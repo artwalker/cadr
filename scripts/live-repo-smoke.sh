@@ -2,10 +2,10 @@
 set -eu
 
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-PI_CL="$PROJECT_DIRECTORY/pi-cl"
+CADR="$PROJECT_DIRECTORY/cadr"
 
-if [ ! -x "$PI_CL" ]; then
-  echo "live repo smoke: build ./pi-cl first" >&2
+if [ ! -x "$CADR" ]; then
+  echo "live repo smoke: build ./cadr first" >&2
   exit 1
 fi
 
@@ -14,8 +14,8 @@ if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
   exit 2
 fi
 
-if [ "${PI_CL_ALLOW_LIVE_TOOL_SMOKE:-}" != "1" ]; then
-  echo "live repo smoke: set PI_CL_ALLOW_LIVE_TOOL_SMOKE=1 to authorize the isolated live tool test" >&2
+if [ "${CADR_ALLOW_LIVE_TOOL_SMOKE:-}" != "1" ]; then
+  echo "live repo smoke: set CADR_ALLOW_LIVE_TOOL_SMOKE=1 to authorize the isolated live tool test" >&2
   exit 2
 fi
 
@@ -46,8 +46,8 @@ chmod +x "$SMOKE_ROOT/project/test.sh"
 OUTPUT="$SMOKE_ROOT/output.txt"
 (
   cd "$SMOKE_ROOT/project"
-  env -u PI_CL_MODEL HOME="$SMOKE_ROOT/home" \
-    "$PI_CL" \
+  env -u CADR_MODEL HOME="$SMOKE_ROOT/home" \
+    "$CADR" \
     --provider deepseek \
     --model deepseek-v4-flash \
     --system-prompt \
@@ -64,7 +64,7 @@ if ! (cd "$SMOKE_ROOT/project" && ./test.sh >/dev/null); then
 fi
 
 SESSION_FILE="$(
-  find "$SMOKE_ROOT/home/.pi-cl/sessions" \
+  find "$SMOKE_ROOT/home/.cadr/sessions" \
     -maxdepth 1 -type f -name '*.jsonl' -print -quit
 )"
 

@@ -8,7 +8,7 @@ function option(name: string): string | undefined {
 }
 
 const referenceDirectory = path.resolve(
-	option("--reference") ?? process.env.PI_TS_REFERENCE ?? "",
+	option("--reference") ?? process.env.CADR_TS_REFERENCE ?? "",
 );
 const outputDirectory = path.resolve(
 	option("--output") ?? "test/fixtures/requests",
@@ -38,7 +38,7 @@ const runnerTemplate = path.resolve(
 );
 const runnerPath = path.join(
 	referenceDirectory,
-	"scripts/.pi-cl-export-ts-payloads.ts",
+	"scripts/.cadr-export-ts-payloads.ts",
 );
 const tsx = path.resolve("node_modules/.bin/tsx");
 

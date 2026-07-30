@@ -4,7 +4,7 @@ set -eu
 SBCL_COMMAND="${SBCL:-sbcl}"
 
 if ! command -v "$SBCL_COMMAND" >/dev/null 2>&1; then
-  echo "pi-cl build: SBCL is required (version 2.4 or newer)." >&2
+  echo "cadr build: SBCL is required (version 2.4 or newer)." >&2
   exit 1
 fi
 
@@ -15,13 +15,13 @@ SBCL_MINOR="${SBCL_REMAINDER%%.*}"
 
 if [ "$SBCL_MAJOR" -lt 2 ] ||
   { [ "$SBCL_MAJOR" -eq 2 ] && [ "$SBCL_MINOR" -lt 4 ]; }; then
-  echo "pi-cl build: SBCL 2.4 or newer is required; found $SBCL_VERSION." >&2
+  echo "cadr build: SBCL 2.4 or newer is required; found $SBCL_VERSION." >&2
   exit 1
 fi
 
 QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 if [ ! -f "$QUICKLISP_SETUP" ]; then
-  echo "pi-cl build: Quicklisp setup not found at $QUICKLISP_SETUP." >&2
+  echo "cadr build: Quicklisp setup not found at $QUICKLISP_SETUP." >&2
   exit 1
 fi
 export QUICKLISP_SETUP

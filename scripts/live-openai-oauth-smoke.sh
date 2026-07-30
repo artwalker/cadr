@@ -2,11 +2,11 @@
 set -eu
 
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-PI_CL="$PROJECT_DIRECTORY/pi-cl"
-AUTH_FILE="${PI_CL_AUTH_FILE:-$HOME/.pi-cl/auth.json}"
+CADR="$PROJECT_DIRECTORY/cadr"
+AUTH_FILE="${CADR_AUTH_FILE:-$HOME/.cadr/auth.json}"
 
-if [ ! -x "$PI_CL" ]; then
-  echo "OAuth live smoke: build ./pi-cl first" >&2
+if [ ! -x "$CADR" ]; then
+  echo "OAuth live smoke: build ./cadr first" >&2
   exit 1
 fi
 
@@ -27,7 +27,7 @@ mkdir -p "$SMOKE_ROOT/project"
 OUTPUT="$SMOKE_ROOT/output.txt"
 (
   cd "$SMOKE_ROOT/project"
-  "$PI_CL" \
+  "$CADR" \
     --provider openai \
     --system-prompt \
     "Follow the requested output format exactly and do not call tools." \

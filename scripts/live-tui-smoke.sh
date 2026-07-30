@@ -2,10 +2,10 @@
 set -eu
 
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-PI_CL="$PROJECT_DIRECTORY/pi-cl"
+CADR="$PROJECT_DIRECTORY/cadr"
 
-if [ ! -x "$PI_CL" ]; then
-  echo "live TUI smoke: build ./pi-cl first" >&2
+if [ ! -x "$CADR" ]; then
+  echo "live TUI smoke: build ./cadr first" >&2
   exit 1
 fi
 
@@ -20,7 +20,7 @@ if ! command -v tmux >/dev/null 2>&1; then
 fi
 
 SMOKE_ROOT="$(mktemp -d)"
-SESSION="pi-cl-tui-$$"
+SESSION="cadr-tui-$$"
 cleanup() {
   tmux kill-session -t "$SESSION" 2>/dev/null || true
   rm -rf -- "$SMOKE_ROOT"
@@ -30,7 +30,7 @@ mkdir -p "$SMOKE_ROOT/home" "$SMOKE_ROOT/project"
 
 tmux new-session -d -s "$SESSION" -x 90 -y 28
 tmux send-keys -t "$SESSION" -l \
-  "cd '$SMOKE_ROOT/project' && before=\$(stty -g) && HOME='$SMOKE_ROOT/home' '$PI_CL' --provider deepseek --model deepseek-v4-flash; after=\$(stty -g); if [ \"\$before\" = \"\$after\" ]; then touch '$SMOKE_ROOT/terminal-restored'; fi"
+  "cd '$SMOKE_ROOT/project' && before=\$(stty -g) && HOME='$SMOKE_ROOT/home' '$CADR' --provider deepseek --model deepseek-v4-flash; after=\$(stty -g); if [ \"\$before\" = \"\$after\" ]; then touch '$SMOKE_ROOT/terminal-restored'; fi"
 tmux send-keys -t "$SESSION" Enter
 sleep 1
 

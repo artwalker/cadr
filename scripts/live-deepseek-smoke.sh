@@ -2,10 +2,10 @@
 set -eu
 
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
-PI_CL="$PROJECT_DIRECTORY/pi-cl"
+CADR="$PROJECT_DIRECTORY/cadr"
 
-if [ ! -x "$PI_CL" ]; then
-  echo "live smoke: build ./pi-cl first" >&2
+if [ ! -x "$CADR" ]; then
+  echo "live smoke: build ./cadr first" >&2
   exit 1
 fi
 
@@ -21,8 +21,8 @@ mkdir -p "$SMOKE_ROOT/home" "$SMOKE_ROOT/project"
 OUTPUT="$SMOKE_ROOT/output.txt"
 (
   cd "$SMOKE_ROOT/project"
-  env -u PI_CL_MODEL HOME="$SMOKE_ROOT/home" \
-    "$PI_CL" \
+  env -u CADR_MODEL HOME="$SMOKE_ROOT/home" \
+    "$CADR" \
     --provider deepseek \
     --model deepseek-v4-flash \
     --system-prompt \

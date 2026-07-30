@@ -38,12 +38,12 @@ const context: Context = {
 	tools: [tool],
 };
 
-function model<TApi extends Api>(
+function model<TApi extends Acadr>(
 	api: TApi,
 	provider: string,
 	id: string,
 	baseUrl: string,
-): Model<TApi> {
+): Model<TAcadr> {
 	return {
 		id,
 		name: id,
