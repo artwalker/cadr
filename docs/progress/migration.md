@@ -167,11 +167,26 @@ reference protocol and is not a cadr product or package name. References to
 `earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508` are retained as
 the required behavioral attribution.
 
-The final zero-residual gate is not yet satisfied: 190 tracked files match the
-required pattern, 185 of them under the upstream TypeScript `packages/` tree.
-The remaining five are the README plus upstream TypeScript root/support files
+The final zero-residual gate is not yet satisfied. The tracked-file audit
+finds 190 files: 185 under the upstream TypeScript `packages/` tree, the
+README, and four upstream TypeScript root/support files
 (`.pi/extensions/tps.ts`, `package-lock.json`,
-`scripts/browser-smoke-entry.ts`, and `tsconfig.json`). This is not silently
-exempted. Removing or renaming that reference implementation is a separate
-repository-shape decision and must be resolved before this report can be
+`scripts/browser-smoke-entry.ts`, and `tsconfig.json`).
+
+The literal filesystem grep currently finds 7,984 files. Of those, 7,517 are
+inside the untracked `pi-mono-rs/` workspace, 430 are in the upstream
+TypeScript `packages/` tree, and 17 are generated `node_modules/` files. It
+also reports 13 historical files because GNU grep matches `--exclude-dir`
+against directory basenames: `--exclude-dir=docs/progress` does not exclude
+the `progress` directory. The operational equivalent is:
+
+```bash
+grep -ri "pi-cl\|pi-ai\|pi-agent\b" \
+  --exclude-dir=.git \
+  --exclude-dir=progress .
+```
+
+None of these results is silently exempted. Removing or renaming the tracked
+reference implementation and relocating user-owned untracked work are
+repository-shape decisions that must be resolved before this report can be
 declared final.
