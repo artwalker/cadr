@@ -34,6 +34,7 @@
    #:define-command
    #:define-event-hook
    #:define-prompt-template
+   #:define-provider
    #:extension-context
    #:extension-context-cwd
    #:extension-context-agent
@@ -43,6 +44,19 @@
    #:extension-context-notify
    #:extension-context-compact
    #:extension-context-reload
+   #:extension-context-select
+   #:extension-context-confirm
+   #:extension-context-input
+   #:extension-context-editor
+   #:extension-context-set-status
+   #:extension-context-set-widget
+   #:extension-context-set-title
+   #:extension-context-set-editor-text
+   #:extension-context-register-provider
+   #:extension-context-register-tool
+   #:extension-context-send-message
+   #:extension-context-send-user-message
+   #:extension-context-set-session-name
    #:extension-event
    #:extension-event-type
    #:extension-event-turn-index
@@ -50,6 +64,9 @@
    #:extension-event-tool-call
    #:extension-event-tool-result
    #:extension-event-tool-results
+   #:extension-event-payload
+   #:extension-cancellation-signal
+   #:extension-cancellation-aborted-p
    #:extension-hook-result
    #:make-extension-hook-result
    #:session

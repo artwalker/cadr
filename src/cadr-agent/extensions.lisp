@@ -24,7 +24,14 @@
              level message))
    :type function)
   reload-function
+  ui-function
+  send-message-function
+  send-user-message-function
+  set-session-name-function
+  (session-started-p nil :type boolean)
   agent
+  base-agent-model
+  base-agent-provider
   (snapshot (make-extension-snapshot)
             :type extension-snapshot)
   (lock (sb-thread:make-mutex
@@ -39,6 +46,7 @@
             (:conc-name %extension-context-))
   host
   source-path
+  bundle
   (active-p t :type boolean))
 
 (defstruct (extension-event
@@ -50,7 +58,37 @@
   tool-call
   tool-result
   tool-results
-  appended-messages)
+  appended-messages
+  payload)
+
+(defstruct (extension-cancellation-signal
+            (:constructor make-extension-cancellation-signal)
+            (:conc-name %extension-cancellation-signal-))
+  (aborted-p nil :type boolean)
+  (lock
+    (sb-thread:make-mutex
+     :name "cadr-extension-cancellation")))
+
+(defun extension-cancellation-aborted-p (signal)
+  (unless (typep signal 'extension-cancellation-signal)
+    (error
+     'extension-execution-error
+     :message "Expected an extension cancellation signal"))
+  (sb-thread:with-mutex
+      ((%extension-cancellation-signal-lock signal))
+    (%extension-cancellation-signal-aborted-p signal)))
+
+(defun abort-extension-cancellation-signal (signal)
+  (unless (typep signal 'extension-cancellation-signal)
+    (error
+     'extension-execution-error
+     :message "Expected an extension cancellation signal"))
+  (sb-thread:with-mutex
+      ((%extension-cancellation-signal-lock signal))
+    (setf
+     (%extension-cancellation-signal-aborted-p signal)
+     t))
+  signal)
 
 (defstruct (extension-hook-result
             (:constructor %make-extension-hook-result))
@@ -112,11 +150,19 @@
      :message
      (format nil "Invalid extension notification level: ~S"
              level)))
-  (funcall
-   (extension-host-notify-function
-    (%extension-context-host context))
-   (princ-to-string message)
-   level)
+  (let* ((host (%extension-context-host context))
+         (ui-function
+           (extension-host-ui-function host)))
+    (if ui-function
+        (funcall
+         ui-function :notify
+         (list
+          :message (princ-to-string message)
+          :level level))
+        (funcall
+         (extension-host-notify-function host)
+         (princ-to-string message)
+         level)))
   nil)
 
 (defun extension-context-compact
@@ -140,6 +186,220 @@
         (funcall reload)
       (setf (%extension-context-active-p context) nil))))
 
+(defun validate-extension-ui-signal (signal)
+  (unless
+      (or
+       (null signal)
+       (typep signal 'extension-cancellation-signal))
+    (error
+     'extension-execution-error
+     :message "UI signal must be an EXTENSION-CANCELLATION-SIGNAL or NIL"))
+  signal)
+
+(defun validate-extension-timeout (timeout-ms)
+  (unless
+      (or
+       (null timeout-ms)
+       (and (integerp timeout-ms)
+            (not (minusp timeout-ms))))
+    (error
+     'extension-execution-error
+     :message "UI timeout-ms must be a non-negative integer or NIL"))
+  timeout-ms)
+
+(defun invoke-extension-ui (context method arguments)
+  (assert-active-extension-context context)
+  (let* ((host (%extension-context-host context))
+         (function (extension-host-ui-function host)))
+    (and function
+         (funcall function method arguments))))
+
+(defun extension-context-select
+    (context title options &key signal timeout-ms)
+  (assert-active-extension-context context)
+  (unless
+      (and
+       (stringp title)
+       (typep options 'sequence)
+       (every #'stringp options))
+    (error
+     'extension-execution-error
+     :message "select requires a string title and a sequence of strings"))
+  (validate-extension-ui-signal signal)
+  (validate-extension-timeout timeout-ms)
+  (invoke-extension-ui
+   context :select
+   (list
+    :title title
+    :options (coerce options 'list)
+    :signal signal
+    :timeout-ms timeout-ms)))
+
+(defun extension-context-confirm
+    (context title message &key signal timeout-ms)
+  (assert-active-extension-context context)
+  (unless (and (stringp title) (stringp message))
+    (error
+     'extension-execution-error
+     :message "confirm requires string title and message values"))
+  (validate-extension-ui-signal signal)
+  (validate-extension-timeout timeout-ms)
+  (not
+   (null
+    (invoke-extension-ui
+     context :confirm
+     (list
+      :title title
+      :message message
+      :signal signal
+      :timeout-ms timeout-ms)))))
+
+(defun extension-context-input
+    (context title &key placeholder signal timeout-ms)
+  (assert-active-extension-context context)
+  (unless
+      (and
+       (stringp title)
+       (or (null placeholder) (stringp placeholder)))
+    (error
+     'extension-execution-error
+     :message "input requires a string title and optional placeholder"))
+  (validate-extension-ui-signal signal)
+  (validate-extension-timeout timeout-ms)
+  (invoke-extension-ui
+   context :input
+   (list
+    :title title
+    :placeholder placeholder
+    :signal signal
+    :timeout-ms timeout-ms)))
+
+(defun extension-context-editor
+    (context title &key prefill)
+  (assert-active-extension-context context)
+  (unless
+      (and
+       (stringp title)
+       (or (null prefill) (stringp prefill)))
+    (error
+     'extension-execution-error
+     :message "editor requires a string title and optional prefill"))
+  (invoke-extension-ui
+   context :editor
+   (list :title title :prefill prefill)))
+
+(defun extension-context-set-status (context key text)
+  (assert-active-extension-context context)
+  (unless
+      (and
+       (stringp key)
+       (or (null text) (stringp text)))
+    (error
+     'extension-execution-error
+     :message "set-status requires a string key and string or NIL text"))
+  (invoke-extension-ui
+   context :set-status
+   (list :key key :text text))
+  nil)
+
+(defun extension-context-set-widget
+    (context key lines &key (placement :above-editor))
+  (assert-active-extension-context context)
+  (unless
+      (and
+       (stringp key)
+       (or
+        (null lines)
+        (and
+         (typep lines 'sequence)
+         (every #'stringp lines)))
+       (member placement '(:above-editor :below-editor)))
+    (error
+     'extension-execution-error
+     :message
+     "set-widget requires a string key, string sequence or NIL, and valid placement"))
+  (invoke-extension-ui
+   context :set-widget
+   (list
+    :key key
+    :lines (and lines (coerce lines 'list))
+    :placement placement))
+  nil)
+
+(defun extension-context-set-title (context title)
+  (assert-active-extension-context context)
+  (unless (stringp title)
+    (error
+     'extension-execution-error
+     :message "set-title requires a string"))
+  (invoke-extension-ui
+   context :set-title
+   (list :title title))
+  nil)
+
+(defun extension-context-set-editor-text (context text)
+  (assert-active-extension-context context)
+  (unless (stringp text)
+    (error
+     'extension-execution-error
+     :message "set-editor-text requires a string"))
+  (invoke-extension-ui
+   context :set-editor-text
+   (list :text text))
+  nil)
+
+(defun call-extension-host-action
+    (context accessor name &rest arguments)
+  (assert-active-extension-context context)
+  (let* ((host (%extension-context-host context))
+         (function (funcall accessor host)))
+    (unless function
+      (error
+       'extension-execution-error
+       :message
+       (format nil "Extension action ~A is unavailable in this host"
+               name)))
+    (apply function arguments)))
+
+(defun extension-context-send-message
+    (context message &key
+                       (trigger-turn-p nil)
+                       deliver-as)
+  (unless
+      (member deliver-as
+              '(nil :steer :follow-up :next-turn))
+    (error
+     'extension-execution-error
+     :message
+     "send-message deliver-as must be :STEER, :FOLLOW-UP, :NEXT-TURN, or NIL"))
+  (call-extension-host-action
+   context #'extension-host-send-message-function
+   "send-message"
+   message
+   :trigger-turn-p (not (null trigger-turn-p))
+   :deliver-as deliver-as))
+
+(defun extension-context-send-user-message
+    (context content &key deliver-as)
+  (unless (member deliver-as '(nil :steer :follow-up))
+    (error
+     'extension-execution-error
+     :message
+     "send-user-message deliver-as must be :STEER, :FOLLOW-UP, or NIL"))
+  (call-extension-host-action
+   context #'extension-host-send-user-message-function
+   "send-user-message"
+   content :deliver-as deliver-as))
+
+(defun extension-context-set-session-name (context name)
+  (unless (stringp name)
+    (error
+     'extension-execution-error
+     :message "set-session-name requires a string"))
+  (call-extension-host-action
+   context #'extension-host-set-session-name-function
+   "set-session-name" name))
+
 (defun extension-event-type (event)
   (%extension-event-type event))
 
@@ -158,6 +418,13 @@
 (defun extension-event-tool-results (event)
   (%extension-event-tool-results event))
 
+(defun extension-event-payload (event)
+  (unless (typep event 'extension-event)
+    (error
+     'extension-execution-error
+     :message "Expected an EXTENSION-EVENT"))
+  (copy-tree (%extension-event-payload event)))
+
 ;;; Registration model
 
 (defstruct extension-bundle
@@ -171,6 +438,7 @@
   (commands nil :type list)
   (hooks nil :type list)
   (templates nil :type list)
+  (providers nil :type list)
   (snapshot-references 0 :type (integer 0 *)))
 
 (defstruct extension-tool-definition
@@ -200,6 +468,11 @@
   description
   argument-hint
   template
+  bundle)
+
+(defstruct extension-provider-definition
+  definition
+  (models nil :type list)
   bundle)
 
 (defvar *extension-registration-bundle* nil)
@@ -347,8 +620,33 @@
   name)
 
 (defparameter +extension-hook-events+
-  '(:turn-start :turn-end
-    :tool-call-before :tool-call-after))
+  '(:turn-start
+    :turn-end
+    :tool-call-before
+    :tool-call-after
+    :session-start
+    :session-info-changed
+    :session-before-switch
+    :session-before-fork
+    :session-before-compact
+    :session-compact
+    :session-shutdown
+    :session-before-tree
+    :session-tree
+    :context
+    :before-agent-start
+    :agent-start
+    :agent-end
+    :agent-settled
+    :message-start
+    :message-update
+    :message-end
+    :input
+    :tool-execution-start
+    :tool-execution-update
+    :tool-execution-end
+    :model-select
+    :thinking-level-select))
 
 (defun register-extension-hook
     (event priority handler)
@@ -420,6 +718,60 @@
         :bundle bundle)))))
   name)
 
+(defun validate-extension-provider
+    (definition models)
+  (unless (typep definition 'cadr-ai:provider-definition)
+    (error
+     'extension-registration-error
+     :message
+     "Provider definition must be a CADR-AI:PROVIDER-DEFINITION"))
+  (unless
+      (and
+       (listp models)
+       (every
+        (lambda (model)
+          (and
+           (typep model 'cadr-ai:model-metadata)
+           (eq
+            (cadr-ai:model-metadata-provider model)
+            (cadr-ai:provider-definition-id definition))))
+        models))
+    (error
+     'extension-registration-error
+     :message
+     "Provider models must be a list of matching CADR-AI:MODEL-METADATA values"))
+  definition)
+
+(defun extension-provider-id (entry)
+  (cadr-ai:provider-definition-id
+   (extension-provider-definition-definition entry)))
+
+(defun register-extension-provider
+    (definition models)
+  (let ((bundle (require-extension-registration-bundle)))
+    (validate-extension-provider definition models)
+    (let ((existing
+            (find
+             (cadr-ai:provider-definition-id definition)
+             (extension-bundle-providers bundle)
+             :key #'extension-provider-id)))
+      (if existing
+          (setf
+           (extension-provider-definition-definition existing)
+           definition
+           (extension-provider-definition-models existing)
+           (copy-list models))
+          (setf
+           (extension-bundle-providers bundle)
+           (nconc
+            (extension-bundle-providers bundle)
+            (list
+             (make-extension-provider-definition
+              :definition definition
+              :models (copy-list models)
+              :bundle bundle)))))))
+  definition)
+
 (defmacro define-tool
     (name &key description parameters
                  (execution-mode :parallel)
@@ -441,12 +793,19 @@
   `(register-extension-template
     ,name ,description ,argument-hint ,template))
 
+(defmacro define-provider (definition &key models)
+  `(register-extension-provider ,definition ,models))
+
 (defun make-extension-host
     (&key
        (cwd (uiop:getcwd))
        (mode :repl)
        notify-function
-       reload-function)
+       reload-function
+       ui-function
+       send-message-function
+       send-user-message-function
+       set-session-name-function)
   (%make-extension-host
    :cwd
    (uiop:ensure-directory-pathname
@@ -460,7 +819,11 @@
               "~&extension[~(~A~)]> ~A~%"
               level message)
       (finish-output *error-output*)))
-   :reload-function reload-function))
+   :reload-function reload-function
+   :ui-function ui-function
+   :send-message-function send-message-function
+   :send-user-message-function send-user-message-function
+   :set-session-name-function set-session-name-function))
 
 (defun extension-definition-origin (definition)
   (extension-bundle-path
@@ -472,7 +835,9 @@
      (extension-hook-definition
       (extension-hook-definition-bundle definition))
      (extension-template-definition
-      (extension-template-definition-bundle definition)))))
+      (extension-template-definition-bundle definition))
+     (extension-provider-definition
+      (extension-provider-definition-bundle definition)))))
 
 (defun extension-conflict
     (kind name winner loser)
@@ -593,7 +958,8 @@
       (maybe-release-extension-snapshot old))
     (when (extension-host-agent host)
       (refresh-agent-extension-tools
-       (extension-host-agent host)))
+       (extension-host-agent host))
+      (apply-extension-provider-overlays host))
     (copy-list
      (extension-snapshot-conflicts snapshot))))
 
@@ -622,7 +988,20 @@
            (%make-extension-context
             :host host
             :source-path
-            (extension-definition-origin definition))))
+            (extension-definition-origin definition)
+            :bundle
+            (etypecase definition
+              (extension-tool-definition
+               (extension-tool-definition-bundle definition))
+              (extension-command-definition
+               (extension-command-definition-bundle definition))
+              (extension-hook-definition
+               (extension-hook-definition-bundle definition))
+              (extension-template-definition
+               (extension-template-definition-bundle definition))
+              (extension-provider-definition
+               (extension-provider-definition-bundle
+                definition))))))
     (unwind-protect
          (funcall function context)
       (setf (%extension-context-active-p context) nil)
@@ -643,7 +1022,9 @@
              (extension-hook-definition
               (extension-hook-definition-event definition))
              (extension-template-definition
-              (extension-template-definition-name definition)))
+              (extension-template-definition-name definition))
+             (extension-provider-definition
+              (extension-provider-id definition)))
            condition)
    :error))
 
@@ -701,9 +1082,328 @@
 
 (defun attach-extension-host (host agent)
   (setf (extension-host-agent host) agent
+        (extension-host-base-agent-provider host)
+        (agent-provider agent)
+        (extension-host-base-agent-model host)
+        (agent-model agent)
         (agent-extension-host agent) host)
+  (unless (extension-host-send-message-function host)
+    (setf
+     (extension-host-send-message-function host)
+     (lambda (message &key trigger-turn-p deliver-as)
+       (extension-host-send-message
+        host message
+        :trigger-turn-p trigger-turn-p
+        :deliver-as deliver-as))))
+  (unless (extension-host-send-user-message-function host)
+    (setf
+     (extension-host-send-user-message-function host)
+     (lambda (content &key deliver-as)
+       (extension-host-send-user-message
+        host content :deliver-as deliver-as))))
+  (unless (extension-host-set-session-name-function host)
+    (setf
+     (extension-host-set-session-name-function host)
+     (lambda (name)
+       (extension-host-set-session-name host name))))
   (refresh-agent-extension-tools agent)
+  (apply-extension-provider-overlays host)
   host)
+
+(defun extension-custom-message-value
+    (message key &optional default)
+  (getf message key default))
+
+(defun extension-custom-message-p (message)
+  (and
+   (listp message)
+   (stringp
+    (extension-custom-message-value
+     message :custom-type))
+   (valid-custom-message-content-p
+    (extension-custom-message-value
+     message :content))))
+
+(defun extension-custom-message-as-user-message (message)
+  (cadr-ai:make-user-message
+   :content
+   (extension-custom-message-value
+    message :content)))
+
+(defun persist-extension-custom-message (agent message)
+  (let ((session (agent-session agent)))
+    (when session
+      (session-append-custom-message
+       session
+       (extension-custom-message-value
+        message :custom-type)
+       (extension-custom-message-value
+        message :content)
+       :details
+       (extension-custom-message-value
+        message :details)
+       :display-p
+       (extension-custom-message-value
+        message :display-p))))
+  message)
+
+(defun deliver-extension-message
+    (agent message deliver-as)
+  (ecase deliver-as
+    (:steer (agent-steer agent message))
+    (:follow-up (agent-follow-up agent message))
+    (:next-turn (agent-next-turn agent message))))
+
+(defun extension-host-send-message
+    (host message &key trigger-turn-p deliver-as)
+  (let ((agent (extension-host-agent host)))
+    (unless agent
+      (error
+       'extension-execution-error
+       :message "send-message requires an attached agent"))
+    (let ((queued-message
+            (cond
+              ((extension-custom-message-p message)
+               (persist-extension-custom-message
+                agent message)
+               (extension-custom-message-as-user-message
+                message))
+              ((typep message 'cadr-ai:user-message)
+               message)
+              (t
+               (error
+                'extension-execution-error
+                :message
+                "send-message requires a custom message plist or USER-MESSAGE")))))
+      (cond
+        (deliver-as
+         (deliver-extension-message
+          agent queued-message deliver-as))
+        ((and trigger-turn-p
+              (agent-busy-p agent))
+         (error
+          'extension-execution-error
+          :message
+          "send-message requires DELIVER-AS while the agent is running"))
+        (trigger-turn-p
+         (agent-prompt agent queued-message))
+        (t message)))))
+
+(defun extension-host-send-user-message
+    (host content &key deliver-as)
+  (let ((agent (extension-host-agent host)))
+    (unless agent
+      (error
+       'extension-execution-error
+       :message
+       "send-user-message requires an attached agent"))
+    (let ((message
+            (if (typep content 'cadr-ai:user-message)
+                content
+                (handler-case
+                    (cadr-ai:make-user-message
+                     :content content)
+                  (error (condition)
+                    (error
+                     'extension-execution-error
+                     :cause condition
+                     :message
+                     "send-user-message requires valid user content"))))))
+      (cond
+        (deliver-as
+         (deliver-extension-message
+          agent message deliver-as))
+        ((agent-busy-p agent)
+         (error
+          'extension-execution-error
+          :message
+          "send-user-message requires DELIVER-AS while the agent is running"))
+        (t (agent-prompt agent message))))))
+
+(defun extension-host-set-session-name (host name)
+  (let* ((agent (extension-host-agent host))
+         (session (and agent (agent-session agent))))
+    (unless session
+      (error
+       'extension-execution-error
+       :message
+       "set-session-name requires an attached session"))
+    (session-set-name session name)
+    (run-extension-lifecycle-hooks
+     host :session-info-changed
+     :payload (list :name (session-name session)))
+    (session-name session)))
+
+(defun extension-host-provider-definitions (host)
+  (let ((seen (make-hash-table))
+        (result nil))
+    (dolist
+        (bundle
+         (extension-snapshot-bundles
+          (extension-host-current-snapshot host)))
+      (dolist (entry (extension-bundle-providers bundle))
+        (unless (gethash (extension-provider-id entry) seen)
+          (setf
+           (gethash (extension-provider-id entry) seen)
+           t)
+          (push entry result))))
+    (nreverse result)))
+
+(defun metadata-model-copy (metadata)
+  (cadr-ai:make-model
+   :id (cadr-ai:model-metadata-id metadata)
+   :name (cadr-ai:model-metadata-name metadata)
+   :provider (cadr-ai:model-metadata-provider metadata)
+   :api (cadr-ai:model-metadata-api metadata)
+   :base-url (cadr-ai:model-metadata-base-url metadata)
+   :max-tokens
+   (cadr-ai:model-metadata-max-output-tokens metadata)
+   :context-window
+   (cadr-ai:model-metadata-context-window metadata)
+   :supports-images-p
+   (cadr-ai:model-metadata-supports-images-p metadata)
+   :supports-tools-p
+   (cadr-ai:model-metadata-supports-tools-p metadata)
+   :reasoning-p
+   (cadr-ai:model-metadata-reasoning-p metadata)
+   :thinking-level-map
+   (cadr-ai:model-metadata-thinking-level-map metadata)
+   :headers (cadr-ai:model-metadata-headers metadata)
+   :compat (cadr-ai:model-metadata-compat metadata)))
+
+(defun provider-overlay-model
+    (entry model)
+  (let* ((definition
+           (extension-provider-definition-definition entry))
+         (metadata
+           (find
+            (cadr-ai:model-id model)
+            (extension-provider-definition-models entry)
+            :key #'cadr-ai:model-metadata-id
+            :test #'string=)))
+    (if metadata
+        (metadata-model-copy metadata)
+        (cadr-ai:make-model
+         :id (cadr-ai:model-id model)
+         :name (cadr-ai::model-name model)
+         :provider (cadr-ai:model-provider model)
+         :api
+         (or
+          (cadr-ai:provider-definition-protocol definition)
+          (cadr-ai:model-api model))
+         :base-url
+         (cadr-ai:provider-definition-base-url definition)
+         :max-tokens (cadr-ai:model-max-tokens model)
+         :context-window (cadr-ai:model-context-window model)
+         :supports-images-p
+         (cadr-ai:provider-definition-supports-images-p
+          definition)
+         :supports-tools-p
+         (cadr-ai:provider-definition-supports-tools-p
+          definition)
+         :reasoning-p
+         (cadr-ai:provider-definition-reasoning-p
+          definition)
+         :thinking-level-map
+         (cadr-ai::model-thinking-level-map model)
+         :headers (cadr-ai::model-headers model)
+         :compat (cadr-ai::model-compat model)))))
+
+(defun apply-extension-provider-overlays (host)
+  (let ((agent (extension-host-agent host)))
+    (when agent
+      (let* ((baseline
+               (or
+                (extension-host-base-agent-model host)
+                (agent-model agent)))
+             (entry
+               (find
+                (cadr-ai:model-provider baseline)
+                (extension-host-provider-definitions host)
+                :key #'extension-provider-id)))
+        (setf
+         (agent-model agent)
+         (if entry
+             (provider-overlay-model entry baseline)
+             baseline)
+         (agent-provider agent)
+         (or
+          (extension-host-base-agent-provider host)
+          (agent-provider agent))))))
+  host)
+
+(defun extension-context-register-tool (context tool)
+  (assert-active-extension-context context)
+  (unless (typep tool 'cadr-ai:tool)
+    (error
+     'extension-execution-error
+     :message "register-tool requires a CADR-AI:TOOL"))
+  (let* ((host (%extension-context-host context))
+         (bundle (%extension-context-bundle context))
+         (name (cadr-ai:tool-name tool))
+         (definition
+           (make-extension-tool-definition
+            :name name
+            :description (cadr-ai:tool-description tool)
+            :parameters (cadr-ai:tool-parameters tool)
+            :execution-mode
+            (cadr-ai:tool-execution-mode tool)
+            :handler
+            (lambda (call-id arguments ignored-context)
+              (declare (ignore ignored-context))
+              (funcall
+               (cadr-ai:tool-executor tool)
+               call-id arguments))
+            :bundle bundle)))
+    (validate-extension-resource-name "tool" name)
+    (validate-extension-schema
+     name (cadr-ai:tool-parameters tool))
+    (setf
+     (extension-bundle-tools bundle)
+     (nconc
+      (remove
+       name
+       (extension-bundle-tools bundle)
+       :key #'extension-tool-definition-name
+       :test #'string=)
+      (list definition)))
+    (replace-extension-bundles
+     host
+     (extension-snapshot-bundles
+      (extension-host-current-snapshot host)))
+    tool))
+
+(defun extension-context-register-provider
+    (context definition &key models)
+  (assert-active-extension-context context)
+  (handler-case
+      (validate-extension-provider definition models)
+    (extension-registration-error (condition)
+      (error
+       'extension-execution-error
+       :cause condition
+       :message (princ-to-string condition))))
+  (let* ((host (%extension-context-host context))
+         (bundle (%extension-context-bundle context))
+         (id (cadr-ai:provider-definition-id definition))
+         (entry
+           (make-extension-provider-definition
+            :definition definition
+            :models (copy-list models)
+            :bundle bundle)))
+    (setf
+     (extension-bundle-providers bundle)
+     (nconc
+      (remove
+       id
+       (extension-bundle-providers bundle)
+       :key #'extension-provider-id)
+      (list entry)))
+    (replace-extension-bundles
+     host
+     (extension-snapshot-bundles
+      (extension-host-current-snapshot host)))
+    definition))
 
 ;;; Commands and prompt templates
 
@@ -1187,3 +1887,413 @@
         (release-acquired-extension-snapshot
          host held)))
     (values primary appended blocked-p reason)))
+
+;;; Wave 2 lifecycle dispatch. The original four hooks above deliberately keep
+;;; their frozen EXTENSION-HOOK-RESULT contract.
+
+(defparameter +extension-lifecycle-no-result-events+
+  '(:session-start
+    :session-info-changed
+    :session-compact
+    :session-shutdown
+    :session-tree
+    :agent-start
+    :agent-end
+    :agent-settled
+    :message-start
+    :message-update
+    :tool-execution-start
+    :tool-execution-update
+    :tool-execution-end
+    :model-select
+    :thinking-level-select))
+
+(defun strict-keyword-plist-p (value)
+  (and
+   (listp value)
+   (evenp (length value))
+   (loop for tail on value by #'cddr
+         always (keywordp (first tail)))))
+
+(defun validate-lifecycle-result-keys
+    (event result allowed)
+  (unless (strict-keyword-plist-p result)
+    (error
+     "~S handler returned ~S instead of a keyword plist or NIL"
+     event result))
+  (loop for tail on result by #'cddr
+        for key = (first tail)
+        do
+        (unless (member key allowed)
+          (error
+           "~S handler returned unsupported key ~S"
+           event key)))
+  result)
+
+(defun extension-boolean-p (value)
+  (or (null value) (eq value t)))
+
+(defun extension-message-role (message)
+  (cond
+    ((typep message 'cadr-ai:user-message) :user)
+    ((typep message 'cadr-ai:assistant-message) :assistant)
+    ((typep message 'cadr-ai:tool-result-message) :tool-result)
+    (t nil)))
+
+(defun validate-session-before-result (event result)
+  (let ((allowed
+          (case event
+            (:session-before-switch
+             '(:cancel-p))
+            (:session-before-fork
+             '(:cancel-p
+               :skip-conversation-restore-p))
+            (:session-before-compact
+             '(:cancel-p :compaction))
+            (:session-before-tree
+             '(:cancel-p
+               :summary
+               :details
+               :usage
+               :custom-instructions
+               :replace-instructions-p
+               :label)))))
+    (validate-lifecycle-result-keys
+     event result allowed)
+    (dolist (key
+             '(:cancel-p
+               :skip-conversation-restore-p
+               :replace-instructions-p))
+      (let ((sentinel (list :missing)))
+        (let ((value (getf result key sentinel)))
+          (unless
+              (or
+               (eq value sentinel)
+               (extension-boolean-p value))
+            (error "~S result key ~S must be boolean"
+                   event key)))))
+    (dolist (key '(:summary :custom-instructions :label))
+      (let ((sentinel (list :missing)))
+        (let ((value (getf result key sentinel)))
+          (unless
+              (or
+               (eq value sentinel)
+               (null value)
+               (stringp value))
+            (error "~S result key ~S must be a string or NIL"
+                   event key)))))
+    result))
+
+(defun validate-lifecycle-result (event result current-payload)
+  (cond
+    ((member event +extension-lifecycle-no-result-events+)
+     (when result
+       (error "~S handlers must return NIL" event))
+     nil)
+    ((member
+      event
+      '(:session-before-switch
+        :session-before-fork
+        :session-before-compact
+        :session-before-tree))
+     (and result
+          (validate-session-before-result event result)))
+    ((eq event :context)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:messages))
+       (let ((messages (getf result :messages)))
+         (unless
+             (and
+              (listp messages)
+              (every #'extension-message-p messages))
+           (error
+            ":CONTEXT :MESSAGES must be a list of CADR-AI messages"))))
+     result)
+    ((eq event :before-agent-start)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:message :system-prompt))
+       (let ((sentinel (list :missing)))
+         (let ((message (getf result :message sentinel))
+               (system-prompt
+                 (getf result :system-prompt sentinel)))
+           (unless
+               (or
+                (eq message sentinel)
+                (extension-message-p message))
+             (error
+              ":BEFORE-AGENT-START :MESSAGE must be a CADR-AI message"))
+           (unless
+               (or
+                (eq system-prompt sentinel)
+                (stringp system-prompt))
+             (error
+              ":BEFORE-AGENT-START :SYSTEM-PROMPT must be a string")))))
+     result)
+    ((eq event :message-end)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:message))
+       (let ((replacement (getf result :message))
+             (original (getf current-payload :message)))
+         (unless
+             (and
+              (extension-message-p replacement)
+              (eq
+               (extension-message-role replacement)
+               (extension-message-role original)))
+           (error
+            ":MESSAGE-END replacement must preserve the message role"))))
+     result)
+    ((eq event :input)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:action :text :images))
+       (let ((action (getf result :action)))
+         (unless (member action '(:continue :transform :handled))
+           (error
+            ":INPUT :ACTION must be :CONTINUE, :TRANSFORM, or :HANDLED"))
+         (case action
+           ((:continue :handled)
+            (unless (= 2 (length result))
+              (error
+               ":INPUT ~S result accepts only :ACTION"
+               action)))
+           (:transform
+            (unless (stringp (getf result :text))
+              (error
+               ":INPUT :TRANSFORM requires string :TEXT"))
+            (let ((sentinel (list :missing)))
+              (let ((images (getf result :images sentinel)))
+                (unless
+                    (or
+                     (eq images sentinel)
+                     (null images)
+                     (typep images 'sequence))
+                  (error
+                   ":INPUT :IMAGES must be a sequence or NIL"))))))))
+     result)
+    (t
+     (error "No lifecycle result contract for ~S" event))))
+
+(defun make-lifecycle-event (event payload)
+  (%make-extension-event
+   :type event
+   :payload (copy-tree payload)
+   :message (getf payload :message)
+   :tool-call (getf payload :tool-call)
+   :tool-result (getf payload :tool-result)
+   :tool-results (getf payload :tool-results)))
+
+(defun lifecycle-event-payload-for-handler
+    (event original state)
+  (case event
+    (:context
+     (list :messages (copy-list (getf state :messages))))
+    (:before-agent-start
+     (let ((copy (copy-list original)))
+       (setf
+        (getf copy :system-prompt)
+        (getf state :system-prompt))
+       copy))
+    (:message-end
+     (let ((copy (copy-list original)))
+       (setf
+        (getf copy :message)
+        (getf state :message))
+       copy))
+    (:input
+     (let ((copy (copy-list original)))
+       (setf
+        (getf copy :text) (getf state :text)
+        (getf copy :images) (getf state :images))
+       copy))
+    (otherwise (copy-tree original))))
+
+(defun initial-lifecycle-state (event payload)
+  (case event
+    (:context
+     (list :messages (copy-list (getf payload :messages))))
+    (:before-agent-start
+     (list
+      :messages nil
+      :system-prompt (getf payload :system-prompt)
+      :modified-p nil))
+    (:message-end
+     (list :message (getf payload :message)
+           :modified-p nil))
+    (:input
+     (list
+      :text (getf payload :text)
+      :images (getf payload :images)
+      :modified-p nil))
+    (otherwise nil)))
+
+(defun merge-lifecycle-result
+    (event state result)
+  (case event
+    ((:session-before-switch
+      :session-before-fork
+      :session-before-compact
+      :session-before-tree)
+     result)
+    (:context
+     (when result
+       (setf
+        (getf state :messages)
+        (copy-list (getf result :messages))))
+     state)
+    (:before-agent-start
+     (when result
+       (let ((sentinel (list :missing)))
+         (let ((message (getf result :message sentinel))
+               (system-prompt
+                 (getf result :system-prompt sentinel)))
+           (unless (eq message sentinel)
+             (setf
+              (getf state :messages)
+              (nconc
+               (getf state :messages)
+               (list message))))
+           (unless (eq system-prompt sentinel)
+             (setf
+              (getf state :system-prompt)
+              system-prompt
+              (getf state :modified-p)
+              t)))))
+     state)
+    (:message-end
+     (when result
+       (setf
+        (getf state :message)
+        (getf result :message)
+        (getf state :modified-p)
+        t))
+     state)
+    (:input
+     (when result
+       (case (getf result :action)
+         (:transform
+          (setf
+           (getf state :text) (getf result :text)
+           (getf state :modified-p) t)
+          (let ((sentinel (list :missing)))
+            (let ((images
+                    (getf result :images sentinel)))
+              (unless (eq images sentinel)
+                (setf
+                 (getf state :images) images)))))
+         (:handled
+          (setf (getf state :handled-p) t))))
+     state)
+    (otherwise state)))
+
+(defun finalize-lifecycle-state (event state last-result)
+  (case event
+    ((:session-before-switch
+      :session-before-fork
+      :session-before-compact
+      :session-before-tree)
+     last-result)
+    (:context
+     (list :messages (copy-list (getf state :messages))))
+    (:before-agent-start
+     (let ((result nil))
+       (when (getf state :messages)
+         (setf
+          (getf result :messages)
+          (copy-list (getf state :messages))))
+       (when (getf state :modified-p)
+         (setf
+          (getf result :system-prompt)
+          (getf state :system-prompt)))
+       result))
+    (:message-end
+     (list :message (getf state :message)))
+    (:input
+     (cond
+       ((getf state :handled-p)
+        '(:action :handled))
+       ((getf state :modified-p)
+        (list
+         :action :transform
+         :text (getf state :text)
+         :images (getf state :images)))
+       (t '(:action :continue))))
+    (otherwise nil)))
+
+(defun run-extension-lifecycle-hooks
+    (host event &key payload)
+  (unless
+      (and
+       (member event +extension-hook-events+)
+       (not
+        (member
+         event
+         '(:turn-start
+           :turn-end
+           :tool-call-before
+           :tool-call-after))))
+    (error
+     'extension-execution-error
+     :message
+     (format nil "Unsupported lifecycle event: ~S" event)))
+  (let* ((snapshot
+           (extension-host-current-snapshot host))
+         (definitions
+           (copy-list
+            (gethash
+             event
+             (extension-snapshot-hooks snapshot))))
+         (state (initial-lifecycle-state event payload))
+         (last-result nil)
+         (held (acquire-extension-snapshot host snapshot)))
+    (unwind-protect
+         (sb-thread:with-recursive-lock
+             ((extension-host-hook-lock host))
+           (dolist (definition definitions)
+             (handler-case
+                 (let* ((handler-payload
+                          (lifecycle-event-payload-for-handler
+                           event payload state))
+                        (result
+                          (call-with-extension-definition
+                           host snapshot definition
+                           (lambda (context)
+                             (funcall
+                              (extension-hook-definition-handler
+                               definition)
+                              (make-lifecycle-event
+                               event handler-payload)
+                              context)))))
+                   (validate-lifecycle-result
+                    event result handler-payload)
+                   (when result
+                     (setf last-result result))
+                   (setf
+                    state
+                    (merge-lifecycle-result
+                     event state result))
+                   (when
+                       (or
+                        (and
+                         (member
+                          event
+                          '(:session-before-switch
+                            :session-before-fork
+                            :session-before-compact
+                            :session-before-tree))
+                         result
+                         (getf result :cancel-p))
+                        (and
+                         (eq event :input)
+                         (getf state :handled-p)))
+                     (return)))
+               (condition (condition)
+                 (notify-extension-failure
+                  host definition "Lifecycle hook"
+                  condition)))))
+      (release-acquired-extension-snapshot host held))
+    (finalize-lifecycle-state
+     event state last-result)))
