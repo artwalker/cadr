@@ -90,7 +90,7 @@ the five-provider v2 registry remain outside the current phase.
 | Differential rendering | renderer/virtual-terminal tests | Only changed rows repaint; shrink clears stale rows; width change forces full redraw; image rows preclear |
 | Exception-safe terminal | lifecycle body and partial-start tests | Cleanup runs after body conditions and after a start method fails mid-setup |
 | Shared frontend semantics | `DISPATCH-USER-INPUT-IS-SHARED-BY-FRONTENDS`, TUI policy test | TUI/REPL share dispatch and agent events; `--no-tui` and non-TTY fallback are explicit |
-| Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh` | Pipe fallback plus autocomplete, undo, kill ring, real DeepSeek two-turn edit, resize, CJK input, and termios restoration |
+| Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh`, `scripts/goal5-manual-tui.sh` | Pipe fallback; overlay focus/CJK/image fallback; autocomplete, undo, kill ring, DeepSeek two-turn edit, resize, image protocol and termios restoration |
 
 ## Phase 9: native infrastructure and dependency closure
 
@@ -102,7 +102,7 @@ the five-provider v2 registry remain outside the current phase.
 | Native HTTP | loopback streaming, chunked, timeout, status/retry tests | HTTP/1.1 framing and stream behavior no longer depend on Dexador |
 | Long-thinking SSE | `SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT` | Native transport receives explicit `read-timeout = NIL` |
 | Required removals | source audit in `docs/dependency-audit.md` | No production `dexador`, `com.inuoe.jzon`, or `clingon` reference |
-| Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 1212 checks and SBCL compression-feature fallback |
+| Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 1219 checks and SBCL compression-feature fallback |
 | Live DeepSeek paths | four live smoke scripts | Native HTTPS/SSE, self-extension, fail/fix/pass repository task, and real TUI multi-turn task |
 
 ## Phase 2: cadr-agent

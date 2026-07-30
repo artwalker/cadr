@@ -377,7 +377,7 @@ The appendix is sorted exactly like
 | `storage` / `server` / `evals` | 0 | 0 | 0 | 0 |
 | **Total** | **28** | **0** | **324** | **352** |
 
-The 1212 CL assertions now cover the complete 27-file TUI test surface and
+The 1219 CL assertions now cover the complete 27-file TUI test surface and
 the nested-gitignore regression. Most other reference files still contain at
 least one provider, v3 entry type, queue, UI, platform, or compatibility case
 that cadr does not implement. Partial coverage stays `M`.
@@ -747,7 +747,7 @@ Goal 5 contains only the first two entries; Wave 1 has not started.
 | Order | Status | Scope | Verification gate |
 |---|---|---|---|
 | Wave 0 | complete | `U-SEARCH-GITIGNORE` and `U-TUI-RI` | both regressions are `C`; no `U` remains |
-| TUI (former Wave 4) | implemented, awaiting manual acceptance | complete 27-file TUI baseline test surface | 575 TUI checks, PTY/live smoke, manual checklist |
+| TUI (former Wave 4) | implemented, awaiting manual acceptance | complete 27-file TUI baseline test surface | 582 TUI checks, PTY/live smoke, manual checklist |
 | Wave 1 | not started | shared OpenAI-Completions/Responses and Anthropic compatibility; compatible providers/catalogs | generated fixtures plus credential-gated smokes |
 | Wave 2 | not started | exact agent harness, session v3, queues, print/JSON and RPC | reference harness/session/RPC tests |
 | Wave 3 | not started | independent APIs and auth flows | protocol fixtures and available live credentials |

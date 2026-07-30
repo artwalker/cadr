@@ -127,9 +127,9 @@ manifest 的 TUI 行从 `C/U/M = 1/1/25` 变为 `27/0/0`，全仓从
 ./scripts/test-cl.sh
   cadr-ai:    256/256
   cadr-agent: 156/156
-  cadr-tui:   575/575
+  cadr-tui:   582/582
   cadr-cli:   225/225
-  total:     1212/1212
+  total:     1219/1219
 
 ./build.sh
   cadr build: SBCL lacks sb-core-compression; building an uncompressed image.
@@ -139,29 +139,42 @@ manifest 的 TUI 行从 `C/U/M = 1/1/25` 变为 `27/0/0`，全仓从
   cadr 0.1.0
 
 ./scripts/live-tui-smoke.sh
+  goal5 manual TUI smoke: overlay focus, CJK frame, image fallback,
+  resize, and terminal restore passed
   live TUI smoke: autocomplete, undo, kill-ring, DeepSeek two-turn edit,
   resize, CJK, and terminal restore passed
 
-bash -n scripts/live-tui-smoke.sh
+bash -n scripts/goal5-manual-tui.sh \
+  scripts/goal5-manual-tui-smoke.sh scripts/live-tui-smoke.sh
   exit 0
 ```
 
 既有测试文件只增加断言，没有删除或放宽断言。最终 `git diff --check`
 通过。`U-TUI-RI`、完整 `wrapTextWithAnsi` 语义和真实 Return/终端回复路径
-均留在 Goal 5 门禁中。
+均留在 Goal 5 门禁中。`goal5-manual-tui.sh` 只加载 test system，不进入
+生产镜像或核心 API；它把图片与 CJK overlay 的人工验收变成真实终端中的
+可重复操作。
 
 ### 待用户人工验收
 
-Goal 5 尚未完成，需用户在真实终端逐项确认：
+Goal 5 尚未完成。先在 Kitty/iTerm2 原生窗口（不要经 tmux）运行：
+
+```bash
+./scripts/goal5-manual-tui.sh
+```
+
+再运行正常程序完成编辑器检查。需用户逐项确认：
 
 1. 输入 `/` 后弹出补全，并可用方向键、Tab、Enter 选择。
 2. `Ctrl+-` / `Ctrl-_` 可 undo；无需验收 redo，因为固定基线没有 redo。
 3. `Ctrl+W`、`Ctrl+U`、`Ctrl+K` 后可用 `Ctrl+Y` 粘贴，并可用 `Alt+Y`
    轮换 kill ring。
 4. Ctrl/Alt + Left/Right 按词移动，对 ASCII 路径、标点和 CJK 边界正确。
-5. Kitty/iTerm2 终端内图片正确显示；不支持图片的终端显示有界 fallback。
-6. overlay 在中文宽字符边界不残留半字，捕获/非捕获焦点分派正确。
-7. resize 后重新检查以上交互，界面无残留、错位或样式泄漏。
+5. harness 显示终端内图片；按 `i` 后显示有界 fallback，再按 `i` 恢复图片。
+6. harness 的 overlay 在中文宽字符边界不残留半字；按 `f` 时 capturing
+   overlay 隐藏/恢复，input target 在 `EDITOR` / `PICKER` 间切换，
+   non-capturing help 始终可见。
+7. 分别 resize harness 与正常程序，以上交互无残留、错位或样式泄漏。
 8. `--no-tui` 仍进入 line REPL。
 
 用户逐项确认前不宣告 Goal 5 完成；Wave 1 未开始。
