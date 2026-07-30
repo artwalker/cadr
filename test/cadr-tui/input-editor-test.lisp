@@ -23,6 +23,50 @@
       (is (string= (format nil "a~%b")
                    (cadr-tui:input-event-text (first events)))))))
 
+(test input-decoder-emits-configurable-editor-actions
+  (let ((decoder (cadr-tui:make-input-decoder)))
+    (is (equal
+         '(:enter)
+         (event-kinds
+          (cadr-tui:feed-input
+           decoder (string #\Return)))))
+    (is
+     (equal
+      '(:line-start :line-end
+        :delete-line-end :delete-word-backward
+        :yank :undo :word-left :word-right
+        :delete-word-forward :yank-pop
+        :jump-forward :jump-backward)
+      (event-kinds
+       (cadr-tui:feed-input
+        decoder
+        (format nil
+                "~C~C~C~C~C~C~C[1;5D~C[1;5C~Cd~Cy~C~C~C"
+                (code-char 1)
+                (code-char 5)
+                (code-char 11)
+                (code-char 23)
+                (code-char 25)
+                (code-char 31)
+                #\Escape
+                #\Escape
+                #\Escape
+                #\Escape
+                (code-char 29)
+                #\Escape
+                (code-char 29))))))
+    (let ((events
+            (cadr-tui:feed-input
+             decoder
+             (format nil "~C[97u~C[45;5u"
+                     #\Escape #\Escape))))
+      (is (equal '(:text :undo)
+                 (event-kinds events)))
+      (is (string=
+           "a"
+           (cadr-tui:input-event-text
+            (first events)))))))
+
 (test multiline-editor-edits-by-grapheme-and-submits
   (let ((editor (cadr-tui:make-multiline-editor)))
     (cadr-tui:editor-handle-event

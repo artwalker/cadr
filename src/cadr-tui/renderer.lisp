@@ -185,6 +185,7 @@
             (:constructor %make-terminal-renderer))
   terminal
   (previous-lines nil :type list)
+  (previous-image-ids nil :type list)
   (previous-width 0 :type (integer 0 *))
   (invalid-p t :type boolean))
 
@@ -203,7 +204,79 @@
             (slice-to-width line
                             (terminal-columns terminal))
           (declare (ignore width))
-          prefix)))
+          (concatenate
+           'string prefix
+           (format nil "~C[0m" #\Escape)))))
+
+(defun kitty-parameter-integer
+    (line parameter)
+  (let ((position
+          (search parameter line)))
+    (when position
+      (parse-integer
+       line
+       :start (+ position
+                 (length parameter))
+       :junk-allowed t))))
+
+(defun kitty-image-id (line)
+  (when (search (format nil "~C_G" #\Escape)
+                line)
+    (kitty-parameter-integer line "i=")))
+
+(defun kitty-image-rows (line)
+  (if (search (format nil "~C_G" #\Escape)
+              line)
+      (or (kitty-parameter-integer line "r=")
+          1)
+      1))
+
+(defun frame-image-ids (lines)
+  (remove-duplicates
+   (remove nil
+           (mapcar #'kitty-image-id lines))
+   :test #'=))
+
+(defun frame-image-change-p (current previous)
+  (loop for row below
+        (max (length current)
+             (length previous))
+        for new =
+        (if (< row (length current))
+            (nth row current)
+            "")
+        for old =
+        (if (< row (length previous))
+            (nth row previous)
+            "")
+        thereis
+        (and
+         (not (string= new old))
+         (or (image-line-p new)
+             (image-line-p old)))))
+
+(defun write-kitty-deletions (stream ids)
+  (dolist (id ids)
+    (write-string
+     (delete-kitty-image id)
+     stream)))
+
+(defun render-frame-line
+    (stream lines row line)
+  (ansi-position stream row 0)
+  (format stream "~C[2K" #\Escape)
+  (let ((reserved
+          (min
+           (kitty-image-rows line)
+           (- (length lines) row))))
+    (when (> reserved 1)
+      (loop for offset from 1 below reserved
+            do
+            (ansi-position stream
+                           (+ row offset) 0)
+            (format stream "~C[2K" #\Escape))
+      (ansi-position stream row 0))
+    (write-string line stream)))
 
 (defun ansi-position (stream row column)
   (format stream "~C[~D;~DH"
@@ -230,10 +303,19 @@
          (row-count
            (max (length current)
                 (length previous)))
+         (image-change-p
+           (frame-image-change-p
+            current previous))
+         (previous-image-ids
+           (terminal-renderer-previous-image-ids
+            renderer))
          (output
            (with-output-to-string (stream)
              (format stream "~C[?2026h~C[?25l"
                      #\Escape #\Escape)
+             (when (or full-p image-change-p)
+               (write-kitty-deletions
+                stream previous-image-ids))
              (when full-p
                (format stream "~C[2J~C[H"
                        #\Escape #\Escape))
@@ -247,12 +329,13 @@
                        (nth row previous)
                        nil)
                    when (or full-p
+                            (and image-change-p
+                                 (image-line-p new))
                             (null old)
                             (not (string= new old)))
                      do
-                     (ansi-position stream row 0)
-                     (format stream "~C[2K" #\Escape)
-                     (write-string new stream))
+                     (render-frame-line
+                      stream current row new))
              (ansi-position
               stream
               (min (max 0 cursor-row)
@@ -265,6 +348,9 @@
     (setf
      (terminal-renderer-previous-lines renderer)
      (copy-list current)
+     (terminal-renderer-previous-image-ids
+      renderer)
+     (frame-image-ids current)
      (terminal-renderer-previous-width renderer) width
      (terminal-renderer-invalid-p renderer) nil)
     output))

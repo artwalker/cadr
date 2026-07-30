@@ -1,0 +1,72 @@
+(in-package #:cadr-tui/tests)
+(in-suite cadr-tui-suite)
+
+(defun single-input-event (input kind &optional text)
+  (cadr-tui:single-line-input-handle-event
+   input
+   (cadr-tui:make-input-event :kind kind :text text)))
+
+(test single-line-input-scrolls-wide-text-with-visible-cursor
+  (let ((input
+          (cadr-tui:make-single-line-input
+           :value "가나다라마바사아자차카타파하")))
+    (single-input-event input :line-start)
+    (loop repeat 5 do (single-input-event input :right))
+    (multiple-value-bind (lines row column)
+        (cadr-tui:render-single-line-input input 20)
+      (is (= 1 (length lines)))
+      (is (= 0 row))
+      (is (< column 20))
+      (is (<= (cadr-tui:visible-width (first lines)) 20)))))
+
+(test single-line-input-kill-yank-pop-and-word-boundaries
+  (let ((input
+          (cadr-tui:make-single-line-input
+           :value "foo.bar 你好，世界")))
+    (single-input-event input :delete-word-backward)
+    (is (string= "foo.bar 你好，"
+                 (cadr-tui:single-line-input-value input)))
+    (single-input-event input :delete-word-backward)
+    (single-input-event input :delete-word-backward)
+    (single-input-event input :yank)
+    (is (string= "foo.bar 你好，世界"
+                 (cadr-tui:single-line-input-value input)))
+    (cadr-tui:single-line-input-set-value input "other")
+    (single-input-event input :delete-word-backward)
+    (single-input-event input :yank)
+    (is (string= "other"
+                 (cadr-tui:single-line-input-value input)))
+    (single-input-event input :yank-pop)
+    (is (string= "你好，世界"
+                 (cadr-tui:single-line-input-value input)))))
+
+(test single-line-input-undo-coalesces-words-and-paste-is-atomic
+  (let ((input (cadr-tui:make-single-line-input)))
+    (loop for character across "hello world"
+          do (single-input-event
+              input :text (string character)))
+    (single-input-event input :undo)
+    (is (string= "hello"
+                 (cadr-tui:single-line-input-value input)))
+    (single-input-event input :undo)
+    (is (string= ""
+                 (cadr-tui:single-line-input-value input)))
+    (single-input-event
+     input :paste
+     (format nil "a~%b~Cc" #\Tab))
+    (is (string= "ab    c"
+                 (cadr-tui:single-line-input-value input)))
+    (single-input-event input :undo)
+    (is (string= ""
+                 (cadr-tui:single-line-input-value input)))))
+
+(test single-line-input-submit-preserves-backslash
+  (let ((input
+          (cadr-tui:make-single-line-input
+           :value "path\\")))
+    (multiple-value-bind (action value)
+        (single-input-event input :enter)
+      (is (eq :submit action))
+      (is (string= "path\\" value)))
+    (is (string= "path\\"
+                 (cadr-tui:single-line-input-value input)))))

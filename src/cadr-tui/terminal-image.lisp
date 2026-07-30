@@ -1,0 +1,487 @@
+(in-package #:cadr-tui)
+
+(defstruct terminal-capabilities
+  images
+  (true-color-p nil :type boolean)
+  (hyperlinks-p nil :type boolean))
+
+(defstruct image-render-result
+  (sequence "" :type string)
+  (rows 1 :type (integer 1 *))
+  image-id)
+
+(defparameter *terminal-capabilities* nil)
+
+(defun environment-value (name environment)
+  (let ((prefix (concatenate 'string name "=")))
+    (loop for entry in environment
+          when (string-prefix-p prefix entry)
+            do (return
+                 (subseq entry (length prefix))))))
+
+(defun truthy-environment-p (name environment)
+  (let ((value (environment-value name environment)))
+    (and value (plusp (length value)))))
+
+(defun detect-terminal-capabilities
+    (&key
+       (environment
+         #+sbcl
+         (sb-ext:posix-environ)
+         #-sbcl nil)
+       tmux-hyperlinks-p)
+  (let* ((term-program
+           (string-downcase
+            (or (environment-value "TERM_PROGRAM"
+                                   environment)
+                "")))
+         (terminal-emulator
+           (string-downcase
+            (or
+             (environment-value "TERMINAL_EMULATOR"
+                                environment)
+             "")))
+         (term
+           (string-downcase
+            (or (environment-value "TERM" environment)
+                "")))
+         (color-term
+           (string-downcase
+            (or (environment-value "COLORTERM"
+                                   environment)
+                "")))
+         (true-color-hint-p
+           (member color-term '("truecolor" "24bit")
+                   :test #'string=)))
+    (cond
+      ((or (truthy-environment-p "TMUX" environment)
+           (string-prefix-p "tmux" term))
+       (make-terminal-capabilities
+        :images nil
+        :true-color-p (not (null true-color-hint-p))
+        :hyperlinks-p (not (null tmux-hyperlinks-p))))
+      ((string-prefix-p "screen" term)
+       (make-terminal-capabilities
+        :images nil
+        :true-color-p (not (null true-color-hint-p))
+        :hyperlinks-p nil))
+      ((or (truthy-environment-p "KITTY_WINDOW_ID"
+                                 environment)
+           (string= term-program "kitty")
+           (string= term-program "ghostty")
+           (search "ghostty" term)
+           (truthy-environment-p "GHOSTTY_RESOURCES_DIR"
+                                 environment)
+           (truthy-environment-p "WEZTERM_PANE"
+                                 environment)
+           (string= term-program "wezterm")
+           (string= term-program "warpterminal")
+           (truthy-environment-p "WARP_SESSION_ID"
+                                 environment)
+           (truthy-environment-p
+            "WARP_TERMINAL_SESSION_UUID" environment))
+       (make-terminal-capabilities
+        :images :kitty :true-color-p t
+        :hyperlinks-p t))
+      ((or (truthy-environment-p "ITERM_SESSION_ID"
+                                 environment)
+           (string= term-program "iterm.app"))
+       (make-terminal-capabilities
+        :images :iterm2 :true-color-p t
+        :hyperlinks-p t))
+      ((or (truthy-environment-p "WT_SESSION" environment)
+           (string= term-program "vscode")
+           (string= term-program "alacritty"))
+       (make-terminal-capabilities
+        :images nil :true-color-p t
+        :hyperlinks-p t))
+      ((string= terminal-emulator
+                "jetbrains-jediterm")
+       (make-terminal-capabilities
+        :images nil :true-color-p t
+        :hyperlinks-p nil))
+      (t
+       (make-terminal-capabilities
+        :images nil
+        :true-color-p (not (null true-color-hint-p))
+        :hyperlinks-p nil)))))
+
+(defun get-terminal-capabilities ()
+  (or *terminal-capabilities*
+      (setf *terminal-capabilities*
+            (detect-terminal-capabilities))))
+
+(defun set-terminal-capabilities (capabilities)
+  (setf *terminal-capabilities* capabilities))
+
+(defun reset-terminal-capabilities ()
+  (setf *terminal-capabilities* nil))
+
+(defun image-line-p (line)
+  (or (search (format nil "~C_G" #\Escape) line)
+      (search (format nil "~C]1337;File=" #\Escape)
+              line)))
+
+(defun allocate-image-id ()
+  (1+ (random #xfffffffe)))
+
+(defun encode-kitty-image
+    (base64-data &key columns rows image-id
+                         (move-cursor-p t))
+  (let ((parameters
+          (append
+           '("a=T" "f=100" "q=2")
+           (unless move-cursor-p '("C=1"))
+           (when columns
+             (list (format nil "c=~D" columns)))
+           (when rows
+             (list (format nil "r=~D" rows)))
+           (when image-id
+             (list (format nil "i=~D" image-id))))))
+    (labels ((command (params chunk)
+               (format nil "~C_G~{~A~^,~};~A~C\\"
+                       #\Escape params chunk #\Escape)))
+      (if (<= (length base64-data) 4096)
+          (command parameters base64-data)
+          (with-output-to-string (output)
+            (loop with position = 0
+                  with first-p = t
+                  while (< position (length base64-data))
+                  for end =
+                  (min (length base64-data)
+                       (+ position 4096))
+                  for last-p = (= end (length base64-data))
+                  for params =
+                  (if first-p
+                      (append parameters '("m=1"))
+                      (list (if last-p "m=0" "m=1")))
+                  do
+                  (write-string
+                   (command
+                    params
+                    (subseq base64-data position end))
+                   output)
+                  (setf position end
+                        first-p nil)))))))
+
+(defun delete-kitty-image (image-id)
+  (format nil "~C_Ga=d,d=I,i=~D,q=2~C\\"
+          #\Escape image-id #\Escape))
+
+(defun delete-all-kitty-images ()
+  (format nil "~C_Ga=d,d=A,q=2~C\\"
+          #\Escape #\Escape))
+
+(defparameter +base64-alphabet+
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
+
+(defun encode-base64-ascii (text)
+  (let ((bytes
+          (map 'vector #'codepoint text)))
+    (with-output-to-string (output)
+      (loop for position from 0 below (length bytes) by 3
+            for remaining = (- (length bytes) position)
+            for first = (aref bytes position)
+            for second =
+            (if (> remaining 1)
+                (aref bytes (1+ position)) 0)
+            for third =
+            (if (> remaining 2)
+                (aref bytes (+ position 2)) 0)
+            for value =
+            (logior (ash first 16)
+                    (ash second 8)
+                    third)
+            do
+            (write-char
+             (char +base64-alphabet+
+                   (ldb (byte 6 18) value))
+             output)
+            (write-char
+             (char +base64-alphabet+
+                   (ldb (byte 6 12) value))
+             output)
+            (write-char
+             (if (> remaining 1)
+                 (char +base64-alphabet+
+                       (ldb (byte 6 6) value))
+                 #\=)
+             output)
+            (write-char
+             (if (> remaining 2)
+                 (char +base64-alphabet+
+                       (ldb (byte 6 0) value))
+                 #\=)
+             output)))))
+
+(defun encode-iterm2-image
+    (base64-data &key width height name
+                         (preserve-aspect-ratio-p t)
+                         (inline-p t))
+  (let ((parameters
+          (append
+           (list (format nil "inline=~D"
+                         (if inline-p 1 0)))
+           (when width
+             (list (format nil "width=~A" width)))
+           (when height
+             (list (format nil "height=~A" height)))
+           (when name
+             (list
+              (format nil "name=~A"
+                      (encode-base64-ascii name))))
+           (unless preserve-aspect-ratio-p
+             '("preserveAspectRatio=0")))))
+    (format nil "~C]1337;File=~{~A~^;~}:~A~C"
+            #\Escape parameters base64-data
+            (code-char 7))))
+
+(defun calculate-image-cell-size
+    (image-width image-height max-width-cells
+     &key max-height-cells
+       (cell-width 9) (cell-height 18))
+  (let* ((maximum-width
+           (max 1 (floor max-width-cells)))
+         (maximum-height
+           (and max-height-cells
+                (max 1 (floor max-height-cells))))
+         (width (max 1 image-width))
+         (height (max 1 image-height))
+         (width-scale
+           (/ (* maximum-width cell-width)
+              width))
+         (height-scale
+           (if maximum-height
+               (/ (* maximum-height cell-height)
+                  height)
+               width-scale))
+         (scale (min width-scale height-scale))
+         (columns
+           (ceiling (/ (* width scale) cell-width)))
+         (rows
+           (ceiling (/ (* height scale) cell-height))))
+    (values
+     (max 1 (min maximum-width columns))
+     (max 1 (if maximum-height
+                (min maximum-height rows)
+                rows)))))
+
+(defun base64-value (character)
+  (position character +base64-alphabet+))
+
+(defun decode-base64 (text)
+  (let ((clean
+          (remove-if
+           (lambda (character)
+             (find character
+                   '(#\Space #\Tab #\Newline #\Return)))
+           text))
+        (bytes
+          (make-array 0
+                      :element-type '(unsigned-byte 8)
+                      :adjustable t
+                      :fill-pointer 0)))
+    (handler-case
+        (loop for position from 0 below (length clean) by 4
+              when (> (+ position 4) (length clean))
+                do (error "invalid base64 length")
+              do
+              (let* ((characters
+                       (subseq clean position
+                               (+ position 4)))
+                     (padding
+                       (count #\= characters))
+                     (values
+                       (loop for character across characters
+                             collect
+                             (if (char= character #\=)
+                                 0
+                                 (or (base64-value character)
+                                     (error
+                                      "invalid base64 character")))))
+                     (packed
+                       (logior
+                        (ash (first values) 18)
+                        (ash (second values) 12)
+                        (ash (third values) 6)
+                        (fourth values))))
+                (vector-push-extend
+                 (ldb (byte 8 16) packed) bytes)
+                (when (< padding 2)
+                  (vector-push-extend
+                   (ldb (byte 8 8) packed) bytes))
+                (when (zerop padding)
+                  (vector-push-extend
+                   (ldb (byte 8 0) packed) bytes))))
+      (condition () (return-from decode-base64 nil)))
+    bytes))
+
+(defun bytes-u16-be (bytes position)
+  (logior (ash (aref bytes position) 8)
+          (aref bytes (1+ position))))
+
+(defun bytes-u16-le (bytes position)
+  (logior (aref bytes position)
+          (ash (aref bytes (1+ position)) 8)))
+
+(defun bytes-u24-le (bytes position)
+  (logior (aref bytes position)
+          (ash (aref bytes (1+ position)) 8)
+          (ash (aref bytes (+ position 2)) 16)))
+
+(defun bytes-u32-be (bytes position)
+  (logior
+   (ash (aref bytes position) 24)
+   (ash (aref bytes (1+ position)) 16)
+   (ash (aref bytes (+ position 2)) 8)
+   (aref bytes (+ position 3))))
+
+(defun bytes-ascii= (bytes position text)
+  (and (<= (+ position (length text))
+           (length bytes))
+       (loop for character across text
+             for index from position
+             always (= (aref bytes index)
+                       (codepoint character)))))
+
+(defun image-dimensions (base64-data mime-type)
+  (let ((bytes (decode-base64 base64-data)))
+    (unless bytes
+      (return-from image-dimensions
+        (values nil nil)))
+    (cond
+      ((and (string= mime-type "image/png")
+            (>= (length bytes) 24)
+            (= (aref bytes 0) #x89)
+            (bytes-ascii= bytes 1 "PNG"))
+       (values (bytes-u32-be bytes 16)
+               (bytes-u32-be bytes 20)))
+      ((and (string= mime-type "image/gif")
+            (>= (length bytes) 10)
+            (or (bytes-ascii= bytes 0 "GIF87a")
+                (bytes-ascii= bytes 0 "GIF89a")))
+       (values (bytes-u16-le bytes 6)
+               (bytes-u16-le bytes 8)))
+      ((and (string= mime-type "image/jpeg")
+            (>= (length bytes) 2)
+            (= (aref bytes 0) #xff)
+            (= (aref bytes 1) #xd8))
+       (loop with position = 2
+             while (< position (- (length bytes) 9))
+             do
+             (if (/= (aref bytes position) #xff)
+                 (incf position)
+                 (let ((marker
+                         (aref bytes (1+ position))))
+                   (if (between-p marker #xc0 #xc2)
+                       (return
+                         (values
+                          (bytes-u16-be bytes
+                                        (+ position 7))
+                          (bytes-u16-be bytes
+                                        (+ position 5))))
+                       (let ((size
+                               (bytes-u16-be
+                                bytes (+ position 2))))
+                         (when (< size 2)
+                           (return (values nil nil)))
+                         (incf position (+ 2 size))))))
+             finally (return (values nil nil))))
+      ((and (string= mime-type "image/webp")
+            (>= (length bytes) 30)
+            (bytes-ascii= bytes 0 "RIFF")
+            (bytes-ascii= bytes 8 "WEBP"))
+       (cond
+         ((bytes-ascii= bytes 12 "VP8X")
+          (values
+           (1+ (bytes-u24-le bytes 24))
+           (1+ (bytes-u24-le bytes 27))))
+         ((bytes-ascii= bytes 12 "VP8 ")
+          (values
+           (logand #x3fff
+                   (bytes-u16-le bytes 26))
+           (logand #x3fff
+                   (bytes-u16-le bytes 28))))
+         (t (values nil nil))))
+      (t (values nil nil)))))
+
+(defun render-terminal-image
+    (base64-data image-width image-height
+     &key (capabilities
+            (get-terminal-capabilities))
+       (max-width-cells 80)
+       max-height-cells image-id
+       (move-cursor-p t))
+  (unless (terminal-capabilities-images capabilities)
+    (return-from render-terminal-image nil))
+  (multiple-value-bind (cell-width cell-height)
+      (get-cell-dimensions)
+    (multiple-value-bind (columns rows)
+        (calculate-image-cell-size
+         image-width image-height max-width-cells
+         :max-height-cells max-height-cells
+         :cell-width cell-width
+         :cell-height cell-height)
+      (make-image-render-result
+       :sequence
+       (ecase
+           (terminal-capabilities-images capabilities)
+         (:kitty
+          (encode-kitty-image
+           base64-data :columns columns :rows rows
+           :image-id image-id
+           :move-cursor-p move-cursor-p))
+         (:iterm2
+          (encode-iterm2-image
+           base64-data :width columns :height "auto")))
+       :rows rows
+       :image-id
+       (and (eq :kitty
+                (terminal-capabilities-images
+                 capabilities))
+            image-id)))))
+
+(defun terminal-hyperlink (text url)
+  (format nil "~C]8;;~A~C\\~A~C]8;;~C\\"
+          #\Escape url #\Escape text
+          #\Escape #\Escape))
+
+(defun absolute-path-p (path)
+  (and (plusp (length path))
+       (char= (char path 0) #\/)))
+
+(defun shortened-home-path (path)
+  (let* ((home-path (namestring
+                     (user-homedir-pathname)))
+         (home
+           (string-right-trim "/" home-path)))
+    (if (or (string= path home)
+            (string-prefix-p
+             (concatenate 'string home "/")
+             path))
+        (concatenate
+         'string "~" (subseq path (length home)))
+        path)))
+
+(defun image-fallback
+    (mime-type &key width height filename
+       (capabilities (get-terminal-capabilities)))
+  (let ((parts nil))
+    (when filename
+      (let ((display (shortened-home-path filename)))
+        (push
+         (if (and
+              (terminal-capabilities-hyperlinks-p
+               capabilities)
+              (absolute-path-p filename))
+             (terminal-hyperlink
+              display
+              (concatenate 'string "file://" filename))
+             display)
+         parts)))
+    (push (format nil "[~A]" mime-type) parts)
+    (when (and width height)
+      (push (format nil "~Dx~D" width height)
+            parts))
+    (format nil "[Image: ~{~A~^ ~}]"
+            (nreverse parts))))

@@ -1,6 +1,8 @@
 (defpackage #:cadr-tui/tests
   (:use #:cl #:fiveam)
-  (:export #:run-tests))
+  (:export
+   #:run-tests
+   #:run-goal5-manual-acceptance))
 
 (in-package #:cadr-tui/tests)
 

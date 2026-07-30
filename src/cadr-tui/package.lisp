@@ -4,7 +4,43 @@
    #:visible-width
    #:grapheme-clusters
    #:slice-to-width
+   #:slice-with-width
+   #:slice-by-column
+   #:extract-segments
+   #:truncate-to-width
+   #:normalize-terminal-output
    #:wrap-text
+   #:fuzzy-match
+   #:fuzzy-filter
+   #:find-word-backward
+   #:find-word-forward
+   #:set-kitty-protocol-active
+   #:kitty-protocol-active-p
+   #:matches-key
+   #:parse-key
+   #:decode-kitty-printable
+   #:decode-printable-key
+   #:key-release-p
+   #:key-repeat-p
+   #:keybindings-manager
+   #:make-keybindings-manager
+   #:keybinding-keys
+   #:keybinding-matches-p
+   #:keybinding-conflicts
+   #:set-keybindings
+   #:get-keybindings
+   #:kill-ring
+   #:make-kill-ring
+   #:kill-ring-push
+   #:kill-ring-peek
+   #:kill-ring-rotate
+   #:kill-ring-length
+   #:undo-stack
+   #:make-undo-stack
+   #:undo-stack-push
+   #:undo-stack-pop
+   #:undo-stack-clear
+   #:undo-stack-length
    #:input-event
    #:make-input-event
    #:input-event-kind
@@ -13,11 +49,101 @@
    #:make-input-decoder
    #:feed-input
    #:flush-input
+   #:stdin-buffer
+   #:make-stdin-buffer
+   #:stdin-buffer-process
+   #:stdin-buffer-flush
+   #:stdin-buffer-clear
+   #:stdin-buffer-destroy
+   #:stdin-buffer-contents
+   #:rgb-color
+   #:rgb-color-red
+   #:rgb-color-green
+   #:rgb-color-blue
+   #:parse-osc-11-background-color
+   #:parse-terminal-color-scheme-report
+   #:terminal-response-filter
+   #:make-terminal-response-filter
+   #:terminal-response-expect-color
+   #:terminal-response-consume
+   #:get-cell-dimensions
+   #:set-cell-dimensions
+   #:terminal-capabilities
+   #:make-terminal-capabilities
+   #:terminal-capabilities-images
+   #:terminal-capabilities-true-color-p
+   #:terminal-capabilities-hyperlinks-p
+   #:detect-terminal-capabilities
+   #:get-terminal-capabilities
+   #:set-terminal-capabilities
+   #:reset-terminal-capabilities
+   #:image-line-p
+   #:allocate-image-id
+   #:encode-kitty-image
+   #:encode-iterm2-image
+   #:delete-kitty-image
+   #:delete-all-kitty-images
+   #:calculate-image-cell-size
+   #:image-dimensions
+   #:image-render-result
+   #:image-render-result-sequence
+   #:image-render-result-rows
+   #:image-render-result-image-id
+   #:render-terminal-image
+   #:terminal-hyperlink
+   #:image-fallback
+   #:resolve-overlay-layout
+   #:composite-overlay-line
+   #:overlay-placement
+   #:make-overlay-placement
+   #:composite-overlay-frame
+   #:overlay-stack
+   #:make-overlay-stack
+   #:overlay-stack-show
+   #:overlay-stack-input-target
+   #:overlay-stack-visible-p
+   #:overlay-handle
+   #:overlay-handle-hide
+   #:overlay-handle-set-hidden
+   #:overlay-handle-focus
+   #:overlay-handle-unfocus
+   #:overlay-handle-focused-p
+   #:autocomplete-item
+   #:make-autocomplete-item
+   #:autocomplete-item-value
+   #:autocomplete-item-label
+   #:autocomplete-item-description
+   #:autocomplete-command
+   #:make-autocomplete-command
+   #:autocomplete-provider
+   #:make-autocomplete-provider
+   #:autocomplete-suggestions
+   #:autocomplete-suggestions-items
+   #:autocomplete-suggestions-prefix
+   #:autocomplete-get-suggestions
+   #:autocomplete-apply
    #:multiline-editor
    #:make-multiline-editor
    #:editor-text
+   #:editor-lines
+   #:editor-cursor
+   #:editor-set-text
+   #:editor-add-history
+   #:editor-insert-text-at-cursor
+   #:editor-expanded-text
+   #:editor-set-autocomplete-provider
+   #:editor-autocomplete-visible-p
+   #:editor-autocomplete-items
    #:editor-handle-event
    #:render-editor
+   #:single-line-input
+   #:make-single-line-input
+   #:single-line-input-value
+   #:single-line-input-set-value
+   #:single-line-input-handle-event
+   #:render-single-line-input
+   #:render-truncated-text
+   #:render-image-component
    #:render-markdown
    #:tool-block
    #:make-tool-block
@@ -33,6 +159,7 @@
    #:make-select-item
    #:select-item-label
    #:select-item-value
+   #:select-item-description
    #:select-list
    #:make-select-list
    #:select-list-query
@@ -56,6 +183,14 @@
    #:virtual-terminal-snapshot
    #:process-terminal
    #:make-process-terminal
+   #:normalize-apple-terminal-input
+   #:keyboard-protocol-negotiator
+   #:make-keyboard-protocol-negotiator
+   #:keyboard-protocol-query
+   #:keyboard-protocol-consume
+   #:keyboard-protocol-flush
+   #:keyboard-protocol-mode
+   #:terminal-dimensions
    #:terminal-stream-p
    #:call-with-terminal))
 

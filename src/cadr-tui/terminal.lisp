@@ -1,5 +1,178 @@
 (in-package #:cadr-tui)
 
+(defparameter +keyboard-protocol-query+
+  (format nil "~C[>7u~C[?u~C[c"
+          #\Escape #\Escape #\Escape))
+
+(defparameter +modify-other-keys-enable+
+  (format nil "~C[>4;2m" #\Escape))
+
+(defparameter +modify-other-keys-disable+
+  (format nil "~C[>4;0m" #\Escape))
+
+(defstruct (keyboard-protocol-negotiator
+            (:constructor make-keyboard-protocol-negotiator
+                ()))
+  (buffer "" :type string)
+  (mode :negotiating))
+
+(defun keyboard-protocol-query ()
+  +keyboard-protocol-query+)
+
+(defun keyboard-protocol-mode (negotiator)
+  (keyboard-protocol-negotiator-mode
+   negotiator))
+
+(defun parse-keyboard-protocol-sequence (sequence)
+  (multiple-value-bind
+        (start end starts ends)
+      (cl-ppcre:scan
+       (format nil "^~C\\[\\?(\\d+)u$"
+               #\Escape)
+       sequence)
+    (declare (ignore end))
+    (when start
+      (return-from parse-keyboard-protocol-sequence
+        (list
+         :kitty
+         (parse-integer
+          (subseq
+           sequence
+           (aref starts 0)
+           (aref ends 0)))))))
+  (when
+      (cl-ppcre:scan
+       (format nil "^~C\\[\\?[\\d;]*c$"
+               #\Escape)
+       sequence)
+    (list :device-attributes)))
+
+(defun keyboard-protocol-prefix-p (sequence)
+  (or
+   (string= sequence
+            (format nil "~C[" #\Escape))
+   (not
+    (null
+     (cl-ppcre:scan
+      (format nil "^~C\\[\\?[\\d;]*$"
+              #\Escape)
+      sequence)))))
+
+(defun keyboard-protocol-handle-sequence
+    (negotiator parsed)
+  (case (first parsed)
+    (:kitty
+     (if (zerop (second parsed))
+         (progn
+           (setf
+            (keyboard-protocol-negotiator-mode
+             negotiator)
+            :modify-other-keys)
+           (values nil
+                   (list
+                    +modify-other-keys-enable+)))
+         (progn
+           (setf
+            (keyboard-protocol-negotiator-mode
+             negotiator)
+            :kitty)
+           (set-kitty-protocol-active t)
+           (values nil nil))))
+    (:device-attributes
+     (if (eq :kitty
+             (keyboard-protocol-negotiator-mode
+              negotiator))
+         (values nil nil)
+         (progn
+           (setf
+            (keyboard-protocol-negotiator-mode
+             negotiator)
+            :modify-other-keys)
+           (values nil
+                   (list
+                    +modify-other-keys-enable+)))))
+    (otherwise (values nil nil))))
+
+(defun keyboard-protocol-consume
+    (negotiator sequence)
+  (let* ((pending
+           (keyboard-protocol-negotiator-buffer
+            negotiator))
+         (combined
+           (if (plusp (length pending))
+               (concatenate 'string pending sequence)
+               sequence))
+         (parsed
+           (parse-keyboard-protocol-sequence
+            combined)))
+    (cond
+      (parsed
+       (setf
+        (keyboard-protocol-negotiator-buffer
+         negotiator)
+        "")
+       (keyboard-protocol-handle-sequence
+        negotiator parsed))
+      ((keyboard-protocol-prefix-p combined)
+       (setf
+        (keyboard-protocol-negotiator-buffer
+         negotiator)
+        combined)
+       (values nil nil))
+      ((plusp (length pending))
+       (setf
+        (keyboard-protocol-negotiator-buffer
+         negotiator)
+        "")
+       (values
+        (remove ""
+                (list pending sequence)
+                :test #'string=)
+        nil))
+      (t
+       (values (list sequence) nil)))))
+
+(defun keyboard-protocol-flush (negotiator)
+  (let ((pending
+          (keyboard-protocol-negotiator-buffer
+           negotiator)))
+    (setf
+     (keyboard-protocol-negotiator-buffer
+      negotiator)
+     "")
+    (unless (zerop (length pending))
+      (list pending))))
+
+(defun normalize-apple-terminal-input
+    (data apple-terminal-p shift-pressed-p)
+  (if (and apple-terminal-p
+           shift-pressed-p
+           (string= data (string #\Return)))
+      (format nil "~C[13;2u" #\Escape)
+      data))
+
+(defun positive-environment-integer
+    (name environment-function)
+  (let ((value (funcall environment-function name)))
+    (when value
+      (let ((parsed
+              (parse-integer value
+                             :junk-allowed t)))
+        (and parsed (> parsed 0) parsed)))))
+
+(defun terminal-dimensions
+    (columns rows
+     &key (environment-function #'uiop:getenv))
+  (values
+   (or (and columns (> columns 0) columns)
+       (positive-environment-integer
+        "COLUMNS" environment-function)
+       80)
+   (or (and rows (> rows 0) rows)
+       (positive-environment-integer
+        "LINES" environment-function)
+       24)))
+
 #+(and sbcl linux)
 (sb-alien:define-alien-type cadr-winsize
   (sb-alien:struct cadr-winsize
@@ -32,6 +205,24 @@
    (started-p
     :initform nil
     :accessor process-terminal-started-p)
+   (keyboard-negotiator
+    :initform
+    (make-keyboard-protocol-negotiator)
+    :accessor
+    process-terminal-keyboard-negotiator)
+   (keyboard-prefix-time
+    :initform nil
+    :accessor process-terminal-keyboard-prefix-time)
+   (stdin-buffer
+    :initform (make-stdin-buffer)
+    :accessor process-terminal-stdin-buffer)
+   (stdin-prefix-time
+    :initform nil
+    :accessor process-terminal-stdin-prefix-time)
+   (response-filter
+    :initform
+    (make-terminal-response-filter)
+    :accessor process-terminal-response-filter)
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
@@ -40,10 +231,14 @@
     (&key
        (input *standard-input*)
        (output *standard-output*))
-  (make-instance
-   'process-terminal
-   :input input
-   :output output))
+  (multiple-value-bind (columns rows)
+      (terminal-dimensions nil nil)
+    (make-instance
+     'process-terminal
+     :input input
+     :output output
+     :columns columns
+     :rows rows)))
 
 #+sbcl
 (defun underlying-stream (stream direction)
@@ -176,6 +371,8 @@
        (process-terminal-input-fd terminal) fd
        (process-terminal-saved-termios terminal)
        original)
+      (stdin-buffer-clear
+       (process-terminal-stdin-buffer terminal))
       (sb-posix:tcsetattr
        fd sb-posix:tcsanow
        (raw-termios original))
@@ -184,8 +381,14 @@
       (terminal-write
        terminal
        (format nil
-               "~C[?1049h~C[?2004h~C[?25l~C[2J~C[H"
-               #\Escape #\Escape #\Escape #\Escape #\Escape))))
+               "~C[?1049h~C[?2004h~C[?25l~C[2J~C[H~A~A"
+               #\Escape #\Escape #\Escape #\Escape #\Escape
+               (keyboard-protocol-query)
+               (if
+                   (terminal-capabilities-images
+                    (get-terminal-capabilities))
+                   (format nil "~C[16t" #\Escape)
+                   "")))))
   #-sbcl
   (error "process-terminal requires SBCL")
   terminal)
@@ -197,8 +400,10 @@
            (terminal-write
             terminal
             (format nil
-                    "~C[0m~C[?25h~C[?2004l~C[?1049l"
-                    #\Escape #\Escape #\Escape #\Escape)))
+                    "~C[0m~C[?25h~C[?2004l~C[<u~A~C[?1049l"
+                    #\Escape #\Escape #\Escape #\Escape
+                    +modify-other-keys-disable+
+                    #\Escape)))
       #+sbcl
       (when (and
              (process-terminal-input-fd terminal)
@@ -210,7 +415,12 @@
            (process-terminal-saved-termios terminal))))
       (setf
        (process-terminal-started-p terminal) nil
-       (process-terminal-saved-termios terminal) nil)))
+       (process-terminal-saved-termios terminal) nil
+       (process-terminal-stdin-prefix-time terminal) nil
+       (process-terminal-keyboard-prefix-time terminal) nil)
+      (stdin-buffer-destroy
+       (process-terminal-stdin-buffer terminal))
+      (set-kitty-protocol-active nil)))
   terminal)
 
 (defmethod terminal-write ((terminal process-terminal) text)
@@ -220,14 +430,121 @@
    (process-terminal-output terminal))
   text)
 
+(defun process-terminal-consume-sequence
+    (terminal sequence forward)
+  (multiple-value-bind (sequences writes)
+      (keyboard-protocol-consume
+       (process-terminal-keyboard-negotiator terminal)
+       sequence)
+    (dolist (write writes)
+      (terminal-write terminal write))
+    (dolist (candidate sequences)
+      (multiple-value-bind (consumed-p value)
+          (terminal-response-consume
+           (process-terminal-response-filter terminal)
+           candidate)
+        (declare (ignore value))
+        (unless consumed-p
+          (setf forward
+                (nconc forward
+                       (list candidate)))))))
+  forward)
+
+(defun elapsed-seconds (start)
+  (/ (- (get-internal-real-time) start)
+     internal-time-units-per-second))
+
 (defmethod terminal-read-input ((terminal process-terminal))
-  (with-output-to-string (output)
-    (loop for character =
-          (read-char-no-hang
-           (process-terminal-input terminal)
-           nil nil)
-          while character
-          do (write-char character output))))
+  (let ((raw
+          (with-output-to-string (output)
+            (loop for character =
+                  (read-char-no-hang
+                  (process-terminal-input terminal)
+                   nil nil)
+                  while character
+                  do (write-char character output))))
+        (forward nil))
+    (when (plusp (length raw))
+      (multiple-value-bind (sequences pastes events)
+          (stdin-buffer-process
+           (process-terminal-stdin-buffer terminal)
+           raw)
+        (declare (ignore sequences pastes))
+        (dolist (event events)
+          (case (first event)
+            (:data
+             (setf forward
+                   (process-terminal-consume-sequence
+                    terminal (second event) forward)))
+            (:paste
+             (setf forward
+                   (nconc
+                    forward
+                    (list
+                     (concatenate
+                      'string
+                      +paste-start+
+                      (second event)
+                      +paste-end+)))))))))
+    (if
+        (plusp
+         (length
+          (stdin-buffer-contents
+           (process-terminal-stdin-buffer terminal))))
+        (unless
+            (process-terminal-stdin-prefix-time terminal)
+          (setf
+           (process-terminal-stdin-prefix-time terminal)
+           (get-internal-real-time)))
+        (setf
+         (process-terminal-stdin-prefix-time terminal)
+         nil))
+    (let ((started
+            (process-terminal-stdin-prefix-time terminal)))
+      (when
+          (and started
+               (>= (elapsed-seconds started) 0.01d0))
+        (dolist
+            (sequence
+             (stdin-buffer-flush
+              (process-terminal-stdin-buffer terminal)))
+          (setf forward
+                (process-terminal-consume-sequence
+                 terminal sequence forward)))
+        (setf
+         (process-terminal-stdin-prefix-time terminal)
+         nil)))
+    (if
+        (plusp
+         (length
+          (keyboard-protocol-negotiator-buffer
+           (process-terminal-keyboard-negotiator
+            terminal))))
+        (unless
+            (process-terminal-keyboard-prefix-time terminal)
+          (setf
+           (process-terminal-keyboard-prefix-time terminal)
+           (get-internal-real-time)))
+        (setf
+         (process-terminal-keyboard-prefix-time terminal)
+         nil))
+    (let ((started
+            (process-terminal-keyboard-prefix-time
+             terminal)))
+      (when
+          (and started
+               (>= (elapsed-seconds started) 0.15d0))
+        (setf
+         forward
+         (append
+          forward
+          (keyboard-protocol-flush
+           (process-terminal-keyboard-negotiator
+            terminal)))
+         (process-terminal-keyboard-prefix-time
+          terminal)
+         nil)))
+    (format nil "~{~A~}" forward)))
 
 (defmethod terminal-resized-p ((terminal process-terminal))
   (when (process-terminal-resize-p terminal)

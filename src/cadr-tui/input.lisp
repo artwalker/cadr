@@ -26,7 +26,21 @@
    (cons (format nil "~C[3~~" #\Escape) :delete)
    (cons (format nil "~C[5~~" #\Escape) :page-up)
    (cons (format nil "~C[6~~" #\Escape) :page-down)
-   (cons (format nil "~C[13;2u" #\Escape) :newline)))
+   (cons (format nil "~C[13;2u" #\Escape) :newline)
+   (cons (format nil "~C[1;5D" #\Escape) :word-left)
+   (cons (format nil "~C[1;5C" #\Escape) :word-right)
+   (cons (format nil "~C[1;3D" #\Escape) :word-left)
+   (cons (format nil "~C[1;3C" #\Escape) :word-right)
+   (cons (format nil "~Cb" #\Escape) :word-left)
+   (cons (format nil "~Cf" #\Escape) :word-right)
+   (cons (format nil "~Cd" #\Escape) :delete-word-forward)
+   (cons (format nil "~Cy" #\Escape) :yank-pop)
+   (cons (format nil "~C~C" #\Escape
+                 (code-char 127))
+         :delete-word-backward)
+   (cons (format nil "~C~C" #\Escape
+                 (code-char 29))
+         :jump-backward)))
 
 (defun string-prefix-p (prefix string)
   (and (<= (length prefix) (length string))
@@ -61,14 +75,90 @@
   (case (codepoint character)
     (3 :interrupt)
     (4 :eof)
+    (1 :line-start)
+    (2 :left)
     (8 :backspace)
     (9 :tab)
-    (10 :enter)
+    (10 :newline)
+    (11 :delete-line-end)
     (13 :enter)
     (15 :toggle-tools)
-    (21 :clear)
+    (21 :delete-line-start)
+    (23 :delete-word-backward)
+    (25 :yank)
+    (29 :jump-forward)
+    (31 :undo)
     (127 :backspace)
     (otherwise nil)))
+
+(defparameter +logical-key-events+
+  '(("tui.editor.cursorUp" . :up)
+    ("tui.editor.cursorDown" . :down)
+    ("tui.editor.cursorLeft" . :left)
+    ("tui.editor.cursorRight" . :right)
+    ("tui.editor.cursorWordLeft" . :word-left)
+    ("tui.editor.cursorWordRight" . :word-right)
+    ("tui.editor.cursorLineStart" . :line-start)
+    ("tui.editor.cursorLineEnd" . :line-end)
+    ("tui.editor.jumpForward" . :jump-forward)
+    ("tui.editor.jumpBackward" . :jump-backward)
+    ("tui.editor.pageUp" . :page-up)
+    ("tui.editor.pageDown" . :page-down)
+    ("tui.editor.deleteCharBackward" . :backspace)
+    ("tui.editor.deleteCharForward" . :delete)
+    ("tui.editor.deleteWordBackward"
+     . :delete-word-backward)
+    ("tui.editor.deleteWordForward"
+     . :delete-word-forward)
+    ("tui.editor.deleteToLineStart"
+     . :delete-line-start)
+    ("tui.editor.deleteToLineEnd"
+     . :delete-line-end)
+    ("tui.editor.yank" . :yank)
+    ("tui.editor.yankPop" . :yank-pop)
+    ("tui.editor.undo" . :undo)
+    ("tui.input.newLine" . :newline)
+    ("tui.input.submit" . :enter)
+    ("tui.input.tab" . :tab)))
+
+(defun event-kind-for-raw-key (data)
+  (let ((manager (get-keybindings)))
+    (loop for (name . kind)
+          in +logical-key-events+
+          when (keybinding-matches-p
+                manager data name)
+            do (return kind))))
+
+(defun input-csi-end-position (text)
+  (when
+      (and (> (length text) 1)
+           (char= (char text 0) #\Escape)
+           (char= (char text 1) #\[))
+    (loop for index from 2 below (length text)
+          for value = (codepoint (char text index))
+          when (between-p value #x40 #x7e)
+            do (return index))))
+
+(defun decode-complete-escape-event (data)
+  (when (key-release-p data)
+    (return-from decode-complete-escape-event
+      (values t nil)))
+  (let ((printable
+          (decode-printable-key data)))
+    (when printable
+      (return-from decode-complete-escape-event
+        (values
+         t
+         (make-input-event
+          :kind :text :text printable)))))
+  (let ((kind
+          (event-kind-for-raw-key data)))
+    (when kind
+      (return-from decode-complete-escape-event
+        (values
+         t
+         (make-input-event :kind kind)))))
+  (values nil nil))
 
 (defun feed-input (decoder text)
   (setf (input-decoder-buffer decoder)
@@ -142,6 +232,39 @@
                (return-from decode-next (decode-next))))
            (when
                (and
+                (> (length
+                    (input-decoder-buffer decoder))
+                   1)
+                (char=
+                 (char
+                  (input-decoder-buffer decoder)
+                  0)
+                 #\Escape)
+                (char=
+                 (char
+                  (input-decoder-buffer decoder)
+                  1)
+                 #\[))
+             (let ((end
+                     (input-csi-end-position
+                      (input-decoder-buffer decoder))))
+               (unless end
+                 (return-from decode-next nil))
+               (let ((data
+                       (subseq
+                        (input-decoder-buffer decoder)
+                        0 (1+ end))))
+                 (multiple-value-bind
+                       (recognized-p event)
+                     (decode-complete-escape-event data)
+                   (when recognized-p
+                     (consume-buffer-prefix
+                      decoder (length data))
+                     (when event (push event events))
+                     (return-from decode-next
+                       (decode-next)))))))
+           (when
+               (and
                 (char=
                  (char
                   (input-decoder-buffer decoder)
@@ -154,8 +277,14 @@
                     (char
                      (input-decoder-buffer decoder)
                      0))
+                  (raw
+                    (string character))
+                  (bound
+                    (event-kind-for-raw-key raw))
                   (control
-                    (decode-control-character character)))
+                    (or bound
+                        (decode-control-character
+                         character))))
              (cond
                (control
                 (consume-buffer-prefix decoder 1)
