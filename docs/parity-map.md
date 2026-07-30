@@ -345,7 +345,7 @@ platform behavior.
 
 ### `docs/test-matrix.md` audit notes
 
-The matrix now records the Goal 5 total of **1212** checks and the expanded
+The matrix now records the Goal 5 total of **1219** checks and the expanded
 TUI gates. The following conservative whole-file classification notes remain:
 
 1. It maps `anthropic-sse-parsing.test.ts` to generic SSE framing and a
@@ -747,7 +747,7 @@ Goal 5 contains only the first two entries; Wave 1 has not started.
 | Order | Status | Scope | Verification gate |
 |---|---|---|---|
 | Wave 0 | complete | `U-SEARCH-GITIGNORE` and `U-TUI-RI` | both regressions are `C`; no `U` remains |
-| TUI (former Wave 4) | implemented, awaiting manual acceptance | complete 27-file TUI baseline test surface | 582 TUI checks, PTY/live smoke, manual checklist |
+| TUI (former Wave 4) | complete; manual acceptance passed 2026-07-30 | complete 27-file TUI baseline test surface | 582 TUI checks, PTY/live smoke, user-confirmed real-terminal checklist |
 | Wave 1 | not started | shared OpenAI-Completions/Responses and Anthropic compatibility; compatible providers/catalogs | generated fixtures plus credential-gated smokes |
 | Wave 2 | not started | exact agent harness, session v3, queues, print/JSON and RPC | reference harness/session/RPC tests |
 | Wave 3 | not started | independent APIs and auth flows | protocol fixtures and available live credentials |

@@ -155,26 +155,29 @@ bash -n scripts/goal5-manual-tui.sh \
 生产镜像或核心 API；它把图片与 CJK overlay 的人工验收变成真实终端中的
 可重复操作。
 
-### 待用户人工验收
+### 提交记录
 
-Goal 5 尚未完成。先在 Kitty/iTerm2 原生窗口（不要经 tmux）运行：
+实现与测试按逻辑分为三个提交：
 
-```bash
-./scripts/goal5-manual-tui.sh
-```
+1. `8bdb6461f2ee7659bad7d935a19c2b94e8acfaa5`
+   `test(cadr): pin uncovered baseline regressions`
+2. `e337deed7dd31f735b0949db388408cf32a21399`
+   `feat(tui): port reference component semantics`
+3. `b1d11c74eb11d4534bc392df59c5b18289ebfc46`
+   `feat(cli): wire full TUI parity into interactive runtime`
 
-再运行正常程序完成编辑器检查。需用户逐项确认：
+### 人工验收通过
 
-1. 输入 `/` 后弹出补全，并可用方向键、Tab、Enter 选择。
-2. `Ctrl+-` / `Ctrl-_` 可 undo；无需验收 redo，因为固定基线没有 redo。
-3. `Ctrl+W`、`Ctrl+U`、`Ctrl+K` 后可用 `Ctrl+Y` 粘贴，并可用 `Alt+Y`
-   轮换 kill ring。
-4. Ctrl/Alt + Left/Right 按词移动，对 ASCII 路径、标点和 CJK 边界正确。
-5. harness 显示终端内图片；按 `i` 后显示有界 fallback，再按 `i` 恢复图片。
-6. harness 的 overlay 在中文宽字符边界不残留半字；按 `f` 时 capturing
-   overlay 隐藏/恢复，input target 在 `EDITOR` / `PICKER` 间切换，
-   non-capturing help 始终可见。
-7. 分别 resize harness 与正常程序，以上交互无残留、错位或样式泄漏。
-8. `--no-tui` 仍进入 line REPL。
+用户于 2026-07-30 逐项确认人工验收通过：补全与选择、undo、kill-ring、
+按词移动、终端图片及 fallback、overlay 中文边界与双 overlay 焦点、resize、
+`--no-tui` line REPL 均符合固定基线。真实终端截图证据覆盖 CJK overlay
+边界、双 overlay 焦点、图片 fallback、resize 与终端恢复。
 
-用户逐项确认前不宣告 Goal 5 完成；Wave 1 未开始。
+提交态重新运行 `./build.sh`，四个套件分别为 256、156、582、225，
+合计 1219/1219 全绿；构建在当前 SBCL 无 `sb-core-compression` 时按设计
+降级生成无压缩 `cadr`，`./cadr --version` 输出 `cadr 0.1.0`。
+`./scripts/live-tui-smoke.sh` 再次通过。
+
+`git status --short --untracked-files=no` 无输出，受版本控制的工作区干净。
+用户要求保留的无关未跟踪路径 `.codex`、`.tmp-home/`、`docs/.obsidian/`
+仍原样存在，未纳入任何提交。Goal 5 完成；Wave 1 未开始。
