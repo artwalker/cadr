@@ -1,5 +1,12 @@
 (in-package #:cadr-ai)
 
+(defstruct model-cost-tier
+  (input-tokens-above 0 :type (integer 0 *))
+  (input-price 0d0 :type double-float)
+  (output-price 0d0 :type double-float)
+  (cache-read-price 0d0 :type double-float)
+  (cache-write-price 0d0 :type double-float))
+
 (defstruct model-metadata
   (provider nil :type symbol)
   (id "" :type string)
@@ -17,12 +24,51 @@
   (input-price 0d0 :type double-float)
   (output-price 0d0 :type double-float)
   (cache-read-price 0d0 :type double-float)
-  (cache-write-price 0d0 :type double-float))
+  (cache-write-price 0d0 :type double-float)
+  (cost-tiers nil :type list))
 
 (defparameter *model-catalog* (make-hash-table :test #'equal))
+(defparameter *image-model-catalog*
+  (make-hash-table :test #'equal))
 
 (defun model-catalog-key (provider id)
   (cons provider id))
+
+(defun register-image-model (model)
+  (setf
+   (gethash
+    (model-catalog-key
+     (image-model-provider model)
+     (image-model-id model))
+    *image-model-catalog*)
+   model)
+  model)
+
+(defun find-image-model (provider id)
+  (or
+   (gethash
+    (model-catalog-key provider id)
+    *image-model-catalog*)
+   (error 'configuration-error
+          :message
+          (format nil "Unknown image model: ~A/~A" provider id))))
+
+(defun list-image-models (&optional provider)
+  (sort
+   (loop for model being the hash-values
+           of *image-model-catalog*
+         when
+         (or (null provider)
+             (eq provider (image-model-provider model)))
+           collect model)
+   #'string<
+   :key #'image-model-id))
+
+(defun register-generated-image-models (rows)
+  (clrhash *image-model-catalog*)
+  (dolist (row rows)
+    (register-image-model
+     (apply #'make-image-model row))))
 
 (defun register-model-metadata (metadata)
   (setf (gethash
@@ -49,32 +95,143 @@
    :key #'model-metadata-id))
 
 (defun calculate-usage-cost (usage metadata)
-  (flet ((charge (tokens price)
+  (let* ((request-input
+           (+ (usage-input usage)
+              (usage-cache-read usage)
+              (usage-cache-write usage)))
+         (tier
+           (loop with best = nil
+                 for candidate in
+                 (model-metadata-cost-tiers metadata)
+                 when
+                 (and
+                  (> request-input
+                     (model-cost-tier-input-tokens-above candidate))
+                  (or
+                   (null best)
+                   (>
+                    (model-cost-tier-input-tokens-above candidate)
+                    (model-cost-tier-input-tokens-above best))))
+                   do (setf best candidate)
+                 finally (return best)))
+         (input-price
+           (if tier
+               (model-cost-tier-input-price tier)
+               (model-metadata-input-price metadata)))
+         (output-price
+           (if tier
+               (model-cost-tier-output-price tier)
+               (model-metadata-output-price metadata)))
+         (cache-read-price
+           (if tier
+               (model-cost-tier-cache-read-price tier)
+               (model-metadata-cache-read-price metadata)))
+         (cache-write-price
+           (if tier
+               (model-cost-tier-cache-write-price tier)
+               (model-metadata-cache-write-price metadata))))
+    (flet ((charge (tokens price)
            (* (/ (coerce tokens 'double-float) 1000000d0)
               price)))
-    (let* ((input
+      (let* ((input
              (charge (usage-input usage)
-                     (model-metadata-input-price metadata)))
+                     input-price))
            (output
              (charge (usage-output usage)
-                     (model-metadata-output-price metadata)))
+                     output-price))
            (cache-read
              (charge (usage-cache-read usage)
-                     (model-metadata-cache-read-price metadata)))
+                     cache-read-price))
+           (long-write
+             (or (usage-cache-write-1h usage) 0))
+           (short-write
+             (- (usage-cache-write usage) long-write))
            (cache-write
-             (charge (usage-cache-write usage)
-                     (model-metadata-cache-write-price metadata))))
-      (setf (usage-cost usage)
-            (make-cost
-             :input input
-             :output output
-             :cache-read cache-read
-             :cache-write cache-write
-             :total (+ input output cache-read cache-write)))))
+             (+
+              (charge short-write cache-write-price)
+              (charge long-write (* 2d0 input-price)))))
+        (setf (usage-cost usage)
+              (make-cost
+               :input input
+               :output output
+               :cache-read cache-read
+               :cache-write cache-write
+               :total (+ input output cache-read cache-write))))))
   usage)
+
+(defun model-from-metadata (metadata)
+  (make-model
+   :id (model-metadata-id metadata)
+   :name (model-metadata-name metadata)
+   :provider (model-metadata-provider metadata)
+   :api (model-metadata-api metadata)
+   :base-url (model-metadata-base-url metadata)
+   :max-tokens (model-metadata-max-output-tokens metadata)
+   :context-window (model-metadata-context-window metadata)
+   :supports-images-p (model-metadata-supports-images-p metadata)
+   :supports-tools-p (model-metadata-supports-tools-p metadata)
+   :reasoning-p (model-metadata-reasoning-p metadata)
+   :thinking-level-map (model-metadata-thinking-level-map metadata)
+   :headers (model-metadata-headers metadata)
+   :compat (model-metadata-compat metadata)))
+
+(defparameter +extended-thinking-levels+
+  '(:off :minimal :low :medium :high :xhigh :max))
+
+(defun supported-thinking-levels (model)
+  (if (not (model-reasoning-p model))
+      '(:off)
+      (remove-if-not
+       (lambda (level)
+         (let ((entry
+                 (assoc
+                  level (model-thinking-level-map model))))
+           (cond
+             ((and entry (null (cdr entry))) nil)
+             ((member level '(:xhigh :max))
+              (and entry (not (null (cdr entry)))))
+             (t t))))
+       +extended-thinking-levels+)))
+
+(defun clamp-thinking-level (model level)
+  (let ((available (supported-thinking-levels model))
+        (requested
+          (position level +extended-thinking-levels+)))
+    (cond
+      ((member level available) level)
+      ((null requested) (or (first available) :off))
+      (t
+       (or
+        (loop for index from requested
+              below (length +extended-thinking-levels+)
+              for candidate =
+              (nth index +extended-thinking-levels+)
+              when (member candidate available)
+                return candidate)
+        (loop for index downfrom (1- requested) to 0
+              for candidate =
+              (nth index +extended-thinking-levels+)
+              when (member candidate available)
+                return candidate)
+        (first available)
+        :off)))))
+
+(defun models-equal-p (left right)
+  (and left right
+       (string= (model-id left) (model-id right))
+       (eq (model-provider left) (model-provider right))))
 
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
-    (register-model-metadata
-     (apply #'make-model-metadata row))))
+    (let ((copy (copy-list row)))
+      (setf
+       (getf copy :cost-tiers)
+       (mapcar
+        (lambda (tier)
+          (if (typep tier 'model-cost-tier)
+              tier
+              (apply #'make-model-cost-tier tier)))
+        (getf copy :cost-tiers)))
+      (register-model-metadata
+       (apply #'make-model-metadata copy)))))

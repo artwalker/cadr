@@ -61,6 +61,7 @@
    #:usage-output
    #:usage-cache-read
    #:usage-cache-write
+   #:usage-cache-write-1h
    #:usage-reasoning
    #:usage-total
    #:usage-cost
@@ -74,6 +75,7 @@
    #:assistant-message-api
    #:assistant-message-provider
    #:assistant-message-model
+   #:assistant-message-response-model
    #:assistant-message-response-id
    #:assistant-message-usage
    #:assistant-message-stop-reason
@@ -86,6 +88,7 @@
    #:tool-result-message-tool-name
    #:tool-result-message-content
    #:tool-result-message-details
+   #:tool-result-message-added-tool-names
    #:tool-result-message-is-error
    #:tool-result-message-timestamp
    #:tool
@@ -93,6 +96,7 @@
    #:tool-name
    #:tool-description
    #:tool-parameters
+   #:tool-constrained-sampling
    #:tool-execution-mode
    #:tool-executor
    #:context
@@ -109,6 +113,34 @@
    #:stream-event-tool-call
    #:stream-event-message
    #:stream-event-reason
+   #:image-model
+   #:make-image-model
+   #:image-model-id
+   #:image-model-name
+   #:image-model-api
+   #:image-model-provider
+   #:image-model-base-url
+   #:image-model-input
+   #:image-model-output
+   #:image-model-input-price
+   #:image-model-output-price
+   #:image-model-cache-read-price
+   #:image-model-cache-write-price
+   #:image-model-headers
+   #:images-context
+   #:make-images-context
+   #:images-context-input
+   #:assistant-images
+   #:make-assistant-images
+   #:assistant-images-api
+   #:assistant-images-provider
+   #:assistant-images-model
+   #:assistant-images-output
+   #:assistant-images-response-id
+   #:assistant-images-usage
+   #:assistant-images-stop-reason
+   #:assistant-images-error-message
+   #:assistant-images-timestamp
    #:sse-event
    #:sse-event-event
    #:sse-event-data
@@ -119,7 +151,9 @@
    #:request-spec-method
    #:request-spec-headers
    #:request-spec-payload
+   #:request-spec-raw-body
    #:request-spec-stream-p
+   #:request-spec-stream-format
    #:*http-request-function*
    #:request-json
    #:request-sse
@@ -128,10 +162,22 @@
    #:openai-provider
    #:openai-completions-provider
    #:google-provider
+   #:azure-openai-provider
+   #:bedrock-provider
+   #:vertex-provider
+   #:mistral-provider
+   #:openai-codex-provider
+   #:pi-messages-provider
    #:make-anthropic-provider
    #:make-openai-provider
    #:make-openai-completions-provider
    #:make-google-provider
+   #:make-azure-openai-provider
+   #:make-bedrock-provider
+   #:make-vertex-provider
+   #:make-mistral-provider
+   #:make-openai-codex-provider
+   #:make-pi-messages-provider
    #:provider-definition
    #:make-provider-definition
    #:provider-definition-id
@@ -141,6 +187,8 @@
    #:provider-definition-auth-types
    #:provider-definition-default-model
    #:provider-definition-key-environment
+   #:provider-definition-required-environment
+   #:provider-definition-dynamic-models-p
    #:provider-definition-supports-images-p
    #:provider-definition-supports-tools-p
    #:provider-definition-reasoning-p
@@ -167,14 +215,53 @@
    #:model-metadata-output-price
    #:model-metadata-cache-read-price
    #:model-metadata-cache-write-price
+   #:model-metadata-cost-tiers
+   #:model-cost-tier
+   #:make-model-cost-tier
+   #:model-cost-tier-input-tokens-above
+   #:model-cost-tier-input-price
+   #:model-cost-tier-output-price
+   #:model-cost-tier-cache-read-price
+   #:model-cost-tier-cache-write-price
    #:register-model-metadata
    #:find-model-metadata
    #:list-model-metadata
+   #:register-image-model
+   #:find-image-model
+   #:list-image-models
    #:calculate-usage-cost
+   #:supported-thinking-levels
+   #:clamp-thinking-level
+   #:models-equal-p
+   #:content-text
+   #:sanitize-surrogates
+   #:context-usage-estimate
+   #:context-usage-estimate-tokens
+   #:context-usage-estimate-usage-tokens
+   #:context-usage-estimate-trailing-tokens
+   #:context-usage-estimate-last-usage-index
+   #:estimate-text-tokens
+   #:estimate-message-tokens
+   #:estimate-context-tokens
+   #:context-overflow-p
+   #:retry-policy
+   #:make-retry-policy
+   #:retry-policy-enabled-p
+   #:retry-policy-max-retries
+   #:retry-policy-base-delay-milliseconds
+   #:retryable-assistant-error-p
+   #:retry-assistant-call
+   #:grammar-json-buffer
+   #:make-grammar-json-buffer
+   #:append-grammar-json-delta
+   #:validate-tool-call
+   #:validate-tool-arguments
+   #:uuid-v7
    #:api-key-credential
    #:make-api-key-credential
    #:api-key-credential-provider
    #:api-key-credential-key
+   #:api-key-credential-environment
    #:oauth-credential
    #:make-oauth-credential
    #:oauth-credential-provider
@@ -199,10 +286,96 @@
    #:refresh-anthropic-oauth-credential
    #:login-openai-oauth
    #:login-anthropic-oauth
+   #:models-runtime-error
+   #:models-runtime-error-code
+   #:memory-credential-store
+   #:make-memory-credential-store
+   #:credential-store-read
+   #:credential-store-modify
+   #:credential-store-delete
+   #:credential-store-list
+   #:runtime-auth-result
+   #:make-runtime-auth-result
+   #:runtime-auth-result-api-key
+   #:runtime-auth-result-headers
+   #:runtime-auth-result-base-url
+   #:runtime-auth-result-environment
+   #:runtime-auth-result-source
+   #:runtime-auth-result-type
+   #:runtime-auth-check
+   #:make-runtime-auth-check
+   #:runtime-auth-check-source
+   #:runtime-auth-check-type
+   #:runtime-provider
+   #:make-runtime-provider
+   #:runtime-provider-id
+   #:runtime-provider-name
+   #:runtime-provider-models
+   #:models-refresh-result
+   #:models-refresh-result-aborted-p
+   #:models-refresh-result-errors
+   #:models-runtime
+   #:make-models-runtime
+   #:models-runtime-set-provider
+   #:models-runtime-delete-provider
+   #:models-runtime-clear-providers
+   #:models-runtime-provider
+   #:models-runtime-providers
+   #:models-runtime-models
+   #:models-runtime-model
+   #:models-runtime-auth
+   #:models-runtime-check-auth
+   #:models-runtime-available-models
+   #:models-runtime-refresh
+   #:models-runtime-complete
+   #:models-runtime-stream
+   #:make-built-in-models-runtime
+   #:faux-state
+   #:faux-state-call-count
+   #:faux-handle
+   #:faux-handle-provider
+   #:make-faux-provider
+   #:faux-set-responses
+   #:faux-append-responses
+   #:faux-pending-response-count
+   #:faux-get-model
+   #:faux-text
+   #:faux-thinking
+   #:faux-tool-call
+   #:faux-assistant-message
+   #:faux-complete
+   #:faux-stream
+   #:normalize-azure-openai-base-url
+   #:resolve-azure-deployment-name
+   #:octets-hex
+   #:hmac-sha256
+   #:aws-sigv4-authorization
+   #:resolve-bedrock-credentials
+   #:load-bedrock-profile-credentials
+   #:resolve-bedrock-profile-region
+   #:resolve-bedrock-region
+   #:resolve-vertex-auth
+   #:read-google-application-credential
+   #:make-vertex-token-request
+   #:exchange-vertex-access-token
+   #:openssl-rs256-sign
+   #:make-service-account-jwt
+   #:poll-device-authorization
+   #:trusted-oauth-url-p
+   #:parse-xai-device-authorization
+   #:oauth-token-credential
+   #:parse-kimi-device-authorization
+   #:parse-github-device-authorization
+   #:github-copilot-base-url
+   #:selectable-github-copilot-model-ids
+   #:radius-authorization-url
+   #:materialize-cloudflare-url
+   #:radius-models-from-config
    #:build-request
    #:parse-complete-response
    #:complete-chat
-   #:stream-chat))
+   #:stream-chat
+   #:generate-images))
 
 (in-package #:cadr-ai)
 

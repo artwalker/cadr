@@ -16,103 +16,52 @@
    (uiop:pathname-directory-pathname
     (truename *load-truename*))))
 
-(asdf:load-asd (truename (merge-pathnames "cadr-ai.asd" *root*)))
-(asdf:load-system "cadr-ai")
+(dolist (relative
+         '("src/cadr-ai/package.lisp"
+           "src/cadr-ai/conditions.lisp"
+           "src/cadr-ai/types.lisp"
+           "src/cadr-ai/json.lisp"
+           "src/cadr-ai/models.lisp"))
+  (load (truename (merge-pathnames relative *root*))))
 
-(defparameter *catalog-fixture*
+(defparameter *catalog-directory*
   (merge-pathnames
-   "test/fixtures/catalogs/wave1-provider-models.json"
+   "test/fixtures/catalogs/provider-data/"
    *root*))
 
 (defparameter *generated-path*
   (merge-pathnames "src/cadr-ai/models.generated.lisp" *root*))
 
-(defparameter *base-rows*
-  '((:provider :anthropic
-     :id "claude-opus-4-8"
-     :context-window 1000000
-     :max-output-tokens 128000
-     :supports-images-p t
-     :supports-tools-p t
-     :reasoning-p t
-     :input-price 5.0d0
-     :output-price 25.0d0
-     :cache-read-price 0.5d0
-     :cache-write-price 6.25d0)
-    (:provider :openai
-     :id "gpt-5.5"
-     :context-window 1050000
-     :max-output-tokens 128000
-     :supports-images-p t
-     :supports-tools-p t
-     :reasoning-p t
-     :input-price 5.0d0
-     :output-price 30.0d0
-     :cache-read-price 0.5d0
-     :cache-write-price 0d0)
-    (:provider :google
-     :id "gemini-3.6-flash"
-     :context-window 1048576
-     :max-output-tokens 65536
-     :supports-images-p t
-     :supports-tools-p t
-     :reasoning-p t
-     :input-price 1.5d0
-     :output-price 7.5d0
-     :cache-read-price 0.15d0
-     :cache-write-price 0d0)
-    (:provider :deepseek
-     :id "deepseek-v4-flash"
-     :context-window 1000000
-     :max-output-tokens 384000
-     :supports-images-p nil
-     :supports-tools-p t
-     :reasoning-p t
-     :input-price 0.14d0
-     :output-price 0.28d0
-     :cache-read-price 0.0028d0
-     :cache-write-price 0d0)
-    (:provider :deepseek
-     :id "deepseek-v4-pro"
-     :context-window 1000000
-     :max-output-tokens 384000
-     :supports-images-p nil
-     :supports-tools-p t
-     :reasoning-p t
-     :input-price 0.435d0
-     :output-price 0.87d0
-     :cache-read-price 0.003625d0
-     :cache-write-price 0d0)
-    (:provider :ollama
-     :id "gpt-oss:20b"
-     :context-window 131072
-     :max-output-tokens 32768
-     :supports-images-p nil
-     :supports-tools-p t
-     :reasoning-p t
-     :input-price 0d0
-     :output-price 0d0
-     :cache-read-price 0d0
-     :cache-write-price 0d0)))
-
 (defparameter *compat-key-map*
-  '(("deferredToolsMode" . :deferred-tools-mode)
+  '(("allowEmptySignature" . :allow-empty-signature)
+    ("cacheControlFormat" . :cache-control-format)
+    ("deferredToolsMode" . :deferred-tools-mode)
+    ("forceAdaptiveThinking" . :force-adaptive-thinking)
     ("maxTokensField" . :max-tokens-field)
     ("requiresReasoningContentOnAssistantMessages"
      . :requires-reasoning-content-on-assistant-messages)
+    ("sendSessionAffinityHeaders"
+     . :send-session-affinity-headers)
+    ("sessionAffinityFormat" . :session-affinity-format)
     ("supportsCacheControlOnTools"
      . :supports-cache-control-on-tools)
     ("supportsDeveloperRole" . :supports-developer-role)
     ("supportsEagerToolInputStreaming"
      . :supports-eager-tool-input-streaming)
+    ("supportsExplicitPromptCacheMode"
+     . :supports-explicit-prompt-cache-mode)
     ("supportsLongCacheRetention"
      . :supports-long-cache-retention)
+    ("supportsOpenAIGrammarTools"
+     . :supports-openai-grammar-tools)
     ("supportsReasoningEffort" . :supports-reasoning-effort)
     ("supportsStore" . :supports-store)
     ("supportsStrictMode" . :supports-strict-mode)
     ("supportsStrictTools" . :supports-strict-tools)
     ("supportsTemperature" . :supports-temperature)
-    ("thinkingFormat" . :thinking-format)))
+    ("supportsToolSearch" . :supports-tool-search)
+    ("thinkingFormat" . :thinking-format)
+    ("zaiToolStream" . :zai-tool-stream)))
 
 (defun json-get (object key &optional default)
   (if (hash-table-p object)
@@ -149,8 +98,10 @@
                         (normalized-json-value
                          (json-get object key))))
                   (if (member mapped
-                              '(:deferred-tools-mode
+                              '(:cache-control-format
+                                :deferred-tools-mode
                                 :max-tokens-field
+                                :session-affinity-format
                                 :thinking-format))
                       (keyword-value value)
                       value))))))
@@ -179,6 +130,23 @@
          (find "image" input :test #'string=)
          t)))
 
+(defun cost-tiers (cost)
+  (let ((tiers (json-get cost "tiers")))
+    (when (vectorp tiers)
+      (loop for tier across tiers
+            collect
+            (list
+             :input-tokens-above
+             (or (json-get tier "inputTokensAbove") 0)
+             :input-price
+             (number-or-zero (json-get tier "input"))
+             :output-price
+             (number-or-zero (json-get tier "output"))
+             :cache-read-price
+             (number-or-zero (json-get tier "cacheRead"))
+             :cache-write-price
+             (number-or-zero (json-get tier "cacheWrite")))))))
+
 (defun model-row (provider model)
   (let ((cost (json-get model "cost")))
     (list
@@ -200,22 +168,32 @@
      :output-price (number-or-zero (json-get cost "output"))
      :cache-read-price (number-or-zero (json-get cost "cacheRead"))
      :cache-write-price
-     (number-or-zero (json-get cost "cacheWrite")))))
+     (number-or-zero (json-get cost "cacheWrite"))
+     :cost-tiers (cost-tiers cost))))
 
 (defun catalog-rows ()
-  (let ((catalog
-          (cadr-ai::parse-json
-           (uiop:read-file-string
-            *catalog-fixture*
-            :external-format :utf-8))))
-    (append
-     *base-rows*
-     (loop for provider in (sorted-json-keys catalog)
-           for models = (json-get catalog provider)
-           append
-           (loop for id in (sorted-json-keys models)
-                 collect (model-row provider
-                                    (json-get models id)))))))
+  (loop for path in
+        (sort
+         (remove-if-not
+          (lambda (path)
+            (and
+             (string-equal "json" (pathname-type path))
+             (not
+              (char= #\. (char (pathname-name path) 0)))))
+          (uiop:directory-files *catalog-directory*))
+         #'string<
+         :key #'namestring)
+        for provider = (pathname-name path)
+        for catalog =
+        (cadr-ai::parse-json
+         (uiop:read-file-string path :external-format :utf-8))
+        append
+        (loop for api in (sorted-json-keys catalog)
+              for models = (json-get catalog api)
+              append
+              (loop for id in (sorted-json-keys models)
+                    collect
+                    (model-row provider (json-get models id))))))
 
 (let* ((rows (catalog-rows))
        (*print-pretty* t)
@@ -227,7 +205,7 @@
               :if-does-not-exist :create
               :external-format :utf-8)
     (write-line
-     ";; Generated by scripts/refresh-model-catalog.lisp from the fixed Wave 1 catalog fixture."
+     ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.83.0 catalog snapshot."
      stream)
     (write-line
      ";; Runtime use is offline and deterministic."

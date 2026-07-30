@@ -376,20 +376,27 @@
   (write-char #\" stream)
   (loop for character across value
         for code = (char-code character)
-        do
-        (case character
-          (#\" (write-string "\\\"" stream))
-          (#\\ (write-string "\\\\" stream))
-          (#\Backspace (write-string "\\b" stream))
-          (#\Page (write-string "\\f" stream))
-          (#\Newline (write-string "\\n" stream))
-          (#\Return (write-string "\\r" stream))
-          (#\Tab (write-string "\\t" stream))
-          (otherwise
-           (if (< code #x20)
-               (format stream "\\u~4,'0X" code)
-               (write-char character stream)))))
+        unless (<= #xd800 code #xdfff)
+          do
+          (case character
+            (#\" (write-string "\\\"" stream))
+            (#\\ (write-string "\\\\" stream))
+            (#\Backspace (write-string "\\b" stream))
+            (#\Page (write-string "\\f" stream))
+            (#\Newline (write-string "\\n" stream))
+            (#\Return (write-string "\\r" stream))
+            (#\Tab (write-string "\\t" stream))
+            (otherwise
+             (if (< code #x20)
+                 (format stream "\\u~4,'0X" code)
+                 (write-char character stream)))))
   (write-char #\" stream))
+
+(defun sanitize-surrogates (text)
+  (remove-if
+   (lambda (character)
+     (<= #xd800 (char-code character) #xdfff))
+   text))
 
 (defun factor-count (value factor)
   (loop with count = 0
@@ -496,15 +503,20 @@
        (plusp (length (string-trim '(#\Space #\Tab #\Newline #\Return)
                                    value)))))
 
-(defun content-text (content)
+(defun content-text (content &optional (separator (string #\Newline)))
   (cond
     ((stringp content)
      content)
     ((or (listp content) (vectorp content))
-     (format nil "~{~A~^~%~}"
-             (loop for item across (coerce content 'vector)
-                   when (typep item 'text-content)
-                     collect (text-content-text item))))
+     (with-output-to-string (output)
+       (loop with first-p = t
+             for item across (coerce content 'vector)
+             when (typep item 'text-content)
+               do
+               (unless first-p
+                 (write-string separator output))
+               (write-string (text-content-text item) output)
+               (setf first-p nil))))
     (t
      "")))
 

@@ -82,11 +82,13 @@
 
 (defstruct (usage
             (:constructor %make-usage
-                (&key input output cache-read cache-write reasoning total cost)))
+                (&key input output cache-read cache-write cache-write-1h
+                      reasoning total cost)))
   (input 0 :type (integer 0 *))
   (output 0 :type (integer 0 *))
   (cache-read 0 :type (integer 0 *))
   (cache-write 0 :type (integer 0 *))
+  (cache-write-1h nil :type (or null (integer 0 *)))
   (reasoning nil :type (or null (integer 0 *)))
   (total 0 :type (integer 0 *))
   (cost (make-cost) :type cost))
@@ -96,6 +98,7 @@
                          (output 0)
                          (cache-read 0)
                          (cache-write 0)
+                         cache-write-1h
                          reasoning
                          total
                          (cost (make-cost)))
@@ -103,6 +106,7 @@
                :output output
                :cache-read cache-read
                :cache-write cache-write
+               :cache-write-1h cache-write-1h
                :reasoning reasoning
                :total (or total
                           (+ input output cache-read cache-write))
@@ -114,12 +118,14 @@
 
 (defstruct (assistant-message
             (:constructor %make-assistant-message
-                (&key content api provider model response-id usage stop-reason
+                (&key content api provider model response-model response-id
+                      usage stop-reason
                       error-message raw-stop-reason timestamp)))
   (content nil :type list)
   (api nil :type symbol)
   (provider nil :type symbol)
   (model "" :type string)
+  (response-model nil :type (or null string))
   (response-id nil :type (or null string))
   (usage (make-usage) :type usage)
   (stop-reason :pending :type symbol)
@@ -132,6 +138,7 @@
                                     api
                                     provider
                                     (model "")
+                                    response-model
                                     response-id
                                     (usage (make-usage))
                                     (stop-reason :pending)
@@ -143,6 +150,7 @@
    :api api
    :provider provider
    :model model
+   :response-model response-model
    :response-id response-id
    :usage usage
    :stop-reason stop-reason
@@ -155,6 +163,7 @@
   (tool-name "" :type string)
   (content nil :type list)
   details
+  (added-tool-names nil :type list)
   (is-error nil :type boolean)
   (timestamp (unix-milliseconds) :type integer))
 
@@ -170,6 +179,34 @@
   (system-prompt nil :type (or null string))
   (messages nil :type list)
   (tools nil :type list))
+
+(defstruct image-model
+  (id "" :type string)
+  (name "" :type string)
+  (api :openrouter-images :type symbol)
+  (provider :openrouter :type symbol)
+  (base-url "" :type string)
+  (input '(:text) :type list)
+  (output '(:image) :type list)
+  (input-price 0d0 :type double-float)
+  (output-price 0d0 :type double-float)
+  (cache-read-price 0d0 :type double-float)
+  (cache-write-price 0d0 :type double-float)
+  (headers nil :type list))
+
+(defstruct images-context
+  (input nil :type list))
+
+(defstruct assistant-images
+  (api nil :type symbol)
+  (provider nil :type symbol)
+  (model "" :type string)
+  (output nil :type list)
+  (response-id nil :type (or null string))
+  (usage nil :type (or null usage))
+  (stop-reason :stop :type symbol)
+  (error-message nil :type (or null string))
+  (timestamp (unix-milliseconds) :type integer))
 
 (defstruct stream-event
   (type nil :type symbol)

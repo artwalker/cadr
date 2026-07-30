@@ -450,6 +450,13 @@
             :api (model-api model)
             :provider (model-provider model)
             :model (model-id model)
+            :response-model
+            (let ((response-model
+                    (json-get response "model")))
+              (and (non-empty-string-p response-model)
+                   (not (string=
+                         response-model (model-id model)))
+                   response-model))
             :response-id (json-get response "id")
             :raw-stop-reason raw-stop
             :stop-reason (map-chat-stop-reason raw-stop))))
@@ -602,6 +609,15 @@
         (when (non-empty-string-p (json-get payload "id"))
           (setf (assistant-message-response-id message)
                 (json-get payload "id")))
+        (let ((response-model
+                (json-get payload "model")))
+          (when (and (non-empty-string-p response-model)
+                     (not (string=
+                           response-model
+                           (assistant-message-model message))))
+            (setf
+             (assistant-message-response-model message)
+             response-model)))
         (update-openai-chat-usage message
                                   (json-get payload "usage"))
         (when choice

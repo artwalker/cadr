@@ -1,7 +1,15 @@
 (in-package #:cadr-ai)
 
 (defclass provider ()
-  ((api-key
+  ((provider-id
+    :initarg :provider-id
+    :initform nil
+    :reader provider-id)
+   (options
+    :initarg :options
+    :initform nil
+    :reader provider-options)
+   (api-key
     :initarg :api-key
     :initform nil
     :reader provider-api-key)
@@ -22,6 +30,12 @@
 (defclass openai-provider (provider) ())
 (defclass openai-completions-provider (provider) ())
 (defclass google-provider (provider) ())
+(defclass azure-openai-provider (openai-provider) ())
+(defclass bedrock-provider (provider) ())
+(defclass vertex-provider (google-provider) ())
+(defclass mistral-provider (openai-completions-provider) ())
+(defclass openai-codex-provider (openai-provider) ())
+(defclass pi-messages-provider (provider) ())
 
 (defparameter *max-provider-retries* 2)
 (defparameter *retry-base-delay* 0.25)
@@ -34,26 +48,70 @@
     (provider-api-key provider)
     (provider-oauth-access-token provider))))
 
-(defun make-anthropic-provider (&key api-key oauth-access-token)
+(defun make-anthropic-provider
+    (&key api-key oauth-access-token oauth-account-id
+            provider-id options)
+  (declare (ignore oauth-account-id))
   (make-instance 'anthropic-provider
                  :api-key api-key
-                 :oauth-access-token oauth-access-token))
+                 :oauth-access-token oauth-access-token
+                 :provider-id provider-id
+                 :options options))
 
 (defun make-openai-provider
-    (&key api-key oauth-access-token oauth-account-id)
+    (&key api-key oauth-access-token oauth-account-id
+            provider-id options)
   (make-instance 'openai-provider
                  :api-key api-key
                  :oauth-access-token oauth-access-token
-                 :oauth-account-id oauth-account-id))
+                 :oauth-account-id oauth-account-id
+                 :provider-id provider-id
+                 :options options))
 
 (defun make-openai-completions-provider
-    (&key api-key (authentication-required-p t))
+    (&key api-key oauth-access-token oauth-account-id
+            (authentication-required-p t) provider-id options)
+  (declare (ignore oauth-account-id))
   (make-instance 'openai-completions-provider
                  :api-key api-key
-                 :authentication-required-p authentication-required-p))
+                 :oauth-access-token oauth-access-token
+                 :authentication-required-p authentication-required-p
+                 :provider-id provider-id
+                 :options options))
 
-(defun make-google-provider (&key api-key)
-  (make-instance 'google-provider :api-key api-key))
+(defun make-google-provider
+    (&key api-key oauth-access-token oauth-account-id
+            provider-id options)
+  (declare (ignore oauth-access-token oauth-account-id))
+  (make-instance 'google-provider
+                 :api-key api-key
+                 :provider-id provider-id
+                 :options options))
+
+(defmacro define-provider-constructor (name class)
+  `(defun ,name
+       (&key api-key oauth-access-token oauth-account-id
+               provider-id options)
+     (make-instance
+      ',class
+      :api-key api-key
+      :oauth-access-token oauth-access-token
+      :oauth-account-id oauth-account-id
+      :provider-id provider-id
+      :options options)))
+
+(define-provider-constructor make-azure-openai-provider
+  azure-openai-provider)
+(define-provider-constructor make-bedrock-provider
+  bedrock-provider)
+(define-provider-constructor make-vertex-provider
+  vertex-provider)
+(define-provider-constructor make-mistral-provider
+  mistral-provider)
+(define-provider-constructor make-openai-codex-provider
+  openai-codex-provider)
+(define-provider-constructor make-pi-messages-provider
+  pi-messages-provider)
 
 (defgeneric build-request
     (provider model context
@@ -244,6 +302,8 @@
                :api (assistant-message-api message)
                :provider (assistant-message-provider message)
                :model (assistant-message-model message)
+               :response-model
+               (assistant-message-response-model message)
                :response-id (assistant-message-response-id message)
                :usage (assistant-message-usage message)
                :stop-reason (assistant-message-stop-reason message)
@@ -437,7 +497,7 @@
             (call-with-provider-retries
              (lambda ()
                (check-abort abort-p)
-               (request-sse
+               (request-provider-events
                 request
                 (lambda (event)
                   (setf saw-provider-event-p t)

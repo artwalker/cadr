@@ -5,7 +5,8 @@
 
 (defstruct api-key-credential
   (provider nil :type symbol)
-  (key "" :type string))
+  (key "" :type string)
+  (environment nil :type list))
 
 (defstruct oauth-credential
   (provider nil :type symbol)
@@ -17,6 +18,22 @@
 (defparameter *provider-auth-locks* (make-hash-table))
 (defparameter *provider-auth-locks-lock*
   (sb-thread:make-mutex :name "cadr-ai provider auth lock table"))
+
+(defun alist-json-object (entries)
+  (let ((object (json-object)))
+    (dolist (entry entries object)
+      (json-put object
+                (string (car entry))
+                (cdr entry)))))
+
+(defun json-object-alist (object)
+  (when (hash-table-p object)
+    (sort
+     (loop for key being the hash-keys of object
+           using (hash-value value)
+           collect (cons key value))
+     #'string<
+     :key #'car)))
 
 (defun provider-auth-lock (provider)
   (sb-thread:with-mutex (*provider-auth-locks-lock*)
@@ -31,9 +48,16 @@
 (defun credential-json (credential)
   (etypecase credential
     (api-key-credential
-     (json-object
-      "type" "api_key"
-      "key" (api-key-credential-key credential)))
+     (let ((object
+             (json-object
+              "type" "api_key"
+              "key" (api-key-credential-key credential))))
+       (when (api-key-credential-environment credential)
+         (json-put
+          object "env"
+          (alist-json-object
+           (api-key-credential-environment credential))))
+       object))
     (oauth-credential
      (let ((object
              (json-object
@@ -53,7 +77,9 @@
         ((string= type "api_key")
          (make-api-key-credential
           :provider provider
-          :key (or (json-get object "key") "")))
+          :key (or (json-get object "key") "")
+          :environment
+          (json-object-alist (json-get object "env"))))
         ((string= type "oauth")
          (make-oauth-credential
           :provider provider

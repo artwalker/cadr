@@ -1,0 +1,173 @@
+;; Generated from the fixed @earendil-works/pi-ai 0.83.0 OpenRouter image catalog.
+(in-package #:cadr-ai)
+
+(defparameter *generated-image-models* '
+((:ID "black-forest-labs/flux.2-flex" :NAME "Black Forest Labs: FLUX.2 Flex" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "black-forest-labs/flux.2-klein-4b" :NAME "Black Forest Labs: FLUX.2 Klein 4B"
+  :API :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL
+  "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE
+  0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS
+  NIL)
+ (:ID "black-forest-labs/flux.2-max" :NAME "Black Forest Labs: FLUX.2 Max" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "black-forest-labs/flux.2-pro" :NAME "Black Forest Labs: FLUX.2 Pro" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "bytedance-seed/seedream-4.5" :NAME "ByteDance Seed: Seedream 4.5" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:IMAGE :TEXT) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "google/gemini-2.5-flash-image" :NAME
+  "Google: Nano Banana (Gemini 2.5 Flash Image)" :API :OPENROUTER-IMAGES :PROVIDER
+  :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT) :OUTPUT
+  (:IMAGE :TEXT) :INPUT-PRICE 0.3d0 :OUTPUT-PRICE 2.5d0 :CACHE-READ-PRICE 0.03d0
+  :CACHE-WRITE-PRICE 0.08333333333333334d0 :HEADERS NIL)
+ (:ID "google/gemini-3-pro-image" :NAME "Google: Nano Banana Pro (Gemini 3 Pro Image)"
+  :API :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL
+  "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT) :OUTPUT (:IMAGE :TEXT)
+  :INPUT-PRICE 2.0d0 :OUTPUT-PRICE 12.0d0 :CACHE-READ-PRICE 0.19999999999999998d0
+  :CACHE-WRITE-PRICE 0.375d0 :HEADERS NIL)
+ (:ID "google/gemini-3-pro-image-preview" :NAME
+  "Google: Nano Banana Pro (Gemini 3 Pro Image Preview)" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT)
+  :OUTPUT (:IMAGE :TEXT) :INPUT-PRICE 2.0d0 :OUTPUT-PRICE 12.0d0 :CACHE-READ-PRICE
+  0.19999999999999998d0 :CACHE-WRITE-PRICE 0.375d0 :HEADERS NIL)
+ (:ID "google/gemini-3.1-flash-image" :NAME
+  "Google: Nano Banana 2 (Gemini 3.1 Flash Image)" :API :OPENROUTER-IMAGES :PROVIDER
+  :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT) :OUTPUT
+  (:IMAGE :TEXT) :INPUT-PRICE 0.5d0 :OUTPUT-PRICE 3.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "google/gemini-3.1-flash-image-preview" :NAME
+  "Google: Nano Banana 2 (Gemini 3.1 Flash Image Preview)" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT)
+  :OUTPUT (:IMAGE :TEXT) :INPUT-PRICE 0.5d0 :OUTPUT-PRICE 3.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "google/gemini-3.1-flash-lite-image" :NAME
+  "Google: Nano Banana 2 Lite (Gemini 3.1 Flash Lite Image)" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT)
+  :OUTPUT (:IMAGE :TEXT) :INPUT-PRICE 0.25d0 :OUTPUT-PRICE 1.5d0 :CACHE-READ-PRICE
+  0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "krea/krea-2-large" :NAME "Krea: Krea 2 Large" :API :OPENROUTER-IMAGES :PROVIDER
+  :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE) :OUTPUT
+  (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "krea/krea-2-medium" :NAME "Krea: Krea 2 Medium" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "krea/krea-2-medium-turbo" :NAME "Krea: Krea 2 Medium Turbo" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "microsoft/mai-image-2.5" :NAME "Microsoft: MAI-Image-2.5" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 5.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "microsoft/mai-image-2.5-pro" :NAME "Microsoft: MAI-Image-2.5 Pro" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 5.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openai/gpt-5-image" :NAME "OpenAI: GPT-5 Image" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT)
+  :OUTPUT (:IMAGE :TEXT) :INPUT-PRICE 10.0d0 :OUTPUT-PRICE 10.0d0 :CACHE-READ-PRICE
+  1.25d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openai/gpt-5-image-mini" :NAME "OpenAI: GPT-5 Image Mini" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:IMAGE :TEXT) :OUTPUT (:IMAGE :TEXT) :INPUT-PRICE 2.5d0 :OUTPUT-PRICE 2.0d0
+  :CACHE-READ-PRICE 0.25d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openai/gpt-5.4-image-2" :NAME "OpenAI: GPT-5.4 Image 2" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:IMAGE :TEXT)
+  :OUTPUT (:IMAGE :TEXT) :INPUT-PRICE 8.0d0 :OUTPUT-PRICE 15.0d0 :CACHE-READ-PRICE
+  2.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openai/gpt-image-1" :NAME "OpenAI: GPT Image 1" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 10.0d0 :OUTPUT-PRICE 10.0d0 :CACHE-READ-PRICE 1.25d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openai/gpt-image-1-mini" :NAME "OpenAI: GPT Image 1 Mini" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 2.5d0 :OUTPUT-PRICE 2.5d0
+  :CACHE-READ-PRICE 0.25d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openai/gpt-image-2" :NAME "OpenAI: GPT Image 2" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 8.0d0 :OUTPUT-PRICE 8.0d0 :CACHE-READ-PRICE 2.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openrouter/auto" :NAME "Auto Router" :API :OPENROUTER-IMAGES :PROVIDER
+  :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE) :OUTPUT
+  (:TEXT :IMAGE) :INPUT-PRICE -1000000.0d0 :OUTPUT-PRICE -1000000.0d0 :CACHE-READ-PRICE
+  0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "openrouter/auto-beta" :NAME "Auto Router (Beta)" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:TEXT :IMAGE) :INPUT-PRICE -1000000.0d0 :OUTPUT-PRICE -1000000.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v3" :NAME "Recraft: Recraft V3" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4" :NAME "Recraft: Recraft V4" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4-pro" :NAME "Recraft: Recraft V4 Pro" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4-pro-vector" :NAME "Recraft: Recraft V4 Pro Vector" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4-vector" :NAME "Recraft: Recraft V4 Vector" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4.1" :NAME "Recraft: Recraft V4.1" :API :OPENROUTER-IMAGES
+  :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1" :INPUT (:TEXT :IMAGE)
+  :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0 :CACHE-READ-PRICE 0.0d0
+  :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4.1-pro" :NAME "Recraft: Recraft V4.1 Pro" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4.1-pro-vector" :NAME "Recraft: Recraft V4.1 Pro Vector" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4.1-utility" :NAME "Recraft: Recraft V4.1 Utility" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4.1-utility-pro" :NAME "Recraft: Recraft V4.1 Utility Pro" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "recraft/recraft-v4.1-vector" :NAME "Recraft: Recraft V4.1 Vector" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "sourceful/riverflow-v2-fast" :NAME "Sourceful: Riverflow V2 Fast" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "sourceful/riverflow-v2-pro" :NAME "Sourceful: Riverflow V2 Pro" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "sourceful/riverflow-v2.5-fast" :NAME "Sourceful: Riverflow V2.5 Fast" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "sourceful/riverflow-v2.5-pro" :NAME "Sourceful: Riverflow V2.5 Pro" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)
+ (:ID "x-ai/grok-imagine-image-quality" :NAME "xAI: Grok Imagine Image Quality" :API
+  :OPENROUTER-IMAGES :PROVIDER :OPENROUTER :BASE-URL "https://openrouter.ai/api/v1"
+  :INPUT (:TEXT :IMAGE) :OUTPUT (:IMAGE) :INPUT-PRICE 0.0d0 :OUTPUT-PRICE 0.0d0
+  :CACHE-READ-PRICE 0.0d0 :CACHE-WRITE-PRICE 0.0d0 :HEADERS NIL)))
+
+(register-generated-image-models *generated-image-models*)
