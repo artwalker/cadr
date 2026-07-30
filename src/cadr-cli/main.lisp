@@ -234,10 +234,40 @@
          t))
       (t nil))))
 
+(defun call-with-cli-signal-handlers (agent function)
+  #+sbcl
+  (catch 'cadr-cli-signal
+    (sb-sys:with-interrupt-bindings
+      (flet ((exit-on-signal (exit-code)
+               (lambda (signal code context)
+                 (declare (ignore signal code context))
+                 (cadr-agent:agent-abort agent)
+                 (throw 'cadr-cli-signal exit-code))))
+        (sb-sys:enable-interrupt
+         sb-unix:sigterm
+         (exit-on-signal 143))
+        #-win32
+        (sb-sys:enable-interrupt
+         sb-unix:sighup
+         (exit-on-signal 129)))
+      (funcall function)))
+  #-sbcl
+  (funcall function))
+
 (defun cli-handler (command)
-  (let* ((tui-p
-           (should-use-tui-p
-            (cli-arguments-no-tui-p command)))
+  (let* ((input-terminal-p
+           (cadr-tui:terminal-stream-p
+            *standard-input* :input))
+         (output-terminal-p
+           (cadr-tui:terminal-stream-p
+            *standard-output* :output))
+         (mode
+           (resolve-cli-mode
+            command
+            input-terminal-p
+            output-terminal-p))
+         (tui-p (eq mode :tui))
+         (repl-p (eq mode :repl))
          (event-consumer nil)
          (notice-consumer nil)
          (abort-requested-p nil)
@@ -247,7 +277,9 @@
                 (lambda (text)
                   (when notice-consumer
                     (funcall notice-consumer text))))
-               *standard-output*))
+               (if repl-p
+                   *standard-output*
+                   *error-output*)))
          (config
            (resolve-provider-config
             :provider
@@ -268,7 +300,7 @@
            (make-cli-extension-manager
             :cwd cwd
             :output frontend-output
-            :mode (if tui-p :tui :repl)
+            :mode mode
             :explicit-paths
             (cli-arguments-extensions command)
             :secret-function
@@ -314,10 +346,15 @@
                    (provider-config-model updated))))
          (run-prompt (prompt)
            (let ((*bash-live-output*
-                   (if tui-p
+                   (if (or tui-p repl-p)
                        frontend-output
-                       *standard-output*)))
-             (cadr-agent:agent-prompt agent prompt)))
+                       *error-output*)))
+             (cadr-agent:agent-prompt
+              agent prompt
+              :source
+              (if (eq mode :rpc)
+                  :rpc
+                  :interactive))))
          (handle-command (line)
            (or
             (handle-auth-command
@@ -398,8 +435,12 @@
             (cadr-agent:session-id candidate)
             (cadr-agent:session-messages
              candidate))))
-      (if tui-p
-          (run-tui
+      (call-with-cli-signal-handlers
+       agent
+       (lambda ()
+         (case mode
+           (:tui
+            (run-tui
            #'run-prompt
            :command-function #'handle-command
            :template-function #'expand-template
@@ -430,13 +471,39 @@
            :messages
            (copy-list
             (cadr-agent:agent-messages agent)))
-          (progn
+            0)
+           (:repl
             (setf event-consumer renderer)
             (run-repl
              #'run-prompt
              :command-function #'handle-command
              :template-function #'expand-template
-             :render-response nil))))))
+             :render-response nil)
+            0)
+           ((:text :json)
+            (multiple-value-bind
+               (initial messages)
+                (build-cli-print-prompts
+                 command
+                 (unless input-terminal-p
+                   (let ((text
+                           (string-trim
+                            '(#\Space #\Tab
+                              #\Newline #\Return)
+                            (uiop:slurp-stream-string
+                             *standard-input*))))
+                     (and
+                      (plusp (length text))
+                      text))))
+              (run-print-mode
+               agent initial messages
+               :mode mode)))
+           (:rpc
+            (run-rpc-mode
+             agent extension-manager
+             :input *standard-input*
+             :output *standard-output*
+             :error-output *error-output*))))))))
 
 (defun main (&optional
                (argv
@@ -454,8 +521,7 @@
              (format t "cadr 0.1.0~%")
              0)
             (t
-             (cli-handler arguments)
-             0))))
+             (cli-handler arguments)))))
     (cadr-ai:cadr-error (condition)
       (format *error-output* "cadr: ~A~%" condition)
       (finish-output *error-output*)

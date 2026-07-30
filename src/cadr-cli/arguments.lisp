@@ -5,6 +5,9 @@
   model
   base-url
   system-prompt
+  mode
+  (print-p nil :type boolean)
+  (messages nil :type list)
   (continue-p nil :type boolean)
   resume
   (extensions nil :type list)
@@ -17,11 +20,14 @@
     ("--model" . :model)
     ("--base-url" . :base-url)
     ("--system-prompt" . :system-prompt)
+    ("--mode" . :mode)
     ("--resume" . :resume)
     ("--extension" . :extension)))
 
 (defparameter +cli-flag-options+
   '(("--continue" . :continue)
+    ("--print" . :print)
+    ("-p" . :print)
     ("--no-tui" . :no-tui)
     ("--help" . :help)
     ("--version" . :version)))
@@ -57,6 +63,21 @@
      (setf
       (cli-arguments-system-prompt arguments)
       value))
+    (:mode
+     (let ((mode
+             (find
+              value
+              '(:text :json :rpc)
+              :key #'symbol-name
+              :test #'string-equal)))
+       (unless mode
+         (error
+          'cadr-ai:configuration-error
+          :message
+          "--mode must be text, json, or rpc"))
+       (setf
+        (cli-arguments-mode arguments)
+        mode)))
     (:resume
      (setf (cli-arguments-resume arguments)
            value))
@@ -71,6 +92,10 @@
     (:continue
      (setf
       (cli-arguments-continue-p arguments)
+      t))
+    (:print
+     (setf
+      (cli-arguments-print-p arguments)
       t))
     (:no-tui
      (setf
@@ -139,13 +164,19 @@
                             name)))
                  (set-cli-flag
                   arguments (cdr flag-option)))
-                (t
+                ((cli-string-prefix-p "-" argument)
                  (error
                   'cadr-ai:configuration-error
                   :message
                   (format nil
-                          "Unknown option or argument: ~A"
-                          argument)))))))
+                          "Unknown option: ~A"
+                          argument)))
+                (t
+                 (setf
+                  (cli-arguments-messages arguments)
+                  (nconc
+                   (cli-arguments-messages arguments)
+                   (list argument))))))))
     (setf
      (cli-arguments-extensions arguments)
      (nreverse
@@ -156,7 +187,8 @@
     (&optional (stream *standard-output*))
   (format stream
           "NAME:~%  cadr - Common Lisp coding agent~%~%")
-  (format stream "USAGE:~%  cadr [options]~%~%")
+  (format stream
+          "USAGE:~%  cadr [options] [messages...]~%~%")
   (format stream "OPTIONS:~%")
   (dolist
       (line
@@ -165,10 +197,44 @@
          "      --extension <VALUE>      Load a Lisp extension (repeatable)"
          "      --help                   Display usage and exit"
          "      --model <VALUE>          Provider model ID"
+         "      --mode <VALUE>           Output mode: text, json, or rpc"
          "      --no-tui                 Use the line-oriented REPL"
+         "  -p, --print                  Process prompts and exit"
          "      --provider <VALUE>       Provider name"
          "      --resume <VALUE>         Resume an exact session ID"
          "      --system-prompt <VALUE>  System prompt text or file"
          "      --version                Display version and exit"))
     (format stream "~A~%" line))
   (finish-output stream))
+
+(defun resolve-cli-mode
+    (arguments input-terminal-p output-terminal-p)
+  (or
+   (cli-arguments-mode arguments)
+   (and
+    (cli-arguments-print-p arguments)
+    :text)
+   (and
+    (cli-arguments-no-tui-p arguments)
+    :repl)
+   (and
+    (or
+     (not input-terminal-p)
+     (not output-terminal-p))
+    :text)
+   :tui))
+
+(defun build-cli-print-prompts
+    (arguments stdin-content)
+  (let* ((messages
+           (copy-list
+            (cli-arguments-messages arguments)))
+         (first-message (pop messages))
+         (initial
+           (cond
+             ((and stdin-content first-message)
+              (format nil "~A~%~A"
+                      stdin-content first-message))
+             (stdin-content stdin-content)
+             (t first-message))))
+    (values initial messages)))
