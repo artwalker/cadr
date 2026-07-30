@@ -145,5 +145,51 @@
         (is (null skills))
         (is
          (member
-          :invalid-metadata diagnostics
+         :invalid-metadata diagnostics
           :key #'cadr-agent::resource-diagnostic-code))))))
+
+(test frontmatter-and-prompt-expansion-match-reference-edge-cases
+  (multiple-value-bind (metadata body error)
+      (cadr-agent::parse-resource-frontmatter
+       (format nil
+               "---~C~Cname: \"review\"~C~Cdescription: |~C~C  Line one~C~C  Line two~C~C---~C~C~C~CBody"
+               #\Return #\Newline
+               #\Return #\Newline
+               #\Return #\Newline
+               #\Return #\Newline
+               #\Return #\Newline
+               #\Return #\Newline
+               #\Return #\Newline))
+    (is (null error))
+    (is (string= "review" (getf metadata :name)))
+    (is (string=
+         (format nil "Line one~%Line two~%")
+         (getf metadata :description)))
+    (is (string= "Body" body)))
+  (multiple-value-bind (metadata body error)
+      (cadr-agent::parse-resource-frontmatter
+       (format nil "---~%foo: [bar~%---~%Body"))
+    (declare (ignore metadata body))
+    (is (search "line 1" error)))
+  (is
+   (string=
+    "3 brief 3  a $1 $ARGUMENTS b c a  a"
+    (cadr-agent::substitute-prompt-arguments
+     "${1:-7} ${2:-brief} $ARGUMENTS ${3:-$ARGUMENTS} ${@:2:2}"
+     '("3" "" "a" "$1" "$ARGUMENTS" "b" "c"))))
+  (is
+   (string=
+    "$1 $ARGUMENTS"
+    (cadr-agent::substitute-prompt-arguments
+     "$ARGUMENTS"
+     '("$1" "$ARGUMENTS"))))
+  (is
+   (string=
+    "b c d"
+    (cadr-agent::substitute-prompt-arguments
+     "${@:2}" '("a" "b" "c" "d"))))
+  (is
+   (string=
+    "a b  "
+    (cadr-agent::substitute-prompt-arguments
+     "$1 $2 $3 $4" '("a" "b")))))

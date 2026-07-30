@@ -22,7 +22,7 @@
            '(:agent-start :turn-start
              :message-start :message-end
              :message-start :message-update :message-end
-             :turn-end :agent-end)
+             :turn-end :agent-end :agent-settled)
            (event-types events)))
       (is (= 2 (length (agent-messages agent))))
       (is (string= "Hello"

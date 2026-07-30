@@ -45,3 +45,31 @@
              (process-path
                (pathname (format nil "/proc/~D/" pid))))
         (is (not (probe-file process-path)))))))
+
+(test bash-captures-active-post-exit-output-and-releases-idle-pipes
+  (with-test-directory (directory)
+    (let ((tool (make-bash-tool directory)))
+      (multiple-value-bind (content details)
+          (invoke-tool
+           tool
+           (args
+            "command"
+            "printf 'HEAD\\n'; (for i in 1 2 3 4 5 6; do sleep 0.05; printf 'TICK%s\\n' \"$i\"; done) &"))
+        (is (= 0 (getf details :exit-code)))
+        (is (search "HEAD" (result-text content)))
+        (is (search "TICK6" (result-text content))))
+      (let ((started
+              (get-internal-real-time)))
+        (multiple-value-bind (content details)
+            (invoke-tool
+             tool
+             (args
+              "command"
+              "printf 'DONE\\n'; (sleep 30) &"))
+          (is (= 0 (getf details :exit-code)))
+          (is (search "DONE" (result-text content)))
+          (is
+           (< (/ (- (get-internal-real-time)
+                    started)
+                 internal-time-units-per-second)
+              2.0)))))))

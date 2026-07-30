@@ -271,6 +271,71 @@
        '(:text "original"
          :source :interactive))))))
 
+(test input-lifecycle-preserves-images-sources-and-streaming-behavior
+  (let ((seen nil)
+        (image
+          (cadr-ai:make-image-content
+           :mime-type "image/png"
+           :data "AA==")))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "input-contract"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :input
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let ((payload
+                           (cadr-agent:extension-event-payload
+                            event)))
+                     (push
+                      (list
+                       (getf payload :source)
+                       (getf payload
+                             :streaming-behavior)
+                       (copy-list
+                        (getf payload :images)))
+                      seen))
+                   '(:action :transform
+                     :text "changed"))))))
+           (host
+             (make-test-extension-host
+              (list bundle)))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :extension-host host
+              :auto-compact-p nil))
+           (message
+             (cadr-ai:make-user-message
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text "original")
+               image))))
+      (multiple-value-bind
+            (transformed handled-p)
+          (cadr-agent::apply-agent-input-hooks
+           agent message :rpc
+           :streaming-behavior :follow-up)
+        (is (null handled-p))
+        (let ((content
+                (cadr-ai:user-message-content
+                 transformed)))
+          (is (string=
+               "changed"
+               (cadr-ai:text-content-text
+                (first content))))
+          (is (eq image (second content)))))
+      (is
+       (equal
+        (list
+         (list :rpc :follow-up
+               (list image)))
+        seen)))))
+
 (test wave2-lifecycle-invalid-results-are-isolated-and-transactional
   (let ((*notifications* nil))
     (declare (special *notifications*))
@@ -703,3 +768,161 @@
         (is (string=
              "persisted"
              (cadr-agent:session-entry-content custom)))))))
+
+(test tree-navigation-cancellation-and-busy-guard-preserve-the-active-leaf
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "tree-navigation"))
+           (target-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "first")))
+           (reply-id
+             (cadr-agent:session-append-message
+              session
+              (assistant
+               (list
+                (make-text-content
+                 :text "reply")))))
+           (current-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "second")))
+           (bundle
+             (make-test-extension-bundle
+              "cancel-tree"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-tree
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   '(:cancel-p t))))))
+           (host
+             (make-test-extension-host
+              (list bundle)))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :session session
+              :extension-host host
+              :auto-compact-p nil)))
+      (declare (ignore reply-id))
+      (multiple-value-bind (messages cancelled-p)
+          (cadr-agent:agent-navigate-tree
+           agent target-id)
+        (is (null messages))
+        (is (eq t cancelled-p)))
+      (is
+       (string=
+        current-id
+        (cadr-agent:session-leaf-id session)))
+      (setf
+       (cadr-agent::agent-busy-p agent)
+       t)
+      (signals cadr-agent::agent-busy-error
+        (cadr-agent:agent-navigate-tree
+         agent target-id))
+      (is
+       (string=
+        current-id
+        (cadr-agent:session-leaf-id session))))))
+
+(test message-end-replacement-persists-finalized-usage-cost
+  (let* ((bundle
+           (make-test-extension-bundle
+            "usage-cost"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :message-end
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (let ((message
+                         (getf
+                          (cadr-agent:extension-event-payload
+                           event)
+                          :message)))
+                   (when
+                       (typep
+                        message
+                        'cadr-ai:assistant-message)
+                     (list
+                      :message
+                      (cadr-ai:make-assistant-message
+                       :content
+                       (copy-list
+                        (cadr-ai:assistant-message-content
+                         message))
+                       :api
+                       (cadr-ai:assistant-message-api
+                        message)
+                       :provider
+                       (cadr-ai:assistant-message-provider
+                        message)
+                       :model
+                       (cadr-ai:assistant-message-model
+                        message)
+                       :usage
+                       (cadr-ai:make-usage
+                        :cost
+                        (cadr-ai:make-cost
+                         :total 0.123d0))
+                       :stop-reason
+                       (cadr-ai:assistant-message-stop-reason
+                        message))))))))))
+         (host
+           (make-test-extension-host
+            (list bundle)))
+         (*responses*
+           (list
+            (assistant
+             (list
+              (make-text-content
+               :text "hello")))))
+         (*contexts* nil)
+         (events nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :extension-host host
+             :stream-function
+             (faux-stream
+              '*responses* '*contexts*)
+             :on-event
+             (lambda (event)
+               (push event events)))))
+      (agent-prompt agent "hi")
+      (let* ((assistant-message
+               (find-if
+                (lambda (message)
+                  (typep
+                   message
+                   'cadr-ai:assistant-message))
+                (agent-messages agent)))
+             (message-end
+               (find
+                :message-end events
+                :key #'agent-event-type)))
+        (is
+         (= 0.123d0
+            (cadr-ai:cost-total
+             (cadr-ai:usage-cost
+              (cadr-ai:assistant-message-usage
+               assistant-message)))))
+        (is
+         (= 0.123d0
+            (cadr-ai:cost-total
+             (cadr-ai:usage-cost
+              (cadr-ai:assistant-message-usage
+               (agent-event-message
+                message-end))))))))))

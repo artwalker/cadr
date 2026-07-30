@@ -111,7 +111,7 @@
          arguments "stdin contents")
       (is
        (string=
-        (format nil "stdin contents~%Explain it")
+        "stdin contentsExplain it"
         initial))
       (is (equal '("Second message") remaining))))
   (multiple-value-bind (initial remaining)
@@ -195,7 +195,8 @@
                "message_update"
                "message_end"
                "turn_end"
-               "agent_end")
+               "agent_end"
+               "agent_settled")
              (loop for record in records
                    collect
                    (cadr-ai::json-get

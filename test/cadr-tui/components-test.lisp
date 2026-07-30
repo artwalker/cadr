@@ -35,6 +35,27 @@
                 (format nil "~{~A~%~}"
                         (cadr-tui:render-tool-block block 40))))))
 
+(test tool-block-recomputes-width-on-every-render
+  (let ((block
+          (cadr-tui:make-tool-block
+           :name "bash"
+           :summary
+           (make-string 200
+                        :initial-element #\x)
+           :output
+           (make-string 200
+                        :initial-element #\y)
+           :status :complete)))
+    (dolist (width '(200 80 60))
+      (dolist
+          (line
+           (cadr-tui:render-tool-block
+            block width))
+        (is
+         (<=
+          (cadr-tui:visible-width line)
+          width))))))
+
 (test status-bar-and-select-list
   (is (search "in:12"
               (cadr-tui:render-status-bar

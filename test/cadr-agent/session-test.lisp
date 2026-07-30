@@ -220,5 +220,58 @@
           (is (string=
                "save me"
                (cadr-ai:user-message-content
-                (first
+               (first
                  (cadr-agent::session-messages loaded))))))))))
+
+(test session-message-ingestion-normalizes-null-or-missing-content
+  (let* ((usage
+           (cadr-ai::json-object
+            "input" 0
+            "output" 0
+            "cacheRead" 0
+            "cacheWrite" 0
+            "total" 0
+            "cost"
+            (cadr-ai::json-object
+             "input" 0
+             "output" 0
+             "cacheRead" 0
+             "cacheWrite" 0
+             "total" 0)))
+         (messages
+           (list
+            (cadr-ai::json-object
+             "role" "user"
+             "content" nil
+             "timestamp" 1)
+            (cadr-ai::json-object
+             "role" "assistant"
+             "content" nil
+             "api" "openai-responses"
+             "provider" "openai"
+             "model" "test"
+             "usage" usage
+             "stopReason" "stop"
+             "timestamp" 2)
+            (cadr-ai::json-object
+             "role" "toolResult"
+             "toolCallId" "call-1"
+             "toolName" "search"
+             "isError" nil
+             "timestamp" 3))))
+    (dolist (object messages)
+      (let ((message
+              (cadr-agent::message-from-json
+               object)))
+        (is
+         (null
+          (etypecase message
+            (cadr-ai:user-message
+             (cadr-ai:user-message-content
+              message))
+            (cadr-ai:assistant-message
+             (cadr-ai:assistant-message-content
+              message))
+            (cadr-ai:tool-result-message
+             (cadr-ai:tool-result-message-content
+              message)))))))))

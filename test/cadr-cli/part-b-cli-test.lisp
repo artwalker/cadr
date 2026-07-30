@@ -1,0 +1,200 @@
+(in-package #:cadr-cli/tests)
+(in-suite cadr-cli-suite)
+
+(test full-reference-cli-option-contract-is-parsed
+  (let ((arguments
+          (cadr-cli::parse-cli-arguments
+           '("--provider" "openai"
+             "--model" "gpt-5.5"
+             "--api-key" "secret"
+             "--system-prompt" "system"
+             "--append-system-prompt" "one"
+             "--append-system-prompt" "two"
+             "--thinking" "xhigh"
+             "-c" "-r"
+             "--mode" "json"
+             "-n" "named"
+             "--no-session"
+             "--session" "session.jsonl"
+             "--session-id" "sid"
+             "--fork" "entry"
+             "--session-dir" "sessions"
+             "--models" "openai/a, anthropic/b"
+             "-t" "read,bash"
+             "-xt" "write"
+             "-nt" "-nbt"
+             "-e" "one.lisp"
+             "--extension" "two.lisp"
+             "-ne" "-p"
+             "--export" "out.html"
+             "--skill" "skill"
+             "-ns"
+             "--prompt-template" "prompt"
+             "-np"
+             "--theme" "theme.json"
+             "--no-themes"
+             "-nc"
+             "--list-models" "gpt"
+             "--offline"
+             "--verbose"
+             "-a"
+             "@README.md"
+             "hello"
+             "--extension-opt=value"))))
+    (is (string= "openai"
+                 (cadr-cli::cli-arguments-provider arguments)))
+    (is (string= "secret"
+                 (cadr-cli::cli-arguments-api-key arguments)))
+    (is (equal '("one" "two")
+               (cadr-cli::cli-arguments-append-system-prompts
+                arguments)))
+    (is (eq :xhigh
+            (cadr-cli::cli-arguments-thinking arguments)))
+    (is (cadr-cli::cli-arguments-continue-p arguments))
+    (is (cadr-cli::cli-arguments-resume-p arguments))
+    (is (cadr-cli::cli-arguments-no-session-p arguments))
+    (is (equal '("openai/a" "anthropic/b")
+               (cadr-cli::cli-arguments-models arguments)))
+    (is (equal '("read" "bash")
+               (cadr-cli::cli-arguments-tools arguments)))
+    (is (equal '("write")
+               (cadr-cli::cli-arguments-exclude-tools arguments)))
+    (is (cadr-cli::cli-arguments-no-tools-p arguments))
+    (is (cadr-cli::cli-arguments-no-builtin-tools-p arguments))
+    (is (equal '("one.lisp" "two.lisp")
+               (cadr-cli::cli-arguments-extensions arguments)))
+    (is (cadr-cli::cli-arguments-no-extensions-p arguments))
+    (is (equal '("README.md")
+               (cadr-cli::cli-arguments-file-arguments arguments)))
+    (is (equal '("hello")
+               (cadr-cli::cli-arguments-messages arguments)))
+    (is (string=
+         "value"
+         (gethash
+          "extension-opt"
+          (cadr-cli::cli-arguments-unknown-flags
+           arguments))))
+    (is (null
+         (cadr-cli::cli-arguments-diagnostics arguments)))))
+
+(test reference-cli-shorthands-diagnostics-and-print-frontmatter
+  (let ((arguments
+          (cadr-cli::parse-cli-arguments
+           (list "-v" "-h" "-na" "-p"
+                 (format nil "---~%title: hi~%---~%body")
+                 "--bad" "value" "-z"))))
+    (is (cadr-cli::cli-arguments-version-p arguments))
+    (is (cadr-cli::cli-arguments-help-p arguments))
+    (is
+     (cadr-cli::cli-arguments-project-trust-override-supplied-p
+      arguments))
+    (is (not
+         (cadr-cli::cli-arguments-project-trust-override
+          arguments)))
+    (is (= 1
+           (length
+            (cadr-cli::cli-arguments-messages arguments))))
+    (is (string= "value"
+                 (gethash
+                  "bad"
+                  (cadr-cli::cli-arguments-unknown-flags
+                   arguments))))
+    (is (equal
+         '((:type :error
+            :message "Unknown option: -z"))
+         (cadr-cli::cli-arguments-diagnostics arguments)))))
+
+(test session-flags-and-file-arguments-drive-runtime-state
+  (with-test-directory (root)
+    (let* ((sessions
+             (merge-pathnames "sessions/" root))
+           (cwd
+             (merge-pathnames "project/" root))
+           (_cwd-ready
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "exact"))
+           (text
+             (merge-pathnames "input.txt" cwd)))
+      (declare (ignore _cwd-ready))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content
+          :text "persist"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (write-text text "file body")
+      (is (null
+           (cadr-cli::resolve-cli-session
+            :no-session-p t
+            :session-id "ephemeral"
+            :directory sessions
+            :cwd cwd)))
+      (is (string=
+           "exact"
+           (cadr-agent:session-id
+            (cadr-cli::resolve-cli-session
+             :session-id "exact"
+             :directory sessions
+             :cwd cwd))))
+      (is (string=
+           "fresh"
+           (cadr-agent:session-id
+            (cadr-cli::resolve-cli-session
+             :session-id "fresh"
+             :directory sessions
+             :cwd cwd
+             :output
+             (make-string-output-stream)))))
+      (is (string=
+           "exact"
+           (cadr-agent:session-id
+            (cadr-cli::resolve-cli-session
+             :session-path
+             (namestring
+              (cadr-agent:session-path
+               session))
+             :directory sessions
+             :cwd cwd))))
+      (signals cadr-ai:configuration-error
+        (cadr-cli::resolve-cli-session
+         :continue-p t
+         :session-id "bad"
+         :directory sessions
+         :cwd cwd))
+      (signals cadr-ai:configuration-error
+        (cadr-cli::resolve-cli-session
+         :session-id "../escape"
+         :directory sessions
+         :cwd cwd))
+      (multiple-value-bind (file-text images)
+          (cadr-cli::process-cli-file-arguments
+           '("input.txt") cwd)
+        (is (search "file body" file-text))
+        (is (null images))
+        (multiple-value-bind (initial remaining)
+            (cadr-cli::build-cli-print-prompts
+             (cadr-cli::parse-cli-arguments
+              '("question" "follow-up"))
+             "stdin"
+             :file-text file-text)
+          (is (search
+               "stdin<file"
+               initial))
+          (is (search
+               "file body"
+               initial))
+          (is (uiop:string-suffix-p
+               initial "question"))
+          (is (equal
+               '("follow-up")
+               remaining)))))))

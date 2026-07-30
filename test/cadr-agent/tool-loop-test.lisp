@@ -49,7 +49,7 @@
              :tool-execution-start :tool-execution-end
              :message-start :message-end :turn-end
              :turn-start :message-start :message-update :message-end
-             :turn-end :agent-end)
+             :turn-end :agent-end :agent-settled)
            (event-types (nreverse events))))
       (let ((second-context (first *contexts*)))
         (is (typep (third (cadr-ai:context-messages second-context))

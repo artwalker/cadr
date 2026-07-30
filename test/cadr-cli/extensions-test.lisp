@@ -158,6 +158,89 @@
         (is (search "[REDACTED]" text))
         (is (not (search "phase7-secret" text)))))))
 
+(test wave3-startup-resource-trust-and-user-bash-hooks-are-wired
+  (with-test-directory (root)
+    (let* ((cwd (merge-pathnames "project/" root))
+           (global (merge-pathnames "global/" root))
+           (extra-skills
+             (merge-pathnames "extra-skills/" root))
+           (output (make-string-output-stream)))
+      (write-text
+       (merge-pathnames "demo/SKILL.md" extra-skills)
+       (format nil
+               "---~%name: demo~%description: Demo~%---~%Body"))
+      (write-text
+       (merge-pathnames ".cadr/settings.json" cwd)
+       "{}")
+      (write-text
+       (merge-pathnames "wave3.lisp" global)
+       (extension-source
+        (format
+         nil
+         "(define-event-hook :resources-discover :handler (lambda (event context) (declare (ignore event context)) (list :skill-paths (list ~S))))~%(define-event-hook :project-trust :handler (lambda (event context) (declare (ignore event context)) '(:trusted :yes :remember-p t)))~%(define-event-hook :user-bash :handler (lambda (event context) (declare (ignore event context)) '(:result (:output \"intercepted\" :exit-code 7))))"
+         (namestring extra-skills))))
+      (let* ((manager
+               (make-test-extension-manager
+                cwd global output))
+             (report
+               (cadr-cli::reload-cli-extensions
+                manager))
+             (host
+               (cadr-cli::cli-extension-manager-host
+                manager))
+             (loader
+               (cadr-cli::make-default-resource-loader
+                :cwd cwd
+                :agent-directory
+                (merge-pathnames "agent/" root)
+                :extension-host host))
+             (snapshot
+               (cadr-cli::reload-resources loader))
+             (trust
+               (cadr-cli::make-project-trust-store
+                (merge-pathnames "trust.json" root))))
+        (is (null (getf report :errors)))
+        (is (equal
+             '("demo")
+             (mapcar
+              #'cadr-agent::skill-name
+              (cadr-cli::resource-snapshot-skills
+               snapshot))))
+        (is
+         (cadr-cli::resolve-project-trusted
+          trust cwd :extension-host host))
+        (multiple-value-bind (decision found-p)
+            (cadr-cli::project-trust-get trust cwd)
+          (is (not (null found-p)))
+          (is (not (null decision))))
+        (multiple-value-bind (content details)
+            (cadr-cli::execute-user-bash
+             host cwd "exit 99")
+          (is (= 7 (getf details :exit-code)))
+          (is (search
+               "intercepted"
+               (result-text content))))))))
+
+(test user-bash-dispatch-preserves-single-and-double-bang-semantics
+  (let ((calls nil))
+    (flet ((bash (command exclude-p)
+             (push (list command exclude-p) calls)
+             "done")
+           (prompt (text)
+             text))
+      (multiple-value-bind (kind result)
+          (cadr-cli::dispatch-user-input
+           "! pwd" #'prompt :bash-function #'bash)
+        (is (eq kind :bash))
+        (is (string= "done" result)))
+      (cadr-cli::dispatch-user-input
+       "!! echo hidden" #'prompt
+       :bash-function #'bash)
+      (is (equal
+           '(("echo hidden" t)
+             ("pwd" nil))
+           calls)))))
+
 (test builtin-command-wins-and-command-wins-over-template
   (with-test-directory (root)
     (let* ((cwd (merge-pathnames "project/" root))

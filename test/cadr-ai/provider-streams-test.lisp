@@ -85,3 +85,63 @@
           (is (eq :error (stream-event-type (car (last events)))))
           (is (eq :aborted
                   (stream-event-reason (car (last events))))))))))
+
+(test stream-request-lifecycle-callbacks-cover-payload-headers-and-response
+  (multiple-value-bind (provider model)
+      (provider-case :openai)
+    (let ((payload-seen-p nil)
+          (headers-seen nil)
+          (response-seen nil))
+      (let ((*http-request-function*
+              (lambda (url &rest arguments)
+                (declare (ignore url))
+                (setf headers-seen
+                      (copy-tree
+                       (getf arguments :headers)))
+                (values
+                 (open
+                  (fixture-path
+                   "test/fixtures/sse/openai-tool.sse")
+                  :direction :input
+                  :element-type '(unsigned-byte 8))
+                 200
+                 '(("X-Provider" . "ok"))))))
+        (let ((message
+                (stream-chat
+                 provider model (sample-context)
+                 (lambda (event)
+                   (declare (ignore event)))
+                 :on-payload
+                 (lambda (payload callback-model)
+                   (is (eq model callback-model))
+                   (setf payload-seen-p t)
+                   (cadr-ai::json-put
+                    payload "metadata"
+                    (cadr-ai::json-object
+                     "trace" "payload"))
+                   payload)
+                 :transform-headers
+                 (lambda (headers)
+                   (append headers
+                           '(("X-Trace" . "headers"))))
+                 :on-response
+                 (lambda (response callback-model)
+                   (is (eq model callback-model))
+                   (setf response-seen response)))))
+          (is (not (null payload-seen-p)))
+          (is (string=
+               "headers"
+               (cdr
+                (assoc "X-Trace" headers-seen
+                       :test #'string-equal))))
+          (is (= 200
+                 (getf response-seen :status)))
+          (is (string=
+               "ok"
+               (cdr
+                (assoc "X-Provider"
+                       (getf response-seen :headers)
+                       :test #'string-equal))))
+          (is (eq :tool-use
+                  (assistant-message-stop-reason
+                   message))))))))

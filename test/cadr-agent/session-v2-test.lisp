@@ -264,3 +264,58 @@
           (is (search "left" html))
           (is (search "right" html))
           (is (search root-id html)))))))
+
+(test session-html-export-renders-skill-wrapper-as-visible-sibling-blocks
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "skill-export"))
+           (skill-text
+             (format
+              nil
+              "<skill name=\"review\" location=\"/skills/review/SKILL.md\">~%# Review~%~%<script>bad()</script>~%</skill>~%~%check this diff"))
+           (message
+             (cadr-ai:make-user-message
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text skill-text)
+               (cadr-ai:make-image-content
+                :mime-type "image/png"
+                :data "AA=="))))
+           (path
+             (merge-pathnames
+              "skill.html" sessions)))
+      (cadr-agent:session-append-message
+       session message)
+      (cadr-agent:export-session-html
+       session path)
+      (let ((html
+              (uiop:read-file-string
+               path :external-format :utf-8)))
+        (is (not
+             (search "&lt;skill" html)))
+        (is (search
+             "class=\"skill-invocation\"" html))
+        (is (search
+             "<h1>Review</h1>" html))
+        (is (search
+             "&lt;script&gt;bad()&lt;/script&gt;"
+             html))
+        (is (not
+             (search "<script>bad()</script>"
+                     html)))
+        (is (search
+             "class=\"user-message\"" html))
+        (is (search "check this diff" html))
+        (is (search
+             "data:image/png;base64,AA=="
+             html))
+        (is (search
+             "tree-role-skill" html))
+        (is (<
+             (search "skill-invocation" html)
+             (search "user-message" html)))))))

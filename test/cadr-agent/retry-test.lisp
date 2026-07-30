@@ -10,6 +10,18 @@
    :stop-reason :error
    :error-message text))
 
+(test explicit-provider-and-transport-guidance-remains-retryable
+  (dolist
+      (message
+       '("Network connection lost."
+         "getaddrinfo ENOTFOUND api.example.com"
+         "EAI_AGAIN api.example.com"
+         "You can retry your request, or contact support."
+         "{\"message\":\"Try your request again.\"}"))
+    (is
+     (cadr-agent::retryable-assistant-error-p
+      (retry-error-message message)))))
+
 (test transient-assistant-errors-retry-and-report-recovery
   (let ((*responses*
           (list
@@ -74,7 +86,12 @@
                  (cadr-agent::agent-event-final-error
                   event)))))
       (is (= 2 (length (agent-messages agent))))
-      (is (null *responses*)))))
+      (is (null *responses*))
+      (is
+       (= 1
+          (count
+           :agent-settled events
+           :key #'agent-event-type))))))
 
 (test retry-budget-exhaustion-and-nonretryable-errors
   (let ((*responses*
