@@ -110,3 +110,63 @@ provider 粘合点。TUI、extension、agent tool 与 CLI tool 冻结路径相�
 `cl+ssl`/OpenSSL 例外。
 
 Goal meter 收尾快照：`1,526,490` tokens，`4,609` 秒（累计值）。
+
+## Part B：预授权增量已落账，四项待裁
+
+状态：**blocked**。以下只记录预授权范围内已经完成的增量；四项越界事项均未
+实现，逐项提案见
+[`docs/proposals/goal-v8-part-b.md`](../proposals/goal-v8-part-b.md)。
+
+### 预授权提交
+
+1. `724494fd562d34097c225072ace81771311c58f4` — 固定 Part B 测试与
+   fixtures，提交信息注明预裁第 0.5(3)；
+2. `36310bfb040674ef43dff421e4e537eb7471ebaa` — agent/session/resource/
+   tool/input runtime；六个 lifecycle event 与 provider request hook 限于
+   预裁第 0.5(3)；
+3. `267b215aa45e488053dd85330d8a9c1106553369` — CLI service primitives；
+4. `81b441aec12669ef368670f494a1b28697bb8193` — CLI-owned interactive
+   controllers，未修改 `src/cadr-tui` 生产代码；
+5. `d0a90f9e009aadcca4f3fb482596c21e4314308b` — REPL/RPC/TUI glue 与
+   startup lifecycle wiring。
+
+### 扩展导出锚点修正
+
+预裁第 0.5(3) 的 `before_provider_request` replacement 合约新增公开导出：
+
+```lisp
+provider-request-replacement
+make-provider-request-replacement
+provider-request-replacement-payload
+```
+
+因此不能继续宣称 Goal 7 的 export SHA 保持不变。按 Goal 7 的相同取样命令：
+
+```text
+sed -n '/#:define-tool/,/#:make-extension-hook-result/p' \
+  src/cadr-agent/package.lisp | sha256sum
+e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a  -
+```
+
+当前 extension 相关 Git object ID：
+
+```text
+89f22526fae6d1395e7af6475e2f78df2a70f86d  src/cadr-agent/extensions.lisp
+0d5ff60edf348d23f98bd30a352d0dccafd8877f  src/cadr-agent/package.lisp
+dd137c9957abf4b184313206c63182ccbb7bc1c6  test/cadr-agent/extensions-wave3-test.lisp
+3f903689bd0f8ac59c4412e8b3d332a26df24cca  src/cadr-cli/extensions.lisp
+4c439bf877d1f82d4ca4628ac52ec20ba2c458e4  src/cadr-cli/sdk-services.lisp
+28b02f016dea4b235d8ef235fa3c2dbb07c42a26  test/cadr-cli/extensions-test.lisp
+```
+
+Goal 7 的三个兼容 fixture SHA 保持不变：
+
+```text
+e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442  test/fixtures/extensions/legacy-wave2-api.lisp
+6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10  test/fixtures/rpc-process-client.py
+c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486  test/fixtures/extensions/rpc-ui.lisp
+```
+
+上述新 export SHA 是预授权增量提交后的当前锚点，不构成对本提案四项的预先
+批准。若用户批准第 2 或第 3 项并新增公共导出，关账时必须再次重算、记录和
+重冻。

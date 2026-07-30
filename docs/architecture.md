@@ -1431,8 +1431,12 @@ union、一次 response、event 转发、session 控制、bash/abort、EOF clean
 逐项 `file:line` 基线见
 [`docs/proposals/goal-v7-extension-api.md`](proposals/goal-v7-extension-api.md)。
 
-重冻锚点为 extension export 文本 SHA-256
-`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`，
+Goal 7 收尾时的 extension export 文本 SHA-256 为
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
+Goal 8 Part B 预裁第 0.5(3) 随 provider request lifecycle 新增公开
+`provider-request-replacement` 三项导出，因此该 SHA **不再保持不变**；当前
+重冻锚点为
+`e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a`，
 旧源兼容 fixture SHA-256
 `e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`，
 RPC wire/process fixture SHA-256
