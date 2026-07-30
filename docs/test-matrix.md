@@ -156,6 +156,7 @@ the five-provider v2 registry remain outside the current phase.
 | ASDF/package namespace | `CADR-SYSTEM-AND-PACKAGE-NAMES-ARE-THE-ONLY-PUBLIC-NAMES` | Four production/test systems load under cadr names; old systems/packages are absent |
 | Frozen extension namespace | `CADR-EXTENSION-API-IS-EXPORTED-FROM-THE-FROZEN-AGENT-PACKAGE` | Four stable registration macros are external symbols of `CADR-AGENT` |
 | Exported symbol rename | `EXPORTED-ERROR-ROOT-USES-THE-CADR-NAME` | Root condition is `CADR-AI:CADR-ERROR`; no old exported root remains |
+| Reference payload helper | `REFERENCE-PAYLOAD-RUNNER-KEEPS-TYPESCRIPT-API-TYPE-NAMES` | Namespace replacement cannot corrupt the pinned TypeScript runner's `Api` / `TApi` identifiers |
 | Complete data move | `INTERACTIVE-USER-DATA-MIGRATION-MOVES-THE-COMPLETE-TREE` | Sessions, extensions, and auth move together; source disappears; auth becomes 0600 |
 | Session continuation | same unit test plus `scripts/migration-smoke.sh` | `--continue` resumes the migrated session without creating a second file |
 | Fail-closed migration | noninteractive, decline, and yolo migration tests | No automatic move without explicit interactive consent; manual command is emitted |

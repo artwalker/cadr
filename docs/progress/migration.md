@@ -92,15 +92,15 @@ repository remain reachable.
 ## Verification evidence
 
 The migration baseline contained 632 Common Lisp checks. The isolated build
-on SBCL 2.6.7 ran 686 checks:
+on SBCL 2.6.7 ran 690 checks:
 
 | Suite | Checks | Result |
 |---|---:|---|
 | `cadr-ai/tests` | 256 | pass |
 | `cadr-agent/tests` | 156 | pass |
 | `cadr-tui/tests` | 59 | pass |
-| `cadr-cli/tests` | 215 | pass |
-| Total | 686 | pass |
+| `cadr-cli/tests` | 219 | pass |
+| Total | 690 | pass |
 
 The isolated build command used a temporary HOME and the installed Quicklisp:
 

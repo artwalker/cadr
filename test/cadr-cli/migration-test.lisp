@@ -29,3 +29,16 @@
        (find-symbol
         (format nil "~C~C-ERROR" #\P #\I)
         "CADR-AI"))))
+
+(test reference-payload-runner-keeps-typescript-api-type-names
+  (let* ((root
+           (asdf:system-source-directory "cadr-cli"))
+         (runner
+           (read-text
+            (merge-pathnames
+             "scripts/export-ts-payloads.runner.ts.txt"
+             root))))
+    (is (search "TApi extends Api" runner))
+    (is (search "Model<TApi>" runner))
+    (is (null (search "Acadr" runner)))
+    (is (null (search "TAcadr" runner)))))
