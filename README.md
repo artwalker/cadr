@@ -230,7 +230,6 @@ introduced. Proposed mechanisms beyond original pi belong in
 CADR_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
 ./scripts/live-tui-smoke.sh
 ./scripts/live-openai-oauth-smoke.sh
-npm run check
 ```
 
 Detailed coverage is in [docs/test-matrix.md](docs/test-matrix.md).

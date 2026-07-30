@@ -22,11 +22,15 @@ Phase 8 TUI、Phase 9 依赖收尾与 cadr 命名迁移已完成**
 - 行为参考仓库：`https://github.com/earendil-works/pi`
 - 固定审计提交：`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`
   （2026-07-30）
-- 当前工作树的 TypeScript HEAD：
+- 迁移前上游 TypeScript HEAD：
   `e3f6912d49d14b6e6ffe96bb053644922004ecf3`
-- 两者已有明显结构差异；实现以 `docs/progress/goal-v1.md` 指定的
-  `earendil-works/pi` 固定提交为行为基线，不修改或升级当前 TypeScript
-  工作树。
+- legacy worktree：`/root/projects/pi-mono`，分支 `pi-mono-legacy`，
+  基点 `48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`
+- 当前 cadr tracked tree 不再包含上游 TypeScript 实现；下列参考路径均
+  指固定审计提交中的路径。重新生成对拍 fixture 时必须 checkout
+  `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` 并将其路径作为
+  `scripts/export-ts-payloads.ts --reference`，不得改用移动中的 legacy
+  分支 tip。
 
 固定提交的范围内，重点参考：
 
