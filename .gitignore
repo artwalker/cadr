@@ -1,40 +1,18 @@
-node_modules/
-dist/
-*.log
-.DS_Store
-*.tsbuildinfo
-# packages/*/node_modules/
-packages/*/dist/
-packages/*/dist-chrome/
-packages/*/dist-firefox/
-*.cpuprofile
+# Native build output
+/cadr
+*.core
+*.fasl
 
-# Environment
+# Local configuration and logs
+.cadr/
 .env
+*.log
 
-# Editor files
+# Editor and OS files
+.DS_Store
+.idea/
 .vscode/
 .zed/
-.idea/
 *.swp
 *.swo
 *~
-
-# Package specific
-.npm/
-coverage/
-.nyc_output/
-.pi_config/
-tui-debug.log
-compaction-results/
-.opencode/
-syntax.jsonl
-out.jsonl
-pi-*.html
-out.html
-packages/coding-agent/binaries/
-todo.md
-plans/
-.pi/hf-sessions/
-.pi/hf-sessions-backup/
-collect.sh

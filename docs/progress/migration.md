@@ -12,6 +12,12 @@ semantics, extension behavior, or TUI behavior.
 The repository was moved, including `.git`, from `/root/projects/pi-mono` to
 `/root/projects/cadr`; it was not copied into a new history.
 
+After the naming commits, the upstream TypeScript working tree was split into
+a legacy worktree while remaining in the same object database and history.
+The current tracked `cadr` tree now contains only the Common Lisp
+implementation, its reference-fixture tooling, tests, and project
+documentation.
+
 ## Naming map
 
 | Former name | Current name |
@@ -70,6 +76,77 @@ fallback is scheduled for removal in `0.2.0`.
 The former names are assembled at runtime in the compatibility reader so the
 legacy namespace does not remain as a product symbol or package alias.
 
+## Legacy worktree and preserved user state
+
+The legacy worktree was created with the required command:
+
+```bash
+git worktree add /root/projects/pi-mono -b pi-mono-legacy 48b9a05f2
+```
+
+The resulting branch is `pi-mono-legacy`, rooted at full commit
+`48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`.
+
+Before the corresponding paths were cleared from the `cadr` worktree, the
+four user-modified files were copied to the legacy worktree, compared with
+`cmp`, and verified byte-identical with SHA-256:
+
+| Path | SHA-256 |
+|---|---|
+| `packages/ai/src/models.generated.ts` | `701da0bb69b7f55df7b9c4cc07933c9513f9e155330642ad8c61378b533b6fe6` |
+| `packages/mom/CHANGELOG.md` | `7e0277bfa9eea2eb4ceef48499207d65284274fdbe0ee23fffe03251a4bf707f` |
+| `packages/mom/README.md` | `b00dd963aa1ff805d42b44c503833c7098fba3951a2b5353fcb4b08b0251ea66` |
+| `packages/mom/src/agent.ts` | `ccf1751fc1221264faef0e72a7403f0f0c294ab48dab1aafb241a648ff483cf7` |
+
+They remain modified and uncommitted on `pi-mono-legacy`; the preservation
+operation did not commit them to any branch. The four `MiMo_*.md` files and
+root/package-local generated Node artifacts were moved into
+`/root/projects/pi-mono/`. The untracked Rust workspace was moved to
+`/root/projects/pi-mono-rs/`.
+`docs/.obsidian/` remained untouched in the `cadr` worktree.
+
+The TypeScript removal is the pure-deletion commit `78018990c`: 780 files and
+218,710 lines deleted, with no added, modified, or renamed path. Removed
+tracked top-level entries:
+
+- `.github/`
+- `.husky/`
+- `.pi/`
+- `AGENTS.md`
+- `CONTRIBUTING.md`
+- `biome.json`
+- `package-lock.json`
+- `package.json`
+- `packages/`
+- `pi-test.sh`
+- `test.sh`
+- `tsconfig.base.json`
+- `tsconfig.json`
+
+The retained `scripts/` directory lost only these upstream TypeScript support
+files:
+
+- `browser-smoke-entry.ts`
+- `build-binaries.sh`
+- `check-browser-smoke.mjs`
+- `cost.ts`
+- `edit-tool-stats.mjs`
+- `profile-coding-agent-node.mjs`
+- `release.mjs`
+- `session-transcripts.ts`
+- `sync-versions.js`
+
+`scripts/export-ts-payloads.ts`,
+`scripts/export-ts-payloads.runner.ts.txt`, and all of `test/fixtures/` were
+preserved byte-for-byte; this check returns no diff:
+
+```bash
+git diff --exit-code 48b9a05f2..78018990c -- \
+  scripts/export-ts-payloads.ts \
+  scripts/export-ts-payloads.runner.ts.txt \
+  test/fixtures
+```
+
 ## Commit and history evidence
 
 | Commit | Purpose |
@@ -78,6 +155,10 @@ legacy namespace does not remain as a product symbol or package alias.
 | `c07b5a668` | Frozen pre-migration Common Lisp baseline |
 | `90350d9ac` | ASDF systems, packages, symbols, paths, scripts, and executable identity |
 | `b8738e62f` | User-data and environment transition |
+| `d0e449ad0` | README, architecture, test matrix, and migration report |
+| `a7fc1b438` | Exact residual-namespace audit |
+| `48b9a05f2` | Reference payload type-name regression guard |
+| `78018990c` | Pure deletion of the upstream TypeScript working tree |
 
 Both ancestry checks succeed:
 
@@ -86,8 +167,19 @@ git merge-base --is-ancestor e3f6912d4 HEAD
 git merge-base --is-ancestor c07b5a668 HEAD
 ```
 
-The current history contains 3,629 commits. All ancestors of the source
-repository remain reachable.
+All ancestors of the source repository remain reachable. The fixed audit
+commit `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` is also present in this
+repository's object database:
+
+```bash
+git cat-file -e \
+  71efc6f0c1909874ec8c944637a9ae7fc0e2d508^{commit}
+```
+
+For future fixture regeneration, check out that exact object into a temporary
+worktree and pass its path to `scripts/export-ts-payloads.ts` as
+`--reference`. Do not substitute the moving `pi-mono-legacy` branch tip for
+the pinned audit commit.
 
 ## Verification evidence
 
@@ -128,7 +220,8 @@ Additional passing checks:
   OpenAI Codex Responses streaming passed using an isolated temporary HOME
 
 npm run check
-  Biome, tsgo, browser smoke, and web-ui checks passed
+  Before the pure deletion commit, Biome, tsgo, browser smoke, and web-ui
+  checks passed
 ```
 
 Unit coverage also proves:
@@ -146,7 +239,7 @@ Unit coverage also proves:
 
 ## Residual-name audit
 
-The required final command is:
+The goal's literal command is recorded here:
 
 ```bash
 grep -ri "pi-cl\|pi-ai\|pi-agent\b" \
@@ -154,31 +247,9 @@ grep -ri "pi-cl\|pi-ai\|pi-agent\b" \
   --exclude-dir=docs/progress .
 ```
 
-Final permitted matches are limited to:
-
-- the README relationship, migration table, and compatibility timeline;
-- this migration report;
-- immutable historical reports under `docs/progress/`;
-- released CHANGELOG history, if retained.
-
-A broader audit also intentionally retains `originator=pi` in the OpenAI OAuth
-and Codex wire protocol plus their tests. That value is required by the fixed
-reference protocol and is not a cadr product or package name. References to
-`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508` are retained as
-the required behavioral attribution.
-
-The final zero-residual gate is not yet satisfied. The tracked-file audit
-finds 190 files: 185 under the upstream TypeScript `packages/` tree, the
-README, and four upstream TypeScript root/support files
-(`.pi/extensions/tps.ts`, `package-lock.json`,
-`scripts/browser-smoke-entry.ts`, and `tsconfig.json`).
-
-The literal filesystem grep currently finds 7,984 files. Of those, 7,517 are
-inside the untracked `pi-mono-rs/` workspace, 430 are in the upstream
-TypeScript `packages/` tree, and 17 are generated `node_modules/` files. It
-also reports 13 historical files because GNU grep matches `--exclude-dir`
-against directory basenames: `--exclude-dir=docs/progress` does not exclude
-the `progress` directory. The operational equivalent is:
+GNU grep compares `--exclude-dir` with directory basenames, so
+`--exclude-dir=docs/progress` does not exclude a directory whose basename is
+`progress`. The equivalent command actually used for acceptance is:
 
 ```bash
 grep -ri "pi-cl\|pi-ai\|pi-agent\b" \
@@ -186,7 +257,41 @@ grep -ri "pi-cl\|pi-ai\|pi-agent\b" \
   --exclude-dir=progress .
 ```
 
-None of these results is silently exempted. Removing or renaming the tracked
-reference implementation and relocating user-owned untracked work are
-repository-shape decisions that must be resolved before this report can be
-declared final.
+Its complete output is the six permitted compatibility references:
+
+```text
+./README.md:| `pi-ai` | `cadr-ai` |
+./README.md:| `pi-agent` | `cadr-agent` |
+./README.md:| `pi-cli` | `cadr-cli` |
+./README.md:| `pi-cl` | `cadr` |
+./README.md:| `~/.pi-cl/` | `~/.cadr/` |
+./README.md:At startup, when `~/.pi-cl/` exists and `~/.cadr/` does not, an interactive
+```
+
+Excluding the README as the sole current-tree exemption produces no output
+and grep exit status `1`:
+
+```bash
+grep -ri "pi-cl\|pi-ai\|pi-agent\b" \
+  --exclude-dir=.git \
+  --exclude-dir=progress \
+  --exclude=README.md .
+```
+
+The exhaustive exemption list and reasons:
+
+- README relationship/thanks: required attribution and no-affiliation
+  statement for the fixed reference implementation.
+- README migration table and compatibility timeline: users need the former
+  names to migrate paths and environment variables.
+- `docs/progress/`, including this report: immutable historical evidence and
+  the required migration explanation.
+- CHANGELOG: no CHANGELOG remains in the current tree. Released upstream
+  CHANGELOGs remain unmodified in Git history and the `pi-mono-legacy`
+  worktree, where their historical product names are immutable.
+
+A broader audit also intentionally retains `originator=pi` in the OpenAI OAuth
+and Codex wire protocol plus their tests. That value is required by the fixed
+reference protocol and is not a cadr product or package name. References to
+`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508` are retained as
+the required behavioral attribution.
