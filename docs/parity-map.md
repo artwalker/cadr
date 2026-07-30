@@ -71,10 +71,10 @@ Reference public surface:
 |---|---|---|
 | Unified types, errors, usage, events | 已实现 | [types](../src/cadr-ai/types.lisp), [conditions](../src/cadr-ai/conditions.lisp), [CL-AI-TYPES](#cl-ai-types) |
 | Native JSON, SSE, HTTP, retry | 已实现 | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [http](../src/cadr-ai/http.lisp), [CL-AI-STREAM](#cl-ai-stream), [CL-AI-ERROR-RETRY](#cl-ai-error-retry) |
-| Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | 缺失（基础已实现） | Core payload/stream paths exist under [providers](../src/cadr-ai/providers/), but current compatibility flags, caching, transport options, raw edge cases, and full provider matrices remain [AI-PROTOCOL](#ai-protocol) |
+| Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | 缺失（Wave 1 深度已实现） | Adaptive/disabled thinking, cache retention, session affinity, eager/strict tools, reasoning formats and selected compatibility flags are covered by [CL-AI-COMPAT](#cl-ai-compat); remaining transport/raw edge cases and complete matrices stay [AI-PROTOCOL](#ai-protocol) |
 | Remaining independent APIs | 缺失 | [AI-INDEPENDENT](#ai-independent) |
-| 38 built-in text providers | 缺失 | cadr registers five IDs, only four of which are baseline IDs; see provider table and [AI-CATALOG](#ai-catalog) |
-| Static catalogs and cost calculation | 缺失（基础已实现） | [models](../src/cadr-ai/models.lisp) and [generated catalog](../src/cadr-ai/models.generated.lisp) cover the five cadr IDs, not the full baseline catalog |
+| 38 built-in text providers | 缺失（16/38 baseline IDs） | cadr registers 17 IDs: 16 baseline providers plus the pre-existing non-baseline `ollama`; 12 Wave 1 providers have fixture-level evidence in [CL-AI-WAVE1](#cl-ai-wave1) |
+| Static catalogs and cost calculation | 缺失（149 models） | [models](../src/cadr-ai/models.lisp) and [generated catalog](../src/cadr-ai/models.generated.lisp) contain 149 offline records across 17 cadr IDs, not the full baseline catalog |
 | API-key and OpenAI/Anthropic OAuth | 缺失（基础已实现） | [auth](../src/cadr-ai/auth.lisp), [oauth](../src/cadr-ai/oauth.lisp), [CL-AI-OAUTH](#cl-ai-oauth); other flows are [AI-AUTH](#ai-auth) |
 | Image input | 已实现 | [CL-AI-IMAGE](#cl-ai-image) |
 | Image generation / OpenRouter Images | 缺失 | [AI-IMAGE-GEN](#ai-image-gen) |
@@ -92,38 +92,38 @@ credential is inferred.
 | # | Provider | Protocol | Authentication | Status and main difficulty | Reachable verification |
 |---:|---|---|---|---|---|
 | 1 | `amazon-bedrock` | `bedrock-converse-stream` | AWS chain/profile/access keys or bearer token | 缺失; AWS SDK credential chain, SigV4, region/inference-profile routing | fixture only; no AWS credential |
-| 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | 缺失; low adapter cost, catalog/endpoint validation | fixture only |
-| 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | 缺失（基础已实现）; adaptive thinking, caching, eager tool input and compatibility matrix remain | fixture; no live credential |
+| 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | 缺失（Wave 1 深度已实现）; adaptive/disabled thinking, caching, eager/strict tools and selected compat are covered; complete matrix remains | fixture; no live credential |
 | 4 | `azure-openai-responses` | `azure-openai-responses` | `AZURE_OPENAI_API_KEY` plus deployment endpoint | 缺失; Azure URL/deployment normalization and Responses replay | fixture only |
-| 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 缺失; shared adapter plus catalog | fixture only |
+| 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | 缺失; placeholder materialization and gateway-specific headers across three APIs | fixture only |
 | 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | 缺失; endpoint materialization | fixture only |
 | 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现 for recorded core text/reasoning/tools; broader generic compat options remain package gaps | fixture + live-ready + [live-proven](../scripts/live-deepseek-smoke.sh) |
 | 9 | `fireworks` | Anthropic + Completions | `FIREWORKS_API_KEY` | 缺失; multi-API catalog routing | fixture only |
 | 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | 缺失; device flow, token exchange, model filtering and Copilot headers | fixture only |
-| 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 缺失（基础已实现）; full Gemini compatibility/thinking matrix remains | fixture; no live credential |
+| 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 缺失（Wave 1 深度已实现）; Gemini 3.6 high/off and non-3 thinking/tool mode are covered; complete matrix remains | fixture; no live credential |
 | 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | 缺失; ADC/GCP auth and regional endpoint construction | fixture only |
-| 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | 缺失; shared adapter plus catalog | fixture only |
-| 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | 缺失; router catalog/compat | fixture only |
+| 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | 缺失; device flow and subscription headers | fixture only |
-| 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | 缺失; Anthropic-compatible endpoint quirks | fixture only |
-| 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | 缺失; regional endpoint/catalog | fixture only |
+| 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
 | 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | 缺失; independent SDK protocol, reasoning mode, schema sanitization | fixture only |
-| 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | 缺失; shared adapter plus catalog | fixture only |
-| 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 缺失; regional endpoint/catalog | fixture only |
+| 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
 | 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 缺失; shared adapter plus catalog | fixture only |
-| 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 缺失（基础已实现）; cache affinity, reasoning replay and compat options remain | fixture; no API-key live credential |
+| 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 缺失（Wave 1 深度已实现）; cache affinity/retention, reasoning and strict tools are covered; remaining Responses modes stay missing | fixture; no API-key live credential |
 | 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 缺失（core OAuth/SSE works under cadr `openai` ID）; distinct provider identity, device flow parity, cache affinity and WebSocket modes remain | fixture + live-ready + [live-proven](../scripts/live-openai-oauth-smoke.sh) |
 | 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 缺失; four-API model routing | fixture only |
 | 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 缺失; three-API model routing | fixture only |
 | 26 | `openrouter` | `openai-completions` | API key or OAuth | 缺失; OAuth, cache-control variants and broad model catalog | fixture only |
-| 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | 缺失; regional plan endpoint/catalog | fixture only |
-| 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | 缺失; regional plan endpoint/catalog | fixture only |
+| 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | 已实现（fixture 对拍）; Wave 1 plan registry/catalog/request/error path | fixture only |
+| 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional plan registry/catalog/request/error path | fixture only |
 | 29 | `radius` | `pi-messages` | API key or Radius OAuth | 缺失; dynamic gateway config/catalog and independent stream protocol | fixture only |
-| 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | 缺失; shared adapter plus catalog | fixture only |
+| 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 31 | `vercel-ai-gateway` | `anthropic-messages` | `AI_GATEWAY_API_KEY` | 缺失; gateway headers/catalog | fixture only |
 | 32 | `xai` | Completions + Responses | API key or xAI device OAuth | 缺失; dual API, device polling and model filtering | fixture only |
-| 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | 缺失; MiMo catalog/compat | fixture only |
+| 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | 已实现（fixture 对拍）; Wave 1 MiMo catalog/compat/request/error path | fixture only |
 | 34 | `xiaomi-token-plan-ams` | `openai-completions` | `XIAOMI_TOKEN_PLAN_AMS_API_KEY` | 缺失; regional plan endpoint and empty-signature behavior | fixture only |
 | 35 | `xiaomi-token-plan-cn` | `openai-completions` | `XIAOMI_TOKEN_PLAN_CN_API_KEY` | 缺失; regional plan endpoint/catalog | fixture only |
 | 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | 缺失; regional plan endpoint/catalog | fixture only |
@@ -137,9 +137,9 @@ Both are missing as public cadr runtimes.
 Audit drift: cadr additionally registers `ollama`, which is **not** in
 `builtinProviders()` at the baseline. It is implemented as a keyless
 OpenAI-Completions endpoint, but the local daemon was unreachable during this
-audit. This is not an approved README difference; the next goal must either
-map it to an exact reference extension/custom-provider behavior or put the
-addition through manual `open-questions` review. This audit does neither.
+audit. This is not an approved README difference. Wave 1 did not remove it
+because doing so would cross the frozen CLI/test boundary; it remains an
+unresolved drift requiring manual `open-questions` review.
 
 ### 2.2 `agent`
 
@@ -301,6 +301,8 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-ai-stream"></a>`CL-AI-STREAM` | [`RECORDED-SSE-FIXTURES-NORMALIZE-EVENTS-AND-FINAL-MESSAGE`, `STREAM-ENDING-WITHOUT-PROVIDER-TERMINAL-EVENT-IS-AN-ERROR`, `STREAM-ABORT-PRESERVES-PARTIAL-CONTENT-AND-TERMINATES`](../test/cadr-ai/provider-streams-test.lisp), [`SSE-FRAMING-*`](../test/cadr-ai/sse-test.lisp), [`SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT`](../test/cadr-ai/http-test.lisp) |
 | <a id="cl-ai-history"></a>`CL-AI-HISTORY` | [`ORPHANED-TOOL-CALLS-RECEIVE-SYNTHETIC-ERROR-RESULTS`, `FOREIGN-HISTORY-IS-MADE-SAFE-FOR-GEMINI-3.6`, `CONSECUTIVE-ANTHROPIC-TOOL-RESULTS-SHARE-ONE-USER-TURN`, `INCOMPLETE-AND-EMPTY-ASSISTANT-MESSAGES-ARE-NOT-REPLAYED`](../test/cadr-ai/provider-history-test.lisp) |
 | <a id="cl-ai-payload"></a>`CL-AI-PAYLOAD` | [`PROVIDER-REQUEST-PAYLOADS-MATCH-REFERENCE-FIXTURES`, `PROVIDER-REQUEST-PATHS-AND-AUTH-HEADERS`, `GEMINI-3.6-OMITS-DEPRECATED-SAMPLING-PARAMETERS`](../test/cadr-ai/provider-payloads-test.lisp) |
+| <a id="cl-ai-compat"></a>`CL-AI-COMPAT` | [Anthropic adaptive/disabled thinking, cache/eager/strict tool compatibility; OpenAI Completions/Responses reasoning, cache and affinity; Google thinking/tool mode](../test/cadr-ai/provider-compat-test.lisp), with exact [request fixtures](../test/fixtures/requests/) |
+| <a id="cl-ai-wave1"></a>`CL-AI-WAVE1` | [12 independent provider registry/catalog/default-payload/missing-key tests](../test/cadr-ai/provider-wave1-test.lisp), [fixed 143-model catalog fixture](../test/fixtures/catalogs/wave1-provider-models.json), and [`BUILT-IN-PROVIDER-REGISTRY-IS-COMPLETE`](../test/cadr-ai/provider-registry-test.lisp) |
 | <a id="cl-ai-image"></a>`CL-AI-IMAGE` | [`EACH-WIRE-PROTOCOL-ENCODES-IMAGE-CONTENT`, `UNSUPPORTED-IMAGE-INPUT-FAILS-BEFORE-TRANSPORT`](../test/cadr-ai/image-model-test.lisp) |
 | <a id="cl-ai-error-retry"></a>`CL-AI-ERROR-RETRY` | [`COMPLETE-CHAT-NORMALIZES-API-ERRORS`](../test/cadr-ai/provider-responses-test.lisp), [`RETRYABLE-COMPLETE-REQUESTS-RESPECT-CAP-AND-RETRY-AFTER`, `NONRETRYABLE-COMPLETE-REQUEST-IS-NOT-RETRIED`, `NATIVE-HTTP-STATUSES-RETAIN-API-BODY-AND-RETRY-POLICY`, `STREAM-RETRIES-BEFORE-PROVIDER-EVENTS-WITHOUT-DUPLICATING-START`](../test/cadr-ai/retry-test.lisp), [`CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
 | <a id="cl-ai-oauth"></a>`CL-AI-OAUTH` | [`OPENAI-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `ANTHROPIC-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `OAUTH-CALLBACK-PARSER-VALIDATES-PATH-AND-STATE`, `OAUTH-REFRESH-IS-DOUBLE-CHECKED-UNDER-LOCK`, `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS`, `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST`](../test/cadr-ai/auth-test.lisp) |
@@ -318,7 +320,7 @@ It has two non-`*.test.ts` suites:
 
 | ID | Missing behavior |
 |---|---|
-| <a id="ai-protocol"></a>`AI-PROTOCOL` | complete protocol option/compatibility matrices, prompt/cache/session affinity, transport selection, partial JSON/ID handling, constrained/deferred tools and all-provider E2E |
+| <a id="ai-protocol"></a>`AI-PROTOCOL` | compatibility cases beyond Wave 1, transport selection, partial JSON/ID handling, constrained/deferred tools and all-provider E2E |
 | <a id="ai-independent"></a>`AI-INDEPENDENT` | Bedrock, Vertex, Mistral Conversations, Azure Responses and `pi-messages` adapters |
 | <a id="ai-auth"></a>`AI-AUTH` | remaining provider auth/OAuth/device flows, token resolution and provider-specific headers |
 | <a id="ai-catalog"></a>`AI-CATALOG` | full 38-provider runtime, generated catalogs, dynamic stores, model metadata/compat and faux public provider |
@@ -345,8 +347,9 @@ platform behavior.
 
 ### `docs/test-matrix.md` audit notes
 
-The matrix now records the Goal 5 total of **1219** checks and the expanded
-TUI gates. The following conservative whole-file classification notes remain:
+The matrix remains the Goal 5 snapshot of **1219** checks and the expanded
+TUI gates; Goal 6's current **1332** total is recorded in its progress report.
+The following conservative whole-file classification notes remain:
 
 1. It maps `anthropic-sse-parsing.test.ts` to generic SSE framing and a
    recorded replay, but the baseline file specifically repairs malformed SSE
@@ -377,10 +380,12 @@ The appendix is sorted exactly like
 | `storage` / `server` / `evals` | 0 | 0 | 0 | 0 |
 | **Total** | **28** | **0** | **324** | **352** |
 
-The 1219 CL assertions now cover the complete 27-file TUI test surface and
-the nested-gitignore regression. Most other reference files still contain at
-least one provider, v3 entry type, queue, UI, platform, or compatibility case
-that cadr does not implement. Partial coverage stays `M`.
+The 1332 CL assertions cover the complete 27-file TUI test surface, the
+nested-gitignore regression, Wave 1 adapter depth, and 12 fixture-verified
+providers. No `ai` TypeScript test file is promoted to `C`: each relevant
+baseline file still contains at least one provider, transport, auth or
+compatibility case outside Wave 1. Whole-file classification therefore
+remains `28/0/324`; partial coverage stays `M`.
 
 | Class | Baseline test file | Evidence/gap |
 |---|---|---|
