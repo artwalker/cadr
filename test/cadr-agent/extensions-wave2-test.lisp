@@ -1,0 +1,705 @@
+(in-package #:cadr-agent/tests)
+(in-suite cadr-agent-suite)
+
+(defparameter +wave2-extension-events+
+  '(:session-start
+    :session-info-changed
+    :session-before-switch
+    :session-before-fork
+    :session-before-compact
+    :session-compact
+    :session-shutdown
+    :session-before-tree
+    :session-tree
+    :context
+    :before-agent-start
+    :agent-start
+    :agent-end
+    :agent-settled
+    :message-start
+    :message-update
+    :message-end
+    :input
+    :tool-execution-start
+    :tool-execution-update
+    :tool-execution-end
+    :model-select
+    :thinking-level-select))
+
+(defun wave2-call (name &rest arguments)
+  (apply
+   (or (find-symbol name :cadr-agent)
+       (error "Missing CADR-AGENT symbol ~A" name))
+   arguments))
+
+(defun wave2-context-action-bundle (id handler)
+  (make-test-extension-bundle
+   id
+   (lambda ()
+     (cadr-agent:define-event-hook
+      :session-start
+      :handler handler))))
+
+(test wave2-extension-events-register-and-expose-copied-plist-payloads
+  (let ((seen nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "wave2-events"
+              (lambda ()
+                (dolist (event +wave2-extension-events+)
+                  (cadr-agent:define-event-hook
+                   event
+                   :handler
+                   (lambda (value context)
+                     (declare (ignore context))
+                     (let ((payload
+                             (wave2-call
+                              "EXTENSION-EVENT-PAYLOAD"
+                              value)))
+                       (push
+                        (list
+                         (cadr-agent:extension-event-type value)
+                         (progn
+                           (when payload
+                             (setf (first payload) :mutated))
+                           (wave2-call
+                            "EXTENSION-EVENT-PAYLOAD"
+                            value)))
+                        seen)
+                       )
+                     nil))))))
+           (host (make-test-extension-host (list bundle))))
+      (dolist (event +wave2-extension-events+)
+        (wave2-call
+         "RUN-EXTENSION-LIFECYCLE-HOOKS"
+         host event :payload (list :marker event)))
+      (is (= (length +wave2-extension-events+)
+             (length seen)))
+      (is
+       (equal
+        +wave2-extension-events+
+        (sort
+         (mapcar #'first seen)
+         #'<
+         :key
+         (lambda (event)
+           (position event +wave2-extension-events+)))))
+      (dolist (entry seen)
+        (is
+         (not
+          (eq :mutated
+              (first (second entry)))))))))
+
+(test wave2-lifecycle-result-merging-matches-the-reference-runner
+  (let* ((first-message
+           (cadr-ai:make-user-message :content "first"))
+         (second-message
+           (cadr-ai:make-user-message :content "second"))
+         (assistant-one
+           (assistant
+            (list (make-text-content :text "one"))))
+         (assistant-two
+           (assistant
+            (list (make-text-content :text "two"))))
+         (bundle
+           (make-test-extension-bundle
+            "wave2-results"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :session-before-switch
+               :priority -10
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 '(:cancel-p nil)))
+              (cadr-agent:define-event-hook
+               :session-before-switch
+               :priority 0
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 '(:cancel-p t)))
+              (cadr-agent:define-event-hook
+               :session-before-switch
+               :priority 10
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 (error "must short-circuit")))
+              (cadr-agent:define-event-hook
+               :context
+               :priority -10
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (is (equal
+                      (list first-message)
+                      (getf
+                       (wave2-call
+                        "EXTENSION-EVENT-PAYLOAD"
+                        event)
+                       :messages)))
+                 (list :messages (list second-message))))
+              (cadr-agent:define-event-hook
+               :context
+               :priority 10
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (is (equal
+                      (list second-message)
+                      (getf
+                       (wave2-call
+                        "EXTENSION-EVENT-PAYLOAD"
+                        event)
+                       :messages)))
+                 nil))
+              (cadr-agent:define-event-hook
+               :before-agent-start
+               :priority -10
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 (list
+                  :message first-message
+                  :system-prompt "changed")))
+              (cadr-agent:define-event-hook
+               :before-agent-start
+               :priority 10
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (is
+                  (string=
+                   "changed"
+                   (getf
+                    (wave2-call
+                     "EXTENSION-EVENT-PAYLOAD"
+                     event)
+                    :system-prompt)))
+                 (list :message second-message)))
+              (cadr-agent:define-event-hook
+               :message-end
+               :priority -10
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 (list :message assistant-two)))
+              (cadr-agent:define-event-hook
+               :message-end
+               :priority 10
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (is
+                  (eq
+                   assistant-two
+                   (getf
+                    (wave2-call
+                     "EXTENSION-EVENT-PAYLOAD"
+                     event)
+                    :message)))
+                 nil))
+              (cadr-agent:define-event-hook
+               :input
+               :priority -10
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 '(:action :transform
+                   :text "changed"
+                   :images ("image"))))
+              (cadr-agent:define-event-hook
+               :input
+               :priority 10
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (is
+                  (string=
+                   "changed"
+                   (getf
+                    (wave2-call
+                     "EXTENSION-EVENT-PAYLOAD"
+                     event)
+                    :text)))
+                 '(:action :handled))))))
+         (host (make-test-extension-host (list bundle))))
+    (is
+     (equal
+      '(:cancel-p t)
+      (wave2-call
+       "RUN-EXTENSION-LIFECYCLE-HOOKS"
+       host :session-before-switch
+       :payload '(:reason :new))))
+    (is
+     (equal
+      (list second-message)
+      (getf
+       (wave2-call
+        "RUN-EXTENSION-LIFECYCLE-HOOKS"
+        host :context
+        :payload (list :messages (list first-message)))
+       :messages)))
+    (let ((result
+            (wave2-call
+             "RUN-EXTENSION-LIFECYCLE-HOOKS"
+             host :before-agent-start
+             :payload
+             '(:prompt "hello"
+               :system-prompt "original"))))
+      (is (equal (list first-message second-message)
+                 (getf result :messages)))
+      (is (string= "changed"
+                   (getf result :system-prompt))))
+    (is
+     (eq
+      assistant-two
+      (getf
+       (wave2-call
+        "RUN-EXTENSION-LIFECYCLE-HOOKS"
+        host :message-end
+        :payload (list :message assistant-one))
+       :message)))
+    (is
+     (equal
+      '(:action :handled)
+      (wave2-call
+       "RUN-EXTENSION-LIFECYCLE-HOOKS"
+       host :input
+       :payload
+       '(:text "original"
+         :source :interactive))))))
+
+(test wave2-lifecycle-invalid-results-are-isolated-and-transactional
+  (let ((*notifications* nil))
+    (declare (special *notifications*))
+    (let* ((message
+             (cadr-ai:make-user-message :content "original"))
+           (bundle
+             (make-test-extension-bundle
+              "wave2-invalid"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :agent-start
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   '(:unexpected t)))
+                (cadr-agent:define-event-hook
+                 :context
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   '(:messages "not-a-list")))
+                (cadr-agent:define-event-hook
+                 :message-end
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (list
+                    :message
+                    (assistant
+                     (list
+                      (make-text-content
+                       :text "wrong-role")))))))))
+           (host
+             (make-test-extension-host
+              (list bundle)
+              :notifications '*notifications*)))
+      (is
+       (null
+        (wave2-call
+         "RUN-EXTENSION-LIFECYCLE-HOOKS"
+         host :agent-start)))
+      (is
+       (equal
+        (list message)
+        (getf
+         (wave2-call
+          "RUN-EXTENSION-LIFECYCLE-HOOKS"
+          host :context
+          :payload (list :messages (list message)))
+         :messages)))
+      (is
+       (eq
+        message
+        (getf
+         (wave2-call
+          "RUN-EXTENSION-LIFECYCLE-HOOKS"
+          host :message-end
+          :payload (list :message message))
+         :message)))
+      (is (= 3 (length *notifications*))))))
+
+(test wave2-ui-context-surface-delegates-and-defaults-without-ui
+  (let ((requests nil))
+    (let* ((bundle
+             (wave2-context-action-bundle
+              "wave2-ui"
+              (lambda (event context)
+                (declare (ignore event))
+                (push
+                 (list
+                  :select
+                  (wave2-call
+                   "EXTENSION-CONTEXT-SELECT"
+                   context "Pick" '("a" "b")
+                   :timeout-ms 50))
+                 requests)
+                (push
+                 (list
+                  :confirm
+                  (wave2-call
+                   "EXTENSION-CONTEXT-CONFIRM"
+                   context "Sure?" "Message"))
+                 requests)
+                (push
+                 (list
+                  :input
+                  (wave2-call
+                   "EXTENSION-CONTEXT-INPUT"
+                   context "Input"
+                   :placeholder "value"))
+                 requests)
+                (push
+                 (list
+                  :editor
+                  (wave2-call
+                   "EXTENSION-CONTEXT-EDITOR"
+                   context "Edit" :prefill "old"))
+                 requests)
+                (wave2-call
+                 "EXTENSION-CONTEXT-SET-STATUS"
+                 context "build" "running")
+                (wave2-call
+                 "EXTENSION-CONTEXT-SET-WIDGET"
+                 context "notes" '("one" "two")
+                 :placement :below-editor)
+                (wave2-call
+                 "EXTENSION-CONTEXT-SET-TITLE"
+                 context "Wave 2")
+                (wave2-call
+                 "EXTENSION-CONTEXT-SET-EDITOR-TEXT"
+                 context "replacement")
+                nil)))
+           (host
+             (cadr-agent::make-extension-host
+              :cwd #P"/tmp/"
+              :ui-function
+              (lambda (method arguments)
+                (push (list method arguments) requests)
+                (case method
+                  (:select "b")
+                  (:confirm t)
+                  (:input "typed")
+                  (:editor "edited"))))))
+      (cadr-agent::replace-extension-bundles host (list bundle))
+      (wave2-call
+       "RUN-EXTENSION-LIFECYCLE-HOOKS"
+       host :session-start)
+      (is (find '(:select "b") requests :test #'equal))
+      (is (find '(:confirm t) requests :test #'equal))
+      (is (find '(:input "typed") requests :test #'equal))
+      (is (find '(:editor "edited") requests :test #'equal))
+      (dolist (method
+               '(:set-status
+                 :set-widget
+                 :set-title
+                 :set-editor-text))
+        (is (find method requests :key #'first))))
+    (let* ((bundle
+             (wave2-context-action-bundle
+              "wave2-ui-default"
+              (lambda (event context)
+                (declare (ignore event))
+                (is
+                 (null
+                  (wave2-call
+                   "EXTENSION-CONTEXT-SELECT"
+                   context "Pick" '("a"))))
+                (is
+                 (null
+                  (wave2-call
+                   "EXTENSION-CONTEXT-CONFIRM"
+                   context "Sure?" "Message")))
+                nil)))
+           (host (make-test-extension-host (list bundle))))
+      (wave2-call
+       "RUN-EXTENSION-LIFECYCLE-HOOKS"
+       host :session-start))))
+
+(test wave2-runtime-tool-and-provider-registration-take-effect-immediately
+  (let* ((dynamic-tool
+           (make-tool
+            :name "dynamic"
+            :description "Dynamic"
+            :parameters (object-schema)
+            :executor
+            (lambda (call-id arguments)
+              (declare (ignore call-id arguments))
+              (values
+               (list
+                (make-text-content :text "dynamic-ok"))
+               nil))))
+         (provider-definition
+           (cadr-ai:make-provider-definition
+            :id :openai
+            :name "OpenAI override"
+            :protocol :openai-responses
+            :base-url "https://proxy.invalid"
+            :default-model "mock"))
+         (bundle
+           (wave2-context-action-bundle
+            "wave2-runtime-registration"
+            (lambda (event context)
+              (declare (ignore event))
+              (wave2-call
+               "EXTENSION-CONTEXT-REGISTER-TOOL"
+               context dynamic-tool)
+              (wave2-call
+               "EXTENSION-CONTEXT-REGISTER-PROVIDER"
+               context provider-definition)
+              nil)))
+         (host (make-test-extension-host (list bundle)))
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :extension-host host
+            :auto-compact-p nil)))
+    (is
+     (null
+      (cadr-agent:find-tool
+       (cadr-agent::agent-tool-registry agent)
+       "dynamic")))
+    (wave2-call
+     "RUN-EXTENSION-LIFECYCLE-HOOKS"
+     host :session-start)
+    (is
+     (not
+      (null
+       (cadr-agent:find-tool
+        (cadr-agent::agent-tool-registry agent)
+        "dynamic"))))
+    (is
+     (string=
+      "https://proxy.invalid"
+      (cadr-ai:model-base-url
+       (cadr-agent:agent-model agent))))))
+
+(test wave2-cancellation-signal-is-opaque-and-observable
+  (let ((signal
+          (wave2-call
+           "MAKE-EXTENSION-CANCELLATION-SIGNAL")))
+    (is
+     (not
+      (wave2-call
+       "EXTENSION-CANCELLATION-ABORTED-P"
+       signal)))
+    (wave2-call
+     "ABORT-EXTENSION-CANCELLATION-SIGNAL"
+     signal)
+    (is
+     (wave2-call
+      "EXTENSION-CANCELLATION-ABORTED-P"
+      signal))))
+
+(test wave2-lifecycle-and-runtime-actions-drive-the-real-agent-loop
+  (let* ((seen nil)
+         (queued-p nil)
+         (hook-message
+           (cadr-ai:make-user-message
+            :content "hook-message"))
+         (bundle
+           (make-test-extension-bundle
+            "wave2-real-loop"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :input
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (push :input seen)
+                 (is
+                  (string=
+                   "original"
+                   (getf
+                    (cadr-agent:extension-event-payload
+                     event)
+                    :text)))
+                 '(:action :transform
+                   :text "transformed")))
+              (cadr-agent:define-event-hook
+               :before-agent-start
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (push :before-agent-start seen)
+                 (is
+                  (string=
+                   "base-system"
+                   (getf
+                    (cadr-agent:extension-event-payload
+                     event)
+                    :system-prompt)))
+                 (list
+                  :message hook-message
+                  :system-prompt "hook-system")))
+              (cadr-agent:define-event-hook
+               :agent-start
+               :handler
+               (lambda (event context)
+                 (declare (ignore event))
+                 (push :agent-start seen)
+                 (unless queued-p
+                   (setf queued-p t)
+                   (cadr-agent:extension-context-send-user-message
+                    context "steered"
+                    :deliver-as :steer))
+                 nil))
+              (dolist
+                  (event
+                   '(:context
+                     :message-start
+                     :message-update
+                     :tool-execution-start
+                     :tool-execution-end
+                     :agent-end
+                     :agent-settled))
+                (cadr-agent:define-event-hook
+                 event
+                 :handler
+                 (lambda (value context)
+                   (declare (ignore context))
+                   (push
+                    (cadr-agent:extension-event-type value)
+                    seen)
+                   nil)))
+              (cadr-agent:define-event-hook
+               :message-end
+               :handler
+               (lambda (event context)
+                 (declare (ignore context))
+                 (push :message-end seen)
+                 (let ((message
+                         (getf
+                          (cadr-agent:extension-event-payload
+                           event)
+                          :message)))
+                   (if
+                       (typep
+                        message
+                        'cadr-ai:assistant-message)
+                       (list
+                        :message
+                        (assistant
+                         (list
+                          (make-text-content
+                           :text "replaced"))))
+                       nil)))))))
+         (host (make-test-extension-host (list bundle)))
+         (*responses*
+           (list
+            (assistant
+             (list (make-text-content :text "first")))
+            (assistant
+             (list (make-text-content :text "second")))))
+         (*contexts* nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :system-prompt "base-system"
+             :extension-host host
+             :stream-function
+             (faux-stream '*responses* '*contexts*))))
+      (agent-prompt agent "original")
+      (is
+       (equal
+        '("transformed" "hook-message" "steered")
+        (loop for message in (agent-messages agent)
+              when (typep message 'cadr-ai:user-message)
+                collect (user-text message))))
+      (is
+       (every
+        (lambda (context)
+          (string=
+           "hook-system"
+           (cadr-ai:context-system-prompt context)))
+        *contexts*))
+      (is
+       (equal
+        '("replaced" "replaced")
+        (loop for message in (agent-messages agent)
+              when
+              (typep message 'cadr-ai:assistant-message)
+                collect
+                (cadr-ai:text-content-text
+                 (first
+                  (cadr-ai:assistant-message-content
+                   message))))))
+      (dolist
+          (event
+           '(:input
+             :before-agent-start
+             :agent-start
+             :context
+             :message-start
+             :message-update
+             :message-end
+             :agent-end
+             :agent-settled))
+        (is (member event seen))))))
+
+(test wave2-send-message-and-session-name-actions-persist
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "wave2-actions"))
+           (bundle
+             (wave2-context-action-bundle
+              "wave2-actions"
+              (lambda (event context)
+                (declare (ignore event))
+                (cadr-agent:extension-context-send-message
+                 context
+                 '(:custom-type "notice"
+                   :content "persisted"
+                   :details (:source :extension)
+                   :display-p t))
+                (cadr-agent:extension-context-set-session-name
+                 context
+                 (format nil "wave~%two"))
+                nil)))
+           (host (make-test-extension-host (list bundle)))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :session session
+              :extension-host host
+              :auto-compact-p nil)))
+      (declare (ignore agent))
+      (wave2-call
+       "RUN-EXTENSION-LIFECYCLE-HOOKS"
+       host :session-start
+       :payload '(:reason :startup))
+      (is (string= "wave two"
+                   (cadr-agent:session-name session)))
+      (let ((custom
+              (find
+               :custom-message
+               (cadr-agent:session-entries session)
+               :key #'cadr-agent:session-entry-type)))
+        (is (not (null custom)))
+        (is (string=
+             "notice"
+             (cadr-agent:session-entry-custom-type custom)))
+        (is (string=
+             "persisted"
+             (cadr-agent:session-entry-content custom)))))))

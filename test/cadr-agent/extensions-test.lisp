@@ -1,6 +1,35 @@
 (in-package #:cadr-agent/tests)
 (in-suite cadr-agent-suite)
 
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (require :sb-introspect))
+
+(defparameter +legacy-extension-api-exports+
+  '("DEFINE-TOOL"
+    "DEFINE-COMMAND"
+    "DEFINE-EVENT-HOOK"
+    "DEFINE-PROMPT-TEMPLATE"
+    "EXTENSION-CONTEXT"
+    "EXTENSION-CONTEXT-CWD"
+    "EXTENSION-CONTEXT-AGENT"
+    "EXTENSION-CONTEXT-SESSION"
+    "EXTENSION-CONTEXT-SOURCE-PATH"
+    "EXTENSION-CONTEXT-MODE"
+    "EXTENSION-CONTEXT-NOTIFY"
+    "EXTENSION-CONTEXT-COMPACT"
+    "EXTENSION-CONTEXT-RELOAD"
+    "EXTENSION-EVENT"
+    "EXTENSION-EVENT-TYPE"
+    "EXTENSION-EVENT-TURN-INDEX"
+    "EXTENSION-EVENT-MESSAGE"
+    "EXTENSION-EVENT-TOOL-CALL"
+    "EXTENSION-EVENT-TOOL-RESULT"
+    "EXTENSION-EVENT-TOOL-RESULTS"
+    "EXTENSION-HOOK-RESULT"
+    "MAKE-EXTENSION-HOOK-RESULT"))
+
+(defvar *legacy-extension-observations* nil)
+
 (defun make-test-extension-bundle (id thunk
                                    &key
                                      (path (format nil "/tmp/~A.lisp" id))
@@ -17,11 +46,13 @@
     (cadr-agent::call-with-extension-registration bundle thunk)
     bundle))
 
-(defun make-test-extension-host (bundles &key notifications)
+(defun make-test-extension-host
+    (bundles &key notifications reload-function)
   (let ((host
           (cadr-agent::make-extension-host
            :cwd #P"/tmp/"
            :mode :repl
+           :reload-function reload-function
            :notify-function
            (lambda (message level)
              (when notifications
@@ -29,6 +60,202 @@
                      (symbol-value notifications)))))))
     (cadr-agent::replace-extension-bundles host bundles)
     host))
+
+(test legacy-extension-source-remains-compatible-after-wave-2-api-expansion
+  (let ((*legacy-extension-observations* nil)
+        (*notifications* nil)
+        (reload-count 0))
+    (declare
+     (special *legacy-extension-observations*
+              *notifications*))
+    (let* ((fixture
+             (asdf:system-relative-pathname
+              "cadr-agent"
+              "test/fixtures/extensions/legacy-wave2-api.lisp"))
+           (bundle
+             (make-test-extension-bundle
+              "legacy-wave2-api"
+              (lambda () (load fixture))
+              :path (namestring fixture)))
+           (host
+             (make-test-extension-host
+              (list bundle)
+              :notifications '*notifications*
+              :reload-function
+              (lambda () (incf reload-count))))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :extension-host host
+              :auto-compact-p nil))
+           (user
+             (cadr-ai:make-user-message
+              :content "original-user"))
+           (assistant-message
+             (assistant
+              (list
+               (make-text-content
+                :text "original-assistant"))))
+           (call
+             (make-tool-call
+              :id "legacy-call"
+              :name "legacy-echo"
+              :arguments
+              (cadr-ai::json-object
+               "value" "original")))
+           (result
+             (cadr-ai:make-tool-result-message
+              :tool-call-id "legacy-call"
+              :tool-name "legacy-echo"
+              :content
+              (list
+               (make-text-content :text "original")))))
+      (declare (ignore agent))
+      (is
+       (equal
+        '(cadr-agent::event
+          &key
+          (cadr-agent::priority 0)
+          cadr-agent::handler)
+        (sb-introspect:function-lambda-list
+         (macro-function
+          'cadr-agent:define-event-hook))))
+      (dolist (name +legacy-extension-api-exports+)
+        (multiple-value-bind (symbol status)
+            (find-symbol name :cadr-agent)
+          (is (not (null symbol)))
+          (is (eq :external status))))
+      (multiple-value-bind
+            (rewritten appended blocked-p reason)
+          (cadr-agent::run-extension-hooks
+           host :turn-start
+           :message user :turn-index 7)
+        (is
+         (string=
+          "legacy-user"
+          (cadr-ai:user-message-content rewritten)))
+        (is
+         (equal
+          '("legacy-start-extra")
+          (mapcar
+           #'cadr-ai:user-message-content
+           appended)))
+        (is (not blocked-p))
+        (is (null reason)))
+      (multiple-value-bind
+            (rewritten appended blocked-p reason)
+          (cadr-agent::run-extension-hooks
+           host :turn-end
+           :message assistant-message
+           :tool-results (list result)
+           :turn-index 7)
+        (declare (ignore appended blocked-p reason))
+        (is
+         (string=
+          "legacy-assistant"
+          (text-content-text
+           (first
+            (assistant-message-content rewritten))))))
+      (multiple-value-bind
+            (rewritten appended blocked-p reason)
+          (cadr-agent::run-extension-hooks
+           host :tool-call-before
+           :tool-call call :turn-index 7)
+        (declare (ignore appended reason))
+        (is
+         (string=
+          "legacy-rewritten"
+          (cadr-ai::json-get
+           (cadr-ai:tool-call-arguments rewritten)
+           "value")))
+        (is (not blocked-p)))
+      (multiple-value-bind
+            (rewritten appended blocked-p reason)
+          (cadr-agent::run-extension-hooks
+           host :tool-call-before
+           :tool-call
+           (make-tool-call
+            :id "legacy-block"
+            :name "legacy-block"
+            :arguments
+            (cadr-ai::json-object))
+           :turn-index 7)
+        (declare (ignore rewritten appended))
+        (is (not (null blocked-p)))
+        (is (string= "legacy-blocked" reason)))
+      (multiple-value-bind
+            (rewritten appended blocked-p reason)
+          (cadr-agent::run-extension-hooks
+           host :tool-call-after
+           :tool-call call
+           :tool-result result
+           :turn-index 7)
+        (declare (ignore appended blocked-p reason))
+        (is (string= "legacy-after"
+                     (text-result rewritten))))
+      (multiple-value-bind (template found-p)
+          (cadr-agent::expand-extension-prompt
+           host "/legacy-template value")
+        (is (not (null found-p)))
+        (is (string= "legacy=value" template)))
+      (is
+       (cadr-agent::invoke-extension-command
+        host "legacy-context" nil))
+      (is (= 1 reload-count))
+      (is
+       (find
+        :turn-start
+        *legacy-extension-observations*))
+      (is
+       (find
+        :tool-call-after
+        *legacy-extension-observations*))
+      (is
+       (find
+        :command
+        *legacy-extension-observations*
+        :key #'first))
+      (is
+       (some
+        (lambda (notification)
+          (and
+           (eq :warning (first notification))
+           (search "legacy-notify"
+                   (second notification))))
+        *notifications*))
+      (is
+       (some
+        (lambda (notification)
+          (and
+           (eq :error (first notification))
+           (search "legacy-contained-error"
+                   (second notification))))
+        *notifications*))
+      (let* ((bad-bundle
+               (make-test-extension-bundle
+                "legacy-bad-result"
+                (lambda ()
+                  (cadr-agent:define-event-hook
+                   :turn-start
+                   :handler
+                   (lambda (event context)
+                     (declare (ignore event context))
+                     '(:replacement "not-accepted"))))))
+             (bad-host
+               (make-test-extension-host
+                (list bad-bundle)
+                :notifications '*notifications*)))
+        (cadr-agent::run-extension-hooks
+         bad-host :turn-start
+         :message user :turn-index 1)
+        (is
+         (some
+          (lambda (notification)
+            (search
+             "instead of EXTENSION-HOOK-RESULT or NIL"
+             (second notification)))
+          *notifications*))))))
 
 (test extension-registration-requires-a-load-context
   (signals cadr-agent:extension-registration-error

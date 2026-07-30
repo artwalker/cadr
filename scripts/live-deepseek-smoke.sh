@@ -23,6 +23,7 @@ OUTPUT="$SMOKE_ROOT/output.txt"
   cd "$SMOKE_ROOT/project"
   env -u CADR_MODEL HOME="$SMOKE_ROOT/home" \
     "$CADR" \
+    --no-tui \
     --provider deepseek \
     --model deepseek-v4-flash \
     --system-prompt \

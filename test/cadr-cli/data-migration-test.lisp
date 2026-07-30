@@ -30,7 +30,16 @@
                :id "legacy-session")))
         (cadr-agent:session-append-message
          session
-         (cadr-ai:make-user-message :content "legacy")))
+         (cadr-ai:make-user-message :content "legacy"))
+        (cadr-agent:session-append-message
+         session
+         (cadr-ai:make-assistant-message
+          :content
+          (list (cadr-ai:make-text-content :text "persist"))
+          :api :openai-responses
+          :provider :openai
+          :model "mock"
+          :stop-reason :stop)))
       (write-text extension "(define-command \"legacy\" (lambda (context) context))")
       (cadr-ai:write-auth-credential
        old-auth

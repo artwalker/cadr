@@ -18,8 +18,18 @@
        (merge-pathnames "anchor" sessions))
       (ensure-directories-exist
        (merge-pathnames "anchor" cwd))
-      (cadr-agent:create-session
-       :directory sessions :cwd cwd :id "wanted")
+      (let ((wanted
+              (cadr-agent:create-session
+               :directory sessions :cwd cwd :id "wanted")))
+        (cadr-agent:session-append-message
+         wanted
+         (cadr-ai:make-assistant-message
+          :content
+          (list (cadr-ai:make-text-content :text "persist"))
+          :api :openai-responses
+          :provider :openai
+          :model "mock"
+          :stop-reason :stop)))
       (let ((session
               (cadr-cli::resolve-cli-session
                :resume-id "wanted"
@@ -67,6 +77,22 @@
            (output (make-string-output-stream))
            (export-path (merge-pathnames "export.html" root)))
       (declare (ignore _))
+      (cadr-agent:session-append-message
+       first
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "first answer"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (cadr-agent:session-append-message
+       second
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "second answer"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
       (is (cadr-cli::handle-session-command
            "/sessions" agent
            :directory sessions :cwd cwd :output output))

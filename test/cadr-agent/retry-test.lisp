@@ -1,0 +1,232 @@
+(in-package #:cadr-agent/tests)
+(in-suite cadr-agent-suite)
+
+(defun retry-error-message (text)
+  (make-assistant-message
+   :content nil
+   :api :openai-responses
+   :provider :openai
+   :model "mock"
+   :stop-reason :error
+   :error-message text))
+
+(test transient-assistant-errors-retry-and-report-recovery
+  (let ((*responses*
+          (list
+           (retry-error-message "overloaded_error")
+           (assistant
+            (list
+             (make-text-content :text "recovered")))))
+        (*contexts* nil)
+        (events nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :on-event
+             (lambda (event)
+               (push event events)))))
+      (setf
+       (cadr-agent::agent-auto-retry-max-attempts agent)
+       3
+       (cadr-agent::agent-auto-retry-base-delay agent)
+       0)
+      (agent-prompt agent "retry me")
+      (setf events (nreverse events))
+      (is (= 2 (length *contexts*)))
+      (is
+       (equal
+        '(t nil)
+        (loop for event in events
+              when
+              (eq :agent-end
+                  (agent-event-type event))
+                collect
+                (cadr-agent::agent-event-will-retry
+                 event))))
+      (is
+       (equal
+        '((:start 1 3 0 "overloaded_error")
+          (:end t 1 nil))
+        (loop for event in events
+              when
+              (eq :auto-retry-start
+                  (agent-event-type event))
+                collect
+                (list
+                 :start
+                 (cadr-agent::agent-event-attempt event)
+                 (cadr-agent::agent-event-max-attempts event)
+                 (cadr-agent::agent-event-delay-ms event)
+                 (cadr-agent:agent-event-error-message
+                  event))
+              when
+              (eq :auto-retry-end
+                  (agent-event-type event))
+                collect
+                (list
+                 :end
+                 (cadr-agent::agent-event-success event)
+                 (cadr-agent::agent-event-attempt event)
+                 (cadr-agent::agent-event-final-error
+                  event)))))
+      (is (= 2 (length (agent-messages agent))))
+      (is (null *responses*)))))
+
+(test retry-budget-exhaustion-and-nonretryable-errors
+  (let ((*responses*
+          (list
+           (retry-error-message "503 service unavailable")
+           (retry-error-message "network connection lost")
+           (retry-error-message "524 status code")))
+        (*contexts* nil)
+        (events nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :on-event
+             (lambda (event)
+               (push event events)))))
+      (setf
+       (cadr-agent::agent-auto-retry-max-attempts agent)
+       2
+       (cadr-agent::agent-auto-retry-base-delay agent)
+       0)
+      (agent-prompt agent "retry me")
+      (setf events (nreverse events))
+      (is (= 3 (length *contexts*)))
+      (is
+       (equal
+        '(t t nil)
+        (loop for event in events
+              when
+              (eq :agent-end
+                  (agent-event-type event))
+                collect
+                (cadr-agent::agent-event-will-retry
+                 event))))
+      (let ((final
+              (find
+               :auto-retry-end events
+               :key #'agent-event-type)))
+        (is (not (null final)))
+        (is
+         (not
+          (cadr-agent::agent-event-success final)))
+        (is (= 2
+               (cadr-agent::agent-event-attempt final)))
+        (is
+         (string=
+          "524 status code"
+          (cadr-agent::agent-event-final-error
+           final))))))
+  (dolist
+      (text
+       '("invalid_api_key"
+         "429 quota exceeded"
+         "billing limit reached"
+         "context_length_exceeded"))
+    (let ((*responses*
+            (list (retry-error-message text)))
+          (*contexts* nil)
+          (events nil))
+      (declare (special *responses* *contexts*))
+      (let ((agent
+              (make-agent
+               :provider :mock
+               :model (mock-model)
+               :stream-function
+               (faux-stream '*responses* '*contexts*)
+               :on-event
+               (lambda (event)
+                 (push event events)))))
+        (setf
+         (cadr-agent::agent-auto-retry-base-delay agent)
+         0)
+        (agent-prompt agent "do not retry"))
+      (is (= 1 (length *contexts*)))
+      (is
+       (null
+        (find
+         :auto-retry-start events
+         :key #'agent-event-type))))))
+
+(test abort-retry-interrupts-backoff-and-settles-agent
+  (let* ((responses
+           (list
+            (retry-error-message
+             "getaddrinfo ENOTFOUND api.invalid")))
+         (contexts nil)
+         (events nil)
+         (retry-started
+           (sb-thread:make-semaphore :count 0))
+         (agent nil)
+         (thread nil))
+    (setf
+     agent
+     (make-agent
+      :provider :mock
+      :model (mock-model)
+      :stream-function
+      (lambda
+          (provider model context on-event
+           &key max-tokens temperature abort-p)
+        (declare
+         (ignore
+          provider model max-tokens temperature
+          abort-p))
+        (push context contexts)
+        (let ((message (pop responses)))
+          (funcall
+           on-event
+           (make-stream-event
+            :type :start
+            :message message))
+          message))
+      :on-event
+      (lambda (event)
+        (push event events)
+        (when
+            (eq :auto-retry-start
+                (agent-event-type event))
+          (sb-thread:signal-semaphore
+           retry-started)))))
+    (setf
+     (cadr-agent::agent-auto-retry-max-attempts agent)
+     3
+     (cadr-agent::agent-auto-retry-base-delay agent)
+     10)
+    (setf
+     thread
+     (sb-thread:make-thread
+      (lambda ()
+        (agent-prompt agent "cancel retry"))
+      :name "cadr-agent-retry-abort-test"))
+    (sb-thread:wait-on-semaphore retry-started)
+    (cadr-agent::agent-abort-retry agent)
+    (sb-thread:join-thread thread)
+    (setf events (nreverse events))
+    (is (= 1 (length contexts)))
+    (is
+     (not
+      (cadr-agent:agent-busy-p agent)))
+    (let ((final
+            (find
+             :auto-retry-end events
+             :key #'agent-event-type)))
+      (is (not (null final)))
+      (is
+       (not
+        (cadr-agent::agent-event-success final)))
+      (is
+       (string=
+        "Retry cancelled"
+        (cadr-agent::agent-event-final-error
+         final))))))

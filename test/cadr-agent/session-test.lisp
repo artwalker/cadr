@@ -97,7 +97,7 @@
                (cadr-agent::session-path session)
                :external-format :utf-8))))))))
 
-(test session-loader-ignores-only-an-incomplete-final-line
+(test session-loader-skips-malformed-jsonl-records-including-the-final-tail
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
     (let ((session
@@ -105,13 +105,21 @@
              :directory sessions :cwd cwd :id "tail")))
       (cadr-agent::session-append-message
        session (cadr-ai:make-user-message :content "kept"))
+      (cadr-agent::session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "answer"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
       (with-open-file
           (stream (cadr-agent::session-path session)
                   :direction :output
                   :if-exists :append
                   :external-format :utf-8)
         (write-string "{\"type\":\"message\"" stream))
-      (is (= 1
+      (is (= 2
              (length
               (cadr-agent::session-messages
                (cadr-agent::load-session
@@ -119,6 +127,14 @@
     (let ((session
             (cadr-agent::create-session
              :directory sessions :cwd cwd :id "middle")))
+      (cadr-agent::session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "before"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
       (with-open-file
           (stream (cadr-agent::session-path session)
                   :direction :output
@@ -127,18 +143,32 @@
         (format stream "{broken}~%"))
       (cadr-agent::session-append-message
        session (cadr-ai:make-user-message :content "after"))
-      (signals cadr-agent::session-error
-        (cadr-agent::load-session
-         (cadr-agent::session-path session))))))
+      (is
+       (= 2
+          (length
+           (cadr-agent::session-messages
+            (cadr-agent::load-session
+             (cadr-agent::session-path session)))))))))
 
 (test continue-session-selects-latest-canonical-matching-cwd
   (with-session-directories (sessions cwd other-cwd)
-    (cadr-agent::create-session
-     :directory sessions :cwd cwd :id "older" :timestamp 10)
-    (cadr-agent::create-session
-     :directory sessions :cwd other-cwd :id "other" :timestamp 30)
-    (cadr-agent::create-session
-     :directory sessions :cwd cwd :id "newer" :timestamp 20)
+    (dolist
+        (session
+         (list
+          (cadr-agent::create-session
+           :directory sessions :cwd cwd :id "older" :timestamp 10)
+          (cadr-agent::create-session
+           :directory sessions :cwd other-cwd :id "other" :timestamp 30)
+          (cadr-agent::create-session
+           :directory sessions :cwd cwd :id "newer" :timestamp 20)))
+      (cadr-agent::session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "persist"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop)))
     (let ((continued
             (cadr-agent::continue-session
              :directory sessions :cwd cwd)))

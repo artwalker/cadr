@@ -133,7 +133,7 @@
                    (cadr-agent:session-path session)
                    :external-format :utf-8)))
             (is (search "old-secret-user" file))
-            (is (search "\"sourceIds\"" file))
+            (is (not (search "\"sourceIds\"" file)))
             (is (search "checkpoint-summary" file))))
         (let ((loaded
                 (cadr-agent:load-session

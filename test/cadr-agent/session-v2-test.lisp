@@ -88,7 +88,7 @@
                          continued-id))))))
         (let ((records (parse-json-lines
                         (cadr-agent:session-path session))))
-          (is (= 2 (cadr-ai::json-get (first records) "version")))
+          (is (= 3 (cadr-ai::json-get (first records) "version")))
           (dolist (record (rest records))
             (is (stringp (cadr-ai::json-get record "id")))
             (multiple-value-bind (value present-p)
@@ -117,7 +117,7 @@
                    (message-texts
                     (cadr-agent:session-messages loaded))))
         (let ((records (parse-json-lines path)))
-          (is (= 2 (cadr-ai::json-get (first records) "version")))
+          (is (= 3 (cadr-ai::json-get (first records) "version")))
           (is (string= "kept"
                        (cadr-ai::json-get
                         (first records) "future_header")))
@@ -175,6 +175,15 @@
          (cadr-ai:make-text-content :text "inspect")
          (cadr-ai:make-image-content
           :mime-type "image/png" :data "YWJj"))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "seen"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
       (let* ((loaded
                (cadr-agent:load-session
                 (cadr-agent:session-path session)))
@@ -210,9 +219,27 @@
               newer
               (cadr-ai:make-user-message :content "left"))))
       (values older)
+      (cadr-agent:session-append-message
+       older
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "older"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
       (cadr-agent:session-branch newer root-id)
       (cadr-agent:session-append-message
        newer (cadr-ai:make-user-message :content "right"))
+      (cadr-agent:session-append-message
+       newer
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "right answer"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
       (let ((listed
               (cadr-agent:list-sessions
                :directory sessions :cwd cwd)))

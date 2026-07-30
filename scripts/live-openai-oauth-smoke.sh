@@ -28,6 +28,7 @@ OUTPUT="$SMOKE_ROOT/output.txt"
 (
   cd "$SMOKE_ROOT/project"
   "$CADR" \
+    --no-tui \
     --provider openai \
     --system-prompt \
     "Follow the requested output format exactly and do not call tools." \
