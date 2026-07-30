@@ -1,135 +1,46 @@
-<p align="center">
-  <a href="https://shittycodingagent.ai">
-    <img src="https://shittycodingagent.ai/logo.svg" alt="pi logo" width="128">
-  </a>
-</p>
-<p align="center">
-  <a href="https://discord.com/invite/3cU7Bz4UPx"><img alt="Discord" src="https://img.shields.io/badge/discord-community-5865F2?style=flat-square&logo=discord&logoColor=white" /></a>
-  <a href="https://github.com/badlogic/pi-mono/actions/workflows/ci.yml"><img alt="Build status" src="https://img.shields.io/github/actions/workflow/status/badlogic/pi-mono/ci.yml?style=flat-square&branch=main" /></a>
-</p>
-<p align="center">
-  <a href="https://pi.dev">pi.dev</a> domain graciously donated by
-  <br /><br />
-  <a href="https://exe.dev"><img src="packages/coding-agent/docs/images/exy.png" alt="Exy mascot" width="48" /><br />exe.dev</a>
-</p>
+# cadr
 
-> New issues and PRs from new contributors are auto-closed by default. Maintainers review auto-closed issues daily. See [CONTRIBUTING.md](CONTRIBUTING.md).
+`cadr` is a native Common Lisp coding agent for SBCL, behaviorally aligned
+with the original pi while remaining idiomatic Lisp.
 
----
+The name has two meanings: `cadr` selects the second element of a list, and
+this project is a second implementation of pi; it also pays tribute to the MIT
+CADR Lisp Machine.
 
-# Pi Monorepo
+## Relationship to pi
 
-> **Looking for the pi coding agent?** See **[packages/coding-agent](packages/coding-agent)** for installation and usage.
+Behavior is pinned to
+[`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`](https://github.com/earendil-works/pi/tree/71efc6f0c1909874ec8c944637a9ae7fc0e2d508).
+That implementation and its tests are the behavioral reference for provider
+payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
+and terminal interaction.
 
-Tools for building AI agents and managing LLM deployments.
+Thanks to the pi authors and contributors for the design and reference
+implementation. `cadr` is an independent project and has no affiliation with
+the original pi project or its maintainers. Both projects use the MIT License;
+see [LICENSE](LICENSE).
 
-## Share your OSS coding agent sessions
+## Build
 
-If you use pi or other coding agents for open source work, please share your sessions.
+Requirements:
 
-Public OSS session data helps improve coding agents with real-world tasks, tool use, failures, and fixes instead of toy benchmarks.
-
-For the full explanation, see [this post on X](https://x.com/badlogicgames/status/2037811643774652911).
-
-To publish sessions, use [`badlogic/pi-share-hf`](https://github.com/badlogic/pi-share-hf). Read its README.md for setup instructions. All you need is a Hugging Face account, the Hugging Face CLI, and `pi-share-hf`.
-
-You can also watch [this video](https://x.com/badlogicgames/status/2041151967695634619), where I show how I publish my `pi-mono` sessions.
-
-I regularly publish my own `pi-mono` work sessions here:
-
-- [badlogicgames/pi-mono on Hugging Face](https://huggingface.co/datasets/badlogicgames/pi-mono)
-
-## Packages
-
-| Package | Description |
-|---------|-------------|
-| **[@mariozechner/pi-ai](packages/ai)** | Unified multi-provider LLM API (OpenAI, Anthropic, Google, etc.) |
-| **[@mariozechner/pi-agent-core](packages/agent)** | Agent runtime with tool calling and state management |
-| **[@mariozechner/pi-coding-agent](packages/coding-agent)** | Interactive coding agent CLI |
-| **[@mariozechner/pi-mom](packages/mom)** | Slack bot that delegates messages to the pi coding agent |
-| **[@mariozechner/pi-tui](packages/tui)** | Terminal UI library with differential rendering |
-| **[@mariozechner/pi-web-ui](packages/web-ui)** | Web components for AI chat interfaces |
-| **[@mariozechner/pi-pods](packages/pods)** | CLI for managing vLLM deployments on GPU pods |
-
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for contribution guidelines and [AGENTS.md](AGENTS.md) for project-specific rules (for both humans and agents).
-
-## Development
+- Linux x64
+- SBCL 2.4 or newer
+- Quicklisp
+- system OpenSSL development/runtime libraries
 
 ```bash
-npm install          # Install all dependencies
-npm run build        # Build all packages
-npm run check        # Lint, format, and type check
-./test.sh            # Run tests (skips LLM-dependent tests without API keys)
-./pi-test.sh         # Run pi from sources (can be run from any directory)
+QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build.sh
+./cadr --version
 ```
 
-> **Note:** `npm run check` requires `npm run build` to be run first. The web-ui package uses `tsc` which needs compiled `.d.ts` files from dependencies.
+The build produces the native executable `./cadr`. If SBCL lacks
+`sb-core-compression`, the build emits an uncompressed image instead of
+failing.
 
-## License
+## Configuration
 
-MIT
-
-## Common Lisp port: `pi-cl`
-
-This repository also contains the SBCL reimplementation specified in
-[`goal.md`](goal.md) and [`goal2.md`](goal2.md). Phases 5–9 add a provider
-registry, OpenAI Chat Completions, DeepSeek/Ollama, images, model pricing,
-OAuth, parent-linked sessions with automatic compaction, Lisp extensions, and
-a pure Common Lisp terminal UI.
-
-### Build
-
-Requirements: Linux x64, SBCL 2.4 or newer, and Quicklisp. The build runs all
-Common Lisp tests before producing the native executable:
-
-```bash
-./build.sh
-./pi-cl --help
-```
-
-Quicklisp defaults to `~/quicklisp/setup.lisp`; override it when needed:
-
-```bash
-QUICKLISP_SETUP=/opt/quicklisp/setup.lisp ./build.sh
-```
-
-SBCL builds without core compression are supported. `build.sh` prints a
-degradation notice and emits an uncompressed `pi-cl` instead of failing.
-
-### Configure and run
-
-Set one provider key, then start the TUI:
-
-```bash
-export ANTHROPIC_API_KEY=...
-./pi-cl
-```
-
-Interactive stdin/stdout use the TUI by default. `--no-tui` forces the
-line-oriented REPL, and non-TTY pipes fall back to it automatically. In the
-TUI, Enter submits, Shift+Enter inserts a newline, Ctrl+O expands or collapses
-the latest tool result, Ctrl+C aborts the active request, and Ctrl+D exits.
-`/model` and `/sessions` open searchable selectors.
-
-After building, the credential-gated two-turn streaming smoke is:
-
-```bash
-./scripts/live-anthropic-smoke.sh
-```
-
-The live repository repair smoke runs only inside a temporary fixture
-repository and requires a second explicit opt-in:
-
-```bash
-PI_CL_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
-```
-
-It uses DeepSeek and verifies an observed test failure, a code edit, and a
-passing rerun.
-
-Supported keys and default models:
+Provider credentials:
 
 | Provider | Environment variable | Default model |
 |---|---|---|
@@ -139,104 +50,118 @@ Supported keys and default models:
 | DeepSeek | `DEEPSEEK_API_KEY` | `deepseek-v4-flash` |
 | Ollama | none | `gpt-oss:20b` |
 
-DeepSeek uses `/v1/chat/completions`; Ollama defaults to
-`http://localhost:11434/v1/chat/completions`. Use `--provider`, `--model`,
-`--base-url`, or `--system-prompt` to override selection. Provider inference
-prefers Anthropic, OpenAI, Google, then DeepSeek. Per-provider configuration is
-also accepted in `~/.pi-cl/config.json`:
+Selection overrides:
+
+```bash
+CADR_PROVIDER=deepseek
+CADR_MODEL=deepseek-v4-flash
+CADR_BASE_URL=https://api.deepseek.com
+```
+
+Equivalent command-line options are `--provider`, `--model`, and
+`--base-url`. Per-provider settings may also be stored in
+`~/.cadr/config.json`:
 
 ```json
 {
   "providers": {
     "deepseek": {
-      "model": "deepseek-v4-pro",
+      "model": "deepseek-v4-flash",
       "base-url": "https://api.deepseek.com"
     }
   }
 }
 ```
 
-CLI values override environment/config values, which override registry
-defaults. Sessions are stored as append-only JSONL v2 trees under
-`~/.pi-cl/sessions/`; `./pi-cl --continue` restores the newest session for the
-current canonical working directory, while `./pi-cl --resume <id>` restores an
-exact session.
-
-Each message has an id and parentId. These REPL commands operate on the tree:
-
-```text
-/sessions
-/switch <session-id>
-/branch <entry-id>
-/compact
-/export [path]
-```
-
-Branching moves the active leaf without deleting the abandoned path. Near the
-model context limit, pi-cl uses the current model to summarize older context,
-stores a compaction node with references to every summarized node, and keeps
-the original history in the JSONL file. A provider-reported context overflow
-gets one compact-and-retry attempt.
-
-The static catalog includes context/output limits, capabilities, and
-per-million-token prices. Refresh it from the public model catalog with:
+## Usage
 
 ```bash
-sbcl --script scripts/refresh-model-catalog.lisp
+./cadr
+./cadr --provider deepseek
+./cadr --continue
+./cadr --resume <session-id>
+./cadr --no-tui
 ```
 
-Programmatic `pi-ai` callers may use `image-content`; Anthropic, OpenAI
-Responses, OpenAI Chat Completions, and Google receive their native base64
-formats. Text-only models reject images explicitly.
+Interactive terminals use the full-screen TUI; pipes and non-TTY input fall
+back to the line REPL. Both frontends share one command, session, extension,
+and agent-event path.
+
+Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Commands
+include `/sessions`, `/switch`, `/branch`, `/compact`, `/export`, `/login`,
+`/logout`, `/reload`, and `/install`.
 
 ### OAuth
 
-Start `./pi-cl --provider openai`, then enter:
+Start `./cadr --provider openai`, then enter:
 
 ```text
 /login openai
 ```
 
-The browser PKCE flow listens once on `127.0.0.1:1455`, stores tokens in
-`~/.pi-cl/auth.json` with mode `0600`, and uses the OpenAI Codex Responses
-endpoint and headers from the fixed reference implementation. `/logout openai`
-removes it. Stored credentials take precedence over environment keys; expiring
-tokens refresh under a provider lock.
+The PKCE callback listens once on `127.0.0.1:1455`. Credentials are stored in
+`~/.cadr/auth.json` with mode `0600`; refresh is locked per provider and token
+values are redacted from transport, API, assistant, and condition output.
+`/login anthropic` implements the same abstraction but has not been live
+verified because no Claude subscription account was available. Subscription
+OAuth channels may be restricted by provider terms to official clients; use
+from this third-party client is at the user's risk.
 
-`/login anthropic` implements the same abstraction but is **not live
-verified**, because no Claude subscription account was available. Subscription
-OAuth channels are commonly restricted by provider terms to official clients;
-using either subscription channel from this third-party client is at the
-user's risk.
+## Migration from the old namespace
 
-Credential-gated Phase 5 smoke tests are:
+This is the single allowed namespace break:
 
-```bash
-./scripts/live-deepseek-smoke.sh
-./scripts/live-openai-oauth-smoke.sh
-```
+| Old | New |
+|---|---|
+| `pi-ai` | `cadr-ai` |
+| `pi-agent` | `cadr-agent` |
+| `pi-cli` | `cadr-cli` |
+| `pi-tui` | `cadr-tui` |
+| `pi-cl` | `cadr` |
+| `~/.pi-cl/` | `~/.cadr/` |
+| `PI_CL_*` | `CADR_*` |
 
-### Lisp extensions
+At startup, when `~/.pi-cl/` exists and `~/.cadr/` does not, an interactive
+terminal offers to move the complete directory. The operation is a rename,
+not a copy, and enforces mode `0600` on the migrated `auth.json`.
+Non-interactive startup refuses automatic migration and prints an exact
+manual `mv` command. `--yolo` never authorizes migration and remains
+unsupported by the core CLI.
 
-Extensions are a `.lisp` file or a directory containing `extension.lisp`.
-They load from the following sources, in descending precedence:
+Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` remain readable
+through the `0.1.x` transition release with a deprecation warning. Support is
+removed in `0.2.0`; new configuration must use `CADR_PROVIDER`, `CADR_MODEL`,
+and `CADR_BASE_URL`.
 
-1. repeatable `--extension <path>` options, with the last option winning;
-2. `./.pi-cl/extensions/`;
-3. `~/.pi-cl/extensions/`.
+## Lisp extensions
 
-Each extension loads in an isolated Common Lisp package and may register tools,
-commands, lifecycle hooks, and prompt templates:
+Extensions are an `extension.lisp` file or a directory containing one.
+Discovery order is:
+
+1. repeatable `--extension <path>` entries, last entry winning;
+2. `./.cadr/extensions/`;
+3. `~/.cadr/extensions/`.
+
+The stable extension interface is now frozen in `CADR-AGENT`. These exported
+macros will not be renamed again:
+
+- `define-tool`
+- `define-command`
+- `define-event-hook`
+- `define-prompt-template`
+
+Example:
 
 ```lisp
 (define-tool "echo"
-  :description "Return text."
+  :description "Return text"
   :parameters
-  (pi-ai::json-object
+  (cadr-ai::json-object
    "type" "object"
    "properties"
-   (pi-ai::json-object
-    "text" (pi-ai::json-object "type" "string"))
+   (cadr-ai::json-object
+    "text"
+    (cadr-ai::json-object "type" "string"))
    "required" (vector "text")
    "additionalProperties" nil)
   :handler
@@ -244,97 +169,74 @@ commands, lifecycle hooks, and prompt templates:
     (declare (ignore call-id context))
     (values
      (list
-      (pi-ai:make-text-content
-       :text (pi-ai::json-get arguments "text")))
+      (cadr-ai:make-text-content
+       :text (cadr-ai::json-get arguments "text")))
      nil)))
 ```
 
-The stable API is `define-tool`, `define-command`, `define-event-hook`,
-`define-prompt-template`, the documented extension context/event accessors,
-and `make-extension-hook-result`. Prompt templates support `$1`, `$@`,
-`$ARGUMENTS`, defaults, and argument slices; names beginning with `skill:`
-are Lisp skills.
+## Security model
 
-Use `/reload` after editing extensions. A failed reload keeps that extension's
-last-known-good generation while allowing unrelated extensions to update.
-`/install <git-url>` clones a package into the global extension directory;
-only explicit network Git URLs are accepted and existing destinations are
-never overwritten. The deterministic and live self-extension checks are:
+Like original pi, `cadr` executes validated tool calls directly by default.
+There is no built-in approval dialog and no core `--yolo` mode. Strong
+isolation is the user's responsibility; run untrusted repositories and
+extensions inside a container or equivalent sandbox.
 
-```bash
-./scripts/test-cl.sh
-./scripts/live-extension-smoke.sh
-```
-
-### Security model
-
-pi-cl follows original pi's default YOLO execution model. Built-in and
-extension tools execute immediately after schema validation. There is no core
-approval dialog, trust ledger, or `--yolo` switch: an approval prompt is not a
-security boundary.
-
-Project extensions are arbitrary in-process Common Lisp. Running pi-cl in an
-untrusted repository is equivalent to executing that repository's extension
-code. Use a container, virtual machine, or restricted OS user when strong
-isolation matters.
-
-Users who want per-tool approval can implement it as an extension policy:
+Users who want approval can implement it without changing the core through a
+`:tool-call-before` hook:
 
 ```lisp
 (define-event-hook :tool-call-before
-  :priority -100
   :handler
   (lambda (event context)
     (declare (ignore context))
-    (let* ((call (extension-event-tool-call event))
-           (name (pi-ai:tool-call-name call)))
-      (format *query-io* "~&Allow tool ~A? [y/N] " name)
+    (let* ((call (cadr-agent:extension-event-tool-call event))
+           (name (cadr-ai:tool-call-name call)))
+      (format *query-io* "~&Run tool ~A? [y/N] " name)
       (finish-output *query-io*)
-      (let ((answer (read-line *query-io* nil "")))
-        (unless (member answer '("y" "yes")
-                        :test #'string-equal)
-          (make-extension-hook-result
-           :block-p t
-           :reason "Denied by approval extension")))))))
+      (unless
+          (member
+           (string-downcase (or (read-line *query-io* nil) ""))
+           '("y" "yes")
+           :test #'string=)
+        (cadr-agent:make-extension-hook-result
+         :block-p t
+         :reason "Rejected by user")))))
 ```
 
-The built-in tools are `read`, `write`, `edit`, `bash`, `glob`, and `grep`.
-All six execute directly by default, matching original pi.
+Extensions are arbitrary in-process Common Lisp. Package isolation prevents
+accidental name collisions; it is not a security boundary.
 
-### Differences from TypeScript Pi
+## Differences from TypeScript pi
 
-- The implementation language and extension ecosystem are Common Lisp;
-  TypeScript/JavaScript extensions, npm packages, and Markdown skill files are
-  intentionally incompatible.
-- The build uses ASDF, Quicklisp, and an SBCL native image instead of the
-  TypeScript/Bun toolchain.
-- Lisp extension packages and generation packages replace JavaScript module
-  loading; this is the unavoidable namespace/loading difference of the
-  language migration.
+- The implementation language and runtime are Common Lisp and SBCL.
+- The build produces an SBCL native image through ASDF and Quicklisp instead
+  of using the TypeScript/Bun toolchain.
+- Extensions are Lisp packages and forms rather than JavaScript modules and
+  npm packages.
 
-### Native infrastructure and dependencies
+No additional core safety, approval, orchestration, or policy mechanism is
+introduced. Proposed mechanisms beyond original pi belong in
+[`docs/open-questions.md`](docs/open-questions.md) until manually approved.
 
-Phase 9 replaced the production JSON parser, CLI parser, HTTP client, tool
-schema validator, and thread portability layer with project or SBCL code.
-Production dependencies are now only `cl+ssl` for system OpenSSL TLS and
-`cl-ppcre`, whose full regex engine is the explicit `goal2.md` deferral.
-
-The final regression run is 632/632 checks. Native-image acceptance, all four
-DeepSeek paths, and the real OpenAI Codex OAuth Responses path pass:
+## Verification
 
 ```bash
+./scripts/test-cl.sh
+./build.sh
 ./scripts/acceptance-smoke.sh
+./scripts/migration-smoke.sh
 ./scripts/live-deepseek-smoke.sh
 ./scripts/live-extension-smoke.sh
-PI_CL_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
+CADR_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
 ./scripts/live-tui-smoke.sh
 ./scripts/live-openai-oauth-smoke.sh
+npm run check
 ```
 
-See [`docs/progress/phase-9.md`](docs/progress/phase-9.md) for replacement and
-performance evidence, and
-[`docs/dependency-audit.md`](docs/dependency-audit.md) for the exact inventory.
+Detailed coverage is in [docs/test-matrix.md](docs/test-matrix.md).
+Migration evidence and the exact residual-name exemptions are in
+[docs/progress/migration.md](docs/progress/migration.md).
 
-See [`docs/architecture.md`](docs/architecture.md) for the exact behavioral
-contract and [`docs/test-matrix.md`](docs/test-matrix.md) for verification
-coverage.
+## License
+
+MIT. See [LICENSE](LICENSE).

@@ -2,9 +2,9 @@
 
 Behavior baseline:
 `earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`.
-The v1 matrix remains below; Phases 5–8 add the `goal2.md` coverage tables.
+The v1 matrix remains below; Phases 5–8 add the `docs/progress/goal-v2.md` coverage tables.
 
-## Phase 1: pi-ai
+## Phase 1: cadr-ai
 
 | TypeScript behavior source | Common Lisp coverage | Evidence |
 |---|---|---|
@@ -104,7 +104,7 @@ the five-provider v2 registry remain outside the current phase.
 | Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 632 checks and SBCL compression-feature fallback |
 | Live DeepSeek paths | four live smoke scripts | Native HTTPS/SSE, self-extension, fail/fix/pass repository task, and real TUI multi-turn task |
 
-## Phase 2: pi-agent
+## Phase 2: cadr-agent
 
 | TypeScript behavior source | Common Lisp coverage | Evidence |
 |---|---|---|
@@ -148,3 +148,17 @@ the five-provider v2 registry remain outside the current phase.
 | Native executable continuation | `scripts/acceptance-smoke.sh` | Saved image help plus two-process `--continue`, one session file |
 | Live Anthropic multi-turn streaming | `scripts/live-anthropic-smoke.sh` | Credential-gated two-turn context assertion; fails before network when the key is absent |
 | Live repository repair | `scripts/live-repo-smoke.sh` | DeepSeek credential plus script-level opt-in; isolated repo must record test failure, edit, and passing rerun |
+
+## cadr migration
+
+| Requirement | Common Lisp coverage | Evidence |
+|---|---|---|
+| ASDF/package namespace | `CADR-SYSTEM-AND-PACKAGE-NAMES-ARE-THE-ONLY-PUBLIC-NAMES` | Four production/test systems load under cadr names; old systems/packages are absent |
+| Frozen extension namespace | `CADR-EXTENSION-API-IS-EXPORTED-FROM-THE-FROZEN-AGENT-PACKAGE` | Four stable registration macros are external symbols of `CADR-AGENT` |
+| Exported symbol rename | `EXPORTED-ERROR-ROOT-USES-THE-CADR-NAME` | Root condition is `CADR-AI:CADR-ERROR`; no old exported root remains |
+| Complete data move | `INTERACTIVE-USER-DATA-MIGRATION-MOVES-THE-COMPLETE-TREE` | Sessions, extensions, and auth move together; source disappears; auth becomes 0600 |
+| Session continuation | same unit test plus `scripts/migration-smoke.sh` | `--continue` resumes the migrated session without creating a second file |
+| Fail-closed migration | noninteractive, decline, and yolo migration tests | No automatic move without explicit interactive consent; manual command is emitted |
+| Environment transition | legacy/new environment tests | Old values warn through 0.1.x; new values win silently; removal is fixed at 0.2.0 |
+| Native executable identity | `./build.sh`, `./cadr --version` | Output filename and version banner use cadr |
+| Git history | ancestry check in `docs/progress/migration.md` | Pre-migration baseline `c07b5a668` remains reachable |

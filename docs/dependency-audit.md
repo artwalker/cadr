@@ -6,10 +6,10 @@ Audit date: 2026-07-30.
 
 | System | Direct dependencies | Decision |
 |---|---|---|
-| `pi-ai` | `cl+ssl` | Retained solely as the permitted system-OpenSSL TLS binding. HTTP itself is native. |
-| `pi-agent` | `cl-ppcre`, `pi-ai` | `cl-ppcre` is the explicitly deferred full regex engine used by JSON Schema `pattern`; `pi-ai` is in-repository. |
-| `pi-cli` | `cl-ppcre`, `pi-agent`, `pi-tui` | `cl-ppcre` is also used directly by glob/grep; the other systems are in-repository. |
-| `pi-tui` | `sb-posix` | SBCL contrib used for terminal state; not a third-party dependency. |
+| `cadr-ai` | `cl+ssl` | Retained solely as the permitted system-OpenSSL TLS binding. HTTP itself is native. |
+| `cadr-agent` | `cl-ppcre`, `cadr-ai` | `cl-ppcre` is the explicitly deferred full regex engine used by JSON Schema `pattern`; `cadr-ai` is in-repository. |
+| `cadr-cli` | `cl-ppcre`, `cadr-agent`, `cadr-tui` | `cl-ppcre` is also used directly by glob/grep; the other systems are in-repository. |
+| `cadr-tui` | `sb-posix` | SBCL contrib used for terminal state; not a third-party dependency. |
 
 ASDF/UIOP, `sb-thread`, `sb-bsd-sockets`, `sb-posix`, `sb-gray`, and SBCL
 Unicode/UTF-8 facilities are implementation-provided and do not add external

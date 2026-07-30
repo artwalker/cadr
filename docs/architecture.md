@@ -1,14 +1,15 @@
-# Pi Common Lisp 重构架构
+# cadr architecture
 
 状态：**v1 Phase 1–4 与 v2 Phase 5–9 已实现；Phase 7 稳定扩展 API
 已于 2026-07-30 人工确认并按提案原文冻结；原版默认执行安全模型已对齐；
-Phase 8 TUI 与 Phase 9 依赖收尾已完成**
+Phase 8 TUI、Phase 9 依赖收尾与 cadr 命名迁移已完成**
 
-本文是 `goal.md` 要求的第一个交付物，已于 2026-07-30 获得人工确认。
+本文是 `docs/progress/goal-v1.md` 要求的第一个交付物，已于 2026-07-30
+获得人工确认。
 后续实现若改变本文中的公开接口、数据格式或行为约束，必须先同步修改本文，
 并在对应阶段报告中说明。
 
-2026-07-30 起新增一条全局约束：pi-cl 对齐固定 TS 基线的设计哲学，不在
+2026-07-30 起新增一条全局约束：cadr 对齐固定 TS 基线的设计哲学，不在
 核心增加原版没有的机制。默认执行模型是 YOLO；审批不是核心安全边界，强
 隔离由用户通过容器提供。任何拟新增机制先写入 `docs/open-questions.md`
 等待人工裁决，不得默认实现。v1 工具确认已在 Phase 7 完成后作为独立任务
@@ -23,7 +24,7 @@ Phase 8 TUI 与 Phase 9 依赖收尾已完成**
   （2026-07-30）
 - 当前工作树的 TypeScript HEAD：
   `e3f6912d49d14b6e6ffe96bb053644922004ecf3`
-- 两者已有明显结构差异；实现以 `goal.md` 指定的
+- 两者已有明显结构差异；实现以 `docs/progress/goal-v1.md` 指定的
   `earendil-works/pi` 固定提交为行为基线，不修改或升级当前 TypeScript
   工作树。
 
@@ -72,11 +73,12 @@ Phase 8 TUI 与 Phase 9 依赖收尾已完成**
 
 ### 1.4 两个明确裁决
 
-1. `goal.md` 要求工具名为 `glob`，参考提交中的同类工具名为 `find`。
+1. `docs/progress/goal-v1.md` 要求工具名为 `glob`，参考提交中的同类工具名为
+   `find`。
    第一版公开名采用 `glob`，参数和结果语义对齐参考实现的 `find`：
    `pattern`、可选 `path`、可选 `limit`、相对路径输出和稳定截断提示。
 2. 参考实现的 `complete()` 可以通过收集流事件得到最终消息，但
-   `goal.md` 明确要求“非流式和流式请求”。因此 CL 层会发送真实的
+   `docs/progress/goal-v1.md` 明确要求“非流式和流式请求”。因此 CL 层会发送真实的
    `stream=false` 请求，不用“内部仍然流式，只是不显示增量”偷换概念。
 
 ## 2. 系统分层
@@ -84,21 +86,21 @@ Phase 8 TUI 与 Phase 9 依赖收尾已完成**
 依赖方向固定为：
 
 ```text
-pi-cli -> pi-agent -> pi-ai
+cadr-cli -> cadr-agent -> cadr-ai
 ```
 
 | TypeScript 责任 | Common Lisp system / package / module | 第一版责任 |
 |---|---|---|
-| `packages/ai/src/types.ts`、model/provider registry | `pi-ai` / `pi-ai` / `types.lisp`、`provider.lisp` | 统一模型、消息、内容块、工具、用量、事件 |
-| `packages/ai/src/api/*` 三家实现 | `pi-ai` / `pi-ai` / `providers/*.lisp` | 请求构造、消息转换、非流式响应和 SSE reducer |
-| `packages/ai/src/utils/event-stream.ts` | `pi-ai` / `pi-ai` / `types.lisp`、`provider.lisp` | 同步事件回调协议和最终消息收集 |
-| provider SDK / fetch 边界 | `pi-ai` / `pi-ai` / `http.lisp`、`sse.lisp` | 自研 HTTP/1.1、OpenSSL TLS、UTF-8 流读取、通用 SSE framing |
-| `packages/agent/src/agent-loop.ts` | `pi-agent` / `pi-agent` / `loop.lisp` | turn 循环、工具批次、事件顺序、停止条件 |
-| `packages/agent/src/agent.ts` | `pi-agent` / `pi-agent` / `runtime.lisp` | 可变状态、订阅、忙碌状态、取消、提示入口 |
-| `packages/agent/src/harness/types.ts` | `pi-agent` / `pi-agent` / `conditions.lisp`、`tool.lisp` | 稳定错误分类、工具协议和执行模式 |
-| harness / coding-agent session | `pi-agent` / `pi-agent` / `session.lisp` | 第一版线性 JSONL 保存、加载、最近会话查找 |
-| harness 与 coding-agent 内置工具 | `pi-cli` / `pi-cli` / `tools/*.lisp` | 六个本地编码工具和统一截断 |
-| `coding-agent` args/main/system prompt | `pi-cli` / `pi-cli` / `config.lisp`、`main.lisp`、`repl.lisp` | 配置、模型选择和 REPL |
+| `packages/ai/src/types.ts`、model/provider registry | `cadr-ai` / `cadr-ai` / `types.lisp`、`provider.lisp` | 统一模型、消息、内容块、工具、用量、事件 |
+| `packages/ai/src/api/*` 三家实现 | `cadr-ai` / `cadr-ai` / `providers/*.lisp` | 请求构造、消息转换、非流式响应和 SSE reducer |
+| `packages/ai/src/utils/event-stream.ts` | `cadr-ai` / `cadr-ai` / `types.lisp`、`provider.lisp` | 同步事件回调协议和最终消息收集 |
+| provider SDK / fetch 边界 | `cadr-ai` / `cadr-ai` / `http.lisp`、`sse.lisp` | 自研 HTTP/1.1、OpenSSL TLS、UTF-8 流读取、通用 SSE framing |
+| `packages/agent/src/agent-loop.ts` | `cadr-agent` / `cadr-agent` / `loop.lisp` | turn 循环、工具批次、事件顺序、停止条件 |
+| `packages/agent/src/agent.ts` | `cadr-agent` / `cadr-agent` / `runtime.lisp` | 可变状态、订阅、忙碌状态、取消、提示入口 |
+| `packages/agent/src/harness/types.ts` | `cadr-agent` / `cadr-agent` / `conditions.lisp`、`tool.lisp` | 稳定错误分类、工具协议和执行模式 |
+| harness / coding-agent session | `cadr-agent` / `cadr-agent` / `session.lisp` | 第一版线性 JSONL 保存、加载、最近会话查找 |
+| harness 与 coding-agent 内置工具 | `cadr-cli` / `cadr-cli` / `tools/*.lisp` | 六个本地编码工具和统一截断 |
+| `coding-agent` args/main/system prompt | `cadr-cli` / `cadr-cli` / `config.lisp`、`main.lisp`、`repl.lisp` | 配置、模型选择和 REPL |
 
 每个 system 只导出稳定入口；provider 私有 payload 类型、SSE 临时状态和
 文件工具内部辅助函数不导出。
@@ -108,13 +110,13 @@ pi-cli -> pi-agent -> pi-ai
 实现目录：
 
 ```text
-pi-ai.asd
-pi-agent.asd
-pi-cli.asd
+cadr-ai.asd
+cadr-agent.asd
+cadr-cli.asd
 build.lisp
 build.sh
 src/
-  pi-ai/
+  cadr-ai/
     package.lisp
     conditions.lisp
     types.lisp
@@ -126,7 +128,7 @@ src/
       anthropic.lisp
       openai.lisp
       google.lisp
-  pi-agent/
+  cadr-agent/
     package.lisp
     conditions.lisp
     schema.lisp
@@ -134,7 +136,7 @@ src/
     loop.lisp
     runtime.lisp
     session.lisp
-  pi-cli/
+  cadr-cli/
     package.lisp
     arguments.lisp
     build-support.lisp
@@ -153,7 +155,7 @@ src/
     repl.lisp
     tui.lisp
     main.lisp
-  pi-tui/
+  cadr-tui/
     package.lisp
     unicode.lisp
     input.lisp
@@ -166,10 +168,10 @@ test/
     requests/
     responses/
     sse/
-  pi-ai/
-  pi-agent/
-  pi-cli/
-  pi-tui/
+  cadr-ai/
+  cadr-agent/
+  cadr-cli/
+  cadr-tui/
 scripts/
   export-ts-payloads.ts
   acceptance-smoke.sh
@@ -182,17 +184,17 @@ docs/
 
 ASDF systems：
 
-- `pi-ai`、`pi-ai/tests`
-- `pi-agent`、`pi-agent/tests`
-- `pi-cli`、`pi-cli/tests`
-- `pi-tui`、`pi-tui/tests`
+- `cadr-ai`、`cadr-ai/tests`
+- `cadr-agent`、`cadr-agent/tests`
+- `cadr-cli`、`cadr-cli/tests`
+- `cadr-tui`、`cadr-tui/tests`
 
 Phase 9 后的生产依赖：
 
 | 库 | 用途 | 选择理由 |
 |---|---|---|
 | `cl+ssl` | HTTPS TLS | 唯一允许的加密层例外；绑定系统 OpenSSL，不自研密码学 |
-| `cl-ppcre` | `grep`、glob 和 JSON Schema `pattern` | 完整正则引擎按 `goal2.md` 明确暂缓；用户 pattern 不交给 shell |
+| `cl-ppcre` | `grep`、glob 和 JSON Schema `pattern` | 完整正则引擎按 `docs/progress/goal-v2.md` 明确暂缓；用户 pattern 不交给 shell |
 | `uiop` / ASDF、`sb-thread`、`sb-bsd-sockets`、`sb-posix` | 路径、进程、线程、socket、终端和构建 | SBCL/ASDF 自带设施，不计第三方生产依赖 |
 
 `fiveam` 只存在于测试 system。`babel`、`bordeaux-threads`、
@@ -242,7 +244,7 @@ tool 的多态行为。
 
 ### 5.1 HTTP 抽象
 
-`pi-ai.http` 提供两个可替换入口：
+`cadr-ai.http` 提供两个可替换入口：
 
 - `request-json`：返回 status、headers、已解析 JSON
 - `request-sse`：返回 status、headers，并把响应体流交给 SSE consumer
@@ -262,7 +264,7 @@ provider/agent 上层 deadline 控制。这个差异必须位于 HTTP 抽象层�
 
 ### 5.2 通用 SSE framing
 
-`pi-ai.sse` 只负责协议，不理解 provider：
+`cadr-ai.sse` 只负责协议，不理解 provider：
 
 1. 以二进制流接收 chunk，经 UTF-8 解码器保留跨 chunk 的未完成字符。
 2. 同时接受 LF 和 CRLF。
@@ -363,7 +365,7 @@ provider/agent 上层 deadline 控制。这个差异必须位于 HTTP 抽象层�
 Condition 层次：
 
 ```text
-pi-error
+cadr-error
 ├── configuration-error
 ├── transport-error
 │   ├── network-error
@@ -495,7 +497,7 @@ header：
 
 约束：
 
-- 默认目录：`~/.pi-cl/sessions/`
+- 默认目录：`~/.cadr/sessions/`
 - API key、Authorization 和环境变量绝不写入 session
 - 每个最终 user/assistant/tool-result message 追加后立即 flush
 - 允许崩溃留下一个不完整的最后一行；只忽略这个尾行
@@ -523,10 +525,10 @@ header：
 - `ANTHROPIC_API_KEY`
 - `OPENAI_API_KEY`
 - `GEMINI_API_KEY`
-- 可选 `PI_CL_PROVIDER`、`PI_CL_MODEL`
+- 可选 `CADR_PROVIDER`、`CADR_MODEL`
 
 provider 未指定时，从现有 key 推断，优先级 Anthropic → OpenAI → Google；
-这保证只设置 `ANTHROPIC_API_KEY` 后执行 `./pi-cl` 能直接工作。每个 provider
+这保证只设置 `ANTHROPIC_API_KEY` 后执行 `./cadr` 能直接工作。每个 provider
 都有固定默认模型：Anthropic `claude-opus-4-8`、OpenAI `gpt-5.5`、
 Google `gemini-3.6-flash`；同时允许 CLI/env 覆盖。三者都记录进 README，
 避免把动态网络模型目录带入第一版。
@@ -534,7 +536,7 @@ Google `gemini-3.6-flash`；同时允许 CLI/env 覆盖。三者都记录进 REA
 REPL 使用标准输入逐行读取：
 
 ```text
-pi> 用户输入
+cadr> 用户输入
 assistant> 流式文本
 ```
 
@@ -563,7 +565,7 @@ assistant> 流式文本
 
 “所有移植测试通过”以这个矩阵为审计入口，不能用测试数量代替行为覆盖。
 
-### Phase 1：pi-ai
+### Phase 1：cadr-ai
 
 先移植：
 
@@ -589,7 +591,7 @@ assistant> 流式文本
 SSE fixture 必须是去敏后的真实响应录制，测试直接回放原始字节流，并覆盖
 故意切在 UTF-8 字符和 JSON token 中间的 chunk 边界。测试不访问在线 API。
 
-### Phase 2：pi-agent
+### Phase 2：cadr-agent
 
 优先移植 `packages/agent/test/agent-loop.test.ts` 的范围内语义：
 
@@ -645,14 +647,14 @@ tools、stream、max tokens 等都不能被模糊比较。
 1. 检查 `sbcl` 存在且版本 >= 2.4。
 2. 加载 `QUICKLISP_SETUP` 指定文件，或
    `~/quicklisp/setup.lisp`。
-3. Quickload `pi-cli`。
+3. Quickload `cadr-cli`。
 4. 运行所有 ASDF test-op；测试失败则不产出二进制。
 5. 检查 `*features*` 是否包含 `:sb-core-compression`。支持时调用：
 
 ```lisp
 (sb-ext:save-lisp-and-die
- "pi-cl"
- :toplevel #'pi-cli:executable-main
+ "cadr"
+ :toplevel #'cadr-cli:executable-main
  :executable t
  :save-runtime-options t
  :compression t)
@@ -661,23 +663,23 @@ tools、stream、max tokens 等都不能被模糊比较。
 不支持时打印明确降级提示，并调用不含 `:compression` 关键字的
 `save-lisp-and-die`。不能仅传 `:compression nil`，因为不带
 `sb-core-compression` 的 SBCL 可能连该关键字都不接受；无压缩构建仍须成功
-产出 `pi-cl`。构建测试分别覆盖 feature 存在和不存在时的参数构造，避免只在
+产出 `cadr`。构建测试分别覆盖 feature 存在和不存在时的参数构造，避免只在
 本机 SBCL 变体上碰巧可用。
 
-产物位于仓库根目录 `./pi-cl`。执行时不需要源码或 Quicklisp，但仍依赖
+产物位于仓库根目录 `./cadr`。执行时不需要源码或 Quicklisp，但仍依赖
 Linux/glibc 和 HTTPS 所需的系统动态库；“单个可执行文件”不虚假承诺完全
 静态链接。
 
 当前审计环境使用 SBCL 2.6.7 和 Quicklisp 2026-01-01。该 SBCL 不含
 `:sb-core-compression`；隔离 HOME 的实际构建已验证降级提示、无压缩
-`pi-cl` 产物、保存 runtime options 后的 `--help` / `--version`，以及跨
+`cadr` 产物、保存 runtime options 后的 `--help` / `--version`，以及跨
 两个进程的 `--continue`。
 
 ## 14. 验收证据映射
 
-| `goal.md` 验收项 | 最终证据 |
+| `docs/progress/goal-v1.md` 验收项 | 最终证据 |
 |---|---|
-| clean Linux 一键产出 `pi-cl` | 隔离 HOME 的 clean-build 日志、二进制 `file` 输出 |
+| clean Linux 一键产出 `cadr` | 隔离 HOME 的 clean-build 日志、二进制 `file` 输出 |
 | Anthropic 多轮流式对话 | `scripts/live-anthropic-smoke.sh` 的获授权终端记录；脚本不输出或保存 key |
 | 真实 repo 读/改/测/修 | faux provider 确定性 E2E + DeepSeek 双重授权的 `scripts/live-repo-smoke.sh` |
 | 三家各一 E2E | 三套原始 SSE 回放、请求捕获和最终统一消息断言 |
@@ -716,7 +718,7 @@ Phase 5 保留 v1 的统一消息、统一事件流和 protocol adapter 边界�
 
 ### 16.1 Provider 注册表与解析优先级
 
-`pi-ai` 新增 `provider-definition` 和显式注册表。每项声明：
+`cadr-ai` 新增 `provider-definition` 和显式注册表。每项声明：
 
 - 稳定 provider id
 - wire protocol：`anthropic-messages`、`openai-responses`、
@@ -730,7 +732,7 @@ protocol adapter 构建；注册表只负责选择 adapter、认证和默认值�
 base URL 解析顺序固定为：
 
 1. CLI `--base-url`
-2. `~/.pi-cl/config.json` 中对应 provider 的 `base-url`
+2. `~/.cadr/config.json` 中对应 provider 的 `base-url`
 3. 注册表默认值
 
 模型解析同理为 CLI `--model`、环境/配置覆盖、注册表默认值。Ollama 是无
@@ -777,7 +779,7 @@ provider/model 未声明图片能力时，在发请求前抛出明确
 
 provider 的请求认证统一解析为 `api-key-credential` 或
 `oauth-credential`。adapter 只接收最终请求头，不参与登录和刷新。
-`~/.pi-cl/auth.json` 是唯一持久凭据文件，写入采用临时文件加原子替换，
+`~/.cadr/auth.json` 是唯一持久凭据文件，写入采用临时文件加原子替换，
 创建后强制 `0600`。所有 condition、会话和诊断输出先经过 secret
 redaction。
 
@@ -923,8 +925,8 @@ registry 注册定义，成功后原子替换 agent 使用的只读快照。扩�
 - 单个 `*.lisp` 文件，extension id 为不含后缀的文件名；
 - 含 `extension.lisp` 的目录，extension id 为目录名。
 
-每个入口在唯一的 `PI-EXTENSION/<id>/<generation>` package 中加载，初始
-package 只 `:use` `CL` 与 `PI-AGENT`；需要 `PI-AI` 时使用显式包前缀。
+每个入口在唯一的 `CADR-EXTENSION/<id>/<generation>` package 中加载，初始
+package 只 `:use` `CL` 与 `CADR-AGENT`；需要 `CADR-AI` 时使用显式包前缀。
 加载器动态绑定 `*package*`、`*load-pathname*` 与注册上下文。扩展不需要也
 不应写 `in-package`。这避免不同扩展的普通符号互相污染，但不声称限制可信
 扩展主动访问其他 package 或系统能力。
@@ -932,8 +934,8 @@ package 只 `:use` `CL` 与 `PI-AGENT`；需要 `PI-AI` 时使用显式包前缀
 发现顺序先按 scope、再按文件名字典序固定：
 
 1. `--extension <path>`，最高优先级；参数可重复，后出现者优先；
-2. `./.pi-cl/extensions/`，项目级；
-3. `~/.pi-cl/extensions/`，全局级。
+2. `./.cadr/extensions/`，项目级；
+3. `~/.cadr/extensions/`，全局级。
 
 同 id 的低优先级入口在加载前即被遮蔽，所以项目项明确覆盖全局同名项，
 CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定性的第一项；
@@ -950,7 +952,7 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
 
 ### 18.2 冻结的注册 API
 
-以下四个宏及其参数协议导出自 `PI-AGENT`，发布后保持兼容：
+以下四个宏及其参数协议导出自 `CADR-AGENT`，发布后保持兼容：
 
 ```lisp
 (define-tool "echo"
@@ -960,7 +962,7 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
   :handler (lambda (call-id arguments context)
              (declare (ignore call-id context))
              (values
-              (list (pi-ai:make-text-content
+              (list (cadr-ai:make-text-content
                      :text (gethash "text" arguments)))
               nil)))
 
@@ -986,7 +988,7 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
   - `:execution-mode` 只能是 `:parallel` 或 `:sequential`，默认
     `:parallel`；
   - handler 固定为 `(call-id arguments context)`，返回 `(values content
-    details)`；content 是 `PI-AI` content 列表；
+    details)`；content 是 `CADR-AI` content 列表；
   - schema 在注册期验证结构，在每次调用期验证最终 arguments。
 - `define-command`
   - handler 固定为 `(arguments context)`；arguments 是命令名后未经拆词的
@@ -1026,7 +1028,7 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
 
 context 只在当前 handler 动态范围内有效；保存后跨 handler 或跨 reload 使用
 会抛出 `stale-extension-context`。`extension-context-agent` 返回当前
-`PI-AGENT:AGENT`，允许 Lisp 扩展使用已经公开的 agent API，但不把 CLI 或
+`CADR-AGENT:AGENT`，允许 Lisp 扩展使用已经公开的 agent API，但不把 CLI 或
 未来 TUI 对象纳入稳定接口。动作函数签名固定为：
 
 - `(extension-context-notify context message &key (level :info))`，level
@@ -1049,7 +1051,7 @@ hook 的唯一修改返回值由
 `make-extension-hook-result` 构造，稳定 keyword 为：
 
 - `:replacement`：替换该事件的主 payload；
-- `:append-messages`：在该事件提交点追加的合法 `PI-AI` 消息列表；
+- `:append-messages`：在该事件提交点追加的合法 `CADR-AI` 消息列表；
 - `:block-p` 与 `:reason`：只允许用于 `:tool-call-before`。
 
 `replacement` 的类型由事件决定：
@@ -1058,8 +1060,8 @@ hook 的唯一修改返回值由
 |---|---|
 | `:turn-start` | 即将持久化并发送的 user message |
 | `:turn-end` | 本轮最终 assistant message |
-| `:tool-call-before` | `PI-AI:TOOL-CALL` |
-| `:tool-call-after` | `PI-AI:TOOL-RESULT-MESSAGE` |
+| `:tool-call-before` | `CADR-AI:TOOL-CALL` |
+| `:tool-call-after` | `CADR-AI:TOOL-RESULT-MESSAGE` |
 
 多个 hook 串行组合：后一个看到前一个的 replacement 与累计追加消息。
 返回类型错误、替换消息 role 错误、tool call/result id 不一致都只使当前
@@ -1101,7 +1103,7 @@ README 安全章节明说。
 - hook 错误跳过当前 hook，agent 主循环继续。
 
 用户可见文本先走既有 secret redaction。扩展错误永不终止 agent；只有
-PI 本身的不变量损坏仍按核心错误处理，不能被扩展异常处理器吞掉。
+cadr 本身的不变量损坏仍按核心错误处理，不能被扩展异常处理器吞掉。
 
 ### 18.5 安全模型
 
@@ -1112,7 +1114,7 @@ PI 本身的不变量损坏仍按核心错误处理，不能被扩展异常处�
 
 README 必须明确：
 
-- 在不可信仓库运行 pi-cl 等价于允许该仓库中的项目扩展执行任意本机代码；
+- 在不可信仓库运行 cadr 等价于允许该仓库中的项目扩展执行任意本机代码；
 - 需要强隔离时应在容器、虚拟机或受限用户中运行；
 - 需要逐工具审批时，可加载文档提供的最小
   `:tool-call-before` Lisp hook 扩展，审批策略不进入核心。
@@ -1126,7 +1128,7 @@ README 必须明确：
 实现通过 argv 列表调用 `git clone -- <url> <staging>`，绝不拼 shell
 字符串。
 
-clone 目标先放在 `~/.pi-cl/extensions/.staging-<random>/`。成功后验证：
+clone 目标先放在 `~/.cadr/extensions/.staging-<random>/`。成功后验证：
 
 1. 顶层存在 `extension.lisp`；
 2. 推导出的目录名只含安全字符；
@@ -1161,19 +1163,19 @@ skill 运行时。
 
 ## 19. Phase 8：TUI 架构
 
-Phase 8 新增独立 ASDF system `pi-tui`。依赖方向扩展为：
+Phase 8 新增独立 ASDF system `cadr-tui`。依赖方向扩展为：
 
 ```text
-pi-cli -> pi-agent -> pi-ai
+cadr-cli -> cadr-agent -> cadr-ai
    |
-   +----> pi-tui
+   +----> cadr-tui
 ```
 
-`pi-tui` 是无 agent 语义的终端组件库，只负责输入解码、Unicode 单元格
-布局、组件渲染、ANSI 差分输出和终端生命周期。`pi-cli/tui.lisp` 是唯一
-adapter：它把与 REPL 完全相同的 `PI-AGENT:AGENT-EVENT` 投影成界面状态，
+`cadr-tui` 是无 agent 语义的终端组件库，只负责输入解码、Unicode 单元格
+布局、组件渲染、ANSI 差分输出和终端生命周期。`cadr-cli/tui.lisp` 是唯一
+adapter：它把与 REPL 完全相同的 `CADR-AGENT:AGENT-EVENT` 投影成界面状态，
 并把编辑器提交交给现有 prompt/command/template 调度。provider、session、
-extension、工具执行与压缩逻辑不得复制进 `pi-tui`。
+extension、工具执行与压缩逻辑不得复制进 `cadr-tui`。
 
 ### 19.1 渲染模型
 
@@ -1215,7 +1217,7 @@ Phase 8 固定包含以下组件：
 - 通用 select-list：过滤、循环上下移动、PageUp/PageDown、Enter 确认、
   Escape 取消；模型与会话选择器复用它。
 
-模型选择只使用 `PI-AI` 当前模型目录，选择后通过现有 provider
+模型选择只使用 `CADR-AI` 当前模型目录，选择后通过现有 provider
 instantiate 路径更新 agent；会话选择只调用现有 session list/switch
 路径。两者都是原版已有交互能力，不产生第二套状态源。
 
@@ -1239,10 +1241,10 @@ Ctrl+C、EOF、provider condition 和扩展 condition 都走同一 cleanup。
 
 ### 19.4 Phase 8 验证门
 
-- `pi-tui/tests` 覆盖 Unicode width/cluster、换行裁剪、编辑器、paste、
+- `cadr-tui/tests` 覆盖 Unicode width/cluster、换行裁剪、编辑器、paste、
   history、select-list、Markdown、差分输出、resize、尾行清除和虚拟终端
   快照；
-- `pi-cli/tests` 覆盖 `--no-tui`、非 TTY 降级、共享 dispatch、agent 事件
+- `cadr-cli/tests` 覆盖 `--no-tui`、非 TTY 降级、共享 dispatch、agent 事件
   到工具块/stream/status 的投影，以及 condition 下 terminal cleanup；
 - 人工终端验收覆盖真实多轮编码任务、流式输出、工具折叠、模型/会话选择、
   resize、CJK/emoji 输入和异常退出后的 shell 状态。
@@ -1258,7 +1260,7 @@ Phase 9 保持 provider、agent、extension、session 与前端公开协议不�
    `com.inuoe.jzon` 移除。
 2. `arguments.lisp` 自研本项目固定选项语法，支持 `--name value`、
    `--name=value`、重复 `--extension`、flags 与结构化错误；`clingon` 移除。
-3. 完整正则引擎不重复造轮子，按 `goal2.md` 明确暂缓并保留 `cl-ppcre`；
+3. 完整正则引擎不重复造轮子，按 `docs/progress/goal-v2.md` 明确暂缓并保留 `cl-ppcre`；
    glob 遍历、`.gitignore` 解释和 literal grep 仍由项目代码实现。
 4. `http.lisp` 自研连接、请求写出、响应解析、content-length、
    connection-close、chunked 和流式 body；TLS 由 `cl+ssl` 提供；
@@ -1283,3 +1285,40 @@ Phase 9 的回归门包括原生 JSON、CLI、schema、真实 loopback HTTP、ch
 SSE 无界 read timeout、全部旧测试、native image、DeepSeek 普通流式、
 自扩展与真实 TUI smoke。实现和性能证据记录在
 `docs/progress/phase-9.md`。
+
+## 21. cadr 命名与数据迁移边界
+
+命名迁移只改变身份、路径与一次性兼容入口，不改变 provider、agent、
+session、extension 或 TUI 语义。迁移前已验收基线为
+`c07b5a668`，该提交及其全部祖先在当前分支可达。
+
+公开命名固定为：
+
+```text
+cadr-cli -> cadr-agent -> cadr-ai
+    |
+    +----> cadr-tui
+```
+
+ASDF production/test system、目录、CL package 和 native image 均使用该
+命名。扩展稳定接口 `DEFINE-TOOL`、`DEFINE-COMMAND`、
+`DEFINE-EVENT-HOOK`、`DEFINE-PROMPT-TEMPLATE` 从 `CADR-AGENT` 导出；
+此次迁移后命名空间冻结，不再提供旧 nickname 或别名。
+
+用户数据根目录为 `~/.cadr/`。启动时只有在旧目录存在且新目录不存在时
+进入迁移门：
+
+1. stdin 必须是 TTY，且原始 argv 不得含 `--yolo`；
+2. 用户明确回答 `y` 或 `yes` 后，以同文件系统 rename 移动整个目录；
+3. 迁移后的 `auth.json` 强制为 `0600`；
+4. 拒绝、EOF、非交互或 `--yolo` 都返回 configuration condition，并给出
+   可直接执行的、正确 shell quoting 的手动 `mv` 命令；
+5. 移动或权限修复失败时尝试把目录 rename 回原位置并 fail closed。
+
+`--yolo` 仍不是 CLI 选项，也不重新引入工具确认机制；迁移门只在旧目录
+确实待迁移时检查原始 argv，以确保它绝不成为数据移动授权。
+
+新配置读取 `CADR_PROVIDER`、`CADR_MODEL`、`CADR_BASE_URL`。旧前缀仅在
+`0.1.x` 作为缺省回退读取，每次实际采用旧值都向 stderr 打弃用警告；新值
+始终优先。兼容入口在 `0.2.0` 删除。session v1/v2 header 不含产品名字段，
+因此读取格式无需增加别名或重写逻辑。

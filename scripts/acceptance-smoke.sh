@@ -9,11 +9,11 @@ if [ ! -x "$CADR" ]; then
   exit 1
 fi
 
-"$CADR" --help >/dev/null
-
 SMOKE_ROOT="$(mktemp -d)"
 trap 'rm -rf -- "$SMOKE_ROOT"' EXIT
 mkdir -p "$SMOKE_ROOT/home" "$SMOKE_ROOT/project"
+
+HOME="$SMOKE_ROOT/home" "$CADR" --help >/dev/null
 
 (
   cd "$SMOKE_ROOT/project"
