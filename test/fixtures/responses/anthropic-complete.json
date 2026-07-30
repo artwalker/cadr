@@ -1,0 +1,19 @@
+{
+  "id": "msg_fixture",
+  "type": "message",
+  "role": "assistant",
+  "model": "claude-test",
+  "content": [
+    {
+      "type": "text",
+      "text": "Hello from fixture."
+    }
+  ],
+  "stop_reason": "end_turn",
+  "usage": {
+    "input_tokens": 11,
+    "output_tokens": 5,
+    "cache_read_input_tokens": 2,
+    "cache_creation_input_tokens": 0
+  }
+}

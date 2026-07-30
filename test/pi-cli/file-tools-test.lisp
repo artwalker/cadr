@@ -1,0 +1,89 @@
+(in-package #:pi-cli/tests)
+(in-suite pi-cli-suite)
+
+(test read-supports-utf8-offset-limit-and-bounded-head-output
+  (with-test-directory (directory)
+    (let ((file (merge-pathnames "unicode.txt" directory)))
+      (write-text file
+                  (format nil "一~%二~%三~%四~%"))
+      (multiple-value-bind (content details)
+          (invoke-tool
+           (make-read-tool directory)
+           (args "path" "unicode.txt"
+                 "offset" 2
+                 "limit" 2))
+        (declare (ignore details))
+        (is (string= (format nil "二~%三")
+                     (result-text content))))
+      (signals error
+        (invoke-tool
+         (make-read-tool directory)
+         (args "path" "unicode.txt" "offset" 99))))
+    (let ((file (merge-pathnames "large.txt" directory)))
+      (with-open-file (stream file
+                              :direction :output
+                              :if-exists :supersede
+                              :if-does-not-exist :create)
+        (loop repeat 2105
+              for index from 1
+              do (format stream "line ~D~%" index)))
+      (multiple-value-bind (content details)
+          (invoke-tool
+           (make-read-tool directory)
+           (args "path" "large.txt"))
+        (is (search "line 1" (result-text content)))
+        (is (not (search "line 2105" (result-text content))))
+        (is (eq t (getf details :truncated)))))))
+
+(test write-creates-parents-and-overwrites-utf8
+  (with-test-directory (directory)
+    (let ((tool (make-write-tool directory))
+          (file (merge-pathnames "a/b.txt" directory)))
+      (invoke-tool tool
+                   (args "path" "a/b.txt"
+                         "content" "第一版"))
+      (is (string= "第一版" (read-text file)))
+      (invoke-tool tool
+                   (args "path" "a/b.txt"
+                         "content" "第二版"))
+      (is (string= "第二版" (read-text file))))))
+
+(test edit-requires-unique-nonoverlapping-original-matches
+  (with-test-directory (directory)
+    (let ((tool (make-edit-tool directory))
+          (file (merge-pathnames "code.txt" directory)))
+      (write-text file "alpha beta gamma")
+      (let ((edits
+              (vector
+               (args "oldText" "alpha" "newText" "A")
+               (args "oldText" "gamma" "newText" "G"))))
+        (invoke-tool tool
+                     (args "path" "code.txt"
+                           "edits" edits)))
+      (is (string= "A beta G" (read-text file)))
+      (signals error
+        (invoke-tool
+         tool
+         (args "path" "code.txt"
+               "edits"
+               (vector
+                (args "oldText" "missing"
+                      "newText" "x")))))
+      (write-text file "same same")
+      (signals error
+        (invoke-tool
+         tool
+         (args "path" "code.txt"
+               "edits"
+               (vector
+                (args "oldText" "same"
+                      "newText" "x")))))
+      (write-text file "abcdef")
+      (signals error
+        (invoke-tool
+         tool
+         (args "path" "code.txt"
+               "edits"
+               (vector
+                (args "oldText" "abcd" "newText" "x")
+                (args "oldText" "bc" "newText" "y"))))))))

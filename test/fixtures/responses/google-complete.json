@@ -1,0 +1,23 @@
+{
+  "responseId": "google_fixture",
+  "candidates": [
+    {
+      "content": {
+        "role": "model",
+        "parts": [
+          {
+            "text": "Hello from fixture."
+          }
+        ]
+      },
+      "finishReason": "STOP"
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 13,
+    "cachedContentTokenCount": 2,
+    "candidatesTokenCount": 4,
+    "thoughtsTokenCount": 1,
+    "totalTokenCount": 18
+  }
+}

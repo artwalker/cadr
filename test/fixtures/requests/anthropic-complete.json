@@ -1,0 +1,35 @@
+{
+  "model": "claude-test",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Inspect README.md"
+    }
+  ],
+  "max_tokens": 4096,
+  "stream": false,
+  "system": [
+    {
+      "type": "text",
+      "text": "Be precise."
+    }
+  ],
+  "tools": [
+    {
+      "name": "read",
+      "description": "Read a file.",
+      "eager_input_streaming": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  ]
+}

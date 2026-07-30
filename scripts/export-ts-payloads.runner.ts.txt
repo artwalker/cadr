@@ -1,0 +1,168 @@
+// Copied into the pinned TypeScript reference checkout by export-ts-payloads.ts.
+import fs from "node:fs";
+import path from "node:path";
+import { stream as streamAnthropic } from "../packages/ai/src/api/anthropic-messages.ts";
+import { stream as streamGoogle } from "../packages/ai/src/api/google-generative-ai.ts";
+import { stream as streamOpenAI } from "../packages/ai/src/api/openai-responses.ts";
+import type {
+	Api,
+	Context,
+	Model,
+	StreamOptions,
+	Tool,
+} from "../packages/ai/src/types.ts";
+
+const outputDirectory = path.resolve(process.argv[2] ?? "test/fixtures/requests");
+
+const tool: Tool = {
+	name: "read",
+	description: "Read a file.",
+	parameters: {
+		type: "object",
+		properties: {
+			path: { type: "string" },
+	},
+	required: ["path"],
+	},
+};
+
+const context: Context = {
+	systemPrompt: "Be precise.",
+	messages: [
+		{
+			role: "user",
+			content: "Inspect README.md",
+			timestamp: 1,
+		},
+	],
+	tools: [tool],
+};
+
+function model<TApi extends Api>(
+	api: TApi,
+	provider: string,
+	id: string,
+	baseUrl: string,
+): Model<TApi> {
+	return {
+		id,
+		name: id,
+		api,
+		provider,
+		baseUrl,
+		reasoning: false,
+		input: ["text"],
+		cost: {
+			input: 0,
+			output: 0,
+			cacheRead: 0,
+			cacheWrite: 0,
+		},
+		contextWindow: 1_048_576,
+		maxTokens: 4096,
+	};
+}
+
+async function capturePayload<T>(
+	start: (options: StreamOptions) => { result(): Promise<unknown> },
+	options: StreamOptions = {},
+): Promise<T> {
+	let captured: T | undefined;
+	const response = start({
+		...options,
+		apiKey: "payload-capture-key",
+		maxRetries: 0,
+		onPayload(payload) {
+			captured = structuredClone(payload) as T;
+			throw new Error("payload captured");
+		},
+	});
+	await response.result();
+	if (captured === undefined) {
+		throw new Error("Provider did not invoke onPayload");
+	}
+	return captured;
+}
+
+function googleWireBody(params: {
+	model: string;
+	contents: unknown;
+	config?: {
+		maxOutputTokens?: number;
+		systemInstruction?: string | object;
+		tools?: unknown;
+		toolConfig?: unknown;
+	};
+}): Record<string, unknown> {
+	const config = params.config ?? {};
+	const body: Record<string, unknown> = {
+		contents: params.contents,
+	};
+	if (config.systemInstruction !== undefined) {
+		body.systemInstruction =
+			typeof config.systemInstruction === "string"
+				? { parts: [{ text: config.systemInstruction }] }
+				: config.systemInstruction;
+	}
+	if (config.maxOutputTokens !== undefined) {
+		body.generationConfig = {
+			maxOutputTokens: config.maxOutputTokens,
+		};
+	}
+	if (config.tools !== undefined) {
+		body.tools = config.tools;
+	}
+	if (config.toolConfig !== undefined) {
+		body.toolConfig = config.toolConfig;
+	}
+	return body;
+}
+
+function writeFixture(name: string, payload: unknown): void {
+	fs.mkdirSync(outputDirectory, { recursive: true });
+	fs.writeFileSync(
+		path.join(outputDirectory, name),
+		`${JSON.stringify(payload, null, 2)}\n`,
+		"utf8",
+	);
+}
+
+const anthropicModel = model(
+	"anthropic-messages",
+	"anthropic",
+	"claude-test",
+	"https://api.anthropic.com",
+);
+const openAIModel = model(
+	"openai-responses",
+	"openai",
+	"gpt-test",
+	"https://api.openai.com",
+);
+const googleModel = model(
+	"google-generative-ai",
+	"google",
+	"gemini-3.6-flash",
+	"https://generativelanguage.googleapis.com/v1beta",
+);
+
+const anthropic = await capturePayload<Record<string, unknown>>(
+	(options) => streamAnthropic(anthropicModel, context, options),
+	{ cacheRetention: "none", maxTokens: 4096 },
+);
+const openAI = await capturePayload<Record<string, unknown>>(
+	(options) => streamOpenAI(openAIModel, context, options),
+	{ cacheRetention: "none", maxTokens: 4096 },
+);
+const googleParams = await capturePayload<Parameters<typeof googleWireBody>[0]>(
+	(options) => streamGoogle(googleModel, context, options),
+	{ maxTokens: 4096 },
+);
+const google = googleWireBody(googleParams);
+
+writeFixture("anthropic-stream.json", anthropic);
+writeFixture("anthropic-complete.json", { ...anthropic, stream: false });
+writeFixture("openai-stream.json", openAI);
+writeFixture("openai-complete.json", { ...openAI, stream: false });
+writeFixture("google-stream.json", google);
+writeFixture("google-complete.json", google);

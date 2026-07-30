@@ -1,0 +1,32 @@
+{
+  "id": "resp_fixture",
+  "object": "response",
+  "status": "completed",
+  "model": "gpt-test",
+  "output": [
+    {
+      "type": "message",
+      "id": "msg_fixture",
+      "role": "assistant",
+      "status": "completed",
+      "content": [
+        {
+          "type": "output_text",
+          "text": "Hello from fixture.",
+          "annotations": []
+        }
+      ]
+    }
+  ],
+  "usage": {
+    "input_tokens": 13,
+    "output_tokens": 5,
+    "total_tokens": 18,
+    "input_tokens_details": {
+      "cached_tokens": 2
+    },
+    "output_tokens_details": {
+      "reasoning_tokens": 1
+    }
+  }
+}
