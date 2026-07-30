@@ -97,12 +97,13 @@
                    provider-name model-id))
           (values
            (cadr-ai::make-protocol-provider
+            (cadr-ai:provider-definition-protocol definition)
             definition
             (let ((name
                     (cadr-ai:provider-definition-key-environment
                      definition)))
               (and name (uiop:getenv name)))
-            nil nil)
+            nil nil nil)
            (metadata-to-model metadata)))
         (let ((config
                 (resolve-provider-config

@@ -129,7 +129,8 @@
 
 (defun oauth-refresh-function (provider)
   (ecase provider
-    (:openai #'cadr-ai:refresh-openai-oauth-credential)
+    ((:openai :openai-codex)
+     #'cadr-ai:refresh-openai-oauth-credential)
     (:anthropic #'cadr-ai:refresh-anthropic-oauth-credential)))
 
 (defun resolve-stored-credential (path provider)
@@ -138,7 +139,9 @@
                (cadr-ai:read-auth-credential path provider))))
     (cond
       ((typep credential 'cadr-ai:oauth-credential)
-       (unless (member provider '(:openai :anthropic))
+       (unless
+           (member provider
+                   '(:openai :openai-codex :anthropic))
          (error 'cadr-ai:configuration-error
                 :message
                 (format nil
@@ -200,7 +203,8 @@
              (resolved-base-url
                (or configured-base-url
                    (and oauth-p
-                        (eq provider-id :openai)
+                        (member provider-id
+                                '(:openai :openai-codex))
                         "https://chatgpt.com/backend-api")
                    (cadr-ai:provider-definition-base-url definition))))
         (when (and (eq auth-source :none)
