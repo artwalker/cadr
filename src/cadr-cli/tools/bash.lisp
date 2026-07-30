@@ -42,6 +42,35 @@
     ;; Always send KILL to the group after the grace period.
     (signal-group "-KILL")))
 
+(defun join-bash-output-reader
+    (reader stream group-id last-output-time
+     &key (idle-grace 0.15))
+  (let ((forced-p nil)
+        (grace-ticks
+          (round
+           (* idle-grace
+              internal-time-units-per-second))))
+    (loop
+      while (sb-thread:thread-alive-p reader)
+      do
+      (when
+          (>= (- (get-internal-real-time)
+                 (funcall last-output-time))
+              grace-ticks)
+        (setf forced-p t)
+        (terminate-process-group group-id)
+        (ignore-errors (close stream))
+        (sb-thread:join-thread
+         reader :timeout 1.0 :default nil)
+        (when (sb-thread:thread-alive-p reader)
+          (ignore-errors
+            (sb-thread:terminate-thread reader)))
+        (return))
+      (sleep 0.01))
+    (unless (sb-thread:thread-alive-p reader)
+      (sb-thread:join-thread reader))
+    forced-p))
+
 (defun run-bash-command (cwd command timeout)
   (when (and timeout (<= timeout 0))
     (error "timeout must be positive"))
@@ -67,6 +96,11 @@
          (deadline (process-deadline timeout))
          (capture (make-string-output-stream))
          (live-output *bash-live-output*)
+         (process-output
+           (uiop:process-info-output process))
+         (last-output-time
+           (get-internal-real-time))
+         (forced-output-close-p nil)
          (reader-error nil)
          (reader
            (sb-thread:make-thread
@@ -78,20 +112,24 @@
                             :if-exists :supersede
                             :if-does-not-exist :create
                             :external-format :utf-8)
-                    (let ((stream
-                            (uiop:process-info-output process)))
-                      (loop for character =
-                              (read-char stream nil :eof)
-                            until (eq character :eof)
-                            do (write-char character capture)
-                               (write-char character full)
-                               (when live-output
-                                 (write-char
-                                  character live-output)
-                                 (finish-output
-                                  live-output)))))
+                    (loop for character =
+                            (read-char
+                             process-output nil :eof)
+                          until (eq character :eof)
+                          do
+                          (setf
+                           last-output-time
+                           (get-internal-real-time))
+                          (write-char character capture)
+                          (write-char character full)
+                          (when live-output
+                            (write-char
+                             character live-output)
+                            (finish-output
+                             live-output))))
                 (error (condition)
-                  (setf reader-error condition))))
+                  (unless forced-output-close-p
+                    (setf reader-error condition)))))
             :name "cadr-bash-output-reader"))
          (timed-out-p nil)
          (exit-code nil))
@@ -109,7 +147,11 @@
            (setf exit-code
                  (or (uiop:wait-process process)
                      128))
-           (sb-thread:join-thread reader)
+           (setf
+            forced-output-close-p
+            (join-bash-output-reader
+             reader process-output group-id
+             (lambda () last-output-time)))
            (when reader-error
              (error reader-error))
            (when timed-out-p
@@ -140,12 +182,73 @@
       (when (uiop:process-alive-p process)
         (terminate-process-group group-id))
       (when (sb-thread:thread-alive-p reader)
-        (sb-thread:join-thread reader))
+        (setf forced-output-close-p t)
+        (ignore-errors (close process-output))
+        (sb-thread:join-thread
+         reader :timeout 1.0 :default nil)
+        (when (sb-thread:thread-alive-p reader)
+          (ignore-errors
+            (sb-thread:terminate-thread reader))))
       (when (and (or timed-out-p reader-error)
                  (probe-file output-path))
         (delete-file output-path))
       (when (probe-file group-path)
         (delete-file group-path)))))
+
+(defun normalized-extension-bash-result (result)
+  (let ((output (or (getf result :output) ""))
+        (exit-code (or (getf result :exit-code) 0)))
+    (values
+     (list
+      (cadr-ai:make-text-content
+       :text
+       (format nil
+               "~A~:[~;~%~]Process exited with code ~D"
+               output
+               (plusp (length output))
+               exit-code)))
+     (list
+      :exit-code exit-code
+      :cancelled (getf result :cancelled-p)
+      :truncated (getf result :truncated-p)
+      :full-output-path
+      (getf result :full-output-path)))))
+
+(defun execute-user-bash
+    (extension-host cwd command
+     &key exclude-from-context-p timeout)
+  (let ((interception
+          (and extension-host
+               (cadr-agent::run-extension-lifecycle-hooks
+                extension-host :user-bash
+                :payload
+                (list
+                 :command command
+                 :exclude-from-context-p
+                 (not
+                  (null exclude-from-context-p))
+                 :cwd
+                 (namestring
+                  (uiop:ensure-directory-pathname
+                   cwd)))))))
+    (cond
+      ((getf interception :result)
+       (normalized-extension-bash-result
+        (getf interception :result)))
+      ((functionp (getf interception :operations))
+       (multiple-value-bind (result details)
+           (funcall
+            (getf interception :operations)
+            command cwd timeout)
+         (if (and
+              (listp result)
+              (or (null result)
+                  (keywordp (first result))))
+             (normalized-extension-bash-result
+              result)
+             (values result details))))
+      (t
+       (run-bash-command cwd command timeout)))))
 
 (defun make-bash-tool (cwd)
   (cadr-ai:make-tool

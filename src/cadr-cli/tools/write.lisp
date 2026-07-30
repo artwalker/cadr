@@ -28,7 +28,10 @@
               (resolve-tool-path
                cwd (required-string arguments "path")))
             (content (required-string arguments "content")))
-       (write-utf8-file path content)
+       (with-file-mutation-queue
+        path
+        (lambda ()
+          (write-utf8-file path content)))
        (values
         (list
          (cadr-ai:make-text-content

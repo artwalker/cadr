@@ -157,7 +157,7 @@
        (values nil :none)))))
 
 (defun resolve-provider-config
-    (&key provider model base-url
+    (&key provider model base-url api-key
           (config-path (default-config-path))
           (auth-path (default-auth-path))
           allow-missing-auth-p)
@@ -185,12 +185,17 @@
                  (cadr-ai::json-get settings "base-url")))
            (credential nil)
            (auth-source :none))
-      (multiple-value-setq (credential auth-source)
-        (resolve-stored-credential auth-path provider-id))
+      (unless api-key
+        (multiple-value-setq (credential auth-source)
+          (resolve-stored-credential auth-path provider-id)))
       (let* ((oauth-p
                (typep credential 'cadr-ai:oauth-credential))
-             (api-key
+             (resolved-api-key
                (cond
+                 ((cadr-ai::non-empty-string-p
+                   api-key)
+                  (setf auth-source :cli)
+                  api-key)
                  ((typep credential 'cadr-ai:api-key-credential)
                   (cadr-ai:api-key-credential-key credential))
                  (oauth-p nil)
@@ -208,12 +213,13 @@
                         "https://chatgpt.com/backend-api")
                    (cadr-ai:provider-definition-base-url definition))))
         (when (and (eq auth-source :none)
-                   (cadr-ai::non-empty-string-p api-key))
+                   (cadr-ai::non-empty-string-p
+                    resolved-api-key))
           (setf auth-source :environment))
         (multiple-value-bind (provider-object model-object)
             (cadr-ai:instantiate-provider
              provider-id
-             :api-key api-key
+             :api-key resolved-api-key
              :oauth-access-token
              (and oauth-p
                   (cadr-ai:oauth-credential-access credential))

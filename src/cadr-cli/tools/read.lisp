@@ -1,13 +1,27 @@
 (in-package #:cadr-cli)
 
 (defun read-tool-file (cwd arguments)
-  (let* ((path
-           (resolve-tool-path
-            cwd (required-string arguments "path")))
-         (offset (or (optional-integer arguments "offset" 1) 1))
+  (let* ((offset (or (optional-integer arguments "offset" 1) 1))
          (limit (optional-integer arguments "limit"))
-         (text (uiop:read-file-string
-                path :external-format :utf-8))
+         (path
+           (resolve-readable-tool-path
+            cwd (required-string arguments "path"))))
+    (multiple-value-bind (image-bytes mime-type hints)
+        (process-image-file path)
+      (when mime-type
+        (let ((note
+                (format nil "Read image file [~A]~@[~%~{~A~^~%~}~]"
+                        mime-type hints)))
+          (return-from read-tool-file
+            (values
+             (list
+              (cadr-ai:make-text-content :text note)
+              (cadr-ai:make-image-content
+               :mime-type mime-type
+               :data (encode-base64-bytes image-bytes)))
+             nil)))))
+    (let* ((text (uiop:read-file-string
+                  path :external-format :utf-8))
          (lines (text-lines text)))
     (when (< offset 1)
       (error "offset must be at least 1"))
@@ -25,7 +39,7 @@
           (bounded-lines selected :head)
         (values
          (list (cadr-ai:make-text-content :text output))
-         details)))))
+         details))))))
 
 (defun make-read-tool (cwd)
   (cadr-ai:make-tool

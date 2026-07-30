@@ -7,6 +7,8 @@
    #:make-bash-tool
    #:make-glob-tool
    #:make-grep-tool
+   #:make-find-tool
+   #:make-ls-tool
    #:make-coding-tools
    #:run-repl
    #:run-tui
@@ -19,6 +21,108 @@
    #:default-config-path
    #:default-auth-path
    #:handle-auth-command
+   #:make-file-auth-storage
+   #:auth-storage-read
+   #:auth-storage-modify
+   #:auth-storage-delete
+   #:auth-storage-list
+   #:make-runtime-credentials
+   #:runtime-credentials-set-api-key
+   #:runtime-credentials-remove-api-key
+   #:make-file-models-store
+   #:models-store-read
+   #:models-store-write
+   #:models-store-delete
+   #:make-model-registry
+   #:refresh-model-registry
+   #:model-registry-all
+   #:model-registry-find
+   #:model-registry-error
+   #:resolve-scoped-models
+   #:resolve-model
+   #:parse-model-spec
+   #:parse-credential-print-command
+   #:credential-for-print
+   #:render-user-message-lines
+   #:render-assistant-message-lines
+   #:make-status-log
+   #:status-log-add-content
+   #:status-log-show
+   #:status-log-entries
+   #:make-startup-input-queue
+   #:queue-startup-input
+   #:pop-startup-input
+   #:make-session-search-record
+   #:session-search-record-id
+   #:filter-and-sort-sessions
+   #:thread-session-records
+   #:format-cwd-for-footer
+   #:fit-footer-text
+   #:footer-usage-summary
+   #:make-footer-data-provider
+   #:footer-data-provider-git-branch
+   #:footer-data-provider-on-branch-change
+   #:footer-data-provider-set-status
+   #:footer-data-provider-statuses
+   #:footer-data-provider-dispose
+   #:detect-background-from-environment
+   #:theme-detection-theme
+   #:theme-detection-source
+   #:theme-detection-confidence
+   #:rgb-background-theme
+   #:parse-auto-theme-setting
+   #:resolve-theme-setting
+   #:theme-export-colors
+   #:load-theme-summaries
+   #:clipboard-command-candidates
+   #:osc52-copy-sequence
+   #:image-dimensions-from-bytes
+   #:process-image-bytes
+   #:image-process-result
+   #:image-process-result-bytes
+   #:image-process-result-mime-type
+   #:image-process-result-original-width
+   #:image-process-result-original-height
+   #:image-process-result-width
+   #:image-process-result-height
+   #:image-process-result-resized-p
+   #:image-process-result-hints
+   #:format-image-dimension-note
+   #:supports-syntax-language-p
+   #:render-highlighted-html
+   #:simple-syntax-highlight
+   #:make-tree-selection
+   #:switch-tree-selection-filter
+   #:tree-selection-selected-id
+   #:make-tool-render-session
+   #:update-tool-render-session
+   #:render-tool-session
+   #:detect-cache-miss
+   #:compute-cache-waste
+   #:cache-miss-missed-tokens
+   #:cache-miss-missed-cost
+   #:cache-miss-idle-milliseconds
+   #:cache-miss-model-changed-p
+   #:cache-waste-missed-tokens
+   #:cache-waste-missed-cost
+   #:cache-waste-miss-count
+   #:cache-waste-misses
+   #:should-run-first-time-setup-p
+   #:settings-analytics-enabled-p
+   #:settings-tracking-id
+   #:settings-set-analytics
+   #:apply-http-proxy-setting
+   #:parse-null-environment
+   #:restore-empty-sandbox-environment
+   #:version-check-request
+   #:get-latest-pi-release
+   #:get-latest-pi-version
+   #:newer-package-version-p
+   #:check-for-new-pi-version
+   #:newer-release
+   #:valid-thinking-level-p
+   #:thinking-theme-color-name
+   #:build-system-prompt
    #:native-image-save-arguments
    #:executable-main
    #:main))
