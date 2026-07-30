@@ -131,3 +131,32 @@
         (is (member :tool-call-delta (collect-event-types events)))
         (is (eq :done
                 (cadr-ai:stream-event-type (car (last events)))))))))
+
+(test openai-completions-preserves-routed-response-model
+  (multiple-value-bind (provider model)
+      (completions-provider-and-model)
+    (let ((response
+            (cadr-ai::json-object
+             "id" "chatcmpl-routed"
+             "model" "anthropic/claude-opus-4.8"
+             "choices"
+             (vector
+              (cadr-ai::json-object
+               "message"
+               (cadr-ai::json-object "content" "ok")
+               "finish_reason" "stop")))))
+      (let ((message
+              (cadr-ai:parse-complete-response
+               provider model response)))
+        (is (string=
+             (cadr-ai:model-id model)
+             (cadr-ai:assistant-message-model message)))
+        (is (string=
+             "anthropic/claude-opus-4.8"
+             (cadr-ai:assistant-message-response-model message))))
+      (setf (gethash "model" response)
+            (cadr-ai:model-id model))
+      (is (null
+           (cadr-ai:assistant-message-response-model
+            (cadr-ai:parse-complete-response
+             provider model response)))))))

@@ -45,7 +45,7 @@
   (let* ((values
            (list
             (cons (cadr-cli::legacy-environment-name "PROVIDER")
-                  "ollama")
+                  "deepseek")
             (cons (cadr-cli::legacy-environment-name "MODEL")
                   "legacy-model")
             (cons (cadr-cli::legacy-environment-name "BASE_URL")
@@ -58,8 +58,9 @@
     (let ((config
             (cadr-cli:resolve-provider-config
              :config-path #P"/definitely/missing/config.json"
-             :auth-path #P"/definitely/missing/auth.json")))
-      (is (string= "ollama"
+             :auth-path #P"/definitely/missing/auth.json"
+             :allow-missing-auth-p t)))
+      (is (string= "deepseek"
                    (cadr-cli:provider-config-name config)))
       (is (string= "legacy-model"
                    (cadr-ai:model-id
@@ -76,7 +77,7 @@
 
 (test new-environment-values-win-without-reading-legacy-values
   (let* ((values
-           `(("CADR_PROVIDER" . "ollama")
+           `(("CADR_PROVIDER" . "deepseek")
              ("CADR_MODEL" . "new-model")
              ("CADR_BASE_URL" . "https://new.example")
              (,(cadr-cli::legacy-environment-name "PROVIDER")
@@ -93,8 +94,9 @@
     (let ((config
             (cadr-cli:resolve-provider-config
              :config-path #P"/definitely/missing/config.json"
-             :auth-path #P"/definitely/missing/auth.json")))
-      (is (string= "ollama"
+             :auth-path #P"/definitely/missing/auth.json"
+             :allow-missing-auth-p t)))
+      (is (string= "deepseek"
                    (cadr-cli:provider-config-name config)))
       (is (string= "new-model"
                    (cadr-ai:model-id
@@ -104,20 +106,16 @@
                     (cadr-cli:provider-config-model config)))))
     (is (string= "" (get-output-stream-string warnings)))))
 
-(test ollama-needs-no-api-key
+(test non-baseline-ollama-provider-is-not-registered
   (let ((cadr-cli::*environment-function* (constantly nil)))
-    (let ((config
-            (cadr-cli:resolve-provider-config
-             :provider "ollama"
-             :config-path #P"/definitely/missing/config.json"
-             :auth-path #P"/definitely/missing/auth.json")))
-      (is (string= "gpt-oss:20b"
-                   (cadr-ai:model-id
-                    (cadr-cli:provider-config-model config))))
-      (is (eq :none
-              (cadr-cli:provider-config-auth-source config))))))
+    (signals cadr-ai:configuration-error
+      (cadr-cli:resolve-provider-config
+       :provider "ollama"
+       :config-path #P"/definitely/missing/config.json"
+       :auth-path #P"/definitely/missing/auth.json"
+       :allow-missing-auth-p t))))
 
-(test stored-oauth-owns-openai-auth-and-selects-codex-endpoint
+(test stored-oauth-owns-openai-codex-auth-and-selects-codex-endpoint
   (with-test-directory (directory)
     (let ((auth-path (merge-pathnames "auth.json" directory))
           (cadr-cli::*environment-function*
@@ -127,16 +125,19 @@
       (cadr-ai:write-auth-credential
        auth-path
        (cadr-ai:make-oauth-credential
-        :provider :openai
+        :provider :openai-codex
         :access "oauth-access"
         :refresh "oauth-refresh"
         :expires (+ (cadr-ai::unix-milliseconds) 3600000)
         :account-id "acct"))
       (let ((config
               (cadr-cli:resolve-provider-config
-               :provider "openai"
+               :provider "openai-codex"
                :config-path #P"/definitely/missing/config.json"
                :auth-path auth-path)))
+        (is (string= "gpt-5.5"
+                     (cadr-ai:model-id
+                      (cadr-cli:provider-config-model config))))
         (is (eq :oauth
                 (cadr-cli:provider-config-auth-source config)))
         (is (string= "https://chatgpt.com/backend-api"

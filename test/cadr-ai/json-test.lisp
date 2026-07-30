@@ -66,3 +66,17 @@
     (is (string=
          "{\"a\":\"x\\ny\",\"z\":1}"
          (cadr-ai::stringify-json object)))))
+
+(test native-json-removes-unpaired-surrogates
+  (let* ((surrogate (code-char #xd83d))
+         (emoji (code-char #x1f648))
+         (text
+           (coerce
+            (list #\a surrogate #\b emoji)
+            'string)))
+    (is (string=
+         (format nil "ab~C" emoji)
+         (cadr-ai:sanitize-surrogates text)))
+    (is (string=
+         (format nil "\"ab~C\"" emoji)
+         (cadr-ai::stringify-json text)))))

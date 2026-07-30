@@ -116,12 +116,56 @@
           (cadr-ai:find-model-metadata :google "gemini-3.6-flash"))
         (deepseek
           (cadr-ai:find-model-metadata :deepseek
-                                     "deepseek-v4-flash")))
+                                     "deepseek-v4-pro")))
     (is (= 1048576
            (cadr-ai:model-metadata-context-window gemini)))
     (is (= 384000
            (cadr-ai:model-metadata-max-output-tokens deepseek)))
     (is (string=
-         "deepseek-v4-flash"
+         "deepseek-v4-pro"
          (cadr-ai:provider-definition-default-model
           (cadr-ai:find-provider-definition :deepseek))))))
+
+(test catalog-pricing-tiers-apply-to-the-whole-request
+  (let* ((metadata
+           (cadr-ai:find-model-metadata
+            :openai-codex "gpt-5.6-sol"))
+         (short
+           (cadr-ai:make-usage
+            :input 200000 :output 100000 :cache-read 72000))
+         (long
+           (cadr-ai:make-usage
+            :input 200000 :output 100000
+            :cache-read 72000 :cache-write 1)))
+    (cadr-ai:calculate-usage-cost short metadata)
+    (cadr-ai:calculate-usage-cost long metadata)
+    (is (= 1d0
+           (cadr-ai:cost-input (cadr-ai:usage-cost short))))
+    (is (= 3d0
+           (cadr-ai:cost-output (cadr-ai:usage-cost short))))
+    (is (= 2d0
+           (cadr-ai:cost-input (cadr-ai:usage-cost long))))
+    (is (= 4.5d0
+           (cadr-ai:cost-output (cadr-ai:usage-cost long))))
+    (is (<
+         (abs
+          (- 0.0000125d0
+             (cadr-ai:cost-cache-write
+              (cadr-ai:usage-cost long))))
+         1d-16))))
+
+(test catalog-thinking-level-support-is-exact
+  (flet ((levels (provider id)
+           (cadr-ai:supported-thinking-levels
+            (cadr-ai::model-from-metadata
+             (cadr-ai:find-model-metadata provider id)))))
+    (is (equal '(:off :minimal :low :medium :high :max)
+               (levels :anthropic "claude-opus-4-6")))
+    (is (equal '(:off :minimal :low :medium :high :xhigh :max)
+               (levels :anthropic "claude-opus-4-8")))
+    (is (equal '(:medium :high :xhigh)
+               (levels :openai "gpt-5.5-pro")))
+    (is (equal '(:off :high :max)
+               (levels :deepseek "deepseek-v4-flash")))
+    (is (equal '(:low :high :max)
+               (levels :kimi-coding "k3")))))
