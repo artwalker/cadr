@@ -36,3 +36,16 @@
   (is (equal '("ab中" "cd")
              (cadr-tui:wrap-text "ab中cd" 4)))
   (is (equal '("" "") (cadr-tui:wrap-text (format nil "~%") 8))))
+
+(test regional-indicator-width-stays-stable-during-streaming
+  (loop for codepoint from #x1f1e6 to #x1f1ff
+        for indicator = (string (code-char codepoint))
+        do (is (= 2 (cadr-tui:visible-width indicator))))
+  (dolist (flag '("🇯🇵" "🇺🇸" "🇬🇧" "🇨🇳" "🇩🇪" "🇫🇷"))
+    (is (= 2 (cadr-tui:visible-width flag))))
+  (dolist (emoji '("👍" "👍🏻" "✅" "⚡" "⚡️" "👨" "👨‍💻" "🏳️‍🌈"))
+    (is (= 2 (cadr-tui:visible-width emoji))))
+  (let ((wrapped (cadr-tui:wrap-text "      - 🇨" 9)))
+    (is (= 2 (length wrapped)))
+    (is (= 7 (cadr-tui:visible-width (first wrapped))))
+    (is (= 2 (cadr-tui:visible-width (second wrapped))))))

@@ -99,6 +99,39 @@
           (is (not (search "generated.lisp" text)))
           (is (not (search "private.txt" text))))))))
 
+(test nested-gitignore-rules-do-not-leak-into-sibling-trees
+  (with-test-directory (directory)
+    (write-text
+     (merge-pathnames "a/.gitignore" directory)
+     (format nil "ignored.txt~%"))
+    (write-text
+     (merge-pathnames "a/deep/.gitignore" directory)
+     (format nil "secret.txt~%"))
+    (dolist (path '("a/ignored.txt"
+                    "a/kept.txt"
+                    "a/deep/ignored.txt"
+                    "a/deep/secret.txt"
+                    "a/deep/kept.txt"
+                    "b/ignored.txt"
+                    "b/kept.txt"
+                    "root.txt"))
+      (write-text (merge-pathnames path directory) ""))
+    (multiple-value-bind (content details)
+        (invoke-tool
+         (make-glob-tool directory)
+         (args "pattern" "**/*.txt" "limit" 100))
+      (declare (ignore details))
+      (is
+       (equal
+        '("a/deep/kept.txt"
+          "a/kept.txt"
+          "b/ignored.txt"
+          "b/kept.txt"
+          "root.txt")
+        (uiop:split-string
+         (result-text content)
+         :separator '(#\Newline)))))))
+
 (test grep-output-is-bounded-by-utf8-bytes-even-with-context
   (with-test-directory (directory)
     (write-text
