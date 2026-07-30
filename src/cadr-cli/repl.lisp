@@ -9,7 +9,8 @@
 
 (defun dispatch-user-input
     (line prompt-function
-     &key command-function template-function)
+     &key command-function template-function
+       bash-function)
   (let ((trimmed
           (string-trim
            '(#\Space #\Tab #\Newline #\Return)
@@ -17,24 +18,43 @@
     (when (zerop (length trimmed))
       (return-from dispatch-user-input
         (values :empty nil)))
-    (if (char= (char trimmed 0) #\/)
-        (multiple-value-bind (handled command-result)
-            (if command-function
-                (funcall command-function line)
-                (values nil nil))
-          (if handled
-              (values :command command-result)
-              (multiple-value-bind (expanded found-p)
-                  (if template-function
-                      (funcall template-function line)
-                      (values line nil))
-                (if found-p
-                    (values
-                     :prompt
-                     (funcall prompt-function expanded))
-                    (values :unknown-command nil)))))
-        (values :prompt
-                (funcall prompt-function line)))))
+    (cond
+      ((and bash-function
+            (char= (char trimmed 0) #\!))
+       (let* ((exclude-p
+                (and (> (length trimmed) 1)
+                     (char= (char trimmed 1)
+                            #\!)))
+              (start (if exclude-p 2 1))
+              (command
+                (string-left-trim
+                 '(#\Space #\Tab)
+                 (subseq trimmed start))))
+         (if (zerop (length command))
+             (values :empty nil)
+             (values
+              :bash
+              (funcall
+               bash-function command exclude-p)))))
+      ((char= (char trimmed 0) #\/)
+       (multiple-value-bind (handled command-result)
+           (if command-function
+               (funcall command-function line)
+               (values nil nil))
+         (if handled
+             (values :command command-result)
+             (multiple-value-bind (expanded found-p)
+                 (if template-function
+                     (funcall template-function line)
+                     (values line nil))
+               (if found-p
+                   (values
+                    :prompt
+                    (funcall prompt-function expanded))
+                   (values :unknown-command nil))))))
+      (t
+       (values :prompt
+               (funcall prompt-function line))))))
 
 (defun run-repl (prompt-function
                  &key
@@ -42,7 +62,8 @@
                    (output *standard-output*)
                    (render-response t)
                    command-function
-                   template-function)
+                   template-function
+                   bash-function)
   (labels
       ((run-prompt (text)
          (let ((message (funcall prompt-function text)))
@@ -71,9 +92,11 @@
           (dispatch-user-input
            line #'run-prompt
            :command-function command-function
-           :template-function template-function)
-        (declare (ignore result))
+           :template-function template-function
+           :bash-function bash-function)
         (when (eq kind :unknown-command)
           (format output
-                  "error> Unknown command~%"))))
+                  "error> Unknown command~%"))
+        (when (eq kind :bash)
+          (format output "~A~%" result))))
     (finish-output output))))

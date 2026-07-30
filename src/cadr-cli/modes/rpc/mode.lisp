@@ -269,9 +269,23 @@
              (rpc-state-prompt-thread state))))
         (cond
           ((string= behavior "steer")
-           (cadr-agent:agent-steer agent message))
+           (multiple-value-bind
+                 (processed handled-p)
+               (cadr-agent::apply-agent-input-hooks
+                agent message :rpc
+                :streaming-behavior :steer)
+             (unless handled-p
+               (cadr-agent:agent-steer
+                agent processed))))
           ((string= behavior "followUp")
-           (cadr-agent:agent-follow-up agent message))
+           (multiple-value-bind
+                 (processed handled-p)
+               (cadr-agent::apply-agent-input-hooks
+                agent message :rpc
+                :streaming-behavior :follow-up)
+             (unless handled-p
+               (cadr-agent:agent-follow-up
+                agent processed))))
           (t
            (error
             "Agent is already processing a prompt; streamingBehavior is required")))
@@ -428,11 +442,20 @@
           (handler-case
               (multiple-value-bind
                     (content details)
-                  (run-bash-command
+                  (execute-user-bash
+                   (cli-extension-manager-host
+                    (rpc-state-extension-manager
+                     state))
                    (cli-extension-manager-cwd
                     (rpc-state-extension-manager
                      state))
-                   command nil)
+                   command
+                   :exclude-from-context-p
+                   (not
+                    (null
+                     (cadr-ai::json-get
+                      object
+                      "excludeFromContext"))))
                 (when (rpc-claim-bash state token)
                   (rpc-write-object
                    state
@@ -801,12 +824,28 @@
       ((string= type "prompt")
        (rpc-start-prompt state object))
       ((string= type "steer")
-       (cadr-agent:agent-steer
-        agent (rpc-prompt-message object))
+       (multiple-value-bind
+             (message handled-p)
+           (cadr-agent::apply-agent-input-hooks
+            agent
+            (rpc-prompt-message object)
+            :rpc
+            :streaming-behavior :steer)
+         (unless handled-p
+           (cadr-agent:agent-steer
+            agent message)))
        (rpc-success id type))
       ((string= type "follow_up")
-       (cadr-agent:agent-follow-up
-        agent (rpc-prompt-message object))
+       (multiple-value-bind
+             (message handled-p)
+           (cadr-agent::apply-agent-input-hooks
+            agent
+            (rpc-prompt-message object)
+            :rpc
+            :streaming-behavior :follow-up)
+         (unless handled-p
+           (cadr-agent:agent-follow-up
+            agent message)))
        (rpc-success id type))
       ((string= type "abort")
        (cadr-agent:agent-abort agent)

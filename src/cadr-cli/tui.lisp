@@ -16,7 +16,8 @@
   (output-tokens 0 :type (integer 0 *))
   (cache-tokens 0 :type (integer 0 *))
   (cost 0d0 :type double-float)
-  (cost-known-p nil :type boolean))
+  (cost-known-p nil :type boolean)
+  status-message)
 
 (defun make-tui-state (&key model session messages)
   (let ((state
@@ -46,6 +47,19 @@
         :type :notice
         :text trimmed))))
   state)
+
+(defun render-tui-status-indicator
+    (message width)
+  (let ((blank
+          (make-string width
+                       :initial-element #\Space)))
+    (if message
+        (list
+         (cadr-tui:truncate-to-width
+          (format nil "… ~A" message)
+          width "")
+         blank)
+        (list blank blank))))
 
 (defun assistant-price-known-p (message)
   (not
@@ -90,6 +104,19 @@
      (accumulate-message-usage state message)))
   state)
 
+(defun reset-tui-messages (state messages)
+  (setf
+   (tui-state-entries state) nil
+   (tui-state-current-assistant state) nil
+   (tui-state-input-tokens state) 0
+   (tui-state-output-tokens state) 0
+   (tui-state-cache-tokens state) 0
+   (tui-state-cost state) 0d0
+   (tui-state-cost-known-p state) nil)
+  (dolist (message messages)
+    (seed-tui-message state message))
+  state)
+
 (defun tool-arguments-summary (call)
   (handler-case
       (cadr-ai::stringify-json
@@ -114,12 +141,43 @@
    :key #'tui-entry-tool-call-id
    :test #'string=))
 
-(defun tui-handle-agent-event (state event)
+(defun tui-handle-agent-event
+    (state event
+     &key
+       display-messages
+       compaction-summary
+       compaction-tokens-before)
   (let ((type (cadr-agent:agent-event-type event))
         (message (cadr-agent:agent-event-message event))
         (stream-event
           (cadr-agent:agent-event-stream-event event)))
     (case type
+      (:agent-start
+       (setf
+        (tui-state-status-message state)
+        "Working..."))
+      (:auto-retry-start
+       (setf
+        (tui-state-status-message state)
+        (format
+         nil "Retrying (~D/~D) in ~Ds..."
+         (or
+          (cadr-agent:agent-event-attempt event)
+          1)
+         (or
+          (cadr-agent:agent-event-max-attempts
+           event)
+          1)
+         (ceiling
+          (or
+           (cadr-agent:agent-event-delay-ms
+            event)
+           0)
+          1000))))
+      (:agent-settled
+       (setf
+        (tui-state-status-message state)
+        nil))
       (:message-start
        (typecase message
          (cadr-ai:user-message
@@ -214,12 +272,35 @@
              (tui-entry-tool-block entry))
             t))))
       (:compaction-start
+       (setf
+        (tui-state-status-message state)
+        "Compacting context...")
        (add-tui-notice state
                        "Compacting context…"))
       (:compaction-end
-       (add-tui-notice state
-                       "Context compacted"))
+       (setf
+        (tui-state-status-message state)
+        nil)
+       (when display-messages
+         (reset-tui-messages
+          state display-messages))
+       (if compaction-summary
+           (append-tui-entry
+            state
+            (make-tui-entry
+             :type :compaction-summary
+             :text
+             (format
+              nil
+              "~@[~:D tokens compacted~]~@[~%~A~]"
+              compaction-tokens-before
+              compaction-summary)))
+           (add-tui-notice state
+                           "Context compacted")))
       (:compaction-error
+       (setf
+        (tui-state-status-message state)
+        nil)
        (add-tui-notice
         state
         (format nil
@@ -243,6 +324,11 @@
      (cadr-tui:render-tool-block
       (tui-entry-tool-block entry)
       width))
+    (:compaction-summary
+     (cadr-tui:wrap-text
+      (format nil "Compaction summary: ~A"
+              (tui-entry-text entry))
+      width))
     (:notice
      (cadr-tui:wrap-text
       (format nil "session> ~A"
@@ -262,7 +348,7 @@
   (multiple-value-bind
         (editor-lines editor-row editor-column)
       (cadr-tui:render-editor editor width)
-    (let* ((status-lines 1)
+    (let* ((status-lines 3)
            (content-height
              (max 0
                   (- rows
@@ -270,16 +356,53 @@
                      (length editor-lines))))
            (all-content
              (if overlay
-                 (cadr-tui:render-select-list
-                  overlay width)
+                 (cond
+                   ((session-selector-state-p
+                     overlay)
+                    (render-session-selector
+                     overlay width))
+                   ((tree-selector-state-p
+                     overlay)
+                    (render-tree-selector
+                     overlay width))
+                   ((model-selector-state-p
+                     overlay)
+                    (render-model-selector
+                     overlay width))
+                   ((scoped-models-selector-state-p
+                     overlay)
+                    (render-scoped-models-selector
+                     overlay width))
+                   ((trust-selector-state-p
+                     overlay)
+                    (render-trust-selector
+                     overlay width))
+                   ((settings-selector-state-p
+                     overlay)
+                    (render-settings-selector
+                     overlay width))
+                   (t
+                    (cadr-tui:render-select-list
+                     overlay width)))
                  (loop for entry in
                        (tui-state-entries state)
                        append
                        (render-tui-entry
                         entry width))))
            (visible
-             (trailing-lines
-              all-content content-height))
+             (if
+                 (and
+                  overlay
+                  (plusp content-height)
+                  (> (length all-content)
+                     content-height))
+                 (cons
+                  (first all-content)
+                  (trailing-lines
+                   (rest all-content)
+                   (1- content-height)))
+                 (trailing-lines
+                  all-content content-height)))
            (padding
              (make-list
               (max 0
@@ -308,6 +431,9 @@
               (tui-state-session state))))
       (values
        (nconc padding visible
+              (render-tui-status-indicator
+               (tui-state-status-message state)
+               width)
               (list status)
               editor-lines)
        (+ content-height
@@ -393,17 +519,54 @@
   #-sbcl
   *standard-output*)
 
+(defun make-import-confirmation-list
+    (line path)
+  (cadr-tui:make-select-list
+   :items
+   (list
+    (cadr-tui:make-select-item
+     :label "Yes"
+     :value
+     (list :confirmed-p t
+           :line line
+           :path path))
+    (cadr-tui:make-select-item
+     :label "No"
+     :value
+     (list :confirmed-p nil
+           :line line
+           :path path)))))
+
 (defparameter +tui-autocomplete-command-specifications+
   '(("model" "Select the active model" nil)
+    ("scoped-models"
+     "Configure models used for cycling" nil)
+    ("tree" "Navigate the session tree" nil)
+    ("trust"
+     "Save project trust for future sessions" nil)
+    ("settings" "Configure cadr settings" nil)
+    ("resume" "Resume a saved session" nil)
     ("sessions" "Select a saved session" nil)
     ("switch" "Switch to a session" "<session-id>")
     ("branch" "Set the session branch point" "<entry-id>")
-    ("compact" "Compact the current context" nil)
+    ("name" "Set the session display name" "<name>")
+    ("session" "Show session info and stats" nil)
+    ("share" "Share session as a secret GitHub gist" nil)
+    ("changelog" "Show changelog entries" nil)
+    ("hotkeys" "Show keyboard shortcuts" nil)
+    ("fork" "Fork from a previous user message" nil)
+    ("new" "Start a new session" nil)
+    ("compact" "Compact the current context"
+     "[instructions]")
+    ("copy" "Copy the last agent message" nil)
+    ("clone" "Duplicate the current session" nil)
+    ("import" "Import a JSONL session" "<path>")
     ("export" "Export the current session" "[path]")
     ("login" "Authenticate a provider" "[provider]")
     ("logout" "Remove provider authentication" "[provider]")
-    ("reload" "Reload extensions" nil)
-    ("install" "Install an extension" "<source>")))
+    ("reload" "Reload settings and resources" nil)
+    ("install" "Install an extension" "<source>")
+    ("quit" "Quit cadr" nil)))
 
 (defun find-tui-fd-program ()
   (loop for directory
@@ -437,22 +600,104 @@
    :fd-path
    (find-tui-fd-program)))
 
+(defun route-tui-submission
+    (line busy-p busy-input-function
+     start-function)
+  (if busy-p
+      (when busy-input-function
+        (funcall busy-input-function line)
+        :queued)
+      (progn
+        (funcall start-function line)
+        :started)))
+
+(defun call-with-sigcont-handler
+    (handler thunk)
+  #+sbcl
+  (sb-sys:with-interrupt-bindings
+    (sb-sys:enable-interrupt
+     sb-unix:sigcont
+     (lambda (signal code context)
+       (declare (ignore signal code context))
+       (funcall handler)))
+    (funcall thunk))
+  #-sbcl
+  (declare (ignore handler))
+  #-sbcl
+  (funcall thunk))
+
+(defun suspend-current-process ()
+  #+sbcl
+  (sb-posix:kill
+   (sb-posix:getpid)
+   sb-unix:sigtstp)
+  #-sbcl
+  (error "Suspend is unsupported on this Lisp runtime"))
+
+(defun suspend-tui
+    (platform
+     stop-function
+     start-function
+     render-function
+     suspend-function
+     signal-wrapper
+     &key notice-function)
+  (when (eq platform :windows)
+    (when notice-function
+      (funcall
+       notice-function
+       "Suspend to background is not supported on Windows"))
+    (return-from suspend-tui nil))
+  (funcall stop-function)
+  (funcall
+   signal-wrapper
+   (lambda ()
+     (funcall start-function)
+     (funcall render-function))
+   suspend-function)
+  t)
+
 (defun run-tui
     (prompt-function
      &key
        command-function
        template-function
+       bash-function
        set-event-consumer
        set-notice-consumer
+       session-state-function
+       busy-input-function
        model-items-function
+       model-selector-function
+       scoped-models-selector-function
+       trust-selector-function
+       settings-selector-function
+       fork-items-function
        session-items-function
+       all-session-items-function
+       tree-state-function
        on-model-selected
+       resolve-model-reference-function
+       on-trust-selected
+       on-import-confirmed
+       on-fork-selected
+       on-new-session
        on-session-selected
+       on-tree-selected
+       on-tree-label
+       tree-copy-function
+       current-session-path
+       session-selector-keybindings
+       session-selector-keybindings-function
+       tree-selector-keybindings
+       tree-selector-keybindings-function
+       (session-selector-show-rename-hint-p t)
        abort-function
        reset-abort-function
        model
        session
        messages
+       initial-notices
        (terminal
          (cadr-tui:make-process-terminal)))
   (let* ((state
@@ -479,7 +724,11 @@
          (overlay-kind nil)
          (busy-p nil)
          (done-p nil)
-         (worker nil))
+         (worker nil)
+         (session-loader-worker nil)
+         (active-session-path current-session-path))
+    (dolist (text initial-notices)
+      (add-tui-notice state text))
     (labels
         ((render ()
            (sb-thread:with-mutex (lock)
@@ -501,8 +750,29 @@
            (render))
          (consume-event (event)
            (sb-thread:with-mutex (lock)
-             (tui-handle-agent-event
-              state event))
+             (if
+                 (and
+                  (eq
+                   :compaction-end
+                   (cadr-agent:agent-event-type
+                    event))
+                  session-state-function)
+                 (multiple-value-bind
+                       (display-messages
+                        compaction-summary
+                        compaction-tokens-before)
+                     (funcall
+                      session-state-function)
+                   (tui-handle-agent-event
+                    state event
+                    :display-messages
+                    display-messages
+                    :compaction-summary
+                    compaction-summary
+                    :compaction-tokens-before
+                    compaction-tokens-before))
+                 (tui-handle-agent-event
+                  state event)))
            (render))
          (start-work (line)
            (unless busy-p
@@ -523,7 +793,9 @@
                                :command-function
                                command-function
                                :template-function
-                               template-function)
+                               template-function
+                               :bash-function
+                               bash-function)
                             (when
                                 (eq kind
                                     :unknown-command)
@@ -544,16 +816,153 @@
                    (render)))
                :name "cadr-tui-dispatch"))))
          (open-selector (kind items)
-           (setf overlay-kind kind
-                 overlay
-                 (cadr-tui:make-select-list
-                  :items items
-                  :height
-                  (max 3
-                       (- (cadr-tui:terminal-rows
-                           terminal)
-                          5))))
+           (setf
+            overlay-kind kind
+            overlay
+            (if (eq kind :session)
+                (make-session-selector-state
+                 :current-sessions
+                 (session-select-items-to-records
+                  items)
+                 :current-session-path
+                 active-session-path
+                 :show-rename-hint-p
+                 session-selector-show-rename-hint-p
+                 :keybindings
+                 (if session-selector-keybindings-function
+                     (funcall
+                      session-selector-keybindings-function)
+                     session-selector-keybindings)
+                 :rename-function
+                 #'rename-session-at-path
+                 :delete-function
+                 #'delete-session-file)
+                (cadr-tui:make-select-list
+                 :items items
+                 :height
+                 (max 3
+                      (- (cadr-tui:terminal-rows
+                          terminal)
+                         5)))))
            (render))
+         (open-tree-selector ()
+           (multiple-value-bind
+                 (entries current-leaf-id)
+               (if tree-state-function
+                   (funcall tree-state-function)
+                   (values nil nil))
+             (setf
+              overlay-kind :tree
+              overlay
+              (make-tree-selector-state
+               :entries entries
+               :current-leaf-id current-leaf-id
+               :keybindings
+               (if tree-selector-keybindings-function
+                   (funcall
+                    tree-selector-keybindings-function)
+                   tree-selector-keybindings)
+               :copy-callback
+               tree-copy-function
+               :label-callback
+               on-tree-label))
+             (render)))
+         (open-model-selector (&optional query)
+           (if model-selector-function
+               (progn
+                 (setf
+                  overlay-kind :model
+                  overlay
+                  (if query
+                      (funcall
+                       model-selector-function query)
+                      (funcall
+                       model-selector-function)))
+                 (render))
+               (open-selector
+                :model
+                (if model-items-function
+                    (funcall
+                     model-items-function)
+                    nil))))
+         (open-scoped-models-selector ()
+           (setf
+            overlay-kind :scoped-models
+            overlay
+            (and scoped-models-selector-function
+                 (funcall
+                  scoped-models-selector-function)))
+           (if overlay
+               (render)
+               (notice "No models available")))
+         (open-trust-selector ()
+           (setf
+            overlay-kind :trust
+            overlay
+            (and trust-selector-function
+                 (funcall trust-selector-function)))
+           (if overlay
+               (render)
+               (notice
+                "Project trust is unavailable")))
+         (open-settings-selector ()
+           (setf
+            overlay-kind :settings
+            overlay
+            (and settings-selector-function
+                 (funcall
+                  settings-selector-function)))
+           (if overlay
+               (render)
+               (notice "Settings are unavailable")))
+         (open-import-confirmation (line path)
+           (setf
+            overlay-kind :import-confirmation
+            overlay
+            (make-import-confirmation-list
+             line path))
+           (render))
+         (open-fork-selector ()
+           (let ((items
+                   (and fork-items-function
+                        (funcall
+                         fork-items-function))))
+             (if items
+                 (progn
+                   (open-selector :fork items)
+                   (setf
+                    (cadr-tui::select-list-selected
+                     overlay)
+                    (1- (length items)))
+                   (render))
+                 (notice
+                  "No messages to fork from"))))
+         (replace-session-state
+             (selected-session selected-messages
+              selected-path)
+           (setf
+            (tui-state-session state)
+            (or selected-session
+                (tui-state-session state)))
+           (when selected-path
+             (setf
+              active-session-path selected-path))
+           (setf
+            (tui-state-entries state) nil
+            (tui-state-current-assistant state)
+            nil
+            (tui-state-input-tokens state)
+            0
+            (tui-state-output-tokens state)
+            0
+            (tui-state-cache-tokens state)
+            0
+            (tui-state-cost state)
+            0d0
+            (tui-state-cost-known-p state)
+            nil)
+           (dolist (message selected-messages)
+             (seed-tui-message state message)))
          (submit (line)
            (let ((trimmed
                    (string-trim
@@ -561,22 +970,91 @@
                       #\Return)
                     line)))
              (cond
-               ((string= trimmed "/model")
-                (open-selector
-                 :model
-                 (if model-items-function
-                     (funcall
-                      model-items-function)
-                     nil)))
-               ((string= trimmed "/sessions")
+               ((or
+                 (string= trimmed "/model")
+                 (uiop:string-prefix-p
+                  "/model " trimmed))
+                (let ((query
+                        (and
+                         (> (length trimmed) 7)
+                         (string-trim
+                          '(#\Space #\Tab)
+                          (subseq trimmed 7)))))
+                  (if
+                      (and
+                       query
+                       (plusp (length query))
+                       resolve-model-reference-function
+                       (let ((matched
+                               (funcall
+                                resolve-model-reference-function
+                                query)))
+                         (when matched
+                           (when on-model-selected
+                             (setf
+                              (tui-state-model state)
+                              (or
+                               (funcall
+                                on-model-selected
+                                matched)
+                               (tui-state-model
+                                state))))
+                           (render)
+                           t)))
+                      nil
+                      (open-model-selector query))))
+               ((string= trimmed
+                         "/scoped-models")
+                (open-scoped-models-selector))
+               ((string= trimmed "/fork")
+                (open-fork-selector))
+               ((string= trimmed "/new")
+                (when on-new-session
+                  (multiple-value-bind
+                        (selected-session
+                         selected-messages
+                         selected-path)
+                      (funcall on-new-session)
+                    (when selected-session
+                      (replace-session-state
+                       selected-session
+                       selected-messages
+                       selected-path)
+                      (notice
+                       "New session started")))))
+               ((string= trimmed "/quit")
+                (setf done-p t))
+               ((string= trimmed "/trust")
+                (open-trust-selector))
+               ((string= trimmed "/settings")
+                (open-settings-selector))
+               ((and
+                 (or
+                  (string= trimmed "/import")
+                  (uiop:string-prefix-p
+                   "/import " trimmed))
+                 (path-command-argument
+                  trimmed "/import"))
+                (open-import-confirmation
+                 trimmed
+                 (path-command-argument
+                  trimmed "/import")))
+               ((member trimmed
+                        '("/resume" "/sessions")
+                        :test #'string=)
                 (open-selector
                  :session
                  (if session-items-function
                      (funcall
                       session-items-function)
                      nil)))
+               ((string= trimmed "/tree")
+                (open-tree-selector))
                (t
-                (start-work line)))))
+                (route-tui-submission
+                 line busy-p
+                 busy-input-function
+                 #'start-work)))))
          (accept-selection (value)
            (let ((kind overlay-kind))
              (setf overlay nil
@@ -591,61 +1069,138 @@
                         (funcall
                          on-model-selected
                          value)
-                        (tui-state-model
+                         (tui-state-model
                          state)))))
+                   (:trust
+                    (when on-trust-selected
+                      (funcall
+                       on-trust-selected value)))
+                   (:import-confirmation
+                    (if
+                        (getf value :confirmed-p)
+                        (when on-import-confirmed
+                          (funcall
+                           on-import-confirmed
+                           (getf value :line)))
+                        (notice "Import cancelled")))
                    (:session
                     (when on-session-selected
                       (multiple-value-bind
                             (selected-session
-                             selected-messages)
+                             selected-messages
+                             selected-path)
                           (funcall
                            on-session-selected
                            value)
-                        (setf
-                         (tui-state-session state)
-                         (or
-                          selected-session
-                          (tui-state-session state)))
+                        (replace-session-state
+                         selected-session
+                         selected-messages
+                         selected-path))))
+                   (:fork
+                    (when on-fork-selected
+                      (multiple-value-bind
+                            (selected-session
+                             selected-messages
+                             selected-path
+                             editor-text)
+                          (funcall
+                           on-fork-selected value)
+                        (when selected-session
+                          (replace-session-state
+                           selected-session
+                           selected-messages
+                           selected-path)
+                          (cadr-tui:editor-set-text
+                           editor
+                           (or editor-text ""))
+                          (add-tui-notice
+                           state
+                           "Forked to new session")))))
+                   (:tree
+                    (when on-tree-selected
+                      (let ((selected-messages
+                              (funcall
+                               on-tree-selected
+                               value)))
                         (when selected-messages
-                          (setf
-                           (tui-state-entries state) nil
-                           (tui-state-current-assistant
-                            state)
-                           nil
-                           (tui-state-input-tokens state)
-                           0
-                           (tui-state-output-tokens state)
-                           0
-                           (tui-state-cache-tokens state)
-                           0
-                           (tui-state-cost state)
-                           0d0
-                           (tui-state-cost-known-p
-                            state)
-                           nil)
-                          (dolist
-                              (message selected-messages)
-                            (seed-tui-message
-                             state message)))))))
+                          (reset-tui-messages
+                           state
+                           selected-messages))))))
                (condition (condition)
                  (add-tui-notice
                   state
                   (format nil "~A" condition)))))
            (render))
+         (start-all-session-load (selector token)
+           (if all-session-items-function
+               (setf
+                session-loader-worker
+                (sb-thread:make-thread
+                 (lambda ()
+                   (handler-case
+                       (let ((records
+                               (session-select-items-to-records
+                                (funcall
+                                 all-session-items-function))))
+                         (sb-thread:with-mutex (lock)
+                           (session-selector-complete-all-load
+                            selector token records)))
+                     (condition (condition)
+                       (sb-thread:with-mutex (lock)
+                         (session-selector-fail-all-load
+                          selector token condition))))
+                   (render))
+                 :name "cadr-session-selector-load"))
+               (session-selector-complete-all-load
+                selector token nil)))
+         (handle-overlay-action (action value)
+           (case action
+             (:select
+              (accept-selection value))
+             (:cancel
+              (setf overlay nil
+                    overlay-kind nil)
+              (render))
+             (:load-all
+              (start-all-session-load
+               overlay value)
+              (render))
+             (otherwise
+              (render))))
          (handle-event (event)
            (if overlay
                (multiple-value-bind
                      (action value)
-                   (cadr-tui:select-list-handle-event
-                    overlay event)
-                 (case action
-                   (:select
-                    (accept-selection value))
-                   (:cancel
-                    (setf overlay nil
-                          overlay-kind nil)
-                    (render))
-                   (otherwise (render))))
+                   (if
+                       (session-selector-state-p overlay)
+                       (session-selector-handle-event
+                        overlay event)
+                       (if
+                           (tree-selector-state-p overlay)
+                           (tree-selector-handle-event
+                            overlay event)
+                           (cond
+                             ((model-selector-state-p
+                               overlay)
+                              (model-selector-handle-event
+                               overlay event))
+                             ((scoped-models-selector-state-p
+                               overlay)
+                              (scoped-models-selector-handle-event
+                               overlay event))
+                             ((trust-selector-state-p
+                               overlay)
+                              (trust-selector-handle-event
+                               overlay event))
+                             ((settings-selector-state-p
+                               overlay)
+                              (settings-selector-handle-event
+                               overlay event))
+                             (t
+                              (cadr-tui:select-list-handle-event
+                               overlay event)))))
+                 (handle-overlay-action
+                  action value))
                (case (cadr-tui:input-event-kind event)
                  (:interrupt
                   (cond
@@ -699,14 +1254,82 @@
                     (let ((input
                             (cadr-tui:terminal-read-input
                              terminal)))
-                      (dolist
-                          (event
-                           (if (plusp (length input))
-                               (cadr-tui:feed-input
-                                decoder input)
-                               (cadr-tui:flush-input
-                                decoder)))
-                        (handle-event event)))
+                      (if
+                          (and
+                           (null overlay)
+                           (= 1 (length input))
+                           (= 26
+                              (char-code
+                               (char input 0))))
+                          (suspend-tui
+                           #+win32 :windows
+                           #-win32 :linux
+                           (lambda ()
+                             (cadr-tui:terminal-stop
+                              terminal))
+                           (lambda ()
+                             (cadr-tui:terminal-start
+                              terminal)
+                             (cadr-tui:invalidate-renderer
+                              renderer))
+                           #'render
+                           #'suspend-current-process
+                           #'call-with-sigcont-handler
+                           :notice-function #'notice)
+                          (multiple-value-bind
+                            (action value handled-p)
+                          (cond
+                            ((and
+                              (plusp (length input))
+                              (session-selector-state-p
+                               overlay))
+                             (session-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
+                              (tree-selector-state-p
+                               overlay))
+                             (tree-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
+                              (model-selector-state-p
+                               overlay))
+                             (model-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
+                              (scoped-models-selector-state-p
+                               overlay))
+                             (scoped-models-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
+                              (trust-selector-state-p
+                               overlay))
+                             (trust-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
+                              (settings-selector-state-p
+                               overlay))
+                             (settings-selector-handle-raw-input
+                              overlay input))
+                            (t
+                             (values nil nil nil)))
+                        (if handled-p
+                            (handle-overlay-action
+                             action value)
+                            (dolist
+                                (event
+                                 (if
+                                     (plusp
+                                      (length input))
+                                     (cadr-tui:feed-input
+                                      decoder input)
+                                     (cadr-tui:flush-input
+                                      decoder)))
+                              (handle-event event))))))
                     (sleep 0.02))))
         (when (and worker
                    (sb-thread:thread-alive-p
@@ -714,6 +1337,12 @@
           (when abort-function
             (funcall abort-function))
           (sb-thread:join-thread worker))
+        (when
+            (and session-loader-worker
+                 (sb-thread:thread-alive-p
+                  session-loader-worker))
+          (sb-thread:join-thread
+           session-loader-worker))
         (when set-event-consumer
           (funcall set-event-consumer nil))
         (when set-notice-consumer

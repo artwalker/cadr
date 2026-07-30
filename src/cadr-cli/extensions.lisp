@@ -22,6 +22,8 @@
   cwd
   global-directory
   explicit-paths
+  configured-package-paths
+  (no-discovery-p nil :type boolean)
   output
   (secret-function (constantly nil) :type function)
   host
@@ -55,6 +57,8 @@
        (global-directory
          (default-extension-directory))
        explicit-paths
+       configured-package-paths
+       no-discovery-p
        (output *standard-output*)
        secret-function
        (mode :repl))
@@ -67,6 +71,10 @@
            (uiop:ensure-directory-pathname
             (pathname global-directory))
            :explicit-paths (copy-list explicit-paths)
+           :configured-package-paths
+           (copy-list configured-package-paths)
+           :no-discovery-p
+           (not (null no-discovery-p))
            :output output
            :secret-function
            (or secret-function
@@ -192,7 +200,9 @@
 
 (defun discover-extension-sources (manager)
   (let ((errors nil)
-        (explicit nil))
+        (explicit nil)
+        (package-project nil)
+        (package-global nil))
     (loop
       for path in
       (reverse
@@ -210,19 +220,48 @@
            explicit)
         (condition (condition)
           (push (princ-to-string condition) errors))))
+    (loop
+      for entry in
+      (cli-extension-manager-configured-package-paths
+       manager)
+      for order from 0
+      for scope = (car entry)
+      for path = (cdr entry)
+      do
+      (handler-case
+          (let ((record
+                  (make-extension-source-record-for-path
+                   path scope
+                   (if (eq scope :project) 1 0)
+                   order)))
+            (if (eq scope :project)
+                (push record package-project)
+                (push record package-global)))
+        (condition (condition)
+          (push (princ-to-string condition) errors))))
     (multiple-value-bind (selected collisions)
         (dedupe-extension-sources
          (nconc
           (nreverse explicit)
-          (discover-extensions-in-directory
-           (merge-pathnames
-            ".cadr/extensions/"
-            (cli-extension-manager-cwd manager))
-           :project 1)
-          (discover-extensions-in-directory
-           (cli-extension-manager-global-directory
-            manager)
-           :global 0)))
+          (unless
+              (cli-extension-manager-no-discovery-p
+               manager)
+            (nconc
+             (nreverse package-project)
+             (discover-extensions-in-directory
+              (merge-pathnames
+               ".cadr/extensions/"
+               (cli-extension-manager-cwd manager))
+              :project 1)))
+          (unless
+              (cli-extension-manager-no-discovery-p
+               manager)
+            (nconc
+             (nreverse package-global)
+             (discover-extensions-in-directory
+              (cli-extension-manager-global-directory
+               manager)
+              :global 0)))))
       (values selected
               (nreverse errors)
               collisions))))
