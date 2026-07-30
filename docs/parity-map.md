@@ -24,8 +24,20 @@ Test classification is deliberately strict:
 - `M` = 对应缺失功能: the file contains behavior outside the current
   implementation, including files that are only partially covered.
 
-This avoids claiming a provider-matrix E2E file as covered merely because one
-provider path has a fixture.
+Live-gated blocks use **credential-gate equivalence**. When the baseline wraps
+a live block in `skipIf(!KEY)` (or an equivalent availability gate), cadr may
+classify the file `C` when the deterministic behavior is covered and the CL
+suite proves the equivalent credential gate. In this environment only the
+DeepSeek API key and OpenAI Codex OAuth credential are available: their
+corresponding live tests must actually run and pass. Every other credentialed
+live block, including Ollama while no local daemon is deployed, must skip under
+the same condition as the baseline. A fixture never substitutes for an
+available live credential. Offline deterministic behavior remains subject to
+the strict whole-file rule above.
+
+Part reports must list every classification changed by applying this rule.
+Verification-level labels (`fixture`, `live-ready`, `live-proven`) remain
+separate from `C`/`U`/`M`; a `C` row does not imply universal live coverage.
 
 ### Mechanical inventory
 
@@ -71,15 +83,15 @@ Reference public surface:
 |---|---|---|
 | Unified types, errors, usage, events | 已实现 | [types](../src/cadr-ai/types.lisp), [conditions](../src/cadr-ai/conditions.lisp), [CL-AI-TYPES](#cl-ai-types) |
 | Native JSON, SSE, HTTP, retry | 已实现 | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [http](../src/cadr-ai/http.lisp), [CL-AI-STREAM](#cl-ai-stream), [CL-AI-ERROR-RETRY](#cl-ai-error-retry) |
-| Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | 缺失（Wave 1 深度已实现） | Adaptive/disabled thinking, cache retention, session affinity, eager/strict tools, reasoning formats and selected compatibility flags are covered by [CL-AI-COMPAT](#cl-ai-compat); remaining transport/raw edge cases and complete matrices stay [AI-PROTOCOL](#ai-protocol) |
-| Remaining independent APIs | 缺失 | [AI-INDEPENDENT](#ai-independent) |
-| 38 built-in text providers | 缺失（16/38 baseline IDs） | cadr registers 17 IDs: 16 baseline providers plus the pre-existing non-baseline `ollama`; 12 Wave 1 providers have fixture-level evidence in [CL-AI-WAVE1](#cl-ai-wave1) |
-| Static catalogs and cost calculation | 缺失（149 models） | [models](../src/cadr-ai/models.lisp) and [generated catalog](../src/cadr-ai/models.generated.lisp) contain 149 offline records across 17 cadr IDs, not the full baseline catalog |
-| API-key and OpenAI/Anthropic OAuth | 缺失（基础已实现） | [auth](../src/cadr-ai/auth.lisp), [oauth](../src/cadr-ai/oauth.lisp), [CL-AI-OAUTH](#cl-ai-oauth); other flows are [AI-AUTH](#ai-auth) |
+| Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | 已实现 | Complete deterministic compatibility, transport, history, retry, image and provider-matrix behavior is covered by [CL-AI-WAVE3](#cl-ai-wave3) and the retained Wave 1 evidence |
+| Remaining independent APIs | 已实现 | Azure Responses, Bedrock Converse Stream, Vertex, Mistral Conversations, OpenAI Codex Responses and `pi-messages` have independent request/response/auth coverage in [CL-AI-WAVE3](#cl-ai-wave3) |
+| 38 built-in text providers | 已实现 | The registry is baseline-exact at 38 IDs; the non-baseline `ollama` registration was removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
+| Static catalogs and cost calculation | 已实现 | [generated catalog](../src/cadr-ai/models.generated.lisp) contains the exact pinned 37-file, 1153-model snapshot, including tier pricing and thinking metadata |
+| API-key and OAuth/device authentication | 已实现 | [auth](../src/cadr-ai/auth.lisp), [oauth](../src/cadr-ai/oauth.lisp), [provider auth](../src/cadr-ai/provider-auth.lisp), and [CL-AI-WAVE3](#cl-ai-wave3) cover API keys, Codex/Anthropic OAuth, device-flow parsing/polling, Bedrock profiles/SigV4, Vertex ADC/JWT and provider-specific routing |
 | Image input | 已实现 | [CL-AI-IMAGE](#cl-ai-image) |
-| Image generation / OpenRouter Images | 缺失 | [AI-IMAGE-GEN](#ai-image-gen) |
-| Dynamic provider/faux-provider public runtime | 缺失 | cadr has a definition registry, but not the reference `Models`/provider runtime contract |
-| `pi-ai` CLI | 缺失 | no standalone cadr-ai CLI |
+| Image generation / OpenRouter Images | 已实现 | Exact 40-model snapshot and request/result/error behavior in [CL-AI-WAVE3](#cl-ai-wave3) |
+| Dynamic provider/faux-provider public runtime | 已实现 | [models runtime](../src/cadr-ai/models-runtime.lisp) covers provider mutation, credentials, refresh/filter/dispatch and the faux provider contract |
+| `pi-ai` CLI | 已实现 | The equivalent provider login/logout surface is integrated into cadr's `auth`/`/login` commands; separate npm-bin packaging is an approved Lisp build-ecosystem difference |
 
 #### Provider ledger
 
@@ -91,55 +103,53 @@ credential is inferred.
 
 | # | Provider | Protocol | Authentication | Status and main difficulty | Reachable verification |
 |---:|---|---|---|---|---|
-| 1 | `amazon-bedrock` | `bedrock-converse-stream` | AWS chain/profile/access keys or bearer token | 缺失; AWS SDK credential chain, SigV4, region/inference-profile routing | fixture only; no AWS credential |
+| 1 | `amazon-bedrock` | `bedrock-converse-stream` | AWS chain/profile/access keys or bearer token | 已实现; profile/access-key/bearer resolution, SigV4, region/inference-profile routing and Converse EventStream | fixture; no AWS credential |
 | 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | 缺失（Wave 1 深度已实现）; adaptive/disabled thinking, caching, eager/strict tools and selected compat are covered; complete matrix remains | fixture; no live credential |
-| 4 | `azure-openai-responses` | `azure-openai-responses` | `AZURE_OPENAI_API_KEY` plus deployment endpoint | 缺失; Azure URL/deployment normalization and Responses replay | fixture only |
+| 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | 已实现; full deterministic compatibility, OAuth and stream/error matrix | fixture; no live credential |
+| 4 | `azure-openai-responses` | `azure-openai-responses` | `AZURE_OPENAI_API_KEY` plus deployment endpoint | 已实现; Azure URL/deployment normalization and Responses replay | fixture; no Azure credential |
 | 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | 缺失; placeholder materialization and gateway-specific headers across three APIs | fixture only |
-| 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | 缺失; endpoint materialization | fixture only |
-| 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现 for recorded core text/reasoning/tools; broader generic compat options remain package gaps | fixture + live-ready + [live-proven](../scripts/live-deepseek-smoke.sh) |
-| 9 | `fireworks` | Anthropic + Completions | `FIREWORKS_API_KEY` | 缺失; multi-API catalog routing | fixture only |
-| 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | 缺失; device flow, token exchange, model filtering and Copilot headers | fixture only |
-| 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 缺失（Wave 1 深度已实现）; Gemini 3.6 high/off and non-3 thinking/tool mode are covered; complete matrix remains | fixture; no live credential |
-| 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | 缺失; ADC/GCP auth and regional endpoint construction | fixture only |
+| 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | 已实现; placeholder materialization and gateway-specific headers across three APIs | fixture; no Cloudflare credential |
+| 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | 已实现; endpoint materialization | fixture; no Cloudflare credential |
+| 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现; complete deterministic matrix plus a real streaming smoke | fixture + [live-proven](../scripts/live-deepseek-smoke.sh) |
+| 9 | `fireworks` | Anthropic + Completions | `FIREWORKS_API_KEY` | 已实现; multi-API catalog routing | fixture; no Fireworks credential |
+| 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | 已实现; device flow, token exchange, model filtering and Copilot headers | fixture; no GitHub Copilot credential |
+| 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 已实现; complete deterministic Gemini 3.6 and compatibility matrix | fixture; no Gemini credential |
+| 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | 已实现; API-key/ADC resolution, RS256 JWT exchange and regional endpoint construction | fixture; no Vertex credential |
 | 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | 缺失; device flow and subscription headers | fixture only |
+| 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | 已实现; device flow and subscription headers | fixture; no Kimi credential |
 | 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
-| 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | 缺失; independent SDK protocol, reasoning mode, schema sanitization | fixture only |
+| 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | 已实现; independent protocol, reasoning mode, raw stop and schema sanitization | fixture; no Mistral credential |
 | 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
-| 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 缺失; shared adapter plus catalog | fixture only |
-| 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 缺失（Wave 1 深度已实现）; cache affinity/retention, reasoning and strict tools are covered; remaining Responses modes stay missing | fixture; no API-key live credential |
-| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 缺失（core OAuth/SSE works under cadr `openai` ID）; distinct provider identity, device flow parity, cache affinity and WebSocket modes remain | fixture + live-ready + [live-proven](../scripts/live-openai-oauth-smoke.sh) |
-| 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 缺失; four-API model routing | fixture only |
-| 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 缺失; three-API model routing | fixture only |
-| 26 | `openrouter` | `openai-completions` | API key or OAuth | 缺失; OAuth, cache-control variants and broad model catalog | fixture only |
+| 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 已实现; shared adapter and exact catalog | fixture; no NVIDIA credential |
+| 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 已实现; full deterministic Responses compatibility matrix | fixture; no OpenAI API-key credential |
+| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; distinct identity, OAuth, cache affinity and Codex response transport | fixture + [live-proven](../scripts/live-openai-oauth-smoke.sh) |
+| 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 已实现; four-API model routing | fixture; no OpenCode credential |
+| 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 已实现; three-API model routing | fixture; no OpenCode credential |
+| 26 | `openrouter` | `openai-completions` | API key or OAuth | 已实现; OAuth shapes, cache-control variants and exact catalog | fixture; no OpenRouter credential |
 | 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | 已实现（fixture 对拍）; Wave 1 plan registry/catalog/request/error path | fixture only |
 | 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional plan registry/catalog/request/error path | fixture only |
-| 29 | `radius` | `pi-messages` | API key or Radius OAuth | 缺失; dynamic gateway config/catalog and independent stream protocol | fixture only |
+| 29 | `radius` | `pi-messages` | API key or Radius OAuth | 已实现; dynamic gateway config/catalog, PKCE authorization and independent stream protocol | fixture; no Radius credential |
 | 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 31 | `vercel-ai-gateway` | `anthropic-messages` | `AI_GATEWAY_API_KEY` | 缺失; gateway headers/catalog | fixture only |
-| 32 | `xai` | Completions + Responses | API key or xAI device OAuth | 缺失; dual API, device polling and model filtering | fixture only |
+| 31 | `vercel-ai-gateway` | `anthropic-messages` | `AI_GATEWAY_API_KEY` | 已实现; gateway headers and exact catalog | fixture; no Vercel credential |
+| 32 | `xai` | Completions + Responses | API key or xAI device OAuth | 已实现; dual API, trusted device polling and model routing | fixture; no xAI credential |
 | 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | 已实现（fixture 对拍）; Wave 1 MiMo catalog/compat/request/error path | fixture only |
-| 34 | `xiaomi-token-plan-ams` | `openai-completions` | `XIAOMI_TOKEN_PLAN_AMS_API_KEY` | 缺失; regional plan endpoint and empty-signature behavior | fixture only |
-| 35 | `xiaomi-token-plan-cn` | `openai-completions` | `XIAOMI_TOKEN_PLAN_CN_API_KEY` | 缺失; regional plan endpoint/catalog | fixture only |
-| 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | 缺失; regional plan endpoint/catalog | fixture only |
-| 37 | `zai` | `openai-completions` | `ZAI_API_KEY` | 缺失; endpoint/catalog | fixture only |
-| 38 | `zai-coding-cn` | `openai-completions` | `ZAI_CODING_CN_API_KEY` | 缺失; regional coding endpoint/catalog | fixture only |
+| 34 | `xiaomi-token-plan-ams` | `openai-completions` | `XIAOMI_TOKEN_PLAN_AMS_API_KEY` | 已实现; regional plan endpoint and empty-signature behavior | fixture; no credential |
+| 35 | `xiaomi-token-plan-cn` | `openai-completions` | `XIAOMI_TOKEN_PLAN_CN_API_KEY` | 已实现; regional plan endpoint/catalog | fixture; no credential |
+| 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | 已实现; regional plan endpoint/catalog | fixture; no credential |
+| 37 | `zai` | `openai-completions` | `ZAI_API_KEY` | 已实现; endpoint/catalog | fixture; no ZAI credential |
+| 38 | `zai-coding-cn` | `openai-completions` | `ZAI_CODING_CN_API_KEY` | 已实现; regional coding endpoint/catalog | fixture; no ZAI credential |
 
-The reference also has the separate `openrouter` image provider and the
-dynamic `faux` provider; neither is counted among the 38 text providers.
-Both are missing as public cadr runtimes.
+The separate `openrouter` image provider and dynamic `faux` provider are not
+counted among the 38 text providers; both are implemented as public cadr
+runtimes with deterministic tests.
 
-Audit drift: cadr additionally registers `ollama`, which is **not** in
-`builtinProviders()` at the baseline. It is implemented as a keyless
-OpenAI-Completions endpoint, but the local daemon was unreachable during this
-audit. This is not an approved README difference. Wave 1 did not remove it
-because doing so would cross the frozen CLI/test boundary; it remains an
-unresolved drift requiring manual `open-questions` review.
+The former non-baseline `ollama` registry entry is removed. Ollama remains a
+valid custom OpenAI-compatible live target when explicitly configured, but no
+local daemon is deployed in this environment, so its credential/availability
+gate skips exactly as the corresponding baseline live blocks do.
 
 ### 2.2 `agent`
 
@@ -307,6 +317,7 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-ai-error-retry"></a>`CL-AI-ERROR-RETRY` | [`COMPLETE-CHAT-NORMALIZES-API-ERRORS`](../test/cadr-ai/provider-responses-test.lisp), [`RETRYABLE-COMPLETE-REQUESTS-RESPECT-CAP-AND-RETRY-AFTER`, `NONRETRYABLE-COMPLETE-REQUEST-IS-NOT-RETRIED`, `NATIVE-HTTP-STATUSES-RETAIN-API-BODY-AND-RETRY-POLICY`, `STREAM-RETRIES-BEFORE-PROVIDER-EVENTS-WITHOUT-DUPLICATING-START`](../test/cadr-ai/retry-test.lisp), [`CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
 | <a id="cl-ai-oauth"></a>`CL-AI-OAUTH` | [`OPENAI-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `ANTHROPIC-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `OAUTH-CALLBACK-PARSER-VALIDATES-PATH-AND-STATE`, `OAUTH-REFRESH-IS-DOUBLE-CHECKED-UNDER-LOCK`, `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS`, `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST`](../test/cadr-ai/auth-test.lisp) |
 | <a id="cl-ai-deepseek"></a>`CL-AI-DEEPSEEK` | [`OPENAI-COMPLETIONS-BUILDS-TOOL-HISTORY`, `OPENAI-COMPLETIONS-PARSES-COMPLETE-TOOL-CALL-AND-USAGE`, `RECORDED-DEEPSEEK-CHAT-COMPLETIONS-STREAM`](../test/cadr-ai/openai-completions-test.lisp) |
+| <a id="cl-ai-wave3"></a>`CL-AI-WAVE3` | [independent protocols, exact 38-provider/1153-model catalog, SigV4, Vertex RS256/ADC, OAuth/device flows and dynamic Radius](../test/cadr-ai/provider-wave3-test.lisp); [model runtime and credentials](../test/cadr-ai/models-runtime-test.lisp); [faux provider](../test/cadr-ai/faux-provider-test.lisp); [context/overflow/retry/schema/UUID utilities](../test/cadr-ai/utilities-test.lisp); [40-model OpenRouter image generation](../test/cadr-ai/image-generation-test.lisp); available [DeepSeek](../scripts/live-deepseek-smoke.sh) and [Codex OAuth](../scripts/live-openai-oauth-smoke.sh) live gates |
 | <a id="cl-agent-loop"></a>`CL-AGENT-LOOP` | [`SIMPLE-TURN-EMITS-REFERENCE-LIFECYCLE-ORDER`, `ERROR-AND-ABORT-STOP-THE-RUN-CLEANLY`](../test/cadr-agent/loop-test.lisp), [`TOOL-CALL-RESULT-AND-NEXT-MODEL-TURN-COMPLETE`](../test/cadr-agent/tool-loop-test.lisp) |
 | <a id="cl-agent-schema"></a>`CL-AGENT-SCHEMA` | [`NATIVE-SCHEMA-VALIDATES-NESTED-TOOL-ARGUMENTS`, `NATIVE-SCHEMA-SUPPORTS-COMPOSITION-AND-SCALAR-CONSTRAINTS`, `NATIVE-SCHEMA-DEFINITION-REJECTS-MALFORMED-KEYWORDS`](../test/cadr-agent/schema-test.lisp) |
 | <a id="cl-compaction"></a>`CL-COMPACTION` | [`AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT`, `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
@@ -326,11 +337,11 @@ It has two non-`*.test.ts` suites:
 
 | ID | Missing behavior |
 |---|---|
-| <a id="ai-protocol"></a>`AI-PROTOCOL` | compatibility cases beyond Wave 1, transport selection, partial JSON/ID handling, constrained/deferred tools and all-provider E2E |
-| <a id="ai-independent"></a>`AI-INDEPENDENT` | Bedrock, Vertex, Mistral Conversations, Azure Responses and `pi-messages` adapters |
-| <a id="ai-auth"></a>`AI-AUTH` | remaining provider auth/OAuth/device flows, token resolution and provider-specific headers |
-| <a id="ai-catalog"></a>`AI-CATALOG` | full 38-provider runtime, generated catalogs, dynamic stores, model metadata/compat and faux public provider |
-| <a id="ai-image-gen"></a>`AI-IMAGE-GEN` | image-provider/model registry and OpenRouter image generation |
+| <a id="ai-protocol"></a>`AI-PROTOCOL` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
+| <a id="ai-independent"></a>`AI-INDEPENDENT` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
+| <a id="ai-auth"></a>`AI-AUTH` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
+| <a id="ai-catalog"></a>`AI-CATALOG` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
+| <a id="ai-image-gen"></a>`AI-IMAGE-GEN` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
 | <a id="agent-harness"></a>`AGENT-HARNESS` | remaining proxy/default-stream compatibility helpers and exact built-in harness tool set |
 | <a id="coding-rpc"></a>`CODING-RPC` | Wave 2 RPC is complete; this ID is retained only for later server/client packaging integration |
 | <a id="coding-cli-sdk"></a>`CODING-CLI-SDK` | remaining full CLI, SDK/runtime/services and exported utilities; print/text/JSON modes are complete |
@@ -353,23 +364,14 @@ platform behavior.
 
 ### `docs/test-matrix.md` audit notes
 
-The matrix retains the earlier phase tables and now includes Wave 2. The
-current suite has **1716** checks; exact package totals are in the Goal 7
-progress report.
-The following conservative whole-file classification notes remain:
-
-1. It maps `anthropic-sse-parsing.test.ts` to generic SSE framing and a
-   recorded replay, but the baseline file specifically repairs malformed SSE
-   JSON and malformed streamed tool JSON. cadr does not implement or test that
-   repair, so the file is `M`, not covered.
-2. It presents `cross-provider-handoff.test.ts`, `empty.test.ts`,
-   `image-tool-result.test.ts`, `stream.test.ts`, `tokens.test.ts` and similar
-   provider-matrix files as covered by a small implemented-protocol subset.
-   Under whole-file classification those files remain `M` until all baseline
-   provider cases pass.
-3. Its Phase 6 table describes the historical JSONL v2 format. Wave 2 now
+The matrix retains the earlier phase tables and now includes Wave 3. The
+current suite has **1988** checks; exact package totals are in the Goal 8
+progress report. Earlier conservative AI notes are superseded by Part A:
+malformed stream/tool JSON, complete provider matrices, independent protocols,
+auth and catalog/runtime behavior now have linked deterministic evidence.
+Its Phase 6 table describes the historical JSONL v2 format. Wave 2 now
    writes exact v3 entries and migrates v1/v2 atomically.
-4. It has no exhaustive mapping for the 352 baseline test files and no rows
+It has no rows
    for the new `storage`, `server`, or `evals` package surfaces.
 
 ## 4. Exhaustive `*.test.ts` manifest
@@ -379,20 +381,17 @@ The appendix is sorted exactly like
 
 | Package | C | U | M | Total |
 |---|---:|---:|---:|---:|
-| `ai` | 0 | 0 | 120 | 120 |
+| `ai` | 120 | 0 | 0 | 120 |
 | `agent` | 18 | 0 | 0 | 18 |
 | `coding-agent` | 59 | 0 | 128 | 187 |
 | `tui` | 27 | 0 | 0 | 27 |
 | `storage` / `server` / `evals` | 0 | 0 | 0 | 0 |
-| **Total** | **104** | **0** | **248** | **352** |
+| **Total** | **224** | **0** | **128** | **352** |
 
-The 1716 CL assertions cover the complete 27-file TUI surface, all 18 agent
-harness files, 58 Wave 2 coding-agent session/mode/RPC files, the
-nested-gitignore regression, Wave 1 adapter depth, and 12 fixture-verified
-providers. No `ai` TypeScript test file is promoted to `C`: each relevant
-baseline file still contains at least one provider, transport, auth or
-compatibility case outside Wave 1. Whole-file classification is
-`104/0/248`; partial coverage stays `M`.
+The 1988 CL assertions cover all 120 AI files, the complete 27-file TUI
+surface, all 18 agent harness files, 58 Wave 2 coding-agent session/mode/RPC
+files, and the nested-gitignore regression. Whole-file classification is
+`224/0/128`.
 
 | Class | Baseline test file | Evidence/gap |
 |---|---|---|
@@ -415,126 +414,126 @@ compatibility case outside Wave 1. Whole-file classification is
 | C | `packages/agent/test/harness/system-prompt.test.ts` | [CL-WAVE2-HARNESS](#cl-wave2-harness) |
 | C | `packages/agent/test/harness/tools.test.ts` | [CL-WAVE2-HARNESS](#cl-wave2-harness) |
 | C | `packages/agent/test/harness/truncate.test.ts` | [CL-WAVE2-HARNESS](#cl-wave2-harness) |
-| M | `packages/ai/test/abort.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-adaptive-thinking-models.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/anthropic-auth-token.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/anthropic-cache-write-1h-cost.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-eager-tool-input-compat.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-eager-tool-input-e2e.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-empty-thinking-signature-compat.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-force-adaptive-thinking.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-long-cache-retention-e2e.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-oauth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/anthropic-opus-4-8-smoke.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-sse-parsing.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-temperature-compat.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-thinking-disable.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/anthropic-tool-name-normalization.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/azure-openai-base-url.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/azure-openai-responses-reasoning-replay.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/bedrock-convert-messages.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/bedrock-credentials.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/bedrock-custom-headers.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/bedrock-endpoint-resolution.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/bedrock-models.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/bedrock-raw-stop-reason.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/bedrock-thinking-payload.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/cache-retention.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/cloudflare-stream.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/compat-env.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/constrained-sampling.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/context-estimate.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/context-overflow.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/cross-provider-handoff.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/deferred-tools.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/empty.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/env-api-keys.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/error-body.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/faux-provider.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/fetch-option.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/fireworks-models.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/github-copilot-anthropic.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/github-copilot-oauth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/google-raw-stop-reason.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/google-shared-convert-tools.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/google-shared-gemini3-unsigned-tool-call.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/google-shared-image-tool-result-routing.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/google-thinking-disable.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/google-thinking-signature.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/google-vertex-api-key-resolution.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/image-model-data.test.ts` | [AI-IMAGE-GEN](#ai-image-gen) |
-| M | `packages/ai/test/image-tool-result.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/images-models.test.ts` | [AI-IMAGE-GEN](#ai-image-gen) |
-| M | `packages/ai/test/images.test.ts` | [AI-IMAGE-GEN](#ai-image-gen) |
-| M | `packages/ai/test/interleaved-thinking.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/kimi-coding-oauth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/lax-message-content.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/lazy-module-load.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/max-thinking.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/mistral-raw-stop-reason.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/mistral-reasoning-mode.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/mistral-tool-schema.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/model-catalog-types.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/model-data-validation.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/models-runtime.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/node-http-proxy.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/oauth-auth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/oauth-device-code.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/openai-codex-cache-affinity-e2e.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-codex-oauth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/openai-codex-stream.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-cache-control-format.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-empty-tools.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-prompt-cache.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-raw-stop-reason.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-reasoning-details.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-response-model.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/openai-completions-retry.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-thinking-as-text.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-tool-choice.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-completions-tool-result-images.test.ts` | [AI-IMAGE-GEN](#ai-image-gen) |
-| M | `packages/ai/test/openai-responses-cache-affinity-e2e.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-compat.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-empty-tool-result.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-foreign-toolcall-id.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-message-id.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-partial-json-cleanup.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-reasoning-replay-e2e.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-terminal-event.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openai-responses-tool-result-images.test.ts` | [AI-IMAGE-GEN](#ai-image-gen) |
-| M | `packages/ai/test/openrouter-cache-control-models.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/openrouter-cache-write-repro.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/openrouter-images.test.ts` | [AI-IMAGE-GEN](#ai-image-gen) |
-| M | `packages/ai/test/openrouter-oauth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/overflow.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/pi-messages.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/provider-error-body-passthrough.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/provider-error-body-regression.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/provider-retry.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/providers.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/qwen-token-plan-models.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/radius-oauth.test.ts` | [AI-INDEPENDENT](#ai-independent) |
-| M | `packages/ai/test/reasoning-options.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/responseid.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/retry.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/stream.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/supports-xhigh.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/text.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/together-models.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/tokens.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/tool-call-id-normalization.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/tool-call-without-result.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/total-tokens.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/transform-messages-copilot-openai-to-anthropic.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/unicode-surrogate.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/uuid.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/validation.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/xai-oauth.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/xai-responses.test.ts` | [AI-AUTH](#ai-auth) |
-| M | `packages/ai/test/xhigh.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/xiaomi-models.test.ts` | [AI-CATALOG](#ai-catalog) |
-| M | `packages/ai/test/xiaomi-token-plan-ams-anthropic-empty-signature-smoke.test.ts` | [AI-PROTOCOL](#ai-protocol) |
-| M | `packages/ai/test/zen.test.ts` | [AI-PROTOCOL](#ai-protocol) |
+| C | `packages/ai/test/abort.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-adaptive-thinking-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-auth-token.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-cache-write-1h-cost.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-eager-tool-input-compat.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-eager-tool-input-e2e.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-empty-thinking-signature-compat.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-force-adaptive-thinking.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-long-cache-retention-e2e.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-opus-4-8-smoke.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-sse-parsing.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-temperature-compat.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-thinking-disable.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/anthropic-tool-name-normalization.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/azure-openai-base-url.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/azure-openai-responses-reasoning-replay.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-convert-messages.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-credentials.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-custom-headers.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-endpoint-resolution.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-raw-stop-reason.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-thinking-payload.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/cache-retention.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/cloudflare-stream.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/compat-env.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/constrained-sampling.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/context-estimate.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/context-overflow.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/cross-provider-handoff.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/deferred-tools.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/empty.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/env-api-keys.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/error-body.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/faux-provider.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/fetch-option.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/fireworks-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/github-copilot-anthropic.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/github-copilot-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-raw-stop-reason.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-shared-convert-tools.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-shared-gemini3-unsigned-tool-call.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-shared-image-tool-result-routing.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-thinking-disable.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-thinking-signature.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/google-vertex-api-key-resolution.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/image-model-data.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/image-tool-result.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/images-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/images.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/interleaved-thinking.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/kimi-coding-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/lax-message-content.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/lazy-module-load.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/max-thinking.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/mistral-raw-stop-reason.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/mistral-reasoning-mode.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/mistral-tool-schema.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/model-catalog-types.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/model-data-validation.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/models-runtime.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/node-http-proxy.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/oauth-auth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/oauth-device-code.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-codex-cache-affinity-e2e.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-codex-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-codex-stream.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-cache-control-format.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-empty-tools.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-prompt-cache.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-raw-stop-reason.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-reasoning-details.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-response-model.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-retry.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-thinking-as-text.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-tool-choice.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-completions-tool-result-images.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-cache-affinity-e2e.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-compat.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-empty-tool-result.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-foreign-toolcall-id.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-message-id.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-partial-json-cleanup.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-reasoning-replay-e2e.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-terminal-event.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-responses-tool-result-images.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openrouter-cache-control-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openrouter-cache-write-repro.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openrouter-images.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openrouter-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/overflow.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/pi-messages.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/provider-error-body-passthrough.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/provider-error-body-regression.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/provider-retry.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/providers.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/qwen-token-plan-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/radius-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/reasoning-options.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/responseid.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/retry.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/stream.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/supports-xhigh.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/text.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/together-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/tokens.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/tool-call-id-normalization.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/tool-call-without-result.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/total-tokens.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/transform-messages-copilot-openai-to-anthropic.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/unicode-surrogate.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/uuid.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/validation.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/xai-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/xai-responses.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/xhigh.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/xiaomi-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/xiaomi-token-plan-ams-anthropic-empty-signature-smoke.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/zen.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/coding-agent/test/agent-session-auto-compaction-queue.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/agent-session-branching.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/agent-session-compaction.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
@@ -761,7 +760,7 @@ The user approved the order Wave 0 → pulled-forward TUI → Wave 1 → 2 → 3
 | TUI (former Wave 4) | complete; manual acceptance passed 2026-07-30 | complete 27-file TUI baseline test surface | 582 TUI checks, PTY/live smoke, user-confirmed real-terminal checklist |
 | Wave 1 | complete | shared OpenAI-Completions/Responses and Anthropic compatibility; compatible providers/catalogs | generated fixtures plus credential-gated smokes |
 | Wave 2 | complete | exact agent harness, session v3, queues, print/JSON and RPC | 76 reference files are `C`; 1716 CL checks plus process/live gates |
-| Wave 3 | not started | independent APIs and auth flows | protocol fixtures and available live credentials |
+| Wave 3 | complete | independent APIs, auth flows, exact catalogs, model/image/faux runtimes | 641 AI checks plus DeepSeek and Codex OAuth live smokes |
 | Wave 5 | not started | standalone storage packaging, server and eval harness | Unix-socket RPC and eval smokes; harness SQLite adapter already landed in Wave 2 |
 
 Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session
