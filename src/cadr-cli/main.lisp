@@ -442,18 +442,20 @@
                (argv
                  (uiop:command-line-arguments)))
   (handler-case
-      (let ((arguments
-              (parse-cli-arguments argv)))
-        (cond
-          ((cli-arguments-help-p arguments)
-           (print-cli-usage)
-           0)
-          ((cli-arguments-version-p arguments)
-           (format t "cadr 0.1.0~%")
-           0)
-          (t
-           (cli-handler arguments)
-           0)))
+      (progn
+        (ensure-user-data-migrated :argv argv)
+        (let ((arguments
+                (parse-cli-arguments argv)))
+          (cond
+            ((cli-arguments-help-p arguments)
+             (print-cli-usage)
+             0)
+            ((cli-arguments-version-p arguments)
+             (format t "cadr 0.1.0~%")
+             0)
+            (t
+             (cli-handler arguments)
+             0))))
     (cadr-ai:cadr-error (condition)
       (format *error-output* "cadr: ~A~%" condition)
       (finish-output *error-output*)

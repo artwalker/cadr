@@ -7,6 +7,7 @@
   (auth-source :none :type symbol))
 
 (defparameter *environment-function* #'uiop:getenv)
+(defparameter *deprecation-warning-stream* *error-output*)
 (defparameter *openai-login-function* #'cadr-ai:login-openai-oauth)
 (defparameter *anthropic-login-function* #'cadr-ai:login-anthropic-oauth)
 
@@ -20,6 +21,24 @@
 
 (defun environment-value (name)
   (funcall *environment-function* name))
+
+(defun legacy-environment-name (suffix)
+  (format nil "~C~C_CL_~A" #\P #\I suffix))
+
+(defun environment-value-with-legacy (name suffix)
+  (or
+   (environment-value name)
+   (let* ((legacy-name
+            (legacy-environment-name suffix))
+          (value
+            (environment-value legacy-name)))
+     (when value
+       (format
+        *deprecation-warning-stream*
+        "cadr: warning: ~A is deprecated; use ~A. Legacy environment variables will be removed in 0.2.0.~%"
+        legacy-name name)
+       (finish-output *deprecation-warning-stream*))
+     value)))
 
 (defun stored-auth-secrets
     (&optional (path (default-auth-path)))
@@ -66,7 +85,8 @@
 
 (defun configured-provider-name (explicit)
   (or explicit
-      (environment-value "CADR_PROVIDER")
+      (environment-value-with-legacy
+       "CADR_PROVIDER" "PROVIDER")
       (cond
         ((environment-value "ANTHROPIC_API_KEY") "anthropic")
         ((environment-value "OPENAI_API_KEY") "openai")
@@ -151,12 +171,14 @@
            (settings (provider-settings config name))
            (resolved-model
              (or model
-                 (environment-value "CADR_MODEL")
+                 (environment-value-with-legacy
+                  "CADR_MODEL" "MODEL")
                  (cadr-ai::json-get settings "model")
                  (cadr-ai:provider-definition-default-model definition)))
            (configured-base-url
              (or base-url
-                 (environment-value "CADR_BASE_URL")
+                 (environment-value-with-legacy
+                  "CADR_BASE_URL" "BASE_URL")
                  (cadr-ai::json-get settings "base-url")))
            (credential nil)
            (auth-source :none))

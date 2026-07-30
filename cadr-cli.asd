@@ -10,6 +10,7 @@
                 :serial t
                 :components ((:file "package")
                              (:file "arguments")
+                             (:file "migration")
                              (:file "config")
                              (:file "truncation")
                              (:module "tools"
@@ -48,6 +49,7 @@
                              (:file "extensions-test")
                              (:file "tui-test")
                              (:file "migration-test")
+                             (:file "data-migration-test")
                              (:file "build-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))

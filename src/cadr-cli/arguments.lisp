@@ -155,7 +155,7 @@
 (defun print-cli-usage
     (&optional (stream *standard-output*))
   (format stream
-          "NAME:~%  cadr - Common Lisp cadr coding agent~%~%")
+          "NAME:~%  cadr - Common Lisp coding agent~%~%")
   (format stream "USAGE:~%  cadr [options]~%~%")
   (format stream "OPTIONS:~%")
   (dolist

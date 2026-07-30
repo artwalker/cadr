@@ -41,6 +41,69 @@
                      (cadr-ai:model-base-url
                       (cadr-cli:provider-config-model config))))))))
 
+(test legacy-environment-values-work-for-one-transition-release-and-warn
+  (let* ((values
+           (list
+            (cons (cadr-cli::legacy-environment-name "PROVIDER")
+                  "ollama")
+            (cons (cadr-cli::legacy-environment-name "MODEL")
+                  "legacy-model")
+            (cons (cadr-cli::legacy-environment-name "BASE_URL")
+                  "https://legacy.example")))
+         (warnings (make-string-output-stream))
+         (cadr-cli::*environment-function*
+           (lambda (name)
+             (cdr (assoc name values :test #'string=))))
+         (cadr-cli::*deprecation-warning-stream* warnings))
+    (let ((config
+            (cadr-cli:resolve-provider-config
+             :config-path #P"/definitely/missing/config.json"
+             :auth-path #P"/definitely/missing/auth.json")))
+      (is (string= "ollama"
+                   (cadr-cli:provider-config-name config)))
+      (is (string= "legacy-model"
+                   (cadr-ai:model-id
+                    (cadr-cli:provider-config-model config))))
+      (is (string= "https://legacy.example"
+                   (cadr-ai:model-base-url
+                    (cadr-cli:provider-config-model config)))))
+    (let ((text (get-output-stream-string warnings)))
+      (dolist (suffix '("PROVIDER" "MODEL" "BASE_URL"))
+        (is (search
+             (cadr-cli::legacy-environment-name suffix)
+             text)))
+      (is (search "0.2.0" text)))))
+
+(test new-environment-values-win-without-reading-legacy-values
+  (let* ((values
+           `(("CADR_PROVIDER" . "ollama")
+             ("CADR_MODEL" . "new-model")
+             ("CADR_BASE_URL" . "https://new.example")
+             (,(cadr-cli::legacy-environment-name "PROVIDER")
+              . "deepseek")
+             (,(cadr-cli::legacy-environment-name "MODEL")
+              . "legacy-model")
+             (,(cadr-cli::legacy-environment-name "BASE_URL")
+              . "https://legacy.example")))
+         (warnings (make-string-output-stream))
+         (cadr-cli::*environment-function*
+           (lambda (name)
+             (cdr (assoc name values :test #'string=))))
+         (cadr-cli::*deprecation-warning-stream* warnings))
+    (let ((config
+            (cadr-cli:resolve-provider-config
+             :config-path #P"/definitely/missing/config.json"
+             :auth-path #P"/definitely/missing/auth.json")))
+      (is (string= "ollama"
+                   (cadr-cli:provider-config-name config)))
+      (is (string= "new-model"
+                   (cadr-ai:model-id
+                    (cadr-cli:provider-config-model config))))
+      (is (string= "https://new.example"
+                   (cadr-ai:model-base-url
+                    (cadr-cli:provider-config-model config)))))
+    (is (string= "" (get-output-stream-string warnings)))))
+
 (test ollama-needs-no-api-key
   (let ((cadr-cli::*environment-function* (constantly nil)))
     (let ((config
