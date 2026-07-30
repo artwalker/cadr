@@ -393,6 +393,50 @@
   #-sbcl
   *standard-output*)
 
+(defparameter +tui-autocomplete-command-specifications+
+  '(("model" "Select the active model" nil)
+    ("sessions" "Select a saved session" nil)
+    ("switch" "Switch to a session" "<session-id>")
+    ("branch" "Set the session branch point" "<entry-id>")
+    ("compact" "Compact the current context" nil)
+    ("export" "Export the current session" "[path]")
+    ("login" "Authenticate a provider" "[provider]")
+    ("logout" "Remove provider authentication" "[provider]")
+    ("reload" "Reload extensions" nil)
+    ("install" "Install an extension" "<source>")))
+
+(defun find-tui-fd-program ()
+  (loop for directory
+        in (uiop:split-string
+            (or (uiop:getenv "PATH") "")
+            :separator '(#\:))
+        when (plusp (length directory))
+          do
+          (dolist (name '("fd" "fdfind"))
+            (let ((candidate
+                    (merge-pathnames
+                     name
+                     (uiop:ensure-directory-pathname
+                      directory))))
+              (when (probe-file candidate)
+                (return-from find-tui-fd-program
+                  candidate))))))
+
+(defun make-tui-autocomplete-provider
+    (&key (base-path (uiop:getcwd)))
+  (cadr-tui:make-autocomplete-provider
+   :commands
+   (loop for (name description argument-hint)
+         in +tui-autocomplete-command-specifications+
+         collect
+         (cadr-tui:make-autocomplete-command
+          :name name
+          :description description
+          :argument-hint argument-hint))
+   :base-path base-path
+   :fd-path
+   (find-tui-fd-program)))
+
 (defun run-tui
     (prompt-function
      &key
@@ -417,7 +461,12 @@
             :session session
             :messages messages))
          (editor
-           (cadr-tui:make-multiline-editor))
+           (let ((editor
+                   (cadr-tui:make-multiline-editor)))
+             (cadr-tui:editor-set-autocomplete-provider
+              editor
+              (make-tui-autocomplete-provider))
+             editor))
          (decoder
            (cadr-tui:make-input-decoder))
          (renderer

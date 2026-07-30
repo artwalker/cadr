@@ -37,6 +37,24 @@
              (lambda (text) (push text prompts))
              :command-function (constantly nil))))))
 
+(test tui-editor-autocomplete-exposes-only-real-cli-commands
+  (let* ((provider
+           (cadr-cli::make-tui-autocomplete-provider
+            :base-path (uiop:getcwd)))
+         (suggestions
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/") 0 1))
+         (values
+           (mapcar
+            #'cadr-tui:autocomplete-item-value
+            (cadr-tui:autocomplete-suggestions-items
+             suggestions))))
+    (is (member "model" values :test #'string=))
+    (is (member "sessions" values :test #'string=))
+    (is (member "login" values :test #'string=))
+    (is (member "reload" values :test #'string=))
+    (is (not (member "redo" values :test #'string=)))))
+
 (test tui-selection-policy-honors-flag-and-tty-state
   (flet ((terminal-p (stream direction)
            (declare (ignore stream direction))
