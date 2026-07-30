@@ -1,5 +1,8 @@
 (in-package #:cadr-agent)
 
+(defconstant +max-session-header-scan-bytes+
+  (* 1024 1024))
+
 (defstruct session-entry
   type
   id
@@ -9,7 +12,23 @@
   summary
   (source-ids nil :type list)
   first-kept-id
-  (tokens-before 0 :type (integer 0 *)))
+  (tokens-before 0 :type (integer 0 *))
+  thinking-level
+  provider
+  model-id
+  active-tool-names
+  from-id
+  details
+  usage
+  (from-hook-p nil :type boolean)
+  custom-type
+  data
+  content
+  (display-p nil :type boolean)
+  target-id
+  label
+  name
+  retained-tail)
 
 (defstruct (session
             (:constructor %make-session))
@@ -17,9 +36,15 @@
   timestamp
   cwd
   path
+  parent-session
+  name
+  modified-timestamp
+  (labels (make-hash-table :test #'equal)
+          :type hash-table)
   (%entries nil :type list)
   (by-id (make-hash-table :test #'equal) :type hash-table)
   leaf-id
+  (persisted-p nil :type boolean)
   (lock (sb-thread:make-mutex :name "cadr-session")))
 
 (defun canonical-session-cwd (cwd)
@@ -32,10 +57,71 @@
    (user-homedir-pathname)))
 
 (defun make-session-id ()
-  (string-downcase
-   (format nil "~36R-~36R"
-           (cadr-ai::unix-milliseconds)
-           (random most-positive-fixnum))))
+  (let ((state (make-random-state t)))
+    (string-downcase
+     (format nil "~36R-~36R"
+             (cadr-ai::unix-milliseconds)
+             (random
+              most-positive-fixnum
+              state)))))
+
+(defun milliseconds-to-iso8601 (milliseconds)
+  (multiple-value-bind
+        (second minute hour day month year)
+      (decode-universal-time
+       (+ 2208988800
+          (floor milliseconds 1000))
+       0)
+    (format nil
+            "~4,'0D-~2,'0D-~2,'0DT~2,'0D:~2,'0D:~2,'0D.~3,'0DZ"
+            year month day hour minute second
+            (mod milliseconds 1000))))
+
+(defun iso8601-to-milliseconds (value)
+  (cond
+    ((integerp value) value)
+    ((and
+      (stringp value)
+      (>= (length value) 19))
+     (handler-case
+         (let* ((year (parse-integer value :start 0 :end 4))
+                (month (parse-integer value :start 5 :end 7))
+                (day (parse-integer value :start 8 :end 10))
+                (hour (parse-integer value :start 11 :end 13))
+                (minute (parse-integer value :start 14 :end 16))
+                (second (parse-integer value :start 17 :end 19))
+                (dot (position #\. value :start 19))
+                (zone
+                  (or
+                   (position #\Z value :start 19)
+                   (length value)))
+                (fraction
+                  (if dot
+                      (subseq
+                       value
+                       (1+ dot)
+                       (min zone (+ dot 4)))
+                      "0"))
+                (millisecond
+                  (parse-integer
+                   (concatenate
+                    'string
+                    fraction
+                    (make-string
+                     (max 0 (- 3 (length fraction)))
+                     :initial-element #\0)))))
+           (+ (* 1000
+                 (- (encode-universal-time
+                     second minute hour day month year 0)
+                    2208988800))
+              millisecond))
+       (error ()
+         (error "Invalid ISO-8601 timestamp: ~S" value))))
+    (t
+     (error "Invalid session timestamp: ~S" value))))
+
+(defun session-timestamp-json (milliseconds)
+  (milliseconds-to-iso8601 milliseconds))
 
 (defun session-failure (path line format-control &rest arguments)
   (error
@@ -121,12 +207,12 @@
     ((typep block 'cadr-ai:image-content)
      (cadr-ai::json-object
       "type" "image"
-      "mime_type" (cadr-ai:image-content-mime-type block)
+      "mimeType" (cadr-ai:image-content-mime-type block)
       "data" (cadr-ai:image-content-data block)))
     ((typep block 'cadr-ai:tool-call)
      (let ((object
              (cadr-ai::json-object
-              "type" "tool_call"
+              "type" "toolCall"
               "id" (cadr-ai:tool-call-id block)
               "name" (cadr-ai:tool-call-name block)
               "arguments"
@@ -134,7 +220,7 @@
                (cadr-ai:tool-call-arguments block)))))
        (when (cadr-ai:tool-call-thought-signature block)
          (cadr-ai::json-put
-          object "thought_signature"
+          object "thoughtSignature"
           (cadr-ai:tool-call-thought-signature block)))
        object))
     (t
@@ -144,13 +230,21 @@
   (map 'vector #'content-block-to-json blocks))
 
 (defun usage-to-json (usage)
-  (let ((object
-          (cadr-ai::json-object
-           "input" (cadr-ai:usage-input usage)
-           "output" (cadr-ai:usage-output usage)
-           "cache_read" (cadr-ai:usage-cache-read usage)
-           "cache_write" (cadr-ai:usage-cache-write usage)
-           "total" (cadr-ai:usage-total usage))))
+  (let* ((cost (cadr-ai:usage-cost usage))
+         (object
+           (cadr-ai::json-object
+            "input" (cadr-ai:usage-input usage)
+            "output" (cadr-ai:usage-output usage)
+            "cacheRead" (cadr-ai:usage-cache-read usage)
+            "cacheWrite" (cadr-ai:usage-cache-write usage)
+            "total" (cadr-ai:usage-total usage)
+            "cost"
+            (cadr-ai::json-object
+             "input" (cadr-ai:cost-input cost)
+             "output" (cadr-ai:cost-output cost)
+             "cacheRead" (cadr-ai:cost-cache-read cost)
+             "cacheWrite" (cadr-ai:cost-cache-write cost)
+             "total" (cadr-ai:cost-total cost)))))
     (when (cadr-ai:usage-reasoning usage)
       (cadr-ai::json-put
        object "reasoning" (cadr-ai:usage-reasoning usage)))
@@ -160,7 +254,7 @@
   (cond
     ((typep message 'cadr-ai:user-message)
      (cadr-ai::json-object
-      "type" "user"
+      "role" "user"
       "content"
       (let ((content (cadr-ai:user-message-content message)))
         (if (stringp content)
@@ -170,7 +264,7 @@
     ((typep message 'cadr-ai:assistant-message)
      (let ((object
              (cadr-ai::json-object
-              "type" "assistant"
+              "role" "assistant"
               "content"
               (content-blocks-to-json
                (cadr-ai:assistant-message-content message))
@@ -184,30 +278,30 @@
               "usage"
               (usage-to-json
                (cadr-ai:assistant-message-usage message))
-              "stop_reason"
+              "stopReason"
               (symbol-json-name
                (cadr-ai:assistant-message-stop-reason message))
               "timestamp"
               (cadr-ai:assistant-message-timestamp message))))
        (when (cadr-ai:assistant-message-response-id message)
          (cadr-ai::json-put
-          object "response_id"
+          object "responseId"
           (cadr-ai:assistant-message-response-id message)))
        (when (cadr-ai:assistant-message-error-message message)
          (cadr-ai::json-put
-          object "error_message"
+          object "errorMessage"
           (cadr-ai:assistant-message-error-message message)))
        (when (cadr-ai:assistant-message-raw-stop-reason message)
          (cadr-ai::json-put
-          object "raw_stop_reason"
+          object "rawStopReason"
           (cadr-ai:assistant-message-raw-stop-reason message)))
        object))
     ((typep message 'cadr-ai:tool-result-message)
      (cadr-ai::json-object
-      "type" "tool_result"
-      "tool_call_id"
+      "role" "toolResult"
+      "toolCallId"
       (cadr-ai:tool-result-message-tool-call-id message)
-      "tool_name"
+      "toolName"
       (cadr-ai:tool-result-message-tool-name message)
       "content"
       (content-blocks-to-json
@@ -215,7 +309,7 @@
       "details"
       (json-safe-value
        (cadr-ai:tool-result-message-details message))
-      "is_error"
+      "isError"
       (cadr-ai:tool-result-message-is-error message)
       "timestamp"
       (cadr-ai:tool-result-message-timestamp message)))
@@ -226,6 +320,13 @@
   (unless (stringp value)
     (error "Expected a symbolic JSON string"))
   (intern (string-upcase value) "KEYWORD"))
+
+(defun json-get-either (object primary legacy)
+  (multiple-value-bind (value present-p)
+      (gethash primary object)
+    (if present-p
+        value
+        (cadr-ai::json-get object legacy))))
 
 (defun content-block-from-json (object)
   (let ((type (cadr-ai::json-get object "type")))
@@ -242,16 +343,19 @@
         (eq t (cadr-ai::json-get object "redacted"))))
       ((string= type "image")
        (cadr-ai:make-image-content
-        :mime-type (cadr-ai::json-get object "mime_type")
+        :mime-type
+        (json-get-either object "mimeType" "mime_type")
         :data (cadr-ai::json-get object "data")))
-      ((string= type "tool_call")
+      ((member type '("toolCall" "tool_call")
+               :test #'string=)
        (cadr-ai:make-tool-call
         :id (cadr-ai::json-get object "id")
         :name (cadr-ai::json-get object "name")
         :arguments
         (cadr-ai::json-get object "arguments")
         :thought-signature
-        (cadr-ai::json-get object "thought_signature")))
+        (json-get-either
+         object "thoughtSignature" "thought_signature")))
       (t
        (error "Unknown content block type: ~S" type)))))
 
@@ -262,16 +366,52 @@
         collect (content-block-from-json object)))
 
 (defun usage-from-json (object)
-  (cadr-ai:make-usage
-   :input (or (cadr-ai::json-get object "input") 0)
-   :output (or (cadr-ai::json-get object "output") 0)
-   :cache-read (or (cadr-ai::json-get object "cache_read") 0)
-   :cache-write (or (cadr-ai::json-get object "cache_write") 0)
-   :reasoning (cadr-ai::json-get object "reasoning")
-   :total (cadr-ai::json-get object "total")))
+  (let ((cost (cadr-ai::json-get object "cost")))
+    (cadr-ai:make-usage
+     :input (or (cadr-ai::json-get object "input") 0)
+     :output (or (cadr-ai::json-get object "output") 0)
+     :cache-read
+     (or (json-get-either object "cacheRead" "cache_read") 0)
+     :cache-write
+     (or (json-get-either object "cacheWrite" "cache_write") 0)
+     :reasoning (cadr-ai::json-get object "reasoning")
+     :total (cadr-ai::json-get object "total")
+     :cost
+     (if (hash-table-p cost)
+         (cadr-ai:make-cost
+          :input
+          (coerce
+           (or (cadr-ai::json-get cost "input") 0)
+           'double-float)
+          :output
+          (coerce
+           (or (cadr-ai::json-get cost "output") 0)
+           'double-float)
+          :cache-read
+          (coerce
+           (or
+            (json-get-either
+             cost "cacheRead" "cache_read")
+            0)
+           'double-float)
+          :cache-write
+          (coerce
+           (or
+            (json-get-either
+             cost "cacheWrite" "cache_write")
+            0)
+           'double-float)
+          :total
+          (coerce
+           (or (cadr-ai::json-get cost "total") 0)
+           'double-float))
+         (cadr-ai:make-cost)))))
 
 (defun message-from-json (object)
-  (let ((type (cadr-ai::json-get object "type"))
+  (let ((type
+          (or
+           (cadr-ai::json-get object "role")
+           (cadr-ai::json-get object "type")))
         (content (cadr-ai::json-get object "content")))
     (cond
       ((string= type "user")
@@ -289,28 +429,41 @@
         :provider (keyword-from-json
                    (cadr-ai::json-get object "provider"))
         :model (cadr-ai::json-get object "model")
-        :response-id (cadr-ai::json-get object "response_id")
+        :response-id
+        (json-get-either object "responseId" "response_id")
         :usage
         (usage-from-json
          (cadr-ai::json-get object "usage"))
         :stop-reason
         (keyword-from-json
-         (cadr-ai::json-get object "stop_reason"))
+              (json-get-either
+               object "stopReason" "stop_reason"))
         :error-message
-        (cadr-ai::json-get object "error_message")
+        (json-get-either
+         object "errorMessage" "error_message")
         :raw-stop-reason
-        (cadr-ai::json-get object "raw_stop_reason")
+        (json-get-either
+         object "rawStopReason" "raw_stop_reason")
         :timestamp (cadr-ai::json-get object "timestamp")))
-      ((string= type "tool_result")
+      ((member type '("toolResult" "tool_result")
+               :test #'string=)
        (cadr-ai:make-tool-result-message
         :tool-call-id
-        (cadr-ai::json-get object "tool_call_id")
+        (json-get-either object "toolCallId" "tool_call_id")
         :tool-name
-        (cadr-ai::json-get object "tool_name")
+        (json-get-either object "toolName" "tool_name")
         :content (content-blocks-from-json content)
         :details (cadr-ai::json-get object "details")
         :is-error
-        (eq t (cadr-ai::json-get object "is_error"))
+        (eq t
+            (json-get-either object "isError" "is_error"))
+        :timestamp (cadr-ai::json-get object "timestamp")))
+      ((string= type "custom")
+       (cadr-ai:make-user-message
+        :content
+        (if (stringp content)
+            content
+            (content-blocks-from-json content))
         :timestamp (cadr-ai::json-get object "timestamp")))
       (t
        (error "Unknown message type: ~S" type)))))
@@ -331,7 +484,12 @@
 
 (defun make-session-entry-id (by-id)
   (loop repeat 100
-        for id = (make-session-id)
+        for id =
+          (string-downcase
+           (format nil "~8,'0X"
+                   (random
+                    #x100000000
+                    (make-random-state t))))
         unless (gethash id by-id)
           return id
         finally
@@ -342,34 +500,185 @@
   (copy-list (session-%entries session)))
 
 (defun session-entry-to-json (entry)
-  (ecase (session-entry-type entry)
+  (let ((base
+          (cadr-ai::json-object
+           "type"
+           (case (session-entry-type entry)
+             (:message "message")
+             (:thinking-level-change
+              "thinking_level_change")
+             (:model-change "model_change")
+             (:active-tools-change
+              "active_tools_change")
+             (:compaction "compaction")
+             (:branch-summary "branch_summary")
+             (:custom "custom")
+             (:custom-message "custom_message")
+             (:label "label")
+             (:session-info "session_info")
+             (:leaf "leaf"))
+           "id" (session-entry-id entry)
+           "parentId"
+           (or
+            (session-entry-parent-id entry)
+            'null)
+           "timestamp"
+           (session-timestamp-json
+            (session-entry-timestamp entry)))))
+    (ecase (session-entry-type entry)
     (:message
-     (cadr-ai::json-object
-      "type" "message"
-      "id" (session-entry-id entry)
-      "parentId" (session-entry-parent-id entry)
-      "timestamp" (session-entry-timestamp entry)
-      "message" (message-to-json
-                 (session-entry-message entry))))
+     (cadr-ai::json-put
+      base "message"
+      (message-to-json
+       (session-entry-message entry))))
+    (:thinking-level-change
+     (cadr-ai::json-put
+      base "thinkingLevel"
+      (session-entry-thinking-level entry)))
+    (:model-change
+     (cadr-ai::json-put
+      base "provider"
+      (session-entry-provider entry))
+     (cadr-ai::json-put
+      base "modelId"
+      (session-entry-model-id entry)))
+    (:active-tools-change
+     (cadr-ai::json-put
+      base "activeToolNames"
+      (coerce
+       (session-entry-active-tool-names entry)
+       'vector)))
     (:compaction
-     (cadr-ai::json-object
-      "type" "compaction"
-      "id" (session-entry-id entry)
-      "parentId" (session-entry-parent-id entry)
-      "timestamp" (session-entry-timestamp entry)
-      "summary" (session-entry-summary entry)
-      "sourceIds"
-      (coerce (session-entry-source-ids entry) 'vector)
-      "firstKeptEntryId"
-      (session-entry-first-kept-id entry)
-      "tokensBefore"
-      (session-entry-tokens-before entry)))))
+     (cadr-ai::json-put
+      base "summary" (session-entry-summary entry))
+     (cadr-ai::json-put
+      base "firstKeptEntryId"
+      (session-entry-first-kept-id entry))
+     (cadr-ai::json-put
+      base "tokensBefore"
+      (session-entry-tokens-before entry))
+     (when (session-entry-details entry)
+       (cadr-ai::json-put
+        base "details"
+        (json-safe-value
+         (session-entry-details entry))))
+     (when (session-entry-usage entry)
+       (cadr-ai::json-put
+        base "usage"
+        (usage-to-json
+         (session-entry-usage entry))))
+     (when (session-entry-from-hook-p entry)
+       (cadr-ai::json-put base "fromHook" t))
+     (when (session-entry-retained-tail entry)
+       (cadr-ai::json-put
+        base "retainedTail"
+        (map
+         'vector
+         #'message-to-json
+         (session-entry-retained-tail entry)))))
+    (:branch-summary
+     (cadr-ai::json-put
+      base "fromId" (session-entry-from-id entry))
+     (cadr-ai::json-put
+      base "summary" (session-entry-summary entry))
+     (when (session-entry-details entry)
+       (cadr-ai::json-put
+        base "details"
+        (json-safe-value
+         (session-entry-details entry))))
+     (when (session-entry-usage entry)
+       (cadr-ai::json-put
+        base "usage"
+        (usage-to-json
+         (session-entry-usage entry))))
+     (when (session-entry-from-hook-p entry)
+       (cadr-ai::json-put base "fromHook" t)))
+    (:custom
+     (cadr-ai::json-put
+      base "customType"
+      (session-entry-custom-type entry))
+     (when (session-entry-data entry)
+       (cadr-ai::json-put
+        base "data"
+        (json-safe-value
+         (session-entry-data entry)))))
+    (:custom-message
+     (cadr-ai::json-put
+      base "customType"
+      (session-entry-custom-type entry))
+     (cadr-ai::json-put
+      base "content"
+      (let ((content (session-entry-content entry)))
+        (if (stringp content)
+            content
+            (content-blocks-to-json content))))
+     (cadr-ai::json-put
+      base "display"
+      (session-entry-display-p entry))
+     (when (session-entry-details entry)
+       (cadr-ai::json-put
+        base "details"
+        (json-safe-value
+         (session-entry-details entry)))))
+    (:label
+     (cadr-ai::json-put
+      base "targetId"
+      (session-entry-target-id entry))
+     (when (session-entry-label entry)
+       (cadr-ai::json-put
+        base "label"
+        (session-entry-label entry))))
+    (:session-info
+     (when (session-entry-name entry)
+       (cadr-ai::json-put
+        base "name"
+        (session-entry-name entry))))
+    (:leaf
+     (cadr-ai::json-put
+      base "targetId"
+      (or
+       (session-entry-target-id entry)
+       'null))))
+    base))
+
+(defun session-header-to-json (session)
+  (let ((header
+          (cadr-ai::json-object
+           "type" "session"
+           "version" 3
+           "id" (session-id session)
+           "timestamp"
+           (session-timestamp-json
+            (session-timestamp session))
+           "cwd" (session-cwd session))))
+    (when (session-parent-session session)
+      (cadr-ai::json-put
+       header "parentSession"
+       (session-parent-session session)))
+    header))
+
+(defun assistant-session-entry-p (entry)
+  (and
+   (eq :message (session-entry-type entry))
+   (typep
+    (session-entry-message entry)
+    'cadr-ai:assistant-message)))
+
+(defun session-entry-activity-timestamp (entry)
+  (when (eq :message (session-entry-type entry))
+    (let ((message (session-entry-message entry)))
+      (cond
+        ((typep message 'cadr-ai:user-message)
+         (cadr-ai:user-message-timestamp message))
+        ((typep message 'cadr-ai:assistant-message)
+         (cadr-ai:assistant-message-timestamp message))))))
 
 (defun create-session (&key
                              (directory
                                (default-session-directory))
                              cwd
                              id
+                             parent-session
                              (timestamp
                                (cadr-ai::unix-milliseconds)))
   (let* ((session-directory
@@ -384,46 +693,56 @@
             session-directory)))
     (ensure-directories-exist
      (merge-pathnames "anchor" session-directory))
-    (handler-case
-        (with-open-file
-            (stream path
-                    :direction :output
-                    :if-exists :error
-                    :if-does-not-exist :create
-                    :external-format :utf-8)
-          (write-jsonl-object
-           stream
-           (cadr-ai::json-object
-            "type" "session"
-            "version" 2
-            "id" session-id
-            "timestamp" timestamp
-            "cwd" canonical-cwd)))
-      (error (cause)
-        (session-failure
-         path 1 "Cannot create session: ~A" cause)))
     (%make-session
      :id session-id
      :timestamp timestamp
      :cwd canonical-cwd
-     :path path)))
+     :path path
+     :parent-session parent-session
+     :modified-timestamp timestamp)))
 
 (defun append-session-entry (session entry)
   (sb-thread:with-mutex
       ((session-lock session))
-    (handler-case
-        (with-open-file
-            (stream (session-path session)
-                    :direction :output
-                    :if-exists :append
-                    :if-does-not-exist :error
-                    :external-format :utf-8)
-          (write-jsonl-object
-           stream (session-entry-to-json entry)))
-      (error (cause)
-        (session-failure
-         (session-path session) nil
-         "Cannot append session entry: ~A" cause)))
+    (cond
+      ((session-persisted-p session)
+       (handler-case
+           (with-open-file
+               (stream (session-path session)
+                       :direction :output
+                       :if-exists :append
+                       :if-does-not-exist :error
+                       :external-format :utf-8)
+             (write-jsonl-object
+              stream (session-entry-to-json entry)))
+         (error (cause)
+           (session-failure
+            (session-path session) nil
+            "Cannot append session entry: ~A" cause))))
+      ((assistant-session-entry-p entry)
+       (handler-case
+           (with-open-file
+               (stream (session-path session)
+                       :direction :output
+                       :if-exists :error
+                       :if-does-not-exist :create
+                       :external-format :utf-8)
+             (write-jsonl-object
+              stream (session-header-to-json session))
+             (dolist
+                 (buffered-entry
+                  (append
+                   (session-%entries session)
+                   (list entry)))
+               (write-jsonl-object
+                stream
+                (session-entry-to-json
+                 buffered-entry))))
+         (error (cause)
+           (session-failure
+            (session-path session) nil
+            "Cannot create session: ~A" cause)))
+       (setf (session-persisted-p session) t)))
     (setf (session-%entries session)
           (nconc (session-%entries session)
                  (list entry))
@@ -431,7 +750,16 @@
                    (session-by-id session))
           entry
           (session-leaf-id session)
-          (session-entry-id entry)))
+          (session-entry-id entry))
+    (let ((activity
+            (session-entry-activity-timestamp
+             entry)))
+      (when activity
+        (setf
+         (session-modified-timestamp session)
+         (max
+          (session-modified-timestamp session)
+          activity)))))
   (session-entry-id entry))
 
 (defun session-append-message (session message)
@@ -446,7 +774,8 @@
     :message message)))
 
 (defun session-append-compaction
-    (session summary source-ids first-kept-id tokens-before)
+    (session summary source-ids first-kept-id tokens-before
+     &key details usage from-hook-p)
   (unless (and (stringp summary)
                (plusp (length summary)))
     (session-failure
@@ -475,7 +804,186 @@
     :summary summary
     :source-ids (copy-list source-ids)
     :first-kept-id first-kept-id
-    :tokens-before tokens-before)))
+    :tokens-before tokens-before
+    :details details
+    :usage usage
+    :from-hook-p (not (null from-hook-p)))))
+
+(defun make-session-child-entry (session type)
+  (make-session-entry
+   :type type
+   :id (make-session-entry-id
+        (session-by-id session))
+   :parent-id (session-leaf-id session)
+   :timestamp (cadr-ai::unix-milliseconds)))
+
+(defun session-append-thinking-level-change
+    (session thinking-level)
+  (unless
+      (and
+       (stringp thinking-level)
+       (plusp (length thinking-level)))
+    (session-failure
+     (session-path session) nil
+     "Thinking level must be a non-empty string"))
+  (let ((entry
+          (make-session-child-entry
+           session :thinking-level-change)))
+    (setf
+     (session-entry-thinking-level entry)
+     thinking-level)
+    (append-session-entry session entry)))
+
+(defun session-append-model-change
+    (session provider model-id)
+  (unless
+      (and
+       (stringp provider)
+       (plusp (length provider))
+       (stringp model-id)
+       (plusp (length model-id)))
+    (session-failure
+     (session-path session) nil
+     "Model change provider and model id must be non-empty strings"))
+  (let ((entry
+          (make-session-child-entry
+           session :model-change)))
+    (setf
+     (session-entry-provider entry) provider
+     (session-entry-model-id entry) model-id)
+    (append-session-entry session entry)))
+
+(defun session-append-branch-summary
+    (session from-id summary
+     &key details usage from-hook-p)
+  (unless
+      (and
+       (stringp from-id)
+       (gethash from-id (session-by-id session))
+       (stringp summary)
+       (plusp (length summary)))
+    (session-failure
+     (session-path session) nil
+     "Branch summary requires an existing from id and non-empty summary"))
+  (let ((entry
+          (make-session-child-entry
+           session :branch-summary)))
+    (setf
+     (session-entry-from-id entry) from-id
+     (session-entry-summary entry) summary
+     (session-entry-details entry) details
+     (session-entry-usage entry) usage
+     (session-entry-from-hook-p entry)
+     (not (null from-hook-p)))
+    (append-session-entry session entry)))
+
+(defun session-append-custom
+    (session custom-type &optional data)
+  (unless
+      (and
+       (stringp custom-type)
+       (plusp (length custom-type)))
+    (session-failure
+     (session-path session) nil
+     "Custom entry type must be a non-empty string"))
+  (let ((entry
+          (make-session-child-entry
+           session :custom)))
+    (setf
+     (session-entry-custom-type entry) custom-type
+     (session-entry-data entry) data)
+    (append-session-entry session entry)))
+
+(defun valid-custom-message-content-p (content)
+  (or
+   (stringp content)
+   (and
+    (typep content 'sequence)
+    (every
+     (lambda (block)
+       (or
+        (typep block 'cadr-ai:text-content)
+        (typep block 'cadr-ai:image-content)))
+     content))))
+
+(defun session-append-custom-message
+    (session custom-type content
+     &key details (display-p nil))
+  (unless
+      (and
+       (stringp custom-type)
+       (plusp (length custom-type))
+       (valid-custom-message-content-p content))
+    (session-failure
+     (session-path session) nil
+     "Invalid custom message entry"))
+  (let ((entry
+          (make-session-child-entry
+           session :custom-message)))
+    (setf
+     (session-entry-custom-type entry) custom-type
+     (session-entry-content entry)
+     (if (stringp content)
+         content
+         (coerce content 'list))
+     (session-entry-details entry) details
+     (session-entry-display-p entry)
+     (not (null display-p)))
+    (append-session-entry session entry)))
+
+(defun session-set-label (session target-id label)
+  (unless
+      (and
+       (stringp target-id)
+       (gethash target-id (session-by-id session))
+       (or (null label) (stringp label)))
+    (session-failure
+     (session-path session) nil
+     "Label target must exist and label must be a string or NIL"))
+  (let ((entry
+          (make-session-child-entry
+           session :label)))
+    (setf
+     (session-entry-target-id entry) target-id
+     (session-entry-label entry) label)
+    (prog1
+        (append-session-entry session entry)
+      (if (and label (plusp (length label)))
+          (setf
+           (gethash target-id
+                    (session-labels session))
+           label)
+          (remhash target-id
+                   (session-labels session))))))
+
+(defun sanitize-session-name (name)
+  (string-trim
+   '(#\Space #\Tab #\Newline #\Return)
+   (cl-ppcre:regex-replace-all
+    "[\\r\\n]+"
+    name " ")))
+
+(defun session-set-name (session name)
+  (unless (stringp name)
+    (session-failure
+     (session-path session) nil
+     "Session name must be a string"))
+  (let* ((sanitized (sanitize-session-name name))
+         (entry
+           (make-session-child-entry
+            session :session-info)))
+    (setf
+     (session-entry-name entry) sanitized)
+    (prog1
+        (append-session-entry session entry)
+      (setf
+       (session-name session)
+       (and
+        (plusp (length sanitized))
+        sanitized)))))
+
+(defun session-label (session entry-id)
+  (gethash entry-id (session-labels session)))
 
 (defun session-branch (session entry-id)
   (unless (gethash entry-id (session-by-id session))
@@ -521,12 +1029,7 @@
   (let* ((path (session-path-entries session leaf-id))
          (compaction (latest-compaction-entry path)))
     (unless compaction
-      (return-from session-context-entries
-        (remove-if-not
-         (lambda (entry)
-           (eq :message
-               (session-entry-type entry)))
-         path)))
+      (return-from session-context-entries path))
     (let* ((compaction-position
              (position compaction path :test #'eq))
            (first-kept-position
@@ -544,26 +1047,17 @@
          (session-entry-first-kept-id compaction)))
       (append
        (list compaction)
-       (remove-if-not
-        (lambda (entry)
-          (eq :message
-              (session-entry-type entry)))
-        (subseq path
-                first-kept-position
-                compaction-position))
-       (remove-if-not
-        (lambda (entry)
-          (eq :message
-              (session-entry-type entry)))
-        (subseq path
-                (1+ compaction-position)))))))
+       (subseq path
+               first-kept-position
+               compaction-position)
+       (subseq path
+               (1+ compaction-position))))))
 
 (defun compaction-summary-message (entry)
   (cadr-ai:make-user-message
    :content
    (format nil
-           "Previous context summary (original entries: ~{~A~^, ~}):~%~A"
-           (session-entry-source-ids entry)
+           "The conversation history before this point was compacted into the following summary:~%~%<summary>~%~A~%</summary>"
            (session-entry-summary entry))
    :timestamp (session-entry-timestamp entry)))
 
@@ -572,12 +1066,29 @@
                                      (session-leaf-id session)))
   (loop for entry in
           (session-context-entries session leaf-id)
-        collect
-        (ecase (session-entry-type entry)
+        append
+        (case (session-entry-type entry)
           (:message
-           (session-entry-message entry))
+           (list (session-entry-message entry)))
           (:compaction
-           (compaction-summary-message entry)))))
+           (list (compaction-summary-message entry)))
+          (:branch-summary
+           (list
+            (cadr-ai:make-user-message
+             :content
+             (format nil
+                     "The following is a summary of a branch that this conversation came back from:~%~%<summary>~%~A~%</summary>"
+                     (session-entry-summary entry))
+             :timestamp
+             (session-entry-timestamp entry))))
+          (:custom-message
+           (list
+            (cadr-ai:make-user-message
+             :content
+             (session-entry-content entry)
+             :timestamp
+             (session-entry-timestamp entry))))
+          (otherwise nil))))
 
 (defun parse-session-line (line path line-number)
   (handler-case
@@ -595,9 +1106,13 @@
     (unless
         (and (string= "session"
                       (cadr-ai::json-get object "type"))
-             (member version '(1 2))
+             (member version '(1 2 3))
              (stringp (cadr-ai::json-get object "id"))
-             (integerp (cadr-ai::json-get object "timestamp"))
+             (or
+              (integerp
+               (cadr-ai::json-get object "timestamp"))
+              (stringp
+               (cadr-ai::json-get object "timestamp")))
              (stringp (cadr-ai::json-get object "cwd")))
       (session-failure path 1 "Invalid session header")))
   object)
@@ -613,19 +1128,24 @@
           (loop
             (multiple-value-bind (line missing-newline-p)
                 (read-line stream nil :eof)
+              (declare (ignore missing-newline-p))
               (when (eq line :eof)
                 (return))
               (incf line-number)
-              (handler-case
-                  (push
-                   (parse-session-line
-                    line path line-number)
-                   objects)
-                (session-error (condition)
-                  (if (and (> line-number 1)
-                           missing-newline-p)
-                      (return)
-                      (error condition)))))))
+              (unless
+                  (zerop
+                   (length
+                    (string-trim
+                     '(#\Space #\Tab
+                       #\Newline #\Return)
+                     line)))
+                (let ((object
+                        (handler-case
+                            (parse-session-line
+                             line path line-number)
+                          (session-error () nil))))
+                  (when object
+                    (push object objects)))))))
       (session-error (condition)
         (error condition))
       (error (cause)
@@ -635,20 +1155,139 @@
       (session-failure path 1 "Session file has no header"))
     (nreverse objects)))
 
+(defun session-header-candidate (octets)
+  (handler-case
+      (let ((line
+              (sb-ext:octets-to-string
+               octets :external-format :utf-8)))
+        (if
+            (zerop
+             (length
+              (string-trim
+               '(#\Space #\Tab #\Newline #\Return)
+               line)))
+            :skip
+            (let ((object (cadr-ai::parse-json line)))
+              (if
+                  (and
+                   (hash-table-p object)
+                   (string=
+                    "session"
+                    (cadr-ai::json-get object "type" ""))
+                   (stringp
+                    (cadr-ai::json-get object "id")))
+                  object
+                  :invalid))))
+    (error () :skip)))
+
+(defun read-session-header-for-discovery (path)
+  (handler-case
+      (with-open-file
+          (stream path
+                  :direction :input
+                  :element-type '(unsigned-byte 8))
+        (let ((line
+                (make-array
+                 256
+                 :element-type '(unsigned-byte 8)
+                 :adjustable t
+                 :fill-pointer 0))
+              (scanned 0))
+          (labels
+              ((inspect-line ()
+                 (let ((candidate
+                         (session-header-candidate
+                          line)))
+                   (setf (fill-pointer line) 0)
+                   (cond
+                     ((eq candidate :skip) nil)
+                     ((eq candidate :invalid)
+                      (return-from
+                          read-session-header-for-discovery
+                        nil))
+                     (t
+                      (return-from
+                          read-session-header-for-discovery
+                        candidate))))))
+            (loop
+              (when
+                  (= scanned
+                     +max-session-header-scan-bytes+)
+                (let ((probe
+                        (read-byte stream nil :eof)))
+                  (if (eq probe :eof)
+                      (progn
+                        (inspect-line)
+                        (return nil))
+                      (return nil))))
+              (let ((octet
+                      (read-byte stream nil :eof)))
+                (when (eq octet :eof)
+                  (inspect-line)
+                  (return nil))
+                (incf scanned)
+                (if (= octet 10)
+                    (inspect-line)
+                    (vector-push-extend
+                     octet line)))))))
+    (error () nil)))
+
 (defun migrate-v1-session-objects (objects)
   (let ((by-id (make-hash-table :test #'equal))
         (parent-id nil))
     (cadr-ai::json-put (first objects) "version" 2)
-    (dolist (object (rest objects))
-      (unless
-          (string= "message"
-                   (cadr-ai::json-get object "type"))
-        (error "Invalid v1 session record"))
+    (loop for object in (rest objects)
+          do
       (let ((id (make-session-entry-id by-id)))
         (cadr-ai::json-put object "id" id)
         (cadr-ai::json-put object "parentId" parent-id)
         (setf (gethash id by-id) t
-              parent-id id))))
+              parent-id id))
+      (when
+          (and
+           (string=
+            "compaction"
+            (cadr-ai::json-get object "type"))
+           (integerp
+            (cadr-ai::json-get
+             object "firstKeptEntryIndex")))
+        (let* ((index
+                 (cadr-ai::json-get
+                  object "firstKeptEntryIndex"))
+               (target
+                 (nth index objects)))
+          (when
+              (and
+               target
+               (not
+                (string=
+                 "session"
+                 (cadr-ai::json-get target "type"))))
+            (cadr-ai::json-put
+             object "firstKeptEntryId"
+             (cadr-ai::json-get target "id")))
+          (remhash "firstKeptEntryIndex" object))))
+  objects))
+
+(defun migrate-v2-session-objects (objects)
+  (cadr-ai::json-put (first objects) "version" 3)
+  (dolist (object (rest objects))
+    (when
+        (string=
+         "message"
+         (cadr-ai::json-get object "type"))
+      (let ((message
+              (cadr-ai::json-get object "message")))
+        (when
+            (and
+             (hash-table-p message)
+             (string=
+              "hookMessage"
+              (or
+               (cadr-ai::json-get message "role")
+               "")))
+          (cadr-ai::json-put
+           message "role" "custom")))))
   objects)
 
 (defun migration-temporary-path (path)
@@ -690,28 +1329,56 @@
   (and (vectorp value)
        (every #'stringp value)))
 
+(defun json-null-to-nil (value)
+  (if (cadr-ai::json-null-p value)
+      nil
+      value))
+
 (defun record-to-session-entry
     (object path line-number by-id)
   (unless (hash-table-p object)
     (session-failure
      path line-number "Session record must be an object"))
-  (let* ((type (require-json-field
-                object "type" path line-number))
-         (id (require-json-field
-              object "id" path line-number))
+  (let* ((type
+           (require-json-field
+            object "type" path line-number))
+         (id
+           (require-json-field
+            object "id" path line-number))
          (parent-id
+           (json-null-to-nil
+            (require-json-field
+             object "parentId" path line-number)))
+         (timestamp-value
            (require-json-field
-            object "parentId" path line-number))
+            object "timestamp" path line-number))
          (timestamp
-           (require-json-field
-            object "timestamp" path line-number)))
-    (unless (and (member type
-                         '("message" "compaction")
-                         :test #'string=)
-                 (stringp id)
-                 (or (null parent-id)
-                     (stringp parent-id))
-                 (integerp timestamp))
+           (handler-case
+               (iso8601-to-milliseconds timestamp-value)
+             (error (cause)
+               (session-failure
+                path line-number
+                "Invalid session timestamp at line ~D: ~A"
+                line-number cause)))))
+    (unless
+        (and
+         (member
+          type
+          '("message"
+            "thinking_level_change"
+            "model_change"
+            "active_tools_change"
+            "compaction"
+            "branch_summary"
+            "custom"
+            "custom_message"
+            "label"
+            "session_info"
+            "leaf")
+          :test #'string=)
+         (stringp id)
+         (or (null parent-id)
+             (stringp parent-id)))
       (session-failure
        path line-number
        "Invalid session record at line ~D" line-number))
@@ -723,58 +1390,251 @@
       (session-failure
        path line-number
        "Missing or forward session parent: ~A" parent-id))
-    (let ((entry
-            (cond
-              ((string= type "message")
-               (make-session-entry
-                :type :message
-                :id id
-                :parent-id parent-id
-                :timestamp timestamp
-                :message
-                (message-from-json
+    (let* ((entry
+             (make-session-entry
+              :type
+              (intern
+               (string-upcase
+                (substitute #\- #\_ type))
+               "KEYWORD")
+              :id id
+              :parent-id parent-id
+              :timestamp timestamp))
+           (details
+             (cadr-ai::json-get object "details"))
+           (usage-object
+             (cadr-ai::json-get object "usage")))
+      (cond
+        ((string= type "message")
+         (setf
+          (session-entry-message entry)
+          (message-from-json
+           (require-json-field
+            object "message" path line-number))))
+        ((string= type "thinking_level_change")
+         (let ((value
                  (require-json-field
-                  object "message" path line-number))))
-              (t
-               (let ((summary
-                       (require-json-field
-                        object "summary" path line-number))
-                     (source-ids
-                       (require-json-field
-                        object "sourceIds" path line-number))
-                     (first-kept-id
-                       (require-json-field
-                        object "firstKeptEntryId"
-                        path line-number))
-                     (tokens-before
-                       (require-json-field
-                        object "tokensBefore"
-                        path line-number)))
-                 (unless
-                     (and (stringp summary)
-                          (plusp (length summary))
-                          (vector-of-strings-p source-ids)
-                          (stringp first-kept-id)
-                          (integerp tokens-before)
-                          (not (minusp tokens-before))
-                          (gethash first-kept-id by-id)
-                          (every
-                           (lambda (source-id)
-                             (gethash source-id by-id))
-                           source-ids))
-                   (session-failure
-                    path line-number
-                    "Invalid compaction record at line ~D"
-                    line-number))
-                 (make-session-entry
-                  :type :compaction
-                  :id id
-                  :parent-id parent-id
-                  :timestamp timestamp
-                  :summary summary
-                  :source-ids (coerce source-ids 'list)
-                  :first-kept-id first-kept-id
-                  :tokens-before tokens-before))))))
+                  object "thinkingLevel"
+                  path line-number)))
+           (unless (stringp value)
+             (session-failure
+              path line-number
+              "Invalid thinking level entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-thinking-level entry)
+            value)))
+        ((string= type "model_change")
+         (let ((provider
+                 (require-json-field
+                  object "provider" path line-number))
+               (model-id
+                 (require-json-field
+                  object "modelId" path line-number)))
+           (unless (and (stringp provider)
+                        (stringp model-id))
+             (session-failure
+              path line-number
+              "Invalid model change entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-provider entry) provider
+            (session-entry-model-id entry) model-id)))
+        ((string= type "active_tools_change")
+         (let ((names
+                 (require-json-field
+                  object "activeToolNames"
+                  path line-number)))
+           (unless (vector-of-strings-p names)
+             (session-failure
+              path line-number
+              "Invalid active tools entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-active-tool-names entry)
+            (coerce names 'list))))
+        ((string= type "compaction")
+         (let* ((summary
+                  (require-json-field
+                   object "summary" path line-number))
+                (source-ids
+                  (or
+                   (cadr-ai::json-get object "sourceIds")
+                   #()))
+                (first-kept-id
+                  (require-json-field
+                   object "firstKeptEntryId"
+                   path line-number))
+                (tokens-before
+                  (require-json-field
+                   object "tokensBefore"
+                   path line-number)))
+           (unless
+               (and
+                (stringp summary)
+                (plusp (length summary))
+                (vector-of-strings-p source-ids)
+                (stringp first-kept-id)
+                (integerp tokens-before)
+                (not (minusp tokens-before))
+                (gethash first-kept-id by-id)
+                (every
+                 (lambda (source-id)
+                   (gethash source-id by-id))
+                 source-ids))
+             (session-failure
+              path line-number
+              "Invalid compaction record at line ~D"
+              line-number))
+           (setf
+            (session-entry-summary entry) summary
+            (session-entry-source-ids entry)
+            (coerce source-ids 'list)
+            (session-entry-first-kept-id entry)
+            first-kept-id
+            (session-entry-tokens-before entry)
+            tokens-before
+            (session-entry-details entry) details
+            (session-entry-usage entry)
+            (and usage-object
+                 (usage-from-json usage-object))
+            (session-entry-from-hook-p entry)
+            (eq t
+                (cadr-ai::json-get
+                 object "fromHook"))
+            (session-entry-retained-tail entry)
+            (let ((tail
+                    (cadr-ai::json-get
+                     object "retainedTail")))
+              (and
+               (vectorp tail)
+               (loop for message across tail
+                     collect
+                     (message-from-json
+                      message)))))))
+        ((string= type "branch_summary")
+         (let ((from-id
+                 (require-json-field
+                  object "fromId" path line-number))
+               (summary
+                 (require-json-field
+                  object "summary" path line-number)))
+           (unless
+               (and
+                (stringp from-id)
+                (or
+                 (string= from-id "root")
+                 (gethash from-id by-id))
+                (stringp summary))
+             (session-failure
+              path line-number
+              "Invalid branch summary at line ~D"
+              line-number))
+           (setf
+            (session-entry-from-id entry) from-id
+            (session-entry-summary entry) summary
+            (session-entry-details entry) details
+            (session-entry-usage entry)
+            (and usage-object
+                 (usage-from-json usage-object))
+            (session-entry-from-hook-p entry)
+            (eq t
+                (cadr-ai::json-get
+                 object "fromHook")))))
+        ((string= type "custom")
+         (let ((custom-type
+                 (require-json-field
+                  object "customType" path line-number)))
+           (unless (stringp custom-type)
+             (session-failure
+              path line-number
+              "Invalid custom entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-custom-type entry)
+            custom-type
+            (session-entry-data entry)
+            (cadr-ai::json-get object "data"))))
+        ((string= type "custom_message")
+         (let ((custom-type
+                 (require-json-field
+                  object "customType" path line-number))
+               (content
+                 (require-json-field
+                  object "content" path line-number)))
+           (unless
+               (and
+                (stringp custom-type)
+                (or
+                 (stringp content)
+                 (vectorp content)))
+             (session-failure
+              path line-number
+              "Invalid custom message at line ~D"
+              line-number))
+           (setf
+            (session-entry-custom-type entry)
+            custom-type
+            (session-entry-content entry)
+            (if (stringp content)
+                content
+                (content-blocks-from-json content))
+            (session-entry-details entry) details
+            (session-entry-display-p entry)
+            (eq t
+                (cadr-ai::json-get
+                 object "display")))))
+        ((string= type "label")
+         (let ((target-id
+                 (require-json-field
+                  object "targetId" path line-number))
+               (label
+                 (json-null-to-nil
+                  (cadr-ai::json-get object "label"))))
+           (unless
+               (and
+                (stringp target-id)
+                (gethash target-id by-id)
+                (or (null label)
+                    (stringp label)))
+             (session-failure
+              path line-number
+              "Invalid label entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-target-id entry) target-id
+            (session-entry-label entry) label)))
+        ((string= type "session_info")
+         (let ((name
+                 (json-null-to-nil
+                  (cadr-ai::json-get object "name"))))
+           (unless (or (null name) (stringp name))
+             (session-failure
+              path line-number
+              "Invalid session info at line ~D"
+              line-number))
+           (setf (session-entry-name entry) name)))
+        ((string= type "leaf")
+         (let ((target-id
+                 (json-null-to-nil
+                  (require-json-field
+                   object "targetId"
+                   path line-number))))
+           (unless
+               (and
+                (or
+                 (null target-id)
+                 (stringp target-id))
+                (or
+                 (null target-id)
+                 (gethash target-id by-id)))
+             (session-failure
+              path line-number
+              "Invalid leaf entry at line ~D"
+              line-number))
+           (setf
+            (session-entry-target-id entry)
+            target-id))))
       (setf (gethash id by-id) entry)
       entry)))
 
@@ -785,46 +1645,102 @@
            (validate-session-header
             (first objects) pathname))
          (version (cadr-ai::json-get header "version" 1)))
-    (when (= version 1)
+    (when (< version 3)
       (handler-case
           (progn
-            (migrate-v1-session-objects objects)
+            (when (= version 1)
+              (migrate-v1-session-objects objects))
+            (migrate-v2-session-objects objects)
             (persist-migrated-session objects pathname))
         (session-error (condition)
           (error condition))
         (error (cause)
           (session-failure
            pathname nil
-           "Cannot migrate v1 session: ~A" cause))))
+           "Cannot migrate session to v3: ~A" cause))))
     (let ((by-id (make-hash-table :test #'equal))
+          (labels (make-hash-table :test #'equal))
+          (session-name nil)
           (entries nil)
           (line-number 1))
       (dolist (object (rest objects))
         (incf line-number)
-        (push
-         (handler-case
-             (record-to-session-entry
-              object pathname line-number by-id)
+        (let ((entry
+                (handler-case
+                    (record-to-session-entry
+                     object pathname line-number by-id)
            (session-error (condition)
              (error condition))
            (error (cause)
              (session-failure
               pathname line-number
               "Invalid session record at line ~D: ~A"
-              line-number cause)))
-         entries))
+              line-number cause)))))
+          (when (eq :label (session-entry-type entry))
+            (if
+                (and
+                 (session-entry-label entry)
+                 (plusp
+                  (length
+                   (session-entry-label entry))))
+                (setf
+                 (gethash
+                  (session-entry-target-id entry)
+                  labels)
+                 (session-entry-label entry))
+                (remhash
+                 (session-entry-target-id entry)
+                 labels)))
+          (when
+              (eq :session-info
+                  (session-entry-type entry))
+            (setf
+             session-name
+             (let ((name
+                     (session-entry-name entry)))
+               (and
+                name
+                (plusp
+                 (length
+                  (string-trim
+                   '(#\Space #\Tab)
+                   name)))
+                name))))
+          (push entry entries)))
       (setf entries (nreverse entries))
-      (%make-session
+      (let* ((timestamp
+               (iso8601-to-milliseconds
+                (cadr-ai::json-get
+                 header "timestamp")))
+             (modified-timestamp
+               (reduce
+                #'max
+                entries
+                :key
+                (lambda (entry)
+                  (or
+                   (session-entry-activity-timestamp
+                    entry)
+                   timestamp))
+                :initial-value timestamp)))
+        (%make-session
        :id (cadr-ai::json-get header "id")
-       :timestamp (cadr-ai::json-get header "timestamp")
+       :timestamp timestamp
        :cwd (cadr-ai::json-get header "cwd")
        :path pathname
+       :parent-session
+       (json-null-to-nil
+        (cadr-ai::json-get header "parentSession"))
+       :name session-name
+       :labels labels
        :%entries entries
        :by-id by-id
+       :persisted-p t
+       :modified-timestamp modified-timestamp
        :leaf-id
        (and entries
             (session-entry-id
-             (car (last entries))))))))
+             (car (last entries)))))))))
 
 (defun list-sessions (&key
                             (directory
@@ -841,21 +1757,35 @@
              (directory
               (merge-pathnames
                "*.jsonl" session-directory))
-           for session =
-             (handler-case
-                 (load-session path)
-               (session-error (condition)
-                 (if (eql 1
-                          (session-error-line condition))
-                     (error condition)
-                     nil)))
-           when (and session
-                     (or (null canonical-cwd)
-                         (string=
-                          canonical-cwd
-                          (session-cwd session))))
-             collect session)
-     #'> :key #'session-timestamp)))
+           for header =
+             (read-session-header-for-discovery
+              path)
+           when
+             (and
+              header
+              (or
+               (null canonical-cwd)
+               (string=
+                canonical-cwd
+                (cadr-ai::json-get
+                 header "cwd" ""))))
+             append
+             (let ((session
+                     (handler-case
+                         (load-session path)
+                       (session-error
+                           (condition)
+                         (if
+                             (eql
+                              1
+                              (session-error-line
+                               condition))
+                             (error condition)
+                             nil)))))
+               (if session
+                   (list session)
+                   nil)))
+     #'> :key #'session-modified-timestamp)))
 
 (defun resume-session
     (id &key (directory (default-session-directory)))
@@ -941,6 +1871,29 @@
                (cadr-ai:tool-result-message-content
                 message)))))))
 
+(defun session-entry-display-role-and-text (entry)
+  (case (session-entry-type entry)
+    (:message
+     (message-display-role-and-text
+      (session-entry-message entry)))
+    (:compaction
+     (values
+      "compaction"
+      (session-entry-summary entry)))
+    (:branch-summary
+     (values
+      "branch_summary"
+      (session-entry-summary entry)))
+    (otherwise
+     (values
+      (string-downcase
+       (substitute
+        #\_ #\-
+        (symbol-name
+         (session-entry-type entry))))
+      (cadr-ai::stringify-json
+       (session-entry-to-json entry))))))
+
 (defun export-session-html (session path)
   (let ((children (make-hash-table :test #'equal))
         (roots nil))
@@ -983,31 +1936,13 @@
                           "root"))
                      (html-escape
                       (session-entry-timestamp entry)))
-             (if (eq :compaction
-                     (session-entry-type entry))
-                 (progn
-                   (format stream
-                           "<strong>compaction</strong><div class=\"meta\">sources=~A first-kept=~A tokens-before=~D</div><div class=\"content\">"
-                           (html-escape
-                            (format nil "~{~A~^,~}"
-                                    (session-entry-source-ids
-                                     entry)))
-                           (html-escape
-                            (session-entry-first-kept-id
-                             entry))
-                           (session-entry-tokens-before
-                            entry))
-                   (write-string
-                    (html-escape
-                     (session-entry-summary entry))
-                    stream))
-                 (multiple-value-bind (role text)
-                     (message-display-role-and-text
-                      (session-entry-message entry))
-                   (format stream
-                           "<strong>~A</strong><div class=\"content\">~A"
-                           (html-escape role)
-                           (html-escape text))))
+             (multiple-value-bind (role text)
+                 (session-entry-display-role-and-text
+                  entry)
+               (format stream
+                       "<strong>~A</strong><div class=\"content\">~A"
+                       (html-escape role)
+                       (html-escape text)))
              (write-string "</div></article>" stream)
              (let ((descendants
                      (gethash

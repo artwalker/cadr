@@ -9,14 +9,32 @@
    #:agent-busy-p
    #:agent-session
    #:agent-prompt
+   #:agent-continue
+   #:agent-steer
+   #:agent-follow-up
+   #:agent-next-turn
+   #:agent-abort
+   #:agent-wait-for-idle
+   #:agent-steering-mode
+   #:agent-follow-up-mode
    #:agent-event
    #:agent-event-type
    #:agent-event-message
+   #:agent-event-messages
    #:agent-event-stream-event
    #:agent-event-tool-call
    #:agent-event-tool-result
    #:agent-event-tool-results
    #:agent-event-error-message
+   #:agent-event-steering
+   #:agent-event-follow-up
+   #:agent-event-next-turn
+   #:agent-event-will-retry
+   #:agent-event-attempt
+   #:agent-event-max-attempts
+   #:agent-event-delay-ms
+   #:agent-event-success
+   #:agent-event-final-error
    #:schema-validation-error
    #:schema-validation-error-tool
    #:schema-validation-error-json-pointer
@@ -74,6 +92,9 @@
    #:session-timestamp
    #:session-cwd
    #:session-path
+   #:session-parent-session
+   #:session-name
+   #:session-label
    #:session-leaf-id
    #:session-messages
    #:session-entry
@@ -86,6 +107,22 @@
    #:session-entry-source-ids
    #:session-entry-first-kept-id
    #:session-entry-tokens-before
+   #:session-entry-thinking-level
+   #:session-entry-provider
+   #:session-entry-model-id
+   #:session-entry-active-tool-names
+   #:session-entry-from-id
+   #:session-entry-details
+   #:session-entry-usage
+   #:session-entry-from-hook-p
+   #:session-entry-custom-type
+   #:session-entry-data
+   #:session-entry-content
+   #:session-entry-display-p
+   #:session-entry-target-id
+   #:session-entry-label
+   #:session-entry-name
+   #:session-entry-retained-tail
    #:session-entries
    #:default-session-directory
    #:create-session
@@ -96,7 +133,151 @@
    #:session-branch
    #:session-append-message
    #:session-append-compaction
+   #:session-append-thinking-level-change
+   #:session-append-model-change
+   #:session-append-branch-summary
+   #:session-append-custom
+   #:session-append-custom-message
+   #:session-set-label
+   #:session-set-name
    #:export-session-html
+   #:prompt-template
+   #:make-prompt-template
+   #:prompt-template-name
+   #:prompt-template-description
+   #:prompt-template-content
+   #:skill
+   #:make-skill
+   #:skill-name
+   #:skill-description
+   #:skill-content
+   #:skill-file-path
+   #:skill-disable-model-invocation-p
+   #:resource-diagnostic
+   #:resource-diagnostic-type
+   #:resource-diagnostic-code
+   #:resource-diagnostic-message
+   #:resource-diagnostic-path
+   #:resource-diagnostic-source
+   #:load-prompt-templates
+   #:load-sourced-prompt-templates
+   #:format-prompt-template-invocation
+   #:load-skills
+   #:load-sourced-skills
+   #:format-skill-invocation
+   #:format-skills-for-system-prompt
+   #:harness-truncation-result
+   #:harness-truncation-result-content
+   #:harness-truncation-result-truncated-p
+   #:harness-truncation-result-truncated-by
+   #:harness-truncation-result-total-lines
+   #:harness-truncation-result-total-bytes
+   #:harness-truncation-result-output-lines
+   #:harness-truncation-result-output-bytes
+   #:harness-truncation-result-last-line-partial-p
+   #:harness-truncation-result-first-line-exceeds-limit-p
+   #:truncate-harness-head
+   #:truncate-harness-tail
+   #:truncate-harness-line
+   #:harness-operation-error
+   #:harness-operation-error-code
+   #:harness-operation-error-message
+   #:harness-operation-error-path
+   #:execution-file-info
+   #:execution-file-info-name
+   #:execution-file-info-path
+   #:execution-file-info-kind
+   #:execution-file-info-size
+   #:execution-file-info-mtime-ms
+   #:execution-result
+   #:execution-result-stdout
+   #:execution-result-stderr
+   #:execution-result-exit-code
+   #:node-execution-env
+   #:make-node-execution-env
+   #:execution-env-absolute-path
+   #:execution-env-join-path
+   #:execution-env-read-text-file
+   #:execution-env-read-text-lines
+   #:execution-env-read-binary-file
+   #:execution-env-write-file
+   #:execution-env-append-file
+   #:execution-env-file-info
+   #:execution-env-list-directory
+   #:execution-env-canonical-path
+   #:execution-env-exists-p
+   #:execution-env-create-directory
+   #:execution-env-remove
+   #:execution-env-create-temp-directory
+   #:execution-env-create-temp-file
+   #:execution-env-exec
+   #:execution-env-cleanup
+   #:session-metadata
+   #:make-session-metadata
+   #:session-metadata-id
+   #:session-metadata-created-at
+   #:session-metadata-cwd
+   #:session-metadata-path
+   #:session-metadata-parent-session-path
+   #:session-metadata-parent-session-id
+   #:session-metadata-data
+   #:memory-session-storage
+   #:make-memory-session-storage
+   #:create-jsonl-session-storage
+   #:open-jsonl-session-storage
+   #:load-jsonl-session-metadata
+   #:session-storage-metadata
+   #:session-storage-leaf-id
+   #:session-storage-set-leaf-id
+   #:session-storage-create-entry-id
+   #:session-storage-append-entry
+   #:session-storage-entry
+   #:session-storage-entries
+   #:session-storage-find-entries
+   #:session-storage-label
+   #:session-storage-name
+   #:session-storage-stats
+   #:session-storage-path
+   #:session-storage-cleanup
+   #:harness-session
+   #:make-harness-session
+   #:harness-session-storage
+   #:harness-session-metadata
+   #:harness-session-leaf-id
+   #:harness-session-set-leaf-id
+   #:harness-session-entry
+   #:harness-session-entries
+   #:harness-session-name
+   #:harness-session-stats
+   #:harness-session-branch
+   #:harness-session-build-context-entries
+   #:harness-session-build-context
+   #:harness-session-cleanup
+   #:harness-session-append-entry
+   #:harness-session-append-message
+   #:harness-session-append-thinking-level
+   #:harness-session-append-model
+   #:harness-session-append-active-tools
+   #:harness-session-append-compaction
+   #:harness-session-append-custom
+   #:harness-session-append-custom-message
+   #:harness-session-set-name
+   #:harness-session-set-label
+   #:harness-session-move-to
+   #:memory-session-repository
+   #:make-memory-session-repository
+   #:jsonl-session-repository
+   #:make-jsonl-session-repository
+   #:sqlite-session-repository
+   #:make-sqlite-session-repository
+   #:session-repository-create
+   #:session-repository-open
+   #:session-repository-list
+   #:session-repository-delete
+   #:session-repository-fork
+   #:apply-sqlite-session-migrations
+   #:sqlite-execute-named
+   #:sqlite-query-single-named
    #:compact-agent
    #:tool-registry
    #:make-tool-registry
