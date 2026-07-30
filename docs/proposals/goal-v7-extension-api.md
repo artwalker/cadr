@@ -1,6 +1,6 @@
 # GOAL v7 扩展 API 限定扩充提案
 
-状态：**待用户逐项确认；未实现。**
+状态：**第 1–8 项已实现并通过验收；扩大后的 API 已重新冻结。**
 
 固定行为基线：
 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`，checkout
@@ -327,38 +327,88 @@ SHA-256、宏展开/签名测试和 wire fixture SHA-256，并更新
 | `test/cadr-cli/bash-test.lisp` | `3475ab2a3760afa06928d8748a44e1514d1ac461` |
 | `test/cadr-cli/execution-policy-test.lisp` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` |
 
-## 7. 本裁决仍未授权的 Wave 2 依赖
+## 7. 获批的 Wave 2 runtime actions
 
-46 个 `CODING-SESSION` 目标中还有以下原版 extension actions；它们不是
-lifecycle event 或 RPC UI，因此本提案不夹带：
+用户已将以下原版 extension actions 一并限定解冻；约束与 lifecycle/UI
+扩充相同：只增加审计提交已有能力，不改变现有宏签名和现有事件语义。
 
-| 未授权 action | 直接依赖的目标文件 | 固定基线 |
+| 获批 action | 直接依赖的目标文件 | 固定基线 |
 |---|---|---|
 | runtime `registerProvider` | `agent-session-dynamic-provider.test.ts`, `suite/agent-session-runtime.test.ts`, regressions `2860` | `packages/coding-agent/src/core/extensions/types.ts:1344-1416` |
 | runtime `registerTool` | `agent-session-dynamic-tools.test.ts`, `suite/agent-session-runtime.test.ts` | `packages/coding-agent/src/core/extensions/types.ts:1233-1240` |
 | `sendMessage` / `sendUserMessage` | `suite/agent-session-queue.test.ts`, regressions `5943` | `packages/coding-agent/src/core/extensions/types.ts:1281-1298` |
 | `setSessionName` | regressions `3686`, `5996` | `packages/coding-agent/src/core/extensions/types.ts:1303-1311` |
 
-现有 `define-tool` 只允许 extension load 期间注册
-（`src/cadr-agent/extensions.lisp:205-217,269-307`），不能冒充原版 callback
-内立即生效的 `registerTool`。这些 action 也不是 TS runtime 特有机制，不能
-标 N/A。
+Lisp 新增映射固定为：
 
-因此，即使本文逐项获批并实现，goal 7 的“所有目标文件 C 或获批 N/A”仍会在
-上述 action 处再次 blocked。需要用户另行裁决：限定解冻这些原版 action，
-或明确把对应整文件从本 goal 验收范围移除。本提案不预先替用户做该决定。
+```lisp
+(define-provider definition &key models)
 
-## 8. 待逐项确认
+(extension-context-register-provider context definition &key models)
+(extension-context-register-tool context tool)
 
-请分别确认：
+(extension-context-send-message
+ context message &key (trigger-turn-p nil) deliver-as)
 
-1. Session lifecycle 的 9 个事件；
-2. Agent/message/input 的 9 个事件；
-3. Tool execution/model 的 5 个观察事件；
-4. `extension-event-payload` plist 与 cancellation signal 映射；
-5. 新事件返回严格 plist、旧事件继续用 `extension-hook-result`；
-6. RPC UI 的 8 个新 context 函数加既有 notify，共 9 种 wire request；
-7. 允许变更/继续冻结路径；
-8. 第 7 节未授权 actions 的后续裁决。
+(extension-context-send-user-message context content &key deliver-as)
+(extension-context-set-session-name context name)
+```
 
-未全部确认前不写实现。
+`definition` 复用 `cadr-ai:provider-definition`，`models` 复用
+`cadr-ai:model-metadata`，`tool` 复用 `cadr-ai:tool`；不复制 provider/tool
+domain type。`define-provider` 只覆盖原版 load-time `registerProvider`，
+context 函数覆盖 callback 内立即生效的注册。现有 `define-tool` 继续只允许
+load 期间调用，不改变其既有语义。
+
+`deliver-as` 精确映射为 `:steer`、`:follow-up`、`:next-turn`；其中
+`sendUserMessage` 只接受前两者。缺省时，idle 直接启动 turn，streaming 时
+必须显式给出投递队列。session name 在写入和事件发出前移除 CR/LF。
+
+provider 注册保存在每个 extension host 的 runtime overlay，不改
+`cadr-ai` 的全局 registry。它可覆盖当前 active model 或追加当前 session
+可见 model；extension reload 后 overlay 随 bundle snapshot 一并替换。
+若实现该能力需要修改 `src/cadr-ai` 任一冻结 object ID，必须立即 blocked，
+不得实施该修改。
+
+## 8. 用户裁决
+
+用户已逐项确认第 1–7 项；第 8 项裁决为第 7 节四组 action 全部限定解冻。
+向后兼容门禁必须先于生产实现落地，Part B→C→D 顺序不变。goal 7 收尾时，
+扩大后的 extension API 重新冻结并记录新 object/export/wire hashes。
+
+## 9. 收尾重冻
+
+重冻对象：
+
+| 路径 | Git object ID |
+|---|---|
+| `src/cadr-agent/extensions.lisp` | `58539b2849fcf6b6756657d46f94ac09a3c639fc` |
+| `src/cadr-agent/package.lisp` | `15525d7cc8bd860d66b3bbaf0f1ab56174464d39` |
+| `test/cadr-agent/extensions-test.lisp` | `c097b312567386421da5cdae0f1c13d039b21bde` |
+| `test/cadr-agent/extensions-wave2-test.lisp` | `c6cfa3544a3f74b44585a9c62f25af7c015d9afa` |
+| `src/cadr-cli/extensions.lisp` | `4e94df55ed27b96c43313d24069225c015b99c17` |
+| `test/cadr-cli/extensions-test.lisp` | `3fa8a1f9eb8a6b519b27f3004290be7551171288` |
+| `src/cadr-cli/modes/rpc/jsonl.lisp` | `5839f4ae5754d91c773a2bacb5a5f61d994fd85a` |
+| `src/cadr-cli/modes/rpc/ui.lisp` | `c5f676784c137dac0a5604f660acbb71415bba48` |
+| `src/cadr-cli/modes/rpc/mode.lisp` | `9e0100edd769295d4a9871cfc7ac7a77f5dd3f11` |
+| `test/cadr-cli/rpc-test.lisp` | `5aa90e7fa51a093a6aa6d0c8dc098d8d2d41ff7b` |
+| `cadr-agent.asd` | `189df27ae5b63f6619e53e981ad7c4c77a68868b` |
+| `cadr-cli.asd` | `dc112807eea502182a1518f5582f6d47348a6ad2` |
+
+从 `#:define-tool` 到 `#:make-extension-hook-result`（含两端）的完整 export
+文本 SHA-256：
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
+
+兼容 fixture SHA-256：
+`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`
+（`test/fixtures/extensions/legacy-wave2-api.lisp`）。
+
+RPC wire/process fixture SHA-256：
+`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`
+（`test/fixtures/rpc-process-client.py`）；UI extension fixture SHA-256：
+`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
+
+宏签名与旧事件语义由
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
+持续冻结。此后恢复“发布即稳定”；任何进一步扩面先进入
+`docs/open-questions.md` 等人工裁决。

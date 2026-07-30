@@ -1,18 +1,15 @@
-# GOAL v7: Wave 2 — Part A 只读预审
+# GOAL v7: Wave 2 — 完成报告
 
 ## 状态
 
-Part A 已完成测试清单、目标模块映射、session v3 磁盘规格、队列语义和冻结区
-基线审计。尚未修改生产代码、测试或 parity 状态，Part B 尚未开始。
+Part A→B→C→D 已按顺序完成。用户逐项确认限定扩充提案第 1–7 项，并裁决
+第 8 项的 runtime provider/tool registration、`sendMessage`/
+`sendUserMessage` 和 `setSessionName` 一并限定解冻；实现只覆盖审计提交
+已有能力，扩大后的 extension API 已重新冻结。
 
-用户已裁决采用“限定解冻扩展 API”路线，但要求实现前先提交完整提案并逐项
-确认。提案见
-[`docs/proposals/goal-v7-extension-api.md`](../proposals/goal-v7-extension-api.md)；
-当前状态仍为 blocked，未获逐项确认前不写实现。
-
-提案复核还发现 46 个 session 目标中的 runtime provider/tool registration、
-`sendMessage`/`sendUserMessage` 和 `setSessionName` 不属于本次获准提案的
-lifecycle/UI 范围；它们已在提案第 7 节单列，禁止夹带。
+实现前兼容门禁
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
+已先行落地；生产实现前结果为 `221/221`，收尾仍为全绿门禁的一部分。
 
 固定参考：
 
@@ -283,6 +280,9 @@ bridge 同样是原版跨平台产品语义，不能诚实地标成 N/A。
 
 ## 进入 Part B 前的原始硬阻塞
 
+以下内容是 Part A 当时的阻塞审计记录；随后用户通过限定解冻提案第 1–8 项
+逐项解除阻塞，当前结论以本文开头的完成状态与后文收尾证据为准。
+
 cadr 当前公开 hook 白名单只有：
 
 ```lisp
@@ -360,3 +360,185 @@ B/C/D 均未启动。
   宏签名和 package export 文本不动，扩大白名单仍然是在触碰已冻结 API。
 
 所以“保持所有冻结 object ID，同时让所有目标文件转 C”在当前规格下不可满足。
+
+## Part B：session v3、队列与 agent harness
+
+完成：
+
+- 新会话写 v3 header/envelope；首个 assistant entry 前延迟落盘；
+- v1/v2→v3 原子迁移，保留未知字段；坏 record/崩溃尾跳过，session 发现读取
+  上限 1 MiB；
+- thinking/model/compaction/branch/custom/custom-message/label/session-info
+  全 entry union；harness storage 另覆盖原版 `active_tools_change` 与 `leaf`；
+- steering/follow-up/next-turn、`one-at-a-time`/`all`、batch 后注入、abort
+  清理与 wait-for-idle；
+- transient retry、retry event、abort during backoff、overflow compaction；
+- memory/JSONL/SQLite storage/repository、fork、branch materialization、
+  materialized stats、`001_initial.sql`、WAL/FULL/busy timeout 与事务 rollback；
+- prompt template、skill、resource/system-prompt formatting、UTF-8 byte/line
+  truncation，以及 filesystem/shell execution environment 的 timeout、abort 与
+  process-group cleanup。
+
+SQLite adapter 因 Agent 包两条审计测试在本 Wave 的强制清单中提前实现；
+Wave 5 保留 standalone storage package、server 与 eval 集成，不重复 adapter。
+没有 N/A。
+
+限定扩展 API 按获批提案增加 lifecycle events、RPC UI context 和四组 runtime
+actions。runtime provider 使用 extension-host overlay，未改 `src/cadr-ai`；
+TUI bridge 未改 `src/cadr-tui`。旧宏签名、旧四事件和旧结果语义由
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
+持续验证。
+
+## Part C：text/JSON 模式
+
+模式优先级实现为：显式 `--mode` → `--print` → 显式 `--no-tui` → 非 TTY
+自动 text → TUI。text 只写最终 assistant 文本，JSON 每行一个 agent event；
+argv 第一条 prompt 与 stdin 合并，后续 argv message 依次执行；provider
+错误走 stderr 和非零退出，shutdown/signal cleanup 保持执行。
+
+既有断言/脚本变更清单：
+
+| 位置 | 旧行为 | 新行为 | 基线依据 |
+|---|---|---|---|
+| CLI mode gate | 非 TTY 默认 line REPL | 非 TTY默认 one-shot text；`--no-tui` 才是 line REPL | `packages/coding-agent/src/main.ts` mode selection 与 `args.test.ts` |
+| `scripts/acceptance-smoke.sh` | pipe 隐式进入 REPL 做多轮 | 显式传 `--no-tui` 保持多轮验收 | line REPL 是 cadr 保留差异，只允许显式选择 |
+| 既有 multi-turn live scripts | pipe 隐式进入 REPL | 显式传 `--no-tui` | 同上 |
+
+没有删除旧测试；上述是本 goal 唯一改变既有测试语义的豁免。
+
+## Part D：RPC
+
+实现审计提交的完整 command union、固定 response shape、request id 保留、
+agent event JSONL 转发、session/model/thinking/queue/compaction 控制、
+bash/abort、clone/fork/tree/messages/stats/HTML/commands，以及 EOF/close
+cleanup。framing 只以 LF 分帧，兼容 CRLF、U+2028/U+2029 和无末尾 LF。
+
+RPC extension UI bridge 覆盖 select/confirm/input/editor 的 response、
+cancel、timeout、signal、unknown id 与 EOF 默认完成，以及 notify/status/
+widget/title/editor text 的 fire-and-forget wire。进程测试用本地 OpenAI SSE
+stub 完成 prompt→event→steer→正常关闭，不实现 server。
+
+## Parity 清单
+
+Part A 的 76 个目标文件全部由 `M` 转为 `C`：
+
+- Agent：18/18；
+- coding-agent session/queue：46/46；
+- print/JSON：6/6；
+- RPC：6/6；
+- N/A：0。
+
+全仓 manifest 由 `28 C / 0 U / 324 M` 更新为
+`104 C / 0 U / 248 M`。
+
+## 扩展 API 重冻
+
+| 路径 | 收尾 Git object ID |
+|---|---|
+| `src/cadr-agent/extensions.lisp` | `58539b2849fcf6b6756657d46f94ac09a3c639fc` |
+| `src/cadr-agent/package.lisp` | `15525d7cc8bd860d66b3bbaf0f1ab56174464d39` |
+| `test/cadr-agent/extensions-test.lisp` | `c097b312567386421da5cdae0f1c13d039b21bde` |
+| `test/cadr-agent/extensions-wave2-test.lisp` | `c6cfa3544a3f74b44585a9c62f25af7c015d9afa` |
+| `src/cadr-cli/extensions.lisp` | `4e94df55ed27b96c43313d24069225c015b99c17` |
+| `test/cadr-cli/extensions-test.lisp` | `3fa8a1f9eb8a6b519b27f3004290be7551171288` |
+| `src/cadr-cli/modes/rpc/jsonl.lisp` | `5839f4ae5754d91c773a2bacb5a5f61d994fd85a` |
+| `src/cadr-cli/modes/rpc/ui.lisp` | `c5f676784c137dac0a5604f660acbb71415bba48` |
+| `src/cadr-cli/modes/rpc/mode.lisp` | `9e0100edd769295d4a9871cfc7ac7a77f5dd3f11` |
+| `test/cadr-cli/rpc-test.lisp` | `5aa90e7fa51a093a6aa6d0c8dc098d8d2d41ff7b` |
+| `cadr-agent.asd` | `189df27ae5b63f6619e53e981ad7c4c77a68868b` |
+| `cadr-cli.asd` | `dc112807eea502182a1518f5582f6d47348a6ad2` |
+
+Export 文本 SHA-256：
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
+旧源兼容 fixture SHA-256：
+`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`。
+RPC wire/process fixture SHA-256：
+`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`。
+UI extension fixture SHA-256：
+`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
+
+## 冻结区收尾对照
+
+| 冻结路径 | 开工 object ID | 收尾 object ID | 结果 |
+|---|---|---|---|
+| `src/cadr-ai` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` | 一致 |
+| `test/cadr-ai` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` | 一致 |
+| `cadr-ai.asd` | `f99e2708e9ff7e3465824c7ea04bedce9512724c` | `f99e2708e9ff7e3465824c7ea04bedce9512724c` | 一致 |
+| `src/cadr-tui` | `1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950` | `1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950` | 一致 |
+| `test/cadr-tui` | `947e63cc73b259ea2b18bfc281b5229a13f9a5d0` | `947e63cc73b259ea2b18bfc281b5229a13f9a5d0` | 一致 |
+| `cadr-tui.asd` | `c09f6172c1c186f15c726b2c04b7ea65a4f4214c` | `c09f6172c1c186f15c726b2c04b7ea65a4f4214c` | 一致 |
+| `src/cadr-agent/tool.lisp` | `42093b6062ab16cde78f72cb87a878057b7dd131` | `42093b6062ab16cde78f72cb87a878057b7dd131` | 一致 |
+| `test/cadr-agent/tool-loop-test.lisp` | `f44cd198c1fbfab8b7402f457d1ea2a848a9aa74` | `f44cd198c1fbfab8b7402f457d1ea2a848a9aa74` | 一致 |
+| `src/cadr-cli/tools` | `0ad21371b8ad2e759dacb26202383965a68d5493` | `0ad21371b8ad2e759dacb26202383965a68d5493` | 一致 |
+| `test/cadr-cli/file-tools-test.lisp` | `206bb0416ff53abba10378a873eeffb698162327` | `206bb0416ff53abba10378a873eeffb698162327` | 一致 |
+| `test/cadr-cli/search-tools-test.lisp` | `5ca50cd12f4b1442891c12ee9fa231b24df07a6c` | `5ca50cd12f4b1442891c12ee9fa231b24df07a6c` | 一致 |
+| `test/cadr-cli/bash-test.lisp` | `3475ab2a3760afa06928d8748a44e1514d1ac461` | `3475ab2a3760afa06928d8748a44e1514d1ac461` | 一致 |
+| `test/cadr-cli/execution-policy-test.lisp` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` | 一致 |
+
+`src/cadr-ai` fuse 未触发；`src/cadr-tui` 也未改。
+
+## 验收证据
+
+```text
+./scripts/test-cl.sh
+  cadr-ai:    369/369
+  cadr-agent: 488/488
+  cadr-tui:   582/582
+  cadr-cli:   277/277
+  total:      1716/1716
+
+./build.sh
+  cadr build: SBCL lacks sb-core-compression; building an uncompressed image.
+
+file ./cadr
+  ELF 64-bit LSB pie executable, x86-64
+
+./cadr --version
+  cadr 0.1.0
+
+./scripts/acceptance-smoke.sh
+  acceptance smoke: delayed persistence, --continue, and exact --resume passed
+
+./scripts/test-wave2-process-modes.sh
+  wave2 process modes: text, auto-stdin, JSONL, RPC intervention/UI/EOF,
+  and SIGTERM cleanup passed
+
+./scripts/live-deepseek-smoke.sh
+  live smoke: DeepSeek Chat Completions streaming passed
+
+./scripts/live-openai-oauth-smoke.sh
+  OAuth live smoke: OpenAI Codex Responses streaming passed
+
+./scripts/live-print-smoke.sh
+  print live smoke: DeepSeek one-shot text mode passed
+
+./scripts/live-extension-smoke.sh
+  live extension smoke: DeepSeek write/reload/invoke loop passed
+```
+
+所有 migration 测试使用临时目录；未读取或改写真实 `~/.cadr/sessions/`。
+`git diff --check` 在收尾复核通过。Goal 7 完成后暂停，不开始 Wave 3。
+
+## 关账整改
+
+用户验收后追加的两项整改已经纳入正式边界：
+
+- `cl-sqlite`（ASDF system `sqlite`）追认为与 `cl+ssl` 同级的第二个在册
+  自研例外；其 `iterate`、CFFI、Alexandria、Babel、trivial-features
+  传递闭包与系统 `libsqlite3` 归属记录在 `docs/dependency-audit.md`，README
+  同步完整例外清单；
+- 后续每份 goal 的 Part A 必须审计新增第三方依赖及传递闭包，未获用户明确
+  授权时立即 `blocked`，禁止先实现后追认；
+- 后续“完成”必须包含按逻辑分组提交、提交后的全量复验和干净工作区；未提交
+  改动的完成宣告无效。
+
+Wave 2 代码按以下顺序落账：
+
+| 顺序 | 提交 | 内容 |
+|---:|---|---|
+| 1 | `e627a787d` | 固定 Wave 2 测试、fixture 与进程/live 门禁 |
+| 2 | `d5958bb6b` | 扩充并重冻 extension API |
+| 3 | `795df7997` | session v3、queue、retry、storage 与 harness |
+| 4 | `7f9ef7d73` | one-shot text 与 JSON 模式 |
+| 5 | `83e96958f` | RPC protocol、UI bridge 与 ASDF wiring |
+| 6 | 本报告所在提交 | 依赖审计、架构、parity 与关账文档 |

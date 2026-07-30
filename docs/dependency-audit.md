@@ -7,7 +7,7 @@ Audit date: 2026-07-30.
 | System | Direct dependencies | Decision |
 |---|---|---|
 | `cadr-ai` | `cl+ssl` | Retained solely as the permitted system-OpenSSL TLS binding. HTTP itself is native. |
-| `cadr-agent` | `cl-ppcre`, `cadr-ai` | `cl-ppcre` is the explicitly deferred full regex engine used by JSON Schema `pattern`; `cadr-ai` is in-repository. |
+| `cadr-agent` | `cl-ppcre`, `sqlite`, `cadr-ai` | `sqlite` is the ASDF system supplied by `cl-sqlite`, the second registered self-build exception; it binds the system SQLite library through CFFI. `cl-ppcre` is the explicitly deferred full regex engine used by JSON Schema `pattern`; `cadr-ai` is in-repository. |
 | `cadr-cli` | `cl-ppcre`, `cadr-agent`, `cadr-tui` | `cl-ppcre` is also used directly by glob/grep; the other systems are in-repository. |
 | `cadr-tui` | `sb-posix` | SBCL contrib used for terminal state; not a third-party dependency. |
 
@@ -15,7 +15,20 @@ ASDF/UIOP, `sb-thread`, `sb-bsd-sockets`, `sb-posix`, `sb-gray`, and SBCL
 Unicode/UTF-8 facilities are implementation-provided and do not add external
 production packages.
 
-## Test and TLS-transitive systems
+## Registered self-build exceptions
+
+The complete exception list is:
+
+1. `cl+ssl`, which binds the system OpenSSL library. The project implements
+   HTTP itself and does not implement cryptography.
+2. `cl-sqlite` (ASDF system `sqlite`), which binds the system `libsqlite3`.
+   The project implements the storage/repository contract and schema behavior,
+   but does not reimplement the SQLite engine or its FFI binding.
+
+`cl-ppcre` is an explicitly authorized deferral for a complete regular
+expression engine, not a third registered self-build exception.
+
+## Test and exception-transitive systems
 
 - `fiveam`: assertions and ASDF `test-op`.
 - `babel`, `flexi-streams`, `trivial-gray-streams`: independent octet and
@@ -28,6 +41,23 @@ production packages.
 Quicklisp distribution. This transitive closure is accepted as part of the
 explicit TLS-binding exception; none is a direct production-system dependency
 or referenced by production source.
+
+`cl-sqlite` directly loads `iterate` and `cffi`. On the audited Linux/SBCL
+Quicklisp distribution, CFFI's transitive closure is `alexandria`, `babel`,
+and `trivial-features`; Babel in turn depends on Alexandria and
+trivial-features. CFFI conditionally uses ASDF/UIOP on Darwin, which is
+implementation-provided. This entire closure, plus the system `libsqlite3`
+shared library, belongs to the `cl-sqlite` exception. Production source calls
+the `sqlite` package but does not call CFFI or those transitive utility systems
+directly.
+
+## Dependency authorization gate
+
+Every future goal must audit proposed direct and transitive dependencies during
+Part A. Discovery of any new third-party dependency marks that goal `blocked`
+until the user explicitly authorizes it and this audit plus the README
+exception list are updated. Adding a dependency first and seeking approval
+afterward is a process violation.
 
 ## Removed production dependencies
 
@@ -47,4 +77,5 @@ rg -n 'dexador|com\.inuoe\.jzon|clingon|cl-jschema|bordeaux-threads:|\bbt:|babel
 
 Expected `src/` result: no matches. Matches under test-system dependency lists
 are intentional and listed above. The ASDF transitive closure of `cl+ssl` is
-separately covered by the TLS exception.
+separately covered by the TLS exception; the `sqlite:` production references
+and CFFI closure are covered by the `cl-sqlite` exception.

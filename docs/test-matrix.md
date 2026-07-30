@@ -58,7 +58,7 @@ the five-provider v2 registry remain outside the current phase.
 | Images in sessions | `SESSION-V2-ROUND-TRIPS-IMAGE-CONTENT` | MIME type and base64 data survive v2 persistence |
 | Threshold compaction | `AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT` | Current stream/model generates summary; original prompt continues against summary plus suffix |
 | Provider overflow recovery | `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH` | Error is retained as a branch; active context compacts and retries exactly once |
-| Traceable originals | automatic-compaction file assertions | JSONL retains original text plus compaction sourceIds and firstKeptEntryId |
+| Traceable originals | automatic-compaction file assertions | JSONL retains original text plus the compaction summary and firstKeptEntryId |
 | Session list and exact resume | `SESSION-LIST-RESUME-*`, CLI resolver tests | Sorted cwd list, exact ID, missing ID failure, continue/resume mutual exclusion |
 | In-process switch and branch | `SESSION-COMMANDS-LIST-SWITCH-BRANCH-AND-EXPORT` | Agent session and context change together; next append uses selected parent |
 | Safe full-tree HTML | `SESSION-LIST-RESUME-AND-HTML-EXPORT-COVER-THE-ENTIRE-TREE` | Both branches render; hostile markup is escaped and no template dependency is used |
@@ -77,6 +77,19 @@ the five-provider v2 registry remain outside the current phase.
 | Git install | injected argv and real local Git daemon tests | No shell interpolation, no local/file URL, atomic staging rename, no overwrite |
 | Self-extension | faux provider and `scripts/live-extension-smoke.sh` | Both deterministic and live DeepSeek complete write → reload → invoke |
 | Original-pi execution model | `CORE-EXPOSES-NO-BUILT-IN-APPROVAL-OR-YOLO-SWITCH`, direct write test | No core confirmation export or `--yolo`; side-effect tools execute after validation |
+
+## Wave 2: agent harness, session v3, print/JSON, and RPC
+
+| Requirement | Common Lisp coverage | Evidence |
+|---|---|---|
+| Agent queues and settlement | queue/retry/loop suites | Steering and follow-up FIFO modes, next-turn retention, busy guard, abort cleanup, retry and ordered events |
+| Harness resources and execution environment | resources/truncate/execution-env suites | Prompt templates, skills, system-prompt formatting, UTF-8 truncation, file abstraction, shell timeout/abort and process-group cleanup |
+| Pluggable session storage | storage and SQLite suites | Memory/JSONL/SQLite CRUD, forks, active leaf, branches, materialized state, migration idempotence and rollback |
+| Session v3 | `SESSION-V3-*`, v1/v2 migration and context tests | Delayed persistence, all reference entry types, bounded discovery, malformed-record recovery and unknown-field preservation |
+| Expanded frozen extension API | legacy compatibility and Wave 2 extension suites | Existing macro/event behavior unchanged; approved lifecycle/UI/runtime additions validated and used by the real loop |
+| Text/JSON modes | modes suite plus `scripts/test-wave2-process-modes.sh` | Mode priority, stdin merge, clean final text, JSONL events, error exits and SIGTERM cleanup |
+| RPC mode | RPC suite plus process fixture | Full command union, response IDs, events, LF framing, prompt intervention, bash abort and extension UI response/timeout/EOF cleanup |
+| Live one-shot print | `scripts/live-print-smoke.sh` | DeepSeek one-shot text mode exits 0 with exact clean output |
 
 ## Phase 8: pure Common Lisp TUI
 

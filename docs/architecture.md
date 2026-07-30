@@ -1,8 +1,9 @@
 # cadr architecture
 
-状态：**v1 Phase 1–4 与 v2 Phase 5–9 已实现；Phase 7 稳定扩展 API
-已于 2026-07-30 人工确认并按提案原文冻结；原版默认执行安全模型已对齐；
-Phase 8 TUI、Phase 9 依赖收尾与 cadr 命名迁移已完成**
+状态：**v1 Phase 1–4 与 v2 Phase 5–9 已实现；北极星 Wave 2 的 agent
+harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
+冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
+命名迁移已完成**
 
 本文是 `docs/progress/goal-v1.md` 要求的第一个交付物，已于 2026-07-30
 获得人工确认。
@@ -210,14 +211,17 @@ Phase 9 后的生产依赖：
 
 | 库 | 用途 | 选择理由 |
 |---|---|---|
-| `cl+ssl` | HTTPS TLS | 唯一允许的加密层例外；绑定系统 OpenSSL，不自研密码学 |
+| `cl+ssl` | HTTPS TLS | 第一个在册自研例外；绑定系统 OpenSSL，不自研密码学 |
+| `cl-sqlite`（ASDF `sqlite`） | session storage SQLite adapter | 第二个在册自研例外；经 CFFI 绑定系统 `libsqlite3`，项目自研 storage/repository contract 而不重写数据库引擎 |
 | `cl-ppcre` | `grep`、glob 和 JSON Schema `pattern` | 完整正则引擎按 `docs/progress/goal-v2.md` 明确暂缓；用户 pattern 不交给 shell |
 | `uiop` / ASDF、`sb-thread`、`sb-bsd-sockets`、`sb-posix` | 路径、进程、线程、socket、终端和构建 | SBCL/ASDF 自带设施，不计第三方生产依赖 |
 
 `fiveam` 只存在于测试 system。`babel`、`bordeaux-threads`、
 `flexi-streams`、`usocket` 和 `trivial-gray-streams` 不被生产源码或
-production system 直接依赖；其中部分仍会作为 `cl+ssl` 的 Quicklisp
-传递依赖进入 image，这归属于唯一允许的 TLS 绑定边界，而非独立保留。
+production system 直接依赖；其中部分仍会作为 `cl+ssl` 或 `cl-sqlite`
+的 Quicklisp 传递依赖进入 image。`cl-sqlite` 直接依赖 `iterate` 与 CFFI；
+Linux/SBCL 下的 CFFI 闭包为 Alexandria、Babel 与 trivial-features。完整
+归属见 `docs/dependency-audit.md`，这些传递项不构成新的独立例外。
 
 不使用 Node/Bun，不调用 provider 的 JavaScript SDK。实现直接使用官方 HTTP
 协议，因此 payload 对拍和原始 SSE 回放是硬门槛。
@@ -714,6 +718,18 @@ Linux/glibc 和 HTTPS 所需的系统动态库；“单个可执行文件”不�
 - 与固定 TS 基线的已知差异
 - 剩余风险和下一阶段
 
+### 15.1 后续 goal 的预审与关账门禁
+
+从本次整改后的下一份 goal 起，每份 goal 规格都必须原文包含以下两条全局
+门禁：
+
+1. Part A 必须列出新增第三方依赖及其传递闭包；发现任何未在
+   `docs/dependency-audit.md` 登记的依赖，立即标记 `blocked`，取得用户明确
+   授权并同步审计与 README 后才能实现。先添加、后追认视为违规。
+2. “完成”必须同时满足实现与测试验收、按逻辑分组提交落账、提交后的全量
+   门禁复验，以及工作区干净。未提交改动不得宣告完成；受明确保护的本地文件
+   只能通过仓库本地 ignore 保留，不能混入提交或删除。
+
 实现过程中没有出现需要源码作者澄清的问题。设计确认时冻结了：
 
 - OpenAI 第一版只实现 Responses API；
@@ -845,13 +861,14 @@ Phase 6 把会话文件定义为 append-only event tree。运行时只选择一�
 root-to-leaf 路径作为模型上下文；分叉不会复制、修改或删除旧节点。这是
 parent-linked tree，而不是维护多份容易漂移的线性消息数组。
 
-### 17.1 JSONL v2 与树不变量
+### 17.1 JSONL v2 与树不变量（历史格式，已由 Wave 2 v3 取代）
 
 首行仍是 session header，但 `version` 升为 `2`。其余记录分为：
 
 - `message`：包含唯一 `id`、`parentId`、`timestamp` 与完整 `message`；
-- `compaction`：同样是树节点，另含 `summary`、`sourceIds`、
-  `firstKeptEntryId` 与 `tokensBefore`。
+- `compaction`：Phase 6 的 v2 节点曾含 `summary`、`sourceIds`、
+  `firstKeptEntryId` 与 `tokensBefore`；Wave 2 v3 不再写非参考
+  `sourceIds`。
 
 每个普通追加节点的 `parentId` 都是当前 leaf；从历史节点分叉只移动内存
 中的 leaf，下一次追加自然形成第二个 child。文件永不原地删改节点，因此
@@ -894,8 +911,8 @@ runtime 用最近一次有效 assistant usage 加尾部估算；无 usage 时用
 1. 从最新消息向前累计 `keep-recent-tokens`，只在 user 或 assistant
    边界切割，绝不从孤立 tool result 开始；
 2. 用当前 agent 的 provider、model 与 stream function 总结较旧部分；
-3. 追加 compaction 节点，其 `sourceIds` 直接引用被总结的原节点，
-   `firstKeptEntryId` 指向保留后缀；
+3. 追加 compaction 节点，`firstKeptEntryId` 指向保留后缀；完整旧节点依靠
+   append log 和 parent 链继续可追溯；
 4. 将模型上下文替换为“摘要消息 + 保留后缀”，再继续原请求。
 
 后续压缩可总结前一压缩节点与新的旧消息，形成可追踪的摘要链。原始节点
@@ -919,7 +936,8 @@ Phase 6 在功能实现前先加入以下回归：
 3. v1 自动迁移为 v2，全部消息语义与原 envelope 附加字段保留；
 4. 重复 id、悬空 parent、损坏中间行失败，未完成尾行仍可恢复；
 5. 接近窗口时调用当前模型生成摘要，随后原请求继续；
-6. 压缩 context 只含摘要与保留后缀，而 JSONL 仍含全部原节点及 sourceIds；
+6. 压缩 context 只含摘要与保留后缀，而 JSONL 仍含全部原节点；Phase 6
+   当时还断言了后来在 Wave 2 v3 删除的 `sourceIds`；
 7. 精确 resume、列表、进程内 switch、CLI 参数互斥；
 8. HTML 导出含完整分支并正确转义恶意文本；
 9. 原有 Phase 1–5 全量回归、native build 与 `npm run check` 继续通过。
@@ -1013,10 +1031,10 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
   - 返回值不参与消息发送，扩展通过 context 通知前端或调用 agent；
   - name 不含前导 `/`，只能使用小写 ASCII 字母、数字、`-`、`_`、`:`。
 - `define-event-hook`
-  - event 只冻结四种：`:turn-start`、`:turn-end`、
-    `:tool-call-before`、`:tool-call-after`；
-  - handler 固定为 `(event context)`，返回 `nil` 表示不修改，或返回
-    `extension-hook-result`；
+  - 既有四事件 `:turn-start`、`:turn-end`、`:tool-call-before`、
+    `:tool-call-after` 的 payload 与结果语义不变；
+  - Wave 2 只增加提案第 3 节列出的原版 lifecycle event；handler 仍固定为
+    `(event context)`，新事件使用各自严格 plist result；
   - priority 为整数，较小者先执行；相同 priority 按扩展优先级和定义顺序
     固定执行。
 - `define-prompt-template`
@@ -1026,6 +1044,9 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
   - argv 使用支持单双引号的确定性拆词器生成，替换不递归；
   - name 为 `skill:<name>` 时即为 Lisp skill。skill 不是第二套文件格式，
     而是使用同一注册、优先级和重载机制的具名模板。
+- `define-provider`
+  - 只注册 `cadr-ai:provider-definition` 与可选 model metadata；
+  - 注册落在当前 extension host overlay，不改全局 provider registry。
 
 这些宏只能在有效加载注册上下文中调用；在 REPL 或普通应用代码中直接调用
 会给出明确 condition，避免定义落入不可见的全局隐式 registry。
@@ -1042,6 +1063,13 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
 - `extension-context-notify`
 - `extension-context-compact`
 - `extension-context-reload`
+- `extension-context-select`、`extension-context-confirm`
+- `extension-context-input`、`extension-context-editor`
+- `extension-context-set-status`、`extension-context-set-widget`
+- `extension-context-set-title`、`extension-context-set-editor-text`
+- `extension-context-register-provider`、`extension-context-register-tool`
+- `extension-context-send-message`、`extension-context-send-user-message`
+- `extension-context-set-session-name`
 
 context 只在当前 handler 动态范围内有效；保存后跨 handler 或跨 reload 使用
 会抛出 `stale-extension-context`。`extension-context-agent` 返回当前
@@ -1053,7 +1081,9 @@ context 只在当前 handler 动态范围内有效；保存后跨 handler 或跨
 - `(extension-context-compact context &key (force-p t))`，返回是否发生压缩；
 - `(extension-context-reload context)`，返回 reload report，并立即使旧
   context stale；
-- `extension-context-mode` 返回当前前端的 `:repl` 或 `:tui`。
+- `extension-context-mode` 返回当前模式的 `:repl`、`:tui`、`:text`、
+  `:json` 或 `:rpc`；
+- dialog/UI 与 runtime action 的精确签名固定在获批提案第 4、7 节。
 
 `extension-event` 稳定导出以下只读 accessor：
 
@@ -1063,6 +1093,11 @@ context 只在当前 handler 动态范围内有效；保存后跨 handler 或跨
 - `extension-event-tool-call`
 - `extension-event-tool-result`
 - `extension-event-tool-results`
+- `extension-event-payload`
+- `extension-cancellation-aborted-p`
+
+旧四事件继续使用专用 accessor；新增事件 payload 是只读 kebab-case plist。
+`extension-cancellation-signal` 是不透明对象，只暴露 aborted 状态。
 
 hook 的唯一修改返回值由
 `make-extension-hook-result` 构造，稳定 keyword 为：
@@ -1264,9 +1299,10 @@ instantiate 路径更新 agent；会话选择只调用现有 session list/switch
 Ctrl+C、EOF、provider condition 和扩展 condition 都走同一 cleanup。
 
 交互式 stdin/stdout 默认启动 TUI；`--no-tui` 强制使用既有 line REPL。
-任一流不是 TTY 时自动使用 REPL，使 pipe、回放测试和 shell automation
-保持确定性。两种前端调用同一个 `dispatch-user-input`，订阅同一个 agent
-事件流；该选择只改变渲染和输入方式。
+任一流不是 TTY 时自动使用一次性 text print 模式；`--mode json` 和
+`--mode rpc` 分别输出事件 JSONL 与 RPC JSONL。TUI/REPL 继续调用同一个
+`dispatch-user-input` 并订阅同一个 agent 事件流；模式选择不复制 agent
+状态。
 
 ### 19.4 Phase 8 验证门
 
@@ -1303,7 +1339,8 @@ Phase 9 保持 provider、agent、extension、session 与前端公开协议不�
 
 最终生产依赖审计的不变量是：
 
-- 唯一加密依赖为 `cl+ssl`；
+- 两个在册自研例外仅为 `cl+ssl` 与 `cl-sqlite`；
+- `cl+ssl` 是唯一加密依赖；`cl-sqlite` 只绑定系统 `libsqlite3`；
 - 唯一明确暂缓依赖为完整正则引擎 `cl-ppcre`；
 - 其他 `.asd` production system 依赖均为本项目 system 或 SBCL/ASDF
   自带设施；
@@ -1331,8 +1368,9 @@ cadr-cli -> cadr-agent -> cadr-ai
 
 ASDF production/test system、目录、CL package 和 native image 均使用该
 命名。扩展稳定接口 `DEFINE-TOOL`、`DEFINE-COMMAND`、
-`DEFINE-EVENT-HOOK`、`DEFINE-PROMPT-TEMPLATE` 从 `CADR-AGENT` 导出；
-此次迁移后命名空间冻结，不再提供旧 nickname 或别名。
+`DEFINE-EVENT-HOOK`、`DEFINE-PROMPT-TEMPLATE`、`DEFINE-PROVIDER` 及 Wave 2
+获批 context/event accessor 从 `CADR-AGENT` 导出；此次迁移后命名空间冻结，
+不再提供旧 nickname 或别名。
 
 用户数据根目录为 `~/.cadr/`。启动时只有在旧目录存在且新目录不存在时
 进入迁移门：
@@ -1351,3 +1389,54 @@ ASDF production/test system、目录、CL package 和 native image 均使用该
 `0.1.x` 作为缺省回退读取，每次实际采用旧值都向 stderr 打弃用警告；新值
 始终优先。兼容入口在 `0.2.0` 删除。session v1/v2 header 不含产品名字段，
 因此读取格式无需增加别名或重写逻辑。
+
+## 22. 北极星 Wave 2：harness、session v3 与进程模式
+
+Wave 2 沿用原版的 storage/repository 分层：`harness-session` 只依赖统一
+storage contract；memory、严格 JSONL 与 SQLite 是可替换 adapter，不另建
+第二套 agent 状态。SQLite 使用原版表、索引、`001_initial.sql` migration、
+WAL、FULL synchronous、busy timeout、事务 append、branch materialization
+与 materialized stats。Wave 5 仍只负责独立 storage package、server 和 eval
+集成，不再重复实现这层 adapter。
+
+coding-agent session 新写入版本为 v3。header 使用 ISO-8601 timestamp、
+可选 `parentSession`；entry envelope 使用 `id`、`parentId`、timestamp，
+支持 message、thinking/model change、compaction、branch summary、custom、
+custom message、label 与 session info。agent harness storage 另使用原版已有的
+`active_tools_change` 和 `leaf` 记录。v1/v2 迁移保留未知字段并通过同目录临时
+文件原子替换；发现阶段最多扫描每个候选 1 MiB，坏 JSONL record 和崩溃尾
+跳过。coding-agent manager 在首个 assistant entry 前只缓冲、不创建文件。
+compaction 不再写非参考 `sourceIds`；完整原节点仍留在 append log 中，
+`firstKeptEntryId` 和 parent tree 提供追溯。
+
+agent runtime 具有原版 steering、follow-up 与 next-turn 队列。steering 在
+turn 开始和完整工具批次结束后注入；follow-up 只在 agent 本应停止时 drain；
+abort 清空前两者但保留 next-turn。每类队列支持 `one-at-a-time` 与 `all`，
+queue event 总是携带两个 live queue 的完整快照。retry、compaction 与
+extension lifecycle 都走同一 event spine。
+
+模式优先级固定为显式 `--mode`、`--print`、显式 `--no-tui`、非 TTY 自动
+text、最后 TUI。text 只输出最终文本；JSON 输出逐行 agent event；RPC 使用
+LF 分帧并兼容 CRLF、U+2028/U+2029 与无末尾 LF。RPC 实现固定 command
+union、一次 response、event 转发、session 控制、bash/abort、EOF cleanup
+和 extension UI request/response；它是 Wave 5 server 的复用边界，本 Wave
+不实现 server。
+
+扩展 API 的限定扩大只包含审计提交已有的 lifecycle events、RPC UI surface
+与 runtime provider/tool/message/session actions。`define-event-hook` 原签名、
+四个旧事件与旧结果语义不变；兼容门禁
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
+冻结这一点。runtime provider overlay 属于 extension host，不修改
+`cadr-ai` registry；TUI 组件层同样未改。完整事件、payload、Lisp 映射与
+逐项 `file:line` 基线见
+[`docs/proposals/goal-v7-extension-api.md`](proposals/goal-v7-extension-api.md)。
+
+重冻锚点为 extension export 文本 SHA-256
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`，
+旧源兼容 fixture SHA-256
+`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`，
+RPC wire/process fixture SHA-256
+`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`，
+UI extension fixture SHA-256
+`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
+逐文件 Git object ID 记录在提案第 9 节；此后该扩大面恢复“发布即稳定”。

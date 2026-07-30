@@ -28,6 +28,7 @@ Requirements:
 - SBCL 2.4 or newer
 - Quicklisp
 - system OpenSSL development/runtime libraries
+- system SQLite development/runtime libraries
 
 ```bash
 QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build.sh
@@ -37,6 +38,24 @@ QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build.sh
 The build produces the native executable `./cadr`. If SBCL lacks
 `sb-core-compression`, the build emits an uncompressed image instead of
 failing.
+
+## Dependency policy
+
+The registered self-build exceptions are:
+
+- `cl+ssl`, solely as the FFI binding to system OpenSSL;
+- `cl-sqlite` (ASDF system `sqlite`), as the FFI binding to system
+  `libsqlite3`.
+
+The latter directly loads `iterate` and CFFI; the audited CFFI closure on
+Linux/SBCL is Alexandria, Babel, and trivial-features. `cl-ppcre` remains an
+explicitly authorized deferral for a complete regex engine, not a third
+self-build exception. The exact production and transitive audit is in
+[`docs/dependency-audit.md`](docs/dependency-audit.md).
+
+Any new third-party dependency must be declared during goal pre-review. The
+goal remains blocked until explicit user authorization; retrospective approval
+is not valid.
 
 ## Configuration
 
@@ -80,12 +99,17 @@ Equivalent command-line options are `--provider`, `--model`, and
 ./cadr --provider deepseek
 ./cadr --continue
 ./cadr --resume <session-id>
+./cadr --print "Explain this repository"
+./cadr --mode json "Explain this repository"
+./cadr --mode rpc
 ./cadr --no-tui
 ```
 
-Interactive terminals use the full-screen TUI; pipes and non-TTY input fall
-back to the line REPL. Both frontends share one command, session, extension,
-and agent-event path.
+Interactive terminals use the full-screen TUI. `--no-tui` explicitly selects
+the line REPL. `--print`/`--mode text` prints only the final answer,
+`--mode json` emits agent events as JSONL, and `--mode rpc` exposes the
+original pi command/response/event JSONL protocol. Without an explicit mode,
+non-TTY input or output selects one-shot text mode.
 
 Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Commands
 include `/sessions`, `/switch`, `/branch`, `/compact`, `/export`, `/login`,
@@ -142,13 +166,19 @@ Discovery order is:
 2. `./.cadr/extensions/`;
 3. `~/.cadr/extensions/`.
 
-The stable extension interface is now frozen in `CADR-AGENT`. These exported
-macros will not be renamed again:
+The stable extension interface is frozen in `CADR-AGENT`. Its registration
+macros are:
 
 - `define-tool`
 - `define-command`
 - `define-event-hook`
 - `define-prompt-template`
+- `define-provider`
+
+It also exposes the original pi lifecycle events, runtime tool/provider
+registration, message/session actions, and RPC-capable extension UI context.
+The exact frozen surface and reference locations are recorded in
+[`docs/proposals/goal-v7-extension-api.md`](docs/proposals/goal-v7-extension-api.md).
 
 Example:
 
@@ -224,8 +254,10 @@ introduced. Proposed mechanisms beyond original pi belong in
 ./scripts/test-cl.sh
 ./build.sh
 ./scripts/acceptance-smoke.sh
+./scripts/test-wave2-process-modes.sh
 ./scripts/migration-smoke.sh
 ./scripts/live-deepseek-smoke.sh
+./scripts/live-print-smoke.sh
 ./scripts/live-extension-smoke.sh
 CADR_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
 ./scripts/live-tui-smoke.sh
