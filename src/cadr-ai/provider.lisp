@@ -56,12 +56,57 @@
   (make-instance 'google-provider :api-key api-key))
 
 (defgeneric build-request
-    (provider model context &key stream-p max-tokens temperature))
+    (provider model context
+     &key stream-p max-tokens temperature reasoning cache-retention
+       session-id tool-choice metadata))
 
 (defgeneric parse-complete-response (provider model response))
 
 (defgeneric reduce-provider-sse-event
     (provider state event emit))
+
+(defun plist-entry (plist key)
+  (let ((tail (member key plist :test #'eq)))
+    (if tail
+        (values (cadr tail) t)
+        (values nil nil))))
+
+(defun model-compat-value (model key default)
+  (multiple-value-bind (value present-p)
+      (plist-entry (model-compat model) key)
+    (if present-p value default)))
+
+(defun model-thinking-level-value (model level)
+  (cdr (assoc level
+              (model-thinking-level-map model)
+              :test #'eq)))
+
+(defun model-thinking-level-present-p (model level)
+  (not
+   (null
+    (assoc level
+           (model-thinking-level-map model)
+           :test #'eq))))
+
+(defun normalize-cache-retention (value)
+  (let ((retention (or value :short)))
+    (unless (member retention '(:none :short :long))
+      (error 'configuration-error
+             :message
+             (format nil "Invalid cache retention: ~A" retention)))
+    retention))
+
+(defun clamp-openai-cache-key (value)
+  (when (non-empty-string-p value)
+    (subseq value 0 (min 64 (length value)))))
+
+(defun tool-strict-p (tool)
+  (let ((constraint (tool-constrained-sampling tool)))
+    (and (eq :json-schema (getf constraint :type))
+         (not
+          (null
+           (member (getf constraint :strict)
+                   '(:prefer :require)))))))
 
 (defstruct provider-stream-state
   (message nil :type (or null assistant-message))
@@ -345,14 +390,20 @@
              (provider-retry-delay condition retry-index))))))
 
 (defun complete-chat (provider model context
-                      &key max-tokens temperature abort-p)
+                      &key max-tokens temperature reasoning cache-retention
+                        session-id tool-choice metadata abort-p)
   (handler-case
       (progn
         (check-abort abort-p)
         (let* ((request (build-request provider model context
                                        :stream-p nil
                                        :max-tokens max-tokens
-                                       :temperature temperature))
+                                       :temperature temperature
+                                       :reasoning reasoning
+                                       :cache-retention cache-retention
+                                       :session-id session-id
+                                       :tool-choice tool-choice
+                                       :metadata metadata))
                (response
                  (call-with-provider-retries
                   (lambda ()
@@ -365,7 +416,8 @@
        model condition provider))))
 
 (defun stream-chat (provider model context on-event
-                    &key max-tokens temperature abort-p)
+                    &key max-tokens temperature reasoning cache-retention
+                      session-id tool-choice metadata abort-p)
   (let* ((message (empty-assistant-message model))
          (state (make-provider-stream-state :message message))
          (saw-provider-event-p nil))
@@ -375,7 +427,12 @@
           (let ((request (build-request provider model context
                                         :stream-p t
                                         :max-tokens max-tokens
-                                        :temperature temperature)))
+                                        :temperature temperature
+                                        :reasoning reasoning
+                                        :cache-retention cache-retention
+                                        :session-id session-id
+                                        :tool-choice tool-choice
+                                        :metadata metadata)))
             (emit-event on-event :start message)
             (call-with-provider-retries
              (lambda ()

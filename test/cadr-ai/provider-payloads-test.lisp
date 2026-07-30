@@ -13,7 +13,8 @@
                (expected (parse-json (read-fixture relative)))
                (request (build-request provider model (sample-context)
                                        :stream-p stream-p
-                                       :max-tokens 4096)))
+                                       :max-tokens 4096
+                                       :cache-retention :none)))
           (is (eql stream-p (request-spec-stream-p request)))
           (is (json-equal-p expected (request-spec-payload request))
               "~A ~A payload differs" provider-name suffix))))))

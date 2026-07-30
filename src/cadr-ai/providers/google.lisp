@@ -108,9 +108,60 @@
 (defun gemini-3.6-flash-p (model)
   (string-equal "gemini-3.6-flash" (model-id model)))
 
+(defun google-gemini-3-pro-p (model)
+  (let ((id (string-downcase (model-id model))))
+    (and (search "gemini-3" id)
+         (search "-pro" id))))
+
+(defun google-gemini-3-flash-p (model)
+  (let ((id (string-downcase (model-id model))))
+    (or (and (search "gemini-3" id)
+             (search "-flash" id))
+        (member id
+                '("gemini-flash-latest"
+                  "gemini-flash-lite-latest")
+                :test #'string=))))
+
+(defun google-gemma-4-p (model)
+  (let ((id (string-downcase (model-id model))))
+    (or (search "gemma-4" id)
+        (search "gemma4" id))))
+
+(defun google-thinking-level (model reasoning)
+  (let ((effort (or reasoning :high)))
+    (cond
+      ((google-gemini-3-pro-p model)
+       (if (member effort '(:minimal :low)) "LOW" "HIGH"))
+      ((google-gemma-4-p model)
+       (if (member effort '(:minimal :low)) "MINIMAL" "HIGH"))
+      (t
+       (ecase effort
+         (:minimal "MINIMAL")
+         (:low "LOW")
+         (:medium "MEDIUM")
+         ((:high :xhigh :max) "HIGH"))))))
+
+(defun google-thinking-config (model reasoning)
+  (when (model-reasoning-p model)
+    (if reasoning
+        (json-object
+         "includeThoughts" t
+         "thinkingLevel"
+         (google-thinking-level model reasoning))
+        (cond
+          ((google-gemini-3-pro-p model)
+           (json-object "thinkingLevel" "LOW"))
+          ((or (google-gemini-3-flash-p model)
+               (google-gemma-4-p model))
+           (json-object "thinkingLevel" "MINIMAL"))
+          (t
+           (json-object "thinkingBudget" 0))))))
+
 (defmethod build-request ((provider google-provider)
                           model context
-                          &key stream-p max-tokens temperature)
+                          &key stream-p max-tokens temperature reasoning
+                            cache-retention session-id tool-choice metadata)
+  (declare (ignore cache-retention session-id metadata))
   (ensure-supported-content model context)
   (let* ((key (require-api-key provider))
          (payload
@@ -135,6 +186,17 @@
       (json-put payload "generationConfig" generation-config))
     (when (context-tools context)
       (json-put payload "tools" (google-tools (context-tools context))))
+    (let ((thinking-config
+            (google-thinking-config model reasoning)))
+      (when thinking-config
+        (json-put payload "thinkingConfig" thinking-config)))
+    (when tool-choice
+      (json-put
+       payload "toolConfig"
+       (json-object
+        "functionCallingConfig"
+        (json-object
+         "mode" (string-upcase tool-choice)))))
     (make-request-spec
      :url (format
            nil
@@ -144,11 +206,14 @@
            (if stream-p
                "streamGenerateContent?alt=sse"
                "generateContent"))
-     :headers `(("content-type" . "application/json")
-                ("accept" . ,(if stream-p
-                                 "text/event-stream"
-                                 "application/json"))
-                ("x-goog-api-key" . ,key))
+     :headers
+     (append
+      `(("content-type" . "application/json")
+        ("accept" . ,(if stream-p
+                         "text/event-stream"
+                         "application/json"))
+        ("x-goog-api-key" . ,key))
+      (model-headers model))
      :payload payload
      :stream-p stream-p
      :provider :google)))

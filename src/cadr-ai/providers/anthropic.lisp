@@ -15,7 +15,7 @@
        "data" (image-content-data block))))
     (t nil)))
 
-(defun anthropic-message-content (message)
+(defun anthropic-message-content (message &optional allow-empty-signature-p)
   (cond
     ((typep message 'user-message)
      (let ((content (user-message-content message)))
@@ -29,18 +29,40 @@
      (list-json-array
       (loop for block in (assistant-message-content message)
             when (typep block 'text-content)
-              collect (json-object "type" "text"
-                                   "text" (text-content-text block))
+              when (non-empty-string-p (text-content-text block))
+                collect (json-object "type" "text"
+                                     "text" (text-content-text block))
             when (typep block 'thinking-content)
-              collect (if (thinking-content-redacted-p block)
-                          (json-object
-                           "type" "redacted_thinking"
-                           "data" (or (thinking-content-signature block) ""))
-                          (json-object
-                           "type" "thinking"
-                           "thinking" (thinking-content-thinking block)
-                           "signature"
-                           (or (thinking-content-signature block) "")))
+              append
+              (let* ((thinking (thinking-content-thinking block))
+                     (signature (thinking-content-signature block))
+                     (signed-p (non-empty-string-p signature)))
+                (cond
+                  ((thinking-content-redacted-p block)
+                   (list
+                    (json-object
+                     "type" "redacted_thinking"
+                     "data" (or signature ""))))
+                  ((and (not (non-empty-string-p thinking))
+                        (not signed-p))
+                   nil)
+                  (signed-p
+                   (list
+                    (json-object
+                     "type" "thinking"
+                     "thinking" thinking
+                     "signature" signature)))
+                  (allow-empty-signature-p
+                   (list
+                    (json-object
+                     "type" "thinking"
+                     "thinking" thinking
+                     "signature" "")))
+                  (t
+                   (list
+                    (json-object
+                     "type" "text"
+                     "text" thinking)))))
             when (typep block 'tool-call)
               collect (json-object
                        "type" "tool_use"
@@ -62,11 +84,45 @@
              (content-text content)))
        "is_error" (tool-result-message-is-error message))))))
 
-(defun anthropic-messages (model messages)
+(defun anthropic-cache-control (model cache-retention)
+  (let ((retention (normalize-cache-retention cache-retention)))
+    (unless (eq retention :none)
+      (let ((result (json-object "type" "ephemeral")))
+        (when (and (eq retention :long)
+                   (model-compat-value
+                    model :supports-long-cache-retention t))
+          (json-put result "ttl" "1h"))
+        result))))
+
+(defun add-anthropic-cache-control-to-messages (messages cache-control)
+  (when (and cache-control (plusp (length messages)))
+    (let* ((message (aref messages (1- (length messages))))
+           (content (json-get message "content")))
+      (when (string= "user" (json-get message "role"))
+        (cond
+          ((stringp content)
+           (json-put
+            message "content"
+            (json-array
+             (json-object
+              "type" "text"
+              "text" content
+              "cache_control" cache-control))))
+          ((and (vectorp content) (plusp (length content)))
+           (let ((block (aref content (1- (length content)))))
+             (when (member (json-get block "type")
+                           '("text" "image" "tool_result")
+                           :test #'string=)
+               (json-put block "cache_control" cache-control))))))))
+  messages)
+
+(defun anthropic-messages (model messages &optional cache-control)
   (let ((prepared
           (prepare-messages-for-model
            messages model #'normalize-provider-id))
-        (result nil))
+        (result nil)
+        (allow-empty-signature-p
+          (model-compat-value model :allow-empty-signature nil)))
     (loop with index = 0
           while (< index (length prepared))
           for message = (nth index prepared)
@@ -80,7 +136,8 @@
                      do (push
                          (aref
                           (anthropic-message-content
-                           (nth index prepared))
+                           (nth index prepared)
+                           allow-empty-signature-p)
                           0)
                          blocks)
                         (incf index))
@@ -90,7 +147,9 @@
                  "content" (list-json-array (nreverse blocks)))
                 result)))
             ((typep message 'assistant-message)
-             (let ((content (anthropic-message-content message)))
+             (let ((content
+                     (anthropic-message-content
+                      message allow-empty-signature-p)))
                (when (plusp (length content))
                  (push
                   (json-object "role" "assistant"
@@ -98,7 +157,9 @@
                   result)))
              (incf index))
             ((typep message 'user-message)
-             (let ((content (anthropic-message-content message)))
+             (let ((content
+                     (anthropic-message-content
+                      message allow-empty-signature-p)))
                (when (if (stringp content)
                          (non-empty-string-p content)
                          (plusp (length content)))
@@ -109,41 +170,107 @@
              (incf index))
             (t
              (incf index))))
-    (list-json-array (nreverse result))))
+    (add-anthropic-cache-control-to-messages
+     (list-json-array (nreverse result))
+     cache-control)))
 
-(defun anthropic-tools (tools)
+(defun anthropic-tools (model tools cache-control)
   (list-json-array
    (loop for tool in tools
-         collect
+         for index from 0
+         for encoded =
          (json-object
           "name" (tool-name tool)
           "description" (tool-description tool)
-          "eager_input_streaming" t
-          "input_schema" (tool-parameters tool)))))
+          "input_schema" (tool-parameters tool))
+         do
+         (when (model-compat-value
+                model :supports-eager-tool-input-streaming t)
+           (json-put encoded "eager_input_streaming" t))
+         (when (and (model-compat-value
+                     model :supports-strict-tools nil)
+                    (tool-strict-p tool))
+           (json-put encoded "strict" t))
+         (when (and cache-control
+                    (model-compat-value
+                     model :supports-cache-control-on-tools t)
+                    (= index (1- (length tools))))
+           (json-put encoded "cache_control" cache-control))
+         collect encoded)))
+
+(defun anthropic-thinking-options (model reasoning)
+  (when (model-reasoning-p model)
+    (cond
+      (reasoning
+       (if (model-compat-value model :force-adaptive-thinking nil)
+           (values
+            (json-object "type" "adaptive"
+                         "display" "summarized")
+            (json-object
+             "effort"
+             (or (model-thinking-level-value model reasoning)
+                 (string-downcase (symbol-name reasoning)))))
+           (values
+            (json-object
+             "type" "enabled"
+             "budget_tokens" 1024
+             "display" "summarized")
+            nil)))
+      ((or (not (model-thinking-level-present-p model :off))
+           (model-thinking-level-value model :off))
+       (values (json-object "type" "disabled") nil)))))
+
+(defun anthropic-tool-choice (choice)
+  (if (stringp choice)
+      (json-object "type" choice)
+      choice))
 
 (defmethod build-request ((provider anthropic-provider)
                           model context
-                          &key stream-p max-tokens temperature)
+                          &key stream-p max-tokens temperature reasoning
+                            cache-retention session-id tool-choice metadata)
   (ensure-supported-content model context)
   (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
+         (cache-control
+           (anthropic-cache-control model cache-retention))
          (payload
            (json-object
             "model" (model-id model)
             "messages" (anthropic-messages
-                        model (context-messages context))
+                        model (context-messages context)
+                        cache-control)
             "max_tokens" (or max-tokens (model-max-tokens model))
             "stream" (and stream-p t))))
     (when (non-empty-string-p (context-system-prompt context))
-      (json-put payload
-                "system"
-                (json-array
-                 (json-object "type" "text"
-                              "text" (context-system-prompt context)))))
+      (let ((block
+              (json-object
+               "type" "text"
+               "text" (context-system-prompt context))))
+         (when cache-control
+           (json-put block "cache_control" cache-control))
+        (json-put payload "system" (json-array block))))
     (when (context-tools context)
-      (json-put payload "tools" (anthropic-tools (context-tools context))))
-    (when temperature
+      (json-put payload "tools"
+                (anthropic-tools
+                 model (context-tools context) cache-control)))
+    (when (and (not (null temperature))
+               (null reasoning)
+               (model-compat-value model :supports-temperature t))
       (json-put payload "temperature" temperature))
+    (multiple-value-bind (thinking output-config)
+        (anthropic-thinking-options model reasoning)
+      (when thinking
+        (json-put payload "thinking" thinking))
+      (when output-config
+        (json-put payload "output_config" output-config)))
+    (when tool-choice
+      (json-put payload "tool_choice"
+                (anthropic-tool-choice tool-choice)))
+    (let ((user-id (and (listp metadata) (getf metadata :user-id))))
+      (when (stringp user-id)
+        (json-put payload "metadata"
+                  (json-object "user_id" user-id))))
     (make-request-spec
      :url (format nil "~A/v1/messages"
                   (strip-trailing-slash (model-base-url model)))
@@ -159,7 +286,19 @@
              . "claude-code-20250219,oauth-2025-04-20")
             ("x-app" . "cli"))
           `(("x-api-key" . ,key)))
-      '(("anthropic-version" . "2023-06-01")))
+      '(("anthropic-version" . "2023-06-01"))
+      (when (and (context-tools context)
+                 (not
+                  (model-compat-value
+                   model :supports-eager-tool-input-streaming t)))
+        '(("anthropic-beta"
+           . "fine-grained-tool-streaming-2025-05-14")))
+      (when (and cache-control
+                 (non-empty-string-p session-id)
+                 (model-compat-value
+                  model :send-session-affinity-headers nil))
+        `(("x-session-affinity" . ,session-id)))
+      (model-headers model))
      :payload payload
      :stream-p stream-p
      :provider :anthropic)))

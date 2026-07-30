@@ -7,11 +7,18 @@
                 (subseq id (1+ separator)))
         (values id nil))))
 
+(defun responses-developer-role-p (model)
+  (and (model-reasoning-p model)
+       (model-compat-value model :supports-developer-role t)))
+
 (defun openai-input-items (model context)
   (let ((items nil)
         (message-index 0))
     (when (non-empty-string-p (context-system-prompt context))
-      (push (json-object "role" "system"
+      (push (json-object "role"
+                         (if (responses-developer-role-p model)
+                             "developer"
+                             "system")
                          "content" (context-system-prompt context))
             items))
     (dolist (message
@@ -93,8 +100,13 @@
             (json-object
              "type" "function_call_output"
              "call_id" call-id
-             "output" (content-text
-                       (tool-result-message-content message)))
+             "output"
+             (let ((text
+                     (content-text
+                      (tool-result-message-content message))))
+               (if (non-empty-string-p text)
+                   text
+                   "(no tool output)")))
             items))
          (when (content-has-images-p
                 (tool-result-message-content message))
@@ -117,19 +129,71 @@
       (incf message-index))
     (list-json-array (nreverse items))))
 
-(defun openai-tools (tools)
+(defun openai-tools (model tools)
   (list-json-array
    (loop for tool in tools
          collect
-         (json-object
-          "type" "function"
-          "name" (tool-name tool)
-          "description" (tool-description tool)
-          "parameters" (tool-parameters tool)))))
+         (let ((encoded
+                 (json-object
+                  "type" "function"
+                  "name" (tool-name tool)
+                  "description" (tool-description tool)
+                  "parameters" (tool-parameters tool))))
+           (when (model-compat-value
+                  model :supports-strict-mode nil)
+             (json-put encoded "strict" (tool-strict-p tool)))
+           encoded))))
+
+(defun responses-session-affinity-format (model)
+  (model-compat-value
+   model :session-affinity-format
+   (if (or (eq (model-provider model) :openrouter)
+           (search "openrouter.ai" (model-base-url model)))
+       :openrouter
+       :openai)))
+
+(defun responses-session-headers (model session-id cache-retention)
+  (when (and (non-empty-string-p session-id)
+             (not (eq (normalize-cache-retention cache-retention)
+                      :none)))
+    (case (responses-session-affinity-format model)
+      (:openrouter
+       `(("x-session-id" . ,session-id)))
+      (:openai-nosession
+       `(("x-client-request-id" . ,session-id)))
+      (otherwise
+       `(("session_id" . ,session-id)
+         ("x-client-request-id" . ,session-id))))))
+
+(defun add-responses-reasoning (payload model reasoning)
+  (when (model-reasoning-p model)
+    (cond
+      (reasoning
+       (json-put
+        payload "reasoning"
+        (json-object
+         "effort"
+         (or (model-thinking-level-value model reasoning)
+             (string-downcase (symbol-name reasoning)))
+         "summary" "auto"))
+       (json-put
+        payload "include"
+        (json-array "reasoning.encrypted_content")))
+      ((or (not (model-thinking-level-present-p model :off))
+           (model-thinking-level-value model :off))
+       (json-put
+        payload "reasoning"
+        (json-object
+         "effort"
+         (or (model-thinking-level-value model :off)
+             "none"))))))
+  payload)
 
 (defmethod build-request ((provider openai-provider)
                           model context
-                          &key stream-p max-tokens temperature)
+                          &key stream-p max-tokens temperature reasoning
+                            cache-retention session-id tool-choice metadata)
+  (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
@@ -140,12 +204,32 @@
             "input" (openai-input-items model context)
             "stream" (and stream-p t)
             "store" nil)))
+    (let ((retention
+            (normalize-cache-retention cache-retention)))
+      (unless (eq retention :none)
+        (let ((cache-key
+                (clamp-openai-cache-key session-id)))
+          (when cache-key
+            (json-put payload "prompt_cache_key" cache-key))))
+      (when (and (eq retention :long)
+                 (model-compat-value
+                  model :supports-long-cache-retention t))
+        (json-put payload "prompt_cache_retention" "24h"))
+      (when (and (eq retention :none)
+                 (model-compat-value
+                  model :supports-explicit-prompt-cache-mode nil))
+        (json-put payload "prompt_cache_options"
+                  (json-object "mode" "explicit"))))
     (when max-tokens
-      (json-put payload "max_output_tokens" max-tokens))
-    (when temperature
+      (json-put payload "max_output_tokens" (max 16 max-tokens)))
+    (when (not (null temperature))
       (json-put payload "temperature" temperature))
     (when (context-tools context)
-      (json-put payload "tools" (openai-tools (context-tools context))))
+      (json-put payload "tools"
+                (openai-tools model (context-tools context))))
+    (when tool-choice
+      (json-put payload "tool_choice" tool-choice))
+    (add-responses-reasoning payload model reasoning)
     (make-request-spec
      :url
      (let ((base (strip-trailing-slash (model-base-url model))))
@@ -174,7 +258,9 @@
                  "OpenAI OAuth credential is missing account ID"))
         `(("chatgpt-account-id" . ,account-id)
           ("originator" . "pi")
-          ("openai-beta" . "responses=experimental"))))
+          ("openai-beta" . "responses=experimental")))
+      (responses-session-headers model session-id cache-retention)
+      (model-headers model))
      :payload payload
      :stream-p stream-p
      :provider :openai)))

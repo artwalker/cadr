@@ -37,6 +37,7 @@
 
 (defstruct model
   (id "" :type string)
+  (name "" :type string)
   (provider nil :type symbol)
   (api nil :type symbol)
   (base-url "" :type string)
@@ -44,7 +45,10 @@
   (context-window 0 :type (integer 0 *))
   (supports-images-p nil :type boolean)
   (supports-tools-p t :type boolean)
-  (reasoning-p nil :type boolean))
+  (reasoning-p nil :type boolean)
+  (thinking-level-map nil :type list)
+  (headers nil :type list)
+  (compat nil :type list))
 
 (defstruct text-content
   (text "" :type string)
@@ -158,6 +162,7 @@
   (name "" :type string)
   (description "" :type string)
   (parameters (make-hash-table :test #'equal) :type hash-table)
+  (constrained-sampling nil :type list)
   (execution-mode :parallel :type symbol)
   (executor nil :type (or null function)))
 

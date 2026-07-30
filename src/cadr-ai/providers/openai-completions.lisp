@@ -67,11 +67,26 @@
       (json-put result "content" ""))
     result))
 
+(defun completions-developer-role-p (model)
+  (model-compat-value
+   model :supports-developer-role
+   (let ((base (model-base-url model)))
+     (and (not (search "deepseek.com" base))
+          (not (member
+                (model-provider model)
+                '(:ant-ling :cerebras :deepseek :moonshotai
+                  :moonshotai-cn :together)
+                :test #'eq))))))
+
 (defun openai-chat-messages (model context)
   (let ((messages nil))
     (when (non-empty-string-p (context-system-prompt context))
       (push
-       (json-object "role" "system"
+       (json-object "role"
+                    (if (and (model-reasoning-p model)
+                             (completions-developer-role-p model))
+                        "developer"
+                        "system")
                     "content" (context-system-prompt context))
        messages))
     (dolist
@@ -133,21 +148,163 @@
             messages)))))
     (list-json-array (nreverse messages))))
 
-(defun openai-chat-tools (tools)
+(defun completions-strict-mode-p (model)
+  (model-compat-value
+   model :supports-strict-mode
+   (not
+    (member (model-provider model)
+            '(:minimax :minimax-cn :moonshotai :moonshotai-cn
+              :together)
+            :test #'eq))))
+
+(defun openai-chat-tools (model tools)
   (list-json-array
    (loop for tool in tools
          collect
          (json-object
           "type" "function"
           "function"
-          (json-object
-           "name" (tool-name tool)
-           "description" (tool-description tool)
-           "parameters" (tool-parameters tool))))))
+          (let ((function
+                  (json-object
+                   "name" (tool-name tool)
+                   "description" (tool-description tool)
+                   "parameters" (tool-parameters tool))))
+            (when (completions-strict-mode-p model)
+              (json-put
+               function "strict"
+               (tool-strict-p tool)))
+            function)))))
+
+(defun completions-provider-match-p (model providers fragments)
+  (or (member (model-provider model) providers :test #'eq)
+      (some (lambda (fragment)
+              (search fragment (model-base-url model)))
+            fragments)))
+
+(defun completions-max-tokens-field (model)
+  (or (model-compat-value model :max-tokens-field nil)
+      (if (completions-provider-match-p
+           model
+           '(:ant-ling :minimax :minimax-cn :moonshotai
+             :moonshotai-cn :together)
+           '("api.ant-ling.com" "api.moonshot." "api.together."))
+          :max-tokens
+          :max-completion-tokens)))
+
+(defun completions-supports-store-p (model)
+  (model-compat-value
+   model :supports-store
+   (not
+    (completions-provider-match-p
+     model
+     '(:ant-ling :cerebras :deepseek :minimax :minimax-cn
+       :moonshotai :moonshotai-cn :together)
+     '("cerebras.ai" "deepseek.com" "api.ant-ling.com"
+       "api.moonshot." "api.together.")))))
+
+(defun completions-thinking-format (model)
+  (or (model-compat-value model :thinking-format nil)
+      (cond
+        ((eq (model-provider model) :deepseek) :deepseek)
+        ((eq (model-provider model) :together) :together)
+        ((eq (model-provider model) :ant-ling) :ant-ling)
+        (t :openai))))
+
+(defun completions-supports-reasoning-effort-p (model)
+  (model-compat-value
+   model :supports-reasoning-effort
+   (not
+    (member (model-provider model)
+            '(:ant-ling :minimax :minimax-cn :moonshotai
+              :moonshotai-cn :together)
+            :test #'eq))))
+
+(defun openai-reasoning-value (model reasoning)
+  (or (and reasoning
+           (model-thinking-level-value model reasoning))
+      (and reasoning
+           (string-downcase (symbol-name reasoning)))))
+
+(defun add-completions-reasoning (payload model reasoning)
+  (when (model-reasoning-p model)
+    (case (completions-thinking-format model)
+      (:qwen
+       (json-put payload "enable_thinking" (not (null reasoning)))
+       (when (and reasoning
+                  (completions-supports-reasoning-effort-p model))
+         (json-put payload "reasoning_effort"
+                   (openai-reasoning-value model reasoning))))
+      (:deepseek
+       (when (or reasoning
+                 (not (and
+                       (model-thinking-level-present-p model :off)
+                       (null
+                        (model-thinking-level-value model :off)))))
+         (json-put payload "thinking"
+                   (json-object "type"
+                                (if reasoning "enabled" "disabled"))))
+       (when (and reasoning
+                  (completions-supports-reasoning-effort-p model))
+         (json-put payload "reasoning_effort"
+                   (openai-reasoning-value model reasoning))))
+      (:together
+       (json-put payload "reasoning"
+                 (json-object "enabled" (not (null reasoning))))
+       (when (and reasoning
+                  (completions-supports-reasoning-effort-p model))
+         (json-put payload "reasoning_effort"
+                   (openai-reasoning-value model reasoning))))
+      (:ant-ling
+       (let ((effort
+               (and reasoning
+                    (model-thinking-level-value model reasoning))))
+         (when (stringp effort)
+           (json-put payload "reasoning"
+                     (json-object "effort" effort)))))
+      (:string-thinking
+       (let ((value
+               (if reasoning
+                   (openai-reasoning-value model reasoning)
+                   (model-thinking-level-value model :off))))
+         (when (stringp value)
+           (json-put payload "thinking" value))))
+      (otherwise
+       (cond
+         ((and reasoning
+               (completions-supports-reasoning-effort-p model))
+          (json-put payload "reasoning_effort"
+                    (openai-reasoning-value model reasoning)))
+         ((and (null reasoning)
+               (completions-supports-reasoning-effort-p model))
+          (let ((off
+                  (model-thinking-level-value model :off)))
+            (when (stringp off)
+              (json-put payload "reasoning_effort" off))))))))
+  payload)
+
+(defun completions-session-headers (model session-id cache-retention)
+  (when (and (non-empty-string-p session-id)
+             (not (eq (normalize-cache-retention cache-retention)
+                      :none))
+             (model-compat-value
+              model :send-session-affinity-headers nil))
+    (case (model-compat-value
+           model :session-affinity-format :openai)
+      (:openrouter
+       `(("x-session-id" . ,session-id)))
+      (:openai-nosession
+       `(("x-client-request-id" . ,session-id)
+         ("x-session-affinity" . ,session-id)))
+      (otherwise
+       `(("session_id" . ,session-id)
+         ("x-client-request-id" . ,session-id)
+         ("x-session-affinity" . ,session-id))))))
 
 (defmethod build-request ((provider openai-completions-provider)
                           model context
-                          &key stream-p max-tokens temperature)
+                          &key stream-p max-tokens temperature reasoning
+                            cache-retention session-id tool-choice metadata)
+  (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
          (payload
@@ -155,16 +312,43 @@
             "model" (model-id model)
             "messages" (openai-chat-messages model context)
             "stream" (and stream-p t))))
-    (when stream-p
+    (when (and stream-p
+               (model-compat-value
+                model :supports-usage-in-streaming t))
       (json-put payload "stream_options"
                 (json-object "include_usage" t)))
     (when max-tokens
-      (json-put payload "max_tokens" max-tokens))
+      (json-put payload
+                (if (eq (completions-max-tokens-field model)
+                        :max-tokens)
+                    "max_tokens"
+                    "max_completion_tokens")
+                max-tokens))
     (when (not (null temperature))
       (json-put payload "temperature" temperature))
+    (when (completions-supports-store-p model)
+      (json-put payload "store" nil))
     (when (context-tools context)
       (json-put payload "tools"
-                (openai-chat-tools (context-tools context))))
+                (openai-chat-tools model (context-tools context))))
+    (when tool-choice
+      (json-put payload "tool_choice" tool-choice))
+    (add-completions-reasoning payload model reasoning)
+    (let ((retention
+            (normalize-cache-retention cache-retention))
+          (supports-long
+            (model-compat-value
+             model :supports-long-cache-retention t)))
+      (when (or (and (search "api.openai.com"
+                             (model-base-url model))
+                     (not (eq retention :none)))
+                (and (eq retention :long) supports-long))
+        (let ((cache-key
+                (clamp-openai-cache-key session-id)))
+          (when cache-key
+            (json-put payload "prompt_cache_key" cache-key))))
+      (when (and (eq retention :long) supports-long)
+        (json-put payload "prompt_cache_retention" "24h")))
     (make-request-spec
      :url (chat-completions-url (model-base-url model))
      :headers
@@ -174,7 +358,10 @@
                          "text/event-stream"
                          "application/json")))
       (when token
-        `(("authorization" . ,(format nil "Bearer ~A" token)))))
+        `(("authorization" . ,(format nil "Bearer ~A" token))))
+      (completions-session-headers
+       model session-id cache-retention)
+      (model-headers model))
      :payload payload
      :stream-p stream-p
      :provider (model-provider model))))

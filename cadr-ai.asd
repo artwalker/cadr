@@ -45,6 +45,7 @@
                              (:file "sse-test")
                              (:file "http-test")
                              (:file "provider-payloads-test")
+                             (:file "provider-compat-test")
                              (:file "provider-history-test")
                              (:file "provider-responses-test")
                              (:file "provider-streams-test")
