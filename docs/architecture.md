@@ -24,8 +24,9 @@ Phase 8 TUI、Phase 9 依赖收尾与 cadr 命名迁移已完成**
   （2026-07-30）
 - 迁移前上游 TypeScript HEAD：
   `e3f6912d49d14b6e6ffe96bb053644922004ecf3`
-- legacy worktree：`/root/projects/pi-mono`，分支 `pi-mono-legacy`，
-  基点 `48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`
+- legacy 状态保存于 `pi-mono-legacy` 分支引用与 patch 归档，基点
+  `48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`；`/root/projects/pi-mono`
+  目录现跟踪上游 `main`
 - 当前 cadr tracked tree 不再包含上游 TypeScript 实现；下列参考路径均
   指固定审计提交中的路径。重新生成对拍 fixture 时必须 checkout
   `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` 并将其路径作为
@@ -162,8 +163,20 @@ src/
   cadr-tui/
     package.lisp
     unicode.lisp
+    fuzzy.lisp
+    word-navigation.lisp
+    keys.lisp
+    keybindings.lisp
+    kill-ring.lisp
+    undo-stack.lisp
     input.lisp
+    stdin-buffer.lisp
+    terminal-colors.lisp
+    terminal-image.lisp
+    overlay.lisp
+    autocomplete.lisp
     editor.lisp
+    input-component.lisp
     components.lisp
     renderer.lisp
     terminal.lisp
@@ -1205,13 +1218,25 @@ cluster。
 
 ### 19.2 输入与组件
 
-输入解码器支持普通 UTF-8 字符、方向键、Home/End、Delete/Backspace、
-Enter、Shift+Enter、Ctrl+C、Ctrl+D、PageUp/PageDown、Escape 和 bracketed
-paste。`multiline-editor` 保存纯文本、grapheme 光标索引和最多 100 条历史；
-Enter 提交，Shift+Enter 插入换行，paste 原样插入并规范 CRLF 为 LF。
+输入路径支持 legacy、CSI/SS3、CSI-u、Kitty 与 modifyOtherKeys，解析
+press/repeat/release 和 native modifiers；`stdin-buffer` 跨 read 保留不完整
+ESC/CSI/paste 序列，并在同一批次中按原顺序分离终端能力回复与用户输入。
+普通 UTF-8、方向键、Home/End、Delete/Backspace、Enter、Shift+Enter、
+Ctrl+C、Ctrl+D、PageUp/PageDown、Escape 和 bracketed paste 均进入同一套
+可配置 keybinding matcher。
+
+`multiline-editor` 保存纯文本、grapheme 光标索引和最多 100 条历史；Enter
+提交，Shift+Enter 插入换行，paste 原样插入并规范 CRLF 为 LF。编辑器与
+单行输入共享按词移动、kill ring、yank/yank-pop 和 undo 语义。固定基线只
+提供 undo，不提供 redo，因此核心不增加 redo 栈或绑定。
 
 Phase 8 固定包含以下组件：
 
+- slash、路径与 `@` 文件 autocomplete，使用确定性的 fuzzy 排序；
+- overlay stack 的 anchor/尺寸/边距/裁剪、focus/capture、非捕获输入分派
+  与 CJK/ANSI 安全合成；
+- OSC 11/颜色方案、cell-size 回复，以及 Kitty/iTerm2 图片编码、能力探测、
+  删除和不支持终端上的文本 fallback；
 - streaming Markdown 文本区：增量文本每帧重新做确定性 block/inline
   渲染，支持标题、列表、引用、围栏代码和行内代码，不等待 message-end；
 - 工具块：显示工具名、参数摘要和执行状态，完成后默认折叠，可由 Enter

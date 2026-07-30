@@ -227,13 +227,13 @@ navigation.
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
 | Grapheme/cell width, wrapping, ANSI-aware layout | 已实现 | [unicode](../src/cadr-tui/unicode.lisp), [CL-TUI](#cl-tui) |
-| Input decoding, bracketed paste, multiline editor | 已实现 | [input](../src/cadr-tui/input.lisp), [editor](../src/cadr-tui/editor.lisp), [CL-TUI](#cl-tui) |
-| Markdown, tool block, status bar, select list | 已实现 core subset | [components](../src/cadr-tui/components.lisp), [CL-TUI](#cl-tui) |
+| Input decoding, bracketed paste, multiline editor, kill ring and undo | 已实现 | [input](../src/cadr-tui/input.lisp), [stdin buffer](../src/cadr-tui/stdin-buffer.lisp), [editor](../src/cadr-tui/editor.lisp), [CL-TUI](#cl-tui) |
+| Markdown, tool block, status bar, select list, truncated text and image component | 已实现 | [components](../src/cadr-tui/components.lisp), [CL-TUI](#cl-tui) |
 | Differential renderer and terminal cleanup | 已实现 | [renderer](../src/cadr-tui/renderer.lisp), [terminal](../src/cadr-tui/terminal.lisp), [CL-TUI](#cl-tui) |
-| Autocomplete, fuzzy matching, configurable keybindings, word navigation | 缺失 | [TUI-INPUT](#tui-input) |
-| Overlay stack/compositing | 缺失 | [TUI-OVERLAY](#tui-overlay) |
-| Terminal image protocols, cell-size replies, color probing | 缺失 | [TUI-TERMINAL](#tui-terminal) |
-| Remaining reference component library/theming | 缺失 | [TUI-COMPONENTS](#tui-components) |
+| Autocomplete, fuzzy matching, configurable keybindings, word navigation | 已实现 | [autocomplete](../src/cadr-tui/autocomplete.lisp), [fuzzy](../src/cadr-tui/fuzzy.lisp), [keybindings](../src/cadr-tui/keybindings.lisp), [word navigation](../src/cadr-tui/word-navigation.lisp), [CL-TUI](#cl-tui) |
+| Overlay stack/compositing | 已实现 | [overlay](../src/cadr-tui/overlay.lisp), [renderer](../src/cadr-tui/renderer.lisp), [CL-TUI](#cl-tui) |
+| Terminal image protocols, cell-size replies, color probing | 已实现 | [terminal image](../src/cadr-tui/terminal-image.lisp), [terminal colors](../src/cadr-tui/terminal-colors.lisp), [CL-TUI](#cl-tui) |
+| Goal 5 reference component/test surface | 已实现 | [components](../src/cadr-tui/components.lisp), [component parity tests](../test/cadr-tui/component-parity-test.lisp), [CL-TUI](#cl-tui) |
 
 ### 2.5 `storage`
 
@@ -312,7 +312,7 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-ext"></a>`CL-EXT` | [`EXTENSION-REGISTRATION-*`, hook, reload and resource-precedence tests](../test/cadr-agent/extensions-test.lisp), [discovery/install/self-extension tests](../test/cadr-cli/extensions-test.lisp) |
 | <a id="cl-tools"></a>`CL-TOOLS` | [file tools](../test/cadr-cli/file-tools-test.lisp), [search tools](../test/cadr-cli/search-tools-test.lisp), [bash](../test/cadr-cli/bash-test.lisp) |
 | <a id="cl-cli"></a>`CL-CLI` | [config/auth](../test/cadr-cli/config-auth-test.lisp), [REPL/tool loop](../test/cadr-cli/repl-test.lisp), [retry tests](../test/cadr-ai/retry-test.lisp) |
-| <a id="cl-tui"></a>`CL-TUI` | [Unicode/layout](../test/cadr-tui/unicode-test.lisp), [input/editor](../test/cadr-tui/input-editor-test.lisp), [components](../test/cadr-tui/components-test.lisp), [renderer](../test/cadr-tui/renderer-test.lisp), [terminal lifecycle](../test/cadr-tui/terminal-test.lisp), [frontend projection](../test/cadr-cli/tui-test.lisp) |
+| <a id="cl-tui"></a>`CL-TUI` | [Unicode/layout](../test/cadr-tui/unicode-test.lisp), [ANSI wrapping](../test/cadr-tui/wrap-ansi-test.lisp), [truncation](../test/cadr-tui/truncate-to-width-test.lisp), [keys](../test/cadr-tui/keys-test.lisp), [keybindings](../test/cadr-tui/keybindings-test.lisp), [stdin buffering](../test/cadr-tui/stdin-buffer-test.lisp), [autocomplete](../test/cadr-tui/autocomplete-test.lisp), [editor](../test/cadr-tui/editor-parity-test.lisp), [single-line input](../test/cadr-tui/input-component-test.lisp), [components](../test/cadr-tui/component-parity-test.lisp), [overlays](../test/cadr-tui/overlay-test.lisp), [terminal colors](../test/cadr-tui/terminal-colors-test.lisp), [terminal images](../test/cadr-tui/terminal-image-test.lisp), [renderer](../test/cadr-tui/renderer-test.lisp), [terminal parity](../test/cadr-tui/terminal-parity-test.lisp), [frontend projection](../test/cadr-cli/tui-test.lisp) |
 
 ### Missing-feature IDs
 
@@ -331,10 +331,6 @@ It has two non-`*.test.ts` suites:
 | <a id="coding-tools"></a>`CODING-TOOLS` | exact read/bash/edit/write/find/grep/ls API and concurrent mutation/streaming/platform edge behavior |
 | <a id="coding-config"></a>`CODING-CONFIG` | settings manager, resource loader, configurable keybindings, project context/trust and migrations |
 | <a id="coding-interactive"></a>`CODING-INTERACTIVE` | complete interactive command/component behavior, clipboard/images, themes, syntax and selectors |
-| <a id="tui-input"></a>`TUI-INPUT` | autocomplete, fuzzy search, configurable keybinding matcher and word navigation |
-| <a id="tui-overlay"></a>`TUI-OVERLAY` | overlay geometry, focus/capture and style-safe compositing |
-| <a id="tui-terminal"></a>`TUI-TERMINAL` | image escapes, cell-size responses and terminal background/color capability |
-| <a id="tui-components"></a>`TUI-COMPONENTS` | remaining reusable reference components and exact truncation/render behaviors |
 | <a id="storage-sqlite"></a>`STORAGE-SQLITE` | complete SQLite package, migrations, materialized views and repo/storage contracts |
 | <a id="server"></a>`SERVER` | complete server package |
 | <a id="evals"></a>`EVALS` | complete eval harness, runner and two eval suites |
@@ -342,37 +338,29 @@ It has two non-`*.test.ts` suites:
 
 ### Applicable but uncovered backlog
 
-These are the only `U` files in the strict manifest. They can be added without
-first implementing a missing production behavior.
-
-| ID | TypeScript regression | Required CL test |
-|---|---|---|
-| <a id="u-tui-ri"></a>`U-TUI-RI` | `regression-regional-indicator-width.test.ts` | assert singleton regional indicators and common streaming emoji intermediates stay width 2 during wrapping |
-| <a id="u-search-gitignore"></a>`U-SEARCH-GITIGNORE` | `3303-find-nested-gitignore.test.ts` | assert a nested `.gitignore` never leaks into a sibling subtree |
-
-The manifest has two `U` files. Similar-looking files were kept in `M` when
+There are no `U` files in the strict manifest. Goal 5 closed
+`U-SEARCH-GITIGNORE` and `U-TUI-RI`; similar-looking files remain `M` when
 they also cover an unimplemented provider, queue, compatibility option or
 platform behavior.
 
-### `docs/test-matrix.md` audit findings
+### `docs/test-matrix.md` audit notes
 
-The matrix was intentionally not edited.
+The matrix now records the Goal 5 total of **1212** checks and the expanded
+TUI gates. The following conservative whole-file classification notes remain:
 
-1. It says the Phase 9 native image has **632** checks; the current invariant
-   is **690**.
-2. It maps `anthropic-sse-parsing.test.ts` to generic SSE framing and a
+1. It maps `anthropic-sse-parsing.test.ts` to generic SSE framing and a
    recorded replay, but the baseline file specifically repairs malformed SSE
    JSON and malformed streamed tool JSON. cadr does not implement or test that
    repair, so the file is `M`, not covered.
-3. It presents `cross-provider-handoff.test.ts`, `empty.test.ts`,
+2. It presents `cross-provider-handoff.test.ts`, `empty.test.ts`,
    `image-tool-result.test.ts`, `stream.test.ts`, `tokens.test.ts` and similar
    provider-matrix files as covered by a small implemented-protocol subset.
    Under whole-file classification those files remain `M` until all baseline
    provider cases pass.
-4. It describes cadr’s parent-linked format as JSONL v2. The audit baseline is
+3. It describes cadr’s parent-linked format as JSONL v2. The audit baseline is
    `CURRENT_SESSION_VERSION = 3` and includes entry kinds absent from cadr.
    Existing cadr tree tests prove its own format, not exact v3 parity.
-5. It has no exhaustive mapping for the 352 baseline test files and no rows
+4. It has no exhaustive mapping for the 352 baseline test files and no rows
    for the new `storage`, `server`, or `evals` package surfaces.
 
 ## 4. Exhaustive `*.test.ts` manifest
@@ -384,15 +372,15 @@ The appendix is sorted exactly like
 |---|---:|---:|---:|---:|
 | `ai` | 0 | 0 | 120 | 120 |
 | `agent` | 0 | 0 | 18 | 18 |
-| `coding-agent` | 0 | 1 | 186 | 187 |
-| `tui` | 1 | 1 | 25 | 27 |
+| `coding-agent` | 1 | 0 | 186 | 187 |
+| `tui` | 27 | 0 | 0 | 27 |
 | `storage` / `server` / `evals` | 0 | 0 | 0 | 0 |
-| **Total** | **1** | **2** | **349** | **352** |
+| **Total** | **28** | **0** | **324** | **352** |
 
-The low `C` count is intentional: the 690 CL assertions cover many core
-behaviors, but almost every reference file also contains at least one
-provider, v3 entry type, queue, UI, platform, or compatibility case that cadr
-does not yet implement. Partial coverage stays `M`.
+The 1212 CL assertions now cover the complete 27-file TUI test surface and
+the nested-gitignore regression. Most other reference files still contain at
+least one provider, v3 entry type, queue, UI, platform, or compatibility case
+that cadr does not implement. Partial coverage stays `M`.
 
 | Class | Baseline test file | Evidence/gap |
 |---|---|---|
@@ -673,7 +661,7 @@ does not yet implement. Partial coverage stays `M`.
 | M | `packages/coding-agent/test/suite/regressions/2860-replaced-session-context.test.ts` | [CODING-SESSION](#coding-session) |
 | M | `packages/coding-agent/test/suite/regressions/3217-scoped-model-order.test.ts` | [CODING-MODELS](#coding-models) |
 | M | `packages/coding-agent/test/suite/regressions/3302-find-path-glob.test.ts` | [CODING-TOOLS](#coding-tools) |
-| U | `packages/coding-agent/test/suite/regressions/3303-find-nested-gitignore.test.ts` | [U-SEARCH-GITIGNORE](#u-search-gitignore) |
+| C | `packages/coding-agent/test/suite/regressions/3303-find-nested-gitignore.test.ts` | [CL-TOOLS](#cl-tools) |
 | M | `packages/coding-agent/test/suite/regressions/3317-network-connection-lost-retry.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
 | M | `packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
 | M | `packages/coding-agent/test/suite/regressions/3616-settings-inmemory-reload.test.ts` | [CODING-CONFIG](#coding-config) |
@@ -722,53 +710,52 @@ does not yet implement. Partial coverage stays `M`.
 | M | `packages/coding-agent/test/trust-selector.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
 | M | `packages/coding-agent/test/user-message.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
 | M | `packages/coding-agent/test/version-check.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/tui/test/autocomplete.test.ts` | [TUI-INPUT](#tui-input) |
-| M | `packages/tui/test/bug-regression-isimageline-startswith-bug.test.ts` | [TUI-TERMINAL](#tui-terminal) |
-| M | `packages/tui/test/editor.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/fuzzy.test.ts` | [TUI-INPUT](#tui-input) |
-| M | `packages/tui/test/input.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/keybindings.test.ts` | [TUI-INPUT](#tui-input) |
-| M | `packages/tui/test/keys.test.ts` | [TUI-INPUT](#tui-input) |
-| M | `packages/tui/test/markdown.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/overlay-non-capturing.test.ts` | [TUI-OVERLAY](#tui-overlay) |
-| M | `packages/tui/test/overlay-options.test.ts` | [TUI-OVERLAY](#tui-overlay) |
-| M | `packages/tui/test/overlay-short-content.test.ts` | [TUI-OVERLAY](#tui-overlay) |
-| M | `packages/tui/test/regression-overlay-cjk-boundary.test.ts` | [TUI-OVERLAY](#tui-overlay) |
-| U | `packages/tui/test/regression-regional-indicator-width.test.ts` | [U-TUI-RI](#u-tui-ri) |
-| M | `packages/tui/test/select-list.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/stdin-buffer.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/tab-width.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/terminal-colors.test.ts` | [TUI-TERMINAL](#tui-terminal) |
-| M | `packages/tui/test/terminal-image.test.ts` | [TUI-TERMINAL](#tui-terminal) |
-| M | `packages/tui/test/terminal.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/truncate-to-width.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/truncated-text.test.ts` | [TUI-COMPONENTS](#tui-components) |
-| M | `packages/tui/test/tui-cell-size-input.test.ts` | [TUI-TERMINAL](#tui-terminal) |
-| M | `packages/tui/test/tui-overlay-style-leak.test.ts` | [TUI-OVERLAY](#tui-overlay) |
-| M | `packages/tui/test/tui-render.test.ts` | [TUI-COMPONENTS](#tui-components) |
+| C | `packages/tui/test/autocomplete.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/bug-regression-isimageline-startswith-bug.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/editor.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/fuzzy.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/input.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/keybindings.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/keys.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/markdown.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/overlay-non-capturing.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/overlay-options.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/overlay-short-content.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/regression-overlay-cjk-boundary.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/regression-regional-indicator-width.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/select-list.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/stdin-buffer.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/tab-width.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/terminal-colors.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/terminal-image.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/terminal.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/truncate-to-width.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/truncated-text.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/tui-cell-size-input.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/tui-overlay-style-leak.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/tui-render.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/tui-shrink.test.ts` | [CL-TUI](#cl-tui) |
-| M | `packages/tui/test/word-navigation.test.ts` | [TUI-INPUT](#tui-input) |
-| M | `packages/tui/test/wrap-ansi.test.ts` | [TUI-COMPONENTS](#tui-components) |
+| C | `packages/tui/test/word-navigation.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/wrap-ansi.test.ts` | [CL-TUI](#cl-tui) |
 <!-- TEST-MANIFEST-END -->
 
-## 5. Recommended implementation waves
+## 5. Fixed implementation sequence
 
-These are recommendations only; no implementation is authorized by this
-document.
+The user approved the order Wave 0 → pulled-forward TUI → Wave 1 → 2 → 3 → 5.
+Goal 5 contains only the first two entries; Wave 1 has not started.
 
-| Wave | Scope | Rough size | Verification gate |
-|---|---|---:|---|
-| 0 | Two `U` regressions only | 2 backlog entries | 690 + new tests, zero production changes |
-| 1 | Complete shared OpenAI-Completions/Responses and Anthropic compatibility options; add low-complexity compatible providers/catalogs in batches | 8–12 provider definitions plus shared adapters | generated request fixtures for every provider/model family; credential-gated DeepSeek and ChatGPT OAuth smokes |
-| 2 | Exact agent harness and coding-agent session v3, queue semantics, print/JSON modes, then RPC | 6–10 modules | port reference harness/session/RPC tests; process-level JSONL round trips |
-| 3 | Independent APIs and auth: Azure, Bedrock, Vertex, Mistral, `pi-messages`, Copilot/Kimi/xAI/Radius flows | 8–12 modules | protocol fixtures first; live only where a credential exists; SigV4/ADC/device flows remain fixture-verified otherwise |
-| 4 | Coding-agent/TUI breadth: tools, settings/resources, selectors, overlays, themes, clipboard/images and terminal capabilities | 10–16 modules | component snapshots, virtual-terminal differential tests, PTY acceptance |
-| 5 | SQLite storage, then server, then eval harness/suites | 8–12 modules | SQLite migration/reopen/fork tests; Unix-socket RPC process tests; explicit-model eval smoke |
+| Order | Status | Scope | Verification gate |
+|---|---|---|---|
+| Wave 0 | complete | `U-SEARCH-GITIGNORE` and `U-TUI-RI` | both regressions are `C`; no `U` remains |
+| TUI (former Wave 4) | implemented, awaiting manual acceptance | complete 27-file TUI baseline test surface | 575 TUI checks, PTY/live smoke, manual checklist |
+| Wave 1 | not started | shared OpenAI-Completions/Responses and Anthropic compatibility; compatible providers/catalogs | generated fixtures plus credential-gated smokes |
+| Wave 2 | not started | exact agent harness, session v3, queues, print/JSON and RPC | reference harness/session/RPC tests |
+| Wave 3 | not started | independent APIs and auth flows | protocol fixtures and available live credentials |
+| Wave 5 | not started | SQLite storage, server and eval harness | migration/reopen/fork, Unix-socket RPC and eval smokes |
 
-Dependency rationale: compatible providers reuse Wave 1 adapters; RPC depends
-on the exact AgentSession/session state from Wave 2; server depends on RPC;
-evals should exercise the completed public runtime rather than a temporary
-parallel harness.
+Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session
+state; server depends on RPC; evals should exercise the completed public
+runtime rather than a temporary parallel harness.
 
 ## 6. Reproduction commands
 

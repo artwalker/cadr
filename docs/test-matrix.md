@@ -82,14 +82,15 @@ the five-provider v2 registry remain outside the current phase.
 
 | Requirement | Common Lisp coverage | Evidence |
 |---|---|---|
-| Grapheme/cell layout | `VISIBLE-WIDTH-*`, cluster and width-aware slice/wrap tests | Combining marks stay attached; CJK, emoji, flags, ANSI, and tabs have deterministic widths |
-| Multiline input | decoder/editor tests | Cursor/delete are cluster-safe; Shift+Enter, history, paste normalization, and wrapped cursor coordinates |
-| Streaming Markdown and tools | Markdown/tool component tests plus TUI event projection | Incomplete streams render immediately; Markdown delimiters are consumed; completed tools collapse and can expand |
-| Status and selectors | status/select-list tests | Model, token/cache usage, known cost, session, filtering, navigation, accept/cancel |
-| Differential rendering | renderer/virtual-terminal tests | Only changed rows repaint; shrink clears stale rows; width change forces full redraw |
+| Grapheme/cell layout | Unicode, `wrap-ansi` and `truncate-to-width` suites | Combining marks, CJK, emoji, flags, ANSI/OSC 8 and tabs retain reference width/wrapping semantics |
+| Input protocols and buffering | keys, keybindings, stdin-buffer and terminal-parity suites | Legacy/CSI-u/Kitty/native modifiers, fragments, paste, capability replies and Return dispatch |
+| Editing and autocomplete | editor, input, fuzzy, word-navigation and autocomplete suites | History, sticky column, kill/yank/yank-pop, undo, path/slash/`@` completion and CJK word movement |
+| Streaming Markdown and components | component parity tests plus TUI event projection | Streaming structures, links/tables/theme, select-list bounds, truncated text and image fallback |
+| Overlay and terminal capability | overlay, terminal-color and terminal-image suites | Focus/capture, CJK-safe compositing, OSC reports, Kitty/iTerm2 encoding, sizing/deletion/fallback |
+| Differential rendering | renderer/virtual-terminal tests | Only changed rows repaint; shrink clears stale rows; width change forces full redraw; image rows preclear |
 | Exception-safe terminal | lifecycle body and partial-start tests | Cleanup runs after body conditions and after a start method fails mid-setup |
 | Shared frontend semantics | `DISPATCH-USER-INPUT-IS-SHARED-BY-FRONTENDS`, TUI policy test | TUI/REPL share dispatch and agent events; `--no-tui` and non-TTY fallback are explicit |
-| Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh` | Pipe fallback plus real DeepSeek two-turn edit, resize, CJK input, and termios restoration |
+| Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh` | Pipe fallback plus autocomplete, undo, kill ring, real DeepSeek two-turn edit, resize, CJK input, and termios restoration |
 
 ## Phase 9: native infrastructure and dependency closure
 
@@ -101,7 +102,7 @@ the five-provider v2 registry remain outside the current phase.
 | Native HTTP | loopback streaming, chunked, timeout, status/retry tests | HTTP/1.1 framing and stream behavior no longer depend on Dexador |
 | Long-thinking SSE | `SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT` | Native transport receives explicit `read-timeout = NIL` |
 | Required removals | source audit in `docs/dependency-audit.md` | No production `dexador`, `com.inuoe.jzon`, or `clingon` reference |
-| Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 632 checks and SBCL compression-feature fallback |
+| Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 1212 checks and SBCL compression-feature fallback |
 | Live DeepSeek paths | four live smoke scripts | Native HTTPS/SSE, self-extension, fail/fix/pass repository task, and real TUI multi-turn task |
 
 ## Phase 2: cadr-agent
