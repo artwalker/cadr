@@ -4,7 +4,13 @@
 (test built-in-provider-registry-is-complete
   (let ((ids (mapcar #'cadr-ai:provider-definition-id
                      (cadr-ai:list-provider-definitions))))
-    (is (equal '(:anthropic :deepseek :google :ollama :openai) ids)))
+    (is
+     (equal
+      '(:ant-ling :anthropic :cerebras :deepseek :google :groq
+        :huggingface :minimax :minimax-cn :moonshotai
+        :moonshotai-cn :ollama :openai :qwen-token-plan
+        :qwen-token-plan-cn :together :xiaomi)
+      ids)))
   (let ((deepseek (cadr-ai:find-provider-definition :deepseek))
         (ollama (cadr-ai:find-provider-definition :ollama)))
     (is (eq :openai-completions

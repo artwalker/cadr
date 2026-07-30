@@ -51,6 +51,7 @@
                              (:file "provider-streams-test")
                              (:file "retry-test")
                              (:file "provider-registry-test")
+                             (:file "provider-wave1-test")
                              (:file "openai-completions-test")
                              (:file "image-model-test")
                              (:file "auth-test"))))

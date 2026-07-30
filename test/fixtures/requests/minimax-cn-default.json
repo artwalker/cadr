@@ -1,0 +1,38 @@
+{
+  "model": "MiniMax-M2.7",
+  "messages": [
+    {
+      "role": "user",
+      "content": "Inspect README.md"
+    }
+  ],
+  "max_tokens": 4096,
+  "stream": true,
+  "system": [
+    {
+      "type": "text",
+      "text": "Be precise."
+    }
+  ],
+  "tools": [
+    {
+      "name": "read",
+      "description": "Read a file.",
+      "eager_input_streaming": true,
+      "input_schema": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "path"
+        ]
+      }
+    }
+  ],
+  "thinking": {
+    "type": "disabled"
+  }
+}

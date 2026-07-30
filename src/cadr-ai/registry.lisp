@@ -14,6 +14,82 @@
 
 (defparameter *provider-definitions* (make-hash-table))
 
+(defparameter *wave1-provider-definition-rows*
+  '((:id :ant-ling
+     :name "Ant Ling"
+     :protocol :openai-completions
+     :base-url "https://api.ant-ling.com/v1"
+     :default-model "Ring-2.6-1T"
+     :key-environment "ANT_LING_API_KEY")
+    (:id :cerebras
+     :name "Cerebras"
+     :protocol :openai-completions
+     :base-url "https://api.cerebras.ai/v1"
+     :default-model "zai-glm-4.7"
+     :key-environment "CEREBRAS_API_KEY")
+    (:id :groq
+     :name "Groq"
+     :protocol :openai-completions
+     :base-url "https://api.groq.com/openai/v1"
+     :default-model "openai/gpt-oss-120b"
+     :key-environment "GROQ_API_KEY")
+    (:id :huggingface
+     :name "Hugging Face"
+     :protocol :openai-completions
+     :base-url "https://router.huggingface.co/v1"
+     :default-model "moonshotai/Kimi-K2.6"
+     :key-environment "HF_TOKEN")
+    (:id :minimax
+     :name "MiniMax"
+     :protocol :anthropic-messages
+     :base-url "https://api.minimax.io/anthropic"
+     :default-model "MiniMax-M2.7"
+     :key-environment "MINIMAX_API_KEY")
+    (:id :minimax-cn
+     :name "MiniMax CN"
+     :protocol :anthropic-messages
+     :base-url "https://api.minimaxi.com/anthropic"
+     :default-model "MiniMax-M2.7"
+     :key-environment "MINIMAX_CN_API_KEY")
+    (:id :moonshotai
+     :name "Moonshot AI"
+     :protocol :openai-completions
+     :base-url "https://api.moonshot.ai/v1"
+     :default-model "kimi-k2.6"
+     :key-environment "MOONSHOT_API_KEY")
+    (:id :moonshotai-cn
+     :name "Moonshot AI CN"
+     :protocol :openai-completions
+     :base-url "https://api.moonshot.cn/v1"
+     :default-model "kimi-k2.6"
+     :key-environment "MOONSHOT_API_KEY")
+    (:id :qwen-token-plan
+     :name "Qwen Token Plan"
+     :protocol :openai-completions
+     :base-url
+     "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
+     :default-model "qwen3.7-max"
+     :key-environment "QWEN_TOKEN_PLAN_API_KEY")
+    (:id :qwen-token-plan-cn
+     :name "Qwen Token Plan CN"
+     :protocol :openai-completions
+     :base-url
+     "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
+     :default-model "qwen3.7-max"
+     :key-environment "QWEN_TOKEN_PLAN_CN_API_KEY")
+    (:id :together
+     :name "Together"
+     :protocol :openai-completions
+     :base-url "https://api.together.ai/v1"
+     :default-model "moonshotai/Kimi-K2.6"
+     :key-environment "TOGETHER_API_KEY")
+    (:id :xiaomi
+     :name "Xiaomi"
+     :protocol :openai-completions
+     :base-url "https://api.xiaomimimo.com/v1"
+     :default-model "mimo-v2.5-pro"
+     :key-environment "XIAOMI_API_KEY")))
+
 (defun register-provider-definition (definition)
   (setf (gethash (provider-definition-id definition)
                  *provider-definitions*)
@@ -38,7 +114,8 @@
   (clrhash *provider-definitions*)
   (dolist
       (definition
-       (list
+       (append
+        (list
         (make-provider-definition
          :id :anthropic
          :name "Anthropic"
@@ -86,7 +163,16 @@
          :auth-types '(:api-key)
          :default-model "gpt-oss:20b"
          :key-environment nil
-         :reasoning-p t)))
+         :reasoning-p t))
+        (mapcar
+         (lambda (row)
+           (apply
+            #'make-provider-definition
+            (append row
+                    '(:auth-types (:api-key)
+                      :supports-tools-p t
+                      :reasoning-p t))))
+         *wave1-provider-definition-rows*)))
     (register-provider-definition definition)))
 
 (register-built-in-providers)
@@ -145,8 +231,19 @@
         :id resolved-id
         :provider id
         :api (provider-definition-protocol definition)
-        :base-url (or base-url
-                      (provider-definition-base-url definition))
+        :base-url
+        (or base-url
+            (and metadata
+                 (non-empty-string-p
+                  (model-metadata-base-url metadata))
+                 (model-metadata-base-url metadata))
+            (provider-definition-base-url definition))
+        :name
+        (if (and metadata
+                 (non-empty-string-p
+                  (model-metadata-name metadata)))
+            (model-metadata-name metadata)
+            resolved-id)
         :max-tokens
         (if metadata
             (model-metadata-max-output-tokens metadata)
@@ -166,4 +263,13 @@
         :reasoning-p
         (if metadata
             (model-metadata-reasoning-p metadata)
-            (provider-definition-reasoning-p definition)))))))
+            (provider-definition-reasoning-p definition))
+        :thinking-level-map
+        (and metadata
+             (model-metadata-thinking-level-map metadata))
+        :headers
+        (and metadata
+             (model-metadata-headers metadata))
+        :compat
+        (and metadata
+             (model-metadata-compat metadata)))))))

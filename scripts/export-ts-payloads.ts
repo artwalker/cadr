@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 
 function option(name: string): string | undefined {
@@ -13,6 +14,7 @@ const referenceDirectory = path.resolve(
 const outputDirectory = path.resolve(
 	option("--output") ?? "test/fixtures/requests",
 );
+const explicitCatalogDirectory = option("--catalog");
 
 if (
 	!referenceDirectory ||
@@ -40,15 +42,48 @@ const runnerPath = path.join(
 	referenceDirectory,
 	"scripts/.cadr-export-ts-payloads.ts",
 );
-const tsx = path.resolve("node_modules/.bin/tsx");
+const tsx = path.join(referenceDirectory, "node_modules/.bin/tsx");
+const temporaryCatalogDirectory = explicitCatalogDirectory
+	? undefined
+	: fs.mkdtempSync(path.join(os.tmpdir(), "cadr-ts-models-"));
+const catalogDirectory = path.resolve(
+	explicitCatalogDirectory ?? temporaryCatalogDirectory!,
+);
 
 fs.copyFileSync(runnerTemplate, runnerPath);
 try {
-	const result = spawnSync(tsx, [runnerPath, outputDirectory], {
+	if (temporaryCatalogDirectory !== undefined) {
+		const generator = spawnSync(
+			process.execPath,
+			[
+				"packages/ai/scripts/generate-models.ts",
+				"--strict",
+				"--json-only",
+				"--json-output",
+				catalogDirectory,
+			],
+			{
+				cwd: referenceDirectory,
+				encoding: "utf8",
+				stdio: "inherit",
+			},
+		);
+		if (generator.error) {
+			throw generator.error;
+		}
+		if (generator.status !== 0) {
+			throw new Error(`Reference catalog generation exited ${generator.status}`);
+		}
+	}
+	const result = spawnSync(
+		tsx,
+		[runnerPath, outputDirectory, catalogDirectory],
+		{
 		cwd: referenceDirectory,
 		encoding: "utf8",
 		stdio: "inherit",
-	});
+		},
+	);
 	if (result.error) {
 		throw result.error;
 	}
@@ -57,4 +92,10 @@ try {
 	}
 } finally {
 	fs.rmSync(runnerPath, { force: true });
+	if (temporaryCatalogDirectory !== undefined) {
+		fs.rmSync(temporaryCatalogDirectory, {
+			force: true,
+			recursive: true,
+		});
+	}
 }

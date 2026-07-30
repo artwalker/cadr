@@ -1,0 +1,43 @@
+{
+  "model": "mimo-v2.5-pro",
+  "messages": [
+    {
+      "role": "developer",
+      "content": "Be precise."
+    },
+    {
+      "role": "user",
+      "content": "Inspect README.md"
+    }
+  ],
+  "stream": true,
+  "stream_options": {
+    "include_usage": true
+  },
+  "store": false,
+  "max_completion_tokens": 4096,
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "read",
+        "description": "Read a file.",
+        "parameters": {
+          "type": "object",
+          "properties": {
+            "path": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "path"
+          ]
+        },
+        "strict": false
+      }
+    }
+  ],
+  "thinking": {
+    "type": "disabled"
+  }
+}

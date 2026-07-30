@@ -1,18 +1,30 @@
 // Copied into the pinned TypeScript reference checkout by export-ts-payloads.ts.
 import fs from "node:fs";
 import path from "node:path";
-import { stream as streamAnthropic } from "../packages/ai/src/api/anthropic-messages.ts";
-import { stream as streamGoogle } from "../packages/ai/src/api/google-generative-ai.ts";
-import { stream as streamOpenAI } from "../packages/ai/src/api/openai-responses.ts";
+import {
+	stream as streamAnthropic,
+	streamSimple as streamAnthropicSimple,
+} from "../packages/ai/src/api/anthropic-messages.ts";
+import {
+	stream as streamGoogle,
+	streamSimple as streamGoogleSimple,
+} from "../packages/ai/src/api/google-generative-ai.ts";
+import { streamSimple as streamOpenAICompletionsSimple } from "../packages/ai/src/api/openai-completions.ts";
+import {
+	stream as streamOpenAI,
+	streamSimple as streamOpenAISimple,
+} from "../packages/ai/src/api/openai-responses.ts";
 import type {
 	Api,
 	Context,
 	Model,
+	SimpleStreamOptions,
 	StreamOptions,
 	Tool,
 } from "../packages/ai/src/types.ts";
 
 const outputDirectory = path.resolve(process.argv[2] ?? "test/fixtures/requests");
+const catalogDirectory = path.resolve(process.argv[3] ?? "");
 
 const tool: Tool = {
 	name: "read",
@@ -23,6 +35,14 @@ const tool: Tool = {
 			path: { type: "string" },
 	},
 	required: ["path"],
+	},
+};
+
+const strictTool: Tool = {
+	...tool,
+	constrainedSampling: {
+		type: "json_schema",
+		strict: "require",
 	},
 };
 
@@ -38,11 +58,17 @@ const context: Context = {
 	tools: [tool],
 };
 
+const strictContext: Context = {
+	...context,
+	tools: [strictTool],
+};
+
 function model<TApi extends Api>(
 	api: TApi,
 	provider: string,
 	id: string,
 	baseUrl: string,
+	overrides: Partial<Model<TApi>> = {},
 ): Model<TApi> {
 	return {
 		id,
@@ -60,12 +86,13 @@ function model<TApi extends Api>(
 		},
 		contextWindow: 1_048_576,
 		maxTokens: 4096,
+		...overrides,
 	};
 }
 
-async function capturePayload<T>(
-	start: (options: StreamOptions) => { result(): Promise<unknown> },
-	options: StreamOptions = {},
+async function capturePayload<T, TOptions extends StreamOptions = StreamOptions>(
+	start: (options: TOptions) => { result(): Promise<unknown> },
+	options: TOptions = {} as TOptions,
 ): Promise<T> {
 	let captured: T | undefined;
 	const response = start({
@@ -92,6 +119,7 @@ function googleWireBody(params: {
 		systemInstruction?: string | object;
 		tools?: unknown;
 		toolConfig?: unknown;
+		thinkingConfig?: unknown;
 	};
 }): Record<string, unknown> {
 	const config = params.config ?? {};
@@ -115,6 +143,9 @@ function googleWireBody(params: {
 	if (config.toolConfig !== undefined) {
 		body.toolConfig = config.toolConfig;
 	}
+	if (config.thinkingConfig !== undefined) {
+		body.thinkingConfig = config.thinkingConfig;
+	}
 	return body;
 }
 
@@ -125,6 +156,28 @@ function writeFixture(name: string, payload: unknown): void {
 		`${JSON.stringify(payload, null, 2)}\n`,
 		"utf8",
 	);
+}
+
+function requireModel<TApi extends Api>(
+	models: Record<string, Model<TApi>>,
+	id: string,
+): Model<TApi> {
+	const selected = models[id];
+	if (selected === undefined) {
+		throw new Error(`Missing fixed catalog model: ${id}`);
+	}
+	return selected;
+}
+
+function readCatalog<TApi extends Api>(
+	provider: string,
+): Record<string, Model<TApi>> {
+	const file = path.join(catalogDirectory, "providers", `${provider}.json`);
+	const parsed: unknown = JSON.parse(fs.readFileSync(file, "utf8"));
+	if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+		throw new Error(`Invalid generated catalog: ${file}`);
+	}
+	return parsed as Record<string, Model<TApi>>;
 }
 
 const anthropicModel = model(
@@ -145,6 +198,69 @@ const googleModel = model(
 	"gemini-3.6-flash",
 	"https://generativelanguage.googleapis.com/v1beta",
 );
+const anthropicAdaptiveModel = model(
+	"anthropic-messages",
+	"anthropic",
+	"claude-opus-4-8",
+	"https://api.anthropic.com",
+	{
+		reasoning: true,
+		thinkingLevelMap: {
+			off: "disabled",
+			high: "high",
+			xhigh: "xhigh",
+			max: "max",
+		},
+		compat: {
+			forceAdaptiveThinking: true,
+			supportsStrictTools: true,
+		},
+	},
+);
+const openAICompletionsQwenModel = model(
+	"openai-completions",
+	"qwen-token-plan",
+	"qwen3.7-max",
+	"https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
+	{
+		reasoning: true,
+		thinkingLevelMap: {
+			high: "high",
+			max: "max",
+		},
+		compat: {
+			thinkingFormat: "qwen",
+			supportsDeveloperRole: false,
+			supportsStore: false,
+			supportsReasoningEffort: true,
+		},
+	},
+);
+const openAIReasoningModel = model(
+	"openai-responses",
+	"openai",
+	"gpt-5.5",
+	"https://api.openai.com",
+	{
+		reasoning: true,
+		thinkingLevelMap: {
+			off: "none",
+			high: "high",
+			xhigh: "xhigh",
+		},
+		compat: {
+			supportsStrictMode: true,
+			supportsLongCacheRetention: true,
+		},
+	},
+);
+const googleThinkingModel = model(
+	"google-generative-ai",
+	"google",
+	"gemini-3.6-flash",
+	"https://generativelanguage.googleapis.com/v1beta",
+	{ reasoning: true },
+);
 
 const anthropic = await capturePayload<Record<string, unknown>>(
 	(options) => streamAnthropic(anthropicModel, context, options),
@@ -159,6 +275,105 @@ const googleParams = await capturePayload<Parameters<typeof googleWireBody>[0]>(
 	{ maxTokens: 4096 },
 );
 const google = googleWireBody(googleParams);
+const anthropicAdaptive = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamAnthropicSimple(anthropicAdaptiveModel, strictContext, options),
+	{
+		cacheRetention: "long",
+		maxTokens: 4096,
+		reasoning: "xhigh",
+		sessionId: "fixture-session",
+	},
+);
+const anthropicDisabled = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamAnthropicSimple(anthropicAdaptiveModel, context, options),
+	{
+		cacheRetention: "none",
+		maxTokens: 4096,
+	},
+);
+const openAICompletionsQwen = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamOpenAICompletionsSimple(openAICompletionsQwenModel, context, options),
+	{
+		cacheRetention: "none",
+		maxTokens: 4096,
+		reasoning: "high",
+		toolChoice: "required",
+	},
+);
+const openAIResponsesReasoning = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamOpenAISimple(openAIReasoningModel, strictContext, options),
+	{
+		cacheRetention: "long",
+		maxTokens: 4096,
+		reasoning: "high",
+		sessionId: "fixture-session",
+		toolChoice: "required",
+	},
+);
+const googleThinking = await capturePayload<Parameters<typeof googleWireBody>[0], SimpleStreamOptions>(
+	(options) => streamGoogleSimple(googleThinkingModel, context, options),
+	{
+		maxTokens: 4096,
+		reasoning: "high",
+	},
+);
+const googleThinkingDisabled = await capturePayload<Parameters<typeof googleWireBody>[0], SimpleStreamOptions>(
+	(options) => streamGoogleSimple(googleThinkingModel, context, options),
+	{ maxTokens: 4096 },
+);
+const completionProviders: ReadonlyArray<{
+	id: string;
+	models: Record<string, Model<"openai-completions">>;
+	defaultModel: string;
+}> = [
+	{ id: "ant-ling", models: readCatalog<"openai-completions">("ant-ling"), defaultModel: "Ring-2.6-1T" },
+	{ id: "cerebras", models: readCatalog<"openai-completions">("cerebras"), defaultModel: "zai-glm-4.7" },
+	{ id: "groq", models: readCatalog<"openai-completions">("groq"), defaultModel: "openai/gpt-oss-120b" },
+	{ id: "huggingface", models: readCatalog<"openai-completions">("huggingface"), defaultModel: "moonshotai/Kimi-K2.6" },
+	{ id: "moonshotai", models: readCatalog<"openai-completions">("moonshotai"), defaultModel: "kimi-k2.6" },
+	{ id: "moonshotai-cn", models: readCatalog<"openai-completions">("moonshotai-cn"), defaultModel: "kimi-k2.6" },
+	{ id: "qwen-token-plan", models: readCatalog<"openai-completions">("qwen-token-plan"), defaultModel: "qwen3.7-max" },
+	{ id: "qwen-token-plan-cn", models: readCatalog<"openai-completions">("qwen-token-plan-cn"), defaultModel: "qwen3.7-max" },
+	{ id: "together", models: readCatalog<"openai-completions">("together"), defaultModel: "moonshotai/Kimi-K2.6" },
+	{ id: "xiaomi", models: readCatalog<"openai-completions">("xiaomi"), defaultModel: "mimo-v2.5-pro" },
+];
+const anthropicProviders: ReadonlyArray<{
+	id: string;
+	models: Record<string, Model<"anthropic-messages">>;
+	defaultModel: string;
+}> = [
+	{ id: "minimax", models: readCatalog<"anthropic-messages">("minimax"), defaultModel: "MiniMax-M2.7" },
+	{ id: "minimax-cn", models: readCatalog<"anthropic-messages">("minimax-cn"), defaultModel: "MiniMax-M2.7" },
+];
+const fixedCatalogs: Record<string, Record<string, Model<Api>>> = {};
+
+for (const entry of completionProviders) {
+	const selected = requireModel(entry.models, entry.defaultModel);
+	const payload = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+		(options) => streamOpenAICompletionsSimple(selected, context, options),
+		{ cacheRetention: "none", maxTokens: 4096 },
+	);
+	writeFixture(`${entry.id}-default.json`, payload);
+	fixedCatalogs[entry.id] = entry.models;
+}
+
+for (const entry of anthropicProviders) {
+	const selected = requireModel(entry.models, entry.defaultModel);
+	const payload = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+		(options) => streamAnthropicSimple(selected, context, options),
+		{ cacheRetention: "none", maxTokens: 4096 },
+	);
+	writeFixture(`${entry.id}-default.json`, payload);
+	fixedCatalogs[entry.id] = entry.models;
+}
+
+const catalogFixtureDirectory = path.resolve(outputDirectory, "../catalogs");
+fs.mkdirSync(catalogFixtureDirectory, { recursive: true });
+fs.writeFileSync(
+	path.join(catalogFixtureDirectory, "wave1-provider-models.json"),
+	`${JSON.stringify(fixedCatalogs, null, 2)}\n`,
+	"utf8",
+);
 
 writeFixture("anthropic-stream.json", anthropic);
 writeFixture("anthropic-complete.json", { ...anthropic, stream: false });
@@ -166,3 +381,9 @@ writeFixture("openai-stream.json", openAI);
 writeFixture("openai-complete.json", { ...openAI, stream: false });
 writeFixture("google-stream.json", google);
 writeFixture("google-complete.json", google);
+writeFixture("anthropic-adaptive-long-cache.json", anthropicAdaptive);
+writeFixture("anthropic-thinking-disabled.json", anthropicDisabled);
+writeFixture("openai-completions-qwen-reasoning.json", openAICompletionsQwen);
+writeFixture("openai-responses-reasoning-cache.json", openAIResponsesReasoning);
+writeFixture("google-thinking-high.json", googleWireBody(googleThinking));
+writeFixture("google-thinking-disabled.json", googleWireBody(googleThinkingDisabled));

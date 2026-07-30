@@ -152,11 +152,17 @@
    #:make-model-metadata
    #:model-metadata-provider
    #:model-metadata-id
+   #:model-metadata-name
+   #:model-metadata-api
+   #:model-metadata-base-url
    #:model-metadata-context-window
    #:model-metadata-max-output-tokens
    #:model-metadata-supports-images-p
    #:model-metadata-supports-tools-p
    #:model-metadata-reasoning-p
+   #:model-metadata-thinking-level-map
+   #:model-metadata-headers
+   #:model-metadata-compat
    #:model-metadata-input-price
    #:model-metadata-output-price
    #:model-metadata-cache-read-price
