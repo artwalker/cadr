@@ -24,6 +24,16 @@
                                            (:file "grep")))
                              (:file "system-prompt")
                              (:file "extensions")
+                             (:module "modes"
+                              :serial t
+                              :components
+                              ((:file "print")
+                               (:module "rpc"
+                                :serial t
+                                :components
+                                ((:file "jsonl")
+                                 (:file "ui")
+                                 (:file "mode")))))
                              (:file "repl")
                              (:file "tui")
                              (:file "main")
@@ -44,6 +54,8 @@
                              (:file "bash-test")
                              (:file "execution-policy-test")
                              (:file "config-auth-test")
+                             (:file "modes-test")
+                             (:file "rpc-test")
                              (:file "repl-test")
                              (:file "session-command-test")
                              (:file "extensions-test")
