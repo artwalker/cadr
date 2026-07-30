@@ -1,6 +1,6 @@
 # Production dependency audit
 
-Audit date: 2026-07-30.
+Audit date: 2026-07-31.
 
 ## Production systems
 
@@ -27,6 +27,34 @@ The complete exception list is:
 
 `cl-ppcre` is an explicitly authorized deferral for a complete regular
 expression engine, not a third registered self-build exception.
+
+## Pure-Lisp replaceable production dependencies
+
+The user authorized the following category for Goal 8 Part B before any build
+dependency was added:
+
+| Direct system | Pinned Quicklisp release | Purpose | Audited closure |
+|---|---|---|---|
+| `cl-jpeg` | `cl-jpeg-20230214-git` | Decode and encode JPEG pixels for baseline image conversion/resizing | ASDF only |
+| `png-read` | `png-read-20170830-git` | Decode PNG scanlines, filters, and color data for baseline image conversion/resizing | `babel`, `chipz`, `iterate` |
+
+These are pure Common Lisp implementation libraries with no system ABI,
+cryptographic trust, database-engine, or sandbox boundary. They are therefore
+registered as **pure-Lisp replaceable dependencies**, not as additional
+self-build exceptions: an in-tree implementation may replace them later
+without changing cadr's public contracts.
+
+The complete `png-read` closure in the audited Quicklisp distribution is:
+
+- `png-read` → `babel`, `chipz`, `iterate`;
+- `babel` → `alexandria`, ASDF, `trivial-features`;
+- `chipz` → ASDF;
+- `iterate` → ASDF.
+
+`babel`, `alexandria`, `trivial-features`, and `iterate` were already present
+through the registered `cl-sqlite` closure. `chipz` is the only newly admitted
+transitive system. ASDF is implementation-provided. This authorization was
+recorded before `cadr-cli.asd` was changed, as required by the dependency gate.
 
 ## Test and exception-transitive systems
 

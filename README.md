@@ -50,7 +50,16 @@ The registered self-build exceptions are:
 The latter directly loads `iterate` and CFFI; the audited CFFI closure on
 Linux/SBCL is Alexandria, Babel, and trivial-features. `cl-ppcre` remains an
 explicitly authorized deferral for a complete regex engine, not a third
-self-build exception. The exact production and transitive audit is in
+self-build exception.
+
+The separately authorized **pure-Lisp replaceable** category contains
+`cl-jpeg` and `png-read` for baseline JPEG/PNG pixel decoding and encoding.
+`png-read` loads Babel, Chipz, and Iterate; Babel and Iterate were already in
+the `cl-sqlite` closure, while Chipz is the only newly admitted transitive
+system. These libraries add no system ABI or security boundary and may be
+replaced by an in-tree implementation without changing public contracts.
+
+The exact production and transitive audit is in
 [`docs/dependency-audit.md`](docs/dependency-audit.md).
 
 Any new third-party dependency must be declared during goal pre-review. The
