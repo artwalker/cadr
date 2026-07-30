@@ -27,6 +27,7 @@
   (messages nil :type list)
   (base-tools nil :type list)
   tool-registry
+  (tool-filter-function #'identity :type function)
   extension-host
   session
   stream-function

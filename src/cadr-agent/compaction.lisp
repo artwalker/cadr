@@ -168,11 +168,20 @@
            collect (cadr-ai:text-content-text block))))
 
 (defun generate-compaction-summary
-    (agent source-entries max-output-tokens)
+    (agent source-entries max-output-tokens
+     &optional custom-instructions)
   (let* ((prompt
            (format
             nil
-            "Summarize the conversation below into a compact checkpoint for another coding agent. Preserve the user's goal, constraints, decisions, completed work, exact paths/symbols/errors, pending work, and anything needed to continue. Do not continue the conversation and do not answer its questions.~%~%~A"
+            "Summarize the conversation below into a compact checkpoint for another coding agent. Preserve the user's goal, constraints, decisions, completed work, exact paths/symbols/errors, pending work, and anything needed to continue. Do not continue the conversation and do not answer its questions.~@[~%~%Additional focus: ~A~]~%~%~A"
+            (and
+             custom-instructions
+             (plusp
+              (length
+               (string-trim
+                '(#\Space #\Tab #\Newline #\Return)
+                custom-instructions)))
+             custom-instructions)
             (entries-summary-text source-entries)))
          (response
            (funcall
@@ -215,7 +224,8 @@
   (min configured
        (max 1 (floor context-window divisor))))
 
-(defun compact-agent (agent &key force-p)
+(defun compact-agent
+    (agent &key force-p custom-instructions)
   (let* ((session (agent-session agent))
          (model (agent-model agent))
          (context-window
@@ -265,7 +275,8 @@
           (handler-case
               (let ((summary
                       (generate-compaction-summary
-                       agent source-entries reserve)))
+                       agent source-entries reserve
+                       custom-instructions)))
                 (session-append-compaction
                  session summary source-ids
                  (session-entry-id kept-entry)

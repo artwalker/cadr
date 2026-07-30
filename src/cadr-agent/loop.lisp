@@ -725,11 +725,49 @@
          (funcall function)
       (progn
         (run-agent-lifecycle agent :agent-settled)
+        (emit-agent-event agent :agent-settled)
         (sb-thread:with-mutex
             ((agent-state-lock agent))
           (setf (agent-busy-p agent) nil)
           (sb-thread:condition-broadcast
            (agent-idle-condition agent))))))
+
+(defun agent-navigate-tree (agent entry-id)
+  (when (agent-busy-p agent)
+    (error
+     'agent-busy-error
+     :message
+     "Cannot navigate the session tree while the agent is running"))
+  (let ((session (agent-session agent)))
+    (unless session
+      (error
+       'session-error
+       :message
+       "Cannot navigate without a persistent session"))
+    (let ((before
+            (run-agent-lifecycle
+             agent :session-before-tree
+             (list
+              :target-id entry-id
+              :summarize-p nil))))
+      (when (getf before :cancel-p)
+        (return-from agent-navigate-tree
+          (values nil t)))
+      (session-branch session entry-id)
+      (setf
+       (agent-messages agent)
+       (session-messages session))
+      (run-agent-lifecycle
+       agent :session-tree
+       (list
+        :target-id entry-id
+        :messages
+        (copy-list
+         (agent-messages agent))))
+      (values
+       (copy-list
+        (agent-messages agent))
+       nil))))
 
 (defun user-message-input-values (message)
   (let ((content
@@ -750,43 +788,66 @@
             (typep block 'cadr-ai:image-content))
           content)))))
 
+(defun apply-agent-input-hooks
+    (agent message source &key streaming-behavior)
+  (let ((normalized
+          (normalize-agent-queue-message message)))
+    (multiple-value-bind (text images)
+        (user-message-input-values normalized)
+      (let* ((payload
+               (list
+                :text text
+                :images images
+                :source source))
+             (payload
+               (if streaming-behavior
+                   (append
+                    payload
+                    (list
+                     :streaming-behavior
+                     streaming-behavior))
+                   payload))
+             (result
+               (run-agent-lifecycle
+                agent :input payload))
+             (action
+               (or
+                (getf result :action)
+                :continue)))
+        (when (eq action :handled)
+          (return-from apply-agent-input-hooks
+            (values nil t)))
+        (let ((final-text
+                (if (eq action :transform)
+                    (getf result :text)
+                    text))
+              (final-images
+                (if (eq action :transform)
+                    (getf result :images)
+                    images)))
+          (values
+           (cadr-ai:make-user-message
+            :content
+            (if final-images
+                (nconc
+                 (list
+                  (cadr-ai:make-text-content
+                   :text final-text))
+                 (copy-list final-images))
+                final-text))
+           nil))))))
+
 (defun prepare-agent-prompt
     (agent message source)
-  (multiple-value-bind (text images)
-      (user-message-input-values message)
-    (let* ((input-result
-             (run-agent-lifecycle
-              agent :input
-              (list
-               :text text
-               :images images
-               :source source)))
-           (action
-             (or
-              (getf input-result :action)
-              :continue)))
-      (when (eq action :handled)
-        (return-from prepare-agent-prompt
-          (values nil nil t)))
-      (let* ((final-text
-               (if (eq action :transform)
-                   (getf input-result :text)
-                   text))
-             (final-images
-               (if (eq action :transform)
-                   (getf input-result :images)
-                   images))
-             (final-message
-               (cadr-ai:make-user-message
-                :content
-                (if final-images
-                    (nconc
-                     (list
-                      (cadr-ai:make-text-content
-                       :text final-text))
-                     (copy-list final-images))
-                    final-text)))
-             (before-result
+  (multiple-value-bind (final-message handled-p)
+      (apply-agent-input-hooks
+       agent message source)
+    (when handled-p
+      (return-from prepare-agent-prompt
+        (values nil nil t)))
+    (multiple-value-bind (final-text final-images)
+        (user-message-input-values final-message)
+      (let* ((before-result
                (run-agent-lifecycle
                 agent :before-agent-start
                 (list

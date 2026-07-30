@@ -98,6 +98,12 @@
   (block-p nil :type boolean)
   reason)
 
+(defstruct (provider-request-replacement
+            (:constructor
+                make-provider-request-replacement
+                (payload)))
+  payload)
+
 (defun make-extension-hook-result
     (&key
        (replacement nil replacement-p)
@@ -646,7 +652,13 @@
     :tool-execution-update
     :tool-execution-end
     :model-select
-    :thinking-level-select))
+    :thinking-level-select
+    :project-trust
+    :resources-discover
+    :before-provider-request
+    :before-provider-headers
+    :after-provider-response
+    :user-bash))
 
 (defun register-extension-hook
     (event priority handler)
@@ -1211,14 +1223,23 @@
                      "send-user-message requires valid user content"))))))
       (cond
         (deliver-as
-         (deliver-extension-message
-          agent message deliver-as))
+         (multiple-value-bind
+               (processed handled-p)
+             (apply-agent-input-hooks
+              agent message :extension
+              :streaming-behavior deliver-as)
+           (unless handled-p
+             (deliver-extension-message
+              agent processed deliver-as))))
         ((agent-busy-p agent)
          (error
           'extension-execution-error
           :message
           "send-user-message requires DELIVER-AS while the agent is running"))
-        (t (agent-prompt agent message))))))
+        (t
+         (agent-prompt
+          agent message
+          :source :extension))))))
 
 (defun extension-host-set-session-name (host name)
   (let* ((agent (extension-host-agent host))
@@ -1906,7 +1927,8 @@
     :tool-execution-update
     :tool-execution-end
     :model-select
-    :thinking-level-select))
+    :thinking-level-select
+    :after-provider-response))
 
 (defun strict-keyword-plist-p (value)
   (and
@@ -2074,6 +2096,62 @@
                   (error
                    ":INPUT :IMAGES must be a sequence or NIL"))))))))
      result)
+    ((eq event :project-trust)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:trusted :remember-p))
+       (unless
+           (member
+            (getf result :trusted)
+            '(:yes :no :undecided))
+         (error
+          ":PROJECT-TRUST :TRUSTED must be :YES, :NO, or :UNDECIDED"))
+       (let ((sentinel (list :missing)))
+         (let ((remember
+                 (getf result
+                       :remember-p sentinel)))
+           (unless
+               (or
+                (eq remember sentinel)
+                (extension-boolean-p remember))
+             (error
+              ":PROJECT-TRUST :REMEMBER-P must be boolean")))))
+     result)
+    ((eq event :resources-discover)
+     (when result
+       (validate-lifecycle-result-keys
+        event result
+        '(:skill-paths
+          :prompt-paths
+          :theme-paths))
+       (dolist
+           (key
+            '(:skill-paths
+              :prompt-paths
+              :theme-paths))
+         (let ((value (getf result key)))
+           (unless
+               (or
+                (null value)
+                (and
+                 (listp value)
+                 (every #'stringp value)))
+             (error
+              ":RESOURCES-DISCOVER ~S must be a list of strings"
+              key)))))
+     result)
+    ((eq event :before-provider-request)
+     result)
+    ((eq event :before-provider-headers)
+     (when result
+       (error
+        ":BEFORE-PROVIDER-HEADERS handlers must return NIL"))
+     nil)
+    ((eq event :user-bash)
+     (when result
+       (validate-lifecycle-result-keys
+        event result '(:operations :result)))
+     result)
     (t
      (error "No lifecycle result contract for ~S" event))))
 
@@ -2107,8 +2185,14 @@
      (let ((copy (copy-list original)))
        (setf
         (getf copy :text) (getf state :text)
-        (getf copy :images) (getf state :images))
+       (getf copy :images) (getf state :images))
        copy))
+    (:before-provider-request
+     (list
+      :payload
+      (copy-tree (getf state :payload))))
+    (:before-provider-headers
+     (list :headers (getf state :headers)))
     (otherwise (copy-tree original))))
 
 (defun initial-lifecycle-state (event payload)
@@ -2128,6 +2212,15 @@
       :text (getf payload :text)
       :images (getf payload :images)
       :modified-p nil))
+    (:resources-discover
+     (list
+      :skill-paths nil
+      :prompt-paths nil
+      :theme-paths nil))
+    (:before-provider-request
+     (list :payload (getf payload :payload)))
+    (:before-provider-headers
+     (list :headers (getf payload :headers)))
     (otherwise nil)))
 
 (defun merge-lifecycle-result
@@ -2187,6 +2280,31 @@
          (:handled
           (setf (getf state :handled-p) t))))
      state)
+    (:resources-discover
+     (when result
+       (dolist
+           (key
+            '(:skill-paths
+              :prompt-paths
+              :theme-paths))
+         (setf
+          (getf state key)
+          (nconc
+           (getf state key)
+           (copy-list (getf result key))))))
+     state)
+    (:before-provider-request
+     (cond
+       ((typep result
+               'provider-request-replacement)
+        (setf
+         (getf state :payload)
+         (provider-request-replacement-payload
+          result)))
+       (result
+        (setf (getf state :payload)
+              result)))
+     state)
     (otherwise state)))
 
 (defun finalize-lifecycle-state (event state last-result)
@@ -2221,6 +2339,22 @@
          :text (getf state :text)
          :images (getf state :images)))
        (t '(:action :continue))))
+    (:project-trust
+     last-result)
+    (:resources-discover
+     (list
+      :skill-paths
+      (copy-list (getf state :skill-paths))
+      :prompt-paths
+      (copy-list (getf state :prompt-paths))
+      :theme-paths
+      (copy-list (getf state :theme-paths))))
+    (:before-provider-request
+     (getf state :payload))
+    (:before-provider-headers
+     (getf state :headers))
+    (:user-bash
+     last-result)
     (otherwise nil)))
 
 (defun run-extension-lifecycle-hooks
@@ -2288,7 +2422,16 @@
                          (getf result :cancel-p))
                         (and
                          (eq event :input)
-                         (getf state :handled-p)))
+                         (getf state :handled-p))
+                        (and
+                         (eq event :project-trust)
+                         result
+                         (member
+                          (getf result :trusted)
+                          '(:yes :no)))
+                        (and
+                         (eq event :user-bash)
+                         result))
                      (return)))
                (condition (condition)
                  (notify-extension-failure

@@ -584,7 +584,8 @@
 (defun request-json
     (request &key
                (connect-timeout 10)
-               (read-timeout 60))
+               (read-timeout 60)
+               on-response)
   (multiple-value-bind (body status headers)
       (invoke-http-request
        request
@@ -593,6 +594,8 @@
        :want-stream nil
        :force-string t)
     (let ((text (normalize-response-body body)))
+      (when on-response
+        (funcall on-response status headers))
       (unless (<= 200 status 299)
         (signal-api-error request text
                           status headers))
@@ -611,7 +614,8 @@
 
 (defun request-sse
     (request consumer
-     &key (connect-timeout 10))
+     &key (connect-timeout 10)
+       on-response)
   (multiple-value-bind (body status headers)
       (invoke-http-request
        request
@@ -622,6 +626,8 @@
        :force-binary t)
     (unwind-protect
          (progn
+           (when on-response
+             (funcall on-response status headers))
            (unless (<= 200 status 299)
              (signal-api-error
               request (slurp-stream body)
@@ -771,7 +777,8 @@
 
 (defun request-aws-event-stream
     (request consumer
-     &key (connect-timeout 10))
+     &key (connect-timeout 10)
+       on-response)
   (multiple-value-bind (body status headers)
       (invoke-http-request
        request
@@ -781,6 +788,8 @@
        :force-binary t)
     (unwind-protect
          (progn
+           (when on-response
+             (funcall on-response status headers))
            (unless (<= 200 status 299)
              (signal-api-error
               request (slurp-stream body)
@@ -791,12 +800,16 @@
         (close body)))))
 
 (defun request-provider-events
-    (request consumer &key (connect-timeout 10))
+    (request consumer
+     &key (connect-timeout 10)
+       on-response)
   (ecase (request-spec-stream-format request)
     (:sse
      (request-sse request consumer
-                  :connect-timeout connect-timeout))
+                  :connect-timeout connect-timeout
+                  :on-response on-response))
     (:aws-event-stream
      (request-aws-event-stream
       request consumer
-      :connect-timeout connect-timeout))))
+      :connect-timeout connect-timeout
+      :on-response on-response))))

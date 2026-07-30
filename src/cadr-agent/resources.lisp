@@ -73,38 +73,97 @@
       (let ((metadata nil)
             (raw
               (subseq normalized 4 end)))
-        (dolist
-            (line
-             (uiop:split-string
-              raw :separator '(#\Newline)))
-          (let ((colon (position #\: line)))
-            (when colon
-              (let* ((key
-                       (string-downcase
+        (let ((lines
+                (uiop:split-string
+                 raw :separator '(#\Newline)))
+              (index 0))
+          (loop while (< index (length lines))
+                for line = (nth index lines)
+                do
+                (incf index)
+                (let ((trimmed
                         (string-trim
                          '(#\Space #\Tab)
-                         (subseq line 0 colon))))
-                     (value
-                       (unquote-frontmatter-value
-                        (subseq line (1+ colon)))))
-                (when
-                    (and
-                     (uiop:string-prefix-p
-                      "[" value)
-                     (not
-                      (uiop:string-suffix-p
-                       value "]")))
-                  (return-from
-                      parse-resource-frontmatter
-                    (values
-                     nil nil
-                     "Invalid frontmatter")))
-                (setf
-                 (getf metadata
-                       (intern
-                        (string-upcase key)
-                        :keyword))
-                 value)))))
+                         line)))
+                  (unless
+                      (or (zerop (length trimmed))
+                          (char= (char trimmed 0) #\#))
+                    (let ((colon (position #\: line)))
+                      (unless colon
+                        (return-from
+                            parse-resource-frontmatter
+                          (values
+                           nil nil
+                           (format nil
+                                   "Invalid frontmatter at line ~D"
+                                   index))))
+                      (let* ((key
+                               (string-downcase
+                                (string-trim
+                                 '(#\Space #\Tab)
+                                 (subseq line 0 colon))))
+                             (raw-value
+                               (string-trim
+                                '(#\Space #\Tab)
+                                (subseq line (1+ colon))))
+                             (value
+                               (if (string= raw-value "|")
+                                   (with-output-to-string (output)
+                                     (loop
+                                       while
+                                       (and
+                                        (< index
+                                           (length lines))
+                                        (let ((next
+                                                (nth index
+                                                     lines)))
+                                          (or
+                                           (zerop
+                                            (length next))
+                                           (member
+                                            (char next 0)
+                                            '(#\Space
+                                              #\Tab)))))
+                                       for next =
+                                       (nth index lines)
+                                       do
+                                       (incf index)
+                                       (write-string
+                                        (if
+                                            (and
+                                             (>=
+                                              (length next)
+                                              2)
+                                             (string=
+                                              "  " next
+                                              :end2 2))
+                                            (subseq next 2)
+                                            (string-left-trim
+                                             '(#\Space #\Tab)
+                                             next))
+                                        output)
+                                       (terpri output)))
+                                   (unquote-frontmatter-value
+                                    raw-value))))
+                        (when
+                            (and
+                             (uiop:string-prefix-p "[" value)
+                             (not
+                              (uiop:string-suffix-p
+                               value "]")))
+                          (return-from
+                              parse-resource-frontmatter
+                            (values
+                             nil nil
+                             (format nil
+                                     "Invalid frontmatter at line ~D"
+                                     index))))
+                        (setf
+                         (getf metadata
+                               (intern
+                                (string-upcase key)
+                                :keyword))
+                         value)))))))
         (values
          metadata
          (string-trim
@@ -248,78 +307,149 @@
      (nreverse templates)
      (nreverse diagnostics))))
 
-(defun regex-replacement-register
-    (target register-starts register-ends index)
-  (let ((start (aref register-starts index))
-        (end (aref register-ends index)))
-    (and start end
-         (subseq target start end))))
+(defun prompt-arguments-string (arguments)
+  (format nil "~{~A~^ ~}" arguments))
+
+(defun positional-prompt-value
+    (arguments number &optional default)
+  (let ((value
+          (and (plusp number)
+               (nth (1- number) arguments))))
+    (if (and value
+             (plusp (length value)))
+        value
+        (or default ""))))
+
+(defun braced-prompt-value (expression arguments)
+  (let ((default-separator
+          (search ":-" expression)))
+    (when default-separator
+      (let* ((name
+               (subseq expression
+                       0 default-separator))
+             (default
+               (subseq expression
+                       (+ default-separator 2)))
+             (value
+               (cond
+                 ((or (string= name "@")
+                      (string= name "ARGUMENTS"))
+                  (prompt-arguments-string arguments))
+                 ((every #'digit-char-p name)
+                  (positional-prompt-value
+                   arguments
+                   (parse-integer name)))
+                 (t nil))))
+        (return-from braced-prompt-value
+          (and value
+               (if (plusp (length value))
+                   value default))))))
+  (when (uiop:string-prefix-p "@:" expression)
+    (let* ((parts
+             (uiop:split-string
+              (subseq expression 2)
+              :separator '(#\:)))
+           (start
+             (ignore-errors
+               (parse-integer (first parts))))
+           (count
+             (and (second parts)
+                  (ignore-errors
+                    (parse-integer
+                     (second parts))))))
+      (when start
+        (let* ((offset
+                 (min
+                  (length arguments)
+                  (max 0 (1- start))))
+               (end
+                 (if count
+                     (min
+                      (length arguments)
+                      (+ offset (max 0 count)))
+                     (length arguments))))
+          (return-from braced-prompt-value
+            (prompt-arguments-string
+             (subseq arguments offset end)))))))
+  nil)
 
 (defun substitute-prompt-arguments (content arguments)
-  (let ((result
-          (cl-ppcre:regex-replace-all
-           "\\$(\\d+)" content
-           (lambda
-               (target start end
-                match-start match-end
-                register-starts register-ends)
-             (declare
-              (ignore
-               start end match-start match-end))
-             (let* ((number
-                      (parse-integer
-                       (regex-replacement-register
-                        target
-                        register-starts
-                        register-ends 0)))
-                    (value
-                      (nth (1- number)
-                           arguments)))
-               (or value ""))))))
-    (setf
-     result
-     (cl-ppcre:regex-replace-all
-      "\\$\\{@:(\\d+)(?::(\\d+))?\\}"
-      result
-      (lambda
-          (target start end
-           match-start match-end
-           register-starts register-ends)
-        (declare
-         (ignore
-          start end match-start match-end))
-        (let* ((start-index
-                 (max
-                  0
-                  (1-
-                   (parse-integer
-                    (regex-replacement-register
-                     target register-starts
-                     register-ends 0)))))
-               (length-text
-                 (regex-replacement-register
-                  target register-starts
-                  register-ends 1))
-               (selected
-                 (if length-text
-                     (subseq
-                      arguments
-                      (min start-index
-                           (length arguments))
-                      (min
-                       (length arguments)
-                       (+ start-index
-                          (parse-integer
-                           length-text))))
-                     (nthcdr start-index
-                             arguments))))
-          (format nil "~{~A~^ ~}" selected)))))
-    (let ((all
-            (format nil "~{~A~^ ~}" arguments)))
-      (cadr-ai::replace-all
-       (cadr-ai::replace-all
-        result "$ARGUMENTS" all)
-       "$@" all))))
+  ;; Single-pass expansion is deliberate: argument/default text is literal and
+  ;; must never become a second template.
+  (with-output-to-string (output)
+    (loop with index = 0
+          while (< index (length content))
+          for character = (char content index)
+          do
+          (cond
+            ((not (char= character #\$))
+             (write-char character output)
+             (incf index))
+            ((and
+              (< (1+ index) (length content))
+              (char= (char content (1+ index))
+                     #\{))
+             (let ((close
+                     (position #\} content
+                               :start (+ index 2))))
+               (if close
+                   (let* ((expression
+                            (subseq content
+                                    (+ index 2)
+                                    close))
+                          (value
+                            (braced-prompt-value
+                             expression arguments)))
+                     (if value
+                         (write-string value output)
+                         (write-string
+                          (subseq content index
+                                  (1+ close))
+                          output))
+                     (setf index (1+ close)))
+                   (progn
+                     (write-char character output)
+                     (incf index)))))
+            ((and
+              (<= (+ index 10) (length content))
+              (string=
+               "$ARGUMENTS" content
+               :start2 index
+               :end2 (+ index 10)))
+             (write-string
+              (prompt-arguments-string arguments)
+              output)
+             (incf index 10))
+            ((and
+              (< (1+ index) (length content))
+              (char= (char content (1+ index))
+                     #\@))
+             (write-string
+              (prompt-arguments-string arguments)
+              output)
+             (incf index 2))
+            ((and
+              (< (1+ index) (length content))
+              (digit-char-p
+               (char content (1+ index))))
+             (let ((end
+                     (or
+                      (position-if-not
+                       #'digit-char-p content
+                       :start (1+ index))
+                      (length content))))
+               (write-string
+                (positional-prompt-value
+                 arguments
+                 (parse-integer
+                  content
+                  :start (1+ index)
+                  :end end))
+                output)
+               (setf index end)))
+            (t
+             (write-char character output)
+             (incf index))))))
 
 (defun format-prompt-template-invocation
     (template &optional arguments)

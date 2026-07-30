@@ -49,7 +49,9 @@
   (setf
    (agent-tool-registry agent)
    (make-tool-registry
-    (merged-agent-tools agent)))
+    (funcall
+     (agent-tool-filter-function agent)
+     (merged-agent-tools agent))))
   agent)
 
 (defun make-agent (&key
@@ -58,6 +60,7 @@
                          system-prompt
                          messages
                          tools
+                         (tool-filter-function #'identity)
                          extension-host
                          session
                          (stream-function #'cadr-ai:stream-chat)
@@ -79,6 +82,7 @@
                      (session-messages session))))
            :base-tools (copy-list tools)
            :tool-registry (make-tool-registry tools)
+           :tool-filter-function tool-filter-function
            :extension-host extension-host
            :session session
            :stream-function stream-function

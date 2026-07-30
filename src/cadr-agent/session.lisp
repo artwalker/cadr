@@ -360,10 +360,14 @@
        (error "Unknown content block type: ~S" type)))))
 
 (defun content-blocks-from-json (value)
-  (unless (vectorp value)
-    (error "Session content must be an array"))
-  (loop for object across value
-        collect (content-block-from-json object)))
+  (cond
+    ((null value) nil)
+    ((vectorp value)
+     (loop for object across value
+           collect
+           (content-block-from-json object)))
+    (t
+     (error "Session content must be an array"))))
 
 (defun usage-from-json (object)
   (let ((cost (cadr-ai::json-get object "cost")))
@@ -1566,6 +1570,7 @@
                (and
                 (stringp custom-type)
                 (or
+                 (null content)
                  (stringp content)
                  (vectorp content)))
              (session-failure
@@ -1576,9 +1581,12 @@
             (session-entry-custom-type entry)
             custom-type
             (session-entry-content entry)
-            (if (stringp content)
-                content
-                (content-blocks-from-json content))
+            (cond
+              ((stringp content) content)
+              ((null content) nil)
+              (t
+               (content-blocks-from-json
+                content)))
             (session-entry-details entry) details
             (session-entry-display-p entry)
             (eq t
@@ -1821,6 +1829,99 @@
             (#\' (write-string "&#39;" output))
             (t (write-char character output))))))
 
+(defparameter +session-skill-block-scanner+
+  (cl-ppcre:create-scanner
+   "^<skill name=\"([^\"]+)\" location=\"([^\"]+)\">\\n([\\s\\S]*?)\\n</skill>(?:\\n\\n([\\s\\S]+))?$"))
+
+(defun parse-session-skill-block (text)
+  (when (stringp text)
+    (multiple-value-bind (match groups)
+        (cl-ppcre:scan-to-strings
+         +session-skill-block-scanner+
+         text)
+      (when match
+        (values
+         (aref groups 0)
+         (aref groups 1)
+         (aref groups 2)
+         (and (> (length groups) 3)
+              (aref groups 3))
+         t)))))
+
+(defun markdown-to-safe-html (text)
+  (let ((lines
+          (uiop:split-string
+           (or text "")
+           :separator '(#\Newline)))
+        (in-code-p nil))
+    (with-output-to-string (output)
+      (dolist (line lines)
+        (cond
+          ((and
+            (>= (length line) 3)
+            (string= "```" line
+                     :end2 3))
+           (if in-code-p
+               (write-string "</code></pre>" output)
+               (write-string "<pre><code>" output))
+           (setf in-code-p
+                 (not in-code-p)))
+          (in-code-p
+           (write-string
+            (html-escape line) output)
+           (write-char #\Newline output))
+          (t
+           (multiple-value-bind (match groups)
+               (cl-ppcre:scan-to-strings
+                "^(#{1,6})[ \t]+(.*)$"
+                line)
+             (cond
+               (match
+                (let ((level
+                        (length
+                         (aref groups 0))))
+                  (format
+                   output
+                   "<h~D>~A</h~D>"
+                   level
+                   (html-escape
+                    (aref groups 1))
+                   level)))
+               ((zerop (length line))
+                (write-string "<br>" output))
+               (t
+                (format
+                 output
+                 "<p>~A</p>"
+                 (html-escape line))))))))
+      (when in-code-p
+        (write-string "</code></pre>"
+                      output)))))
+
+(defun user-message-text-and-images (message)
+  (let ((content
+          (cadr-ai:user-message-content
+           message)))
+    (if (stringp content)
+        (values content nil)
+        (values
+         (format
+          nil "~{~A~^~%~}"
+          (loop for block in
+                (coerce content 'list)
+                when
+                (typep block
+                       'cadr-ai:text-content)
+                  collect
+                  (cadr-ai:text-content-text
+                   block)))
+         (loop for block in
+               (coerce content 'list)
+               when
+               (typep block
+                      'cadr-ai:image-content)
+                 collect block)))))
+
 (defun content-block-display-text (block)
   (cond
     ((typep block 'cadr-ai:text-content)
@@ -1918,7 +2019,7 @@
       (write-string
        (html-escape (session-id session)) stream)
       (write-string
-       "</title><style>body{font:16px system-ui;max-width:960px;margin:2rem auto;padding:0 1rem}ol{border-left:1px solid #bbb}.node{margin:.8rem 0;padding:.7rem;background:#f6f6f6;border-radius:.4rem}.meta{color:#666;font:12px monospace}.content{white-space:pre-wrap}.compaction{background:#fff3cd}</style></head><body><h1>Session "
+       "</title><style>body{font:16px system-ui;max-width:960px;margin:2rem auto;padding:0 1rem}ol{border-left:1px solid #bbb}.node{margin:.8rem 0;padding:.7rem;background:#f6f6f6;border-radius:.4rem}.meta{color:#666;font:12px monospace}.content{white-space:pre-wrap}.compaction{background:#fff3cd}.skill-invocation,.user-message{margin:.5rem 0;padding:.7rem;border-radius:.4rem}.skill-invocation{background:#eef3ff}.user-message{background:#fff}.skill-invocation-content p,.user-message p{margin:.35rem 0}.message-image{max-width:100%;max-height:30rem}.tree-role-skill{font-weight:700}</style></head><body><h1>Session "
        stream)
       (write-string (html-escape (session-id session)) stream)
       (write-string "</h1>" stream)
@@ -1936,14 +2037,83 @@
                           "root"))
                      (html-escape
                       (session-entry-timestamp entry)))
-             (multiple-value-bind (role text)
-                 (session-entry-display-role-and-text
-                  entry)
-               (format stream
-                       "<strong>~A</strong><div class=\"content\">~A"
-                       (html-escape role)
-                       (html-escape text)))
-             (write-string "</div></article>" stream)
+             (let ((message
+                     (session-entry-message
+                      entry)))
+               (if
+                   (and
+                    (eq :message
+                        (session-entry-type
+                         entry))
+                    (typep
+                     message
+                     'cadr-ai:user-message))
+                   (multiple-value-bind
+                         (text images)
+                       (user-message-text-and-images
+                        message)
+                     (multiple-value-bind
+                           (skill-name skill-location
+                            skill-content user-text
+                            skill-p)
+                         (parse-session-skill-block
+                          text)
+                       (declare
+                        (ignore skill-location))
+                       (if skill-p
+                           (progn
+                             (format
+                              stream
+                              "<div class=\"tree-node\"><span class=\"tree-role-skill\">skill:</span> ~A~@[ · <span class=\"tree-role-user\">user:</span> ~A~]</div>"
+                              (html-escape
+                               skill-name)
+                              (and user-text
+                                   (html-escape
+                                    user-text)))
+                             (format
+                              stream
+                              "<div class=\"skill-invocation\"><strong>[skill] ~A</strong><div class=\"skill-invocation-content\">~A</div></div>"
+                              (html-escape
+                               skill-name)
+                              (markdown-to-safe-html
+                               skill-content))
+                             (when
+                                 (or user-text
+                                     images)
+                               (write-string
+                                "<div class=\"user-message\">"
+                                stream)
+                               (dolist
+                                   (image images)
+                                 (format
+                                  stream
+                                  "<img class=\"message-image\" src=\"data:~A;base64,~A\">"
+                                  (html-escape
+                                   (cadr-ai:image-content-mime-type
+                                    image))
+                                  (html-escape
+                                   (cadr-ai:image-content-data
+                                    image))))
+                               (when user-text
+                                 (write-string
+                                  (markdown-to-safe-html
+                                   user-text)
+                                  stream))
+                               (write-string
+                                "</div>" stream)))
+                           (format
+                            stream
+                            "<strong>user</strong><div class=\"content\">~A</div>"
+                            (html-escape text)))))
+                   (multiple-value-bind (role text)
+                       (session-entry-display-role-and-text
+                        entry)
+                     (format
+                      stream
+                      "<strong>~A</strong><div class=\"content\">~A</div>"
+                      (html-escape role)
+                      (html-escape text)))))
+             (write-string "</article>" stream)
              (let ((descendants
                      (gethash
                       (session-entry-id entry)

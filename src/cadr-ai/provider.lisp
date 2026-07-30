@@ -449,9 +449,45 @@
              *retry-sleep-function*
              (provider-retry-delay condition retry-index))))))
 
+(defun apply-provider-request-callbacks
+    (request model on-payload transform-headers)
+  (when on-payload
+    (multiple-value-bind
+          (replacement supplied-p)
+        (funcall
+         on-payload
+         (request-spec-payload request)
+         model)
+      (when (or supplied-p replacement)
+        (setf
+         (request-spec-payload request)
+         replacement))))
+  (when transform-headers
+    (let ((replacement
+            (funcall
+             transform-headers
+             (copy-tree
+              (request-spec-headers request)))))
+      (when replacement
+        (setf
+         (request-spec-headers request)
+         replacement))))
+  request)
+
+(defun notify-provider-response
+    (callback status headers model)
+  (when callback
+    (funcall
+     callback
+     (list
+      :status status
+      :headers headers)
+     model)))
+
 (defun complete-chat (provider model context
                       &key max-tokens temperature reasoning cache-retention
-                        session-id tool-choice metadata abort-p)
+                        session-id tool-choice metadata abort-p
+                        on-payload transform-headers on-response)
   (handler-case
       (progn
         (check-abort abort-p)
@@ -464,11 +500,22 @@
                                        :session-id session-id
                                        :tool-choice tool-choice
                                        :metadata metadata))
+               (_prepared
+                 (apply-provider-request-callbacks
+                  request model
+                  on-payload transform-headers))
                (response
                  (call-with-provider-retries
                   (lambda ()
                     (check-abort abort-p)
-                    (request-json request)))))
+                    (request-json
+                     request
+                     :on-response
+                     (lambda (status headers)
+                       (notify-provider-response
+                        on-response
+                        status headers model)))))))
+          (declare (ignore _prepared))
           (check-abort abort-p)
           (parse-complete-response provider model response)))
     (error (condition)
@@ -477,7 +524,8 @@
 
 (defun stream-chat (provider model context on-event
                     &key max-tokens temperature reasoning cache-retention
-                      session-id tool-choice metadata abort-p)
+                      session-id tool-choice metadata abort-p
+                      on-payload transform-headers on-response)
   (let* ((message (empty-assistant-message model))
          (state (make-provider-stream-state :message message))
          (saw-provider-event-p nil))
@@ -493,6 +541,9 @@
                                         :session-id session-id
                                         :tool-choice tool-choice
                                         :metadata metadata)))
+            (apply-provider-request-callbacks
+             request model
+             on-payload transform-headers)
             (emit-event on-event :start message)
             (call-with-provider-retries
              (lambda ()
@@ -504,7 +555,12 @@
                   (check-abort abort-p)
                   (reduce-provider-sse-event
                    provider state event on-event)
-                  (check-abort abort-p))))
+                  (check-abort abort-p))
+                :on-response
+                (lambda (status headers)
+                  (notify-provider-response
+                   on-response status headers
+                   model))))
              :retry-allowed-p
              (lambda (condition)
                (declare (ignore condition))

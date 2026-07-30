@@ -15,6 +15,7 @@
    #:agent-next-turn
    #:agent-abort
    #:agent-wait-for-idle
+   #:agent-navigate-tree
    #:agent-steering-mode
    #:agent-follow-up-mode
    #:agent-event
@@ -85,6 +86,9 @@
    #:extension-event-payload
    #:extension-cancellation-signal
    #:extension-cancellation-aborted-p
+   #:provider-request-replacement
+   #:make-provider-request-replacement
+   #:provider-request-replacement-payload
    #:extension-hook-result
    #:make-extension-hook-result
    #:session
