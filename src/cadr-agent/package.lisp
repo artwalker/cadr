@@ -54,6 +54,7 @@
    #:define-event-hook
    #:define-prompt-template
    #:define-provider
+   #:define-native-provider
    #:define-shortcut
    #:define-flag
    #:define-message-renderer

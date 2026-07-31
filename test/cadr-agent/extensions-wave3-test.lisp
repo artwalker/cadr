@@ -385,6 +385,32 @@
       (is (null rendered))
       (is (null handled-p)))))
 
+(test wave3-native-provider-registration-is-additive-and-reload-aware
+  (let* ((provider
+           (cadr-ai:make-runtime-provider
+            :id :native
+            :name "Native"
+            :api-key-auth-p t))
+         (bundle
+           (make-test-extension-bundle
+            "native"
+            (lambda ()
+              (cadr-agent:define-native-provider
+               provider))))
+         (host
+           (make-test-extension-host
+            (list bundle))))
+    (is (equal
+         '(:native)
+         (mapcar
+          #'cadr-ai:runtime-provider-id
+          (cadr-agent::extension-host-native-providers
+           host))))
+    (cadr-agent::replace-extension-bundles host nil)
+    (is (null
+         (cadr-agent::extension-host-native-providers
+          host)))))
+
 (test project-trust-uses-first-decision
   (let ((calls nil))
     (let* ((bundle

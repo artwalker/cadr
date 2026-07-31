@@ -10,6 +10,7 @@
   (tools nil :type list)
   (commands nil :type list)
   (templates nil :type list)
+  (native-providers nil :type list)
   (shortcuts nil :type list)
   (flags nil :type list)
   (message-renderers nil :type list)
@@ -700,6 +701,7 @@
   (hooks nil :type list)
   (templates nil :type list)
   (providers nil :type list)
+  (native-providers nil :type list)
   (shortcuts nil :type list)
   (flags nil :type list)
   (message-renderers nil :type list)
@@ -740,6 +742,10 @@
 (defstruct extension-provider-definition
   definition
   (models nil :type list)
+  bundle)
+
+(defstruct extension-native-provider-definition
+  provider
   bundle)
 
 (defstruct extension-shortcut-definition
@@ -1093,6 +1099,44 @@
               :bundle bundle)))))))
   definition)
 
+(defun register-extension-native-provider (provider)
+  (unless (typep provider 'cadr-ai:runtime-provider)
+    (error
+     'extension-registration-error
+     :message
+     "Native provider must be a CADR-AI:RUNTIME-PROVIDER"))
+  (let* ((bundle (require-extension-registration-bundle))
+         (id (cadr-ai:runtime-provider-id provider))
+         (existing
+           (find
+            id
+            (extension-bundle-native-providers bundle)
+            :key
+            (lambda (entry)
+              (cadr-ai:runtime-provider-id
+               (extension-native-provider-definition-provider
+                entry))))))
+    (unless (keywordp id)
+      (error
+       'extension-registration-error
+       :message "Native provider ID must be a keyword"))
+    (when existing
+      (error
+       'extension-registration-error
+       :message
+       (format nil
+               "Native provider ~A is registered more than once in the same extension"
+               id)))
+    (setf
+     (extension-bundle-native-providers bundle)
+     (nconc
+      (extension-bundle-native-providers bundle)
+      (list
+       (make-extension-native-provider-definition
+        :provider provider
+        :bundle bundle)))))
+  provider)
+
 (defun validate-extension-renderer-type
     (kind custom-type)
   (unless
@@ -1301,6 +1345,9 @@
 (defmacro define-provider (definition &key models)
   `(register-extension-provider ,definition ,models))
 
+(defmacro define-native-provider (provider)
+  `(register-extension-native-provider ,provider))
+
 (defmacro define-shortcut
     (key &key description handler)
   `(register-extension-shortcut
@@ -1376,6 +1423,9 @@
       (extension-template-definition-bundle definition))
      (extension-provider-definition
       (extension-provider-definition-bundle definition))
+     (extension-native-provider-definition
+      (extension-native-provider-definition-bundle
+       definition))
      (extension-shortcut-definition
       (extension-shortcut-definition-bundle definition))
      (extension-flag-definition
@@ -1433,6 +1483,8 @@
   (let ((tool-table (make-hash-table :test #'equal))
         (command-table (make-hash-table :test #'equal))
         (template-table (make-hash-table :test #'equal))
+        (native-provider-table
+          (make-hash-table :test #'eq))
         (shortcut-table (make-hash-table :test #'equal))
         (flag-table (make-hash-table :test #'equal))
         (message-renderer-table
@@ -1444,6 +1496,7 @@
         (*tools* nil)
         (*commands* nil)
         (*templates* nil)
+        (*native-providers* nil)
         (*shortcuts* nil)
         (*flags* nil)
         (*message-renderers* nil)
@@ -1453,6 +1506,7 @@
         (hooks (make-hash-table :test #'eq)))
     (declare
      (special *tools* *commands* *templates*
+              *native-providers*
               *shortcuts* *flags*
               *message-renderers* *entry-renderers*
               *tool-renderers*
@@ -1473,6 +1527,18 @@
          template-table '*templates* definition
          #'extension-template-definition-name
          "Prompt template" '*conflicts*))
+      (dolist
+          (definition
+           (extension-bundle-native-providers bundle))
+        (add-first-definition
+         native-provider-table
+         '*native-providers*
+         definition
+         (lambda (entry)
+           (cadr-ai:runtime-provider-id
+            (extension-native-provider-definition-provider
+             entry)))
+         "Native provider" '*conflicts*))
       (dolist (definition
                (extension-bundle-shortcuts bundle))
         (add-last-definition
@@ -1532,6 +1598,7 @@
      :tools *tools*
      :commands *commands*
      :templates *templates*
+     :native-providers *native-providers*
      :shortcuts *shortcuts*
      :flags *flags*
      :message-renderers *message-renderers*
@@ -2140,6 +2207,12 @@
            t)
           (push entry result))))
     (nreverse result)))
+
+(defun extension-host-native-providers (host)
+  (mapcar
+   #'extension-native-provider-definition-provider
+   (extension-snapshot-native-providers
+    (extension-host-current-snapshot host))))
 
 (defun metadata-model-copy (metadata)
   (cadr-ai:make-model
