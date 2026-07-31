@@ -12,7 +12,8 @@
       text))
 
 (defun replace-paired-marker
-    (text marker &key open-code ansi-theme-p)
+    (text marker &key open-code style-function
+                       ansi-theme-p)
   (loop with position = 0
         with result = ""
         for start = (search marker text
@@ -28,12 +29,17 @@
          (concatenate
           'string result
           (subseq text position start)
-          (ansi-style
-           open-code
-           (subseq text
+          (let ((value
+                  (subseq
+                   text
                    (+ start (length marker))
-                   end)
-           ansi-theme-p))
+                   end)))
+            (if style-function
+                (funcall style-function
+                         value ansi-theme-p)
+                (ansi-style
+                 open-code value
+                 ansi-theme-p))))
          position (+ end (length marker)))
         finally
         (return
@@ -41,15 +47,31 @@
                        (subseq text position)))))
 
 (defun markdown-link-replacement
-    (label url image-p capabilities)
+    (label url image-p capabilities
+     ansi-theme-p)
   (if image-p
       (format nil "Image: ~A (~A)" label url)
-      (if (terminal-capabilities-hyperlinks-p
-           capabilities)
-          (terminal-hyperlink label url)
-          (format nil "~A (~A)" label url))))
+      (let ((styled-label
+              (theme-foreground
+               :md-link
+               (theme-underline
+                label
+                :enabled-p ansi-theme-p)
+               :enabled-p ansi-theme-p)))
+        (if (terminal-capabilities-hyperlinks-p
+             capabilities)
+            (terminal-hyperlink styled-label url)
+            (if (string= label url)
+                styled-label
+                (format
+                 nil "~A (~A)"
+                 styled-label
+                 (theme-foreground
+                  :md-link-url url
+                  :enabled-p ansi-theme-p)))))))
 
-(defun replace-markdown-links (text capabilities)
+(defun replace-markdown-links
+    (text capabilities ansi-theme-p)
   (with-output-to-string (output)
     (loop with position = 0
           while (< position (length text))
@@ -98,7 +120,8 @@
                                   label-start label-end)
                           (subseq text
                                   url-start url-end)
-                          image-p capabilities)
+                          image-p capabilities
+                          ansi-theme-p)
                          output)
                         (setf position (1+ url-end)))
                       (progn
@@ -110,14 +133,22 @@
     (line ansi-theme-p capabilities)
   (let ((result
           (replace-markdown-links
-           line capabilities)))
+           line capabilities ansi-theme-p)))
     (setf result
           (replace-paired-marker
            result "**" :open-code "1"
+           :style-function
+           (lambda (text enabled-p)
+             (theme-bold
+              text :enabled-p enabled-p))
            :ansi-theme-p ansi-theme-p)
           result
           (replace-paired-marker
            result "__" :open-code "1"
+           :style-function
+           (lambda (text enabled-p)
+             (theme-bold
+              text :enabled-p enabled-p))
            :ansi-theme-p ansi-theme-p)
           result
           (replace-paired-marker
@@ -126,18 +157,31 @@
           result
           (replace-paired-marker
            result "`" :open-code "36"
+           :style-function
+           (lambda (text enabled-p)
+             (theme-foreground
+              :md-code text
+              :enabled-p enabled-p))
            :ansi-theme-p ansi-theme-p))
     (unless (search "**" result)
       (setf
        result
        (replace-paired-marker
         result "*" :open-code "3"
+        :style-function
+        (lambda (text enabled-p)
+          (theme-italic
+           text :enabled-p enabled-p))
         :ansi-theme-p ansi-theme-p)))
     (unless (search "__" result)
       (setf
        result
        (replace-paired-marker
         result "_" :open-code "3"
+        :style-function
+        (lambda (text enabled-p)
+          (theme-italic
+           text :enabled-p enabled-p))
         :ansi-theme-p ansi-theme-p)))
     result))
 
@@ -169,24 +213,145 @@
                    (char trimmed 0)))
           trimmed))))
 
-(defun markdown-table-line (line)
-  (let* ((parts
-           (uiop:split-string
-            line :separator '(#\|)))
-         (parts
-           (remove-if
-            (lambda (part)
-              (zerop
-               (length
-                (string-trim
-                 '(#\Space #\Tab) part))))
-            parts)))
-    (format nil "│ ~{~A~^ │ ~} │"
-            (mapcar
-             (lambda (part)
+(defun markdown-table-cells (line)
+  (let ((parts
+          (uiop:split-string
+           line :separator '(#\|))))
+    (when
+        (and parts
+             (zerop
+              (length
                (string-trim
-                '(#\Space #\Tab) part))
-             parts))))
+                '(#\Space #\Tab)
+                (first parts)))))
+      (setf parts (rest parts)))
+    (when
+        (and parts
+             (zerop
+              (length
+               (string-trim
+                '(#\Space #\Tab)
+                (car (last parts))))))
+      (setf parts (butlast parts)))
+    (mapcar
+     (lambda (part)
+       (string-trim
+        '(#\Space #\Tab) part))
+     parts)))
+
+(defun markdown-table-border-line
+    (left middle right widths
+     ansi-theme-p)
+  (theme-foreground
+   :border-muted
+   (with-output-to-string (stream)
+     (write-char left stream)
+     (loop for width in widths
+           for first-p = t then nil
+           do
+           (unless first-p
+             (write-char middle stream))
+           (write-string
+            (make-string
+             (+ width 2)
+             :initial-element #\─)
+            stream))
+     (write-char right stream))
+   :enabled-p ansi-theme-p))
+
+(defun markdown-table-row-line
+    (cells widths ansi-theme-p header-p
+     capabilities)
+  (let ((border
+          (lambda (text)
+            (theme-foreground
+             :border-muted text
+             :enabled-p ansi-theme-p))))
+    (with-output-to-string (stream)
+      (write-string (funcall border "│")
+                    stream)
+      (loop for width in widths
+            for index from 0
+            for cell = (or (nth index cells) "")
+            for rendered =
+              (render-inline-markdown
+               (truncate-to-width
+                cell width "" nil)
+               ansi-theme-p capabilities)
+            for padded =
+              (concatenate
+               'string rendered
+               (make-string
+                (max
+                 0
+                 (- width
+                    (visible-width rendered)))
+                :initial-element #\Space))
+            do
+            (format
+             stream " ~A "
+             (if header-p
+                 (theme-bold
+                  padded
+                  :enabled-p ansi-theme-p)
+                 padded))
+            (write-string
+             (funcall border "│")
+             stream)))))
+
+(defun markdown-table-widths
+    (rows available-width)
+  (let* ((column-count
+           (loop for row in rows
+                 maximize (length row)))
+         (overhead
+           (+ 1 (* 3 column-count)))
+         (per-column
+           (max
+            1
+            (min
+             30
+             (floor
+              (max column-count
+                   (- available-width overhead))
+              (max 1 column-count))))))
+    (loop for index below column-count
+          collect
+          (max
+           1
+           (min
+            per-column
+            (loop for row in rows
+                  maximize
+                  (visible-width
+                   (or (nth index row) ""))))))))
+
+(defun render-markdown-table
+    (rows available-width
+     ansi-theme-p capabilities)
+  (let ((widths
+          (markdown-table-widths
+           rows available-width)))
+    (append
+     (list
+      (markdown-table-border-line
+       #\┌ #\┬ #\┐ widths
+       ansi-theme-p)
+      (markdown-table-row-line
+       (first rows) widths ansi-theme-p
+       t capabilities)
+      (markdown-table-border-line
+       #\├ #\┼ #\┤ widths
+       ansi-theme-p))
+     (loop for row in (rest rows)
+           collect
+           (markdown-table-row-line
+            row widths ansi-theme-p
+            nil capabilities))
+     (list
+      (markdown-table-border-line
+       #\└ #\┴ #\┘ widths
+       ansi-theme-p)))))
 
 (defun markdown-ordered-prefix-end (line)
   (let ((dot (position #\. line)))
@@ -198,36 +363,75 @@
                       (subseq line 0 dot)))
       (+ dot 2))))
 
+(defun markdown-heading-level (line)
+  (loop for character across line
+        while (char= character #\#)
+        count 1))
+
 (defun markdown-line
-    (line in-code-p ansi-theme-p capabilities)
+    (line in-code-p ansi-theme-p
+     capabilities available-width)
   (cond
     ((string-prefix-p "```" line)
-     (values "" (not in-code-p) t))
+     (values
+      (theme-foreground
+       :md-code-block-border line
+       :enabled-p ansi-theme-p)
+      (not in-code-p) nil))
     (in-code-p
      (values
-      (ansi-style
-       "36" (concatenate 'string "  " line)
-       ansi-theme-p)
+      (theme-foreground
+       :md-code-block
+       (concatenate 'string "  " line)
+       :enabled-p ansi-theme-p)
       in-code-p nil))
     ((markdown-horizontal-rule-p line)
      (values
-      (make-string 3 :initial-element #\─)
+      (theme-foreground
+       :md-hr
+       (make-string
+        (min 80 available-width)
+        :initial-element #\─)
+       :enabled-p ansi-theme-p)
       in-code-p nil))
     ((markdown-table-divider-p line)
      (values "" in-code-p t))
     ((and (> (length line) 0)
           (char= (char line 0) #\#))
-     (values
-      (ansi-style
-       "1" (trim-markdown-prefix line #\#)
-       ansi-theme-p)
-      in-code-p nil))
+     (let* ((level
+              (markdown-heading-level line))
+            (text
+              (if (<= level 2)
+                  (string-left-trim
+                   '(#\Space)
+                   (subseq line level))
+                  line))
+            (styled
+              (theme-foreground
+               :md-heading
+               (if (= level 1)
+                   (theme-underline
+                    (theme-bold
+                     text
+                     :enabled-p ansi-theme-p)
+                    :enabled-p ansi-theme-p)
+                   (if (= level 2)
+                       (theme-bold
+                        text
+                        :enabled-p ansi-theme-p)
+                       text))
+               :enabled-p ansi-theme-p)))
+       (values styled in-code-p nil)))
     ((or (string-prefix-p "- " line)
          (string-prefix-p "* " line)
          (string-prefix-p "+ " line))
      (values
       (concatenate
-       'string "• "
+       'string
+       (theme-foreground
+        :md-list-bullet "•"
+        :enabled-p ansi-theme-p)
+       " "
        (render-inline-markdown
         (subseq line 2)
         ansi-theme-p capabilities))
@@ -240,14 +444,19 @@
     ((string-prefix-p "> " line)
      (values
       (concatenate
-       'string "│ "
-       (render-inline-markdown
-        (subseq line 2)
-        ansi-theme-p capabilities))
-      in-code-p nil))
-    ((find #\| line)
-     (values
-      (markdown-table-line line)
+       'string
+       (theme-foreground
+        :md-quote-border "│"
+        :enabled-p ansi-theme-p)
+       " "
+       (theme-foreground
+        :md-quote
+        (theme-italic
+         (render-inline-markdown
+          (subseq line 2)
+          ansi-theme-p capabilities)
+         :enabled-p ansi-theme-p)
+        :enabled-p ansi-theme-p))
       in-code-p nil))
     (t
      (values
@@ -275,18 +484,60 @@
               text))
         (in-code-p nil)
         (result nil))
-    (dolist (line (split-lines-preserving-empty text))
-      (multiple-value-bind
-            (rendered next-code-p skip-p)
-          (markdown-line
-           line in-code-p ansi-theme-p capabilities)
-        (setf in-code-p next-code-p)
-        (unless skip-p
-          (setf result
-                (nconc
-                 result
-                 (wrap-text
-                  rendered available-width))))))
+    (let ((source-lines
+            (split-lines-preserving-empty text)))
+      (loop while source-lines
+            for line = (pop source-lines)
+            for next = (first source-lines)
+            do
+            (if
+                (and
+                 (not in-code-p)
+                 (find #\| line)
+                 next
+                 (markdown-table-divider-p next))
+                (let ((rows
+                        (list
+                         (markdown-table-cells
+                          line))))
+                  (pop source-lines)
+                  (loop while
+                        (and source-lines
+                             (find #\|
+                                   (first source-lines))
+                             (plusp
+                              (length
+                               (string-trim
+                                '(#\Space #\Tab)
+                                (first source-lines)))))
+                        do
+                        (setf rows
+                              (nconc
+                               rows
+                               (list
+                                (markdown-table-cells
+                                 (pop
+                                  source-lines))))))
+                  (setf result
+                        (nconc
+                         result
+                         (render-markdown-table
+                          rows available-width
+                          ansi-theme-p
+                          capabilities))))
+                (multiple-value-bind
+                      (rendered next-code-p skip-p)
+                    (markdown-line
+                     line in-code-p ansi-theme-p
+                     capabilities available-width)
+                  (setf in-code-p next-code-p)
+                  (unless skip-p
+                    (setf result
+                          (nconc
+                           result
+                           (wrap-text
+                            rendered
+                            available-width))))))))
     (let ((content
             (loop for line in result
                   collect
@@ -439,27 +690,85 @@
         (not (tool-block-collapsed-p block)))
   block)
 
-(defun render-tool-block (block width)
-  (let* ((indicator
-           (case (tool-block-status block)
-             (:running "…")
-             (:error "×")
-             (otherwise "✓")))
-         (header
-           (format nil "~A ~A ~A"
-                   indicator
-                   (tool-block-name block)
-                   (tool-block-summary block)))
-         (lines (wrap-logical-line header width)))
-    (if (or (tool-block-collapsed-p block)
-            (zerop (length (tool-block-output block))))
-        lines
-        (nconc
-         lines
-         (loop for line in
-               (wrap-text (tool-block-output block)
-                          (max 1 (- width 2)))
-               collect (concatenate 'string "  " line))))))
+(defun tool-status-theme-tokens (status)
+  (case status
+    (:running
+     (values :accent
+             :tool-pending-bg "…"))
+    (:error
+     (values :error
+             :tool-error-bg "×"))
+    (otherwise
+     (values :success
+             :tool-success-bg "✓"))))
+
+(defun render-tool-block
+    (block width &key (ansi-theme-p nil))
+  (multiple-value-bind
+        (status-token background-token indicator)
+      (tool-status-theme-tokens
+       (tool-block-status block))
+    (let* ((content-width (max 1 (- width 2)))
+           (header
+             (format
+              nil "~A ~A~@[ ~A~]"
+              (theme-foreground
+               status-token indicator
+               :enabled-p ansi-theme-p)
+              (theme-foreground
+               :tool-title
+               (theme-bold
+                (tool-block-name block)
+                :enabled-p ansi-theme-p)
+               :enabled-p ansi-theme-p)
+              (let ((summary
+                      (tool-block-summary block)))
+                (and
+                 (plusp (length summary))
+                 (theme-foreground
+                  :accent summary
+                  :enabled-p ansi-theme-p)))))
+           (header-lines
+             (wrap-logical-line
+              header content-width))
+           (output-lines
+             (unless
+                 (or
+                  (tool-block-collapsed-p block)
+                  (zerop
+                   (length
+                    (tool-block-output block))))
+               (loop for line in
+                     (wrap-text
+                      (tool-block-output block)
+                      content-width)
+                     collect
+                     (theme-foreground
+                      :tool-output line
+                      :enabled-p ansi-theme-p))))
+           (box-lines
+             (append
+              (list "")
+              header-lines
+              output-lines
+              (list ""))))
+      (cons
+       ""
+       (loop for line in box-lines
+             for padded =
+               (concatenate
+                'string " " line
+                (make-string
+                 (max
+                  1
+                  (- width
+                     1
+                     (visible-width line)))
+                 :initial-element #\Space))
+             collect
+             (theme-background
+              background-token padded
+              :enabled-p ansi-theme-p))))))
 
 (defun fit-status (text width)
   (multiple-value-bind (prefix used)
@@ -468,20 +777,238 @@
      'string prefix
      (make-string
       (max 0 (- width used))
-      :initial-element #\Space))))
+     :initial-element #\Space))))
+
+(defun format-footer-tokens (count)
+  (cond
+    ((< count 1000)
+     (format nil "~D" count))
+    ((< count 10000)
+     (format nil "~,1Fk"
+             (/ count 1000d0)))
+    ((< count 1000000)
+     (format nil "~Dk"
+             (round count 1000)))
+    ((< count 10000000)
+     (format nil "~,1FM"
+             (/ count 1000000d0)))
+    (t
+     (format nil "~DM"
+             (round count 1000000)))))
+
+(defun footer-context-text
+    (percent context-window
+     auto-compact-p ansi-theme-p)
+  (let* ((display
+           (format
+            nil "~A/~A~:[~; (auto)~]"
+            (if (numberp percent)
+                (format nil "~,1F%"
+                        (coerce percent
+                                'double-float))
+                "?")
+            (format-footer-tokens
+             (or context-window 0))
+            auto-compact-p))
+         (token
+           (cond
+             ((and (numberp percent)
+                   (> percent 90))
+              :error)
+             ((and (numberp percent)
+                   (> percent 70))
+              :warning)
+             (t :dim))))
+    (theme-foreground
+     token display
+     :enabled-p ansi-theme-p)))
+
+(defun sanitize-footer-status (text)
+  (string-trim
+   '(#\Space #\Tab)
+   (cl-ppcre:regex-replace-all
+    "[\\r\\n\\t ]+" (or text "") " ")))
+
+(defun render-footer
+    (width
+     &key cwd branch session-name
+       model provider thinking
+       (input 0) (output 0)
+       (cache-read 0) (cache-write 0)
+       latest-cache-hit-rate
+       cost subscription-p
+       context-percent
+       (context-window 0)
+       (auto-compact-p t)
+       multiple-providers-p
+       statuses
+       (ansi-theme-p nil))
+  (let* ((location
+           (format
+            nil "~A~@[ (~A)~]~@[ • ~A~]"
+            (or cwd "")
+            branch session-name))
+         (parts nil))
+    (when (plusp input)
+      (push
+       (format nil "↑~A"
+               (format-footer-tokens input))
+       parts))
+    (when (plusp output)
+      (push
+       (format nil "↓~A"
+               (format-footer-tokens output))
+       parts))
+    (when (plusp cache-read)
+      (push
+       (format nil "R~A"
+               (format-footer-tokens cache-read))
+       parts))
+    (when (plusp cache-write)
+      (push
+       (format nil "W~A"
+               (format-footer-tokens cache-write))
+       parts))
+    (when
+        (and
+         (or (plusp cache-read)
+             (plusp cache-write))
+         (numberp latest-cache-hit-rate))
+      (push
+       (format
+        nil "CH~,1F%"
+        (coerce latest-cache-hit-rate
+                'double-float))
+       parts))
+    (when (or cost subscription-p)
+      (push
+       (format
+        nil "$~,3F~:[~; (sub)~]"
+        (coerce (or cost 0d0)
+                'double-float)
+        subscription-p)
+       parts))
+    (setf parts (nreverse parts))
+    (let* ((plain-left
+             (format nil "~{~A~^ ~}" parts))
+           (context
+             (footer-context-text
+              context-percent context-window
+              auto-compact-p ansi-theme-p))
+           (left
+             (if (plusp
+                  (length plain-left))
+                 (concatenate
+                  'string
+                  (theme-foreground
+                   :dim plain-left
+                   :enabled-p ansi-theme-p)
+                  " " context)
+                 context))
+           (thinking-name
+             (and thinking
+                  (string-downcase
+                   (if (symbolp thinking)
+                       (symbol-name thinking)
+                       (princ-to-string
+                        thinking)))))
+           (right-without-provider
+             (format
+              nil "~A~@[ • ~A~]"
+              (or model "no-model")
+              (and
+               thinking-name
+               (if (string= thinking-name
+                            "off")
+                   "thinking off"
+                   thinking-name))))
+           (right
+             (if
+                 (and multiple-providers-p
+                      provider)
+                 (format nil "(~A) ~A"
+                         provider
+                         right-without-provider)
+                 right-without-provider))
+           (left-width (visible-width left))
+           (right-width (visible-width right)))
+      (when (> left-width width)
+        (setf left
+              (truncate-to-width
+               left width "...")
+              left-width
+              (visible-width left)))
+      (when
+          (and
+           multiple-providers-p
+           (> (+ left-width 2 right-width)
+              width))
+        (setf right right-without-provider
+              right-width
+              (visible-width right)))
+      (let* ((available
+               (- width left-width 2))
+             (visible-right
+               (if (plusp available)
+                   (truncate-to-width
+                    right available "" nil)
+                   ""))
+             (visible-right-width
+               (visible-width visible-right))
+             (second-line
+               (if (plusp visible-right-width)
+                   (concatenate
+                    'string left
+                    (make-string
+                     (max
+                      2
+                      (- width left-width
+                         visible-right-width))
+                     :initial-element #\Space)
+                    (theme-foreground
+                     :dim visible-right
+                     :enabled-p
+                     ansi-theme-p))
+                   left))
+             (lines
+               (list
+                (truncate-to-width
+                 (theme-foreground
+                  :dim location
+                  :enabled-p ansi-theme-p)
+                 width "...")
+                (truncate-to-width
+                 second-line width "" nil))))
+        (if statuses
+            (append
+             lines
+             (list
+              (truncate-to-width
+               (format
+                nil "~{~A~^ ~}"
+                (loop for entry in
+                        (sort
+                         (copy-list statuses)
+                         #'string<
+                         :key #'car)
+                      collect
+                      (sanitize-footer-status
+                       (cdr entry))))
+               width "..." nil)))
+            lines)))))
 
 (defun render-status-bar
     (width &key model (input 0) (output 0)
                   (cache 0) cost session)
-  (fit-status
-   (format nil "~A  in:~D out:~D cache:~D  $~A  session:~A"
-           (or model "—")
-           input output cache
-           (if cost
-               (format nil "~,4F" cost)
-               "—")
-           (or session "—"))
-   width))
+  (second
+   (render-footer
+    width
+    :session-name session
+    :model model
+    :input input
+    :output output
+    :cache-read cache
+    :cost cost)))
 
 (defstruct select-item
   (label "" :type string)
@@ -502,7 +1029,7 @@
   truncate-primary)
 
 (defun make-select-list
-    (&key items (height 8) (show-filter-p t)
+    (&key items (height 5) (show-filter-p t)
        (min-primary-column-width 32)
        (max-primary-column-width 32)
        truncate-primary)
@@ -524,9 +1051,17 @@
         (copy-list (select-list-items list))
         (remove-if-not
          (lambda (item)
-           (search query
-                   (string-downcase
-                    (select-item-label item))))
+           (let ((value
+                   (select-item-value item)))
+             (string-prefix-p
+              query
+              (string-downcase
+               (cond
+                 ((stringp value) value)
+                 ((symbolp value)
+                  (symbol-name value))
+                 (t
+                  (select-item-label item)))))))
          (select-list-items list)))))
 
 (defun clamp-select-index (list)
@@ -585,7 +1120,8 @@
                      (select-item-value item)))))))
     (values nil nil)))
 
-(defun render-select-list (list width)
+(defun render-select-list
+    (list width &key (ansi-theme-p nil))
   (let* ((items (select-list-filtered-items list))
          (count (length items))
          (selected
@@ -595,9 +1131,14 @@
                     (1- count))))
          (height (select-list-height list))
          (start
-           (max 0
-                (- selected
-                   (1- height))))
+           (max
+            0
+            (min
+             (- selected
+                (floor height 2))
+             (- count height))))
+         (end
+           (min count (+ start height)))
          (minimum
            (min
             (select-list-min-primary-column-width
@@ -671,33 +1212,98 @@
                              label-width
                              (length spacing) 2)))
                    (if (> remaining 10)
-                       (concatenate
-                        'string prefix label spacing
-                        (truncate-to-width
-                         description remaining ""))
+                       (let ((line
+                               (concatenate
+                                'string
+                                prefix label spacing
+                                (truncate-to-width
+                                 description
+                                 remaining ""))))
+                         (if selected-p
+                             (theme-foreground
+                              :accent line
+                              :enabled-p
+                              ansi-theme-p)
+                             (concatenate
+                              'string
+                              prefix label
+                              (theme-foreground
+                               :muted
+                               (concatenate
+                                'string spacing
+                                (truncate-to-width
+                                 description
+                                 remaining ""))
+                               :enabled-p
+                               ansi-theme-p))))
+                       (let ((line
+                               (concatenate
+                                'string prefix
+                                (primary
+                                 item selected-p
+                                 (- width
+                                    prefix-width
+                                    2)))))
+                         (if selected-p
+                             (theme-foreground
+                              :accent line
+                              :enabled-p
+                              ansi-theme-p)
+                             line))))
+                 (concatenate
+                  'string
+                  (if selected-p
+                      (theme-foreground
+                       :accent
                        (concatenate
                         'string prefix
                         (primary
                          item selected-p
-                         (- width prefix-width 2)))))
-                 (concatenate
-                  'string prefix
-                  (primary
-                   item selected-p
-                   (max 1
-                        (- width prefix-width 2))))))))
+                         (max
+                          1
+                          (- width
+                             prefix-width 2))))
+                       :enabled-p ansi-theme-p)
+                      (concatenate
+                       'string prefix
+                       (primary
+                        item selected-p
+                        (max
+                         1
+                         (- width
+                            prefix-width 2))))))))))
       (nconc
        (when (select-list-show-filter-p list)
          (list
-          (fit-status
-           (format nil "filter: ~A"
-                   (select-list-query list))
-           width)))
+          (theme-foreground
+           :muted
+           (fit-status
+            (format nil "filter: ~A"
+                    (select-list-query list))
+            width)
+           :enabled-p ansi-theme-p)))
        (if (zerop count)
-           (list "(no matches)")
-           (loop for item in
-                 (subseq items
-                         start
-                         (min count (+ start height)))
-                 for index from start
-                 collect (render-item item index)))))))
+           (list
+            (theme-foreground
+             :muted "  No matching commands"
+             :enabled-p ansi-theme-p))
+           (nconc
+            (loop for item in
+                  (subseq items start end)
+                  for index from start
+                  collect
+                  (render-item item index))
+            (when
+                (or (plusp start)
+                    (< end count))
+              (list
+               (theme-foreground
+                :muted
+                (truncate-to-width
+                 (format nil "  (~D/~D)"
+                         (1+ selected)
+                         count)
+                 (max 1 (- width 2))
+                 "")
+                :enabled-p
+                ansi-theme-p)))))))))

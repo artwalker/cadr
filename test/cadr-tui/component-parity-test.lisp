@@ -57,7 +57,7 @@
     (is (<= (cadr-tui:visible-width
              (first lines))
             60))
-    (setf (cadr-tui:select-list-query list) "a-very")
+    (setf (cadr-tui:select-list-query list) "long")
     (is (= 1
            (length
             (cadr-tui:select-list-filtered-items list))))))
@@ -76,7 +76,8 @@
             text 48 :ansi-theme-p t
             :capabilities caps))
          (joined
-           (format nil "~{~A~%~}" lines)))
+           (cadr-tui:strip-terminal-sequences
+            (format nil "~{~A~%~}" lines))))
     (is (search "Header" joined))
     (is (search "• item" joined))
     (is (search "1. ordered" joined))
@@ -85,12 +86,18 @@
     (is (search "italic" joined))
     (is (search "gone" joined))
     (is (search "code" joined))
-    (is (search "https://example.com" joined))
+    (is
+     (search
+      "https://example.com"
+      (format nil "~{~A~%~}" lines)))
     (is (search "│ A" joined))
     (is (search "(+ 1 2)" joined))
     (is (search "Image: alt (image.png)" joined))
     (is (search "───" joined))
-    (is (search (format nil "~C[" #\Escape) joined))
+    (is
+     (search
+      (format nil "~C[" #\Escape)
+      (format nil "~{~A~%~}" lines)))
     (is (every (lambda (line)
                  (<= (cadr-tui:visible-width line)
                      48))
