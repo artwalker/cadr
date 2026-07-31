@@ -11,7 +11,13 @@ exec "$SBCL_COMMAND" --noinform --non-interactive \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-agent.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-tui.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-cli.asd\"))" \
+  --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-storage.asd\"))" \
+  --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-server.asd\"))" \
+  --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-evals.asd\"))" \
   --eval '(asdf:test-system "cadr-ai" :force t)' \
   --eval '(asdf:test-system "cadr-agent" :force t)' \
   --eval '(asdf:test-system "cadr-tui" :force t)' \
-  --eval '(asdf:test-system "cadr-cli" :force t)'
+  --eval '(asdf:test-system "cadr-cli" :force t)' \
+  --eval '(asdf:test-system "cadr-storage" :force t)' \
+  --eval '(asdf:test-system "cadr-server" :force t)' \
+  --eval '(asdf:test-system "cadr-evals" :force t)'
