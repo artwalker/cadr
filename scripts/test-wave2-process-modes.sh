@@ -85,7 +85,8 @@ import sys
 with open(sys.argv[1], encoding="utf-8") as stream:
     records = [json.loads(line) for line in stream if line.strip()]
 assert records
-assert records[-1]["type"] == "agent_end"
+assert records[-1]["type"] == "agent_settled"
+assert any(record["type"] == "agent_end" for record in records)
 assert any(record["type"] == "message_update" for record in records)
 PY
 

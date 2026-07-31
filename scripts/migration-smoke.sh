@@ -15,7 +15,15 @@ if ! command -v script >/dev/null 2>&1; then
 fi
 
 SMOKE_ROOT="$(mktemp -d)"
-trap 'rm -rf -- "$SMOKE_ROOT"' EXIT
+SERVER_PID=""
+cleanup() {
+  if [ -n "$SERVER_PID" ]; then
+    kill "$SERVER_PID" 2>/dev/null || true
+    wait "$SERVER_PID" 2>/dev/null || true
+  fi
+  rm -rf -- "$SMOKE_ROOT"
+}
+trap cleanup EXIT
 
 LEGACY_NAME="$(printf '%s%s-cl' p i)"
 HOME_DIRECTORY="$SMOKE_ROOT/home"
@@ -24,10 +32,27 @@ OLD_DIRECTORY="$HOME_DIRECTORY/.$LEGACY_NAME"
 NEW_DIRECTORY="$HOME_DIRECTORY/.cadr"
 mkdir -p "$HOME_DIRECTORY" "$PROJECT"
 
+PORT_FILE="$SMOKE_ROOT/port"
+python3 "$PROJECT_DIRECTORY/test/fixtures/openai-sse-server.py" \
+  "$PORT_FILE" &
+SERVER_PID="$!"
+tries=0
+while [ ! -s "$PORT_FILE" ]; do
+  tries=$((tries + 1))
+  if [ "$tries" -ge 100 ]; then
+    echo "migration smoke: provider stub did not start" >&2
+    exit 1
+  fi
+  sleep 0.02
+done
+PORT="$(tr -d '\r\n' <"$PORT_FILE")"
+BASE_URL="http://127.0.0.1:$PORT"
+
 (
   cd "$PROJECT"
-  HOME="$HOME_DIRECTORY" ANTHROPIC_API_KEY="offline-smoke" \
-    "$CADR" --provider anthropic --no-tui </dev/null >/dev/null
+  HOME="$HOME_DIRECTORY" OPENAI_API_KEY=test \
+    "$CADR" --provider openai --model gpt-4o-mini \
+    --base-url "$BASE_URL" --print "seed" >/dev/null
 )
 mv -- "$NEW_DIRECTORY" "$OLD_DIRECTORY"
 mkdir -p "$OLD_DIRECTORY/extensions/example"
@@ -59,7 +84,7 @@ if [ ! -d "$OLD_DIRECTORY" ] || [ -e "$NEW_DIRECTORY" ]; then
   exit 1
 fi
 
-COMMAND="cd '$PROJECT' && HOME='$HOME_DIRECTORY' ANTHROPIC_API_KEY='offline-smoke' '$CADR' --provider anthropic --continue --no-tui"
+COMMAND="cd '$PROJECT' && HOME='$HOME_DIRECTORY' OPENAI_API_KEY='test' '$CADR' --provider openai --model gpt-4o-mini --base-url '$BASE_URL' --continue --no-tui"
 printf 'yes\n' | script -qefc "$COMMAND" /dev/null >/dev/null
 
 if [ -e "$OLD_DIRECTORY" ] || [ ! -d "$NEW_DIRECTORY" ]; then
