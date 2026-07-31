@@ -34,7 +34,7 @@
          "SQLITE-QUERY-SINGLE-NAMED"))
     (multiple-value-bind (symbol status)
         (find-symbol name :cadr-storage)
-      (is symbol)
+      (is (not (null symbol)))
       (is (eq :external status)))))
 
 (test standalone-storage-repository-creates-reopens-lists-forks-and-deletes
@@ -50,8 +50,7 @@
              (cadr-agent:session-repository-create
               repository
               :id "source"
-              :cwd cwd
-              :metadata '(:purpose "wave5")))
+              :cwd cwd))
            (entry
              (cadr-agent:harness-session-append-message
               session
