@@ -106,10 +106,15 @@
               :images nil
               :true-color-p nil
               :hyperlinks-p nil))
+           (filename
+             (namestring
+              (merge-pathnames
+               "pictures/a.png"
+               (user-homedir-pathname))))
            (fallback
              (cadr-tui:image-fallback
               "image/png" :width 640 :height 480
-              :filename "/root/pictures/a.png"
+              :filename filename
               :capabilities caps)))
       (is (string=
            "[Image: ~/pictures/a.png [image/png] 640x480]"
