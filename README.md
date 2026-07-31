@@ -128,9 +128,9 @@ the line REPL. `--print`/`--mode text` prints only the final answer,
 original pi command/response/event JSONL protocol. Without an explicit mode,
 non-TTY input or output selects one-shot text mode.
 
-Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Commands
-include `/sessions`, `/switch`, `/branch`, `/compact`, `/export`, `/login`,
-`/logout`, `/reload`, and `/install`.
+Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Interactive
+session navigation uses `/resume`, `/fork`, and `/tree`; the remaining slash
+command surface follows the original pi command list.
 
 `--fork` accepts a session file path or a full/partial session ID, preferring
 the current project's sessions before the global session set. It creates a new
@@ -301,6 +301,10 @@ accidental name collisions; it is not a security boundary.
   of using the TypeScript/Bun toolchain.
 - Extensions are Lisp packages and forms rather than JavaScript modules and
   npm packages.
+- By explicit user decision, every selector wraps in both directions, including
+  the few original pi selectors that clamp at a boundary.
+- By explicit user decision, bash tool titles omit the explicit-timeout suffix
+  and always render as `$ <command>`.
 - Provider live checks use credential-gated FiveAM blocks, matching the
   reference vitest mechanism. External shell harnesses remain only where a
   unit test cannot faithfully observe the real boundary:
@@ -318,11 +322,11 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Full ASDF gate | 3043 checks: 3042 pass, one credential-gated Anthropic skip, zero failures |
+| Full ASDF gate | Goal 9 B3 third-round current-user gate: 6877 checks, 6876 pass, one credential-gated Anthropic skip, zero failures |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Live-proven | Credential-gated FiveAM with explicit provider/model and no user settings dependency: DeepSeek streaming/print/extension/repo/eval and OpenAI Codex CLI/eval; retained PTY smoke covers the live DeepSeek TUI |
 | Credential-gated | Providers without credentials skip live blocks exactly as the baseline does; fixtures are not presented as live evidence |
-| Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; the final all-feature terminal sweep remains the Goal 8 acceptance gate |
+| Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; Goal 9 Part B awaits the third-round B3 dual-terminal sweep |
 
 ```bash
 ./scripts/test-cl.sh
@@ -342,6 +346,8 @@ Migration evidence and the exact residual-name exemptions are in
 [docs/progress/migration.md](docs/progress/migration.md).
 The final mechanical evidence and pending human checklist are in
 [docs/acceptance/goal-v8-final.md](docs/acceptance/goal-v8-final.md).
+Goal 9 visual-parity evidence and the pending B3 human checklist are in
+[docs/acceptance/goal-v9-part-b.md](docs/acceptance/goal-v9-part-b.md).
 
 ## License
 

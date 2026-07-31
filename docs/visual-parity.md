@@ -36,7 +36,8 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 
 - `一致`：进入 Part B 前已等价，或本轮复核未发现差异。
 - `不一致（已改齐）`：本轮发现差异、实现修正并有永久门禁。
-- `有意差异`：须有用户批准并登记 README；当前为零项。
+- `有意差异`：须有用户批准并登记 README。本轮有两项用户裁决：所有选择器
+  双向循环，以及 bash 标题永不显示 timeout。
 
 ## B1. 可复现的基线 TUI
 
@@ -177,12 +178,12 @@ background reset    = ESC[49m
 
 | ID | 基线合约与 Cadr 证据 | 状态 |
 |---|---|---|
-| LY-01 | root 顺序为 startup/chat/pending/status/widgets/editor/footer；`tui.lisp:1740-1915`，`GOAL9-ROOT-LAYOUT-PUTS-EDITOR-BEFORE-TWO-LINE-FOOTER`。 | 不一致（已改齐） |
-| LY-02 | user 全宽背景 X=1/Y=1；assistant 无背景且可见内容前一空行；thinking muted+italic；`tui.lisp:1497-1639`。 | 不一致（已改齐） |
-| LY-03 | tool 前 spacer、X=1/Y=1、状态背景；`components.lisp:1554-1649`。 | 不一致（已改齐） |
-| LY-04 | editor 只有上下 `─`，高度 `max(5,floor(rows*0.3))`，滚动信息在边框；`editor.lisp:1420-1662`。 | 不一致（已改齐） |
-| LY-05 | select primary=32、gap=2、description min=10、默认 5 行、宽度 `<=40` 关闭 description；`components.lisp:1871-2164`。 | 不一致（已改齐） |
-| LY-06 | overlay 默认 `min(80,width)`，selector 自身边框、spacer 和窄屏裁剪；`overlay.lisp:87-107`、`tui.lisp:1838-1915`。 | 一致 |
+| LY-01 | root 顺序为 startup/chat/pending/status/widgets/editor/footer；`src/cadr-cli/tui.lisp:1997` `render-tui-state`，`GOAL9-ROOT-LAYOUT-PUTS-EDITOR-BEFORE-TWO-LINE-FOOTER`。 | 不一致（已改齐） |
+| LY-02 | user 全宽背景 X=1/Y=1；assistant 无背景且可见内容前一空行；thinking muted+italic；`src/cadr-cli/tui.lisp:1689,1758,1872`。 | 不一致（已改齐） |
+| LY-03 | tool 前 spacer、X=1/Y=1、状态背景；`src/cadr-tui/components.lisp:1567` `render-tool-block`。 | 不一致（已改齐） |
+| LY-04 | editor 只有上下 `─`，高度 `max(5,floor(rows*0.3))`，滚动信息在边框；`src/cadr-tui/editor.lisp:1551` `render-editor`。 | 不一致（已改齐） |
+| LY-05 | select primary=32、gap=2、description min=10、默认 5 行、宽度 `<=40` 关闭 description；`src/cadr-tui/components.lisp:1923,2024`。 | 不一致（已改齐） |
+| LY-06 | overlay 默认 `min(80,width)`，selector 自身边框、spacer 和窄屏裁剪；`src/cadr-tui/overlay.lisp:79` `resolve-overlay-layout`、`src/cadr-cli/tui.lisp:1997`。 | 一致 |
 | MD-01 | H1/H2/H3+ 样式、H3+ 前缀和 block spacing 对齐。 | 不一致（已改齐） |
 | MD-02 | code fence、两格缩进、在册语言语法着色、未知语言 code-block 色对齐；完整移植基线 `syntax-highlight.test.ts` 的 span/entity/继承、TS、diff、regexp、decorator、HTML 门禁，并覆盖 HTML/diff/JSON/Bash/SQL 可见 token 边界与 Python/Bash URL 反例。 | 不一致（已改齐） |
 | MD-03 | quote `│ `、italic、HR 80-cell cap 对齐。 | 不一致（已改齐） |
@@ -191,9 +192,10 @@ background reset    = ESC[49m
 | MD-06 | 表格宽度分配、wrap、粗体 header、完整 box、窄屏 raw fallback 对齐。 | 不一致（已改齐） |
 | MD-07 | inline style 局部恢复、streaming partial fence 防闪烁对齐。 | 不一致（已改齐） |
 | TL-01 | pending/success/error 背景、title/argument/output/error/warning 语义色对齐；真实 bash 非零退出必须从 tool result 传播为红底 error state，标题仍为 `$ command` 且不添加状态 glyph，文案为 `Command exited...`。 | 不一致（已改齐） |
-| TL-02 | collapsed preview：bash 5、read/write 10、grep 15、find/ls 20；expanded 显示完整保留结果。 | 不一致（已改齐） |
+| TL-02 | collapsed preview：bash 5、write 10、grep 15、find/ls 20；成功 read 折叠态不显示结果，展开后显示完整结果，error 始终可见。 | 不一致（已改齐） |
 | TL-03 | real edit 结果进入 diff renderer；context/add/remove 色、单行 word inverse、tab→3 spaces 和超长行上限对齐；bash running/settled 显示 `Elapsed`/`Took`。 | 不一致（已改齐） |
 | TL-04 | 默认 active tools、顺序、description、prompt snippet/guidelines 对齐基线 `read,bash,edit,write`；`grep/find/ls` 仅显式启用，避免模型因提示偏离改用 bash echo/sed。 | 不一致（已改齐） |
+| TL-05 | 用户裁决：bash 标题无论是否显式传入 timeout 均只显示 `$ command`，不显示 `(timeout Ns)`。这与审计基线 `bash.ts:226-231` 的显式 timeout 后缀有意不同。 | 有意差异 |
 | FT-01 | cwd/branch/session；input/output/cache read/write/hit/cost/context；provider/model/thinking；extension status 三行布局对齐。 | 不一致（已改齐） |
 | FT-02 | context `>70%` warning、`>90%` error 对齐。 | 不一致（已改齐） |
 | FT-03 | working/retry/compaction spinner、语义色与 status 区域对齐。 | 不一致（已改齐） |
@@ -202,6 +204,7 @@ background reset    = ESC[49m
 | SL-02 | session selected row 使用全宽 `selectedBg`；tree 只给固定 gutter/body segment 着色，不错误 padding 到整行。 | 不一致（已改齐） |
 | SL-03 | model 最多 10 行、accent selected、muted provider、green `✓`、border/spacer 对齐。 | 不一致（已改齐） |
 | SL-04 | autocomplete primary 12..32、默认 5、配置 3..20、仅 `@` 20 ms debounce、popup 在下边框后。 | 不一致（已改齐） |
+| SL-05 | 用户裁决：所有选择器在首末项双向循环，空列表保持稳定；基线各选择器并非统一循环，故作为有意差异登记。 | 有意差异 |
 | AN-01 | spinner `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`，80 ms；loader 前一空行。 | 不一致（已改齐） |
 | AN-02 | render 16 ms throttle；terminal progress 1 s keepalive；`showTerminalProgress` 每事件读取且关闭立即 clear。 | 不一致（已改齐） |
 | AN-03 | IME zero-width marker、inverse fake cursor、hardware cursor 放置/隐藏/恢复对齐。 | 不一致（已改齐） |
@@ -209,22 +212,25 @@ background reset    = ESC[49m
 
 Markdown 门禁：
 
-- `test/cadr-tui/components-test.lisp:130-767`
+- `test/cadr-tui/components-test.lisp:130-820`
 - `test/cadr-tui/component-parity-test.lisp:159-331`
 - `src/cadr-cli/interactive-services.lisp:2935-3950`
 - `test/cadr-cli/part-b-interactive-test.lisp:1352-1485,1821-1881`
-- `test/cadr-cli/tui-test.lisp:2693-2725`
+- `test/cadr-cli/tui-test.lisp:1695` `GOAL9-TUI-MARKDOWN-TRANSFORMERS-COVER-USER-TEXT-THINKING-STREAMING-AND-CACHE`
+- `test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN`
 
 工具、footer、选择器与动效门禁：
 
 - `test/cadr-tui/components-test.lisp:229-568`
 - `test/cadr-tui/editor-parity-test.lisp:224-521`
 - `test/cadr-tui/terminal-colors-test.lisp:108-251`
-- `test/cadr-cli/tui-test.lisp:223-1145,1698-2240`
+- `test/cadr-cli/tui-test.lisp:223-1415,2334-2700`
 - `test/cadr-cli/part-b-interactive-test.lisp:1671-2180`
 
-机械账本结论：33 个编号项中 `一致` 2 项，`不一致（已改齐）` 31 项，
-`有意差异` 0 项，`pending` 0 项。
+第三轮机械账本：35 个编号项中 `一致` 2 项，`不一致（已改齐）` 31 项，
+`有意差异` 2 项，`pending` 0 项。定向门禁、隔离/当前用户全量、PTY lifecycle、
+隔离 native build 与提交证据均已落账；README 差异登记已同步。B3 第三轮真实双终端
+A/B 仍须由用户裁决。
 
 ### B2 运行时补充门禁
 
@@ -236,12 +242,55 @@ Markdown 门禁：
 | selector | empty/filter-empty/first/last/page/wrap/select |
 | editor | empty→incremental Unicode→ZWJ intermediate→complete grapheme |
 | assistant stream | start→每个 delta→final multiline document |
+| Markdown stream | delta→TUI entry→Markdown renderer→virtual terminal 全链路逐帧保留 fence 与空 code line |
 | stream content | 每个单切点/代表性多切点→逐字符相等；纯空白、空白+数字、连续数字、行首数字、非流式 |
 | provider thinking | 每个 provider × 每个 thinking level × catalog 命中/未知 model→payload 与 start/delta/end |
 | tool | start/running/partial→success 或 error→collapsed/expanded |
-| exact copy | tool success/error/args 与全部 overlay 每一行→完整 snapshot 逐字相等 |
+| exact copy | tool success/error/args 与全部 overlay 每一行→完整 snapshot 逐字相等；14 个 overlay 另锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw/Kitty input→configured action→busy/idle behavior |
+
+### B2 overlay 完整逐行合约
+
+第三轮不再以“抽查六个 overlay”代表全部交互面。下表已由当前机械门禁锁定；
+每一行均以去 ANSI 的完整行数组、ANSI 语义样式和首末循环事件共同验证。
+
+| Surface | 标题 | 提示 | 搜索 | 条目、顺序和值 | 计数 | 选中、边框与间距 | 描述 | 循环 |
+|---|---|---|---|---|---|---|---|---|
+| `/model` | 无额外 `Select Model` 标题 | 未 scoped 时 `Only showing models from configured providers. Use /login to add providers.`；刷新后 `Model catalogs refreshed.`；scoped 状态只显示 `Scope: all | scoped`，不显示 `tab scope (all/scoped)` | `> ` | 当前过滤顺序；`id [provider]`，当前模型 `✓` | 超 viewport 时位置/总数 | `→` accent；上下 `─`，各区块空行固定 | 选中项下 `Model Name: ...` | 双向 |
+| `/settings` | 主层无伪造标题；子层为 `Thinking Level`、`Theme`、`Light Theme`、`Dark Theme`、`Automatic Theme` | 主层 `Enter/Space to change · Esc to cancel`；子层 `Enter to select · Esc to go back` | 主层 type-to-search | 与基线能力门控一致：supports-images=nil 为 25 项；true 时在 Auto-compact 后追加 Show images、Image width，合计 27 项；子层候选顺序固定 | 10 行 viewport，按实际总数显示 `(i/25)` 或 `(i/27)` | `→` accent；上下边框；说明与列表间固定空行 | 宽屏显示 option description，窄屏换行/裁剪；子层显示说明 | 双向 |
+| `/resume` | `Resume Session (Current Folder)`，右侧 scope/name/sort 状态 | scope、regex/exact、sort/named/delete/path/rename 两行 | `> query` | threaded/search 结果顺序；名称或首条消息、消息数与 age | viewport 时当前位置/总数 | 选中行全宽背景；上下边框与固定 spacer | cwd/path 按状态展示 | 双向 |
+| `/fork` | `Fork from Message` | `Select a user message ... into a new session` | 无 | active path 的 user messages，原顺序；每项 `Message i of N` | 每项自带 `i of N` | `›` 选中；标题区、边框、条目间空行逐行固定 | 用户消息摘要 | 双向 |
+| `/tree` | `Session Tree` | `↑/↓ move · ←/→ page · ctrl+←/→ branch · ctrl+x copy ...` 与 `filters ctrl+d/t/u/l/a ...` | `Type to search:` | 树序；tool call 为 `[bash: <args>]`、`[read: <path>]`，不得渲染 raw result | `(i/N)` | 固定 gutter 选中背景；上下边框与空行固定 | message/tool label、branch/label time | 双向 |
+| `/login` 方法 | `Select authentication method:` | `↑↓ navigate  enter select  escape/ctrl+c cancel` | 无 | account 后 API key；值为对应 auth type | 无 | `→`；上下边框及标题/列表/提示 spacer | 无 | 双向 |
+| `/login` provider/API key | `Select provider to configure:`；输入层 `Login to <provider>` | provider 选择后 OAuth 或 masked API key；`escape/ctrl+c cancel  enter submit` | provider 为 `> `；key 为 masked `> ` | provider 定义顺序；name、auth type、configured 状态 | viewport `(i/N)`；空态精确文案 | `→`；上下边框及固定 spacer | `[subscription]`/`[API key]` 与 credential source | 双向 |
+| `/logout` | `Select provider to logout:` | 空态 `No providers logged in. Use /login first.` | `> ` | 已存 credential 投影，稳定排序；不混入 env/config-only 项 | viewport `(i/N)` | `→`；上下边框及固定 spacer | auth type 与 configured/source | 双向 |
+| `/scoped-models` | `Model Configuration` | `Session-only. ctrl+s to save to settings.` 与完整操作提示 | `> ` | session order；unavailable id 保留；enabled `✓`/disabled `✗` | enabled/unavailable 状态及 viewport | `→` accent；上下边框及固定 spacer | `Model Name: ...` | 双向 |
+| `/import` | `Import session` | `Replace current session with <path>?`；`↑↓ navigate  enter select  escape cancel` | 无 | `Yes` 后 `No`；值含 confirmed flag、原命令与 path | 无 | `→`；上下边框及固定 spacer | 无 | 双向 |
+| `/trust` | `Project trust` 与 cwd | `↑↓ navigate  enter save  escape cancel` | 无 | Trust、Trust parent folder、Do not trust | 无 | `→`；上下边框及固定 spacer | saved decision、current session、parent path | 双向 |
+| extension custom UI | extension 提供的单行/多行 title | 通用 `↑↓ navigate  enter select  escape cancel` | 由扩展 surface 决定 | 扩展提供的 label/value 原顺序 | generic viewport | `→`；framed select 上下边框与固定 spacer | 扩展提供 description | 双向；真实 extension worker→live TUI bridge→键盘选择→返回值已回归 |
+| autocomplete | 无标题 | 无额外提示 | editor 当前 `/command`、`/model ...`、`/login ...` 或 `@path` prefix | command 规范顺序/匹配排序；model/provider/path items 与真实 value | `autocompleteMaxVisible` 限制 | selected `→`，popup 位于 editor 下边框后，无 overlay 外框；`@path` 有完整 40×8 virtual-screen 门禁 | 宽度允许时显示 description | 双向 |
+| `/sessions`、`/switch`、`/branch`、`/install` | 基线无对应 slash/TUI surface | Cadr 已从内置 slash dispatch、overlay 与 autocomplete 全部删除；直接输入只按普通未知输入路径处理，不构成命令 alias 或隐藏 backend | 无 | 无 | 无 | 无 | 无 | 不适用 |
+| `/compact` | 基线无 overlay | 当前直接执行 compaction，并在 status/transcript 呈现进度或结果 | 无 | 无 | 无 | 无 | compaction status | 不适用 |
+| `/export` | 基线无 overlay | 当前直接按默认 HTML 或显式 path 导出并 notice 结果 | 无 | 无 | 无 | 无 | 输出 path | 不适用 |
+| `/reload` | 基线无 overlay | 当前直接 reload keybindings/extensions/skills/prompts/themes/context 并 notice 结果 | 无 | 无 | 无 | 无 | reload summary | 不适用 |
+
+14 个 overlay 的完整 virtual-screen SHA-256 由
+`GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` 锁定；
+`@path` 整屏与循环由
+`GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` 锁定。
+settings 的 25/27 能力分支、完整文案、搜索、窄屏和 submenu 由
+`GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`、
+`GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT` 与
+`GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES` 锁定。extension raw
+surface 由 `GOAL9-B3-EXTENSION-SELECTOR-STYLES-COUNTDOWN-KEYS-AND-TOOL-TOGGLE-ARE-EXACT`
+锁定，真实桥接由
+`GOAL9-B3-EXTENSION-SELECT-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` 与
+`GOAL9-B3-EXTENSION-CONFIRM-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` 锁定。
+流式 Markdown 全链路由
+`GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` 锁定；
+provider × API × thinking level × catalog hit/miss 矩阵由
+`EVERY-BUILT-IN-PROVIDER-AND-API-HAS-THINKING-LEVEL-HIT-MISS-CONTRACT` 锁定。
 
 ## B3. 双终端 A/B 门禁
 
@@ -277,11 +326,11 @@ CADR_OFFLINE=1 \
 | Long output | `Output the integers 1 through 120, one per line, with no prose.`；滚到顶、一页、底。 | follow、scroll marker、clipping、footer anchor、回到 live tail。 |  |
 | Tool call | `Use bash to run printf 'alpha\\nbeta\\n'; then read README.md and report only its first heading.`；完成后 Ctrl+O。 | 状态背景、padding、title/arg/output 色、preview budget、展开稳定。 |  |
 | Diff | 在各自临时目录把 `alpha beta gamma` edit 为 `alpha delta gamma`。 | add/remove/context、word inverse、背景、折叠/展开。 |  |
-| Overlays | 依次打开/取消 `/model`、`/settings`、`/resume`、`/fork`、`/tree`、`/login`，各移动和翻页一次。 | border、spacer、selectedBg、provider/checkmark、scroll、focus、无 stale。 |  |
+| Overlays | 依次打开/取消 `/model`、`/settings`、`/resume`、`/fork`、`/tree`、`/login`、`/logout`、`/scoped-models`、`/import`、`/trust` 与 extension custom UI；逐一覆盖搜索、空态、首末循环和翻页。 | 每一行标题/提示/搜索/条目/值/计数/描述、border、spacer、selectedBg、scroll、focus、无 stale。 |  |
 | Autocomplete | `/mo`→取消，`/model `→取消，`@REA`→移动→应用→undo。 | popup 位置、断点、selected row、description、cursor/IME、undo。 |  |
 | CJK/emoji | 重复粘贴 `中文ABC🙂👨‍👩‍👧‍👦 é` 至换行，按 grapheme 移动删除并提交。 | cell、cursor、border、wrap、transcript alignment。 |  |
 | Narrow resize | overlay 打开及 streaming 时依次 100×32→60×20→40×12→100×32。 | reflow、table/code wrap、footer truncation、overlay clipping、无 stale cell。 |  |
 | Error | `/model __goal9_missing_model__`；再让 bash 执行 `sh -c 'echo expected-error >&2; exit 7'`。 | error color/spacing、tool error background、footer recovery、focus。 |  |
 | Exit | `/quit`；重启后 Ctrl-C。 | cursor、bracketed paste/raw、alternate screen、无重复 final frame。 |  |
 
-Part B disposition: `第二轮 B3 已退回；运行时补正完成后等待用户重新逐项确认`
+Part B disposition: `第三轮机械门禁、全量、PTY、构建与提交已落账；等待 B3 用户确认`
