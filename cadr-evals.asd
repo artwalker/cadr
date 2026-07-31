@@ -20,7 +20,8 @@
   :components ((:module "test/cadr-evals"
                 :serial t
                 :components ((:file "package")
-                             (:file "evals-test"))))
+                             (:file "evals-test")
+                             (:file "live-evals-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call
