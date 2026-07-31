@@ -162,14 +162,18 @@
                (cadr-evals:eval-result-events
                 result))
              (hello-result
-               (find
-                "tool_result"
-                events
-                :key
+               (find-if
                 (lambda (event)
-                  (cadr-ai::json-get
-                   event "type"))
-                :test #'string=)))
+                  (and
+                   (string=
+                    "tool_result"
+                    (cadr-ai::json-get
+                     event "type"))
+                   (string=
+                    "hello"
+                    (cadr-ai::json-get
+                     event "name"))))
+                events)))
         (is (string=
              "Hello, Bob!"
              (cadr-ai::json-get
