@@ -246,6 +246,266 @@
              (setf cursor (replacement-end replacement))
           finally (write-string original output :start cursor))))
 
+(defstruct edit-diff-range
+  old-start
+  old-end
+  new-start
+  new-end)
+
+(defun edit-line-start-offsets (text)
+  (let ((starts nil))
+    (when (plusp (length text))
+      (push 0 starts)
+      (loop for index below (1- (length text))
+            when (char= (char text index) #\Newline)
+              do (push (1+ index) starts)))
+    (coerce (nreverse starts) 'vector)))
+
+(defun edit-line-index-at-offset (starts offset)
+  (when (zerop (length starts))
+    (return-from edit-line-index-at-offset 0))
+  (let ((low 0)
+        (high (1- (length starts)))
+        (found 0))
+    (loop while (<= low high)
+          for middle = (floor (+ low high) 2)
+          if (<= (aref starts middle) offset)
+            do (setf found middle
+                     low (1+ middle))
+          else
+            do (setf high (1- middle)))
+    found))
+
+(defun replacement-covers-whole-lines-p
+    (replacement original starts old-start old-end)
+  (and
+   (= (replacement-start replacement)
+      (aref starts old-start))
+   (= (replacement-end replacement)
+      (if (< (1+ old-end) (length starts))
+          (aref starts (1+ old-end))
+          (length original)))))
+
+(defun replacement-diff-ranges
+    (original updated replacements)
+  (let ((old-starts
+          (edit-line-start-offsets original))
+        (new-starts
+          (edit-line-start-offsets updated))
+        (offset-delta 0)
+        (ranges nil))
+    (dolist (replacement replacements)
+      (let* ((old-start
+               (edit-line-index-at-offset
+                old-starts
+                (replacement-start replacement)))
+             (old-end
+               (edit-line-index-at-offset
+                old-starts
+                (max
+                 (replacement-start replacement)
+                 (1- (replacement-end replacement)))))
+             (new-offset
+               (+ (replacement-start replacement)
+                  offset-delta))
+             (new-length
+               (length (replacement-new replacement)))
+             (whole-lines-p
+               (replacement-covers-whole-lines-p
+                replacement original old-starts
+                old-start old-end))
+             (new-start
+               (if (and (zerop new-length)
+                        whole-lines-p
+                        (= new-offset (length updated)))
+                   (length new-starts)
+                   (edit-line-index-at-offset
+                    new-starts new-offset)))
+             (new-end
+               (cond
+                 ((plusp new-length)
+                  (edit-line-index-at-offset
+                   new-starts
+                   (+ new-offset new-length -1)))
+                 ((or
+                   (zerop (length new-starts))
+                   whole-lines-p)
+                  (1- new-start))
+                 (t new-start))))
+        (push
+         (make-edit-diff-range
+          :old-start old-start
+          :old-end old-end
+          :new-start new-start
+          :new-end new-end)
+         ranges)
+        (incf
+         offset-delta
+         (- new-length
+            (- (replacement-end replacement)
+               (replacement-start replacement))))))
+    (nreverse ranges)))
+
+(defun group-edit-diff-ranges (ranges)
+  (let ((groups nil))
+    (dolist (range ranges)
+      (let ((current (car groups)))
+        (if
+            (and
+             current
+             (<= (edit-diff-range-old-start range)
+                 (+ (edit-diff-range-old-end current) 9)))
+            (setf
+             (edit-diff-range-old-end current)
+             (max
+              (edit-diff-range-old-end current)
+              (edit-diff-range-old-end range))
+             (edit-diff-range-new-end current)
+             (max
+              (edit-diff-range-new-end current)
+              (edit-diff-range-new-end range)))
+            (push (copy-edit-diff-range range)
+                  groups))))
+    (nreverse groups)))
+
+(defun format-edit-diff-line
+    (marker number width text)
+  (format nil "~C~vD ~A"
+          marker width number text))
+
+(defun generate-edit-display-diff
+    (original updated replacements)
+  (let* ((old-lines
+           (coerce (text-lines original) 'vector))
+         (new-lines
+           (coerce (text-lines updated) 'vector))
+         (groups
+           (group-edit-diff-ranges
+            (replacement-diff-ranges
+             original updated replacements)))
+         (width
+           (length
+            (write-to-string
+             (max 1
+                  (length old-lines)
+                  (length new-lines)))))
+         (output nil))
+    (loop for group in groups
+          for group-index from 0
+          for old-start =
+            (edit-diff-range-old-start group)
+          for old-end =
+            (edit-diff-range-old-end group)
+          for new-start =
+            (edit-diff-range-new-start group)
+          for new-end =
+            (edit-diff-range-new-end group)
+          for before = (max 0 (- old-start 4))
+          for after =
+            (min (length old-lines)
+                 (+ old-end 5))
+          do
+          (when (plusp group-index)
+            (push
+             (format nil " ~vA ..." width "")
+             output))
+          (loop for index from before below old-start
+                do
+                (push
+                 (format-edit-diff-line
+                  #\Space (1+ index) width
+                  (aref old-lines index))
+                 output))
+          (loop for index from old-start to old-end
+                when (< index (length old-lines))
+                  do
+                  (push
+                   (format-edit-diff-line
+                    #\- (1+ index) width
+                    (aref old-lines index))
+                   output))
+          (loop for index from new-start to new-end
+                when (and (>= index 0)
+                          (< index (length new-lines)))
+                  do
+                  (push
+                   (format-edit-diff-line
+                    #\+ (1+ index) width
+                    (aref new-lines index))
+                   output))
+          (loop for index from (1+ old-end) below after
+                do
+                (push
+                 (format-edit-diff-line
+                  #\Space (1+ index) width
+                  (aref old-lines index))
+                 output)))
+    (values
+     (join-lines (nreverse output))
+     (and groups
+          (1+
+           (max 0
+                (edit-diff-range-new-start
+                 (first groups)))))
+     groups)))
+
+(defun generate-edit-unified-patch
+    (path original updated groups)
+  (let ((old-lines
+          (coerce (text-lines original) 'vector))
+        (new-lines
+          (coerce (text-lines updated) 'vector)))
+    (with-output-to-string (stream)
+      (format stream "--- ~A~%+++ ~A" path path)
+      (dolist (group groups)
+        (let* ((old-start
+                 (edit-diff-range-old-start group))
+               (old-end
+                 (edit-diff-range-old-end group))
+               (new-start
+                 (edit-diff-range-new-start group))
+               (new-end
+                 (edit-diff-range-new-end group))
+               (before-count (min 4 old-start))
+               (after-count
+                 (min 4
+                      (max 0
+                           (- (length old-lines)
+                              old-end 1))))
+               (old-hunk-start (- old-start before-count))
+               (new-hunk-start
+                 (max 0 (- new-start before-count)))
+               (old-count
+                 (+ before-count
+                    (1+ (- old-end old-start))
+                    after-count))
+               (new-change-count
+                 (max 0 (1+ (- new-end new-start))))
+               (new-count
+                 (+ before-count new-change-count
+                    after-count)))
+          (format
+           stream
+           "~%@@ -~D,~D +~D,~D @@"
+           (1+ old-hunk-start) old-count
+           (1+ new-hunk-start) new-count)
+          (loop for index from old-hunk-start below old-start
+                do (format stream "~% ~A"
+                           (aref old-lines index)))
+          (loop for index from old-start to old-end
+                when (< index (length old-lines))
+                  do (format stream "~%-~A"
+                             (aref old-lines index)))
+          (loop for index from new-start to new-end
+                when (and (>= index 0)
+                          (< index (length new-lines)))
+                  do (format stream "~%+~A"
+                             (aref new-lines index)))
+          (loop for index from (1+ old-end)
+                  below (+ (1+ old-end) after-count)
+                do (format stream "~% ~A"
+                           (aref old-lines index))))))))
+
 (defun make-edit-tool (cwd)
   (cadr-ai:make-tool
    :name "edit"
@@ -271,10 +531,15 @@
    (lambda (call-id arguments)
      (declare (ignore call-id))
      (let* ((arguments (prepare-edit-arguments arguments))
+            (display-path
+              (required-string arguments "path"))
             (path
               (resolve-tool-path
-               cwd (required-string arguments "path")))
-            (replacement-count 0))
+               cwd display-path))
+            (replacement-count 0)
+            (display-diff nil)
+            (patch nil)
+            (first-changed-line nil))
        (with-file-mutation-queue
         path
         (lambda ()
@@ -292,6 +557,16 @@
                        (apply-replacements original replacements)))
                 (setf replacement-count
                       (length replacements))
+                (multiple-value-bind
+                      (diff first-line groups)
+                    (generate-edit-display-diff
+                     original updated replacements)
+                  (setf
+                   display-diff diff
+                   first-changed-line first-line
+                   patch
+                   (generate-edit-unified-patch
+                    display-path original updated groups)))
                 (atomic-write-utf8
                  path
                  (concatenate
@@ -306,4 +581,8 @@
                   replacement-count
                   (namestring path))))
         (list :path (namestring path)
-              :replacements replacement-count))))))
+              :replacements replacement-count
+              :diff display-diff
+              :patch patch
+              :first-changed-line
+              first-changed-line))))))

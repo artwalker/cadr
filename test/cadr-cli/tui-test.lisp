@@ -27,6 +27,19 @@
    (pop (footer-sync-test-terminal-inputs terminal))
    ""))
 
+(defclass progress-event-test-terminal
+    (footer-sync-test-terminal)
+  ((progress-values
+    :initform nil
+    :accessor progress-event-test-terminal-values)))
+
+(defmethod cadr-tui:terminal-set-progress
+    ((terminal progress-event-test-terminal) active-p)
+  (push
+   (not (null active-p))
+   (progress-event-test-terminal-values terminal))
+  (not (null active-p)))
+
 (defun footer-sync-submit-input (text)
   (format nil "~A~C" text #\Return))
 
@@ -46,6 +59,47 @@
        100 8)
     (declare (ignore row column))
     (format nil "~{~A~^~%~}" lines)))
+
+(defun goal9-complete-theme-object
+    (&key (name "custom")
+          (accent "#010203")
+          vars
+          omit-thinking-max-p)
+  (let ((colors
+          (make-hash-table :test #'equal))
+        (object
+          (make-hash-table :test #'equal)))
+    (dolist
+        (entry
+         cadr-cli::+tui-theme-json-color-map+)
+      (unless
+          (and
+           omit-thinking-max-p
+           (string= (car entry)
+                    "thinkingMax"))
+        (setf
+         (gethash (car entry) colors)
+         (or
+          (cdr
+           (assoc
+            (cdr entry)
+            cadr-tui::+dark-theme-colors+))
+          "#010203"))))
+    (setf
+     (gethash "accent" colors) accent
+     (gethash "name" object) name
+     (gethash "colors" object) colors)
+    (when vars
+      (setf
+       (gethash "vars" object)
+       vars))
+    object))
+
+(defun goal9-complete-theme-json
+    (&rest arguments)
+  (cadr-ai::stringify-json
+   (apply #'goal9-complete-theme-object
+          arguments)))
 
 (test successful-login-synchronizes-footer-model
   (with-test-directory (directory)
@@ -165,6 +219,374 @@
       (let ((footer (rendered-footer-text state)))
         (is (search "gpt-5.6-luna" footer))
         (is (null (search "startup-model" footer)))))))
+
+(test goal9-footer-refreshes-all-live-fields-and-extension-statuses
+  (let ((updated-p nil)
+        (extension-ui nil)
+        (footer-calls 0))
+    (let* ((terminal
+             (make-instance
+              'footer-sync-test-terminal
+              :columns 120 :rows 12
+              :inputs
+              (list
+               (footer-sync-submit-input "/refresh")
+               (footer-sync-submit-input "/quit"))
+              :before-second-read
+              (lambda ()
+                (wait-for-footer-sync
+                 (lambda ()
+                   (> footer-calls 1))))))
+           (state
+             (cadr-cli::run-tui
+              (constantly nil)
+              :model "startup"
+              :terminal terminal
+              :set-extension-ui-function
+              (lambda (function)
+                (setf extension-ui function))
+              :footer-state-function
+              (lambda ()
+                (incf footer-calls)
+                (if updated-p
+                    (list
+                     :model "live-model"
+                     :provider :openai-codex
+                     :thinking :high
+                     :context-window 200000
+                     :context-percent 12.5d0
+                     :auto-compact-p nil
+                     :session-name "live-session"
+                     :multiple-providers-p t
+                     :subscription-p t
+                     :input 10
+                     :output 20
+                     :cache-read 30
+                     :cache-write 40
+                     :latest-cache-hit-rate 75d0
+                     :cost 0.25d0
+                     :cost-known-p t)
+                    (list :model "startup")))
+              :command-function
+              (lambda (line)
+                (when (string= line "/refresh")
+                  (setf updated-p t)
+                  (funcall
+                   extension-ui
+                   :set-status
+                   (list
+                    :key "extension"
+                    :text "ready")))
+                t))))
+      (is (string=
+           "live-model"
+           (cadr-cli::tui-state-model state)))
+      (is (eq :openai-codex
+              (cadr-cli::tui-state-provider state)))
+      (is (eq :high
+              (cadr-cli::tui-state-thinking state)))
+      (is (= 200000
+             (cadr-cli::tui-state-context-window
+              state)))
+      (is (= 12.5d0
+             (cadr-cli::tui-state-context-percent
+              state)))
+      (is (not
+           (cadr-cli::tui-state-auto-compact-p
+            state)))
+      (is (string=
+           "live-session"
+           (cadr-cli::tui-state-session-name state)))
+      (is (cadr-cli::tui-state-multiple-providers-p
+           state))
+      (is (cadr-cli::tui-state-subscription-p state))
+      (is (= 10
+             (cadr-cli::tui-state-input-tokens state)))
+      (is (= 20
+             (cadr-cli::tui-state-output-tokens state)))
+      (is (= 30
+             (cadr-cli::tui-state-cache-read-tokens
+              state)))
+      (is (= 40
+             (cadr-cli::tui-state-cache-write-tokens
+              state)))
+      (is (= 75d0
+             (cadr-cli::tui-state-latest-cache-hit-rate
+              state)))
+      (is (= 0.25d0
+             (cadr-cli::tui-state-cost state)))
+      (is (cadr-cli::tui-state-cost-known-p state))
+      (is (string=
+           "ready"
+           (cdr
+            (assoc
+             "extension"
+             (cadr-cli::tui-state-statuses state)
+             :test #'string=)))))))
+
+(test goal9-footer-thinking-refresh-synchronizes-editor-border-without-overwriting-bash
+  (let ((state
+          (cadr-cli::make-tui-state
+           :model "mock"))
+        (editor
+          (cadr-tui:make-multiline-editor)))
+    (cadr-cli::apply-tui-footer-state
+     state (list :thinking :high))
+    (cadr-cli::synchronize-tui-editor-border
+     state editor)
+    (is (eq
+         :thinking-high
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))
+    (cadr-tui:editor-set-border-mode editor :bash)
+    (cadr-cli::apply-tui-footer-state
+     state (list :thinking :low))
+    (cadr-cli::synchronize-tui-editor-border
+     state editor)
+    (is (eq
+         :bash-mode
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))
+    (cadr-tui:editor-set-border-mode
+     editor :thinking :high)
+    (cadr-cli::apply-tui-footer-state
+     state (list :thinking nil))
+    (cadr-cli::synchronize-tui-editor-border
+     state editor)
+    (is (eq
+         :thinking-off
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))))
+
+(test goal9-terminal-progress-setting-is-read-for-every-agent-event
+  (let ((event-consumer nil)
+        (enabled-p nil)
+        (events-complete-p nil)
+        (setting-reads nil))
+    (let* ((terminal
+             (make-instance
+              'progress-event-test-terminal
+              :columns 80 :rows 12
+              :inputs
+              (list
+               (footer-sync-submit-input "/progress")
+               (footer-sync-submit-input "/quit"))
+              :before-second-read
+              (lambda ()
+                (wait-for-footer-sync
+                 (lambda () events-complete-p)))))
+           (state
+             (cadr-cli::run-tui
+              (constantly nil)
+              :model "mock"
+              :terminal terminal
+              :set-event-consumer
+              (lambda (consumer)
+                (setf event-consumer consumer))
+              :show-terminal-progress-function
+              (lambda ()
+                (push enabled-p setting-reads)
+                enabled-p)
+              :command-function
+              (lambda (line)
+                (when (string= line "/progress")
+                  (setf enabled-p t)
+                  (funcall
+                   event-consumer
+                   (cadr-agent::make-agent-event
+                    :type :agent-start))
+                  (setf enabled-p nil)
+                  (funcall
+                   event-consumer
+                   (cadr-agent::make-agent-event
+                    :type :message-update))
+                  (setf enabled-p t)
+                  (funcall
+                   event-consumer
+                   (cadr-agent::make-agent-event
+                    :type :compaction-start))
+                  (funcall
+                   event-consumer
+                   (cadr-agent::make-agent-event
+                    :type :compaction-end))
+                  (setf enabled-p nil
+                        events-complete-p t))
+                t))))
+      (declare (ignore state))
+      (is (equal
+           '(nil t nil t)
+           (progress-event-test-terminal-values
+            terminal)))
+      (is (equal
+           '(t nil t t)
+           (subseq
+            (reverse setting-reads)
+            0 4))))))
+
+(test goal9-footer-auto-compact-follows-live-footer-state
+  (let ((state
+          (cadr-cli::make-tui-state
+           :model "mock"
+           :context-window 100000
+           :auto-compact-p nil)))
+    (is (null
+         (search
+          "(auto)"
+          (rendered-footer-text state))))
+    (cadr-cli::apply-tui-footer-state
+     state (list :auto-compact-p t))
+    (is (search
+         "(auto)"
+         (rendered-footer-text state)))
+    (cadr-cli::apply-tui-footer-state
+     state (list :auto-compact-p nil))
+    (is (null
+         (search
+          "(auto)"
+          (rendered-footer-text state))))))
+
+(test goal9-live-editor-input-switches-bash-border-from-current-prefix
+  (let ((state
+          (cadr-cli::make-tui-state
+           :model "mock"
+           :thinking :high))
+        (editor
+          (cadr-tui:make-multiline-editor)))
+    (cadr-cli::handle-tui-editor-event
+     state editor
+     (cadr-tui:make-input-event
+      :kind :text :text "  !"))
+    (is (eq
+         :bash-mode
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))
+    (cadr-cli::handle-tui-editor-event
+     state editor
+     (cadr-tui:make-input-event
+      :kind :backspace))
+    (is (eq
+         :thinking-high
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))
+    (cadr-tui:editor-set-border-mode editor :bash)
+    (cadr-cli::synchronize-tui-editor-border
+     state editor)
+    (is (eq
+         :bash-mode
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))
+    (cadr-tui:editor-set-text editor "ordinary")
+    (cadr-cli::synchronize-tui-editor-input-border
+     state editor)
+    (cadr-cli::apply-tui-footer-state
+     state (list :thinking :low))
+    (cadr-cli::synchronize-tui-editor-border
+     state editor)
+    (is (eq
+         :thinking-low
+         (cadr-tui::multiline-editor-border-color-key
+          editor)))))
+
+(test goal9-cli-terminal-progress-setting-is-live
+  (with-test-directory (directory)
+    (let ((manager
+            (cadr-cli::make-settings-manager
+             :global-path
+             (merge-pathnames "settings.json"
+                              directory)
+             :project-path
+             (merge-pathnames "project.json"
+                              directory)
+             :project-trusted-p nil)))
+      (is (not
+           (cadr-cli::settings-show-terminal-progress-p
+            manager)))
+      (cadr-cli::settings-set-nested
+       manager "terminal" "showTerminalProgress"
+       t :scope :global)
+      (is
+       (cadr-cli::settings-show-terminal-progress-p
+        manager))
+      (cadr-cli::settings-set-nested
+       manager "terminal" "showTerminalProgress"
+       nil :scope :global)
+      (is (not
+           (cadr-cli::settings-show-terminal-progress-p
+            manager))))))
+
+(test goal9-footer-hides-known-zero-cost-without-subscription
+  (let ((state
+          (cadr-cli::make-tui-state
+           :model "mock")))
+    (setf
+     (cadr-cli::tui-state-cost-known-p state)
+     t
+     (cadr-cli::tui-state-cost state)
+     0d0)
+    (is (null
+         (search
+          "$0.000"
+          (rendered-footer-text state))))))
+
+(test goal9-extension-theme-update-is-serialized-with-rendering
+  (let* ((extension-ui nil)
+         (updated-p nil)
+         (object
+           (goal9-complete-theme-object
+            :name "custom"
+            :accent "#112233"))
+         (terminal
+           (make-instance
+            'footer-sync-test-terminal
+            :columns 80 :rows 12
+            :inputs
+            (list
+             (footer-sync-submit-input "/theme")
+             (footer-sync-submit-input "/quit"))
+            :before-second-read
+            (lambda ()
+              (wait-for-footer-sync
+               (lambda ()
+                 (and
+                  updated-p
+                  (string=
+                   "#112233"
+                   (cadr-tui:theme-color-value
+                    :accent)))))))))
+    (unwind-protect
+         (progn
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "mock"
+            :terminal terminal
+            :set-extension-ui-function
+            (lambda (function)
+              (setf extension-ui function))
+            :theme-function
+            (lambda ()
+              (if updated-p
+                  (list
+                   :name "custom"
+                   :object object)
+                  (list :name "dark")))
+            :set-theme-function
+            (lambda (theme)
+              (declare (ignore theme))
+              (setf updated-p t)
+              (list :success t))
+            :command-function
+            (lambda (line)
+              (when (string= line "/theme")
+                (funcall
+                 extension-ui
+                 :set-theme
+                 (list :theme "custom")))
+              t))
+           (is (string=
+                "#112233"
+                (cadr-tui:theme-color-value
+                 :accent))))
+      (cadr-tui:reset-current-theme))))
 
 (test oauth-auth-url-renders-once-without-session-prefix
   (let* ((url
@@ -330,11 +752,11 @@
       (is (find "session> notice-1"
                 alt-lines
                 :test #'string=))
-      (is (= (1- (length alt-lines))
-             alt-row)))))
+      (is (< alt-row
+             (length alt-lines))))))
 
 (test idle-status-spacing-is-reserved-only-on-main-screen
-  (is (= 1
+  (is (= 2
          (length
           (cadr-cli::render-tui-status-indicator
            nil 20 :reserve-idle-p t))))
@@ -397,6 +819,7 @@
   (let* ((state
            (cadr-cli::make-tui-state
             :model "gemini-3.6-flash"
+            :context-window 100
             :session "session-1"))
          (message
            (cadr-ai:make-assistant-message
@@ -452,14 +875,257 @@
       :message message))
     (let ((editor (cadr-tui:make-multiline-editor)))
       (multiple-value-bind (lines row column)
-          (cadr-cli::render-tui-state state editor 40 12)
+          (cadr-cli::render-tui-state state editor 40 20)
         (declare (ignore row column))
-        (let ((screen (format nil "~{~A~%~}" lines)))
+        (let ((screen
+                (cadr-tui:strip-terminal-sequences
+                 (format nil "~{~A~%~}" lines))))
           (is (search "你好 cadr" screen))
           (is (search "read" screen))
-          (is (search "in:10" screen))
-          (is (search "out:4" screen))
-          (is (search "cache:2" screen)))))))
+          (is (search "↑10" screen))
+          (is (search "↓4" screen))
+          (is (search "R2" screen))
+          (is (= 16d0
+                 (cadr-cli::tui-state-context-percent
+                  state))))))))
+
+(test goal9-built-in-tool-titles-summarize-real-arguments
+  (dolist
+      (case
+       (list
+        (list
+         "bash"
+         (args "command" "printf ok" "timeout" 7)
+         "printf ok (timeout 7s)")
+        (list
+         "read"
+         (args "path" "README.md" "offset" 2
+               "limit" 3)
+         "README.md:2-4")
+        (list
+         "write"
+         (args "path" "notes.txt" "content" "body")
+         "notes.txt")
+        (list
+         "edit"
+         (args
+          "path" "code.lisp"
+          "edits"
+          (vector
+           (args "oldText" "old" "newText" "new")))
+         "code.lisp")
+        (list
+         "grep"
+         (args "pattern" "needle" "path" "src"
+               "glob" "*.lisp" "limit" 5)
+         "/needle/ in src (*.lisp) limit 5")
+        (list
+         "find"
+         (args "pattern" "*.lisp" "path" "src"
+               "limit" 6)
+         "*.lisp in src (limit 6)")
+        (list
+         "ls"
+         (args "path" "src" "limit" 7)
+         "src (limit 7)")))
+    (destructuring-bind
+          (name arguments expected)
+        case
+      (let* ((state
+               (cadr-cli::make-tui-state
+                :model "mock"))
+             (call
+               (cadr-ai:make-tool-call
+                :id (format nil "call-~A" name)
+                :name name
+                :arguments arguments)))
+        (cadr-cli::tui-handle-agent-event
+         state
+         (cadr-agent::make-agent-event
+          :type :tool-execution-start
+          :tool-call call))
+        (let* ((entry
+                 (car
+                  (cadr-cli::tui-state-entries state)))
+               (summary
+                 (cadr-tui:tool-block-summary
+                  (cadr-cli::tui-entry-tool-block
+                   entry))))
+          (is (string= expected summary))
+          (is (null (search "{" summary)))
+          (is (null (search "\"" summary))))))))
+
+(test goal9-real-edit-tool-result-reaches-semantic-diff-rendering
+  (with-test-directory (directory)
+    (let* ((file
+             (merge-pathnames "code.txt" directory))
+           (tool
+             (cadr-cli:make-edit-tool directory))
+           (call
+             (cadr-ai:make-tool-call
+              :id "real-edit"
+              :name "edit"
+              :arguments
+              (args
+               "path" "code.txt"
+               "edits"
+               (vector
+                (args "oldText" "beta"
+                      "newText" "BETA")))))
+           (agent
+             (cadr-agent:make-agent
+              :tools (list tool)))
+           (prepared nil)
+           (outcome nil)
+           (result nil)
+           (state
+             (cadr-cli::make-tui-state
+              :model "mock")))
+      (write-text
+       file
+       (format nil "alpha~%beta~%gamma~%"))
+      ;; Execution must occur after the fixture exists.
+      (setf
+       prepared
+       (cadr-agent::prepare-tool-execution agent call)
+       outcome
+       (cadr-agent::execute-prepared-tool prepared)
+       result
+       (cadr-agent::tool-outcome-result outcome))
+      (is (not
+           (cadr-ai:tool-result-message-is-error
+            result)))
+      (let ((diff
+              (getf
+               (cadr-ai:tool-result-message-details
+                result)
+               :diff)))
+        (is (stringp diff))
+        (is (search "-2 beta" diff))
+        (is (search "+2 BETA" diff)))
+      (let ((details
+              (cadr-ai:tool-result-message-details
+               result)))
+        (is (= 2 (getf details :first-changed-line)))
+        (is (search "--- code.txt"
+                    (getf details :patch)))
+        (is (search "@@ -1,3 +1,3 @@"
+                    (getf details :patch))))
+      (multiple-value-bind (diff first-changed-line)
+          (cadr-cli::generate-edit-display-diff
+           (format nil "alpha~%beta~%")
+           (format nil "alpha~%")
+           (list
+            (cadr-cli::make-replacement
+             :start 6 :end 11
+             :old (format nil "beta~%")
+             :new "")))
+        (is (= 2 first-changed-line))
+        (is (search "-2 beta" diff)))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :tool-execution-start
+        :tool-call call))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :tool-execution-end
+        :tool-call call
+        :tool-result result))
+      (let* ((entry
+               (car
+                (cadr-cli::tui-state-entries state)))
+             (block
+               (cadr-cli::tui-entry-tool-block entry))
+             (caps
+               (cadr-tui:make-terminal-capabilities
+                :true-color-p t)))
+        (is (string=
+             "code.txt"
+             (cadr-tui:tool-block-summary block)))
+        (is (search "-2 beta"
+                    (cadr-tui:tool-block-output block)))
+        (is (search "+2 BETA"
+                    (cadr-tui:tool-block-output block)))
+        (is (null
+             (search "Applied 1 replacement"
+                     (cadr-tui:tool-block-output block))))
+        (cadr-tui:set-current-theme
+         :dark :capabilities caps)
+        (unwind-protect
+             (let ((rendered
+                     (format
+                      nil "~{~A~^~%~}"
+                      (cadr-cli::render-tui-entry
+                       entry 80))))
+               (is (search
+                    (cadr-tui:theme-foreground-ansi
+                     :tool-diff-removed)
+                    rendered))
+               (is (search
+                    (cadr-tui:theme-foreground-ansi
+                     :tool-diff-added)
+                    rendered)))
+          (cadr-tui:reset-current-theme))))))
+
+(test goal9-compaction-preserves-totals-and-hides-context-until-next-usage
+  (let* ((state
+           (cadr-cli::make-tui-state
+            :model "mock"
+            :context-window 100))
+         (before
+           (cadr-ai:make-assistant-message
+            :api :openai-responses
+            :provider :openai
+            :model "mock"
+            :usage
+            (cadr-ai:make-usage
+             :input 10 :output 5)
+            :stop-reason :stop))
+         (after
+           (cadr-ai:make-assistant-message
+            :api :openai-responses
+            :provider :openai
+            :model "mock"
+            :usage
+            (cadr-ai:make-usage
+             :input 20 :output 5)
+            :stop-reason :stop)))
+    (cadr-cli::seed-tui-message state before)
+    (is (= 15d0
+           (cadr-cli::tui-state-context-percent
+            state)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :compaction-end)
+     :display-messages nil
+     :compaction-summary "summary")
+    (is (null
+         (cadr-cli::tui-state-context-percent
+          state)))
+    (is (= 10
+           (cadr-cli::tui-state-input-tokens state)))
+    (is (= 5
+           (cadr-cli::tui-state-output-tokens state)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :message-start
+      :message after))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :message-end
+      :message after))
+    (is (= 25d0
+           (cadr-cli::tui-state-context-percent
+            state)))
+    (is (= 30
+           (cadr-cli::tui-state-input-tokens state)))
+    (is (= 10
+           (cadr-cli::tui-state-output-tokens state)))))
 
 (test goal9-tui-markdown-transformers-cover-user-text-thinking-streaming-and-cache
   (let ((calls nil))
@@ -855,7 +1521,7 @@
 (test tui-input-sequence-produces-virtual-screen-snapshot
   (let* ((terminal
            (cadr-tui:make-virtual-terminal
-            :columns 24 :rows 6))
+            :columns 48 :rows 8))
          (renderer
            (cadr-tui:make-terminal-renderer
             terminal))
@@ -877,7 +1543,7 @@
        editor event))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
-         state editor 24 6)
+         state editor 48 8)
       (cadr-tui:render-frame
        renderer lines
        :cursor-row row
@@ -941,7 +1607,7 @@
            (cadr-tui:make-multiline-editor)))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
-         state editor 140 12
+         state editor 140 18
          :overlay selector)
       (declare (ignore row column))
       (let ((screen
@@ -992,7 +1658,7 @@
            (cadr-tui:make-multiline-editor)))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
-         state editor 40 16
+         state editor 40 28
          :overlay selector)
       (declare (ignore row column))
       (let ((screen
@@ -1049,7 +1715,7 @@
     (dolist
         (case
          `((,model-selector
-            "Select Model" "Scope: scoped" "two")
+            "Select Model" "Scope: all | scoped" "two")
            (,scoped-selector
             "Model Configuration"
             "faux/unavailable"
@@ -1063,7 +1729,9 @@
              :overlay overlay)
           (declare (ignore row column))
           (let ((screen
-                  (format nil "~{~A~^~%~}" lines)))
+                  (cadr-tui:strip-terminal-sequences
+                   (format nil "~{~A~^~%~}"
+                           lines))))
             (dolist (text expected)
               (is (search text screen)))))))))
 
@@ -1090,6 +1758,965 @@
          :overlay selector)
       (declare (ignore row column))
       (let ((screen
-              (format nil "~{~A~^~%~}" lines)))
+              (cadr-tui:strip-terminal-sequences
+               (format nil "~{~A~^~%~}" lines))))
         (is (search "Settings" screen))
-        (is (search "Auto-compact: on" screen))))))
+        (is (search "Auto-compact  on" screen))))))
+
+(test goal9-user-and-assistant-message-shells-match-baseline
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (let* ((user
+                  (cadr-cli::make-tui-entry
+                   :type :user :text "hello"))
+                (assistant
+                  (cadr-cli::make-tui-entry
+                   :type :assistant
+                   :content-blocks
+                   (list
+                    (cons :assistant-thinking
+                          "reasoning")
+                    (cons :assistant
+                          "answer"))))
+                (user-lines
+                  (cadr-cli::render-tui-entry
+                   user 24))
+                (assistant-lines
+                  (cadr-cli::render-tui-entry
+                   assistant 24))
+                (user-ansi
+                  (format nil "~{~A~^~%~}"
+                          user-lines))
+                (assistant-ansi
+                  (format nil "~{~A~^~%~}"
+                          assistant-lines)))
+           (is (= 3 (length user-lines)))
+           (is (= 0
+                  (search
+                   cadr-cli::+osc-133-start+
+                   (first user-lines))))
+           (is (= 0
+                  (search
+                   (concatenate
+                    'string
+                    cadr-cli::+osc-133-end+
+                    cadr-cli::+osc-133-final+)
+                   (car (last user-lines)))))
+           (is (every
+                (lambda (line)
+                  (= 24
+                     (cadr-tui:visible-width line)))
+                user-lines))
+           (is (search
+                (format nil "~C[48;2;52;53;65m"
+                        #\Escape)
+                user-ansi))
+           (is (string=
+                cadr-cli::+osc-133-start+
+                (first assistant-lines)))
+           (is (= 0
+                  (search
+                   cadr-cli::+osc-133-start+
+                   (first assistant-lines))))
+           (is (= 0
+                  (search
+                   (concatenate
+                    'string
+                    cadr-cli::+osc-133-end+
+                    cadr-cli::+osc-133-final+)
+                   (car (last assistant-lines)))))
+           (is (search
+                (format nil "~C[3m"
+                        #\Escape)
+                assistant-ansi))
+           (is (search
+                (format nil "~C[38;2;128;128;128m"
+                        #\Escape)
+                assistant-ansi)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-assistant-tool-call-messages-do-not-open-osc133-zones
+  (let* ((entry
+           (cadr-cli::make-tui-entry
+            :type :assistant
+            :content-blocks
+            (list (cons :assistant "calling tool"))
+            :has-tool-calls-p t))
+         (rendered
+           (format
+            nil "~{~A~^~%~}"
+            (cadr-cli::render-tui-entry
+             entry 60))))
+    (is (null
+         (search cadr-cli::+osc-133-start+
+                 rendered)))
+    (is (null
+         (search cadr-cli::+osc-133-end+
+                 rendered)))
+    (is (null
+         (search cadr-cli::+osc-133-final+
+                 rendered)))))
+
+(test goal9-root-layout-puts-editor-before-two-line-footer
+  (let* ((state
+           (cadr-cli::make-tui-state
+            :model "gpt-5.6-luna"
+            :provider "openai-codex"
+            :thinking :high
+            :cwd "~/work"
+            :branch "main"
+            :session-name "visual"))
+         (editor
+           (cadr-tui:make-multiline-editor
+            :text "prompt")))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 60 14
+         :full-document-p t)
+      (declare (ignore row column))
+      (let* ((plain
+               (mapcar
+                #'cadr-tui:strip-terminal-sequences
+                lines))
+             (top-border
+               (position-if
+                (lambda (line)
+                  (and
+                   (plusp (length line))
+                   (every
+                    (lambda (character)
+                      (char= character #\─))
+                    line)))
+                plain))
+             (cwd-line
+               (position-if
+                (lambda (line)
+                  (search "~/work (main) • visual"
+                          line))
+                plain))
+             (model-line
+               (position-if
+                (lambda (line)
+                  (search "gpt-5.6-luna • high"
+                          line))
+                plain)))
+        (is (integerp top-border))
+        (is (integerp cwd-line))
+        (is (integerp model-line))
+        (is (< top-border cwd-line))
+        (is (= (1+ cwd-line)
+               model-line))))))
+
+(test goal9-custom-theme-summary-is-applied-to-live-rendering
+  (let ((object
+          (goal9-complete-theme-object
+           :accent "#010203")))
+    (cadr-cli::apply-tui-theme-summary
+     (list :name "custom"
+           :object object)
+     :background :dark
+     :capabilities
+     (cadr-tui:make-terminal-capabilities
+      :true-color-p t))
+    (unwind-protect
+         (is (string=
+              "#010203"
+              (cadr-tui:theme-color-value
+               :accent)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-status-indicator-uses-baseline-spinner-colors-and-spacing
+  (is (equal
+       '("⠋" "⠙" "⠹" "⠸" "⠼"
+         "⠴" "⠦" "⠧" "⠇" "⠏")
+       (coerce cadr-cli::+tui-spinner-frames+
+               'list)))
+  (is (= 0.08d0
+         cadr-cli::+tui-spinner-interval-seconds+))
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (let* ((working
+                  (cadr-cli::render-tui-status-indicator
+                   "Working..." 40 :spinner-frame "⠋"))
+                (retry
+                  (cadr-cli::render-tui-status-indicator
+                   "Retrying (1/3) in 2s..." 40
+                   :spinner-frame "⠙"))
+                (working-ansi (second working))
+                (retry-ansi (second retry)))
+           (is (string= "" (first working)))
+           (is (string=
+                "⠋ Working..."
+                (cadr-tui:strip-terminal-sequences
+                 working-ansi)))
+           (is (search
+                (format nil "~C[38;2;138;190;183m"
+                        #\Escape)
+                working-ansi))
+           (is (search
+                (format nil "~C[38;2;128;128;128m"
+                        #\Escape)
+                working-ansi))
+           (is (search
+                (format nil "~C[38;2;255;255;0m"
+                        #\Escape)
+                retry-ansi))
+           (dolist (message
+                    '("Compacting context..."
+                      "Summarizing branch..."))
+             (is (search
+                  (format nil "~C[38;2;138;190;183m"
+                          #\Escape)
+                  (second
+                   (cadr-cli::render-tui-status-indicator
+                    message 40 :spinner-frame "⠹")))))
+           (is (equal
+                (list
+                 (make-string 40
+                              :initial-element #\Space)
+                 (make-string 40
+                              :initial-element #\Space))
+                (cadr-cli::render-tui-status-indicator
+                 nil 40 :reserve-idle-p t))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-overlay-clipping-keeps-the-selected-row-visible
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (let* ((selected
+                  (cadr-tui:theme-background
+                   :selected-bg
+                   "→ selected item"
+                   :enabled-p t))
+                (lines
+                  (append
+                   '("top border" "title" "search")
+                   (loop for index below 20
+                         collect
+                         (if (= index 16)
+                             selected
+                             (format nil
+                                     "  item ~D"
+                                     index)))
+                   '("bottom border")))
+                (fitted
+                  (cadr-cli::fit-overlay-lines
+                   lines 8))
+                (plain
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   fitted)))
+           (is (= 8 (length fitted)))
+           (is (find "→ selected item"
+                     plain :test #'string=))
+           (is (find "top border"
+                     plain :test #'string=))
+           (is (find "bottom border"
+                     plain :test #'string=)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-render-coordinator-coalesces-and-keeps-final-request
+  (let* ((now 0d0)
+         (renders 0)
+         (coordinator
+           (cadr-cli::make-tui-render-coordinator
+            :clock-function (lambda () now))))
+    (cadr-cli::request-tui-render coordinator)
+    (cadr-cli::request-tui-render coordinator)
+    (cadr-cli::request-tui-render coordinator)
+    (is
+     (cadr-cli::flush-tui-render
+      coordinator
+      (lambda ()
+        (incf renders)
+        (cadr-cli::request-tui-render
+         coordinator))))
+    (is (= 1 renders))
+    (is (not
+         (cadr-cli::flush-tui-render
+          coordinator (lambda () (incf renders)))))
+    (setf now 0.015d0)
+    (is (not
+         (cadr-cli::flush-tui-render
+          coordinator (lambda () (incf renders)))))
+    (setf now 0.016d0)
+    (is
+     (cadr-cli::flush-tui-render
+      coordinator (lambda () (incf renders))))
+    (is (= 2 renders))
+    (cadr-cli::stop-tui-render-coordinator coordinator)
+    (cadr-cli::request-tui-render coordinator)
+    (setf now 1d0)
+    (is (not
+         (cadr-cli::flush-tui-render
+          coordinator (lambda () (incf renders)))))
+    (is (= 2 renders))))
+
+(test goal9-render-coordinator-accepts-concurrent-requests
+  (let* ((now 0d0)
+         (renders 0)
+         (coordinator
+           (cadr-cli::make-tui-render-coordinator
+            :clock-function (lambda () now)))
+         (workers
+           (loop repeat 8
+                 collect
+                 (sb-thread:make-thread
+                  (lambda ()
+                    (loop repeat 100
+                          do
+                          (cadr-cli::request-tui-render
+                           coordinator)))))))
+    (dolist (worker workers)
+      (sb-thread:join-thread worker))
+    (is
+     (cadr-cli::flush-tui-render
+      coordinator (lambda () (incf renders))))
+    (is (= 1 renders))
+    (is (not
+         (cadr-cli::flush-tui-render
+          coordinator (lambda () (incf renders)))))
+    (is (= 1 renders))))
+
+(test goal9-spinner-and-retry-countdown-use-injected-time
+  (let* ((state
+           (cadr-cli::make-tui-state :model "mock"))
+         (animation
+           (cadr-cli::make-tui-status-animation)))
+    (setf
+     (cadr-cli::tui-state-status-message state)
+     "Retrying (2/4) in 2s...")
+    (is
+     (cadr-cli::advance-tui-status-animation
+      animation state t 0d0))
+    (is (string=
+         "⠋"
+         (cadr-cli::tui-status-animation-frame
+          animation)))
+    (is
+     (cadr-cli::advance-tui-status-animation
+      animation state t 0.08d0))
+    (is (string=
+         "⠙"
+         (cadr-cli::tui-status-animation-frame
+          animation)))
+    (is
+     (cadr-cli::advance-tui-status-animation
+      animation state t 1d0))
+    (is (string=
+         "Retrying (2/4) in 1s..."
+         (cadr-cli::tui-state-status-message state)))
+    (is
+     (cadr-cli::advance-tui-status-animation
+      animation state t 2d0))
+    (is (string=
+         "Retrying (2/4) in 0s..."
+         (cadr-cli::tui-state-status-message state)))
+    (setf
+     (cadr-cli::tui-state-status-message state) nil)
+    (is
+     (cadr-cli::advance-tui-status-animation
+      animation state nil 2.01d0))
+    (is (null
+         (cadr-cli::tui-status-animation-active-p
+          animation)))))
+
+(test goal9-animated-status-renders-on-virtual-terminal-without-sleep
+  (let* ((terminal
+           (cadr-tui:make-virtual-terminal
+            :columns 40 :rows 8))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal))
+         (state
+           (cadr-cli::make-tui-state :model "mock"))
+         (editor
+           (cadr-tui:make-multiline-editor)))
+    (setf
+     (cadr-cli::tui-state-status-message state)
+     "Compacting context...")
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 40 8 :spinner-frame "⠹")
+      (cadr-tui:render-frame
+       renderer lines
+       :cursor-row row
+       :cursor-column column))
+    (let ((screen
+            (format
+             nil "~{~A~^~%~}"
+             (cadr-tui:virtual-terminal-snapshot
+              terminal))))
+      (is (search "⠹ Compacting context..."
+                  screen)))))
+
+(test goal9-startup-header-precedes-chat-and-expands-with-tools
+  (let* ((state
+           (cadr-cli::make-tui-state
+            :model "mock"
+            :startup-compact-lines
+            '("cadr v0.1.0"
+              "ctrl+c interrupt · / commands · ! bash"
+              "Press ctrl+o to show full startup help and loaded resources.")
+            :startup-expanded-lines
+            '("cadr v0.1.0"
+              "ctrl+c to interrupt"
+              "ctrl+l twice to exit"
+              "/ for commands"
+              "! to run bash")))
+         (editor
+           (cadr-tui:make-multiline-editor)))
+    (cadr-cli::add-tui-notice state "restored chat")
+    (flet ((plain-render ()
+             (multiple-value-bind
+                   (lines row column)
+                 (cadr-cli::render-tui-state
+                  state editor 80 20
+                  :full-document-p t)
+               (declare (ignore row column))
+               (mapcar
+                #'cadr-tui:strip-terminal-sequences
+                lines))))
+      (let* ((compact (plain-render))
+             (logo (position "cadr v0.1.0"
+                             compact :test #'string=))
+             (chat
+               (position-if
+                (lambda (line)
+                  (search "restored chat" line))
+                compact)))
+        (is (integerp logo))
+        (is (integerp chat))
+        (is (< logo chat))
+        (is (find-if
+             (lambda (line)
+               (search "show full startup help" line))
+             compact)))
+      (cadr-cli::set-tui-tools-expanded state t)
+      (let ((expanded (plain-render)))
+        (is (find "ctrl+l twice to exit"
+                  expanded :test #'string=))
+        (is (null
+             (find-if
+              (lambda (line)
+                (search "show full startup help" line))
+              expanded)))))))
+
+(defclass background-query-test-terminal
+    (cadr-tui::virtual-terminal)
+  ((inputs
+    :initarg :inputs
+    :accessor background-query-test-inputs)
+   (query-count
+    :initform 0
+    :accessor background-query-test-query-count)))
+
+(defmethod cadr-tui:terminal-read-input
+    ((terminal background-query-test-terminal))
+  (or (pop (background-query-test-inputs terminal))
+      ""))
+
+(defmethod cadr-tui:terminal-query-background-color
+    ((terminal background-query-test-terminal)
+     &key timeout-seconds)
+  (is (= 0.1d0 timeout-seconds))
+  (incf
+   (background-query-test-query-count terminal))
+  (cadr-tui::make-rgb-color
+   :red 250 :green 250 :blue 250))
+
+(test goal9-auto-theme-falls-back-to-osc11-after-dsr-timeout
+  (let ((detected nil)
+        (terminal
+          (make-instance
+           'background-query-test-terminal
+           :columns 80 :rows 12
+           :inputs
+           (list
+            (footer-sync-submit-input "/quit")))))
+    (unwind-protect
+         (progn
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "mock"
+            :terminal terminal
+            :theme-mode-function
+            (constantly :auto)
+            :detected-theme-function
+            (lambda (background)
+              (setf detected background)
+              (list :name
+                    (string-downcase
+                     (symbol-name background))
+                    :path nil)))
+           (is (= 1
+                  (background-query-test-query-count
+                   terminal)))
+           (is (eq :light detected))
+           (is (eq :light
+                   (cadr-tui:terminal-theme-name
+                    (cadr-tui:current-theme)))))
+      (cadr-tui:reset-current-theme))))
+
+(defclass color-scheme-test-terminal
+    (background-query-test-terminal)
+  ((scheme-query-count
+    :initform 0
+    :accessor color-scheme-test-query-count)
+   (scheme-changes
+    :initarg :scheme-changes
+    :initform nil
+    :accessor color-scheme-test-changes)
+   (notification-values
+    :initform nil
+    :accessor color-scheme-test-notification-values)))
+
+(defmethod cadr-tui:terminal-query-color-scheme
+    ((terminal color-scheme-test-terminal)
+     &key timeout-seconds)
+  (is (= 0.1d0 timeout-seconds))
+  (incf (color-scheme-test-query-count terminal))
+  :dark)
+
+(defmethod cadr-tui:terminal-color-scheme-change
+    ((terminal color-scheme-test-terminal))
+  (pop (color-scheme-test-changes terminal)))
+
+(defmethod cadr-tui:terminal-set-color-scheme-notifications
+    ((terminal color-scheme-test-terminal) enabled)
+  (push
+   (not (null enabled))
+   (color-scheme-test-notification-values terminal))
+  (not (null enabled)))
+
+(defclass dynamic-theme-test-terminal
+    (color-scheme-test-terminal)
+  ((reads
+    :initform 0
+    :accessor dynamic-theme-test-terminal-reads)
+   (before-second-read
+    :initarg :before-second-read
+    :reader dynamic-theme-test-terminal-before-second-read)))
+
+(defmethod cadr-tui:terminal-read-input
+    ((terminal dynamic-theme-test-terminal))
+  (when
+      (= 2
+         (incf
+          (dynamic-theme-test-terminal-reads terminal)))
+    (funcall
+     (dynamic-theme-test-terminal-before-second-read
+      terminal)))
+  (or (pop (background-query-test-inputs terminal))
+      ""))
+
+(test goal9-auto-theme-prefers-dsr-and-applies-live-notifications
+  (let ((detected nil)
+        (terminal
+          (make-instance
+           'color-scheme-test-terminal
+           :columns 80 :rows 12
+           :scheme-changes (list :light)
+           :inputs
+           (list
+            (footer-sync-submit-input "/quit")))))
+    (unwind-protect
+         (progn
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "mock"
+            :terminal terminal
+            :theme-mode-function
+            (constantly :auto)
+            :detected-theme-function
+            (lambda (background)
+              (push background detected)
+              (list
+               :name
+               (string-downcase
+                (symbol-name background))
+               :path nil)))
+           (is (= 1
+                  (color-scheme-test-query-count
+                   terminal)))
+           (is (zerop
+                (background-query-test-query-count
+                 terminal)))
+           (is (equal
+                '(:light :dark)
+                detected))
+           (is (equal
+                '(t)
+                (color-scheme-test-notification-values
+                 terminal)))
+           (is (eq :light
+                   (cadr-tui:terminal-theme-name
+                    (cadr-tui:current-theme)))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-unconfigured-theme-detects-osc11-once-without-live-sync
+  (let ((detected nil)
+        (terminal
+          (make-instance
+           'color-scheme-test-terminal
+           :columns 80 :rows 12
+           :scheme-changes (list :dark)
+           :inputs
+           (list
+            (footer-sync-submit-input "/quit")))))
+    (unwind-protect
+         (progn
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "mock"
+            :terminal terminal
+            :theme-mode-function
+            (constantly :detect-once)
+            :detected-theme-function
+            (lambda (background)
+              (push background detected)
+              (list
+               :name
+               (string-downcase
+                (symbol-name background))
+               :path nil)))
+           (is (zerop
+                (color-scheme-test-query-count
+                 terminal)))
+           (is (= 1
+                  (background-query-test-query-count
+                   terminal)))
+           (is (equal '(:light) detected))
+           (is (equal
+                '(nil)
+                (color-scheme-test-notification-values
+                 terminal))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-fixed-theme-skips-terminal-detection
+  (let ((terminal
+          (make-instance
+           'color-scheme-test-terminal
+           :columns 80 :rows 12
+           :inputs
+           (list
+            (footer-sync-submit-input "/quit")))))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal terminal
+     :theme-mode-function
+     (constantly :fixed)
+     :detected-theme-function
+     (lambda (background)
+       (declare (ignore background))
+       (error "fixed themes must not detect terminal colors")))
+    (is (zerop
+         (color-scheme-test-query-count terminal)))
+    (is (zerop
+         (background-query-test-query-count terminal)))
+    (is (equal
+         '(nil)
+         (color-scheme-test-notification-values
+          terminal)))))
+
+(test goal9-theme-mode-dynamically-disables-live-notifications
+  (let ((extension-ui nil)
+        (mode :auto)
+        (updated-p nil))
+    (let* ((terminal
+             (make-instance
+              'dynamic-theme-test-terminal
+              :columns 80 :rows 12
+              :inputs
+              (list
+               (footer-sync-submit-input "/theme")
+               (footer-sync-submit-input "/quit"))
+              :before-second-read
+              (lambda ()
+                (wait-for-footer-sync
+                 (lambda () updated-p)))))
+           (state
+             (cadr-cli::run-tui
+              (constantly nil)
+              :model "mock"
+              :terminal terminal
+              :theme-mode-function
+              (lambda () mode)
+              :detected-theme-function
+              (lambda (background)
+                (list
+                 :name
+                 (string-downcase
+                  (symbol-name background))
+                 :path nil))
+              :theme-function
+              (lambda () (list :name "dark"))
+              :set-extension-ui-function
+              (lambda (function)
+                (setf extension-ui function))
+              :set-theme-function
+              (lambda (theme)
+                (declare (ignore theme))
+                (setf mode :fixed)
+                (list :success t))
+              :command-function
+              (lambda (line)
+                (when (string= line "/theme")
+                  (funcall
+                   extension-ui
+                   :set-theme
+                   (list :theme "dark"))
+                  (setf updated-p t))
+                t))))
+      (declare (ignore state))
+      (is (equal
+           '(nil t)
+           (color-scheme-test-notification-values
+            terminal)))
+      (is (= 1
+             (color-scheme-test-query-count
+              terminal)))
+      (is (zerop
+           (background-query-test-query-count
+            terminal))))))
+
+(test goal9-custom-theme-watcher-reloads-valid-writes-and-keeps-last-valid
+  (with-test-directory (directory)
+    (let* ((path
+             (merge-pathnames "watch.json" directory))
+           (initial-object
+             (goal9-complete-theme-object
+              :name "watch"
+              :accent "#010203"))
+           (summary
+             (list :name "watch"
+                   :path path
+                   :object initial-object))
+           (watcher nil)
+           (now 0d0)
+           (caps
+             (cadr-tui:make-terminal-capabilities
+              :true-color-p t)))
+      (labels
+          ((write-theme (text)
+             (with-open-file
+                 (stream path
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create)
+               (write-string text stream)))
+           (poll ()
+             (cadr-cli::poll-tui-theme-watcher
+              watcher
+              :clock-function (lambda () now)
+              :capabilities caps))
+           (settle ()
+             (is (not (poll)))
+             (incf now 0.101d0)
+             (poll)))
+        (write-theme
+         (cadr-ai::stringify-json
+          initial-object))
+        (setf watcher
+              (cadr-cli::make-tui-theme-watcher
+               summary))
+        (cadr-cli::apply-tui-theme-summary
+         summary :capabilities caps)
+        (unwind-protect
+             (progn
+               (write-theme
+                (goal9-complete-theme-json
+                 :name "watch"
+                 :accent "#aabbcc"))
+               (is (settle))
+               (is (string=
+                    "#aabbcc"
+                    (cadr-tui:theme-color-value
+                     :accent)))
+               (write-theme "{not-json")
+               (is (not (settle)))
+               (is (string=
+                    "#aabbcc"
+                    (cadr-tui:theme-color-value
+                     :accent)))
+               (write-theme
+                (goal9-complete-theme-json
+                 :name "watch"
+                 :accent "not-a-color"))
+               (is (not (settle)))
+               (is (string=
+                    "#aabbcc"
+                    (cadr-tui:theme-color-value
+                     :accent)))
+               (write-theme
+                "{\"name\":\"watch\",\"colors\":{\"accent\":\"missing\"},\"vars\":{}}")
+               (is (not (settle)))
+               (is (string=
+                    "#aabbcc"
+                    (cadr-tui:theme-color-value
+                     :accent)))
+               (let ((variables
+                       (make-hash-table
+                        :test #'equal)))
+                 (setf
+                  (gethash "first" variables)
+                  "second"
+                  (gethash "second" variables)
+                  "first")
+                 (write-theme
+                  (goal9-complete-theme-json
+                   :name "watch"
+                   :accent "first"
+                   :vars variables)))
+               (is (not (settle)))
+               (is (string=
+                    "#aabbcc"
+                    (cadr-tui:theme-color-value
+                     :accent)))
+               (write-theme
+                (goal9-complete-theme-json
+                 :name "watch"
+                 :accent 42))
+               (is (settle))
+               (is (= 42
+                      (cadr-tui:theme-color-value
+                       :accent)))
+               (is (string=
+                    (format nil "~C[38;5;42m"
+                            #\Escape)
+                    (cadr-tui:theme-foreground-ansi
+                     :accent)))
+               (write-theme
+                (goal9-complete-theme-json
+                 :name "watch"
+                 :accent ""))
+               (is (settle))
+               (is (string=
+                    ""
+                    (cadr-tui:theme-color-value
+                     :accent)))
+               (is (string=
+                    (format nil "~C[39m"
+                            #\Escape)
+                    (cadr-tui:theme-foreground-ansi
+                     :accent))))
+          (cadr-tui:reset-current-theme))))))
+
+(test goal9-custom-theme-requires-complete-schema-and-falls-back-thinking-max
+  (let* ((caps
+           (cadr-tui:make-terminal-capabilities
+            :true-color-p t))
+         (partial
+           (cadr-ai::parse-json
+            "{\"name\":\"partial\",\"colors\":{\"accent\":\"#010203\"}}"))
+         (complete
+           (goal9-complete-theme-object
+            :name "complete"
+            :omit-thinking-max-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (progn
+           (is (not
+                (cadr-cli::apply-tui-theme-summary
+                 (list
+                  :name "partial"
+                  :object partial)
+                 :keep-current-on-error-p t
+                 :capabilities caps)))
+           (is (string=
+                "#8abeb7"
+                (cadr-tui:theme-color-value
+                 :accent)))
+           (is
+            (cadr-cli::apply-tui-theme-summary
+             (list
+              :name "complete"
+              :object complete)
+             :keep-current-on-error-p t
+             :capabilities caps))
+           (is (equal
+                (cadr-tui:theme-color-value
+                 :thinking-xhigh)
+                (cadr-tui:theme-color-value
+                 :thinking-max))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-custom-theme-rejects-invalid-optional-schema-values
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (dolist
+             (mutate
+              (list
+               (lambda (object)
+                 (setf (gethash "name" object) ""))
+               (lambda (object)
+                 (setf (gethash "$schema" object) 42))
+               (lambda (object)
+                 (setf (gethash "vars" object) nil))
+               (lambda (object)
+                 (setf (gethash "export" object) nil))))
+           (let ((object
+                   (goal9-complete-theme-object
+                    :name "invalid")))
+             (funcall mutate object)
+             (is (not
+                  (cadr-cli::apply-tui-theme-summary
+                   (list
+                    :name "invalid"
+                    :object object)
+                   :keep-current-on-error-p t
+                   :capabilities caps)))
+             (is (string=
+                  "#8abeb7"
+                  (cadr-tui:theme-color-value
+                   :accent)))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-assistant-fenced-code-uses-semantic-syntax-colors
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (let* ((entry
+                  (cadr-cli::make-tui-entry
+                   :type :assistant
+                   :content-blocks
+                   (list
+                    (cons
+                     :assistant
+                     (format nil
+                             "```javascript~%const answer = 42;~%```")))))
+                (rendered
+                  (format
+                   nil "~{~A~^~%~}"
+                   (cadr-cli::render-tui-entry
+                    entry 60))))
+           (is (search
+                (cadr-tui:theme-foreground-ansi
+                 :syntax-keyword)
+                rendered))
+           (is (search
+                (cadr-tui:theme-foreground-ansi
+                 :syntax-number)
+                rendered)))
+      (cadr-tui:reset-current-theme))))

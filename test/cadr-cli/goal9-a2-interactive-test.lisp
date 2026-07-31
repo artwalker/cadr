@@ -74,7 +74,8 @@
         (goal9-a2-editor-snapshot editor 12 8)
       (declare (ignore row column))
       (let ((screen (goal9-a2-screen-text snapshot)))
-        (is (search "alpha beta" screen))
+        (is (search "alpha" screen))
+        (is (search "beta" screen))
         (is (search "中文👩‍💻" screen))
         (is (search "omega" screen)))
       (is (> (length lines) 2))
@@ -210,11 +211,16 @@
         (goal9-a2-feed-editor
          editor decoder (string (code-char 31)))
         (is (string= "./no" (cadr-tui:editor-text editor))))
-      (let* ((decoder (cadr-tui:make-input-decoder))
+      (let* ((now 0d0)
+             (decoder (cadr-tui:make-input-decoder))
              (editor (cadr-tui:make-multiline-editor)))
         (cadr-tui:editor-set-autocomplete-provider
          editor provider)
+        (cadr-tui:editor-set-autocomplete-clock
+         editor (lambda () now))
         (goal9-a2-feed-editor editor decoder "@main")
+        (incf now 0.02d0)
+        (is (cadr-tui:editor-poll-autocomplete editor))
         (is
          (find
           "@src/main.lisp"
@@ -226,7 +232,7 @@
           (declare (ignore lines row column))
           (let ((screen (goal9-a2-screen-text snapshot)))
             (is (search "main.lisp" screen))
-            (is (search "src" screen))))
+            (is (null (search "src" screen)))))
         (goal9-a2-feed-editor editor decoder (string #\Tab))
         (is (search
              "@src/main.lisp"
@@ -288,9 +294,9 @@
           (case
            `((,session "Resume Session" "会话一")
              (,tree "Session Tree" "树节点")
-             (,model "Select Model" "Scope: scoped")
+             (,model "Select Model" "Scope: all | scoped")
              (,scoped "Model Configuration" "one")
-             (,settings "Settings" "Auto-compact: on")
+             (,settings "Settings" "Auto-compact  on")
              (,trust "Project trust" "Do not trust")))
         (destructuring-bind (overlay &rest expected) case
           (multiple-value-bind (snapshot lines row column)
@@ -367,7 +373,9 @@
          (model (cadr-ai:faux-get-model handle))
          (state
            (cadr-cli::make-tui-state
-            :model "faux-1" :session "render-session"))
+            :model "faux-1"
+            :session "render-session"
+            :session-name "render-session"))
          (editor (cadr-tui:make-multiline-editor))
          (event-types nil)
          (stream-types nil)
@@ -459,7 +467,7 @@
     (setf
      (cadr-cli::tui-state-input-tokens state) 11
      (cadr-cli::tui-state-output-tokens state) 7
-     (cadr-cli::tui-state-cache-tokens state) 3
+     (cadr-cli::tui-state-cache-read-tokens state) 3
      (cadr-cli::tui-state-cost-known-p state) t
      (cadr-cli::tui-state-cost state) 0.0042d0)
     (cadr-cli::set-tui-tools-expanded state t)
@@ -473,8 +481,8 @@
              '("Heading" "first" "A" "B" "(+ 1 2)"
                "docs" "https://example.test" "plan-stream"
                "echoed line one" "final-stream"
-               "in:11" "out:7" "cache:3" "$0.0042"
-               "session:render-session"))
+               "↑11" "↓7" "R3" "$0.004"
+               "render-session"))
           (is (search needle screen))))
       (is (every
            (lambda (line)
@@ -487,4 +495,4 @@
       (declare (ignore lines row column))
       (let ((screen (goal9-a2-screen-text collapsed)))
         (is (search "echo" screen))
-        (is (not (search "echoed line one" screen)))))))
+        (is (search "echoed line one" screen))))))

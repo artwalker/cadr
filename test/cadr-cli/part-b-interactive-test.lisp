@@ -87,16 +87,19 @@
   (is
    (equal
     (list
+     (make-string 20 :initial-element #\Space)
      (make-string 20 :initial-element #\Space))
     (cadr-cli::render-tui-status-indicator
      nil 20)))
   (is
    (equal
     (list
-     "… Retrying (1/3) in 1s..."
-     (make-string 40 :initial-element #\Space))
-    (cadr-cli::render-tui-status-indicator
-     "Retrying (1/3) in 1s..." 40))))
+     ""
+     "⠋ Retrying (1/3) in 1s...")
+    (mapcar
+     #'cadr-tui:strip-terminal-sequences
+     (cadr-cli::render-tui-status-indicator
+      "Retrying (1/3) in 1s..." 40)))))
 
 (test anthropic-subscription-warning-is-provider-gated-disableable-and-once-only
   (let ((state
@@ -752,6 +755,15 @@
         (dark
           (cadr-cli:detect-background-from-environment
            '(("COLORFGBG" . "15;0"))))
+        (bright-red
+          (cadr-cli:detect-background-from-environment
+           '(("COLORFGBG" . "0;9"))))
+        (light-cube
+          (cadr-cli:detect-background-from-environment
+           '(("COLORFGBG" . "1;231;999"))))
+        (out-of-range
+          (cadr-cli:detect-background-from-environment
+           '(("COLORFGBG" . "256"))))
         (fallback
           (cadr-cli:detect-background-from-environment
            '(("OTHER" . "x")))))
@@ -761,6 +773,15 @@
     (is (eq :dark
             (cadr-cli:theme-detection-theme
              dark)))
+    (is (eq :dark
+            (cadr-cli:theme-detection-theme
+             bright-red)))
+    (is (eq :light
+            (cadr-cli:theme-detection-theme
+             light-cube)))
+    (is (eq :low
+            (cadr-cli:theme-detection-confidence
+             out-of-range)))
     (is (eq :low
             (cadr-cli:theme-detection-confidence
              fallback))))
@@ -770,10 +791,42 @@
   (is (eq :light
           (cadr-cli:rgb-background-theme
            250 250 250)))
+  (is (eq :dark
+          (cadr-cli:rgb-background-theme
+           128 128 128)))
+  (is (eq :dark
+          (cadr-cli:rgb-background-theme
+           187 187 187)))
+  (is (eq :light
+          (cadr-cli:rgb-background-theme
+           188 188 188)))
+  (signals type-error
+    (cadr-cli:rgb-background-theme
+     -1 0 0))
+  (signals type-error
+    (cadr-cli:rgb-background-theme
+     0 0 256))
+  (is (null
+       (cadr-cli::xterm-color-to-rgb -1)))
+  (is (null
+       (cadr-cli::xterm-color-to-rgb 256)))
+  (is (equal
+       '(:light-theme "light"
+         :dark-theme "dark")
+       (cadr-cli:parse-auto-theme-setting
+        "  light / dark  ")))
+  (is (null
+       (cadr-cli:parse-auto-theme-setting
+        " /dark")))
+  (is (null
+       (cadr-cli:parse-auto-theme-setting
+        "light/  ")))
+  (is (null
+       (cadr-cli:parse-auto-theme-setting nil)))
   (is (string=
        "light"
        (cadr-cli:resolve-theme-setting
-        "light/dark" :light)))
+        " light / dark " :light)))
   (is (null
        (cadr-cli:resolve-theme-setting
         "light/dark/extra" :dark)))
@@ -1307,7 +1360,9 @@
                    (format nil "[n:~A]" text)))
            (cons "string"
                  (lambda (text)
-                   (format nil "[s:~A]" text))))))
+                   (format nil "[s:~A]" text)))
+           (cons "variable" #'identity)
+           (cons "operator" #'identity))))
     (is (string=
          "[k:const] value"
          (cadr-cli:render-highlighted-html
@@ -1322,13 +1377,111 @@
          (cadr-cli:render-highlighted-html
           "<span class=\"hljs-string\">a<span class=\"hljs-subst\">${x}</span>b</span>"
           theme)))
+    (is (string=
+         "[s:a][s:b][s:c]"
+         (cadr-cli:render-highlighted-html
+          "<span class=\"hljs-string\">a<span class=\"language-xml\">b</span>c</span>"
+          theme)))
     (is (cadr-cli:supports-syntax-language-p
          "typescript"))
     (is (string=
          "[k:const] value = [n:1]"
          (cadr-cli:simple-syntax-highlight
           "const value = 1" "typescript"
-          theme)))))
+          theme))))
+  (let* ((source
+           (format
+            nil
+            "// note~%class Widget {~%  run(value: string) {~%    const result = value + ~S;~%    return result + 42;~%  }~%}"
+            "x"))
+         (theme
+           (loop
+             for scope in
+             '("comment" "keyword" "function"
+               "variable" "string" "number"
+               "type" "operator" "punctuation")
+             collect
+             (cons
+              scope
+              (let ((scope scope))
+                (lambda (text)
+                  (format nil "[~A:~A]"
+                          scope text))))))
+         (rendered
+           (cadr-cli:simple-syntax-highlight
+            source "typescript" theme)))
+    (is (string=
+         (format
+          nil
+          "[comment:// note]~%[keyword:class] [function:Widget] {~%  [function:run][function:(][variable:value][variable::][variable: ][type:string][function:)] {~%    [keyword:const] result = value + [string:~S];~%    [keyword:return] result + [number:42];~%  }~%}"
+          "x")
+         rendered))
+    (dolist (language '("python" "bash"))
+      (is (string=
+           "https://example.com"
+           (cadr-cli:simple-syntax-highlight
+            "https://example.com"
+            language theme))))))
+
+(test goal9-syntax-highlighting-matches-cli-highlight-visible-scopes
+  (let ((theme
+          (loop
+            for scope in
+            '("keyword" "function" "variable"
+              "string" "number" "type"
+              "operator" "punctuation"
+              "addition" "deletion")
+            collect
+            (cons
+             scope
+             (let ((scope scope))
+               (lambda (text)
+                 (format nil "[~A:~A]"
+                         scope text)))))))
+    (is (string=
+         "[punctuation:<][keyword:div][punctuation: ][variable:class][punctuation:=][string:\"x\"][punctuation:>]hello[punctuation:</][keyword:div][punctuation:>]"
+         (cadr-cli:simple-syntax-highlight
+          "<div class=\"x\">hello</div>"
+          "html" theme)))
+    (is (string=
+         (format nil
+                 "[deletion:-old]~%[addition:+new]~% same")
+         (cadr-cli:simple-syntax-highlight
+          (format nil "-old~%+new~% same")
+          "diff" theme)))
+    (is (string=
+         "{[variable:\"ok\"]: [number:true]}"
+         (cadr-cli:simple-syntax-highlight
+          "{\"ok\": true}" "json" theme)))
+    (is (string=
+         "[function:f]() { [type:echo] [string:\"][variable:$x][string:\"]; }"
+         (cadr-cli:simple-syntax-highlight
+          "f() { echo \"$x\"; }" "bash" theme)))
+    (is (string=
+         "[keyword:SELECT] name [keyword:FROM] users [keyword:WHERE] id [operator:=] [number:42]"
+         (cadr-cli:simple-syntax-highlight
+          "SELECT name FROM users WHERE id = 42"
+          "sql" theme)))))
+
+(test goal9-syntax-previous-word-context-does-not-cross-boundaries
+  (let ((theme
+          (list
+           (cons "keyword"
+                 (lambda (text)
+                   (format nil "[keyword:~A]" text)))
+           (cons "type"
+                 (lambda (text)
+                   (format nil "[type:~A]" text)))
+           (cons "string"
+                 (lambda (text)
+                   (format nil "[string:~A]" text))))))
+    (is (string=
+         (format nil
+                 "[keyword:new] [string:\"x\"] Widget~%[keyword:new]; Other~%[keyword:new]~%Third")
+         (cadr-cli:simple-syntax-highlight
+          (format nil
+                  "new \"x\" Widget~%new; Other~%new~%Third")
+          "typescript" theme)))))
 
 (test tree-selection-follows-visible-ancestors-and-preserves-empty-filters
   (let* ((entries
@@ -1481,7 +1634,8 @@
                    (format nil "~{~A~^~%~}" help))))
       (is (every
            (lambda (line)
-             (<= (length line) 30))
+             (<= (cadr-tui:visible-width line)
+                 30))
            help)))
     (let* ((custom
              (cadr-cli::make-tree-selector-state
@@ -1653,6 +1807,314 @@
    :base-url "https://example.invalid"
    :max-tokens 1024))
 
+(defmacro with-selector-truecolor-theme (&body body)
+  `(progn
+     (cadr-tui:set-current-theme
+      :dark
+      :capabilities
+      (cadr-tui:make-terminal-capabilities
+       :true-color-p t))
+     (unwind-protect
+          (progn ,@body)
+       (cadr-tui:reset-current-theme))))
+
+(test goal9-fenced-code-path-matches-baseline-token-boundaries
+  (with-selector-truecolor-theme
+    (let ((rendered
+            (cadr-cli::tui-syntax-highlight
+             "typescript"
+             (format
+              nil
+              "// note~%class Widget { run(value: string) { const result = 1 + ~S; return value + result1; } }"
+              "x"))))
+      (dolist
+          (rgb
+           '("106;153;85"
+             "86;156;214"
+             "220;220;170"
+             "156;220;254"
+             "206;145;120"
+             "181;206;168"
+             "78;201;176"))
+        (is (search
+             (format nil "~C[38;2;~Am"
+                     #\Escape rgb)
+             rendered)))
+      (dolist
+          (rgb '("212;212;212"))
+        (is (null
+             (search
+              (format nil "~C[38;2;~Am"
+                      #\Escape rgb)
+              rendered))))
+      (dolist (language '("python" "bash"))
+        (is (string=
+             "https://example.com"
+             (cadr-cli::tui-syntax-highlight
+              language
+              "https://example.com"))))
+      (is (string=
+           (format nil
+                   "~C[38;2;204;102;102m-old~C[39m~%~C[38;2;181;189;104m+new~C[39m~%"
+                   #\Escape #\Escape
+                   #\Escape #\Escape)
+           (cadr-cli::tui-syntax-highlight
+            "diff" (format nil "-old~%+new~%"))))
+      (is (search
+           (format nil
+                   "~C[38;2;206;145;120m/foo+/gi~C[39m"
+                   #\Escape #\Escape)
+           (cadr-cli::tui-syntax-highlight
+            "javascript" "const re = /foo+/gi;")))
+      (is (string=
+           (format nil
+                   "~C[38;2;128;128;128m@decorator~C[39m"
+                   #\Escape #\Escape)
+           (cadr-cli::tui-syntax-highlight
+            "python" "@decorator")))
+      (is (search
+           (format nil
+                   "~C[38;2;86;156;214mdiv~C[39m"
+                   #\Escape #\Escape)
+           (cadr-cli::tui-syntax-highlight
+            "html" "<div></div>"))))))
+
+(test goal9-session-and-tree-selectors-use-full-width-selected-backgrounds
+  (with-selector-truecolor-theme
+    (let* ((width 18)
+           (session
+             (cadr-cli::make-session-selector-state
+              :current-sessions
+              (list
+               (session-record
+                "selected" 2 "界界 selected")
+               (session-record
+                "other" 1 "other"))))
+           (session-lines
+             (cadr-cli::render-session-selector
+              session width))
+           (selected-session
+             (find-if
+              (lambda (line)
+                (search "界界 selected"
+                        (cadr-tui:strip-terminal-sequences
+                         line)))
+              session-lines))
+           (tree
+             (cadr-cli::make-tree-selector-state
+              :entries
+              '((:id "root" :parent-id nil
+                 :type :message :role :user
+                 :text "界界 root")
+                (:id "child" :parent-id "root"
+                 :type :message :role :assistant
+                 :text "child"))
+              :current-leaf-id "child"
+              :initial-selected-id "root"))
+           (tree-lines
+             (cadr-cli::tree-selector-render-lines
+              tree width))
+           (tree-panel
+             (cadr-cli::render-tree-selector
+              tree width))
+           (selected-tree (first tree-lines)))
+      (dolist (line
+               (append session-lines tree-lines
+                       tree-panel))
+        (is (<= (cadr-tui:visible-width line)
+                width)))
+      (is (string= ""
+                   (cadr-tui:strip-terminal-sequences
+                    (first session-lines))))
+      (is (= width
+             (cadr-tui:visible-width
+              (second session-lines))))
+      (is (= width
+             (cadr-tui:visible-width
+              (car (last session-lines)))))
+      (is (string= ""
+                   (cadr-tui:strip-terminal-sequences
+                    (first tree-panel))))
+      (is (= width
+             (cadr-tui:visible-width
+              (second tree-panel))))
+      (is (= width
+             (cadr-tui:visible-width
+              (car (last tree-panel)))))
+      (dolist (line (list selected-session selected-tree))
+        (is (not (null line)))
+        (is (= width
+               (cadr-tui:visible-width line)))
+        (is (uiop:string-prefix-p
+             (format nil "~C[48;2;58;58;74m"
+                     #\Escape)
+             line))
+        (is (uiop:string-suffix-p
+             line
+             (format nil "~C[49m" #\Escape))))
+      (is (search
+           (format nil "~C[38;2;102;102;102m"
+                   #\Escape)
+           (format nil "~{~A~^~%~}" session-lines)))
+      (is (search
+           (format nil "~C[38;2;128;128;128m"
+                   #\Escape)
+           (format nil "~{~A~^~%~}" tree-lines))))))
+
+(test goal9-session-selector-labels-neutralize-terminal-controls
+  (let* ((escape (string #\Escape))
+         (record
+           (session-record
+            "unsafe" 1
+            (format nil
+                    "first~%second~Ctab~A[2Jclear~Cend"
+                    #\Tab escape (code-char 127))))
+         (label
+           (cadr-cli::session-selector-record-label
+            record)))
+    (is (string=
+         "first second tab [2Jclear end"
+         label))
+    (is (null (find-if
+               (lambda (character)
+                 (let ((code
+                         (char-code character)))
+                   (or (<= code 31)
+                       (= code 127))))
+               label)))))
+
+(test goal9-model-selector-uses-borders-spacers-and-semantic-row-colors
+  (with-selector-truecolor-theme
+    (let* ((current
+             (selector-test-model :faux "model-00"))
+           (models
+             (loop for index below 12
+                   collect
+                   (selector-test-model
+                    (if (evenp index) :faux :other)
+                    (format nil "model-~2,'0D" index))))
+           (state
+             (cadr-cli::make-model-selector-state
+              :all-models models
+              :current-model current))
+           (width 30)
+           (lines
+             (cadr-cli::render-model-selector
+              state width))
+           (plain
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              lines))
+           (model-lines
+             (remove-if-not
+              (lambda (line)
+                (cl-ppcre:scan
+                 "^(?:→ |  )model-[0-9][0-9] \\["
+                 line))
+              plain))
+           (selected-line
+             (let ((position
+                     (position-if
+                      (lambda (line)
+                        (search "→ model-00" line))
+                      plain)))
+               (and position
+                    (nth position lines)))))
+      (is (= 10 (length model-lines)))
+      (is (= width
+             (cadr-tui:visible-width
+              (first lines))))
+      (is (= width
+             (cadr-tui:visible-width
+              (car (last lines)))))
+      (is (every
+           (lambda (character)
+             (char= character #\─))
+           (cadr-tui:strip-terminal-sequences
+            (first lines))))
+      (is (string= "" (second plain)))
+      (is (string= ""
+                   (nth (- (length plain) 2)
+                        plain)))
+      (is (search
+           (format nil "~C[38;2;138;190;183m"
+                   #\Escape)
+           selected-line))
+      (is (search
+           (format nil "~C[38;2;128;128;128m"
+                   #\Escape)
+           selected-line))
+      (is (search
+           (format nil "~C[38;2;181;189;104m ✓"
+                   #\Escape)
+           selected-line))
+      (is (every
+           (lambda (line)
+             (<= (cadr-tui:visible-width line)
+                 width))
+           lines)))))
+
+(test goal9-settings-trust-and-scoped-selectors-are-semantic-and-narrow-safe
+  (with-selector-truecolor-theme
+    (let* ((settings
+             (cadr-cli::make-settings-selector-state
+              :options
+              (list
+               (cadr-cli::make-settings-option
+                :id "one" :label "界界 setting"
+                :description "A long muted description"
+                :value t :values (list t nil))
+               (cadr-cli::make-settings-option
+                :id "two" :label "Other"
+                :value nil :values (list t nil)))))
+           (trust
+             (cadr-cli::make-trust-selector-state
+              :cwd "/tmp/界界-project/"
+              :saved-entry
+              '(:path "/tmp/界界-project/"
+                :decision t)
+              :project-trusted-p t))
+           (model
+             (selector-test-model
+              :faux "界界-model" "Wide Model"))
+           (scoped
+             (cadr-cli::make-scoped-models-selector-state
+              :all-models (list model)
+              :enabled-ids (list "faux/界界-model")))
+           (width 16)
+           (groups
+             (list
+              (cadr-cli::render-settings-selector
+               settings width)
+              (cadr-cli::render-trust-selector
+               trust width)
+              (cadr-cli::render-scoped-models-selector
+               scoped width))))
+      (dolist (lines groups)
+        (is (every
+             (lambda (line)
+               (<= (cadr-tui:visible-width line)
+                   width))
+             lines))
+        (let ((rendered
+                (format nil "~{~A~^~%~}" lines)))
+          (is (search
+               (format nil "~C[38;2;138;190;183m"
+                       #\Escape)
+               rendered))
+          (is (search
+               (format nil "~C[38;2;128;128;128m"
+                       #\Escape)
+               rendered))
+          (is (search
+               (format nil "~C[38;2;102;102;102m"
+                       #\Escape)
+               rendered))
+          (is (search
+               (format nil "~C[48;2;58;58;74m"
+                       #\Escape)
+               rendered)))))))
+
 (test model-selector-preserves-scope-order-and-resets-query-selection
   (let* ((alpha-1
            (selector-test-model
@@ -1751,10 +2213,11 @@
               (push ids persisted)))))
     (is (search
          "faux/unavailable [unavailable] ✗"
-         (format
-          nil "~{~A~^~%~}"
-          (cadr-cli::render-scoped-models-selector
-           state 120))))
+         (cadr-tui:strip-terminal-sequences
+          (format
+           nil "~{~A~^~%~}"
+           (cadr-cli::render-scoped-models-selector
+            state 120)))))
     (cadr-cli::scoped-models-selector-handle-event
      state
      (cadr-tui:make-input-event :kind :enter))

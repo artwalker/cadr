@@ -1611,6 +1611,27 @@
         default
         (eq value t))))
 
+(defun settings-show-terminal-progress-p (manager)
+  (let ((terminal-settings
+          (settings-value
+           manager "terminal"
+           (empty-json-object))))
+    (and
+     (hash-table-p terminal-settings)
+     (eq t
+         (cadr-ai::json-get
+          terminal-settings
+          "showTerminalProgress"
+          nil)))))
+
+(defun settings-terminal-theme-mode (manager)
+  (let ((configured
+          (settings-value manager "theme" nil)))
+    (cond
+      ((null configured) :detect-once)
+      ((parse-auto-theme-setting configured) :auto)
+      (t :fixed))))
+
 (defun settings-choice-value
     (manager key choices default)
   (let ((value
@@ -2683,6 +2704,182 @@
                     :oauth
                     (cadr-ai::provider-api-key
                      provider))))))
+         (config-subscription-p ()
+           (let ((provider
+                   (provider-config-provider config)))
+             (or
+              (and
+               provider
+               (cadr-ai::provider-oauth-access-token
+                provider))
+              (string-equal
+               (provider-key
+                (provider-config-name config))
+               "kimi-coding"))))
+         (valid-context-assistant-entry-p (entry)
+           (and
+            (eq
+             :message
+             (cadr-agent:session-entry-type entry))
+            (let ((message
+                    (cadr-agent:session-entry-message
+                     entry)))
+              (and
+               (typep
+                message
+                'cadr-ai:assistant-message)
+               (not
+                (member
+                 (cadr-ai:assistant-message-stop-reason
+                  message)
+                 '(:aborted :error)))
+               (plusp
+                (cadr-ai:usage-total
+                 (cadr-ai:assistant-message-usage
+                  message)))))))
+         (current-context-percent ()
+           (let* ((model
+                    (cadr-agent:agent-model agent))
+                  (window
+                    (cadr-ai:model-context-window model))
+                  (current
+                    (cadr-agent:agent-session agent))
+                  (entries
+                    (and
+                     current
+                     (cadr-agent::session-path-entries
+                      current)))
+                  (compaction
+                    (and
+                     entries
+                     (cadr-agent::latest-compaction-entry
+                      entries)))
+                  (compaction-position
+                    (and
+                     compaction
+                     (position compaction entries
+                               :test #'eq))))
+             (when
+                 (and
+                  (plusp window)
+                  (or
+                   (null compaction)
+                   (find-if
+                    #'valid-context-assistant-entry-p
+                    entries
+                    :start
+                    (1+ compaction-position))))
+               (let ((estimate
+                       (cadr-ai:estimate-context-tokens
+                        (cadr-agent:agent-messages
+                         agent))))
+                 (* 100d0
+                    (/ (cadr-ai:context-usage-estimate-tokens
+                        estimate)
+                       window))))))
+         (current-cache-hit-rate ()
+           (let ((current
+                   (cadr-agent:agent-session agent)))
+             (when current
+               (loop
+                 for entry in
+                 (reverse
+                  (cadr-agent:session-entries
+                   current))
+                 when
+                   (and
+                    (eq
+                     :message
+                     (cadr-agent:session-entry-type
+                      entry))
+                    (typep
+                     (cadr-agent:session-entry-message
+                      entry)
+                     'cadr-ai:assistant-message))
+                   do
+                   (let* ((usage
+                            (cadr-ai:assistant-message-usage
+                             (cadr-agent:session-entry-message
+                              entry)))
+                          (prompt
+                            (+ (cadr-ai:usage-input usage)
+                               (cadr-ai:usage-cache-read
+                                usage)
+                               (cadr-ai:usage-cache-write
+                                usage))))
+                     (return
+                       (and
+                        (plusp prompt)
+                        (* 100d0
+                           (/ (cadr-ai:usage-cache-read
+                               usage)
+                              prompt)))))))))
+         (current-footer-state ()
+           (let* ((model
+                    (cadr-agent:agent-model agent))
+                  (current
+                    (cadr-agent:agent-session agent))
+                  (stats
+                    (and
+                     current
+                     (session-command-stats current)))
+                  (providers
+                    (remove-duplicates
+                     (mapcar
+                      #'cadr-ai:model-provider
+                      available-models)
+                     :test #'eq))
+                  (messages
+                    (and
+                     current
+                     (cadr-agent:session-messages
+                      current))))
+             (list
+              :model (cadr-ai:model-id model)
+              :provider
+              (provider-config-name config)
+              :thinking
+              (and
+               (cadr-ai:model-reasoning-p model)
+               (cadr-agent::agent-thinking-level
+                agent))
+              :context-window
+              (cadr-ai:model-context-window model)
+              :context-percent
+              (current-context-percent)
+              :session-name
+              (and
+               current
+               (cadr-agent:session-name current))
+              :multiple-providers-p
+              (> (length providers) 1)
+              :subscription-p
+              (not (null (config-subscription-p)))
+              :auto-compact-p
+              (cadr-agent::agent-auto-compact-p agent)
+              :input (or (getf stats :input) 0)
+              :output (or (getf stats :output) 0)
+              :cache-read
+              (or (getf stats :cache-read) 0)
+              :cache-write
+              (or (getf stats :cache-write) 0)
+              :latest-cache-hit-rate
+              (current-cache-hit-rate)
+              :cost (or (getf stats :cost) 0d0)
+              :cost-known-p
+              (some
+               (lambda (message)
+                 (and
+                  (typep
+                   message
+                   'cadr-ai:assistant-message)
+                  (ignore-errors
+                    (cadr-ai:find-model-metadata
+                     (cadr-ai:assistant-message-provider
+                      message)
+                     (cadr-ai:assistant-message-model
+                      message)))))
+               messages))))
          (refresh-auth (provider action)
            (let ((previous-auth-source
                    (provider-config-auth-source
@@ -2935,7 +3132,21 @@
                     (warning
                       (anthropic-warning)))
                (when model-consumer
-                 (funcall model-consumer model-id))
+                 (funcall
+                  model-consumer model-id
+                  (provider-config-name
+                   updated)
+                  (cadr-ai:model-context-window
+                   (provider-config-model updated))
+                  (and
+                   (cadr-ai:model-reasoning-p
+                    (provider-config-model updated))
+                   (cadr-agent::agent-thinking-level
+                    agent))
+                  (if
+                      (config-subscription-p)
+                      t
+                      :not-subscription)))
                (when
                    (and warning
                         notice-consumer)
@@ -3205,7 +3416,19 @@
                   (run-prompt initial))
                 (dolist (message messages)
                   (run-prompt message))))
-            (run-tui
+            (multiple-value-bind
+                  (startup-compact
+                   startup-expanded)
+                (if
+                    (or
+                     (cli-arguments-verbose-p command)
+                     (not
+                      (settings-value
+                       settings-manager
+                       "quietStartup" nil)))
+                    (make-tui-startup-lines resources)
+                    (values nil nil))
+              (run-tui
            #'run-prompt
            :command-function #'handle-command
            :template-function #'expand-template
@@ -3229,12 +3452,74 @@
                (cli-extension-manager-host
                 extension-manager))
               function))
+           :footer-state-function
+           #'current-footer-state
+           :footer-cwd cwd
+           :available-provider-count
+           (length
+            (remove-duplicates
+             (mapcar
+              #'cadr-ai:model-provider
+              available-models)
+             :test #'eq))
+           :subscription-p
+           (not (null (config-subscription-p)))
+           :autocomplete-max-visible
+           (settings-choice-value
+            settings-manager
+            "autocompleteMaxVisible"
+            '(3 5 7 10 15 20) 5)
+           :show-terminal-progress-function
+           (lambda ()
+             (settings-show-terminal-progress-p
+              settings-manager))
            :theme-function
            (lambda ()
-             (let ((name
-                     (settings-value
-                      settings-manager
-                      "theme" "dark")))
+             (let* ((configured
+                      (settings-value
+                       settings-manager
+                       "theme" nil))
+                    (background
+                      (theme-detection-theme
+                       (detect-background-from-environment)))
+                    (name
+                      (or
+                       (and
+                        configured
+                        (resolve-theme-setting
+                         configured background))
+                       (string-downcase
+                        (symbol-name
+                         background)))))
+               (or
+                (find
+                 name
+                 (resource-snapshot-themes
+                  resources)
+                 :key
+                 (lambda (theme)
+                   (getf theme :name))
+                 :test #'string=)
+                (list :name name :path nil))))
+           :theme-mode-function
+           (lambda ()
+             (settings-terminal-theme-mode
+              settings-manager))
+           :detected-theme-function
+           (lambda (background)
+             (let* ((configured
+                      (settings-value
+                       settings-manager
+                       "theme" nil))
+                    (name
+                      (or
+                       (and
+                        configured
+                        (resolve-theme-setting
+                         configured background))
+                       (string-downcase
+                        (symbol-name
+                         background)))))
                (or
                 (find
                  name
@@ -3380,6 +3665,36 @@
            :model
            (cadr-ai:model-id
             (cadr-agent:agent-model agent))
+           :provider
+           (provider-config-name config)
+           :thinking
+           (cadr-agent::agent-thinking-level
+            agent)
+           :cwd
+           (format-cwd-for-footer
+            (namestring
+             (uiop:ensure-directory-pathname
+              cwd))
+            (namestring
+             (uiop:ensure-directory-pathname
+              (user-homedir-pathname))))
+           :branch
+           (ignore-errors
+             (let ((paths
+                     (find-git-footer-paths
+                      cwd)))
+               (and paths
+                    (resolve-git-footer-branch
+                     paths))))
+           :session-name
+           (and
+            (cadr-agent:agent-session agent)
+            (cadr-agent:session-name
+             (cadr-agent:agent-session
+              agent)))
+           :context-window
+           (cadr-ai:model-context-window
+            (cadr-agent:agent-model agent))
            :session
            (and
             (cadr-agent:agent-session agent)
@@ -3388,13 +3703,28 @@
            :messages
            (copy-list
             (cadr-agent:agent-messages agent))
+           :startup-compact-lines
+           startup-compact
+           :startup-expanded-lines
+           startup-expanded
            :alt-p
            (cli-arguments-alt-p command)
+           :show-hardware-cursor-p
+           (or
+            (settings-value
+             settings-manager
+             "showHardwareCursor" nil)
+            (string=
+             (or
+              (uiop:getenv
+               "CADR_HARDWARE_CURSOR")
+              "")
+             "1"))
            :initial-notices
            (let ((warning
                    (anthropic-warning)))
              (and warning
-                  (list warning))))
+                  (list warning)))))
             0)
            (:repl
             (setf event-consumer renderer)

@@ -1240,19 +1240,78 @@
      name))
    name))
 
+(defun sanitize-session-selector-label (text)
+  (with-output-to-string (output)
+    (loop for character across (or text "")
+          for code = (char-code character)
+          do
+          (write-char
+           (if (or (<= code 31)
+                   (= code 127))
+               #\Space
+               character)
+           output))))
+
 (defun session-selector-record-label (record)
-  (or
-   (and
-    (named-session-p record)
-    (session-search-record-name record))
-   (let ((text
-           (string-trim
-            '(#\Space #\Tab #\Newline #\Return)
-            (session-search-record-all-messages-text
-             record))))
-     (if (plusp (length text))
-         text
-         (session-search-record-id record)))))
+  (sanitize-session-selector-label
+   (or
+    (and
+     (named-session-p record)
+     (session-search-record-name record))
+    (let ((text
+            (string-trim
+             '(#\Space #\Tab #\Newline #\Return)
+             (session-search-record-all-messages-text
+              record))))
+      (if (plusp (length text))
+          text
+          (session-search-record-id record))))))
+
+(defun selector-fit-line (line width &key (pad-p nil))
+  (let* ((available (max 0 width))
+         (limited
+           (cadr-tui:truncate-to-width
+            line available ""))
+         (padding
+           (if pad-p
+               (max
+                0
+                (- available
+                   (cadr-tui:visible-width limited)))
+               0)))
+    (concatenate
+     'string limited
+     (make-string padding
+                  :initial-element #\Space))))
+
+(defun selector-border-line
+    (width &optional (color :border-muted))
+  (cadr-tui:theme-foreground
+   color
+   (make-string (max 0 width)
+                :initial-element #\─)))
+
+(defun selector-title-line (title width)
+  (selector-fit-line
+   (cadr-tui:theme-foreground
+    :accent
+    (cadr-tui:theme-bold title))
+   width))
+
+(defun selector-selected-line (line width)
+  (cadr-tui:theme-background
+   :selected-bg
+   (selector-fit-line line width :pad-p t)))
+
+(defun selector-muted-line (line width)
+  (selector-fit-line
+   (cadr-tui:theme-foreground :muted line)
+   width))
+
+(defun selector-dim-line (line width)
+  (selector-fit-line
+   (cadr-tui:theme-foreground :dim line)
+   width))
 
 (defun render-session-selector (selector width)
   (when
@@ -1260,11 +1319,21 @@
           (session-selector-state-mode selector))
     (return-from render-session-selector
       (list
-       "Rename Session"
-       (cadr-tui:truncate-to-width
-        (session-selector-state-rename-input selector)
+       ""
+       (selector-border-line width :accent)
+       ""
+       (selector-title-line "Rename Session" width)
+       (selector-fit-line
+        (cadr-tui:theme-foreground
+         :accent
+         (session-selector-state-rename-input
+          selector))
         width)
-       "enter to save · escape to cancel")))
+       (selector-dim-line
+        "enter to save · escape to cancel"
+        width)
+       ""
+       (selector-border-line width :accent))))
   (let* ((scope
            (session-selector-state-scope selector))
          (sort
@@ -1275,27 +1344,63 @@
            (session-selector-visible-nodes selector))
          (selected
            (session-selector-state-selected selector))
+         (title
+           (if (eq scope :current)
+               "Resume Session (Current Folder)"
+               "Resume Session (All)"))
+         (scope-text
+           (if (eq scope :current)
+               (concatenate
+                'string
+                (cadr-tui:theme-foreground
+                 :accent "◉ Current Folder")
+                (cadr-tui:theme-foreground
+                 :muted " | ○ All"))
+               (concatenate
+                'string
+                (cadr-tui:theme-foreground
+                 :muted "○ Current Folder | ")
+                (cadr-tui:theme-foreground
+                 :accent
+                 (if
+                     (session-selector-state-all-loading-p
+                      selector)
+                     "Loading ..."
+                     "◉ All")))))
          (lines
            (list
-            (cadr-tui:truncate-to-width
-             (format
-              nil
-              "Resume Session (~A)  Name: ~A  Sort: ~:(~A~)~:[~;  Loading...~]"
-              (if (eq scope :current)
-                  "Current Folder"
-                  "All")
-              (if (eq name-filter :all)
-                  "All" "Named")
-              sort
-              (and
-               (eq scope :all)
-               (session-selector-state-all-loading-p
-                selector)))
+            ""
+            (selector-border-line width :accent)
+            ""
+            (selector-fit-line
+             (concatenate
+              'string
+              (cadr-tui:theme-bold title)
+              "  " scope-text
+              "  "
+              (cadr-tui:theme-foreground
+               :muted "Name: ")
+              (cadr-tui:theme-foreground
+               :accent
+               (if (eq name-filter :all)
+                   "All" "Named"))
+              "  "
+              (cadr-tui:theme-foreground
+               :muted "Sort: ")
+              (cadr-tui:theme-foreground
+               :accent
+               (string-capitalize
+                (symbol-name sort))))
              width)
-            (cadr-tui:truncate-to-width
-             (format nil "Search: ~A"
-                     (session-selector-state-query
-                      selector))
+            (selector-fit-line
+             (concatenate
+              'string
+              (cadr-tui:theme-foreground
+               :muted "Search: ")
+              (cadr-tui:theme-foreground
+               :accent
+               (session-selector-state-query
+                selector)))
              width))))
     (cond
       ((session-selector-state-confirming-delete-path
@@ -1305,17 +1410,25 @@
         (append
          lines
          (list
-          "Delete session? enter confirm · escape cancel"))))
+          (selector-fit-line
+           (cadr-tui:theme-foreground
+            :error
+            "Delete session? enter confirm · escape cancel")
+           width)
+          ""))))
       ((session-selector-state-status-message selector)
        (setf
         lines
         (append
          lines
          (list
-          (cadr-tui:truncate-to-width
-           (session-selector-state-status-message
-            selector)
-           width)))))
+          (selector-fit-line
+           (cadr-tui:theme-foreground
+            :accent
+            (session-selector-state-status-message
+             selector))
+           width)
+          ""))))
       (t
        (let ((hints
                (list
@@ -1353,39 +1466,81 @@
           (append
            lines
            (list
-            (cadr-tui:truncate-to-width
+            (selector-dim-line
              (format nil "~{~A~^ · ~}" hints)
-             width)))))))
-    (if (null nodes)
-        (append
-         lines
-         (list
-          (if (eq scope :current)
-              "No sessions in current folder. Press Tab to view all."
-              "No sessions found")))
-        (append
-         lines
-         (loop
-           for (depth . record) in nodes
-           for index from 0
-           collect
-           (cadr-tui:truncate-to-width
-            (format
-             nil "~A~A~A~@[  ~A~]"
-             (if (= index selected) "› " "  ")
-             (if (plusp depth)
-                 (format
-                  nil "~A└─ "
-                  (make-string
-                   (* 3 (1- depth))
-                   :initial-element #\Space))
-                 "")
-             (session-selector-record-label record)
-             (and
-              (session-selector-state-show-path-p
-               selector)
-              (session-search-record-path record)))
-            width))))))
+             width)
+            ""))))))
+    (setf
+     lines
+     (append
+      lines
+      (if (null nodes)
+          (list
+           (selector-muted-line
+            (if (eq scope :current)
+                "No sessions in current folder. Press Tab to view all."
+                "No sessions found")
+            width))
+          (loop
+            for (depth . record) in nodes
+            for index from 0
+            for selected-p = (= index selected)
+            for current-p =
+              (same-session-path-p
+               (session-search-record-path record)
+               (session-selector-state-current-session-path
+                selector))
+            for name-p = (named-session-p record)
+            for prefix =
+              (if (plusp depth)
+                  (format
+                   nil "~A└─ "
+                   (make-string
+                    (* 3 (1- depth))
+                    :initial-element #\Space))
+                  "")
+            for label =
+              (session-selector-record-label record)
+            for path =
+              (and
+               (session-selector-state-show-path-p
+                selector)
+               (session-search-record-path record))
+            for line =
+              (concatenate
+               'string
+               (if selected-p
+                   (cadr-tui:theme-foreground
+                    :accent "› ")
+                   "  ")
+               (cadr-tui:theme-foreground
+                :dim prefix)
+               (funcall
+                (if current-p
+                    (lambda (text)
+                      (cadr-tui:theme-foreground
+                       :accent text))
+                    (if name-p
+                        (lambda (text)
+                          (cadr-tui:theme-foreground
+                           :warning text))
+                        #'identity))
+                (if selected-p
+                    (cadr-tui:theme-bold label)
+                    label))
+               (if path
+                   (cadr-tui:theme-foreground
+                    :dim
+                    (format nil "  ~A" path))
+                   ""))
+            collect
+              (if selected-p
+                  (selector-selected-line line width)
+                  (selector-fit-line line width))))))
+    (append
+     lines
+     (list ""
+           (selector-border-line width :accent)))))
 
 (defun format-cwd-for-footer (cwd home)
   (let* ((normalized-home
@@ -1921,8 +2076,21 @@
   source
   confidence)
 
-(defun color-index-light-p (index)
-  (member index '(7 8 9 10 11 12 13 14 15)))
+(defun colorfgbg-background-index (value)
+  (loop
+    for part in
+    (reverse
+     (uiop:split-string
+      value :separator '(#\;)))
+    for trimmed =
+    (string-trim
+     '(#\Space #\Tab #\Newline #\Return)
+     part)
+    for index =
+    (ignore-errors
+      (parse-integer trimmed :junk-allowed t))
+    when (and index (<= 0 index 255))
+      return index))
 
 (defun detect-background-from-environment
     (&optional environment)
@@ -1934,19 +2102,14 @@
            (and (null environment)
                 (uiop:getenv "COLORFGBG")))))
     (if value
-        (let* ((parts
-                 (uiop:split-string
-                  value :separator '(#\;)))
-               (last
-                 (car (last parts)))
-               (index
-                 (ignore-errors
-                   (parse-integer last))))
+        (let ((index
+                (colorfgbg-background-index
+                 value)))
           (if index
               (make-theme-detection
                :theme
-               (if (color-index-light-p index)
-                   :light :dark)
+               (apply #'rgb-background-theme
+                      (xterm-color-to-rgb index))
                :source "COLORFGBG"
                :confidence :high)
               (make-theme-detection
@@ -1959,10 +2122,12 @@
          :confidence :low))))
 
 (defun rgb-background-theme (red green blue)
+  (dolist (channel (list red green blue))
+    (check-type channel (integer 0 255)))
   (let* ((linear
            (lambda (value)
              (let ((channel (/ value 255d0)))
-               (if (<= channel 0.04045d0)
+               (if (<= channel 0.03928d0)
                    (/ channel 12.92d0)
                    (expt
                     (/ (+ channel 0.055d0)
@@ -1976,16 +2141,32 @@
                (funcall linear green))
             (* 0.0722d0
                (funcall linear blue)))))
-    (if (> luminance 0.179d0)
+    (if (>= luminance 0.5d0)
         :light :dark)))
 
 (defun parse-auto-theme-setting (setting)
-  (let ((parts
-          (uiop:split-string
-           setting :separator '(#\/))))
-    (when (= 2 (length parts))
-      (list :light-theme (first parts)
-            :dark-theme (second parts)))))
+  (when (stringp setting)
+    (let ((slash (position #\/ setting)))
+      (when
+          (and slash
+               (null
+                (position #\/ setting
+                          :start (1+ slash))))
+        (let ((light
+                (string-trim
+                 '(#\Space #\Tab #\Newline
+                   #\Return)
+                 (subseq setting 0 slash)))
+              (dark
+                (string-trim
+                 '(#\Space #\Tab #\Newline
+                   #\Return)
+                 (subseq setting (1+ slash)))))
+          (when
+              (and (plusp (length light))
+                   (plusp (length dark)))
+            (list :light-theme light
+                  :dark-theme dark)))))))
 
 (defun resolve-theme-setting
     (setting background)
@@ -1996,10 +2177,15 @@
        (ecase background
          (:light (getf auto :light-theme))
          (:dark (getf auto :dark-theme))))
-      ((find #\/ setting) nil)
-      (t setting))))
+      ((and (stringp setting)
+            (find #\/ setting))
+       nil)
+      ((stringp setting) setting)
+      (t nil))))
 
 (defun xterm-color-to-rgb (index)
+  (unless (typep index '(integer 0 255))
+    (return-from xterm-color-to-rgb nil))
   (cond
     ((< index 16)
      (nth
@@ -2896,54 +3082,925 @@
       (apply #'concatenate 'string
              (nreverse segments)))))
 
+(defparameter +simple-syntax-keywords+
+  '("as" "async" "await" "break" "case"
+    "catch" "class" "const" "continue"
+    "def" "default" "do" "else" "enum"
+    "export" "extends" "false" "finally"
+    "for" "from" "function" "if" "import"
+    "in" "interface" "let" "match" "new"
+    "nil" "null" "package" "pass" "private"
+    "protected" "public" "raise" "return"
+    "static" "struct" "super" "switch" "this"
+    "throw" "trait" "true" "try" "type"
+    "typeof" "undefined" "var" "void" "while"
+    "with" "yield"))
+
+(defparameter +simple-syntax-types+
+  '("any" "boolean" "byte" "char" "double"
+    "float" "int" "integer" "long" "map"
+    "number" "object" "record" "short"
+    "string" "symbol" "tuple" "uint" "vector"))
+
+(defparameter +simple-syntax-color-keys+
+  '(("comment" . :syntax-comment)
+    ("keyword" . :syntax-keyword)
+    ("function" . :syntax-function)
+    ("variable" . :syntax-variable)
+    ("string" . :syntax-string)
+    ("number" . :syntax-number)
+    ("type" . :syntax-type)
+    ("operator" . :syntax-operator)
+    ("punctuation" . :syntax-punctuation)
+    ("meta" . :muted)
+    ("addition" . :tool-diff-added)
+    ("deletion" . :tool-diff-removed)))
+
+(defun simple-syntax-formatter (scope theme)
+  (or
+   (cdr (assoc scope theme :test #'string=))
+   (let ((color
+           (cdr
+            (assoc scope
+                   +simple-syntax-color-keys+
+                   :test #'string=))))
+     (and
+      color
+      (lambda (text)
+        (cadr-tui:theme-foreground
+         color text :enabled-p t))))))
+
+(defun write-simple-syntax-token
+    (text scope theme output)
+  (let ((formatter
+          (and scope
+               (simple-syntax-formatter
+                scope theme))))
+    (write-string
+     (if formatter
+         (funcall formatter text)
+         text)
+     output)))
+
+(defun write-simple-syntax-range
+    (code start end scope theme output)
+  (when (< start end)
+    (write-simple-syntax-token
+     (subseq code start end)
+     scope theme output)))
+
+(defun simple-syntax-next-nonspace-index
+    (code start)
+  (loop for index from start below (length code)
+        unless
+        (member (char code index)
+                '(#\Space #\Tab #\Newline
+                  #\Return))
+          return index))
+
+(defun simple-syntax-quoted-end
+    (code start)
+  (let ((quote (char code start))
+        (index (1+ start))
+        (escaped-p nil))
+    (loop while (< index (length code))
+          for character = (char code index)
+          do
+          (cond
+            (escaped-p
+             (setf escaped-p nil))
+            ((char= character #\\)
+             (setf escaped-p t))
+            ((char= character quote)
+             (return (1+ index))))
+          (incf index)
+          finally (return index))))
+
+(defun simple-syntax-highlight-diff
+    (code theme)
+  (with-output-to-string (output)
+    (loop with start = 0
+          while (< start (length code))
+          for newline =
+            (position #\Newline code :start start)
+          for end = (or newline (length code))
+          for scope =
+            (and (< start end)
+                 (case (char code start)
+                   (#\+ "addition")
+                   (#\- "deletion")
+                   (otherwise nil)))
+          do
+          (write-simple-syntax-range
+           code start end scope theme output)
+          (when newline
+            (write-char #\Newline output))
+          (setf start
+                (if newline
+                    (1+ newline)
+                    (length code))))))
+
+(defun simple-syntax-markup-name-part-p
+    (character)
+  (or (alphanumericp character)
+      (member character '(#\- #\_ #\:))))
+
+(defun simple-syntax-highlight-markup
+    (code theme)
+  (with-output-to-string (output)
+    (loop with index = 0
+          while (< index (length code))
+          do
+          (cond
+            ((and
+              (<= (+ index 4) (length code))
+              (string= "<!--" code
+                       :start2 index
+                       :end2 (+ index 4)))
+             (let* ((close
+                      (search "-->" code
+                              :start2 (+ index 4)))
+                    (end
+                      (if close
+                          (+ close 3)
+                          (length code))))
+               (write-simple-syntax-range
+                code index end "comment"
+                theme output)
+               (setf index end)))
+            ((char= (char code index) #\<)
+             (let ((prefix-end
+                     (if
+                         (and
+                          (< (1+ index) (length code))
+                          (char= (char code (1+ index))
+                                 #\/))
+                         (+ index 2)
+                         (1+ index))))
+               (write-simple-syntax-range
+                code index prefix-end
+                "punctuation" theme output)
+               (setf index prefix-end)
+               (let ((name-end index))
+                 (loop while
+                       (and
+                        (< name-end (length code))
+                        (simple-syntax-markup-name-part-p
+                         (char code name-end)))
+                       do (incf name-end))
+                 (write-simple-syntax-range
+                  code index name-end "keyword"
+                  theme output)
+                 (setf index name-end))
+               (loop while (< index (length code))
+                     for character = (char code index)
+                     do
+                     (cond
+                       ((char= character #\>)
+                        (write-simple-syntax-range
+                         code index (1+ index)
+                         "punctuation" theme output)
+                        (incf index)
+                        (return))
+                       ((and
+                         (char= character #\/)
+                         (< (1+ index) (length code))
+                         (char= (char code (1+ index))
+                                #\>))
+                        (write-simple-syntax-range
+                         code index (+ index 2)
+                         "punctuation" theme output)
+                        (incf index 2)
+                        (return))
+                       ((member character
+                                '(#\Space #\Tab
+                                  #\Newline #\Return))
+                        (let ((end (1+ index)))
+                          (loop while
+                                (and
+                                 (< end (length code))
+                                 (member
+                                  (char code end)
+                                  '(#\Space #\Tab
+                                    #\Newline
+                                    #\Return)))
+                                do (incf end))
+                          (write-simple-syntax-range
+                           code index end
+                           "punctuation" theme output)
+                          (setf index end)))
+                       ((member character '(#\" #\'))
+                        (let ((end
+                                (simple-syntax-quoted-end
+                                 code index)))
+                          (write-simple-syntax-range
+                           code index end "string"
+                           theme output)
+                          (setf index end)))
+                       ((simple-syntax-markup-name-part-p
+                         character)
+                        (let ((end (1+ index)))
+                          (loop while
+                                (and
+                                 (< end (length code))
+                                 (simple-syntax-markup-name-part-p
+                                  (char code end)))
+                                do (incf end))
+                          (write-simple-syntax-range
+                           code index end "variable"
+                           theme output)
+                          (setf index end)))
+                       (t
+                        (write-simple-syntax-range
+                         code index (1+ index)
+                         "punctuation" theme output)
+                        (incf index))))))
+            (t
+             (let ((end
+                     (or (position #\< code
+                                   :start (1+ index))
+                         (length code))))
+               (write-string
+                (subseq code index end) output)
+               (setf index end)))))))
+
+(defun simple-syntax-highlight-json
+    (code theme)
+  (with-output-to-string (output)
+    (loop with index = 0
+          while (< index (length code))
+          for character = (char code index)
+          do
+          (cond
+            ((char= character #\")
+             (let* ((end
+                      (simple-syntax-quoted-end
+                       code index))
+                    (next
+                      (simple-syntax-next-nonspace-index
+                       code end))
+                    (scope
+                      (if
+                          (and next
+                               (char= (char code next)
+                                      #\:))
+                          "variable"
+                          "string")))
+               (write-simple-syntax-range
+                code index end scope theme output)
+               (setf index end)))
+            ((or (digit-char-p character)
+                 (and
+                  (char= character #\-)
+                  (< (1+ index) (length code))
+                  (digit-char-p
+                   (char code (1+ index)))))
+             (let ((end (1+ index)))
+               (loop while
+                     (and
+                      (< end (length code))
+                      (or
+                       (digit-char-p (char code end))
+                       (member (char code end)
+                               '(#\. #\e #\E #\+ #\-))))
+                     do (incf end))
+               (write-simple-syntax-range
+                code index end "number"
+                theme output)
+               (setf index end)))
+            ((alpha-char-p character)
+             (let ((end (1+ index)))
+               (loop while
+                     (and (< end (length code))
+                          (alpha-char-p
+                           (char code end)))
+                     do (incf end))
+               (write-simple-syntax-range
+                code index end
+                (and
+                 (member
+                  (string-downcase
+                   (subseq code index end))
+                  '("true" "false" "null")
+                  :test #'string=)
+                 "number")
+                theme output)
+               (setf index end)))
+            (t
+             (write-char character output)
+             (incf index))))))
+
+(defparameter +simple-bash-built-ins+
+  '("alias" "bg" "bind" "break" "builtin"
+    "cd" "command" "compgen" "complete"
+    "continue" "declare" "dirs" "disown"
+    "echo" "enable" "eval" "exec" "exit"
+    "export" "fc" "fg" "getopts" "hash"
+    "help" "history" "jobs" "kill" "let"
+    "local" "logout" "mapfile" "popd"
+    "printf" "pushd" "pwd" "read"
+    "readonly" "return" "set" "shift"
+    "shopt" "source" "suspend" "test"
+    "times" "trap" "type" "typeset"
+    "ulimit" "umask" "unalias" "unset"
+    "wait"))
+
+(defparameter +simple-bash-keywords+
+  '("case" "coproc" "do" "done" "elif"
+    "else" "esac" "fi" "for" "function"
+    "if" "in" "select" "then" "time"
+    "until" "while"))
+
+(defun simple-syntax-bash-variable-end
+    (code start limit)
+  (cond
+    ((and (< (1+ start) limit)
+          (char= (char code (1+ start)) #\{))
+     (let ((close
+             (position #\} code
+                       :start (+ start 2)
+                       :end limit)))
+       (if close (1+ close) (1+ start))))
+    (t
+     (let ((end (1+ start)))
+       (loop while
+             (and
+              (< end limit)
+              (or
+               (alphanumericp (char code end))
+               (member (char code end)
+                       '(#\_ #\@ #\# #\? #\!
+                         #\- #\$))))
+             do (incf end))
+       end))))
+
+(defun simple-syntax-write-bash-string
+    (code start end theme output)
+  (if (char= (char code start) #\')
+      (write-simple-syntax-range
+       code start end "string" theme output)
+      (loop with segment-start = start
+            with index = (1+ start)
+            while (< index end)
+            do
+            (if (char= (char code index) #\$)
+                (let ((variable-end
+                        (simple-syntax-bash-variable-end
+                         code index end)))
+                  (write-simple-syntax-range
+                   code segment-start index
+                   "string" theme output)
+                  (write-simple-syntax-range
+                   code index variable-end
+                   "variable" theme output)
+                  (setf index variable-end
+                        segment-start variable-end))
+                (incf index))
+            finally
+            (write-simple-syntax-range
+             code segment-start end
+             "string" theme output))))
+
+(defun simple-syntax-highlight-bash
+    (code theme)
+  (with-output-to-string (output)
+    (loop with index = 0
+          while (< index (length code))
+          for character = (char code index)
+          do
+          (cond
+            ((char= character #\#)
+             (let ((end
+                     (or (position #\Newline code
+                                   :start (1+ index))
+                         (length code))))
+               (write-simple-syntax-range
+                code index end "comment"
+                theme output)
+               (setf index end)))
+            ((member character '(#\" #\'))
+             (let ((end
+                     (simple-syntax-quoted-end
+                      code index)))
+               (simple-syntax-write-bash-string
+                code index end theme output)
+               (setf index end)))
+            ((char= character #\$)
+             (let ((end
+                     (simple-syntax-bash-variable-end
+                      code index (length code))))
+               (write-simple-syntax-range
+                code index end "variable"
+                theme output)
+               (setf index end)))
+            ((or (alpha-char-p character)
+                 (char= character #\_))
+             (let ((end (1+ index)))
+               (loop while
+                     (and
+                      (< end (length code))
+                      (or
+                       (alphanumericp (char code end))
+                       (char= (char code end) #\_)))
+                     do (incf end))
+               (let* ((word (subseq code index end))
+                      (lower (string-downcase word))
+                      (next
+                        (simple-syntax-next-nonspace-index
+                         code end))
+                      (function-p
+                        (and next
+                             (char= (char code next) #\()
+                             (< (1+ next) (length code))
+                             (char= (char code (1+ next))
+                                    #\)))))
+                 (write-simple-syntax-range
+                  code index end
+                  (cond
+                    ((member lower
+                             +simple-bash-built-ins+
+                             :test #'string=)
+                     "type")
+                    ((member lower
+                             +simple-bash-keywords+
+                             :test #'string=)
+                     "keyword")
+                    (function-p "function")
+                    (t nil))
+                  theme output))
+               (setf index end)))
+            ((digit-char-p character)
+             (let ((end (1+ index)))
+               (loop while
+                     (and (< end (length code))
+                          (digit-char-p
+                           (char code end)))
+                     do (incf end))
+               (write-simple-syntax-range
+                code index end "number"
+                theme output)
+               (setf index end)))
+            (t
+             (write-char character output)
+             (incf index))))))
+
+(defparameter +simple-sql-keywords+
+  '("all" "alter" "and" "as" "asc" "between"
+    "by" "case" "create" "delete" "desc"
+    "distinct" "drop" "else" "end" "exists"
+    "from" "full" "group" "having" "in"
+    "inner" "insert" "into" "is" "join"
+    "left" "like" "limit" "not" "null"
+    "offset" "on" "or" "order" "outer"
+    "right" "select" "set" "table" "then"
+    "union" "update" "values" "when" "where"))
+
+(defun simple-syntax-highlight-sql
+    (code theme)
+  (with-output-to-string (output)
+    (loop with index = 0
+          while (< index (length code))
+          for character = (char code index)
+          do
+          (cond
+            ((and
+              (< (1+ index) (length code))
+              (char= character #\-)
+              (char= (char code (1+ index)) #\-))
+             (let ((end
+                     (or (position #\Newline code
+                                   :start (+ index 2))
+                         (length code))))
+               (write-simple-syntax-range
+                code index end "comment"
+                theme output)
+               (setf index end)))
+            ((member character '(#\' #\"))
+             (let ((end
+                     (simple-syntax-quoted-end
+                      code index)))
+               (write-simple-syntax-range
+                code index end "string"
+                theme output)
+               (setf index end)))
+            ((alpha-char-p character)
+             (let ((end (1+ index)))
+               (loop while
+                     (and
+                      (< end (length code))
+                      (or
+                       (alphanumericp (char code end))
+                       (char= (char code end) #\_)))
+                     do (incf end))
+               (write-simple-syntax-range
+                code index end
+                (and
+                 (member
+                  (string-downcase
+                   (subseq code index end))
+                  +simple-sql-keywords+
+                  :test #'string=)
+                 "keyword")
+                theme output)
+               (setf index end)))
+            ((digit-char-p character)
+             (let ((end (1+ index)))
+               (loop while
+                     (and
+                      (< end (length code))
+                      (or
+                       (digit-char-p (char code end))
+                       (char= (char code end) #\.)))
+                     do (incf end))
+               (write-simple-syntax-range
+                code index end "number"
+                theme output)
+               (setf index end)))
+            ((member character
+                     '(#\= #\< #\> #\! #\+ #\-
+                       #\* #\/ #\%))
+             (let ((end (1+ index)))
+               (when
+                   (and
+                    (< end (length code))
+                    (member (char code end)
+                            '(#\= #\> #\<)))
+                 (incf end))
+               (write-simple-syntax-range
+                code index end "operator"
+                theme output)
+               (setf index end)))
+            (t
+             (write-char character output)
+             (incf index))))))
+
+(defun simple-syntax-regexp-start-p
+    (code index)
+  (let ((previous
+          (loop for cursor downfrom (1- index) to 0
+                for character = (char code cursor)
+                unless
+                (member character
+                        '(#\Space #\Tab #\Newline
+                          #\Return))
+                  return character)))
+    (or (null previous)
+        (member previous
+                '(#\= #\( #\[ #\{ #\, #\:
+                  #\; #\! #\? #\& #\|)))))
+
+(defun simple-syntax-regexp-end
+    (code start)
+  (let ((index (1+ start))
+        (escaped-p nil)
+        (class-p nil))
+    (loop while (< index (length code))
+          for character = (char code index)
+          do
+          (cond
+            (escaped-p
+             (setf escaped-p nil))
+            ((char= character #\\)
+             (setf escaped-p t))
+            ((char= character #\[)
+             (setf class-p t))
+            ((and class-p
+                  (char= character #\]))
+             (setf class-p nil))
+            ((and (not class-p)
+                  (char= character #\/))
+             (incf index)
+             (loop while
+                   (and (< index (length code))
+                        (alpha-char-p
+                         (char code index)))
+                   do (incf index))
+             (return index)))
+          (incf index)
+          finally (return nil))))
+
+(defun simple-syntax-identifier-start-p
+    (character)
+  (or (alpha-char-p character)
+      (member character '(#\_ #\$))))
+
+(defun simple-syntax-identifier-part-p
+    (character)
+  (or (alphanumericp character)
+      (member character '(#\_ #\$))))
+
+(defun simple-syntax-next-character
+    (code start)
+  (loop for index from start below (length code)
+        for character = (char code index)
+        unless
+        (member character
+                '(#\Space #\Tab #\Newline
+                  #\Return))
+          return character))
+
+(defun simple-syntax-line-comment-length
+    (code index language)
+  (let ((remaining (- (length code) index)))
+    (cond
+      ((and
+        (member language
+                '("c" "cpp" "go" "java"
+                  "javascript" "typescript"
+                  "rust")
+                :test #'string=)
+        (>= remaining 2)
+            (string= "//" code
+                     :start2 index
+                     :end2 (+ index 2)))
+       2)
+      ((and
+        (member language '("sql")
+                :test #'string=)
+        (>= remaining 2)
+        (string= "--" code
+                 :start2 index
+                 :end2 (+ index 2)))
+       2)
+      ((and
+        (member language
+                '("bash" "python" "ruby"
+                  "yaml")
+                :test #'string=)
+        (char= (char code index) #\#))
+       1)
+      ((and
+        (string= language "lisp")
+        (char= (char code index) #\;))
+       1)
+      (t nil))))
+
+(defun simple-syntax-word-scope
+    (word next-character previous-word
+     parameter-depth expect-type-p)
+  (let ((lower (string-downcase word)))
+    (cond
+      ((member lower +simple-syntax-keywords+
+               :test #'string=)
+       "keyword")
+      ((member previous-word
+               '("class" "enum" "interface"
+                 "struct" "trait")
+               :test #'string=)
+       "function")
+      ((or
+        (member lower +simple-syntax-types+
+                :test #'string=)
+        expect-type-p
+        (member previous-word
+                '("extends" "implements" "new"
+                  "type")
+                :test #'string=))
+       "type")
+      ((and next-character
+            (char= next-character #\())
+       "function")
+      ((plusp parameter-depth)
+       "variable")
+      (t nil))))
+
 (defun simple-syntax-highlight
     (code language &optional theme)
-  (unless (supports-syntax-language-p language)
+  (unless
+      (and (stringp language)
+           (supports-syntax-language-p language))
     (return-from simple-syntax-highlight code))
-  (let ((result code)
-        (keyword
-          (cdr (assoc "keyword" theme
-                      :test #'string=)))
-        (number
-          (cdr (assoc "number" theme
-                      :test #'string=))))
-    (when keyword
-      (setf
-       result
-       (cl-ppcre:regex-replace-all
-        "\\b(const|let|var|function|def|class|if|else|return)\\b"
-        result
-        (lambda
-            (target start end
-             match-start match-end
-             register-starts register-ends)
-          (declare
-           (ignore
-            start end
-            register-starts register-ends))
-          (funcall
-           keyword
-           (subseq target
-                   match-start match-end))))))
-    (when number
-      (setf
-       result
-       (cl-ppcre:regex-replace-all
-        "\\b\\d+(?:\\.\\d+)?\\b"
-        result
-        (lambda
-            (target start end
-             match-start match-end
-             register-starts register-ends)
-          (declare
-           (ignore
-            start end
-            register-starts register-ends))
-          (funcall
-           number
-           (subseq target
-                   match-start match-end))))))
-    result))
+  (let ((language (string-downcase language)))
+    (cond
+      ((string= language "diff")
+       (return-from simple-syntax-highlight
+         (simple-syntax-highlight-diff
+          code theme)))
+      ((member language '("html" "xml")
+               :test #'string=)
+       (return-from simple-syntax-highlight
+         (simple-syntax-highlight-markup
+          code theme)))
+      ((string= language "json")
+       (return-from simple-syntax-highlight
+         (simple-syntax-highlight-json
+          code theme)))
+      ((string= language "bash")
+       (return-from simple-syntax-highlight
+         (simple-syntax-highlight-bash
+          code theme)))
+      ((string= language "sql")
+       (return-from simple-syntax-highlight
+         (simple-syntax-highlight-sql
+          code theme)))))
+  (let ((language (string-downcase language))
+        (index 0)
+        (previous-word nil)
+        (parameter-depth 0)
+        (pending-function-p nil)
+        (expect-type-p nil))
+    (with-output-to-string (output)
+      (labels
+          ((emit (start end &optional scope)
+             (let* ((text (subseq code start end))
+                    (formatter
+                      (and scope
+                           (simple-syntax-formatter
+                            scope theme))))
+               (write-string
+                (if formatter
+                    (funcall formatter text)
+                    text)
+                output))))
+        (loop while (< index (length code))
+              for character = (char code index)
+              for comment-length =
+              (simple-syntax-line-comment-length
+               code index language)
+              do
+              (cond
+                (comment-length
+                 (let ((end
+                         (or
+                          (position #\Newline code
+                                    :start
+                                    (+ index comment-length))
+                          (length code))))
+                   (emit index end "comment")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         index end)))
+                ((and
+                  (member language
+                          '("c" "cpp" "css" "go"
+                            "java" "javascript"
+                            "typescript" "rust")
+                          :test #'string=)
+                  (<= (+ index 2) (length code))
+                  (string= "/*" code
+                           :start2 index
+                           :end2 (+ index 2)))
+                 (let* ((close
+                          (search "*/" code
+                                  :start2 (+ index 2)))
+                        (end
+                          (if close
+                              (+ close 2)
+                              (length code))))
+                   (emit index end "comment")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         index end)))
+                ((and
+                  (member language
+                          '("javascript" "typescript")
+                          :test #'string=)
+                  (char= character #\/)
+                  (simple-syntax-regexp-start-p
+                   code index)
+                  (simple-syntax-regexp-end
+                   code index))
+                 (let ((end
+                         (simple-syntax-regexp-end
+                          code index)))
+                   (emit index end "string")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         index end)))
+                ((and
+                  (string= language "python")
+                  (char= character #\@))
+                 (let ((end (1+ index)))
+                   (loop while
+                         (and
+                          (< end (length code))
+                          (not
+                           (member
+                            (char code end)
+                            '(#\Space #\Tab
+                              #\Newline #\Return))))
+                         do (incf end))
+                   (emit index end "meta")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         index end)))
+                ((member character
+                         '(#\" #\' #\`))
+                 (let ((quote character)
+                       (end (1+ index))
+                       (escaped-p nil))
+                   (loop while (< end (length code))
+                         for current = (char code end)
+                         do
+                         (cond
+                           (escaped-p
+                            (setf escaped-p nil))
+                           ((char= current #\\)
+                            (setf escaped-p t))
+                           ((char= current quote)
+                            (incf end)
+                            (return)))
+                         (incf end))
+                   (emit index end "string")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         index end)))
+                ((simple-syntax-identifier-start-p
+                  character)
+                 (let ((end (1+ index)))
+                   (loop while
+                         (and
+                          (< end (length code))
+                          (simple-syntax-identifier-part-p
+                           (char code end)))
+                         do (incf end))
+                   (let* ((word (subseq code index end))
+                          (lower
+                            (string-downcase word))
+                          (scope
+                            (simple-syntax-word-scope
+                             word
+                             (simple-syntax-next-character
+                              code end)
+                             previous-word
+                             parameter-depth
+                             expect-type-p)))
+                     (emit index end scope)
+                     (setf
+                      pending-function-p
+                      (and
+                       scope
+                       (string= scope "function")
+                       (eql
+                        (simple-syntax-next-character
+                         code end)
+                        #\())
+                      expect-type-p nil)
+                     (setf previous-word lower
+                           index end))))
+                ((digit-char-p character)
+                 (let ((end (1+ index)))
+                   (loop while
+                         (and
+                          (< end (length code))
+                          (or
+                           (digit-char-p
+                            (char code end))
+                           (member
+                            (char code end)
+                            '(#\. #\_))))
+                         do (incf end))
+                   (emit index end "number")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         index end)))
+                ((char= character #\()
+                 (if
+                     (or pending-function-p
+                         (plusp parameter-depth))
+                     (progn
+                       (emit index (1+ index)
+                             "function")
+                       (incf parameter-depth))
+                     (write-char character output))
+                 (setf pending-function-p nil)
+                 (setf previous-word nil)
+                 (incf index))
+                ((and
+                  (plusp parameter-depth)
+                  (char= character #\)))
+                 (emit index (1+ index) "function")
+                 (decf parameter-depth)
+                 (setf expect-type-p nil
+                       previous-word nil)
+                 (incf index))
+                ((and
+                  (plusp parameter-depth)
+                  (char= character #\:))
+                 (emit index (1+ index) "variable")
+                 (setf expect-type-p t
+                       previous-word nil)
+                 (incf index))
+                ((and
+                  expect-type-p
+                  (member character '(#\Space #\Tab)))
+                 (emit index (1+ index) "variable")
+                 (incf index))
+                (t
+                 (write-char character output)
+                 (unless
+                     (member character
+                             '(#\Space #\Tab))
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil))
+                 (incf index))))))))
 
 (defun tree-entry-visible-p
     (entry filter)
@@ -3924,35 +4981,54 @@
              for id in ids
              for entry = (gethash id by-id)
              for label = (getf entry :label)
-             collect
-               (cadr-tui:truncate-to-width
-                (format
-                 nil "~:[  ~;> ~]~@[~A ~]~@[~A ~]~A"
-                 (equal id selected)
-                 (and label
-                      (format nil "[~A]" label))
-                 (and
-                  label
-                  (tree-selector-state-show-label-timestamps-p
-                   state)
+             for selected-p = (equal id selected)
+             for label-prefix =
+               (and label
+                    (cadr-tui:theme-foreground
+                     :warning
+                     (format nil "[~A] " label)))
+             for timestamp-prefix =
+               (and
+                label
+                (tree-selector-state-show-label-timestamps-p
+                 state)
+                (cadr-tui:theme-foreground
+                 :muted
+                 (format
+                  nil "~A "
                   (tree-selector-format-label-timestamp
-                   (getf entry :label-timestamp)))
-                 (or
-                  (getf entry :text)
-                  (string-downcase
-                   (symbol-name
-                    (getf entry :type)))))
-                width
-                ""))))
+                   (getf entry :label-timestamp)))))
+             for body =
+               (or
+                (getf entry :text)
+                (string-downcase
+                 (symbol-name
+                  (getf entry :type))))
+             for line =
+               (concatenate
+                'string
+                (if selected-p
+                    (cadr-tui:theme-foreground
+                     :accent "→ ")
+                    "  ")
+                (or label-prefix "")
+                (or timestamp-prefix "")
+                (if selected-p
+                    (cadr-tui:theme-bold body)
+                    body))
+             collect
+               (if selected-p
+                   (selector-selected-line line width)
+                   (selector-fit-line line width)))))
     (append
      (if lines
          lines
          (list
-          (cadr-tui:truncate-to-width
+          (selector-muted-line
            "  No entries found"
-           width "")))
+           width)))
      (list
-      (cadr-tui:truncate-to-width
+      (selector-muted-line
        (format
         nil "  (~D/~D)~A"
         (if selected
@@ -3964,7 +5040,7 @@
             0)
         (length ids)
         (tree-selector-status-labels state))
-       width "")))))
+       width)))))
 
 (defun tree-selector-help-key
     (state name)
@@ -3990,13 +5066,16 @@
      (let ((keys
              (tree-selector-help-keys
               state (first entry))))
-       (cadr-tui:wrap-text
-        (if (getf (cddr entry) :label-first)
-            (format nil "  ~A ~A"
-                    (second entry) keys)
-            (format nil "  ~A ~A"
-                    keys (second entry)))
-        width)))
+       (mapcar
+        (lambda (line)
+          (selector-dim-line line width))
+        (cadr-tui:wrap-text
+         (if (getf (cddr entry) :label-first)
+             (format nil "  ~A ~A"
+                     (second entry) keys)
+             (format nil "  ~A ~A"
+                     keys (second entry)))
+         width))))
    '((("tui.select.up" "tui.select.down")
       "move")
      (("tui.editor.cursorLeft"
@@ -4023,22 +5102,45 @@
   (if (eq :label
           (tree-selector-state-mode state))
       (list
-       "Session Tree — Edit Label"
-       (cadr-tui:truncate-to-width
-        (format nil "Label: ~A"
-                (tree-selector-state-label-input
-                 state))
-        width "")
-       "enter save · escape cancel")
+       ""
+       (selector-border-line width)
+       (selector-title-line
+        "  Session Tree — Edit Label" width)
+       (selector-fit-line
+        (concatenate
+         'string
+         (cadr-tui:theme-foreground
+          :muted "Label: ")
+         (cadr-tui:theme-foreground
+          :accent
+          (tree-selector-state-label-input
+           state)))
+        width)
+       (selector-dim-line
+        "enter save · escape cancel" width)
+       ""
+       (selector-border-line width))
       (append
        (list
-        "Session Tree"
-        (cadr-tui:truncate-to-width
-         (format nil "Search: ~A"
-                 (tree-selector-state-query state))
-         width ""))
+        ""
+        (selector-border-line width)
+        (selector-title-line "  Session Tree" width))
+       (tree-selector-help-lines state width)
+       (list
+        (selector-fit-line
+         (concatenate
+          'string
+          (cadr-tui:theme-foreground
+           :muted "Search: ")
+          (cadr-tui:theme-foreground
+           :accent
+           (tree-selector-state-query state)))
+         width)
+        (selector-border-line width)
+        "")
        (tree-selector-render-lines state width)
-       (tree-selector-help-lines state width))))
+       (list ""
+             (selector-border-line width)))))
 
 (defun project-trust-options (cwd)
   (let* ((path
@@ -4256,45 +5358,63 @@
     (state width)
   (append
    (list
-    "Project trust"
-    (cadr-tui:truncate-to-width
+    (selector-border-line width)
+    ""
+    (selector-title-line "Project trust" width)
+    (selector-muted-line
      (trust-selector-state-cwd state)
-     width "")
-    (cadr-tui:truncate-to-width
+     width)
+    ""
+    (selector-muted-line
      (format nil "Saved decision: ~A"
-             (trust-decision-description
-              state))
-     width "")
-    (format nil "Current session: ~A"
-            (if
-                (trust-selector-state-project-trusted-p
-                 state)
-                "trusted"
-                "untrusted")))
+             (trust-decision-description state))
+     width)
+    (selector-muted-line
+     (format nil "Current session: ~A"
+             (if
+                 (trust-selector-state-project-trusted-p
+                  state)
+                 "trusted"
+                 "untrusted"))
+     width)
+    "")
    (loop
      for option
        in (trust-selector-state-options state)
      for index from 0
+     for selected-p =
+       (= index
+          (trust-selector-state-selected state))
+     for saved-p =
+       (trust-option-saved-p
+        option
+        (trust-selector-state-saved-entry state))
+     for line =
+       (concatenate
+        'string
+        (if selected-p
+            (cadr-tui:theme-foreground
+             :accent "→ ")
+            "  ")
+        (if selected-p
+            (cadr-tui:theme-foreground
+             :accent (getf option :label))
+            (getf option :label))
+        (if saved-p
+            (cadr-tui:theme-foreground
+             :success " ✓")
+            ""))
      collect
-     (cadr-tui:truncate-to-width
-      (format
-       nil "~A~A~A"
-       (if
-           (= index
-              (trust-selector-state-selected
-               state))
-           "> "
-           "  ")
-       (getf option :label)
-       (if
-           (trust-option-saved-p
-            option
-            (trust-selector-state-saved-entry
-             state))
-           " ✓"
-           ""))
-      width ""))
-   (list "up/down navigate · enter save · escape cancel")))
+       (if selected-p
+           (selector-selected-line line width)
+           (selector-fit-line line width)))
+   (list
+    ""
+    (selector-dim-line
+     "up/down navigate · enter save · escape cancel"
+     width)
+    ""
+    (selector-border-line width))))
 
 (defstruct settings-option
   id
@@ -4476,36 +5596,52 @@
 (defun render-settings-selector
     (state width)
   (let ((selected-option
-          (settings-selector-selected-option state)))
+          (settings-selector-selected-option state))
+        (selected-index
+          (settings-selector-state-selected state)))
     (append
-     (list "Settings")
+     (list
+      (selector-border-line width)
+      (selector-title-line "Settings" width))
      (loop
        for option
          in (settings-selector-state-options state)
        for index from 0
+       for selected-p = (= index selected-index)
+       for line =
+         (concatenate
+          'string
+          (if selected-p
+              (cadr-tui:theme-foreground
+               :accent "→ ")
+              "  ")
+          (if selected-p
+              (cadr-tui:theme-foreground
+               :accent
+               (settings-option-label option))
+              (settings-option-label option))
+          "  "
+          (cadr-tui:theme-foreground
+           (if selected-p :accent :muted)
+           (settings-option-display-value option)))
        collect
-       (cadr-tui:truncate-to-width
-        (format
-         nil "~A~A: ~A"
-         (if
-             (= index
-                (settings-selector-state-selected
-                 state))
-             "> "
-             "  ")
-         (settings-option-label option)
-         (settings-option-display-value option))
-        width ""))
+         (if selected-p
+             (selector-selected-line line width)
+             (selector-fit-line line width)))
      (when selected-option
        (list
-        (cadr-tui:truncate-to-width
+        ""
+        (selector-dim-line
          (or
           (settings-option-description
            selected-option)
           "")
-         width "")))
+         width)))
      (list
-      "up/down navigate · enter change · escape close"))))
+      (selector-dim-line
+       "up/down navigate · enter change · escape close"
+       width)
+      (selector-border-line width)))))
 
 (defstruct oauth-selector-option
   id
@@ -5064,45 +6200,98 @@
             (model-selector-state-current-model state)))
       (append
        (list
-        "Select Model"
-        (if
-            (model-selector-state-scoped-models state)
-            (format
-             nil "Scope: ~:[all~;scoped~]  (tab)"
-             (eq :scoped
-                 (model-selector-state-scope state)))
-            "Only showing models from configured providers.")
-        (format nil "Search: ~A"
-                (model-selector-state-query state)))
+        (selector-border-line width)
+        ""
+        (selector-title-line "Select Model" width)
+        (selector-fit-line
+         (if
+             (model-selector-state-scoped-models state)
+             (let ((scoped-p
+                     (eq :scoped
+                         (model-selector-state-scope
+                          state))))
+               (concatenate
+                'string
+                (cadr-tui:theme-foreground
+                 :muted "Scope: ")
+                (cadr-tui:theme-foreground
+                 (if scoped-p :muted :accent)
+                 "all")
+                (cadr-tui:theme-foreground
+                 :muted " | ")
+                (cadr-tui:theme-foreground
+                 (if scoped-p :accent :muted)
+                 "scoped")))
+             (cadr-tui:theme-foreground
+              :warning
+              "Only showing models from configured providers."))
+         width)
+        (selector-dim-line "tab scope (all/scoped)" width)
+        ""
+        (selector-fit-line
+         (concatenate
+          'string
+          (cadr-tui:theme-foreground
+           :muted "Search: ")
+          (cadr-tui:theme-foreground
+           :accent
+           (model-selector-state-query state)))
+         width)
+        "")
        (if models
            (loop
              for model in models
              for index from start
+             for selected-p = (= index selected)
+             for current-p =
+               (model-equal-p model current)
              collect
-             (cadr-tui:truncate-to-width
-              (format
-               nil "~:[  ~;> ~]~A [~(~A~)]~:[~; ✓~]"
-               (= index selected)
-               (cadr-ai:model-id model)
-               (cadr-ai:model-provider model)
-               (model-equal-p model current))
-              width ""))
-           (list "  No matching models"))
+             (selector-fit-line
+              (concatenate
+               'string
+               (if selected-p
+                   (cadr-tui:theme-foreground
+                    :accent "→ ")
+                   "  ")
+               (if selected-p
+                   (cadr-tui:theme-foreground
+                    :accent
+                    (cadr-ai:model-id model))
+                   (cadr-ai:model-id model))
+               " "
+               (cadr-tui:theme-foreground
+                :muted
+                (format nil "[~(~A~)]"
+                        (cadr-ai:model-provider
+                         model)))
+               (if current-p
+                   (cadr-tui:theme-foreground
+                    :success " ✓")
+                   ""))
+              width))
+           (list
+            (selector-muted-line
+             "  No matching models" width)))
+       (when (> total (length models))
+         (list
+          (selector-muted-line
+           (format nil "  (~D/~D)"
+                   (1+ selected) total)
+           width)))
        (when
            (and models
                 (model-selector-selected-model state))
          (list
-          (cadr-tui:truncate-to-width
+          ""
+          (selector-muted-line
            (format
             nil "  Model Name: ~A"
             (cadr-ai::model-name
              (model-selector-selected-model state)))
-           width "")))
-       (when (> total (length models))
-         (list
-          (format
-           nil "  (~D/~D)"
-           (1+ selected) total)))))))
+           width)))
+       (list
+        ""
+        (selector-border-line width))))))
 
 (defstruct (scoped-models-selector-state
             (:constructor
@@ -5746,39 +6935,86 @@
         (scoped-models-selector-counts state)
       (append
        (list
-        "Model Configuration"
-        (format
-         nil "Session-only. ~A to save to settings."
-         (scoped-models-binding-label
-          state "app.models.save"))
-        (format nil "Search: ~A"
-                (scoped-models-selector-state-query
-                 state)))
+        (selector-border-line width)
+        ""
+        (selector-title-line
+         "Model Configuration" width)
+        (selector-muted-line
+         (format
+          nil "Session-only. ~A to save to settings."
+          (scoped-models-binding-label
+           state "app.models.save"))
+         width)
+        ""
+        (selector-fit-line
+         (concatenate
+          'string
+          (cadr-tui:theme-foreground
+           :muted "Search: ")
+          (cadr-tui:theme-foreground
+           :accent
+           (scoped-models-selector-state-query
+            state)))
+         width)
+        "")
        (if visible
            (loop
              for item in visible
              for index from start
              for model = (getf item :model)
-             collect
-             (cadr-tui:truncate-to-width
-              (format
-               nil
-               "~:[  ~;> ~]~A [~A]~A"
-               (= index selected)
+             for selected-p = (= index selected)
+             for identifier =
                (if model
                    (cadr-ai:model-id model)
                    (getf item :id))
+             for provider =
                (if model
                    (provider-key
                     (cadr-ai:model-provider model))
                    "unavailable")
+             for status =
                (cond
-                 ((null model) " ✗")
+                 ((null model)
+                  (cadr-tui:theme-foreground
+                   :dim " ✗"))
                  (all-p "")
-                 ((getf item :enabled-p) " ✓")
-                 (t " ✗")))
-              width ""))
-           (list "  No matching models"))
+                 ((getf item :enabled-p)
+                  (cadr-tui:theme-foreground
+                   :success " ✓"))
+                 (t
+                  (cadr-tui:theme-foreground
+                   :dim " ✗")))
+             for line =
+               (concatenate
+                'string
+                (if selected-p
+                    (cadr-tui:theme-foreground
+                     :accent "→ ")
+                    "  ")
+                (if selected-p
+                    (cadr-tui:theme-foreground
+                     :accent identifier)
+                    identifier)
+                (cadr-tui:theme-foreground
+                 :muted
+                 (format nil " [~A]" provider))
+                status)
+             collect
+               (if selected-p
+                   (selector-selected-line line width)
+                   (selector-fit-line line width)))
+           (list
+            (selector-muted-line
+             "  No matching models" width)))
+       (when
+           (or (> start 0)
+               (< end (length items)))
+         (list
+          (selector-muted-line
+           (format nil "  (~D/~D)"
+                   (1+ selected)
+                   (length items))
+           width)))
        (when visible
          (let* ((item
                   (scoped-models-selector-selected-item
@@ -5787,44 +7023,58 @@
                   (and item
                        (getf item :model))))
            (list
-            (format
-             nil "  ~A"
-             (if model
-                 (format nil "Model Name: ~A"
-                         (cadr-ai::model-name model))
-                 "Model unavailable")))))
+            ""
+            (selector-muted-line
+             (format
+              nil "  ~A"
+              (if model
+                  (format nil "Model Name: ~A"
+                          (cadr-ai::model-name
+                           model))
+                  "Model unavailable"))
+             width))))
        (list
-        (cadr-tui:truncate-to-width
-         (format
-          nil
-          "~A toggle · ~A all · ~A clear · ~A provider · ~A/~A reorder · ~A save · ~A~:[~; (unsaved)~]"
-          (scoped-models-binding-label
-           state "tui.select.confirm")
-          (scoped-models-binding-label
-           state "app.models.enableAll")
-          (scoped-models-binding-label
-           state "app.models.clearAll")
-          (scoped-models-binding-label
-           state "app.models.toggleProvider")
-          (scoped-models-binding-label
-           state "app.models.reorderUp")
-          (scoped-models-binding-label
-           state "app.models.reorderDown")
-          (scoped-models-binding-label
-           state "app.models.save")
-          (if all-p
-              "all enabled"
-              (format
-               nil "~D/~D enabled~@[ · ~D unavailable~]"
-               enabled
-               (length
-                (scoped-models-selector-state-all-ids
-                 state))
-               (and (plusp unavailable)
-                    unavailable)))
-          (scoped-models-selector-state-dirty-p
-           state))
-         width ""))))))
+        ""
+        (selector-fit-line
+         (concatenate
+          'string
+          (cadr-tui:theme-foreground
+           :dim
+           (format
+            nil
+            "~A toggle · ~A all · ~A clear · ~A provider · ~A/~A reorder · ~A save · ~A"
+            (scoped-models-binding-label
+             state "tui.select.confirm")
+            (scoped-models-binding-label
+             state "app.models.enableAll")
+            (scoped-models-binding-label
+             state "app.models.clearAll")
+            (scoped-models-binding-label
+             state "app.models.toggleProvider")
+            (scoped-models-binding-label
+             state "app.models.reorderUp")
+            (scoped-models-binding-label
+             state "app.models.reorderDown")
+            (scoped-models-binding-label
+             state "app.models.save")
+            (if all-p
+                "all enabled"
+                (format
+                 nil "~D/~D enabled~@[ · ~D unavailable~]"
+                 enabled
+                 (length
+                  (scoped-models-selector-state-all-ids
+                   state))
+                 (and (plusp unavailable)
+                      unavailable)))))
+          (if
+              (scoped-models-selector-state-dirty-p
+               state)
+              (cadr-tui:theme-foreground
+               :warning " (unsaved)")
+              ""))
+         width)
+        (selector-border-line width))))))
 
 (defstruct (tool-render-session
             (:constructor make-tool-render-session
