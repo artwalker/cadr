@@ -126,7 +126,7 @@ TUI 在 start/end 两帧展示 call content 还是 receipt；`/model` 则把 sco
 | `/model` `tab scope` 提示 | `src/cadr-cli/interactive-services.lisp:8012`；`test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`；`test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | unscoped/scoped 两条完整文案路径均不再出现 `tab scope (all/scoped)`；scoped 状态只保留 `Scope: all | scoped` 状态标题。 | 旧门禁只覆盖 unscoped 分支，并把 scoped 分支残留提示当作允许差异；宣告范围大于真实验证范围。 |
 | read collapsed preview | `src/cadr-tui/components.lisp:1213-1222,1514-1565`；`test/cadr-tui/components-test.lisp:423` `GOAL9-TOOL-COLLAPSED-PREVIEWS-MATCH-BASELINE-BUDGETS` | 成功 read 折叠态不显示结果；展开显示完整结果；error 始终可见。 | 旧共享 budget 错把 read 与 write 合并为 10 行，并只断言裁剪数量，未对照 read 专用 result renderer。 |
 | Markdown streaming fence | `src/cadr-tui/components.lisp:796-906`；`test/cadr-tui/components-test.lisp:764` `GOAL9-MARKDOWN-STREAMING-FENCES-MATCH-BASELINE-EXACTLY`；`test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` | 审计基线完成态本身保留开、闭 fence 行，因此截图中的字面 <code>```text</code> / <code>```</code> 已核实为非差异；本轮只修 empty/partial streaming fence 与 fence 后首个空 code line，并从 delta 经 TUI state、Markdown renderer 到 virtual terminal 锁定完整链路。 | 旧测试偏重完成态和 token 样式，没有逐帧固定完整行数组，也没有穿过完整 TUI 链。 |
-| 14 个 overlay 整屏合约 | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:122` `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` | model、model-scoped、settings、resume、fork、tree、scoped-models、trust、login-method、login-provider、api-key、import、extension-select、extension-custom 均锁定完整 virtual-screen SHA-256。 | 原门禁分散在 substring、样式 token 和业务 action 测试，只抽查六个 overlay，未证明每个 surface 的整屏输出。 |
+| 15 个 overlay 整屏合约 | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:125` `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` | model、model-scoped、settings、resume、fork、tree、scoped-models、trust、login-method、login-provider、logout-provider、api-key、import、extension-select、extension-custom 均锁定完整 virtual-screen SHA-256。收尾自查发现初版清单漏列独立 `/logout` surface；新增 case 先以 `PENDING` 期望复现 `14 pass / 1 fail`，再锁定真实整屏 SHA 转绿。 | 原门禁分散在 substring、样式 token 和业务 action 测试，只抽查六个 overlay；本轮初版枚举又误把 login/logout 共用 renderer 当成同一 surface，未证明每个命令 surface 的整屏输出。 |
 | settings 能力门控 | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:169` `GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`；`:347` `GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT`；`:497` `GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES` | 与基线相同：supports-images=nil 时 25 项；true 时按能力增加 Show images/Image width，合计 27 项；submenu 与边界循环另行锁定。 | 旧报告把 nil 分支的 25 项误当作固定用户裁决，没有覆盖 capability=true 分支。 |
 | `@path` autocomplete | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:837` `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` | 40×8 完整 virtual screen、换行与上下双向循环均锁定。 | 旧检查只断言匹配项或局部 popup，没有完整屏幕与 wrap 行为。 |
 | extension raw/live | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:589` `GOAL9-B3-EXTENSION-SELECTOR-STYLES-COUNTDOWN-KEYS-AND-TOOL-TOGGLE-ARE-EXACT`；`:646` `GOAL9-B3-EXTENSION-SELECT-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE`；`:694` `GOAL9-B3-EXTENSION-CONFIRM-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` | raw input、倒计时、按键、tool toggle，以及真实 worker→live TUI overlay bridge→键盘→返回值均有门禁。 | 旧检查只证明孤立 framed selector 可 render，未证明真实 bridge 与返回值。 |
@@ -163,8 +163,8 @@ background reset    = ESC[49m
 
 | 证据 | 命令/范围 | checks | pass | skip | fail | 输出记录 |
 |---|---|---:|---:|---:|---:|---|
-| 隔离确定性全量 | 临时空 `HOME`，显式 unset 四类 live credential，`./scripts/test-cl.sh` | 6854 | 6846 | 8 | 0 | `/tmp/cadr-goal9-isolated-rerun.log` |
-| 当前用户状态全量 | `./scripts/test-cl.sh` | 6877 | 6876 | 1 | 0 | `/tmp/cadr-goal9-current.log` |
+| 隔离确定性全量 | 临时空 `HOME`，显式 unset 四类 live credential，`./scripts/test-cl.sh` | 6855 | 6847 | 8 | 0 | `/tmp/cadr-goal9-isolated-rerun.log` |
+| 当前用户状态全量 | `./scripts/test-cl.sh` | 6878 | 6877 | 1 | 0 | `/tmp/cadr-goal9-current.log` |
 | 本机可用 live 门禁 | 当前与隔离 totals 的增量；DeepSeek 与 Codex OAuth 均真实执行 | 23 | 23 | 0 | 0 | `/tmp/cadr-goal9-current.log` |
 | PTY lifecycle | `./scripts/goal9-a2-pty.sh` | 3 | 3 | 0 | 0 | normal、ctrl-c、suspend-resume 均 PASS |
 
@@ -175,7 +175,7 @@ Codex OAuth CLI、DeepSeek/Codex eval 及两个 DeepSeek 进程级 eval 均真�
 证据真实性补充：第一次保存隔离重跑时，既有
 `SHUTDOWN-DURING-PREFLIGHT-PREVENTS-PROVIDER-START` 时序测试偶发 2 个断言失败；
 本轮没有改动 `cadr-agent`，按“顺手发现只记录不修”处理。相同隔离命令立即重跑
-6854 checks 全绿，当前用户状态 6877 checks 亦全绿；失败日志保留为
+6855 checks 全绿，当前用户状态 6878 checks 亦全绿；失败日志保留为
 `/tmp/cadr-goal9-isolated.log`。
 
 残留 grep 命令与原始输出：
@@ -232,7 +232,8 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 | `94c1b0822` | tool preview、Markdown 与 editor autocomplete |
 | `7d89b096b` | overlay 完整合约、settings/auth/extension glue 与运行时门禁 |
 | `d77321774` | docs/README 收口与最终证据 |
-| `本澄清提交` | 明确完成态 Markdown fence 为已核实非差异 |
+| `034f69e0f` | 明确完成态 Markdown fence 为已核实非差异 |
+| `本最终门禁提交` | 补齐 `/logout` 独立整屏 SHA，并刷新全量数字 |
 
 提交后须再次确认本轮路径无未提交变更；用户预存的
 `docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与

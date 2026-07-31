@@ -100,6 +100,9 @@
      (cons "login-provider"
            (cadr-cli::make-oauth-selector-state
             :mode :login :options (goal9-b3-overlay-auth-options)))
+     (cons "logout-provider"
+           (cadr-cli::make-oauth-selector-state
+            :mode :logout :options (goal9-b3-overlay-auth-options)))
      (cons "api-key"
            (cadr-cli::make-api-key-input-state
             (second (goal9-b3-overlay-auth-options))))
@@ -131,6 +134,7 @@
             ("trust" . "91476A3411AD79385394054B0F1250067136A28086EEDF83A34C98E481626866")
             ("login-method" . "E8B9832D6CBD13D2E4275992BB026B78B5FC58952AD54BAD2302AD73B922822D")
             ("login-provider" . "D0BBBCD732D1DBD1CC63434C06A87E509817116694C4EC36B732383ABD9ABD6B")
+            ("logout-provider" . "8B64091A84F4BF61281FC767B91955066B3C0472E575E864C266D34AE95D1424")
             ("api-key" . "A3E134010EAB3AC193B4F587DB22042515C633BD46A63953382F9B5E1CC2100C")
             ("import" . "9F523B226D7639B0449AE7F3E6E6980F7D1B10B1D17DD03DA4D494E208802E3E")
             ("extension-select" . "493B0D5F9A671AC464143BB174CBA9C73EF06D9C23F96A272B4A6EE6DEDD793C")

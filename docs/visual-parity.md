@@ -246,7 +246,7 @@ A/B 仍须由用户裁决。
 | stream content | 每个单切点/代表性多切点→逐字符相等；纯空白、空白+数字、连续数字、行首数字、非流式 |
 | provider thinking | 每个 provider × 每个 thinking level × catalog 命中/未知 model→payload 与 start/delta/end |
 | tool | start/running/partial→success 或 error→collapsed/expanded |
-| exact copy | tool success/error/args 与全部 overlay 每一行→完整 snapshot 逐字相等；14 个 overlay 另锁定整屏 SHA-256 |
+| exact copy | tool success/error/args 与全部 overlay 每一行→完整 snapshot 逐字相等；15 个 overlay 另锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw/Kitty input→configured action→busy/idle behavior |
 
@@ -275,7 +275,7 @@ A/B 仍须由用户裁决。
 | `/export` | 基线无 overlay | 当前直接按默认 HTML 或显式 path 导出并 notice 结果 | 无 | 无 | 无 | 无 | 输出 path | 不适用 |
 | `/reload` | 基线无 overlay | 当前直接 reload keybindings/extensions/skills/prompts/themes/context 并 notice 结果 | 无 | 无 | 无 | 无 | reload summary | 不适用 |
 
-14 个 overlay 的完整 virtual-screen SHA-256 由
+15 个 overlay（含独立 `/logout` surface）的完整 virtual-screen SHA-256 由
 `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` 锁定；
 `@path` 整屏与循环由
 `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` 锁定。
