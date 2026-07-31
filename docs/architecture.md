@@ -1502,3 +1502,40 @@ d845e5e14fd9c9b864e65297e58728ae1f1e7c2f  src/cadr-cli/extensions/llama/provider
 
 此后该扩大面恢复“发布即稳定”；后续 goal 不得修改上述对象而不重新走人工
 裁决。
+
+## 23. Goal 8 Wave 5：storage、server 与 evals
+
+Wave 5 只实现固定审计提交已有的三个独立 package，不扩张 agent/extension
+机制：
+
+```text
+cadr-storage -> cadr-agent -> cadr-ai
+cadr-server  -> cadr-ai + external cadr --mode rpc child
+cadr-evals   -> cadr-cli -> cadr-agent -> cadr-ai
+```
+
+`cadr-storage` 是已完成 SQLite adapter 的独立 ASDF/package facade，公开
+migration、named statement adapter、repository 与 storage 类型；数据和事务
+实现仍只有一份，不复制 agent session 状态。它只复用已批准的
+`cl-sqlite`/CFFI 闭包，不增加依赖。
+
+`cadr-server` 对齐原版 Unix-domain socket JSONL supervisor，而不是 HTTP
+server。每个 instance 拥有独立 `cadr --mode rpc` 子进程；supervisor
+持久化 machine/instance record，桥接普通 RPC、stream event 与 extension UI
+request/response，并在停止、异常退出和 server restart 时收敛状态。Radius
+只在现有 OAuth 或 `RADIUS_API_KEY` 可用时启用，沿用 credential gate；无凭据
+时完全 dormant。
+
+`cadr-evals` 用隔离的 project/agent/session 目录创建真实 agent runtime，
+要求显式 provider/model，不隐式回退；输入只允许 prompt/reload 序列，输出
+统一为 transcript、usage 与可选 selector。smoke 与 self-extension eval
+复用该公共 harness，测试可用 faux provider，环境中可用的 DeepSeek/Codex
+凭据另走 live gate。
+
+Wave 5 门禁固定为：
+
+1. standalone storage system 的 schema、事务、fork/materialized state；
+2. 真实 Unix socket 的单请求、错误、stale socket 与 RPC stream framing；
+3. supervisor spawn/list/status/RPC/UI/stop/restart recovery；
+4. eval 显式模型选择、隔离清理、transcript/usage 与 self-extension；
+5. 全量 CL tests、独立 server build/smoke、既有 `cadr` build/version。
