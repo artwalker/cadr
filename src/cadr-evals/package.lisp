@@ -6,9 +6,82 @@
    #:eval-result-events
    #:eval-result-usage
    #:eval-result-errors
+   #:eval-result-artifacts
+   #:eval-result-timings
    #:make-eval-prompt-step
    #:make-eval-reload-step
    #:run-coding-agent-eval
    #:run-smoke-eval
    #:run-extension-eval
+   #:+cadr-session-snapshot-artifact+
+   #:eval-attachment
+   #:make-eval-attachment
+   #:eval-attachment-name
+   #:eval-attachment-content-type
+   #:eval-attachment-body
+   #:eval-artifact
+   #:make-eval-artifact
+   #:eval-artifact-type
+   #:eval-artifact-run-id
+   #:eval-artifact-attachments
+   #:eval-artifact-reference
+   #:eval-artifact-reference-name
+   #:eval-artifact-reference-path
+   #:record-eval-session-artifact
+   #:record-eval-source-artifact
+   #:persist-eval-artifact-references
+   #:+eval-harness-iteration-artifact+
+   #:eval-harness
+   #:make-eval-harness
+   #:make-coding-agent-eval-harness
+   #:eval-harness-name
+   #:run-eval-harness
+   #:eval-harness-row
+   #:eval-harness-row-harness
+   #:eval-harness-row-name
+   #:eval-harness-row-repetition
+   #:derive-eval-group-key
+   #:parse-eval-harness-iteration-artifact
+   #:eval-harness-table
+   #:harness-observation
+   #:make-harness-observation
+   #:paired-metric-summary
+   #:paired-metric-summary-total-pairs
+   #:paired-metric-summary-eligible-pairs
+   #:paired-metric-summary-baseline-mean
+   #:paired-metric-summary-candidate-mean
+   #:paired-metric-summary-mean-delta
+   #:correctness-lift-summary
+   #:correctness-lift-summary-total-pairs
+   #:correctness-lift-summary-eligible-pairs
+   #:correctness-lift-summary-baseline-pass-rate
+   #:correctness-lift-summary-candidate-pass-rate
+   #:correctness-lift-summary-lift
+   #:correctness-lift-summary-baseline-wins
+   #:correctness-lift-summary-candidate-wins
+   #:correctness-lift-summary-ties
+   #:harness-pair-comparison
+   #:harness-pair-comparison-baseline
+   #:harness-pair-comparison-candidate
+   #:harness-pair-comparison-correctness
+   #:harness-pair-comparison-total-tokens
+   #:harness-pair-comparison-total-ms
+   #:harness-pair-comparison-estimated-cost-usd
+   #:harness-comparison-diagnostic
+   #:harness-comparison-diagnostic-test-name
+   #:harness-comparison-diagnostic-harness
+   #:harness-comparison-diagnostic-reason
+   #:harness-eval-set-report
+   #:harness-eval-set-report-eval-set
+   #:harness-eval-set-report-comparisons
+   #:harness-comparison-report
+   #:harness-comparison-report-eval-sets
+   #:harness-comparison-report-diagnostics
+   #:summarize-harness-comparisons
+   #:format-harness-comparison-report
    #:eval-main))
+
+(in-package #:cadr-evals)
+
+(defparameter +cadr-session-snapshot-artifact+
+  "cadrSessionJsonl")

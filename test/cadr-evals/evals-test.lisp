@@ -90,6 +90,31 @@
           (is (plusp
                (cadr-ai::json-get
                 usage "totalTokens")))
+          (is (hash-table-p
+               (cadr-ai::json-get
+                usage "metadata")))
+          (is (numberp
+               (cadr-ai::json-get
+                (cadr-evals:eval-result-timings
+                 result)
+                "totalMs")))
+          (let* ((artifacts
+                   (cadr-evals:eval-result-artifacts
+                    result))
+                 (run-id
+                   (cadr-ai::json-get
+                    artifacts "runId"))
+                 (snapshot
+                   (cadr-ai::json-get
+                    artifacts
+                    cadr-evals:+cadr-session-snapshot-artifact+)))
+            (is (and
+                 (stringp run-id)
+                 (plusp (length run-id))))
+            (is (search
+                 "\"type\":\"session\""
+                 snapshot))
+            (is (search run-id snapshot)))
           (is (= 2 (length events)))
           (is (equal
                '("user" "assistant")
@@ -100,7 +125,7 @@
                 events)))
           (is (not
                (probe-file
-                observed-root))))))))
+               observed-root))))))))
 
 (test self-extension-eval-writes-reloads-and-invokes-hello-tool
   (let ((extension-text

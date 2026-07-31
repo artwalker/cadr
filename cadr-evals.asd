@@ -8,6 +8,9 @@
                 :serial t
                 :components ((:file "package")
                              (:file "harness")
+                             (:file "artifacts")
+                             (:file "harness-table")
+                             (:file "summary")
                              (:file "suites")
                              (:file "main"))))
   :in-order-to ((test-op (test-op "cadr-evals/tests"))))
@@ -21,6 +24,10 @@
                 :serial t
                 :components ((:file "package")
                              (:file "evals-test")
+                             (:file "pi-harness-test")
+                             (:file "artifacts-test")
+                             (:file "harness-table-test")
+                             (:file "summary-test")
                              (:file "live-evals-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))

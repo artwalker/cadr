@@ -4,7 +4,13 @@
   output
   (events nil)
   usage
-  (errors nil))
+  (errors nil)
+  (artifacts
+    (make-hash-table :test #'equal)
+    :type hash-table)
+  (timings
+    (make-hash-table :test #'equal)
+    :type hash-table))
 
 (defparameter *eval-environment-function*
   #'uiop:getenv)
@@ -48,18 +54,31 @@
 
 (defun resolve-eval-selection
     (provider model)
-  (let ((resolved-provider
-          (or provider
-              (eval-environment
-               "CADR_EVAL_PROVIDER")
-              (eval-environment
-               "PI_PROVIDER")))
-        (resolved-model
-          (or model
-              (eval-environment
-               "CADR_EVAL_MODEL")
-              (eval-environment
-               "PI_MODEL"))))
+  (flet ((trim-selection (value)
+           (and
+            value
+            (string-trim
+             '(#\Space #\Tab
+               #\Newline #\Return)
+             value))))
+    (let ((resolved-provider
+            (trim-selection
+             (if provider
+                 provider
+                 (or
+                  (eval-environment
+                   "CADR_EVAL_PROVIDER")
+                  (eval-environment
+                   "PI_PROVIDER")))))
+          (resolved-model
+            (trim-selection
+             (if model
+                 model
+                 (or
+                  (eval-environment
+                   "CADR_EVAL_MODEL")
+                  (eval-environment
+                   "PI_MODEL"))))))
     (unless
         (and resolved-provider
              (plusp
@@ -74,7 +93,7 @@
        :message
        "Eval provider and model must both be selected explicitly"))
     (values resolved-provider
-            resolved-model)))
+            resolved-model))))
 
 (defun make-eval-root ()
   (let* ((base
@@ -270,7 +289,8 @@
         (output 0)
         (cache-read 0)
         (cache-write 0)
-        (tool-calls 0))
+        (tool-calls 0)
+        (estimated-cost 0d0))
     (dolist (message messages)
       (when
           (typep message
@@ -298,21 +318,39 @@
                    usage))
             (incf cache-write
                   (cadr-ai:usage-cache-write
-                   usage))))))
-    (cadr-ai::json-object
-     "provider"
-     (string-downcase
-      (symbol-name
-       (cadr-ai:model-provider model)))
-     "model" (cadr-ai:model-id model)
-     "inputTokens" input
-     "outputTokens" output
-     "cacheReadTokens" cache-read
-     "cacheWriteTokens" cache-write
-     "totalTokens"
-     (+ input output
-        cache-read cache-write)
-     "toolCalls" tool-calls)))
+                   usage))
+            (incf
+             estimated-cost
+             (cadr-ai:cost-total
+              (cadr-ai:usage-cost
+               usage)))))))
+    (let ((metadata
+            (cadr-ai::json-object
+             "cacheReadTokens" cache-read
+             "cacheWriteTokens" cache-write)))
+      (when (plusp estimated-cost)
+        (cadr-ai::json-put
+         metadata "estimatedCostUsd"
+         estimated-cost))
+      (cadr-ai::json-object
+       "provider"
+       (string-downcase
+        (symbol-name
+         (cadr-ai:model-provider model)))
+       "model" (cadr-ai:model-id model)
+       "inputTokens" input
+       "outputTokens" output
+       "totalTokens"
+       (+ input output
+          cache-read cache-write)
+       "toolCalls" tool-calls
+       "metadata" metadata))))
+
+(defun eval-elapsed-milliseconds (started)
+  (* 1000d0
+     (/ (- (get-internal-real-time)
+           started)
+        internal-time-units-per-second)))
 
 (defun last-assistant-since
     (agent start)
@@ -403,8 +441,12 @@
 (defun run-coding-agent-eval
     (input
      &key provider model no-tools
-       selector)
-  (multiple-value-bind
+       selector
+       transform-system-prompt
+       abort-p)
+  (let ((started
+          (get-internal-real-time)))
+    (multiple-value-bind
         (provider-name model-id)
       (resolve-eval-selection
        provider model)
@@ -486,26 +528,45 @@
                             (cadr-agent:create-session
                              :directory
                              session-directory
-                             :cwd cwd)))
+                             :cwd cwd))
+                          (default-system-prompt
+                            (cadr-cli::build-system-prompt
+                             :selected-tools
+                             (mapcar
+                              #'cadr-ai:tool-name
+                              tools)
+                             :tool-snippets
+                             (cadr-cli::tool-prompt-snippets
+                              tools)
+                             :cwd
+                             (namestring cwd)))
+                          (system-prompt
+                            (if transform-system-prompt
+                                (funcall
+                                 transform-system-prompt
+                                 default-system-prompt)
+                                default-system-prompt)))
+                     (unless
+                         (and
+                          (stringp system-prompt)
+                          (plusp
+                           (length
+                            (string-trim
+                             '(#\Space #\Tab
+                               #\Newline #\Return)
+                             system-prompt))))
+                       (error
+                        "Transformed eval system prompt must not be empty"))
                      (setf
                       agent
                       (cadr-agent:make-agent
                        :provider provider-object
                        :model model-object
-                       :system-prompt
-                       (cadr-cli::build-system-prompt
-                        :selected-tools
-                        (mapcar
-                         #'cadr-ai:tool-name
-                         tools)
-                        :tool-snippets
-                        (cadr-cli::tool-prompt-snippets
-                         tools)
-                        :cwd
-                        (namestring cwd))
+                       :system-prompt system-prompt
                        :tools tools
                        :extension-host host
                        :session session
+                       :abort-p abort-p
                        :auto-compact-p nil
                        :stream-function
                        (cadr-cli::make-extension-aware-stream-function
@@ -565,12 +626,51 @@
                            :usage
                            (eval-usage
                             messages
-                            model-object)))))))
+                            model-object)
+                           :artifacts
+                           (cadr-ai::json-object
+                            "runId"
+                            (cadr-agent:session-id
+                             session))))))))
                (error (cause)
                  (setf failure cause)))
           (shutdown-eval-agent agent)
           (release-eval-extensions
            manager)
+          (when (and outcome agent)
+            (handler-case
+                (let* ((session
+                         (cadr-agent:agent-session
+                          agent))
+                       (path
+                         (and
+                          session
+                          (cadr-agent:session-path
+                           session))))
+                  (when (and path
+                             (probe-file path))
+                    (setf
+                     (gethash
+                      +cadr-session-snapshot-artifact+
+                      (eval-result-artifacts
+                       outcome))
+                     (uiop:read-file-string
+                      path
+                      :external-format
+                      :utf-8))))
+              (error (snapshot-cause)
+                (if failure
+                    (setf
+                     failure
+                     (make-condition
+                      'simple-error
+                      :format-control
+                      "Eval failed (~A) and session snapshot failed (~A)"
+                      :format-arguments
+                      (list failure
+                            snapshot-cause)))
+                    (setf failure
+                          snapshot-cause)))))
           (when (probe-file root)
             (handler-case
                 (uiop:delete-directory-tree
@@ -593,4 +693,10 @@
                           cleanup-cause))))))
         (when failure
           (error failure))
-        outcome))))
+        (setf
+         (eval-result-timings outcome)
+         (cadr-ai::json-object
+          "totalMs"
+          (eval-elapsed-milliseconds
+           started)))
+        outcome)))))

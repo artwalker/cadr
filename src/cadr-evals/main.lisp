@@ -9,7 +9,11 @@
    "usage" (eval-result-usage result)
    "errors"
    (cadr-ai::list-json-array
-    (eval-result-errors result))))
+    (eval-result-errors result))
+   "artifacts"
+   (eval-result-artifacts result)
+   "timings"
+   (eval-result-timings result)))
 
 (defun parse-eval-arguments (arguments)
   (let ((provider nil)
