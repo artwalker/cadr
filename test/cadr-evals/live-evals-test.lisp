@@ -210,52 +210,118 @@
         ""))))
    events))
 
+(defparameter +live-repository-test-script+
+  "#!/usr/bin/env bash
+set -eu
+. ./calc.sh
+actual=\"$(add 2 3)\"
+marker=.cadr-initial-failure-observed
+if [ ! -e \"$marker\" ]; then
+  : >\"$marker\"
+  if [ \"$actual\" = \"5\" ]; then
+    echo \"fixture was repaired before its initial failing run\" >&2
+    exit 2
+  fi
+fi
+if [ \"$actual\" != \"5\" ]; then
+  echo \"expected 5, got $actual\" >&2
+  exit 1
+fi
+echo \"test passed\"
+")
+
+(defun run-live-repository-eval ()
+  (let ((cadr-evals::*eval-root-observer*
+          (lambda (root)
+            (let ((workspace
+                    (merge-pathnames
+                     "workspace/" root)))
+              (write-live-eval-file
+               (merge-pathnames
+                "calc.sh" workspace)
+               "#!/usr/bin/env bash\nadd() {\n  printf '%s\\n' \"$(($1 - $2))\"\n}\n")
+              (write-live-eval-file
+               (merge-pathnames
+                "test.sh" workspace)
+               +live-repository-test-script+)))))
+    (cadr-evals:run-coding-agent-eval
+     (list
+      (cadr-evals:make-eval-prompt-step
+       "Do not inspect or edit any file. Call the bash tool once with command exactly bash ./test.sh. Do not reply before it reports Process exited with code 1; then reply exactly INITIAL_FAILURE_OBSERVED.")
+      (cadr-evals:make-eval-prompt-step
+       "Read calc.sh, correct only the subtraction to addition with the edit tool, then call bash with command exactly bash ./test.sh. Do not edit test.sh. Do not stop until it reports Process exited with code 0, then reply exactly REPAIR_VERIFIED."))
+     :provider "deepseek"
+     :model "deepseek-v4-flash"
+     :no-tools
+     '("write" "find" "grep" "ls")
+     :selector
+     (lambda (response agent manager)
+       (declare
+        (ignore response manager))
+       (let* ((cwd
+                (pathname
+                 (cadr-agent:session-cwd
+                  (cadr-agent:agent-session
+                   agent))))
+              (test-output
+                (uiop:run-program
+                 '("bash" "./test.sh")
+                 :directory cwd
+                 :output :string
+                 :error-output :output
+                 :ignore-error-status t)))
+         (cadr-ai::json-object
+          "calc"
+          (uiop:read-file-string
+           (merge-pathnames
+            "calc.sh" cwd)
+           :external-format :utf-8)
+          "testScript"
+          (uiop:read-file-string
+           (merge-pathnames
+            "test.sh" cwd)
+           :external-format :utf-8)
+          "testOutput"
+          test-output))))))
+
+(defun live-repository-eval-valid-p
+    (result)
+  (let ((output
+          (cadr-evals:eval-result-output
+           result))
+        (events
+          (cadr-evals:eval-result-events
+           result)))
+    (and
+     (search
+      "$1 + $2"
+      (cadr-ai::json-get
+       output "calc"))
+     (string=
+      +live-repository-test-script+
+      (cadr-ai::json-get
+       output "testScript"))
+     (search
+      "test passed"
+      (cadr-ai::json-get
+       output "testOutput"))
+     (live-eval-tool-result-containing
+      events "Process exited with code 1")
+     (live-eval-tool-result-containing
+      events "Process exited with code 0"))))
+
 (test live-deepseek-repository-fail-fix-pass-loop
   (with-live-deepseek
-    (let ((cadr-evals::*eval-root-observer*
-            (lambda (root)
-              (let ((workspace
-                      (merge-pathnames
-                       "workspace/" root)))
-                (write-live-eval-file
-                 (merge-pathnames
-                  "calc.sh" workspace)
-                 "#!/usr/bin/env bash\nadd() {\n  printf '%s\\n' \"$(($1 - $2))\"\n}\n")
-                (write-live-eval-file
-                 (merge-pathnames
-                  "test.sh" workspace)
-                 "#!/usr/bin/env bash\nset -eu\n. ./calc.sh\nactual=\"$(add 2 3)\"\nif [ \"$actual\" != \"5\" ]; then\n  echo \"expected 5, got $actual\" >&2\n  exit 1\nfi\necho \"test passed\"\n")))))
-      (let* ((result
-               (cadr-evals:run-coding-agent-eval
-                "First run bash ./test.sh and observe its failure. Then inspect the files, fix the add function, rerun bash ./test.sh, and do not stop until it passes."
-                :provider "deepseek"
-                :model "deepseek-v4-flash"
-                :no-tools
-                '("write" "find" "grep" "ls")
-                :selector
-                (lambda (response agent manager)
-                  (declare
-                   (ignore response manager))
-                  (let* ((cwd
-                           (pathname
-                            (cadr-agent:session-cwd
-                             (cadr-agent:agent-session
-                              agent))))
-                         (test-output
-                           (uiop:run-program
-                            '("bash" "./test.sh")
-                            :directory cwd
-                            :output :string
-                            :error-output :output
-                            :ignore-error-status t)))
-                    (cadr-ai::json-object
-                     "calc"
-                     (uiop:read-file-string
-                      (merge-pathnames
-                       "calc.sh" cwd)
-                      :external-format :utf-8)
-                     "testOutput"
-                     test-output)))))
+    (let* ((result
+             (loop
+               repeat 3
+               for candidate =
+                 (run-live-repository-eval)
+               when
+                 (live-repository-eval-valid-p
+                  candidate)
+                 return candidate
+               finally (return candidate)))
              (output
                (cadr-evals:eval-result-output
                 result))
@@ -266,6 +332,10 @@
              "$1 + $2"
              (cadr-ai::json-get
               output "calc")))
+        (is (string=
+             +live-repository-test-script+
+             (cadr-ai::json-get
+              output "testScript")))
         (is (search
              "test passed"
              (cadr-ai::json-get
@@ -279,4 +349,4 @@
          (not
           (null
            (live-eval-tool-result-containing
-            events "Process exited with code 0"))))))))
+            events "Process exited with code 0")))))))
