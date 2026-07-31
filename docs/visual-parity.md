@@ -12,10 +12,20 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 - 工具必须覆盖 running、partial、success、error、折叠/展开及耗时文案；
 - assistant/tool 流式输出必须按真实 delta 逐帧重绘，保留原始换行，不得借用
   notice、日志或其他展示通道；
+- 流式内容必须做逐字符等价门禁：对同一固定原文遍历每一个单切点以及代表性的
+  多切点，最终组装文本和每个 `text` event payload 都必须与原文逐字符相等；
+  空白 delta、空白+数字、连续数字、行首数字和非流式路径均为必测边界；
+- provider 能力不能由单一实现代测：每个 provider × 每个 thinking level 都必须
+  断言请求能力参数以及是否发出 thinking start/delta/end，Responses reasoning
+  summary 与 chat-completions reasoning content 分属独立通路；未知/临时 model id
+  也必须进入同一矩阵；
 - editor 必须按终端可能交付的码点边界逐步输入并逐帧 render，包括空字符串、
   CJK、combining mark、emoji ZWJ 中间态；
 - 命令、键位、overlay 和 footer 必须验证从 input decoder 到运行时状态再到最终
-  virtual screen 的完整链路，不能只比提示文案或构造后的静态组件。
+  virtual screen 的完整链路，不能只比提示文案或构造后的静态组件；
+- 工具成功/失败/参数回显和每个 overlay 的每一行提示文案必须以完整字符串或
+  完整 virtual-screen snapshot 逐字断言；只搜索关键词、只检查样式 token 或仅
+  断言事件类型不构成视觉合约证据。
 
 确定性门禁优先使用 faux provider + virtual terminal；只有真实进程、终端模式或
 信号生命周期无法在进程内等价覆盖时才使用 PTY。每个现场缺陷先保留能复现原故障
@@ -180,7 +190,7 @@ background reset    = ESC[49m
 | MD-05 | link underline/color、OSC 8 与 fallback URL 规则对齐。 | 不一致（已改齐） |
 | MD-06 | 表格宽度分配、wrap、粗体 header、完整 box、窄屏 raw fallback 对齐。 | 不一致（已改齐） |
 | MD-07 | inline style 局部恢复、streaming partial fence 防闪烁对齐。 | 不一致（已改齐） |
-| TL-01 | pending/success/error 背景、title/argument/output/error/warning 语义色对齐；真实 bash 非零退出必须从 tool result 传播为 `× $` error state，文案为 `Command exited...`。 | 不一致（已改齐） |
+| TL-01 | pending/success/error 背景、title/argument/output/error/warning 语义色对齐；真实 bash 非零退出必须从 tool result 传播为红底 error state，标题仍为 `$ command` 且不添加状态 glyph，文案为 `Command exited...`。 | 不一致（已改齐） |
 | TL-02 | collapsed preview：bash 5、read/write 10、grep 15、find/ls 20；expanded 显示完整保留结果。 | 不一致（已改齐） |
 | TL-03 | real edit 结果进入 diff renderer；context/add/remove 色、单行 word inverse、tab→3 spaces 和超长行上限对齐；bash running/settled 显示 `Elapsed`/`Took`。 | 不一致（已改齐） |
 | TL-04 | 默认 active tools、顺序、description、prompt snippet/guidelines 对齐基线 `read,bash,edit,write`；`grep/find/ls` 仅显式启用，避免模型因提示偏离改用 bash echo/sed。 | 不一致（已改齐） |
@@ -218,7 +228,7 @@ Markdown 门禁：
 
 ### B2 运行时补充门禁
 
-2026-07-31 首轮 B3 真实双终端 A/B 退回后，新增以下原机械账本没有覆盖的
+2026-07-31 首轮及 2026-08-01 第二轮 B3 真实双终端 A/B 退回后，新增以下原机械账本没有覆盖的
 运行时矩阵；测试名和红→绿证据在 `docs/acceptance/goal-v9-part-b.md` 逐项列出。
 
 | 状态面 | 必测转换 |
@@ -226,7 +236,10 @@ Markdown 门禁：
 | selector | empty/filter-empty/first/last/page/wrap/select |
 | editor | empty→incremental Unicode→ZWJ intermediate→complete grapheme |
 | assistant stream | start→每个 delta→final multiline document |
+| stream content | 每个单切点/代表性多切点→逐字符相等；纯空白、空白+数字、连续数字、行首数字、非流式 |
+| provider thinking | 每个 provider × 每个 thinking level × catalog 命中/未知 model→payload 与 start/delta/end |
 | tool | start/running/partial→success 或 error→collapsed/expanded |
+| exact copy | tool success/error/args 与全部 overlay 每一行→完整 snapshot 逐字相等 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw/Kitty input→configured action→busy/idle behavior |
 
@@ -271,4 +284,4 @@ CADR_OFFLINE=1 \
 | Error | `/model __goal9_missing_model__`；再让 bash 执行 `sh -c 'echo expected-error >&2; exit 7'`。 | error color/spacing、tool error background、footer recovery、focus。 |  |
 | Exit | `/quit`；重启后 Ctrl-C。 | cursor、bracketed paste/raw、alternate screen、无重复 final frame。 |  |
 
-Part B disposition: `首轮 B3 已退回；运行时补正完成后等待用户重新逐项确认`
+Part B disposition: `第二轮 B3 已退回；运行时补正完成后等待用户重新逐项确认`

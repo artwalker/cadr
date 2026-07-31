@@ -1,6 +1,6 @@
 # Goal 9 Part B 阶段报告
 
-> 状态：首轮 B3 双终端 A/B 已由用户退回。P0→P2 运行时补正已实施；
+> 状态：第二轮 B3 双终端 A/B 已由用户退回。P0→P2 运行时补正已实施；
 > 本报告更新机械证据并等待用户重新验收。Part C 尚未开始。
 
 ## 1. 基线与机械账本
@@ -44,7 +44,7 @@ terminal/PTY 的运行时状态门禁。
 | P0-1 `/fork` 空候选崩溃 | `GOAL9-SELECT-LIST-EMPTY-AND-FIRST-ITEM-NAVIGATION-NEVER-WRITES-NEGATIVE-INDEX` | 旧导航先把 unsigned `selected` 写成 `-1` 再 clamp；改为在写槽前原子计算合法循环索引，空列表固定为 0。 | 旧 selector 测试只使用非空列表并从中间/向下导航，没有覆盖首项向上、过滤后零候选及 Enter/render。 |
 | P0-2 CJK/emoji 编辑崩溃 | `EDITOR-INCREMENTAL-CJK-AND-EMOJI-INPUT-NEVER-RENDERS-EMPTY-GRAPHEME`、`GRAPHEME-CLUSTERS-HANDLE-EMPTY-AND-DANGLING-JOINER-BOUNDARIES` | Common Lisp 中空字符串为真，autocomplete 对 `""` 执行 `(char value 0)`；同时悬空 ZWJ 吞掉 cursor placeholder。现先验长度并保持逐码点 grapheme 边界。 | 旧测试一次插入完整 grapheme，且未挂 autocomplete provider；没有逐码点渲染 ZWJ 中间态或 Unicode+尾随空格产生的空 path prefix。 |
 | P0-3 `session> <char>` | `GOAL9-B-TUI-BASH-STREAM-DOES-NOT-CREATE-SESSION-NOTICES` | TUI 把 bash live stream 接到 notice stream，而 bash 每字符 flush，遂生成一行一个 notice；TUI 不再把该流接入 notice 通道。 | notice、bash capture 和最终 tool result 分别测试，从未通过真实 mode wiring 驱动每字符 flush 并检查 virtual screen。 |
-| P1-4 exit 7 显示成功 | `GOAL9-B-BASH-NONZERO-EXIT-IS-A-TOOL-ERROR`、`GOAL9-B-NONZERO-BASH-TOOL-RENDERS-ERROR-STATE` | 非零退出从普通 result 改为 error tool result；运行时 block 为 `:error`、`× $`、error background。 | 组件测试手工构造 `:error`，bash 测试只找 exit footer；没有跑真实 agent tool loop 验证 result `is-error` 到 TUI 状态。 |
+| P1-4 exit 7 显示成功 | `GOAL9-B-BASH-NONZERO-EXIT-IS-A-TOOL-ERROR`、`GOAL9-B-NONZERO-BASH-TOOL-RENDERS-ERROR-STATE` | 非零退出从普通 result 改为 error tool result；运行时 block 为 `:error`、红色背景。第二轮进一步移除了基线没有的状态 glyph。 | 组件测试手工构造 `:error`，bash 测试只找 exit footer；没有跑真实 agent tool loop 验证 result `is-error` 到 TUI 状态。 |
 | P1-5 selector 不循环 | `GOAL9-SELECT-LIST-NAVIGATION-WRAPS-AT-BOTH-BOUNDARIES` | up/down/page 均以候选数取模，首末双向循环；零候选仍不移动。 | 旧测试把 clamp 当正确行为，没有以基线首末循环作为运行时契约。 |
 | P1-6 长输出与工具选择 | `GOAL9-STREAMED-MULTILINE-ASSISTANT-OUTPUT-STAYS-LINE-ORIENTED-EVERY-FRAME`、`GOAL9-DEFAULT-TOOL-AND-PROMPT-CONTRACT-MATCHES-AUDIT-BASELINE` | 120 行逐帧证明显式换行在 event→renderer→virtual terminal 链路不丢失；现场连排不是 Markdown 换行实现。实际偏离在更上游：Cadr 错把 7 个工具默认启用，且四工具 descriptions/snippets/guidelines 与基线不同；现默认恢复 `read,bash,edit,write` 并逐字对齐相应提示，解释并修正 bash echo/sed 偏好。 | 旧测试反而把 7 工具固化为“基线”，system prompt 仅宽松查 substring，stream 测试只有一个静态 delta，无多行逐帧 renderer/viewport。 |
 | P2-7 键位提示/行为 | `GOAL9-P2-BASELINE-KEY-HINTS-AND-DECODER-ACTIONS-AGREE`、`GOAL9-P2-CTRL-C-CLEARS-BUSY-DRAFT-AND-ESCAPE-INTERRUPTS` | 默认改为 Escape interrupt、Ctrl-C clear/双击 exit、Ctrl-D empty exit；raw 与 Kitty 输入均走可配置 app actions。 | 旧测试只比静态提示并把错误文本固化，没有验证 decoder→busy/idle action、双击时序和 virtual terminal。 |
@@ -75,6 +75,32 @@ terminal/PTY 的运行时状态门禁。
 `/tmp/cadr-goal9-b-p1-tool-error-{red,green}.log`、
 `/tmp/cadr-goal9-b-p2-timing-{red,green}.log`。
 
+## 3.1 第二轮 B3 退回与内容等价补正
+
+第二轮暴露的根因不是“又漏了几个常量”，而是原 5399 条仍偏向事件类型、结构和
+局部 substring，没有证明内容逐字符不变、provider 能力矩阵完整以及整屏文案逐字
+等价。以下门禁均先在旧实现上复现现场红相，再以同一断言转绿。
+
+| 项 | 回归门禁 | 原故障与修正 | 原 5399 条为何未捕获 |
+|---|---|---|---|
+| P0-1 流式数字前空格被吞 | `OPENAI-COMPLETIONS-STREAM-TEXT-IS-CHARACTER-EXACT-FOR-ALL-DELTA-BOUNDARIES`、`OPENAI-COMPLETIONS-NONSTREAM-TEXT-IS-CHARACTER-EXACT` | `append-chat-text-delta` 用会 trim 的“非空字符串”判断丢弃纯空白 delta；改为只拒绝长度为零的字符串。逐一遍历原文每个单切点，并覆盖纯空白、空白+数字、连续数字、行首数字、逐字符 delta 与非流式路径。 | 旧 stream fixtures 只断言事件结构且 delta 都含非空单词，没有把所有 delta 拼回后逐字符比原文，更没有空白 delta 或数字边界。 |
+| P0-2 Responses reasoning summary 缺失 | `OPENAI-RESPONSES-REASONING-SUMMARY-PARTS-EMIT-EXACT-THINKING-EVENTS` | 补齐 `response.reasoning_summary_part.done` 分段、空行分隔、最终 summary/content 回填、signature 与 thinking start/delta/end。现复用既有 muted italic thinking renderer。 | 旧 reasoning 门禁只覆盖 DeepSeek `reasoning_content` 和通用 renderer，没有 Responses summary 事件 fixture；“能渲染 thinking”被误当成“每个 provider 都会产出 thinking”。 |
+| P0-3 未知模型 thinking 降级 | `UNKNOWN-DEEPSEEK-MODEL-INHERITS-FALLBACK-CAPABILITIES-FOR-EVERY-THINKING-LEVEL` | catalog miss 时继承该 provider 默认模型的协议、能力和 thinking map，但保留用户模型 ID；显式非 off thinking 仍下发 reasoning。覆盖 off/minimal/low/medium/high/xhigh/max 的 payload 与事件序列。 | 旧模型测试只覆盖 catalog hit；没有“未知 model × thinking level”矩阵，也未验证 CLI 的 thinking 选项传入 provider resolution。 |
+| P0-4 read `offset=0` | `READ-OFFSET-MATCHES-BASELINE-ZERO-NEGATIVE-AND-BEYOND-END-SEMANTICS` | 0 视为从头，负值 clamp 到首行；超界精确报 `Offset N is beyond end of file (N lines total)`，空文件语义保留。 | 旧测试只覆盖正 offset/limit，并仅泛化断言会报错；没有 0、负值和完整错误文案。 |
+| P1-5 用户块间距/换行 | `GOAL9-B3-USER-BLOCK-SPACING-AND-WRAPPING-MATCH-BASELINE` | 相邻 assistant→user transcript 增加基线 spacer；固定宽度完整行快照保留 box 内续行行首 padding。 | 旧测试孤立渲染单个 user component，只找内容 substring；没有相邻 transcript、固定宽度和每行精确快照。 |
+| P1-7 bash 标题 timeout | `GOAL9-B3-TOOL-TITLE-COPY-HAS-NO-STATUS-GLYPH-OR-DEFAULT-TIMEOUT` | 对齐 bash schema 的 command/timeout 描述，明确 timeout 无默认值；无 timeout 的真实 event→block 标题不再出现后缀，显式 timeout 仍按基线展示。 | 旧测试只手工测显式 timeout renderer，没有对拍模型看到的 schema，也没有驱动真实无 timeout tool call。 |
+| P1-8 工具标题 glyph | `GOAL9-B3-TOOL-TITLE-COPY-HAS-NO-STATUS-GLYPH-OR-DEFAULT-TIMEOUT` | running/success/error 标题移除 `…/✓/×`，只由背景和语义色表达状态。 | 旧 snapshot 本身把新增 glyph 固化为期望值，未与基线完整标题逐字对拍。 |
+| P1-9 `/login` 无参数 | `GOAL9-B3-LOGIN-WITHOUT-ARGUMENTS-RENDERS-AUTH-METHOD-SELECTOR`、`GOAL9-B3-API-KEY-LOGIN-IS-MASKED-CANCELLABLE-AND-PERSISTENT` | 新增账户/API key 两级选择；API key 输入全程掩码、可取消、空值不提交，成功后持久化 credential、刷新 registry/footer；显式 `/login provider` 不变。 | 旧测试只覆盖显式 `/login openai` 与独立 provider selector，没有命令无参分派、四行完整文案或键盘→掩码输入→auth.json→runtime refresh 的端到端路径。 |
+| P2-10 `/model` 文案 | `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE` | 未 scoped 时显示 `Use /login to add providers.`、输入前缀改为 `> `，仅确有 scoped models 时显示 tab scope。 | 旧测试只找 warning/model 名和样式 token，没有对未 scoped 状态的完整 overlay 逐行快照。 |
+| P2-11 `/tree` 提示 | `GOAL9-B3-TREE-HELP-COPY-PRESERVES-ARROW-GLYPHS-AND-FILTER-ABBREVIATIONS` | 精确恢复 `↑/↓`、`←/→`、`ctrl+←/→` 与 `ctrl+d/t/u/l/a`。 | 旧测试验证 action 可触发，但未断言 fallback key name 的字形转换、ctrl 前缀压缩和完整两行提示。 |
+| P2-12 `/tree` 工具条目 | `GOAL9-B3-TREE-TOOL-RESULTS-RENDER-CALL-LABELS-NOT-RAW-OUTPUT` | 从 session assistant tool call 按 call ID 关联 tool result，渲染 `[bash: <args>]`、`[read: <path>]` 等标签而非输出正文。 | 旧 tree fixtures 只有孤立 tool result text，没有真实 tool-call/result 关联和完整条目快照。 |
+| P2-13 冷启动下沉 | `GOAL9-B3-COLD-STARTUP-CONTENT-IS-TOP-ALIGNED` | 仅冷启动无 transcript/overlay 时把剩余 padding 放到 startup 内容之后，editor/footer 仍锚定底部。 | 旧 root layout 测试使用 full-document 路径绕过 viewport padding，只验证组件顺序，没有完整 16 行冷启动屏幕与 cursor 坐标。 |
+
+红相包括原始空格折叠、Responses 零 thinking、未知模型零 thinking、
+`offset must be at least 1`、旧 overlay/tool/tree/cold-start 完整快照差异；绿相已纳入
+下述全量 5614 条门禁。read 标题的 `:起-止` 后缀未修改，因为它是基线
+`formatReadLineRange` 的正确行为。
+
 ## 4. 色彩字节证据
 
 同一 dark palette 输入的 capture：
@@ -99,35 +125,35 @@ background reset    = ESC[49m
 
 ```bash
 env -u DEEPSEEK_API_KEY \
-  HOME=/tmp/cadr-goal9-b-return-home.wJ0Ly4 \
+  HOME=/tmp/cadr-goal9-b3-build.JstiBg \
   QUICKLISP_SETUP=/root/quicklisp/setup.lisp \
   ./build.sh
 ```
 
-结果为 `5376 checks / 5368 pass / 8 credential-gated skip / 0 fail`：
+结果为 `5591 checks / 5583 pass / 8 credential-gated skip / 0 fail`：
 
 | suite | checks | pass | skip | fail |
 |---|---:|---:|---:|---:|
-| cadr-ai | 728 | 726 | 2 | 0 |
+| cadr-ai | 854 | 852 | 2 | 0 |
 | cadr-agent | 621 | 621 | 0 | 0 |
 | cadr-tui | 1162 | 1162 | 0 | 0 |
-| cadr-cli | 2181 | 2179 | 2 | 0 |
+| cadr-cli | 2270 | 2268 | 2 | 0 |
 | cadr-storage | 23 | 23 | 0 | 0 |
 | cadr-server | 43 | 43 | 0 | 0 |
 | cadr-evals | 121 | 117 | 4 | 0 |
 | cadr-protocol | 497 | 497 | 0 | 0 |
 
-完整日志：`/tmp/cadr-goal9-b-return-build.log`。
+构建命令退出 0；各 suite 摘要与构建输出保存在本轮终端记录中。
 
 ### 5.2 真实凭据门禁
 
 真实用户环境执行 `./scripts/test-cl.sh`，结果为
-`5399 checks / 5398 pass / 1 credential-gated skip / 0 fail`：
+`5614 checks / 5613 pass / 1 credential-gated skip / 0 fail`：
 
-- AI：`732 / 731 pass / 1 skip / 0 fail`。
+- AI：`858 / 857 pass / 1 skip / 0 fail`。
 - agent：`621 / 621 pass`。
 - TUI：`1162 / 1162 pass`。
-- CLI：`2185 / 2185 pass`。
+- CLI：`2274 / 2274 pass`。
 - storage：`23 / 23 pass`。
 - server：`43 / 43 pass`。
 - evals：`136 / 136 pass`。
@@ -135,7 +161,7 @@ env -u DEEPSEEK_API_KEY \
 
 DeepSeek chat、DeepSeek eval/repository loop、Codex OAuth CLI/eval 均在套件内
 真实执行并全绿；唯一 skip 是本机无 Anthropic 凭据，与既定 live 门控同构。
-完整日志：`/tmp/cadr-goal9-b-return-full-final.log`。
+完整全量命令退出 0。
 
 ## 6. 隔离构建产物
 
@@ -144,14 +170,14 @@ DeepSeek chat、DeepSeek eval/repository loop、Codex OAuth CLI/eval 均在套�
 
 ```text
 cadr build: SBCL lacks sb-core-compression; building an uncompressed image.
-cadr         66233320 bytes mode=755  cadr 0.1.0
+cadr         66266088 bytes mode=755  cadr 0.1.0
 cadr-server  57155288 bytes mode=755  cadr-server 0.1.0
 ```
 
 SHA-256：
 
 ```text
-4e4146b4c125ea2b811951867d57840b4e079a906e7fd528b20da561af6d4c6f  cadr
+c2c55fcbea96d8da4dc5e8232c27ed42565c1a86529862b61fa7408a374dfb9e  cadr
 678f80a3f1429dd6174dc93ed4ab21464dbc857ceea0cb7cde2613a5c362d6a0  cadr-server
 ```
 
@@ -167,6 +193,8 @@ SHA-256：
 | `77b7440dc` | interactive visual behavior |
 | `7af02f166` | B1/B2 mechanical parity closeout |
 | `7c074ad07` | B3 runtime-state correction, regressions and expanded methodology |
+| `25172b074` | stream 内容等价、Responses reasoning summary 与未知模型 thinking fallback |
+| `a792ed5b8` | read、login、tool copy、transcript、overlay、tree 与 cold-start 运行时对齐 |
 
 本阶段开发用量快照：`4,210,661 tokens / 19,459 seconds`。
 
