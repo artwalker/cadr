@@ -90,6 +90,29 @@
         :text trimmed))))
   state)
 
+(defun terminal-hyperlink (url label)
+  (format nil "~C]8;;~A~C~A~C]8;;~C"
+          #\Escape url (code-char 7) label
+          #\Escape (code-char 7)))
+
+(defun render-auth-url-lines (url width)
+  (let* ((linked
+           (terminal-hyperlink url url))
+         (hint
+           (terminal-hyperlink
+            url "Ctrl+click to open")))
+    (append
+     (cadr-tui:wrap-text linked width)
+     (list hint))))
+
+(defun add-tui-auth-url (state url)
+  (append-tui-entry
+   state
+   (make-tui-entry
+    :type :auth-url
+    :text url))
+  state)
+
 (defun render-tui-status-indicator
     (message width)
   (let ((blank
@@ -503,6 +526,10 @@
       (format nil "session> ~A"
               (tui-entry-text entry))
       width))
+    (:auth-url
+     (render-auth-url-lines
+      (tui-entry-text entry)
+      width))
     (otherwise nil)))
 
 (defun trailing-lines (lines count)
@@ -868,6 +895,7 @@
        bash-function
        set-event-consumer
        set-notice-consumer
+       set-auth-url-consumer
        set-extension-ui-function
        theme-function
        all-themes-function
@@ -964,6 +992,10 @@
          (notice (text)
            (sb-thread:with-mutex (lock)
              (add-tui-notice state text))
+           (render))
+         (show-auth-url (url)
+           (sb-thread:with-mutex (lock)
+             (add-tui-auth-url state url))
            (render))
          (finish-custom-ui (result)
            (sb-thread:with-mutex (custom-ui-lock)
@@ -1553,6 +1585,9 @@
       (when set-notice-consumer
         (funcall set-notice-consumer
                  #'notice))
+      (when set-auth-url-consumer
+        (funcall set-auth-url-consumer
+                 #'show-auth-url))
       (when set-extension-ui-function
         (funcall set-extension-ui-function
                  #'extension-ui-call))
@@ -1681,6 +1716,8 @@
           (funcall set-event-consumer nil))
         (when set-notice-consumer
           (funcall set-notice-consumer nil))
+        (when set-auth-url-consumer
+          (funcall set-auth-url-consumer nil))
         (when set-extension-ui-function
           (funcall set-extension-ui-function nil))))
     state))

@@ -2193,6 +2193,7 @@
          (repl-p (eq mode :repl))
          (event-consumer nil)
          (notice-consumer nil)
+         (auth-url-consumer nil)
          (abort-requested-p nil)
          (frontend-output
            (if tui-p
@@ -2646,24 +2647,63 @@
                     :oauth
                     (cadr-ai::provider-api-key
                      provider))))))
-         (refresh-auth (provider)
-           (declare (ignore provider))
-           (let ((updated
-                   (resolve-provider-config
-                    :provider (provider-config-name config)
-                    :model
-                    (cadr-ai:model-id
-                     (provider-config-model config))
-                   :base-url
-                    (cli-arguments-base-url command)
-                    :api-key
-                    (cli-arguments-api-key command)
-                    :allow-missing-auth-p t)))
-             (setf config updated
-                   (cadr-agent:agent-provider agent)
-                   (provider-config-provider updated)
-                   (cadr-agent:agent-model agent)
-                   (provider-config-model updated))))
+         (refresh-auth (provider action)
+           (let ((previous-auth-source
+                   (provider-config-auth-source
+                    config)))
+             (refresh-available-models)
+             (if
+                 (and
+                  (eq action :login)
+                  (or
+                   (eq previous-auth-source :none)
+                   (not
+                    (eq
+                     provider
+                     (cadr-ai:model-provider
+                      (provider-config-model
+                       config))))))
+                 (let* ((definition
+                          (cadr-ai:find-provider-definition
+                           provider))
+                        (model
+                          (model-registry-find
+                           model-registry
+                           provider
+                           (cadr-ai:provider-definition-default-model
+                            definition))))
+                   (unless
+                       (and model
+                            (find
+                             model available-models
+                             :test
+                             #'cadr-ai:models-equal-p))
+                     (error
+                      'cadr-ai:configuration-error
+                      :message
+                      (format
+                       nil
+                       "No default model is available for provider ~A"
+                       provider)))
+                   (select-model model))
+                 (let ((updated
+                         (resolve-provider-config
+                          :provider
+                          (provider-config-name config)
+                          :model
+                          (cadr-ai:model-id
+                           (provider-config-model config))
+                          :base-url
+                          (cli-arguments-base-url command)
+                          :api-key
+                          (cli-arguments-api-key command)
+                          :allow-missing-auth-p t)))
+                   (setf
+                    config updated
+                    (cadr-agent:agent-provider agent)
+                    (provider-config-provider updated)
+                    (cadr-agent:agent-model agent)
+                    (provider-config-model updated))))))
          (run-prompt (prompt)
            (let ((*bash-live-output*
                    (if (or tui-p repl-p)
@@ -2741,6 +2781,8 @@
             (handle-auth-command
              line
              :output frontend-output
+             :auth-url-function
+             auth-url-consumer
              :on-change #'refresh-auth)
             (handle-session-command
              line agent
@@ -3134,6 +3176,9 @@
            :set-notice-consumer
            (lambda (consumer)
              (setf notice-consumer consumer))
+           :set-auth-url-consumer
+           (lambda (consumer)
+             (setf auth-url-consumer consumer))
            :set-extension-ui-function
            (lambda (function)
              (setf

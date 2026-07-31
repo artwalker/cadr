@@ -1,6 +1,24 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(test oauth-auth-url-renders-once-without-session-prefix
+  (let* ((url
+           "https://auth.openai.com/oauth/authorize?response_type=code&client_id=test&redirect_uri=http%3A%2F%2Flocalhost")
+         (lines
+           (cadr-cli::render-auth-url-lines url 48))
+         (plain
+           (mapcar #'cadr-tui::strip-ansi lines))
+         (joined
+           (format nil "~{~A~^~%~}" plain)))
+    (is (not
+         (search
+          "Open this URL"
+          joined)))
+    (is (not (search "session>" joined)))
+    (is (search url
+                (format nil "~{~A~}" plain)))
+    (is (search "Ctrl+click to open" joined))))
+
 (test dispatch-user-input-is-shared-by-frontends
   (let ((prompts nil)
         (commands nil))

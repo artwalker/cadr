@@ -20,6 +20,56 @@
     (is (search "codex_cli_simplified_flow=true" url))
     (is (search "originator=pi" url))))
 
+(test openai-token-credentials-use-openai-codex-provider-identity
+  (let* ((payload
+           (cadr-ai::json-object
+            "https://api.openai.com/auth"
+            (cadr-ai::json-object
+             "chatgpt_account_id" "account-identity")))
+         (access
+           (format
+            nil "e30.~A.signature"
+            (cadr-ai::base64url-encode
+             (babel:string-to-octets
+              (cadr-ai::stringify-json payload)
+              :encoding :utf-8))))
+         (credential
+           (cadr-ai::token-response-credential
+            :openai-codex
+            (cadr-ai::json-object
+             "access_token" access
+             "refresh_token" "refresh"
+             "expires_in" 3600)
+            nil)))
+    (is (eq :openai-codex
+            (cadr-ai:oauth-credential-provider
+             credential)))
+    (is (string=
+         "account-identity"
+         (cadr-ai:oauth-credential-account-id
+          credential)))))
+
+(test oauth-auth-url-presentation-is-structured-for-tui
+  (let ((output (make-string-output-stream))
+        (observed nil)
+        (url "https://example.invalid/oauth?state=one&code=two"))
+    (cadr-ai::present-oauth-auth-url
+     url output
+     (lambda (presented)
+       (setf observed presented)))
+    (is (string= url observed))
+    (is (string= ""
+                 (get-output-stream-string output))))
+  (let ((output (make-string-output-stream))
+        (url "https://example.invalid/oauth?state=one&code=two"))
+    (cadr-ai::present-oauth-auth-url
+     url output nil)
+    (is (string=
+         (format nil
+                 "Open this URL in your browser:~%~A~%"
+                 url)
+         (get-output-stream-string output)))))
+
 (test anthropic-authorization-url-matches-fixed-reference
   (let ((url
           (cadr-ai:anthropic-authorization-url
@@ -58,14 +108,16 @@
     (delete-file path)
     (let ((credential
             (cadr-ai:make-oauth-credential
-             :provider :openai
+             :provider :openai-codex
              :access "access-secret"
              :refresh "refresh-secret"
              :expires (+ (cadr-ai::unix-milliseconds) 3600000)
              :account-id "acct-1")))
       (cadr-ai:write-auth-credential path credential)
       (is (= #o600 (logand #o777 (cadr-ai:auth-file-mode path))))
-      (let ((stored (cadr-ai:read-auth-credential path :openai)))
+      (let ((stored
+              (cadr-ai:read-auth-credential
+               path :openai-codex)))
         (is (string= "access-secret"
                      (cadr-ai:oauth-credential-access stored)))
         (is (string= "acct-1"
@@ -77,8 +129,11 @@
         (is (not (search "access-secret" redacted)))
         (is (not (search "refresh-secret" redacted)))
         (is (search "[REDACTED]" redacted)))
-      (cadr-ai:delete-auth-credential path :openai)
-      (is (null (cadr-ai:read-auth-credential path :openai))))))
+      (cadr-ai:delete-auth-credential
+       path :openai-codex)
+      (is (null
+           (cadr-ai:read-auth-credential
+            path :openai-codex))))))
 
 (test oauth-refresh-is-double-checked-under-lock
   (uiop:with-temporary-file (:pathname path)
@@ -86,7 +141,7 @@
     (cadr-ai:write-auth-credential
      path
      (cadr-ai:make-oauth-credential
-      :provider :openai
+      :provider :openai-codex
       :access "old"
       :refresh "refresh"
       :expires 0
@@ -99,13 +154,13 @@
          (bt:make-thread
           (lambda ()
             (cadr-ai:resolve-oauth-credential
-             path :openai
+             path :openai-codex
              (lambda (credential)
                (declare (ignore credential))
                (bt:with-lock-held ((cadr-ai::provider-auth-lock :test-counter))
                  (incf refreshes))
                (cadr-ai:make-oauth-credential
-                :provider :openai
+                :provider :openai-codex
                 :access "new"
                 :refresh "rotated"
                 :expires (+ (cadr-ai::unix-milliseconds) 3600000)
@@ -116,18 +171,19 @@
       (is (= 1 refreshes))
       (is (string= "new"
                    (cadr-ai:oauth-credential-access
-                    (cadr-ai:read-auth-credential path :openai)))))))
+                    (cadr-ai:read-auth-credential
+                     path :openai-codex)))))))
 
 (test openai-oauth-uses-codex-url-and-reference-headers
   (let* ((provider
-           (cadr-ai:make-openai-provider
+           (cadr-ai:make-openai-codex-provider
             :oauth-access-token "oauth-secret"
             :oauth-account-id "acct-7"))
          (model
            (cadr-ai:make-model
             :id "gpt-5.5"
-            :provider :openai
-            :api :openai-responses
+            :provider :openai-codex
+            :api :openai-codex-responses
             :base-url "https://chatgpt.com/backend-api"))
          (request
            (cadr-ai:build-request provider model (sample-context)
@@ -152,14 +208,14 @@
 (test oauth-access-token-is-redacted-from-provider-errors
   (let* ((secret "oauth-access-must-not-leak")
          (provider
-           (cadr-ai:make-openai-provider
+           (cadr-ai:make-openai-codex-provider
             :oauth-access-token secret
             :oauth-account-id "acct-7"))
          (model
            (cadr-ai:make-model
             :id "gpt-5.5"
-            :provider :openai
-            :api :openai-responses
+            :provider :openai-codex
+            :api :openai-codex-responses
             :base-url "https://chatgpt.com/backend-api"))
          (context (sample-context))
          (cadr-ai::*max-provider-retries* 0)
@@ -219,7 +275,7 @@
     (cadr-ai:write-auth-credential
      path
      (cadr-ai:make-oauth-credential
-      :provider :openai
+      :provider :openai-codex
       :access "expired-access"
       :refresh "refresh-secret"
       :expires 0
@@ -254,10 +310,10 @@
                 nil))))
       (let* ((credential
                (cadr-ai:resolve-oauth-credential
-                path :openai
+                path :openai-codex
                 #'cadr-ai:refresh-openai-oauth-credential))
              (provider
-               (cadr-ai:make-openai-provider
+               (cadr-ai:make-openai-codex-provider
                 :oauth-access-token
                 (cadr-ai:oauth-credential-access credential)
                 :oauth-account-id
@@ -265,8 +321,8 @@
              (model
                (cadr-ai:make-model
                 :id "gpt-5.5"
-                :provider :openai
-                :api :openai-responses
+                :provider :openai-codex
+                :api :openai-codex-responses
                 :base-url "https://chatgpt.com/backend-api"))
              (request
                (cadr-ai:build-request

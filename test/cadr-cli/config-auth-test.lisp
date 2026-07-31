@@ -160,6 +160,40 @@
                  (cadr-ai:request-spec-headers request)
                  :test #'string-equal)))))))))
 
+(test misidentified-openai-oauth-does-not-block-login-recovery
+  (with-test-directory (directory)
+    (let ((auth-path
+            (merge-pathnames "auth.json" directory)))
+      (cadr-ai:write-auth-credential
+       auth-path
+       (cadr-ai:make-oauth-credential
+        :provider :openai
+        :access "legacy-access"
+        :refresh "legacy-refresh"
+        :expires
+        (+ (cadr-ai::unix-milliseconds)
+           3600000)
+        :account-id "acct"))
+      (let ((config
+              (cadr-cli:resolve-provider-config
+               :provider "openai"
+               :config-path
+               #P"/definitely/missing/config.json"
+               :auth-path auth-path
+               :allow-missing-auth-p t)))
+        (is (eq
+             :none
+             (cadr-cli:provider-config-auth-source
+              config)))
+        (is (null
+             (cadr-ai::provider-oauth-access-token
+              (cadr-cli:provider-config-provider
+               config))))
+        (is (typep
+             (cadr-ai:read-auth-credential
+              auth-path :openai)
+             'cadr-ai:oauth-credential))))))
+
 (test repl-dispatches-slash-commands-without-prompting-model
   (let ((commands nil)
         (prompts nil)
@@ -187,21 +221,130 @@
            (calls nil)
            (output (make-string-output-stream))
            (cadr-cli::*openai-login-function*
-            (lambda (auth-path &key output)
-              (declare (ignore output))
+            (lambda
+                (auth-path
+                 &key output auth-url-function)
+              (declare
+               (ignore output auth-url-function))
               (push :login calls)
               (cadr-ai:write-auth-credential
                auth-path
                (cadr-ai:make-oauth-credential
-                :provider :openai
+                :provider :openai-codex
                 :access "a" :refresh "r"
                 :expires (+ (cadr-ai::unix-milliseconds) 1000000)
                 :account-id "acct")))))
       (is (cadr-cli:handle-auth-command
            "/login openai" :auth-path path :output output))
-      (is (typep (cadr-ai:read-auth-credential path :openai)
+      (is (typep (cadr-ai:read-auth-credential
+                  path :openai-codex)
                  'cadr-ai:oauth-credential))
+      (let ((config
+              (cadr-cli:resolve-provider-config
+               :provider "openai-codex"
+               :config-path
+               #P"/definitely/missing/config.json"
+               :auth-path path)))
+        (is (string=
+             "gpt-5.5"
+             (cadr-ai:model-id
+              (cadr-cli:provider-config-model config))))
+        (is (eq :oauth
+                (cadr-cli:provider-config-auth-source
+                 config))))
       (is (cadr-cli:handle-auth-command
            "/logout openai" :auth-path path :output output))
-      (is (null (cadr-ai:read-auth-credential path :openai)))
+      (is (null
+           (cadr-ai:read-auth-credential
+            path :openai-codex)))
       (is (equal '(:login) calls)))))
+
+(test login-openai-change-event-selects-codex-default-path
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (changes nil)
+           (request-url nil)
+           (request-headers nil)
+           (cadr-cli::*openai-login-function*
+             (lambda (auth-path &key output auth-url-function)
+               (declare (ignore output auth-url-function))
+               (cadr-ai:write-auth-credential
+                auth-path
+                (cadr-ai:make-oauth-credential
+                 :provider :openai-codex
+                 :access "a" :refresh "r"
+                 :expires
+                 (+ (cadr-ai::unix-milliseconds)
+                    1000000)
+                 :account-id "acct")))))
+      (is
+       (cadr-cli:handle-auth-command
+        "/login openai"
+        :auth-path path
+        :output (make-string-output-stream)
+        :on-change
+        (lambda (provider action)
+          (push (list provider action) changes))))
+      (is (equal
+           '((:openai-codex :login))
+           changes))
+      (let* ((provider
+               (first (first changes)))
+             (config
+               (cadr-cli:resolve-provider-config
+                :provider
+                (string-downcase
+                 (symbol-name provider))
+                :config-path
+                #P"/definitely/missing/config.json"
+                :auth-path path)))
+        (is (string=
+             "gpt-5.5"
+             (cadr-ai:model-id
+              (cadr-cli:provider-config-model
+               config))))
+        (let ((cadr-ai::*http-request-function*
+                (lambda (url &rest arguments)
+                  (setf request-url url
+                        request-headers
+                        (getf arguments :headers))
+                  (values
+                   (make-string-input-stream
+                    (format
+                     nil
+                     "data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_login\"}}~%~%data: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"id\":\"msg_login\",\"role\":\"assistant\",\"content\":[]}}~%~%data: {\"type\":\"response.output_text.delta\",\"output_index\":0,\"delta\":\"LOGIN_DEFAULT_OK\"}~%~%data: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"message\",\"id\":\"msg_login\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"LOGIN_DEFAULT_OK\"}]}}~%~%data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_login\",\"status\":\"completed\",\"model\":\"gpt-5.5\",\"usage\":{\"input_tokens\":1,\"output_tokens\":1,\"total_tokens\":2}}}~%~%"))
+                   200
+                   '(("content-type"
+                      . "text/event-stream"))))))
+          (let ((message
+                  (cadr-ai:stream-chat
+                   (cadr-cli:provider-config-provider
+                    config)
+                   (cadr-cli:provider-config-model
+                    config)
+                   (cadr-ai:make-context
+                    :messages
+                    (list
+                     (cadr-ai:make-user-message
+                      :content "hello")))
+                   (lambda (event)
+                     (declare (ignore event))))))
+            (is (eq
+                 :stop
+                 (cadr-ai:assistant-message-stop-reason
+                  message)))
+            (is (string=
+                 "LOGIN_DEFAULT_OK"
+                 (cadr-ai:text-content-text
+                  (first
+                   (cadr-ai:assistant-message-content
+                    message)))))))
+        (is (search
+             "/codex/responses"
+             request-url))
+        (is (string=
+             "Bearer a"
+             (cdr
+              (assoc "authorization"
+                     request-headers
+                     :test #'string-equal))))))))

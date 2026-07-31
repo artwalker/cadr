@@ -469,12 +469,12 @@
      :expires (+ (unix-milliseconds)
                  (round (* expires-in 1000)))
      :account-id
-     (and (eq provider :openai)
+     (and (eq provider :openai-codex)
           (openai-account-id-from-token access)))))
 
 (defun exchange-openai-authorization-code (code verifier)
   (token-response-credential
-   :openai
+   :openai-codex
    (oauth-token-request
     +openai-oauth-token-url+
     `(("grant_type" . "authorization_code")
@@ -487,7 +487,7 @@
 
 (defun refresh-openai-oauth-credential (credential)
   (token-response-credential
-   :openai
+   :openai-codex
    (oauth-token-request
     +openai-oauth-token-url+
     `(("grant_type" . "refresh_token")
@@ -595,16 +595,27 @@
 (defun wait-for-openai-oauth-code (state)
   (wait-for-oauth-code state 1455 "/auth/callback" "OpenAI"))
 
+(defun present-oauth-auth-url
+    (url output auth-url-function)
+  (if auth-url-function
+      (funcall auth-url-function url)
+      (format output
+              "Open this URL in your browser:~%~A~%"
+              url))
+  (finish-output output)
+  url)
+
 (defun login-openai-oauth (auth-path
                            &key
                              (output *standard-output*)
-                             (open-browser *oauth-browser-open-function*))
+                             (open-browser *oauth-browser-open-function*)
+                             auth-url-function)
   (multiple-value-bind (verifier challenge)
       (generate-pkce)
     (let* ((state (oauth-state))
            (url (openai-authorization-url challenge state)))
-      (format output "Open this URL to authenticate:~%~A~%" url)
-      (finish-output output)
+      (present-oauth-auth-url
+       url output auth-url-function)
       (handler-case
           (funcall open-browser url)
         (error ()
@@ -627,16 +638,17 @@
     (auth-path
      &key
        (output *standard-output*)
-       (open-browser *oauth-browser-open-function*))
+       (open-browser *oauth-browser-open-function*)
+       auth-url-function)
   ;; This mirrors the fixed reference implementation but remains live-unverified.
   (multiple-value-bind (verifier challenge)
       (generate-pkce)
     (let* ((state verifier)
            (url (anthropic-authorization-url challenge state)))
       (format output
-              "Anthropic subscription OAuth is unverified and may violate provider terms.~%Open this URL to authenticate:~%~A~%"
-              url)
-      (finish-output output)
+              "Anthropic subscription OAuth is unverified and may violate provider terms.~%")
+      (present-oauth-auth-url
+       url output auth-url-function)
       (handler-case
           (funcall open-browser url)
         (error ()

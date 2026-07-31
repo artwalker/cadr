@@ -1666,8 +1666,7 @@
                  (and
                   (member
                    provider-id
-                   '(:openai :openai-codex
-                     :anthropic))
+                   '(:openai-codex :anthropic))
                   (oauth-refresh-function
                    provider-id)))
                (credential

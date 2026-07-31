@@ -129,7 +129,7 @@
 
 (defun oauth-refresh-function (provider)
   (ecase provider
-    ((:openai :openai-codex)
+    (:openai-codex
      #'cadr-ai:refresh-openai-oauth-credential)
     (:anthropic #'cadr-ai:refresh-anthropic-oauth-credential)))
 
@@ -139,18 +139,15 @@
                (cadr-ai:read-auth-credential path provider))))
     (cond
       ((typep credential 'cadr-ai:oauth-credential)
-       (unless
+       (if
            (member provider
-                   '(:openai :openai-codex :anthropic))
-         (error 'cadr-ai:configuration-error
-                :message
-                (format nil
-                        "OAuth is not supported for provider ~A"
-                        provider)))
-       (values
-        (cadr-ai:resolve-oauth-credential
-         path provider (oauth-refresh-function provider))
-        :oauth))
+                   '(:openai-codex :anthropic))
+           (values
+            (cadr-ai:resolve-oauth-credential
+             path provider
+             (oauth-refresh-function provider))
+            :oauth)
+           (values nil :none)))
       ((typep credential 'cadr-ai:api-key-credential)
        (values credential :stored-api-key))
       (t
@@ -208,8 +205,8 @@
              (resolved-base-url
                (or configured-base-url
                    (and oauth-p
-                        (member provider-id
-                                '(:openai :openai-codex))
+                        (eq provider-id
+                            :openai-codex)
                         "https://chatgpt.com/backend-api")
                    (cadr-ai:provider-definition-base-url definition))))
         (when (and (eq auth-source :none)
@@ -243,19 +240,26 @@
           :test #'string=))
 
 (defun parse-auth-provider (value)
-  (let ((provider
-          (and value
-               (provider-symbol (string-downcase value)))))
-    (unless (member provider '(:openai :anthropic))
+  (let* ((provider
+           (and value
+                (provider-symbol
+                 (string-downcase value))))
+         (identity
+           (case provider
+             (:openai :openai-codex)
+             (:anthropic :anthropic)
+             (otherwise nil))))
+    (unless identity
       (error 'cadr-ai:configuration-error
              :message
              "OAuth provider must be openai or anthropic"))
-    provider))
+    identity))
 
 (defun handle-auth-command
     (line &key
             (auth-path (default-auth-path))
             (output *standard-output*)
+            auth-url-function
             on-change)
   (let* ((parts (split-command-line line))
          (command (first parts)))
@@ -263,22 +267,30 @@
       ((string= command "/login")
        (let ((provider (parse-auth-provider (second parts))))
          (ecase provider
-           (:openai
+           (:openai-codex
             (funcall *openai-login-function*
-                     auth-path :output output))
+                     auth-path
+                     :output output
+                     :auth-url-function
+                     auth-url-function))
            (:anthropic
             (funcall *anthropic-login-function*
-                     auth-path :output output)))
+                     auth-path
+                     :output output
+                     :auth-url-function
+                     auth-url-function)))
          (format output "~(~A~) login stored in ~A~%"
                  provider (namestring auth-path))
-         (when on-change (funcall on-change provider))
+         (when on-change
+           (funcall on-change provider :login))
          (finish-output output)
          t))
       ((string= command "/logout")
        (let ((provider (parse-auth-provider (second parts))))
          (cadr-ai:delete-auth-credential auth-path provider)
          (format output "~(~A~) logged out~%" provider)
-         (when on-change (funcall on-change provider))
+         (when on-change
+           (funcall on-change provider :logout))
          (finish-output output)
          t))
       (t nil))))
