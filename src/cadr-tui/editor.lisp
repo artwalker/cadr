@@ -4,7 +4,7 @@
             (:constructor %make-multiline-editor))
   (text "" :type string)
   (cursor 0 :type (integer 0 *))
-  (prompt "› " :type string)
+  (prompt "" :type string)
   (history nil :type list)
   (history-limit 100 :type (integer 1 *))
   history-index
@@ -22,6 +22,7 @@
   (autocomplete-selected 0 :type (integer 0 *))
   autocomplete-prefix
   (last-render-width 80 :type (integer 1 *))
+  (scroll-offset 0 :type (integer 0 *))
   last-yank-start
   last-yank-end)
 
@@ -46,7 +47,7 @@
              (write-char character output)))
           (incf index))))
 
-(defun make-multiline-editor (&key (text "") (prompt "› ")
+(defun make-multiline-editor (&key (text "") (prompt "")
                                    (history-limit 100))
   (let ((normalized (normalize-editor-text text)))
     (%make-multiline-editor
@@ -151,7 +152,8 @@
      (multiline-editor-cursor editor)
      (if (eq cursor :start)
          0
-         (length normalized))))
+         (length normalized))
+     (multiline-editor-scroll-offset editor) 0))
   (editor-reset-navigation-state editor)
   editor)
 
@@ -880,7 +882,8 @@
    (multiline-editor-history-draft editor) nil
    (multiline-editor-pastes editor) nil
    (multiline-editor-paste-counter editor) 0
-   (multiline-editor-last-action editor) nil)
+   (multiline-editor-last-action editor) nil
+   (multiline-editor-scroll-offset editor) 0)
   (undo-stack-clear
    (multiline-editor-undo-stack editor))
   (editor-cancel-autocomplete editor)
@@ -1246,18 +1249,194 @@
        chunks)
       (nreverse chunks))))
 
-(defun render-editor (editor width)
+(defun editor-scroll-border
+    (direction hidden-line-count width)
+  (let* ((available-width (max 0 width))
+         (indicator
+           (format nil "─── ~A ~D more "
+                   direction hidden-line-count))
+         (remaining
+           (- available-width
+              (visible-width indicator))))
+    (if (>= remaining 0)
+        (concatenate
+         'string indicator
+         (make-string remaining
+                      :initial-element #\─))
+        (let* ((ellipsis
+                 (subseq "..." 0
+                         (min 3 available-width)))
+               (indicator-width
+                 (- available-width
+                    (visible-width ellipsis))))
+          (concatenate
+           'string
+           (slice-by-column
+            indicator 0 (max 0 indicator-width) t)
+           ellipsis)))))
+
+(defun editor-pad-rendered-line (line width)
+  (multiple-value-bind (prefix prefix-width)
+      (slice-to-width line width)
+    (concatenate
+     'string prefix
+     (make-string
+      (max 0 (- width prefix-width))
+      :initial-element #\Space))))
+
+(defun editor-single-line-text (text)
+  (string-trim
+   '(#\Space #\Tab #\Newline #\Return)
+   (map 'string
+        (lambda (character)
+          (if (member character
+                      '(#\Newline #\Return))
+              #\Space
+              character))
+        text)))
+
+(defun editor-autocomplete-primary-width (items)
+  (max
+   12
+   (min
+    32
+    (loop for item in items
+          maximize
+          (+ 2
+             (visible-width
+              (autocomplete-item-label item)))))))
+
+(defun render-editor-autocomplete-item
+    (item selected-p width primary-column-width)
+  (let* ((prefix (if selected-p "→ " "  "))
+         (prefix-width 2)
+         (label (autocomplete-item-label item))
+         (description
+           (and (autocomplete-item-description item)
+                (editor-single-line-text
+                 (autocomplete-item-description item))))
+         (plain-line
+           (if (and description
+                    (plusp (length description))
+                    (> width 40))
+               (let* ((effective-primary-width
+                        (max
+                         1
+                         (min primary-column-width
+                              (- width prefix-width 4))))
+                      (maximum-label-width
+                        (max 1
+                             (- effective-primary-width 2)))
+                      (short-label
+                        (truncate-to-width
+                         label maximum-label-width "" nil))
+                      (spacing
+                        (make-string
+                         (max
+                          1
+                          (- effective-primary-width
+                             (visible-width short-label)))
+                         :initial-element #\Space))
+                      (description-start
+                        (+ prefix-width
+                           (visible-width short-label)
+                           (length spacing)))
+                      (remaining-width
+                        (- width description-start 2)))
+                 (if (> remaining-width 10)
+                     (list
+                      (concatenate
+                       'string prefix short-label spacing)
+                      (truncate-to-width
+                       description remaining-width "" nil))
+                     (list
+                      (concatenate
+                       'string prefix
+                       (truncate-to-width
+                        label
+                        (max 1 (- width prefix-width 2))
+                        "" nil))
+                      nil)))
+               (list
+                (concatenate
+                 'string prefix
+                 (truncate-to-width
+                  label
+                  (max 1 (- width prefix-width 2))
+                  "" nil))
+                nil)))
+         (leading (first plain-line))
+         (trailing (second plain-line))
+         (styled
+           (if selected-p
+               (theme-foreground
+                :accent
+                (concatenate
+                 'string leading (or trailing "")))
+               (concatenate
+                'string leading
+                (if trailing
+                    (theme-foreground :muted trailing)
+                    "")))))
+    (editor-pad-rendered-line styled width)))
+
+(defun render-editor-autocomplete (editor width)
+  (let* ((items
+           (multiline-editor-autocomplete-suggestions
+            editor))
+         (selected
+           (multiline-editor-autocomplete-selected
+            editor))
+         (maximum-visible 5)
+         (start
+           (max
+            0
+            (min
+             (- selected
+                (floor maximum-visible 2))
+             (max 0
+                  (- (length items)
+                     maximum-visible)))))
+         (end
+           (min (length items)
+                (+ start maximum-visible)))
+         (primary-column-width
+           (editor-autocomplete-primary-width items))
+         (lines
+           (loop for index from start below end
+                 collect
+                 (render-editor-autocomplete-item
+                  (nth index items)
+                  (= index selected)
+                  width primary-column-width))))
+    (if (or (> start 0)
+            (< end (length items)))
+        (nconc
+         lines
+         (list
+          (editor-pad-rendered-line
+           (theme-foreground
+            :muted
+            (format nil "  (~D/~D)"
+                    (1+ selected)
+                    (length items)))
+           width)))
+        lines)))
+
+(defun render-editor
+    (editor width &key (terminal-rows 24)
+                       (focused-p t))
   (let* ((prompt (multiline-editor-prompt editor))
          (prompt-width (visible-width prompt))
          (content-width
-           (max 1 (- width prompt-width)))
+           (max 1 (- width prompt-width 1)))
          (continuation
            (make-string prompt-width
                         :initial-element #\Space))
          (text (multiline-editor-text editor))
          (cursor (multiline-editor-cursor editor))
          (logical-lines (split-editor-lines text))
-         (lines nil)
+         (layout-lines nil)
          (cursor-row nil)
          (cursor-column nil)
          (absolute-start 0)
@@ -1281,28 +1460,38 @@
                            (zerop chunk-index))
                       prompt continuation)
                   do
-                  (push
-                   (concatenate 'string
-                                line-prefix chunk-text)
-                   lines)
+                  (let ((cursor-p
+                          (and
+                           (null cursor-row)
+                           (or
+                            (and
+                             (>= cursor
+                                 (+ absolute-start
+                                    chunk-start))
+                             (< cursor
+                                (+ absolute-start
+                                   chunk-end)))
+                            (and
+                             (= cursor
+                                (+ absolute-start
+                                   chunk-end))
+                             (= chunk-index
+                                (1-
+                                 (length chunks))))))))
+                    (push
+                     (list
+                      :text
+                      (concatenate 'string
+                                   line-prefix chunk-text)
+                      :cursor-p cursor-p
+                      :cursor-index
+                      (and cursor-p
+                           (+ (length line-prefix)
+                              (- cursor absolute-start
+                                 chunk-start))))
+                     layout-lines)
                   (when
-                      (and
-                       (null cursor-row)
-                       (or
-                        (and
-                         (>= cursor
-                             (+ absolute-start
-                                chunk-start))
-                         (< cursor
-                            (+ absolute-start
-                               chunk-end)))
-                        (and
-                         (= cursor
-                            (+ absolute-start
-                               chunk-end))
-                         (= chunk-index
-                            (1-
-                             (length chunks))))))
+                      cursor-p
                     (setf
                      cursor-row row
                      cursor-column
@@ -1314,38 +1503,109 @@
                           (min
                            chunk-end
                            (- cursor absolute-start)))))))
-                  (incf row)))
+                  (incf row))))
           (incf absolute-start
                 (+ (length logical-line) 1)))
-    (let ((result (nreverse lines)))
-      (when (editor-autocomplete-visible-p editor)
-        (loop for item
-              in (multiline-editor-autocomplete-suggestions
-                  editor)
-              for index from 0
-              repeat 5
-              for description =
-              (autocomplete-item-description item)
-              for line =
-              (format nil "~A ~A~@[ — ~A~]"
-                      (if
-                          (= index
-                             (multiline-editor-autocomplete-selected
-                              editor))
-                          "›"
-                          " ")
-                      (autocomplete-item-label item)
-                      description)
-              do
-              (setf
-               result
+    (setf layout-lines (nreverse layout-lines))
+    (let* ((maximum-visible
+             (max 5
+                  (floor
+                   (max 0 terminal-rows)
+                   10/3)))
+           (cursor-row (or cursor-row 0))
+           (scroll-offset
+             (multiline-editor-scroll-offset editor)))
+      (cond
+        ((< cursor-row scroll-offset)
+         (setf scroll-offset cursor-row))
+        ((>= cursor-row
+             (+ scroll-offset maximum-visible))
+         (setf scroll-offset
+               (- cursor-row maximum-visible -1))))
+      (setf scroll-offset
+            (max
+             0
+             (min
+              scroll-offset
+              (max 0
+                   (- (length layout-lines)
+                      maximum-visible))))
+            (multiline-editor-scroll-offset editor)
+            scroll-offset)
+      (let* ((visible-layout-lines
+               (subseq
+                layout-lines
+                (min scroll-offset
+                     (length layout-lines))
+                (min
+                 (length layout-lines)
+                 (+ scroll-offset maximum-visible))))
+             (top-border
+               (theme-foreground
+                :border
+                (if (plusp scroll-offset)
+                    (editor-scroll-border
+                     "↑" scroll-offset width)
+                    (make-string
+                     width :initial-element #\─))))
+             (lines-below
+               (- (length layout-lines)
+                  (+ scroll-offset
+                     (length visible-layout-lines))))
+             (bottom-border
+               (theme-foreground
+                :border
+                (if (plusp lines-below)
+                    (editor-scroll-border
+                     "↓" lines-below width)
+                    (make-string
+                     width :initial-element #\─))))
+             (content-lines
+               (loop for record in visible-layout-lines
+                     for display-text = (getf record :text)
+                     for cursor-index =
+                     (getf record :cursor-index)
+                     collect
+                     (progn
+                       (when (and focused-p
+                                  (getf record :cursor-p))
+                         (let ((before
+                                 (subseq display-text
+                                         0 cursor-index))
+                               (after
+                                 (subseq display-text
+                                         cursor-index)))
+                           (if (plusp (length after))
+                               (let* ((grapheme
+                                        (first
+                                         (grapheme-clusters
+                                          after)))
+                                      (rest
+                                        (subseq after
+                                                (length grapheme))))
+                                 (setf display-text
+                                       (concatenate
+                                        'string before
+                                        (theme-inverse grapheme)
+                                        rest)))
+                               (setf display-text
+                                     (concatenate
+                                      'string before
+                                      (theme-inverse " "))))))
+                       (editor-pad-rendered-line
+                        display-text width))))
+             (result
                (nconc
-                result
-                (list
-                 (truncate-to-width
-                  line width "" nil))))))
+                (list top-border)
+                content-lines
+                (list bottom-border))))
+      (when (editor-autocomplete-visible-p editor)
+        (setf
+         result
+         (nconc
+          result
+          (render-editor-autocomplete editor width))))
       (values
        result
-       (or cursor-row
-           (max 0 (1- (length result))))
-       (or cursor-column prompt-width)))))
+       (+ 1 (- cursor-row scroll-offset))
+       (or cursor-column prompt-width))))))

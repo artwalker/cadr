@@ -98,6 +98,12 @@
      editor (cadr-tui:make-input-event :kind :text :text "ab中文"))
     (multiple-value-bind (lines row column)
         (cadr-tui:render-editor editor 6)
-      (is (equal '("› ab中" "  文") lines))
-      (is (= 1 row))
+      (is
+       (equal
+        '("──────" "› ab  " "  中  "
+          "  文  " "──────")
+        (mapcar
+         #'cadr-tui:strip-terminal-sequences
+         lines)))
+      (is (= 3 row))
       (is (= 4 column)))))

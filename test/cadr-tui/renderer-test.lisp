@@ -151,3 +151,46 @@
                    #\Return #\Newline #\Escape
                    #\Escape)
            output)))))
+
+(test renderer-hides-hardware-cursor-by-default-in-main-and-alt-modes
+  (dolist (alt-p '(nil t))
+    (let* ((terminal
+             (cadr-tui:make-virtual-terminal
+              :columns 20 :rows 4))
+           (renderer
+             (cadr-tui:make-terminal-renderer
+              terminal :alt-p alt-p))
+           (output
+             (cadr-tui:render-frame
+              renderer '("editor")
+              :cursor-row 0 :cursor-column 3)))
+      (is (search
+           (format nil "~C[?25l" #\Escape)
+           output))
+      (is (null
+           (search
+            (format nil "~C[?25h" #\Escape)
+            output))))))
+
+(test renderer-explicit-hardware-cursor-option-is-main-alt-symmetric
+  (dolist (alt-p '(nil t))
+    (let* ((terminal
+             (cadr-tui:make-virtual-terminal
+              :columns 20 :rows 4))
+           (renderer
+             (cadr-tui:make-terminal-renderer
+              terminal
+              :alt-p alt-p
+              :show-hardware-cursor-p t))
+           (output
+             (cadr-tui:render-frame
+              renderer '("editor")
+              :cursor-row 0 :cursor-column 3)))
+      (is (search
+           (if alt-p
+               (format nil "~C[1;4H" #\Escape)
+               (format nil "~C[4G" #\Escape))
+           output))
+      (is (search
+           (format nil "~C[?25h" #\Escape)
+           output)))))

@@ -209,6 +209,7 @@
   (alt-screen-active-p nil :type boolean)
   (wheel-scroll-lines 3 :type (integer 1 *))
   (mouse-p t :type boolean)
+  (show-hardware-cursor-p nil :type boolean)
   open-url-function
   (last-document nil :type list)
   (scroll-top 0 :type (integer 0 *))
@@ -236,6 +237,7 @@
      &key alt-p
        (wheel-scroll-lines 3)
        (mouse-p t)
+       (show-hardware-cursor-p nil)
        open-url-function)
   (%make-terminal-renderer
    :terminal terminal
@@ -243,6 +245,8 @@
    :wheel-scroll-lines
    (max 1 (floor wheel-scroll-lines))
    :mouse-p (not (null mouse-p))
+   :show-hardware-cursor-p
+   (not (null show-hardware-cursor-p))
    :open-url-function open-url-function))
 
 (defun invalidate-renderer (renderer)
@@ -1051,10 +1055,15 @@
                (with-output-to-string (stream)
                  (write-relative-row-move
                   stream difference)
-                 (format stream "~C[~DG~C[?25h"
+                 (format stream "~C[~DG~C[?25~C"
                          #\Escape
                          (1+ target-column)
-                         #\Escape))))
+                         #\Escape
+                         (if
+                             (terminal-renderer-show-hardware-cursor-p
+                              renderer)
+                             #\h
+                             #\l)))))
         (terminal-write
          (terminal-renderer-terminal renderer)
          output)
@@ -1582,8 +1591,13 @@
                       (min
                        (max 0 cursor-column)
                        (1- width)))
-                     (format stream "~C[?25h"
-                             #\Escape))
+                     (format stream "~C[?25~C"
+                             #\Escape
+                             (if
+                                 (terminal-renderer-show-hardware-cursor-p
+                                  renderer)
+                                 #\h
+                                 #\l)))
                    (format stream "~C[?25l"
                            #\Escape))
                (format stream "~C[?2026l"
