@@ -1,5 +1,8 @@
 # GOAL v5: Wave 0 回归清偿 + TUI 全量对齐
 
+> 历史报告：文内 `71efc6f0…` 记录 Goal 5 当时的审计锚点；Goal 9 起当前
+> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+
 ## 〇、前置条件与定位
 
 - goal 4 已验收。全程以 `docs/parity-map.md` 为工作清单，行为基线仍为 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`（审计用 detached worktree，禁止以 pi-mono-legacy 的 2026-04 状态为基准）。

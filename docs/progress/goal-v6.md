@@ -1,5 +1,8 @@
 # GOAL v6: Wave 1 — 共享适配器与兼容 provider
 
+> 历史报告：文内 `71efc6f0…` 记录 Goal 6 当时的审计锚点；Goal 9 起当前
+> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+
 ## 基线与边界
 
 - 固定行为基线：

@@ -10,10 +10,14 @@ CADR Lisp Machine.
 ## Relationship to pi
 
 Behavior is pinned to
-[`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`](https://github.com/earendil-works/pi/tree/71efc6f0c1909874ec8c944637a9ae7fc0e2d508).
+[`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`](https://github.com/earendil-works/pi/tree/74caa2649f10ed71b4378ce69f5d9fbfd2466ca5).
 That implementation and its tests are the behavioral reference for provider
 payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
 and terminal interaction.
+
+The former
+`71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is retained only as a
+historical audit anchor.
 
 Thanks to the pi authors and contributors for the design and reference
 implementation. `cadr` is an independent project and has no affiliation with

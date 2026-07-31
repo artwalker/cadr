@@ -1,12 +1,32 @@
 # Test matrix
 
 Behavior baseline:
-`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`.
-The v1 matrix remains below; Phases 5–8 add the `docs/progress/goal-v2.md` coverage tables.
+`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+The former `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is historical only.
+The v1 matrix remains below as historical evidence; later tables supersede its
+intermediate provider, session, extension, and test-count claims.
 Provider live checks are credential-gated FiveAM blocks. Shell harnesses are
 retained only for native process/PTY/socket/migration boundaries; the complete
 script audit and exact claim limits are in
 [`goal-v8-smoke-audit.md`](acceptance/goal-v8-smoke-audit.md).
+
+## Goal 9 Part A: current baseline delta
+
+| Baseline behavior | Common Lisp coverage | Evidence |
+|---|---|---|
+| Bedrock structured error metadata | `test/cadr-ai/bedrock-error-metadata-test.lisp`, `BEDROCK-FAILURE-RECORDS-BOUNDED-STRUCTURED-METADATA` | HTTP and in-stream failures preserve bounded provider diagnostics without changing abort semantics |
+| Current model metadata and pricing | `GPT-5-6-AUTHORITATIVE-PRICING-AND-OPENCODE-GO-NAME` | Updated pricing/metadata and provider naming are checked against the audit baseline |
+| Permanent harness shutdown/task tracking | `SHUTDOWN-*`, `WAIT-FOR-IDLE-IGNORES-MUTATIONS-BUT-SHUTDOWN-AWAITS-THEM` | Shutdown is permanent/idempotent, awaits active work and rejects later prompt/append/compact/tree mutation |
+| Markdown extension API and width contract | `DISCOVERED-EXTENSION-SOURCE-REGISTERS-MARKDOWN-TRANSFORMER`, `GOAL9-TUI-MARKDOWN-TRANSFORMERS-COVER-USER-TEXT-THINKING-STREAMING-AND-CACHE`, `GOAL9-MARKDOWN-TRANSFORM-RECEIVES-EXACT-AVAILABLE-WIDTH` | Transformer chain receives message type and available width; errors are isolated; rendering cache semantics remain stable |
+| Malformed package manifest | `GOAL9-MALFORMED-PACKAGE-MANIFEST-IGNORES-INVALID-FIELDS-WITHOUT-DROPPING-VALID-FIELDS` | Invalid fields are ignored independently while valid package metadata survives discovery |
+| Alternate-screen TUI | `test/cadr-tui/alt-screen-test.lisp`, `test/cadr-cli/tui-test.lisp` | Viewport/scroll, configurable input, OSC 8/52, Kitty/iTerm image behavior, grapheme selection and terminal restoration |
+| Terminal grapheme widths | `TERMINAL-CELL-WIDTH-*`, grapheme-safe truncation/editor suites | CJK, emoji, combining and regional-indicator clusters retain terminal-cell semantics |
+| Remote-session protocol v2 | `test/cadr-protocol/cbor-test.lisp`, `framing-test.lisp`, `protocol-test.lisp` | Strict CBOR, bounded four-byte framing and validated client/server codecs; 41 tests / 497 checks |
+| Comparative eval infrastructure | `test/cadr-evals/pi-harness-test.lisp`, `artifacts-test.lisp`, `harness-table-test.lisp`, `summary-test.lisp` | Explicit selection, isolated artifacts, iteration/group metadata, correctness/efficiency summaries and diagnostics |
+| Deterministic workflows | `test/cadr-cli/goal9-a2-workflows-test.lisp`, `goal9-a2-interactive-test.lisp` plus PTY harness | Session branching/isolation, text/JSON/RPC, extension reload/UI/renderers, editor/completion/overlays and faux streaming |
+
+The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
+`packages/coding-agent/test/config.test.ts` remains the sole approved `N/A`.
 
 ## Phase 1: cadr-ai
 
@@ -30,14 +50,15 @@ script audit and exact claim limits are in
 | Socket timeout classification | `SOCKET-TIMEOUTS-REMAIN-DISTINCT-RETRYABLE-TRANSPORT-ERRORS` | Native socket timeout remains a retryable `timeout-error` |
 | Gemini 3.6 API contract | `GEMINI-3.6-OMITS-DEPRECATED-SAMPLING-PARAMETERS` | Default model ID and omission of deprecated sampling fields |
 
-Bedrock, Vertex, WebSocket, and provider-specific compatibility quirks outside
-the five-provider v2 registry remain outside the current phase.
+This Phase 1 table is historical. Bedrock, Vertex and the provider-specific
+compatibility matrix were subsequently closed by Wave 3 and the Goal 9 delta;
+they are not current gaps.
 
 ## Phase 5: providers, images, catalog, and OAuth
 
 | Requirement | Common Lisp coverage | Evidence |
 |---|---|---|
-| Five-provider registry | `BUILT-IN-PROVIDER-REGISTRY-IS-COMPLETE`, construction/missing-key tests | Protocol and provider are separate; Ollama is keyless |
+| Historical five-provider registry step | `BUILT-IN-PROVIDER-REGISTRY-IS-COMPLETE`, construction/missing-key tests | Superseded by the exact 38-provider registry; the non-baseline built-in Ollama entry was removed |
 | DeepSeek Chat Completions | `OPENAI-COMPLETIONS-*`, `RECORDED-DEEPSEEK-CHAT-COMPLETIONS-STREAM` | Tool history, non-stream parse, reasoning/tool deltas, usage |
 | Current defaults | `REFRESHED-CATALOG-INCLUDES-GEMINI-3.6-AND-CURRENT-DEEPSEEK-DEFAULT` | Gemini 3.6 Flash and DeepSeek V4 Flash |
 | Base URL/config precedence | `PROVIDER-CONFIG-RESOLVES-REGISTRY-CONFIG-AND-CLI-PRECEDENCE` | CLI → environment/config → registry |
@@ -54,6 +75,9 @@ the five-provider v2 registry remain outside the current phase.
 | Live OpenAI OAuth | `test/cadr-cli/live-test.lisp` | Credential-gated, explicit `openai-codex/gpt-5.5` in an isolated HOME; byte-for-byte auth copy, no user settings/session/extensions |
 
 ## Phase 6: tree sessions, compaction, resume, and export
+
+This table records the historical v2 milestone. The current session format is
+v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 
 | Requirement | Common Lisp coverage | Evidence |
 |---|---|---|
@@ -73,7 +97,7 @@ the five-provider v2 registry remain outside the current phase.
 
 | Requirement | Common Lisp coverage | Evidence |
 |---|---|---|
-| Frozen registration API | `EXTENSION-REGISTRATION-*` | Four macros reject invalid names, modes, schemas, events, templates, and calls outside loader context |
+| Frozen extension API | legacy compatibility plus Wave 2 extension suites | The expanded, re-frozen lifecycle/UI/runtime API preserves existing macro signatures and event semantics |
 | Discovery and isolation | `EXTENSION-DISCOVERY-*`, `LATER-CLI-EXTENSION-*` | Unique generation packages; CLI/project/global priority; shadowed files never execute |
 | Hook semantics | hook chain, real execution, transactional and turn persistence tests | Priority, rewrite, append, block, final schema validation, and pre-JSONL commit |
 | Error containment | tool/command/template/hook/load error tests | Agent survives every extension boundary; visible errors redact configured secrets |
@@ -104,7 +128,7 @@ the five-provider v2 registry remain outside the current phase.
 | Server protocol and persistence | `PROTOCOL-AND-STORAGE-PRESERVE-BASELINE-RECORDS`, supervisor suite | JSONL framing, machine/instance records, session metadata, lifecycle convergence and restart recovery |
 | Unix-socket RPC supervisor | socket suite plus `scripts/server-smoke.sh` | Stale socket replacement, spawn/list/status/RPC/stop, stream events and extension UI bridge against a real `cadr --mode rpc` child |
 | Radius presence | heartbeat retry suite | Credential gating, exponential transient backoff, three-404 re-registration threshold and dormant no-credential behavior |
-| Eval harness | `CADR-EVALS-SUITE` | Explicit provider/model, isolated cleanup, normalized transcript/usage and prompt/reload sequencing |
+| Eval harness | `CADR-EVALS-SUITE` | Goal 8 harness plus Goal 9 artifact/table/summary expansion; explicit provider/model, isolated cleanup and normalized transcript/usage |
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
 | Live evals | `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
@@ -113,12 +137,12 @@ the five-provider v2 registry remain outside the current phase.
 
 | Requirement | Common Lisp coverage | Evidence |
 |---|---|---|
-| Grapheme/cell layout | Unicode, `wrap-ansi` and `truncate-to-width` suites | Combining marks, CJK, emoji, flags, ANSI/OSC 8 and tabs retain reference width/wrapping semantics |
+| Grapheme/cell layout | Unicode, `wrap-ansi` and `truncate-to-width` suites | Combining marks, CJK, emoji, flags, Indic/Myanmar spacing marks, ANSI/OSC 8 and tabs retain reference width/wrapping semantics |
 | Input protocols and buffering | keys, keybindings, stdin-buffer and terminal-parity suites | Legacy/CSI-u/Kitty/native modifiers, fragments, paste, capability replies and Return dispatch |
 | Editing and autocomplete | editor, input, fuzzy, word-navigation and autocomplete suites | History, sticky column, kill/yank/yank-pop, undo, path/slash/`@` completion and CJK word movement |
 | Streaming Markdown and components | component parity tests plus TUI event projection | Streaming structures, links/tables/theme, select-list bounds, truncated text and image fallback |
 | Overlay and terminal capability | overlay, terminal-color and terminal-image suites | Focus/capture, CJK-safe compositing, OSC reports, Kitty/iTerm2 encoding, sizing/deletion/fallback |
-| Differential rendering | renderer/virtual-terminal tests | Only changed rows repaint; shrink clears stale rows; width change forces full redraw; image rows preclear |
+| Differential and alternate-screen rendering | renderer/virtual-terminal and alt-screen tests | Changed-row repaint, stale-row clearing, viewport/scroll, mouse/link/selection, image cleanup/cropping and full terminal restoration |
 | Exception-safe terminal | lifecycle body and partial-start tests | Cleanup runs after body conditions and after a start method fails mid-setup |
 | Shared frontend semantics | `DISPATCH-USER-INPUT-IS-SHARED-BY-FRONTENDS`, TUI policy test | TUI/REPL share dispatch and agent events; `--no-tui` and non-TTY fallback are explicit |
 | Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh`, `scripts/goal5-manual-tui-smoke.sh` | Pipe fallback; overlay focus/CJK/image fallback; autocomplete, undo, kill ring, DeepSeek two-turn edit, resize, image protocol and termios restoration |
@@ -133,7 +157,7 @@ the five-provider v2 registry remain outside the current phase.
 | Native HTTP | loopback streaming, chunked, timeout, status/retry tests | HTTP/1.1 framing and stream behavior no longer depend on Dexador |
 | Long-thinking SSE | `SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT` | Native transport receives explicit `read-timeout = NIL` |
 | Required removals | source audit in `docs/dependency-audit.md` | No production `dexador`, `com.inuoe.jzon`, or `clingon` reference |
-| Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 1219 checks and SBCL compression-feature fallback |
+| Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | Historical Phase 9 gate: 1219 checks and SBCL compression-feature fallback; current totals live in the active goal report |
 | Live DeepSeek paths | credential-gated FiveAM blocks plus `scripts/live-tui-smoke.sh` | HTTPS/SSE, self-extension, fail/fix/pass repository task, and real PTY TUI multi-turn task |
 
 ## Phase 2: cadr-agent
@@ -186,7 +210,7 @@ the five-provider v2 registry remain outside the current phase.
 | Requirement | Common Lisp coverage | Evidence |
 |---|---|---|
 | ASDF/package namespace | `CADR-SYSTEM-AND-PACKAGE-NAMES-ARE-THE-ONLY-PUBLIC-NAMES` | Four production/test systems load under cadr names; old systems/packages are absent |
-| Frozen extension namespace | `CADR-EXTENSION-API-IS-EXPORTED-FROM-THE-FROZEN-AGENT-PACKAGE` | Four stable registration macros are external symbols of `CADR-AGENT` |
+| Frozen extension namespace | legacy compatibility and expanded export-freeze tests | The expanded stable extension API is exported from `CADR-AGENT`; the former four-macro statement was an earlier freeze snapshot |
 | Exported symbol rename | `EXPORTED-ERROR-ROOT-USES-THE-CADR-NAME` | Root condition is `CADR-AI:CADR-ERROR`; no old exported root remains |
 | Reference payload helper | `REFERENCE-PAYLOAD-RUNNER-KEEPS-TYPESCRIPT-API-TYPE-NAMES` | Namespace replacement cannot corrupt the pinned TypeScript runner's `Api` / `TApi` identifiers |
 | Complete data move | `INTERACTIVE-USER-DATA-MIGRATION-MOVES-THE-COMPLETE-TREE` | Sessions, extensions, and auth move together; source disappears; auth becomes 0600 |

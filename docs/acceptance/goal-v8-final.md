@@ -1,7 +1,9 @@
 # Goal 8 终局验收包
 
-固定基线：
-`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`。
+Goal 8 的历史固定基线为
+`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`；
+Goal 9 起当前规范基线已升级为
+`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
 此前机械验收因 OAuth smoke 改写真实凭据身份而退回。2026-07-31 补正后
 必须重新完成本节；下列真实终端人工项仍须由用户逐项确认，项目才能进入
 维护态。
@@ -77,25 +79,42 @@
 
 在真实终端、真实仓库副本或容器内执行；不要对重要工作区直接做工具写入测试。
 
-- [ ] 启动与退出：启动 full-screen TUI；正常退出、Ctrl-C、挂起/恢复后
+- [x] 启动与退出：启动 full-screen TUI；正常退出、Ctrl-C、挂起/恢复后
   shell 回显、光标、粘贴与 termios 均恢复。
-- [ ] 输入编辑：多行、CJK、emoji、宽字符换行；按词移动；history；
+  *永久门禁：`scripts/goal9-a2-pty.sh` 的 `normal`、`ctrl-c`、
+  `suspend-resume` 三个真实 PTY 场景。*
+- [x] 输入编辑：多行、CJK、emoji、宽字符换行；按词移动；history；
   kill/yank/yank-pop；undo。
-- [ ] 补全：slash command、文件路径、`@`；键盘选择、取消、应用后 undo。
-- [ ] Overlay：session、tree、model、scoped-model、settings、trust 选择器；
+  *永久门禁：
+  `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT`。*
+- [x] 补全：slash command、文件路径、`@`；键盘选择、取消、应用后 undo。
+  *永久门禁：
+  `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO`。*
+- [x] Overlay：session、tree、model、scoped-model、settings、trust 选择器；
   双 overlay 焦点、CJK 边框、窄宽 resize 均正确。
-- [ ] 渲染：流式 text/thinking/tool、Markdown 列表/表格/代码/链接；
+  *永久门禁：
+  `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS`。*
+- [x] 渲染：流式 text/thinking/tool、Markdown 列表/表格/代码/链接；
   长内容折叠展开与状态栏 token/cache/cost。
+  *结构永久门禁：
+  `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS`；纯观感留给
+  Goal 9 Part B 的基线 A/B。*
 - [ ] 图片：真实 Kitty/iTerm2 协议终端显示；不支持协议时 fallback；resize 后
   旧 image placement 清理。
 - [ ] 工具：read/write/edit/bash/find/grep/ls 在隔离仓库默认直接执行，
   无核心审批弹窗；错误、超时、截断与后续恢复可见。
-- [ ] 会话：新建、命名、switch、branch、compact、export、退出后
+- [x] 会话：新建、命名、switch、branch、compact、export、退出后
   `--continue` 与 `--resume`；两个分支内容不串线。
-- [ ] 扩展：加载、命令、tool、hook、reload；旧扩展兼容；custom UI/renderer；
+  *永久门禁：
+  `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED`。*
+- [x] 扩展：加载、命令、tool、hook、reload；旧扩展兼容；custom UI/renderer；
   reload 后旧 generation 正确 stale。
-- [ ] 模式：`--print` 只输出最终文本；`--mode json` 每行合法 JSON；
+  *永久门禁：
+  `GOAL9-A2-EXTENSION-WORKFLOW-COVERS-LEGACY-UI-RENDERERS-AND-STALE-RELOAD`。*
+- [x] 模式：`--print` 只输出最终文本；`--mode json` 每行合法 JSON；
   `--mode rpc` request/response/event 与 extension UI 往返。
+  *永久门禁：
+  `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT`。*
 - [ ] Server：一个终端运行 `cadr-server serve`，另一终端完成
   spawn/list/status/rpc/rpc-stream/stop；服务重启后旧 online instance
   收敛为 stopped。

@@ -1,5 +1,9 @@
 # Phase 4 progress: persistence, retries, build, and acceptance
 
+> Historical report: `71efc6f0...` below is the audit anchor used by this
+> phase. Goal 9 moved the current normative baseline to
+> `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+
 > Superseded policy note (2026-07-30): `--yolo` and the core confirmation path
 > referenced below were removed after Phase 7. The live smoke retains only a
 > script-level cost/side-effect opt-in.

@@ -3,7 +3,8 @@
 状态：**v1 Phase 1–4 与 v2 Phase 5–9 已实现；北极星 Wave 2 的 agent
 harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
 冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
-命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结**
+命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
+Goal 9 已将行为基线重锁到 `74caa2649` 并完成 Part A 增量实现**
 
 本文是 `docs/progress/goal-v1.md` 要求的第一个交付物，已于 2026-07-30
 获得人工确认。
@@ -21,8 +22,11 @@ harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 
 ### 1.1 参考源码
 
 - 行为参考仓库：`https://github.com/earendil-works/pi`
-- 固定审计提交：`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`
+- 固定审计提交：`74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
   （2026-07-30）
+- 历史审计锚点：
+  `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`；仅用于 Goal 4–8 的
+  历史对照，不再参与当前 parity 判定
 - 迁移前上游 TypeScript HEAD：
   `e3f6912d49d14b6e6ffe96bb053644922004ecf3`
 - legacy 状态保存于 `pi-mono-legacy` 分支引用与 patch 归档，基点
@@ -30,9 +34,9 @@ harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 
   目录现跟踪上游 `main`
 - 当前 cadr tracked tree 不再包含上游 TypeScript 实现；下列参考路径均
   指固定审计提交中的路径。重新生成对拍 fixture 时必须 checkout
-  `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` 并将其路径作为
-  `scripts/export-ts-payloads.ts --reference`，不得改用移动中的 legacy
-  分支 tip。
+  `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` 并将其路径作为
+  `scripts/export-ts-payloads.ts --reference`，不得改用移动中的
+  upstream 或 legacy 分支 tip。
 
 固定提交的范围内，重点参考：
 

@@ -292,6 +292,8 @@ The exhaustive exemption list and reasons:
 
 A broader audit also intentionally retains `originator=pi` in the OpenAI OAuth
 and Codex wire protocol plus their tests. That value is required by the fixed
-reference protocol and is not a cadr product or package name. References to
-`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508` are retained as
-the required behavioral attribution.
+reference protocol and is not a cadr product or package name. The current
+behavioral attribution is
+`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`; references to
+`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508` are retained only
+as the historical Goal 4–8 audit anchor.

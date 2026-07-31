@@ -2,9 +2,10 @@
 
 ## 1. Scope and counting rules
 
-Behavioral baseline: `earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`.
-The audit used the detached worktree `/tmp/cadr-parity-71efc6f0`; the
-`pi-mono-legacy` worktree was not used as a source of truth.
+Behavioral baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+The audit uses the detached worktree `/tmp/cadr-parity-74caa2649`. The former
+baseline `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` and its checkout are retained
+only as a historical delta anchor; neither is a current parity source of truth.
 
 Status meanings:
 
@@ -45,18 +46,20 @@ separate from `C`/`U`/`M`; a `C` row does not imply universal live coverage.
 
 | Package | Files at baseline | `*.test.ts` |
 |---|---:|---:|
-| `ai` | 309 | 120 |
+| `ai` | 310 | 121 |
 | `agent` | 71 | 18 |
-| `coding-agent` | 586 | 187 |
-| `tui` | 72 | 27 |
+| `coding-agent` | 590 | 189 |
+| `tui` | 75 | 28 |
 | `storage` | 18 | 0 |
 | `server` | 17 | 0 |
-| `evals` | 8 | 0 |
-| **Total tests** |  | **352** |
+| `evals` | 19 | 4 |
+| `protocol` | 17 | 3 |
+| **Total** | **1117** | **363** |
 
-`storage`, `server`, and `evals` genuinely contain no `*.test.ts` at the audit
-commit. SQLite coverage lives in two `agent/test/harness/sqlite-*.test.ts`
-files. `evals` instead has two `*.eval.ts` suites, inventoried below.
+`storage` and `server` contain no `*.test.ts` at the audit commit. SQLite
+coverage lives in two `agent/test/harness/sqlite-*.test.ts` files. `evals`
+contains four deterministic `*.test.ts` files and retains two `*.eval.ts`
+suites; the new `protocol` package contains three deterministic test files.
 
 The provider directory has **82 top-level files**: **38 built-in text-provider
 factories**, **37 static `*.models.ts` catalogs**, one built-in image-provider
@@ -171,7 +174,7 @@ proxy/default-stream helpers.
 | Tree session and compaction core | 已实现 | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | Built-in read/write/edit/bash/find/grep/ls harness set | 已实现 | Exact public tool names and execution-environment behavior are covered by [CL-PART-B](#cl-part-b) |
 | Skills/templates/system prompt | 有意差异 | Lisp registrations replace Markdown/TS resource formats; [CL-PART-B](#cl-part-b) |
-| Proxy/default-stream compatibility helpers | 缺失 | [AGENT-HARNESS](#agent-harness) |
+| Stream configuration/provider-request hooks and permanent shutdown | 已实现 | [CL-WAVE2-HARNESS](#cl-wave2-harness), [CL-GOAL9-HARNESS](#cl-goal9-harness) |
 
 ### 2.3 `coding-agent`
 
@@ -287,9 +290,18 @@ maintains Radius presence.
 The reference package wraps `AgentSession` as a `vitest-evals` harness. It
 requires an explicit provider/model, creates isolated project/agent
 directories, normalizes messages/tool calls/results and usage, supports
-prompt/reload sequences, and cleans up the session and temporary tree.
+prompt/reload sequences, and cleans up the session and temporary tree. The
+current baseline adds artifact persistence, iteration/group planning, and
+correctness/efficiency summaries with incomplete and duplicate diagnostics.
 
-It has two non-`*.test.ts` suites:
+It has four deterministic `*.test.ts` files:
+
+- `test/pi-harness.test.ts`;
+- `test/vitest-evals/artifacts.test.ts`;
+- `test/vitest-evals/harness-table.test.ts`;
+- `test/vitest-evals/summary.test.ts`.
+
+It also retains two `*.eval.ts` suites:
 
 - `src/smoke.eval.ts`: exact “Paris” end-to-end response and usage identity;
 - `src/extensions.eval.ts`: model creates, reloads and invokes a `hello`
@@ -298,10 +310,24 @@ It has two non-`*.test.ts` suites:
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Generic eval harness and normalized transcript/usage | 已实现 | [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
-| Explicit provider/model runner | 已实现 | [run-evals](../scripts/run-evals.sh), [EVALS](#evals) |
+| Generic eval harness and normalized transcript/usage | 已实现 | [eval tests](../test/cadr-evals/evals-test.lisp), [pi harness tests](../test/cadr-evals/pi-harness-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| Artifacts, harness table and summaries | 已实现 | [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), [summary](../test/cadr-evals/summary-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| Explicit provider/model runner | 已实现 | [run-evals](../scripts/run-evals.sh), [CL-GOAL9-EVALS](#cl-goal9-evals) |
 | Smoke eval | 已实现 | faux unit gate plus [DeepSeek/Codex live gate](../test/cadr-evals/live-evals-test.lisp), [EVALS](#evals) |
 | Self-extension eval | 已实现 | isolated write/reload/invoke gate in [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
+
+### 2.8 `protocol`
+
+The current baseline adds the standalone remote-session v2 wire package. Its
+public contract is strict CBOR encoding/decoding, four-byte big-endian length
+framing, and validated client/server message codecs. Cadr implements the same
+contract in pure Lisp without adding a dependency.
+
+| Surface | Status | cadr evidence or gap |
+|---|---|---|
+| CBOR value subset, limits and rejection semantics | 已实现 | [CBOR tests](../test/cadr-protocol/cbor-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| Fragmented/coalesced bounded framing | 已实现 | [framing tests](../test/cadr-protocol/framing-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| Version 2 client/server schemas and codecs | 已实现 | [protocol tests](../test/cadr-protocol/protocol-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
 
 ## 3. Gap and evidence index
 
@@ -320,6 +346,12 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-ai-oauth"></a>`CL-AI-OAUTH` | [`OPENAI-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `ANTHROPIC-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `OAUTH-CALLBACK-PARSER-VALIDATES-PATH-AND-STATE`, `OAUTH-REFRESH-IS-DOUBLE-CHECKED-UNDER-LOCK`, `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS`, `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST`](../test/cadr-ai/auth-test.lisp) |
 | <a id="cl-ai-deepseek"></a>`CL-AI-DEEPSEEK` | [`OPENAI-COMPLETIONS-BUILDS-TOOL-HISTORY`, `OPENAI-COMPLETIONS-PARSES-COMPLETE-TOOL-CALL-AND-USAGE`, `RECORDED-DEEPSEEK-CHAT-COMPLETIONS-STREAM`](../test/cadr-ai/openai-completions-test.lisp) |
 | <a id="cl-ai-wave3"></a>`CL-AI-WAVE3` | [independent protocols, exact 38-provider/1153-model catalog, SigV4, Vertex RS256/ADC, OAuth/device flows and dynamic Radius](../test/cadr-ai/provider-wave3-test.lisp); [model runtime and credentials](../test/cadr-ai/models-runtime-test.lisp); [faux provider](../test/cadr-ai/faux-provider-test.lisp); [context/overflow/retry/schema/UUID utilities](../test/cadr-ai/utilities-test.lisp); [40-model OpenRouter image generation](../test/cadr-ai/image-generation-test.lisp); available [DeepSeek](../test/cadr-ai/live-provider-test.lisp) and explicit-model [Codex OAuth](../test/cadr-cli/live-test.lisp) live gates, plus deterministic login/default-route coverage |
+| <a id="cl-goal9-ai"></a>`CL-GOAL9-AI` | [Bedrock error metadata](../test/cadr-ai/bedrock-error-metadata-test.lisp) and [Bedrock structured failure plus GPT-5.6 pricing/provider metadata](../test/cadr-ai/provider-wave3-test.lisp) |
+| <a id="cl-goal9-harness"></a>`CL-GOAL9-HARNESS` | [permanent, idempotent shutdown; active/preflight/mutation/tree task settlement; post-shutdown rejection](../test/cadr-agent/shutdown-test.lisp) |
+| <a id="cl-goal9-coding"></a>`CL-GOAL9-CODING` | [session/print/JSON/RPC/extension workflows](../test/cadr-cli/goal9-a2-workflows-test.lisp), [interactive structure and snapshots](../test/cadr-cli/goal9-a2-interactive-test.lisp), [malformed package manifest](../test/cadr-cli/part-b-package-test.lisp), and [Markdown extension/TUI bridge](../test/cadr-cli/extensions-test.lisp) |
+| <a id="cl-goal9-tui"></a>`CL-GOAL9-TUI` | [alternate-screen viewport/input/image/link/selection/restore](../test/cadr-tui/alt-screen-test.lisp), [terminal grapheme widths](../test/cadr-tui/unicode-test.lisp), [Markdown transformer width](../test/cadr-tui/components-test.lisp), and [CLI frontend integration](../test/cadr-cli/tui-test.lisp) |
+| <a id="cl-goal9-evals"></a>`CL-GOAL9-EVALS` | [pi harness](../test/cadr-evals/pi-harness-test.lisp), [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), and [summary](../test/cadr-evals/summary-test.lisp) |
+| <a id="cl-goal9-protocol"></a>`CL-GOAL9-PROTOCOL` | [CBOR](../test/cadr-protocol/cbor-test.lisp), [framing](../test/cadr-protocol/framing-test.lisp), and [v2 schemas/codecs](../test/cadr-protocol/protocol-test.lisp); 41 tests / 497 checks |
 | <a id="cl-agent-loop"></a>`CL-AGENT-LOOP` | [`SIMPLE-TURN-EMITS-REFERENCE-LIFECYCLE-ORDER`, `ERROR-AND-ABORT-STOP-THE-RUN-CLEANLY`](../test/cadr-agent/loop-test.lisp), [`TOOL-CALL-RESULT-AND-NEXT-MODEL-TURN-COMPLETE`](../test/cadr-agent/tool-loop-test.lisp) |
 | <a id="cl-agent-schema"></a>`CL-AGENT-SCHEMA` | [`NATIVE-SCHEMA-VALIDATES-NESTED-TOOL-ARGUMENTS`, `NATIVE-SCHEMA-SUPPORTS-COMPOSITION-AND-SCALAR-CONSTRAINTS`, `NATIVE-SCHEMA-DEFINITION-REJECTS-MALFORMED-KEYWORDS`](../test/cadr-agent/schema-test.lisp) |
 | <a id="cl-compaction"></a>`CL-COMPACTION` | [`AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT`, `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
@@ -345,7 +377,7 @@ It has two non-`*.test.ts` suites:
 | <a id="ai-auth"></a>`AI-AUTH` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
 | <a id="ai-catalog"></a>`AI-CATALOG` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
 | <a id="ai-image-gen"></a>`AI-IMAGE-GEN` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
-| <a id="agent-harness"></a>`AGENT-HARNESS` | remaining proxy/default-stream compatibility helpers and exact built-in harness tool set |
+| <a id="agent-harness"></a>`AGENT-HARNESS` | closed by Wave 2 harness coverage and Goal 9 permanent shutdown/task tracking; see [CL-WAVE2-HARNESS](#cl-wave2-harness) and [CL-GOAL9-HARNESS](#cl-goal9-harness) |
 | <a id="coding-rpc"></a>`CODING-RPC` | closed by Wave 2 RPC and Goal 8 Wave 5 server/client packaging; see [SERVER](#server) |
 | <a id="coding-cli-sdk"></a>`CODING-CLI-SDK` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="coding-models"></a>`CODING-MODELS` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
@@ -355,27 +387,30 @@ It has two non-`*.test.ts` suites:
 | <a id="coding-interactive"></a>`CODING-INTERACTIVE` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="storage-sqlite"></a>`STORAGE-SQLITE` | closed by Goal 8 Wave 5; [23 standalone storage checks](../test/cadr-storage/storage-test.lisp) cover adapter, migrations, repo and materialized state |
 | <a id="server"></a>`SERVER` | closed by Goal 8 Wave 5; [43 server checks](../test/cadr-server/server-test.lisp) plus the [native Unix-socket smoke](../scripts/server-smoke.sh) cover the package |
-| <a id="evals"></a>`EVALS` | closed by Goal 8 Wave 5; deterministic [eval checks](../test/cadr-evals/evals-test.lisp) and the [DeepSeek/Codex live gates](../test/cadr-evals/live-evals-test.lisp) cover the harness and two suites |
+| <a id="evals"></a>`EVALS` | closed by Goal 8 Wave 5 and expanded for the current baseline by [CL-GOAL9-EVALS](#cl-goal9-evals); credential-gated DeepSeek/Codex suites remain in [live evals](../test/cadr-evals/live-evals-test.lisp) |
 | <a id="diff-lisp-ecosystem"></a>`DIFF-LISP-ECOSYSTEM` | approved Lisp extension/skill/template/package format and implementation/build-language differences; capability gaps inside those systems remain separately missing |
 
 ### Applicable but uncovered backlog
 
 There are no `U` or `M` files in the strict manifest. Goal 5 closed
 `U-SEARCH-GITIGNORE` and `U-TUI-RI`; Goal 8 Parts A and B closed the remaining
-applicable files. `config.test.ts` is the sole user-approved `N/A`.
+applicable files; Goal 9 Part A closed all 11 newly added files and revalidated
+all 26 modified prior-`C` files. `config.test.ts` is the sole user-approved
+`N/A`.
 
 ### `docs/test-matrix.md` audit notes
 
-The matrix retains the earlier phase tables and now includes Wave 3,
-Goal 8 Part B, and Wave 5. The current suite has **2987** checks; exact package totals are
-in the Goal 8 progress report. Earlier conservative AI notes are superseded by
-Part A:
+The matrix retains historical phase tables and adds a current Goal 9 Part A
+delta table. The **2987** checks quoted by Goal 8 are a historical closeout
+snapshot, not the current suite total. Earlier conservative AI notes are
+superseded by Part A:
 malformed stream/tool JSON, complete provider matrices, independent protocols,
 auth and catalog/runtime behavior now have linked deterministic evidence.
 Its Phase 6 table describes the historical JSONL v2 format. Wave 2 now
    writes exact v3 entries and migrates v1/v2 atomically.
-Wave 5 adds rows for the standalone `storage`, `server`, and `evals`
-package surfaces.
+Wave 5 added the standalone `storage`, `server`, and original eval harness;
+Goal 9 adds the four comparative-eval test files and the standalone `protocol`
+package.
 
 ## 4. Exhaustive `*.test.ts` manifest
 
@@ -384,18 +419,31 @@ The appendix is sorted exactly like
 
 | Package | C | U | M | N/A | Total |
 |---|---:|---:|---:|---:|---:|
-| `ai` | 120 | 0 | 0 | 0 | 120 |
+| `ai` | 121 | 0 | 0 | 0 | 121 |
 | `agent` | 18 | 0 | 0 | 0 | 18 |
-| `coding-agent` | 186 | 0 | 0 | 1 | 187 |
-| `tui` | 27 | 0 | 0 | 0 | 27 |
-| `storage` / `server` / `evals` | 0 | 0 | 0 | 0 | 0 |
-| **Total** | **351** | **0** | **0** | **1** | **352** |
+| `coding-agent` | 188 | 0 | 0 | 1 | 189 |
+| `tui` | 28 | 0 | 0 | 0 | 28 |
+| `evals` | 4 | 0 | 0 | 0 | 4 |
+| `protocol` | 3 | 0 | 0 | 0 | 3 |
+| `storage` / `server` | 0 | 0 | 0 | 0 | 0 |
+| **Total** | **362** | **0** | **0** | **1** | **363** |
 
-The first 2905 CL assertions cover all 120 AI files, the complete 27-file TUI
-surface, all 18 agent harness files, and 186 applicable coding-agent files.
-The remaining 82 assertions cover the baseline packages that contain no
-`*.test.ts`: standalone storage, server, and evals.
-Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
+All 121 AI files, the complete 28-file TUI surface, all 18 agent files, 188
+applicable coding-agent files, all four eval test files, and all three protocol
+test files are covered. `config.test.ts` remains the sole user-approved
+build-ecosystem exception. Whole-file classification is
+`362 C / 0 U / 0 M / 1 N/A`.
+
+The baseline delta modified 26 previously classified `C` files. Each was
+re-read against `71efc6f0..74caa2649` and revalidated rather than carried
+forward by status alone:
+
+| Package | Revalidated existing baseline files | Goal 9 evidence |
+|---|---|---|
+| `agent` | `harness/agent-harness.test.ts` | [CL-GOAL9-HARNESS](#cl-goal9-harness) |
+| `ai` | `deferred-tools.test.ts`; `openai-completions-thinking-as-text.test.ts`; `openai-completions-tool-choice.test.ts`; `openai-completions-tool-result-images.test.ts` | [CL-GOAL9-AI](#cl-goal9-ai), [CL-AI-WAVE3](#cl-ai-wave3) |
+| `coding-agent` | `args.test.ts`; `assistant-message.test.ts`; `edit-tool-no-full-redraw.test.ts`; `extensions-discovery.test.ts`; `extensions-runner.test.ts`; `interactive-mode-status.test.ts`; `user-message.test.ts` | [CL-GOAL9-CODING](#cl-goal9-coding) |
+| `tui` | `editor.test.ts`; `markdown.test.ts`; `overlay-non-capturing.test.ts`; `overlay-options.test.ts`; `overlay-short-content.test.ts`; `regression-overlay-cjk-boundary.test.ts`; `tab-width.test.ts`; `terminal-colors.test.ts`; `terminal-image.test.ts`; `truncate-to-width.test.ts`; `tui-cell-size-input.test.ts`; `tui-overlay-style-leak.test.ts`; `tui-render.test.ts`; `tui-shrink.test.ts` | [CL-GOAL9-TUI](#cl-goal9-tui) |
 
 | Class | Baseline test file | Evidence/gap |
 |---|---|---|
@@ -439,6 +487,7 @@ Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 | C | `packages/ai/test/bedrock-credentials.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/bedrock-custom-headers.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/bedrock-endpoint-resolution.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/bedrock-error-metadata.test.ts` | [CL-GOAL9-AI](#cl-goal9-ai) |
 | C | `packages/ai/test/bedrock-models.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/bedrock-raw-stop-reason.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/bedrock-thinking-payload.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
@@ -604,6 +653,7 @@ Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 | C | `packages/coding-agent/test/interactive-mode-startup-input.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/interactive-mode-status.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/interactive-mode-suspend.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-tui.test.ts` | [CL-GOAL9-CODING](#cl-goal9-coding), [CL-GOAL9-TUI](#cl-goal9-tui) |
 | C | `packages/coding-agent/test/keybindings-migration.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/llama-extension.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/max-thinking.test.ts` | [CL-PART-B](#cl-part-b) |
@@ -705,6 +755,7 @@ Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 | C | `packages/coding-agent/test/suite/regressions/6904-dns-transport-retry.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/6949-unavailable-scoped-model.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/6999-models-json-hot-reload.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/7187-malformed-package-manifest.test.ts` | [CL-GOAL9-CODING](#cl-goal9-coding) |
 | C | `packages/coding-agent/test/suite/regressions/7209-model-selector-filter-resets-selection.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/extension-factory-cache.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/pre-prompt-compaction-no-continue.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
@@ -725,6 +776,13 @@ Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 | C | `packages/coding-agent/test/trust-selector.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/user-message.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/version-check.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/evals/test/pi-harness.test.ts` | [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| C | `packages/evals/test/vitest-evals/artifacts.test.ts` | [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| C | `packages/evals/test/vitest-evals/harness-table.test.ts` | [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| C | `packages/evals/test/vitest-evals/summary.test.ts` | [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| C | `packages/protocol/test/cbor/cbor.test.ts` | [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| C | `packages/protocol/test/framing.test.ts` | [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| C | `packages/protocol/test/protocol.test.ts` | [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
 | C | `packages/tui/test/autocomplete.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/bug-regression-isimageline-startswith-bug.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/editor.test.ts` | [CL-TUI](#cl-tui) |
@@ -746,6 +804,7 @@ Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 | C | `packages/tui/test/terminal.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/truncate-to-width.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/truncated-text.test.ts` | [CL-TUI](#cl-tui) |
+| C | `packages/tui/test/tui-alt-screen.test.ts` | [CL-GOAL9-TUI](#cl-goal9-tui) |
 | C | `packages/tui/test/tui-cell-size-input.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/tui-overlay-style-leak.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/tui-render.test.ts` | [CL-TUI](#cl-tui) |
@@ -756,18 +815,20 @@ Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 
 ## 5. Fixed implementation sequence
 
-The user approved the order Wave 0 → pulled-forward TUI → Wave 1 → 2 → 3 → 5.
+The user approved the historical order Wave 0 → pulled-forward TUI → Wave 1 →
+2 → 3 → 5, followed by Goal 9 Part A/A2.
 
 | Order | Status | Scope | Verification gate |
 |---|---|---|---|
 | Wave 0 | complete | `U-SEARCH-GITIGNORE` and `U-TUI-RI` | both regressions are `C`; no `U` remains |
-| TUI (former Wave 4) | complete; manual acceptance passed 2026-07-30 | complete 27-file TUI baseline test surface | 582 TUI checks, PTY/live smoke, user-confirmed real-terminal checklist |
+| TUI (former Wave 4) | complete; manual acceptance passed 2026-07-30 | historical 27-file TUI test surface | 582 TUI checks, PTY/live smoke, user-confirmed real-terminal checklist |
 | Wave 1 | complete | shared OpenAI-Completions/Responses and Anthropic compatibility; compatible providers/catalogs | generated fixtures plus credential-gated smokes |
 | Wave 2 | complete | exact agent harness, session v3, queues, print/JSON and RPC | 76 reference files are `C`; 1716 CL checks plus process/live gates |
 | Wave 3 | complete | independent APIs, auth flows, exact catalogs, model/image/faux runtimes | 641 AI checks plus DeepSeek and Codex OAuth live smokes |
 | Goal 8 Part B | complete | complete coding-agent runtime, tools, configuration, models, packages, interactive UI and approved extension/llama surfaces | 127 former `M` files are `C`; `config.test.ts` is the sole approved `N/A`; 2905 CL checks |
 | Wave 5 | complete | standalone storage packaging, server and eval harness | 23 storage + 43 server + 16 eval checks; native Unix-socket smoke; DeepSeek and Codex OAuth eval smokes |
-| Goal 8 Part F | mechanically complete; user acceptance pending | final ledger, dependency audit, freeze anchors, README and acceptance package | `351 C / 0 U / 0 M / 1 N/A`; 2987 CL checks; final real-terminal checklist remains |
+| Goal 8 Part F | complete; user acceptance passed | historical final ledger, dependency audit, freeze anchors, README and acceptance package | Historical `351 C / 0 U / 0 M / 1 N/A`; 2987 CL checks |
+| Goal 9 Part A/A2 | ledger complete; final clean-tree gate tracked in the Part A report | baseline upgrade, protocol, evals, shutdown, metadata/pricing, Markdown, manifest, alternate screen, grapheme widths and permanent faux/PTY gates | `362 C / 0 U / 0 M / 1 N/A = 363`; all 11 new files and 26 changed prior-`C` files revalidated |
 
 Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session
 state; server depends on RPC; evals should exercise the completed public
@@ -776,51 +837,54 @@ runtime rather than a temporary parallel harness.
 ## 6. Reproduction commands
 
 ```bash
-git cat-file -e 71efc6f0c1909874ec8c944637a9ae7fc0e2d508^{commit}
-git worktree add --detach /tmp/cadr-parity-71efc6f0 \
-  71efc6f0c1909874ec8c944637a9ae7fc0e2d508
-git -C /tmp/cadr-parity-71efc6f0 rev-parse HEAD
+git cat-file -e 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5^{commit}
+git worktree add --detach /tmp/cadr-parity-74caa2649 \
+  74caa2649f10ed71b4378ce69f5d9fbfd2466ca5
+git -C /tmp/cadr-parity-74caa2649 rev-parse HEAD
 
-find /tmp/cadr-parity-71efc6f0/packages -type f -name '*.test.ts' |
-  sed 's#^/tmp/cadr-parity-71efc6f0/##' | sort
-for p in ai agent coding-agent tui storage server evals; do
-  printf '%s ' "$p"
-  find "/tmp/cadr-parity-71efc6f0/packages/$p" \
+find /tmp/cadr-parity-74caa2649/packages -type f -name '*.test.ts' |
+  sed 's#^/tmp/cadr-parity-74caa2649/##' | sort
+for p in ai agent coding-agent tui storage server evals protocol; do
+  printf '%s files=' "$p"
+  git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only HEAD -- \
+    "packages/$p" | wc -l
+  printf '%s tests=' "$p"
+  find "/tmp/cadr-parity-74caa2649/packages/$p" \
     -type f -name '*.test.ts' | wc -l
 done
 
-find /tmp/cadr-parity-71efc6f0/packages/ai/src/providers \
+find /tmp/cadr-parity-74caa2649/packages/ai/src/providers \
   -maxdepth 1 -type f | wc -l
-find /tmp/cadr-parity-71efc6f0/packages/ai/src/providers \
+find /tmp/cadr-parity-74caa2649/packages/ai/src/providers \
   -maxdepth 1 -type f -name '*.models.ts' | wc -l
 sed -n '/export function builtinProviders/,/^}/p' \
-  /tmp/cadr-parity-71efc6f0/packages/ai/src/providers/all.ts
+  /tmp/cadr-parity-74caa2649/packages/ai/src/providers/all.ts
 
 awk '/^<!-- TEST-MANIFEST-BEGIN -->/{flag=1;next}
      /^<!-- TEST-MANIFEST-END -->/{exit}
      flag' docs/parity-map.md |
   rg -o 'packages/[^` ]+\.test\.ts' | sort > /tmp/cadr-map-tests
-find /tmp/cadr-parity-71efc6f0/packages -type f -name '*.test.ts' |
-  sed 's#^/tmp/cadr-parity-71efc6f0/##' | sort > /tmp/cadr-baseline-tests
-test "$(wc -l < /tmp/cadr-map-tests)" -eq 352
-test "$(sort -u /tmp/cadr-map-tests | wc -l)" -eq 352
+find /tmp/cadr-parity-74caa2649/packages -type f -name '*.test.ts' |
+  sed 's#^/tmp/cadr-parity-74caa2649/##' | sort > /tmp/cadr-baseline-tests
+test "$(wc -l < /tmp/cadr-map-tests)" -eq 363
+test "$(sort -u /tmp/cadr-map-tests | wc -l)" -eq 363
 diff -u /tmp/cadr-baseline-tests /tmp/cadr-map-tests
 
 ./scripts/test-cl.sh
-test -z "$(git status --porcelain --untracked-files=no)"
-git status --short |
-  rg '^\?\? docs/(parity-map\.md|progress/goal-v4\.md)$'
+git status --short
 ```
 
 Spot checks:
 
 ```bash
-git -C /tmp/cadr-parity-71efc6f0 show HEAD:packages/ai/src/providers/all.ts |
+git -C /tmp/cadr-parity-74caa2649 show HEAD:packages/ai/src/providers/all.ts |
   sed -n '/export function builtinProviders/,/^}/p'
-git -C /tmp/cadr-parity-71efc6f0 show \
+git -C /tmp/cadr-parity-74caa2649 show \
   HEAD:packages/coding-agent/src/core/session-manager.ts | sed -n '1,170p'
-git -C /tmp/cadr-parity-71efc6f0 show \
+git -C /tmp/cadr-parity-74caa2649 show \
   HEAD:packages/server/src/ipc/protocol.ts | sed -n '1,170p'
-git -C /tmp/cadr-parity-71efc6f0 show \
+git -C /tmp/cadr-parity-74caa2649 show \
   HEAD:packages/storage/sqlite-node/src/sqlite/migrations/001_initial.sql
+git -C /tmp/cadr-parity-74caa2649 show \
+  HEAD:packages/protocol/src/schemas.ts | sed -n '1,220p'
 ```

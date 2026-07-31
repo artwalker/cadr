@@ -26,7 +26,7 @@ if (
 	)
 ) {
 	throw new Error(
-		"Pass --reference <checkout> for earendil-works/pi commit 71efc6f0c1909874ec8c944637a9ae7fc0e2d508",
+		"Pass --reference <checkout> for earendil-works/pi commit 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
 	);
 }
 if (!fs.existsSync(path.join(referenceDirectory, "node_modules"))) {
