@@ -19,6 +19,8 @@
   :components ((:module "test/cadr-protocol"
                 :serial t
                 :components ((:file "package")
+                             (:file "cbor-test")
+                             (:file "framing-test")
                              (:file "protocol-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
