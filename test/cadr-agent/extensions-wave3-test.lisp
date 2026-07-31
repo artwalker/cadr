@@ -119,6 +119,65 @@
            (search "Shortcut" message))
          (cadr-agent::extension-host-conflicts host)))))
 
+(test goal9-markdown-transformers-chain-in-load-order-and-contain-errors
+  (let ((contexts nil)
+        (failures nil))
+    (let* ((first
+             (make-test-extension-bundle
+              "markdown-a"
+              (lambda ()
+                (cadr-agent:define-markdown-transformer
+                 (lambda (markdown context)
+                   (push (copy-list context) contexts)
+                   (substitute
+                    #\² #\x markdown))))))
+           (broken
+             (make-test-extension-bundle
+              "markdown-b"
+              (lambda ()
+                (cadr-agent:define-markdown-transformer
+                 (lambda (markdown context)
+                   (declare (ignore markdown context))
+                   (error "broken transformer"))))))
+           (last
+             (make-test-extension-bundle
+              "markdown-c"
+              (lambda ()
+                (cadr-agent:define-markdown-transformer
+                 (lambda (markdown context)
+                   (declare (ignore context))
+                   (concatenate
+                    'string markdown " done"))))))
+           (host
+             (make-test-extension-host
+              (list first broken last)
+              :notifications '*goal9-markdown-failures*)))
+      (declare (special *goal9-markdown-failures*))
+      (setf *goal9-markdown-failures* nil)
+      (let* ((source "x")
+             (context
+               '(:message-type :assistant
+                 :streaming-p t
+                 :available-width 78))
+             (result
+               (cadr-agent::transform-extension-markdown
+                host source context)))
+        (is (string= "² done" result))
+        (is (string= "x" source))
+        (is (equal context
+                   '(:message-type :assistant
+                     :streaming-p t
+                     :available-width 78)))
+        (is (= 3
+               (length
+                (cadr-agent::extension-host-markdown-transformers
+                 host))))
+        (is (equal context (first contexts)))
+        (setf failures *goal9-markdown-failures*)
+        (is (= 1 (length failures)))
+        (is (search "broken transformer"
+                    (second (first failures))))))))
+
 (test wave3-load-scope-api-survives-handlers-but-stales-on-reload
   (let ((captured nil)
         (sent nil)

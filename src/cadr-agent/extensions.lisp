@@ -14,6 +14,7 @@
   (shortcuts nil :type list)
   (flags nil :type list)
   (message-renderers nil :type list)
+  (markdown-transformers nil :type list)
   (entry-renderers nil :type list)
   (tool-renderers nil :type list)
   (hooks (make-hash-table :test #'eq) :type hash-table)
@@ -705,6 +706,7 @@
   (shortcuts nil :type list)
   (flags nil :type list)
   (message-renderers nil :type list)
+  markdown-transformer
   (entry-renderers nil :type list)
   (tool-renderers nil :type list)
   (hidden-p nil :type boolean)
@@ -764,6 +766,10 @@
 (defstruct extension-renderer-definition
   custom-type
   renderer
+  bundle)
+
+(defstruct extension-markdown-transformer-definition
+  transformer
   bundle)
 
 (defstruct extension-tool-renderer-definition
@@ -1276,6 +1282,21 @@
           updated)))))
   custom-type)
 
+(defun register-extension-markdown-transformer
+    (transformer)
+  (let ((bundle (require-extension-registration-bundle)))
+    (unless (functionp transformer)
+      (error
+       'extension-registration-error
+       :message
+       "Markdown transformer must be a function"))
+    (setf
+     (extension-bundle-markdown-transformer bundle)
+     (make-extension-markdown-transformer-definition
+      :transformer transformer
+      :bundle bundle)))
+  transformer)
+
 (defun register-extension-tool-renderer
     (tool-name call result)
   (let ((bundle (require-extension-registration-bundle)))
@@ -1363,6 +1384,10 @@
   `(register-extension-renderer
     :message ,custom-type ,renderer))
 
+(defmacro define-markdown-transformer (transformer)
+  `(register-extension-markdown-transformer
+    ,transformer))
+
 (defmacro define-entry-renderer
     (custom-type &key renderer)
   `(register-extension-renderer
@@ -1432,6 +1457,9 @@
       (extension-flag-definition-bundle definition))
      (extension-renderer-definition
       (extension-renderer-definition-bundle definition))
+     (extension-markdown-transformer-definition
+      (extension-markdown-transformer-definition-bundle
+       definition))
      (extension-tool-renderer-definition
       (extension-tool-renderer-definition-bundle
        definition)))))
@@ -1500,6 +1528,7 @@
         (*shortcuts* nil)
         (*flags* nil)
         (*message-renderers* nil)
+        (*markdown-transformers* nil)
         (*entry-renderers* nil)
         (*tool-renderers* nil)
         (*conflicts* nil)
@@ -1508,7 +1537,8 @@
      (special *tools* *commands* *templates*
               *native-providers*
               *shortcuts* *flags*
-              *message-renderers* *entry-renderers*
+              *message-renderers* *markdown-transformers*
+              *entry-renderers*
               *tool-renderers*
               *conflicts*))
     (dolist (bundle bundles)
@@ -1559,6 +1589,15 @@
          '*message-renderers* definition
          #'extension-renderer-definition-custom-type
          "Message renderer" '*conflicts*))
+      (when
+          (extension-bundle-markdown-transformer bundle)
+        (setf
+         *markdown-transformers*
+         (nconc
+          *markdown-transformers*
+          (list
+           (extension-bundle-markdown-transformer
+            bundle)))))
       (dolist (definition
                (extension-bundle-entry-renderers
                 bundle))
@@ -1602,6 +1641,7 @@
      :shortcuts *shortcuts*
      :flags *flags*
      :message-renderers *message-renderers*
+     :markdown-transformers *markdown-transformers*
      :entry-renderers *entry-renderers*
      :tool-renderers *tool-renderers*
      :hooks hooks
@@ -1757,6 +1797,8 @@
              (extension-renderer-definition
               (extension-renderer-definition-custom-type
                definition))
+             (extension-markdown-transformer-definition
+              :markdown)
              (extension-tool-renderer-definition
               (extension-tool-renderer-definition-tool-name
                definition)))
@@ -1798,6 +1840,40 @@
   (find-extension-renderer
    host custom-type
    #'extension-snapshot-message-renderers))
+
+(defun extension-host-markdown-transformers (host)
+  (copy-list
+   (extension-snapshot-markdown-transformers
+    (extension-host-current-snapshot host))))
+
+(defun transform-extension-markdown
+    (host markdown context)
+  (let* ((snapshot
+           (extension-host-current-snapshot host))
+         (current markdown))
+    (acquire-extension-snapshot host snapshot)
+    (unwind-protect
+         (dolist
+             (definition
+              (extension-snapshot-markdown-transformers
+               snapshot)
+              current)
+           (handler-case
+               (let ((transformed
+                       (funcall
+                        (extension-markdown-transformer-definition-transformer
+                         definition)
+                        current
+                        (copy-list context))))
+                 (when (stringp transformed)
+                   (setf current transformed)))
+             (condition (condition)
+               (notify-extension-failure
+                host definition
+                "Markdown transformer"
+                condition))))
+      (release-acquired-extension-snapshot
+       host snapshot))))
 
 (defun find-extension-entry-renderer
     (host custom-type)

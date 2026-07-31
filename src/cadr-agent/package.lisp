@@ -64,6 +64,7 @@
    #:define-shortcut
    #:define-flag
    #:define-message-renderer
+   #:define-markdown-transformer
    #:define-entry-renderer
    #:define-tool-renderer
    #:extension-api
