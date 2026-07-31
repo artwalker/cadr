@@ -22,7 +22,9 @@ trap cleanup EXIT
 mkdir -p "$TEST_ROOT/home" "$TEST_ROOT/project"
 
 PORT_FILE="$TEST_ROOT/port"
+REQUEST_MARKER="$TEST_ROOT/request-marker"
 CADR_STUB_DELAY=0.15 \
+  CADR_STUB_REQUEST_MARKER="$REQUEST_MARKER" \
   python3 "$PROJECT_DIRECTORY/test/fixtures/openai-sse-server.py" \
   "$PORT_FILE" &
 SERVER_PID="$!"
@@ -114,6 +116,7 @@ PY
 ) >"$TEST_ROOT/rpc-ui-eof.out"
 
 SHUTDOWN_MARKER="$TEST_ROOT/shutdown-marker"
+REQUESTS_BEFORE="$(wc -l <"$REQUEST_MARKER")"
 (
   cd "$TEST_ROOT/project"
   HOME="$TEST_ROOT/signal-home" OPENAI_API_KEY=test \
@@ -134,7 +137,15 @@ while [ ! -d "$TEST_ROOT/signal-home/.cadr/sessions" ]; do
   fi
   sleep 0.01
 done
-sleep 0.05
+tries=0
+while [ "$(wc -l <"$REQUEST_MARKER")" -le "$REQUESTS_BEFORE" ]; do
+  tries=$((tries + 1))
+  if [ "$tries" -ge 100 ]; then
+    echo "wave2 process modes: signal request did not start" >&2
+    exit 1
+  fi
+  sleep 0.01
+done
 kill -TERM "$SIGNAL_PID"
 set +e
 wait "$SIGNAL_PID"

@@ -15,6 +15,11 @@ class Handler(BaseHTTPRequestHandler):
     def do_POST(self):
         length = int(self.headers.get("content-length", "0"))
         self.rfile.read(length)
+        request_marker = os.environ.get("CADR_STUB_REQUEST_MARKER")
+        if request_marker:
+            with open(request_marker, "a", encoding="utf-8") as stream:
+                stream.write("request\n")
+                stream.flush()
         delay = float(os.environ.get("CADR_STUB_DELAY", "0.05"))
         time.sleep(delay)
         text = os.environ.get("CADR_STUB_TEXT", "stub-ok")
