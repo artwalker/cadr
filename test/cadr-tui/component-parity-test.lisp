@@ -95,9 +95,17 @@
                  (<= (cadr-tui:visible-width line)
                      48))
                lines))
-    (is (equal '("streaming **open")
-               (cadr-tui:render-markdown
-                "streaming **open" 30)))))
+    (let ((streaming
+            (cadr-tui:render-markdown
+             "streaming **open" 30)))
+      (is (= 1 (length streaming)))
+      (is (= 30
+             (cadr-tui:visible-width
+              (first streaming))))
+      (is (string=
+           "streaming **open"
+           (string-right-trim
+            " " (first streaming)))))))
 
 (test image-component-reserves-rows-and-falls-back-within-width
   (let* ((kitty

@@ -1,6 +1,42 @@
 (in-package #:cadr-tui/tests)
 (in-suite cadr-tui-suite)
 
+(test goal9-markdown-transform-receives-exact-available-width
+  (let ((seen nil))
+    (let ((rendered
+            (cadr-tui:render-markdown
+             "answer" 58
+             :transform-function
+             (lambda (markdown available-width)
+               (push available-width seen)
+               (format nil "~A (~D)"
+                       markdown available-width)))))
+      (is (search "answer (58)"
+                  (format nil "~{~A~^~%~}" rendered)))
+      (is (equal '(58) seen)))))
+
+(test goal9-markdown-padding-reduces-transform-width
+  (let ((calls nil))
+    (let ((lines
+            (cadr-tui:render-markdown
+             "source" 80
+             :padding-x 2
+             :transform-function
+             (lambda (source available-width)
+               (push
+                (list source available-width)
+                calls)
+               (format nil "~A ~D"
+                       source available-width)))))
+      (is (equal
+           '(("source" 76))
+           calls))
+      (is (= 80
+             (cadr-tui:visible-width
+              (first lines))))
+      (is (search "source 76"
+                  (first lines))))))
+
 (test markdown-renders-incomplete-stream
   (let ((lines
           (cadr-tui:render-markdown

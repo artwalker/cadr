@@ -257,9 +257,23 @@
 
 (defun render-markdown
     (text width &key ansi-theme-p
+                     transform-function
+                     (padding-x 0)
+                     (padding-y 0)
                      (capabilities
                        (get-terminal-capabilities)))
-  (let ((in-code-p nil)
+  (let* ((available-width
+           (max 1 (- width (* 2 padding-x))))
+         (text
+          (if transform-function
+              (let ((transformed
+                      (funcall transform-function
+                               text available-width)))
+                (if (stringp transformed)
+                    transformed
+                    text))
+              text))
+        (in-code-p nil)
         (result nil))
     (dolist (line (split-lines-preserving-empty text))
       (multiple-value-bind
@@ -271,8 +285,46 @@
           (setf result
                 (nconc
                  result
-                 (wrap-text rendered width))))))
-    (or result (list ""))))
+                 (wrap-text
+                  rendered available-width))))))
+    (let ((content
+            (loop for line in result
+                  collect
+                  (if (image-line-p line)
+                      line
+                      (let* ((with-margins
+                               (concatenate
+                                'string
+                                (make-string
+                                 padding-x
+                                 :initial-element
+                                 #\Space)
+                                line
+                                (make-string
+                                 padding-x
+                                 :initial-element
+                                 #\Space)))
+                             (visible
+                               (visible-width
+                                with-margins)))
+                        (concatenate
+                         'string
+                         with-margins
+                         (make-string
+                          (max 0 (- width visible))
+                          :initial-element
+                          #\Space))))))
+          (empty
+            (make-string
+             width :initial-element #\Space)))
+      (or
+       (append
+        (make-list padding-y
+                   :initial-element empty)
+        content
+        (make-list padding-y
+                   :initial-element empty))
+       (list "")))))
 
 (defun render-truncated-text
     (text width &key (padding-x 0)
