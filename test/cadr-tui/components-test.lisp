@@ -1,6 +1,15 @@
 (in-package #:cadr-tui/tests)
 (in-suite cadr-tui-suite)
 
+(defun count-substring (needle haystack)
+  (loop with start = 0
+        for position =
+          (search needle haystack :start2 start)
+        while position
+        count 1
+        do (setf start
+                 (+ position (length needle)))))
+
 (test goal9-markdown-transform-receives-exact-available-width
   (let ((seen nil))
     (let ((rendered
@@ -43,7 +52,7 @@
            (format nil "# 标题~%~%- one~%> quote~%```lisp~%(+ 1 2)")
            20)))
     (is (search "标题" (first lines)))
-    (is (find-if (lambda (line) (search "• one" line)) lines))
+    (is (find-if (lambda (line) (search "- one" line)) lines))
     (is (find-if (lambda (line) (search "│ quote" line)) lines))
     (is (find-if (lambda (line) (search "(+ 1 2)" line)) lines))))
 
@@ -62,10 +71,11 @@
           (cadr-tui:make-tool-block
            :name "read"
            :summary "{\"path\":\"README.md\"}"
-         :output (format nil "line one~%line two")
+           :output (format nil "line one~%line two")
            :status :complete)))
-    (is (= 4 (length
-              (cadr-tui:render-tool-block block 40))))
+    (is (search "line two"
+                (format nil "~{~A~%~}"
+                        (cadr-tui:render-tool-block block 40))))
     (cadr-tui:toggle-tool-block block)
     (is (> (length (cadr-tui:render-tool-block block 40)) 1))
     (is (search "line one"
@@ -128,17 +138,23 @@
                    lines)))
     (is (string= "H1"
                  (string-right-trim " " (first plain))))
+    (is (string= ""
+                 (string-right-trim
+                  " " (second plain))))
     (is (string= "H2"
-                 (string-right-trim " " (second plain))))
-    (is (string= "### H3"
                  (string-right-trim " " (third plain))))
+    (is (string= ""
+                 (string-right-trim
+                  " " (fourth plain))))
+    (is (string= "### H3"
+                 (string-right-trim " " (fifth plain))))
     (is (find "│ quote" plain
               :test
               (lambda (expected line)
                 (string=
                  expected
                  (string-right-trim " " line)))))
-    (is (find "• item" plain
+    (is (find "- item" plain
               :test
               (lambda (expected line)
                 (string=
@@ -230,16 +246,20 @@
                    block 28 :ansi-theme-p t))
                 (plain
                   (mapcar
-                   #'cadr-tui:strip-terminal-sequences
+                   (lambda (line)
+                     (string-right-trim
+                      " "
+                      (cadr-tui:strip-terminal-sequences
+                       line)))
                    lines))
                 (joined
                   (format nil "~{~A~^~%~}" lines)))
            (is (string= "" (first plain)))
-           (is (string=
-                (make-string 28
-                             :initial-element #\Space)
-                (second plain)))
-           (is (search "bash" (third plain)))
+           (is (string= "" (second plain)))
+           (is (search "$ printf ok"
+                       (third plain)))
+           (is (null (search "bash"
+                             (third plain))))
            (is (search "one" joined))
            (is (search
                 (format nil "~C[48;2;40;40;50m"
@@ -288,3 +308,467 @@
       (is (search
            (format nil "~C[" #\Escape)
            (format nil "~{~A~^~%~}" lines))))))
+
+(test goal9-tool-collapsed-previews-match-baseline-budgets
+  (labels
+      ((output (count)
+         (format nil "~{~A~^~%~}"
+                 (loop for index from 1 to count
+                       collect
+                       (format nil "line-~2,'0D" index))))
+       (plain-lines (name count &key expanded-p)
+         (let ((block
+                 (cadr-tui:make-tool-block
+                  :name name
+                  :summary "args"
+                  :output (output count)
+                  :status :complete
+                  :collapsed-p (not expanded-p))))
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-tui:render-tool-block block 72)))))
+    (let ((bash (plain-lines "bash" 12)))
+      (is (find-if
+           (lambda (line)
+             (search "7 earlier lines" line))
+           bash))
+      (is (null (find-if
+                 (lambda (line) (search "line-07" line))
+                 bash)))
+      (is (find-if
+           (lambda (line) (search "line-08" line))
+           bash))
+      (is (find-if
+           (lambda (line) (search "line-12" line))
+           bash)))
+    (dolist (entry '(("read" 10)
+                     ("write" 10)
+                     ("grep" 15)
+                     ("find" 20)
+                     ("ls" 20)))
+      (destructuring-bind (name budget) entry
+        (let ((lines (plain-lines name (+ budget 2))))
+          (is (find-if
+               (lambda (line)
+                 (search
+                  (format nil "line-~2,'0D" budget)
+                  line))
+               lines))
+          (is (null
+               (find-if
+                (lambda (line)
+                  (search
+                   (format nil "line-~2,'0D" (1+ budget))
+                   line))
+                lines)))
+          (is (find-if
+               (lambda (line)
+                 (search "2 more lines" line))
+               lines)))))
+    (let ((expanded (plain-lines "read" 12 :expanded-p t)))
+      (is (find-if
+           (lambda (line) (search "line-12" line))
+           expanded)))
+    (let ((caps
+            (cadr-tui:make-terminal-capabilities
+             :images nil :true-color-p t
+             :hyperlinks-p nil)))
+      (cadr-tui:set-current-theme :dark :capabilities caps)
+      (unwind-protect
+           (let* ((block
+                    (cadr-tui:make-tool-block
+                     :name "bash" :summary "args"
+                     :output (output 6)
+                     :status :complete
+                     :collapsed-p t))
+                  (rendered
+                    (format nil "~{~A~^~%~}"
+                            (cadr-tui:render-tool-block
+                             block 72 :ansi-theme-p t))))
+             (is (search
+                  (format nil
+                          "~C[38;2;128;128;128m... (1 earlier lines"
+                          #\Escape)
+                  rendered)))
+        (cadr-tui:reset-current-theme)))))
+
+(test goal9-tool-preview-is-tab-normalized-and-ansi-width-safe
+  (let* ((escape (string #\Escape))
+         (block
+           (cadr-tui:make-tool-block
+            :name "bash"
+            :summary "宽参数"
+            :output
+            (format nil
+                    "~A[31m甲乙丙丁戊己庚辛~A[39m~%one~Ctwo~%three~%four~%five~%six"
+                    escape escape #\Tab)
+            :status :complete
+            :collapsed-p t))
+         (lines
+           (cadr-tui:render-tool-block
+            block 18 :ansi-theme-p t))
+         (plain
+           (mapcar #'cadr-tui:strip-terminal-sequences
+                   lines)))
+    (is (every
+         (lambda (line)
+           (or (string= line "")
+               (= 18 (cadr-tui:visible-width line))))
+         lines))
+    (is (find-if
+         (lambda (line) (search "one   two" line))
+         plain))
+    (is (search (format nil "~C[" #\Escape)
+                (format nil "~{~A~^~%~}" lines)))))
+
+(test goal9-tool-diff-uses-semantic-lines-and-word-inverse
+  (let* ((caps
+           (cadr-tui:make-terminal-capabilities
+            :images nil :true-color-p t
+            :hyperlinks-p nil))
+         (block
+           (cadr-tui:make-tool-block
+            :name "edit"
+            :summary "src/example.lisp"
+            :output
+            (format nil
+                    "-12 hello brave world~%+12 hello bold world~% 13 same~Ccontext"
+                    #\Tab)
+            :status :complete
+            :collapsed-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let ((rendered
+                 (format nil "~{~A~^~%~}"
+                         (cadr-tui:render-tool-block
+                          block 80 :ansi-theme-p t))))
+           (is (search
+                (format nil "~C[38;2;204;102;102m"
+                        #\Escape)
+                rendered))
+           (is (search
+                (format nil "~C[38;2;181;189;104m"
+                        #\Escape)
+                rendered))
+           (is (search
+                (format nil "~C[38;2;128;128;128m"
+                        #\Escape)
+                rendered))
+           (is (search
+                (format nil "~C[7mbrave~C[27m"
+                        #\Escape #\Escape)
+                rendered))
+           (is (search
+                (format nil "~C[7mbold~C[27m"
+                        #\Escape #\Escape)
+                rendered))
+           (is (search "same   context"
+                       (cadr-tui:strip-terminal-sequences
+                        rendered))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-tool-output-classifies-error-warning-and-status-backgrounds
+  (let* ((caps
+           (cadr-tui:make-terminal-capabilities
+            :images nil :true-color-p t
+            :hyperlinks-p nil))
+         (error-block
+           (cadr-tui:make-tool-block
+            :name "bash" :summary "false"
+            :output "command failed" :status :error
+            :collapsed-p nil))
+         (warning-block
+           (cadr-tui:make-tool-block
+            :name "read" :summary "large.log"
+            :output "[Truncated: line limit reached]"
+            :status :complete :collapsed-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let ((error-rendered
+                 (format nil "~{~A~^~%~}"
+                         (cadr-tui:render-tool-block
+                          error-block 50 :ansi-theme-p t)))
+               (warning-rendered
+                 (format nil "~{~A~^~%~}"
+                         (cadr-tui:render-tool-block
+                          warning-block 50 :ansi-theme-p t))))
+           (is (search
+                (format nil "~C[48;2;60;40;40m"
+                        #\Escape)
+                error-rendered))
+           (is (search
+                (format nil "~C[38;2;204;102;102m"
+                        #\Escape)
+                error-rendered))
+           (is (search
+                (format nil "~C[48;2;40;50;40m"
+                        #\Escape)
+                warning-rendered))
+           (is (search
+                (format nil "~C[38;2;255;255;0m"
+                        #\Escape)
+                warning-rendered)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-tool-output-strips-terminal-control-sequences
+  (let* ((escape (string #\Escape))
+         (bell (string (code-char 7)))
+         (block
+           (cadr-tui:make-tool-block
+            :name "bash" :summary "untrusted"
+            :output
+            (format nil
+                    "~A[2Jvisible~A]0;owned~Atext~A]52;c;c2VjcmV0~A~A[31mred~A[0m"
+                    escape escape bell escape bell
+                    escape escape)
+            :status :complete
+            :collapsed-p nil))
+         (rendered
+           (format nil "~{~A~^~%~}"
+                   (cadr-tui:render-tool-block
+                    block 80))))
+    (is (search "visibletextred" rendered))
+    (is (null (search "[2J" rendered)))
+    (is (null (search "]0;owned" rendered)))
+    (is (null (search "c2VjcmV0" rendered)))))
+
+(test goal9-word-diff-is-bounded-for-long-minified-lines
+  (let* ((old
+           (format nil "~{old~D~^_~}"
+                   (loop for index below 400
+                         collect index)))
+         (new
+           (format nil "~{new~D~^_~}"
+                   (loop for index below 400
+                         collect index)))
+         (block
+           (cadr-tui:make-tool-block
+            :name "edit" :summary "minified"
+            :output
+            (format nil "-1 ~A~%+1 ~A" old new)
+            :status :complete
+            :collapsed-p nil))
+         (plain
+           (cadr-tui:strip-terminal-sequences
+            (format nil "~{~A~^~%~}"
+                    (cadr-tui:render-tool-block
+                     block 120
+                     :ansi-theme-p t))))
+         (rendered
+           (format nil "~{~A~^~%~}"
+                   (cadr-tui:render-tool-block
+                    block 120
+                    :ansi-theme-p t))))
+    (is (search "old0_old1_old2" plain))
+    (is (search "new0_new1_new2" plain))
+    (is (null
+         (search
+          (format nil "~C[7m" #\Escape)
+          rendered)))))
+
+(test goal9-markdown-nested-task-and-ordered-list-markers
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((lines
+                  (cadr-tui:render-markdown
+                   (format nil
+                           "- outer~%  - inner~%      3. ordered~%- [x] done~%- [ ] todo")
+                   40 :ansi-theme-p t))
+                (plain
+                  (mapcar
+                   (lambda (line)
+                     (string-right-trim
+                      " "
+                      (cadr-tui:strip-terminal-sequences
+                       line)))
+                   lines))
+                (rendered
+                  (format nil "~{~A~^~%~}" lines)))
+           (is (find "- outer" plain :test #'string=))
+           (is (find "    - inner" plain :test #'string=))
+           (is (find "        3. ordered" plain
+                     :test #'string=))
+           (is (find "- [x] done" plain :test #'string=))
+           (is (find "- [ ] todo" plain :test #'string=))
+           (is (search
+                (format nil
+                        "~C[38;2;138;190;183m3.~C[39m"
+                        #\Escape #\Escape)
+                rendered))
+           (is (search
+                (format nil
+                        "~C[38;2;138;190;183m- [x]~C[39m"
+                        #\Escape #\Escape)
+                rendered)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-markdown-streaming-partial-closing-fence-does-not-flicker
+  (let ((without-partial
+          (cadr-tui:render-markdown
+           (format nil "```lisp~%(+ 1 2)") 40))
+        (with-partial
+          (cadr-tui:render-markdown
+           (format nil "```lisp~%(+ 1 2)~%``") 40)))
+    (is (equal without-partial with-partial))
+    (is (null
+         (search "  ``"
+                 (format nil "~{~A~^~%~}"
+                         with-partial))))))
+
+(test goal9-markdown-narrow-table-falls-back-to-source
+  (let* ((source
+           (format nil
+                   "| A | B | C |~%|---|---|---|~%| 1 | 2 | 3 |"))
+         (lines (cadr-tui:render-markdown source 8))
+         (plain
+           (format nil "~{~A~^~%~}"
+                   (mapcar
+                    #'cadr-tui:strip-terminal-sequences
+                    lines))))
+    (is (search "| A |" plain))
+    (is (search "|---|" plain))
+    (is (null (search "┌" plain)))
+    (is (every
+         (lambda (line)
+           (<= (cadr-tui:visible-width line) 8))
+         lines))))
+
+(test goal9-markdown-syntax-highlight-hook-is-theme-neutral
+  (let ((calls nil)
+        (escape (string #\Escape))
+        (caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (progn
+           (let ((rendered
+                   (format
+                    nil "~{~A~^~%~}"
+                    (cadr-tui:render-markdown
+                     (format nil "```lisp~%(+ 1 2)~%```") 40
+                     :ansi-theme-p t
+                     :syntax-highlight-function
+                     (lambda (language source)
+                       (push (list language source) calls)
+                       (format nil "~A[35m~A~A[39m"
+                               escape source escape))))))
+             (is (equal '(("lisp" "(+ 1 2)")) calls))
+             (is (search
+                  (format nil "~C[35m(+ 1 2)~C[39m"
+                          #\Escape #\Escape)
+                  rendered)))
+           (let ((fallback
+                   (format
+                    nil "~{~A~^~%~}"
+                    (cadr-tui:render-markdown
+                     (format nil "```unknown~%text~%```") 40
+                     :ansi-theme-p t
+                     :syntax-highlight-function
+                     (lambda (language source)
+                       (declare (ignore language source))
+                       nil)))))
+             (is (search
+                  (format nil
+                          "~C[38;2;181;189;104mtext~C[39m"
+                          #\Escape #\Escape)
+                  fallback))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-markdown-headings-space-following-blocks-and-restore-style
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((lines
+                  (cadr-tui:render-markdown
+                   (format nil
+                           "### Head `code` tail~%paragraph")
+                   80 :ansi-theme-p t
+                   :capabilities caps))
+                (plain
+                  (mapcar
+                   (lambda (line)
+                     (string-right-trim
+                      " "
+                      (cadr-tui:strip-terminal-sequences
+                       line)))
+                   lines))
+                (rendered
+                  (format nil "~{~A~^~%~}" lines))
+                (heading-prefix
+                  (format nil
+                          "~C[38;2;240;198;116m~C[1m"
+                          #\Escape #\Escape)))
+           (is (string= "### Head code tail"
+                        (first plain)))
+           (is (string= "" (second plain)))
+           (is (string= "paragraph"
+                        (third plain)))
+           (is (>=
+                (count-substring
+                 heading-prefix rendered)
+                2)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-markdown-list-markers-and-continuations-match-baseline
+  (let* ((source
+           (format nil
+                   "* alpha beta gamma delta epsilon~%  7) ordered item"))
+         (lines
+           (cadr-tui:render-markdown
+            source 18
+            :preserve-list-markers-p t))
+         (plain
+           (mapcar
+            (lambda (line)
+              (string-right-trim
+               " "
+               (cadr-tui:strip-terminal-sequences
+                line)))
+            lines)))
+    (is (uiop:string-prefix-p "* " (first plain)))
+    (is (uiop:string-prefix-p "  "
+                              (second plain)))
+    (is (not
+         (uiop:string-prefix-p "* "
+                               (second plain))))
+    (is (find-if
+         (lambda (line)
+           (uiop:string-prefix-p "    7) " line))
+         plain))))
+
+(test goal9-markdown-quote-restores-outer-style-after-inline-reset
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((rendered
+                  (format
+                   nil "~{~A~^~%~}"
+                   (cadr-tui:render-markdown
+                    "> before `code` after"
+                    80 :ansi-theme-p t
+                    :capabilities caps)))
+                (quote-prefix
+                  (format nil
+                          "~C[38;2;128;128;128m~C[3m"
+                          #\Escape #\Escape)))
+           (is (>=
+                (count-substring
+                 quote-prefix rendered)
+                2))
+           (is (search
+                "│ before code after"
+                (cadr-tui:strip-terminal-sequences
+                 rendered))))
+      (cadr-tui:reset-current-theme))))

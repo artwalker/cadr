@@ -10,6 +10,19 @@
 (defparameter +modify-other-keys-disable+
   (format nil "~C[>4;0m" #\Escape))
 
+(defparameter +terminal-progress-active-sequence+
+  (format nil "~C]9;4;3~C" #\Escape (code-char 7)))
+
+(defparameter +terminal-progress-clear-sequence+
+  (format nil "~C]9;4;0;~C" #\Escape (code-char 7)))
+
+(defconstant +terminal-progress-keepalive-seconds+ 1.0d0)
+
+(defun terminal-monotonic-seconds ()
+  (/ (get-internal-real-time)
+     (coerce internal-time-units-per-second
+             'double-float)))
+
 (defstruct (keyboard-protocol-negotiator
             (:constructor make-keyboard-protocol-negotiator
                 ()))
@@ -226,6 +239,26 @@
     :initform
     (make-terminal-response-filter)
     :accessor process-terminal-response-filter)
+   (background-response
+    :initform nil
+    :accessor process-terminal-background-response)
+   (color-scheme-response
+    :initform nil
+    :accessor process-terminal-color-scheme-response)
+   (color-scheme-notifications-enabled-p
+    :initform nil
+    :accessor
+    process-terminal-color-scheme-notifications-enabled-p)
+   (progress-active-p
+    :initform nil
+    :accessor process-terminal-progress-active-p)
+   (progress-next-keepalive-at
+    :initform nil
+    :accessor process-terminal-progress-next-keepalive-at)
+   (progress-clock-function
+    :initarg :progress-clock-function
+    :initform #'terminal-monotonic-seconds
+    :accessor process-terminal-progress-clock-function)
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
@@ -233,13 +266,16 @@
 (defun make-process-terminal
     (&key
        (input *standard-input*)
-       (output *standard-output*))
+       (output *standard-output*)
+       (progress-clock-function
+         #'terminal-monotonic-seconds))
   (multiple-value-bind (columns rows)
       (terminal-dimensions nil nil)
     (make-instance
      'process-terminal
      :input input
      :output output
+     :progress-clock-function progress-clock-function
      :columns columns
      :rows rows)))
 
@@ -387,13 +423,18 @@
       (terminal-write
        terminal
        (format nil
-               "~C[?2004h~C[?25l~A~A"
+               "~C[?2004h~C[?25l~A~A~A"
                #\Escape #\Escape
                (keyboard-protocol-query)
                (if
                    (terminal-capabilities-images
                     (get-terminal-capabilities))
                    (format nil "~C[16t" #\Escape)
+                   "")
+               (if
+                   (process-terminal-color-scheme-notifications-enabled-p
+                    terminal)
+                   (format nil "~C[?2031h" #\Escape)
                    "")))))
   #-sbcl
   (error "process-terminal requires SBCL")
@@ -403,10 +444,18 @@
   (when (process-terminal-started-p terminal)
     (unwind-protect
          (ignore-errors
+           (when (process-terminal-progress-active-p
+                  terminal)
+             (terminal-set-progress terminal nil))
            (terminal-write
             terminal
             (format nil
-                    "~C[0m~C[?25h~C[?2004l~C[<u~A"
+                    "~A~C[0m~C[?25h~C[?2004l~C[<u~A"
+                    (if
+                        (process-terminal-color-scheme-notifications-enabled-p
+                         terminal)
+                        (format nil "~C[?2031l" #\Escape)
+                        "")
                     #\Escape #\Escape #\Escape #\Escape
                     +modify-other-keys-disable+)))
       #+sbcl
@@ -421,6 +470,9 @@
       (setf
        (process-terminal-started-p terminal) nil
        (process-terminal-saved-termios terminal) nil
+       (process-terminal-progress-active-p terminal) nil
+       (process-terminal-progress-next-keepalive-at terminal)
+       nil
        (process-terminal-stdin-prefix-time terminal) nil
        (process-terminal-keyboard-prefix-time terminal) nil
        (process-terminal-pending-input terminal) nil)
@@ -449,11 +501,21 @@
           (terminal-response-consume
            (process-terminal-response-filter terminal)
            candidate)
-        (declare (ignore value))
-        (unless consumed-p
-          (setf forward
-                (nconc forward
-                       (list candidate)))))))
+        (if consumed-p
+            (cond
+              ((typep value 'rgb-color)
+               (setf
+                (process-terminal-background-response
+                 terminal)
+                value))
+              ((member value '(:dark :light))
+               (setf
+                (process-terminal-color-scheme-response
+                 terminal)
+                value)))
+            (setf forward
+                  (nconc forward
+                         (list candidate)))))))
   forward)
 
 (defun elapsed-seconds (start)
@@ -567,6 +629,169 @@
     (setf (process-terminal-resize-p terminal) nil)
     (refresh-terminal-size terminal)
     t))
+
+(defmethod terminal-query-background-color
+    ((terminal process-terminal)
+     &key (timeout-seconds 0.1d0))
+  (unless (process-terminal-started-p terminal)
+    (return-from terminal-query-background-color nil))
+  (let ((forward nil)
+        (started-at
+          (get-internal-real-time))
+        (timeout
+          (max 0d0
+               (coerce timeout-seconds
+                       'double-float))))
+    (setf
+     (process-terminal-background-response terminal)
+     nil)
+    (terminal-response-expect-color
+     (process-terminal-response-filter terminal))
+    (terminal-write
+     terminal
+     (format nil "~C]11;?~C"
+             #\Escape (code-char 7)))
+    (loop
+      (let ((input
+              (terminal-read-input terminal)))
+        (when (plusp (length input))
+          (push input forward)))
+      (when
+          (or
+           (process-terminal-background-response terminal)
+           (>= (elapsed-seconds started-at) timeout))
+        (return))
+      (sleep 0.005d0))
+    (when forward
+      (setf
+       (process-terminal-pending-input terminal)
+       (nconc
+        (nreverse forward)
+        (process-terminal-pending-input terminal))))
+    (process-terminal-background-response terminal)))
+
+(defmethod terminal-query-color-scheme
+    ((terminal process-terminal)
+     &key (timeout-seconds 0.1d0))
+  (unless (process-terminal-started-p terminal)
+    (return-from terminal-query-color-scheme nil))
+  (let ((forward nil)
+        (started-at
+          (get-internal-real-time))
+        (timeout
+          (max 0d0
+               (coerce timeout-seconds
+                       'double-float))))
+    (setf
+     (process-terminal-color-scheme-response terminal)
+     nil)
+    (terminal-write
+     terminal
+     (format nil "~C[?996n" #\Escape))
+    (loop
+      (let ((input
+              (terminal-read-input terminal)))
+        (when (plusp (length input))
+          (push input forward)))
+      (when
+          (or
+           (process-terminal-color-scheme-response terminal)
+           (>= (elapsed-seconds started-at) timeout))
+        (return))
+      (sleep 0.005d0))
+    (when forward
+      (setf
+       (process-terminal-pending-input terminal)
+       (nconc
+        (nreverse forward)
+        (process-terminal-pending-input terminal))))
+    (prog1
+        (process-terminal-color-scheme-response terminal)
+      (setf
+       (process-terminal-color-scheme-response terminal)
+       nil))))
+
+(defmethod terminal-set-color-scheme-notifications
+    ((terminal process-terminal) enabled)
+  (let ((enabled-p (not (null enabled))))
+    (unless
+        (eq enabled-p
+            (process-terminal-color-scheme-notifications-enabled-p
+             terminal))
+      (setf
+       (process-terminal-color-scheme-notifications-enabled-p
+        terminal)
+       enabled-p)
+      (when (process-terminal-started-p terminal)
+        (terminal-write
+         terminal
+         (format nil "~C[?2031~C"
+                 #\Escape
+                 (if enabled-p #\h #\l)))))
+    enabled-p))
+
+(defmethod terminal-color-scheme-change
+    ((terminal process-terminal))
+  (prog1
+      (process-terminal-color-scheme-response terminal)
+    (setf
+     (process-terminal-color-scheme-response terminal)
+     nil)))
+
+(defmethod terminal-set-progress
+    ((terminal process-terminal) active)
+  (let ((active-p (not (null active))))
+    (if active-p
+        (progn
+          (terminal-write
+           terminal
+           +terminal-progress-active-sequence+)
+          (setf
+           (process-terminal-progress-active-p terminal)
+           t
+           (process-terminal-progress-next-keepalive-at
+            terminal)
+           (+ (funcall
+               (process-terminal-progress-clock-function
+                terminal))
+              +terminal-progress-keepalive-seconds+)))
+        (progn
+          (setf
+           (process-terminal-progress-active-p terminal)
+           nil
+           (process-terminal-progress-next-keepalive-at
+            terminal)
+           nil)
+          (terminal-write
+           terminal
+           +terminal-progress-clear-sequence+)))
+    active-p))
+
+(defmethod terminal-poll-progress
+    ((terminal process-terminal))
+  (let ((next
+          (process-terminal-progress-next-keepalive-at
+           terminal)))
+    (when
+        (and
+         (process-terminal-progress-active-p terminal)
+         next
+         (>=
+          (funcall
+           (process-terminal-progress-clock-function
+            terminal))
+          next))
+      (terminal-write
+       terminal
+       +terminal-progress-active-sequence+)
+      (setf
+       (process-terminal-progress-next-keepalive-at
+        terminal)
+       (+ (funcall
+           (process-terminal-progress-clock-function
+            terminal))
+          +terminal-progress-keepalive-seconds+))
+      t)))
 
 (defun %call-with-terminal
     (terminal function

@@ -20,13 +20,25 @@
   autocomplete-provider
   autocomplete-suggestions
   (autocomplete-selected 0 :type (integer 0 *))
+  (autocomplete-max-visible 5
+                            :type (integer 3 20))
   autocomplete-prefix
+  (autocomplete-clock #'editor-monotonic-seconds
+                      :type function)
+  autocomplete-pending-deadline
+  autocomplete-pending-force-p
+  (border-color-key :border-muted :type keyword)
   (last-render-width 80 :type (integer 1 *))
   (scroll-offset 0 :type (integer 0 *))
   last-yank-start
   last-yank-end)
 
 (defparameter +editor-paste-marker-prefix+ "[paste #")
+(defparameter +editor-autocomplete-debounce-seconds+ 1/50)
+
+(defun editor-monotonic-seconds ()
+  (/ (get-internal-real-time)
+     internal-time-units-per-second))
 
 (defun normalize-editor-text (text)
   (with-output-to-string (output)
@@ -47,14 +59,18 @@
              (write-char character output)))
           (incf index))))
 
-(defun make-multiline-editor (&key (text "") (prompt "")
-                                   (history-limit 100))
+(defun make-multiline-editor
+    (&key (text "") (prompt "")
+          (history-limit 100)
+          (autocomplete-max-visible 5))
   (let ((normalized (normalize-editor-text text)))
     (%make-multiline-editor
      :text normalized
      :cursor (length normalized)
      :prompt prompt
-     :history-limit history-limit)))
+     :history-limit history-limit
+     :autocomplete-max-visible
+     (max 3 (min 20 autocomplete-max-visible)))))
 
 (defun editor-text (editor)
   (multiline-editor-text editor))
@@ -127,7 +143,9 @@
   (setf
    (multiline-editor-autocomplete-suggestions editor) nil
    (multiline-editor-autocomplete-prefix editor) nil
-   (multiline-editor-autocomplete-selected editor) 0)
+   (multiline-editor-autocomplete-selected editor) 0
+   (multiline-editor-autocomplete-pending-deadline editor) nil
+   (multiline-editor-autocomplete-pending-force-p editor) nil)
   editor)
 
 (defun editor-exit-history (editor)
@@ -362,7 +380,6 @@
         :type-word)
   (editor-reset-navigation-state editor)
   (editor-insert-raw editor text)
-  (editor-refresh-autocomplete editor)
   editor)
 
 (defun editor-insert-text-at-cursor (editor text)
@@ -915,12 +932,12 @@
   (editor-reset-navigation-state editor)
   editor)
 
-(defun editor-refresh-autocomplete
-    (editor &key force-p)
+(defun editor-run-autocomplete
+    (editor force-p)
   (let ((provider
           (multiline-editor-autocomplete-provider editor)))
     (unless provider
-      (return-from editor-refresh-autocomplete
+      (return-from editor-run-autocomplete
         (editor-cancel-autocomplete editor)))
     (multiple-value-bind (line column)
         (editor-cursor editor)
@@ -944,6 +961,74 @@
               editor)
              0)
             (editor-cancel-autocomplete editor)))))
+  editor)
+
+(defun editor-autocomplete-debounce-p (editor force-p)
+  (and
+   (not force-p)
+   (multiple-value-bind (line column)
+       (editor-cursor editor)
+     (let ((text (or (nth line (editor-lines editor)) "")))
+       (autocomplete-at-prefix
+        (subseq text 0 (min column (length text))))))))
+
+(defun editor-refresh-autocomplete
+    (editor &key force-p)
+  (if (editor-autocomplete-debounce-p editor force-p)
+      (setf
+       (multiline-editor-autocomplete-pending-deadline editor)
+       (+ (funcall
+          (multiline-editor-autocomplete-clock editor))
+          +editor-autocomplete-debounce-seconds+)
+       (multiline-editor-autocomplete-pending-force-p editor)
+       (not (null force-p)))
+      (progn
+        (setf
+         (multiline-editor-autocomplete-pending-deadline editor)
+         nil
+         (multiline-editor-autocomplete-pending-force-p editor)
+         nil)
+        (editor-run-autocomplete editor force-p)))
+  editor)
+
+(defun editor-set-autocomplete-clock (editor clock)
+  (unless (functionp clock)
+    (error "Editor autocomplete clock must be a function"))
+  (setf
+   (multiline-editor-autocomplete-clock editor) clock
+   (multiline-editor-autocomplete-pending-deadline editor) nil
+   (multiline-editor-autocomplete-pending-force-p editor) nil)
+  editor)
+
+(defun editor-poll-autocomplete (editor)
+  (let ((deadline
+          (multiline-editor-autocomplete-pending-deadline
+           editor)))
+    (when (and deadline
+               (>= (funcall
+                    (multiline-editor-autocomplete-clock editor))
+                   deadline))
+      (let ((force-p
+              (multiline-editor-autocomplete-pending-force-p
+               editor)))
+        (setf
+         (multiline-editor-autocomplete-pending-deadline editor)
+         nil
+         (multiline-editor-autocomplete-pending-force-p editor)
+         nil)
+        (editor-run-autocomplete editor force-p)
+        t))))
+
+(defun editor-set-border-mode
+    (editor mode &optional thinking-level)
+  (setf
+   (multiline-editor-border-color-key editor)
+   (ecase mode
+     (:idle :border-muted)
+     (:thinking
+      (theme-thinking-color-key
+       (or thinking-level :off)))
+     (:bash :bash-mode)))
   editor)
 
 (defun editor-set-autocomplete-provider
@@ -1387,7 +1472,9 @@
          (selected
            (multiline-editor-autocomplete-selected
             editor))
-         (maximum-visible 5)
+         (maximum-visible
+           (multiline-editor-autocomplete-max-visible
+            editor))
          (start
            (max
             0
@@ -1542,7 +1629,7 @@
                  (+ scroll-offset maximum-visible))))
              (top-border
                (theme-foreground
-                :border
+                (multiline-editor-border-color-key editor)
                 (if (plusp scroll-offset)
                     (editor-scroll-border
                      "↑" scroll-offset width)
@@ -1554,7 +1641,7 @@
                      (length visible-layout-lines))))
              (bottom-border
                (theme-foreground
-                :border
+                (multiline-editor-border-color-key editor)
                 (if (plusp lines-below)
                     (editor-scroll-border
                      "↓" lines-below width)

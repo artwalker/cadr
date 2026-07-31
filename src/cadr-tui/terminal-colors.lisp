@@ -156,12 +156,13 @@
 
 (defstruct (terminal-response-filter
             (:constructor make-terminal-response-filter ()))
-  (consume-color-replies-p nil :type boolean))
+  (pending-color-replies 0
+                         :type (integer 0 *)))
 
 (defun terminal-response-expect-color (filter)
-  (setf
-   (terminal-response-filter-consume-color-replies-p filter)
-   t)
+  (incf
+   (terminal-response-filter-pending-color-replies
+    filter))
   filter)
 
 (defun terminal-response-consume (filter data)
@@ -171,9 +172,19 @@
       (set-cell-dimensions width height)
       (return-from terminal-response-consume
         (values t (list width height)))))
+  (let ((scheme
+          (parse-terminal-color-scheme-report data)))
+    (when scheme
+      (return-from terminal-response-consume
+        (values t scheme))))
   (when (and
-         (terminal-response-filter-consume-color-replies-p filter)
+         (plusp
+          (terminal-response-filter-pending-color-replies
+           filter))
          (osc-11-background-color-response-p data))
+    (decf
+     (terminal-response-filter-pending-color-replies
+      filter))
     (return-from terminal-response-consume
       (values t
               (parse-osc-11-background-color data))))

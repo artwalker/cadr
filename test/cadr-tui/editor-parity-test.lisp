@@ -221,6 +221,150 @@
                    (<= (cadr-tui:visible-width line) 20))
                  lines)))))
 
+(test editor-autocomplete-honors-configured-visible-row-limit
+  (let* ((provider
+           (cadr-tui:make-autocomplete-provider
+            :commands
+            (loop for index below 25
+                  collect
+                  (cadr-tui:make-autocomplete-command
+                   :name
+                   (format nil "command-~D" index)))))
+         (editor
+           (cadr-tui:make-multiline-editor
+            :autocomplete-max-visible 1)))
+    (cadr-tui:editor-set-autocomplete-provider
+     editor provider)
+    (editor-event editor :text "/")
+    (let ((lines
+            (cadr-tui::render-editor-autocomplete
+             editor 40)))
+      (is (= 4 (length lines)))
+      (is (some
+           (lambda (line)
+             (search "(1/25)" line))
+           lines)))
+    (let ((editor
+            (cadr-tui:make-multiline-editor
+             :autocomplete-max-visible 99)))
+      (cadr-tui:editor-set-autocomplete-provider
+       editor provider)
+      (editor-event editor :text "/")
+      (is (= 21
+             (length
+              (cadr-tui::render-editor-autocomplete
+               editor 40)))))))
+
+(test editor-border-colors-use-semantic-mode-tokens
+  (let ((editor
+          (cadr-tui:make-multiline-editor
+           :text "hello" :prompt "")))
+    (flet ((top-border ()
+             (first
+              (multiple-value-list
+               (cadr-tui:render-editor editor 12)))))
+      (is (search
+           (cadr-tui:theme-foreground-ansi :border-muted)
+           (first (top-border))))
+      (cadr-tui:editor-set-border-mode editor :thinking :high)
+      (is (search
+           (cadr-tui:theme-foreground-ansi :thinking-high)
+           (first (top-border))))
+      (cadr-tui:editor-set-border-mode editor :bash)
+      (is (search
+           (cadr-tui:theme-foreground-ansi :bash-mode)
+           (first (top-border))))
+      (cadr-tui:editor-set-border-mode editor :idle)
+      (is (search
+           (cadr-tui:theme-foreground-ansi :border-muted)
+           (first (top-border)))))))
+
+(test editor-autocomplete-debounce-is-pollable-and-latest-request-wins
+  (with-autocomplete-tree
+   (lambda (root)
+     (let* ((now 0)
+            (calls nil)
+            (provider
+              (cadr-tui:make-autocomplete-provider
+               :base-path root
+               :commands
+               (list
+                (cadr-tui:make-autocomplete-command
+                 :name "help"))))
+            (editor (cadr-tui:make-multiline-editor))
+            (original
+              (symbol-function
+               'cadr-tui:autocomplete-get-suggestions)))
+       (unwind-protect
+            (progn
+              (setf
+               (symbol-function
+                'cadr-tui:autocomplete-get-suggestions)
+               (lambda (actual-provider lines line column
+                        &key force-p)
+                 (push (list (copy-list lines)
+                             line column force-p)
+                       calls)
+                 (funcall original actual-provider lines
+                          line column :force-p force-p)))
+              (cadr-tui:editor-set-autocomplete-clock
+               editor (lambda () now))
+              (cadr-tui:editor-set-autocomplete-provider
+               editor provider)
+
+              ;; Slash-command menus are cheap and remain synchronous.
+              (editor-event editor :text "/")
+              (is (= 1 (length calls)))
+              (is (cadr-tui:editor-autocomplete-visible-p editor))
+
+              ;; Attachment completion waits 20 ms, and each edit supersedes
+              ;; the older request before the provider is invoked.
+              (setf calls nil)
+              (cadr-tui:editor-set-text editor "")
+              (editor-event editor :text "@")
+              (is (null calls))
+              (incf now 5/1000)
+              (editor-event editor :text "a")
+              (is (null calls))
+              (incf now 5/1000)
+              (editor-event editor :text "b")
+              (is (null calls))
+              (incf now 19/1000)
+              (is (not
+                   (cadr-tui:editor-poll-autocomplete editor)))
+              (incf now 1/1000)
+              (is (cadr-tui:editor-poll-autocomplete editor))
+              (is (= 1 (length calls)))
+              (is (equal '("@ab")
+                         (first (first calls))))
+              (is (not
+                   (cadr-tui:editor-poll-autocomplete editor)))
+              (is (= 1 (length calls)))
+
+              ;; Ordinary path completion remains synchronous.
+              (setf calls nil)
+              (cadr-tui:editor-set-text editor "")
+              (editor-event editor :text ".")
+              (is (= 1 (length calls)))
+              (editor-event editor :text "/")
+              (is (= 2 (length calls)))
+              (is (equal '("./")
+                         (first (first calls))))
+              (is (not
+                   (cadr-tui:editor-poll-autocomplete editor)))
+              (is (= 2 (length calls)))
+
+              ;; Explicit Tab/force bypasses the debounce window.
+              (setf calls nil)
+              (cadr-tui:editor-set-text editor "REA")
+              (editor-event editor :tab)
+              (is (= 1 (length calls)))
+              (is (fourth (first calls))))
+         (setf
+          (symbol-function
+           'cadr-tui:autocomplete-get-suggestions)
+          original))))))
+
 (test editor-enter-applies-and-submits-slash-completion
   (let* ((provider
            (cadr-tui:make-autocomplete-provider
@@ -282,7 +426,7 @@
              (car (last plain))))
         (is (string=
              (cadr-tui:theme-foreground
-              :border
+              :border-muted
               (make-string 16 :initial-element #\─))
              (car (last lines))))
         (is (= 5 row))

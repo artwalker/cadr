@@ -162,6 +162,9 @@
    #:editor-insert-text-at-cursor
    #:editor-expanded-text
    #:editor-set-autocomplete-provider
+   #:editor-set-autocomplete-clock
+   #:editor-poll-autocomplete
+   #:editor-set-border-mode
    #:editor-autocomplete-visible-p
    #:editor-autocomplete-items
    #:editor-handle-event
@@ -205,6 +208,12 @@
    #:terminal-write
    #:terminal-read-input
    #:terminal-resized-p
+   #:terminal-query-background-color
+   #:terminal-query-color-scheme
+   #:terminal-set-color-scheme-notifications
+   #:terminal-color-scheme-change
+   #:terminal-set-progress
+   #:terminal-poll-progress
    #:terminal-renderer
    #:make-terminal-renderer
    #:alt-screen-renderer-p

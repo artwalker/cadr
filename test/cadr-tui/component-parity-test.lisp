@@ -79,7 +79,7 @@
            (cadr-tui:strip-terminal-sequences
             (format nil "~{~A~%~}" lines))))
     (is (search "Header" joined))
-    (is (search "• item" joined))
+    (is (search "- item" joined))
     (is (search "1. ordered" joined))
     (is (search "│ quote" joined))
     (is (search "bold" joined))
@@ -146,3 +146,189 @@
     (is (<= (cadr-tui:visible-width
              (first fallback))
             20))))
+
+(defun markdown-parity-plain-lines (text width &rest options)
+  (mapcar
+   (lambda (line)
+     (string-right-trim
+      " "
+      (cadr-tui:strip-terminal-sequences line)))
+   (apply #'cadr-tui:render-markdown
+          text width options)))
+
+(test goal9-md03-renders-nested-and-bare-blockquotes
+  (let ((lines
+          (markdown-parity-plain-lines
+           (format nil "> outer~%> > nested~%>~%after")
+           40)))
+    (is (find "│ outer" lines :test #'string=))
+    (is (find "│ │ nested" lines :test #'string=))
+    (is (find "│" lines :test #'string=))
+    (is (equal '("│" "" "after")
+               (last lines 3)))))
+
+(test goal9-md04-preserves-source-list-continuations-and-nesting
+  (let* ((lines
+          (markdown-parity-plain-lines
+           (format nil
+                   "* parent~%  continuation words that wrap~%    7) child~%       nested continuation words")
+           18 :preserve-list-markers-p t))
+         (nested-index
+           (position "    7) child" lines
+                     :test #'string=)))
+    (is (string= "* parent" (first lines)))
+    (is (find "  continuation" lines
+              :test #'uiop:string-prefix-p))
+    (is (find "  words that wrap" lines
+              :test #'string=))
+    (is (find "    7) child" lines :test #'string=))
+    (is (find "       nested" lines
+              :test #'uiop:string-prefix-p))
+    (is (every
+         (lambda (line)
+           (uiop:string-prefix-p "       " line))
+         (nthcdr (1+ nested-index) lines)))))
+
+(test goal9-md05-mailto-link-comparison-omits-redundant-url
+  (let* ((caps
+           (cadr-tui:make-terminal-capabilities
+            :images nil :true-color-p t
+            :hyperlinks-p nil))
+         (rendered
+           (format nil "~{~A~^~%~}"
+                   (cadr-tui:render-markdown
+                    "[person@example.com](mailto:person@example.com)"
+                    80 :capabilities caps))))
+    (is (search "person@example.com" rendered))
+    (is (null (search "(mailto:" rendered)))))
+
+(test goal9-md06-wraps-table-cells-and-separates-body-rows
+  (let* ((lines
+           (markdown-parity-plain-lines
+            (format nil
+                    "| Name | Description |~%| --- | --- |~%| alpha | first body cell wraps across lines |~%| beta | second row |")
+            28))
+         (alpha-index
+           (position-if
+            (lambda (line) (search "alpha" line))
+            lines))
+         (beta-index
+           (position-if
+            (lambda (line) (search "beta" line))
+            lines)))
+    (is (not (null alpha-index)))
+    (is (not (null beta-index)))
+    (is (> beta-index (+ alpha-index 1)))
+    (is (find-if
+         (lambda (line)
+           (and (plusp (length line))
+                (char= #\├ (char line 0))))
+         (subseq lines (1+ alpha-index) beta-index)))
+    (is (find-if
+         (lambda (line)
+           (and (uiop:string-prefix-p "│ " line)
+                (search "wraps" line)))
+         lines))))
+
+(test goal9-md07-restores-default-message-style-after-inline-reset
+  (let* ((escape (string #\Escape))
+         (user-prefix
+           (format nil "~A[38;5;111m" escape))
+         (thinking-prefix
+           (format nil "~A[38;5;244m~A[3m"
+                   escape escape))
+         (user
+           (format nil "~{~A~^~%~}"
+                   (cadr-tui:render-markdown
+                    "before `code` after" 80
+                    :ansi-theme-p t
+                    :default-style-function
+                    (lambda (text)
+                      (format nil "~A~A~A[39m"
+                              user-prefix text escape)))))
+         (thinking
+           (format nil "~{~A~^~%~}"
+                   (cadr-tui:render-markdown
+                    "before **bold** after" 80
+                    :ansi-theme-p t
+                    :default-style-function
+                    (lambda (text)
+                      (format nil "~A~A~A[23m~A[39m"
+                              thinking-prefix text
+                              escape escape))))))
+    (is (>= (count-substring user-prefix user) 2))
+    (is (>= (count-substring thinking-prefix thinking) 2))))
+
+(test goal9-markdown-blocks-space-following-content-like-baseline
+  (let ((cases
+          (list
+           (format nil "```txt~%code~%```~%after-code")
+           (format nil "> quote~%after-quote")
+           (format nil "---~%after-rule")
+           (format nil
+                   "| A | B |~%|---|---|~%| 1 | 2 |~%after-table"))))
+    (dolist (source cases)
+      (let* ((lines
+               (markdown-parity-plain-lines source 40))
+             (after-index
+               (position-if
+                (lambda (line)
+                  (search "after-" line))
+                lines)))
+        (is (not (null after-index)))
+        (is (plusp after-index))
+        (is (string= "" (nth (1- after-index) lines)))))))
+
+(test goal9-footer-extension-status-preserves-its-own-style
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((escape (string #\Escape))
+                (error-prefix
+                  (format nil "~A[38;2;204;102;102m"
+                          escape))
+                (dim-prefix
+                  (format nil "~A[38;2;128;128;128m"
+                          escape))
+                (status
+                  (cadr-tui:theme-foreground
+                   :error
+                   (format nil "extension~% status")
+                   :enabled-p t))
+                (line
+                  (third
+                   (cadr-tui:render-footer
+                    14 :model "m"
+                    :statuses (list (cons "x" status))
+                    :ansi-theme-p t))))
+           (is (uiop:string-prefix-p error-prefix line))
+           (is (not (uiop:string-prefix-p dim-prefix line)))
+           (is (search "extension" line))
+           (is (null (search (string #\Newline) line)))
+           (is (<= (cadr-tui:visible-width line) 14)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-footer-token-count-rounding-matches-js-math-round
+  (dolist
+      (entry
+       '((999 "999")
+         (1000 "1.0k")
+         (9999 "10.0k")
+         (10000 "10k")
+         (10499 "10k")
+         (10500 "11k")
+         (12500 "13k")
+         (999999 "1000k")
+         (1000000 "1.0M")
+         (9999999 "10.0M")
+         (10000000 "10M")
+         (10499999 "10M")
+         (10500000 "11M")
+         (12500000 "13M")))
+    (destructuring-bind (count expected) entry
+      (is (string=
+           expected
+           (cadr-tui::format-footer-tokens count))))))
