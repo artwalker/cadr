@@ -42,17 +42,35 @@
        (rpc-process-factory
          #'make-rpc-process)
        radius)
-  (make-instance
-   'server-supervisor
-   :directory
-   (ensure-server-directory
-    server-directory)
-   :process-factory
-   rpc-process-factory
-   :radius
-   (or radius
-       (make-radius-presence
-        :directory server-directory))))
+  (let* ((presence
+           (or radius
+               (make-radius-presence
+                :directory
+                server-directory)))
+         (supervisor
+           (make-instance
+            'server-supervisor
+            :directory
+            (ensure-server-directory
+             server-directory)
+            :process-factory
+            rpc-process-factory
+            :radius presence)))
+    (radius-configure-coordinator
+     presence
+     :get-live-instance
+     (lambda (instance-id)
+       (supervisor-get-live-instance
+        supervisor instance-id))
+     :list-live-instances
+     (lambda ()
+       (supervisor-list-live-instances
+        supervisor))
+     :update-instance
+     (lambda (instance)
+       (supervisor-update-instance
+        supervisor instance)))
+    supervisor))
 
 (defun set-instance-status
     (supervisor live status)
@@ -325,6 +343,38 @@
          (clone-instance-record
           (live-instance-record
            live)))))
+
+(defun supervisor-list-live-instances
+    (supervisor)
+  (sb-thread:with-mutex
+      ((supervisor-lock supervisor))
+    (loop
+      for live being the hash-values
+      of (supervisor-live supervisor)
+      collect
+      (clone-instance-record
+       (live-instance-record live)))))
+
+(defun supervisor-update-instance
+    (supervisor instance)
+  (let ((record
+          (clone-instance-record
+           instance)))
+    (sb-thread:with-mutex
+        ((supervisor-lock supervisor))
+      (let ((live
+              (gethash
+               (instance-record-id record)
+               (supervisor-live
+                supervisor))))
+        (when live
+          (setf
+           (live-instance-record live)
+           record))))
+    (upsert-instance
+     (supervisor-directory supervisor)
+     record)
+    (clone-instance-record record)))
 
 (defun supervisor-list-instances
     (supervisor)

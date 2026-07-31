@@ -275,6 +275,11 @@
    (ipc-server-stopping-p server)
    t)
   (ignore-errors
+    (let ((stream
+            (connect-ipc-stream
+             (ipc-server-path server))))
+      (close stream)))
+  (ignore-errors
     (sb-bsd-sockets:socket-close
      (ipc-server-socket server)))
   (let ((thread

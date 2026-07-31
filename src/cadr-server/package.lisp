@@ -38,8 +38,10 @@
    #:supervisor-spawn-instance
    #:supervisor-stop-instance
    #:supervisor-list-instances
+   #:supervisor-list-live-instances
    #:supervisor-get-instance
    #:supervisor-get-live-instance
+   #:supervisor-update-instance
    #:supervisor-handle-rpc
    #:supervisor-open-rpc-stream
    #:supervisor-recover-after-restart
@@ -53,4 +55,5 @@
    #:stop-ipc-server
    #:connect-ipc-stream
    #:ipc-request
+   #:server-executable-main
    #:main))

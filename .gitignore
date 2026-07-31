@@ -1,5 +1,6 @@
 # Native build output
 /cadr
+/cadr-server
 *.core
 *.fasl
 

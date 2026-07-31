@@ -298,6 +298,103 @@
             (cadr-server:supervisor-get-instance
              supervisor id)))))))
 
+(test rpc-child-wait-uses-the-supported-uiop-call-shape
+  (let ((process
+          (uiop:launch-program
+           '("/bin/true")
+           :wait nil)))
+    (is (= 0
+           (cadr-server::wait-rpc-child-process
+            process)))))
+
+(test printing-a-client-response-returns-a-successful-main-value
+  (let ((response
+          (cadr-ai::json-object
+           "type" "list_result"
+           "ok" t))
+        (result :unset))
+    (with-output-to-string
+        (*standard-output*)
+      (setf result
+            (cadr-server::print-server-response
+             response)))
+    (is (null result))))
+
+(test spawn-cli-options-match-the-reference-flags
+  (let ((request
+          (cadr-server::spawn-request-from-arguments
+           '("spawn"
+             "--label" "worker"
+             "--cwd" "/tmp/work"))))
+    (is (string=
+         "/tmp/work"
+         (cadr-ai::json-get
+          request "cwd")))
+    (is (string=
+         "worker"
+         (cadr-ai::json-get
+          request "label"))))
+  (let ((request
+          (cadr-server::spawn-request-from-arguments
+           '("spawn"))))
+    (is (string=
+         (namestring
+          (uiop:getcwd))
+         (cadr-ai::json-get
+          request "cwd")))
+    (is (null
+         (cadr-ai::json-get
+          request "label")))))
+
+(test radius-heartbeat-retries-back-off-and-reregisters-after-three-404s
+  (let ((state
+          (cadr-server::make-radius-heartbeat
+           :interval-milliseconds 1000)))
+    (flet ((not-found ()
+             (make-condition
+              'cadr-ai:api-error
+              :message "missing"
+              :provider :radius
+              :status 404))
+           (transient ()
+             (make-condition
+              'cadr-ai:api-error
+              :message "busy"
+              :provider :radius
+              :status 503)))
+      (multiple-value-bind
+            (action delay)
+          (cadr-server::record-radius-heartbeat-error
+           state (not-found))
+        (is (eq :retry action))
+        (is (= 1000 delay)))
+      (multiple-value-bind
+            (action delay)
+          (cadr-server::record-radius-heartbeat-error
+           state (not-found))
+        (is (eq :retry action))
+        (is (= 1000 delay)))
+      (multiple-value-bind
+            (action delay)
+          (cadr-server::record-radius-heartbeat-error
+           state (not-found))
+        (declare (ignore delay))
+        (is (eq :reregister action)))
+      (cadr-server::record-radius-heartbeat-success
+       state)
+      (multiple-value-bind
+            (action delay)
+          (cadr-server::record-radius-heartbeat-error
+           state (transient))
+        (is (eq :retry action))
+        (is (<= 1000 delay 1250)))
+      (multiple-value-bind
+            (action delay)
+          (cadr-server::record-radius-heartbeat-error
+           state (transient))
+        (is (eq :retry action))
+        (is (<= 2000 delay 2500))))))
+
 (test unix-socket-supports-single-request-errors-streams-and-stale-files
   (with-server-directory (directory)
     (let* ((processes

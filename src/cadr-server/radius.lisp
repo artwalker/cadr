@@ -14,7 +14,19 @@
    (sb-thread:make-waitqueue
     :name "cadr-radius-heartbeat"))
   (stopped-p nil)
+  (interval-milliseconds 30000)
+  (delay-milliseconds 30000)
+  (consecutive-not-found-count 0)
+  (transient-failure-count 0)
+  radius-id
   thread)
+
+(defparameter +radius-not-found-retry-threshold+
+  3)
+(defparameter +radius-backoff-base-milliseconds+
+  1000)
+(defparameter +radius-backoff-max-milliseconds+
+  30000)
 
 (defclass http-radius-presence
     (radius-presence)
@@ -33,6 +45,9 @@
    (machine-heartbeat
     :initform nil
     :accessor radius-machine-heartbeat)
+   (machine-label
+    :initform nil
+    :accessor radius-machine-label)
    (pi-heartbeats
     :initform
     (make-hash-table :test #'equal)
@@ -41,7 +56,16 @@
     :initform
     (sb-thread:make-mutex
      :name "cadr-radius")
-    :reader radius-lock)))
+    :reader radius-lock)
+   (get-live-instance-function
+    :initform (constantly nil)
+    :accessor radius-get-live-instance-function)
+   (list-live-instances-function
+    :initform (constantly nil)
+    :accessor radius-list-live-instances-function)
+   (update-instance-function
+    :initform (constantly nil)
+    :accessor radius-update-instance-function)))
 
 (defgeneric radius-start
     (presence &key label))
@@ -50,6 +74,29 @@
     (presence instance))
 (defgeneric radius-disconnect-pi
     (presence instance))
+
+(defun radius-configure-coordinator
+    (presence
+     &key get-live-instance
+       list-live-instances
+       update-instance)
+  (when
+      (typep presence
+             'http-radius-presence)
+    (setf
+     (radius-get-live-instance-function
+      presence)
+     (or get-live-instance
+         (constantly nil))
+     (radius-list-live-instances-function
+      presence)
+     (or list-live-instances
+         (constantly nil))
+     (radius-update-instance-function
+      presence)
+     (or update-instance
+         (constantly nil))))
+  presence)
 
 (defun make-dormant-radius-presence ()
   (make-instance
@@ -155,6 +202,74 @@
     :payload body
     :provider :radius)))
 
+(defun radius-not-found-error-p (cause)
+  (and
+   (typep cause 'cadr-ai:api-error)
+   (= 404
+      (cadr-ai:api-error-status
+       cause))))
+
+(defun radius-backoff-delay
+    (failure-count)
+  (let* ((exponential
+           (min
+            +radius-backoff-max-milliseconds+
+            (* +radius-backoff-base-milliseconds+
+               (expt
+                2
+                (max 0
+                     (1- failure-count))))))
+         (jitter-limit
+           (max 250
+                (ceiling exponential 4))))
+    (min
+     +radius-backoff-max-milliseconds+
+     (+ exponential
+        (random jitter-limit)))))
+
+(defun record-radius-heartbeat-success
+    (state)
+  (setf
+   (radius-heartbeat-consecutive-not-found-count
+    state)
+   0
+   (radius-heartbeat-transient-failure-count
+    state)
+   0)
+  (radius-heartbeat-interval-milliseconds
+   state))
+
+(defun record-radius-heartbeat-error
+    (state cause)
+  (if (radius-not-found-error-p cause)
+      (progn
+        (setf
+         (radius-heartbeat-transient-failure-count
+          state)
+         0)
+        (incf
+         (radius-heartbeat-consecutive-not-found-count
+          state))
+        (if
+            (>=
+             (radius-heartbeat-consecutive-not-found-count
+              state)
+             +radius-not-found-retry-threshold+)
+            (values :reregister nil)
+            (values
+             :retry
+             (radius-heartbeat-interval-milliseconds
+              state))))
+      (progn
+        (incf
+         (radius-heartbeat-transient-failure-count
+          state))
+        (values
+         :retry
+         (radius-backoff-delay
+          (radius-heartbeat-transient-failure-count
+           state))))))
+
 (defun stop-radius-heartbeat (state)
   (when state
     (sb-thread:with-mutex
@@ -168,7 +283,7 @@
   nil)
 
 (defun radius-heartbeat-loop
-    (state interval-milliseconds function)
+    (state function)
   (loop
     (sb-thread:with-mutex
         ((radius-heartbeat-lock state))
@@ -179,31 +294,49 @@
        (radius-heartbeat-waitqueue state)
        (radius-heartbeat-lock state)
        :timeout
-       (/ interval-milliseconds
+       (/ (radius-heartbeat-delay-milliseconds
+           state)
           1000.0))
       (when
           (radius-heartbeat-stopped-p state)
         (return)))
-    (handler-case
-        (funcall function)
-      (error (cause)
-        (format
-         *error-output*
-         "cadr-server: Radius heartbeat failed: ~A~%"
-         cause)
-        (finish-output *error-output*)))))
+    (setf
+     (radius-heartbeat-delay-milliseconds
+      state)
+     (or
+      (handler-case
+          (funcall function state)
+        (error (cause)
+          (format
+           *error-output*
+           "cadr-server: Radius heartbeat failed: ~A~%"
+           cause)
+          (finish-output *error-output*)
+          (multiple-value-bind
+                (action delay)
+              (record-radius-heartbeat-error
+               state cause)
+            (declare (ignore action))
+            delay)))
+      (radius-heartbeat-interval-milliseconds
+       state)))))
 
 (defun start-radius-heartbeat
-    (interval-milliseconds function name)
+    (interval-milliseconds function name
+     &key radius-id)
   (let ((state
-          (make-radius-heartbeat)))
+          (make-radius-heartbeat
+           :interval-milliseconds
+           interval-milliseconds
+           :delay-milliseconds
+           interval-milliseconds
+           :radius-id radius-id)))
     (setf
      (radius-heartbeat-thread state)
      (sb-thread:make-thread
       (lambda ()
         (radius-heartbeat-loop
-         state interval-milliseconds
-         function))
+         state function))
       :name name))
     state))
 
@@ -256,21 +389,87 @@
        response "heartbeatIntervalMs")
       30000))))
 
-(defmethod radius-start
-    ((presence http-radius-presence)
-     &key label)
-  (multiple-value-bind
-        (machine interval)
-      (register-radius-machine
-       presence label)
-    (stop-radius-heartbeat
-     (radius-machine-heartbeat
-      presence))
-    (setf
-     (radius-machine-heartbeat presence)
-     (start-radius-heartbeat
-      interval
-      (lambda ()
+(defun record-radius-recovery-error
+    (state)
+  (incf
+   (radius-heartbeat-transient-failure-count
+    state))
+  (radius-backoff-delay
+   (radius-heartbeat-transient-failure-count
+    state)))
+
+(defun log-radius-retry
+    (scope action state delay cause)
+  (format
+   *error-output*
+   "cadr-server: ~A ~A failed (attempt ~A); retrying in ~Ams: ~A~%"
+   scope action
+   (radius-heartbeat-transient-failure-count
+    state)
+   delay cause)
+  (finish-output *error-output*))
+
+(defun radius-reregister-pi
+    (presence instance-id)
+  (let ((instance
+          (funcall
+           (radius-get-live-instance-function
+            presence)
+           instance-id)))
+    (unless instance
+      (let ((state nil))
+        (sb-thread:with-mutex
+            ((radius-lock presence))
+          (setf
+           state
+           (gethash
+            instance-id
+            (radius-pi-heartbeats
+             presence)))
+          (remhash
+           instance-id
+           (radius-pi-heartbeats
+            presence)))
+        (stop-radius-heartbeat state))
+      (return-from radius-reregister-pi
+        nil))
+    (let ((registered
+            (radius-register-pi
+             presence instance)))
+      (funcall
+       (radius-update-instance-function
+        presence)
+       registered)
+      t)))
+
+(defun radius-reregister-machine-and-pis
+    (presence)
+  (radius-start
+   presence
+   :label
+   (radius-machine-label presence))
+  (dolist
+      (instance
+       (funcall
+        (radius-list-live-instances-function
+         presence)))
+    (handler-case
+        (radius-reregister-pi
+         presence
+         (instance-record-id instance))
+      (error (cause)
+        (format
+         *error-output*
+         "cadr-server: Radius Pi ~A re-registration failed: ~A~%"
+         (instance-record-id instance)
+         cause)
+        (finish-output *error-output*))))
+  t)
+
+(defun heartbeat-radius-machine
+    (presence state)
+  (handler-case
+      (progn
         (radius-post
          presence
          (format nil
@@ -286,7 +485,119 @@
           (namestring
            (server-socket-path
             (radius-directory
-             presence))))))
+             presence)))))
+        (record-radius-heartbeat-success
+         state))
+    (error (cause)
+      (multiple-value-bind
+            (action delay)
+          (record-radius-heartbeat-error
+           state cause)
+        (if (eq action :retry)
+            (progn
+              (unless
+                  (radius-not-found-error-p
+                   cause)
+                (log-radius-retry
+                 "Radius machine"
+                 "heartbeat"
+                 state delay cause))
+              delay)
+            (handler-case
+                (progn
+                  (radius-reregister-machine-and-pis
+                   presence)
+                  (record-radius-heartbeat-success
+                   state))
+              (error (recovery-cause)
+                (let ((recovery-delay
+                        (record-radius-recovery-error
+                         state)))
+                  (log-radius-retry
+                   "Radius machine"
+                   "re-registration"
+                   state recovery-delay
+                   recovery-cause)
+                  recovery-delay))))))))
+
+(defun heartbeat-radius-pi
+    (presence instance-id state)
+  (handler-case
+      (progn
+        (radius-post
+         presence
+         (format nil
+                 "pis/~A/heartbeat"
+                 (radius-heartbeat-radius-id
+                  state))
+         (cadr-ai::json-object))
+        (record-radius-heartbeat-success
+         state))
+    (error (cause)
+      (multiple-value-bind
+            (action delay)
+          (record-radius-heartbeat-error
+           state cause)
+        (if (eq action :retry)
+            (progn
+              (unless
+                  (radius-not-found-error-p
+                   cause)
+                (log-radius-retry
+                 (format nil
+                         "Radius Pi ~A"
+                         instance-id)
+                 "heartbeat"
+                 state delay cause))
+              delay)
+            (handler-case
+                (if
+                    (radius-reregister-pi
+                     presence instance-id)
+                    (record-radius-heartbeat-success
+                     state)
+                    (let ((retry-delay
+                            (radius-backoff-delay 1)))
+                      (format
+                       *error-output*
+                       "cadr-server: Radius Pi ~A re-registration skipped; retrying in ~Ams~%"
+                       instance-id retry-delay)
+                      (finish-output
+                       *error-output*)
+                      retry-delay))
+              (error (recovery-cause)
+                (let ((recovery-delay
+                        (record-radius-recovery-error
+                         state)))
+                  (log-radius-retry
+                   (format nil
+                           "Radius Pi ~A"
+                           instance-id)
+                   "re-registration"
+                   state recovery-delay
+                   recovery-cause)
+                  recovery-delay))))))))
+
+(defmethod radius-start
+    ((presence http-radius-presence)
+     &key label)
+  (multiple-value-bind
+        (machine interval)
+      (register-radius-machine
+       presence label)
+    (setf
+     (radius-machine-label presence)
+     label)
+    (stop-radius-heartbeat
+     (radius-machine-heartbeat
+      presence))
+    (setf
+     (radius-machine-heartbeat presence)
+     (start-radius-heartbeat
+      interval
+      (lambda (state)
+        (heartbeat-radius-machine
+         presence state))
       "cadr-radius-machine"))
     machine))
 
@@ -304,16 +615,13 @@
                presence))
      (start-radius-heartbeat
       interval
-      (lambda ()
-        (radius-post
-         presence
-         (format nil
-                 "pis/~A/heartbeat"
-                 radius-id)
-         (cadr-ai::json-object)))
+      (lambda (state)
+        (heartbeat-radius-pi
+         presence instance-id state))
       (format nil
               "cadr-radius-pi-~A"
-              instance-id)))))
+              instance-id)
+      :radius-id radius-id))))
 
 (defmethod radius-register-pi
     ((presence http-radius-presence)

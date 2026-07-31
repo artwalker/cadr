@@ -224,11 +224,13 @@
             (rpc-child-stderr-text process)))
     (error () nil)))
 
+(defun wait-rpc-child-process (process)
+  (uiop:wait-process process))
+
 (defun rpc-child-wait-loop (process)
   (let* ((status
-           (uiop:wait-process
-            (rpc-child-process process)
-            :ignore-error-status t))
+           (wait-rpc-child-process
+            (rpc-child-process process)))
          (cause
            (make-condition
             'simple-error
@@ -412,7 +414,6 @@
      (rpc-child-process process)
      :urgent nil))
   (ignore-errors
-    (uiop:wait-process
-     (rpc-child-process process)
-     :ignore-error-status t))
+    (wait-rpc-child-process
+     (rpc-child-process process)))
   nil)

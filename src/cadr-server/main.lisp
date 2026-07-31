@@ -5,7 +5,7 @@
        (stream *standard-output*))
   (format
    stream
-   "Usage: cadr-server <serve|list|spawn|status|stop|rpc|rpc-stream> [arguments]~%")
+   "Usage:~%  cadr-server serve~%  cadr-server list~%  cadr-server spawn [--cwd <path>] [--label <label>]~%  cadr-server status <instance-id>~%  cadr-server stop <instance-id>~%  cadr-server rpc <instance-id> <json-command>~%  cadr-server rpc-stream <instance-id>~%")
   (finish-output stream))
 
 (defun command-argument
@@ -13,12 +13,35 @@
   (or (nth index arguments)
       (error "Missing ~A" description)))
 
+(defun server-option-value
+    (arguments option)
+  (let ((position
+          (position option arguments
+                    :test #'string=)))
+    (and position
+         (nth (1+ position)
+              arguments))))
+
+(defun spawn-request-from-arguments
+    (arguments)
+  (cadr-ai::json-object
+   "type" "spawn"
+   "cwd"
+   (or
+    (server-option-value
+     arguments "--cwd")
+    (namestring
+     (uiop:getcwd)))
+   "label"
+   (server-option-value
+    arguments "--label")))
+
 (defun print-server-response (response)
   (write-string
    (encode-server-message response)
    *standard-output*)
   (finish-output *standard-output*)
-  response)
+  nil)
 
 (defun run-server ()
   (let* ((supervisor
@@ -120,13 +143,8 @@
            (print-server-response
             (ipc-request
              socket-path
-             (cadr-ai::json-object
-              "type" "spawn"
-              "cwd"
-              (command-argument
-               arguments 1 "cwd")
-              "label"
-              (nth 2 arguments)))))
+             (spawn-request-from-arguments
+              arguments))))
           ((string= command "status")
            (print-server-response
             (ipc-request
@@ -180,3 +198,6 @@
         (finish-output
          *error-output*)
         (uiop:quit 1)))))
+
+(defun server-executable-main ()
+  (uiop:quit (or (main) 0)))
