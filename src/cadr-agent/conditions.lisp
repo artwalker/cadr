@@ -21,6 +21,7 @@
     :reader tool-execution-error-tool-call-id)))
 
 (define-condition agent-busy-error (cadr-ai:cadr-error) ())
+(define-condition agent-shutdown-error (cadr-ai:cadr-error) ())
 (define-condition agent-turn-limit-error (cadr-ai:cadr-error) ())
 
 (define-condition extension-registration-error

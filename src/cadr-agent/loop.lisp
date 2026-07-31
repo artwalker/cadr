@@ -712,11 +712,19 @@
 (defun call-with-agent-run (agent function)
     (sb-thread:with-mutex
         ((agent-state-lock agent))
+      (when (agent-shutdown-p agent)
+        (shutdown-agent-error))
       (when (agent-busy-p agent)
         (error 'agent-busy-error
                :message "Agent is already processing a prompt"))
       (setf
        (agent-busy-p agent) t
+       (agent-operation-count agent)
+       (1+ (agent-operation-count agent))
+       (agent-operation-threads agent)
+       (cons
+        sb-thread:*current-thread*
+        (agent-operation-threads agent))
        (agent-abort-requested-p agent) nil
        (agent-retry-attempt agent) 0
        (agent-retry-in-progress-p agent) nil
@@ -728,46 +736,59 @@
         (emit-agent-event agent :agent-settled)
         (sb-thread:with-mutex
             ((agent-state-lock agent))
-          (setf (agent-busy-p agent) nil)
+          (setf
+           (agent-busy-p agent) nil
+           (agent-operation-count agent)
+           (1- (agent-operation-count agent))
+           (agent-operation-threads agent)
+           (delete
+            sb-thread:*current-thread*
+            (agent-operation-threads agent)
+            :count 1
+            :test #'eq))
           (sb-thread:condition-broadcast
            (agent-idle-condition agent))))))
 
 (defun agent-navigate-tree (agent entry-id)
-  (when (agent-busy-p agent)
-    (error
-     'agent-busy-error
-     :message
-     "Cannot navigate the session tree while the agent is running"))
-  (let ((session (agent-session agent)))
-    (unless session
-      (error
-       'session-error
-       :message
-       "Cannot navigate without a persistent session"))
-    (let ((before
-            (run-agent-lifecycle
-             agent :session-before-tree
-             (list
-              :target-id entry-id
-              :summarize-p nil))))
-      (when (getf before :cancel-p)
-        (return-from agent-navigate-tree
-          (values nil t)))
-      (session-branch session entry-id)
-      (setf
-       (agent-messages agent)
-       (session-messages session))
-      (run-agent-lifecycle
-       agent :session-tree
-       (list
-        :target-id entry-id
-        :messages
-        (copy-list
-         (agent-messages agent))))
-      (values
-       (copy-list
-        (agent-messages agent))
-       nil))))
+  (call-with-agent-operation
+   agent
+   (lambda ()
+     (when (agent-busy-p agent)
+       (error
+        'agent-busy-error
+        :message
+        "Cannot navigate the session tree while the agent is running"))
+     (let ((session (agent-session agent)))
+       (unless session
+         (error
+          'session-error
+          :message
+          "Cannot navigate without a persistent session"))
+       (let ((before
+               (run-agent-lifecycle
+                agent :session-before-tree
+                (list
+                 :target-id entry-id
+                 :summarize-p nil))))
+         (when (getf before :cancel-p)
+           (return-from agent-navigate-tree
+             (values nil t)))
+         (assert-agent-not-shutdown agent)
+         (session-branch session entry-id)
+         (setf
+          (agent-messages agent)
+          (session-messages session))
+         (run-agent-lifecycle
+          agent :session-tree
+          (list
+           :target-id entry-id
+           :messages
+           (copy-list
+            (agent-messages agent))))
+         (values
+          (copy-list
+           (agent-messages agent))
+          nil))))))
 
 (defun user-message-input-values (message)
   (let ((content
@@ -878,7 +899,7 @@
      &key
        (source :interactive)
        preflight-function)
-  (let ((message
+    (let ((message
           (normalize-agent-queue-message prompt)))
     (call-with-agent-run
      agent
@@ -892,16 +913,19 @@
              (progn
                (when preflight-function
                  (funcall preflight-function))
+               (assert-agent-not-shutdown agent)
                nil)
              (progn
                (when preflight-function
                  (funcall preflight-function))
+               (assert-agent-not-shutdown agent)
                (let ((*agent-run-system-prompt*
                        system-prompt))
                  (run-agent-with-retries
                   agent messages)))))))))
 
 (defun agent-continue (agent)
+  (assert-agent-not-shutdown agent)
   (let ((messages (agent-messages agent)))
     (unless messages
       (error

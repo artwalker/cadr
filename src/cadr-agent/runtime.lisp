@@ -41,6 +41,10 @@
   abort-p
   (abort-requested-p nil :type boolean)
   (busy-p nil :type boolean)
+  (shutdown-p nil :type boolean)
+  (operation-count 0 :type (integer 0 *))
+  (mutation-count 0 :type (integer 0 *))
+  (operation-threads nil :type list)
   (thinking-level :off
                   :type (member :off :minimal :low :medium
                                 :high :xhigh :max))
@@ -138,6 +142,7 @@
      :next-turn next-turn)))
 
 (defun enqueue-agent-message (agent queue message)
+  (assert-agent-not-shutdown agent)
   (let ((normalized
           (normalize-agent-queue-message message)))
     (sb-thread:with-mutex
@@ -224,6 +229,112 @@
     (emit-agent-queue-update agent)
     (values steering follow-up)))
 
+(defun clear-all-agent-queues (agent)
+  (sb-thread:with-mutex
+      ((agent-queue-lock agent))
+    (setf
+     (agent-steering-queue agent) nil
+     (agent-follow-up-queue agent) nil
+     (agent-next-turn-queue agent) nil))
+  (emit-agent-queue-update agent)
+  agent)
+
+(defun shutdown-agent-error ()
+  (error
+   'agent-shutdown-error
+   :message "Agent has been shut down"))
+
+(defun assert-agent-not-shutdown (agent)
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (when (agent-shutdown-p agent)
+      (shutdown-agent-error)))
+  agent)
+
+(defun begin-agent-operation (agent)
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (when (agent-shutdown-p agent)
+      (shutdown-agent-error))
+    (incf (agent-operation-count agent))
+    (push sb-thread:*current-thread*
+          (agent-operation-threads agent)))
+  agent)
+
+(defun end-agent-operation (agent)
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (decf (agent-operation-count agent))
+    (setf
+     (agent-operation-threads agent)
+     (delete
+      sb-thread:*current-thread*
+      (agent-operation-threads agent)
+      :count 1
+      :test #'eq))
+    (sb-thread:condition-broadcast
+     (agent-idle-condition agent)))
+  agent)
+
+(defun call-with-agent-operation (agent function)
+  (begin-agent-operation agent)
+  (unwind-protect
+       (funcall function)
+    (end-agent-operation agent)))
+
+(defun call-with-agent-mutation (agent function)
+  (sb-thread:with-mutex
+      ((agent-state-lock agent))
+    (when (agent-shutdown-p agent)
+      (shutdown-agent-error))
+    (incf (agent-mutation-count agent)))
+  (unwind-protect
+       (funcall function)
+    (sb-thread:with-mutex
+        ((agent-state-lock agent))
+      (decf (agent-mutation-count agent))
+      (sb-thread:condition-broadcast
+       (agent-idle-condition agent)))))
+
+(defun agent-append-message (agent message)
+  (call-with-agent-mutation
+   agent
+   (lambda ()
+     (append-agent-message agent message))))
+
+(defun agent-set-model (agent model)
+  (call-with-agent-mutation
+   agent
+   (lambda ()
+     (when (agent-session agent)
+       (session-append-model-change
+        (agent-session agent)
+        (string-downcase
+         (symbol-name
+          (cadr-ai:model-provider model)))
+        (cadr-ai:model-id model)))
+     (setf (agent-model agent) model)
+     model)))
+
+(defun agent-set-thinking-level (agent level)
+  (unless
+      (member level
+              '(:off :minimal :low :medium
+                :high :xhigh :max))
+    (error
+     'cadr-ai:configuration-error
+     :message
+     (format nil "Invalid thinking level: ~A" level)))
+  (call-with-agent-mutation
+   agent
+   (lambda ()
+     (when (agent-session agent)
+       (session-append-thinking-level-change
+        (agent-session agent)
+        (string-downcase (symbol-name level))))
+     (setf (agent-thinking-level agent) level)
+     level)))
+
 (defun agent-aborted-p (agent)
   (or
    (sb-thread:with-mutex
@@ -233,6 +344,7 @@
      (and predicate (funcall predicate)))))
 
 (defun agent-abort (agent)
+  (assert-agent-not-shutdown agent)
   (agent-abort-retry agent)
   (sb-thread:with-mutex
       ((agent-state-lock agent))
@@ -253,9 +365,41 @@
 (defun agent-wait-for-idle (agent)
   (sb-thread:with-mutex
       ((agent-state-lock agent))
-    (loop while (agent-busy-p agent)
+    (loop while (plusp
+                 (agent-operation-count agent))
           do
           (sb-thread:condition-wait
            (agent-idle-condition agent)
            (agent-state-lock agent))))
   agent)
+
+(defun agent-shutdown (agent)
+  (let ((called-from-operation-p nil))
+    (sb-thread:with-mutex
+        ((agent-state-lock agent))
+      (setf
+       (agent-shutdown-p agent) t
+       (agent-abort-requested-p agent) t
+       (agent-retry-abort-requested-p agent) t
+       called-from-operation-p
+       (member
+        sb-thread:*current-thread*
+        (agent-operation-threads agent)
+        :test #'eq))
+      (sb-thread:condition-broadcast
+       (agent-retry-condition agent)))
+    (clear-all-agent-queues agent)
+    (unless called-from-operation-p
+      (sb-thread:with-mutex
+          ((agent-state-lock agent))
+        (loop while
+              (or
+               (plusp
+                (agent-operation-count agent))
+               (plusp
+                (agent-mutation-count agent)))
+              do
+              (sb-thread:condition-wait
+               (agent-idle-condition agent)
+               (agent-state-lock agent))))))
+  nil)

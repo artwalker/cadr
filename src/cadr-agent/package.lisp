@@ -14,7 +14,13 @@
    #:agent-follow-up
    #:agent-next-turn
    #:agent-abort
+   #:agent-shutdown
+   #:agent-shutdown-p
+   #:agent-shutdown-error
    #:agent-wait-for-idle
+   #:agent-append-message
+   #:agent-set-model
+   #:agent-set-thinking-level
    #:agent-navigate-tree
    #:agent-steering-mode
    #:agent-follow-up-mode

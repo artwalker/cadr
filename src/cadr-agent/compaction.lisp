@@ -201,7 +201,9 @@
             (min max-output-tokens
                  (cadr-ai:model-max-tokens
                   (agent-model agent)))
-            :abort-p (agent-abort-p agent)))
+            :abort-p
+            (lambda ()
+              (agent-aborted-p agent))))
          (summary
            (and response
                 (assistant-message-text response))))
@@ -224,7 +226,7 @@
   (min configured
        (max 1 (floor context-window divisor))))
 
-(defun compact-agent
+(defun %compact-agent
     (agent &key force-p custom-instructions)
   (let* ((session (agent-session agent))
          (model (agent-model agent))
@@ -234,7 +236,7 @@
     (unless (and session
                  context-window
                  (plusp context-window))
-      (return-from compact-agent nil))
+      (return-from %compact-agent nil))
     (let* ((messages (agent-messages agent))
            (tokens-before
              (context-estimated-tokens messages))
@@ -250,14 +252,14 @@
           (or force-p
               (> tokens-before
                  (- context-window reserve)))
-        (return-from compact-agent nil))
+        (return-from %compact-agent nil))
       (let* ((entries
                (session-context-entries session))
              (cut-point
                (compaction-cut-point
                 entries keep-recent)))
         (unless cut-point
-          (return-from compact-agent nil))
+          (return-from %compact-agent nil))
         (let* ((source-entries
                  (subseq entries 0 cut-point))
                (kept-entry
@@ -269,7 +271,7 @@
               (eq :compaction
                   (session-entry-type
                    (car (last entries))))
-            (return-from compact-agent nil))
+            (return-from %compact-agent nil))
           (emit-agent-event
            agent :compaction-start)
           (handler-case
@@ -277,6 +279,7 @@
                       (generate-compaction-summary
                        agent source-entries reserve
                        custom-instructions)))
+                (assert-agent-not-shutdown agent)
                 (session-append-compaction
                  session summary source-ids
                  (session-entry-id kept-entry)
@@ -292,6 +295,16 @@
                :error-message
                (princ-to-string condition))
               nil)))))))
+
+(defun compact-agent
+    (agent &key force-p custom-instructions)
+  (call-with-agent-operation
+   agent
+   (lambda ()
+     (%compact-agent
+      agent
+      :force-p force-p
+      :custom-instructions custom-instructions))))
 
 (defun maybe-compact-agent (agent)
   (when (agent-auto-compact-p agent)
