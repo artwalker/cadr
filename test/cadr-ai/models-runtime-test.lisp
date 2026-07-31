@@ -305,3 +305,167 @@
              ("CLOUDFLARE_GATEWAY_ID" . "gateway"))
            (cadr-ai:api-key-credential-environment
             credential))))))
+
+(test models-runtime-api-key-login-uses-opaque-interaction-and-persists
+  (let* ((prompts nil)
+         (events nil)
+         (aborted-p nil)
+         (store (cadr-ai:make-memory-credential-store))
+         (runtime
+           (cadr-ai:make-models-runtime
+            :credential-store store))
+         (interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (push prompt prompts)
+              "secret")
+            :notify-function
+            (lambda (event)
+              (push event events))
+            :abort-p
+            (lambda () aborted-p))))
+    (cadr-ai:models-runtime-set-provider
+     runtime
+     (cadr-ai:make-runtime-provider
+      :id :interactive
+      :name "Interactive"
+      :api-key-auth-p t
+      :api-key-login-function
+      (lambda (login-interaction)
+        (cadr-ai:runtime-auth-interaction-notify
+         login-interaction
+         '(:type :info :message "Checking"))
+        (cadr-ai:make-api-key-credential
+         :provider :interactive
+         :key
+         (cadr-ai:runtime-auth-interaction-prompt
+          login-interaction
+          '(:type :secret
+            :message "API key"
+            :placeholder "optional"))))))
+    (let ((credential
+            (cadr-ai:models-runtime-login-api-key
+             runtime :interactive interaction)))
+      (is (typep credential 'cadr-ai:api-key-credential))
+      (is (string= "secret"
+                   (cadr-ai:api-key-credential-key credential)))
+      (is (eq credential
+              (cadr-ai:credential-store-read
+               store :interactive))))
+    (is (equal
+         '((:type :secret
+            :message "API key"
+            :placeholder "optional"))
+         prompts))
+    (is (equal
+         '((:type :info :message "Checking"))
+         events))
+    (setf aborted-p t)
+    (is (cadr-ai:runtime-auth-interaction-aborted-p
+         interaction))
+    (signals cadr-ai:models-runtime-error
+      (cadr-ai:models-runtime-login-api-key
+       runtime :missing interaction))))
+
+(test models-runtime-prefers-provider-auth-check
+  (let* ((check-input nil)
+         (runtime (cadr-ai:make-models-runtime)))
+    (cadr-ai:models-runtime-set-provider
+     runtime
+     (cadr-ai:make-runtime-provider
+      :id :checked
+      :name "Checked"
+      :models (list (runtime-test-model :checked "m"))
+      :api-key-auth-p t
+      :auth-check-function
+      (lambda (credential environment)
+        (setf check-input (list credential environment))
+        (cadr-ai:make-runtime-auth-check
+         :source "Custom check"
+         :type :api-key))
+      :auth-resolver
+      (lambda (&rest ignored)
+        (declare (ignore ignored))
+        (error "resolver must not run"))))
+    (let ((check
+            (cadr-ai:models-runtime-check-auth
+             runtime :checked)))
+      (is (string=
+           "Custom check"
+           (cadr-ai:runtime-auth-check-source check))))
+    (is (equal '(nil nil) check-input))))
+
+(test models-runtime-refresh-context-is-additive-and-old-refresh-stays-compatible
+  (let* ((runtime (cadr-ai:make-models-runtime))
+         (context-seen nil)
+         (legacy-call nil)
+         (abort-p (lambda () nil)))
+    (cadr-ai:models-runtime-set-provider
+     runtime
+     (cadr-ai:make-runtime-provider
+      :id :contextual
+      :name "Contextual"
+      :api-key-auth-p t
+      :auth-resolver
+      (lambda (&rest ignored)
+        (declare (ignore ignored))
+        (cadr-ai:make-runtime-auth-result
+         :api-key "context-key"
+         :source "Ambient"
+         :type :api-key))
+      :refresh-context-function
+      (lambda (context)
+        (setf context-seen context)
+        (funcall
+         (cadr-ai:runtime-refresh-context-store context)
+         :write
+         '(:cached t)))))
+    (cadr-ai:models-runtime-set-provider
+     runtime
+     (cadr-ai:make-runtime-provider
+      :id :legacy
+      :name "Legacy"
+      :api-key-auth-p t
+      :auth-resolver
+      (lambda (&rest ignored)
+        (declare (ignore ignored))
+        (cadr-ai:make-runtime-auth-result
+         :api-key "legacy-key"
+         :source "Ambient"
+         :type :api-key))
+      :refresh-function
+      (lambda (credential store allow-network force)
+        (setf legacy-call
+              (list credential store allow-network force)))))
+    (let ((result
+            (cadr-ai:models-runtime-refresh
+             runtime
+             :allow-network t
+             :force t
+             :abort-p abort-p)))
+      (is (null
+           (cadr-ai:models-refresh-result-errors result))))
+    (is (typep
+         (cadr-ai:runtime-refresh-context-credential
+          context-seen)
+         'cadr-ai:api-key-credential))
+    (is (cadr-ai:runtime-refresh-context-allow-network-p
+         context-seen))
+    (is (cadr-ai:runtime-refresh-context-force-p
+         context-seen))
+    (is (not
+         (cadr-ai:runtime-refresh-context-aborted-p
+          context-seen)))
+    (is (equal
+         '(:cached t)
+         (funcall
+          (cadr-ai:runtime-refresh-context-store
+           context-seen)
+          :read)))
+    (is (= 4 (length legacy-call)))
+    (is (typep (first legacy-call)
+               'cadr-ai:api-key-credential))
+    (is (functionp (second legacy-call)))
+    (is (third legacy-call))
+    (is (fourth legacy-call))))

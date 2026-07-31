@@ -306,11 +306,26 @@
    #:make-runtime-auth-check
    #:runtime-auth-check-source
    #:runtime-auth-check-type
+   #:runtime-auth-interaction
+   #:make-runtime-auth-interaction
+   #:runtime-auth-interaction-prompt
+   #:runtime-auth-interaction-notify
+   #:runtime-auth-interaction-aborted-p
+   #:runtime-refresh-context
+   #:make-runtime-refresh-context
+   #:runtime-refresh-context-credential
+   #:runtime-refresh-context-store
+   #:runtime-refresh-context-allow-network-p
+   #:runtime-refresh-context-force-p
+   #:runtime-refresh-context-aborted-p
    #:runtime-provider
    #:make-runtime-provider
    #:runtime-provider-id
    #:runtime-provider-name
    #:runtime-provider-models
+   #:runtime-provider-api-key-login-function
+   #:runtime-provider-auth-check-function
+   #:runtime-provider-refresh-context-function
    #:models-refresh-result
    #:models-refresh-result-aborted-p
    #:models-refresh-result-errors
@@ -325,6 +340,7 @@
    #:models-runtime-model
    #:models-runtime-auth
    #:models-runtime-check-auth
+   #:models-runtime-login-api-key
    #:models-runtime-available-models
    #:models-runtime-refresh
    #:models-runtime-complete

@@ -63,6 +63,72 @@
   source
   type)
 
+(defstruct runtime-auth-interaction
+  prompt-function
+  notify-function
+  abort-p)
+
+(defun valid-runtime-auth-prompt-p (prompt)
+  (and
+   (listp prompt)
+   (member (getf prompt :type) '(:text :secret))
+   (stringp (getf prompt :message))
+   (or (null (getf prompt :placeholder))
+       (stringp (getf prompt :placeholder)))))
+
+(defun runtime-auth-interaction-aborted-p (interaction)
+  (let ((abort-p
+          (runtime-auth-interaction-abort-p interaction)))
+    (and abort-p
+         (not (null (funcall abort-p))))))
+
+(defun runtime-auth-interaction-prompt (interaction prompt)
+  (unless (valid-runtime-auth-prompt-p prompt)
+    (error 'models-runtime-error
+           :code :auth
+           :message "Invalid runtime authentication prompt"))
+  (when (runtime-auth-interaction-aborted-p interaction)
+    (error 'models-runtime-error
+           :code :auth
+           :message "Runtime authentication was aborted"))
+  (let ((function
+          (runtime-auth-interaction-prompt-function
+           interaction)))
+    (unless function
+      (error 'models-runtime-error
+             :code :auth
+             :message "Runtime authentication has no prompt function"))
+    (funcall function (copy-list prompt))))
+
+(defun runtime-auth-interaction-notify (interaction event)
+  (unless
+      (and
+       (listp event)
+       (keywordp (getf event :type))
+       (stringp (getf event :message)))
+    (error 'models-runtime-error
+           :code :auth
+           :message "Invalid runtime authentication event"))
+  (let ((function
+          (runtime-auth-interaction-notify-function
+           interaction)))
+    (when function
+      (funcall function (copy-list event))))
+  nil)
+
+(defstruct runtime-refresh-context
+  credential
+  store
+  (allow-network-p t :type boolean)
+  (force-p nil :type boolean)
+  abort-p)
+
+(defun runtime-refresh-context-aborted-p (context)
+  (let ((abort-p
+          (runtime-refresh-context-abort-p context)))
+    (and abort-p
+         (not (null (funcall abort-p))))))
+
 (defstruct runtime-provider
   (id nil :type symbol)
   (name "" :type string)
@@ -70,10 +136,13 @@
   models-function
   (api-key-auth-p nil :type boolean)
   (oauth-auth-p nil :type boolean)
+  api-key-login-function
+  auth-check-function
   auth-resolver
   oauth-refresh-function
   oauth-to-auth-function
   refresh-function
+  refresh-context-function
   filter-function
   complete-function
   stream-function)
@@ -303,13 +372,88 @@
            (make-runtime-auth-check
             :source "OAuth" :type :oauth)))
         (t
-         (let ((auth
-                 (runtime-resolve-api-key-auth
-                  runtime provider credential nil)))
-           (when auth
-             (make-runtime-auth-check
-              :source (runtime-auth-result-source auth)
-              :type :api-key))))))))
+         (let ((check
+                 (runtime-provider-auth-check-function
+                  provider)))
+           (if check
+               (handler-case
+                   (funcall
+                    check credential
+                    (models-runtime-environment runtime))
+                 (error (cause)
+                   (error 'models-runtime-error
+                          :code :auth
+                          :message
+                          (format nil
+                                  "API key auth check failed for provider ~A"
+                                  provider-id)
+                          :cause cause)))
+               (let ((auth
+                       (runtime-resolve-api-key-auth
+                        runtime provider credential nil)))
+                 (when auth
+                   (make-runtime-auth-check
+                    :source (runtime-auth-result-source auth)
+                    :type :api-key))))))))))
+
+(defun models-runtime-login-api-key
+    (runtime provider-id interaction)
+  (let ((provider
+          (models-runtime-provider runtime provider-id)))
+    (unless provider
+      (error 'models-runtime-error
+             :code :provider
+             :message
+             (format nil "Unknown provider: ~A" provider-id)))
+    (let ((login
+            (runtime-provider-api-key-login-function
+             provider)))
+      (unless login
+        (error 'models-runtime-error
+               :code :auth
+               :message
+               (format nil
+                       "~A does not support API key login"
+                       (runtime-provider-name provider))))
+      (let ((credential
+              (handler-case
+                  (funcall login interaction)
+                (models-runtime-error (condition)
+                  (error condition))
+                (error (cause)
+                  (error 'models-runtime-error
+                         :code :auth
+                         :message
+                         (format nil
+                                 "API key login failed for ~A"
+                                 provider-id)
+                         :cause cause)))))
+        (unless (typep credential 'api-key-credential)
+          (error 'models-runtime-error
+                 :code :auth
+                 :message
+                 (format nil
+                         "API key login returned an invalid credential for ~A"
+                         provider-id)))
+        (setf
+         (api-key-credential-provider credential)
+         provider-id)
+        (handler-case
+            (credential-store-modify
+             (models-runtime-credential-store runtime)
+             provider-id
+             (lambda (current)
+               (declare (ignore current))
+               credential))
+          (error (cause)
+            (error 'models-runtime-error
+                   :code :auth
+                   :message
+                   (format nil
+                           "Credential store modify failed for ~A"
+                           provider-id)
+                   :cause cause)))
+        credential))))
 
 (defun models-runtime-available-models
     (runtime &optional provider-id)
@@ -393,8 +537,11 @@
         (setf aborted-p t)
         (return))
       (let ((refresh
-              (runtime-provider-refresh-function provider)))
-        (when refresh
+              (runtime-provider-refresh-function provider))
+            (refresh-context
+              (runtime-provider-refresh-context-function
+               provider)))
+        (when (or refresh refresh-context)
           (let* ((provider-id
                    (runtime-provider-id provider))
                  (stored
@@ -406,13 +553,31 @@
                         (runtime-refresh-credential
                          runtime provider allow-network)))
                   (when credential
-                    (funcall refresh credential store
-                             allow-network force)))
+                    (if refresh-context
+                        (funcall
+                         refresh-context
+                         (make-runtime-refresh-context
+                          :credential credential
+                          :store store
+                          :allow-network-p allow-network
+                          :force-p (not (null force))
+                          :abort-p abort-p))
+                        (funcall refresh credential store
+                                 allow-network force))))
               (error (cause)
                 (push (cons provider-id cause) errors)
                 (ignore-errors
-                  (funcall refresh
-                           stored store nil nil))))))))
+                  (if refresh-context
+                      (funcall
+                       refresh-context
+                       (make-runtime-refresh-context
+                        :credential stored
+                        :store store
+                        :allow-network-p nil
+                        :force-p nil
+                        :abort-p abort-p))
+                      (funcall refresh
+                               stored store nil nil)))))))))
     (make-models-refresh-result
      :aborted-p aborted-p
      :errors (nreverse errors))))
