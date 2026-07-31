@@ -767,6 +767,7 @@ The user approved the order Wave 0 → pulled-forward TUI → Wave 1 → 2 → 3
 | Wave 3 | complete | independent APIs, auth flows, exact catalogs, model/image/faux runtimes | 641 AI checks plus DeepSeek and Codex OAuth live smokes |
 | Goal 8 Part B | complete | complete coding-agent runtime, tools, configuration, models, packages, interactive UI and approved extension/llama surfaces | 127 former `M` files are `C`; `config.test.ts` is the sole approved `N/A`; 2905 CL checks |
 | Wave 5 | complete | standalone storage packaging, server and eval harness | 23 storage + 43 server + 16 eval checks; native Unix-socket smoke; DeepSeek and Codex OAuth eval smokes |
+| Goal 8 Part F | mechanically complete; user acceptance pending | final ledger, dependency audit, freeze anchors, README and acceptance package | `351 C / 0 U / 0 M / 1 N/A`; 2987 CL checks; final real-terminal checklist remains |
 
 Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session
 state; server depends on RPC; evals should exercise the completed public

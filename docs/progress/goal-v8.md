@@ -273,3 +273,33 @@ Part B 的 extension export SHA 仍为
 Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
 `351 C / 0 U / 0 M / 1 N/A`；新增的 82 个断言覆盖基线中没有
 `*.test.ts` 的 storage/server/evals package surface。
+
+## Part F：终局机械收官
+
+状态：机械部分完成并落账；等待用户按
+[`docs/acceptance/goal-v8-final.md`](../acceptance/goal-v8-final.md)
+逐项完成人工验收，尚未宣告进入维护态。
+
+### 收官提交
+
+1. `33575aa3e` — 修正全链路 smoke 对新增 `agent_settled` 与延迟 session
+   持久化的陈旧假设；
+2. `3e78b1962` — TUI live smoke 使用唯一 slash command 前缀，不再依赖
+   扩充后会变化的命令排序；
+3. Part F docs 提交 — 最终账本、依赖审计、冻结 object ID、README 验证
+   等级与终局验收包。
+
+### 机械结论
+
+- 终局账本：`351 C / 0 U / 0 M / 1 N/A`；
+- 全量：`2987/2987`；
+- `build.sh`、`build-server.sh` 均成功无压缩降级并产出新命名；
+- acceptance、process modes、migration、server 与 TUI deterministic
+  smokes 全绿；
+- DeepSeek 的 stream/print/extension/repo/TUI/eval 与 Codex OAuth 的
+  stream/eval 全部实际运行通过；
+- Anthropic 无凭据，按基线 credential gate 跳过；
+- 依赖审计无新增第三方依赖；
+- 最终代码、ASDF/build 与 extension SHA 已写入 architecture 第 24 节。
+
+Goal 8 的终局大验收仍以用户人工清单为最后一道门；自行宣布完成无效。

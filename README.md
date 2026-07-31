@@ -292,23 +292,35 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 ## Verification
 
+| Level | Current evidence |
+|---|---|
+| Deterministic | 2987/2987 Common Lisp checks; fixture/request/response parity for all baseline protocols |
+| Live-proven | DeepSeek API key and OpenAI Codex OAuth: streaming, print, extension, repo-tool, TUI, and eval smokes |
+| Credential-gated | Providers without credentials skip live blocks exactly as the baseline does; fixtures are not presented as live evidence |
+| Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; the final all-feature terminal sweep remains the Goal 8 acceptance gate |
+
 ```bash
 ./scripts/test-cl.sh
 ./build.sh
+./build-server.sh
 ./scripts/acceptance-smoke.sh
 ./scripts/test-wave2-process-modes.sh
 ./scripts/migration-smoke.sh
+./scripts/server-smoke.sh
 ./scripts/live-deepseek-smoke.sh
 ./scripts/live-print-smoke.sh
 ./scripts/live-extension-smoke.sh
 CADR_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
 ./scripts/live-tui-smoke.sh
 ./scripts/live-openai-oauth-smoke.sh
+./scripts/live-evals-smoke.sh
 ```
 
 Detailed coverage is in [docs/test-matrix.md](docs/test-matrix.md).
 Migration evidence and the exact residual-name exemptions are in
 [docs/progress/migration.md](docs/progress/migration.md).
+The final mechanical evidence and pending human checklist are in
+[docs/acceptance/goal-v8-final.md](docs/acceptance/goal-v8-final.md).
 
 ## License
 

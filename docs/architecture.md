@@ -1546,3 +1546,40 @@ Wave 5 已完成并冻结。三个 package 不引入第三方依赖；全量门�
 生成无压缩 image；真实 Unix socket 已通过 spawn/list/status/RPC/stop，
 DeepSeek 与 Codex OAuth eval 均实际运行通过。此后这三个 package 的公开
 surface 遵循“发布即稳定”。
+
+## 24. Goal 8 Part F 最终冻结锚点
+
+最终生产代码锚定提交
+`3e78b1962a82059caf84edccce484f1d5ae79290`。目录 tree object ID：
+
+```text
+c6b85aa0511bfb615f880c8d1de89108ff405c6e  src/cadr-ai
+4cc11551025c0d8fa61372b26653f362fd3bb81b  src/cadr-agent
+1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950  src/cadr-tui
+422b4525e263e45ef200c0e821f836d8e51468f6  src/cadr-cli
+00f906f794cab3265ee9c211cb130106f2ef8d96  src/cadr-storage
+b1c26416d7f496a0e807c80d0ea9578cbbdd12b2  src/cadr-server
+f5b51e94a7d93680cd081d3fd259d1d4536b9009  src/cadr-evals
+```
+
+ASDF/build blob object ID：
+
+```text
+e94a3f1c1c80ffb784a94e8bbef9c8645e8504da  cadr-ai.asd
+7d657fa28a05a98b7ea673ac73ff26e0bff5d923  cadr-agent.asd
+c09f6172c1c186f15c726b2c04b7ea65a4f4214c  cadr-tui.asd
+aebccdb3796edc419d916403b2af3c52e378b3db  cadr-cli.asd
+bf24fcc2be42f862c0369436fadb17c575aee430  cadr-storage.asd
+2ff62e91d0ec40503544ba04380b21db0fe6ad53  cadr-server.asd
+5627e43154b59f09591999cbc92586c722cc113c  cadr-evals.asd
+43826965957004c3b13c49d5ddd77c29b62d35b3  build.sh
+892a4d77b6a38cc5b8d1bd5fb5731fb7fd9a8d2e  build.lisp
+25c0804937c42b2c5170e453fe976ef318f98056  build-server.sh
+3514e9f825d0d64b6e2c0663cdcf79ee94129b1c  build-server.lisp
+593c7d773b13107f2f3758ccc49abc66005f941d  scripts/test-cl.sh
+```
+
+Extension export SHA 继续为
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
+此锚点后的公开 surface 变更必须进入新 goal 并先走人工裁决；依赖门禁与
+“完成即提交”门禁继续全局生效。
