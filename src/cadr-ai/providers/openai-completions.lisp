@@ -247,6 +247,36 @@
                   (completions-supports-reasoning-effort-p model))
          (json-put payload "reasoning_effort"
                    (openai-reasoning-value model reasoning))))
+      (:zai
+       (json-put
+        payload "thinking"
+        (if reasoning
+            (json-object "type" "enabled"
+                         "clear_thinking" nil)
+            (json-object "type" "disabled")))
+       (when (and reasoning
+                  (completions-supports-reasoning-effort-p model))
+         (let ((effort
+                 (openai-reasoning-value model reasoning)))
+           (when (stringp effort)
+             (json-put payload "reasoning_effort" effort)))))
+      (:openrouter
+       (cond
+         (reasoning
+          (json-put
+           payload "reasoning"
+           (json-object
+            "effort"
+            (openai-reasoning-value model reasoning))))
+         ((or
+           (not (model-thinking-level-present-p model :off))
+           (model-thinking-level-value model :off))
+          (json-put
+           payload "reasoning"
+           (json-object
+            "effort"
+            (or (model-thinking-level-value model :off)
+                "none"))))))
       (:together
        (json-put payload "reasoning"
                  (json-object "enabled" (not (null reasoning))))

@@ -204,3 +204,119 @@
       (is (string=
            ""
            (get-output-stream-string errors))))))
+
+(test json-mode-preserves-final-assistant-text-byte-for-byte
+  (let ((expected
+          (format nil
+                  "The exit code was 7 and there are 12 steps and 3 files.~%alpha seven beta twelve gamma 7 delta 12 epsilon")))
+    (multiple-value-bind (agent remaining)
+        (cli-faux-agent
+         (list (cli-test-assistant expected)))
+      (declare (ignore remaining))
+      (let ((output (make-string-output-stream))
+            (errors (make-string-output-stream)))
+        (is
+         (= 0
+            (cadr-cli::run-print-mode
+             agent "one" nil
+             :mode :json
+             :output output
+             :error-output errors)))
+        (let* ((records
+                 (loop
+                   for line in
+                   (uiop:split-string
+                    (get-output-stream-string output)
+                    :separator '(#\Newline))
+                   unless (zerop (length line))
+                     collect (cadr-ai::parse-json line)))
+               (assistant-end
+                 (find-if
+                  (lambda (record)
+                    (let ((message
+                            (cadr-ai::json-get record "message")))
+                      (and
+                       (string= "message_end"
+                                (cadr-ai::json-get record "type"))
+                       (hash-table-p message)
+                       (string= "assistant"
+                                (cadr-ai::json-get message "role")))))
+                  records))
+               (message
+                 (cadr-ai::json-get assistant-end "message"))
+               (content
+                 (cadr-ai::json-get message "content")))
+          (is (not (null assistant-end)))
+          (is (= 1 (length content)))
+          (is (string=
+               expected
+               (cadr-ai::json-get (aref content 0) "text"))))
+        (is (string=
+             ""
+             (get-output-stream-string errors)))))))
+
+(test unknown-deepseek-thinking-levels-use-the-cli-clamp-before-request-build
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :deepseek
+       :api-key "fixture-key"
+       :base-url "https://fixture.invalid/v1"
+       :model-id "deepseek-chat"
+       :reasoning :high)
+    (let ((agent
+            (cadr-agent:make-agent
+             :provider provider
+             :model model))
+          (settings
+            (cadr-cli::make-memory-settings-manager)))
+      (dolist (case
+               '((:off :off)
+                 (:minimal :high)
+                 (:low :high)
+                 (:medium :high)
+                 (:high :high)
+                 (:xhigh :max)
+                 (:max :max)))
+        (destructuring-bind (requested expected) case
+          (let* ((effective
+                   (cadr-cli::set-cli-thinking-level
+                    agent settings requested))
+                 (reasoning
+                   (unless (eq effective :off)
+                     effective))
+                 (request
+                   (cadr-ai:build-request
+                    provider model
+                    (cadr-ai:make-context
+                     :messages
+                     (list
+                      (cadr-ai:make-user-message
+                       :content "think")))
+                    :stream-p t
+                    :reasoning reasoning))
+                 (payload
+                   (cadr-ai:request-spec-payload request))
+                 (thinking
+                   (cadr-ai::json-get payload "thinking")))
+            (is (eq expected effective)
+                "~A should clamp to ~A, got ~A"
+                requested expected effective)
+            (is (eq expected
+                    (cadr-agent::agent-thinking-level agent)))
+            (if (eq expected :off)
+                (progn
+                  (is (string=
+                       "disabled"
+                       (cadr-ai::json-get thinking "type")))
+                  (is (not
+                       (cadr-ai::json-present-p
+                        payload "reasoning_effort"))))
+                (progn
+                  (is (string=
+                       "enabled"
+                       (cadr-ai::json-get thinking "type")))
+                  (is (string=
+                       (string-downcase
+                        (symbol-name expected))
+                       (cadr-ai::json-get
+                        payload "reasoning_effort")))))))))))

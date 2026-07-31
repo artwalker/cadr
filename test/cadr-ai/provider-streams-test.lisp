@@ -206,3 +206,342 @@
              (format nil "~%~%")
              (cadr-ai:stream-event-delta
               (third thinking-events))))))))
+
+(defparameter *thinking-matrix-levels*
+  '(:off :minimal :low :medium :high :xhigh :max))
+
+(defun thinking-matrix-provider-model
+    (provider-id model-id requested-level)
+  (cadr-ai:instantiate-provider
+   provider-id
+   :api-key "fixture-key"
+   :oauth-access-token "fixture-oauth"
+   :oauth-account-id "fixture-account"
+   :base-url "https://fixture.invalid/v1"
+   :model-id model-id
+   :reasoning requested-level
+   :allow-missing-auth-p t
+   :options
+   '(:cloudflare-account-id "fixture-account"
+     :cloudflare-gateway-id "fixture-gateway"
+     :azure-base-url "https://fixture.invalid/v1"
+     :region "us-east-1"
+     :project "fixture-project"
+     :location "us-central1"
+     :environment (("AWS_REGION" . "us-east-1")))))
+
+(defun thinking-matrix-json-value (object &rest path)
+  (loop with value = object
+        for key in path
+        do (setf value
+                 (and (hash-table-p value)
+                      (cadr-ai::json-get value key)))
+        finally (return value)))
+
+(defun thinking-matrix-payload-state (api payload)
+  (case api
+    ((:anthropic-messages)
+     (let ((thinking (cadr-ai::json-get payload "thinking")))
+       (cond
+         ((not (hash-table-p thinking)) :absent)
+         ((string= "disabled"
+                   (cadr-ai::json-get thinking "type"))
+          :off)
+         (t :on))))
+    ((:openai-responses :openai-codex-responses
+      :azure-openai-responses)
+     (let ((reasoning (cadr-ai::json-get payload "reasoning")))
+       (cond
+         ((not (hash-table-p reasoning)) :absent)
+         ((string= "none"
+                   (cadr-ai::json-get reasoning "effort"))
+          :off)
+         (t :on))))
+    ((:google-generative-ai)
+     (let ((thinking
+             (cadr-ai::json-get payload "thinkingConfig")))
+       (cond
+         ((not (hash-table-p thinking)) :absent)
+         ((eql 0 (cadr-ai::json-get thinking "thinkingBudget"))
+          :off)
+         (t :on))))
+    ((:google-vertex)
+     (let ((thinking (cadr-ai::json-get payload "thinkingConfig")))
+       (cond
+         ((not (hash-table-p thinking)) :absent)
+         ((eql 0 (cadr-ai::json-get thinking "thinkingBudget"))
+          :off)
+         (t :on))))
+    ((:bedrock-converse-stream)
+     (if (hash-table-p
+          (cadr-ai::json-get payload
+                             "additionalModelRequestFields"))
+         :on
+         :absent))
+    ((:mistral-conversations)
+     (if (or (cadr-ai::json-present-p payload "reasoning_effort")
+             (cadr-ai::json-present-p payload "prompt_mode"))
+         :on
+         :absent))
+    ((:pi-messages)
+     (if (cadr-ai::json-present-p
+          (cadr-ai::json-get payload "options") "reasoning")
+         :on
+         :absent))
+    ((:openai-completions)
+     (let ((enable-present-p
+             (cadr-ai::json-present-p payload "enable_thinking"))
+           (enable (cadr-ai::json-get payload "enable_thinking"))
+           (effort (cadr-ai::json-get payload "reasoning_effort"))
+           (reasoning (cadr-ai::json-get payload "reasoning"))
+           (thinking (cadr-ai::json-get payload "thinking")))
+       (cond
+         ((and enable-present-p (not enable)) :off)
+         ((eq t enable) :on)
+         ((stringp effort)
+          (if (member effort '("none" "off" "disabled")
+                      :test #'string-equal)
+              :off
+              :on))
+         ((hash-table-p reasoning)
+          (let ((nested-effort
+                  (cadr-ai::json-get reasoning "effort")))
+            (cond
+              ((and (cadr-ai::json-present-p reasoning "enabled")
+                    (not (cadr-ai::json-get reasoning "enabled")))
+               :off)
+              ((and (stringp nested-effort)
+                    (member nested-effort
+                            '("none" "off" "disabled")
+                            :test #'string-equal))
+               :off)
+              ((or (eq t (cadr-ai::json-get reasoning "enabled"))
+                   (cadr-ai::json-present-p reasoning "effort"))
+               :on)
+              (t :absent))))
+         ((hash-table-p thinking)
+          (if (string= "disabled"
+                       (or (cadr-ai::json-get thinking "type") ""))
+              :off
+              :on))
+         ((stringp thinking)
+          (if (member thinking '("none" "off" "disabled")
+                      :test #'string-equal)
+              :off
+              :on))
+         (t :absent))))
+    (otherwise
+     (error "Unhandled thinking-matrix API: ~A" api))))
+
+(defun thinking-matrix-baseline-completions-state (model reasoning)
+  (let ((format (cadr-ai::completions-thinking-format model)))
+    (if reasoning
+        (case format
+          (:ant-ling
+           (if (stringp
+                (cadr-ai::model-thinking-level-value
+                 model reasoning))
+               :on
+               :absent))
+          ((:zai :qwen :qwen-chat-template :chat-template :deepseek
+            :openrouter :together :string-thinking)
+           :on)
+          (otherwise
+           (if (cadr-ai::completions-supports-reasoning-effort-p
+                model)
+               :on
+               :absent)))
+        (case format
+          ((:zai :qwen :qwen-chat-template :chat-template :together)
+           :off)
+          ((:deepseek :openrouter)
+           (if (and
+                (cadr-ai::model-thinking-level-present-p model :off)
+                (null
+                 (cadr-ai::model-thinking-level-value model :off)))
+               :absent
+               :off))
+          (:string-thinking
+           (if (stringp
+                (cadr-ai::model-thinking-level-value model :off))
+               :off
+               :absent))
+          (otherwise
+           (if (and
+                (cadr-ai::completions-supports-reasoning-effort-p
+                 model)
+                (stringp
+                 (cadr-ai::model-thinking-level-value model :off)))
+               :off
+               :absent))))))
+
+(defun thinking-matrix-baseline-payload-state (model reasoning)
+  (let ((api (cadr-ai:model-api model)))
+    (unless (cadr-ai:model-reasoning-p model)
+      (return-from thinking-matrix-baseline-payload-state :absent))
+    (case api
+      (:anthropic-messages
+       (if reasoning
+           :on
+           (if (and
+                (cadr-ai::model-thinking-level-present-p model :off)
+                (null
+                 (cadr-ai::model-thinking-level-value model :off)))
+               :absent
+               :off)))
+      ((:openai-responses :azure-openai-responses)
+       (if reasoning
+           :on
+           (if (or
+                (eq :github-copilot (cadr-ai:model-provider model))
+                (and
+                 (cadr-ai::model-thinking-level-present-p model :off)
+                 (null
+                  (cadr-ai::model-thinking-level-value model :off))))
+               :absent
+               :off)))
+      (:openai-codex-responses
+       (if reasoning :on :absent))
+      ((:google-generative-ai :google-vertex)
+       (if reasoning
+           :on
+           (if (or
+                (cadr-ai::google-gemini-3-pro-p model)
+                (cadr-ai::google-gemini-3-flash-p model)
+                (cadr-ai::google-gemma-4-p model))
+               :on
+               :off)))
+      (:bedrock-converse-stream
+       (if (and reasoning
+                (cadr-ai::bedrock-claude-model-p model))
+           :on
+           :absent))
+      (:mistral-conversations
+       (if reasoning :on :absent))
+      (:pi-messages
+       (if reasoning :on :absent))
+      (:openai-completions
+       (thinking-matrix-baseline-completions-state model reasoning))
+      (otherwise
+       (error "Unhandled thinking-matrix API: ~A" api)))))
+
+(defun thinking-matrix-event-data (api thinking-p)
+  (case api
+    ((:anthropic-messages)
+     (if thinking-p
+         '("{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"thinking\"}}"
+           "{\"type\":\"content_block_delta\",\"index\":0,\"delta\":{\"type\":\"thinking_delta\",\"thinking\":\"matrix thought\"}}"
+           "{\"type\":\"content_block_stop\",\"index\":0}")
+         nil))
+    ((:openai-responses :openai-codex-responses
+      :azure-openai-responses)
+     (if thinking-p
+         '("{\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"reasoning\",\"id\":\"rs_matrix\",\"summary\":[]}}"
+           "{\"type\":\"response.reasoning_summary_text.delta\",\"output_index\":0,\"delta\":\"matrix thought\"}"
+           "{\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"reasoning\",\"id\":\"rs_matrix\",\"summary\":[{\"type\":\"summary_text\",\"text\":\"matrix thought\"}]}}")
+         nil))
+    ((:openai-completions :mistral-conversations)
+     (if thinking-p
+         '("{\"id\":\"chat_matrix\",\"choices\":[{\"delta\":{\"reasoning_content\":\"matrix thought\"},\"finish_reason\":null}]}"
+           "{\"id\":\"chat_matrix\",\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}")
+         nil))
+    ((:google-generative-ai :google-vertex)
+     (if thinking-p
+         '("{\"candidates\":[{\"content\":{\"parts\":[{\"thought\":true,\"text\":\"matrix thought\"}]}}]}"
+           "{\"candidates\":[{\"content\":{\"parts\":[]},\"finishReason\":\"STOP\"}]}")
+         nil))
+    ((:bedrock-converse-stream)
+     (if thinking-p
+         '("{\"contentBlockDelta\":{\"contentBlockIndex\":0,\"delta\":{\"reasoningContent\":{\"text\":\"matrix thought\"}}}}"
+           "{\"contentBlockDelta\":{\"contentBlockIndex\":1,\"delta\":{\"text\":\"answer\"}}}"
+           "{\"messageStop\":{\"stopReason\":\"end_turn\"}}")
+         nil))
+    ((:pi-messages)
+     (if thinking-p
+         '("{\"type\":\"thinking_start\",\"contentIndex\":0}"
+           "{\"type\":\"thinking_delta\",\"contentIndex\":0,\"delta\":\"matrix thought\"}"
+           "{\"type\":\"thinking_end\",\"contentIndex\":0}")
+         nil))
+    (otherwise
+     (error "Unhandled thinking-matrix API: ~A" api))))
+
+(defun thinking-matrix-event-types (provider model thinking-p)
+  (let ((events nil)
+        (state
+          (cadr-ai::make-provider-stream-state
+           :message (cadr-ai::empty-assistant-message model))))
+    (dolist (data
+             (thinking-matrix-event-data
+              (cadr-ai:model-api model) thinking-p))
+      (cadr-ai::reduce-provider-sse-event
+       provider state
+       (cadr-ai::make-sse-event :data data)
+       (lambda (event) (push event events))))
+    (mapcar #'cadr-ai:stream-event-type
+            (remove-if-not
+             (lambda (event)
+               (member (cadr-ai:stream-event-type event)
+                       '(:thinking-start :thinking-delta :thinking-end)))
+             (nreverse events)))))
+
+(test every-built-in-provider-and-api-has-thinking-level-hit-miss-contract
+  (dolist (definition (cadr-ai:list-provider-definitions))
+    (let* ((provider-id
+             (cadr-ai:provider-definition-id definition))
+           (default-model-id
+             (cadr-ai:provider-definition-default-model definition))
+           (catalog-hit
+             (ignore-errors
+               (cadr-ai:find-model-metadata
+                provider-id default-model-id)))
+           (model-cases
+             (append
+              (when catalog-hit
+                (list (cons :hit default-model-id)))
+              (list
+               (cons :miss
+                     (format nil "matrix-unknown-~(~A~)"
+                             provider-id))))))
+      (when (eq provider-id :radius)
+        (is (null catalog-hit)
+            "Radius is dynamic and intentionally has no static hit"))
+      (dolist (model-case model-cases)
+        (dolist (level *thinking-matrix-levels*)
+          (multiple-value-bind (provider model)
+              (thinking-matrix-provider-model
+               provider-id (cdr model-case) level)
+            (let* ((effective-level
+                     (cadr-ai:clamp-thinking-level model level))
+                   (reasoning
+                     (unless (eq effective-level :off)
+                       effective-level))
+                   (expected-payload-state
+                     (thinking-matrix-baseline-payload-state
+                      model reasoning))
+                   (expected-thinking-events-p
+                     (and reasoning
+                          (cadr-ai:model-reasoning-p model)))
+                   (request
+                     (cadr-ai:build-request
+                      provider model (sample-context)
+                      :stream-p t
+                      :reasoning reasoning))
+                   (payload-state
+                     (thinking-matrix-payload-state
+                      (cadr-ai:model-api model)
+                      (cadr-ai:request-spec-payload request)))
+                   (label
+                     (format nil "~A/~A/~A/~A"
+                             provider-id (car model-case)
+                             (cadr-ai:model-api model) level)))
+                (is (eq expected-payload-state payload-state)
+                    "~A request thinking state differs: expected ~A, got ~A"
+                    label expected-payload-state payload-state)
+                (is
+                 (equal
+                  (if expected-thinking-events-p
+                      '(:thinking-start :thinking-delta :thinking-end)
+                      nil)
+                  (thinking-matrix-event-types
+                   provider model expected-thinking-events-p))
+                 "~A thinking event sequence differs" label))))))))

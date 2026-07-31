@@ -265,6 +265,9 @@
              :session-id session-id
              :tool-choice tool-choice
              :metadata metadata)))
+      (unless reasoning
+        (remhash "reasoning"
+                 (request-spec-payload request)))
       (setf (request-spec-provider request) :openai-codex)
       request)))
 
