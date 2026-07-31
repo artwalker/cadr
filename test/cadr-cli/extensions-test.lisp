@@ -433,6 +433,18 @@
         (is (search "command-won" text))
         (is (not (search "builtin-lost" text)))))))
 
+(test nonbaseline-install-command-stays-out-of-slash-surface
+  (with-test-directory (root)
+    (let ((manager
+            (make-test-extension-manager
+             (merge-pathnames "project/" root)
+             (merge-pathnames "global/" root)
+             (make-string-output-stream))))
+      (is (null
+           (cadr-cli::handle-extension-command
+            "/install https://example.invalid/extension.git"
+            manager))))))
+
 (test self-extension-write-reload-and-tool-call-completes-in-one-agent
   (with-test-directory (root)
     (let* ((cwd (merge-pathnames "project/" root))

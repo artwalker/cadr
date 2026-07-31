@@ -1344,67 +1344,6 @@
   (multiple-value-bind (command argument)
       (split-command line)
     (cond
-      ((string= command "/sessions")
-       (dolist
-           (session
-            (cadr-agent:list-sessions
-             :directory directory :cwd cwd))
-         (format
-          output "~A ~A ~D messages~%"
-          (if (and (cadr-agent:agent-session agent)
-                   (string=
-                    (cadr-agent:session-id session)
-                    (cadr-agent:session-id
-                     (cadr-agent:agent-session agent))))
-              "*"
-              " ")
-          (cadr-agent:session-id session)
-          (length (cadr-agent:session-messages session))))
-       (finish-output output)
-       t)
-      ((string= command "/switch")
-       (unless argument
-         (error
-          'cadr-ai:configuration-error
-          :message "Usage: /switch <session-id>"))
-       (let ((session
-               (find
-                argument
-                (cadr-agent:list-sessions
-                 :directory directory :cwd cwd)
-                :key #'cadr-agent:session-id
-                :test #'string=)))
-         (unless session
-           (error
-            'cadr-agent:session-error
-            :path directory
-            :message
-            (format nil "Session not found for this cwd: ~A"
-                    argument)))
-         (switch-agent-session agent session)
-         (format output "Switched to session ~A~%"
-                 argument)
-         (finish-output output)
-         t))
-      ((string= command "/branch")
-       (unless argument
-         (error
-          'cadr-ai:configuration-error
-          :message "Usage: /branch <entry-id>"))
-       (unless (cadr-agent:agent-session agent)
-         (error
-          'cadr-ai:configuration-error
-          :message "The agent has no persistent session"))
-       (cadr-agent:session-branch
-        (cadr-agent:agent-session agent)
-        argument)
-       (setf
-        (cadr-agent:agent-messages agent)
-        (cadr-agent:session-messages
-         (cadr-agent:agent-session agent)))
-       (format output "Branch point set to ~A~%" argument)
-       (finish-output output)
-       t)
       ((string= command "/name")
        (unless (cadr-agent:agent-session agent)
          (error
@@ -1847,7 +1786,12 @@
 
 (defun make-cli-settings-selector-state
     (settings-manager agent resources
-     &key keybindings)
+     &key keybindings
+       (supports-images-p
+         (not
+          (null
+           (cadr-tui:terminal-capabilities-images
+            (cadr-tui:get-terminal-capabilities))))))
   (let* ((terminal
            (settings-value
             settings-manager
@@ -1872,9 +1816,32 @@
                  collect name))
             :test #'string=))
          (current-theme
-           (settings-choice-value
-            settings-manager "theme"
-            theme-names "dark"))
+           (let ((configured
+                   (settings-value
+                    settings-manager "theme" "dark")))
+             (if (or (member configured theme-names
+                             :test #'string=)
+                     (parse-auto-theme-setting configured))
+                 configured
+                 "dark")))
+         (follow-up-key
+           (or
+            (and keybindings
+                 (first
+                  (cadr-tui:keybinding-keys
+                   keybindings "app.message.followUp")))
+            (and keybindings
+                 (let ((binding
+                         (assoc
+                          "app.message.followUp"
+                          (cadr-tui::keybindings-manager-user-bindings
+                           keybindings)
+                          :test #'string=)))
+                   (let ((value (cdr binding)))
+                     (if (listp value)
+                         (first value)
+                         value))))
+            "alt+enter"))
          (options
            (list
             (make-settings-option
@@ -1886,33 +1853,10 @@
              (cadr-agent::agent-auto-compact-p agent)
              :values (list t nil))
             (make-settings-option
-             :id "show-images"
-             :label "Show images"
-             :description
-             "Render images inline in terminal"
-             :value
-             (if (hash-table-p terminal)
-                 (eq t
-                     (cadr-ai::json-get
-                      terminal "showImages" t))
-                 t)
-             :values (list t nil))
-            (make-settings-option
-             :id "image-width-cells"
-             :label "Image width"
-             :description
-             "Preferred inline image width in terminal cells"
-             :value
-             (if (hash-table-p terminal)
-                 (cadr-ai::json-get
-                  terminal "imageWidthCells" 60)
-                 60)
-             :values '(60 80 120))
-            (make-settings-option
              :id "auto-resize-images"
              :label "Auto-resize images"
              :description
-             "Resize large images to 2000x2000 max for model compatibility"
+             "Resize large images to 2000x2000 max for better model compatibility"
              :value
              (if (hash-table-p images)
                  (eq t
@@ -1936,7 +1880,7 @@
              :id "skill-commands"
              :label "Skill commands"
              :description
-             "Register skills as slash commands"
+             "Register skills as /skill:name commands"
              :value
              (settings-boolean-value
               settings-manager
@@ -1946,7 +1890,7 @@
              :id "show-hardware-cursor"
              :label "Show hardware cursor"
              :description
-             "Show the terminal cursor for IME support"
+             "Show the terminal cursor while still positioning it for IME support"
              :value
              (settings-boolean-value
               settings-manager
@@ -1956,7 +1900,7 @@
              :id "editor-padding"
              :label "Editor padding"
              :description
-             "Horizontal input editor padding"
+             "Horizontal padding for input editor (0-3)"
              :value
              (settings-choice-value
               settings-manager "editorPaddingX"
@@ -1966,7 +1910,7 @@
              :id "output-padding"
              :label "Output padding"
              :description
-             "Horizontal transcript padding"
+             "Horizontal padding for user messages, assistant messages, and thinking"
              :value
              (settings-output-padding
               settings-manager)
@@ -1975,7 +1919,7 @@
              :id "autocomplete-max-visible"
              :label "Autocomplete max items"
              :description
-             "Maximum visible autocomplete items"
+             "Max visible items in autocomplete dropdown (3-20)"
              :value
              (settings-choice-value
               settings-manager
@@ -1986,7 +1930,7 @@
              :id "clear-on-shrink"
              :label "Clear on shrink"
              :description
-             "Clear empty terminal rows when content shrinks"
+             "Clear empty rows when content shrinks (may cause flicker)"
              :value
              (if (hash-table-p terminal)
                  (eq t
@@ -1998,7 +1942,7 @@
              :id "terminal-progress"
              :label "Terminal progress"
              :description
-             "Show terminal tab progress indicators"
+             "Show OSC 9;4 progress indicators in the terminal tab bar"
              :value
              (if (hash-table-p terminal)
                  (eq t
@@ -2011,7 +1955,7 @@
              :id "steering-mode"
              :label "Steering mode"
              :description
-             "Delivery mode for messages queued while streaming"
+             "Enter while streaming queues steering messages. 'one-at-a-time': deliver one, wait for response. 'all': deliver all at once."
              :value
              (cadr-agent:agent-steering-mode agent)
              :values '(:one-at-a-time :all))
@@ -2019,7 +1963,10 @@
              :id "follow-up-mode"
              :label "Follow-up mode"
              :description
-             "Delivery mode for follow-up messages"
+             (format
+              nil
+              "~A queues follow-up messages until agent stops. 'one-at-a-time': deliver one, wait for response. 'all': deliver all at once."
+              follow-up-key)
              :value
              (cadr-agent:agent-follow-up-mode agent)
              :values '(:one-at-a-time :all))
@@ -2027,7 +1974,7 @@
              :id "transport"
              :label "Transport"
              :description
-             "Preferred provider transport"
+             "Preferred transport for providers that support multiple transports"
              :value
              (settings-choice-value
               settings-manager "transport"
@@ -2041,7 +1988,7 @@
              :id "http-idle-timeout"
              :label "HTTP idle timeout"
              :description
-             "Maximum idle gap while waiting for HTTP data"
+             "Maximum idle gap while waiting for HTTP headers or body chunks. Disable for local models that pause longer than five minutes."
              :value
              (settings-http-idle-timeout-ms
               settings-manager)
@@ -2063,7 +2010,7 @@
              :id "cache-miss-notices"
              :label "Cache miss notices"
              :description
-             "Show transcript notices for prompt-cache misses"
+             "Show transcript notices for significant prompt-cache misses"
              :value
              (settings-boolean-value
               settings-manager
@@ -2073,7 +2020,7 @@
              :id "collapse-changelog"
              :label "Collapse changelog"
              :description
-             "Show a condensed changelog after updates"
+             "Show condensed changelog after updates"
              :value
              (settings-boolean-value
               settings-manager
@@ -2083,7 +2030,7 @@
              :id "quiet-startup"
              :label "Quiet startup"
              :description
-             "Disable verbose startup output"
+             "Disable verbose printing at startup"
              :value
              (settings-boolean-value
               settings-manager
@@ -2093,7 +2040,7 @@
              :id "install-telemetry"
              :label "Install telemetry"
              :description
-             "Send anonymous version and update pings"
+             "Send an anonymous version/update ping after changelog-detected updates"
              :value
              (settings-boolean-value
               settings-manager
@@ -2103,7 +2050,7 @@
              :id "default-project-trust"
              :label "Default project trust"
              :description
-             "Fallback when no saved trust decision exists"
+             "Fallback behavior when no extension or saved trust decision decides project trust"
              :value
              (settings-choice-value
               settings-manager
@@ -2117,7 +2064,7 @@
              :id "double-escape-action"
              :label "Double-escape action"
              :description
-             "Action for double Escape with an empty editor"
+             "Action when pressing Escape twice with empty editor"
              :value
              (settings-choice-value
               settings-manager
@@ -2129,7 +2076,7 @@
              :id "tree-filter-mode"
              :label "Tree filter mode"
              :description
-             "Default filter when opening the session tree"
+             "Default filter when opening /tree"
              :value
              (settings-choice-value
               settings-manager
@@ -2141,16 +2088,22 @@
              '("default" "no-tools" "user-only"
                "labeled-only" "all"))
             (make-settings-option
-             :id "anthropic-extra-usage"
-             :label "Anthropic extra usage"
+             :id "warnings"
+             :label "Warnings"
              :description
-             "Warn when subscription auth may use paid extra usage"
+             "Enable or disable individual warnings"
              :value
-             (settings-boolean-value
-              settings-manager
-              "warnings" t
-              "anthropicExtraUsage")
-             :values (list t nil))
+             (list
+              :anthropic-extra-usage
+              (settings-boolean-value
+               settings-manager
+               "warnings" t
+               "anthropicExtraUsage"))
+             :format-function
+             (lambda (value)
+               (declare (ignore value))
+               "configure")
+             :submenu :warnings)
             (make-settings-option
              :id "thinking"
              :label "Thinking level"
@@ -2160,16 +2113,54 @@
              (cadr-agent::agent-thinking-level agent)
              :values
              (cadr-ai:supported-thinking-levels
-              (cadr-agent:agent-model agent)))
+              (cadr-agent:agent-model agent))
+             :submenu :thinking)
             (make-settings-option
              :id "theme"
              :label "Theme"
              :description
              "Color theme for the interface"
              :value current-theme
-             :values theme-names))))
+             :values theme-names
+             :submenu :theme))))
+    (when supports-images-p
+      (setf
+       options
+       (append
+        (subseq options 0 1)
+        (list
+         (make-settings-option
+          :id "show-images"
+          :label "Show images"
+          :description "Render images inline in terminal"
+          :value
+          (if (hash-table-p terminal)
+              (eq t
+                  (cadr-ai::json-get
+                   terminal "showImages" t))
+              t)
+          :values (list t nil))
+         (make-settings-option
+          :id "image-width-cells"
+          :label "Image width"
+          :description
+          "Preferred inline image width in terminal cells"
+          :value
+          (let ((value
+                  (and
+                   (hash-table-p terminal)
+                   (cadr-ai::json-get
+                    terminal "imageWidthCells" 60))))
+            (if (member value '(60 80 120)) value 60))
+          :values '(60 80 120)))
+        (subseq options 1))))
     (make-settings-selector-state
      :options options
+     :theme-names theme-names
+     :current-theme current-theme
+     :terminal-theme
+     (theme-detection-theme
+      (detect-background-from-environment))
      :keybindings keybindings
      :change-callback
      (lambda (id value)
@@ -2182,6 +2173,11 @@
           (setf
            (cadr-agent::agent-auto-compact-p agent)
            value))
+         ((string= id "auto-resize-images")
+          (settings-set-nested
+           settings-manager
+           "images" "autoResize" value
+           :scope :global))
          ((string= id "show-images")
           (settings-set-nested
            settings-manager
@@ -2191,11 +2187,6 @@
           (settings-set-nested
            settings-manager
            "terminal" "imageWidthCells" value
-           :scope :global))
-         ((string= id "auto-resize-images")
-          (settings-set-nested
-           settings-manager
-           "images" "autoResize" value
            :scope :global))
          ((string= id "block-images")
           (settings-set-nested
@@ -2983,6 +2974,26 @@
                      (cadr-ai:assistant-message-model
                       message)))))
                messages))))
+         (authentication-status (provider)
+           (let ((credential
+                   (and
+                    (model-registry-credentials model-registry)
+                    (auth-storage-read
+                     (model-registry-credentials model-registry)
+                     provider))))
+             (when credential
+               (list
+                :type
+                (if (typep credential
+                           'cadr-ai:oauth-credential)
+                    :oauth
+                    :api-key)
+                :source "stored credential"))))
+         (stored-logout-options ()
+           (logout-provider-options
+            (cadr-ai:list-provider-definitions)
+            (auth-storage-list
+             (model-registry-credentials model-registry))))
          (refresh-auth (provider action)
            (let ((previous-auth-source
                    (provider-config-auth-source
@@ -3040,6 +3051,12 @@
                     (provider-config-provider updated)
                     (cadr-agent:agent-model agent)
                     (provider-config-model updated))))))
+         (select-logout-provider (provider)
+           (auth-storage-delete
+            (model-registry-credentials model-registry)
+            provider)
+           (refresh-auth provider :logout)
+           provider)
          (run-prompt (prompt)
            (let ((*bash-live-output*
                    (bash-live-output-for-mode
@@ -3609,6 +3626,26 @@
                    (getf theme :name))
                  :test #'string=)
                 (list :name name :path nil))))
+           :preview-theme-function
+           (lambda (theme-setting)
+             (let* ((background
+                      (theme-detection-theme
+                       (detect-background-from-environment)))
+                    (name
+                      (or
+                       (resolve-theme-setting
+                        theme-setting background)
+                       (string-downcase
+                        (symbol-name background)))))
+               (or
+                (find
+                 name
+                 (resource-snapshot-themes resources)
+                 :key
+                 (lambda (theme)
+                   (getf theme :name))
+                 :test #'string=)
+                (list :name name :path nil))))
            :theme-mode-function
            (lambda ()
              (settings-terminal-theme-mode
@@ -3743,7 +3780,10 @@
              (model-registry-login-api-key
               model-registry provider key)
              (refresh-auth provider :login))
+           :auth-status-function #'authentication-status
+           :logout-options-function #'stored-logout-options
            :on-model-selected #'select-model
+           :on-logout-selected #'select-logout-provider
            :resolve-model-reference-function
            #'resolve-model-reference
            :on-trust-selected #'select-trust

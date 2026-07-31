@@ -12,12 +12,16 @@
    (before-second-read
     :initarg :before-second-read
     :accessor
-    footer-sync-test-terminal-before-second-read)))
+    footer-sync-test-terminal-before-second-read)
+   (before-read-number
+    :initarg :before-read-number
+    :initform 2
+    :accessor footer-sync-test-terminal-before-read-number)))
 
 (defmethod cadr-tui:terminal-read-input
     ((terminal footer-sync-test-terminal))
   (when
-      (= 2
+      (= (footer-sync-test-terminal-before-read-number terminal)
          (incf
           (footer-sync-test-terminal-reads terminal)))
     (funcall
@@ -117,8 +121,10 @@
               (list
                (footer-sync-submit-input
                 "/login openai")
+               (footer-sync-submit-input "")
                (footer-sync-submit-input
                 "/quit"))
+              :before-read-number 3
               :before-second-read
               (lambda ()
                 (wait-for-footer-sync
@@ -805,7 +811,7 @@
     (is (member "model" values :test #'string=))
     (is (member "scoped-models" values
                 :test #'string=))
-    (is (member "sessions" values :test #'string=))
+    (is (not (member "sessions" values :test #'string=)))
     (is (member "settings" values :test #'string=))
     (is (member "login" values :test #'string=))
     (is (member "reload" values :test #'string=))
@@ -1044,7 +1050,7 @@
         (list
          "bash"
          (args "command" "printf ok" "timeout" 7)
-         "printf ok (timeout 7s)")
+         "printf ok")
         (list
          "read"
          (args "path" "README.md" "offset" 2
@@ -1184,8 +1190,14 @@
   (dolist
       (case
        (list
-        (list :complete "printf ok" "$ printf ok")
-        (list :error "exit 7" "$ exit 7")))
+        (list :complete "printf ok"
+              '("" "                                        "
+                " $ printf ok                            "
+                "                                        "))
+        (list :error "exit 7"
+              '("" "                                        "
+                " $ exit 7                               "
+                "                                        "))))
     (destructuring-bind (status summary expected) case
       (let* ((block
                (cadr-tui:make-tool-block
@@ -1195,16 +1207,9 @@
                 :output ""))
              (plain
                (mapcar
-                (lambda (line)
-                  (string-trim
-                   " "
-                   (cadr-tui:strip-terminal-sequences
-                    line)))
+                #'cadr-tui:strip-terminal-sequences
                 (cadr-tui:render-tool-block block 40))))
-        (is (member expected plain :test #'string=))
-        (is (null (search "✓" (format nil "~{~A~%~}" plain))))
-        (is (null (search "×" (format nil "~{~A~%~}" plain))))
-        (is (null (search "timeout" (format nil "~{~A~%~}" plain)))))))
+        (is (equal expected plain)))))
   (let ((call
           (cadr-ai:make-tool-call
            :id "explicit-timeout"
@@ -1212,8 +1217,123 @@
            :arguments
            (args "command" "sleep 1" "timeout" 7))))
     (is (string=
-         "sleep 1 (timeout 7s)"
+         "sleep 1"
          (cadr-cli::tool-arguments-summary call)))))
+
+(test goal9-b3-explicit-bash-timeout-never-appears-in-title
+  (let* ((state (cadr-cli::make-tui-state))
+         (call
+           (cadr-ai:make-tool-call
+            :id "explicit-timeout-title"
+            :name "bash"
+            :arguments
+            (args "command" "sleep 1" "timeout" 10))))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :tool-execution-start
+      :tool-call call))
+    (let* ((block
+             (cadr-cli::tui-entry-tool-block
+              (first (cadr-cli::tui-state-entries state))))
+           (rendered
+             (format nil "~{~A~^~%~}"
+                     (mapcar
+                      #'cadr-tui:strip-terminal-sequences
+                      (cadr-tui:render-tool-block block 60)))))
+      (is (string= "sleep 1"
+                   (cadr-tui:tool-block-summary block)))
+      (is (search "$ sleep 1" rendered))
+      (is (null (search " (timeout 10s)" rendered)))
+      (is (null (search "timeout" rendered))))))
+
+(test goal9-b3-bash-failure-tool-frame-is-an-exact-baseline-snapshot
+  (let* ((block
+           (cadr-tui:make-tool-block
+            :name "bash"
+            :summary "exit 7"
+            :output "Command exited with code 7"
+            :status :error
+            :started-at 10d0
+            :ended-at 10d0
+            :collapsed-p t))
+         (plain
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-tui:render-tool-block block 60))))
+    (is
+     (equal
+      '(""
+        "                                                            "
+        " $ exit 7                                                   "
+        " Command exited with code 7                                 "
+        " Took 0.0s                                                  "
+        "                                                            ")
+      plain))))
+
+(test goal9-b3-write-tool-displays-request-content-not-byte-receipt
+  (let* ((state (cadr-cli::make-tui-state))
+         (content (format nil "alpha~%beta~%gamma"))
+         (call
+           (cadr-ai:make-tool-call
+            :id "write-content"
+            :name "write"
+            :arguments
+            (args "path" "notes.txt" "content" content)))
+         (result
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "write-content"
+            :tool-name "write"
+            :content
+            (list
+             (cadr-ai:make-text-content
+              :text "Wrote 16 UTF-8 bytes to /tmp/notes.txt"))
+            :is-error nil)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :tool-execution-start
+      :tool-call call))
+    (let ((block
+            (cadr-cli::tui-entry-tool-block
+             (first (cadr-cli::tui-state-entries state)))))
+      (is (string= content (cadr-tui:tool-block-output block)))
+      (is
+       (equal
+        '(""
+          "                                                            "
+          " write notes.txt                                            "
+          " alpha                                                      "
+          " beta                                                       "
+          " gamma                                                      "
+          "                                                            ")
+        (mapcar
+         #'cadr-tui:strip-terminal-sequences
+         (cadr-tui:render-tool-block block 60)))))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :tool-execution-end
+      :tool-call call
+      :tool-result result))
+    (let* ((block
+             (cadr-cli::tui-entry-tool-block
+              (first (cadr-cli::tui-state-entries state))))
+           (plain
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              (cadr-tui:render-tool-block block 60))))
+      (is (string= content (cadr-tui:tool-block-output block)))
+      (is
+       (equal
+        '(""
+          "                                                            "
+          " write notes.txt                                            "
+          " alpha                                                      "
+          " beta                                                       "
+          " gamma                                                      "
+          "                                                            ")
+        plain)))))
 
 (test goal9-b3-login-without-arguments-renders-auth-method-selector
   (let ((plain
@@ -1222,12 +1342,20 @@
            (cadr-cli::render-login-method-selector
             (cadr-cli::make-login-method-selector-state)
             80))))
-    (is (equal
-         '("Select authentication method:"
-           "→ Sign in with an account"
-           "  Sign in with an API key"
-           "↑↓ navigate  enter select  escape/ctrl+c cancel")
-         plain)))
+    (is
+     (equal
+      (list
+       (make-string 80 :initial-element #\─)
+       ""
+       " Select authentication method:"
+       ""
+       " → Sign in with an account"
+       "   Sign in with an API key"
+       ""
+       " ↑↓ navigate  enter select  escape/ctrl+c cancel"
+       ""
+       (make-string 80 :initial-element #\─))
+      plain)))
   (let ((commands nil))
     (let (terminal)
       (setf
@@ -1249,6 +1377,44 @@
        :command-function
        (lambda (line)
          (push line commands)))
+      (is (null commands)))))
+
+(test goal9-b3-logout-opens-stored-provider-selector-and-removes-selection
+  (let ((commands nil)
+        (selected nil))
+    (let (terminal)
+      (setf
+       terminal
+       (make-instance
+        'footer-sync-test-terminal
+        :columns 80 :rows 14
+        :inputs
+        (list
+         (footer-sync-submit-input "/logout")
+         (footer-sync-submit-input "")
+         (footer-sync-submit-input "/quit"))
+        :before-second-read
+        (constantly nil)))
+      (cadr-cli::run-tui
+       (constantly nil)
+       :model "mock"
+       :terminal terminal
+       :command-function
+       (lambda (line)
+         (push line commands))
+       :logout-options-function
+       (lambda ()
+         (list
+          (cadr-cli::make-oauth-selector-option
+           :id :openai-codex
+           :name "OpenAI Codex"
+           :auth-type :oauth
+           :status
+           '(:type :oauth :source "stored credential"))))
+       :on-logout-selected
+       (lambda (provider)
+         (setf selected provider)))
+      (is (eq :openai-codex selected))
       (is (null commands)))))
 
 (test goal9-b3-api-key-login-is-masked-cancellable-and-persistent
@@ -1957,15 +2123,18 @@
       (is (search "gemini-3.6-flash" snapshot)))))
 
 (test tui-import-confirmation-defaults-to-an-explicit-yes-choice
-  (let ((selector
+  (let* ((state
           (cadr-cli::make-import-confirmation-list
            "/import '/tmp/session.jsonl'"
-           "/tmp/session.jsonl")))
+           "/tmp/session.jsonl"))
+         (selector
+           (cadr-cli::framed-select-state-select-list
+            state)))
     (let ((rendered
             (format
              nil "~{~A~^~%~}"
-             (cadr-tui:render-select-list
-              selector 80))))
+             (cadr-cli::render-framed-select-state
+              state 80))))
       (is (search "Yes" rendered))
       (is (search "No" rendered)))
     (multiple-value-bind (action value)
@@ -2159,8 +2328,8 @@
       (let ((screen
               (cadr-tui:strip-terminal-sequences
                (format nil "~{~A~^~%~}" lines))))
-        (is (search "Settings" screen))
-        (is (search "Auto-compact  on" screen))))))
+        (is (null (search "Settings" screen)))
+        (is (search "Auto-compact  true" screen))))))
 
 (test goal9-user-and-assistant-message-shells-match-baseline
   (let ((caps

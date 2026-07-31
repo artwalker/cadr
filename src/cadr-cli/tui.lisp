@@ -54,6 +54,164 @@
   component
   done-function)
 
+(defstruct (framed-select-state
+            (:constructor %make-framed-select-state))
+  (title "" :type string)
+  message
+  select-list
+  deadline
+  toggle-tools-function
+  keybindings)
+
+(defun make-framed-select-state
+    (title labels values
+     &key message timeout-ms toggle-tools-function keybindings)
+  (%make-framed-select-state
+   :title title
+   :message message
+   :deadline
+   (and timeout-ms
+        (plusp timeout-ms)
+        (+ (tui-monotonic-seconds)
+           (/ timeout-ms 1000d0)))
+   :toggle-tools-function toggle-tools-function
+   :keybindings
+   (or keybindings
+       (cadr-tui:get-keybindings))
+   :select-list
+   (cadr-tui:make-select-list
+    :items
+    (loop for label in labels
+          for value in values
+          collect
+          (cadr-tui:make-select-item
+           :label label :value value))
+    :height (max 1 (length labels))
+    :show-filter-p nil)))
+
+(defun framed-select-key-hint (state name)
+  (let ((keys
+          (cadr-tui:keybinding-keys
+           (framed-select-state-keybindings state)
+           name)))
+    (format nil "~{~A~^/~}" keys)))
+
+(defun framed-select-title (state now)
+  (let ((deadline (framed-select-state-deadline state)))
+    (if deadline
+        (format nil "~A (~Ds)"
+                (framed-select-state-title state)
+                (max 0 (ceiling (- deadline now))))
+        (framed-select-state-title state))))
+
+(defun render-framed-select-state
+    (state width &key (now (tui-monotonic-seconds)))
+  (labels ((indented (line)
+             (cadr-tui:truncate-to-width
+              (concatenate 'string " " line)
+              width "")))
+    (append
+     (list
+      (cadr-tui:theme-foreground
+       :border
+       (make-string width :initial-element #\─))
+      "")
+     (mapcar
+      (lambda (line)
+        (indented
+         (cadr-tui:theme-foreground
+          :accent
+          (cadr-tui:theme-bold line :enabled-p t)
+          :enabled-p t)))
+      (uiop:split-string
+       (framed-select-title state now)
+       :separator '(#\Newline)))
+     (when (framed-select-state-message state)
+       (mapcar
+        #'indented
+        (uiop:split-string
+         (framed-select-state-message state)
+         :separator '(#\Newline))))
+     (list "")
+     (mapcar
+      #'indented
+      (cadr-tui:render-select-list
+       (framed-select-state-select-list state)
+       (max 1 (1- width))
+       :ansi-theme-p t))
+     (list
+      ""
+      (indented
+       (format nil "↑↓ navigate  ~A select  ~A cancel"
+               (framed-select-key-hint
+                state "tui.select.confirm")
+               (framed-select-key-hint
+                state "tui.select.cancel")))
+      ""
+      (cadr-tui:theme-foreground
+       :border
+       (make-string width :initial-element #\─))))))
+
+(defun framed-select-state-handle-event (state event)
+  (if (eq (cadr-tui:input-event-kind event)
+          :toggle-tools)
+      (progn
+        (when (framed-select-state-toggle-tools-function state)
+          (funcall
+           (framed-select-state-toggle-tools-function state)))
+        (values :changed nil))
+      (multiple-value-bind (action value)
+          (cadr-tui:select-list-handle-event
+           (framed-select-state-select-list state)
+           event)
+        (if (or action
+                (not
+                 (member
+                  (cadr-tui:input-event-kind event)
+                  '(:up :down :page-up :page-down
+                    :text :backspace))))
+            (values action value)
+            (values :changed nil)))))
+
+(defun framed-select-state-handle-raw-input (state data)
+  (let ((keybindings
+          (framed-select-state-keybindings state)))
+    (cond
+      ((or (string= data "k")
+           (selector-keybinding-matches-p
+            keybindings data "tui.select.up"))
+       (multiple-value-bind (action value)
+           (framed-select-state-handle-event
+            state (cadr-tui:make-input-event :kind :up))
+         (values action value t)))
+      ((or (string= data "j")
+           (selector-keybinding-matches-p
+            keybindings data "tui.select.down"))
+       (multiple-value-bind (action value)
+           (framed-select-state-handle-event
+            state (cadr-tui:make-input-event :kind :down))
+         (values action value t)))
+      ((selector-keybinding-matches-p
+        keybindings data "tui.select.confirm")
+       (multiple-value-bind (action value)
+           (framed-select-state-handle-event
+            state (cadr-tui:make-input-event :kind :enter))
+         (values action value t)))
+      ((selector-keybinding-matches-p
+        keybindings data "tui.select.cancel")
+       (multiple-value-bind (action value)
+           (framed-select-state-handle-event
+            state (cadr-tui:make-input-event :kind :escape))
+         (values action value t)))
+      ((and (= (length data) 1)
+            (= (char-code (char data 0)) 15))
+       (multiple-value-bind (action value)
+           (framed-select-state-handle-event
+            state (cadr-tui:make-input-event
+                   :kind :toggle-tools))
+         (values action value t)))
+      (t (values nil nil nil)))))
+
 (defun render-extension-custom-ui
     (state width)
   (let ((component
@@ -981,15 +1139,9 @@
                  ""))))
       (cond
         ((string-equal name "bash")
-         (format
-          nil "~A~A"
-          (safe-tool-summary-value
-           (value "command")
-           "[invalid command]")
-          (let ((timeout (value "timeout")))
-            (if (numberp timeout)
-                (format nil " (timeout ~As)" timeout)
-                ""))))
+         (safe-tool-summary-value
+          (value "command")
+          "[invalid command]"))
         ((string-equal name "read")
          (let ((offset (value "offset"))
                (limit (value "limit")))
@@ -1068,20 +1220,35 @@
 
 (defun rendered-tool-result-text (call result)
   (let ((text (tool-result-text result)))
-    (if
-        (and
-         (string-equal
-          (cadr-ai:tool-call-name call) "edit")
-         (not
-          (cadr-ai:tool-result-message-is-error result)))
-        (let ((diff
-                (tool-result-detail
-                 result :diff "diff")))
-          (if (and (stringp diff)
-                   (plusp (length diff)))
-              diff
-              text))
-        text)))
+    (cond
+      ((cadr-ai:tool-result-message-is-error result)
+       text)
+      ((string-equal
+        (cadr-ai:tool-call-name call) "write")
+       (let ((content
+               (cadr-ai::json-get
+                (cadr-ai:tool-call-arguments call)
+                "content")))
+         (if (stringp content) content text)))
+      ((string-equal
+        (cadr-ai:tool-call-name call) "edit")
+       (let ((diff
+               (tool-result-detail
+                result :diff "diff")))
+         (if (and (stringp diff)
+                  (plusp (length diff)))
+             diff
+             text)))
+      (t text))))
+
+(defun tool-call-preview-output (call)
+  (when (string-equal
+         (cadr-ai:tool-call-name call) "write")
+    (let ((content
+            (cadr-ai::json-get
+             (cadr-ai:tool-call-arguments call)
+             "content")))
+      (and (stringp content) content))))
 
 (defun find-tool-entry (state call-id)
   (find
@@ -1255,8 +1422,10 @@
                    :tool-block
                    (cadr-tui:make-tool-block
                     :name (cadr-ai:tool-call-name call)
-                   :summary
-                   (tool-arguments-summary call)
+                    :summary
+                    (tool-arguments-summary call)
+                    :output
+                    (or (tool-call-preview-output call) "")
                     :started-at
                     (funcall clock-function)
                     :collapsed-p
@@ -1961,6 +2130,9 @@
                      overlay)
                     (render-extension-custom-ui
                      overlay width))
+                   ((framed-select-state-p overlay)
+                    (render-framed-select-state
+                     overlay width :now now))
                    (t
                     (cadr-tui:render-select-list
                      overlay width)))
@@ -2128,51 +2300,51 @@
 
 (defun make-import-confirmation-list
     (line path)
-  (cadr-tui:make-select-list
-   :items
+  (make-framed-select-state
+   "Import session"
+   '("Yes" "No")
    (list
-    (cadr-tui:make-select-item
-     :label "Yes"
-     :value
-     (list :confirmed-p t
-           :line line
-           :path path))
-    (cadr-tui:make-select-item
-     :label "No"
-     :value
-     (list :confirmed-p nil
-           :line line
-           :path path)))))
+    (list :confirmed-p t
+          :line line
+          :path path)
+    (list :confirmed-p nil
+          :line line
+          :path path))
+   :message
+   (format nil "Replace current session with ~A?" path)))
 
 (defparameter +tui-autocomplete-command-specifications+
-  '(("model" "Select the active model" nil)
+  '(("settings" "Open settings menu" nil)
+    ("model" "Select model (opens selector UI)"
+     "<provider/model>")
     ("scoped-models"
-     "Configure models used for cycling" nil)
-    ("tree" "Navigate the session tree" nil)
-    ("trust"
-     "Save project trust for future sessions" nil)
-    ("settings" "Configure cadr settings" nil)
-    ("resume" "Resume a saved session" nil)
-    ("sessions" "Select a saved session" nil)
-    ("switch" "Switch to a session" "<session-id>")
-    ("branch" "Set the session branch point" "<entry-id>")
-    ("name" "Set the session display name" "<name>")
-    ("session" "Show session info and stats" nil)
+     "Enable/disable models for Ctrl+P cycling" nil)
+    ("export"
+     "Export session (HTML default, or specify path: .html/.jsonl)"
+     nil)
+    ("import"
+     "Import and resume a session from a JSONL file" nil)
     ("share" "Share session as a secret GitHub gist" nil)
+    ("copy" "Copy last agent message to clipboard" nil)
+    ("name" "Set session display name" nil)
+    ("session" "Show session info and stats" nil)
     ("changelog" "Show changelog entries" nil)
-    ("hotkeys" "Show keyboard shortcuts" nil)
-    ("fork" "Fork from a previous user message" nil)
+    ("hotkeys" "Show all keyboard shortcuts" nil)
+    ("fork"
+     "Create a new fork from a previous user message" nil)
+    ("clone"
+     "Duplicate the current session at the current position" nil)
+    ("tree" "Navigate session tree (switch branches)" nil)
+    ("trust"
+     "Save project trust decision for future sessions" nil)
+    ("login" "Configure provider authentication" "<provider>")
+    ("logout" "Remove provider authentication" nil)
     ("new" "Start a new session" nil)
-    ("compact" "Compact the current context"
-     "[instructions]")
-    ("copy" "Copy the last agent message" nil)
-    ("clone" "Duplicate the current session" nil)
-    ("import" "Import a JSONL session" "<path>")
-    ("export" "Export the current session" "[path]")
-    ("login" "Authenticate a provider" "[provider]")
-    ("logout" "Remove provider authentication" "[provider]")
-    ("reload" "Reload settings and resources" nil)
-    ("install" "Install an extension" "<source>")
+    ("compact" "Manually compact the session context" nil)
+    ("resume" "Resume a different session" nil)
+    ("reload"
+     "Reload keybindings, extensions, skills, prompts, themes, and context files"
+     nil)
     ("quit" "Quit cadr" nil)))
 
 (defun find-tui-fd-program ()
@@ -2192,8 +2364,109 @@
                 (return-from find-tui-fd-program
                   candidate))))))
 
+(defun tui-model-autocomplete-items
+    (model-items-function prefix)
+  (let* ((models
+           (loop for item in (and model-items-function
+                                  (funcall model-items-function))
+                 for model = (cadr-tui:select-item-value item)
+                 when (typep model 'cadr-ai:model)
+                   collect model))
+         (filtered
+           (cadr-tui::fuzzy-filter
+            models prefix
+            (lambda (model)
+              (format nil "~(~A~)/~A ~A"
+                      (cadr-ai:model-provider model)
+                      (cadr-ai:model-id model)
+                      (cadr-ai::model-name model))))))
+    (loop for model in filtered
+          for provider =
+            (format nil "~(~A~)"
+                    (cadr-ai:model-provider model))
+          for id = (cadr-ai:model-id model)
+          collect
+          (cadr-tui:make-autocomplete-item
+           :value (format nil "~A/~A" provider id)
+           :label id
+           :description provider))))
+
+(defun tui-login-autocomplete-records (options)
+  (let ((records nil))
+    (dolist (option options)
+      (let* ((id
+               (format nil "~(~A~)"
+                       (oauth-selector-option-id option)))
+             (record
+               (find id records
+                     :key (lambda (entry) (getf entry :id))
+                     :test #'string=)))
+        (if record
+            (pushnew
+             (oauth-selector-option-auth-type option)
+             (getf record :auth-types))
+            (push
+             (list
+              :id id
+              :name (oauth-selector-option-name option)
+              :auth-types
+              (list
+               (oauth-selector-option-auth-type option)))
+             records))))
+    (sort records #'string<
+          :key (lambda (entry) (getf entry :name)))))
+
+(defun tui-auth-type-label (auth-type)
+  (if (eq auth-type :oauth)
+      "subscription"
+      "API key"))
+
+(defun tui-login-autocomplete-items
+    (login-options-function prefix)
+  (let* ((records
+           (tui-login-autocomplete-records
+            (and login-options-function
+                 (funcall login-options-function))))
+         (filtered
+           (cadr-tui::fuzzy-filter
+            records prefix
+            (lambda (record)
+              (format nil "~A ~A ~{~A~^ ~}"
+                      (getf record :id)
+                      (getf record :name)
+                      (mapcar
+                       #'tui-auth-type-label
+                       (getf record :auth-types)))))))
+    (loop for record in filtered
+          for id = (getf record :id)
+          for name = (getf record :name)
+          for types =
+            (sort
+             (copy-list (getf record :auth-types))
+             #'<
+             :key
+             (lambda (auth-type)
+               (if (eq auth-type :oauth) 0 1)))
+          for auth-label =
+            (format nil "~{~A~^/~}"
+                    (mapcar #'tui-auth-type-label types))
+          collect
+          (cadr-tui:make-autocomplete-item
+           :value id
+           :label id
+           :description
+           (if (string= name id)
+               auth-label
+               (format nil "~A · ~A" name auth-label))))))
+
 (defun make-tui-autocomplete-provider
-    (&key (base-path (uiop:getcwd)))
+    (&key
+       (base-path (uiop:getcwd))
+       model-items-function
+       (login-options-function
+         (lambda ()
+           (login-provider-options
+            (cadr-ai:list-provider-definitions)))))
   (cadr-tui:make-autocomplete-provider
    :commands
    (loop for (name description argument-hint)
@@ -2202,7 +2475,17 @@
          (cadr-tui:make-autocomplete-command
           :name name
           :description description
-          :argument-hint argument-hint))
+          :argument-hint argument-hint
+          :argument-completer
+          (cond
+            ((string= name "model")
+             (lambda (prefix)
+               (tui-model-autocomplete-items
+                model-items-function prefix)))
+            ((string= name "login")
+             (lambda (prefix)
+               (tui-login-autocomplete-items
+                login-options-function prefix))))))
    :base-path base-path
    :fd-path
    (find-tui-fd-program)))
@@ -2705,6 +2988,7 @@
        all-themes-function
        get-theme-function
        set-theme-function
+       preview-theme-function
        session-state-function
        busy-input-function
        model-items-function
@@ -2718,7 +3002,10 @@
        all-session-items-function
        tree-state-function
        api-key-login-function
+       auth-status-function
+       logout-options-function
        on-model-selected
+       on-logout-selected
        resolve-model-reference-function
        on-trust-selected
        on-import-confirmed
@@ -2806,7 +3093,9 @@
                     autocomplete-max-visible)))
              (cadr-tui:editor-set-autocomplete-provider
               editor
-              (make-tui-autocomplete-provider))
+              (make-tui-autocomplete-provider
+               :model-items-function
+               model-items-function))
              (cadr-tui:editor-set-autocomplete-clock
               editor clock-function)
              (cadr-tui:editor-set-border-mode
@@ -3070,33 +3359,102 @@
                 custom-ui-done-p t)
                (sb-thread:condition-broadcast
                 custom-ui-condition))))
-         (show-custom-ui
-             (factory overlay-p overlay-options)
-           (declare (ignore overlay-p overlay-options))
+         (show-extension-overlay
+             (component &key signal timeout-ms)
            (sb-thread:with-mutex (custom-ui-lock)
              (setf
               custom-ui-done-p nil
               custom-ui-result nil))
+           (unless custom-ui-done-p
+             (sb-thread:with-mutex (lock)
+               (setf overlay-kind :extension-custom
+                     overlay component))
+             (request-render))
+           (let* ((deadline
+                    (and timeout-ms
+                         (+ (get-internal-real-time)
+                            (ceiling
+                             (* timeout-ms
+                                internal-time-units-per-second)
+                             1000))))
+                  (monitor
+                    (and
+                     (or signal deadline)
+                     (sb-thread:make-thread
+                      (lambda ()
+                        (loop with last-countdown = nil
+                          when
+                            (and deadline
+                                 (framed-select-state-p component))
+                          do
+                            (let ((remaining
+                                    (max
+                                     0
+                                     (ceiling
+                                      (/ (- deadline
+                                            (get-internal-real-time))
+                                         internal-time-units-per-second)))))
+                              (unless (eql remaining last-countdown)
+                                (setf last-countdown remaining)
+                                (request-render)))
+                          (when
+                              (sb-thread:with-mutex (custom-ui-lock)
+                                custom-ui-done-p)
+                            (return))
+                          (when
+                              (or
+                               (and signal
+                                    (cadr-agent::extension-cancellation-aborted-p
+                                     signal))
+                               (and deadline
+                                    (>= (get-internal-real-time)
+                                        deadline)))
+                            (finish-custom-ui nil)
+                            (return))
+                          (sleep 0.01)))
+                      :name "cadr-extension-ui-timeout")))
+                  (result
+                    (sb-thread:with-mutex (custom-ui-lock)
+                      (loop until custom-ui-done-p
+                            do
+                            (sb-thread:condition-wait
+                             custom-ui-condition
+                             custom-ui-lock))
+                      custom-ui-result)))
+             (when monitor
+               (sb-thread:join-thread monitor))
+             (sb-thread:with-mutex (lock)
+               (when (eq overlay component)
+                 (setf overlay nil
+                       overlay-kind nil)))
+             (request-render)
+             result))
+         (show-custom-ui
+             (factory overlay-p overlay-options)
+           (declare (ignore overlay-p overlay-options))
+           (sb-thread:with-mutex (custom-ui-lock)
+             (setf custom-ui-done-p nil
+                   custom-ui-result nil))
            (let ((component
                    (funcall factory
                             #'finish-custom-ui)))
-             (unless custom-ui-done-p
-               (sb-thread:with-mutex (lock)
-                 (setf
-                  overlay-kind :extension-custom
-                  overlay
+             (if custom-ui-done-p
+                 custom-ui-result
+                 (show-extension-overlay
                   (make-extension-custom-ui-state
                    :component component
-                   :done-function
-                   #'finish-custom-ui)))
-               (request-render))
-             (sb-thread:with-mutex (custom-ui-lock)
-               (loop until custom-ui-done-p
-                     do
-                     (sb-thread:condition-wait
-                      custom-ui-condition
-                      custom-ui-lock))
-               custom-ui-result)))
+                   :done-function #'finish-custom-ui)))))
+         (show-extension-selection
+             (title options &key message signal timeout-ms)
+           (show-extension-overlay
+            (make-framed-select-state
+             title options options
+             :message message
+             :timeout-ms timeout-ms
+             :toggle-tools-function
+             (lambda ()
+               (toggle-last-tool-block state)))
+            :signal signal :timeout-ms timeout-ms))
          (add-extension-autocomplete-provider
              (factory)
            (let* ((current
@@ -3117,6 +3475,24 @@
            nil)
          (extension-ui-call (method arguments)
            (case method
+             (:select
+              (show-extension-selection
+               (getf arguments :title)
+               (getf arguments :options)
+               :signal (getf arguments :signal)
+               :timeout-ms (getf arguments :timeout-ms)))
+             (:confirm
+              (show-extension-overlay
+               (make-framed-select-state
+                (getf arguments :title)
+                '("Yes" "No") '(t nil)
+                :message (getf arguments :message)
+                :timeout-ms (getf arguments :timeout-ms)
+                :toggle-tools-function
+                (lambda ()
+                  (toggle-last-tool-block state)))
+               :signal (getf arguments :signal)
+               :timeout-ms (getf arguments :timeout-ms)))
              (:custom
               (show-custom-ui
                (getf arguments :factory)
@@ -3433,7 +3809,9 @@
            (let ((options
                    (login-provider-options
                     (cadr-ai:list-provider-definitions)
-                    :auth-type auth-type)))
+                    :auth-type auth-type
+                    :status-function
+                    auth-status-function)))
              (if options
                  (setf
                   overlay-kind :login-provider
@@ -3444,6 +3822,21 @@
                  (notice
                   "No login methods available")))
            (request-render))
+         (open-logout-provider-selector ()
+           (let ((options
+                   (and logout-options-function
+                        (funcall logout-options-function))))
+             (if options
+                 (progn
+                   (setf
+                    overlay-kind :logout-provider
+                    overlay
+                    (make-oauth-selector-state
+                     :mode :logout
+                     :options options))
+                   (request-render))
+                 (notice
+                  "No stored credentials to remove. /logout only removes credentials saved by /login; environment variables and models.json config are unchanged."))))
          (open-api-key-input (option)
            (setf
             overlay-kind :api-key-input
@@ -3568,6 +3961,8 @@
                 (open-settings-selector))
                ((string= trimmed "/login")
                 (open-login-method-selector))
+               ((string= trimmed "/logout")
+                (open-logout-provider-selector))
                ((and
                  (or
                   (string= trimmed "/import")
@@ -3579,9 +3974,7 @@
                  trimmed
                  (path-command-argument
                   trimmed "/import")))
-               ((member trimmed
-                        '("/resume" "/sessions")
-                        :test #'string=)
+               ((string= trimmed "/resume")
                 (open-selector
                  :session
                  (if session-items-function
@@ -3624,6 +4017,21 @@
                           nil "/login ~(~A~)"
                           (oauth-selector-option-id value)))
                         (open-api-key-input value)))
+                   (:logout-provider
+                    (when on-logout-selected
+                      (funcall
+                       on-logout-selected
+                       (oauth-selector-option-id value))
+                      (notice
+                       (if
+                           (eq
+                            (oauth-selector-option-auth-type value)
+                            :oauth)
+                           (format nil "Logged out of ~A"
+                                   (oauth-selector-option-name value))
+                           (format nil
+                                   "Removed stored API key for ~A. Environment variables and models.json config are unchanged."
+                                   (oauth-selector-option-name value))))))
                    (:api-key-input
                     (let* ((option
                              (getf value :option))
@@ -3753,6 +4161,21 @@
                    value
                    (string=
                     (getf value :id)
+                    "theme-preview")
+                   preview-theme-function)
+                (let ((summary
+                        (funcall
+                         preview-theme-function
+                         (getf value :value))))
+                  (sb-thread:with-mutex (lock)
+                    (apply-tui-theme-summary summary)
+                    (reset-theme-watcher summary))))
+              (when
+                  (and
+                   (eq overlay-kind :settings)
+                   value
+                   (string=
+                    (getf value :id)
                     "theme")
                    theme-function)
                 (let ((summary
@@ -3823,11 +4246,15 @@
                                overlay)
                               (extension-custom-ui-handle-event
                                overlay event))
+                             ((framed-select-state-p overlay)
+                              (framed-select-state-handle-event
+                               overlay event))
                              (t
                               (cadr-tui:select-list-handle-event
                                overlay event)))))
                  (handle-overlay-action
-                  action value))
+                  action value)
+                 (request-render))
                (case (cadr-tui:input-event-kind event)
                  ((:escape :interrupt)
                   (if busy-p
@@ -4020,11 +4447,18 @@
                                overlay))
                              (settings-selector-handle-raw-input
                               overlay input))
+                            ((and
+                              (plusp (length input))
+                              (framed-select-state-p overlay))
+                             (framed-select-state-handle-raw-input
+                              overlay input))
                             (t
                              (values nil nil nil)))
                         (if handled-p
-                            (handle-overlay-action
-                             action value)
+                            (progn
+                              (handle-overlay-action
+                               action value)
+                              (request-render))
                             (dolist
                                 (event
                                  (if

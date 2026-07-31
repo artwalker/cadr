@@ -640,13 +640,6 @@
               :warning
               :info)))
        t)
-      ((string= command "/install")
-       (when (zerop (length arguments))
-         (error
-          'cadr-ai:configuration-error
-          :message "Usage: /install <git-url>"))
-       (install-extension-package manager arguments)
-       t)
       ((and
         (plusp (length command))
         (char= (char command 0) #\/))

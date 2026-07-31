@@ -407,7 +407,7 @@
              (,model "Scope: all | scoped"
               "Model catalogs refreshed.")
              (,scoped "Model Configuration" "one")
-             (,settings "Settings" "Auto-compact  on")
+             (,settings "> " "Auto-compact  true")
              (,trust "Project trust" "Do not trust")))
         (destructuring-bind (overlay &rest expected) case
           (multiple-value-bind (snapshot lines row column)

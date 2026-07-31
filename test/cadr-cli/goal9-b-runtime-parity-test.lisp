@@ -170,3 +170,63 @@
             (cadr-cli::tui-entry-text
              (cadr-cli::tui-state-current-assistant state))))
         "The final event stream must retain every explicit line boundary.")))
+
+(test goal9-streamed-markdown-fence-is-exact-through-the-full-tui-chain
+  (let* ((width 32)
+         (rows 12)
+         (state
+           (cadr-cli::make-tui-state
+            :model "faux" :session "stream-fence"))
+         (editor (cadr-tui:make-multiline-editor))
+         (terminal
+           (cadr-tui:make-virtual-terminal
+            :columns width :rows rows))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p t))
+         (message
+           (cadr-ai:make-assistant-message
+            :api :faux :provider :faux :model "faux"
+            :stop-reason :stop))
+         (expected "")
+         (deltas
+           (list "```te" (format nil "xt~%alpha")
+                 (format nil "~%``") "`")))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :message-start :message message))
+    (dolist (delta deltas)
+      (setf expected
+            (concatenate 'string expected delta))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :message-update
+        :message message
+        :stream-event
+        (cadr-ai:make-stream-event
+         :type :text-delta :delta delta)))
+      (is
+       (string=
+        expected
+        (cadr-cli::tui-entry-text
+         (cadr-cli::tui-state-current-assistant state))))
+      (multiple-value-bind (document row column)
+          (cadr-cli::render-tui-state
+           state editor width rows :full-document-p t)
+        (cadr-tui:render-frame
+         renderer document :cursor-row row :cursor-column column)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :message-end :message message))
+    (let ((plain-screen
+            (mapcar
+             (lambda (line)
+               (string-right-trim
+                " "
+                (cadr-tui:strip-terminal-sequences line)))
+             (cadr-tui:virtual-terminal-snapshot terminal))))
+      (is (find " ```text" plain-screen :test #'string=))
+      (is (find "   alpha" plain-screen :test #'string=))
+      (is (find " ```" plain-screen :test #'string=)))))

@@ -165,3 +165,464 @@
          ""
          "?/0 (auto)                                              faux")
         (goal9-b3-plain-lines lines))))))
+
+(test goal9-b3-settings-overlay-is-an-exact-baseline-screen
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (model
+           (cadr-ai:make-model
+            :id "reasoning" :name "Reasoning"
+            :provider :faux :api :openai-responses
+            :reasoning-p t))
+         (agent
+           (cadr-agent:make-agent
+            :provider nil :model model))
+         (state
+           (cadr-cli::make-cli-settings-selector-state
+            manager agent
+            (cadr-cli::make-resource-snapshot)
+            :supports-images-p nil))
+         (width 80)
+         (border
+           (make-string width :initial-element #\─))
+         (options
+           (cadr-cli::settings-selector-state-options state)))
+    (is (= 25 (length options)))
+    (is
+     (equal
+      '("autocompact" "auto-resize-images" "block-images"
+        "skill-commands" "show-hardware-cursor" "editor-padding"
+        "output-padding" "autocomplete-max-visible" "clear-on-shrink"
+        "terminal-progress" "steering-mode" "follow-up-mode" "transport"
+        "http-idle-timeout" "hide-thinking" "cache-miss-notices"
+        "collapse-changelog" "quiet-startup" "install-telemetry"
+        "default-project-trust" "double-escape-action" "tree-filter-mode"
+        "warnings" "thinking" "theme")
+      (mapcar #'cadr-cli::settings-option-id options)))
+    (is
+     (uiop:string-prefix-p
+      "alt+enter queues follow-up messages"
+      (cadr-cli::settings-option-description
+       (find "follow-up-mode" options
+             :key #'cadr-cli::settings-option-id
+             :test #'string=))))
+    (is
+     (equal
+      (list
+       border
+       "> "
+       ""
+       "→ Auto-compact            true"
+       "  Auto-resize images      true"
+       "  Block images            false"
+       "  Skill commands          true"
+       "  Show hardware cursor    false"
+       "  Editor padding          0"
+       "  Output padding          1"
+       "  Autocomplete max items  5"
+       "  Clear on shrink         false"
+       "  Terminal progress       false"
+       "  (1/25)"
+       ""
+       "  Automatically compact context when it gets too large"
+       ""
+       "  Type to search · Enter/Space to change · Esc to cancel"
+       border)
+      (goal9-b3-plain-lines
+       (cadr-cli::render-settings-selector state width))))))
+
+(test goal9-b3-settings-overlay-retains-the-complete-ansi-screen-contract
+  (let ((capabilities
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities capabilities)
+    (unwind-protect
+         (let* ((state
+                  (cadr-cli::make-settings-selector-state
+                   :options
+                   (list
+                    (cadr-cli::make-settings-option
+                     :id "autocompact"
+                     :label "Auto-compact"
+                     :description "Automatically compact context"
+                     :value t :values (list t nil)))))
+                (width 40)
+                (rendered
+                  (cadr-cli::render-settings-selector state width)))
+           (is
+            (equal
+             (list
+              (format nil "~C[38;2;80;80;80m~A~C[39m"
+                      #\Escape
+                      (make-string width :initial-element #\─)
+                      #\Escape)
+              (format nil
+                      "~C[38;2;128;128;128m> ~C[39m~C[38;2;138;190;183m~C[39m"
+                      #\Escape #\Escape #\Escape #\Escape)
+              ""
+              (format nil
+                      "~C[38;2;138;190;183m→ ~C[39m~C[38;2;138;190;183mAuto-compact~C[39m  ~C[38;2;138;190;183mtrue~C[39m"
+                      #\Escape #\Escape #\Escape #\Escape
+                      #\Escape #\Escape)
+              ""
+              (format nil
+                      "~C[38;2;102;102;102m  Automatically compact context~C[39m"
+                      #\Escape #\Escape)
+              ""
+              (format nil
+                      "~C[38;2;102;102;102m  Type to search · Enter/Space to change~C[0m"
+                      #\Escape #\Escape)
+              (format nil "~C[38;2;80;80;80m~A~C[39m"
+                      #\Escape
+                      (make-string width :initial-element #\─)
+                      #\Escape))
+             rendered))
+           (is
+            (every
+             (lambda (line)
+               (or (string= line "")
+                   (search (string #\Escape) line)))
+             rendered)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal9-b3-settings-overlay-wraps-and-searches-through-its-real-input-path
+  (let* ((changes nil)
+         (state
+           (cadr-cli::make-settings-selector-state
+            :options
+            (loop for index below 25
+                  collect
+                  (cadr-cli::make-settings-option
+                   :id (format nil "setting-~D" index)
+                   :label (if (= index 24)
+                              "Terminal progress"
+                              (format nil "Setting ~D" index))
+                   :description (format nil "Description ~D" index)
+                   :value (evenp index)
+                   :values (list t nil)))
+            :change-callback
+            (lambda (id value)
+              (push (list id value) changes)))))
+    (multiple-value-bind (action value handled-p)
+        (cadr-cli::settings-selector-handle-raw-input
+         state (format nil "~C[A" #\Escape))
+      (declare (ignore value))
+      (is (eq :changed action))
+      (is (not (null handled-p))))
+    (is (= 24 (cadr-cli::settings-selector-state-selected state)))
+    (multiple-value-bind (action value handled-p)
+        (cadr-cli::settings-selector-handle-raw-input
+         state (format nil "~C[B" #\Escape))
+      (declare (ignore value))
+      (is (eq :changed action))
+      (is (not (null handled-p))))
+    (is (zerop (cadr-cli::settings-selector-state-selected state)))
+    (dolist (character (coerce "term" 'list))
+      (cadr-cli::settings-selector-handle-event
+       state
+       (cadr-tui:make-input-event
+        :kind :text :text (string character))))
+    (is (string= "term" (cadr-cli::settings-selector-state-query state)))
+    (is
+     (equal
+      '("Terminal progress")
+      (mapcar
+       #'cadr-cli::settings-option-label
+       (cadr-cli::settings-selector-visible-options state))))
+    (is
+     (equal
+      '("────────────" "> term" "" "→ Terminal p" "" "  Descript"
+        "  ion 24" "" "  Type to se" "────────────")
+      (goal9-b3-plain-lines
+       (cadr-cli::render-settings-selector state 12))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :backspace))
+    (is (string= "ter" (cadr-cli::settings-selector-state-query state)))
+    (setf (cadr-cli::settings-selector-state-query state) "")
+    (cadr-cli::settings-selector-apply-filter state)
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :text :text " "))
+    (is (equal '(("setting-0" nil)) changes))))
+
+(test goal9-b3-settings-capability-and-submenus-match-baseline-contract
+  (let* ((manager (cadr-cli::make-memory-settings-manager))
+         (model
+           (cadr-ai:make-model
+            :id "reasoning" :name "Reasoning"
+            :provider :faux :api :openai-responses
+            :reasoning-p t))
+         (agent
+           (cadr-agent:make-agent :provider nil :model model))
+         (with-images
+           (cadr-cli::make-cli-settings-selector-state
+            manager agent (cadr-cli::make-resource-snapshot)
+            :supports-images-p t)))
+    (is (= 27
+           (length
+            (cadr-cli::settings-selector-state-options with-images))))
+    (is
+     (equal
+      '("autocompact" "show-images" "image-width-cells"
+        "auto-resize-images" "block-images" "skill-commands"
+        "show-hardware-cursor")
+      (mapcar
+       #'cadr-cli::settings-option-id
+       (subseq
+       (cadr-cli::settings-selector-state-options with-images)
+        0 7))))
+    (setf (cadr-cli::settings-selector-state-selected with-images) 1)
+    (cadr-cli::settings-selector-handle-event
+     with-images (cadr-tui:make-input-event :kind :enter))
+    (is
+     (null
+      (cadr-cli::settings-nested-value
+       manager "terminal" "showImages" :missing)))
+    (setf (cadr-cli::settings-selector-state-selected with-images) 2)
+    (cadr-cli::settings-selector-handle-event
+     with-images (cadr-tui:make-input-event :kind :enter))
+    (is
+     (= 80
+        (cadr-cli::settings-nested-value
+         manager "terminal" "imageWidthCells" -1))))
+  (let* ((width 80)
+         (border (make-string width :initial-element #\─))
+         (changes nil)
+         (state
+           (cadr-cli::make-settings-selector-state
+            :theme-names '("dark" "light")
+            :current-theme "dark"
+            :options
+            (list
+             (cadr-cli::make-settings-option
+              :id "warnings" :label "Warnings"
+              :description "Enable or disable individual warnings"
+              :value '(:anthropic-extra-usage t)
+              :format-function
+              (lambda (value)
+                (declare (ignore value))
+                "configure")
+              :submenu :warnings)
+             (cadr-cli::make-settings-option
+              :id "thinking" :label "Thinking level"
+              :description
+              "Reasoning depth for thinking-capable models"
+              :value :low :values '(:off :low :high)
+              :submenu :thinking)
+             (cadr-cli::make-settings-option
+              :id "theme" :label "Theme"
+              :description "Color theme for the interface"
+              :value "dark" :values '("dark" "light")
+              :submenu :theme))
+            :change-callback
+            (lambda (id value)
+              (push (list id value) changes)))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is
+     (equal
+      (list
+       border
+       "→ Anthropic extra usage  true"
+       ""
+       "  Warn when Anthropic subscription auth may use paid extra usage"
+       ""
+       "  Enter/Space to change · Esc to cancel"
+       border)
+      (goal9-b3-plain-lines
+       (cadr-cli::render-settings-selector state width))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is (equal '(("anthropic-extra-usage" nil)) changes))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :escape))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :down))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is
+     (equal
+      (list
+       border "Thinking Level" ""
+       "Select reasoning depth for thinking-capable models" ""
+       "  off         No reasoning"
+       "→ low         Light reasoning (~2k tokens)"
+       "  high        Deep reasoning (~16k tokens)"
+       "" "  Enter to select · Esc to go back" border)
+      (goal9-b3-plain-lines
+       (cadr-cli::render-settings-selector state width))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :up))
+    (is (= 0 (cadr-cli::settings-selector-state-submenu-selected state)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :up))
+    (is (= 2 (cadr-cli::settings-selector-state-submenu-selected state)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :escape))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :down))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is
+     (equal
+      (list
+       border "Theme" ""
+       "Select a theme, or choose Automatic to follow terminal appearance."
+       ""
+       "  Automatic   Use separate themes for light and dark terminal appearance"
+       "→ dark"
+       "  light"
+       "" "  Enter to select · Esc to go back" border)
+      (goal9-b3-plain-lines
+       (cadr-cli::render-settings-selector state width))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :up))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is
+     (equal
+      (list
+       border "Automatic Theme" ""
+       "Choose themes for terminal light and dark appearance."
+       "Light/dark detection requires terminal support." ""
+       "→ Light theme  dark"
+       "  Dark theme   dark"
+       "  Apply        save and go back"
+       "  Change mode  switch to single theme"
+       ""
+       "  Theme to use in automatic mode when the terminal is light"
+       "" "  Enter/Space to change · Esc to cancel" border)
+       (goal9-b3-plain-lines
+       (cadr-cli::render-settings-selector state width))))))
+
+(test goal9-b3-every-settings-submenu-wraps-at-both-boundaries
+  (let ((state
+          (cadr-cli::make-settings-selector-state
+           :theme-names '("dark" "light")
+           :current-theme "dark"
+           :options
+           (list
+            (cadr-cli::make-settings-option
+             :id "warnings" :label "Warnings"
+             :value '(:anthropic-extra-usage t)
+             :submenu :warnings)
+            (cadr-cli::make-settings-option
+             :id "thinking" :label "Thinking"
+             :value :low :values '(:off :low :high)
+             :submenu :thinking)
+            (cadr-cli::make-settings-option
+             :id "theme" :label "Theme"
+             :value "dark" :values '("dark" "light")
+             :submenu :theme)))))
+    (dolist (mode '(:warnings :thinking :theme-single
+                    :theme-automatic :theme-light :theme-dark))
+      (setf (cadr-cli::settings-selector-state-mode state) mode
+            (cadr-cli::settings-selector-state-submenu-selected state) 0)
+      (let ((last-index
+              (1-
+               (length
+                (cadr-cli::settings-selector-submenu-options state)))))
+        (cadr-cli::settings-selector-handle-event
+         state (cadr-tui:make-input-event :kind :up))
+        (is (= last-index
+               (cadr-cli::settings-selector-state-submenu-selected state)))
+        (cadr-cli::settings-selector-handle-event
+         state (cadr-tui:make-input-event :kind :down))
+        (is (zerop
+             (cadr-cli::settings-selector-state-submenu-selected state)))))))
+
+(test goal9-b3-settings-raw-input-wraps-submenus-and-uses-configured-follow-up-key
+  (let* ((keybindings
+           (cadr-tui:make-keybindings-manager
+            :user-bindings
+            '(("app.message.followUp" . ("alt+f")))))
+         (manager (cadr-cli::make-memory-settings-manager))
+         (model
+           (cadr-ai:make-model
+            :id "reasoning" :name "Reasoning"
+            :provider :faux :api :openai-responses
+            :reasoning-p t))
+         (agent
+           (cadr-agent:make-agent :provider nil :model model))
+         (full
+           (cadr-cli::make-cli-settings-selector-state
+            manager agent (cadr-cli::make-resource-snapshot)
+            :supports-images-p nil
+            :keybindings keybindings))
+         (follow-up
+           (find "follow-up-mode"
+                 (cadr-cli::settings-selector-state-options full)
+                 :key #'cadr-cli::settings-option-id
+                 :test #'string=))
+         (state
+           (cadr-cli::make-settings-selector-state
+            :theme-names '("dark" "light")
+            :current-theme "dark"
+            :keybindings keybindings
+            :options
+            (list
+             (cadr-cli::make-settings-option
+              :id "theme" :label "Theme"
+              :value "dark" :values '("dark" "light")
+              :submenu :theme)))))
+    (is
+     (uiop:string-prefix-p
+      "alt+f queues follow-up messages"
+      (cadr-cli::settings-option-description follow-up)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (setf (cadr-cli::settings-selector-state-submenu-selected state) 0)
+    (multiple-value-bind (action value handled-p)
+        (cadr-cli::settings-selector-handle-raw-input
+         state (format nil "~C[A" #\Escape))
+      (is (eq :changed action))
+      (is (equal '(:id "theme-preview" :value "light") value))
+      (is (not (null handled-p))))
+    (is (= 2 (cadr-cli::settings-selector-state-submenu-selected state)))
+    (multiple-value-bind (action value handled-p)
+        (cadr-cli::settings-selector-handle-raw-input
+         state (format nil "~C[B" #\Escape))
+      (is (eq :changed action))
+      (is (equal '(:id "theme-preview" :value "dark/dark") value))
+      (is (not (null handled-p))))
+    (is (zerop
+         (cadr-cli::settings-selector-state-submenu-selected state)))))
+
+(test goal9-b3-settings-automatic-theme-drafts-reset-after-cancel
+  (let ((state
+          (cadr-cli::make-settings-selector-state
+           :theme-names '("dark" "light")
+           :current-theme "dark/dark"
+           :terminal-theme :light
+           :options
+           (list
+            (cadr-cli::make-settings-option
+             :id "theme" :label "Theme"
+             :value "dark/dark" :values '("dark" "light")
+             :submenu :theme)))))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :down))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is
+     (string= "light/dark"
+              (cadr-cli::settings-selector-automatic-theme-setting
+               state)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :escape))
+    (is (eq :main (cadr-cli::settings-selector-state-mode state)))
+    (cadr-cli::settings-selector-handle-event
+     state (cadr-tui:make-input-event :kind :enter))
+    (is
+     (string= "dark/dark"
+              (cadr-cli::settings-selector-automatic-theme-setting
+               state)))
+    (setf (cadr-cli::settings-selector-state-submenu-selected state) 3)
+    (multiple-value-bind (action preview)
+        (cadr-cli::settings-selector-handle-event
+         state (cadr-tui:make-input-event :kind :enter))
+      (is (eq :changed action))
+      (is (equal '(:id "theme-preview" :value "dark") preview)))))

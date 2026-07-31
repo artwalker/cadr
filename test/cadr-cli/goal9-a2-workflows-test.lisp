@@ -78,17 +78,15 @@
         (is (string= "workflow"
                      (cadr-agent:session-name source)))
 
-        (is
-         (cadr-cli::handle-session-command
-          (format nil "/branch ~A" common-id)
-          agent :directory sessions :cwd cwd :output output))
+        (cadr-agent:session-branch source common-id)
+        (setf (cadr-agent:agent-messages agent)
+              (cadr-agent:session-messages source))
         (cadr-agent:agent-prompt agent "branch-a-user")
         (let ((branch-a-leaf
                 (cadr-agent::session-leaf-id source)))
-          (is
-           (cadr-cli::handle-session-command
-            (format nil "/branch ~A" common-id)
-            agent :directory sessions :cwd cwd :output output))
+          (cadr-agent:session-branch source common-id)
+          (setf (cadr-agent:agent-messages agent)
+                (cadr-agent:session-messages source))
           (cadr-agent:agent-prompt agent "branch-b-user")
           (let* ((branch-b-leaf
                    (cadr-agent::session-leaf-id source))
@@ -131,17 +129,11 @@
           (is (search "branch-a-user" html))
           (is (search "branch-b-user" html)))
 
-        (is
-         (cadr-cli::handle-session-command
-          "/switch other"
-          agent :directory sessions :cwd cwd :output output))
+        (cadr-cli::switch-agent-session agent other)
         (is (string= "other"
                      (cadr-agent:session-id
                       (cadr-agent:agent-session agent))))
-        (is
-         (cadr-cli::handle-session-command
-          "/switch source"
-          agent :directory sessions :cwd cwd :output output))
+        (cadr-cli::switch-agent-session agent source)
         (is (string= "source"
                      (cadr-agent:session-id
                       (cadr-agent:agent-session agent))))
@@ -154,10 +146,7 @@
              (string= "source"
                       (cadr-agent:session-id
                        (cadr-agent:agent-session agent)))))
-        (is
-         (cadr-cli::handle-session-command
-          "/switch source"
-          agent :directory sessions :cwd cwd :output output))
+        (cadr-cli::switch-agent-session agent source)
 
         (let ((continue-arguments
                 (cadr-cli::parse-cli-arguments '("--continue")))

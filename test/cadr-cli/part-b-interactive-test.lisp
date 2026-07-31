@@ -550,7 +550,7 @@
       (is (search "path (off)"
                   (sixth plain)))
       (is (string= "" (seventh plain)))
-      (is (string= "child" (eighth plain)))
+      (is (string= "> child" (eighth plain)))
       (is (string= "" (ninth plain)))
       (is (some
            (lambda (line)
@@ -2364,13 +2364,18 @@
            (width 16)
            (groups
              (list
-              (cadr-cli::render-settings-selector
-               settings width)
-              (cadr-cli::render-trust-selector
-               trust width)
-              (cadr-cli::render-scoped-models-selector
-               scoped width))))
-      (dolist (lines groups)
+              (cons nil
+                    (cadr-cli::render-settings-selector
+                     settings width))
+              (cons nil
+                    (cadr-cli::render-trust-selector
+                     trust width))
+              (cons nil
+                    (cadr-cli::render-scoped-models-selector
+                     scoped width)))))
+      (dolist (group groups)
+        (let ((selected-background-p (car group))
+              (lines (cdr group)))
         (is (every
              (lambda (line)
                (<= (cadr-tui:visible-width line)
@@ -2390,10 +2395,16 @@
                (format nil "~C[38;2;102;102;102m"
                        #\Escape)
                rendered))
-          (is (search
-               (format nil "~C[48;2;58;58;74m"
-                       #\Escape)
-               rendered)))))))
+          (if selected-background-p
+              (is (search
+                   (format nil "~C[48;2;58;58;74m"
+                           #\Escape)
+                   rendered))
+              (is (null
+                   (search
+                    (format nil "~C[48;2;58;58;74m"
+                            #\Escape)
+                    rendered))))))))))
 
 (test model-selector-preserves-scope-order-and-resets-query-selection
   (let* ((alpha-1
@@ -2659,9 +2670,9 @@
              nil "~{~A~^~%~}"
              (cadr-cli::render-settings-selector
               selector 80))))
-      (is (search "Settings" rendered))
+      (is (null (search "Settings" rendered)))
       (is (search "Auto-compact" rendered))
-      (is (search "on" rendered)))
+      (is (search "true" rendered)))
     (multiple-value-bind (action value)
         (cadr-cli::settings-selector-handle-event
          selector
@@ -2744,6 +2755,12 @@
            (cadr-cli::settings-value
             manager "steeringMode")))
       (select-option "thinking")
+      (cadr-cli::settings-selector-handle-event
+       selector
+       (cadr-tui:make-input-event :kind :down))
+      (cadr-cli::settings-selector-handle-event
+       selector
+       (cadr-tui:make-input-event :kind :enter))
       (is (eq :minimal
               (cadr-agent::agent-thinking-level
                agent)))

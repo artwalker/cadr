@@ -248,6 +248,7 @@
          (identity
            (case provider
              (:openai :openai-codex)
+             (:openai-codex :openai-codex)
              (:anthropic :anthropic)
              (otherwise nil))))
     (unless identity

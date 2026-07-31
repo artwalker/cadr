@@ -52,7 +52,7 @@
          :directory sessions
          :output output)))))
 
-(test session-commands-list-switch-branch-and-export
+(test nonbaseline-session-aliases-stay-out-of-slash-surface-and-export-works
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))
            (cwd (merge-pathnames "project/" root))
@@ -93,29 +93,24 @@
         :provider :openai
         :model "mock"
         :stop-reason :stop))
-      (is (cadr-cli::handle-session-command
-           "/sessions" agent
-           :directory sessions :cwd cwd :output output))
-      (is (cadr-cli::handle-session-command
-           "/switch first" agent
-           :directory sessions :cwd cwd :output output))
+      (dolist (line '("/sessions" "/switch first" "/branch first"))
+        (is (null
+             (cadr-cli::handle-session-command
+              line agent
+              :directory sessions :cwd cwd :output output))))
+      (cadr-cli::switch-agent-session agent first)
       (is (string= "first"
                    (cadr-agent:session-id
                     (cadr-agent:agent-session agent))))
-      (is (cadr-cli::handle-session-command
-           (format nil "/branch ~A" first-node)
-           agent
-           :directory sessions :cwd cwd :output output))
+      (cadr-agent:session-branch first first-node)
       (is (cadr-cli::handle-session-command
            (format nil "/export ~A" (namestring export-path))
            agent
            :directory sessions :cwd cwd :output output))
       (is (probe-file export-path))
       (let ((text (get-output-stream-string output)))
-        (is (search "first" text))
-        (is (search "second" text))
-        (is (search "Switched to session first" text))
-        (is (search "Branch point" text))
+        (is (null (search "Switched to session" text)))
+        (is (null (search "Branch point" text)))
         (is (search "Exported" text))))))
 
 (test copy-clone-and-import-commands-match-interactive-session-semantics
