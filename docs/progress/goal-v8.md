@@ -286,7 +286,7 @@ Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
    持久化的陈旧假设；
 2. `3e78b1962` — TUI live smoke 使用唯一 slash command 前缀，不再依赖
    扩充后会变化的命令排序；
-3. Part F docs 提交 — 最终账本、依赖审计、冻结 object ID、README 验证
+3. `03383d127` — 最终账本、依赖审计、冻结 object ID、README 验证
    等级与终局验收包。
 
 ### 机械结论
