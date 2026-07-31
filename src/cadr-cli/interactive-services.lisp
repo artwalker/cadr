@@ -3187,7 +3187,7 @@
             (bmp-to-png bytes)
             effective-mime "image/png")
       (push
-       "Image converted from image/bmp to image/png."
+       "[Image converted from image/bmp to image/png.]"
        hints))
     (multiple-value-bind (rgba width height)
         (decode-image-rgba
@@ -3244,25 +3244,50 @@
 (defun format-image-dimension-note (result)
   (when (image-process-result-resized-p result)
     (let ((scale
-            (max
-             (/ (image-process-result-original-width
-                 result)
-                (max 1
-                     (image-process-result-width
-                      result)))
-             (/ (image-process-result-original-height
-                 result)
-                (max 1
-                     (image-process-result-height
-                      result))))))
+            (/ (image-process-result-original-width result)
+               (max 1
+                    (image-process-result-width result)))))
       (format
        nil
-       "Image original ~Dx~D, displayed at ~Dx~D (~,2Fx scale)."
+       "[Image: original ~Dx~D, displayed at ~Dx~D. Multiply coordinates by ~,2F to map to original image.]"
        (image-process-result-original-width result)
        (image-process-result-original-height result)
        (image-process-result-width result)
        (image-process-result-height result)
        (coerce scale 'double-float)))))
+
+(defun process-image-file (path)
+  (let* ((bytes (read-binary-file path))
+         (mime-type (detect-image-mime-type bytes)))
+    (when mime-type
+      (if (member mime-type
+                  '("image/gif" "image/webp")
+                  :test #'string=)
+          (values bytes mime-type nil nil)
+          (let ((processed
+                  (handler-case
+                      (process-image-bytes bytes mime-type)
+                    (condition () nil))))
+            (if processed
+                (let* ((dimension-note
+                         (format-image-dimension-note
+                          processed))
+                       (hints
+                         (append
+                          (copy-list
+                           (image-process-result-hints
+                            processed))
+                          (and dimension-note
+                               (list dimension-note)))))
+                  (values
+                   (image-process-result-bytes processed)
+                   (image-process-result-mime-type processed)
+                   hints nil))
+                (values
+                 nil mime-type nil
+                 (if (string= mime-type "image/bmp")
+                     "[Image omitted: could not be converted to a supported inline image format.]"
+                     "[Image omitted: could not be resized below the inline image size limit.]"))))))))
 
 (defparameter +syntax-highlight-languages+
   '("bash" "c" "cpp" "css" "diff" "go"

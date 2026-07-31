@@ -45,6 +45,47 @@
        (+ (get-internal-real-time)
           (round (* timeout internal-time-units-per-second)))))
 
+(defun bash-truncation-notice
+    (details output-path full-output)
+  (when (getf details :truncated)
+    (let* ((total-lines (getf details :total-lines))
+           (output-lines (getf details :output-lines))
+           (start-line (- total-lines output-lines -1))
+           (end-line total-lines))
+      (cond
+        ((getf details :last-line-partial)
+         (let* ((lines
+                  (cadr-agent::harness-text-lines full-output))
+                (last-line (or (car (last lines)) "")))
+           (format
+            nil
+            "[Showing last ~A of line ~D (line is ~A). Full output: ~A]"
+            (format-byte-size (getf details :output-bytes))
+            end-line
+            (format-byte-size (utf8-length last-line))
+            output-path)))
+        ((eq (getf details :truncated-by) :lines)
+         (format
+          nil
+          "[Showing lines ~D-~D of ~D. Full output: ~A]"
+          start-line end-line total-lines output-path))
+        (t
+         (format
+          nil
+          "[Showing lines ~D-~D of ~D (~A limit). Full output: ~A]"
+          start-line end-line total-lines
+          (format-byte-size +maximum-output-bytes+)
+          output-path))))))
+
+(defun append-bash-status (text status)
+  (format nil "~A~:[~;~%~%~]~A"
+          text (plusp (length text)) status))
+
+(defun strip-setsid-timeout-noise (text)
+  (cl-ppcre:regex-replace-all
+   "(?m)^setsid: child [0-9]+ did not exit normally: No such file or directory\\n?"
+   text ""))
+
 (defun read-process-group-id (path)
   (loop repeat 100
         when (probe-file path)
@@ -133,6 +174,7 @@
            (get-internal-real-time))
          (forced-output-close-p nil)
          (reader-error nil)
+         (preserve-output-p nil)
          (reader
            (sb-thread:make-thread
             (lambda ()
@@ -185,31 +227,54 @@
              (lambda () last-output-time)))
            (when reader-error
              (error reader-error))
-           (when timed-out-p
-             (error "Command timed out after ~,2F seconds"
-                    timeout))
-           (let ((full-output
-                   (get-output-stream-string capture)))
+           (let* ((raw-output
+                    (get-output-stream-string capture))
+                  (full-output
+                    (if timed-out-p
+                        (strip-setsid-timeout-noise
+                         raw-output)
+                        raw-output)))
+             (unless (string= raw-output full-output)
+               (write-utf8-file output-path full-output))
              (multiple-value-bind (tail details)
                  (truncate-tail full-output)
-               (let ((truncated (getf details :truncated)))
-                 (unless truncated
+               (let* ((truncated (getf details :truncated))
+                      (notice
+                        (bash-truncation-notice
+                         details (namestring output-path)
+                         full-output))
+                      (text
+                        (if notice
+                            (format nil "~A~%~%~A"
+                                    tail notice)
+                            tail)))
+                 (setf preserve-output-p truncated)
+                 (unless preserve-output-p
                    (when (probe-file output-path)
                      (delete-file output-path)))
+                 (when timed-out-p
+                   (error
+                    (append-bash-status
+                     text
+                     (format nil
+                             "Command timed out after ~A seconds"
+                             timeout))))
                  (values
                   (list
                    (cadr-ai:make-text-content
                     :text
                     (format nil
                             "~A~:[~;~%~]Process exited with code ~D"
-                            tail
-                            (plusp (length tail))
+                            text
+                            (plusp (length text))
                             exit-code)))
-                  (list
-                   :exit-code exit-code
-                   :truncated truncated
-                   :full-output-path
-                   (and truncated (namestring output-path))))))))
+                  (append
+                   (list :exit-code exit-code)
+                   details
+                   (list
+                    :full-output-path
+                    (and truncated
+                         (namestring output-path)))))))))
       (when (uiop:process-alive-p process)
         (terminate-process-group group-id))
       (when (sb-thread:thread-alive-p reader)
@@ -220,7 +285,8 @@
         (when (sb-thread:thread-alive-p reader)
           (ignore-errors
             (sb-thread:terminate-thread reader))))
-      (when (and (or timed-out-p reader-error)
+      (when (and reader-error
+                 (not preserve-output-p)
                  (probe-file output-path))
         (delete-file output-path))
       (when (probe-file group-path)
@@ -236,10 +302,10 @@
               exit-code)))
       (when (/= exit-code 0)
         (error
-         "~A~:[~;~%~%~]Command exited with code ~D"
-         text
-         (plusp (length text))
-         exit-code))
+         (append-bash-status
+          (if (plusp (length text)) text "(no output)")
+          (format nil "Command exited with code ~D"
+                  exit-code))))
       (values
        (list
         (cadr-ai:make-text-content

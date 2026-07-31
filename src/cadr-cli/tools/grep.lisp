@@ -16,21 +16,36 @@
          (filter-scanner (and filter (glob-scanner filter)))
          (literal-p (eq t (cadr-ai::json-get arguments "literal")))
          (ignore-case-p
-           (eq t (cadr-ai::json-get arguments "ignore_case")))
+           (eq t
+               (or (cadr-ai::json-get arguments "ignoreCase")
+                   (cadr-ai::json-get arguments "ignore_case"))))
          (context-count
-           (or (optional-integer arguments "context" 0) 0))
-         (limit (or (optional-integer arguments "limit" 1000)
-                    1000))
+           (max 0
+                (or (optional-integer arguments "context" 0) 0)))
+         (limit (max 1
+                     (or (optional-integer arguments "limit" 100)
+                         100)))
          (scanner
            (grep-matcher pattern literal-p ignore-case-p))
          (output nil)
          (match-count 0)
-         (truncated nil))
-    (when (or (< context-count 0) (< limit 1))
-      (error "context must be nonnegative and limit must be positive"))
+         (match-limit-reached-p nil)
+         (lines-truncated-p nil))
+    (unless (probe-file base)
+      (error "Path not found: ~A" (namestring base)))
+    (let* ((directory-base
+             (uiop:directory-exists-p base))
+           (directory-p (not (null directory-base)))
+           (files
+             (if directory-p
+                 (collect-tree-files directory-base)
+                 (list base))))
     (block search
-      (dolist (file (collect-tree-files base))
-        (let ((relative-base (relative-posix-path file base)))
+      (dolist (file files)
+        (let ((relative-base
+                (if directory-p
+                    (relative-posix-path file directory-base)
+                    (file-namestring file))))
           (when (or (null filter-scanner)
                     (cl-ppcre:scan filter-scanner relative-base))
             (handler-case
@@ -38,7 +53,7 @@
                          (text-lines
                           (uiop:read-file-string
                            file :external-format :utf-8)))
-                       (relative (relative-posix-path file cwd)))
+                       (relative relative-base))
                   (loop for line in lines
                         for index from 0
                         when (cl-ppcre:scan scanner line)
@@ -56,36 +71,69 @@
                                         #\:
                                         #\-)
                                   do
-                                  (push
-                                   (format
-                                    nil "~A~C~D~C~A"
-                                    relative marker
-                                    (1+ context-index) marker
-                                    (let ((text
-                                            (nth context-index
-                                                 lines)))
-                                      (if (> (length text) 10000)
-                                          (subseq text 0 10000)
-                                          text)))
-                                   output)))
+                                  (multiple-value-bind
+                                        (display-line truncated-p)
+                                      (truncate-tool-line
+                                       (nth context-index lines))
+                                    (when truncated-p
+                                      (setf lines-truncated-p t))
+                                    (push
+                                     (format
+                                      nil "~A~C~D~C ~A"
+                                      relative marker
+                                      (1+ context-index) marker
+                                      display-line)
+                                     output))))
                           (when (>= match-count limit)
-                            (setf truncated t)
+                            (setf match-limit-reached-p t)
                             (return-from search))))
               (error () nil))))))
     (let ((raw-output
             (if output
                 (join-lines (nreverse output))
                 "No matches found")))
+      (when (null output)
+        (return-from grep-lines
+          (values
+           (list
+            (cadr-ai:make-text-content :text raw-output))
+           nil)))
       (multiple-value-bind (bounded-output bounds)
-          (truncate-head raw-output)
-        (values
-         (list
-          (cadr-ai:make-text-content
-           :text bounded-output))
-         (list
-          :truncated
-          (or truncated (getf bounds :truncated))
-          :matches match-count))))))
+          (truncate-head
+           raw-output :max-lines most-positive-fixnum)
+        (let ((notices nil)
+              (details nil))
+          (when match-limit-reached-p
+            (push
+             (format
+              nil
+              "~D matches limit reached. Use limit=~D for more, or refine pattern"
+              limit (* 2 limit))
+             notices)
+            (setf (getf details :match-limit-reached)
+                  limit))
+          (when (getf bounds :truncated)
+            (push
+             (format nil "~A limit reached"
+                     (format-byte-size
+                      +maximum-output-bytes+))
+             notices)
+            (setf (getf details :truncation) bounds))
+          (when lines-truncated-p
+            (push
+             "Some lines truncated to 500 chars. Use read tool to see full lines"
+             notices)
+            (setf (getf details :lines-truncated) t))
+          (when notices
+            (setf
+             bounded-output
+             (format nil "~A~%~%[~{~A~^. ~}]"
+                     bounded-output (nreverse notices))))
+          (values
+           (list
+            (cadr-ai:make-text-content
+             :text bounded-output))
+           details)))))))
 
 (defun make-grep-tool (cwd)
   (cadr-ai:make-tool

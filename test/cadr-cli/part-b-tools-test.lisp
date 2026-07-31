@@ -42,7 +42,8 @@
         (invoke-tool
          (cadr-cli:make-ls-tool directory)
          (args "limit" 2))
-      (is (string= (format nil "A.txt~%dir/")
+      (is (string= (format nil
+                           "A.txt~%dir/~%~%[2 entries limit reached. Use limit=4 for more]")
                    (result-text content)))
       (is (= 2 (getf details :entry-limit-reached))))
     (signals error

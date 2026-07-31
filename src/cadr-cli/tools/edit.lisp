@@ -1,6 +1,7 @@
 (in-package #:cadr-cli)
 
 (defstruct replacement
+  index
   start
   end
   old
@@ -68,8 +69,6 @@
     prepared))
 
 (defun all-occurrences (needle haystack)
-  (when (zerop (length needle))
-    (error "oldText must not be empty"))
   (loop with start = 0
         for position = (search needle haystack :start2 start)
         while position
@@ -171,12 +170,38 @@
   (nth-value 0
              (fuzzy-normalize-with-map text)))
 
-(defun fuzzy-match-range (old original)
+(defun edit-old-text-empty-error (path index total)
+  (if (= total 1)
+      (error "oldText must not be empty in ~A." path)
+      (error "edits[~D].oldText must not be empty in ~A."
+             index path)))
+
+(defun edit-not-found-error (path index total)
+  (if (= total 1)
+      (error
+       "Could not find the exact text in ~A. The old text must match exactly including all whitespace and newlines."
+       path)
+      (error
+       "Could not find edits[~D] in ~A. The oldText must match exactly including all whitespace and newlines."
+       index path)))
+
+(defun edit-duplicate-error (path index total occurrences)
+  (if (= total 1)
+      (error
+       "Found ~D occurrences of the text in ~A. The text must be unique. Please provide more context to make it unique."
+       occurrences path)
+      (error
+       "Found ~D occurrences of edits[~D] in ~A. Each oldText must be unique. Please provide more context to make it unique."
+       occurrences index path)))
+
+(defun fuzzy-match-range (old original path index total)
+  (when (zerop (length old))
+    (edit-old-text-empty-error path index total))
   (let* ((exact-positions
            (all-occurrences old original))
          (fuzzy-old (fuzzy-normalize old)))
     (when (zerop (length fuzzy-old))
-      (error "oldText must not be empty"))
+      (edit-old-text-empty-error path index total))
     (multiple-value-bind
           (fuzzy-original starts ends)
         (fuzzy-normalize-with-map original)
@@ -185,9 +210,10 @@
                fuzzy-old fuzzy-original)))
         (cond
           ((null fuzzy-positions)
-           (error "oldText was not found: ~S" old))
+           (edit-not-found-error path index total))
           ((cdr fuzzy-positions)
-           (error "oldText is not unique: ~S" old))
+           (edit-duplicate-error
+            path index total (length fuzzy-positions)))
           ((and exact-positions
                 (null (cdr exact-positions)))
            (values
@@ -204,21 +230,24 @@
               (aref starts position)
               (aref ends last)))))))))
 
-(defun parse-replacements (arguments original)
+(defun parse-replacements (arguments original path)
   (let ((edits (cadr-ai::json-get arguments "edits")))
     (unless (and (vectorp edits) (plusp (length edits)))
-      (error "edits must contain at least one replacement"))
+      (error
+       "Edit tool input is invalid. edits must contain at least one replacement."))
     (let ((replacements nil))
       (loop for edit across edits
+            for index from 0
             for old = (required-string edit "oldText")
             for new = (required-string edit "newText")
             do
             (multiple-value-bind (start end)
                 (fuzzy-match-range
                  (normalize-line-endings old)
-                 original)
+                 original path index (length edits))
                (push
                 (make-replacement
+                 :index index
                  :start start
                  :end end
                  :old old
@@ -231,7 +260,12 @@
             when (and previous
                       (< (replacement-start replacement)
                          (replacement-end previous)))
-              do (error "Edits overlap in the original file"))
+              do
+              (error
+               "edits[~D] and edits[~D] overlap in ~A. Merge them into one edit or target disjoint regions."
+               (replacement-index previous)
+               (replacement-index replacement)
+               path))
       replacements)))
 
 (defun apply-replacements (original replacements)
@@ -540,6 +574,9 @@
             (display-diff nil)
             (patch nil)
             (first-changed-line nil))
+       (unless (probe-file path)
+         (error "Could not edit file: ~A. Error code: ENOENT."
+                display-path))
        (with-file-mutation-queue
         path
         (lambda ()
@@ -552,11 +589,20 @@
               (let* ((original
                        (normalize-line-endings body))
                      (replacements
-                       (parse-replacements arguments original))
+                       (parse-replacements
+                        arguments original display-path))
                      (updated
                        (apply-replacements original replacements)))
                 (setf replacement-count
                       (length replacements))
+                (when (string= original updated)
+                  (if (= replacement-count 1)
+                      (error
+                       "No changes made to ~A. The replacement produced identical content. This might indicate an issue with special characters or the text not existing as expected."
+                       display-path)
+                      (error
+                       "No changes made to ~A. The replacements produced identical content."
+                       display-path)))
                 (multiple-value-bind
                       (diff first-line groups)
                     (generate-edit-display-diff
@@ -577,12 +623,10 @@
         (list
          (cadr-ai:make-text-content
           :text
-          (format nil "Applied ~D replacement~:P to ~A"
+          (format nil "Successfully replaced ~D block(s) in ~A."
                   replacement-count
-                  (namestring path))))
-        (list :path (namestring path)
-              :replacements replacement-count
-              :diff display-diff
+                  display-path)))
+        (list :diff display-diff
               :patch patch
               :first-changed-line
               first-changed-line))))))

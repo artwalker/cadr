@@ -26,18 +26,51 @@
                (uiop:subdirectories path))
               #'string-lessp
               :key #'directory-entry-name))
-           (truncated (> (length entries) limit))
+           (limit-reached-p (> (length entries) limit))
            (selected
              (subseq entries 0 (min limit (length entries))))
-           (text
-             (if selected
-                 (join-lines
-                  (mapcar #'directory-entry-name selected))
-                 "(empty directory)")))
-      (values
-       (list (cadr-ai:make-text-content :text text))
-       (and truncated
-            (list :entry-limit-reached limit))))))
+           (raw-output
+             (and selected
+                  (join-lines
+                   (mapcar #'directory-entry-name selected)))))
+      (if (null selected)
+          (values
+           (list
+            (cadr-ai:make-text-content
+             :text "(empty directory)"))
+           nil)
+          (multiple-value-bind (output truncation)
+              (truncate-head
+               raw-output :max-lines most-positive-fixnum)
+            (let ((notices nil)
+                  (details nil))
+              (when limit-reached-p
+                (push
+                 (format
+                  nil
+                  "~D entries limit reached. Use limit=~D for more"
+                  limit (* 2 limit))
+                 notices)
+                (setf
+                 (getf details :entry-limit-reached)
+                 limit))
+              (when (getf truncation :truncated)
+                (push
+                 (format nil "~A limit reached"
+                         (format-byte-size
+                          +maximum-output-bytes+))
+                 notices)
+                (setf (getf details :truncation)
+                      truncation))
+              (when notices
+                (setf
+                 output
+                 (format nil "~A~%~%[~{~A~^. ~}]"
+                         output (nreverse notices))))
+              (values
+               (list
+                (cadr-ai:make-text-content :text output))
+               details)))))))
 
 (defun make-ls-tool (cwd)
   (cadr-ai:make-tool

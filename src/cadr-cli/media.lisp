@@ -1234,22 +1234,3 @@
                      (aref bytes (+ source 3))
                      255))))))
         (encode-rgba-png rgba width height)))))
-
-(defun process-image-file (path)
-  (let* ((bytes (read-binary-file path))
-         (mime-type (detect-image-mime-type bytes)))
-    (when mime-type
-      (if (member mime-type
-                  '("image/bmp" "image/jpeg")
-                  :test #'string=)
-          (let ((png
-                  (convert-image-bytes-to-png
-                   bytes mime-type)))
-            (when png
-              (values
-               png "image/png"
-               (list
-                (format
-                 nil "Converted ~A to PNG"
-                 mime-type)))))
-          (values bytes mime-type nil)))))

@@ -25,9 +25,11 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (let* ((path
+     (let* ((display-path
+              (required-string arguments "path"))
+            (path
               (resolve-tool-path
-               cwd (required-string arguments "path")))
+               cwd display-path))
             (content (required-string arguments "content")))
        (with-file-mutation-queue
         path
@@ -37,8 +39,7 @@
         (list
          (cadr-ai:make-text-content
           :text
-          (format nil "Wrote ~D UTF-8 bytes to ~A"
-                  (utf8-length content)
-                  (namestring path))))
-        (list :path (namestring path)
-              :bytes (utf8-length content)))))))
+          (format nil "Successfully wrote ~D bytes to ~A"
+                  (utf16-code-unit-length content)
+                  display-path)))
+        nil)))))

@@ -13,7 +13,8 @@
                  "offset" 2
                  "limit" 2))
         (declare (ignore details))
-        (is (string= (format nil "二~%三")
+        (is (string= (format nil
+                             "二~%三~%~%[2 more lines in file. Use offset=4 to continue.]")
                      (result-text content))))
       (signals error
         (invoke-tool

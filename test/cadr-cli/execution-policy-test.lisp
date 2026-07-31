@@ -24,5 +24,5 @@
         (declare (ignore details))
         (is (probe-file path))
         (is (string= "executed" (read-text path)))
-        (is (search "Wrote"
-                    (result-text content)))))))
+        (is (string= "Successfully wrote 8 bytes to direct.txt"
+                     (result-text content)))))))

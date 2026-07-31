@@ -83,6 +83,7 @@
                              (:file "part-b-package-test")
                              (:file "search-tools-test")
                              (:file "bash-test")
+                             (:file "tool-result-parity-test")
                              (:file "execution-policy-test")
                              (:file "config-auth-test")
                              (:file "modes-test")

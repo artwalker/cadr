@@ -45,9 +45,9 @@
                  "context" 1
                  "limit" 10))
         (declare (ignore details))
-        (is (search "src/a.txt:2:Needle 42"
+        (is (search "src/a.txt:2: Needle 42"
                     (result-text content)))
-        (is (search "src/a.txt-1-before"
+        (is (search "src/a.txt-1- before"
                     (result-text content)))
         (is (not (search "b.log"
                          (result-text content)))))
@@ -59,7 +59,7 @@
                  "path" "."
                  "limit" 1))
         (is (search "Needle 42" (result-text content)))
-        (is (eq t (getf details :truncated)))))))
+        (is (= 1 (getf details :match-limit-reached)))))))
 
 (test glob-and-grep-follow-parseable-gitignore-rules
   (with-test-directory (directory)
@@ -150,9 +150,8 @@
                "literal" t
                "context" 1
                "limit" 100))
-      (is (<= (length
-               (babel:string-to-octets
-                (result-text content)
-                :encoding :utf-8))
-              (* 50 1024)))
-      (is (eq t (getf details :truncated))))))
+      (is (search "50.0KB limit reached"
+                  (result-text content)))
+      (is (eq t
+              (getf (getf details :truncation)
+                    :truncated))))))
