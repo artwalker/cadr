@@ -35,6 +35,37 @@
         (is (not (search "line 2105" (result-text content))))
         (is (eq t (getf details :truncated)))))))
 
+(test read-offset-matches-baseline-zero-negative-and-beyond-end-semantics
+  (with-test-directory (directory)
+    (let ((file (merge-pathnames "offsets.txt" directory))
+          (tool (make-read-tool directory)))
+      (write-text file (format nil "first~%second~%third"))
+      (dolist (offset '(0 -7))
+        (multiple-value-bind (content details)
+            (invoke-tool
+             tool
+             (args "path" "offsets.txt" "offset" offset "limit" 1))
+          (declare (ignore details))
+          (is (search "first" (result-text content)))
+          (is (null (search "second" (result-text content))))))
+      (handler-case
+          (progn
+            (invoke-tool
+             tool
+             (args "path" "offsets.txt" "offset" 4))
+            (fail "offset beyond EOF should fail"))
+        (error (condition)
+          (is
+           (string=
+            "Offset 4 is beyond end of file (3 lines total)"
+            (princ-to-string condition)))))
+      (let ((empty (merge-pathnames "empty.txt" directory)))
+        (write-text empty "")
+        (multiple-value-bind (content details)
+            (invoke-tool tool (args "path" "empty.txt"))
+          (declare (ignore details))
+          (is (string= "" (result-text content))))))))
+
 (test write-creates-parents-and-overwrites-utf8
   (with-test-directory (directory)
     (let ((tool (make-write-tool directory))

@@ -657,6 +657,30 @@
      registry :allow-network t :force t)
     credential))
 
+(defun model-registry-login-api-key
+    (registry provider-id key)
+  (unless (cadr-ai::non-empty-string-p key)
+    (error 'cadr-ai:configuration-error
+           :message "API key must not be empty"))
+  (let ((storage
+          (model-registry-credentials registry)))
+    (unless storage
+      (error 'cadr-ai:configuration-error
+             :message
+             "No credential storage is configured"))
+    (let ((credential
+            (cadr-ai:make-api-key-credential
+             :provider
+             (provider-symbol-from-key provider-id)
+             :key key)))
+      (auth-storage-modify
+       storage provider-id
+       (lambda (current)
+         (declare (ignore current))
+         credential))
+      (refresh-model-registry registry)
+      credential)))
+
 (defun built-in-models ()
   (mapcar
    #'cadr-ai::model-from-metadata

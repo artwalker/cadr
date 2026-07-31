@@ -205,8 +205,11 @@
       (cadr-ai::json-put property "description" description))
     property))
 
-(defun number-property ()
-  (cadr-ai::json-object "type" "number"))
+(defun number-property (&optional description)
+  (let ((property (cadr-ai::json-object "type" "number")))
+    (when description
+      (cadr-ai::json-put property "description" description))
+    property))
 
 (defun boolean-property ()
   (cadr-ai::json-object "type" "boolean"))

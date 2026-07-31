@@ -1700,6 +1700,24 @@
       width))
     (otherwise nil)))
 
+(defun render-tui-entries
+    (entries width &key extension-host now)
+  (loop
+    for entry in entries
+    for index from 0
+    for rendered =
+      (render-tui-entry
+       entry width
+       :extension-host extension-host
+       :now now)
+    append
+      (if
+          (and
+           (plusp index)
+           (eq (tui-entry-type entry) :user))
+          (cons "" rendered)
+          rendered)))
+
 (defun trailing-lines (lines count)
   (if (<= (length lines) count)
       lines
@@ -1929,6 +1947,16 @@
                      overlay)
                     (render-settings-selector
                      overlay width))
+                   ((login-method-selector-state-p
+                     overlay)
+                    (render-login-method-selector
+                     overlay width))
+                   ((api-key-input-state-p overlay)
+                    (render-api-key-input-state
+                     overlay width))
+                   ((oauth-selector-state-p overlay)
+                    (render-oauth-selector
+                     overlay width))
                    ((extension-custom-ui-state-p
                      overlay)
                     (render-extension-custom-ui
@@ -1936,14 +1964,11 @@
                    (t
                     (cadr-tui:render-select-list
                      overlay width)))
-                 (loop for entry in
-                       (tui-state-entries state)
-                       append
-                       (render-tui-entry
-                       entry width
-                       :extension-host
-                       extension-host
-                       :now now))))
+                 (render-tui-entries
+                  (tui-state-entries state)
+                  width
+                  :extension-host extension-host
+                  :now now)))
            (startup-lines
              (and
               (null overlay)
@@ -1968,6 +1993,10 @@
                   (list "")
                   entry-content)
                  entry-content))
+           (top-align-content-p
+             (and startup-lines
+                  (null entry-content)
+                  (null overlay)))
            (visible
              (cond
                ((and full-document-p
@@ -1993,12 +2022,19 @@
                       (length visible)))
               :initial-element "")))
       (values
-       (nconc padding visible
-              status-indicator
-              widget-above-lines
-              editor-lines
-              widget-below-lines
-              footer-lines)
+       (if top-align-content-p
+           (nconc visible padding
+                  status-indicator
+                  widget-above-lines
+                  editor-lines
+                  widget-below-lines
+                  footer-lines)
+           (nconc padding visible
+                  status-indicator
+                  widget-above-lines
+                  editor-lines
+                  widget-below-lines
+                  footer-lines))
        (+ rendered-content-height
           (length status-indicator)
           (length widget-above-lines)
@@ -2681,6 +2717,7 @@
        session-items-function
        all-session-items-function
        tree-state-function
+       api-key-login-function
        on-model-selected
        resolve-model-reference-function
        on-trust-selected
@@ -3386,6 +3423,33 @@
             (make-import-confirmation-list
              line path))
            (request-render))
+         (open-login-method-selector ()
+           (setf
+            overlay-kind :login-method
+            overlay
+            (make-login-method-selector-state))
+           (request-render))
+         (open-login-provider-selector (auth-type)
+           (let ((options
+                   (login-provider-options
+                    (cadr-ai:list-provider-definitions)
+                    :auth-type auth-type)))
+             (if options
+                 (setf
+                  overlay-kind :login-provider
+                  overlay
+                  (make-oauth-selector-state
+                   :mode :login
+                   :options options))
+                 (notice
+                  "No login methods available")))
+           (request-render))
+         (open-api-key-input (option)
+           (setf
+            overlay-kind :api-key-input
+            overlay
+            (make-api-key-input-state option))
+           (request-render))
          (open-fork-selector ()
            (let ((items
                    (and fork-items-function
@@ -3502,6 +3566,8 @@
                 (open-trust-selector))
                ((string= trimmed "/settings")
                 (open-settings-selector))
+               ((string= trimmed "/login")
+                (open-login-method-selector))
                ((and
                  (or
                   (string= trimmed "/import")
@@ -3545,6 +3611,39 @@
                          value)
                          (tui-state-model
                          state)))))
+                   (:login-method
+                    (open-login-provider-selector value))
+                   (:login-provider
+                    (if
+                        (eq
+                         (oauth-selector-option-auth-type
+                          value)
+                         :oauth)
+                        (start-work
+                         (format
+                          nil "/login ~(~A~)"
+                          (oauth-selector-option-id value)))
+                        (open-api-key-input value)))
+                   (:api-key-input
+                    (let* ((option
+                             (getf value :option))
+                           (provider
+                             (oauth-selector-option-id
+                              option)))
+                      (unless api-key-login-function
+                        (error
+                         'cadr-ai:configuration-error
+                         :message
+                         "API key login is unavailable"))
+                      (funcall
+                       api-key-login-function
+                       provider
+                       (getf value :key))
+                      (notice
+                       (format
+                        nil "Saved API key for ~A"
+                        (oauth-selector-option-name
+                         option)))))
                    (:trust
                     (when on-trust-selected
                       (funcall
@@ -3709,6 +3808,16 @@
                              ((settings-selector-state-p
                                overlay)
                               (settings-selector-handle-event
+                               overlay event))
+                             ((login-method-selector-state-p
+                               overlay)
+                              (login-method-selector-handle-event
+                               overlay event))
+                             ((api-key-input-state-p overlay)
+                              (api-key-input-state-handle-event
+                               overlay event))
+                             ((oauth-selector-state-p overlay)
+                              (oauth-selector-handle-event
                                overlay event))
                              ((extension-custom-ui-state-p
                                overlay)

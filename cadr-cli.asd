@@ -93,6 +93,7 @@
                              (:file "llama-extension-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
+                             (:file "goal9-b3-p2-regressions-test")
                              (:file "goal9-a2-interactive-test")
                              (:file "goal9-a2-workflows-test")
                              (:file "migration-test")

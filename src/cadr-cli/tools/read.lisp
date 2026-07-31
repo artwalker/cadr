@@ -22,24 +22,24 @@
              nil)))))
     (let* ((text (uiop:read-file-string
                   path :external-format :utf-8))
-         (lines (text-lines text)))
-    (when (< offset 1)
-      (error "offset must be at least 1"))
-    (when (and limit (< limit 1))
-      (error "limit must be at least 1"))
-    (when (> offset (max 1 (length lines)))
-      (error "offset ~D is beyond the end of the file (~D lines)"
-             offset (length lines)))
-    (let* ((start (min (1- offset) (length lines)))
-           (end (if limit
-                    (min (length lines) (+ start limit))
-                    (length lines)))
-           (selected (subseq lines start end)))
-      (multiple-value-bind (output details)
-          (bounded-lines selected :head)
-        (values
-         (list (cadr-ai:make-text-content :text output))
-         details))))))
+           (lines (or (text-lines text) (list "")))
+           (start (if (zerop offset)
+                      0
+                      (max 0 (1- offset)))))
+      (when (and limit (< limit 1))
+        (error "limit must be at least 1"))
+      (when (>= start (length lines))
+        (error "Offset ~D is beyond end of file (~D lines total)"
+               offset (length lines)))
+      (let* ((end (if limit
+                      (min (length lines) (+ start limit))
+                      (length lines)))
+             (selected (subseq lines start end)))
+        (multiple-value-bind (output details)
+            (bounded-lines selected :head)
+          (values
+           (list (cadr-ai:make-text-content :text output))
+           details))))))
 
 (defun make-read-tool (cwd)
   (cadr-ai:make-tool

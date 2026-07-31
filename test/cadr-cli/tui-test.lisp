@@ -704,7 +704,8 @@
                   (format
                    nil "~{~A~^~%~}"
                    (cadr-tui:render-tool-block block 80))))
-            (is (search "× $" rendered))
+            (is (search "$ printf" rendered))
+            (is (null (search "×" rendered)))
             (is (null (search "✓" rendered)))))))))
 
 (test goal9-b-tool-events-record-runtime-for-the-live-tui
@@ -1101,6 +1102,257 @@
           (is (string= expected summary))
           (is (null (search "{" summary)))
           (is (null (search "\"" summary))))))))
+
+(test goal9-b3-user-block-spacing-and-wrapping-match-baseline
+  (let* ((assistant
+           (cadr-cli::make-tui-entry
+            :type :assistant
+            :text "previous answer"
+            :content-blocks
+            (list (cons :assistant "previous answer"))))
+         (user
+           (cadr-cli::make-tui-entry
+            :type :user
+            :text
+            "Think for several seconds, then give exactly 12 numbered one-line steps for checking a CLI release."))
+         (lines
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-cli::render-tui-entries
+             (list assistant user) 86))))
+    (is (equal
+         '(""
+           " previous answer                                                                      "
+           ""
+           "                                                                                      "
+           " Think for several seconds, then give exactly 12 numbered one-line steps for checking "
+           " a CLI release.                                                                       "
+           "                                                                                      ")
+         lines))))
+
+(test goal9-b3-tool-title-copy-has-no-status-glyph-or-default-timeout
+  (let* ((tool (cadr-cli:make-bash-tool #P"/tmp/"))
+         (properties
+           (cadr-ai::json-get
+            (cadr-ai:tool-parameters tool) "properties"))
+         (command
+           (cadr-ai::json-get properties "command"))
+         (timeout
+           (cadr-ai::json-get properties "timeout")))
+    (is (string= "Bash command to execute"
+                 (cadr-ai::json-get command "description")))
+    (is (string=
+         "Timeout in seconds (optional, no default timeout)"
+         (cadr-ai::json-get timeout "description")))
+    (is (not (cadr-ai::json-present-p timeout "default"))))
+  (let* ((state
+           (cadr-cli::make-tui-state))
+         (call
+           (cadr-ai:make-tool-call
+            :id "no-default-timeout"
+            :name "bash"
+            :arguments
+            (args "command" "printf ok"))))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :tool-execution-start
+      :tool-call call))
+    (let ((block
+            (cadr-cli::tui-entry-tool-block
+             (first
+              (cadr-cli::tui-state-entries state)))))
+      (is (string=
+           "printf ok"
+           (cadr-tui:tool-block-summary block)))
+      (setf (cadr-tui:tool-block-status block)
+            :complete)
+      (let ((plain
+              (mapcar
+               (lambda (line)
+                 (string-trim
+                  " "
+                  (cadr-tui:strip-terminal-sequences
+                   line)))
+               (cadr-tui:render-tool-block block 40))))
+        (is (member "$ printf ok" plain
+                    :test #'string=))
+        (is (null
+             (search
+              "timeout"
+              (format nil "~{~A~%~}" plain)))))))
+  (dolist
+      (case
+       (list
+        (list :complete "printf ok" "$ printf ok")
+        (list :error "exit 7" "$ exit 7")))
+    (destructuring-bind (status summary expected) case
+      (let* ((block
+               (cadr-tui:make-tool-block
+                :name "bash"
+                :summary summary
+                :status status
+                :output ""))
+             (plain
+               (mapcar
+                (lambda (line)
+                  (string-trim
+                   " "
+                   (cadr-tui:strip-terminal-sequences
+                    line)))
+                (cadr-tui:render-tool-block block 40))))
+        (is (member expected plain :test #'string=))
+        (is (null (search "✓" (format nil "~{~A~%~}" plain))))
+        (is (null (search "×" (format nil "~{~A~%~}" plain))))
+        (is (null (search "timeout" (format nil "~{~A~%~}" plain)))))))
+  (let ((call
+          (cadr-ai:make-tool-call
+           :id "explicit-timeout"
+           :name "bash"
+           :arguments
+           (args "command" "sleep 1" "timeout" 7))))
+    (is (string=
+         "sleep 1 (timeout 7s)"
+         (cadr-cli::tool-arguments-summary call)))))
+
+(test goal9-b3-login-without-arguments-renders-auth-method-selector
+  (let ((plain
+          (mapcar
+           #'cadr-tui:strip-terminal-sequences
+           (cadr-cli::render-login-method-selector
+            (cadr-cli::make-login-method-selector-state)
+            80))))
+    (is (equal
+         '("Select authentication method:"
+           "→ Sign in with an account"
+           "  Sign in with an API key"
+           "↑↓ navigate  enter select  escape/ctrl+c cancel")
+         plain)))
+  (let ((commands nil))
+    (let (terminal)
+      (setf
+       terminal
+       (make-instance
+        'footer-sync-test-terminal
+        :columns 80 :rows 12
+        :inputs
+        (list
+         (footer-sync-submit-input "/login")
+         (string #\Escape)
+         (footer-sync-submit-input "/quit"))
+        :before-second-read
+        (constantly nil)))
+      (cadr-cli::run-tui
+       (constantly nil)
+       :model "mock"
+       :terminal terminal
+       :command-function
+       (lambda (line)
+         (push line commands)))
+      (is (null commands)))))
+
+(test goal9-b3-api-key-login-is-masked-cancellable-and-persistent
+  (let* ((option
+           (cadr-cli::make-oauth-selector-option
+            :id :anthropic
+            :name "Anthropic"
+            :auth-type :api-key
+            :method-name "Anthropic API key"))
+         (state
+           (cadr-cli::make-api-key-input-state option)))
+    (multiple-value-bind (action value)
+        (cadr-cli::api-key-input-state-handle-event
+         state
+         (cadr-tui:make-input-event
+          :kind :text
+          :text "secret-value"))
+      (declare (ignore value))
+      (is (null action)))
+    (let ((rendered
+            (format
+             nil "~{~A~^~%~}"
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              (cadr-cli::render-api-key-input-state
+               state 80)))))
+      (is (search "Login to Anthropic" rendered))
+      (is (search "************" rendered))
+      (is (null (search "secret-value" rendered))))
+    (multiple-value-bind (action value)
+        (cadr-cli::api-key-input-state-handle-event
+         state
+         (cadr-tui:make-input-event :kind :escape))
+      (is (eq :cancel action))
+      (is (null value))))
+  (with-test-directory (directory)
+    (let* ((auth-path
+             (merge-pathnames "auth.json" directory))
+           (registry
+             (cadr-cli:make-model-registry
+              :path
+              (merge-pathnames "models.json" directory)
+              :credentials
+              (cadr-cli:make-file-auth-storage
+               auth-path)))
+           (provider-options
+             (cadr-cli::login-provider-options
+              (cadr-ai:list-provider-definitions)
+              :auth-type :api-key))
+           (provider-index
+             (position
+              :anthropic provider-options
+              :key
+              #'cadr-cli::oauth-selector-option-id))
+           (selected-provider nil)
+           (refresh-count 0)
+           (terminal
+             (make-instance
+              'footer-sync-test-terminal
+              :columns 80 :rows 16
+              :inputs
+              (append
+               (list
+                (footer-sync-submit-input "/login")
+                (format nil "~C[B" #\Escape)
+                (string #\Return))
+               (loop repeat provider-index
+                     collect
+                     (format nil "~C[B" #\Escape))
+               (list
+                (string #\Return)
+                (footer-sync-submit-input
+                 "persisted-secret")
+                (footer-sync-submit-input "/quit")))
+              :before-second-read
+              (constantly nil))))
+      (cadr-cli::run-tui
+       (constantly nil)
+       :model "mock"
+       :terminal terminal
+       :api-key-login-function
+       (lambda (provider key)
+         (setf selected-provider provider)
+         (cadr-cli::model-registry-login-api-key
+          registry provider key)
+         (incf refresh-count)))
+      (is (eq :anthropic selected-provider))
+      (is (= 1 refresh-count))
+      (let ((credential
+              (cadr-cli:auth-storage-read
+               (cadr-cli::model-registry-credentials registry)
+               selected-provider)))
+        (is (typep credential
+                   'cadr-ai:api-key-credential))
+        (is (string=
+             "persisted-secret"
+             (cadr-ai:api-key-credential-key
+              credential))))
+      (is (find
+           selected-provider
+           (cadr-cli::model-registry-available-models
+            registry
+            :auth-path auth-path)
+           :key #'cadr-ai:model-provider)))))
 
 (test goal9-real-edit-tool-result-reaches-semantic-diff-rendering
   (with-test-directory (directory)

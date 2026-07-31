@@ -5435,6 +5435,130 @@
    (cl-ppcre:regex-replace-all
     "[\\n\\t]" (or text "") " ")))
 
+(defun tree-selector-shorten-path (path)
+  (let ((home (or (uiop:getenv "HOME") "")))
+    (if
+        (and
+         (plusp (length home))
+         (<= (length home) (length path))
+         (string= home path :end2 (length home)))
+        (concatenate
+         'string "~" (subseq path (length home)))
+        path)))
+
+(defun tree-selector-tool-argument
+    (arguments name &optional fallback)
+  (or
+   (and arguments
+        (cadr-ai::json-get arguments name))
+   (and fallback arguments
+        (cadr-ai::json-get arguments fallback))))
+
+(defun tree-selector-format-tool-call
+    (name arguments)
+  (cond
+    ((string= name "read")
+     (let* ((path
+              (tree-selector-shorten-path
+               (or
+                (tree-selector-tool-argument
+                 arguments "path" "file_path")
+                "")))
+            (offset-present-p
+              (cadr-ai::json-present-p
+               arguments "offset"))
+            (limit-present-p
+              (cadr-ai::json-present-p
+               arguments "limit"))
+            (offset
+              (and offset-present-p
+                   (cadr-ai::json-get
+                    arguments "offset")))
+            (limit
+              (and limit-present-p
+                   (cadr-ai::json-get
+                    arguments "limit"))))
+       (format
+        nil "[read: ~A~A]"
+        path
+        (if (or offset-present-p limit-present-p)
+            (let* ((start (or offset 1))
+                   (end
+                     (and limit
+                          (+ start limit -1))))
+              (format nil ":~A~@[-~A~]"
+                      start end))
+            ""))))
+    ((member name '("write" "edit")
+             :test #'string=)
+     (format
+      nil "[~A: ~A]" name
+      (tree-selector-shorten-path
+       (or
+        (tree-selector-tool-argument
+         arguments "path" "file_path")
+        ""))))
+    ((string= name "bash")
+     (let* ((raw
+              (or
+               (tree-selector-tool-argument
+                arguments "command")
+               ""))
+            (normalized
+              (tree-selector-normalize-display-text
+               raw))
+            (command
+              (subseq normalized 0
+                      (min 50
+                           (length normalized)))))
+       (format nil "[bash: ~A~A]"
+               command
+               (if (> (length raw) 50)
+                   "..." ""))))
+    ((string= name "grep")
+     (format
+      nil "[grep: /~A/ in ~A]"
+      (or
+       (tree-selector-tool-argument
+        arguments "pattern")
+       "")
+      (tree-selector-shorten-path
+       (or
+        (tree-selector-tool-argument
+         arguments "path")
+        "."))))
+    ((string= name "find")
+     (format
+      nil "[find: ~A in ~A]"
+      (or
+       (tree-selector-tool-argument
+        arguments "pattern")
+       "")
+      (tree-selector-shorten-path
+       (or
+        (tree-selector-tool-argument
+         arguments "path")
+        "."))))
+    ((string= name "ls")
+     (format
+      nil "[ls: ~A]"
+      (tree-selector-shorten-path
+       (or
+        (tree-selector-tool-argument
+         arguments "path")
+        "."))))
+    (t
+     (let* ((json
+              (cadr-ai::stringify-json
+               arguments))
+            (short
+              (subseq json 0
+                      (min 40 (length json)))))
+       (format nil "[~A: ~A~A]"
+               name short
+               (if (> (length json) 40)
+                   "..." ""))))))
+
 (defun tree-selector-entry-display-text
     (entry selected-p)
   (let* ((type (getf entry :type))
@@ -5467,8 +5591,17 @@
                 ((:tool-result :toolresult)
                  (cadr-tui:theme-foreground
                   :muted
-                  (if (plusp (length text))
-                      text "[tool]")))
+                  (let ((name
+                          (getf entry
+                                :tool-call-name))
+                        (arguments
+                          (getf entry
+                                :tool-call-arguments)))
+                    (if (and name arguments)
+                        (tree-selector-format-tool-call
+                         name arguments)
+                        (format nil "[~A]"
+                                (or name "tool"))))))
                 (:bash-execution
                  (cadr-tui:theme-foreground
                   :dim
@@ -5716,21 +5849,66 @@
 
 (defun tree-selector-help-key
     (state name)
-  (first
-   (cadr-tui:keybinding-keys
-    (tree-selector-state-keybindings state)
-    name)))
+  (or
+   (first
+    (cadr-tui:keybinding-keys
+     (tree-selector-state-keybindings state)
+     name))
+   (cdr
+    (assoc
+     name
+     '(("tui.select.up" . "up")
+       ("tui.select.down" . "down")
+       ("tui.editor.cursorLeft" . "left")
+       ("tui.editor.cursorRight" . "right"))
+     :test #'string=))))
 
 (defun tree-selector-help-keys
     (state names)
-  (format
-   nil "~{~A~^/~}"
-   (remove
-    nil
-    (mapcar
-     (lambda (name)
-       (tree-selector-help-key state name))
-     names))))
+  (let ((keys
+          (remove
+           nil
+           (mapcar
+            (lambda (name)
+              (tree-selector-help-key state name))
+            names))))
+    (when keys
+      (let* ((parts
+               (mapcar
+                (lambda (key)
+                  (let ((separator
+                          (position #\+ key
+                                    :from-end t)))
+                    (if separator
+                        (cons
+                         (subseq key 0 (1+ separator))
+                         (subseq key (1+ separator)))
+                        (cons "" key))))
+                keys))
+             (prefix (caar parts))
+             (compact
+               (if
+                   (and
+                    (string= prefix "ctrl+")
+                    (every
+                     (lambda (part)
+                       (string= prefix (car part)))
+                     parts))
+                   (concatenate
+                    'string prefix
+                    (format nil "~{~A~^/~}"
+                            (mapcar #'cdr parts)))
+                   (format nil "~{~A~^/~}" keys))))
+        (reduce
+         (lambda (text replacement)
+           (cl-ppcre:regex-replace-all
+            (car replacement) text
+            (cdr replacement)))
+         '(("\\bup\\b" . "↑")
+           ("\\bdown\\b" . "↓")
+           ("\\bleft\\b" . "←")
+           ("\\bright\\b" . "→"))
+         :initial-value compact)))))
 
 (defun tree-selector-help-lines (state width)
   (let* ((items
@@ -6362,6 +6540,119 @@
   method-name
   status)
 
+(defstruct (login-method-selector-state
+            (:constructor
+                %make-login-method-selector-state))
+  select-list)
+
+(defun make-login-method-selector-state ()
+  (%make-login-method-selector-state
+   :select-list
+   (cadr-tui:make-select-list
+    :items
+    (list
+     (cadr-tui:make-select-item
+      :label "Sign in with an account"
+      :value :oauth)
+     (cadr-tui:make-select-item
+      :label "Sign in with an API key"
+      :value :api-key))
+    :height 2
+    :show-filter-p nil)))
+
+(defun login-method-selector-handle-event
+    (state event)
+  (if
+      (member
+       (cadr-tui:input-event-kind event)
+       '(:clear :interrupt))
+      (values :cancel nil)
+      (cadr-tui:select-list-handle-event
+       (login-method-selector-state-select-list
+        state)
+       event)))
+
+(defun render-login-method-selector (state width)
+  (append
+   (list "Select authentication method:")
+   (cadr-tui:render-select-list
+    (login-method-selector-state-select-list state)
+    width
+    :ansi-theme-p t)
+   (list
+    "↑↓ navigate  enter select  escape/ctrl+c cancel")))
+
+(defstruct (api-key-input-state
+            (:constructor
+                %make-api-key-input-state))
+  option
+  input)
+
+(defun make-api-key-input-state (option)
+  (%make-api-key-input-state
+   :option option
+   :input
+   (cadr-tui:make-single-line-input
+    :prompt "> ")))
+
+(defun api-key-input-state-handle-event
+    (state event)
+  (if
+      (member
+       (cadr-tui:input-event-kind event)
+       '(:escape :cancel :clear :interrupt :eof))
+      (values :cancel nil)
+      (multiple-value-bind (action value)
+          (cadr-tui:single-line-input-handle-event
+           (api-key-input-state-input state)
+           event)
+        (if (eq action :submit)
+            (if (cadr-ai::non-empty-string-p value)
+                (values
+                 :select
+                 (list
+                  :option
+                  (api-key-input-state-option state)
+                  :key value))
+                (values :changed nil))
+            (values action value)))))
+
+(defun render-api-key-input-state (state width)
+  (let* ((option
+           (api-key-input-state-option state))
+         (input
+           (api-key-input-state-input state))
+         (masked
+           (cadr-tui:make-single-line-input
+            :value
+            (make-string
+             (length
+              (cadr-tui:single-line-input-value
+               input))
+             :initial-element #\*)
+            :prompt "> ")))
+    (setf
+     (cadr-tui::single-line-input-cursor masked)
+     (cadr-tui::single-line-input-cursor input))
+    (multiple-value-bind (input-lines row column)
+        (cadr-tui:render-single-line-input
+         masked width)
+      (declare (ignore row column))
+      (append
+       (list
+        (selector-border-line width)
+        (selector-fit-line
+         (format
+          nil "Login to ~A"
+          (oauth-selector-option-name option))
+         width)
+        ""
+        "API key")
+       input-lines
+       (list
+        "escape/ctrl+c cancel  enter submit"
+        (selector-border-line width))))))
+
 (defstruct (oauth-selector-state
             (:constructor
                 %make-oauth-selector-state))
@@ -6915,44 +7206,49 @@
           (current
             (model-selector-state-current-model state)))
       (append
-       (list
-        (selector-border-line width)
-        ""
-        (selector-fit-line
-         (if
-             (model-selector-state-scoped-models state)
-             (let ((scoped-p
-                     (eq :scoped
-                         (model-selector-state-scope
-                          state))))
-               (concatenate
-                'string
-                (cadr-tui:theme-foreground
-                 :muted "Scope: ")
-                (cadr-tui:theme-foreground
-                 (if scoped-p :muted :accent)
-                 "all")
-                (cadr-tui:theme-foreground
-                 :muted " | ")
-                (cadr-tui:theme-foreground
-                 (if scoped-p :accent :muted)
-                 "scoped")))
-             (cadr-tui:theme-foreground
-              :warning
-              "Only showing models from configured providers."))
-         width)
-        (selector-dim-line "tab scope (all/scoped)" width)
-        ""
-        (selector-fit-line
-         (concatenate
-          'string
-          (cadr-tui:theme-foreground
-           :muted "Search: ")
-          (cadr-tui:theme-foreground
-           :accent
-           (model-selector-state-query state)))
-         width)
-        "")
+       (append
+        (list
+         (selector-border-line width)
+         ""
+         (selector-fit-line
+          (if
+              (model-selector-state-scoped-models state)
+              (let ((scoped-p
+                      (eq :scoped
+                          (model-selector-state-scope
+                           state))))
+                (concatenate
+                 'string
+                 (cadr-tui:theme-foreground
+                  :muted "Scope: ")
+                 (cadr-tui:theme-foreground
+                  (if scoped-p :muted :accent)
+                  "all")
+                 (cadr-tui:theme-foreground
+                  :muted " | ")
+                 (cadr-tui:theme-foreground
+                  (if scoped-p :accent :muted)
+                  "scoped")))
+              (cadr-tui:theme-foreground
+               :warning
+               "Only showing models from configured providers. Use /login to add providers."))
+          width))
+        (when (model-selector-state-scoped-models state)
+          (list
+           (selector-dim-line
+            "tab scope (all/scoped)" width)))
+        (list
+         ""
+         (selector-fit-line
+          (concatenate
+           'string
+           (cadr-tui:theme-foreground
+            :muted "> ")
+           (cadr-tui:theme-foreground
+            :accent
+            (model-selector-state-query state)))
+          width)
+         ""))
        (if models
            (loop
              for model in models

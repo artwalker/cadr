@@ -1186,13 +1186,13 @@
   (case status
     (:running
      (values :accent
-             :tool-pending-bg "…"))
+             :tool-pending-bg nil))
     (:error
      (values :error
-             :tool-error-bg "×"))
+             :tool-error-bg nil))
     (otherwise
      (values :success
-             :tool-success-bg "✓"))))
+             :tool-success-bg nil))))
 
 (defun normalize-tool-output (text)
   (cl-ppcre:regex-replace-all
@@ -1565,10 +1565,12 @@
     (let* ((content-width (max 1 (- width 2)))
            (header
              (format
-              nil "~A ~A~@[ ~A~]"
-              (theme-foreground
-               status-token indicator
-               :enabled-p ansi-theme-p)
+              nil "~@[~A ~]~A~@[ ~A~]"
+              (and
+               indicator
+               (theme-foreground
+                status-token indicator
+                :enabled-p ansi-theme-p))
               (theme-foreground
                :tool-title
                (theme-bold

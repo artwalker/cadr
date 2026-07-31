@@ -554,8 +554,33 @@
               (remhash target result)))))
     result))
 
+(defun session-tree-tool-calls (session)
+  (let ((result
+          (make-hash-table :test #'equal)))
+    (dolist (entry
+             (cadr-agent:session-entries session))
+      (let ((message
+              (cadr-agent:session-entry-message
+               entry)))
+        (when
+            (typep message
+                   'cadr-ai:assistant-message)
+          (dolist (block
+                   (cadr-ai:assistant-message-content
+                    message))
+            (when (typep block 'cadr-ai:tool-call)
+              (setf
+               (gethash (cadr-ai:tool-call-id block)
+                        result)
+               (list
+                :name (cadr-ai:tool-call-name block)
+                :arguments
+                (cadr-ai:tool-call-arguments
+                 block))))))))
+    result))
+
 (defun session-entry-tree-selector-data
-    (session entry label-timestamps)
+    (session entry label-timestamps tool-calls)
   (let* ((type
            (cadr-agent:session-entry-type entry))
          (message
@@ -568,7 +593,15 @@
               :tool-result)
              (otherwise nil)))
          (id
-           (cadr-agent:session-entry-id entry)))
+           (cadr-agent:session-entry-id entry))
+         (tool-call
+           (and
+            (typep message
+                   'cadr-ai:tool-result-message)
+            (gethash
+             (cadr-ai:tool-result-message-tool-call-id
+              message)
+             tool-calls))))
     (list
      :id id
      :parent-id
@@ -634,19 +667,30 @@
       entry)
      :custom-type
      (cadr-agent:session-entry-custom-type
-      entry))))
+      entry)
+     :tool-call-name
+     (and
+      (typep message 'cadr-ai:tool-result-message)
+      (or (getf tool-call :name)
+          (cadr-ai:tool-result-message-tool-name
+           message)))
+     :tool-call-arguments
+     (getf tool-call :arguments))))
 
 (defun session-tree-selector-data (session)
   (if (null session)
       (values nil nil)
       (let ((label-timestamps
               (session-tree-label-timestamps
-               session)))
+               session))
+            (tool-calls
+              (session-tree-tool-calls session)))
         (values
          (mapcar
           (lambda (entry)
             (session-entry-tree-selector-data
-             session entry label-timestamps))
+             session entry label-timestamps
+             tool-calls))
           (cadr-agent:session-entries session))
          (cadr-agent:session-leaf-id session)))))
 
@@ -2349,6 +2393,7 @@
             :provider
             (or (cli-arguments-provider command) "openai")
             :model (cli-arguments-model command)
+            :reasoning (cli-arguments-thinking command)
             :base-url (cli-arguments-base-url command)
             :api-key (cli-arguments-api-key command)
             :allow-missing-auth-p t))
@@ -3693,6 +3738,11 @@
            #'all-session-items
            :tree-state-function
            #'current-session-tree
+           :api-key-login-function
+           (lambda (provider key)
+             (model-registry-login-api-key
+              model-registry provider key)
+             (refresh-auth provider :login))
            :on-model-selected #'select-model
            :resolve-model-reference-function
            #'resolve-model-reference

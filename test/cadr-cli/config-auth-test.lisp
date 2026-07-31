@@ -41,6 +41,108 @@
                      (cadr-ai:model-base-url
                       (cadr-cli:provider-config-model config))))))))
 
+(test unknown-deepseek-model-inherits-fallback-capabilities-for-every-thinking-level
+  (with-test-directory (directory)
+    (let ((config-path (merge-pathnames "config.json" directory))
+          (auth-path (merge-pathnames "auth.json" directory))
+          (cadr-cli::*environment-function*
+            (lambda (name)
+              (and (string= name "DEEPSEEK_API_KEY")
+                   "deepseek-secret"))))
+      (dolist (level '(:off :minimal :low :medium :high :xhigh :max))
+        (let* ((config
+                 (cadr-cli:resolve-provider-config
+                  :provider "deepseek"
+                  :model "deepseek-chat"
+                  :reasoning level
+                  :config-path config-path
+                  :auth-path auth-path))
+               (provider
+                 (cadr-cli:provider-config-provider config))
+               (model
+                 (cadr-cli:provider-config-model config))
+               (requested
+                 (unless (eq level :off) level))
+               (request
+                 (cadr-ai:build-request
+                  provider model
+                  (cadr-ai:make-context
+                   :messages
+                   (list
+                    (cadr-ai:make-user-message :content "think")))
+                  :stream-p t
+                  :reasoning requested))
+               (payload
+                 (cadr-ai:request-spec-payload request))
+               (thinking
+                 (cadr-ai::json-get payload "thinking")))
+          (is (string= "deepseek-chat"
+                       (cadr-ai:model-id model)))
+          (is (cadr-ai:model-reasoning-p model))
+          (is (= 1000000
+                 (cadr-ai:model-context-window model)))
+          (if requested
+              (progn
+                (is (string=
+                     "enabled"
+                     (cadr-ai::json-get thinking "type")))
+                (is (string=
+                     (string-downcase (symbol-name level))
+                     (cadr-ai::json-get payload
+                                        "reasoning_effort"))))
+              (progn
+                (is (string=
+                     "disabled"
+                     (cadr-ai::json-get thinking "type")))
+                (is (null
+                     (cadr-ai::json-get payload
+                                        "reasoning_effort")))))
+          (let ((events nil)
+                (cadr-ai::*http-request-function*
+                  (lambda (url &rest arguments)
+                    (declare (ignore url arguments))
+                    (values
+                     (make-string-input-stream
+                      (if requested
+                          (format
+                           nil
+                           "data: {\"choices\":[{\"delta\":{\"reasoning_content\":\"plan\"},\"finish_reason\":null}]}~%~%data: {\"choices\":[{\"delta\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}~%~%")
+                          (format
+                           nil
+                           "data: {\"choices\":[{\"delta\":{\"content\":\"ok\"},\"finish_reason\":\"stop\"}]}~%~%")))
+                     200
+                     '(("content-type" . "text/event-stream"))))))
+            (let ((message
+                    (cadr-ai:stream-chat
+                     provider model
+                     (cadr-ai:make-context
+                      :messages
+                      (list
+                       (cadr-ai:make-user-message :content "think")))
+                     (lambda (event)
+                       (push event events))
+                     :reasoning requested)))
+              (is (eq :stop
+                      (cadr-ai:assistant-message-stop-reason message)))
+              (if requested
+                  (is (equal
+                       '(:thinking-start :thinking-delta :thinking-end)
+                       (remove-if-not
+                        (lambda (type)
+                          (member type
+                                  '(:thinking-start
+                                    :thinking-delta
+                                    :thinking-end)))
+                        (mapcar
+                         #'cadr-ai:stream-event-type
+                         (nreverse events)))))
+                  (is (not
+                       (member
+                        :thinking-delta
+                        (mapcar
+                         #'cadr-ai:stream-event-type
+                         (nreverse events)))))))))))))
+
 (test legacy-environment-values-work-for-one-transition-release-and-warn
   (let* ((values
            (list
