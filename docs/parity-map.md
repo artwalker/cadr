@@ -258,10 +258,10 @@ session-storage contract.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| SQLite adapter and transaction contract | 缺失 | [STORAGE-SQLITE](#storage-sqlite) |
-| Migration/schema | 缺失 | [STORAGE-SQLITE](#storage-sqlite) |
-| SQLite repo create/open/list/delete/fork | 缺失 | [STORAGE-SQLITE](#storage-sqlite) |
-| Materialized tree/branch storage | 缺失 | [STORAGE-SQLITE](#storage-sqlite) |
+| SQLite adapter and transaction contract | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| Migration/schema | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| SQLite repo create/open/list/delete/fork | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| Materialized tree/branch storage | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
 | JSONL filesystem sessions | 已实现 but not a storage-package substitute | [session](../src/cadr-agent/session.lisp) |
 
 ### 2.6 `server`
@@ -276,11 +276,11 @@ maintains Radius presence.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Server CLI and Unix socket framing | 缺失 | [SERVER](#server) |
-| Instance supervisor and persistence | 缺失 | [SERVER](#server) |
-| RPC request/stream bridge and extension UI bridge | 缺失 | [SERVER](#server) |
-| Radius registration/presence | 缺失 | [SERVER](#server) |
-| Public server API | 缺失 | [SERVER](#server) |
+| Server CLI and Unix socket framing | 已实现 | [server tests](../test/cadr-server/server-test.lisp), [server smoke](../scripts/server-smoke.sh), [SERVER](#server) |
+| Instance supervisor and persistence | 已实现 | [server tests](../test/cadr-server/server-test.lisp), [SERVER](#server) |
+| RPC request/stream bridge and extension UI bridge | 已实现 | [server tests](../test/cadr-server/server-test.lisp), [server smoke](../scripts/server-smoke.sh), [SERVER](#server) |
+| Radius registration/presence | 已实现 | credential gate, heartbeat backoff and 404 re-registration in [radius.lisp](../src/cadr-server/radius.lisp), [SERVER](#server) |
+| Public server API | 已实现 | [package exports](../src/cadr-server/package.lisp), [SERVER](#server) |
 
 ### 2.7 `evals`
 
@@ -298,10 +298,10 @@ It has two non-`*.test.ts` suites:
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Generic eval harness and normalized transcript/usage | 缺失 | [EVALS](#evals) |
-| Explicit provider/model runner | 缺失 | [EVALS](#evals) |
-| Smoke eval | 缺失 | [EVALS](#evals) |
-| Self-extension eval | 缺失; deterministic/live smoke scripts are not the exported eval harness | [EVALS](#evals) |
+| Generic eval harness and normalized transcript/usage | 已实现 | [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
+| Explicit provider/model runner | 已实现 | [run-evals](../scripts/run-evals.sh), [EVALS](#evals) |
+| Smoke eval | 已实现 | faux unit gate plus [DeepSeek/Codex live gate](../scripts/live-evals-smoke.sh), [EVALS](#evals) |
+| Self-extension eval | 已实现 | isolated write/reload/invoke gate in [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
 
 ## 3. Gap and evidence index
 
@@ -346,16 +346,16 @@ It has two non-`*.test.ts` suites:
 | <a id="ai-catalog"></a>`AI-CATALOG` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
 | <a id="ai-image-gen"></a>`AI-IMAGE-GEN` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
 | <a id="agent-harness"></a>`AGENT-HARNESS` | remaining proxy/default-stream compatibility helpers and exact built-in harness tool set |
-| <a id="coding-rpc"></a>`CODING-RPC` | Wave 2 RPC is complete; this ID is retained only for later server/client packaging integration |
+| <a id="coding-rpc"></a>`CODING-RPC` | closed by Wave 2 RPC and Goal 8 Wave 5 server/client packaging; see [SERVER](#server) |
 | <a id="coding-cli-sdk"></a>`CODING-CLI-SDK` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="coding-models"></a>`CODING-MODELS` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="coding-session"></a>`CODING-SESSION` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="coding-tools"></a>`CODING-TOOLS` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="coding-config"></a>`CODING-CONFIG` | closed except the approved `config.test.ts` build-ecosystem `N/A`; see [CL-PART-B](#cl-part-b) |
 | <a id="coding-interactive"></a>`CODING-INTERACTIVE` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
-| <a id="storage-sqlite"></a>`STORAGE-SQLITE` | standalone storage package integration; the agent harness SQLite adapter, migrations, materialized views and repo/storage contracts are complete |
-| <a id="server"></a>`SERVER` | complete server package |
-| <a id="evals"></a>`EVALS` | complete eval harness, runner and two eval suites |
+| <a id="storage-sqlite"></a>`STORAGE-SQLITE` | closed by Goal 8 Wave 5; [23 standalone storage checks](../test/cadr-storage/storage-test.lisp) cover adapter, migrations, repo and materialized state |
+| <a id="server"></a>`SERVER` | closed by Goal 8 Wave 5; [43 server checks](../test/cadr-server/server-test.lisp) plus the [native Unix-socket smoke](../scripts/server-smoke.sh) cover the package |
+| <a id="evals"></a>`EVALS` | closed by Goal 8 Wave 5; [16 eval checks](../test/cadr-evals/evals-test.lisp) and the [DeepSeek/Codex live gate](../scripts/live-evals-smoke.sh) cover the harness and two suites |
 | <a id="diff-lisp-ecosystem"></a>`DIFF-LISP-ECOSYSTEM` | approved Lisp extension/skill/template/package format and implementation/build-language differences; capability gaps inside those systems remain separately missing |
 
 ### Applicable but uncovered backlog
@@ -366,16 +366,16 @@ applicable files. `config.test.ts` is the sole user-approved `N/A`.
 
 ### `docs/test-matrix.md` audit notes
 
-The matrix retains the earlier phase tables and now includes Wave 3 and
-Goal 8 Part B. The current suite has **2905** checks; exact package totals are
+The matrix retains the earlier phase tables and now includes Wave 3,
+Goal 8 Part B, and Wave 5. The current suite has **2987** checks; exact package totals are
 in the Goal 8 progress report. Earlier conservative AI notes are superseded by
 Part A:
 malformed stream/tool JSON, complete provider matrices, independent protocols,
 auth and catalog/runtime behavior now have linked deterministic evidence.
 Its Phase 6 table describes the historical JSONL v2 format. Wave 2 now
    writes exact v3 entries and migrates v1/v2 atomically.
-It has no rows
-   for the new `storage`, `server`, or `evals` package surfaces.
+Wave 5 adds rows for the standalone `storage`, `server`, and `evals`
+package surfaces.
 
 ## 4. Exhaustive `*.test.ts` manifest
 
@@ -391,8 +391,10 @@ The appendix is sorted exactly like
 | `storage` / `server` / `evals` | 0 | 0 | 0 | 0 | 0 |
 | **Total** | **351** | **0** | **0** | **1** | **352** |
 
-The 2905 CL assertions cover all 120 AI files, the complete 27-file TUI
+The first 2905 CL assertions cover all 120 AI files, the complete 27-file TUI
 surface, all 18 agent harness files, and 186 applicable coding-agent files.
+The remaining 82 assertions cover the baseline packages that contain no
+`*.test.ts`: standalone storage, server, and evals.
 Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 
 | Class | Baseline test file | Evidence/gap |
@@ -764,7 +766,7 @@ The user approved the order Wave 0 → pulled-forward TUI → Wave 1 → 2 → 3
 | Wave 2 | complete | exact agent harness, session v3, queues, print/JSON and RPC | 76 reference files are `C`; 1716 CL checks plus process/live gates |
 | Wave 3 | complete | independent APIs, auth flows, exact catalogs, model/image/faux runtimes | 641 AI checks plus DeepSeek and Codex OAuth live smokes |
 | Goal 8 Part B | complete | complete coding-agent runtime, tools, configuration, models, packages, interactive UI and approved extension/llama surfaces | 127 former `M` files are `C`; `config.test.ts` is the sole approved `N/A`; 2905 CL checks |
-| Wave 5 | not started | standalone storage packaging, server and eval harness | Unix-socket RPC and eval smokes; harness SQLite adapter already landed in Wave 2 |
+| Wave 5 | complete | standalone storage packaging, server and eval harness | 23 storage + 43 server + 16 eval checks; native Unix-socket smoke; DeepSeek and Codex OAuth eval smokes |
 
 Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session
 state; server depends on RPC; evals should exercise the completed public

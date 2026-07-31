@@ -91,6 +91,19 @@ the five-provider v2 registry remain outside the current phase.
 | RPC mode | RPC suite plus process fixture | Full command union, response IDs, events, LF framing, prompt intervention, bash abort and extension UI response/timeout/EOF cleanup |
 | Live one-shot print | `scripts/live-print-smoke.sh` | DeepSeek one-shot text mode exits 0 with exact clean output |
 
+## Goal 8 Wave 5: storage, server, and evals
+
+| Requirement | Common Lisp coverage | Evidence |
+|---|---|---|
+| Standalone SQLite package | `CADR-STORAGE-SUITE` | 23 checks cover exports, adapter/named parameters, migrations, transactions, create/open/list/delete/fork and materialized state |
+| Server protocol and persistence | `PROTOCOL-AND-STORAGE-PRESERVE-BASELINE-RECORDS`, supervisor suite | JSONL framing, machine/instance records, session metadata, lifecycle convergence and restart recovery |
+| Unix-socket RPC supervisor | socket suite plus `scripts/server-smoke.sh` | Stale socket replacement, spawn/list/status/RPC/stop, stream events and extension UI bridge against a real `cadr --mode rpc` child |
+| Radius presence | heartbeat retry suite | Credential gating, exponential transient backoff, three-404 re-registration threshold and dormant no-credential behavior |
+| Eval harness | `CADR-EVALS-SUITE` | Explicit provider/model, isolated cleanup, normalized transcript/usage and prompt/reload sequencing |
+| Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
+| Live evals | `scripts/live-evals-smoke.sh` | DeepSeek key and Codex OAuth both run the exact Paris/usage smoke through the public harness |
+| Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
+
 ## Phase 8: pure Common Lisp TUI
 
 | Requirement | Common Lisp coverage | Evidence |

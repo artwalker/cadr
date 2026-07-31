@@ -33,11 +33,14 @@ Requirements:
 ```bash
 QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build.sh
 ./cadr --version
+
+QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build-server.sh
+./cadr-server --version
 ```
 
-The build produces the native executable `./cadr`. If SBCL lacks
-`sb-core-compression`, the build emits an uncompressed image instead of
-failing.
+The builds produce `./cadr` and the optional Unix-socket supervisor
+`./cadr-server`. If SBCL lacks `sb-core-compression`, either build emits an
+uncompressed image instead of failing.
 
 ## Dependency policy
 
@@ -123,6 +126,36 @@ non-TTY input or output selects one-shot text mode.
 Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Commands
 include `/sessions`, `/switch`, `/branch`, `/compact`, `/export`, `/login`,
 `/logout`, `/reload`, and `/install`.
+
+### Server
+
+`cadr-server` supervises independent RPC-mode agents over a Unix socket:
+
+```bash
+./cadr-server serve
+./cadr-server spawn --cwd "$PWD" --label worker
+./cadr-server list
+./cadr-server status <instance-id>
+./cadr-server rpc <instance-id> '{"type":"get_state"}'
+./cadr-server stop <instance-id>
+```
+
+State and `server.sock` live under `~/.cadr/server/` by default. Radius
+presence is dormant unless a stored Radius OAuth credential or
+`RADIUS_API_KEY` exists.
+
+### Evals
+
+The eval harness requires an explicit provider and model:
+
+```bash
+./scripts/run-evals.sh \
+  --provider deepseek \
+  --model deepseek-v4-flash
+```
+
+`scripts/live-evals-smoke.sh` is the credential-gated gate for the locally
+available DeepSeek key and Codex OAuth credential.
 
 ### OAuth
 

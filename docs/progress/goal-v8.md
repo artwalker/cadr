@@ -215,3 +215,61 @@ Part B 把开工时 coding-agent 的 128 个 `M` 重分类为 127 个 `C` 和一
 用户裁决的 `N/A`；逐文件变更清单就是 parity-map manifest 中所有
 `CL-PART-B` 行及 `config.test.ts` 行。收尾账本：
 `351 C / 0 U / 0 M / 1 N/A`。
+
+## Wave 5：storage、server 与 evals
+
+状态：完成并提交。该 Wave 只补齐固定基线已有的三个独立 package，没有
+修改已重冻的 extension/TUI surface，也没有引入第三方依赖。
+
+### 落账提交
+
+1. `d7b81ce16`、`098362696` — 测试先行，建立独立 `cadr-storage`
+   facade，复用唯一 SQLite repository/storage 实现；
+2. `ee9a18640`、`c2f463ffb` — 测试先行，实现 Unix-socket JSONL
+   supervisor、RPC child、持久化、Radius credential gate 与 UI/event bridge；
+3. `11d9f9685`、`a99048395` — 测试先行，实现隔离 eval harness、smoke 与
+   self-extension suites；
+4. `c11278b07` — native server 构建、真实 socket smoke、原版 spawn flags、
+   进程退出/accept-loop 修复，以及 Radius backoff/连续三次 404 重注册；
+5. `370aeafce` — eval CLI runner 与 DeepSeek/Codex OAuth live gate；
+6. `088f3c639` — 将三个 package 纳入全量测试入口；
+7. `7be14f292` — 显式声明 server 使用的 SBCL process contrib，不新增
+   第三方依赖。
+
+### 门禁证据
+
+```text
+./scripts/test-cl.sh
+cadr-ai       668/668
+cadr-agent    588/588
+cadr-tui      593/593
+cadr-cli     1056/1056
+cadr-storage   23/23
+cadr-server    43/43
+cadr-evals     16/16
+total        2987/2987
+
+./scripts/server-smoke.sh
+server smoke: spawn/list/status/RPC/stop over Unix socket passed
+
+./scripts/live-evals-smoke.sh
+live evals: DeepSeek and OpenAI Codex smoke suites passed
+```
+
+`build.sh` 与 `build-server.sh` 均在当前 SBCL 缺少
+`sb-core-compression` 时明确降级为无压缩 image；产物分别为 `cadr` 与
+`cadr-server`，二者 `--version` 均显示 cadr 新命名。最终产物为：
+
+```text
+cadr         65,381,272 bytes  mode 0755
+cadr-server  57,220,848 bytes  mode 0755
+```
+
+### 冻结与账本
+
+相对 Goal 8 开工提交，`git diff 664e6b80...HEAD -- src/cadr-tui` 仍为空；
+Part B 的 extension export SHA 仍为
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
+Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
+`351 C / 0 U / 0 M / 1 N/A`；新增的 82 个断言覆盖基线中没有
+`*.test.ts` 的 storage/server/evals package surface。

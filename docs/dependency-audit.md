@@ -10,6 +10,9 @@ Audit date: 2026-07-31.
 | `cadr-agent` | `cl-ppcre`, `sqlite`, `cadr-ai` | `sqlite` is the ASDF system supplied by `cl-sqlite`, the second registered self-build exception; it binds the system SQLite library through CFFI. `cl-ppcre` is the explicitly deferred full regex engine used by JSON Schema `pattern`; `cadr-ai` is in-repository. |
 | `cadr-cli` | `cl-ppcre`, `cl-jpeg`, `png-read`, `cadr-agent`, `cadr-tui` | `cl-ppcre` is used directly by glob/grep; `cl-jpeg` and `png-read` are the approved pure-Lisp replaceable image codecs; the other systems are in-repository. |
 | `cadr-tui` | `sb-posix` | SBCL contrib used for terminal state; not a third-party dependency. |
+| `cadr-storage` | `cadr-agent` | In-repository facade over the already audited SQLite repository/storage implementation; no new dependency. |
+| `cadr-server` | `cadr-ai`, `sb-bsd-sockets`, `sb-posix` | In-repository protocol/runtime plus SBCL's Unix-socket/process contribs; no new third-party dependency. |
+| `cadr-evals` | `cadr-cli` | In-repository behavioral harness and runners; no new third-party dependency. |
 
 ASDF/UIOP, `sb-thread`, `sb-bsd-sockets`, `sb-posix`, `sb-gray`, and SBCL
 Unicode/UTF-8 facilities are implementation-provided and do not add external

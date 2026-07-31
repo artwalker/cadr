@@ -3,7 +3,7 @@
 状态：**v1 Phase 1–4 与 v2 Phase 5–9 已实现；北极星 Wave 2 的 agent
 harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
 冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
-命名迁移已完成**
+命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结**
 
 本文是 `docs/progress/goal-v1.md` 要求的第一个交付物，已于 2026-07-30
 获得人工确认。
@@ -1524,7 +1524,8 @@ server。每个 instance 拥有独立 `cadr --mode rpc` 子进程；supervisor
 持久化 machine/instance record，桥接普通 RPC、stream event 与 extension UI
 request/response，并在停止、异常退出和 server restart 时收敛状态。Radius
 只在现有 OAuth 或 `RADIUS_API_KEY` 可用时启用，沿用 credential gate；无凭据
-时完全 dormant。
+时完全 dormant；启用后按原版对 transient failure 指数退避，并在连续三次
+404 后重新注册 machine/Pi。
 
 `cadr-evals` 用隔离的 project/agent/session 目录创建真实 agent runtime，
 要求显式 provider/model，不隐式回退；输入只允许 prompt/reload 序列，输出
@@ -1539,3 +1540,9 @@ Wave 5 门禁固定为：
 3. supervisor spawn/list/status/RPC/UI/stop/restart recovery；
 4. eval 显式模型选择、隔离清理、transcript/usage 与 self-extension；
 5. 全量 CL tests、独立 server build/smoke、既有 `cadr` build/version。
+
+Wave 5 已完成并冻结。三个 package 不引入第三方依赖；全量门禁为
+`2987/2987`。独立 `cadr-server` 构建同样检测 `sb-core-compression`，缺失时
+生成无压缩 image；真实 Unix socket 已通过 spawn/list/status/RPC/stop，
+DeepSeek 与 Codex OAuth eval 均实际运行通过。此后这三个 package 的公开
+surface 遵循“发布即稳定”。
