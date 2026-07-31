@@ -644,7 +644,8 @@
 (defun append-bedrock-failure-diagnostic
     (message condition fallback-request-id)
   (let ((details nil))
-    (when (typep condition 'api-error)
+    (when (and (typep condition 'api-error)
+               (numberp (api-error-status condition)))
       (setf (getf details :status)
             (api-error-status condition)))
     (let ((code (bedrock-error-code condition)))

@@ -24,6 +24,7 @@
 (define-condition timeout-error (transport-error) ())
 (define-condition request-aborted (transport-error) ())
 (define-condition sse-protocol-error (transport-error) ())
+(define-condition bedrock-stream-exception (cadr-error) ())
 
 (define-condition api-error (cadr-error)
   ((provider

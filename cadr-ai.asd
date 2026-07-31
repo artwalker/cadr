@@ -61,6 +61,7 @@
                              (:file "provider-registry-test")
                              (:file "provider-wave1-test")
                              (:file "provider-wave3-test")
+                             (:file "bedrock-error-metadata-test")
                              (:file "models-runtime-test")
                              (:file "faux-provider-test")
                              (:file "openai-completions-test")

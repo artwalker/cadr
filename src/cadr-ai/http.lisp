@@ -732,6 +732,17 @@
               (setf offset next))))
     (nreverse headers)))
 
+(defun bedrock-modeled-exception-message (payload code)
+  (or
+   (ignore-errors
+     (let ((object (parse-json payload)))
+       (and (hash-table-p object)
+            (or (json-get object "message")
+                (json-get object "Message")))))
+   (and (non-empty-string-p payload) payload)
+   code
+   "Bedrock exception"))
+
 (defun read-aws-event-stream
     (stream consumer)
   (loop
@@ -773,21 +784,39 @@
                              :test #'string=)))
                (event-type
                  (cdr (assoc ":event-type" headers
+                             :test #'string=)))
+               (exception-type
+                 (cdr (assoc ":exception-type" headers
+                             :test #'string=)))
+               (error-code
+                 (cdr (assoc ":error-code" headers
+                             :test #'string=)))
+               (error-message
+                 (cdr (assoc ":error-message" headers
                              :test #'string=))))
-          (when (string= message-type "exception")
-            (error 'api-error
-                   :provider :amazon-bedrock
-                   :status 500
-                   :code event-type
-                   :message
-                   (format nil "~A: ~A"
-                           (or event-type "Bedrock exception")
-                           payload)))
-          (funcall
-           consumer
-           (make-sse-event
-            :event event-type
-            :data payload)))))))
+          (cond
+            ((string= message-type "exception")
+             ;; Smithy deserializes modeled exceptions to bare objects.  The
+             ;; exception code is no longer observable by the provider catch.
+             (error
+              'bedrock-stream-exception
+              :message
+              (bedrock-modeled-exception-message
+               payload exception-type)))
+            ((string= message-type "error")
+             ;; Unmodeled errors retain :error-code as the thrown Error name.
+             (error 'api-error
+                    :provider :amazon-bedrock
+                    :status nil
+                    :code error-code
+                    :message
+                    (or error-message "UnknownError")))
+            (t
+             (funcall
+              consumer
+              (make-sse-event
+               :event event-type
+               :data payload)))))))))
 
 (defun request-aws-event-stream
     (request consumer
