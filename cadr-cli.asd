@@ -92,6 +92,8 @@
                              (:file "extensions-test")
                              (:file "llama-extension-test")
                              (:file "tui-test")
+                             (:file "goal9-a2-interactive-test")
+                             (:file "goal9-a2-workflows-test")
                              (:file "migration-test")
                              (:file "data-migration-test")
                              (:file "build-test")
