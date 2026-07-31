@@ -221,6 +221,46 @@
                    (<= (cadr-tui:visible-width line) 20))
                  lines)))))
 
+(test editor-delete-does-not-invent-file-autocomplete-at-plain-trailing-space
+  (with-autocomplete-tree
+   (lambda (root)
+     (let ((provider
+             (cadr-tui:make-autocomplete-provider
+              :base-path root
+              :commands
+              (list
+               (cadr-tui:make-autocomplete-command
+                :name "help")))))
+       (dolist (kind '(:backspace :delete))
+         (let ((editor
+                 (cadr-tui:make-multiline-editor
+                  :text "plain x")))
+           (cadr-tui:editor-set-autocomplete-provider
+            editor provider)
+           (when (eq kind :delete)
+             (setf
+              (cadr-tui::multiline-editor-cursor editor)
+              (length "plain ")))
+           (editor-event editor kind)
+           (is (string= "plain "
+                        (cadr-tui:editor-text editor)))
+           (is (not
+                (cadr-tui:editor-autocomplete-visible-p
+                 editor)))))
+       (dolist (text '("/he" "./R"))
+         (let ((editor
+                 (cadr-tui:make-multiline-editor)))
+           (cadr-tui:editor-set-autocomplete-provider
+            editor provider)
+           (editor-type editor text)
+           (is
+            (cadr-tui:editor-autocomplete-visible-p
+             editor))
+           (editor-event editor :backspace)
+           (is
+            (cadr-tui:editor-autocomplete-visible-p
+             editor))))))))
+
 (test editor-autocomplete-honors-configured-visible-row-limit
   (let* ((provider
            (cadr-tui:make-autocomplete-provider

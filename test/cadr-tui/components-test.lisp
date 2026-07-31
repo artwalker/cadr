@@ -73,12 +73,16 @@
            :summary "{\"path\":\"README.md\"}"
            :output (format nil "line one~%line two")
            :status :complete)))
-    (is (search "line two"
-                (format nil "~{~A~%~}"
-                        (cadr-tui:render-tool-block block 40))))
+    (is (null
+         (search "line two"
+                 (format nil "~{~A~%~}"
+                         (cadr-tui:render-tool-block block 40)))))
     (cadr-tui:toggle-tool-block block)
     (is (> (length (cadr-tui:render-tool-block block 40)) 1))
     (is (search "line one"
+                (format nil "~{~A~%~}"
+                        (cadr-tui:render-tool-block block 40))))
+    (is (search "line two"
                 (format nil "~{~A~%~}"
                         (cadr-tui:render-tool-block block 40))))))
 
@@ -448,8 +452,26 @@
       (is (find-if
            (lambda (line) (search "line-12" line))
            bash)))
-    (dolist (entry '(("read" 10)
-                     ("write" 10)
+    (let ((collapsed-read (plain-lines "read" 12)))
+      (is
+       (equal
+        (list
+         ""
+         (make-string 72 :initial-element #\Space)
+         (concatenate
+          'string " read args"
+          (make-string 62 :initial-element #\Space))
+         (make-string 72 :initial-element #\Space))
+        collapsed-read))
+      (is (null
+           (find-if
+            (lambda (line) (search "line-" line))
+            collapsed-read)))
+      (is (null
+           (find-if
+            (lambda (line) (search "more lines" line))
+            collapsed-read))))
+    (dolist (entry '(("write" 10)
                      ("grep" 15)
                      ("find" 20)
                      ("ls" 20)))
@@ -476,6 +498,19 @@
       (is (find-if
            (lambda (line) (search "line-12" line))
            expanded)))
+    (let* ((block
+             (cadr-tui:make-tool-block
+              :name "read" :summary "missing.txt"
+              :output "Offset 99 is beyond end of file"
+              :status :error :collapsed-p t))
+           (collapsed-error
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              (cadr-tui:render-tool-block block 72))))
+      (is (find-if
+           (lambda (line)
+             (search "Offset 99 is beyond end of file" line))
+           collapsed-error)))
     (let ((caps
             (cadr-tui:make-terminal-capabilities
              :images nil :true-color-p t
@@ -725,6 +760,40 @@
          (search "  ``"
                  (format nil "~{~A~^~%~}"
                          with-partial))))))
+
+(test goal9-markdown-streaming-fences-match-baseline-exactly
+  (dolist
+      (case
+       (list
+        (list
+         (format nil "```ts~%const x = 1;~%``")
+         '("```ts" "  const x = 1;" "```"))
+        (list
+         (format nil "```md~%not a closing fence:~%``~%```")
+         '("```md" "  not a closing fence:" "  ``" "```"))
+        (list
+         (format nil "```ts~%``")
+         '("```ts" "" "```"))
+        (list
+         (format nil "````~%```")
+         '("```" "" "```"))
+        (list
+         (format nil "~A~%~A" "~~~~~" "~~~~")
+         '("```" "" "```"))
+        (list
+         (format nil
+                 "```md~%not a closing fence:~%``~%```~%~%after")
+         '("```md" "  not a closing fence:" "  ``" "```"
+           "" "after"))))
+    (destructuring-bind (source expected) case
+      (is (equal
+           expected
+           (mapcar
+            (lambda (line)
+              (string-right-trim
+               " "
+               (cadr-tui:strip-terminal-sequences line)))
+            (cadr-tui:render-markdown source 80)))))))
 
 (test goal9-markdown-narrow-table-falls-back-to-source
   (let* ((source

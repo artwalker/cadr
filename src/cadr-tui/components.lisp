@@ -857,10 +857,12 @@
                               syntax-highlight-function
                               language source)))
                           (display-lines
-                            (if (stringp highlighted)
-                                (split-lines-preserving-empty
-                                 highlighted)
-                                code-lines)))
+                            (or
+                             (if (stringp highlighted)
+                                 (split-lines-preserving-empty
+                                  highlighted)
+                                 code-lines)
+                             (list ""))))
                      (setf result
                            (nconc
                             result
@@ -1211,9 +1213,8 @@
 (defun tool-preview-budget (name)
   (cond
     ((string-equal name "bash") 5)
-    ((member name '("read" "write")
-             :test #'string-equal)
-     10)
+    ((string-equal name "read") 0)
+    ((string-equal name "write") 10)
     ((string-equal name "grep") 15)
     ((member name '("find" "ls")
              :test #'string-equal)
@@ -1523,9 +1524,16 @@
          (budget
            (and
             (tool-block-collapsed-p block)
-            (tool-preview-budget
-             (tool-block-name block)))))
+            (if (and
+                 (string-equal
+                  (tool-block-name block) "read")
+                 (eq (tool-block-status block) :error))
+                10
+                (tool-preview-budget
+                 (tool-block-name block))))))
     (cond
+      ((and budget (zerop budget))
+       nil)
       ((or (null budget)
            (<= (length visual-lines) budget))
        visual-lines)
