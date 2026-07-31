@@ -2229,6 +2229,7 @@
          (event-consumer nil)
          (notice-consumer nil)
          (auth-url-consumer nil)
+         (model-consumer nil)
          (abort-requested-p nil)
          (frontend-output
            (if tui-p
@@ -2928,15 +2929,19 @@
                       command))
                     :source :interactive)))
              (setf config updated)
-             (let ((warning
-                     (anthropic-warning)))
+             (let* ((model-id
+                      (cadr-ai:model-id
+                       (provider-config-model updated)))
+                    (warning
+                      (anthropic-warning)))
+               (when model-consumer
+                 (funcall model-consumer model-id))
                (when
                    (and warning
                         notice-consumer)
                  (funcall
-                  notice-consumer warning)))
-             (cadr-ai:model-id
-              (provider-config-model updated))))
+                  notice-consumer warning))
+               model-id)))
          (resolve-model-reference (reference)
            (refresh-available-models)
            (exact-model-reference-match
@@ -3214,6 +3219,9 @@
            :set-auth-url-consumer
            (lambda (consumer)
              (setf auth-url-consumer consumer))
+           :set-model-consumer
+           (lambda (consumer)
+             (setf model-consumer consumer))
            :set-extension-ui-function
            (lambda (function)
              (setf

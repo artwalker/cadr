@@ -1,6 +1,171 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(defclass footer-sync-test-terminal
+    (cadr-tui::virtual-terminal)
+  ((inputs
+    :initarg :inputs
+    :accessor footer-sync-test-terminal-inputs)
+   (reads
+    :initform 0
+    :accessor footer-sync-test-terminal-reads)
+   (before-second-read
+    :initarg :before-second-read
+    :accessor
+    footer-sync-test-terminal-before-second-read)))
+
+(defmethod cadr-tui:terminal-read-input
+    ((terminal footer-sync-test-terminal))
+  (when
+      (= 2
+         (incf
+          (footer-sync-test-terminal-reads terminal)))
+    (funcall
+     (footer-sync-test-terminal-before-second-read
+      terminal)))
+  (or
+   (pop (footer-sync-test-terminal-inputs terminal))
+   ""))
+
+(defun footer-sync-submit-input (text)
+  (format nil "~A~C" text #\Return))
+
+(defun wait-for-footer-sync (predicate)
+  (loop repeat 200
+        when (funcall predicate)
+          do (return t)
+        do (sleep 0.005)
+        finally
+        (error "Timed out waiting for footer model synchronization")))
+
+(defun rendered-footer-text (state)
+  (multiple-value-bind (lines row column)
+      (cadr-cli::render-tui-state
+       state
+       (cadr-tui:make-multiline-editor)
+       100 8)
+    (declare (ignore row column))
+    (format nil "~{~A~^~%~}" lines)))
+
+(test successful-login-synchronizes-footer-model
+  (with-test-directory (directory)
+    (let* ((auth-path
+             (merge-pathnames "auth.json" directory))
+           (model-consumer nil)
+           (selected-model "startup-model")
+           (changed-provider nil)
+           (changed-action nil)
+           (terminal
+             (make-instance
+              'footer-sync-test-terminal
+              :columns 100 :rows 8
+              :inputs
+              (list
+               (footer-sync-submit-input
+                "/login openai")
+               (footer-sync-submit-input
+                "/quit"))
+              :before-second-read
+              (lambda ()
+                (wait-for-footer-sync
+                 (lambda ()
+                   (string= selected-model
+                            "gpt-5.5"))))))
+           (mock-login-function
+             (lambda
+                 (path &key output auth-url-function)
+               (declare (ignore output auth-url-function))
+               (cadr-ai:write-auth-credential
+                path
+                (cadr-ai:make-oauth-credential
+                 :provider :openai-codex
+                 :access "access"
+                 :refresh "refresh"
+                 :expires
+                 (+ (cadr-ai::unix-milliseconds)
+                    1000000)
+                 :account-id "account")))))
+      (let ((state
+              (cadr-cli::run-tui
+               (constantly nil)
+               :model "startup-model"
+               :terminal terminal
+               :set-model-consumer
+               (lambda (consumer)
+                 (setf model-consumer consumer))
+               :command-function
+               (lambda (line)
+                 (let ((cadr-cli::*openai-login-function*
+                         mock-login-function))
+                   (cadr-cli:handle-auth-command
+                    line
+                    :auth-path auth-path
+                    :output
+                    (make-string-output-stream)
+                    :on-change
+                    (lambda (provider action)
+                      (setf changed-provider provider
+                            changed-action action)
+                      (setf selected-model "gpt-5.5")
+                      (funcall model-consumer
+                               selected-model))))))))
+        (is (eq :openai-codex changed-provider))
+        (is (eq :login changed-action))
+        (is (typep
+             (cadr-ai:read-auth-credential
+              auth-path :openai-codex)
+             'cadr-ai:oauth-credential))
+        (is (string= "gpt-5.5"
+                     (cadr-cli::tui-state-model state)))
+        (let ((footer (rendered-footer-text state)))
+          (is (search "gpt-5.5" footer))
+          (is (null (search "startup-model" footer))))))))
+
+(test model-selection-synchronizes-footer-model
+  (let* ((model-consumer nil)
+         (selected-model "startup-model")
+         (target (list :model "gpt-5.6-luna"))
+         (terminal
+           (make-instance
+            'footer-sync-test-terminal
+            :columns 100 :rows 8
+            :inputs
+            (list
+             (footer-sync-submit-input
+              "/model gpt-5.6-luna")
+             (footer-sync-submit-input
+              "/quit"))
+            :before-second-read
+            (lambda ()
+              (wait-for-footer-sync
+               (lambda ()
+                 (string= selected-model
+                          "gpt-5.6-luna")))))))
+    (let ((state
+            (cadr-cli::run-tui
+             (constantly nil)
+             :model "startup-model"
+             :terminal terminal
+             :set-model-consumer
+             (lambda (consumer)
+               (setf model-consumer consumer))
+             :resolve-model-reference-function
+             (lambda (reference)
+               (and
+                (string= reference "gpt-5.6-luna")
+                target))
+             :on-model-selected
+             (lambda (model)
+               (is (eq target model))
+               (setf selected-model "gpt-5.6-luna")
+               (funcall model-consumer selected-model)
+               nil))))
+      (is (string= "gpt-5.6-luna"
+                   (cadr-cli::tui-state-model state)))
+      (let ((footer (rendered-footer-text state)))
+        (is (search "gpt-5.6-luna" footer))
+        (is (null (search "startup-model" footer)))))))
+
 (test oauth-auth-url-renders-once-without-session-prefix
   (let* ((url
            "https://auth.openai.com/oauth/authorize?response_type=code&client_id=test&redirect_uri=http%3A%2F%2Flocalhost")

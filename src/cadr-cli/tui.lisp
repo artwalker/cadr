@@ -1177,6 +1177,7 @@
        set-event-consumer
        set-notice-consumer
        set-auth-url-consumer
+       set-model-consumer
        set-extension-ui-function
        theme-function
        all-themes-function
@@ -1281,6 +1282,17 @@
            (sb-thread:with-mutex (lock)
              (add-tui-auth-url state url))
            (render))
+         (show-model (model-id)
+           (when
+               (and
+                (stringp model-id)
+                (plusp (length model-id)))
+             (sb-thread:with-mutex (lock)
+               (setf
+                (tui-state-model state)
+                model-id))
+             (render))
+           (tui-state-model state))
          (finish-custom-ui (result)
            (sb-thread:with-mutex (custom-ui-lock)
              (unless custom-ui-done-p
@@ -1872,6 +1884,9 @@
       (when set-auth-url-consumer
         (funcall set-auth-url-consumer
                  #'show-auth-url))
+      (when set-model-consumer
+        (funcall set-model-consumer
+                 #'show-model))
       (when set-extension-ui-function
         (funcall set-extension-ui-function
                  #'extension-ui-call))
@@ -2022,6 +2037,8 @@
           (funcall set-notice-consumer nil))
         (when set-auth-url-consumer
           (funcall set-auth-url-consumer nil))
+        (when set-model-consumer
+          (funcall set-model-consumer nil))
         (when set-extension-ui-function
           (funcall set-extension-ui-function nil))))
     state))
