@@ -19,31 +19,73 @@
               path provider)
            (condition () nil)))))
 
+(defun make-live-deepseek-eval-resolver
+    (api-key)
+  (lambda (provider model)
+    (unless (string= provider "deepseek")
+      (error "Unexpected live DeepSeek provider: ~A"
+             provider))
+    (multiple-value-bind
+          (provider-object model-object)
+        (cadr-ai:instantiate-provider
+         :deepseek
+         :api-key api-key
+         :model-id model)
+      (values provider-object
+              model-object
+              #'cadr-ai:stream-chat))))
+
+(defun make-live-openai-codex-eval-resolver
+    (credential)
+  (lambda (provider model)
+    (unless (string= provider "openai-codex")
+      (error
+       "Unexpected live OpenAI Codex provider: ~A"
+       provider))
+    (multiple-value-bind
+          (provider-object model-object)
+        (cadr-ai:instantiate-provider
+         :openai-codex
+         :oauth-access-token
+         (cadr-ai:oauth-credential-access
+          credential)
+         :oauth-account-id
+         (cadr-ai:oauth-credential-account-id
+          credential)
+         :model-id model)
+      (values provider-object
+              model-object
+              #'cadr-ai:stream-chat))))
+
 (defmacro with-live-deepseek (&body body)
-  `(if
-       (live-eval-environment-value
-        "DEEPSEEK_API_KEY")
-       (progn ,@body)
-       (skip "DEEPSEEK_API_KEY is not set")))
+  `(let ((api-key
+           (live-eval-environment-value
+            "DEEPSEEK_API_KEY")))
+     (if api-key
+         (let ((cadr-evals::*eval-model-resolver*
+                 (make-live-deepseek-eval-resolver
+                  api-key)))
+           ,@body)
+         (skip "DEEPSEEK_API_KEY is not set"))))
 
 (defmacro with-live-openai-codex
     (&body body)
-  `(let ((credential
+  `(let ((stored
            (live-eval-auth-credential
-            :openai-codex))
-         (misidentified
-           (live-eval-auth-credential
-            :openai)))
-     (cond
-       ((typep credential
-               'cadr-ai:oauth-credential)
-        ,@body)
-       ((typep misidentified
-               'cadr-ai:oauth-credential)
-        (error
-         "OpenAI OAuth is still stored under provider openai; run /login openai with the corrected cadr build"))
-       (t
-        (skip "OpenAI Codex OAuth is not configured")))))
+            :openai-codex)))
+     (if
+         (typep stored
+                'cadr-ai:oauth-credential)
+         (let* ((credential
+                  (cadr-ai:resolve-oauth-credential
+                   (cadr-cli::default-auth-path)
+                   :openai-codex
+                   #'cadr-ai:refresh-openai-oauth-credential))
+                (cadr-evals::*eval-model-resolver*
+                  (make-live-openai-codex-eval-resolver
+                   credential)))
+           ,@body)
+         (skip "OpenAI Codex OAuth is not configured"))))
 
 (defun assert-live-smoke-eval
     (result expected-provider)
@@ -76,7 +118,7 @@
       :model "deepseek-v4-flash")
      "deepseek")))
 
-(test live-openai-codex-eval-smoke-uses-real-auth-file
+(test live-openai-codex-eval-smoke-uses-explicit-model-and-real-oauth
   (with-live-openai-codex
     (assert-live-smoke-eval
      (cadr-evals:run-smoke-eval

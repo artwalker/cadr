@@ -259,9 +259,14 @@
             path :openai-codex)))
       (is (equal '(:login) calls)))))
 
-(test login-openai-change-event-selects-codex-default-path
+(test login-openai-temp-store-default-resolver-routes-codex-request
   (with-test-directory (directory)
-    (let* ((path (merge-pathnames "auth.json" directory))
+    (let* ((auth-path
+             (merge-pathnames
+              ".cadr/auth.json" directory))
+           (config-path
+             (merge-pathnames
+              ".cadr/config.json" directory))
            (changes nil)
            (request-url nil)
            (request-headers nil)
@@ -280,7 +285,7 @@
       (is
        (cadr-cli:handle-auth-command
         "/login openai"
-        :auth-path path
+        :auth-path auth-path
         :output (make-string-output-stream)
         :on-change
         (lambda (provider action)
@@ -288,6 +293,13 @@
       (is (equal
            '((:openai-codex :login))
            changes))
+      (is (typep
+           (cadr-ai:read-auth-credential
+            auth-path :openai-codex)
+           'cadr-ai:oauth-credential))
+      (is (null
+           (cadr-ai:read-auth-credential
+            auth-path :openai)))
       (let* ((provider
                (first (first changes)))
              (config
@@ -295,14 +307,21 @@
                 :provider
                 (string-downcase
                  (symbol-name provider))
-                :config-path
-                #P"/definitely/missing/config.json"
-                :auth-path path)))
+                :config-path config-path
+                :auth-path auth-path)))
         (is (string=
-             "gpt-5.5"
-             (cadr-ai:model-id
+             "openai-codex"
+             (cadr-cli:provider-config-name
+              config)))
+        (is (eq
+             :openai-codex
+             (cadr-ai:model-provider
               (cadr-cli:provider-config-model
                config))))
+        (is (eq
+             :oauth
+             (cadr-cli:provider-config-auth-source
+              config)))
         (let ((cadr-ai::*http-request-function*
                 (lambda (url &rest arguments)
                   (setf request-url url
@@ -312,7 +331,7 @@
                    (make-string-input-stream
                     (format
                      nil
-                     "data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_login\"}}~%~%data: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"id\":\"msg_login\",\"role\":\"assistant\",\"content\":[]}}~%~%data: {\"type\":\"response.output_text.delta\",\"output_index\":0,\"delta\":\"LOGIN_DEFAULT_OK\"}~%~%data: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"message\",\"id\":\"msg_login\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"LOGIN_DEFAULT_OK\"}]}}~%~%data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_login\",\"status\":\"completed\",\"model\":\"gpt-5.5\",\"usage\":{\"input_tokens\":1,\"output_tokens\":1,\"total_tokens\":2}}}~%~%"))
+                     "data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_login\"}}~%~%data: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"message\",\"id\":\"msg_login\",\"role\":\"assistant\",\"content\":[]}}~%~%data: {\"type\":\"response.output_text.delta\",\"output_index\":0,\"delta\":\"LOGIN_DEFAULT_OK\"}~%~%data: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"message\",\"id\":\"msg_login\",\"role\":\"assistant\",\"content\":[{\"type\":\"output_text\",\"text\":\"LOGIN_DEFAULT_OK\"}]}}~%~%data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_login\",\"status\":\"completed\",\"usage\":{\"input_tokens\":1,\"output_tokens\":1,\"total_tokens\":2}}}~%~%"))
                    200
                    '(("content-type"
                       . "text/event-stream"))))))

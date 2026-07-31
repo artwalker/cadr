@@ -33,25 +33,33 @@
        (get-output-stream-string output)
        (get-output-stream-string errors)))))
 
-(defun live-default-model-settings ()
-  (let ((path
-          (merge-pathnames
-           ".cadr/settings.json"
-           (user-homedir-pathname))))
-    (and
-     (probe-file path)
-     (handler-case
-         (let ((object
-                 (cadr-ai::parse-json
-                  (uiop:read-file-string
-                   path :external-format :utf-8))))
-           (values
-            (cadr-ai::json-get
-             object "defaultProvider")
-            (cadr-ai::json-get
-             object "defaultModel")))
-       (condition ()
-         (values nil nil))))))
+(defun run-isolated-live-cli
+    (directory arguments &key auth-source)
+  (let* ((home
+           (merge-pathnames "home/" directory))
+         (workspace
+           (merge-pathnames "workspace/" directory))
+         (isolated-auth
+           (merge-pathnames
+            ".cadr/auth.json" home))
+         (original-home
+           (uiop:getenv "HOME")))
+    (ensure-directories-exist
+     (merge-pathnames "anchor" home))
+    (ensure-directories-exist
+     (merge-pathnames "anchor" workspace))
+    (when auth-source
+      (ensure-directories-exist isolated-auth)
+      (uiop:copy-file auth-source isolated-auth))
+    (unwind-protect
+         (progn
+           (setf (uiop:getenv "HOME")
+                 (namestring home))
+           (uiop:with-current-directory
+               (workspace)
+             (run-live-cli arguments)))
+      (setf (uiop:getenv "HOME")
+            original-home))))
 
 (test live-deepseek-print-mode-emits-only-final-text
   (if
@@ -60,12 +68,48 @@
         "DEEPSEEK_API_KEY"))
       (skip "DEEPSEEK_API_KEY is not set")
       (with-test-directory (directory)
-        (uiop:with-current-directory (directory)
+        (multiple-value-bind
+              (status output errors)
+            (run-isolated-live-cli
+             directory
+             '("--provider" "deepseek"
+               "--model" "deepseek-v4-flash"
+               "--print"
+               "--no-session"
+               "--no-tools"
+               "--no-extensions"
+               "--no-skills"
+               "--no-prompt-templates"
+               "--no-context-files"
+               "--system-prompt"
+               "Follow the requested output format exactly and do not call tools."
+               "Reply with exactly DEEPSEEK_PRINT_OK and nothing else."))
+          (is (= 0 status))
+          (is (string=
+               "DEEPSEEK_PRINT_OK"
+               (string-trim
+                '(#\Space #\Tab #\Newline #\Return)
+                output)))
+          (is (string= "" errors))))))
+
+(test live-openai-codex-explicit-model-uses-oauth-credential
+  (let* ((auth-source
+           (cadr-cli::default-auth-path))
+         (credential
+           (live-cli-auth-credential
+            :openai-codex)))
+    (if
+        (not
+         (typep credential
+                'cadr-ai:oauth-credential))
+        (skip "OpenAI Codex OAuth is not configured")
+        (with-test-directory (directory)
           (multiple-value-bind
                 (status output errors)
-              (run-live-cli
-               '("--provider" "deepseek"
-                 "--model" "deepseek-v4-flash"
+              (run-isolated-live-cli
+               directory
+               '("--provider" "openai-codex"
+                 "--model" "gpt-5.5"
                  "--print"
                  "--no-session"
                  "--no-tools"
@@ -75,61 +119,12 @@
                  "--no-context-files"
                  "--system-prompt"
                  "Follow the requested output format exactly and do not call tools."
-                 "Reply with exactly DEEPSEEK_PRINT_OK and nothing else."))
+                 "Reply with exactly OAUTH_EXPLICIT_OK and nothing else.")
+               :auth-source auth-source)
             (is (= 0 status))
             (is (string=
-                 "DEEPSEEK_PRINT_OK"
+                 "OAUTH_EXPLICIT_OK"
                  (string-trim
                   '(#\Space #\Tab #\Newline #\Return)
                   output)))
             (is (string= "" errors)))))))
-
-(test live-openai-oauth-login-default-route-is-directly-usable
-  (let ((credential
-          (live-cli-auth-credential
-           :openai-codex))
-        (misidentified
-          (live-cli-auth-credential
-           :openai)))
-    (cond
-      ((typep credential
-              'cadr-ai:oauth-credential)
-       (multiple-value-bind
-             (provider model)
-           (live-default-model-settings)
-         (is (string=
-              "openai-codex"
-              (or provider "")))
-         (is (string=
-              (cadr-ai:provider-definition-default-model
-               (cadr-ai:find-provider-definition
-                :openai-codex))
-              (or model ""))))
-       (with-test-directory (directory)
-         (uiop:with-current-directory (directory)
-           (multiple-value-bind
-                 (status output errors)
-               (run-live-cli
-                '("--print"
-                  "--no-session"
-                  "--no-tools"
-                  "--no-extensions"
-                  "--no-skills"
-                  "--no-prompt-templates"
-                  "--no-context-files"
-                  "--system-prompt"
-                  "Follow the requested output format exactly and do not call tools."
-                  "Reply with exactly OAUTH_DEFAULT_OK and nothing else."))
-             (is (= 0 status))
-             (is (string=
-                  "OAUTH_DEFAULT_OK"
-                  (string-trim
-                   '(#\Space #\Tab #\Newline #\Return)
-                   output)))
-             (is (string= "" errors))))))
-      ((typep misidentified
-              'cadr-ai:oauth-credential)
-       (error
-        "OpenAI OAuth is still stored under provider openai; run /login openai with the corrected cadr build"))
-      (t
-       (skip "OpenAI Codex OAuth is not configured")))))
