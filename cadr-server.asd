@@ -3,7 +3,8 @@
   :version "0.1.0"
   :license "MIT"
   :depends-on ("cadr-ai"
-               "sb-bsd-sockets")
+               "sb-bsd-sockets"
+               "sb-posix")
   :serial t
   :components ((:module "src/cadr-server"
                 :serial t
