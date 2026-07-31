@@ -80,6 +80,29 @@
    #:get-terminal-capabilities
    #:set-terminal-capabilities
    #:reset-terminal-capabilities
+   #:terminal-theme
+   #:make-terminal-theme
+   #:terminal-theme-name
+   #:terminal-theme-color-mode
+   #:terminal-theme-enabled-p
+   #:terminal-theme-color-keys
+   #:parse-theme-hex-color
+   #:rgb-to-ansi-256
+   #:theme-color-value
+   #:theme-foreground-ansi
+   #:theme-background-ansi
+   #:theme-foreground
+   #:theme-background
+   #:theme-bold
+   #:theme-italic
+   #:theme-underline
+   #:theme-inverse
+   #:theme-thinking-color-key
+   #:theme-thinking-foreground
+   #:theme-bash-mode-foreground
+   #:current-theme
+   #:set-current-theme
+   #:reset-current-theme
    #:image-line-p
    #:allocate-image-id
    #:encode-kitty-image
@@ -161,6 +184,7 @@
    #:tool-block-collapsed-p
    #:toggle-tool-block
    #:render-tool-block
+   #:render-footer
    #:render-status-bar
    #:select-item
    #:make-select-item
