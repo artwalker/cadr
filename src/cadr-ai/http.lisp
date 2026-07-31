@@ -505,12 +505,25 @@
 
 (defun signal-api-error (request body status headers)
   (let* ((retry-after (header-value headers "retry-after"))
+         (error-code
+           (ignore-errors
+             (let* ((object (parse-json body))
+                    (nested (json-get object "error"))
+                    (value
+                      (or (json-get object "__type")
+                          (json-get object "code")
+                          (and (hash-table-p nested)
+                               (or
+                                (json-get nested "code")
+                                (json-get nested "type"))))))
+               (and (stringp value) value))))
          (retryable-p (or (= status 429)
                           (member status
                                   '(500 502 503 504)))))
     (error 'api-error
            :provider (request-spec-provider request)
            :status status
+           :code error-code
            :retry-after retry-after
            :retryable-p retryable-p
            :message
@@ -765,6 +778,7 @@
             (error 'api-error
                    :provider :amazon-bedrock
                    :status 500
+                   :code event-type
                    :message
                    (format nil "~A: ~A"
                            (or event-type "Bedrock exception")

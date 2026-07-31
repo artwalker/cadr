@@ -412,6 +412,120 @@ region = eu-central-1")))
         "Provider stopped with: guardrail_intervened"
         (cadr-ai:assistant-message-error-message message))))))
 
+(test bedrock-failure-records-bounded-structured-metadata
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :amazon-bedrock
+       :model-id "amazon.nova-lite-v1:0"
+       :api-key "bearer")
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (values
+               (make-string-input-stream
+                "{\"message\":\"bad model\",\"__type\":\"ValidationException\"}")
+               400
+               '(("x-amzn-requestid"
+                  . "11111111-2222-3333-4444-555555555555"))))))
+      (let* ((message
+               (cadr-ai:stream-chat
+                provider model
+                (cadr-ai:make-context
+                 :messages
+                 (list
+                  (cadr-ai:make-user-message
+                   :content "hello")))
+                (lambda (event)
+                  (declare (ignore event)))))
+             (diagnostic
+               (first
+                (cadr-ai:assistant-message-diagnostics
+                 message)))
+             (details
+               (cadr-ai:assistant-message-diagnostic-details
+                diagnostic)))
+        (is (eq :error
+                (cadr-ai:assistant-message-stop-reason
+                 message)))
+        (is (eq :bedrock-response-failure
+                (cadr-ai:assistant-message-diagnostic-type
+                 diagnostic)))
+        (is (= 400 (getf details :status)))
+        (is (string=
+             "ValidationException"
+             (getf details :error-code)))
+        (is (string=
+             "11111111-2222-3333-4444-555555555555"
+             (getf details :request-id)))))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (error "socket hang up"))))
+      (let ((message
+              (cadr-ai:stream-chat
+               provider model
+               (cadr-ai:make-context)
+               (lambda (event)
+                 (declare (ignore event))))))
+        (is (null
+             (cadr-ai:assistant-message-diagnostics
+              message)))))))
+
+(test bedrock-abort-does-not-append-failure-diagnostic
+  (multiple-value-bind (provider model)
+      (cadr-ai:instantiate-provider
+       :amazon-bedrock
+       :model-id "amazon.nova-lite-v1:0"
+       :api-key "bearer")
+    (let ((message
+            (cadr-ai:stream-chat
+             provider model
+             (cadr-ai:make-context)
+             (lambda (event)
+               (declare (ignore event)))
+             :abort-p (constantly t))))
+      (is (eq :aborted
+              (cadr-ai:assistant-message-stop-reason
+               message)))
+      (is (null
+           (cadr-ai:assistant-message-diagnostics
+            message))))))
+
+(test gpt-5-6-authoritative-pricing-and-opencode-go-name
+  (dolist
+      (provider
+       '(:openai :openai-codex :cloudflare-ai-gateway))
+    (let ((luna
+            (cadr-ai:find-model-metadata
+             provider "gpt-5.6-luna"))
+          (terra
+            (cadr-ai:find-model-metadata
+             provider "gpt-5.6-terra")))
+      (is (= 0.2d0
+             (cadr-ai:model-metadata-input-price luna)))
+      (is (= 1.2d0
+             (cadr-ai:model-metadata-output-price luna)))
+      (is (= 0.02d0
+             (cadr-ai:model-metadata-cache-read-price luna)))
+      (is (= 0.25d0
+             (cadr-ai:model-metadata-cache-write-price luna)))
+      (is (= 2d0
+             (cadr-ai:model-metadata-input-price terra)))
+      (is (= 12d0
+             (cadr-ai:model-metadata-output-price terra)))
+      (let ((tier
+              (first
+               (cadr-ai:model-metadata-cost-tiers luna))))
+        (is (= 0.4d0
+               (cadr-ai:model-cost-tier-input-price tier)))
+        (is (= 1.8d0
+               (cadr-ai:model-cost-tier-output-price tier))))))
+  (is (string=
+       "OpenCode Go"
+       (cadr-ai:provider-definition-name
+        (cadr-ai:find-provider-definition
+         :opencode-go)))))
+
 (test vertex-auth-resolution-distinguishes-api-key-and-adc
   (is
    (equal

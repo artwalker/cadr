@@ -116,11 +116,17 @@
   (content "" :type (or string list vector))
   (timestamp (unix-milliseconds) :type integer))
 
+(defstruct assistant-message-diagnostic
+  (type nil :type symbol)
+  (timestamp (unix-milliseconds) :type integer)
+  (details nil :type list)
+  (error nil))
+
 (defstruct (assistant-message
             (:constructor %make-assistant-message
                 (&key content api provider model response-model response-id
                       usage stop-reason
-                      error-message raw-stop-reason timestamp)))
+                      error-message raw-stop-reason diagnostics timestamp)))
   (content nil :type list)
   (api nil :type symbol)
   (provider nil :type symbol)
@@ -131,6 +137,7 @@
   (stop-reason :pending :type symbol)
   (error-message nil :type (or null string))
   (raw-stop-reason nil :type (or null string))
+  (diagnostics nil :type list)
   (timestamp (unix-milliseconds) :type integer))
 
 (defun make-assistant-message (&key
@@ -144,6 +151,7 @@
                                     (stop-reason :pending)
                                     error-message
                                     raw-stop-reason
+                                    (diagnostics nil)
                                     (timestamp (unix-milliseconds)))
   (%make-assistant-message
    :content content
@@ -156,6 +164,7 @@
    :stop-reason stop-reason
    :error-message error-message
    :raw-stop-reason raw-stop-reason
+   :diagnostics diagnostics
    :timestamp timestamp))
 
 (defstruct tool-result-message

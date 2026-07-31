@@ -123,6 +123,14 @@
 (defgeneric reduce-provider-sse-event
     (provider state event emit))
 
+(defgeneric finalize-provider-stream
+    (provider model state emit))
+
+(defmethod finalize-provider-stream
+    ((provider provider) model state emit)
+  (declare (ignore provider model state emit))
+  nil)
+
 (defun plist-entry (plist key)
   (let ((tail (member key plist :test #'eq)))
     (if tail
@@ -310,6 +318,9 @@
                :error-message (assistant-message-error-message message)
                :raw-stop-reason
                (assistant-message-raw-stop-reason message)
+               :diagnostics
+               (copy-list
+                (assistant-message-diagnostics message))
                :timestamp (assistant-message-timestamp message))
               transformed))))
         ((typep message 'tool-result-message)
@@ -528,7 +539,8 @@
                       on-payload transform-headers on-response)
   (let* ((message (empty-assistant-message model))
          (state (make-provider-stream-state :message message))
-         (saw-provider-event-p nil))
+         (saw-provider-event-p nil)
+         (response-request-id nil))
     (handler-case
         (progn
           (check-abort abort-p)
@@ -558,6 +570,14 @@
                   (check-abort abort-p))
                 :on-response
                 (lambda (status headers)
+                  (when (typep provider 'bedrock-provider)
+                    (setf response-request-id
+                          (normalize-bedrock-diagnostic-value
+                           (or
+                            (header-value
+                             headers "x-amzn-requestid")
+                            (header-value
+                             headers "x-amz-request-id")))))
                   (notify-provider-response
                    on-response status headers
                    model))))
@@ -565,6 +585,8 @@
              (lambda (condition)
                (declare (ignore condition))
                (not saw-provider-event-p))))
+          (finalize-provider-stream
+           provider model state on-event)
           (unless (provider-stream-state-terminal-p state)
             (error 'sse-protocol-error
                    :message "Provider stream ended without a terminal event"))
@@ -590,8 +612,59 @@
           (setf (assistant-message-stop-reason message) reason
               (assistant-message-error-message message)
               (condition-text condition provider))
+          (when (and (eq reason :error)
+                     (typep provider 'bedrock-provider))
+            (append-bedrock-failure-diagnostic
+             message condition response-request-id))
           (emit-event on-event :error message :reason reason))
         message))))
+
+(defconstant +maximum-bedrock-diagnostic-value-characters+ 200)
+
+(defun normalize-bedrock-diagnostic-value (value)
+  (when (stringp value)
+    (let ((trimmed
+            (string-trim
+             '(#\Space #\Tab #\Return #\Newline)
+             value)))
+      (when (<= 1 (length trimmed)
+                +maximum-bedrock-diagnostic-value-characters+)
+        trimmed))))
+
+(defun bedrock-error-code (condition)
+  (let ((code
+          (and (typep condition 'api-error)
+               (api-error-code condition))))
+    (when (and
+           (stringp code)
+           (uiop:string-suffix-p code "Exception")
+           (not (string= code "Unknown")))
+      (normalize-bedrock-diagnostic-value code))))
+
+(defun append-bedrock-failure-diagnostic
+    (message condition fallback-request-id)
+  (let ((details nil))
+    (when (typep condition 'api-error)
+      (setf (getf details :status)
+            (api-error-status condition)))
+    (let ((code (bedrock-error-code condition)))
+      (when code
+        (setf (getf details :error-code) code)))
+    (let ((request-id
+            (normalize-bedrock-diagnostic-value
+             fallback-request-id)))
+      (when request-id
+        (setf (getf details :request-id) request-id)))
+    (when details
+      (setf
+       (assistant-message-diagnostics message)
+       (append
+        (assistant-message-diagnostics message)
+        (list
+         (make-assistant-message-diagnostic
+          :type :bedrock-response-failure
+          :details details))))))
+  message)
 
 (defun map-simple-stop-reason (raw)
   (cond

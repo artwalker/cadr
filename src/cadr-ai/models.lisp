@@ -221,10 +221,50 @@
        (string= (model-id left) (model-id right))
        (eq (model-provider left) (model-provider right))))
 
+(defun round-model-cost (value)
+  (/ (round (* value 1000000d0))
+     1000000d0))
+
+(defun apply-gpt-5-6-pricing-override (row)
+  (when
+      (member
+       (getf row :provider)
+       '(:openai :openai-codex :cloudflare-ai-gateway))
+    (let ((prices
+            (cond
+              ((string= (getf row :id) "gpt-5.6-luna")
+               '(0.2d0 1.2d0 0.02d0 0.25d0))
+              ((string= (getf row :id) "gpt-5.6-terra")
+               '(2d0 12d0 0.2d0 2.5d0)))))
+      (when prices
+        (destructuring-bind
+            (input output cache-read cache-write)
+            prices
+          (setf
+           (getf row :input-price) input
+           (getf row :output-price) output
+           (getf row :cache-read-price) cache-read
+           (getf row :cache-write-price) cache-write
+           (getf row :cost-tiers)
+           (list
+            (list
+             :input-tokens-above 272000
+             :input-price
+             (round-model-cost (* input 2d0))
+             :output-price
+             (round-model-cost (* output 1.5d0))
+             :cache-read-price
+             (round-model-cost (* cache-read 2d0))
+             :cache-write-price
+             (round-model-cost (* cache-write 2d0)))))))))
+  row)
+
 (defun register-generated-models (rows)
   (clrhash *model-catalog*)
   (dolist (row rows)
-    (let ((copy (copy-list row)))
+    (let ((copy
+            (apply-gpt-5-6-pricing-override
+             (copy-list row))))
       (setf
        (getf copy :cost-tiers)
        (mapcar

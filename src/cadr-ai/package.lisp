@@ -81,7 +81,14 @@
    #:assistant-message-stop-reason
    #:assistant-message-error-message
    #:assistant-message-raw-stop-reason
+   #:assistant-message-diagnostics
    #:assistant-message-timestamp
+   #:assistant-message-diagnostic
+   #:make-assistant-message-diagnostic
+   #:assistant-message-diagnostic-type
+   #:assistant-message-diagnostic-timestamp
+   #:assistant-message-diagnostic-details
+   #:assistant-message-diagnostic-error
    #:tool-result-message
    #:make-tool-result-message
    #:tool-result-message-tool-call-id

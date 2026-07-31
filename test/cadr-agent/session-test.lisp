@@ -272,6 +272,47 @@
             (cadr-ai:assistant-message
              (cadr-ai:assistant-message-content
               message))
-            (cadr-ai:tool-result-message
+             (cadr-ai:tool-result-message
              (cadr-ai:tool-result-message-content
               message)))))))))
+
+(test session-round-trips-assistant-diagnostics
+  (let* ((diagnostic
+           (cadr-ai:make-assistant-message-diagnostic
+            :type :bedrock-response-failure
+            :timestamp 123
+            :details
+            '(:status 429
+              :error-code "ThrottlingException"
+              :request-id "request-1")))
+         (message
+           (cadr-ai:make-assistant-message
+            :api :bedrock-converse-stream
+            :provider :amazon-bedrock
+            :model "test"
+            :diagnostics (list diagnostic)
+            :stop-reason :error
+            :error-message "throttled"
+            :timestamp 456))
+         (json
+           (cadr-agent::message-to-json message))
+         (loaded
+           (cadr-agent::message-from-json json))
+         (loaded-diagnostic
+           (first
+            (cadr-ai:assistant-message-diagnostics loaded))))
+    (is (= 1
+           (length
+            (cadr-ai:assistant-message-diagnostics loaded))))
+    (is (eq :bedrock-response-failure
+            (cadr-ai:assistant-message-diagnostic-type
+             loaded-diagnostic)))
+    (is (= 123
+           (cadr-ai:assistant-message-diagnostic-timestamp
+            loaded-diagnostic)))
+    (is (equal
+         '(:status 429
+           :error-code "ThrottlingException"
+           :request-id "request-1")
+         (cadr-ai:assistant-message-diagnostic-details
+          loaded-diagnostic)))))

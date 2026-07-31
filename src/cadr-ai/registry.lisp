@@ -190,7 +190,7 @@
      :default-model "kimi-k2.6"
      :key-environment "OPENCODE_API_KEY")
     (:id :opencode-go
-     :name "OpenCode Zen Go"
+     :name "OpenCode Go"
      :protocol :openai-completions
      :base-url "https://opencode.ai/zen/go/v1"
      :auth-types (:api-key)

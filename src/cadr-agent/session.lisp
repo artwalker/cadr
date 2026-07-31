@@ -250,6 +250,54 @@
        object "reasoning" (cadr-ai:usage-reasoning usage)))
     object))
 
+(defun diagnostic-detail-json-key (key)
+  (case key
+    (:error-code "errorCode")
+    (:request-id "requestId")
+    (otherwise
+     (if (stringp key)
+         key
+         (symbol-json-name key)))))
+
+(defun diagnostic-details-to-json (details)
+  (if (plist-like-p details)
+      (let ((object (cadr-ai::json-object)))
+        (loop for (key value) on details by #'cddr
+              do
+              (cadr-ai::json-put
+               object
+               (diagnostic-detail-json-key key)
+               (json-safe-value value)))
+        object)
+      (json-safe-value details)))
+
+(defun assistant-diagnostic-to-json (diagnostic)
+  (let ((object
+          (cadr-ai::json-object
+           "type"
+           (symbol-json-name
+            (cadr-ai:assistant-message-diagnostic-type diagnostic))
+           "timestamp"
+           (cadr-ai:assistant-message-diagnostic-timestamp diagnostic))))
+    (when (cadr-ai:assistant-message-diagnostic-details diagnostic)
+      (cadr-ai::json-put
+       object "details"
+       (diagnostic-details-to-json
+        (cadr-ai:assistant-message-diagnostic-details diagnostic))))
+    (when (cadr-ai:assistant-message-diagnostic-error diagnostic)
+      (cadr-ai::json-put
+       object "error"
+       (json-safe-value
+        (cadr-ai:assistant-message-diagnostic-error diagnostic))))
+    object))
+
+(defun diagnostic-detail-keyword (key)
+  (cond
+    ((string= key "errorCode") :error-code)
+    ((string= key "requestId") :request-id)
+    (t
+     (intern (string-upcase key) "KEYWORD"))))
+
 (defun message-to-json (message)
   (cond
     ((typep message 'cadr-ai:user-message)
@@ -295,6 +343,13 @@
          (cadr-ai::json-put
           object "rawStopReason"
           (cadr-ai:assistant-message-raw-stop-reason message)))
+       (when (cadr-ai:assistant-message-diagnostics message)
+         (cadr-ai::json-put
+          object "diagnostics"
+          (map
+           'vector
+           #'assistant-diagnostic-to-json
+           (cadr-ai:assistant-message-diagnostics message))))
        object))
     ((typep message 'cadr-ai:tool-result-message)
      (cadr-ai::json-object
@@ -327,6 +382,39 @@
     (if present-p
         value
         (cadr-ai::json-get object legacy))))
+
+(defun diagnostic-json-value-to-lisp (value)
+  (cond
+    ((stringp value) value)
+    ((hash-table-p value)
+     (let ((result nil))
+       (maphash
+        (lambda (key item)
+          (setf result
+                (append
+                 result
+                 (list
+                  (diagnostic-detail-keyword key)
+                  (diagnostic-json-value-to-lisp item)))))
+        value)
+       result))
+    ((vectorp value)
+     (map 'list #'diagnostic-json-value-to-lisp value))
+    (t value)))
+
+(defun assistant-diagnostic-from-json (object)
+  (cadr-ai:make-assistant-message-diagnostic
+   :type
+   (keyword-from-json
+    (cadr-ai::json-get object "type"))
+   :timestamp
+   (cadr-ai::json-get object "timestamp")
+   :details
+   (diagnostic-json-value-to-lisp
+    (cadr-ai::json-get object "details"))
+   :error
+   (diagnostic-json-value-to-lisp
+    (cadr-ai::json-get object "error"))))
 
 (defun content-block-from-json (object)
   (let ((type (cadr-ai::json-get object "type")))
@@ -448,6 +536,13 @@
         :raw-stop-reason
         (json-get-either
          object "rawStopReason" "raw_stop_reason")
+        :diagnostics
+        (map
+         'list
+         #'assistant-diagnostic-from-json
+         (or
+          (cadr-ai::json-get object "diagnostics")
+          #()))
         :timestamp (cadr-ai::json-get object "timestamp")))
       ((member type '("toolResult" "tool_result")
                :test #'string=)

@@ -654,3 +654,23 @@
                  (assistant-message-error-message message)
                  (format nil "Provider finish_reason: ~A"
                          finish-reason))))))))))
+
+(defmethod finalize-provider-stream
+    ((provider openai-completions-provider)
+     model state emit)
+  (declare (ignore provider))
+  (unless
+      (or
+       (provider-stream-state-terminal-p state)
+       (model-compat-value
+        model :supports-finish-reason t))
+    (finish-chat-stream-blocks state emit)
+    (let ((message
+            (provider-stream-state-message state)))
+      (setf
+       (assistant-message-stop-reason message)
+       (if (tool-call-present-p message)
+           :tool-use
+           :stop)
+       (provider-stream-state-terminal-p state) t)))
+  nil)

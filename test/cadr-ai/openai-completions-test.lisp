@@ -160,3 +160,65 @@
            (cadr-ai:assistant-message-response-model
             (cadr-ai:parse-complete-response
              provider model response)))))))
+
+(test completions-without-finish-reason-follow-compat-contract
+  (multiple-value-bind (provider ignored-model)
+      (completions-provider-and-model)
+    (declare (ignore ignored-model))
+    (labels
+        ((run-case (supports-finish-reason &optional tool-p)
+           (let* ((model
+                    (cadr-ai:make-model
+                     :id "compatible"
+                     :provider :compatible
+                     :api :openai-completions
+                     :base-url "https://example.invalid/v1"
+                     :max-tokens 1024
+                     :compat
+                     (list :supports-finish-reason
+                           supports-finish-reason)))
+                  (*http-request-function*
+                    (lambda (url &rest arguments)
+                      (declare (ignore url arguments))
+                      (values
+                       (make-string-input-stream
+                        (if tool-p
+                            (format
+                             nil
+                             "data: {\"choices\":[{\"delta\":{\"tool_calls\":[{\"index\":0,\"id\":\"call-1\",\"function\":{\"name\":\"read\",\"arguments\":\"{}\"}}]},\"finish_reason\":null}]}~%~%data: [DONE]~%~%")
+                            (format
+                             nil
+                             "data: {\"choices\":[{\"delta\":{\"content\":\"hello\"},\"finish_reason\":null}]}~%~%data: [DONE]~%~%")))
+                       200
+                       '(("content-type"
+                          . "text/event-stream"))))))
+             (cadr-ai:stream-chat
+              provider model
+              (cadr-ai:make-context
+               :messages
+               (list
+                (cadr-ai:make-user-message
+                 :content "hello")))
+              (lambda (event)
+                (declare (ignore event)))))))
+      (let ((message (run-case nil)))
+        (is (eq :stop
+                (cadr-ai:assistant-message-stop-reason
+                 message)))
+        (is (string= "hello" (first-text message))))
+      (let ((message (run-case nil t)))
+        (is (eq :tool-use
+                (cadr-ai:assistant-message-stop-reason
+                 message)))
+        (is (typep
+             (first
+              (cadr-ai:assistant-message-content message))
+             'cadr-ai:tool-call)))
+      (let ((message (run-case t)))
+        (is (eq :error
+                (cadr-ai:assistant-message-stop-reason
+                 message)))
+        (is (search
+             "terminal"
+             (cadr-ai:assistant-message-error-message
+              message)))))))
