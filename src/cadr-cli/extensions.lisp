@@ -22,6 +22,7 @@
   cwd
   global-directory
   explicit-paths
+  (extension-factories nil :type list)
   configured-package-paths
   (no-discovery-p nil :type boolean)
   output
@@ -57,6 +58,7 @@
        (global-directory
          (default-extension-directory))
        explicit-paths
+       extension-factories
        configured-package-paths
        no-discovery-p
        (output *standard-output*)
@@ -71,6 +73,8 @@
            (uiop:ensure-directory-pathname
             (pathname global-directory))
            :explicit-paths (copy-list explicit-paths)
+           :extension-factories
+           (copy-list extension-factories)
            :configured-package-paths
            (copy-list configured-package-paths)
            :no-discovery-p
@@ -89,9 +93,112 @@
                 manager message level))
              :reload-function
              (lambda ()
-               (reload-cli-extensions manager)))))
+               (reload-cli-extensions manager))
+             :exec-function
+             (lambda (command arguments
+                      &key cwd environment timeout-ms)
+               (let* ((execution-environment
+                        (cadr-agent:make-node-execution-env
+                         :cwd
+                         (cli-extension-manager-cwd
+                          manager)))
+                      (shell-command
+                        (format
+                         nil "~{~A~^ ~}"
+                         (mapcar
+                          #'shell-quote
+                          (cons command arguments)))))
+                 (multiple-value-bind (result error)
+                     (cadr-agent:execution-env-exec
+                      execution-environment
+                      shell-command
+                      :cwd cwd
+                      :environment environment
+                      :timeout
+                      (and timeout-ms
+                           (/ timeout-ms 1000.0)))
+                   (when error
+                     (error
+                      'cadr-agent:extension-execution-error
+                      :message
+                      (cadr-agent:harness-operation-error-message
+                       error)))
+                   (list
+                    :stdout
+                    (cadr-agent:execution-result-stdout
+                     result)
+                    :stderr
+                    (cadr-agent:execution-result-stderr
+                     result)
+                    :exit-code
+                    (cadr-agent:execution-result-exit-code
+                     result))))))))
       (setf (cli-extension-manager-host manager) host))
     manager))
+
+(defun configure-extension-ui-bridge
+    (manager
+     &key
+       custom-function
+       autocomplete-function
+       theme-function
+       all-themes-function
+       get-theme-function
+       set-theme-function
+       tools-expanded-function
+       set-tools-expanded-function)
+  (let* ((host
+           (cli-extension-manager-host manager))
+         (fallback
+           (cadr-agent::extension-host-ui-function
+            host)))
+    (setf
+     (cadr-agent::extension-host-ui-function host)
+     (lambda (method arguments)
+       (case method
+         (:custom
+          (and
+           custom-function
+           (funcall
+            custom-function
+            (getf arguments :factory)
+            (getf arguments :overlay-p)
+            (getf arguments :overlay-options))))
+         (:add-autocomplete-provider
+          (when autocomplete-function
+            (funcall
+             autocomplete-function
+             (getf arguments :factory)))
+          nil)
+         (:theme
+          (and theme-function
+               (funcall theme-function)))
+         (:all-themes
+          (and all-themes-function
+               (funcall all-themes-function)))
+         (:get-theme
+          (and get-theme-function
+               (funcall
+                get-theme-function
+                (getf arguments :name))))
+         (:set-theme
+          (and set-theme-function
+               (funcall
+                set-theme-function
+                (getf arguments :theme))))
+         (:tools-expanded-p
+          (and tools-expanded-function
+               (funcall tools-expanded-function)))
+         (:set-tools-expanded
+          (when set-tools-expanded-function
+            (funcall
+             set-tools-expanded-function
+             (getf arguments :expanded-p)))
+          nil)
+         (otherwise
+          (and fallback
+               (funcall fallback method arguments)))))))
+  manager)
 
 (defun extension-directory-id (directory)
   (let ((parts
@@ -313,7 +420,8 @@
                   (cli-extension-manager-output manager))
                 (*error-output*
                   (cli-extension-manager-output manager)))
-            (cadr-agent::call-with-extension-registration
+            (cadr-agent::call-with-extension-load
+             (cli-extension-manager-host manager)
              bundle
              (lambda ()
                (load
@@ -332,6 +440,63 @@
                  (extension-source-record-id source)
                  (extension-source-record-path source)
                  condition))))))
+
+(defun valid-inline-extension-factory-p (input)
+  (or
+   (functionp input)
+   (and
+    (listp input)
+    (evenp (length input))
+    (loop for (key value) on input by #'cddr
+          always
+          (case key
+            (:name (stringp value))
+            (:factory (functionp value))
+            (:hidden-p
+             (or (null value) (eq value t)))
+            (otherwise nil)))
+    (stringp (getf input :name))
+    (plusp (length (getf input :name)))
+    (functionp (getf input :factory)))))
+
+(defun load-inline-extension-factory
+    (manager input index)
+  (unless (valid-inline-extension-factory-p input)
+    (error
+     'cadr-agent:extension-registration-error
+     :message
+     "Inline extension must be a function or (:NAME string :FACTORY function :HIDDEN-P boolean)"))
+  (let* ((named-p (not (functionp input)))
+         (name
+           (if named-p
+               (getf input :name)
+               (format nil "~D" index)))
+         (path
+           (format nil "<inline:~A>" name))
+         (factory
+           (if named-p
+               (getf input :factory)
+               input))
+         (bundle
+           (cadr-agent::make-extension-bundle
+            :id path
+            :path path
+            :scope :inline
+            :rank 3
+            :order index
+            :hidden-p
+            (and named-p
+                 (not
+                  (null
+                   (getf input :hidden-p)))))))
+    (cadr-agent::call-with-extension-load
+     (cli-extension-manager-host manager)
+     bundle
+     (lambda ()
+       (funcall
+        factory
+        (cadr-agent:current-extension-api))))
+    bundle))
 
 (defun same-extension-source-p (bundle source)
   (and
@@ -377,6 +542,26 @@
             (setf (gethash id next-last-good)
                   bundle)
             (push bundle bundles))))
+      (loop
+        for input in
+        (cli-extension-manager-extension-factories
+         manager)
+        for index from 1
+        do
+        (handler-case
+            (progn
+              (push
+               (load-inline-extension-factory
+                manager input index)
+               bundles)
+              (incf loaded))
+          (condition (condition)
+            (push (princ-to-string condition)
+                  errors)
+            (extension-manager-notify
+             manager
+             (princ-to-string condition)
+             :error))))
       (setf bundles (nreverse bundles)
             (cli-extension-manager-last-good manager)
             next-last-good)

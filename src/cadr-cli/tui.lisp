@@ -4,7 +4,13 @@
   type
   (text "" :type string)
   tool-call-id
-  tool-block)
+  tool-block
+  (tool-render-state (make-hash-table)
+                     :type hash-table)
+  custom-call-render
+  (custom-call-rendered-p nil :type boolean)
+  custom-result-render
+  (custom-result-rendered-p nil :type boolean))
 
 (defstruct (tui-state
             (:constructor %make-tui-state))
@@ -17,7 +23,43 @@
   (cache-tokens 0 :type (integer 0 *))
   (cost 0d0 :type double-float)
   (cost-known-p nil :type boolean)
+  (tools-expanded-p nil :type boolean)
   status-message)
+
+(defstruct extension-custom-ui-state
+  component
+  done-function)
+
+(defun render-extension-custom-ui
+    (state width)
+  (let ((component
+          (extension-custom-ui-state-component
+           state)))
+    (cond
+      ((cadr-tui::select-list-p component)
+       (cadr-tui:render-select-list
+        component width))
+      (t
+       (extension-render-value-lines
+        component width)))))
+
+(defun extension-custom-ui-handle-event
+    (state event)
+  (let ((component
+          (extension-custom-ui-state-component
+           state)))
+    (cond
+      ((cadr-tui::select-list-p component)
+       (cadr-tui:select-list-handle-event
+        component event))
+      ((eq (cadr-tui:input-event-kind event)
+           :escape)
+       (values :cancel nil))
+      ((eq (cadr-tui:input-event-kind event)
+           :enter)
+       (values :select component))
+      (t
+       (values nil nil)))))
 
 (defun make-tui-state (&key model session messages)
   (let ((state
@@ -144,6 +186,7 @@
 (defun tui-handle-agent-event
     (state event
      &key
+       extension-host
        display-messages
        compaction-summary
        compaction-tokens-before)
@@ -234,18 +277,52 @@
       (:tool-execution-start
        (let ((call
                (cadr-agent:agent-event-tool-call event)))
-         (append-tui-entry
-          state
-          (make-tui-entry
-           :type :tool
-           :tool-call-id
-           (cadr-ai:tool-call-id call)
-           :tool-block
-           (cadr-tui:make-tool-block
-            :name (cadr-ai:tool-call-name call)
-            :summary
-            (tool-arguments-summary call)
-            :status :running)))))
+         (let* ((render-state
+                  (make-hash-table))
+                (entry
+                  (make-tui-entry
+                   :type :tool
+                   :tool-call-id
+                   (cadr-ai:tool-call-id call)
+                   :tool-render-state render-state
+                   :tool-block
+                   (cadr-tui:make-tool-block
+                    :name (cadr-ai:tool-call-name call)
+                    :summary
+                    (tool-arguments-summary call)
+                    :collapsed-p
+                    (not
+                     (tui-state-tools-expanded-p
+                      state))
+                    :status :running))))
+           (when extension-host
+             (multiple-value-bind
+                   (rendered handled-p)
+                 (cadr-agent::render-extension-tool-call
+                  extension-host
+                  (cadr-ai:tool-call-name call)
+                  (cadr-ai:tool-call-arguments call)
+                  (list
+                   :state render-state
+                   :tool-call-id
+                   (cadr-ai:tool-call-id call)
+                   :cwd
+                   (namestring
+                    (cadr-agent::extension-host-cwd
+                     extension-host))
+                   :execution-started-p t
+                   :args-complete-p t
+                   :partial-p nil
+                   :expanded-p
+                   (tui-state-tools-expanded-p state)))
+               (setf
+                (tui-entry-custom-call-render
+                 entry)
+                rendered
+                (tui-entry-custom-call-rendered-p
+                 entry)
+                (not (null handled-p)))))
+           (append-tui-entry state entry))))
       (:tool-execution-end
        (let* ((call
                 (cadr-agent:agent-event-tool-call event))
@@ -270,7 +347,43 @@
                 :complete)
             (cadr-tui:tool-block-collapsed-p
              (tui-entry-tool-block entry))
-            t))))
+            (not
+             (tui-state-tools-expanded-p state)))
+           (when extension-host
+             (multiple-value-bind
+                   (rendered handled-p)
+                 (cadr-agent::render-extension-tool-result
+                  extension-host
+                  (cadr-ai:tool-call-name call)
+                  result
+                  (list
+                   :expanded-p
+                   (tui-state-tools-expanded-p state)
+                   :partial-p nil)
+                  (list
+                   :state
+                   (tui-entry-tool-render-state entry)
+                   :tool-call-id
+                   (cadr-ai:tool-call-id call)
+                   :cwd
+                   (namestring
+                    (cadr-agent::extension-host-cwd
+                     extension-host))
+                   :execution-started-p t
+                   :args-complete-p t
+                   :partial-p nil
+                   :expanded-p
+                   (tui-state-tools-expanded-p state)
+                   :is-error-p
+                   (cadr-ai:tool-result-message-is-error
+                    result)))
+               (setf
+                (tui-entry-custom-result-render
+                 entry)
+                rendered
+                (tui-entry-custom-result-rendered-p
+                 entry)
+                (not (null handled-p))))))))
       (:compaction-start
        (setf
         (tui-state-status-message state)
@@ -309,6 +422,24 @@
                  event))))))
   state)
 
+(defun extension-render-value-lines
+    (value width)
+  (cond
+    ((null value) nil)
+    ((stringp value)
+     (cadr-tui:wrap-text value width))
+    ((and (listp value)
+          (every #'stringp value))
+     (loop for line in value
+           append
+           (cadr-tui:wrap-text line width)))
+    ((cadr-tui::select-list-p value)
+     (cadr-tui:render-select-list value width))
+    (t
+     (cadr-tui:wrap-text
+      (princ-to-string value)
+      width))))
+
 (defun render-tui-entry (entry width)
   (case (tui-entry-type entry)
     (:user
@@ -321,9 +452,47 @@
       (tui-entry-text entry)
       width))
     (:tool
-     (cadr-tui:render-tool-block
-      (tui-entry-tool-block entry)
-      width))
+     (let ((custom-call
+             (and
+              (tui-entry-custom-call-rendered-p entry)
+              (extension-render-value-lines
+               (tui-entry-custom-call-render entry)
+               width)))
+           (custom-result
+             (and
+              (tui-entry-custom-result-rendered-p
+               entry)
+              (extension-render-value-lines
+               (tui-entry-custom-result-render entry)
+               width))))
+       (if
+           (or
+            (tui-entry-custom-call-rendered-p entry)
+            (tui-entry-custom-result-rendered-p entry))
+           (nconc
+            (or
+             custom-call
+             (cadr-tui:wrap-text
+              (format nil "~A ~A"
+                      (cadr-tui:tool-block-name
+                       (tui-entry-tool-block entry))
+                      (cadr-tui:tool-block-summary
+                       (tui-entry-tool-block entry)))
+              width))
+            (if
+                (tui-entry-custom-result-rendered-p
+                 entry)
+                custom-result
+                (let ((output
+                        (cadr-tui:tool-block-output
+                         (tui-entry-tool-block entry))))
+                  (and
+                   (plusp (length output))
+                   (cadr-tui:wrap-text
+                    output width)))))
+           (cadr-tui:render-tool-block
+            (tui-entry-tool-block entry)
+            width))))
     (:compaction-summary
      (cadr-tui:wrap-text
       (format nil "Compaction summary: ~A"
@@ -380,6 +549,10 @@
                    ((settings-selector-state-p
                      overlay)
                     (render-settings-selector
+                     overlay width))
+                   ((extension-custom-ui-state-p
+                     overlay)
+                    (render-extension-custom-ui
                      overlay width))
                    (t
                     (cadr-tui:render-select-list
@@ -441,16 +614,23 @@
           editor-row)
        editor-column))))
 
+(defun set-tui-tools-expanded
+    (state expanded-p)
+  (setf
+   (tui-state-tools-expanded-p state)
+   (not (null expanded-p)))
+  (dolist (entry (tui-state-entries state))
+    (when (eq (tui-entry-type entry) :tool)
+      (setf
+       (cadr-tui:tool-block-collapsed-p
+        (tui-entry-tool-block entry))
+       (not expanded-p))))
+  (tui-state-tools-expanded-p state))
+
 (defun toggle-last-tool-block (state)
-  (let ((entry
-          (find
-           :tool
-           (tui-state-entries state)
-           :from-end t
-           :key #'tui-entry-type)))
-    (when entry
-      (cadr-tui:toggle-tool-block
-       (tui-entry-tool-block entry)))))
+  (set-tui-tools-expanded
+   state
+   (not (tui-state-tools-expanded-p state))))
 
 (defun should-use-tui-p
     (no-tui-p
@@ -600,6 +780,29 @@
    :fd-path
    (find-tui-fd-program)))
 
+(defparameter +reserved-extension-shortcut-keys+
+  '("ctrl+c" "ctrl+d" "ctrl+z"))
+
+(defun effective-extension-shortcuts (host)
+  (remove-if
+   (lambda (definition)
+     (member
+      (cadr-agent::extension-shortcut-definition-key
+       definition)
+      +reserved-extension-shortcut-keys+
+      :test #'string-equal))
+   (cadr-agent::extension-host-shortcuts host)))
+
+(defun find-extension-shortcut-for-input
+    (host input)
+  (find-if
+   (lambda (definition)
+     (cadr-tui:matches-key
+      input
+      (cadr-agent::extension-shortcut-definition-key
+       definition)))
+   (effective-extension-shortcuts host)))
+
 (defun route-tui-submission
     (line busy-p busy-input-function
      start-function)
@@ -665,6 +868,11 @@
        bash-function
        set-event-consumer
        set-notice-consumer
+       set-extension-ui-function
+       theme-function
+       all-themes-function
+       get-theme-function
+       set-theme-function
        session-state-function
        busy-input-function
        model-items-function
@@ -672,6 +880,7 @@
        scoped-models-selector-function
        trust-selector-function
        settings-selector-function
+       extension-host
        fork-items-function
        session-items-function
        all-session-items-function
@@ -726,6 +935,14 @@
          (done-p nil)
          (worker nil)
          (session-loader-worker nil)
+         (custom-ui-lock
+           (sb-thread:make-mutex
+            :name "cadr-extension-custom-ui"))
+         (custom-ui-condition
+           (sb-thread:make-waitqueue
+            :name "cadr-extension-custom-ui"))
+         (custom-ui-done-p nil)
+         (custom-ui-result nil)
          (active-session-path current-session-path))
     (dolist (text initial-notices)
       (add-tui-notice state text))
@@ -748,6 +965,92 @@
            (sb-thread:with-mutex (lock)
              (add-tui-notice state text))
            (render))
+         (finish-custom-ui (result)
+           (sb-thread:with-mutex (custom-ui-lock)
+             (unless custom-ui-done-p
+               (setf
+                custom-ui-result result
+                custom-ui-done-p t)
+               (sb-thread:condition-broadcast
+                custom-ui-condition))))
+         (show-custom-ui
+             (factory overlay-p overlay-options)
+           (declare (ignore overlay-p overlay-options))
+           (sb-thread:with-mutex (custom-ui-lock)
+             (setf
+              custom-ui-done-p nil
+              custom-ui-result nil))
+           (let ((component
+                   (funcall factory
+                            #'finish-custom-ui)))
+             (unless custom-ui-done-p
+               (sb-thread:with-mutex (lock)
+                 (setf
+                  overlay-kind :extension-custom
+                  overlay
+                  (make-extension-custom-ui-state
+                   :component component
+                   :done-function
+                   #'finish-custom-ui)))
+               (render))
+             (sb-thread:with-mutex (custom-ui-lock)
+               (loop until custom-ui-done-p
+                     do
+                     (sb-thread:condition-wait
+                      custom-ui-condition
+                      custom-ui-lock))
+               custom-ui-result)))
+         (add-extension-autocomplete-provider
+             (factory)
+           (let* ((current
+                    (cadr-tui::multiline-editor-autocomplete-provider
+                     editor))
+                  (replacement
+                    (funcall factory current)))
+             (when replacement
+               (unless
+                   (typep replacement
+                          'cadr-tui:autocomplete-provider)
+                 (error
+                  'cadr-agent:extension-execution-error
+                  :message
+                  "Autocomplete factory must return an AUTOCOMPLETE-PROVIDER or NIL"))
+               (cadr-tui:editor-set-autocomplete-provider
+                editor replacement)))
+           nil)
+         (extension-ui-call (method arguments)
+           (case method
+             (:custom
+              (show-custom-ui
+               (getf arguments :factory)
+               (getf arguments :overlay-p)
+               (getf arguments :overlay-options)))
+             (:add-autocomplete-provider
+              (add-extension-autocomplete-provider
+               (getf arguments :factory)))
+             (:theme
+              (and theme-function
+                   (funcall theme-function)))
+             (:all-themes
+              (and all-themes-function
+                   (funcall all-themes-function)))
+             (:get-theme
+              (and get-theme-function
+                   (funcall get-theme-function
+                            (getf arguments :name))))
+             (:set-theme
+              (and set-theme-function
+                   (funcall set-theme-function
+                            (getf arguments :theme))))
+             (:tools-expanded-p
+              (tui-state-tools-expanded-p state))
+             (:set-tools-expanded
+              (set-tui-tools-expanded
+               state
+               (getf arguments :expanded-p))
+              (render)
+              nil)
+             (otherwise nil)))
          (consume-event (event)
            (sb-thread:with-mutex (lock)
              (if
@@ -765,6 +1068,7 @@
                       session-state-function)
                    (tui-handle-agent-event
                     state event
+                    :extension-host extension-host
                     :display-messages
                     display-messages
                     :compaction-summary
@@ -772,7 +1076,8 @@
                     :compaction-tokens-before
                     compaction-tokens-before))
                  (tui-handle-agent-event
-                  state event)))
+                  state event
+                  :extension-host extension-host)))
            (render))
          (start-work (line)
            (unless busy-p
@@ -1125,7 +1430,9 @@
                         (when selected-messages
                           (reset-tui-messages
                            state
-                           selected-messages))))))
+                           selected-messages)))))
+                   (:extension-custom
+                    (finish-custom-ui value)))
                (condition (condition)
                  (add-tui-notice
                   state
@@ -1158,6 +1465,10 @@
              (:select
               (accept-selection value))
              (:cancel
+              (when
+                  (eq overlay-kind
+                      :extension-custom)
+                (finish-custom-ui nil))
               (setf overlay nil
                     overlay-kind nil)
               (render))
@@ -1195,6 +1506,10 @@
                              ((settings-selector-state-p
                                overlay)
                               (settings-selector-handle-event
+                               overlay event))
+                             ((extension-custom-ui-state-p
+                               overlay)
+                              (extension-custom-ui-handle-event
                                overlay event))
                              (t
                               (cadr-tui:select-list-handle-event
@@ -1238,6 +1553,9 @@
       (when set-notice-consumer
         (funcall set-notice-consumer
                  #'notice))
+      (when set-extension-ui-function
+        (funcall set-extension-ui-function
+                 #'extension-ui-call))
       (unwind-protect
            (cadr-tui:call-with-terminal
             terminal
@@ -1254,13 +1572,26 @@
                     (let ((input
                             (cadr-tui:terminal-read-input
                              terminal)))
-                      (if
-                          (and
-                           (null overlay)
-                           (= 1 (length input))
-                           (= 26
-                              (char-code
-                               (char input 0))))
+                      (let ((extension-shortcut
+                              (and
+                               (null overlay)
+                               extension-host
+                               (plusp (length input))
+                               (find-extension-shortcut-for-input
+                                extension-host input))))
+                      (cond
+                        (extension-shortcut
+                         (cadr-agent::invoke-extension-shortcut
+                          extension-host
+                          (cadr-agent::extension-shortcut-definition-key
+                           extension-shortcut))
+                         (render))
+                        ((and
+                          (null overlay)
+                          (= 1 (length input))
+                          (= 26
+                             (char-code
+                              (char input 0))))
                           (suspend-tui
                            #+win32 :windows
                            #-win32 :linux
@@ -1275,8 +1606,9 @@
                            #'render
                            #'suspend-current-process
                            #'call-with-sigcont-handler
-                           :notice-function #'notice)
-                          (multiple-value-bind
+                           :notice-function #'notice))
+                        (t
+                         (multiple-value-bind
                             (action value handled-p)
                           (cond
                             ((and
@@ -1329,8 +1661,10 @@
                                       decoder input)
                                      (cadr-tui:flush-input
                                       decoder)))
-                              (handle-event event))))))
+                              (handle-event event)))))))
+                      )
                     (sleep 0.02))))
+        (finish-custom-ui nil)
         (when (and worker
                    (sb-thread:thread-alive-p
                     worker))
@@ -1346,5 +1680,7 @@
         (when set-event-consumer
           (funcall set-event-consumer nil))
         (when set-notice-consumer
-          (funcall set-notice-consumer nil))))
+          (funcall set-notice-consumer nil))
+        (when set-extension-ui-function
+          (funcall set-extension-ui-function nil))))
     state))

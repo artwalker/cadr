@@ -13,6 +13,139 @@
    :output output
    :secret-function secret-function))
 
+(test inline-extension-factories-rerun-and-preserve-baseline-naming
+  (with-test-directory (root)
+    (let* ((cwd (merge-pathnames "project/" root))
+           (global (merge-pathnames "global/" root))
+           (output (make-string-output-stream))
+           (runs nil)
+           (apis nil)
+           (manager
+             (cadr-cli::make-cli-extension-manager
+              :cwd cwd
+              :global-directory global
+              :output output
+              :extension-factories
+              (list
+               (lambda (api)
+                 (push :bare runs)
+                 (push api apis)
+                 (cadr-agent::define-flag
+                  "bare" :type :boolean :default t))
+               (list
+                :name "named"
+                :factory
+                (lambda (api)
+                  (push :named runs)
+                  (push api apis)
+                  (cadr-agent::define-flag
+                   "named" :type :string
+                   :default "yes"))
+                :hidden-p t)))))
+      (let ((first
+              (cadr-cli::reload-cli-extensions
+               manager)))
+        (is (= 2 (getf first :active)))
+        (is (= 2 (getf first :loaded))))
+      (let* ((host
+               (cadr-cli::cli-extension-manager-host
+                manager))
+             (bundles
+               (cadr-agent::extension-snapshot-bundles
+                (cadr-agent::extension-host-current-snapshot
+                 host))))
+        (is (equal
+             '("<inline:1>" "<inline:named>")
+             (mapcar
+              #'cadr-agent::extension-bundle-path
+              bundles)))
+        (is (null
+             (cadr-agent::extension-bundle-hidden-p
+              (first bundles))))
+        (is
+         (cadr-agent::extension-bundle-hidden-p
+          (second bundles))))
+      (let ((old-apis (copy-list apis)))
+        (cadr-cli::reload-cli-extensions manager)
+        (is (= 4 (length runs)))
+        (dolist (api old-apis)
+          (signals cadr-agent:stale-extension-context
+            (cadr-agent::extension-api-get-flag
+             api "bare")))))))
+
+(test cli-extension-ui-bridge-delegates-theme-custom-autocomplete-and-expansion
+  (with-test-directory (root)
+    (let* ((calls nil)
+           (manager
+             (cadr-cli::make-cli-extension-manager
+              :cwd root
+              :global-directory
+              (merge-pathnames "global/" root)
+              :output (make-string-output-stream))))
+      (cadr-cli::configure-extension-ui-bridge
+       manager
+       :custom-function
+       (lambda (factory overlay-p overlay-options)
+         (push
+          (list :custom
+                (funcall factory)
+                overlay-p overlay-options)
+          calls)
+         :custom-result)
+       :autocomplete-function
+       (lambda (factory)
+         (push (list :autocomplete factory) calls))
+       :theme-function
+       (lambda () '(:name "dark"))
+       :all-themes-function
+       (lambda ()
+         '((:name "dark") (:name "light")))
+       :get-theme-function
+       (lambda (name)
+         (list :name name))
+       :set-theme-function
+       (lambda (theme)
+         (list :success (string= theme "light")))
+       :tools-expanded-function (constantly t)
+       :set-tools-expanded-function
+       (lambda (expanded-p)
+         (push (list :expanded expanded-p) calls)))
+      (let ((ui
+              (cadr-agent::extension-host-ui-function
+               (cadr-cli::cli-extension-manager-host
+                manager))))
+        (is (eq
+             :custom-result
+             (funcall
+              ui :custom
+              (list
+               :factory (lambda () '("line"))
+               :overlay-p t
+               :overlay-options '(:width 40)))))
+        (funcall
+         ui :add-autocomplete-provider
+         (list :factory (lambda () nil)))
+        (is (equal
+             '(:name "dark")
+             (funcall ui :theme nil)))
+        (is (= 2
+               (length
+                (funcall ui :all-themes nil))))
+        (is (equal
+             '(:name "light")
+             (funcall ui :get-theme
+                      '(:name "light"))))
+        (is (equal
+             '(:success t)
+             (funcall ui :set-theme
+                      '(:theme "light"))))
+        (is (funcall ui :tools-expanded-p nil))
+        (funcall ui :set-tools-expanded
+                 '(:expanded-p nil))
+        (is (member :custom calls :key #'first))
+        (is (member :autocomplete calls :key #'first))
+        (is (member :expanded calls :key #'first))))))
+
 (test extension-discovery-loads-isolated-packages-and-obeys-precedence
   (with-test-directory (root)
     (let* ((cwd (merge-pathnames "project/" root))

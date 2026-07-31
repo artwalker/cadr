@@ -1225,6 +1225,11 @@
            (format nil "~A" condition)))))))
 
 (defun switch-agent-session (agent session)
+  (let ((host
+          (cadr-agent::agent-extension-host agent)))
+    (when host
+      (cadr-agent::invalidate-extension-host-generation
+       host)))
   (setf (cadr-agent:agent-session agent) session
         (cadr-agent:agent-messages agent)
         (cadr-agent:session-messages session))
@@ -3129,6 +3134,99 @@
            :set-notice-consumer
            (lambda (consumer)
              (setf notice-consumer consumer))
+           :set-extension-ui-function
+           (lambda (function)
+             (setf
+              (cadr-agent::extension-host-ui-function
+               (cli-extension-manager-host
+                extension-manager))
+              function))
+           :theme-function
+           (lambda ()
+             (let ((name
+                     (settings-value
+                      settings-manager
+                      "theme" "dark")))
+               (or
+                (find
+                 name
+                 (resource-snapshot-themes
+                  resources)
+                 :key
+                 (lambda (theme)
+                   (getf theme :name))
+                 :test #'string=)
+                (list :name name :path nil))))
+           :all-themes-function
+           (lambda ()
+             (let ((themes
+                     (copy-list
+                      (resource-snapshot-themes
+                       resources))))
+               (dolist (name '("light" "dark"))
+                 (unless
+                     (find
+                      name themes
+                      :key
+                      (lambda (theme)
+                        (getf theme :name))
+                      :test #'string=)
+                   (push
+                    (list :name name :path nil)
+                    themes)))
+               (nreverse themes)))
+           :get-theme-function
+           (lambda (name)
+             (or
+              (find
+               name
+               (resource-snapshot-themes resources)
+               :key
+               (lambda (theme)
+                 (getf theme :name))
+               :test #'string=)
+              (and
+               (member name '("dark" "light")
+                       :test #'string=)
+               (list :name name :path nil))))
+           :set-theme-function
+           (lambda (theme)
+             (let* ((name
+                      (cond
+                        ((stringp theme) theme)
+                        ((hash-table-p theme)
+                         (cadr-ai::json-get
+                          theme "name"))
+                        ((listp theme)
+                         (getf theme :name))))
+                    (known
+                      (and
+                       (stringp name)
+                       (or
+                        (member
+                         name '("dark" "light")
+                         :test #'string=)
+                        (find
+                         name
+                         (resource-snapshot-themes
+                          resources)
+                         :key
+                         (lambda (entry)
+                           (getf entry :name))
+                         :test #'string=)))))
+               (if known
+                   (progn
+                     (settings-set
+                      settings-manager
+                      "theme" name
+                      :scope :global)
+                     (list :success t))
+                   (list
+                    :success nil
+                    :error
+                    (format nil
+                            "Theme not found: ~A"
+                            name)))))
            :session-state-function
            #'current-session-display-state
            :busy-input-function
@@ -3150,6 +3248,9 @@
            #'trust-selector
            :settings-selector-function
            #'settings-selector
+           :extension-host
+           (cli-extension-manager-host
+            extension-manager)
            :fork-items-function #'fork-items
            :session-items-function #'session-items
            :all-session-items-function

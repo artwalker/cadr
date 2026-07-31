@@ -480,6 +480,11 @@
 
 (defun rpc-switch-agent-session
     (agent session reason previous-file)
+  (let ((host
+          (cadr-agent::agent-extension-host agent)))
+    (when host
+      (cadr-agent::invalidate-extension-host-generation
+       host)))
   (setf
    (cadr-agent:agent-session agent) session
    (cadr-agent:agent-messages agent)
