@@ -198,3 +198,76 @@
           (is (equal
                '("follow-up")
                remaining)))))))
+
+(test fork-accepts-session-id-prefix-and-prefers-current-project
+  (with-test-directory (root)
+    (let* ((sessions
+             (merge-pathnames "sessions/" root))
+           (cwd
+             (merge-pathnames "project/" root))
+           (other-cwd
+             (merge-pathnames "other/" root))
+           (_cwd-ready
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (_other-ready
+             (ensure-directories-exist
+              (merge-pathnames "anchor" other-cwd)))
+           (local
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd cwd
+              :id "abcdef-local"))
+           (global
+             (cadr-agent:create-session
+              :directory sessions
+              :cwd other-cwd
+              :id "abcdef-global")))
+      (declare (ignore _cwd-ready _other-ready))
+      (cadr-agent:session-append-message
+       local
+       (cadr-ai:make-user-message
+        :content "local"))
+      (cadr-agent:session-append-message
+       local
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content
+          :text "local reply"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (cadr-agent:session-append-message
+       global
+       (cadr-ai:make-user-message
+        :content "global"))
+      (cadr-agent:session-append-message
+       global
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content
+          :text "global reply"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (let ((fork
+              (cadr-cli::resolve-cli-session
+               :fork-source "abcdef"
+               :directory sessions
+               :cwd cwd)))
+        (is
+         (string=
+          "abcdef-local"
+          (cadr-agent:session-parent-session
+           fork)))
+        (is
+         (string=
+          "local"
+          (cadr-ai:user-message-content
+           (first
+            (cadr-agent:session-messages
+             fork)))))))))

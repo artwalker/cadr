@@ -90,6 +90,45 @@
             (cadr-agent:agent-event-error-message event))
            (finish-output output)))))))
 
+(defun session-argument-path-p (argument)
+  (or
+   (position #\/ argument)
+   (position #\\ argument)
+   (uiop:string-suffix-p ".jsonl" argument)))
+
+(defun find-session-by-id-or-prefix
+    (argument sessions)
+  (or
+   (find
+    argument sessions
+    :key #'cadr-agent:session-id
+    :test #'string=)
+   (find-if
+    (lambda (session)
+      (uiop:string-prefix-p
+       argument
+       (cadr-agent:session-id session)))
+    sessions)))
+
+(defun resolve-fork-source-session
+    (argument directory cwd)
+  (if (session-argument-path-p argument)
+      (cadr-agent:load-session
+       (merge-pathnames
+        (pathname argument)
+        (uiop:ensure-directory-pathname cwd)))
+      (or
+       (find-session-by-id-or-prefix
+        argument
+        (cadr-agent:list-sessions
+         :directory directory :cwd cwd))
+       (find-session-by-id-or-prefix
+        argument
+        (cadr-agent:list-sessions
+         :directory directory))
+       (cadr-agent:resume-session
+        argument :directory directory))))
+
 (defun resolve-cli-session
     (&key
        continue-p
@@ -153,12 +192,8 @@
   (cond
     (fork-source
      (let* ((source
-              (if (probe-file fork-source)
-                  (cadr-agent:load-session
-                   fork-source)
-                  (cadr-agent:resume-session
-                   fork-source
-                   :directory directory)))
+              (resolve-fork-source-session
+               fork-source directory cwd))
             (target
               (cadr-agent:create-session
                :directory directory
@@ -3345,6 +3380,8 @@
            :messages
            (copy-list
             (cadr-agent:agent-messages agent))
+           :alt-p
+           (cli-arguments-alt-p command)
            :initial-notices
            (let ((warning
                    (anthropic-warning)))

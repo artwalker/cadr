@@ -195,6 +195,38 @@
                                             :test #'string=))))
           (is (every #'find-package packages)))))))
 
+(test discovered-extension-source-registers-markdown-transformer
+  (with-test-directory (root)
+    (let* ((cwd
+             (merge-pathnames "project/" root))
+           (global
+             (merge-pathnames "global/" root))
+           (source
+             (merge-pathnames
+              "markdown.lisp" global))
+           (manager
+             (make-test-extension-manager
+              cwd global
+              (make-string-output-stream))))
+      (write-text
+       source
+       (extension-source
+        "(define-markdown-transformer (lambda (markdown context) (format nil \"~(~A~)|~A|~A\" (getf context :message-type) (getf context :available-width) markdown)))"))
+      (let ((report
+              (cadr-cli::reload-cli-extensions
+               manager)))
+        (is (null (getf report :errors)))
+        (is
+         (string=
+          "assistant|78|hello"
+          (cadr-agent::transform-extension-markdown
+           (cadr-cli::cli-extension-manager-host
+            manager)
+           "hello"
+           '(:message-type :assistant
+             :streaming-p nil
+             :available-width 78))))))))
+
 (test later-cli-extension-wins-and-shadowed-sources-never-load
   (with-test-directory (root)
     (let* ((cwd (merge-pathnames "project/" root))

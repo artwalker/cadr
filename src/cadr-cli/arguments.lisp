@@ -42,6 +42,7 @@
   (no-context-files-p nil :type boolean)
   list-models
   (offline-p nil :type boolean)
+  (alt-p nil :type boolean)
   (verbose-p nil :type boolean)
   project-trust-override
   (project-trust-override-supplied-p nil :type boolean)
@@ -99,6 +100,7 @@
     ("--no-context-files" . :no-context-files)
     ("-nc" . :no-context-files)
     ("--offline" . :offline)
+    ("--alt" . :alt)
     ("--verbose" . :verbose)
     ("--approve" . :approve)
     ("-a" . :approve)
@@ -260,6 +262,8 @@
       t))
     (:offline
      (setf (cli-arguments-offline-p arguments) t))
+    (:alt
+     (setf (cli-arguments-alt-p arguments) t))
     (:verbose
      (setf (cli-arguments-verbose-p arguments) t))
     (:approve
@@ -473,7 +477,7 @@
          "      --no-session                   Disable persistence"
          "      --session <path>               Session JSONL path"
          "      --session-id <id>              Explicit session id"
-         "      --fork <id>                    Fork from entry/session"
+         "      --fork <id|path>               Fork from session ID prefix/path"
          "      --session-dir <path>           Session directory"
          "      --models <list>                Scoped models"
          "  -t, --tools <list>                 Tool allowlist"
@@ -493,6 +497,7 @@
          " -nc, --no-context-files             Disable context files"
          "      --list-models [pattern]         List models"
          "      --offline                      Disable package network access"
+         "      --alt                          Use the alternate-screen TUI"
          "      --verbose                      Verbose diagnostics"
          "      --no-tui                       Use the line-oriented frontend"
          "  -a, --approve                      Trust project"

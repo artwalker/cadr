@@ -3,6 +3,12 @@
 (defstruct tui-entry
   type
   (text "" :type string)
+  (content-blocks nil :type list)
+  (streaming-p nil :type boolean)
+  (markdown-cache nil :type list)
+  (stop-reason :pending :type symbol)
+  error-message
+  (has-tool-calls-p nil :type boolean)
   tool-call-id
   tool-block
   (tool-render-state (make-hash-table)
@@ -114,7 +120,8 @@
   state)
 
 (defun render-tui-status-indicator
-    (message width)
+    (message width &key
+                     (reserve-idle-p t))
   (let ((blank
           (make-string width
                        :initial-element #\Space)))
@@ -124,7 +131,8 @@
           (format nil "… ~A" message)
           width "")
          blank)
-        (list blank blank))))
+        (and reserve-idle-p
+             (list blank)))))
 
 (defun assistant-price-known-p (message)
   (not
@@ -150,6 +158,59 @@
       (incf (tui-state-cost state)
             (cadr-ai:cost-total cost)))))
 
+(defun assistant-message-has-tool-calls-p
+    (message)
+  (some
+   (lambda (block)
+     (typep block 'cadr-ai:tool-call))
+   (cadr-ai:assistant-message-content message)))
+
+(defun assistant-display-blocks (message)
+  (let ((result nil))
+    (dolist
+        (block
+         (cadr-ai:assistant-message-content
+          message))
+      (cond
+        ((typep block 'cadr-ai:text-content)
+         (let ((text
+                 (string-trim
+                  '(#\Space #\Tab #\Newline
+                    #\Return)
+                  (cadr-ai:text-content-text
+                   block))))
+           (when (plusp (length text))
+             (setf result
+                   (nconc
+                    result
+                    (list
+                     (cons :assistant text)))))))
+        ((typep block 'cadr-ai:thinking-content)
+         (let ((thinking
+                 (string-trim
+                  '(#\Space #\Tab #\Newline
+                    #\Return)
+                  (cadr-ai:thinking-content-thinking
+                   block))))
+           (when (plusp (length thinking))
+             (let ((last (car (last result))))
+               (if
+                   (and last
+                        (eq :assistant-thinking
+                            (car last)))
+                   (setf
+                    (cdr last)
+                    (format nil "~A~%~%~A"
+                            (cdr last) thinking))
+                   (setf result
+                         (nconc
+                          result
+                          (list
+                           (cons
+                            :assistant-thinking
+                            thinking)))))))))))
+    result))
+
 (defun seed-tui-message (state message)
   (typecase message
     (cadr-ai:user-message
@@ -165,7 +226,18 @@
       state
       (make-tui-entry
        :type :assistant
-       :text (response-text message)))
+       :text (response-text message)
+       :content-blocks
+       (assistant-display-blocks message)
+       :stop-reason
+       (cadr-ai:assistant-message-stop-reason
+        message)
+       :error-message
+       (cadr-ai:assistant-message-error-message
+        message)
+       :has-tool-calls-p
+       (assistant-message-has-tool-calls-p
+        message)))
      (accumulate-message-usage state message)))
   state)
 
@@ -259,7 +331,20 @@
                   (append-tui-entry
                    state
                    (make-tui-entry
-                    :type :assistant))))
+                   :type :assistant
+                    :streaming-p t
+                    :stop-reason
+                    (cadr-ai:assistant-message-stop-reason
+                     message)
+                    :error-message
+                    (cadr-ai:assistant-message-error-message
+                     message)
+                    :has-tool-calls-p
+                    (assistant-message-has-tool-calls-p
+                     message)
+                    :content-blocks
+                    (assistant-display-blocks
+                     message)))))
             (setf
              (tui-state-current-assistant state)
              entry)))))
@@ -267,32 +352,77 @@
        (when
            (and
             (tui-state-current-assistant state)
-            stream-event
-            (eq :text-delta
-                (cadr-ai:stream-event-type
-                 stream-event)))
-         (setf
-          (tui-entry-text
-           (tui-state-current-assistant state))
-          (concatenate
-           'string
-           (tui-entry-text
-            (tui-state-current-assistant state))
-           (or
-            (cadr-ai:stream-event-delta
-             stream-event)
-            "")))))
+            stream-event)
+         (let* ((entry
+                  (tui-state-current-assistant state))
+                (event-type
+                  (cadr-ai:stream-event-type
+                   stream-event))
+                (message-type
+                  (case event-type
+                    (:text-delta :assistant)
+                    (:thinking-delta
+                     :assistant-thinking)))
+                (delta
+                  (or
+                   (cadr-ai:stream-event-delta
+                    stream-event)
+                   "")))
+           (when message-type
+             (when (eq message-type :assistant)
+               (setf
+                (tui-entry-text entry)
+                (concatenate
+                 'string
+                 (tui-entry-text entry)
+                 delta)))
+             (let ((last
+                     (car
+                      (last
+                       (tui-entry-content-blocks
+                        entry)))))
+               (if
+                   (and last
+                        (eq (car last)
+                            message-type))
+                   (setf
+                    (cdr last)
+                    (concatenate
+                     'string (cdr last) delta))
+                   (setf
+                    (tui-entry-content-blocks entry)
+                    (nconc
+                     (tui-entry-content-blocks entry)
+                     (list
+                      (cons message-type
+                            delta))))))))))
       (:message-end
        (when (typep message 'cadr-ai:assistant-message)
          (let ((entry
                  (tui-state-current-assistant state)))
-           (when (and entry
-                      (zerop
-                       (length
-                        (tui-entry-text entry))))
+           (when entry
+             (let ((blocks
+                     (assistant-display-blocks
+                      message)))
+               (when blocks
+                 (setf
+                  (tui-entry-content-blocks entry)
+                  blocks
+                  (tui-entry-text entry)
+                  (response-text message)))
+               (setf
+                (tui-entry-stop-reason entry)
+                (cadr-ai:assistant-message-stop-reason
+                 message)
+                (tui-entry-error-message entry)
+                (cadr-ai:assistant-message-error-message
+                 message)
+                (tui-entry-has-tool-calls-p entry)
+                (assistant-message-has-tool-calls-p
+                 message))
              (setf
-              (tui-entry-text entry)
-              (response-text message))))
+              (tui-entry-streaming-p entry)
+              nil))))
          (accumulate-message-usage state message)
          (setf
           (tui-state-current-assistant state)
@@ -463,17 +593,134 @@
       (princ-to-string value)
       width))))
 
-(defun render-tui-entry (entry width)
+(defun transform-tui-markdown
+    (entry source message-type width extension-host
+     &optional (cache-key message-type))
+  (unless extension-host
+    (return-from transform-tui-markdown source))
+  (let* ((snapshot
+           (cadr-agent::extension-host-current-snapshot
+            extension-host))
+         (context
+           (list
+            :message-type message-type
+            :streaming-p
+            (tui-entry-streaming-p entry)
+            :available-width width)))
+    (let ((cached
+            (find-if
+             (lambda (item)
+               (and
+                (equal cache-key (first item))
+                (string= source (second item))
+                (eq
+                 (tui-entry-streaming-p entry)
+                 (third item))
+                (= width (fourth item))
+                (eq snapshot (fifth item))))
+             (tui-entry-markdown-cache entry))))
+      (if cached
+          (sixth cached)
+          (let ((transformed
+                  (cadr-agent::transform-extension-markdown
+                   extension-host source context)))
+            (setf
+             (tui-entry-markdown-cache entry)
+             (cons
+              (list
+               cache-key source
+               (tui-entry-streaming-p entry)
+               width snapshot transformed)
+              (remove
+               cache-key
+               (tui-entry-markdown-cache entry)
+               :key #'first
+               :test #'equal)))
+            transformed)))))
+
+(defun assistant-stop-error-lines
+    (entry width)
+  (let ((message
+          (case (tui-entry-stop-reason entry)
+            (:length
+             "Error: Model stopped because it reached the maximum output token limit. The response may be incomplete.")
+            (:aborted
+             (let ((error-message
+                     (tui-entry-error-message
+                      entry)))
+               (if
+                   (and error-message
+                        (not
+                         (string=
+                          error-message
+                          "Request was aborted")))
+                   error-message
+                   "Operation aborted")))
+            (:error
+             (unless
+                 (tui-entry-has-tool-calls-p entry)
+               (format
+                nil "Error: ~A"
+                (or
+                 (tui-entry-error-message entry)
+                 "Unknown error")))))))
+    (when message
+      (cons
+       ""
+       (cadr-tui:render-markdown
+        message width :padding-x 1)))))
+
+(defun render-assistant-blocks
+    (entry width extension-host)
+  (let ((available-width
+          (max 1 (- width 2))))
+    (nconc
+     (loop for (message-type . source)
+             in
+             (or
+              (tui-entry-content-blocks entry)
+              (and
+               (plusp
+                (length
+                 (string-trim
+                  '(#\Space #\Tab #\Newline
+                    #\Return)
+                  (tui-entry-text entry))))
+               (list
+                (cons
+                 :assistant
+                 (string-trim
+                  '(#\Space #\Tab #\Newline
+                    #\Return)
+                  (tui-entry-text entry))))))
+           for block-index from 0
+           for transformed =
+             (transform-tui-markdown
+              entry source message-type
+              available-width extension-host
+              (list message-type block-index))
+           append
+             (cadr-tui:render-markdown
+              transformed width
+              :padding-x 1))
+     (assistant-stop-error-lines
+      entry width))))
+
+(defun render-tui-entry
+    (entry width &key extension-host)
   (case (tui-entry-type entry)
     (:user
-     (cadr-tui:wrap-text
-      (format nil "you> ~A"
-              (tui-entry-text entry))
-      width))
-    (:assistant
      (cadr-tui:render-markdown
-      (tui-entry-text entry)
-      width))
+      (transform-tui-markdown
+       entry
+       (tui-entry-text entry)
+       :user
+       (max 1 (- width 2))
+       extension-host)
+      width :padding-x 1))
+    (:assistant
+     (render-assistant-blocks
+      entry width extension-host))
     (:tool
      (let ((custom-call
              (and
@@ -540,11 +787,19 @@
 
 (defun render-tui-state
     (state editor width rows
-     &key overlay busy-p)
+     &key overlay busy-p extension-host
+       full-document-p)
   (multiple-value-bind
         (editor-lines editor-row editor-column)
       (cadr-tui:render-editor editor width)
-    (let* ((status-lines 3)
+    (let* ((status-indicator
+             (render-tui-status-indicator
+              (tui-state-status-message state)
+              width
+              :reserve-idle-p
+              (not full-document-p)))
+           (status-lines
+             (1+ (length status-indicator)))
            (content-height
              (max 0
                   (- rows
@@ -588,25 +843,34 @@
                        (tui-state-entries state)
                        append
                        (render-tui-entry
-                        entry width))))
+                        entry width
+                        :extension-host
+                        extension-host))))
            (visible
-             (if
-                 (and
-                  overlay
-                  (plusp content-height)
-                  (> (length all-content)
-                     content-height))
-                 (cons
-                  (first all-content)
-                  (trailing-lines
-                   (rest all-content)
-                   (1- content-height)))
+             (cond
+               ((and full-document-p
+                     (null overlay))
+                all-content)
+               ((and
+                 overlay
+                 (plusp content-height)
+                 (> (length all-content)
+                    content-height))
+                (cons
+                 (first all-content)
                  (trailing-lines
-                  all-content content-height)))
+                  (rest all-content)
+                  (1- content-height))))
+               (t
+                (trailing-lines
+                 all-content content-height))))
+           (rendered-content-height
+             (max content-height
+                  (length visible)))
            (padding
              (make-list
               (max 0
-                   (- content-height
+                   (- rendered-content-height
                       (length visible)))
               :initial-element ""))
            (status
@@ -631,12 +895,10 @@
               (tui-state-session state))))
       (values
        (nconc padding visible
-              (render-tui-status-indicator
-               (tui-state-status-message state)
-               width)
+              status-indicator
               (list status)
               editor-lines)
-       (+ content-height
+       (+ rendered-content-height
           status-lines
           editor-row)
        editor-column))))
@@ -864,6 +1126,17 @@
   #-sbcl
   (error "Suspend is unsupported on this Lisp runtime"))
 
+(defun open-tui-url (url)
+  (uiop:launch-program
+   #+darwin
+   (list "open" url)
+   #+win32
+   (list "cmd" "/c" "start" "" url)
+   #-(or darwin win32)
+   (list "xdg-open" url)
+   :output :interactive
+   :error-output :interactive))
+
 (defun suspend-tui
     (platform
      stop-function
@@ -886,6 +1159,14 @@
      (funcall render-function))
    suspend-function)
   t)
+
+(defun make-interactive-renderer
+    (terminal alt-p)
+  (cadr-tui:make-terminal-renderer
+   terminal
+   :alt-p alt-p
+   :open-url-function
+   #'open-tui-url))
 
 (defun run-tui
     (prompt-function
@@ -935,6 +1216,7 @@
        session
        messages
        initial-notices
+       alt-p
        (terminal
          (cadr-tui:make-process-terminal)))
   (let* ((state
@@ -952,8 +1234,8 @@
          (decoder
            (cadr-tui:make-input-decoder))
          (renderer
-           (cadr-tui:make-terminal-renderer
-            terminal))
+           (make-interactive-renderer
+            terminal alt-p))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -984,7 +1266,9 @@
                   (cadr-tui:terminal-columns terminal)
                   (cadr-tui:terminal-rows terminal)
                   :overlay overlay
-                  :busy-p busy-p)
+                  :busy-p busy-p
+                  :extension-host extension-host
+                  :full-document-p alt-p)
                (cadr-tui:render-frame
                 renderer lines
                 :cursor-row cursor-row
@@ -1615,6 +1899,9 @@
                                (find-extension-shortcut-for-input
                                 extension-host input))))
                       (cond
+                        ((cadr-tui:renderer-handle-input
+                          renderer input)
+                         (render))
                         (extension-shortcut
                          (cadr-agent::invoke-extension-shortcut
                           extension-host
@@ -1631,9 +1918,15 @@
                            #+win32 :windows
                            #-win32 :linux
                            (lambda ()
+                             (cadr-tui:renderer-before-stop
+                              renderer)
                              (cadr-tui:terminal-stop
-                              terminal))
+                              terminal)
+                             (cadr-tui:renderer-after-stop
+                              renderer))
                            (lambda ()
+                             (cadr-tui:renderer-start
+                              renderer)
                              (cadr-tui:terminal-start
                               terminal)
                              (cadr-tui:invalidate-renderer
@@ -1698,7 +1991,18 @@
                                       decoder)))
                               (handle-event event)))))))
                       )
-                    (sleep 0.02))))
+                    (sleep 0.02)))
+            :before-start
+            (lambda ()
+              (cadr-tui:renderer-start renderer))
+            :before-stop
+            (lambda ()
+              (cadr-tui:renderer-before-stop
+               renderer))
+            :after-stop
+            (lambda ()
+              (cadr-tui:renderer-after-stop
+               renderer)))
         (finish-custom-ui nil)
         (when (and worker
                    (sb-thread:thread-alive-p

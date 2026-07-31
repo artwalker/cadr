@@ -87,7 +87,6 @@
   (is
    (equal
     (list
-     (make-string 20 :initial-element #\Space)
      (make-string 20 :initial-element #\Space))
     (cadr-cli::render-tui-status-indicator
      nil 20)))

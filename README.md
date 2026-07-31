@@ -111,6 +111,7 @@ Equivalent command-line options are `--provider`, `--model`, and
 ./cadr --provider deepseek
 ./cadr --continue
 ./cadr --resume <session-id>
+./cadr --fork <session-id-prefix>
 ./cadr --print "Explain this repository"
 ./cadr --mode json "Explain this repository"
 ./cadr --mode rpc
@@ -126,6 +127,11 @@ non-TTY input or output selects one-shot text mode.
 Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Commands
 include `/sessions`, `/switch`, `/branch`, `/compact`, `/export`, `/login`,
 `/logout`, `/reload`, and `/install`.
+
+`--fork` accepts a session file path or a full/partial session ID, preferring
+the current project's sessions before the global session set. It creates a new
+session containing the source conversation. It does not accept a message entry
+ID; use interactive `/fork` to select a user-message entry.
 
 ### Server
 

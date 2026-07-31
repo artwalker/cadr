@@ -93,11 +93,12 @@
               nil
               :terminal-p-function #'not-terminal-p)))))
 
-(test cli-advertises-no-tui
+(test cli-advertises-tui-renderer-selection
   (let ((usage
           (with-output-to-string (stream)
             (cadr-cli::print-cli-usage stream))))
     (is (search "--no-tui" usage))
+    (is (search "--alt" usage))
     (is (null (search "--yolo" usage)))))
 
 (test native-cli-parser-handles-values-flags-and-repeats
@@ -108,6 +109,7 @@
              "--extension" "one.lisp"
              "--extension=two.lisp"
              "--continue"
+             "--alt"
              "--no-tui"))))
     (is (string=
          "deepseek"
@@ -123,11 +125,108 @@
           arguments)))
     (is (cadr-cli::cli-arguments-continue-p
          arguments))
+    (is (cadr-cli::cli-arguments-alt-p
+         arguments))
     (is (cadr-cli::cli-arguments-no-tui-p
          arguments)))
   (signals cadr-ai:configuration-error
     (cadr-cli::parse-cli-arguments
      '("--model" "--continue"))))
+
+(test alt-screen-tui-state-preserves-full-document
+  (let ((state
+          (cadr-cli::make-tui-state
+           :model "gpt-5.6-luna"
+           :session "session-alt"))
+        (editor
+          (cadr-tui:make-multiline-editor)))
+    (loop for index from 1 to 12
+          do
+          (cadr-cli::add-tui-notice
+           state
+           (format nil "notice-~D" index)))
+    (multiple-value-bind
+          (main-lines main-row main-column)
+        (cadr-cli::render-tui-state
+         state editor 40 8)
+      (declare (ignore main-row main-column))
+      (is (= 8 (length main-lines)))
+      (is (null
+           (find "session> notice-1"
+                 main-lines
+                 :test #'string=))))
+    (multiple-value-bind
+          (alt-lines alt-row alt-column)
+        (cadr-cli::render-tui-state
+         state editor 40 8
+         :full-document-p t)
+      (declare (ignore alt-column))
+      (is (> (length alt-lines) 8))
+      (is (find "session> notice-1"
+                alt-lines
+                :test #'string=))
+      (is (= (1- (length alt-lines))
+             alt-row)))))
+
+(test idle-status-spacing-is-reserved-only-on-main-screen
+  (is (= 1
+         (length
+          (cadr-cli::render-tui-status-indicator
+           nil 20 :reserve-idle-p t))))
+  (is (null
+       (cadr-cli::render-tui-status-indicator
+        nil 20 :reserve-idle-p nil)))
+  (is (= 2
+         (length
+          (cadr-cli::render-tui-status-indicator
+           "Working..." 20
+           :reserve-idle-p nil)))))
+
+(test interactive-renderer-selects-alternate-screen-only-when-requested
+  (let* ((main-terminal
+           (cadr-tui:make-virtual-terminal))
+         (main-renderer
+           (cadr-cli::make-interactive-renderer
+            main-terminal nil))
+         (alt-terminal
+           (cadr-tui:make-virtual-terminal))
+         (alt-renderer
+           (cadr-cli::make-interactive-renderer
+            alt-terminal t)))
+    (is
+     (not
+      (cadr-tui:alt-screen-renderer-p
+       main-renderer)))
+    (is
+     (cadr-tui:alt-screen-renderer-p
+      alt-renderer))
+    (cadr-tui:renderer-start main-renderer)
+    (cadr-tui:renderer-start alt-renderer)
+    (is
+     (null
+      (find-if
+       (lambda (write)
+         (search
+          (format nil "~C[?1049h" #\Escape)
+          write))
+       (cadr-tui::virtual-writes
+        main-terminal))))
+    (is
+     (find-if
+      (lambda (write)
+        (search
+         (format nil "~C[?1049h" #\Escape)
+         write))
+      (cadr-tui::virtual-writes
+       alt-terminal)))
+    (cadr-tui:renderer-before-stop
+     main-renderer)
+    (cadr-tui:renderer-after-stop
+     main-renderer)
+    (cadr-tui:renderer-before-stop
+     alt-renderer)
+    (cadr-tui:renderer-after-stop
+     alt-renderer)))
 
 (test tui-state-projects-stream-tools-and-usage
   (let* ((state
@@ -196,6 +295,271 @@
           (is (search "in:10" screen))
           (is (search "out:4" screen))
           (is (search "cache:2" screen)))))))
+
+(test goal9-tui-markdown-transformers-cover-user-text-thinking-streaming-and-cache
+  (let ((calls nil))
+    (let* ((bundle
+             (cadr-agent::make-extension-bundle
+              :id "markdown"
+              :path "/tmp/markdown.lisp"
+              :scope :project))
+           (host
+             (cadr-agent::make-extension-host
+              :cwd #P"/tmp/"))
+           (state
+             (cadr-cli::make-tui-state
+              :model "mock"
+              :messages
+              (list
+               (cadr-ai:make-user-message
+                :content "input"))))
+           (assistant
+             (cadr-ai:make-assistant-message
+              :api :openai-responses
+              :provider :openai
+              :model "mock"
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text "answer")
+               (cadr-ai:make-thinking-content
+                :thinking "reasoning"))
+              :stop-reason :stop))
+           (editor
+             (cadr-tui:make-multiline-editor)))
+      (cadr-agent::call-with-extension-registration
+       bundle
+       (lambda ()
+         (cadr-agent:define-markdown-transformer
+          (lambda (markdown context)
+            (push
+             (list markdown (copy-list context))
+             calls)
+            (format nil "~(~A~):~A"
+                    (getf context :message-type)
+                    markdown)))))
+      (cadr-agent::replace-extension-bundles
+       host (list bundle))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :message-start
+        :message assistant))
+      (multiple-value-bind (lines row column)
+          (cadr-cli::render-tui-state
+           state editor 80 20
+           :extension-host host)
+        (declare (ignore row column))
+        (let ((screen
+                (format nil "~{~A~^~%~}" lines)))
+          (is (search "user:input" screen))
+          (is (search "assistant:answer"
+                      screen))
+          (is (search
+               "assistant-thinking:reasoning"
+               screen))))
+      (let ((count (length calls)))
+        (cadr-cli::render-tui-state
+         state editor 80 20
+         :extension-host host)
+        (is (= count (length calls))))
+      (is
+       (some
+        (lambda (call)
+          (and
+           (eq :assistant
+               (getf (second call)
+                     :message-type))
+           (getf (second call) :streaming-p)
+           (= 78
+              (getf (second call)
+                    :available-width))))
+        calls))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :message-end
+        :message assistant))
+      (cadr-cli::render-tui-state
+       state editor 60 20
+       :extension-host host)
+      (is
+       (some
+        (lambda (call)
+          (and
+           (eq :assistant-thinking
+               (getf (second call)
+                     :message-type))
+           (null
+            (getf (second call)
+                  :streaming-p))
+           (= 58
+              (getf (second call)
+                    :available-width))))
+        calls))
+      (is
+       (some
+        (lambda (call)
+          (and
+           (eq :user
+               (getf (second call)
+                     :message-type))
+           (= 78
+              (getf (second call)
+                    :available-width))))
+        calls)))))
+
+(test markdown-transformer-cache-is-bounded-and-user-output-is-parsed
+  (let* ((bundle
+           (cadr-agent::make-extension-bundle
+            :id "bounded-markdown"
+            :path "/tmp/bounded-markdown.lisp"
+            :scope :project))
+         (host
+           (cadr-agent::make-extension-host
+            :cwd #P"/tmp/"))
+         (state
+           (cadr-cli::make-tui-state
+            :model "mock"
+            :messages
+            (list
+             (cadr-ai:make-user-message
+              :content "input"))))
+         (assistant
+           (cadr-ai:make-assistant-message
+            :api :openai-responses
+            :provider :openai
+            :model "mock"
+            :stop-reason :pending))
+         (editor
+           (cadr-tui:make-multiline-editor)))
+    (cadr-agent::call-with-extension-registration
+     bundle
+     (lambda ()
+       (cadr-agent:define-markdown-transformer
+        (lambda (markdown context)
+          (if (eq :user
+                  (getf context :message-type))
+              "**parsed-user**"
+              markdown)))))
+    (cadr-agent::replace-extension-bundles
+     host (list bundle))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :message-start
+      :message assistant))
+    (let ((entry
+            (cadr-cli::tui-state-current-assistant
+             state)))
+      (loop for index from 1 to 50
+            for source =
+            (make-string index
+                         :initial-element #\x)
+            do
+            (setf
+             (cadr-cli::tui-entry-text entry)
+             source
+             (cadr-cli::tui-entry-content-blocks
+              entry)
+             (list (cons :assistant source)))
+            (cadr-cli::render-tui-state
+             state editor 80 20
+             :extension-host host))
+      (is (<=
+           (length
+            (cadr-cli::tui-entry-markdown-cache
+             entry))
+           1)))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 80 20
+         :extension-host host)
+      (declare (ignore row column))
+      (let ((screen
+              (format nil "~{~A~^~%~}" lines)))
+        (is (search "parsed-user" screen))
+        (is (null (search "**parsed-user**"
+                          screen)))))))
+
+(test assistant-blocks-trim-merge-and-surface-stop-errors
+  (let ((message
+          (cadr-ai:make-assistant-message
+           :api :openai-responses
+           :provider :openai
+           :model "mock"
+           :content
+           (list
+            (cadr-ai:make-text-content
+             :text "  first  ")
+            (cadr-ai:make-text-content
+             :text "   ")
+            (cadr-ai:make-thinking-content
+             :thinking "  one ")
+            (cadr-ai:make-thinking-content
+             :thinking " two  ")
+            (cadr-ai:make-text-content
+             :text " tail "))
+           :stop-reason :length)))
+    (is (equal
+         (list
+          (cons :assistant "first")
+          (cons :assistant-thinking
+                (format nil "one~%~%two"))
+          (cons :assistant "tail"))
+         (cadr-cli::assistant-display-blocks
+          message)))
+    (let* ((state
+             (cadr-cli::make-tui-state
+              :model "mock"
+              :messages (list message)))
+           (editor
+             (cadr-tui:make-multiline-editor)))
+      (multiple-value-bind (lines row column)
+          (cadr-cli::render-tui-state
+           state editor 100 20)
+        (declare (ignore row column))
+        (is
+         (search
+          "maximum output token limit"
+          (format nil "~{~A~^~%~}" lines))))))
+  (dolist
+      (case
+       (list
+        (list :aborted
+              "Request was aborted"
+              "Operation aborted")
+        (list :aborted
+              "provider cancelled"
+              "provider cancelled")
+        (list :error
+              "bad gateway"
+              "Error: bad gateway")))
+    (destructuring-bind
+        (stop-reason error-message expected)
+        case
+      (let* ((message
+               (cadr-ai:make-assistant-message
+                :api :openai-responses
+                :provider :openai
+                :model "mock"
+                :stop-reason stop-reason
+                :error-message error-message))
+             (state
+               (cadr-cli::make-tui-state
+                :model "mock"
+                :messages (list message)))
+             (editor
+               (cadr-tui:make-multiline-editor)))
+        (multiple-value-bind (lines row column)
+            (cadr-cli::render-tui-state
+             state editor 80 12)
+          (declare (ignore row column))
+          (is
+           (search
+            expected
+            (format nil "~{~A~^~%~}"
+                    lines))))))))
 
 (test tui-compaction-rebuilds-chat-appends-summary-and-keeps-steering-input
   (let* ((old
