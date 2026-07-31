@@ -1542,7 +1542,8 @@ request/response，并在停止、异常退出和 server restart 时收敛状态
 要求显式 provider/model，不隐式回退；输入只允许 prompt/reload 序列，输出
 统一为 transcript、usage 与可选 selector。smoke 与 self-extension eval
 复用该公共 harness，测试可用 faux provider，环境中可用的 DeepSeek/Codex
-凭据在各 ASDF test system 内走 FiveAM credential gate，与基线
+凭据在各 ASDF test system 内走 FiveAM credential gate，并注入显式
+provider/model resolver，不读取用户 settings、session 或扩展。这与基线
 `describe.skipIf(!KEY)` 机制同构。provider/CLI/eval live 行为不再另设 shell
 smoke 层。只观察原生 image、PTY/termios、Unix socket、跨进程迁移、signal
 或 RPC EOF 的 shell harness 继续保留；其逐项边界见
@@ -1560,8 +1561,9 @@ Wave 5 已完成并冻结。三个 package 不引入第三方依赖。独立
 `cadr-server` 构建同样检测 `sb-core-compression`，缺失时生成无压缩 image；
 真实 Unix socket 已通过 spawn/list/status/RPC/stop。旧
 `live-evals-smoke.sh` 的 Codex 结论因改写凭据身份而撤回；补正后的真实
-auth/settings 默认路径已由上述 FiveAM credential gate 重新验证。最终
-ASDF gate 为 `3041 checks / 3040 pass / 1 Anthropic credential skip /
+凭据由显式 provider/model 的 FiveAM live gate 验证，login/store/default
+resolver/Codex transport 则由临时 auth/config 与网络桩确定性验证。最终
+ASDF gate 为 `3043 checks / 3042 pass / 1 Anthropic credential skip /
 0 fail`。此后三个 package 的公开 surface 遵循“发布即稳定”。
 
 ## 24. Goal 8 Part F 最终冻结锚点

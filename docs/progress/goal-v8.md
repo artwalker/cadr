@@ -305,8 +305,8 @@ Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
 - acceptance、process modes、migration、server 与 TUI deterministic
   smokes 全绿；
 - DeepSeek 的旧 live 记录由凭据门控 FiveAM 重新验证；Codex OAuth 的旧
-  stream/eval 记录因改写凭据身份而撤回，必须以真实 auth/settings 默认
-  路径重新验证；
+  stream/eval 记录因改写凭据身份而撤回；默认路由由临时目录与网络桩
+  确定性验证，live 仅显式验证凭据；
 - Anthropic 无凭据，按基线 credential gate 跳过；
 - 依赖审计无新增第三方依赖；
 - 最终代码、ASDF/build 与 extension SHA 已写入 architecture 第 24 节。
@@ -327,8 +327,9 @@ Goal 8 的终局大验收仍以用户人工清单为最后一道门；自行宣�
 - 只保留真实二进制、PTY/termios、Unix socket、迁移、signal/RPC EOF
   这类进程级 harness；逐脚本结论见
   [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md)；
-- OpenAI live 门禁直接读取真实 `~/.cadr/auth.json` 与默认 settings，
-  不复制、不改名、不传 provider/model 覆盖；旧身份存在时门禁明确失败。
+- OpenAI 登录/default-route 回归使用临时 auth/config 与网络桩；live 门禁
+  只按凭据可用性启用，在测试内显式指定 provider/model，不读取用户 settings。
+  CLI 为隔离其他个人状态，仅逐字节复制 auth 文件，不改名或规范化。
 
 ### 补正提交与最终机械结果
 
@@ -339,20 +340,26 @@ Goal 8 的终局大验收仍以用户人工清单为最后一道门；自行宣�
 3. `03aca58dc0c17c227436cc0e3373c01da30f0312` — repo live gate 强制先
    观察真实 code 1、保持 test fixture 未改，再接受修复后的 code 0；
 4. `a85b0ad321969b5fcfbda58d279d9b9c3a96209e` — process smoke 以服务端
-   请求 marker 同步 SIGTERM，不再依赖固定 50ms 猜测。
+   请求 marker 同步 SIGTERM，不再依赖固定 50ms 猜测；
+5. `c73f27dffce029cefd29393015b0fc212ed47eca` — 将 OAuth 回归拆成
+   临时目录/网络桩确定性层与显式 provider/model live 层，并隔离全部
+   CLI/eval live 对用户 settings、session、扩展的读取。
 
 最终机械证据：
 
-- 全量 ASDF gate：`3041 checks / 3040 pass / 1 skip / 0 fail`，唯一 skip
+- 全量 ASDF gate：`3043 checks / 3042 pass / 1 skip / 0 fail`，唯一 skip
   为无 Anthropic key；DeepSeek 与 Codex OAuth live blocks 均真跑；
 - `build.sh` 与 `build-server.sh` 均在无 `sb-core-compression` 的 SBCL
   上降级成功，产出 `cadr` 65,348,488 bytes 与 `cadr-server`
   57,155,288 bytes，mode 0755，二者 `--version` 均为 `0.1.0` 新名；
 - 六个保留脚本全部重跑通过：acceptance、process modes、migration、
   server、Goal 5 PTY 与 live DeepSeek TUI；
-- 真实 TUI `/login openai` 后在同一进程、不加 provider/model 参数直接
+- 产品人工证据仍成立：真实 TUI `/login openai` 后在同一进程、不加
+  provider/model 参数直接
   对话，settings 持久化为 `openai-codex/gpt-5.5`，assistant 精确回复
-  `OAUTH_TUI_DIRECT_OK`；
+  `OAUTH_TUI_DIRECT_OK`；自动 live 门禁不再读取或断言该 settings；
+- 正式全量运行使用用户当前 `openai-codex/gpt-5.6-luna` settings，运行
+  前后保持不变；
 - extension export SHA 仍为
   `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`，
   相对 Goal 8 开工提交的 `src/cadr-tui` production diff 仍为空。

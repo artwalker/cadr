@@ -50,7 +50,8 @@ the five-provider v2 registry remain outside the current phase.
 | Codex request contract | `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS` | URL, bearer, account, originator, beta headers |
 | Slash auth commands | config-auth REPL and dispatch tests | `/login`, `/logout`, provider re-resolution |
 | Live DeepSeek | `test/cadr-ai/live-provider-test.lisp` | Credential-gated exact response, terminal events and positive usage |
-| Live OpenAI OAuth | `test/cadr-cli/live-test.lisp` | Real `~/.cadr/auth.json` plus persisted defaults; no provider/model override |
+| OpenAI OAuth login/default route | `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST` | Temporary auth/config plus login and HTTP stubs prove `openai-codex` storage, default resolution and Codex transport without homedir state |
+| Live OpenAI OAuth | `test/cadr-cli/live-test.lisp` | Credential-gated, explicit `openai-codex/gpt-5.5` in an isolated HOME; byte-for-byte auth copy, no user settings/session/extensions |
 
 ## Phase 6: tree sessions, compaction, resume, and export
 
@@ -105,7 +106,7 @@ the five-provider v2 registry remain outside the current phase.
 | Radius presence | heartbeat retry suite | Credential gating, exponential transient backoff, three-404 re-registration threshold and dormant no-credential behavior |
 | Eval harness | `CADR-EVALS-SUITE` | Explicit provider/model, isolated cleanup, normalized transcript/usage and prompt/reload sequencing |
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
-| Live evals | `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run exact Paris/usage checks through the public harness |
+| Live evals | `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
 
 ## Phase 8: pure Common Lisp TUI

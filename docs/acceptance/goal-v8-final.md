@@ -10,7 +10,7 @@
 
 - [x] parity-map：`351 C / 0 U / 0 M / 1 N/A`；唯一 N/A 为用户逐文件批准的
   `packages/coding-agent/test/config.test.ts`。
-- [x] `./scripts/test-cl.sh`：`3041 checks / 3040 pass / 1 skip / 0 fail`；
+- [x] `./scripts/test-cl.sh`：`3043 checks / 3042 pass / 1 skip / 0 fail`；
   唯一 skip 为本机无 `ANTHROPIC_API_KEY`。
 - [x] `./build.sh`：缺少 `sb-core-compression` 时降级成功；
   `cadr 0.1.0`，65,348,488 bytes，mode 0755。
@@ -28,8 +28,13 @@
   image fallback、resize、terminal restore。
 - [x] `test/cadr-ai/live-provider-test.lisp`：凭据门控 DeepSeek 精确响应、
   stream 终态与 usage；无 Anthropic 凭据时按基线 skip。
-- [x] `test/cadr-cli/live-test.lisp`：DeepSeek one-shot 精确 stdout/stderr；
-  OpenAI 使用真实 auth/settings 且不传 provider/model。
+- [x] `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST`：
+  临时 auth/config、登录桩与 HTTP 桩确定性覆盖
+  `/login openai` → `openai-codex` 存储 → 默认模型解析 → Codex Responses；
+  同时断言未写入错误的 `openai` 身份。
+- [x] `test/cadr-cli/live-test.lisp`：DeepSeek 与 Codex 都在隔离 HOME 中
+  显式指定 provider/model；Codex 只逐字节复制真实 auth 文件作为凭据输入，
+  不读取用户 settings、session 或扩展。
 - [x] `test/cadr-evals/live-evals-test.lisp`：DeepSeek 与 Codex eval、
   self-extension、repo read/edit/fail/fix/pass 均在 FiveAM 内凭据门控。
 - [x] `./scripts/live-tui-smoke.sh`：DeepSeek 两轮真实 TUI 编辑、resize、
@@ -39,10 +44,10 @@
 - [x] shell smoke 机制收敛：逐脚本审计、删除七个可内置 live 脚本、仅保留
   五类边界的六个进程/终端 harness，且全部重新运行通过，见
   [`goal-v8-smoke-audit.md`](goal-v8-smoke-audit.md)。
-- [x] 真实 TUI `/login openai` 后不重启、不加参数直接发送提示；
+- [x] 产品人工证据：真实 TUI `/login openai` 后不重启、不加参数直接发送提示；
   `auth.json` 同时保留旧 `openai` 记录并新增 `openai-codex`，settings 为
   `openai-codex/gpt-5.5`，同一 session 的 assistant 回复精确为
-  `OAUTH_TUI_DIRECT_OK`。
+  `OAUTH_TUI_DIRECT_OK`。该证据不作为自动 live 测试的输入。
 - [x] dependency audit：Wave 5/Part F 无新第三方依赖。
 - [x] extension export SHA：
   `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
@@ -57,13 +62,16 @@
 
 本轮有效证据必须同时满足：
 
-1. `/login openai` 直接把凭据存为 `openai-codex`，并选择/持久化其默认
-   模型；
-2. 回归测试覆盖 login change → 默认模型 → Codex Responses stream；
-3. live CLI 直接读取真实 `~/.cadr/auth.json` 和 settings，命令不传
-   `--provider`/`--model`，不复制、不改名；
-4. 全量 ASDF test-op 运行这些 credential-gated live blocks，而不是另起
-   一层可绕过产品输入的 shell 验证。
+1. 确定性层使用临时 auth/config 和网络桩覆盖 login change → 正确身份存储
+   → 默认模型解析 → Codex Responses，不读 homedir；
+2. live 层只以可用凭据门控，测试内显式指定 provider/model；CLI 的隔离
+   HOME 仅逐字节复制 auth 输入，不改键、不规范化；
+3. eval live 层注入显式 provider/model resolver；其 project、session 与
+   extension 继续使用 harness 自建的隔离目录；
+4. `cadr-ai` 两条 provider live 本来就只读环境凭据并显式构造 provider/model，
+   无需修改；
+5. 在用户当前 `openai-codex/gpt-5.6-luna` settings 下运行全量仍全绿，
+   且测试前后 settings 逐字段不变。
 
 ## 用户真实终端人工验收
 

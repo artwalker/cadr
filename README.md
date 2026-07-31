@@ -308,9 +308,9 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Full ASDF gate | 3041 checks: 3040 pass, one credential-gated Anthropic skip, zero failures |
-| Deterministic | Fixture/request/response parity for all baseline protocols |
-| Live-proven | Credential-gated FiveAM: DeepSeek streaming/print/extension/repo/eval and OpenAI Codex default CLI/eval; retained PTY smoke covers the live DeepSeek TUI |
+| Full ASDF gate | 3043 checks: 3042 pass, one credential-gated Anthropic skip, zero failures |
+| Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
+| Live-proven | Credential-gated FiveAM with explicit provider/model and no user settings dependency: DeepSeek streaming/print/extension/repo/eval and OpenAI Codex CLI/eval; retained PTY smoke covers the live DeepSeek TUI |
 | Credential-gated | Providers without credentials skip live blocks exactly as the baseline does; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; the final all-feature terminal sweep remains the Goal 8 acceptance gate |
 
