@@ -165,6 +165,8 @@ SHA-256：
 | `b2c1d2aee` | themed terminal components |
 | `c9a730337` | terminal visual primitives |
 | `77b7440dc` | interactive visual behavior |
+| `7af02f166` | B1/B2 mechanical parity closeout |
+| `7c074ad07` | B3 runtime-state correction, regressions and expanded methodology |
 
 本阶段开发用量快照：`4,210,661 tokens / 19,459 seconds`。
 
