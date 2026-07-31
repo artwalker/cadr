@@ -35,6 +35,17 @@
                                            (:file "find")
                                            (:file "ls")))
                              (:file "system-prompt")
+                             (:module "bundled-extensions"
+                              :pathname "extensions"
+                              :serial t
+                              :components
+                              ((:module "llama"
+                                :serial t
+                                :components
+                                ((:file "client")
+                                 (:file "huggingface")
+                                 (:file "provider")
+                                 (:file "extension")))))
                              (:file "extensions")
                              (:module "modes"
                               :serial t
@@ -79,6 +90,7 @@
                              (:file "repl-test")
                              (:file "session-command-test")
                              (:file "extensions-test")
+                             (:file "llama-extension-test")
                              (:file "tui-test")
                              (:file "migration-test")
                              (:file "data-migration-test")

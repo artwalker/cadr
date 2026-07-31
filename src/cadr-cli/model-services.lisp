@@ -539,11 +539,123 @@
             (:constructor %make-model-registry))
   path
   credentials
+  native-runtime
   (models nil :type list)
   (provider-settings
     (make-hash-table :test #'eq)
     :type hash-table)
   error)
+
+(defvar *native-extension-host* nil)
+(defvar *active-native-model-registry* nil)
+
+(defun model-registry-native-provider-p
+    (registry provider)
+  (and
+   (model-registry-native-runtime registry)
+   (cadr-ai:models-runtime-provider
+    (model-registry-native-runtime registry)
+    provider)))
+
+(defun seed-native-provider-credential
+    (registry provider-id)
+  (let* ((runtime
+           (model-registry-native-runtime registry))
+         (store
+           (cadr-ai::models-runtime-credential-store
+            runtime))
+         (credential
+           (and
+            (model-registry-credentials registry)
+            (auth-storage-read
+             (model-registry-credentials registry)
+             provider-id))))
+    (if credential
+        (cadr-ai:credential-store-modify
+         store provider-id
+         (lambda (old)
+           (declare (ignore old))
+           credential))
+        (cadr-ai:credential-store-delete
+         store provider-id))))
+
+(defun merge-native-runtime-models (registry)
+  (let* ((runtime
+           (model-registry-native-runtime registry))
+         (provider-ids
+           (mapcar
+            #'cadr-ai:runtime-provider-id
+            (cadr-ai:models-runtime-providers runtime)))
+         (static
+           (remove-if
+            (lambda (model)
+              (member
+               (cadr-ai:model-provider model)
+               provider-ids))
+            (model-registry-models registry))))
+    (setf
+     (model-registry-models registry)
+     (sort
+      (append
+       static
+       (cadr-ai:models-runtime-models runtime))
+      (lambda (left right)
+        (let ((left-provider
+                (provider-key
+                 (cadr-ai:model-provider left)))
+              (right-provider
+                (provider-key
+                 (cadr-ai:model-provider right))))
+          (if (string= left-provider right-provider)
+              (string<
+               (cadr-ai:model-id left)
+               (cadr-ai:model-id right))
+              (string<
+               left-provider
+               right-provider)))))))
+  registry)
+
+(defun sync-model-registry-native-providers
+    (registry &key (allow-network t) force)
+  (let ((runtime
+          (model-registry-native-runtime registry)))
+    (cadr-ai:models-runtime-clear-providers runtime)
+    (dolist
+        (provider
+         (and
+          *native-extension-host*
+          (cadr-agent::extension-host-native-providers
+           *native-extension-host*)))
+      (cadr-ai:models-runtime-set-provider
+       runtime provider)
+      (seed-native-provider-credential
+       registry
+       (cadr-ai:runtime-provider-id provider)))
+    (let ((result
+            (cadr-ai:models-runtime-refresh
+             runtime
+             :allow-network allow-network
+             :force force)))
+      (merge-native-runtime-models registry)
+      result)))
+
+(defun model-registry-login-native-provider
+    (registry provider-id interaction)
+  (let* ((runtime
+           (model-registry-native-runtime registry))
+         (credential
+           (cadr-ai:models-runtime-login-api-key
+            runtime provider-id interaction)))
+    (when (model-registry-credentials registry)
+      (auth-storage-modify
+       (model-registry-credentials registry)
+       provider-id
+       (lambda (current)
+         (declare (ignore current))
+         credential)))
+    (sync-model-registry-native-providers
+     registry :allow-network t :force t)
+    credential))
 
 (defun built-in-models ()
   (mapcar
@@ -656,17 +768,25 @@
          (model-registry-provider-settings registry)
          settings
          (model-registry-error registry)
-         nil))
+         nil)
+        (when (model-registry-native-runtime registry)
+          (sync-model-registry-native-providers
+           registry)))
     (condition (condition)
       (setf (model-registry-error registry)
             (princ-to-string condition))))
   registry)
 
 (defun make-model-registry (&key path credentials)
-  (refresh-model-registry
-   (%make-model-registry
-    :path path
-    :credentials credentials)))
+  (let ((registry
+          (%make-model-registry
+           :path path
+           :credentials credentials
+           :native-runtime
+           (cadr-ai:make-models-runtime))))
+    (setf *active-native-model-registry*
+          registry)
+    (refresh-model-registry registry)))
 
 (defun model-registry-all (registry)
   (copy-list (model-registry-models registry)))
@@ -760,7 +880,51 @@
            (or api-key configured-key))
          (effective-base-url
            (or base-url configured-base-url)))
-    (if (known-provider-definition-p provider)
+    (cond
+      ((model-registry-native-provider-p
+        registry provider)
+       (let ((auth
+               (cadr-ai:models-runtime-auth
+                (model-registry-native-runtime
+                 registry)
+                model
+                :api-key effective-key)))
+         (when
+             (and
+              (null auth)
+              (not allow-missing-auth-p))
+           (error
+            'cadr-ai:configuration-error
+            :message
+            (format nil
+                    "No authentication configured for provider ~A"
+                    provider-name)))
+         (make-provider-config
+          :name provider-name
+          :provider
+          (funcall
+           (model-provider-constructor
+            (cadr-ai:model-api model))
+           :api-key
+           (and auth
+                (cadr-ai:runtime-auth-result-api-key
+                 auth))
+           :provider-id provider
+           :authentication-required-p nil)
+          :model
+          (if
+              (and auth
+                   (cadr-ai:runtime-auth-result-base-url
+                    auth))
+              (copy-model-with-overrides
+               model
+               :base-url
+               (cadr-ai:runtime-auth-result-base-url
+                auth))
+              model)
+          :auth-source
+          (if auth :native :none))))
+      ((known-provider-definition-p provider)
         (let ((resolved
                 (resolve-provider-config
                  :provider provider-name
@@ -786,7 +950,8 @@
                     (null api-key))
                :models-json
                (provider-config-auth-source
-                resolved))))
+                resolved)))))
+      (t
         (let* ((credential
                  (and
                   (model-registry-credentials registry)
@@ -857,7 +1022,7 @@
                'cadr-ai:oauth-credential)
               :oauth)
              (credential :stored-api-key)
-             (t :none)))))))
+             (t :none))))))))
 
 (defun model-registry-available-models
     (registry

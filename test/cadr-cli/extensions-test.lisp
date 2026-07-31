@@ -45,8 +45,8 @@
       (let ((first
               (cadr-cli::reload-cli-extensions
                manager)))
-        (is (= 2 (getf first :active)))
-        (is (= 2 (getf first :loaded))))
+        (is (= 3 (getf first :active)))
+        (is (= 3 (getf first :loaded))))
       (let* ((host
                (cadr-cli::cli-extension-manager-host
                 manager))
@@ -55,16 +55,21 @@
                 (cadr-agent::extension-host-current-snapshot
                  host))))
         (is (equal
-             '("<inline:1>" "<inline:named>")
+             '("<inline:llama.cpp>"
+               "<inline:1>"
+               "<inline:named>")
              (mapcar
               #'cadr-agent::extension-bundle-path
               bundles)))
-        (is (null
-             (cadr-agent::extension-bundle-hidden-p
-              (first bundles))))
         (is
          (cadr-agent::extension-bundle-hidden-p
-          (second bundles))))
+          (first bundles)))
+        (is (null
+             (cadr-agent::extension-bundle-hidden-p
+              (second bundles))))
+        (is
+         (cadr-agent::extension-bundle-hidden-p
+          (third bundles))))
       (let ((old-apis (copy-list apis)))
         (cadr-cli::reload-cli-extensions manager)
         (is (= 4 (length runs)))
@@ -250,7 +255,7 @@
         "(define-prompt-template \"value\" :template \"old\")"))
       (write-text bad (extension-source "(error \"load boom\")"))
       (let ((report (cadr-cli::reload-cli-extensions manager)))
-        (is (= 1 (getf report :loaded)))
+        (is (= 2 (getf report :loaded)))
         (is (= 1 (length (getf report :errors)))))
       (write-text good (extension-source "(error \"reload boom\")"))
       (cadr-cli::reload-cli-extensions manager)

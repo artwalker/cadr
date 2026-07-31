@@ -74,7 +74,12 @@
             (pathname global-directory))
            :explicit-paths (copy-list explicit-paths)
            :extension-factories
-           (copy-list extension-factories)
+           (cons
+            (list
+             :name "llama.cpp"
+             :factory #'llama-extension-factory
+             :hidden-p t)
+            (copy-list extension-factories))
            :configured-package-paths
            (copy-list configured-package-paths)
            :no-discovery-p
@@ -134,6 +139,8 @@
                     (cadr-agent:execution-result-exit-code
                      result))))))))
       (setf (cli-extension-manager-host manager) host))
+    (setf *native-extension-host*
+          (cli-extension-manager-host manager))
     manager))
 
 (defun configure-extension-ui-bridge
@@ -460,7 +467,7 @@
     (functionp (getf input :factory)))))
 
 (defun load-inline-extension-factory
-    (manager input index)
+    (manager input order anonymous-index)
   (unless (valid-inline-extension-factory-p input)
     (error
      'cadr-agent:extension-registration-error
@@ -470,7 +477,7 @@
          (name
            (if named-p
                (getf input :name)
-               (format nil "~D" index)))
+               (format nil "~D" anonymous-index)))
          (path
            (format nil "<inline:~A>" name))
          (factory
@@ -483,7 +490,7 @@
             :path path
             :scope :inline
             :rank 3
-            :order index
+            :order order
             :hidden-p
             (and named-p
                  (not
@@ -546,13 +553,17 @@
         for input in
         (cli-extension-manager-extension-factories
          manager)
-        for index from 1
+        for order from 1
+        with anonymous-index = 0
         do
         (handler-case
             (progn
+              (when (functionp input)
+                (incf anonymous-index))
               (push
                (load-inline-extension-factory
-                manager input index)
+                manager input order
+                anonymous-index)
                bundles)
               (incf loaded))
           (condition (condition)
