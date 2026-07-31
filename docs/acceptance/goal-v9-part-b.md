@@ -1,6 +1,6 @@
 # Goal 9 Part B 阶段报告
 
-> 状态：第三轮机械门禁、全量、grep、PTY 与隔离构建已绿；提交证据见第 7 节。
+> 状态：第四轮 tool result 补正、机械门禁与全量已绿；提交证据见第 7 节。
 > 等待用户重新执行 B3 双终端 A/B，Part C 尚未开始。
 
 ## 1. 基线与机械账本
@@ -122,7 +122,7 @@ TUI 在 start/end 两帧展示 call content 还是 receipt；`/model` 则把 sco
 | 面 | 当前源码与门禁 | 本轮事实 | 旧检查为何漏过 |
 |---|---|---|---|
 | bash timeout 标题 | `src/cadr-cli/tui.lisp:1124-1202`；`test/cadr-cli/tui-test.lisp:1223` `GOAL9-B3-EXPLICIT-BASH-TIMEOUT-NEVER-APPEARS-IN-TITLE` | default 与 explicit timeout 均不得出现在标题。该用户裁决与审计基线显式后缀冲突，按有意差异登记。 | 旧门禁只证明“默认 timeout 不应凭空出现”，并主动保留 explicit 后缀，测试范围与宣告范围不一致。 |
-| write running/success 文案 | `src/cadr-cli/tui.lisp:1221-1249,1261-1501`；`test/cadr-cli/tui-test.lisp:1274` `GOAL9-B3-WRITE-TOOL-DISPLAYS-REQUEST-CONTENT-NOT-BYTE-RECEIPT` | running 与 success 均展示请求 content 的基线 preview；`Wrote N UTF-8 bytes...` 仍可作为模型侧 executor result，但不得成为 TUI 用户文案。 | 旧测试只测 executor receipt 和 tool status，未对 event→block 的完整 output 行做 start/end 快照。 |
+| write running/success 文案 | `src/cadr-cli/tui.lisp:1221-1249,1261-1501`；`test/cadr-cli/tui-test.lisp:1274` `GOAL9-B3-WRITE-TOOL-DISPLAYS-REQUEST-CONTENT-NOT-BYTE-RECEIPT` | running 与 success 均展示请求 content 的基线 preview；模型侧 result 已在第 3.3 节另行按基线逐字修正，显示层不得以 receipt 替代 content。 | 旧测试只测 executor receipt 和 tool status，未对 event→block 的完整 output 行做 start/end 快照，也没有验证 receipt 自身是否符合基线。 |
 | `/model` `tab scope` 提示 | `src/cadr-cli/interactive-services.lisp:8012`；`test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`；`test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | unscoped/scoped 两条完整文案路径均不再出现 `tab scope (all/scoped)`；scoped 状态只保留 `Scope: all | scoped` 状态标题。 | 旧门禁只覆盖 unscoped 分支，并把 scoped 分支残留提示当作允许差异；宣告范围大于真实验证范围。 |
 | read collapsed preview | `src/cadr-tui/components.lisp:1213-1222,1514-1565`；`test/cadr-tui/components-test.lisp:423` `GOAL9-TOOL-COLLAPSED-PREVIEWS-MATCH-BASELINE-BUDGETS` | 成功 read 折叠态不显示结果；展开显示完整结果；error 始终可见。 | 旧共享 budget 错把 read 与 write 合并为 10 行，并只断言裁剪数量，未对照 read 专用 result renderer。 |
 | Markdown streaming fence | `src/cadr-tui/components.lisp:796-906`；`test/cadr-tui/components-test.lisp:764` `GOAL9-MARKDOWN-STREAMING-FENCES-MATCH-BASELINE-EXACTLY`；`test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` | 审计基线完成态本身保留开、闭 fence 行，因此截图中的字面 <code>```text</code> / <code>```</code> 已核实为非差异；本轮只修 empty/partial streaming fence 与 fence 后首个空 code line，并从 delta 经 TUI state、Markdown renderer 到 virtual terminal 锁定完整链路。 | 旧测试偏重完成态和 token 样式，没有逐帧固定完整行数组，也没有穿过完整 TUI 链。 |
@@ -144,6 +144,38 @@ overlay 与 autocomplete 全部删除，与基线 surface 一致；它们不再�
 样式、空态、viewport 和首末循环缺一不可。完整对照表见
 [`visual-parity.md`](../visual-parity.md#b2-overlay-完整逐行合约)。
 
+## 3.3 第四轮：模型可见 tool result 逐字审计
+
+本轮把工具调用拆成三层独立合约：request/arguments、写入会话并回传模型的
+result、TUI renderer。前一轮只修 write 的显示层，甚至把错误 receipt 误写成
+“按基线保留”；本轮以注册表 `+builtin-coding-tool-names+` 的七个工具为封闭集合，
+逐个对照审计提交源码。`glob.lisp` 只是测试/内部辅助，未注册为模型可调用工具，
+不冒充第八个内置工具。
+
+| 工具 | 审计基线 `file:line` | 模型可见 result 合约 | Cadr 源码与永久门禁 | 结论 |
+|---|---|---|---|---|
+| write | `packages/coding-agent/src/core/tools/write.ts:220-223` | `Successfully wrote N bytes to <原始 path>`；`N=JavaScript content.length`，即 UTF-16 码元数，不是 UTF-8 bytes。 | `src/cadr-cli/tools/write.lisp:42`；`GOAL9-B3-WRITE-RESULT-MATCHES-BASELINE-UTF16-CODE-UNIT-COUNT` 用 `中🙂` 锁定 `N=3`。 | 不一致（已改齐） |
+| edit | `packages/coding-agent/src/core/tools/edit.ts:323-360`；`packages/coding-agent/src/core/tools/edit-diff.ts:257-292,347-352` | success、ENOENT、not-found、duplicate、no-change、overlap 均保留原始 path、edit index 与 replacement 数。 | `src/cadr-cli/tools/edit.lisp:173-269,577-632`；`GOAL9-B3-EDIT-RESULT-AND-ERRORS-MATCH-BASELINE-COPY`。 | 不一致（已改齐） |
+| read | `packages/coding-agent/src/core/tools/read.ts:246-315`；`packages/coding-agent/src/utils/image-process.ts:67-117`；`packages/coding-agent/src/utils/image-resize.ts:116-123` | user limit、2000 行、50.0KB、首行超限、总行数/next offset；图片转换/省略/resize 坐标提示均逐字且数值同口径。 | `src/cadr-cli/tools/read.lisp:3-100`、`src/cadr-cli/interactive-services.lisp:3174-3294`；`GOAL9-B3-READ-RESULT-NOTICES-MATCH-BASELINE-LINE-COUNTS`。 | 不一致（已改齐） |
+| bash | `packages/coding-agent/src/core/tools/bash.ts:404-454` | 空输出、非零退出、timeout、2000 行/50.0KB/单长行截断提示；随机 full-output path 只替换值，模板逐字一致。 | `src/cadr-cli/tools/bash.lisp:48-87,220-316`；`GOAL9-B3-BASH-RESULT-STATUS-AND-TRUNCATION-COPY-MATCH-BASELINE`。额外移除 timeout 时 `setsid` 注入的非命令 stderr。 | 不一致（已改齐） |
+| find | `packages/coding-agent/src/core/tools/find.ts:282-346` | 空结果、`N results limit reached. Use limit=2N...`、50.0KB notice；路径相对 search root。 | `src/cadr-cli/tools/find.lisp:10-71`；`GOAL9-B3-SEARCH-TOOL-RESULTS-MATCH-BASELINE-COPY-AND-COUNTS`。 | 不一致（已改齐） |
+| grep | `packages/coding-agent/src/core/tools/grep.ts:178-356` | default limit 100；`path:line: text`/context spacing；500 UTF-16 码元长行；match/byte/long-line notice 与数值。 | `src/cadr-cli/tools/grep.lisp:10-136`；同一 search 门禁以 CJK/emoji 边界锁定 UTF-16 口径，并覆盖 byte-boundary。 | 不一致（已改齐） |
+| ls | `packages/coding-agent/src/core/tools/ls.ts:124-202` | `(empty directory)`、排序/目录 `/`、entry limit 与 50.0KB notice。 | `src/cadr-cli/tools/ls.lisp:11-73`；同一 search 门禁及既有 limit 门禁。 | 不一致（已改齐） |
+
+运行时/操作系统原生异常只允许保留“实现语言迁移必然导致的异常对象措辞”差异；
+所有项目自行拼装并会进入会话的 success/error/continuation/truncation 文案均已逐字
+对齐。图片能力的 provider 请求策略仍由既有 `cadr-ai` 冻结层负责，本表只审计
+read tool 产生的 result 内容，不借此修改 provider 机制。
+
+红相不是抽象推断：write 用 `中🙂` 得到旧值 `7 UTF-8 bytes` 而基线为 `3 bytes`；
+edit、read、bash、find/grep/ls 的旧文案/notice 同批失败；图片分支随后复现旧
+`Converted image/bmp to PNG` 与损坏 BMP 被误当文本 `BM`。先前 6878 条为何漏过：
+write 只有 ASCII，导致 UTF-8 bytes 与 UTF-16 units 恰好相等；其余测试只断言文件
+副作用、substring、details flag 或 TUI 展示，没有把 executor result 作为完整字符串
+快照，也没有 Unicode、截断边界和损坏图片输入。本轮专用门禁 `24/24`，其中
+grep 另用 CJK/emoji 构造“Common Lisp 字符数小于 500、UTF-16 码元数大于 500”
+的边界，防止同类计数口径再次被 ASCII 掩盖。
+
 ## 4. 色彩字节证据
 
 同一 dark palette 输入的 capture：
@@ -159,13 +191,14 @@ background reset    = ESC[49m
 
 原始 capture：`/tmp/cadr-goal9-color-capture.txt`。
 
-## 5. 第三轮最终机械证据
+## 5. 第四轮最终机械证据
 
 | 证据 | 命令/范围 | checks | pass | skip | fail | 输出记录 |
 |---|---|---:|---:|---:|---:|---|
-| 隔离确定性全量 | 临时空 `HOME`，显式 unset 四类 live credential，`./scripts/test-cl.sh` | 6855 | 6847 | 8 | 0 | `/tmp/cadr-goal9-isolated-rerun.log` |
-| 当前用户状态全量 | `./scripts/test-cl.sh` | 6878 | 6877 | 1 | 0 | `/tmp/cadr-goal9-current.log` |
-| 本机可用 live 门禁 | 当前与隔离 totals 的增量；DeepSeek 与 Codex OAuth 均真实执行 | 23 | 23 | 0 | 0 | `/tmp/cadr-goal9-current.log` |
+| tool result 专用门禁 | 7 个注册工具的完整 result 文案与数值边界 | 24 | 24 | 0 | 0 | 本轮五个 `GOAL9-B3-*-RESULT-*` FiveAM 测试 |
+| 隔离确定性全量 | 临时空 `HOME`，显式 unset 四类 live credential，`./scripts/test-cl.sh` | 6879 | 6871 | 8 | 0 | `/tmp/cadr-goal9-tool-result-isolated-rerun.log` |
+| 当前用户状态全量 | `./scripts/test-cl.sh` | 6902 | 6901 | 1 | 0 | `/tmp/cadr-goal9-tool-result-current-final.log` |
+| 本机可用 live 门禁 | 当前与隔离 totals 的增量；DeepSeek 与 Codex OAuth 均真实执行 | 23 | 23 | 0 | 0 | `/tmp/cadr-goal9-tool-result-current-final.log` |
 | PTY lifecycle | `./scripts/goal9-a2-pty.sh` | 3 | 3 | 0 | 0 | normal、ctrl-c、suspend-resume 均 PASS |
 
 当前用户全量中的唯一 skip 为没有 `ANTHROPIC_API_KEY` 的
@@ -175,8 +208,9 @@ Codex OAuth CLI、DeepSeek/Codex eval 及两个 DeepSeek 进程级 eval 均真�
 证据真实性补充：第一次保存隔离重跑时，既有
 `SHUTDOWN-DURING-PREFLIGHT-PREVENTS-PROVIDER-START` 时序测试偶发 2 个断言失败；
 本轮没有改动 `cadr-agent`，按“顺手发现只记录不修”处理。相同隔离命令立即重跑
-6855 checks 全绿，当前用户状态 6878 checks 亦全绿；失败日志保留为
-`/tmp/cadr-goal9-isolated.log`。
+6879 checks 全绿，当前用户状态 6902 checks 亦全绿；本轮首次隔离运行同一既有
+时序门禁再次发生相同 2 个断言失败，未改产品代码，原命令立即复跑全绿。失败日志
+保留为 `/tmp/cadr-goal9-tool-result-isolated.log`。
 
 残留 grep 命令与原始输出：
 
@@ -184,7 +218,7 @@ Codex OAuth CLI、DeepSeek/Codex eval 及两个 DeepSeek 进程级 eval 均真�
 $ rg -n 'format nil " \(timeout ~As\)"|timeout ~As' src/cadr-cli/tui.lisp
 (no output; exit 1)
 
-$ rg -n 'Wrote ~D UTF-8 bytes|Wrote [0-9]+ UTF-8 bytes' src/cadr-cli/tui.lisp
+$ rg -n 'Wrote ~D UTF-8 bytes|Wrote [0-9]+ UTF-8 bytes|Applied ~D replacement|Converted ~A to PNG' src test
 (no output; exit 1)
 
 $ rg -n 'tab scope \(all/scoped\)' src/cadr-cli/tui.lisp test/cadr-cli
@@ -193,21 +227,24 @@ $ rg -n 'tab scope \(all/scoped\)' src/cadr-cli/tui.lisp test/cadr-cli
 $ rg -n 'up/down navigate · enter change · escape close' src
 (no output; exit 1)
 
-$ rg -n 'timeout 10s|Wrote 16 UTF-8 bytes' test/cadr-cli/tui-test.lisp
+$ rg -n 'timeout 10s|Successfully wrote 16 bytes' test/cadr-cli/tui-test.lisp
 1247:      (is (null (search " (timeout 10s)" rendered)))
-1290:              :text "Wrote 16 UTF-8 bytes to /tmp/notes.txt"))
+1290:              :text "Successfully wrote 16 bytes to notes.txt"))
 
 $ rg -n 'tool-preview-budget|\(string-equal name "read"\)' src/cadr-tui/components.lisp
 1213:(defun tool-preview-budget (name)
 1216:    ((string-equal name "read") 0)
 1532:                (tool-preview-budget
 
-$ rg -n 'Wrote ~D UTF-8 bytes' src/cadr-cli/tools/write.lisp
-40:          (format nil "Wrote ~D UTF-8 bytes to ~A"
+$ rg -n 'utf16-code-unit-length|Successfully wrote' src/cadr-cli/truncation.lisp src/cadr-cli/tools/write.lisp
+src/cadr-cli/truncation.lisp:21:(defun utf16-code-unit-length (text)
+src/cadr-cli/truncation.lisp:86:  (if (<= (utf16-code-unit-length line) max-units)
+src/cadr-cli/tools/write.lisp:42:          (format nil "Successfully wrote ~D bytes to ~A"
+src/cadr-cli/tools/write.lisp:43:                  (utf16-code-unit-length content)
 ```
 
-最后一项是模型可见 executor result，按基线工具协议保留；前述 TUI-scoped grep
-证明它不再泄漏为用户展示文案。
+模型可见 executor result 与 TUI preview 现在分别有门禁；后者继续展示 write
+request content，前者按基线返回 UTF-16 码元计数 receipt。
 
 ## 6. 隔离构建产物
 
@@ -224,7 +261,7 @@ cadr-server SHA-256: a973aaa04f1d0f85ee6a59fbe767209fb45b0269e89df48790af05c0a60
 logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 ```
 
-## 7. 第三轮提交
+## 7. 第三、四轮提交
 
 | commit | 内容 |
 |---|---|
@@ -233,7 +270,8 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 | `7d89b096b` | overlay 完整合约、settings/auth/extension glue 与运行时门禁 |
 | `d77321774` | docs/README 收口与最终证据 |
 | `034f69e0f` | 明确完成态 Markdown fence 为已核实非差异 |
-| `本最终门禁提交` | 补齐 `/logout` 独立整屏 SHA，并刷新全量数字 |
+| `21ae81f13` | 补齐 `/logout` 独立整屏 SHA，并刷新第三轮全量数字 |
+| `1c442d271` | 第四轮模型可见 tool result 与永久回归门禁 |
 
 提交后须再次确认本轮路径无未提交变更；用户预存的
 `docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与
@@ -244,5 +282,5 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 精确启动命令、环境约束和 11 个逐场景检查项见
 [`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
 
-当前处置：`第三轮机械门禁、全量、PTY、构建与提交已落账；等待用户重新逐项确认`。
+当前处置：`第四轮 tool result 补正、全量与提交已落账；等待用户重新逐项确认`。
 收到确认前不开始 Part C。
