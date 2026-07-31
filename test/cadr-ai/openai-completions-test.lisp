@@ -12,6 +12,42 @@
                      :supports-tools-p t
                      :reasoning-p t)))
 
+(defun stream-completions-text-deltas (provider model deltas)
+  (let ((events nil)
+        (*http-request-function*
+          (lambda (url &rest arguments)
+            (declare (ignore url arguments))
+            (values
+             (make-string-input-stream
+              (with-output-to-string (output)
+                (dolist (delta deltas)
+                  (format
+                   output "data: ~A~%~%"
+                   (cadr-ai::stringify-json
+                    (cadr-ai::json-object
+                     "choices"
+                     (vector
+                      (cadr-ai::json-object
+                       "delta"
+                       (cadr-ai::json-object
+                        "content" delta)
+                       "finish_reason" 'cadr-ai::null))))))
+                (format
+                 output
+                 "data: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}]}~%~%")))
+             200
+             '(("content-type" . "text/event-stream"))))))
+    (values
+     (cadr-ai:stream-chat
+      provider model
+      (cadr-ai:make-context
+       :messages
+       (list
+        (cadr-ai:make-user-message :content "repeat")))
+      (lambda (event)
+        (push event events)))
+     (nreverse events))))
+
 (test openai-completions-builds-tool-history
   (multiple-value-bind (provider model)
       (completions-provider-and-model)
@@ -94,7 +130,72 @@
       (is (= 2 (cadr-ai:usage-cache-read
                 (cadr-ai:assistant-message-usage message))))
       (is (= 3 (cadr-ai:usage-reasoning
-                (cadr-ai:assistant-message-usage message)))))))
+                 (cadr-ai:assistant-message-usage message)))))))
+
+(test openai-completions-stream-text-is-character-exact-for-all-delta-boundaries
+  (multiple-value-bind (provider model)
+      (completions-provider-and-model)
+    (let* ((expected
+             "The exit code was 7 and there are 12 steps and 3 files.")
+           (character-deltas
+             (loop for character across expected
+                   collect (string character)))
+           (cases
+             (append
+              (loop for split from 0 to (length expected)
+                    collect
+                    (list (subseq expected 0 split)
+                          (subseq expected split)))
+              (list
+               character-deltas
+               '("The exit code was" " " "7" " and there are" " "
+                 "12" " steps and" " " "3" " files.")
+               '("The exit code was" " 7" " and there are" " 12"
+                 " steps and" " 3" " files.")))))
+      (dolist (deltas cases)
+        (multiple-value-bind (message events)
+            (stream-completions-text-deltas
+             provider model deltas)
+          (is (string= expected (first-text message)))
+          (is
+           (string=
+            expected
+            (format
+             nil "~{~A~}"
+             (loop for event in events
+                   when
+                     (eq :text-delta
+                         (cadr-ai:stream-event-type event))
+                     collect
+                     (cadr-ai:stream-event-delta event))))))))
+    (dolist
+        (case
+         '(("12345" ("1" "2" "3" "4" "5"))
+           ("7 starts at line zero" ("7" " starts at line zero"))
+           ("alpha  12 omega" ("alpha" "  " "12" " omega"))))
+      (multiple-value-bind (message events)
+          (stream-completions-text-deltas
+           provider model (second case))
+        (declare (ignore events))
+        (is (string= (first case) (first-text message)))))))
+
+(test openai-completions-nonstream-text-is-character-exact
+  (multiple-value-bind (provider model)
+      (completions-provider-and-model)
+    (let* ((expected
+             "The exit code was 7 and there are 12 steps and 3 files.")
+           (response
+             (cadr-ai::json-object
+              "choices"
+              (vector
+               (cadr-ai::json-object
+                "message"
+                (cadr-ai::json-object "content" expected)
+                "finish_reason" "stop"))))
+           (message
+             (cadr-ai:parse-complete-response
+              provider model response)))
+      (is (string= expected (first-text message))))))
 
 (test recorded-deepseek-chat-completions-stream
   (multiple-value-bind (provider model)

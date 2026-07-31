@@ -144,4 +144,65 @@
                        :test #'string-equal))))
           (is (eq :tool-use
                   (assistant-message-stop-reason
-                   message))))))))
+                  message))))))))
+
+(test openai-responses-reasoning-summary-parts-emit-exact-thinking-events
+  (multiple-value-bind (provider ignored-model)
+      (provider-case :openai)
+    (declare (ignore ignored-model))
+    (let* ((model
+             (cadr-ai:make-model
+              :id "gpt-reasoning"
+              :provider :openai-codex
+              :api :openai-codex-responses
+              :base-url "https://chatgpt.com/backend-api"
+              :max-tokens 4096
+              :reasoning-p t))
+           (events nil)
+           (*http-request-function*
+             (lambda (url &rest arguments)
+               (declare (ignore url arguments))
+               (values
+                (make-string-input-stream
+                 (format
+                  nil
+                  "data: {\"type\":\"response.created\",\"response\":{\"id\":\"resp_reasoning\"}}~%~%data: {\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"reasoning\",\"id\":\"rs_1\",\"summary\":[]}}~%~%data: {\"type\":\"response.reasoning_summary_text.delta\",\"output_index\":0,\"delta\":\"Planning exact output\"}~%~%data: {\"type\":\"response.reasoning_summary_part.done\",\"output_index\":0,\"summary_index\":0,\"part\":{\"type\":\"summary_text\",\"text\":\"Planning exact output\"}}~%~%data: {\"type\":\"response.reasoning_summary_text.delta\",\"output_index\":0,\"delta\":\"Checking 12 steps\"}~%~%data: {\"type\":\"response.output_item.done\",\"output_index\":0,\"item\":{\"type\":\"reasoning\",\"id\":\"rs_1\",\"summary\":[{\"type\":\"summary_text\",\"text\":\"Planning exact output\"},{\"type\":\"summary_text\",\"text\":\"Checking 12 steps\"}]}}~%~%data: {\"type\":\"response.completed\",\"response\":{\"id\":\"resp_reasoning\",\"status\":\"completed\",\"usage\":{\"input_tokens\":1,\"output_tokens\":2,\"total_tokens\":3}}}~%~%"))
+                200
+                '(("content-type" . "text/event-stream"))))))
+      (let* ((message
+               (cadr-ai:stream-chat
+                provider model (sample-context)
+                (lambda (event)
+                  (push event events))
+                :reasoning :high))
+             (thinking
+               (find-if
+                (lambda (block)
+                  (typep block 'cadr-ai:thinking-content))
+                (cadr-ai:assistant-message-content message)))
+             (thinking-events
+               (remove-if-not
+                (lambda (event)
+                  (member
+                   (cadr-ai:stream-event-type event)
+                   '(:thinking-start :thinking-delta :thinking-end)))
+                (nreverse events))))
+        (is (string=
+             (format nil "Planning exact output~%~%Checking 12 steps")
+             (cadr-ai:thinking-content-thinking thinking)))
+        (is (equal
+             '(:thinking-start :thinking-delta :thinking-delta
+               :thinking-delta :thinking-end)
+             (mapcar #'cadr-ai:stream-event-type thinking-events)))
+        (is (string=
+             (format nil "Planning exact output~%~%Checking 12 steps")
+             (format
+              nil "~{~A~}"
+              (loop for event in thinking-events
+                    when (eq :thinking-delta
+                             (cadr-ai:stream-event-type event))
+                    collect (cadr-ai:stream-event-delta event)))))
+        (is (string=
+             (format nil "~%~%")
+             (cadr-ai:stream-event-delta
+              (third thinking-events))))))))

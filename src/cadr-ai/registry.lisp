@@ -383,7 +383,7 @@
 
 (defun instantiate-provider
     (id &key api-key oauth-access-token oauth-account-id
-             base-url model-id allow-missing-auth-p options)
+             base-url model-id reasoning allow-missing-auth-p options)
   (let* ((definition (find-provider-definition id))
          (requires-key-p
            (and
@@ -402,9 +402,18 @@
            (metadata
              (ignore-errors
                (find-model-metadata id resolved-id)))
+           (fallback-metadata
+             (and
+              (null metadata)
+              (ignore-errors
+                (find-model-metadata
+                 id
+                 (provider-definition-default-model definition)))))
+           (effective-metadata
+             (or metadata fallback-metadata))
            (protocol
-             (or (and metadata
-                      (model-metadata-api metadata))
+             (or (and effective-metadata
+                      (model-metadata-api effective-metadata))
                  (provider-definition-protocol definition))))
       (values
        (make-protocol-provider
@@ -418,10 +427,10 @@
         :api protocol
         :base-url
         (or base-url
-            (and metadata
+            (and effective-metadata
                  (non-empty-string-p
-                  (model-metadata-base-url metadata))
-                 (model-metadata-base-url metadata))
+                  (model-metadata-base-url effective-metadata))
+                 (model-metadata-base-url effective-metadata))
             (provider-definition-base-url definition))
         :name
         (if (and metadata
@@ -430,34 +439,39 @@
             (model-metadata-name metadata)
             resolved-id)
         :max-tokens
-        (if metadata
-            (model-metadata-max-output-tokens metadata)
+        (if effective-metadata
+            (model-metadata-max-output-tokens effective-metadata)
             4096)
         :context-window
-        (if metadata
-            (model-metadata-context-window metadata)
+        (if effective-metadata
+            (model-metadata-context-window effective-metadata)
             0)
         :supports-images-p
-        (if metadata
-            (model-metadata-supports-images-p metadata)
+        (if effective-metadata
+            (model-metadata-supports-images-p effective-metadata)
             (provider-definition-supports-images-p definition))
         :supports-tools-p
-        (if metadata
-            (model-metadata-supports-tools-p metadata)
+        (if effective-metadata
+            (model-metadata-supports-tools-p effective-metadata)
             (provider-definition-supports-tools-p definition))
         :reasoning-p
-        (if metadata
-            (model-metadata-reasoning-p metadata)
-            (provider-definition-reasoning-p definition))
+        (or
+         (and
+          (null metadata)
+          reasoning
+          (not (eq reasoning :off)))
+         (if effective-metadata
+             (model-metadata-reasoning-p effective-metadata)
+             (provider-definition-reasoning-p definition)))
         :thinking-level-map
-        (and metadata
-             (model-metadata-thinking-level-map metadata))
+        (and effective-metadata
+             (model-metadata-thinking-level-map effective-metadata))
         :headers
-        (and metadata
-             (model-metadata-headers metadata))
+        (and effective-metadata
+             (model-metadata-headers effective-metadata))
         :compat
-        (and metadata
-             (model-metadata-compat metadata)))))))
+        (and effective-metadata
+             (model-metadata-compat effective-metadata)))))))
 
 (defparameter +built-in-runtime-environment-names+
   '("ANT_LING_API_KEY"

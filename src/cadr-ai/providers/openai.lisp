@@ -435,6 +435,19 @@
                (emit-event emit :thinking-delta message
                            :content-index content-index
                            :delta delta)))))
+        ((string= type "response.reasoning_summary_part.done")
+         (multiple-value-bind (block content-index)
+             (openai-stream-block state output-index)
+           (when (typep block 'thinking-content)
+             (let ((delta (format nil "~%~%")))
+               (setf (thinking-content-thinking block)
+                     (concatenate
+                      'string
+                      (thinking-content-thinking block)
+                      delta))
+               (emit-event emit :thinking-delta message
+                           :content-index content-index
+                           :delta delta)))))
         ((string= type "response.function_call_arguments.delta")
          (multiple-value-bind (block content-index)
              (openai-stream-block state output-index)
@@ -479,6 +492,35 @@
                             :content-index content-index
                             :content (text-content-text block)))
                ((typep block 'thinking-content)
+                (let* ((summary
+                         (json-get item "summary"))
+                       (content
+                         (json-get item "content"))
+                       (summary-text
+                         (and
+                          (vectorp summary)
+                          (format
+                           nil "~{~A~^~%~%~}"
+                           (loop for part across summary
+                                 collect
+                                 (or (json-get part "text") "")))))
+                       (content-text
+                         (and
+                          (vectorp content)
+                          (format
+                           nil "~{~A~^~%~%~}"
+                           (loop for part across content
+                                 collect
+                                 (or (json-get part "text") ""))))))
+                  (cond
+                    ((and summary-text
+                          (plusp (length summary-text)))
+                     (setf (thinking-content-thinking block)
+                           summary-text))
+                    ((and content-text
+                          (plusp (length content-text)))
+                     (setf (thinking-content-thinking block)
+                           content-text))))
                 (setf (thinking-content-signature block)
                       (stringify-json item))
                 (emit-event emit :thinking-end message

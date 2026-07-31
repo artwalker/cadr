@@ -494,7 +494,8 @@
     (values block index)))
 
 (defun append-chat-text-delta (state key type delta emit)
-  (when (non-empty-string-p delta)
+  (when (and (stringp delta)
+             (plusp (length delta)))
     (multiple-value-bind (block index)
         (chat-stream-block state key type emit)
       (ecase type

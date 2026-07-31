@@ -154,7 +154,7 @@
        (values nil :none)))))
 
 (defun resolve-provider-config
-    (&key provider model base-url api-key
+    (&key provider model base-url api-key reasoning
           (config-path (default-config-path))
           (auth-path (default-auth-path))
           allow-missing-auth-p)
@@ -225,6 +225,7 @@
                   (cadr-ai:oauth-credential-account-id credential))
              :base-url resolved-base-url
              :model-id resolved-model
+             :reasoning reasoning
              :allow-missing-auth-p allow-missing-auth-p)
           (make-provider-config
            :name name
