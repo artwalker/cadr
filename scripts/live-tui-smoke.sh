@@ -69,10 +69,20 @@ if [ "$attempt" -ge 20 ]; then
   exit 1
 fi
 
-tmux send-keys -t "$SESSION" Down Tab
+tmux send-keys -t "$SESSION" -l "scoped-"
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" | grep -Fq "/scoped-models"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+tmux send-keys -t "$SESSION" Tab
 sleep 0.2
 SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$SCREEN" | grep -Fq "/sessions"; then
+if ! printf '%s\n' "$SCREEN" | grep -Fq "/scoped-models"; then
   echo "live TUI smoke: autocomplete selection did not apply" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
@@ -81,7 +91,7 @@ fi
 tmux send-keys -t "$SESSION" C-_
 sleep 0.2
 SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if printf '%s\n' "$SCREEN" | grep -Fq "/sessions"; then
+if printf '%s\n' "$SCREEN" | grep -Fq "/scoped-models"; then
   echo "live TUI smoke: autocomplete undo did not restore the prefix" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
