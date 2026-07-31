@@ -185,7 +185,7 @@ background reset    = ESC[49m
 | LY-05 | select primary=32、gap=2、description min=10、默认 5 行、宽度 `<=40` 关闭 description；`src/cadr-tui/components.lisp:1923,2024`。 | 不一致（已改齐） |
 | LY-06 | overlay 默认 `min(80,width)`，selector 自身边框、spacer 和窄屏裁剪；`src/cadr-tui/overlay.lisp:79` `resolve-overlay-layout`、`src/cadr-cli/tui.lisp:1997`。 | 一致 |
 | MD-01 | H1/H2/H3+ 样式、H3+ 前缀和 block spacing 对齐。 | 不一致（已改齐） |
-| MD-02 | code fence、两格缩进、在册语言语法着色、未知语言 code-block 色对齐；完整移植基线 `syntax-highlight.test.ts` 的 span/entity/继承、TS、diff、regexp、decorator、HTML 门禁，并覆盖 HTML/diff/JSON/Bash/SQL 可见 token 边界与 Python/Bash URL 反例。 | 不一致（已改齐） |
+| MD-02 | code fence、两格缩进、在册语言语法着色、未知语言 code-block 色对齐；完整移植基线 `syntax-highlight.test.ts` 的 span/entity/继承、TS、diff、regexp、decorator、HTML 门禁，并覆盖 HTML/diff/JSON/Bash/SQL 可见 token 边界与 Python/Bash URL 反例。审计基线完成态本身保留开、闭 fence 行，因此看到字面 <code>```text</code> / <code>```</code> 是已核实非差异。 | 不一致（已改齐） |
 | MD-03 | quote `│ `、italic、HR 80-cell cap 对齐。 | 不一致（已改齐） |
 | MD-04 | ordered/unordered/task marker、四格嵌套和 continuation 对齐。 | 不一致（已改齐） |
 | MD-05 | link underline/color、OSC 8 与 fallback URL 规则对齐。 | 不一致（已改齐） |

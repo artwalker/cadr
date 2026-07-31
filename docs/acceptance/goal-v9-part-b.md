@@ -125,7 +125,7 @@ TUI 在 start/end 两帧展示 call content 还是 receipt；`/model` 则把 sco
 | write running/success 文案 | `src/cadr-cli/tui.lisp:1221-1249,1261-1501`；`test/cadr-cli/tui-test.lisp:1274` `GOAL9-B3-WRITE-TOOL-DISPLAYS-REQUEST-CONTENT-NOT-BYTE-RECEIPT` | running 与 success 均展示请求 content 的基线 preview；`Wrote N UTF-8 bytes...` 仍可作为模型侧 executor result，但不得成为 TUI 用户文案。 | 旧测试只测 executor receipt 和 tool status，未对 event→block 的完整 output 行做 start/end 快照。 |
 | `/model` `tab scope` 提示 | `src/cadr-cli/interactive-services.lisp:8012`；`test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`；`test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | unscoped/scoped 两条完整文案路径均不再出现 `tab scope (all/scoped)`；scoped 状态只保留 `Scope: all | scoped` 状态标题。 | 旧门禁只覆盖 unscoped 分支，并把 scoped 分支残留提示当作允许差异；宣告范围大于真实验证范围。 |
 | read collapsed preview | `src/cadr-tui/components.lisp:1213-1222,1514-1565`；`test/cadr-tui/components-test.lisp:423` `GOAL9-TOOL-COLLAPSED-PREVIEWS-MATCH-BASELINE-BUDGETS` | 成功 read 折叠态不显示结果；展开显示完整结果；error 始终可见。 | 旧共享 budget 错把 read 与 write 合并为 10 行，并只断言裁剪数量，未对照 read 专用 result renderer。 |
-| Markdown streaming fence | `src/cadr-tui/components.lisp:796-906`；`test/cadr-tui/components-test.lisp:764` `GOAL9-MARKDOWN-STREAMING-FENCES-MATCH-BASELINE-EXACTLY`；`test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` | empty/partial/closed backtick 与 tilde fence 的每一帧逐行等价，含 fence 后首个空 code line；另从 delta 经 TUI state、Markdown renderer 到 virtual terminal 锁定完整链路。 | 旧测试偏重完成态和 token 样式，没有逐帧固定完整行数组，也没有穿过完整 TUI 链。 |
+| Markdown streaming fence | `src/cadr-tui/components.lisp:796-906`；`test/cadr-tui/components-test.lisp:764` `GOAL9-MARKDOWN-STREAMING-FENCES-MATCH-BASELINE-EXACTLY`；`test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` | 审计基线完成态本身保留开、闭 fence 行，因此截图中的字面 <code>```text</code> / <code>```</code> 已核实为非差异；本轮只修 empty/partial streaming fence 与 fence 后首个空 code line，并从 delta 经 TUI state、Markdown renderer 到 virtual terminal 锁定完整链路。 | 旧测试偏重完成态和 token 样式，没有逐帧固定完整行数组，也没有穿过完整 TUI 链。 |
 | 14 个 overlay 整屏合约 | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:122` `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` | model、model-scoped、settings、resume、fork、tree、scoped-models、trust、login-method、login-provider、api-key、import、extension-select、extension-custom 均锁定完整 virtual-screen SHA-256。 | 原门禁分散在 substring、样式 token 和业务 action 测试，只抽查六个 overlay，未证明每个 surface 的整屏输出。 |
 | settings 能力门控 | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:169` `GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`；`:347` `GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT`；`:497` `GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES` | 与基线相同：supports-images=nil 时 25 项；true 时按能力增加 Show images/Image width，合计 27 项；submenu 与边界循环另行锁定。 | 旧报告把 nil 分支的 25 项误当作固定用户裁决，没有覆盖 capability=true 分支。 |
 | `@path` autocomplete | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:837` `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` | 40×8 完整 virtual screen、换行与上下双向循环均锁定。 | 旧检查只断言匹配项或局部 popup，没有完整屏幕与 wrap 行为。 |
@@ -231,7 +231,8 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 | `3b41becd3` | provider thinking 能力矩阵与字节级模式门禁 |
 | `94c1b0822` | tool preview、Markdown 与 editor autocomplete |
 | `7d89b096b` | overlay 完整合约、settings/auth/extension glue 与运行时门禁 |
-| `本报告提交` | docs/README 收口与最终证据 |
+| `d77321774` | docs/README 收口与最终证据 |
+| `本澄清提交` | 明确完成态 Markdown fence 为已核实非差异 |
 
 提交后须再次确认本轮路径无未提交变更；用户预存的
 `docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与
