@@ -76,6 +76,8 @@
     (,(format nil "~C[7^" #\Escape) . "ctrl+home")
     (,(format nil "~C[8$" #\Escape) . "shift+end")
     (,(format nil "~C[8^" #\Escape) . "ctrl+end")
+    (,(format nil "~C[1;5H" #\Escape) . "ctrl+home")
+    (,(format nil "~C[1;5F" #\Escape) . "ctrl+end")
     (,(format nil "~COP" #\Escape) . "f1")
     (,(format nil "~COQ" #\Escape) . "f2")
     (,(format nil "~COR" #\Escape) . "f3")

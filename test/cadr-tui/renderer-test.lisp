@@ -1,6 +1,41 @@
 (in-package #:cadr-tui/tests)
 (in-suite cadr-tui-suite)
 
+(test main-screen-first-render-preserves-scrollback-and-stop-position
+  (let* ((terminal
+           (cadr-tui:make-virtual-terminal
+            :columns 20 :rows 3))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal))
+         (document
+           '("one" "two" "three" "four" "five"))
+         (output
+           (cadr-tui:render-frame renderer document)))
+    (is (null
+         (search (format nil "~C[2J" #\Escape)
+                 output)))
+    (is (search "one" output))
+    (is (search "five" output))
+    (is (= 5
+           (length
+            (cadr-tui::terminal-renderer-previous-lines
+             renderer))))
+    (setf
+     (cadr-tui::virtual-writes terminal)
+     nil)
+    (cadr-tui:renderer-before-stop renderer)
+    (let ((stop-output
+            (first
+             (cadr-tui::virtual-writes terminal))))
+      (is (search
+           (format nil "~C~C"
+                   #\Return #\Newline)
+           stop-output))
+      (is (null
+           (search
+            (format nil "~C[?1049l" #\Escape)
+            stop-output))))))
+
 (test differential-renderer-updates-only-changed-lines
   (let* ((terminal (cadr-tui:make-virtual-terminal :columns 12 :rows 4))
          (renderer (cadr-tui:make-terminal-renderer terminal)))
@@ -12,7 +47,11 @@
              renderer '("one" "TWO")
              :cursor-row 1 :cursor-column 3)))
       (is (null (search (format nil "~C[1;1H" #\Escape) output)))
-      (is (search (format nil "~C[2;1H" #\Escape) output)))
+      (is (search
+           (format nil "~C~C[2KTWO"
+                   #\Return #\Escape)
+           output))
+      (is (null (search "one" output))))
     (is (equal '("one" "TWO" "" "")
                (cadr-tui:virtual-terminal-snapshot terminal)))))
 
@@ -105,7 +144,10 @@
              renderer
              (list "before" image "" "" "after"))))
       (is (search
-           (format nil "~C[2K~C[3;1H~C[2K~C[4;1H~C[2K"
-                   #\Escape #\Escape #\Escape
-                   #\Escape #\Escape)
+           (format nil
+                   "~C[2K~C~C~C[2K~C~C~C[2K~C[2A"
+                   #\Escape
+                   #\Return #\Newline #\Escape
+                   #\Return #\Newline #\Escape
+                   #\Escape)
            output)))))

@@ -8,9 +8,144 @@
 (defstruct image-render-result
   (sequence "" :type string)
   (rows 1 :type (integer 1 *))
+  (columns 1 :type (integer 1 *))
   image-id)
 
 (defparameter *terminal-capabilities* nil)
+(defparameter *kitty-image-metadata*
+  (make-hash-table))
+(defparameter *kitty-image-metadata-order* nil)
+(defparameter +kitty-image-metadata-limit+ 1000)
+
+(defun register-kitty-image-metadata
+    (&key image-id columns rows width-px height-px)
+  (when image-id
+    (setf
+     (gethash image-id *kitty-image-metadata*)
+     (list
+      :image-id image-id
+      :columns columns
+      :rows rows
+      :width-px width-px
+      :height-px height-px)
+     *kitty-image-metadata-order*
+     (nconc
+      (remove image-id
+              *kitty-image-metadata-order*
+              :test #'=)
+      (list image-id)))
+    (loop while
+          (> (length *kitty-image-metadata-order*)
+             +kitty-image-metadata-limit+)
+          for oldest =
+          (pop *kitty-image-metadata-order*)
+          do (remhash
+              oldest
+              *kitty-image-metadata*)))
+  image-id)
+
+(defun kitty-line-parameter-integer
+    (line parameter)
+  (let ((position (search parameter line)))
+    (when position
+      (parse-integer
+       line
+       :start (+ position
+                 (length parameter))
+       :junk-allowed t))))
+
+(defun kitty-control-header-bounds (line)
+  (let* ((prefix
+           (format nil "~C_G" #\Escape))
+         (sequence-start
+           (search prefix line))
+         (controls-start
+           (and sequence-start
+                (+ sequence-start
+                   (length prefix))))
+         (controls-end
+           (and controls-start
+                (position #\; line
+                          :start controls-start))))
+    (values sequence-start
+            controls-start
+            controls-end)))
+
+(defun kitty-crop-control-p (control)
+  (and
+   (>= (length control) 2)
+   (member (char control 0)
+           '(#\y #\h #\r))
+   (char= (char control 1) #\=)))
+
+(defun get-kitty-image-metadata (line)
+  (let ((id
+          (and
+           (search
+            (format nil "~C_G" #\Escape)
+            line)
+           (kitty-line-parameter-integer
+            line "i="))))
+    (and id
+         (copy-list
+          (gethash id
+                   *kitty-image-metadata*)))))
+
+(defun crop-kitty-image-line
+    (line hidden-rows visible-rows)
+  (let* ((metadata
+           (get-kitty-image-metadata line))
+         (rows (getf metadata :rows))
+         (height (getf metadata :height-px))
+         (width (getf metadata :width-px))
+         (columns (getf metadata :columns)))
+    (unless
+        (and
+         metadata rows height width columns
+         (> rows 0)
+         (> hidden-rows 0)
+         (> visible-rows 0))
+      (return-from crop-kitty-image-line
+        line))
+    (multiple-value-bind
+          (sequence-start controls-start
+           controls-end)
+        (kitty-control-header-bounds line)
+      (unless controls-end
+        (return-from crop-kitty-image-line
+          line))
+      (let* ((start
+               (floor
+                (* height hidden-rows)
+                rows))
+             (end
+               (min
+                height
+                (ceiling
+                 (* height
+                    (+ hidden-rows
+                       visible-rows))
+                 rows)))
+             (controls
+               (append
+                (remove-if
+                 #'kitty-crop-control-p
+                 (uiop:split-string
+                  (subseq line
+                          controls-start
+                          controls-end)
+                  :separator '(#\,)))
+                (list
+                 (format nil "y=~D" start)
+                 (format nil "h=~D"
+                         (max 1 (- end start)))
+                 (format nil "r=~D"
+                         visible-rows)))))
+        (format
+         nil "~A~C_G~{~A~^,~};~A"
+         (subseq line 0 sequence-start)
+         #\Escape controls
+         (subseq line (1+ controls-end)))))))
 
 (defun environment-value (name environment)
   (let ((prefix (concatenate 'string name "=")))
@@ -422,24 +557,44 @@
          :max-height-cells max-height-cells
          :cell-width cell-width
          :cell-height cell-height)
-      (make-image-render-result
-       :sequence
-       (ecase
-           (terminal-capabilities-images capabilities)
-         (:kitty
-          (encode-kitty-image
-           base64-data :columns columns :rows rows
+      (let ((result
+              (make-image-render-result
+               :sequence
+               (ecase
+                   (terminal-capabilities-images
+                    capabilities)
+                 (:kitty
+                  (encode-kitty-image
+                   base64-data
+                   :columns columns :rows rows
+                   :image-id image-id
+                   :move-cursor-p move-cursor-p))
+                 (:iterm2
+                  (encode-iterm2-image
+                   base64-data
+                   :width columns
+                   :height "auto")))
+               :rows rows
+               :columns columns
+               :image-id
+               (and
+                (eq :kitty
+                    (terminal-capabilities-images
+                     capabilities))
+                image-id))))
+        (when
+            (and
+             image-id
+             (eq :kitty
+                 (terminal-capabilities-images
+                  capabilities)))
+          (register-kitty-image-metadata
            :image-id image-id
-           :move-cursor-p move-cursor-p))
-         (:iterm2
-          (encode-iterm2-image
-           base64-data :width columns :height "auto")))
-       :rows rows
-       :image-id
-       (and (eq :kitty
-                (terminal-capabilities-images
-                 capabilities))
-            image-id)))))
+           :columns columns
+           :rows rows
+           :width-px image-width
+           :height-px image-height))
+        result))))
 
 (defun terminal-hyperlink (text url)
   (format nil "~C]8;;~A~C\\~A~C]8;;~C\\"

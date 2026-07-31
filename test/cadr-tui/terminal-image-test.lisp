@@ -94,6 +94,9 @@
               :move-cursor-p nil)))
       (is (not (null result)))
       (is (= 5 (cadr-tui:image-render-result-rows result)))
+      (is (= 20
+             (cadr-tui:image-render-result-columns
+              result)))
       (is (= 7
              (cadr-tui:image-render-result-image-id result)))
       (is (cadr-tui:image-line-p
@@ -116,3 +119,65 @@
              "file" "file:///tmp/a.png")))
       (is (= 4 (cadr-tui:visible-width link)))
       (is (search "file:///tmp/a.png" link)))))
+
+(test kitty-image-metadata-registers-reads-and-crops
+  (let ((line
+          (cadr-tui:encode-kitty-image
+           "AAAA"
+           :columns 2 :rows 3
+           :image-id 991
+           :move-cursor-p nil)))
+    (cadr-tui:register-kitty-image-metadata
+     :image-id 991
+     :columns 2 :rows 3
+     :width-px 100 :height-px 100)
+    (let ((metadata
+            (cadr-tui:get-kitty-image-metadata
+             line)))
+      (is (= 991 (getf metadata :image-id)))
+      (is (= 2 (getf metadata :columns)))
+      (is (= 3 (getf metadata :rows)))
+      (is (= 100 (getf metadata :width-px)))
+      (is (= 100 (getf metadata :height-px))))
+    (let ((middle
+            (cadr-tui:crop-kitty-image-line
+             line 1 1))
+          (bottom
+            (cadr-tui:crop-kitty-image-line
+             line 2 1))
+          (middle-to-bottom
+            (cadr-tui:crop-kitty-image-line
+             line 1 2))
+          (tail
+            (format nil ";AAAA~C\\"
+                    #\Escape)))
+      (is
+       (string=
+        (format
+         nil
+         "~C_Ga=T,f=100,q=2,C=1,c=2,i=991,y=33,h=34,r=1~A"
+         #\Escape tail)
+        middle))
+      (is
+       (string=
+        (format
+         nil
+         "~C_Ga=T,f=100,q=2,C=1,c=2,i=991,y=66,h=34,r=1~A"
+         #\Escape tail)
+        bottom))
+      (is
+       (string=
+        (format
+         nil
+         "~C_Ga=T,f=100,q=2,C=1,c=2,i=991,y=33,h=67,r=2~A"
+         #\Escape tail)
+        middle-to-bottom))
+      (is
+       (string=
+        line
+        (cadr-tui:crop-kitty-image-line
+         line 0 1))))
+    (is (string=
+         "plain"
+         (cadr-tui:crop-kitty-image-line
+          "plain" 1 1)))))

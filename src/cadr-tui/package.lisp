@@ -2,7 +2,10 @@
   (:use #:cl)
   (:export
    #:visible-width
+   #:strip-terminal-sequences
    #:grapheme-clusters
+   #:grapheme-cell-range
+   #:osc8-link-at-column
    #:slice-to-width
    #:slice-with-width
    #:slice-by-column
@@ -88,7 +91,11 @@
    #:image-render-result
    #:image-render-result-sequence
    #:image-render-result-rows
+   #:image-render-result-columns
    #:image-render-result-image-id
+   #:register-kitty-image-metadata
+   #:get-kitty-image-metadata
+   #:crop-kitty-image-line
    #:render-terminal-image
    #:terminal-hyperlink
    #:image-fallback
@@ -176,6 +183,16 @@
    #:terminal-resized-p
    #:terminal-renderer
    #:make-terminal-renderer
+   #:alt-screen-renderer-p
+   #:renderer-viewport-top
+   #:renderer-following-output-p
+   #:renderer-start
+   #:renderer-before-stop
+   #:renderer-after-stop
+   #:renderer-scroll-by
+   #:renderer-scroll-to-top
+   #:renderer-scroll-to-bottom
+   #:renderer-handle-input
    #:invalidate-renderer
    #:render-frame
    #:virtual-terminal

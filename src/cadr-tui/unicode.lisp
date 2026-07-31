@@ -148,6 +148,111 @@
                 (write-char (char text index) output)
                 (incf index))))))
 
+(defun strip-terminal-sequences (text)
+  (strip-ansi text))
+
+(defun grapheme-cell-range (text column)
+  (let ((cell 0)
+        (index 0))
+    (loop while (< index (length text))
+          for ansi-end = (ansi-sequence-end text index)
+          do
+          (if ansi-end
+              (setf index ansi-end)
+              (let* ((next
+                       (or
+                        (position #\Escape text
+                                  :start index)
+                        (length text)))
+                     (fragment
+                       (subseq text index next)))
+                (dolist
+                    (cluster
+                     (grapheme-clusters fragment))
+                  (let* ((width
+                           (grapheme-width cluster))
+                         (end (+ cell width)))
+                    (when
+                        (and
+                         (<= cell column)
+                         (< column end))
+                      (return-from
+                          grapheme-cell-range
+                        (cons cell end)))
+                    (setf cell end)))
+                (setf index next))))
+    nil))
+
+(defun osc8-url-from-code (code)
+  (unless
+      (and
+       (>= (length code) 4)
+       (char= (char code 0) #\Escape)
+       (char= (char code 1) #\])
+       (char= (char code 2) #\8)
+       (char= (char code 3) #\;))
+    (return-from osc8-url-from-code
+      (values nil nil)))
+  (let* ((bell-p
+           (char=
+            (char code (1- (length code)))
+            (code-char 7)))
+         (body
+           (subseq code 4
+                   (- (length code)
+                      (if bell-p 1 2))))
+         (separator (position #\; body))
+         (url
+           (and separator
+                (subseq body
+                        (1+ separator)))))
+    (values
+     (and url
+          (plusp (length url))
+          url)
+     t)))
+
+(defun osc8-link-at-column (text column)
+  (let ((cell 0)
+        (index 0)
+        (active-url nil))
+    (loop while (< index (length text))
+          for ansi-end = (ansi-sequence-end text index)
+          do
+          (if ansi-end
+              (progn
+                (multiple-value-bind
+                      (url osc8-p)
+                    (osc8-url-from-code
+                     (subseq text index ansi-end))
+                  (when osc8-p
+                    (setf active-url url)))
+                (setf index ansi-end))
+              (let* ((next
+                       (or
+                        (position #\Escape text
+                                  :start index)
+                        (length text)))
+                     (fragment
+                       (subseq text index next)))
+                (dolist
+                    (cluster
+                     (grapheme-clusters fragment))
+                  (let ((end
+                          (+ cell
+                             (grapheme-width
+                              cluster))))
+                    (when
+                        (and
+                         (<= cell column)
+                         (< column end))
+                      (return-from
+                          osc8-link-at-column
+                        active-url))
+                    (setf cell end)))
+                (setf index next))))
+    nil))
+
 (defun grapheme-clusters (text)
   (let ((clusters nil)
         (start 0)

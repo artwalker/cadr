@@ -35,7 +35,11 @@
     ("tui.select.pageUp" . ("pageUp"))
     ("tui.select.pageDown" . ("pageDown"))
     ("tui.select.confirm" . ("enter"))
-    ("tui.select.cancel" . ("escape" "ctrl+c"))))
+    ("tui.select.cancel" . ("escape" "ctrl+c"))
+    ("tui.altScreen.pageUp" . ("shift+pageUp"))
+    ("tui.altScreen.pageDown" . ("shift+pageDown"))
+    ("tui.altScreen.top" . ("ctrl+home"))
+    ("tui.altScreen.bottom" . ("ctrl+end"))))
 
 (defstruct (keybindings-manager
             (:constructor %make-keybindings-manager))

@@ -219,6 +219,9 @@
    (stdin-prefix-time
     :initform nil
     :accessor process-terminal-stdin-prefix-time)
+   (pending-input
+    :initform nil
+    :accessor process-terminal-pending-input)
    (response-filter
     :initform
     (make-terminal-response-filter)
@@ -373,6 +376,9 @@
        original)
       (stdin-buffer-clear
        (process-terminal-stdin-buffer terminal))
+      (setf
+       (process-terminal-pending-input terminal)
+       nil)
       (sb-posix:tcsetattr
        fd sb-posix:tcsanow
        (raw-termios original))
@@ -381,8 +387,8 @@
       (terminal-write
        terminal
        (format nil
-               "~C[?1049h~C[?2004h~C[?25l~C[2J~C[H~A~A"
-               #\Escape #\Escape #\Escape #\Escape #\Escape
+               "~C[?2004h~C[?25l~A~A"
+               #\Escape #\Escape
                (keyboard-protocol-query)
                (if
                    (terminal-capabilities-images
@@ -400,10 +406,9 @@
            (terminal-write
             terminal
             (format nil
-                    "~C[0m~C[?25h~C[?2004l~C[<u~A~C[?1049l"
+                    "~C[0m~C[?25h~C[?2004l~C[<u~A"
                     #\Escape #\Escape #\Escape #\Escape
-                    +modify-other-keys-disable+
-                    #\Escape)))
+                    +modify-other-keys-disable+)))
       #+sbcl
       (when (and
              (process-terminal-input-fd terminal)
@@ -417,7 +422,8 @@
        (process-terminal-started-p terminal) nil
        (process-terminal-saved-termios terminal) nil
        (process-terminal-stdin-prefix-time terminal) nil
-       (process-terminal-keyboard-prefix-time terminal) nil)
+       (process-terminal-keyboard-prefix-time terminal) nil
+       (process-terminal-pending-input terminal) nil)
       (stdin-buffer-destroy
        (process-terminal-stdin-buffer terminal))
       (set-kitty-protocol-active nil)))
@@ -455,6 +461,12 @@
      internal-time-units-per-second))
 
 (defmethod terminal-read-input ((terminal process-terminal))
+  (when
+      (process-terminal-pending-input terminal)
+    (return-from terminal-read-input
+      (pop
+       (process-terminal-pending-input
+        terminal))))
   (let ((raw
           (with-output-to-string (output)
             (loop for character =
@@ -544,7 +556,11 @@
          (process-terminal-keyboard-prefix-time
           terminal)
          nil)))
-    (format nil "~{~A~}" forward)))
+    (when forward
+      (setf
+       (process-terminal-pending-input terminal)
+       (rest forward)))
+    (or (first forward) "")))
 
 (defmethod terminal-resized-p ((terminal process-terminal))
   (when (process-terminal-resize-p terminal)
@@ -552,14 +568,26 @@
     (refresh-terminal-size terminal)
     t))
 
-(defun %call-with-terminal (terminal function)
+(defun %call-with-terminal
+    (terminal function
+     before-start before-stop after-stop)
   (unwind-protect
        (progn
+         (when before-start
+           (funcall before-start))
          (terminal-start terminal)
          (funcall function))
-    (terminal-stop terminal)))
+    (unwind-protect
+         (progn
+           (when before-stop
+             (funcall before-stop))
+           (terminal-stop terminal))
+      (when after-stop
+        (funcall after-stop)))))
 
-(defun call-with-terminal (terminal function)
+(defun call-with-terminal
+    (terminal function
+     &key before-start before-stop after-stop)
   #+sbcl
   (if (typep terminal 'process-terminal)
       (sb-sys:with-interrupt-bindings
@@ -570,7 +598,13 @@
            (setf
             (process-terminal-resize-p terminal)
             t)))
-        (%call-with-terminal terminal function))
-      (%call-with-terminal terminal function))
+        (%call-with-terminal
+         terminal function
+         before-start before-stop after-stop))
+      (%call-with-terminal
+       terminal function
+       before-start before-stop after-stop))
   #-sbcl
-  (%call-with-terminal terminal function))
+  (%call-with-terminal
+   terminal function
+   before-start before-stop after-stop))

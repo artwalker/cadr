@@ -55,6 +55,7 @@
                              (:file "components-test")
                              (:file "component-parity-test")
                              (:file "renderer-test")
+                             (:file "alt-screen-test")
                              (:file "terminal-test")
                              (:file "terminal-parity-test")
                              (:file "manual-acceptance-test"))))

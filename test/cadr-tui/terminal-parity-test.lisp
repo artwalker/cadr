@@ -102,6 +102,34 @@
          (multiple-value-list
           (cadr-tui:get-cell-dimensions))))))
 
+(test process-terminal-preserves-batched-input-event-boundaries
+  (let* ((press
+           (format nil "~C[<0;2;1M" #\Escape))
+         (drag
+           (format nil "~C[<32;4;1M" #\Escape))
+         (release
+           (format nil "~C[<0;4;1m" #\Escape))
+         (terminal
+           (cadr-tui:make-process-terminal
+            :input
+            (make-string-input-stream
+             (concatenate
+              'string press drag release))
+            :output
+            (make-string-output-stream))))
+    (is (string=
+         press
+         (cadr-tui:terminal-read-input terminal)))
+    (is (string=
+         drag
+         (cadr-tui:terminal-read-input terminal)))
+    (is (string=
+         release
+         (cadr-tui:terminal-read-input terminal)))
+    (is (string=
+         ""
+         (cadr-tui:terminal-read-input terminal)))))
+
 (test terminal-dimensions-use-environment-before-defaults
   (flet ((lookup (name)
            (cdr (assoc name
