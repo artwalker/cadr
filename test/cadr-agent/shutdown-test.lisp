@@ -92,7 +92,42 @@
       (signals cadr-agent:agent-shutdown-error
         (cadr-agent:agent-prompt agent "again"))
       (signals cadr-agent:agent-shutdown-error
-        (cadr-agent:agent-next-turn agent "again")))))
+        (cadr-agent:agent-next-turn agent "again"))
+      (signals cadr-agent:agent-shutdown-error
+        (cadr-agent:agent-append-message
+         agent
+         (cadr-ai:make-user-message
+          :content "again"))))))
+
+(test shutdown-idle-agent-preserves-durable-session-and-rejects-compaction
+  (with-shutdown-test-session (session)
+    (cadr-agent::session-append-message
+     session
+     (cadr-ai:make-user-message
+      :content "existing"))
+    (cadr-agent::session-append-message
+     session
+     (assistant
+      (list
+       (make-text-content
+        :text "durable"))))
+    (let* ((path
+             (cadr-agent:session-path session))
+           (before
+             (uiop:read-file-string path))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :session session)))
+      (cadr-agent:agent-shutdown agent)
+      (is
+       (equalp
+        before
+        (uiop:read-file-string path)))
+      (signals cadr-agent:agent-shutdown-error
+        (cadr-agent:compact-agent
+         agent :force-p t)))))
 
 (test shutdown-during-preflight-prevents-provider-start
   (let* ((entered
@@ -233,6 +268,15 @@
                 (sb-thread:make-thread
                  (lambda ()
                    (cadr-agent:agent-shutdown agent)))))
+          (loop repeat 1000
+                until
+                (cadr-agent:agent-shutdown-p
+                 agent)
+                do (sleep 0.001)
+                finally
+                (is
+                 (cadr-agent:agent-shutdown-p
+                  agent)))
           (sb-thread:signal-semaphore release)
           (sb-thread:join-thread compaction-thread)
           (sb-thread:join-thread shutdown-thread))
