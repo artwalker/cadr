@@ -3,6 +3,8 @@
   :version "0.1.0"
   :license "MIT"
   :depends-on ("cl-ppcre"
+               "cl-jpeg"
+               "png-read"
                "cadr-agent"
                "cadr-tui")
   :serial t

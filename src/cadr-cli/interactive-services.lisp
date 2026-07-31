@@ -2658,7 +2658,8 @@
      &key (auto-resize-p t)
        (max-width 2000)
        (max-height 2000)
-       (max-bytes (* 5 1024 1024))
+       (max-bytes (* 9 512 1024))
+       (jpeg-quality 80)
        resize-function)
   (let ((effective-bytes bytes)
         (effective-mime mime-type)
@@ -2670,35 +2671,57 @@
       (push
        "Image converted from image/bmp to image/png."
        hints))
-    (multiple-value-bind
-          (width height valid-p)
-        (image-dimensions-from-bytes
+    (multiple-value-bind (rgba width height)
+        (decode-image-rgba
          effective-bytes effective-mime)
-      (unless valid-p
+      (unless rgba
         (return-from process-image-bytes nil))
-      (if
-          (and auto-resize-p
+      (let ((resize-required-p
+              (and
+               auto-resize-p
                (or (> width max-width)
                    (> height max-height)
-                   (> (length effective-bytes)
-                      max-bytes)))
-          (and
-           resize-function
+                   (>=
+                    (base64-encoded-byte-size
+                     effective-bytes)
+                    max-bytes)))))
+        (cond
+          ((not resize-required-p)
+           (make-image-process-result
+            :bytes (copy-seq effective-bytes)
+            :mime-type effective-mime
+            :original-width width
+            :original-height height
+            :width width
+            :height height
+            :resized-p nil
+            :hints (nreverse hints)))
+          (resize-function
            (funcall
             resize-function
             effective-bytes effective-mime
             width height
             max-width max-height max-bytes
             (nreverse hints)))
-          (make-image-process-result
-           :bytes (copy-seq effective-bytes)
-           :mime-type effective-mime
-           :original-width width
-           :original-height height
-           :width width
-           :height height
-           :resized-p nil
-           :hints (nreverse hints))))))
+          (t
+           (multiple-value-bind
+                 (resized-bytes resized-mime
+                  resized-width resized-height)
+               (resize-image-rgba-to-limits
+                rgba width height
+                max-width max-height max-bytes
+                :jpeg-quality jpeg-quality)
+             (when resized-bytes
+               (make-image-process-result
+                :bytes resized-bytes
+                :mime-type resized-mime
+                :original-width width
+                :original-height height
+                :width resized-width
+                :height resized-height
+                :resized-p t
+                :hints
+                (nreverse hints))))))))))
 
 (defun format-image-dimension-note (result)
   (when (image-process-result-resized-p result)

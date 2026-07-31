@@ -1026,7 +1026,66 @@
            :key #'first
            :test #'string=)))))
 
-(test image-processing-detects-dimensions-converts-bmp-and-omits-unsafe-output
+(defun image-test-base64-value (character)
+  (position
+   character
+   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"))
+
+(defun decode-image-test-base64 (text)
+  (let ((output
+          (make-array
+           0 :element-type '(unsigned-byte 8)
+           :adjustable t :fill-pointer 0))
+        (accumulator 0)
+        (bits 0))
+    (loop for character across text
+          unless (member character
+                         '(#\Space #\Tab #\Newline #\Return #\=))
+            do
+            (let ((value
+                    (image-test-base64-value character)))
+              (unless value
+                (error "Invalid test base64"))
+              (setf accumulator
+                    (logior (ash accumulator 6) value)
+                    bits (+ bits 6))
+              (when (>= bits 8)
+                (decf bits 8)
+                (vector-push-extend
+                 (ldb (byte 8 bits) accumulator)
+                 output)
+                (setf accumulator
+                      (ldb (byte bits 0) accumulator)))))
+    output))
+
+(defun image-test-exif-orientation (jpeg orientation)
+  (let* ((payload
+           (vector
+            #x45 #x78 #x69 #x66 0 0
+            #x49 #x49 #x2a 0 8 0 0 0
+            1 0
+            #x12 1 3 0 1 0 0 0
+            orientation 0 0 0
+            0 0 0 0))
+         (segment-length (+ 2 (length payload)))
+         (output
+           (make-array
+            (+ (length jpeg) 4 (length payload))
+            :element-type '(unsigned-byte 8))))
+    (replace output jpeg :end2 2)
+    (setf (aref output 2) #xff
+          (aref output 3) #xe1
+          (aref output 4)
+          (ldb (byte 8 8) segment-length)
+          (aref output 5)
+          (ldb (byte 8 0) segment-length))
+    (replace output payload :start1 6)
+    (replace output jpeg
+             :start1 (+ 6 (length payload))
+             :start2 2)
+    output))
+
+(test image-processing-decodes-converts-resamples-orients-and-enforces-limits
   (let ((bmp
           (make-array
            58 :element-type '(unsigned-byte 8)
@@ -1092,7 +1151,137 @@
          (cadr-cli:process-image-bytes
           png "image/png"
           :max-width 1
-          :max-height 1)))))
+          :max-height 1
+          :resize-function
+          (lambda (&rest ignored)
+            (declare (ignore ignored))
+            nil)))))
+  (let* ((tiny-png
+           (decode-image-test-base64
+            "iVBORw0KGgoAAAANSUhEUgAAAAIAAAACAQMAAABIeJ9nAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAAGUExURf8AAP///0EdNBEAAAABYktHRAH/Ai3eAAAAB3RJTUUH6gEOADM5Ddoh/wAAAAxJREFUCNdjYGBgAAAABAABJzQnCgAAACV0RVh0ZGF0ZTpjcmVhdGUAMjAyNi0wMS0xNFQwMDo1MTo1NyswMDowMOnKzHgAAAAldEVYdGRhdGU6bW9kaWZ5ADIwMjYtMDEtMTRUMDA6NTE6NTcrMDA6MDCYl3TEAAAAKHRFWHRkYXRlOnRpbWVzdGFtcAAyMDI2LTAxLTE0VDAwOjUxOjU3KzAwOjAwz4JVGwAAAABJRU5ErkJggg=="))
+         (result
+           (cadr-cli:process-image-bytes
+            tiny-png "image/png"
+            :max-width 100
+            :max-height 100
+            :max-bytes (* 1024 1024))))
+    (is (not (null result)))
+    (is (equalp
+         tiny-png
+         (cadr-cli:image-process-result-bytes
+          result)))
+    (is (not
+         (cadr-cli:image-process-result-resized-p
+          result))))
+  (let* ((jpeg
+           (decode-image-test-base64
+            "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgMCAgMDAwMEAwMEBQgFBQQEBQoHBwYIDAoMDAsKCwsNDhIQDQ4RDgsLEBYQERMUFRUVDA8XGBYUGBIUFRT/2wBDAQMEBAUEBQkFBQkUDQsNFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFBT/wAARCAACAAIDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAVAQEBAAAAAAAAAAAAAAAAAAAGCf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AD3VTB3/2Q=="))
+         (png
+           (cadr-cli::convert-image-bytes-to-png
+            jpeg "image/jpeg")))
+    (is (equalp #(137 80 78 71)
+                (subseq png 0 4)))
+    (multiple-value-bind (rgba width height)
+        (cadr-cli::decode-image-rgba
+         png "image/png")
+      (is (= 2 width))
+      (is (= 2 height))
+      (is (= 16 (length rgba)))))
+  (let* ((width 8)
+         (height 4)
+         (rgba
+           (make-array
+            (* width height 4)
+            :element-type '(unsigned-byte 8))))
+    (dotimes (y height)
+      (dotimes (x width)
+        (let ((position (* (+ (* y width) x) 4)))
+          (setf (aref rgba position) (* x 30)
+                (aref rgba (+ position 1)) (* y 60)
+                (aref rgba (+ position 2)) 127
+                (aref rgba (+ position 3)) 255))))
+    (let* ((png (cadr-cli::encode-rgba-png
+                 rgba width height))
+           (result
+             (cadr-cli:process-image-bytes
+              png "image/png"
+              :max-width 4
+              :max-height 2
+              :max-bytes (* 1024 1024))))
+      (is (not (null result)))
+      (is
+       (cadr-cli:image-process-result-resized-p
+        result))
+      (is (= 4
+             (cadr-cli:image-process-result-width
+              result)))
+      (is (= 2
+             (cadr-cli:image-process-result-height
+              result)))
+      (multiple-value-bind (decoded resized-width resized-height)
+          (cadr-cli::decode-image-rgba
+           (cadr-cli:image-process-result-bytes result)
+           (cadr-cli:image-process-result-mime-type result))
+        (is (= 4 resized-width))
+        (is (= 2 resized-height))
+        (is (= (* 4 2 4) (length decoded)))))
+    (let* ((jpeg
+             (cadr-cli::encode-rgba-jpeg
+              rgba width height 85))
+           (oriented
+             (image-test-exif-orientation jpeg 6))
+           (result
+             (cadr-cli:process-image-bytes
+              oriented "image/jpeg"
+              :max-width 2
+              :max-height 8
+              :max-bytes (* 1024 1024))))
+      (is (not (null result)))
+      (is (= 2
+             (cadr-cli:image-process-result-width
+              result)))
+      (is (= 4
+             (cadr-cli:image-process-result-height
+              result)))))
+  (let* ((width 64)
+         (height 64)
+         (rgba
+           (make-array
+            (* width height 4)
+            :element-type '(unsigned-byte 8))))
+    (dotimes (index (* width height))
+      (let ((position (* index 4)))
+        (setf (aref rgba position) (mod (* index 37) 256)
+              (aref rgba (+ position 1)) (mod (* index 61) 256)
+              (aref rgba (+ position 2)) (mod (* index 97) 256)
+              (aref rgba (+ position 3)) 255)))
+    (let* ((png
+             (cadr-cli::encode-rgba-png
+              rgba width height))
+           (input-size
+             (* 4 (ceiling (length png) 3)))
+           (result
+             (cadr-cli:process-image-bytes
+              png "image/png"
+              :max-width 2000
+              :max-height 2000
+              :max-bytes
+              (floor (* input-size 0.9)))))
+      (is (not (null result)))
+      (is (<
+           (* 4
+              (ceiling
+               (length
+                (cadr-cli:image-process-result-bytes
+                 result))
+               3))
+           (floor (* input-size 0.9)))))
+    (is (null
+         (cadr-cli:process-image-bytes
+          (cadr-cli::encode-rgba-png
+           rgba width height)
+          "image/png"
+          :max-bytes 1)))))
 
 (test truncate-to-width-remains-unicode-and-emoji-safe
   (dolist
