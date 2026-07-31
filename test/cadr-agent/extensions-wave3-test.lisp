@@ -22,6 +22,369 @@
          event
          cadr-agent::+extension-hook-events+))))
 
+(test wave3-additive-extension-registries-preserve-baseline-resolution
+  (let* ((first
+           (make-test-extension-bundle
+            "first-additive"
+            (lambda ()
+              (cadr-agent::define-shortcut
+               "ctrl+shift+x"
+               :description "first shortcut"
+               :handler (lambda (context)
+                          (declare (ignore context))
+                          :first))
+              (cadr-agent::define-flag
+               "plan" :description "first flag"
+               :type :boolean :default t)
+              (cadr-agent::define-message-renderer
+               "status"
+               :renderer (lambda (&rest values)
+                           (declare (ignore values))
+                           :first-message))
+              (cadr-agent::define-entry-renderer
+               "state"
+               :renderer (lambda (&rest values)
+                           (declare (ignore values))
+                           :first-entry))
+              (cadr-agent::define-tool-renderer
+               "read"
+               :call (lambda (&rest values)
+                       (declare (ignore values))
+                       :first-call)))))
+         (second
+           (make-test-extension-bundle
+            "second-additive"
+            (lambda ()
+              (cadr-agent::define-shortcut
+               "ctrl+shift+x"
+               :description "second shortcut"
+               :handler (lambda (context)
+                          (declare (ignore context))
+                          :second))
+              (cadr-agent::define-flag
+               "plan" :description "second flag"
+               :type :boolean :default nil)
+              (cadr-agent::define-message-renderer
+               "status"
+               :renderer (lambda (&rest values)
+                           (declare (ignore values))
+                           :second-message))
+              (cadr-agent::define-tool-renderer
+               "read"
+               :result (lambda (&rest values)
+                         (declare (ignore values))
+                         :second-result)))))
+         (host
+           (make-test-extension-host
+            (list first second)))
+         (shortcuts
+           (cadr-agent::extension-host-shortcuts host))
+         (flags
+           (cadr-agent::extension-host-flags host))
+         (tool-renderer
+           (cadr-agent::find-extension-tool-renderer
+            host "read")))
+    ;; Shortcuts follow the baseline last-registration-wins rule. Flags and
+    ;; renderers follow first-extension precedence.
+    (is (= 1 (length shortcuts)))
+    (is (string=
+         "second shortcut"
+         (cadr-agent::extension-shortcut-definition-description
+          (first shortcuts))))
+    (is (= 1 (length flags)))
+    (is (string=
+         "first flag"
+         (cadr-agent::extension-flag-definition-description
+          (first flags))))
+    (is (eq
+         :first-message
+         (funcall
+          (cadr-agent::extension-renderer-definition-renderer
+           (cadr-agent::find-extension-message-renderer
+            host "status")))))
+    (is (eq
+         :first-entry
+         (funcall
+          (cadr-agent::extension-renderer-definition-renderer
+           (cadr-agent::find-extension-entry-renderer
+            host "state")))))
+    (is (functionp
+         (cadr-agent::extension-tool-renderer-definition-call
+          tool-renderer)))
+    (is (null
+         (cadr-agent::extension-tool-renderer-definition-result
+          tool-renderer)))
+    (is (some
+         (lambda (message)
+           (search "Shortcut" message))
+         (cadr-agent::extension-host-conflicts host)))))
+
+(test wave3-load-scope-api-survives-handlers-but-stales-on-reload
+  (let ((captured nil)
+        (sent nil)
+        (executed nil)
+        (active-tools '("read" "bash")))
+    (let* ((host
+             (cadr-agent::make-extension-host
+              :cwd #P"/tmp/"
+              :send-message-function
+              (lambda (message &key trigger-turn-p deliver-as)
+                (push
+                 (list message trigger-turn-p deliver-as)
+                 sent))
+              :send-user-message-function
+              (lambda (content &key deliver-as)
+                (push (list content deliver-as) sent))
+              :exec-function
+              (lambda (command arguments
+                       &key cwd environment timeout-ms)
+                (push
+                 (list command arguments cwd environment
+                       timeout-ms)
+                 executed)
+                '(:stdout "ok" :stderr "" :exit-code 0))
+              :get-active-tools-function
+              (lambda () (copy-list active-tools))
+              :set-active-tools-function
+              (lambda (names)
+                (setf active-tools (copy-list names)))))
+           (bundle
+             (cadr-agent::make-extension-bundle
+              :id "api"
+              :path "/tmp/api.lisp"
+              :scope :project
+              :rank 1
+              :order 0)))
+      (cadr-agent::call-with-extension-load
+       host bundle
+       (lambda ()
+         (cadr-agent::define-flag
+          "enabled" :type :boolean :default t)
+         (setf captured
+               (cadr-agent::current-extension-api))))
+      (cadr-agent::replace-extension-bundles
+       host (list bundle))
+      (cadr-agent::extension-api-send-message
+       captured "later"
+       :trigger-turn-p t :deliver-as :follow-up)
+      (cadr-agent::extension-api-send-user-message
+       captured "user" :deliver-as :steer)
+      (is (equal
+           '(:stdout "ok" :stderr "" :exit-code 0)
+           (cadr-agent::extension-api-exec
+            captured "printf" '("ok")
+            :cwd "/tmp" :environment '(("A" . "B"))
+            :timeout-ms 250)))
+      (is (eq t
+              (cadr-agent::extension-api-get-flag
+               captured "enabled")))
+      (is (equal
+           '("read" "bash")
+           (cadr-agent::extension-api-get-active-tools
+            captured)))
+      (cadr-agent::extension-api-set-active-tools
+       captured '("bash"))
+      (is (equal '("bash") active-tools))
+      (is (= 2 (length sent)))
+      (is (= 1 (length executed)))
+      (let ((replacement
+              (make-test-extension-bundle
+               "api"
+               (lambda ())
+               :path "/tmp/api.lisp")))
+        (cadr-agent::replace-extension-bundles
+         host (list replacement)))
+      (signals cadr-agent:stale-extension-context
+        (cadr-agent::extension-api-get-active-tools
+         captured)))))
+
+(test wave3-handler-context-idle-and-command-only-wait-remain-scoped
+  (let ((command-context nil)
+        (hook-context nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "idle"
+              (lambda ()
+                (cadr-agent:define-command
+                 "wait"
+                 :handler
+                 (lambda (arguments context)
+                   (declare (ignore arguments))
+                   (setf command-context context)
+                   (is
+                    (cadr-agent::extension-context-idle-p
+                     context))
+                   (is
+                    (typep
+                     (cadr-agent::extension-command-context-wait-for-idle
+                      context)
+                     'cadr-agent:agent))))
+                (cadr-agent:define-event-hook
+                 :agent-start
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event))
+                   (setf hook-context context)
+                   (signals cadr-agent:extension-execution-error
+                     (cadr-agent::extension-command-context-wait-for-idle
+                      context)))))))
+           (host
+             (make-test-extension-host
+              (list bundle)))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :extension-host host
+              :auto-compact-p nil)))
+      (declare (ignore agent))
+      (is
+       (cadr-agent::invoke-extension-command
+        host "wait" ""))
+      (cadr-agent::run-extension-lifecycle-hooks
+       host :agent-start)
+      (signals cadr-agent:stale-extension-context
+        (cadr-agent::extension-context-idle-p
+         command-context))
+      (signals cadr-agent:stale-extension-context
+        (cadr-agent::extension-context-idle-p
+         hook-context)))))
+
+(test wave3-additive-ui-surface-delegates-without-tui-core-changes
+  (let ((calls nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "ui-additive"
+              (lambda ()
+                (cadr-agent:define-command
+                 "ui"
+                 :handler
+                 (lambda (arguments context)
+                   (declare (ignore arguments))
+                   (cadr-agent::extension-context-custom
+                    context (lambda () '("custom"))
+                    :overlay-p t
+                    :overlay-options '(:width 40))
+                   (cadr-agent::extension-context-add-autocomplete-provider
+                    context (lambda (&rest values)
+                              (declare (ignore values))
+                              nil))
+                   (is (equal
+                        '(:name "dark")
+                        (cadr-agent::extension-context-theme
+                         context)))
+                   (is (= 2
+                          (length
+                           (cadr-agent::extension-context-all-themes
+                            context))))
+                   (is (equal
+                        '(:name "light")
+                        (cadr-agent::extension-context-get-theme
+                         context "light")))
+                   (is (equal
+                        '(:success t)
+                        (cadr-agent::extension-context-set-theme
+                         context "light")))
+                   (is
+                    (cadr-agent::extension-context-tools-expanded-p
+                     context))
+                   (cadr-agent::extension-context-set-tools-expanded
+                    context nil))))))
+           (host
+             (cadr-agent::make-extension-host
+              :cwd #P"/tmp/"
+              :ui-function
+              (lambda (method arguments)
+                (push (list method arguments) calls)
+                (case method
+                  (:theme '(:name "dark"))
+                  (:all-themes
+                   '((:name "dark") (:name "light")))
+                  (:get-theme '(:name "light"))
+                  (:set-theme '(:success t))
+                  (:tools-expanded-p t)
+                  (otherwise nil))))))
+      (cadr-agent::replace-extension-bundles
+       host (list bundle))
+      (is
+       (cadr-agent::invoke-extension-command
+        host "ui" ""))
+      (is (member :custom calls :key #'first))
+      (is (member :add-autocomplete-provider
+                  calls :key #'first))
+      (is (member :set-tools-expanded
+                  calls :key #'first)))))
+
+(test wave3-tool-renderers-share-state-and-expose-fallback-slots
+  (let* ((bundle
+           (make-test-extension-bundle
+            "render-state"
+            (lambda ()
+              (cadr-agent::define-tool-renderer
+               "read"
+               :call
+               (lambda (arguments context)
+                 (setf
+                  (gethash
+                   :token
+                   (getf context :state))
+                  (getf arguments :path))
+                 (list
+                  (format nil "call ~A"
+                          (getf arguments :path))))
+               :result
+               (lambda (result options context)
+                 (declare (ignore result options))
+                 (list
+                  (format
+                   nil "result ~A"
+                   (gethash
+                    :token
+                    (getf context :state))))))
+              (cadr-agent::define-tool-renderer
+               "write"
+               :call
+               (lambda (arguments context)
+                 (declare (ignore arguments context))
+                 '("write call"))))))
+         (host
+           (make-test-extension-host
+            (list bundle)))
+         (state (make-hash-table))
+         (call-context
+           (list :state state
+                 :tool-call-id "tool-1"
+                 :cwd "/tmp"))
+         (result-context
+           (list :state state
+                 :tool-call-id "tool-1"
+                 :cwd "/tmp")))
+    (multiple-value-bind (rendered handled-p)
+        (cadr-agent::render-extension-tool-call
+         host "read" '(:path "notes.txt")
+         call-context)
+      (is (not (null handled-p)))
+      (is (equal '("call notes.txt") rendered)))
+    (multiple-value-bind (rendered handled-p)
+        (cadr-agent::render-extension-tool-result
+         host "read" '(:content "ok")
+         '(:expanded-p t :partial-p nil)
+         result-context)
+      (is (not (null handled-p)))
+      (is (equal '("result notes.txt") rendered)))
+    (multiple-value-bind (rendered handled-p)
+        (cadr-agent::render-extension-tool-result
+         host "write" '(:content "ok") nil
+         (list :state (make-hash-table)))
+      (is (null rendered))
+      (is (null handled-p)))
+    (multiple-value-bind (rendered handled-p)
+        (cadr-agent::render-extension-tool-call
+         host "missing" nil
+         (list :state (make-hash-table)))
+      (is (null rendered))
+      (is (null handled-p)))))
+
 (test project-trust-uses-first-decision
   (let ((calls nil))
     (let* ((bundle

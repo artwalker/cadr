@@ -1,5 +1,8 @@
 (in-package #:cadr-agent)
 
+(defvar *extension-registration-bundle* nil)
+(defvar *extension-registration-api* nil)
+
 ;;; Immutable effective registry containers
 
 (defstruct extension-snapshot
@@ -7,6 +10,11 @@
   (tools nil :type list)
   (commands nil :type list)
   (templates nil :type list)
+  (shortcuts nil :type list)
+  (flags nil :type list)
+  (message-renderers nil :type list)
+  (entry-renderers nil :type list)
+  (tool-renderers nil :type list)
   (hooks (make-hash-table :test #'eq) :type hash-table)
   (conflicts nil :type list)
   (active-count 0 :type (integer 0 *))
@@ -28,6 +36,15 @@
   send-message-function
   send-user-message-function
   set-session-name-function
+  exec-function
+  get-flag-function
+  get-active-tools-function
+  set-active-tools-function
+  (flag-values (make-hash-table :test #'equal)
+               :type hash-table)
+  (active-tool-names nil :type list)
+  (active-tools-overridden-p nil :type boolean)
+  (attachment-generation 0 :type (integer 0 *))
   (session-started-p nil :type boolean)
   agent
   base-agent-model
@@ -47,7 +64,15 @@
   host
   source-path
   bundle
+  kind
   (active-p t :type boolean))
+
+(defstruct (extension-api
+            (:constructor %make-extension-api)
+            (:conc-name %extension-api-))
+  host
+  bundle
+  (attachment-generation 0 :type (integer 0 *)))
 
 (defstruct (extension-event
             (:constructor %make-extension-event)
@@ -146,6 +171,26 @@
 (defun extension-context-mode (context)
   (assert-active-extension-context context)
   (extension-host-mode (%extension-context-host context)))
+
+(defun extension-context-idle-p (context)
+  (let ((agent (extension-context-agent context)))
+    (or (null agent)
+        (not (agent-busy-p agent)))))
+
+(defun extension-command-context-wait-for-idle (context)
+  (assert-active-extension-context context)
+  (unless (eq (%extension-context-kind context) :command)
+    (error
+     'extension-execution-error
+     :message
+     "wait-for-idle is only available to extension command contexts"))
+  (let ((agent (extension-context-agent context)))
+    (unless agent
+      (error
+       'extension-execution-error
+       :message
+       "wait-for-idle requires an attached agent"))
+    (agent-wait-for-idle agent)))
 
 (defun extension-context-notify
     (context message &key (level :info))
@@ -354,6 +399,73 @@
    (list :text text))
   nil)
 
+(defun extension-context-custom
+    (context factory &key overlay-p overlay-options)
+  (unless (functionp factory)
+    (error
+     'extension-execution-error
+     :message "custom requires a component factory function"))
+  (invoke-extension-ui
+   context :custom
+   (list :factory factory
+         :overlay-p (not (null overlay-p))
+         :overlay-options overlay-options)))
+
+(defun extension-context-add-autocomplete-provider
+    (context factory)
+  (unless (functionp factory)
+    (error
+     'extension-execution-error
+     :message
+     "add-autocomplete-provider requires a factory function"))
+  (invoke-extension-ui
+   context :add-autocomplete-provider
+   (list :factory factory))
+  nil)
+
+(defun extension-context-theme (context)
+  (invoke-extension-ui context :theme nil))
+
+(defun extension-context-all-themes (context)
+  (or (invoke-extension-ui context :all-themes nil)
+      nil))
+
+(defun extension-context-get-theme (context name)
+  (unless (stringp name)
+    (error
+     'extension-execution-error
+     :message "get-theme requires a string name"))
+  (invoke-extension-ui
+   context :get-theme (list :name name)))
+
+(defun extension-context-set-theme (context theme)
+  (unless
+      (or (stringp theme)
+          (listp theme)
+          (hash-table-p theme))
+    (error
+     'extension-execution-error
+     :message
+     "set-theme requires a theme name or theme object"))
+  (or
+   (invoke-extension-ui
+    context :set-theme (list :theme theme))
+   (list :success nil
+         :error "Theme switching is unavailable")))
+
+(defun extension-context-tools-expanded-p (context)
+  (not
+   (null
+    (invoke-extension-ui
+     context :tools-expanded-p nil))))
+
+(defun extension-context-set-tools-expanded
+    (context expanded-p)
+  (invoke-extension-ui
+   context :set-tools-expanded
+   (list :expanded-p (not (null expanded-p))))
+  nil)
+
 (defun call-extension-host-action
     (context accessor name &rest arguments)
   (assert-active-extension-context context)
@@ -406,6 +518,149 @@
    context #'extension-host-set-session-name-function
    "set-session-name" name))
 
+(defun active-extension-api-p (api)
+  (and
+   (typep api 'extension-api)
+   (let ((host (%extension-api-host api))
+         (bundle (%extension-api-bundle api)))
+     (and
+      (= (%extension-api-attachment-generation api)
+         (extension-host-attachment-generation host))
+      (or
+       (eq bundle *extension-registration-bundle*)
+       (member
+        bundle
+        (extension-snapshot-bundles
+         (extension-host-current-snapshot host))
+        :test #'eq))))))
+
+(defun assert-active-extension-api (api)
+  (unless (active-extension-api-p api)
+    (error
+     'stale-extension-context
+     :message
+     "Extension API is stale after reload, bundle retirement, or session replacement"))
+  api)
+
+(defun call-extension-api-action
+    (api accessor name &rest arguments)
+  (assert-active-extension-api api)
+  (let* ((host (%extension-api-host api))
+         (function (funcall accessor host)))
+    (unless function
+      (error
+       'extension-execution-error
+       :message
+       (format nil "Extension action ~A is unavailable in this host"
+               name)))
+    (apply function arguments)))
+
+(defun extension-api-send-message
+    (api message &key (trigger-turn-p nil) deliver-as)
+  (unless
+      (member deliver-as
+              '(nil :steer :follow-up :next-turn))
+    (error
+     'extension-execution-error
+     :message
+     "send-message deliver-as must be :STEER, :FOLLOW-UP, :NEXT-TURN, or NIL"))
+  (call-extension-api-action
+   api #'extension-host-send-message-function
+   "send-message" message
+   :trigger-turn-p (not (null trigger-turn-p))
+   :deliver-as deliver-as))
+
+(defun extension-api-send-user-message
+    (api content &key deliver-as)
+  (unless (member deliver-as '(nil :steer :follow-up))
+    (error
+     'extension-execution-error
+     :message
+     "send-user-message deliver-as must be :STEER, :FOLLOW-UP, or NIL"))
+  (call-extension-api-action
+   api #'extension-host-send-user-message-function
+   "send-user-message" content
+   :deliver-as deliver-as))
+
+(defun extension-api-exec
+    (api command arguments
+     &key cwd environment timeout-ms)
+  (unless
+      (and
+       (stringp command)
+       (plusp (length command))
+       (listp arguments)
+       (every #'stringp arguments)
+       (or (null cwd) (stringp cwd))
+       (or
+        (null environment)
+        (and
+         (listp environment)
+         (every
+          (lambda (entry)
+            (and
+             (consp entry)
+             (stringp (car entry))
+             (stringp (cdr entry))))
+          environment)))
+       (or
+        (null timeout-ms)
+        (and (integerp timeout-ms)
+             (not (minusp timeout-ms)))))
+    (error
+     'extension-execution-error
+     :message
+     "exec requires command/argument strings, optional string cwd/environment alist, and non-negative timeout-ms"))
+  (call-extension-api-action
+   api #'extension-host-exec-function
+   "exec" command (copy-list arguments)
+   :cwd cwd
+   :environment (copy-tree environment)
+   :timeout-ms timeout-ms))
+
+(defun extension-api-get-flag (api name)
+  (assert-active-extension-api api)
+  (unless (stringp name)
+    (error
+     'extension-execution-error
+     :message "get-flag requires a string name"))
+  (let* ((bundle (%extension-api-bundle api))
+         (registered
+           (extension-api-registered-flag-p
+            bundle name)))
+    (unless registered
+      (return-from extension-api-get-flag nil))
+    (let* ((host (%extension-api-host api))
+           (function
+             (extension-host-get-flag-function host)))
+      (if function
+          (funcall function name)
+          (gethash name
+                   (extension-host-flag-values host))))))
+
+(defun extension-api-get-active-tools (api)
+  (copy-list
+   (call-extension-api-action
+    api #'extension-host-get-active-tools-function
+    "get-active-tools")))
+
+(defun extension-api-set-active-tools (api tool-names)
+  (unless
+      (and
+       (listp tool-names)
+       (every #'stringp tool-names)
+       (= (length tool-names)
+          (length
+           (remove-duplicates
+            tool-names :test #'string=))))
+    (error
+     'extension-execution-error
+     :message
+     "set-active-tools requires a list of unique tool-name strings"))
+  (call-extension-api-action
+   api #'extension-host-set-active-tools-function
+   "set-active-tools" (copy-list tool-names)))
+
 (defun extension-event-type (event)
   (%extension-event-type event))
 
@@ -445,6 +700,12 @@
   (hooks nil :type list)
   (templates nil :type list)
   (providers nil :type list)
+  (shortcuts nil :type list)
+  (flags nil :type list)
+  (message-renderers nil :type list)
+  (entry-renderers nil :type list)
+  (tool-renderers nil :type list)
+  (hidden-p nil :type boolean)
   (snapshot-references 0 :type (integer 0 *)))
 
 (defstruct extension-tool-definition
@@ -481,11 +742,59 @@
   (models nil :type list)
   bundle)
 
-(defvar *extension-registration-bundle* nil)
+(defstruct extension-shortcut-definition
+  key
+  description
+  handler
+  bundle)
+
+(defstruct extension-flag-definition
+  name
+  description
+  type
+  default
+  bundle)
+
+(defstruct extension-renderer-definition
+  custom-type
+  renderer
+  bundle)
+
+(defstruct extension-tool-renderer-definition
+  tool-name
+  call
+  result
+  bundle)
+
+(defun extension-api-registered-flag-p
+    (bundle name)
+  (find
+   name
+   (extension-bundle-flags bundle)
+   :key #'extension-flag-definition-name
+   :test #'string=))
 
 (defun call-with-extension-registration (bundle function)
   (let ((*extension-registration-bundle* bundle))
     (funcall function)))
+
+(defun call-with-extension-load (host bundle function)
+  (let ((*extension-registration-bundle* bundle)
+        (*extension-registration-api*
+          (%make-extension-api
+           :host host
+           :bundle bundle
+           :attachment-generation
+           (extension-host-attachment-generation host))))
+    (funcall function)))
+
+(defun current-extension-api ()
+  (or
+   *extension-registration-api*
+   (error
+    'extension-registration-error
+    :message
+    "CURRENT-EXTENSION-API is only available while loading an extension")))
 
 (defun require-extension-registration-bundle ()
   (or
@@ -784,6 +1093,190 @@
               :bundle bundle)))))))
   definition)
 
+(defun validate-extension-renderer-type
+    (kind custom-type)
+  (unless
+      (and (stringp custom-type)
+           (plusp (length custom-type)))
+    (error
+     'extension-registration-error
+     :message
+     (format nil "~A type must be a non-empty string"
+             kind)))
+  custom-type)
+
+(defun register-extension-shortcut
+    (key description handler)
+  (let ((bundle (require-extension-registration-bundle)))
+    (unless
+        (and (stringp key)
+             (plusp (length key)))
+      (error
+       'extension-registration-error
+       :message
+       "Shortcut key must be a non-empty string"))
+    (unless (or (null description)
+                (stringp description))
+      (error
+       'extension-registration-error
+       :message
+       "Shortcut description must be a string or NIL"))
+    (unless (functionp handler)
+      (error
+       'extension-registration-error
+       :message "Shortcut handler must be a function"))
+    (let ((definition
+            (make-extension-shortcut-definition
+             :key (string-downcase key)
+             :description description
+             :handler handler
+             :bundle bundle)))
+      (setf
+       (extension-bundle-shortcuts bundle)
+       (nconc
+        (remove
+         key
+         (extension-bundle-shortcuts bundle)
+         :key #'extension-shortcut-definition-key
+         :test #'string-equal)
+        (list definition)))))
+  key)
+
+(defun valid-extension-flag-default-p
+    (type default)
+  (ecase type
+    (:boolean
+     (or (null default) (eq default t)))
+    (:string
+     (or (null default) (stringp default)))))
+
+(defun register-extension-flag
+    (name description type default)
+  (let ((bundle (require-extension-registration-bundle)))
+    (validate-extension-resource-name "flag" name)
+    (unless (or (null description)
+                (stringp description))
+      (error
+       'extension-registration-error
+       :message
+       (format nil "Flag ~A description must be a string or NIL"
+               name)))
+    (unless (member type '(:boolean :string))
+      (error
+       'extension-registration-error
+       :message
+       (format nil "Flag ~A type must be :BOOLEAN or :STRING"
+               name)))
+    (unless (valid-extension-flag-default-p type default)
+      (error
+       'extension-registration-error
+       :message
+       (format nil "Flag ~A default does not match type ~S"
+               name type)))
+    (let ((definition
+            (make-extension-flag-definition
+             :name name
+             :description description
+             :type type
+             :default default
+             :bundle bundle)))
+      (setf
+       (extension-bundle-flags bundle)
+       (nconc
+        (remove
+         name
+         (extension-bundle-flags bundle)
+         :key #'extension-flag-definition-name
+         :test #'string=)
+        (list definition)))))
+  name)
+
+(defun register-extension-renderer
+    (kind custom-type renderer)
+  (let ((bundle (require-extension-registration-bundle)))
+    (validate-extension-renderer-type kind custom-type)
+    (unless (functionp renderer)
+      (error
+       'extension-registration-error
+       :message
+       (format nil "~A renderer must be a function"
+               kind)))
+    (let* ((accessor
+             (ecase kind
+               (:message
+                #'extension-bundle-message-renderers)
+               (:entry
+                #'extension-bundle-entry-renderers)))
+           (definitions (funcall accessor bundle))
+           (definition
+             (make-extension-renderer-definition
+              :custom-type custom-type
+              :renderer renderer
+              :bundle bundle))
+           (updated
+             (nconc
+              (remove
+               custom-type definitions
+               :key
+               #'extension-renderer-definition-custom-type
+               :test #'string=)
+              (list definition))))
+      (ecase kind
+        (:message
+         (setf
+          (extension-bundle-message-renderers bundle)
+          updated))
+        (:entry
+         (setf
+          (extension-bundle-entry-renderers bundle)
+          updated)))))
+  custom-type)
+
+(defun register-extension-tool-renderer
+    (tool-name call result)
+  (let ((bundle (require-extension-registration-bundle)))
+    (validate-extension-resource-name
+     "tool renderer" tool-name)
+    (unless
+        (and
+         (or (null call) (functionp call))
+         (or (null result) (functionp result))
+         (or call result))
+      (error
+       'extension-registration-error
+       :message
+       "Tool renderer requires at least one function-valued :CALL or :RESULT"))
+    (let ((existing
+            (find
+             tool-name
+             (extension-bundle-tool-renderers bundle)
+             :key
+             #'extension-tool-renderer-definition-tool-name
+             :test #'string=)))
+      (if existing
+          (setf
+           (extension-tool-renderer-definition-call
+            existing)
+           (or call
+               (extension-tool-renderer-definition-call
+                existing))
+           (extension-tool-renderer-definition-result
+            existing)
+           (or result
+               (extension-tool-renderer-definition-result
+                existing)))
+          (setf
+           (extension-bundle-tool-renderers bundle)
+           (nconc
+            (extension-bundle-tool-renderers bundle)
+            (list
+             (make-extension-tool-renderer-definition
+              :tool-name tool-name
+              :call call
+              :result result
+              :bundle bundle)))))))
+  tool-name)
+
 (defmacro define-tool
     (name &key description parameters
                  (execution-mode :parallel)
@@ -808,6 +1301,31 @@
 (defmacro define-provider (definition &key models)
   `(register-extension-provider ,definition ,models))
 
+(defmacro define-shortcut
+    (key &key description handler)
+  `(register-extension-shortcut
+    ,key ,description ,handler))
+
+(defmacro define-flag
+    (name &key description type default)
+  `(register-extension-flag
+    ,name ,description ,type ,default))
+
+(defmacro define-message-renderer
+    (custom-type &key renderer)
+  `(register-extension-renderer
+    :message ,custom-type ,renderer))
+
+(defmacro define-entry-renderer
+    (custom-type &key renderer)
+  `(register-extension-renderer
+    :entry ,custom-type ,renderer))
+
+(defmacro define-tool-renderer
+    (tool-name &key call result)
+  `(register-extension-tool-renderer
+    ,tool-name ,call ,result))
+
 (defun make-extension-host
     (&key
        (cwd (uiop:getcwd))
@@ -817,7 +1335,11 @@
        ui-function
        send-message-function
        send-user-message-function
-       set-session-name-function)
+       set-session-name-function
+       exec-function
+       get-flag-function
+       get-active-tools-function
+       set-active-tools-function)
   (%make-extension-host
    :cwd
    (uiop:ensure-directory-pathname
@@ -835,7 +1357,11 @@
    :ui-function ui-function
    :send-message-function send-message-function
    :send-user-message-function send-user-message-function
-   :set-session-name-function set-session-name-function))
+   :set-session-name-function set-session-name-function
+   :exec-function exec-function
+   :get-flag-function get-flag-function
+   :get-active-tools-function get-active-tools-function
+   :set-active-tools-function set-active-tools-function))
 
 (defun extension-definition-origin (definition)
   (extension-bundle-path
@@ -849,7 +1375,16 @@
      (extension-template-definition
       (extension-template-definition-bundle definition))
      (extension-provider-definition
-      (extension-provider-definition-bundle definition)))))
+      (extension-provider-definition-bundle definition))
+     (extension-shortcut-definition
+      (extension-shortcut-definition-bundle definition))
+     (extension-flag-definition
+      (extension-flag-definition-bundle definition))
+     (extension-renderer-definition
+      (extension-renderer-definition-bundle definition))
+     (extension-tool-renderer-definition
+      (extension-tool-renderer-definition-bundle
+       definition)))))
 
 (defun extension-conflict
     (kind name winner loser)
@@ -875,17 +1410,52 @@
                  (symbol-value ordered)
                  (list definition)))))))
 
+(defun add-last-definition
+    (table ordered definition key kind conflicts)
+  (let* ((name (funcall key definition))
+         (previous (gethash name table)))
+    (when previous
+      (push
+       (extension-conflict kind name definition previous)
+       (symbol-value conflicts))
+      (setf
+       (symbol-value ordered)
+       (remove previous
+               (symbol-value ordered)
+               :test #'eq)))
+    (setf (gethash name table) definition)
+    (setf
+     (symbol-value ordered)
+     (nconc (symbol-value ordered)
+            (list definition)))))
+
 (defun make-extension-snapshot-from-bundles (bundles)
   (let ((tool-table (make-hash-table :test #'equal))
         (command-table (make-hash-table :test #'equal))
         (template-table (make-hash-table :test #'equal))
+        (shortcut-table (make-hash-table :test #'equal))
+        (flag-table (make-hash-table :test #'equal))
+        (message-renderer-table
+          (make-hash-table :test #'equal))
+        (entry-renderer-table
+          (make-hash-table :test #'equal))
+        (tool-renderer-table
+          (make-hash-table :test #'equal))
         (*tools* nil)
         (*commands* nil)
         (*templates* nil)
+        (*shortcuts* nil)
+        (*flags* nil)
+        (*message-renderers* nil)
+        (*entry-renderers* nil)
+        (*tool-renderers* nil)
         (*conflicts* nil)
         (hooks (make-hash-table :test #'eq)))
     (declare
      (special *tools* *commands* *templates*
+              *shortcuts* *flags*
+              *message-renderers* *entry-renderers*
+              *tool-renderers*
               *conflicts*))
     (dolist (bundle bundles)
       (dolist (definition (extension-bundle-tools bundle))
@@ -903,6 +1473,41 @@
          template-table '*templates* definition
          #'extension-template-definition-name
          "Prompt template" '*conflicts*))
+      (dolist (definition
+               (extension-bundle-shortcuts bundle))
+        (add-last-definition
+         shortcut-table '*shortcuts* definition
+         #'extension-shortcut-definition-key
+         "Shortcut" '*conflicts*))
+      (dolist (definition
+               (extension-bundle-flags bundle))
+        (add-first-definition
+         flag-table '*flags* definition
+         #'extension-flag-definition-name
+         "Flag" '*conflicts*))
+      (dolist (definition
+               (extension-bundle-message-renderers
+                bundle))
+        (add-first-definition
+         message-renderer-table
+         '*message-renderers* definition
+         #'extension-renderer-definition-custom-type
+         "Message renderer" '*conflicts*))
+      (dolist (definition
+               (extension-bundle-entry-renderers
+                bundle))
+        (add-first-definition
+         entry-renderer-table
+         '*entry-renderers* definition
+         #'extension-renderer-definition-custom-type
+         "Entry renderer" '*conflicts*))
+      (dolist (definition
+               (extension-bundle-tool-renderers bundle))
+        (add-first-definition
+         tool-renderer-table
+         '*tool-renderers* definition
+         #'extension-tool-renderer-definition-tool-name
+         "Tool renderer" '*conflicts*))
       (dolist (definition (extension-bundle-hooks bundle))
         (push definition
               (gethash
@@ -927,6 +1532,11 @@
      :tools *tools*
      :commands *commands*
      :templates *templates*
+     :shortcuts *shortcuts*
+     :flags *flags*
+     :message-renderers *message-renderers*
+     :entry-renderers *entry-renderers*
+     :tool-renderers *tool-renderers*
      :hooks hooks
      :conflicts (nreverse *conflicts*))))
 
@@ -966,6 +1576,18 @@
          (extension-bundle-snapshot-references bundle)))
       (setf old (extension-host-snapshot host)
             (extension-host-snapshot host) snapshot)
+      (dolist (flag (extension-snapshot-flags snapshot))
+        (multiple-value-bind (value present-p)
+            (gethash
+             (extension-flag-definition-name flag)
+             (extension-host-flag-values host))
+          (declare (ignore value))
+          (unless present-p
+            (setf
+             (gethash
+              (extension-flag-definition-name flag)
+              (extension-host-flag-values host))
+             (extension-flag-definition-default flag)))))
       (setf (extension-snapshot-retired-p old) t)
       (maybe-release-extension-snapshot old))
     (when (extension-host-agent host)
@@ -1013,7 +1635,31 @@
                (extension-template-definition-bundle definition))
               (extension-provider-definition
                (extension-provider-definition-bundle
-                definition))))))
+                definition))
+              (extension-shortcut-definition
+               (extension-shortcut-definition-bundle
+                definition))
+              (extension-flag-definition
+               (extension-flag-definition-bundle
+                definition))
+              (extension-renderer-definition
+               (extension-renderer-definition-bundle
+                definition))
+              (extension-tool-renderer-definition
+               (extension-tool-renderer-definition-bundle
+                definition)))
+            :kind
+            (etypecase definition
+              (extension-tool-definition :tool)
+              (extension-command-definition :command)
+              (extension-hook-definition :event)
+              (extension-template-definition :template)
+              (extension-provider-definition :provider)
+              (extension-shortcut-definition :shortcut)
+              (extension-flag-definition :flag)
+              (extension-renderer-definition :renderer)
+              (extension-tool-renderer-definition
+               :tool-renderer)))))
     (unwind-protect
          (funcall function context)
       (setf (%extension-context-active-p context) nil)
@@ -1036,7 +1682,17 @@
              (extension-template-definition
               (extension-template-definition-name definition))
              (extension-provider-definition
-              (extension-provider-id definition)))
+              (extension-provider-id definition))
+             (extension-shortcut-definition
+              (extension-shortcut-definition-key definition))
+             (extension-flag-definition
+              (extension-flag-definition-name definition))
+             (extension-renderer-definition
+              (extension-renderer-definition-custom-type
+               definition))
+             (extension-tool-renderer-definition
+              (extension-tool-renderer-definition-tool-name
+               definition)))
            condition)
    :error))
 
@@ -1049,6 +1705,149 @@
   (copy-list
    (extension-snapshot-conflicts
     (extension-host-current-snapshot host))))
+
+(defun extension-host-shortcuts (host)
+  (copy-list
+   (extension-snapshot-shortcuts
+    (extension-host-current-snapshot host))))
+
+(defun extension-host-flags (host)
+  (copy-list
+   (extension-snapshot-flags
+    (extension-host-current-snapshot host))))
+
+(defun find-extension-renderer
+    (host custom-type accessor)
+  (find
+   custom-type
+   (funcall
+    accessor
+    (extension-host-current-snapshot host))
+   :key #'extension-renderer-definition-custom-type
+   :test #'string=))
+
+(defun find-extension-message-renderer
+    (host custom-type)
+  (find-extension-renderer
+   host custom-type
+   #'extension-snapshot-message-renderers))
+
+(defun find-extension-entry-renderer
+    (host custom-type)
+  (find-extension-renderer
+   host custom-type
+   #'extension-snapshot-entry-renderers))
+
+(defun find-extension-tool-renderer
+    (host tool-name)
+  (find
+   tool-name
+   (extension-snapshot-tool-renderers
+    (extension-host-current-snapshot host))
+   :key
+   #'extension-tool-renderer-definition-tool-name
+   :test #'string=))
+
+(defun call-extension-renderer
+    (host definition phase function arguments)
+  (let ((snapshot
+          (extension-host-current-snapshot host)))
+    (acquire-extension-snapshot host snapshot)
+    (unwind-protect
+         (handler-case
+             (values
+              (apply function arguments)
+              t)
+           (condition (condition)
+             (notify-extension-failure
+              host definition phase condition)
+             (values nil nil)))
+      (release-acquired-extension-snapshot
+       host snapshot))))
+
+(defun render-extension-message
+    (host custom-type message options)
+  (let ((definition
+          (find-extension-message-renderer
+           host custom-type)))
+    (if definition
+        (call-extension-renderer
+         host definition "Message renderer"
+         (extension-renderer-definition-renderer
+          definition)
+         (list message options))
+        (values nil nil))))
+
+(defun render-extension-entry
+    (host custom-type entry options)
+  (let ((definition
+          (find-extension-entry-renderer
+           host custom-type)))
+    (if definition
+        (call-extension-renderer
+         host definition "Entry renderer"
+         (extension-renderer-definition-renderer
+          definition)
+         (list entry options))
+        (values nil nil))))
+
+(defun render-extension-tool-call
+    (host tool-name arguments context)
+  (let* ((definition
+           (find-extension-tool-renderer
+            host tool-name))
+         (function
+           (and
+            definition
+            (extension-tool-renderer-definition-call
+             definition))))
+    (if function
+        (call-extension-renderer
+         host definition "Tool call renderer"
+         function (list arguments context))
+        (values nil nil))))
+
+(defun render-extension-tool-result
+    (host tool-name result options context)
+  (let* ((definition
+           (find-extension-tool-renderer
+            host tool-name))
+         (function
+           (and
+            definition
+            (extension-tool-renderer-definition-result
+             definition))))
+    (if function
+        (call-extension-renderer
+         host definition "Tool result renderer"
+         function
+         (list result options context))
+        (values nil nil))))
+
+(defun invoke-extension-shortcut
+    (host key)
+  (let* ((snapshot
+           (extension-host-current-snapshot host))
+         (definition
+           (find
+            key
+            (extension-snapshot-shortcuts snapshot)
+            :key #'extension-shortcut-definition-key
+            :test #'string-equal)))
+    (unless definition
+      (return-from invoke-extension-shortcut nil))
+    (handler-case
+        (call-with-extension-definition
+         host snapshot definition
+         (lambda (context)
+           (funcall
+            (extension-shortcut-definition-handler
+             definition)
+            context)))
+      (condition (condition)
+        (notify-extension-failure
+         host definition "Shortcut" condition)))
+    t))
 
 (defun extension-host-tools (host)
   (let ((snapshot
@@ -1092,7 +1891,62 @@
                         (extension-definition-origin captured)
                         condition))))))))))
 
+(defun extension-host-current-active-tools (host)
+  (let ((agent (extension-host-agent host)))
+    (unless agent
+      (error
+       'extension-execution-error
+       :message
+       "get-active-tools requires an attached agent"))
+    (mapcar
+     #'cadr-ai:tool-name
+     (registry-tools
+      (agent-tool-registry agent)))))
+
+(defun extension-host-set-active-tools
+    (host names)
+  (let ((agent (extension-host-agent host)))
+    (unless agent
+      (error
+       'extension-execution-error
+       :message
+       "set-active-tools requires an attached agent"))
+    (let* ((available
+             (mapcar
+              #'cadr-ai:tool-name
+              (merged-agent-tools agent)))
+           (unknown
+             (set-difference
+              names available :test #'string=)))
+      (when unknown
+        (error
+         'extension-execution-error
+         :message
+         (format nil
+                 "~D unknown active tool~:P: ~{~A~^, ~}"
+                 (length unknown) unknown)))
+      (setf
+       (extension-host-active-tool-names host)
+       (copy-list names)
+       (extension-host-active-tools-overridden-p host)
+       t)
+      (refresh-agent-extension-tools agent)
+      (copy-list names))))
+
+(defun invalidate-extension-host-generation (host)
+  (sb-thread:with-mutex
+      ((extension-host-lock host))
+    (incf
+     (extension-host-attachment-generation host)))
+  host)
+
 (defun attach-extension-host (host agent)
+  (when
+      (and
+       (extension-host-agent host)
+       (not (eq (extension-host-agent host)
+                agent)))
+    (invalidate-extension-host-generation host))
   (setf (extension-host-agent host) agent
         (extension-host-base-agent-provider host)
         (agent-provider agent)
@@ -1118,6 +1972,23 @@
      (extension-host-set-session-name-function host)
      (lambda (name)
        (extension-host-set-session-name host name))))
+  (unless (extension-host-get-flag-function host)
+    (setf
+     (extension-host-get-flag-function host)
+     (lambda (name)
+       (gethash name
+                (extension-host-flag-values host)))))
+  (unless (extension-host-get-active-tools-function host)
+    (setf
+     (extension-host-get-active-tools-function host)
+     (lambda ()
+       (extension-host-current-active-tools host))))
+  (unless (extension-host-set-active-tools-function host)
+    (setf
+     (extension-host-set-active-tools-function host)
+     (lambda (names)
+       (extension-host-set-active-tools
+        host names))))
   (refresh-agent-extension-tools agent)
   (apply-extension-provider-overlays host)
   host)

@@ -54,12 +54,27 @@
    #:define-event-hook
    #:define-prompt-template
    #:define-provider
+   #:define-shortcut
+   #:define-flag
+   #:define-message-renderer
+   #:define-entry-renderer
+   #:define-tool-renderer
+   #:extension-api
+   #:current-extension-api
+   #:extension-api-send-message
+   #:extension-api-send-user-message
+   #:extension-api-exec
+   #:extension-api-get-flag
+   #:extension-api-get-active-tools
+   #:extension-api-set-active-tools
    #:extension-context
    #:extension-context-cwd
    #:extension-context-agent
    #:extension-context-session
    #:extension-context-source-path
    #:extension-context-mode
+   #:extension-context-idle-p
+   #:extension-command-context-wait-for-idle
    #:extension-context-notify
    #:extension-context-compact
    #:extension-context-reload
@@ -71,6 +86,14 @@
    #:extension-context-set-widget
    #:extension-context-set-title
    #:extension-context-set-editor-text
+   #:extension-context-custom
+   #:extension-context-add-autocomplete-provider
+   #:extension-context-theme
+   #:extension-context-all-themes
+   #:extension-context-get-theme
+   #:extension-context-set-theme
+   #:extension-context-tools-expanded-p
+   #:extension-context-set-tools-expanded
    #:extension-context-register-provider
    #:extension-context-register-tool
    #:extension-context-send-message

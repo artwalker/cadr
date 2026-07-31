@@ -46,12 +46,29 @@
      extension-tools)))
 
 (defun refresh-agent-extension-tools (agent)
-  (setf
-   (agent-tool-registry agent)
-   (make-tool-registry
-    (funcall
-     (agent-tool-filter-function agent)
-     (merged-agent-tools agent))))
+  (let* ((filtered
+           (funcall
+            (agent-tool-filter-function agent)
+            (merged-agent-tools agent)))
+         (host (agent-extension-host agent))
+         (effective
+           (if
+               (and
+                host
+                (extension-host-active-tools-overridden-p
+                 host))
+               (remove-if-not
+                (lambda (tool)
+                  (member
+                   (cadr-ai:tool-name tool)
+                   (extension-host-active-tool-names
+                    host)
+                   :test #'string=))
+                filtered)
+               filtered)))
+    (setf
+     (agent-tool-registry agent)
+     (make-tool-registry effective)))
   agent)
 
 (defun make-agent (&key
