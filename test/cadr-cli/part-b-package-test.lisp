@@ -297,3 +297,32 @@
                (cadr-cli::cli-extension-manager-host
                 disabled))
               "package-command")))))))
+
+(test goal9-malformed-package-manifest-ignores-invalid-fields-without-dropping-valid-fields
+  (with-test-directory (root)
+    (let ((package
+            (merge-pathnames "package/" root)))
+      (write-text
+       (merge-pathnames
+        "skills/bad/SKILL.md" package)
+       "---\nname: bad\ndescription: Must not load\n---\n")
+      (write-text
+       (merge-pathnames "prompts/valid.md"
+                        package)
+       "Valid prompt\n")
+      (write-text
+       (merge-pathnames "package.json"
+                        package)
+       "{\"name\":\"bad-package\",\"version\":\"1.0.0\",\"pi\":{\"skills\":\"./skills\",\"prompts\":[\"./prompts\"]}}")
+      (let ((paths
+              (cadr-cli::package-resource-paths
+               (list
+                (list :scope :project
+                      :path package)))))
+        (is (null (getf paths :skills)))
+        (is (= 1
+               (length
+                (getf paths :prompts))))
+        (is (uiop:subpathp
+             (first (getf paths :prompts))
+             package))))))
