@@ -454,6 +454,7 @@
             (autocomplete-path-prefix before force-p)))
       (when path-prefix
         (when (and
+               (plusp (length path-prefix))
                (char= (char path-prefix 0) #\/)
                (zerop
                 (length

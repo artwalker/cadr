@@ -185,6 +185,8 @@
    #:tool-block-output
    #:tool-block-status
    #:tool-block-collapsed-p
+   #:tool-block-started-at
+   #:tool-block-ended-at
    #:toggle-tool-block
    #:render-tool-block
    #:render-footer

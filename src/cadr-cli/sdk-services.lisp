@@ -462,6 +462,8 @@
        prompt-guidelines context-files
        skills cwd custom-prompt
        append-system-prompt
+       (readme-path
+         "/usr/local/share/cadr/README.md")
        (docs-directory
          "/usr/local/share/cadr/docs")
        (examples-directory
@@ -469,7 +471,7 @@
   (let* ((selected
            (if selected-tools-p
                selected-tools
-               (mapcar #'car tool-snippets)))
+               '("read" "bash" "edit" "write")))
          (described
            (remove-if-not
             (lambda (name)
@@ -478,14 +480,31 @@
             selected))
          (guidelines
            (dedupe-prompt-guidelines
-            prompt-guidelines)))
+            (append
+             (when
+                 (and
+                  (member "bash" selected
+                          :test #'string=)
+                  (not
+                   (intersection
+                    '("grep" "find" "ls")
+                    selected
+                    :test #'string=)))
+               (list
+                "Use bash for file operations like ls, rg, find"))
+             prompt-guidelines
+             (list
+              "Be concise in your responses"
+              "Show file paths clearly when working with files")))))
     (with-output-to-string (output)
       (if custom-prompt
           (write-string custom-prompt output)
           (progn
-            (format output
-                    "You are cadr, a coding agent working in ~A.~%~%"
-                    (or cwd "."))
+            (write-string
+             "You are an expert coding assistant operating inside cadr, a coding agent harness. You help users by reading files, executing commands, editing code, and writing new files."
+             output)
+            (terpri output)
+            (terpri output)
             (format output "Available tools:~%")
             (if described
                 (dolist (name described)
@@ -496,29 +515,19 @@
                     (assoc name tool-snippets
                            :test #'string=))))
                 (format output "(none)~%"))
-            (format output
-                    "~%Guidelines:~%- Show file paths clearly.~%")
-            (when
-                (and
-                 (member "bash" selected
-                         :test #'string=)
-                 (not
-                  (intersection
-                   '("grep" "find" "ls")
-                   selected
-                   :test #'string=)))
-              (format output
-                      "- Use bash for file operations like ls, rg, find.~%"))
             (format
              output
-             "- When reading pi docs or examples, resolve docs/... under Additional docs (~A) and examples/... under Examples (~A), not the current working directory.~%"
-             docs-directory examples-directory)
-            (format
-             output
-             "- Environment variables are documented in ~A/environment-variables.md.~%"
-             docs-directory)
+             "~%In addition to the tools above, you may have access to other custom tools depending on the project.~%~%Guidelines:~%")
             (dolist (guideline guidelines)
-              (format output "- ~A~%" guideline))))
+              (format output "- ~A~%" guideline))
+            (format
+             output
+             "~%Cadr documentation (read only when the user asks about cadr itself, its SDK, extensions, themes, skills, or TUI):~%- Main documentation: ~A~%- Additional docs: ~A~%- Examples: ~A (extensions, custom tools, SDK)~%"
+             readme-path docs-directory
+             examples-directory)
+            (format
+             output
+             "- When reading cadr docs or examples, resolve docs/... under Additional docs and examples/... under Examples, not the current working directory~%- When asked about: extensions (docs/extensions.md, examples/extensions/), themes (docs/themes.md), skills (docs/skills.md), prompt templates (docs/prompt-templates.md), TUI components (docs/tui.md), keybindings (docs/keybindings.md), SDK integrations (docs/sdk.md), custom providers (docs/custom-provider.md), adding models (docs/models.md), cadr packages (docs/packages.md), environment variables (docs/environment-variables.md)~%- When working on cadr topics, read the docs and examples, and follow .md cross-references before implementing~%- Always read cadr .md files completely and follow links to related docs (e.g., tui.md for TUI API details)")))
       (when append-system-prompt
         (format output "~%~%~A"
                 append-system-prompt))
@@ -550,10 +559,9 @@
          (cadr-agent:format-skills-for-system-prompt
           skills)
          output))
-      (when custom-prompt
-        (format output
-                "~%Current working directory: ~A"
-                (or cwd "."))))))
+      (format output
+              "~%Current working directory: ~A"
+              (or cwd ".")))))
 
 (defun provider-header-table (headers)
   (let ((table

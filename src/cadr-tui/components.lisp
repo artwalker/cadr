@@ -1156,10 +1156,13 @@
   (summary "" :type string)
   (output "" :type string)
   (status :running :type symbol)
-  (collapsed-p nil :type boolean))
+  (collapsed-p nil :type boolean)
+  started-at
+  ended-at)
 
 (defun make-tool-block (&key (name "") (summary "")
                              (output "") (status :running)
+                             started-at ended-at
                              (collapsed-p nil
                               collapsed-p-supplied-p))
   (%make-tool-block
@@ -1167,6 +1170,8 @@
    :summary summary
    :output output
    :status status
+   :started-at started-at
+   :ended-at ended-at
    :collapsed-p
    (if collapsed-p-supplied-p
        collapsed-p
@@ -1552,7 +1557,7 @@
           content-width "...")))))))
 
 (defun render-tool-block
-    (block width &key (ansi-theme-p nil))
+    (block width &key (ansi-theme-p nil) now)
   (multiple-value-bind
         (status-token background-token indicator)
       (tool-status-theme-tokens
@@ -1593,11 +1598,36 @@
                (tool-output-preview-lines
                 block content-width
                 ansi-theme-p)))
+           (timing-line
+             (and
+              (string-equal
+               (tool-block-name block) "bash")
+              (tool-block-started-at block)
+              (let* ((running-p
+                       (eq (tool-block-status block)
+                           :running))
+                     (end
+                       (or
+                        (tool-block-ended-at block)
+                        now
+                        (tool-block-started-at block)))
+                     (elapsed
+                       (max
+                        0d0
+                        (- end
+                           (tool-block-started-at block)))))
+                (theme-foreground
+                 :muted
+                 (format nil "~A ~,1Fs"
+                         (if running-p "Elapsed" "Took")
+                         elapsed)
+                 :enabled-p ansi-theme-p))))
            (box-lines
              (append
               (list "")
               header-lines
               output-lines
+              (and timing-line (list timing-line))
               (list ""))))
       (cons
        ""
@@ -1923,7 +1953,19 @@
     (setf (select-list-selected list)
           (if (zerop count)
               0
-              (mod (select-list-selected list) count)))))
+              (min (select-list-selected list)
+                   (1- count))))))
+
+(defun move-select-index (list delta)
+  (let ((count
+          (length
+           (select-list-filtered-items list))))
+    (setf (select-list-selected list)
+          (if (zerop count)
+              0
+              (mod (+ (select-list-selected list)
+                      delta)
+                   count)))))
 
 (defun select-list-handle-event (list event)
   (let ((kind (input-event-kind event)))
@@ -1946,23 +1988,20 @@
               query (length query)))
             (select-list-selected list) 0))))
       (:up
-       (decf (select-list-selected list))
-       (clamp-select-index list))
+       (move-select-index list -1))
       (:down
-       (incf (select-list-selected list))
-       (clamp-select-index list))
+       (move-select-index list 1))
       (:page-up
-       (decf (select-list-selected list)
-             (select-list-height list))
-       (clamp-select-index list))
+       (move-select-index
+        list (- (select-list-height list))))
       (:page-down
-       (incf (select-list-selected list)
-             (select-list-height list))
-       (clamp-select-index list))
+       (move-select-index
+        list (select-list-height list)))
       (:escape
        (return-from select-list-handle-event
          (values :cancel nil)))
       (:enter
+       (clamp-select-index list)
        (let ((item
                (nth (select-list-selected list)
                     (select-list-filtered-items list))))

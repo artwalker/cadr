@@ -356,7 +356,7 @@
          "Show file paths clearly"
          prompt))
     (is (search
-         "/opt/pi/docs/environment-variables.md"
+         "- Additional docs: /opt/pi/docs"
          prompt)))
   (is (search
        "Available tools:"

@@ -250,6 +250,9 @@
   path
   parent-path
   name
+  cwd
+  first-message
+  (message-count 0 :type (integer 0 *))
   (modified 0 :type real)
   (all-messages-text "" :type string)
   payload)
@@ -618,24 +621,36 @@
     (t "")))
 
 (defun session-to-search-record (session)
-  (make-session-search-record
-   :id (cadr-agent:session-id session)
-   :path (cadr-agent:session-path session)
-   :parent-path
-   (cadr-agent:session-parent-session session)
-   :name (cadr-agent:session-name session)
-   :modified
-   (or (cadr-agent::session-modified-timestamp
-        session)
-       (cadr-agent:session-timestamp session)
-       0)
-   :all-messages-text
-   (format
-    nil "~{~A~^~%~}"
-    (mapcar
-     #'session-message-search-text
-     (cadr-agent:session-messages session)))
-   :payload session))
+  (let* ((messages
+           (cadr-agent:session-messages session))
+         (texts
+           (mapcar #'session-message-search-text
+                   messages)))
+    (make-session-search-record
+     :id (cadr-agent:session-id session)
+     :path (cadr-agent:session-path session)
+     :parent-path
+     (cadr-agent:session-parent-session session)
+     :name (cadr-agent:session-name session)
+     :cwd (cadr-agent:session-cwd session)
+     :first-message
+     (find-if
+      (lambda (text)
+        (plusp
+         (length
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return)
+           text))))
+      texts)
+     :message-count (length messages)
+     :modified
+     (or (cadr-agent::session-modified-timestamp
+          session)
+         (cadr-agent:session-timestamp session)
+         0)
+     :all-messages-text
+     (format nil "~{~A~^~%~}" texts)
+     :payload session)))
 
 (defun session-select-items-to-records (items)
   (loop
@@ -650,6 +665,8 @@
          :path
          (princ-to-string value)
          :modified 0
+         :first-message
+         (cadr-tui:select-item-label item)
          :all-messages-text
          (cadr-tui:select-item-label item)
          :payload value))))
@@ -1261,11 +1278,126 @@
     (let ((text
             (string-trim
              '(#\Space #\Tab #\Newline #\Return)
-             (session-search-record-all-messages-text
-              record))))
+             (or
+              (session-search-record-first-message
+               record)
+              (session-search-record-all-messages-text
+               record)))))
       (if (plusp (length text))
           text
           (session-search-record-id record))))))
+
+(defun session-selector-shorten-path (path)
+  (let* ((value
+           (etypecase path
+             (pathname (namestring path))
+             (string path)))
+         (home
+           (string-right-trim
+            "/" (namestring
+                 (user-homedir-pathname)))))
+    (if
+        (or (string= value home)
+            (uiop:string-prefix-p
+             (concatenate 'string home "/")
+             value))
+        (concatenate 'string "~"
+                     (subseq value (length home)))
+        value)))
+
+(defun session-selector-format-age
+    (modified &optional
+                (now (cadr-ai::unix-milliseconds)))
+  (let ((seconds
+          (max 0
+               (floor
+                (/ (- now modified) 1000)))))
+    (cond
+      ((< seconds 60) "now")
+      ((< seconds 3600)
+       (format nil "~Dm" (floor seconds 60)))
+      ((< seconds 86400)
+       (format nil "~Dh" (floor seconds 3600)))
+      ((< seconds 604800)
+       (format nil "~Dd" (floor seconds 86400)))
+      ((< seconds 2592000)
+       (format nil "~Dw" (floor seconds 604800)))
+      ((< seconds 31536000)
+       (format nil "~Dmo" (floor seconds 2592000)))
+      (t
+       (format nil "~Dy" (floor seconds 31536000))))))
+
+(defun selector-align-left-right
+    (left right width)
+  (let* ((right
+           (cadr-tui:truncate-to-width
+            right (max 0 width) ""))
+         (left-width
+           (max 0
+                (- width
+                   (cadr-tui:visible-width right)
+                   1)))
+         (left
+           (cadr-tui:truncate-to-width
+            left left-width "")))
+    (concatenate
+     'string left
+     (make-string
+      (max 0
+           (- width
+              (cadr-tui:visible-width left)
+              (cadr-tui:visible-width right)))
+      :initial-element #\Space)
+     right)))
+
+(defun centered-visible-slice
+    (items selected maximum)
+  (let* ((count (length items))
+         (start
+           (max
+            0
+            (min
+             (- selected (floor maximum 2))
+             (- count maximum))))
+         (end (min (+ start maximum) count)))
+    (values (subseq items start end)
+            start end count)))
+
+(defun session-selector-node-prefix
+    (nodes index)
+  (let* ((depth (car (nth index nodes)))
+         (count (length nodes)))
+    (when (zerop depth)
+      (return-from session-selector-node-prefix ""))
+    (with-output-to-string (output)
+      (loop for level from 1 below depth
+            for continues-p =
+              (loop for cursor from (1+ index)
+                    below count
+                    for later-depth =
+                      (car (nth cursor nodes))
+                    when (< later-depth level)
+                      return nil
+                    when (= later-depth level)
+                      return t
+                    finally (return nil))
+            do
+            (write-string
+             (if continues-p "│  " "   ")
+             output))
+      (let ((last-p
+              (loop for cursor from (1+ index)
+                    below count
+                    for later-depth =
+                      (car (nth cursor nodes))
+                    when (< later-depth depth)
+                      return t
+                    when (= later-depth depth)
+                      return nil
+                    finally (return t))))
+        (write-string
+         (if last-p "└─ " "├─ ")
+         output)))))
 
 (defun selector-fit-line (line width &key (pad-p nil))
   (let* ((available (max 0 width))
@@ -1322,13 +1454,16 @@
        ""
        (selector-border-line width :accent)
        ""
-       (selector-title-line "Rename Session" width)
+       (selector-fit-line
+        (cadr-tui:theme-bold "Rename Session") width)
+       ""
        (selector-fit-line
         (cadr-tui:theme-foreground
          :accent
          (session-selector-state-rename-input
           selector))
         width)
+       ""
        (selector-dim-line
         "enter to save · escape to cancel"
         width)
@@ -1349,198 +1484,394 @@
                "Resume Session (Current Folder)"
                "Resume Session (All)"))
          (scope-text
-           (if (eq scope :current)
-               (concatenate
-                'string
-                (cadr-tui:theme-foreground
-                 :accent "◉ Current Folder")
-                (cadr-tui:theme-foreground
-                 :muted " | ○ All"))
-               (concatenate
-                'string
-                (cadr-tui:theme-foreground
-                 :muted "○ Current Folder | ")
-                (cadr-tui:theme-foreground
-                 :accent
-                 (if
-                     (session-selector-state-all-loading-p
-                      selector)
-                     "Loading ..."
-                     "◉ All")))))
-         (lines
-           (list
-            ""
-            (selector-border-line width :accent)
-            ""
-            (selector-fit-line
-             (concatenate
-              'string
-              (cadr-tui:theme-bold title)
-              "  " scope-text
-              "  "
-              (cadr-tui:theme-foreground
-               :muted "Name: ")
-              (cadr-tui:theme-foreground
-               :accent
-               (if (eq name-filter :all)
-                   "All" "Named"))
-              "  "
-              (cadr-tui:theme-foreground
-               :muted "Sort: ")
-              (cadr-tui:theme-foreground
-               :accent
-               (string-capitalize
-                (symbol-name sort))))
-             width)
-            (selector-fit-line
-             (concatenate
-              'string
-              (cadr-tui:theme-foreground
-               :muted "Search: ")
-              (cadr-tui:theme-foreground
-               :accent
-               (session-selector-state-query
-                selector)))
-             width))))
+           (cond
+             ((session-selector-state-all-loading-p
+               selector)
+              (concatenate
+               'string
+               (cadr-tui:theme-foreground
+                :muted "○ Current Folder | ")
+               (cadr-tui:theme-foreground
+                :accent "Loading ...")))
+             ((eq scope :current)
+              (concatenate
+               'string
+               (cadr-tui:theme-foreground
+                :accent "◉ Current Folder")
+               (cadr-tui:theme-foreground
+                :muted " | ○ All")))
+             (t
+              (concatenate
+               'string
+               (cadr-tui:theme-foreground
+                :muted "○ Current Folder | ")
+               (cadr-tui:theme-foreground
+                :accent "◉ All")))))
+         (right
+           (concatenate
+            'string scope-text "  "
+            (cadr-tui:theme-foreground
+             :muted "Name: ")
+            (cadr-tui:theme-foreground
+             :accent
+             (if (eq name-filter :all)
+                 "All" "Named"))
+            "  "
+            (cadr-tui:theme-foreground
+             :muted "Sort: ")
+            (cadr-tui:theme-foreground
+             :accent
+             (string-capitalize
+              (symbol-name sort)))))
+         (hint-1 nil)
+         (hint-2 nil))
     (cond
       ((session-selector-state-confirming-delete-path
         selector)
        (setf
-        lines
-        (append
-         lines
-         (list
-          (selector-fit-line
-           (cadr-tui:theme-foreground
-            :error
-            "Delete session? enter confirm · escape cancel")
-           width)
-          ""))))
+        hint-1
+        (cadr-tui:theme-foreground
+         :error
+         "Delete session? enter confirm · escape cancel")
+        hint-2 ""))
       ((session-selector-state-status-message selector)
        (setf
-        lines
-        (append
-         lines
-         (list
-          (selector-fit-line
-           (cadr-tui:theme-foreground
-            :accent
-            (session-selector-state-status-message
-             selector))
-           width)
-          ""))))
+        hint-1
+        (cadr-tui:theme-foreground
+         :accent
+         (session-selector-state-status-message
+          selector))
+        hint-2 ""))
       (t
-       (let ((hints
-               (list
-                "tab scope"
-                (format nil "~A sort"
-                        (session-selector-binding-label
-                         selector
-                         "app.session.toggleSort"))
-                (format nil "~A named"
-                        (session-selector-binding-label
-                         selector
-                         "app.session.toggleNamedFilter"))
-                (format nil "~A delete"
-                        (session-selector-binding-label
-                         selector
-                         "app.session.delete"))
-                (format nil "~A path"
-                        (session-selector-binding-label
-                         selector
-                         "app.session.togglePath")))))
-         (when
-             (session-selector-state-show-rename-hint-p
-              selector)
-           (setf
-            hints
-            (append
-             hints
-             (list
-              (format nil "~A rename"
-                      (session-selector-binding-label
-                       selector
-                       "app.session.rename"))))))
-         (setf
-          lines
-          (append
-           lines
-           (list
-            (selector-dim-line
-             (format nil "~{~A~^ · ~}" hints)
-             width)
-            ""))))))
-    (setf
-     lines
-     (append
-      lines
-      (if (null nodes)
+       (setf
+        hint-1
+        (format nil "tab scope · re:<pattern> regex · ~S exact"
+                "phrase")
+        hint-2
+        (format
+         nil "~{~A~^ · ~}"
+         (append
           (list
-           (selector-muted-line
-            (if (eq scope :current)
-                "No sessions in current folder. Press Tab to view all."
-                "No sessions found")
-            width))
-          (loop
-            for (depth . record) in nodes
-            for index from 0
-            for selected-p = (= index selected)
-            for current-p =
-              (same-session-path-p
-               (session-search-record-path record)
-               (session-selector-state-current-session-path
-                selector))
-            for name-p = (named-session-p record)
-            for prefix =
-              (if (plusp depth)
-                  (format
-                   nil "~A└─ "
-                   (make-string
-                    (* 3 (1- depth))
-                    :initial-element #\Space))
-                  "")
-            for label =
-              (session-selector-record-label record)
-            for path =
-              (and
-               (session-selector-state-show-path-p
-                selector)
-               (session-search-record-path record))
-            for line =
-              (concatenate
-               'string
+           (format nil "~A sort"
+                   (session-selector-binding-label
+                    selector "app.session.toggleSort"))
+           (format nil "~A named"
+                   (session-selector-binding-label
+                    selector
+                    "app.session.toggleNamedFilter"))
+           (format nil "~A delete"
+                   (session-selector-binding-label
+                    selector "app.session.delete"))
+           (format nil "~A path (~A)"
+                   (session-selector-binding-label
+                    selector "app.session.togglePath")
+                   (if
+                       (session-selector-state-show-path-p
+                        selector)
+                       "on" "off")))
+          (when
+              (session-selector-state-show-rename-hint-p
+               selector)
+            (list
+             (format nil "~A rename"
+                     (session-selector-binding-label
+                      selector
+                      "app.session.rename")))))))))
+    (multiple-value-bind
+          (visible start end total)
+        (centered-visible-slice nodes selected 10)
+      (append
+       (list
+        ""
+        (selector-border-line width :accent)
+        ""
+        (selector-fit-line
+         (selector-align-left-right
+          (cadr-tui:theme-bold title)
+          right width)
+         width)
+        (selector-dim-line hint-1 width)
+        (selector-dim-line hint-2 width)
+        ""
+        (selector-fit-line
+         (cadr-tui:theme-foreground
+          :accent
+          (session-selector-state-query selector))
+         width)
+        "")
+       (if (null visible)
+           (list
+            (selector-muted-line
+             (cond
+               ((eq name-filter :named)
+                (if (eq scope :current)
+                    "  No named sessions in current folder. Press ctrl+n to show all, or Tab to view all."
+                    "  No named sessions found. Press ctrl+n to show all."))
+               ((eq scope :current)
+                "  No sessions in current folder. Press Tab to view all.")
+               (t "  No sessions found"))
+             width))
+           (loop
+             for node in visible
+             for index from start
+             for record = (cdr node)
+             for selected-p = (= index selected)
+             for current-p =
+               (same-session-path-p
+                (session-search-record-path record)
+                (session-selector-state-current-session-path
+                 selector))
+             for name-p = (named-session-p record)
+             for prefix =
+               (session-selector-node-prefix nodes index)
+             for raw-label =
+               (session-selector-record-label record)
+             for right-part =
+               (format
+                nil "~@[~A ~]~@[~A ~]~D ~A"
+                (and
+                 (session-selector-state-show-path-p
+                  selector)
+                 (session-selector-shorten-path
+                  (session-search-record-path record)))
+                (and
+                 (eq scope :all)
+                 (session-search-record-cwd record)
+                 (session-selector-shorten-path
+                  (session-search-record-cwd record)))
+                (session-search-record-message-count record)
+                (session-selector-format-age
+                 (session-search-record-modified record)))
+             for cursor =
                (if selected-p
                    (cadr-tui:theme-foreground
                     :accent "› ")
                    "  ")
-               (cadr-tui:theme-foreground
-                :dim prefix)
+             for available =
+               (max
+                10
+                (- width 2
+                   (cadr-tui:visible-width prefix)
+                   (cadr-tui:visible-width right-part)
+                   2))
+             for fitted-label =
+               (cadr-tui:truncate-to-width
+                raw-label available "…")
+             for styled-label =
                (funcall
-                (if current-p
-                    (lambda (text)
-                      (cadr-tui:theme-foreground
-                       :accent text))
-                    (if name-p
-                        (lambda (text)
-                          (cadr-tui:theme-foreground
-                           :warning text))
-                        #'identity))
+                (cond
+                  (current-p
+                   (lambda (text)
+                     (cadr-tui:theme-foreground
+                      :accent text)))
+                  (name-p
+                   (lambda (text)
+                     (cadr-tui:theme-foreground
+                      :warning text)))
+                  (t #'identity))
                 (if selected-p
-                    (cadr-tui:theme-bold label)
-                    label))
-               (if path
-                   (cadr-tui:theme-foreground
-                    :dim
-                    (format nil "  ~A" path))
-                   ""))
-            collect
-              (if selected-p
-                  (selector-selected-line line width)
-                  (selector-fit-line line width))))))
-    (append
-     lines
-     (list ""
-           (selector-border-line width :accent)))))
+                    (cadr-tui:theme-bold fitted-label)
+                    fitted-label))
+             for left =
+               (concatenate
+                'string cursor
+                (cadr-tui:theme-foreground
+                 :dim prefix)
+                styled-label)
+             for spacing =
+               (max
+                1
+                (- width
+                   (cadr-tui:visible-width left)
+                   (cadr-tui:visible-width right-part)))
+             for line =
+               (concatenate
+                'string left
+                (make-string spacing
+                             :initial-element #\Space)
+                (cadr-tui:theme-foreground
+                 :dim right-part))
+             collect
+               (if selected-p
+                   (cadr-tui:theme-background
+                    :selected-bg
+                    (selector-fit-line line width))
+                   (selector-fit-line line width))))
+       (when (or (> start 0)
+                 (< end total))
+         (list
+          (selector-muted-line
+           (format nil "  (~D/~D)"
+                   (1+ selected) total)
+           width)))
+       (list ""
+             (selector-border-line width :accent))))))
+
+(defstruct (user-message-selector-state
+            (:constructor
+                %make-user-message-selector-state))
+  (items nil :type list)
+  (selected 0 :type (integer 0 *))
+  (max-visible 10 :type (integer 1 *))
+  keybindings)
+
+(defun make-user-message-selector-state
+    (&key items initial-selected-value
+       (max-visible 10) keybindings)
+  (let ((initial
+          (and initial-selected-value
+               (position
+                initial-selected-value items
+                :key #'cadr-tui:select-item-value
+                :test #'equal))))
+    (%make-user-message-selector-state
+     :items (copy-list items)
+     :selected
+     (or initial
+         (max 0 (1- (length items))))
+     :max-visible (max 1 max-visible)
+     :keybindings
+     (or keybindings
+         (cadr-tui:make-keybindings-manager)))))
+
+(defun user-message-selector-move (state delta)
+  (let ((count
+          (length
+           (user-message-selector-state-items state))))
+    (when (plusp count)
+      (setf
+       (user-message-selector-state-selected state)
+       (mod
+        (+
+         (user-message-selector-state-selected state)
+         delta)
+        count))))
+  state)
+
+(defun user-message-selector-selection (state)
+  (let ((item
+          (nth
+           (user-message-selector-state-selected state)
+           (user-message-selector-state-items state))))
+    (and item
+         (cadr-tui:select-item-value item))))
+
+(defun user-message-selector-handle-event
+    (state event)
+  (case (cadr-tui:input-event-kind event)
+    (:up
+     (user-message-selector-move state -1)
+     (values :changed nil))
+    (:down
+     (user-message-selector-move state 1)
+     (values :changed nil))
+    ((:enter :submit)
+     (let ((value
+             (user-message-selector-selection state)))
+       (if value
+           (values :select value)
+           (values nil nil))))
+    ((:escape :cancel :interrupt)
+     (values :cancel nil))
+    (otherwise
+     (values nil nil))))
+
+(defun user-message-selector-handle-raw-input
+    (state data)
+  (let ((keybindings
+          (user-message-selector-state-keybindings state)))
+    (cond
+      ((selector-keybinding-matches-p
+        keybindings data "tui.select.up")
+       (user-message-selector-move state -1)
+       (values :changed nil t))
+      ((selector-keybinding-matches-p
+        keybindings data "tui.select.down")
+       (user-message-selector-move state 1)
+       (values :changed nil t))
+      ((selector-keybinding-matches-p
+        keybindings data "tui.select.confirm")
+       (let ((value
+               (user-message-selector-selection state)))
+         (values (and value :select) value t)))
+      ((selector-keybinding-matches-p
+        keybindings data "tui.select.cancel")
+       (values :cancel nil t))
+      (t
+       (values nil nil nil)))))
+
+(defun render-user-message-selector
+    (state width)
+  (let* ((items
+           (user-message-selector-state-items state))
+         (selected
+           (user-message-selector-state-selected state)))
+    (multiple-value-bind
+          (visible start end total)
+        (centered-visible-slice
+         items selected
+         (user-message-selector-state-max-visible state))
+      (append
+       (list
+        ""
+        (selector-fit-line
+         (cadr-tui:theme-bold "Fork from Message")
+         width))
+       (mapcar
+        (lambda (line)
+          (selector-muted-line line width))
+        (cadr-tui:wrap-text
+         "Select a user message to copy the active path up to that point into a new session"
+         width))
+       (list ""
+             (selector-border-line width)
+             "")
+       (if visible
+           (mapcan
+            (lambda (item index)
+              (let* ((selected-p (= index selected))
+                     (text
+                       (string-trim
+                        '(#\Space #\Tab #\Newline #\Return)
+                        (cl-ppcre:regex-replace-all
+                         "\\n"
+                         (cadr-tui:select-item-label item)
+                         " ")))
+                     (message
+                       (cadr-tui:truncate-to-width
+                        text (max 0 (- width 2)) "")))
+                (list
+                 (selector-fit-line
+                  (concatenate
+                   'string
+                   (if selected-p
+                       (cadr-tui:theme-foreground
+                        :accent "› ")
+                       "  ")
+                   (if selected-p
+                       (cadr-tui:theme-bold message)
+                       message))
+                  width)
+                 (selector-muted-line
+                  (format nil "  Message ~D of ~D"
+                          (1+ index) total)
+                  width)
+                 "")))
+            visible
+            (loop for index from start below end
+                  collect index))
+           (list
+            (selector-muted-line
+             "  No user messages found" width)))
+       (when (or (> start 0)
+                 (< end total))
+         (list
+          (selector-muted-line
+           (format nil "  (~D/~D)"
+                   (1+ selected) total)
+           width)))
+       (list ""
+             (selector-border-line width))))))
 
 (defun format-cwd-for-footer (cwd home)
   (let* ((normalized-home
@@ -4118,6 +4449,7 @@
    (make-hash-table :test #'equal)
    :type hash-table)
   (show-label-timestamps-p nil :type boolean)
+  (max-visible-lines 10 :type (integer 1 *))
   (mode :list :type symbol)
   label-edit-id
   (label-input "" :type string)
@@ -4419,6 +4751,7 @@
     (&key entries current-leaf-id
        initial-selected-id
        (filter :default)
+       (max-visible-lines 10)
        copy-callback select-callback
        cancel-callback label-callback
        keybindings)
@@ -4430,6 +4763,8 @@
             entries current-leaf-id)
            :current-leaf-id current-leaf-id
            :filter filter
+           :max-visible-lines
+           (max 1 max-visible-lines)
            :selected-id
            (or initial-selected-id
                current-leaf-id)
@@ -4968,6 +5303,291 @@
    (tree-selector-state-show-label-timestamps-p
     state)))
 
+(defun tree-selector-visual-nodes (state)
+  (let* ((children
+           (tree-selector-state-visible-children state))
+         (roots (copy-list (gethash nil children)))
+         (multiple-roots-p (> (length roots) 1))
+         (visuals (make-hash-table :test #'equal))
+         (stack nil))
+    (loop for id in (reverse roots)
+          for index downfrom (1- (length roots))
+          do
+          (push
+           (list id
+                 (if multiple-roots-p 1 0)
+                 multiple-roots-p
+                 multiple-roots-p
+                 (= index (1- (length roots)))
+                 nil
+                 multiple-roots-p)
+           stack))
+    (loop while stack
+          for item = (pop stack)
+          for id = (first item)
+          for indent = (second item)
+          for just-branched-p = (third item)
+          for show-connector-p = (fourth item)
+          for last-p = (fifth item)
+          for gutters = (sixth item)
+          for virtual-root-child-p = (seventh item)
+          for node-children = (copy-list
+                               (gethash id children))
+          for multiple-children-p =
+            (> (length node-children) 1)
+          do
+          (setf
+           (gethash id visuals)
+           (list
+            :indent indent
+            :show-connector-p show-connector-p
+            :last-p last-p
+            :gutters gutters
+            :virtual-root-child-p
+            virtual-root-child-p))
+          (let* ((child-indent
+                   (cond
+                     (multiple-children-p (1+ indent))
+                     ((and just-branched-p
+                           (plusp indent))
+                      (1+ indent))
+                     (t indent)))
+                 (connector-displayed-p
+                   (and show-connector-p
+                        (not virtual-root-child-p)))
+                 (display-indent
+                   (if multiple-roots-p
+                       (max 0 (1- indent))
+                       indent))
+                 (connector-position
+                   (max 0 (1- display-indent)))
+                 (child-gutters
+                   (if connector-displayed-p
+                       (append
+                        gutters
+                        (list
+                         (cons connector-position
+                               (not last-p))))
+                       gutters)))
+            (loop for child in (reverse node-children)
+                  for index downfrom
+                    (1- (length node-children))
+                  do
+                  (push
+                   (list
+                    child child-indent
+                    multiple-children-p
+                    multiple-children-p
+                    (= index
+                       (1- (length node-children)))
+                    child-gutters nil)
+                   stack))))
+    (values visuals multiple-roots-p)))
+
+(defun tree-selector-prefix
+    (state id visual multiple-roots-p)
+  (let* ((indent (getf visual :indent))
+         (display-indent
+           (if multiple-roots-p
+               (max 0 (1- indent))
+               indent))
+         (show-connector-p
+           (and (getf visual :show-connector-p)
+                (not
+                 (getf visual
+                       :virtual-root-child-p))))
+         (connector-position
+           (and show-connector-p
+                (1- display-indent)))
+         (last-p (getf visual :last-p))
+         (folded-p
+           (gethash id
+                    (tree-selector-state-folded state)))
+         (foldable-p
+           (tree-selector-foldable-p state id)))
+    (with-output-to-string (output)
+      (loop for level below display-indent
+            for gutter =
+              (assoc level (getf visual :gutters))
+            do
+            (cond
+              (gutter
+               (write-string
+                (if (cdr gutter) "│  " "   ")
+                output))
+              ((and connector-position
+                    (= level connector-position))
+               (write-string
+                (if last-p "└" "├") output)
+               (write-string
+                (cond
+                  (folded-p "⊞")
+                  (foldable-p "⊟")
+                  (t "─"))
+                output)
+               (write-char #\Space output))
+              (t
+               (write-string "   " output)))))))
+
+(defun tree-selector-normalize-display-text (text)
+  (string-trim
+   '(#\Space #\Tab #\Newline #\Return)
+   (cl-ppcre:regex-replace-all
+    "[\\n\\t]" (or text "") " ")))
+
+(defun tree-selector-entry-display-text
+    (entry selected-p)
+  (let* ((type (getf entry :type))
+         (role (getf entry :role))
+         (text
+           (tree-selector-normalize-display-text
+            (getf entry :text)))
+         (result
+           (case type
+             (:message
+              (case role
+                (:user
+                 (concatenate
+                  'string
+                  (cadr-tui:theme-foreground
+                   :accent "user: ")
+                  text))
+                (:assistant
+                 (concatenate
+                  'string
+                  (cadr-tui:theme-foreground
+                   :success "assistant: ")
+                  (if (plusp (length text))
+                      text
+                      (cadr-tui:theme-foreground
+                       :muted
+                       (if (getf entry :error-p)
+                           "(aborted)"
+                           "(no content)")))))
+                ((:tool-result :toolresult)
+                 (cadr-tui:theme-foreground
+                  :muted
+                  (if (plusp (length text))
+                      text "[tool]")))
+                (:bash-execution
+                 (cadr-tui:theme-foreground
+                  :dim
+                  (format nil "[bash]: ~A" text)))
+                (otherwise
+                 (cadr-tui:theme-foreground
+                  :dim
+                  (format nil "[~(~A~)]" role)))))
+             ((:custom-message :custom_message)
+              (concatenate
+               'string
+               (cadr-tui:theme-foreground
+                :custom-message-label
+                (format nil "[~A]: "
+                        (or (getf entry :custom-type)
+                            "custom")))
+               text))
+             (:compaction
+              (cadr-tui:theme-foreground
+               :border-accent
+               (if (plusp (length text))
+                   (format nil "[compaction]: ~A" text)
+                   "[compaction]")))
+             (:branch-summary
+              (concatenate
+               'string
+               (cadr-tui:theme-foreground
+                :warning "[branch summary]: ")
+               text))
+             (:model-change
+              (cadr-tui:theme-foreground
+               :dim
+               (format nil "[model: ~A]"
+                       (or (getf entry :model-id)
+                           text))))
+             (:thinking-level-change
+              (cadr-tui:theme-foreground
+               :dim
+               (format nil "[thinking: ~A]"
+                       (or (getf entry :thinking-level)
+                           text))))
+             (:custom
+              (cadr-tui:theme-foreground
+               :dim
+               (format nil "[custom: ~A]"
+                       (or (getf entry :custom-type)
+                           "custom"))))
+             (:label
+              (cadr-tui:theme-foreground
+               :dim
+               (format nil "[label: ~A]"
+                       (or (getf entry :label)
+                           "(cleared)"))))
+             (:session-info
+              (cadr-tui:theme-foreground
+               :dim
+               (format nil "[title: ~A]"
+                       (or (getf entry :name)
+                           "empty"))))
+             (otherwise text))))
+    (if selected-p
+        (cadr-tui:theme-bold result)
+        result)))
+
+(defun tree-selector-horizontal-viewport
+    (rows width)
+  (let* ((gutter-width 2)
+         (viewport-width
+           (max 0 (- width gutter-width)))
+         (maximum-body-width
+           (loop for row in rows
+                 maximize (getf row :body-width)
+                   into maximum
+                 finally (return (or maximum 0))))
+         (maximum-scroll
+           (max 0
+                (- maximum-body-width
+                   viewport-width)))
+         (selected
+           (find-if
+            (lambda (row)
+              (getf row :selected-p))
+            rows))
+         (scroll 0))
+    (when (and selected
+               (plusp maximum-scroll))
+      (let ((minimum-content
+              (min 20
+                   (max 4
+                        (floor viewport-width 3)))))
+        (when
+            (> (getf selected :anchor-column)
+               (- viewport-width minimum-content))
+          (let ((context
+                  (min 12
+                       (max 2
+                            (floor viewport-width 4)))))
+            (setf
+             scroll
+             (min maximum-scroll
+                  (- (getf selected :anchor-column)
+                     context)))))))
+    (loop for row in rows
+          collect
+          (selector-fit-line
+           (if (plusp scroll)
+               (concatenate
+                'string
+                (getf row :gutter)
+                (cadr-tui:slice-by-column
+                 (getf row :body)
+                 scroll viewport-width t)
+                (format nil "~C[0m" #\Escape))
+               (concatenate
+                'string
+                (getf row :gutter)
+                (getf row :body)))
+           width))))
+
 (defun tree-selector-render-lines (state width)
   (let* ((by-id
            (tree-selector-entry-map
@@ -4976,71 +5596,123 @@
            (tree-selector-state-visible-ids state))
          (selected
            (tree-selector-state-selected-id state))
-         (lines
-           (loop
-             for id in ids
-             for entry = (gethash id by-id)
-             for label = (getf entry :label)
-             for selected-p = (equal id selected)
-             for label-prefix =
-               (and label
-                    (cadr-tui:theme-foreground
-                     :warning
-                     (format nil "[~A] " label)))
-             for timestamp-prefix =
-               (and
-                label
-                (tree-selector-state-show-label-timestamps-p
-                 state)
-                (cadr-tui:theme-foreground
-                 :muted
-                 (format
-                  nil "~A "
-                  (tree-selector-format-label-timestamp
-                   (getf entry :label-timestamp)))))
-             for body =
-               (or
-                (getf entry :text)
-                (string-downcase
-                 (symbol-name
-                  (getf entry :type))))
-             for line =
-               (concatenate
-                'string
-                (if selected-p
-                    (cadr-tui:theme-foreground
-                     :accent "→ ")
-                    "  ")
-                (or label-prefix "")
-                (or timestamp-prefix "")
-                (if selected-p
-                    (cadr-tui:theme-bold body)
-                    body))
-             collect
-               (if selected-p
-                   (selector-selected-line line width)
-                   (selector-fit-line line width)))))
-    (append
-     (if lines
-         lines
-         (list
-          (selector-muted-line
-           "  No entries found"
-           width)))
-     (list
-      (selector-muted-line
-       (format
-        nil "  (~D/~D)~A"
-        (if selected
-            (1+
-             (or
-              (position selected ids
-                        :test #'equal)
-              -1))
-            0)
-        (length ids)
-        (tree-selector-status-labels state))
-       width)))))
+         (selected-index
+           (or (position selected ids :test #'equal)
+               0))
+         (active-path
+           (tree-selector-active-path
+            (tree-selector-state-entries state)
+            (tree-selector-state-current-leaf-id
+             state))))
+    (multiple-value-bind
+          (visible start end total)
+        (centered-visible-slice
+         ids selected-index
+         (tree-selector-state-max-visible-lines
+          state))
+      (declare (ignore end))
+      (multiple-value-bind
+            (visuals multiple-roots-p)
+          (tree-selector-visual-nodes state)
+        (let ((rows
+                (loop
+                  for id in visible
+                  for index from start
+                  for entry = (gethash id by-id)
+                  for visual = (gethash id visuals)
+                  for selected-p = (= index selected-index)
+                  for prefix =
+                    (tree-selector-prefix
+                     state id visual multiple-roots-p)
+                  for root-fold-marker =
+                    (and
+                     (gethash
+                      id
+                      (tree-selector-state-folded state))
+                     (not
+                      (and
+                       (getf visual :show-connector-p)
+                       (not
+                        (getf visual
+                              :virtual-root-child-p))))
+                     (cadr-tui:theme-foreground
+                      :accent "⊞ "))
+                  for path-marker =
+                    (and
+                     (gethash id active-path)
+                     (cadr-tui:theme-foreground
+                      :accent "• "))
+                  for prefix-part =
+                    (concatenate
+                     'string
+                     (cadr-tui:theme-foreground
+                      :dim prefix)
+                     (or root-fold-marker "")
+                     (or path-marker ""))
+                  for label = (getf entry :label)
+                  for label-part =
+                    (and label
+                         (cadr-tui:theme-foreground
+                          :warning
+                          (format nil "[~A] " label)))
+                  for timestamp-part =
+                    (and
+                     label
+                     (tree-selector-state-show-label-timestamps-p
+                      state)
+                     (cadr-tui:theme-foreground
+                      :muted
+                      (format
+                       nil "~A "
+                       (tree-selector-format-label-timestamp
+                        (getf entry :label-timestamp)))))
+                  for cursor =
+                    (if selected-p
+                        (cadr-tui:theme-foreground
+                         :accent "› ")
+                        "  ")
+                  for body =
+                    (concatenate
+                     'string prefix-part
+                     (or label-part "")
+                     (or timestamp-part "")
+                     (tree-selector-entry-display-text
+                      entry selected-p))
+                  when selected-p
+                    do
+                    (setf
+                     cursor
+                     (cadr-tui:theme-background
+                      :selected-bg cursor)
+                     body
+                     (cadr-tui:theme-background
+                      :selected-bg body))
+                  collect
+                  (list
+                   :gutter cursor
+                   :body body
+                   :anchor-column
+                   (cadr-tui:visible-width prefix-part)
+                   :body-width
+                   (cadr-tui:visible-width body)
+                   :selected-p selected-p))))
+          (append
+           (if rows
+               (tree-selector-horizontal-viewport
+                rows width)
+               (list
+                (selector-muted-line
+                 "  No entries found" width)))
+           (list
+            (selector-muted-line
+             (format
+              nil "  (~D/~D)~A"
+              (if selected
+                  (1+ selected-index)
+                  0)
+              total
+              (tree-selector-status-labels state))
+             width))))))))
 
 (defun tree-selector-help-key
     (state name)
@@ -5061,86 +5733,126 @@
      names))))
 
 (defun tree-selector-help-lines (state width)
-  (mapcan
-   (lambda (entry)
-     (let ((keys
-             (tree-selector-help-keys
-              state (first entry))))
-       (mapcar
-        (lambda (line)
-          (selector-dim-line line width))
-        (cadr-tui:wrap-text
-         (if (getf (cddr entry) :label-first)
-             (format nil "  ~A ~A"
-                     (second entry) keys)
-             (format nil "  ~A ~A"
-                     keys (second entry)))
-         width))))
-   '((("tui.select.up" "tui.select.down")
-      "move")
-     (("tui.editor.cursorLeft"
-       "tui.editor.cursorRight")
-      "page")
-     (("app.tree.foldOrUp"
-       "app.tree.unfoldOrDown")
-      "branch")
-     (("app.message.copy") "copy")
-     (("app.tree.editLabel") "label")
-     (("app.tree.toggleLabelTimestamp")
-      "label time")
-     (("app.tree.filter.default"
-       "app.tree.filter.noTools"
-       "app.tree.filter.userOnly"
-       "app.tree.filter.labeledOnly"
-       "app.tree.filter.all")
-      "filters" :label-first t)
-     (("app.tree.filter.cycleForward"
-       "app.tree.filter.cycleBackward")
-      "cycle" :label-first t))))
+  (let* ((items
+           (mapcar
+            (lambda (entry)
+              (let ((keys
+                      (tree-selector-help-keys
+                       state (first entry))))
+                (if (getf (cddr entry) :label-first)
+                    (format nil "~A ~A"
+                            (second entry) keys)
+                    (format nil "~A ~A"
+                            keys (second entry)))))
+            '((("tui.select.up" "tui.select.down")
+               "move")
+              (("tui.editor.cursorLeft"
+                "tui.editor.cursorRight")
+               "page")
+              (("app.tree.foldOrUp"
+                "app.tree.unfoldOrDown")
+               "branch")
+              (("app.message.copy") "copy")
+              (("app.tree.editLabel") "label")
+              (("app.tree.toggleLabelTimestamp")
+               "label time")
+              (("app.tree.filter.default"
+                "app.tree.filter.noTools"
+                "app.tree.filter.userOnly"
+                "app.tree.filter.labeledOnly"
+                "app.tree.filter.all")
+               "filters" :label-first t)
+              (("app.tree.filter.cycleForward"
+                "app.tree.filter.cycleBackward")
+               "cycle" :label-first t))))
+         (lines nil)
+         (current ""))
+    (dolist (item items)
+      (let* ((indented
+               (concatenate 'string "  " item))
+             (candidate
+               (if (zerop (length current))
+                   (if
+                       (<= (cadr-tui:visible-width indented)
+                           width)
+                       indented item)
+                   (concatenate
+                    'string current " · " item))))
+        (if
+            (or (zerop (length current))
+                (<= (cadr-tui:visible-width candidate)
+                    width))
+            (setf current candidate)
+            (progn
+              (setf lines
+                    (nconc
+                     lines
+                     (cadr-tui:wrap-text
+                      (string-right-trim " " current)
+                      width)))
+              (setf current
+                    (if
+                        (<=
+                         (cadr-tui:visible-width indented)
+                         width)
+                        indented item))))))
+    (when (plusp (length current))
+      (setf lines
+            (nconc
+             lines
+             (cadr-tui:wrap-text
+              (string-right-trim " " current)
+              width))))
+    (mapcar
+     (lambda (line)
+       (selector-dim-line line width))
+     lines)))
 
 (defun render-tree-selector (state width)
-  (if (eq :label
-          (tree-selector-state-mode state))
-      (list
-       ""
-       (selector-border-line width)
-       (selector-title-line
-        "  Session Tree — Edit Label" width)
-       (selector-fit-line
-        (concatenate
-         'string
-         (cadr-tui:theme-foreground
-          :muted "Label: ")
-         (cadr-tui:theme-foreground
-          :accent
-          (tree-selector-state-label-input
-           state)))
-        width)
-       (selector-dim-line
-        "enter save · escape cancel" width)
-       ""
-       (selector-border-line width))
-      (append
+  (append
+   (list
+    ""
+    (selector-border-line width)
+    (selector-fit-line
+     (cadr-tui:theme-bold "  Session Tree")
+     width))
+   (tree-selector-help-lines state width)
+   (list
+    (selector-fit-line
+     (concatenate
+      'string "  "
+      (cadr-tui:theme-foreground
+       :muted "Type to search:")
+      (if
+          (plusp
+           (length
+            (tree-selector-state-query state)))
+          (concatenate
+           'string " "
+           (cadr-tui:theme-foreground
+            :accent
+            (tree-selector-state-query state)))
+          ""))
+     width)
+    (selector-border-line width)
+    "")
+   (if (eq :label
+           (tree-selector-state-mode state))
        (list
-        ""
-        (selector-border-line width)
-        (selector-title-line "  Session Tree" width))
-       (tree-selector-help-lines state width)
-       (list
+        (selector-muted-line
+         "  Label (empty to remove):" width)
         (selector-fit-line
          (concatenate
-          'string
-          (cadr-tui:theme-foreground
-           :muted "Search: ")
+          'string "  "
           (cadr-tui:theme-foreground
            :accent
-           (tree-selector-state-query state)))
+           (tree-selector-state-label-input state)))
          width)
-        (selector-border-line width)
-        "")
-       (tree-selector-render-lines state width)
-       (list ""
-             (selector-border-line width)))))
+        (selector-dim-line
+         "  enter save  escape cancel" width))
+       (tree-selector-render-lines state width))
+   (list ""
+         (selector-border-line width))))
 
 (defun project-trust-options (cwd)
   (let* ((path
@@ -5963,6 +6675,7 @@
   (scope :all)
   (query "" :type string)
   (selected 0 :type (integer 0 *))
+  refresh-status-message
   keybindings)
 
 (defun model-selector-active-models (state)
@@ -6010,7 +6723,8 @@
 
 (defun make-model-selector-state
     (&key all-models scoped-models
-       current-model keybindings)
+       current-model refresh-status-message
+       keybindings)
   (let ((state
           (%make-model-selector-state
            :all-models
@@ -6019,6 +6733,8 @@
            :scoped-models
            (copy-list scoped-models)
            :current-model current-model
+           :refresh-status-message
+           refresh-status-message
            :scope
            (if scoped-models :scoped :all)
            :keybindings
@@ -6202,7 +6918,6 @@
        (list
         (selector-border-line width)
         ""
-        (selector-title-line "Select Model" width)
         (selector-fit-line
          (if
              (model-selector-state-scoped-models state)
@@ -6288,6 +7003,19 @@
             nil "  Model Name: ~A"
             (cadr-ai::model-name
              (model-selector-selected-model state)))
+           width)))
+       (when
+           (model-selector-state-refresh-status-message
+            state)
+         (list
+          ""
+          (selector-fit-line
+           (cadr-tui:theme-foreground
+            :success
+            (format
+             nil "  ~A"
+             (model-selector-state-refresh-status-message
+              state)))
            width)))
        (list
         ""

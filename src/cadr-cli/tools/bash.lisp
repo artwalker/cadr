@@ -2,6 +2,37 @@
 
 (defvar *bash-live-output* nil)
 
+(defun bash-live-output-for-mode (mode frontend-output)
+  (case mode
+    (:repl frontend-output)
+    (:tui nil)
+    (otherwise *error-output*)))
+
+(defun bash-strip-exit-footer (text exit-code)
+  (let ((footer
+          (format nil
+                  "Process exited with code ~D"
+                  exit-code)))
+    (cond
+      ((string= text footer)
+       "")
+      ((and
+        (> (length text) (length footer))
+        (string=
+         footer text
+         :start2 (- (length text)
+                    (length footer))))
+       (let ((end
+               (- (length text)
+                  (length footer))))
+         (if (and
+              (plusp end)
+              (char= #\Newline
+                     (char text (1- end))))
+             (subseq text 0 (1- end))
+             (subseq text 0 end))))
+      (t text))))
+
 (defun bash-output-path ()
   (merge-pathnames
    (format nil "cadr-bash-~D-~D.log"
@@ -195,6 +226,29 @@
       (when (probe-file group-path)
         (delete-file group-path)))))
 
+(defun execute-bash-tool-command (cwd command timeout)
+  (multiple-value-bind (content details)
+      (run-bash-command cwd command timeout)
+    (let* ((exit-code (getf details :exit-code))
+           (text
+             (bash-strip-exit-footer
+              (cadr-ai:text-content-text (first content))
+              exit-code)))
+      (when (/= exit-code 0)
+        (error
+         "~A~:[~;~%~%~]Command exited with code ~D"
+         text
+         (plusp (length text))
+         exit-code))
+      (values
+       (list
+        (cadr-ai:make-text-content
+         :text
+         (if (plusp (length text))
+             text
+             "(no output)")))
+       details))))
+
 (defun normalized-extension-bash-result (result)
   (let ((output (or (getf result :output) ""))
         (exit-code (or (getf result :exit-code) 0)))
@@ -254,7 +308,7 @@
   (cadr-ai:make-tool
    :name "bash"
    :description
-   "Run a Bash command in the project directory and return merged output."
+   "Execute a bash command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
    :parameters
    (object-schema
     (cadr-ai::json-object
@@ -265,7 +319,7 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (run-bash-command
+     (execute-bash-tool-command
       cwd
       (required-string arguments "command")
       (cadr-ai::json-get arguments "timeout")))))

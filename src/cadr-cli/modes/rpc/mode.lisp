@@ -322,34 +322,6 @@
           :name "cadr-rpc-prompt")))
     +rpc-async-response+)))
 
-(defun rpc-strip-bash-exit-footer
-    (text exit-code)
-  (let ((footer
-          (format nil
-                  "Process exited with code ~D"
-                  exit-code)))
-    (cond
-      ((string= text footer)
-       "")
-      ((and
-        (> (length text) (length footer))
-        (string=
-         footer
-         text
-         :start2 (- (length text)
-                    (length footer))))
-       (let ((end
-               (- (length text)
-                  (length footer))))
-         (if
-             (and
-              (plusp end)
-              (char= #\Newline
-                     (char text (1- end))))
-             (subseq text 0 (1- end))
-             (subseq text 0 end))))
-      (t text))))
-
 (defun rpc-bash-result-json
     (content details &key cancelled-p)
   (let* ((exit-code
@@ -363,7 +335,7 @@
            (cadr-ai::json-object
             "output"
             (if exit-code
-                (rpc-strip-bash-exit-footer
+                (bash-strip-exit-footer
                  text exit-code)
                 text)
             "exitCode"

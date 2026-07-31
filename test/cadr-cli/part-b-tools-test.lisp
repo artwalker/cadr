@@ -5,7 +5,7 @@
   (with-test-directory (directory)
     (is
      (equal
-      '("read" "write" "edit" "bash" "find" "grep" "ls")
+      '("read" "bash" "edit" "write")
       (mapcar #'cadr-ai:tool-name
               (cadr-cli::make-baseline-coding-tools directory))))))
 
@@ -278,7 +278,7 @@
         '("read" "bash")
         (names
          (cadr-cli::select-coding-tools
-          (cadr-cli::make-baseline-coding-tools directory)
+          (cadr-cli::make-all-coding-tools directory)
           :allow '("read" "write" "bash")
           :exclude '("write")))))
       (is
@@ -287,7 +287,7 @@
         (names
          (cadr-cli::select-coding-tools
           (append
-           (cadr-cli::make-baseline-coding-tools directory)
+           (cadr-cli::make-all-coding-tools directory)
            (list
             (cadr-ai:make-tool
              :name "extension-tool"

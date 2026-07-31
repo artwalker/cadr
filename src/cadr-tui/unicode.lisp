@@ -271,7 +271,10 @@
               ((= index start)
                (setf regional-count
                      (if (regional-indicator-p character) 1 0)))
-              ((or join-next-p
+              ((or (and join-next-p
+                        (not (member character
+                                     '(#\Space #\Tab
+                                       #\Newline #\Return))))
                    (combining-character-p character)
                    (= (codepoint character) #x200d))
                (when (regional-indicator-p character)

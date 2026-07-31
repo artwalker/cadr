@@ -1,7 +1,10 @@
 (in-package #:cadr-tui)
 
 (defparameter +tui-keybinding-definitions+
-  '(("tui.editor.cursorUp" . ("up"))
+  '(("app.interrupt" . ("escape"))
+    ("app.clear" . ("ctrl+c"))
+    ("app.exit" . ("ctrl+d"))
+    ("tui.editor.cursorUp" . ("up"))
     ("tui.editor.cursorDown" . ("down"))
     ("tui.editor.cursorLeft" . ("left" "ctrl+b"))
     ("tui.editor.cursorRight" . ("right" "ctrl+f"))

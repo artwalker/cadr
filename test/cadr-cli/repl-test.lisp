@@ -268,7 +268,7 @@
                        message)))
                     message)))))
         (cadr-agent:agent-prompt agent "fix add and run its test")
-        (let ((bash-codes
+        (let ((bash-results
                 (loop for message
                         in (cadr-agent:agent-messages agent)
                       when
@@ -280,11 +280,19 @@
                           (cadr-ai:tool-result-message-tool-name
                            message)))
                         collect
-                        (getf
-                         (cadr-ai:tool-result-message-details
-                          message)
-                         :exit-code))))
-          (is (equal '(1 0) bash-codes)))
+                        (list
+                         :exit-code
+                         (getf
+                          (cadr-ai:tool-result-message-details
+                           message)
+                          :exit-code)
+                         :error-p
+                         (cadr-ai:tool-result-message-is-error
+                          message)))))
+          (is (equal
+               '((:exit-code nil :error-p t)
+                 (:exit-code 0 :error-p nil))
+               bash-results)))
         (is (string=
              (format nil "(defun add (a b) (+ a b))~%")
              (read-text

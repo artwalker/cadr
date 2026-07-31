@@ -153,13 +153,17 @@
 
 (defun session-record
     (id modified text
-     &key name path parent-path)
+     &key name path parent-path cwd first-message
+       (message-count 0))
   (cadr-cli:make-session-search-record
    :id id
    :path (or path
              (format nil "/tmp/~A.jsonl" id))
    :parent-path parent-path
    :name name
+   :cwd cwd
+   :first-message (or first-message text)
+   :message-count message-count
    :modified modified
    :all-messages-text text))
 
@@ -490,6 +494,129 @@
           (format nil "~{~A~^~%~}"
                   (cadr-cli::render-session-selector
                    selector 100)))))))
+
+(test goal9-session-selector-layout-matches-baseline-panel-and-list
+  (let* ((parent-path #P"/tmp/thread-parent.jsonl")
+         (state
+           (cadr-cli::make-session-selector-state
+            :current-sessions
+            (append
+             (list
+              (session-record
+               "parent" 0 "parent search text"
+               :name "Named parent"
+               :path parent-path
+               :cwd "/tmp/project"
+               :message-count 4)
+              (session-record
+               "child-a" 0 "child A"
+               :parent-path parent-path
+               :message-count 2)
+              (session-record
+               "child-b" 0 "child B"
+               :parent-path parent-path
+               :message-count 3))
+             (loop for index below 9
+                   collect
+                   (session-record
+                    (format nil "other-~D" index)
+                    0
+                    (format nil "other ~D" index)
+                    :message-count index)))
+            :show-rename-hint-p t))
+         (width 120))
+    (setf
+     (cadr-cli::session-selector-state-query state)
+     "child")
+    (let* ((lines
+             (cadr-cli::render-session-selector
+              state width))
+           (plain
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              lines)))
+      (is (string= "" (first plain)))
+      (is (= width
+             (cadr-tui:visible-width
+              (second lines))))
+      (is (string= "" (third plain)))
+      (is (uiop:string-prefix-p
+           "Resume Session (Current Folder)"
+           (fourth plain)))
+      (is (search "Sort: Threaded"
+                  (fourth plain)))
+      (is (search "re:<pattern> regex"
+                  (fifth plain)))
+      (is (search "path (off)"
+                  (sixth plain)))
+      (is (string= "" (seventh plain)))
+      (is (string= "child" (eighth plain)))
+      (is (string= "" (ninth plain)))
+      (is (some
+           (lambda (line)
+             (and (search "child A" line)
+                  (search "2 " line)))
+           plain))
+      (is (string= ""
+                   (nth (- (length plain) 2)
+                        plain)))
+      (is (= width
+             (cadr-tui:visible-width
+              (car (last lines))))))
+    (setf
+     (cadr-cli::session-selector-state-query state)
+     ""
+     (cadr-cli::session-selector-state-selected state)
+     11)
+    (let* ((plain
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              (cadr-cli::render-session-selector
+               state width)))
+           (rows
+             (remove-if-not
+              (lambda (line)
+                (or (uiop:string-prefix-p "› " line)
+                    (uiop:string-prefix-p "  " line)))
+              (subseq plain 9
+                      (- (length plain) 2)))))
+      (is (= 11 (length rows)))
+      (is (some
+           (lambda (line)
+             (search "├─ " line))
+           rows))
+      (is (some
+           (lambda (line)
+             (search "└─ " line))
+           rows))
+      (is (search "(12/12)"
+                  (car (last rows)))))))
+
+(test goal9-session-selector-rename-layout-matches-baseline-spacers
+  (let ((state
+          (cadr-cli::make-session-selector-state
+           :current-sessions
+           (list (session-record "one" 0 "one")))))
+    (setf
+     (cadr-cli::session-selector-state-mode state) :rename
+     (cadr-cli::session-selector-state-rename-input state)
+     "Renamed")
+    (let ((plain
+            (mapcar
+             #'cadr-tui:strip-terminal-sequences
+             (cadr-cli::render-session-selector state 60))))
+      (is (equal
+           '("" "" "Rename Session" "" "Renamed" ""
+             "enter to save · escape to cancel" "")
+           (list
+            (first plain)
+            (third plain)
+            (fourth plain)
+            (fifth plain)
+            (sixth plain)
+            (seventh plain)
+            (eighth plain)
+            (ninth plain)))))))
 
 (test footer-path-width-cost-cache-and-subscription-semantics
   (is (string=
@@ -1798,6 +1925,155 @@
           (cadr-cli::tree-selector-state-folded
            state))))))
 
+(test goal9-tree-selector-layout-matches-baseline-tree-viewport-and-label-shell
+  (let* ((entries
+           (append
+            '((:id "root" :parent-id nil
+               :type :message :role :user
+               :text "root prompt")
+              (:id "branch-a" :parent-id "root"
+               :type :message :role :assistant
+               :text "branch A")
+              (:id "branch-b" :parent-id "root"
+               :type :message :role :user
+               :text "branch B" :label "keep"))
+            (loop for index below 5
+                  for parent = "branch-b" then id
+                  for id = (format nil "tail-~D" index)
+                  collect
+                  (list
+                   :id id :parent-id parent
+                   :type :message
+                   :role (if (evenp index)
+                             :assistant :user)
+                   :text (format nil "tail ~D" index)))))
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id "tail-4"
+            :initial-selected-id "root"
+            :max-visible-lines 5))
+         (width 100)
+         (panel
+           (cadr-cli::render-tree-selector state width))
+         (plain
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            panel))
+         (tree-lines
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-cli::tree-selector-render-lines
+             state width))))
+    (is (string= "" (first plain)))
+    (is (= width
+           (cadr-tui:visible-width
+            (second panel))))
+    (is (string= "  Session Tree"
+                 (third plain)))
+    (is (< 1
+           (count-if
+            (lambda (word)
+              (search word (fourth plain)
+                      :test #'char-equal))
+            '("move" "page" "branch" "copy"
+              "label"))))
+    (is (search "  Type to search:"
+                (format nil "~{~A~^~%~}" plain)))
+    (is (search "• user: root prompt"
+                (first tree-lines)))
+    (is (search "├⊟ • [keep] user: branch B"
+                (second tree-lines)))
+    (is (search "│     • assistant: tail 0"
+                (third tree-lines)))
+    (is (= 6 (length tree-lines)))
+    (is (search "(1/8)"
+                (car (last tree-lines))))
+    (cadr-cli::tree-selector-select-id state "tail-4")
+    (let ((scrolled
+            (mapcar
+             #'cadr-tui:strip-terminal-sequences
+             (cadr-cli::tree-selector-render-lines
+              state width))))
+      (is (= 6 (length scrolled)))
+      (is (search "tail 4"
+                  (nth 3 scrolled)))
+      (is (search "└─ assistant: branch A"
+                  (nth 4 scrolled)))
+      (is (search "(7/8)"
+                  (car (last scrolled)))))
+    (cadr-cli::tree-selector-select-id state "branch-b")
+    (cadr-cli::tree-selector-start-label-edit state)
+    (setf
+     (cadr-cli::tree-selector-state-label-input state)
+     "renamed")
+    (let* ((label-panel
+             (cadr-cli::render-tree-selector state width))
+           (label-plain
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              label-panel))
+           (joined
+             (format nil "~{~A~^~%~}" label-plain)))
+      (is (string= "  Session Tree"
+                   (third label-plain)))
+      (is (search "Type to search:" joined))
+      (is (search "  Label (empty to remove):"
+                  joined))
+      (is (search "  renamed" joined))
+      (is (not (search "Edit Label" joined))))))
+
+(test goal9-fork-history-overlay-matches-baseline-message-layout
+  (let* ((items
+           (loop for index from 1 to 12
+                 collect
+                 (cadr-tui:make-select-item
+                  :label
+                  (format nil "message ~D~%second line" index)
+                  :value (format nil "entry-~D" index))))
+         (state
+           (cadr-cli::make-user-message-selector-state
+            :items items))
+         (lines
+           (cadr-cli::render-user-message-selector
+            state 80))
+         (plain
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            lines)))
+    (is (string= "" (first plain)))
+    (is (string= "Fork from Message"
+                 (second plain)))
+    (is (search
+         "Select a user message to copy the active path"
+         (third plain)))
+    (is (search "new session"
+                (format nil "~{~A~^ ~}"
+                        (subseq plain 2 4))))
+    (is (string= "" (fifth plain)))
+    (is (= 80
+           (cadr-tui:visible-width
+            (sixth lines))))
+    (is (string= "" (seventh plain)))
+    (is (some
+         (lambda (line)
+           (search "› message 12 second line" line))
+         plain))
+    (is (some
+         (lambda (line)
+           (string= "  Message 12 of 12" line))
+         plain))
+    (is (some
+         (lambda (line)
+           (string= "  (12/12)" line))
+         plain))
+    (multiple-value-bind (action value)
+        (cadr-cli::user-message-selector-handle-event
+         state
+         (cadr-tui:make-input-event :kind :enter))
+      (is (eq :select action))
+      (is (string= "entry-12" value)))))
+
 (defun selector-test-model (provider id &optional name)
   (cadr-ai:make-model
    :id id
@@ -1879,9 +2155,9 @@
            (cadr-cli::tui-syntax-highlight
             "html" "<div></div>"))))))
 
-(test goal9-session-and-tree-selectors-use-full-width-selected-backgrounds
+(test goal9-session-and-tree-selectors-match-baseline-selected-backgrounds
   (with-selector-truecolor-theme
-    (let* ((width 18)
+    (let* ((width 30)
            (session
              (cadr-cli::make-session-selector-state
               :current-sessions
@@ -1941,17 +2217,21 @@
       (is (= width
              (cadr-tui:visible-width
               (car (last tree-panel)))))
+      (is (not (null selected-session)))
+      (is (= width
+             (cadr-tui:visible-width
+              selected-session)))
+      (is (not (null selected-tree)))
+      (is (< (cadr-tui:visible-width selected-tree)
+             width))
       (dolist (line (list selected-session selected-tree))
-        (is (not (null line)))
-        (is (= width
-               (cadr-tui:visible-width line)))
         (is (uiop:string-prefix-p
              (format nil "~C[48;2;58;58;74m"
                      #\Escape)
              line))
-        (is (uiop:string-suffix-p
-             line
-             (format nil "~C[49m" #\Escape))))
+        (is (search
+             (format nil "~C[49m" #\Escape)
+             line)))
       (is (search
            (format nil "~C[38;2;102;102;102m"
                    #\Escape)

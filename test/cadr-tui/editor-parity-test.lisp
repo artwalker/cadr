@@ -486,6 +486,30 @@
            (search (format nil "~C[7m" #\Escape)
                    (second lines)))))))
 
+(test editor-incremental-cjk-and-emoji-input-never-renders-empty-grapheme
+  (let ((editor
+          (cadr-tui:make-multiline-editor :prompt "")))
+    (cadr-tui:editor-set-autocomplete-provider
+     editor
+     (cadr-tui:make-autocomplete-provider
+      :base-path (uiop:getcwd)))
+    ;; A real terminal may split a ZWJ emoji at any codepoint boundary.  Render
+    ;; every intermediate state, including a trailing joiner, just as the TUI
+    ;; does after each input chunk.
+    (loop for character across "中文ABC🙂👨‍👩‍👧‍👦 é"
+          do
+          (editor-event editor :text (string character))
+          (multiple-value-bind (lines row column)
+              (cadr-tui:render-editor
+               editor 80 :terminal-rows 24 :focused-p t)
+            (declare (ignore row column))
+            (is (every
+                 (lambda (line)
+                   (= 80 (cadr-tui:visible-width line)))
+                 lines))))
+    (is (string= "中文ABC🙂👨‍👩‍👧‍👦 é"
+                 (cadr-tui:editor-text editor)))))
+
 (test editor-autocomplete-centers-selection-after-bottom-border
   (let* ((commands
            (loop for index below 8

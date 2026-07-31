@@ -389,7 +389,7 @@
            (compact
              (list
               logo
-              "ctrl+c interrupt · ctrl+l/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
+              "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
               "Press ctrl+o to show full startup help and loaded resources."
               ""
               "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr."))
@@ -397,9 +397,9 @@
              (append
               (list
                logo
-               "ctrl+c to interrupt"
-               "ctrl+l to clear"
-               "ctrl+l twice to exit"
+               "escape to interrupt"
+               "ctrl+c to clear"
+               "ctrl+c twice to exit"
                "ctrl+d to exit (empty)"
                "ctrl+z to suspend"
                "ctrl+k to delete to end"
@@ -1097,7 +1097,8 @@
        extension-host
        display-messages
        compaction-summary
-       compaction-tokens-before)
+       compaction-tokens-before
+       (clock-function #'tui-monotonic-seconds))
   (let ((type (cadr-agent:agent-event-type event))
         (message (cadr-agent:agent-event-message event))
         (stream-event
@@ -1254,8 +1255,10 @@
                    :tool-block
                    (cadr-tui:make-tool-block
                     :name (cadr-ai:tool-call-name call)
-                    :summary
-                    (tool-arguments-summary call)
+                   :summary
+                   (tool-arguments-summary call)
+                    :started-at
+                    (funcall clock-function)
                     :collapsed-p
                     (not
                      (tui-state-tools-expanded-p
@@ -1311,6 +1314,9 @@
                  result)
                 :error
                 :complete)
+            (cadr-tui:tool-block-ended-at
+             (tui-entry-tool-block entry))
+            (funcall clock-function)
             (cadr-tui:tool-block-collapsed-p
              (tui-entry-tool-block entry))
             (not
@@ -1581,7 +1587,7 @@
          :enabled-p t)))
 
 (defun render-tui-entry
-    (entry width &key extension-host)
+    (entry width &key extension-host now)
   (case (tui-entry-type entry)
     (:user
      (let ((lines
@@ -1676,7 +1682,8 @@
            (cadr-tui:render-tool-block
             (tui-entry-tool-block entry)
             width
-            :ansi-theme-p t))))
+            :ansi-theme-p t
+            :now now))))
     (:compaction-summary
      (cadr-tui:wrap-text
       (format nil "Compaction summary: ~A"
@@ -1804,6 +1811,7 @@
     (state editor width rows
      &key overlay busy-p extension-host
        full-document-p
+       (now (tui-monotonic-seconds))
        (spinner-frame
          (aref +tui-spinner-frames+ 0)))
   (multiple-value-bind
@@ -1901,6 +1909,10 @@
                      overlay)
                     (render-tree-selector
                      overlay width))
+                   ((user-message-selector-state-p
+                     overlay)
+                    (render-user-message-selector
+                     overlay width))
                    ((model-selector-state-p
                      overlay)
                     (render-model-selector
@@ -1928,9 +1940,10 @@
                        (tui-state-entries state)
                        append
                        (render-tui-entry
-                        entry width
-                        :extension-host
-                        extension-host))))
+                       entry width
+                       :extension-host
+                       extension-host
+                       :now now))))
            (startup-lines
              (and
               (null overlay)
@@ -2159,7 +2172,7 @@
    (find-tui-fd-program)))
 
 (defparameter +reserved-extension-shortcut-keys+
-  '("ctrl+c" "ctrl+d" "ctrl+z"))
+  '("escape" "ctrl+c" "ctrl+d" "ctrl+z"))
 
 (defun effective-extension-shortcuts (host)
   (remove-if
@@ -2782,6 +2795,7 @@
          (overlay-kind nil)
          (busy-p nil)
          (done-p nil)
+         (last-clear-at nil)
          (worker nil)
          (session-loader-worker nil)
          (custom-ui-lock
@@ -2811,6 +2825,7 @@
                   :busy-p busy-p
                   :extension-host extension-host
                   :full-document-p alt-p
+                  :now (funcall clock-function)
                   :spinner-frame
                   (tui-status-animation-frame
                    status-animation))
@@ -3186,10 +3201,12 @@
                     :compaction-summary
                     compaction-summary
                     :compaction-tokens-before
-                    compaction-tokens-before))
+                    compaction-tokens-before
+                    :clock-function clock-function))
                  (tui-handle-agent-event
-                  state event
-                  :extension-host extension-host)))
+                 state event
+                  :extension-host extension-host
+                  :clock-function clock-function)))
            (refresh-footer-state))
          (start-work (line)
            (unless busy-p
@@ -3298,6 +3315,12 @@
               (make-tree-selector-state
                :entries entries
                :current-leaf-id current-leaf-id
+               :max-visible-lines
+               (max
+                5
+                (floor
+                 (cadr-tui:terminal-rows terminal)
+                 2))
                :keybindings
                (if tree-selector-keybindings-function
                    (funcall
@@ -3370,11 +3393,11 @@
                          fork-items-function))))
              (if items
                  (progn
-                   (open-selector :fork items)
                    (setf
-                    (cadr-tui::select-list-selected
-                     overlay)
-                    (1- (length items)))
+                    overlay-kind :fork
+                    overlay
+                    (make-user-message-selector-state
+                     :items items))
                    (request-render))
                  (notice
                   "No messages to fork from"))))
@@ -3667,6 +3690,10 @@
                            (tree-selector-handle-event
                             overlay event)
                            (cond
+                             ((user-message-selector-state-p
+                               overlay)
+                              (user-message-selector-handle-event
+                               overlay event))
                              ((model-selector-state-p
                                overlay)
                               (model-selector-handle-event
@@ -3693,25 +3720,42 @@
                  (handle-overlay-action
                   action value))
                (case (cadr-tui:input-event-kind event)
-                 (:interrupt
-                  (cond
-                    (busy-p
-                     (when abort-function
-                       (funcall abort-function))
-                     (notice "Abort requested"))
-                    ((plusp
-                      (length
-                       (cadr-tui:editor-text
-                        editor)))
-                     (handle-tui-editor-event
-                      state editor
-                      (cadr-tui:make-input-event
-                       :kind :clear))
-                     (request-render))
-                    (t (setf done-p t))))
+                 ((:escape :interrupt)
+                  (if busy-p
+                      (progn
+                        (when abort-function
+                          (funcall abort-function))
+                        (notice "Abort requested"))
+                      (progn
+                        (handle-tui-editor-event
+                         state editor event)
+                        (request-render))))
+                 (:clear
+                  (let ((now
+                          (funcall clock-function)))
+                    (if
+                        (and last-clear-at
+                             (< (- now last-clear-at)
+                                0.5d0))
+                        (setf done-p t)
+                        (progn
+                          (handle-tui-editor-event
+                           state editor event)
+                          (setf last-clear-at now)
+                          (request-render)))))
                  (:eof
-                  (unless busy-p
-                    (setf done-p t)))
+                  (if
+                      (zerop
+                       (length
+                        (cadr-tui:editor-text editor)))
+                      (unless busy-p
+                        (setf done-p t))
+                      (progn
+                        (handle-tui-editor-event
+                         state editor
+                         (cadr-tui:make-input-event
+                          :kind :delete))
+                        (request-render))))
                  (:toggle-tools
                   (toggle-last-tool-block state)
                   (request-render))
@@ -3836,6 +3880,12 @@
                               (tree-selector-state-p
                                overlay))
                              (tree-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
+                              (user-message-selector-state-p
+                               overlay))
+                             (user-message-selector-handle-raw-input
                               overlay input))
                             ((and
                               (plusp (length input))

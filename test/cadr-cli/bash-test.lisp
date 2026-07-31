@@ -4,16 +4,24 @@
 (test bash-merges-output-reports-nonzero-and-truncates-tail
   (with-test-directory (directory)
     (let ((tool (make-bash-tool directory)))
-      (multiple-value-bind (content details)
-          (invoke-tool
-           tool
-           (args "command"
-                 "printf 'out\\n'; printf 'err\\n' >&2; exit 7"))
-        (is (search "out" (result-text content)))
-        (is (search "err" (result-text content)))
-        (is (search "process exited with code 7"
-                    (string-downcase (result-text content))))
-        (is (= 7 (getf details :exit-code))))
+      (let ((condition
+              (handler-case
+                  (progn
+                    (invoke-tool
+                     tool
+                     (args "command"
+                           "printf 'out\\n'; printf 'err\\n' >&2; exit 7"))
+                    nil)
+                (error (condition)
+                  condition))))
+        (is (not (null condition)))
+        (when condition
+          (let ((message (princ-to-string condition)))
+            (is (search "out" message))
+            (is (search "err" message))
+            (is (search
+                 "Command exited with code 7"
+                 message)))))
       (multiple-value-bind (content details)
           (invoke-tool
            tool
@@ -25,6 +33,29 @@
         (is (eq t (getf details :truncated)))
         (is (probe-file (getf details :full-output-path)))
         (delete-file (getf details :full-output-path))))))
+
+(test goal9-b-bash-nonzero-exit-is-a-tool-error
+  (with-test-directory (directory)
+    (let* ((tool (make-bash-tool directory))
+           (condition
+             (handler-case
+                 (progn
+                   (invoke-tool
+                    tool
+                    (args
+                     "command"
+                     "printf 'out\\n'; printf 'err\\n' >&2; exit 7"))
+                   nil)
+               (error (condition)
+                 condition))))
+      (is (not (null condition)))
+      (when condition
+        (let ((message (princ-to-string condition)))
+          (is (search "out" message))
+          (is (search "err" message))
+          (is (search
+               "Command exited with code 7"
+               message)))))))
 
 (test bash-timeout-kills-the-process-group
   (with-test-directory (directory)

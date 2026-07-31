@@ -103,6 +103,31 @@
           (cadr-tui:visible-width line)
           width))))))
 
+(test goal9-b-bash-tool-runtime-renders-elapsed-and-took-lines
+  (let ((block
+          (cadr-tui:make-tool-block
+           :name "bash"
+           :summary "printf ok"
+           :status :running
+           :started-at 10d0)))
+    (let ((running
+            (cadr-tui:strip-terminal-sequences
+             (format
+              nil "~{~A~%~}"
+              (cadr-tui:render-tool-block
+               block 60 :now 11.26d0)))))
+      (is (search "Elapsed 1.3s" running)))
+    (setf
+     (cadr-tui:tool-block-status block) :error
+     (cadr-tui:tool-block-ended-at block) 10.04d0)
+    (let ((finished
+            (cadr-tui:strip-terminal-sequences
+             (format
+              nil "~{~A~%~}"
+              (cadr-tui:render-tool-block
+               block 60 :now 99d0)))))
+      (is (search "Took 0.0s" finished)))))
+
 (test status-bar-and-select-list
   (is (search "↑12"
               (cadr-tui:render-status-bar
@@ -126,6 +151,88 @@
     (cadr-tui:select-list-handle-event
      list (cadr-tui:make-input-event :kind :escape))
     (is (string= "gem" (cadr-tui:select-list-query list)))))
+
+(test goal9-select-list-empty-and-first-item-navigation-never-writes-negative-index
+  (let ((list
+          (cadr-tui:make-select-list
+           :items
+           (list
+            (cadr-tui:make-select-item
+             :label "first" :value :first)
+            (cadr-tui:make-select-item
+             :label "last" :value :last)))))
+    (finishes
+      (cadr-tui:select-list-handle-event
+       list (cadr-tui:make-input-event :kind :up)))
+    (is (= 1 (cadr-tui::select-list-selected list)))
+    (cadr-tui:select-list-handle-event
+     list (cadr-tui:make-input-event :kind :down))
+    (is (zerop (cadr-tui::select-list-selected list)))
+    (cadr-tui:select-list-handle-event
+     list (cadr-tui:make-input-event :kind :page-up))
+    (is (= 1 (cadr-tui::select-list-selected list)))
+    (cadr-tui:select-list-handle-event
+     list (cadr-tui:make-input-event :kind :page-down))
+    (is (zerop (cadr-tui::select-list-selected list)))
+    (cadr-tui:select-list-handle-event
+     list (cadr-tui:make-input-event :kind :up))
+    (multiple-value-bind (action value)
+        (cadr-tui:select-list-handle-event
+         list (cadr-tui:make-input-event :kind :enter))
+      (is (eq :select action))
+      (is (eq :last value))))
+  (dolist (items
+           (list
+            nil
+            (list
+             (cadr-tui:make-select-item
+              :label "candidate" :value :candidate))))
+    (let ((list
+            (cadr-tui:make-select-list
+             :items items :height 3)))
+      (when items
+        (setf (cadr-tui::select-list-selected list) 99)
+        (setf (cadr-tui:select-list-query list)
+              "no-match"))
+      (dolist (kind '(:up :down :page-up :page-down))
+        (finishes
+          (cadr-tui:select-list-handle-event
+           list (cadr-tui:make-input-event :kind kind)))
+        (is (zerop (cadr-tui::select-list-selected list))))
+      (multiple-value-bind (action value)
+          (cadr-tui:select-list-handle-event
+           list (cadr-tui:make-input-event :kind :enter))
+        (is (null action))
+        (is (null value)))
+      (is (find-if
+           (lambda (line)
+             (search "No matching commands" line))
+           (cadr-tui:render-select-list list 40))))))
+
+(test goal9-select-list-navigation-wraps-at-both-boundaries
+  (let ((list
+          (cadr-tui:make-select-list
+           :items
+           (loop for value in '(:first :middle :last)
+                 collect
+                 (cadr-tui:make-select-item
+                  :label (string-downcase
+                          (symbol-name value))
+                  :value value)))))
+    (cadr-tui:select-list-handle-event
+     list (cadr-tui:make-input-event :kind :up))
+    (multiple-value-bind (action value)
+        (cadr-tui:select-list-handle-event
+         list (cadr-tui:make-input-event :kind :enter))
+      (is (eq :select action))
+      (is (eq :last value)))
+    (cadr-tui:select-list-handle-event
+     list (cadr-tui:make-input-event :kind :down))
+    (multiple-value-bind (action value)
+        (cadr-tui:select-list-handle-event
+         list (cadr-tui:make-input-event :kind :enter))
+      (is (eq :select action))
+      (is (eq :first value)))))
 
 (test goal9-markdown-block-layout-matches-baseline
   (let* ((text

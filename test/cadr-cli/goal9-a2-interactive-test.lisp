@@ -58,6 +58,114 @@
    :api :faux :base-url "http://localhost:0"
    :max-tokens 1024))
 
+(defclass goal9-p2-key-terminal
+    (cadr-tui::virtual-terminal)
+  ((inputs
+    :initarg :inputs
+    :accessor goal9-p2-key-terminal-inputs)
+   (worker-done-p
+    :initarg :worker-done-p
+    :reader goal9-p2-key-terminal-worker-done-p)))
+
+(defmethod cadr-tui:terminal-read-input
+    ((terminal goal9-p2-key-terminal))
+  (or
+   (pop (goal9-p2-key-terminal-inputs terminal))
+   (when
+       (funcall
+        (goal9-p2-key-terminal-worker-done-p terminal))
+     (format nil "~C[100;5u" #\Escape))
+   ""))
+
+(test goal9-p2-baseline-key-hints-and-decoder-actions-agree
+  (multiple-value-bind (compact expanded)
+      (cadr-cli::make-tui-startup-lines
+       (cadr-cli::make-resource-snapshot))
+    (is (find
+         "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
+         compact :test #'string=))
+    (is (find "escape to interrupt" expanded :test #'string=))
+    (is (find "ctrl+c to clear" expanded :test #'string=))
+    (is (find "ctrl+c twice to exit" expanded :test #'string=))
+    (is (find "ctrl+d to exit (empty)" expanded :test #'string=)))
+  (let ((decoder (cadr-tui:make-input-decoder)))
+    (is (eq :clear
+            (cadr-tui:input-event-kind
+             (first
+              (cadr-tui:feed-input
+               decoder (string (code-char 3)))))))
+    (is (eq :clear
+            (cadr-tui:input-event-kind
+             (first
+              (cadr-tui:feed-input
+               decoder
+               (format nil "~C[99;5u" #\Escape))))))
+    (is (eq :eof
+            (cadr-tui:input-event-kind
+             (first
+              (cadr-tui:feed-input
+               decoder
+               (format nil "~C[100;5u" #\Escape))))))
+    (is (null
+         (cadr-tui:feed-input decoder (string #\Escape))))
+    (is (eq :escape
+            (cadr-tui:input-event-kind
+             (first (cadr-tui:flush-input decoder)))))))
+
+(test goal9-p2-ctrl-c-clears-busy-draft-and-escape-interrupts
+  (let ((aborted-p nil)
+        (worker-done-p nil)
+        (abort-count 0))
+    (let ((terminal
+            (make-instance
+             'goal9-p2-key-terminal
+             :columns 80 :rows 16
+             :inputs
+             (list
+              (format nil "go~C" #\Return)
+              "draft"
+              (format nil "~C[99;5u" #\Escape)
+              (string #\Escape))
+             :worker-done-p
+             (lambda () worker-done-p))))
+      (cadr-cli::run-tui
+       (lambda (line)
+         (declare (ignore line))
+         (loop until aborted-p do (sleep 0.001))
+         (setf worker-done-p t))
+       :abort-function
+       (lambda ()
+         (incf abort-count)
+         (setf aborted-p t))
+       :model "faux"
+       :terminal terminal)
+      (is (= 1 abort-count))
+      (is (null
+           (search
+            "draft"
+            (goal9-a2-screen-text
+             (cadr-tui:virtual-terminal-snapshot terminal)))))))
+  (let ((terminal
+          (make-instance
+           'goal9-p2-key-terminal
+           :columns 80 :rows 16
+           :inputs
+           (list
+            "draft"
+            (format nil "~C[99;5u" #\Escape)
+            (format nil "~C[99;5u" #\Escape))
+           :worker-done-p (constantly nil))))
+    (cadr-cli::run-tui
+     (lambda (line)
+       (error "Unexpected submission: ~A" line))
+     :model "faux"
+     :terminal terminal)
+    (is (null
+         (search
+          "draft"
+          (goal9-a2-screen-text
+           (cadr-tui:virtual-terminal-snapshot terminal)))))))
+
 (test goal9-a2-input-editor-pty-events-and-virtual-screen-cover-full-contract
   (let* ((decoder (cadr-tui:make-input-decoder))
          (editor
@@ -269,7 +377,9 @@
              (cadr-cli::make-model-selector-state
               :all-models (list one two)
               :scoped-models (list two one)
-              :current-model one))
+              :current-model one
+              :refresh-status-message
+              "Model catalogs refreshed."))
            (scoped
              (cadr-cli::make-scoped-models-selector-state
               :all-models (list one two)
@@ -294,7 +404,8 @@
           (case
            `((,session "Resume Session" "会话一")
              (,tree "Session Tree" "树节点")
-             (,model "Select Model" "Scope: all | scoped")
+             (,model "Scope: all | scoped"
+              "Model catalogs refreshed.")
              (,scoped "Model Configuration" "one")
              (,settings "Settings" "Auto-compact  on")
              (,trust "Project trust" "Do not trust")))
@@ -305,7 +416,9 @@
             (declare (ignore row column))
             (let ((screen (goal9-a2-screen-text snapshot)))
               (dolist (needle expected)
-                (is (search needle screen))))
+                (is (search needle screen)))
+              (when (eq overlay model)
+                (is (null (search "Select Model" screen)))))
             (is (every
                  (lambda (line)
                    (<= (cadr-tui:visible-width line) 72))

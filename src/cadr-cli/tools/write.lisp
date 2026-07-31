@@ -13,7 +13,8 @@
 (defun make-write-tool (cwd)
   (cadr-ai:make-tool
    :name "write"
-   :description "Create or completely overwrite a UTF-8 text file."
+   :description
+   "Write content to a file. Creates the file if it doesn't exist, overwrites if it does. Automatically creates parent directories."
    :parameters
    (object-schema
     (cadr-ai::json-object

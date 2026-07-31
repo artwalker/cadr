@@ -606,6 +606,153 @@
                 (format nil "~{~A~}" plain)))
     (is (search "Ctrl+click to open" joined))))
 
+(test goal9-b-tui-bash-stream-does-not-create-session-notices
+  (with-test-directory (directory)
+    (let* ((notifications nil)
+           (state (cadr-cli::make-tui-state))
+           (editor (cadr-tui:make-multiline-editor))
+           (frontend
+             (cadr-cli::make-notification-output-stream
+              (lambda (text)
+                (push text notifications)
+                (cadr-cli::add-tui-notice state text)))))
+      ;; Bash writes and flushes each streamed character.  The TUI must keep
+      ;; that stream out of the generic notice channel or it renders visible
+      ;; `session> <char>` rows.
+      (let ((cadr-cli::*bash-live-output*
+              (cadr-cli::bash-live-output-for-mode
+               :tui frontend)))
+        (multiple-value-bind (content details)
+            (cadr-cli::run-bash-command
+             directory "printf alphadeltagamma" 2)
+          (declare (ignore details))
+          (is (search
+               "alphadeltagamma"
+               (cadr-ai:text-content-text
+                (first content))))))
+      (is (null notifications))
+      (multiple-value-bind (lines row column)
+          (cadr-cli::render-tui-state state editor 80 24)
+        (declare (ignore row column))
+        (let ((screen
+                (format
+                 nil "~{~A~%~}"
+                 (mapcar
+                  #'cadr-tui:strip-terminal-sequences
+                  lines))))
+          (is (null (search "session>" screen)))
+          (is (null (search "alphadeltagamma" screen))))))))
+
+(test goal9-b-nonzero-bash-tool-renders-error-state
+  (with-test-directory (directory)
+    (let* ((handle
+             (cadr-ai:make-faux-provider
+              :token-min 64 :token-max 64))
+           (model (cadr-ai:faux-get-model handle))
+           (state
+             (cadr-cli::make-tui-state
+              :model "faux-1"))
+           (tool (cadr-cli::make-bash-tool directory)))
+      (cadr-ai:faux-set-responses
+       handle
+       (list
+        (cadr-ai:faux-assistant-message
+         (list
+          (cadr-ai:faux-tool-call
+           "bash"
+           (args
+            "command"
+            "printf 'expected-error\\n' >&2; exit 7")
+           :id "goal9-bash-error"))
+         :stop-reason :tool-use)
+        (cadr-ai:faux-assistant-message "done")))
+      (let ((agent
+              (cadr-agent:make-agent
+               :provider :faux
+               :model model
+               :tools (list tool)
+               :stream-function
+               (lambda (provider selected-model context on-event
+                        &rest options)
+                 (declare (ignore provider))
+                 (apply
+                  #'cadr-ai:faux-stream
+                  handle selected-model context on-event options))
+               :on-event
+               (lambda (event)
+                 (cadr-cli::tui-handle-agent-event
+                  state event)))))
+        (unwind-protect
+             (cadr-agent:agent-prompt agent "run the failing command")
+          (cadr-agent:agent-shutdown agent)))
+      (let* ((entry
+               (find
+                :tool
+                (cadr-cli::tui-state-entries state)
+                :key #'cadr-cli::tui-entry-type))
+             (block
+               (and entry
+                    (cadr-cli::tui-entry-tool-block entry))))
+        (is (not (null block)))
+        (when block
+          (is (eq :error
+                  (cadr-tui:tool-block-status block)))
+          (is (search
+               "Command exited with code 7"
+               (cadr-tui:tool-block-output block)))
+          (let ((rendered
+                  (format
+                   nil "~{~A~^~%~}"
+                   (cadr-tui:render-tool-block block 80))))
+            (is (search "× $" rendered))
+            (is (null (search "✓" rendered)))))))))
+
+(test goal9-b-tool-events-record-runtime-for-the-live-tui
+  (let* ((now 20d0)
+         (state (cadr-cli::make-tui-state))
+         (call
+           (cadr-ai:make-tool-call
+            :id "timed-bash"
+            :name "bash"
+            :arguments (args "command" "exit 7")))
+         (result
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "timed-bash"
+            :tool-name "bash"
+            :is-error t
+            :content
+            (list
+             (cadr-ai:make-text-content
+              :text "Command exited with code 7")))))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :tool-execution-start
+      :tool-call call)
+     :clock-function (lambda () now))
+    (incf now 0.04d0)
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :tool-execution-end
+      :tool-call call
+      :tool-result result)
+     :clock-function (lambda () now))
+    (let* ((entry
+             (find
+              :tool
+              (cadr-cli::tui-state-entries state)
+              :key #'cadr-cli::tui-entry-type))
+           (block (cadr-cli::tui-entry-tool-block entry))
+           (rendered
+             (cadr-tui:strip-terminal-sequences
+              (format
+               nil "~{~A~%~}"
+               (cadr-tui:render-tool-block
+                block 60 :now now)))))
+      (is (search "Command exited with code 7" rendered))
+      (is (search "Took 0.0s" rendered)))))
+
 (test dispatch-user-input-is-shared-by-frontends
   (let ((prompts nil)
         (commands nil))
@@ -1715,7 +1862,7 @@
     (dolist
         (case
          `((,model-selector
-            "Select Model" "Scope: all | scoped" "two")
+            "Scope: all | scoped" "two")
            (,scoped-selector
             "Model Configuration"
             "faux/unavailable"
@@ -2168,12 +2315,12 @@
             :model "mock"
             :startup-compact-lines
             '("cadr v0.1.0"
-              "ctrl+c interrupt · / commands · ! bash"
+              "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash"
               "Press ctrl+o to show full startup help and loaded resources.")
             :startup-expanded-lines
             '("cadr v0.1.0"
-              "ctrl+c to interrupt"
-              "ctrl+l twice to exit"
+              "escape to interrupt"
+              "ctrl+c twice to exit"
               "/ for commands"
               "! to run bash")))
          (editor
@@ -2206,7 +2353,7 @@
              compact)))
       (cadr-cli::set-tui-tools-expanded state t)
       (let ((expanded (plain-render)))
-        (is (find "ctrl+l twice to exit"
+        (is (find "ctrl+c twice to exit"
                   expanded :test #'string=))
         (is (null
              (find-if

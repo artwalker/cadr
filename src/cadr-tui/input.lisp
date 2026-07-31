@@ -73,7 +73,7 @@
 
 (defun decode-control-character (character)
   (case (codepoint character)
-    (3 :interrupt)
+    (3 :clear)
     (4 :eof)
     (1 :line-start)
     (2 :left)
@@ -92,7 +92,10 @@
     (otherwise nil)))
 
 (defparameter +logical-key-events+
-  '(("tui.editor.cursorUp" . :up)
+  '(("app.interrupt" . :interrupt)
+    ("app.clear" . :clear)
+    ("app.exit" . :eof)
+    ("tui.editor.cursorUp" . :up)
     ("tui.editor.cursorDown" . :down)
     ("tui.editor.cursorLeft" . :left)
     ("tui.editor.cursorRight" . :right)

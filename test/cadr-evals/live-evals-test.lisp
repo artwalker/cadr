@@ -289,9 +289,9 @@ echo \"test passed\"
     (cadr-evals:run-coding-agent-eval
      (list
       (cadr-evals:make-eval-prompt-step
-       "Do not inspect or edit any file. Call the bash tool once with command exactly bash ./test.sh. Do not reply before it reports Process exited with code 1; then reply exactly INITIAL_FAILURE_OBSERVED.")
+       "Do not inspect or edit any file. Call the bash tool once with command exactly bash ./test.sh. Do not reply before it reports Command exited with code 1; then reply exactly INITIAL_FAILURE_OBSERVED.")
       (cadr-evals:make-eval-prompt-step
-       "Read calc.sh, correct only the subtraction to addition with the edit tool, then call bash with command exactly bash ./test.sh. Do not edit test.sh. Do not stop until it reports Process exited with code 0, then reply exactly REPAIR_VERIFIED."))
+       "Read calc.sh, correct only the subtraction to addition with the edit tool, then call bash with command exactly bash ./test.sh. Do not edit test.sh. Do not stop until its output reports test passed, then reply exactly REPAIR_VERIFIED."))
      :provider "deepseek"
      :model "deepseek-v4-flash"
      :no-tools
@@ -348,9 +348,9 @@ echo \"test passed\"
       (cadr-ai::json-get
        output "testOutput"))
      (live-eval-tool-result-containing
-      events "Process exited with code 1")
+      events "Command exited with code 1")
      (live-eval-tool-result-containing
-      events "Process exited with code 0"))))
+      events "test passed"))))
 
 (test live-deepseek-repository-fail-fix-pass-loop
   (with-live-deepseek
@@ -386,9 +386,9 @@ echo \"test passed\"
          (not
           (null
            (live-eval-tool-result-containing
-            events "Process exited with code 1"))))
+            events "Command exited with code 1"))))
         (is
          (not
           (null
            (live-eval-tool-result-containing
-            events "Process exited with code 0")))))))
+            events "test passed")))))))

@@ -21,6 +21,17 @@
     (is (string= "👩‍💻" (third clusters)))
     (is (string= "🇨🇳" (fourth clusters)))))
 
+(test grapheme-clusters-handle-empty-and-dangling-joiner-boundaries
+  (is (null (cadr-tui:grapheme-clusters "")))
+  (is (zerop (cadr-tui:visible-width "")))
+  (let* ((dangling (format nil "👨~C " (code-char #x200d)))
+         (clusters (cadr-tui:grapheme-clusters dangling)))
+    (is (= 2 (length clusters)))
+    (is (string= (format nil "👨~C" (code-char #x200d))
+                 (first clusters)))
+    (is (string= " " (second clusters)))
+    (is (= 3 (cadr-tui:visible-width dangling)))))
+
 (test width-aware-slicing-and-wrapping
   (multiple-value-bind (prefix width)
       (cadr-tui:slice-to-width "ab中cd" 4)

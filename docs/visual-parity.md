@@ -1,7 +1,26 @@
 # Goal 9 Part B visual parity ledger
 
 基线固定为 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
-本文只记录可机械验证的视觉与交互合约；最终观感仍由 B3 双终端 A/B 门禁裁决。
+本文记录可机械验证的视觉与交互合约；最终观感仍由 B3 双终端 A/B 门禁裁决。
+
+## B2 方法论：视觉合约包含运行时状态
+
+B2 不再把静态常量、单次组件 render 或最终字符串相等视为充分证据。视觉合约
+同时覆盖组件在真实事件序列中的状态与状态转换：
+
+- 选择器必须覆盖空列表、过滤后零候选、首项、末项、翻页、循环导航和确认；
+- 工具必须覆盖 running、partial、success、error、折叠/展开及耗时文案；
+- assistant/tool 流式输出必须按真实 delta 逐帧重绘，保留原始换行，不得借用
+  notice、日志或其他展示通道；
+- editor 必须按终端可能交付的码点边界逐步输入并逐帧 render，包括空字符串、
+  CJK、combining mark、emoji ZWJ 中间态；
+- 命令、键位、overlay 和 footer 必须验证从 input decoder 到运行时状态再到最终
+  virtual screen 的完整链路，不能只比提示文案或构造后的静态组件。
+
+确定性门禁优先使用 faux provider + virtual terminal；只有真实进程、终端模式或
+信号生命周期无法在进程内等价覆盖时才使用 PTY。每个现场缺陷先保留能复现原故障
+的红测，再以同一断言转绿。B3 仍负责真实终端观感，但不再替 B2 发现可自动化的
+崩溃、边界态和状态错误。
 
 状态只允许：
 
@@ -161,15 +180,16 @@ background reset    = ESC[49m
 | MD-05 | link underline/color、OSC 8 与 fallback URL 规则对齐。 | 不一致（已改齐） |
 | MD-06 | 表格宽度分配、wrap、粗体 header、完整 box、窄屏 raw fallback 对齐。 | 不一致（已改齐） |
 | MD-07 | inline style 局部恢复、streaming partial fence 防闪烁对齐。 | 不一致（已改齐） |
-| TL-01 | pending/success/error 背景、title/argument/output/error/warning 语义色对齐。 | 不一致（已改齐） |
+| TL-01 | pending/success/error 背景、title/argument/output/error/warning 语义色对齐；真实 bash 非零退出必须从 tool result 传播为 `× $` error state，文案为 `Command exited...`。 | 不一致（已改齐） |
 | TL-02 | collapsed preview：bash 5、read/write 10、grep 15、find/ls 20；expanded 显示完整保留结果。 | 不一致（已改齐） |
-| TL-03 | real edit 结果进入 diff renderer；context/add/remove 色、单行 word inverse、tab→3 spaces 和超长行上限对齐。 | 不一致（已改齐） |
+| TL-03 | real edit 结果进入 diff renderer；context/add/remove 色、单行 word inverse、tab→3 spaces 和超长行上限对齐；bash running/settled 显示 `Elapsed`/`Took`。 | 不一致（已改齐） |
+| TL-04 | 默认 active tools、顺序、description、prompt snippet/guidelines 对齐基线 `read,bash,edit,write`；`grep/find/ls` 仅显式启用，避免模型因提示偏离改用 bash echo/sed。 | 不一致（已改齐） |
 | FT-01 | cwd/branch/session；input/output/cache read/write/hit/cost/context；provider/model/thinking；extension status 三行布局对齐。 | 不一致（已改齐） |
 | FT-02 | context `>70%` warning、`>90%` error 对齐。 | 不一致（已改齐） |
 | FT-03 | working/retry/compaction spinner、语义色与 status 区域对齐。 | 不一致（已改齐） |
 | FT-04 | `/login`、`/model`、thinking、subscription、auto-compaction 均从 live agent state 刷新；editor thinking/bash border 同步。 | 不一致（已改齐） |
 | SL-01 | generic selected `→ ` + accent、muted description、scroll/no-match 主题对齐。 | 不一致（已改齐） |
-| SL-02 | session/tree selected row 使用全宽 `selectedBg`。 | 不一致（已改齐） |
+| SL-02 | session selected row 使用全宽 `selectedBg`；tree 只给固定 gutter/body segment 着色，不错误 padding 到整行。 | 不一致（已改齐） |
 | SL-03 | model 最多 10 行、accent selected、muted provider、green `✓`、border/spacer 对齐。 | 不一致（已改齐） |
 | SL-04 | autocomplete primary 12..32、默认 5、配置 3..20、仅 `@` 20 ms debounce、popup 在下边框后。 | 不一致（已改齐） |
 | AN-01 | spinner `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`，80 ms；loader 前一空行。 | 不一致（已改齐） |
@@ -193,8 +213,22 @@ Markdown 门禁：
 - `test/cadr-cli/tui-test.lisp:223-1145,1698-2240`
 - `test/cadr-cli/part-b-interactive-test.lisp:1671-2180`
 
-机械账本结论：32 个编号项中 `一致` 2 项，`不一致（已改齐）` 30 项，
+机械账本结论：33 个编号项中 `一致` 2 项，`不一致（已改齐）` 31 项，
 `有意差异` 0 项，`pending` 0 项。
+
+### B2 运行时补充门禁
+
+2026-07-31 首轮 B3 真实双终端 A/B 退回后，新增以下原机械账本没有覆盖的
+运行时矩阵；测试名和红→绿证据在 `docs/acceptance/goal-v9-part-b.md` 逐项列出。
+
+| 状态面 | 必测转换 |
+|---|---|
+| selector | empty/filter-empty/first/last/page/wrap/select |
+| editor | empty→incremental Unicode→ZWJ intermediate→complete grapheme |
+| assistant stream | start→每个 delta→final multiline document |
+| tool | start/running/partial→success 或 error→collapsed/expanded |
+| command UI | command→refresh→overlay→navigation→cancel/select |
+| application keys | raw/Kitty input→configured action→busy/idle behavior |
 
 ## B3. 双终端 A/B 门禁
 
@@ -237,4 +271,4 @@ CADR_OFFLINE=1 \
 | Error | `/model __goal9_missing_model__`；再让 bash 执行 `sh -c 'echo expected-error >&2; exit 7'`。 | error color/spacing、tool error background、footer recovery、focus。 |  |
 | Exit | `/quit`；重启后 Ctrl-C。 | cursor、bracketed paste/raw、alternate screen、无重复 final frame。 |  |
 
-Part B disposition: `等待用户逐项确认`
+Part B disposition: `首轮 B3 已退回；运行时补正完成后等待用户重新逐项确认`

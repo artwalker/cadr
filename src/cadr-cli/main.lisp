@@ -1,16 +1,27 @@
 (in-package #:cadr-cli)
 
-(defun make-coding-tools (cwd)
-  (make-baseline-coding-tools cwd))
+(defparameter +default-coding-tool-names+
+  '("read" "bash" "edit" "write"))
+
+(defparameter +builtin-coding-tool-names+
+  '("read" "bash" "edit" "write" "grep" "find" "ls"))
 
 (defun make-baseline-coding-tools (cwd)
   (list (make-read-tool cwd)
-        (make-write-tool cwd)
-        (make-edit-tool cwd)
         (make-bash-tool cwd)
-        (make-find-tool cwd)
-        (make-grep-tool cwd)
-        (make-ls-tool cwd)))
+        (make-edit-tool cwd)
+        (make-write-tool cwd)))
+
+(defun make-coding-tools (cwd)
+  (make-baseline-coding-tools cwd))
+
+(defun make-all-coding-tools (cwd)
+  (append
+   (make-baseline-coding-tools cwd)
+   (list
+    (make-grep-tool cwd)
+    (make-find-tool cwd)
+    (make-ls-tool cwd))))
 
 (defun select-coding-tools
     (tools &key allow exclude no-builtin-p builtin-names)
@@ -1592,12 +1603,46 @@
      :test #'string=)))
 
 (defun tool-prompt-snippets (tools)
-  (mapcar
-   (lambda (tool)
-     (cons
-      (cadr-ai:tool-name tool)
-      (cadr-ai:tool-description tool)))
-   tools))
+  (let ((baseline
+          '(("read" . "Read file contents")
+            ("bash"
+             . "Execute bash commands (ls, grep, find, etc.)")
+            ("edit"
+             . "Make precise file edits with exact text replacement, including multiple disjoint edits in one call")
+            ("write" . "Create or overwrite files")
+            ("grep"
+             . "Search file contents for patterns (respects .gitignore)")
+            ("find"
+             . "Find files by glob pattern (respects .gitignore)")
+            ("ls" . "List directory contents"))))
+    (mapcar
+     (lambda (tool)
+       (let* ((name (cadr-ai:tool-name tool))
+              (snippet
+                (cdr (assoc name baseline :test #'string=))))
+         (cons
+          name
+          (or snippet
+              (cadr-ai:tool-description tool)))))
+     tools)))
+
+(defun tool-prompt-guidelines (tools)
+  (loop for tool in tools
+        append
+        (cond
+          ((string= "read" (cadr-ai:tool-name tool))
+           (list
+            "Use read to examine files instead of cat or sed."))
+          ((string= "edit" (cadr-ai:tool-name tool))
+           (list
+            "Use edit for precise changes (edits[].oldText must match exactly)"
+            "When changing multiple separate locations in one file, use one edit call with multiple entries in edits[] instead of multiple edit calls"
+            "Each edits[].oldText is matched against the original file, not after earlier edits are applied. Do not emit overlapping or nested edits. Merge nearby changes into one edit."
+            "Keep edits[].oldText as small as possible while still being unique in the file. Do not pad with large unchanged regions."))
+          ((string= "write" (cadr-ai:tool-name tool))
+           (list
+            "Use write only for new files or complete rewrites."))
+          (t nil))))
 
 (defun settings-boolean-value
     (manager key default &optional nested-key)
@@ -2225,6 +2270,8 @@
      (mapcar #'cadr-ai:tool-name tools)
      :tool-snippets
      (tool-prompt-snippets tools)
+     :prompt-guidelines
+     (tool-prompt-guidelines tools)
      :context-files
      (resource-snapshot-context-files snapshot)
      :skills
@@ -2582,10 +2629,9 @@
          (resources
            (reload-resources resource-loader))
          (baseline-tools
-           (make-coding-tools cwd))
+           (make-all-coding-tools cwd))
          (builtin-names
-           (mapcar #'cadr-ai:tool-name
-                   baseline-tools))
+           +builtin-coding-tool-names+)
          (tool-filter
            (lambda (tools)
              (if
@@ -2595,7 +2641,19 @@
                  (select-coding-tools
                   tools
                   :allow
-                  (cli-arguments-tools command)
+                  (or
+                   (cli-arguments-tools command)
+                   (append
+                    +default-coding-tool-names+
+                    (mapcar
+                     #'cadr-ai:tool-name
+                     (remove-if
+                      (lambda (tool)
+                        (member
+                         (cadr-ai:tool-name tool)
+                         builtin-names
+                         :test #'string=))
+                      tools))))
                   :exclude
                   (cli-arguments-exclude-tools
                    command)
@@ -2939,9 +2997,8 @@
                     (provider-config-model updated))))))
          (run-prompt (prompt)
            (let ((*bash-live-output*
-                   (if (or tui-p repl-p)
-                       frontend-output
-                       *error-output*)))
+                   (bash-live-output-for-mode
+                    mode frontend-output)))
              (cadr-agent:agent-prompt
               agent prompt
               :source
@@ -3175,6 +3232,12 @@
                      scoped-model-entries)
                     :current-model
                     (cadr-agent:agent-model agent)
+                    :refresh-status-message
+                    (and
+                     (null
+                      (model-registry-error
+                       model-registry))
+                     "Model catalogs refreshed.")
                     :keybindings
                     (make-models-selector-keybindings
                      (settings-keybindings
