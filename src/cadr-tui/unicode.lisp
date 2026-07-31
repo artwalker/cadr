@@ -14,6 +14,10 @@
 (defun combining-character-p (character)
   (let ((value (codepoint character)))
     (or
+     #+sbcl
+     (member
+      (sb-unicode:general-category character)
+      '(:mn :mc :me))
      (between-p value #x0300 #x036f)
      (between-p value #x0483 #x0489)
      (between-p value #x0591 #x05bd)
@@ -51,6 +55,42 @@
      (between-p value #xe0100 #xe01ef)
      (between-p value #x1f3fb #x1f3ff)
      (between-p value #xe0020 #xe007f))))
+
+(defun mark-character-p (character)
+  #+sbcl
+  (member
+   (sb-unicode:general-category character)
+   '(:mn :mc :me))
+  #-sbcl
+  (combining-character-p character))
+
+(defun non-printing-character-p (character)
+  (or
+   (control-character-p character)
+   (mark-character-p character)
+   #+sbcl
+   (member
+    (sb-unicode:general-category character)
+    '(:cf :cs))))
+
+(defun terminal-spacing-mark-p (character)
+  (let ((value (codepoint character)))
+    (or
+     (and
+      #+sbcl
+      (eq :mc
+          (sb-unicode:general-category character))
+      #-sbcl
+      nil
+      (not
+       (member value
+               '(#x1734 #x302e #x302f))))
+     (member
+      value
+      '(#x065f #x0f7f #x102b #x102c
+        #x1031 #x1033 #x1034 #x1035
+        #x1038 #x103a #x103b #x103c
+        #x103d #x103e)))))
 
 (defun regional-indicator-p (character)
   (between-p (codepoint character) #x1f1e6 #x1f1ff))
@@ -157,13 +197,43 @@
                  (= (codepoint character) #xfe0f)))
            cluster)
      2)
+    ((every #'terminal-spacing-mark-p cluster)
+     (length cluster))
     (t
-     (loop for character across cluster
-           unless (or (combining-character-p character)
-                      (control-character-p character))
-             maximize (if (wide-codepoint-p character) 2 1)
-               into width
-           finally (return (or width 0))))))
+     (let* ((characters (coerce cluster 'list))
+            (base
+              (member-if-not
+               #'non-printing-character-p
+               characters)))
+       (if (null base)
+           0
+           (let ((width
+                   (if (wide-codepoint-p (first base))
+                       2
+                       1))
+                 (follows-mark-p nil))
+             (dolist (character (rest base) width)
+               (cond
+                 ((terminal-spacing-mark-p character)
+                  (incf width)
+                  (setf follows-mark-p nil))
+                 ((mark-character-p character)
+                  (setf follows-mark-p t))
+                 ((not
+                   (non-printing-character-p character))
+                  (let ((value (codepoint character)))
+                    (cond
+                      ((or
+                        follows-mark-p
+                        (between-p value #xff00 #xffef))
+                       (incf
+                        width
+                        (if (wide-codepoint-p character)
+                            2
+                            1)))
+                      ((member value '(#x0e33 #x0eb3))
+                       (incf width))))
+                  (setf follows-mark-p nil))))))))))
 
 (defun visible-width (text)
   (loop for cluster in (grapheme-clusters (strip-ansi text))

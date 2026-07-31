@@ -49,3 +49,52 @@
     (is (= 2 (length wrapped)))
     (is (= 7 (cadr-tui:visible-width (first wrapped))))
     (is (= 2 (cadr-tui:visible-width (second wrapped))))))
+
+(test terminal-cell-width-covers-indic-and-myanmar-spacing-marks
+  (dolist
+      (case
+       '(("र्क" 2)
+         ("नेटवर्क" 5)
+         ("सर्वाधिकार सुरक्षित। ऑर्डर पर क्लिक करें" 33)
+         ("র্ক" 2)
+         ("ર્ક" 2)
+         ("ର୍କ" 2)
+         ("ర్క" 2)
+         ("ര്‍ക" 2)
+         ("ကာ" 2)
+         ("ကေ" 2)
+         ("က်" 2)
+         ("ကျ" 2)
+         ("ကြ" 2)
+         ("ကဳ" 2)
+         ("ကဴ" 2)
+         ("ကဵ" 2)
+         ("ကး" 2)
+         ("ကို" 1)
+         ("က္" 1)))
+    (is (= (second case)
+           (cadr-tui:visible-width (first case)))
+        "~S must occupy ~D terminal cells"
+        (first case)
+        (second case))))
+
+(test terminal-cell-width-keeps-ordinary-marks-zero-width
+  (dolist
+      (case
+       `((,(format nil "e~C" #\Combining_Acute_Accent) 1)
+         ("čřžůú" 5)
+         ("שָׁ" 1)
+         ("بّ" 1)
+         ("རྐ" 1)
+         ("ᜠ᜴" 1)
+         ("가〮" 2)
+         ("가〯" 2)
+         ("网络" 4)
+         ("ネットワーク" 12)
+         ("が" 2)
+         ("が" 2)))
+    (is (= (second case)
+           (cadr-tui:visible-width (first case)))
+        "~S must occupy ~D terminal cells"
+        (first case)
+        (second case))))
