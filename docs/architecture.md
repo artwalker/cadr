@@ -193,7 +193,12 @@ test/
 scripts/
   export-ts-payloads.ts
   acceptance-smoke.sh
+  goal5-manual-tui-smoke.sh
+  live-tui-smoke.sh
+  migration-smoke.sh
+  server-smoke.sh
   test-cl.sh
+  test-wave2-process-modes.sh
 docs/
   architecture.md
   test-matrix.md
@@ -705,8 +710,8 @@ Linux/glibc 和 HTTPS 所需的系统动态库；“单个可执行文件”不�
 | `docs/progress/goal-v1.md` 验收项 | 最终证据 |
 |---|---|
 | clean Linux 一键产出 `cadr` | 隔离 HOME 的 clean-build 日志、二进制 `file` 输出 |
-| Anthropic 多轮流式对话 | `scripts/live-anthropic-smoke.sh` 的获授权终端记录；脚本不输出或保存 key |
-| 真实 repo 读/改/测/修 | faux provider 确定性 E2E + DeepSeek 双重授权的 `scripts/live-repo-smoke.sh` |
+| Anthropic 多轮流式对话 | `test/cadr-ai/live-provider-test.lisp` 的凭据门控；本环境无 key 时与基线同构跳过 |
+| 真实 repo 读/改/测/修 | faux provider 确定性 E2E + `test/cadr-evals/live-evals-test.lisp` 的 DeepSeek 凭据门控 |
 | 三家各一 E2E | 三套原始 SSE 回放、请求捕获和最终统一消息断言 |
 | 所有移植测试、文档一致 | `docs/test-matrix.md` 全绿、ASDF 全量 test-op、文档 diff 审计 |
 | 默认执行、无核心审批 | 副作用工具直接执行、`--yolo` 被拒绝、审批 hook 示例 |
@@ -840,9 +845,15 @@ OpenAI Codex OAuth 严格采用固定 TS 审计提交的参数：
   `OpenAI-Beta: responses=experimental`
 
 本地一次性 callback server 只监听 `127.0.0.1:1455`，只接受
-`/auth/callback`，验证 state 后立即关闭。`/login openai` 完成 PKCE，
-`/logout openai` 原子删除该凭据。Anthropic OAuth 复用相同 credential
-接口，但在实现、测试报告和 README 中明确标记为未验证。
+`/auth/callback`，验证 state 后立即关闭。`/login openai` 的用户命令映射
+到基线 provider 身份 `openai-codex`；exchange、refresh、auth.json 存储和
+Codex Responses 读取始终使用同一身份。登录后若此前路由无可用凭据，或
+当前模型属于其他 provider，则选择并持久化 `openai-codex` 默认模型，随后无需
+provider/model 参数即可对话。TUI 按基线显示 OSC 8 可点击的原始 URL 和
+`Ctrl+click to open`，不经 session notice 加前缀；非 TUI fallback 才输出
+`Open this URL in your browser:` 与下一行原始 URL。`/logout openai`
+原子删除 `openai-codex` 凭据。Anthropic OAuth 复用相同 credential 接口，
+但在实现、测试报告和 README 中明确标记为未验证。
 
 ### 16.5 Phase 5 测试门禁
 
@@ -855,7 +866,7 @@ OpenAI Codex OAuth 严格采用固定 TS 审计提交的参数：
 5. PKCE、callback state、0600、logout、脱敏
 6. 过期 token 的并发单次刷新录制回放
 7. OpenAI Codex OAuth Responses 请求头
-8. 原有 v1 全量回归、`npm run check` 和 Phase 5 live smoke
+8. 原有 v1 全量回归、`npm run check` 和 Phase 5 凭据门控 live tests
 
 Phase 7 的稳定扩展 API 后续已通过独立人工确认并完成实现。
 
@@ -1210,7 +1221,7 @@ skill 运行时。
 7. prompt placeholder 全集、command/template/builtin 解析优先级；
 8. 用本地临时 git repo 验证 `/install`、argv 注入防护、目标冲突不覆盖；
 9. faux provider 在单次进程内完成“write 新扩展 → `/reload` → 调用新工具”；
-10. DeepSeek live smoke 完成同一自扩展闭环；
+10. DeepSeek 凭据门控 FiveAM test 完成同一自扩展闭环；
 11. Phase 1–6 全量回归、native build、acceptance smoke 与
     `npm run check` 继续通过。
 
@@ -1531,7 +1542,11 @@ request/response，并在停止、异常退出和 server restart 时收敛状态
 要求显式 provider/model，不隐式回退；输入只允许 prompt/reload 序列，输出
 统一为 transcript、usage 与可选 selector。smoke 与 self-extension eval
 复用该公共 harness，测试可用 faux provider，环境中可用的 DeepSeek/Codex
-凭据另走 live gate。
+凭据在各 ASDF test system 内走 FiveAM credential gate，与基线
+`describe.skipIf(!KEY)` 机制同构。provider/CLI/eval live 行为不再另设 shell
+smoke 层。只观察原生 image、PTY/termios、Unix socket、跨进程迁移、signal
+或 RPC EOF 的 shell harness 继续保留；其逐项边界见
+`docs/acceptance/goal-v8-smoke-audit.md`。
 
 Wave 5 门禁固定为：
 
@@ -1541,22 +1556,24 @@ Wave 5 门禁固定为：
 4. eval 显式模型选择、隔离清理、transcript/usage 与 self-extension；
 5. 全量 CL tests、独立 server build/smoke、既有 `cadr` build/version。
 
-Wave 5 已完成并冻结。三个 package 不引入第三方依赖；全量门禁为
-`2987/2987`。独立 `cadr-server` 构建同样检测 `sb-core-compression`，缺失时
-生成无压缩 image；真实 Unix socket 已通过 spawn/list/status/RPC/stop，
-DeepSeek 与 Codex OAuth eval 均实际运行通过。此后这三个 package 的公开
-surface 遵循“发布即稳定”。
+Wave 5 已完成并冻结。三个 package 不引入第三方依赖。独立
+`cadr-server` 构建同样检测 `sb-core-compression`，缺失时生成无压缩 image；
+真实 Unix socket 已通过 spawn/list/status/RPC/stop。旧
+`live-evals-smoke.sh` 的 Codex 结论因改写凭据身份而撤回；补正后的真实
+auth/settings 默认路径已由上述 FiveAM credential gate 重新验证。最终
+ASDF gate 为 `3041 checks / 3040 pass / 1 Anthropic credential skip /
+0 fail`。此后三个 package 的公开 surface 遵循“发布即稳定”。
 
 ## 24. Goal 8 Part F 最终冻结锚点
 
-最终生产代码锚定提交
-`3e78b1962a82059caf84edccce484f1d5ae79290`。目录 tree object ID：
+证据补正后的生产与测试系统锚定提交
+`a85b0ad321969b5fcfbda58d279d9b9c3a96209e`。目录 tree object ID：
 
 ```text
-c6b85aa0511bfb615f880c8d1de89108ff405c6e  src/cadr-ai
+7c6e82c496d1fead28ab0dbc2da6d5baf9d3a3c5  src/cadr-ai
 4cc11551025c0d8fa61372b26653f362fd3bb81b  src/cadr-agent
 1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950  src/cadr-tui
-422b4525e263e45ef200c0e821f836d8e51468f6  src/cadr-cli
+7e9377516002bd8d47f6e87a64dad08ff73eb880  src/cadr-cli
 00f906f794cab3265ee9c211cb130106f2ef8d96  src/cadr-storage
 b1c26416d7f496a0e807c80d0ea9578cbbdd12b2  src/cadr-server
 f5b51e94a7d93680cd081d3fd259d1d4536b9009  src/cadr-evals
@@ -1565,13 +1582,13 @@ f5b51e94a7d93680cd081d3fd259d1d4536b9009  src/cadr-evals
 ASDF/build blob object ID：
 
 ```text
-e94a3f1c1c80ffb784a94e8bbef9c8645e8504da  cadr-ai.asd
+e31b0c8d4fa963905cb5b806da53b23a9502cd0d  cadr-ai.asd
 7d657fa28a05a98b7ea673ac73ff26e0bff5d923  cadr-agent.asd
 c09f6172c1c186f15c726b2c04b7ea65a4f4214c  cadr-tui.asd
-aebccdb3796edc419d916403b2af3c52e378b3db  cadr-cli.asd
+9798d81c340091e25e13c3149652951310962369  cadr-cli.asd
 bf24fcc2be42f862c0369436fadb17c575aee430  cadr-storage.asd
 2ff62e91d0ec40503544ba04380b21db0fe6ad53  cadr-server.asd
-5627e43154b59f09591999cbc92586c722cc113c  cadr-evals.asd
+d09bb77c6c45dd4c7fc3a0d354cf589f066effd8  cadr-evals.asd
 43826965957004c3b13c49d5ddd77c29b62d35b3  build.sh
 892a4d77b6a38cc5b8d1bd5fb5731fb7fd9a8d2e  build.lisp
 25c0804937c42b2c5170e453fe976ef318f98056  build-server.sh

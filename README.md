@@ -154,19 +154,25 @@ The eval harness requires an explicit provider and model:
   --model deepseek-v4-flash
 ```
 
-`scripts/live-evals-smoke.sh` is the credential-gated gate for the locally
-available DeepSeek key and Codex OAuth credential.
+Credential-gated live blocks are part of the normal FiveAM suites. With the
+locally available credentials, `test/cadr-evals/live-evals-test.lisp` runs the
+DeepSeek and Codex OAuth evals; absent credentials skip exactly as in the
+reference vitest suites.
 
 ### OAuth
 
-Start `./cadr --provider openai`, then enter:
+Start `./cadr`, then enter:
 
 ```text
 /login openai
 ```
 
 The PKCE callback listens once on `127.0.0.1:1455`. Credentials are stored in
-`~/.cadr/auth.json` with mode `0600`; refresh is locked per provider and token
+`~/.cadr/auth.json` under the baseline `openai-codex` provider identity with
+mode `0600`. A successful login selects and persists that provider's default
+model when the previous route had no usable auth or belonged to another
+provider, so the same session and the next plain `./cadr` invocation can
+converse without provider/model flags. Refresh is locked per provider and token
 values are redacted from transport, API, assistant, and condition output.
 `/login anthropic` implements the same abstraction but has not been live
 verified because no Claude subscription account was available. Subscription
@@ -285,6 +291,14 @@ accidental name collisions; it is not a security boundary.
   of using the TypeScript/Bun toolchain.
 - Extensions are Lisp packages and forms rather than JavaScript modules and
   npm packages.
+- Provider live checks use credential-gated FiveAM blocks, matching the
+  reference vitest mechanism. External shell harnesses remain only where a
+  unit test cannot faithfully observe the real boundary:
+  `acceptance-smoke.sh` (native image and cross-process sessions),
+  `goal5-manual-tui-smoke.sh`/`live-tui-smoke.sh` (PTY, terminal rendering and
+  termios), `migration-smoke.sh` (interactive data migration),
+  `server-smoke.sh` (native multiprocess Unix socket), and
+  `test-wave2-process-modes.sh` (native modes, signals and RPC EOF).
 
 No additional core safety, approval, orchestration, or policy mechanism is
 introduced. Proposed mechanisms beyond original pi belong in
@@ -294,8 +308,9 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic | 2987/2987 Common Lisp checks; fixture/request/response parity for all baseline protocols |
-| Live-proven | DeepSeek API key and OpenAI Codex OAuth: streaming, print, extension, repo-tool, TUI, and eval smokes |
+| Full ASDF gate | 3041 checks: 3040 pass, one credential-gated Anthropic skip, zero failures |
+| Deterministic | Fixture/request/response parity for all baseline protocols |
+| Live-proven | Credential-gated FiveAM: DeepSeek streaming/print/extension/repo/eval and OpenAI Codex default CLI/eval; retained PTY smoke covers the live DeepSeek TUI |
 | Credential-gated | Providers without credentials skip live blocks exactly as the baseline does; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; the final all-feature terminal sweep remains the Goal 8 acceptance gate |
 
@@ -307,16 +322,12 @@ introduced. Proposed mechanisms beyond original pi belong in
 ./scripts/test-wave2-process-modes.sh
 ./scripts/migration-smoke.sh
 ./scripts/server-smoke.sh
-./scripts/live-deepseek-smoke.sh
-./scripts/live-print-smoke.sh
-./scripts/live-extension-smoke.sh
-CADR_ALLOW_LIVE_TOOL_SMOKE=1 ./scripts/live-repo-smoke.sh
 ./scripts/live-tui-smoke.sh
-./scripts/live-openai-oauth-smoke.sh
-./scripts/live-evals-smoke.sh
 ```
 
 Detailed coverage is in [docs/test-matrix.md](docs/test-matrix.md).
+The script-by-script evidence audit is in
+[docs/acceptance/goal-v8-smoke-audit.md](docs/acceptance/goal-v8-smoke-audit.md).
 Migration evidence and the exact residual-name exemptions are in
 [docs/progress/migration.md](docs/progress/migration.md).
 The final mechanical evidence and pending human checklist are in

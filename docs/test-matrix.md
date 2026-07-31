@@ -3,6 +3,10 @@
 Behavior baseline:
 `earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`.
 The v1 matrix remains below; Phases 5–8 add the `docs/progress/goal-v2.md` coverage tables.
+Provider live checks are credential-gated FiveAM blocks. Shell harnesses are
+retained only for native process/PTY/socket/migration boundaries; the complete
+script audit and exact claim limits are in
+[`goal-v8-smoke-audit.md`](acceptance/goal-v8-smoke-audit.md).
 
 ## Phase 1: cadr-ai
 
@@ -45,8 +49,8 @@ the five-provider v2 registry remain outside the current phase.
 | Refresh replay to request | `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST` | Expired → recorded token response → Codex request |
 | Codex request contract | `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS` | URL, bearer, account, originator, beta headers |
 | Slash auth commands | config-auth REPL and dispatch tests | `/login`, `/logout`, provider re-resolution |
-| Live DeepSeek | `scripts/live-deepseek-smoke.sh` | Native executable streamed exact response |
-| Live OpenAI OAuth | `scripts/live-openai-oauth-smoke.sh` | Real ChatGPT login; Codex Responses streaming passed |
+| Live DeepSeek | `test/cadr-ai/live-provider-test.lisp` | Credential-gated exact response, terminal events and positive usage |
+| Live OpenAI OAuth | `test/cadr-cli/live-test.lisp` | Real `~/.cadr/auth.json` plus persisted defaults; no provider/model override |
 
 ## Phase 6: tree sessions, compaction, resume, and export
 
@@ -75,7 +79,7 @@ the five-provider v2 registry remain outside the current phase.
 | Atomic reload | last-known-good and old-closure tests | One snapshot swap; failed generation keeps same-source LKG; old calls finish on old code |
 | Commands/templates/skills | placeholder and command-priority tests | Built-ins beat extension commands; commands beat templates; fixed placeholder grammar |
 | Git install | injected argv and real local Git daemon tests | No shell interpolation, no local/file URL, atomic staging rename, no overwrite |
-| Self-extension | faux provider and `scripts/live-extension-smoke.sh` | Both deterministic and live DeepSeek complete write → reload → invoke |
+| Self-extension | faux provider plus `test/cadr-evals/live-evals-test.lisp` | Both deterministic and credential-gated DeepSeek complete write → reload → invoke with explicit tool-surface assertions |
 | Original-pi execution model | `CORE-EXPOSES-NO-BUILT-IN-APPROVAL-OR-YOLO-SWITCH`, direct write test | No core confirmation export or `--yolo`; side-effect tools execute after validation |
 
 ## Wave 2: agent harness, session v3, print/JSON, and RPC
@@ -89,7 +93,7 @@ the five-provider v2 registry remain outside the current phase.
 | Expanded frozen extension API | legacy compatibility and Wave 2 extension suites | Existing macro/event behavior unchanged; approved lifecycle/UI/runtime additions validated and used by the real loop |
 | Text/JSON modes | modes suite plus `scripts/test-wave2-process-modes.sh` | Mode priority, stdin merge, clean final text, JSONL events, error exits and SIGTERM cleanup |
 | RPC mode | RPC suite plus process fixture | Full command union, response IDs, events, LF framing, prompt intervention, bash abort and extension UI response/timeout/EOF cleanup |
-| Live one-shot print | `scripts/live-print-smoke.sh` | DeepSeek one-shot text mode exits 0 with exact clean output |
+| Live one-shot print | `test/cadr-cli/live-test.lisp` | Credential-gated DeepSeek CLI handler exits 0 with exact stdout and empty stderr |
 
 ## Goal 8 Wave 5: storage, server, and evals
 
@@ -101,7 +105,7 @@ the five-provider v2 registry remain outside the current phase.
 | Radius presence | heartbeat retry suite | Credential gating, exponential transient backoff, three-404 re-registration threshold and dormant no-credential behavior |
 | Eval harness | `CADR-EVALS-SUITE` | Explicit provider/model, isolated cleanup, normalized transcript/usage and prompt/reload sequencing |
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
-| Live evals | `scripts/live-evals-smoke.sh` | DeepSeek key and Codex OAuth both run the exact Paris/usage smoke through the public harness |
+| Live evals | `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run exact Paris/usage checks through the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
 
 ## Phase 8: pure Common Lisp TUI
@@ -116,7 +120,7 @@ the five-provider v2 registry remain outside the current phase.
 | Differential rendering | renderer/virtual-terminal tests | Only changed rows repaint; shrink clears stale rows; width change forces full redraw; image rows preclear |
 | Exception-safe terminal | lifecycle body and partial-start tests | Cleanup runs after body conditions and after a start method fails mid-setup |
 | Shared frontend semantics | `DISPATCH-USER-INPUT-IS-SHARED-BY-FRONTENDS`, TUI policy test | TUI/REPL share dispatch and agent events; `--no-tui` and non-TTY fallback are explicit |
-| Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh`, `scripts/goal5-manual-tui.sh` | Pipe fallback; overlay focus/CJK/image fallback; autocomplete, undo, kill ring, DeepSeek two-turn edit, resize, image protocol and termios restoration |
+| Native/live acceptance | `scripts/acceptance-smoke.sh`, `scripts/live-tui-smoke.sh`, `scripts/goal5-manual-tui-smoke.sh` | Pipe fallback; overlay focus/CJK/image fallback; autocomplete, undo, kill ring, DeepSeek two-turn edit, resize, image protocol and termios restoration |
 
 ## Phase 9: native infrastructure and dependency closure
 
@@ -129,7 +133,7 @@ the five-provider v2 registry remain outside the current phase.
 | Long-thinking SSE | `SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT` | Native transport receives explicit `read-timeout = NIL` |
 | Required removals | source audit in `docs/dependency-audit.md` | No production `dexador`, `com.inuoe.jzon`, or `clingon` reference |
 | Full native image | `./build.sh`, `scripts/acceptance-smoke.sh` | 1219 checks and SBCL compression-feature fallback |
-| Live DeepSeek paths | four live smoke scripts | Native HTTPS/SSE, self-extension, fail/fix/pass repository task, and real TUI multi-turn task |
+| Live DeepSeek paths | credential-gated FiveAM blocks plus `scripts/live-tui-smoke.sh` | HTTPS/SSE, self-extension, fail/fix/pass repository task, and real PTY TUI multi-turn task |
 
 ## Phase 2: cadr-agent
 
@@ -173,8 +177,8 @@ the five-provider v2 registry remain outside the current phase.
 | Compression feature fallback | `NATIVE-IMAGE-OPTIONS-OMIT-UNSUPPORTED-COMPRESSION-KEYWORD` | Unsupported builds omit the keyword entirely; supported builds use compression |
 | Repository repair acceptance | `FAUX-REPO-TASK-OBSERVES-FAILING-TEST-FIXES-AND-PASSES` | Read → wrong edit → failed test → corrected edit → passing test |
 | Native executable continuation | `scripts/acceptance-smoke.sh` | Saved image help plus two-process `--continue`, one session file |
-| Live Anthropic multi-turn streaming | `scripts/live-anthropic-smoke.sh` | Credential-gated two-turn context assertion; fails before network when the key is absent |
-| Live repository repair | `scripts/live-repo-smoke.sh` | DeepSeek credential plus script-level opt-in; isolated repo must record test failure, edit, and passing rerun |
+| Live Anthropic multi-turn streaming | `test/cadr-ai/live-provider-test.lisp` | Credential-gated exact two-turn context; absent key skips like the baseline |
+| Live repository repair | `test/cadr-evals/live-evals-test.lisp` | DeepSeek credential gate only; isolated repo must record test failure, edit, and passing rerun |
 
 ## cadr migration
 

@@ -7,6 +7,13 @@
 - Goal 8 开工提交：`664e6b80ae1dc0d67711dc83e92e5e39f7518174`
 - 开工账本：`104 C / 0 U / 248 M`
 
+> 证据补正（2026-07-31）：本文后续保留的旧
+> `live-*-smoke.sh` 命令输出只记录当时执行历史，不再作为当前验收证据。
+> `live-openai-oauth-smoke.sh` 与 `live-evals-smoke.sh` 曾用 `jq` 把
+> `openai` 凭据改名为 `openai-codex`；其 OAuth “通过”结论已撤回。当前
+> 证据以文末补正记录和
+> [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md) 为准。
+
 ## Part A：Wave 3 provider 与完整 AI 面
 
 状态：完成并提交。
@@ -276,7 +283,8 @@ Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
 
 ## Part F：终局机械收官
 
-状态：机械部分完成并落账；等待用户按
+状态：旧机械证据因 OAuth 绕过被退回；2026-07-31 证据补正后须重新验收。
+用户仍需按
 [`docs/acceptance/goal-v8-final.md`](../acceptance/goal-v8-final.md)
 逐项完成人工验收，尚未宣告进入维护态。
 
@@ -296,10 +304,57 @@ Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
 - `build.sh`、`build-server.sh` 均成功无压缩降级并产出新命名；
 - acceptance、process modes、migration、server 与 TUI deterministic
   smokes 全绿；
-- DeepSeek 的 stream/print/extension/repo/TUI/eval 与 Codex OAuth 的
-  stream/eval 全部实际运行通过；
+- DeepSeek 的旧 live 记录由凭据门控 FiveAM 重新验证；Codex OAuth 的旧
+  stream/eval 记录因改写凭据身份而撤回，必须以真实 auth/settings 默认
+  路径重新验证；
 - Anthropic 无凭据，按基线 credential gate 跳过；
 - 依赖审计无新增第三方依赖；
 - 最终代码、ASDF/build 与 extension SHA 已写入 architecture 第 24 节。
 
 Goal 8 的终局大验收仍以用户人工清单为最后一道门；自行宣布完成无效。
+
+## 2026-07-31 证据真实性补正
+
+本轮不是给旧 smoke 打补丁，而是收敛验证机制：
+
+- `/login openai` 的 exchange、refresh、存储、读取统一为基线
+  `openai-codex` 身份；登录后的默认模型选择覆盖无凭据或其他 provider
+  的既有路由；
+- OAuth URL 在 TUI 中使用基线 OSC 8 原始链接与点击提示，不再经过
+  `session>` notice；
+- 七个 provider/CLI/eval shell live 脚本删除，其覆盖移入 ASDF/FiveAM
+  凭据门控；
+- 只保留真实二进制、PTY/termios、Unix socket、迁移、signal/RPC EOF
+  这类进程级 harness；逐脚本结论见
+  [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md)；
+- OpenAI live 门禁直接读取真实 `~/.cadr/auth.json` 与默认 settings，
+  不复制、不改名、不传 provider/model 覆盖；旧身份存在时门禁明确失败。
+
+### 补正提交与最终机械结果
+
+1. `cd5f7ba16dc30fa0bc5c1d7e7723a9f0553bd764` — 统一 OpenAI Codex
+   登录/存储/读取身份、默认模型选择与 URL 展示，并先落回归；
+2. `42ef9d74dff0aac7b1c52ed7402e8206e103fb66` — 删除七个可内置 live
+   shell 脚本，覆盖并入三个 ASDF/FiveAM credential gate；
+3. `03aca58dc0c17c227436cc0e3373c01da30f0312` — repo live gate 强制先
+   观察真实 code 1、保持 test fixture 未改，再接受修复后的 code 0；
+4. `a85b0ad321969b5fcfbda58d279d9b9c3a96209e` — process smoke 以服务端
+   请求 marker 同步 SIGTERM，不再依赖固定 50ms 猜测。
+
+最终机械证据：
+
+- 全量 ASDF gate：`3041 checks / 3040 pass / 1 skip / 0 fail`，唯一 skip
+  为无 Anthropic key；DeepSeek 与 Codex OAuth live blocks 均真跑；
+- `build.sh` 与 `build-server.sh` 均在无 `sb-core-compression` 的 SBCL
+  上降级成功，产出 `cadr` 65,348,488 bytes 与 `cadr-server`
+  57,155,288 bytes，mode 0755，二者 `--version` 均为 `0.1.0` 新名；
+- 六个保留脚本全部重跑通过：acceptance、process modes、migration、
+  server、Goal 5 PTY 与 live DeepSeek TUI；
+- 真实 TUI `/login openai` 后在同一进程、不加 provider/model 参数直接
+  对话，settings 持久化为 `openai-codex/gpt-5.5`，assistant 精确回复
+  `OAUTH_TUI_DIRECT_OK`；
+- extension export SHA 仍为
+  `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`，
+  相对 Goal 8 开工提交的 `src/cadr-tui` production diff 仍为空。
+
+此前 `2987/2987` 及旧脚本结果只保留为历史记录，不能代替以上补正证据。

@@ -100,7 +100,7 @@ Reference public surface:
 Verification labels describe what is reachable with the credentials observed
 during this audit, not what was rerun: `fixture` means deterministic local
 replay/unit conversion; `live-ready` means a usable credential is present;
-`live-proven` links an existing cadr live-smoke result. No unavailable
+`live-proven` links an existing cadr credential-gated FiveAM result. No unavailable
 credential is inferred.
 
 | # | Provider | Protocol | Authentication | Status and main difficulty | Reachable verification |
@@ -112,7 +112,7 @@ credential is inferred.
 | 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
 | 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | 已实现; placeholder materialization and gateway-specific headers across three APIs | fixture; no Cloudflare credential |
 | 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | 已实现; endpoint materialization | fixture; no Cloudflare credential |
-| 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现; complete deterministic matrix plus a real streaming smoke | fixture + [live-proven](../scripts/live-deepseek-smoke.sh) |
+| 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现; complete deterministic matrix plus a real streaming gate | fixture + [live-proven](../test/cadr-ai/live-provider-test.lisp) |
 | 9 | `fireworks` | Anthropic + Completions | `FIREWORKS_API_KEY` | 已实现; multi-API catalog routing | fixture; no Fireworks credential |
 | 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | 已实现; device flow, token exchange, model filtering and Copilot headers | fixture; no GitHub Copilot credential |
 | 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 已实现; complete deterministic Gemini 3.6 and compatibility matrix | fixture; no Gemini credential |
@@ -127,7 +127,7 @@ credential is inferred.
 | 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
 | 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 已实现; shared adapter and exact catalog | fixture; no NVIDIA credential |
 | 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 已实现; full deterministic Responses compatibility matrix | fixture; no OpenAI API-key credential |
-| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; distinct identity, OAuth, cache affinity and Codex response transport | fixture + [live-proven](../scripts/live-openai-oauth-smoke.sh) |
+| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; one identity across login/store/default routing and Codex response transport | fixture + [live-proven](../test/cadr-cli/live-test.lisp) |
 | 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 已实现; four-API model routing | fixture; no OpenCode credential |
 | 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 已实现; three-API model routing | fixture; no OpenCode credential |
 | 26 | `openrouter` | `openai-completions` | API key or OAuth | 已实现; OAuth shapes, cache-control variants and exact catalog | fixture; no OpenRouter credential |
@@ -300,7 +300,7 @@ It has two non-`*.test.ts` suites:
 |---|---|---|
 | Generic eval harness and normalized transcript/usage | 已实现 | [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
 | Explicit provider/model runner | 已实现 | [run-evals](../scripts/run-evals.sh), [EVALS](#evals) |
-| Smoke eval | 已实现 | faux unit gate plus [DeepSeek/Codex live gate](../scripts/live-evals-smoke.sh), [EVALS](#evals) |
+| Smoke eval | 已实现 | faux unit gate plus [DeepSeek/Codex live gate](../test/cadr-evals/live-evals-test.lisp), [EVALS](#evals) |
 | Self-extension eval | 已实现 | isolated write/reload/invoke gate in [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
 
 ## 3. Gap and evidence index
@@ -319,7 +319,7 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-ai-error-retry"></a>`CL-AI-ERROR-RETRY` | [`COMPLETE-CHAT-NORMALIZES-API-ERRORS`](../test/cadr-ai/provider-responses-test.lisp), [`RETRYABLE-COMPLETE-REQUESTS-RESPECT-CAP-AND-RETRY-AFTER`, `NONRETRYABLE-COMPLETE-REQUEST-IS-NOT-RETRIED`, `NATIVE-HTTP-STATUSES-RETAIN-API-BODY-AND-RETRY-POLICY`, `STREAM-RETRIES-BEFORE-PROVIDER-EVENTS-WITHOUT-DUPLICATING-START`](../test/cadr-ai/retry-test.lisp), [`CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
 | <a id="cl-ai-oauth"></a>`CL-AI-OAUTH` | [`OPENAI-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `ANTHROPIC-AUTHORIZATION-URL-MATCHES-FIXED-REFERENCE`, `OAUTH-CALLBACK-PARSER-VALIDATES-PATH-AND-STATE`, `OAUTH-REFRESH-IS-DOUBLE-CHECKED-UNDER-LOCK`, `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS`, `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST`](../test/cadr-ai/auth-test.lisp) |
 | <a id="cl-ai-deepseek"></a>`CL-AI-DEEPSEEK` | [`OPENAI-COMPLETIONS-BUILDS-TOOL-HISTORY`, `OPENAI-COMPLETIONS-PARSES-COMPLETE-TOOL-CALL-AND-USAGE`, `RECORDED-DEEPSEEK-CHAT-COMPLETIONS-STREAM`](../test/cadr-ai/openai-completions-test.lisp) |
-| <a id="cl-ai-wave3"></a>`CL-AI-WAVE3` | [independent protocols, exact 38-provider/1153-model catalog, SigV4, Vertex RS256/ADC, OAuth/device flows and dynamic Radius](../test/cadr-ai/provider-wave3-test.lisp); [model runtime and credentials](../test/cadr-ai/models-runtime-test.lisp); [faux provider](../test/cadr-ai/faux-provider-test.lisp); [context/overflow/retry/schema/UUID utilities](../test/cadr-ai/utilities-test.lisp); [40-model OpenRouter image generation](../test/cadr-ai/image-generation-test.lisp); available [DeepSeek](../scripts/live-deepseek-smoke.sh) and [Codex OAuth](../scripts/live-openai-oauth-smoke.sh) live gates |
+| <a id="cl-ai-wave3"></a>`CL-AI-WAVE3` | [independent protocols, exact 38-provider/1153-model catalog, SigV4, Vertex RS256/ADC, OAuth/device flows and dynamic Radius](../test/cadr-ai/provider-wave3-test.lisp); [model runtime and credentials](../test/cadr-ai/models-runtime-test.lisp); [faux provider](../test/cadr-ai/faux-provider-test.lisp); [context/overflow/retry/schema/UUID utilities](../test/cadr-ai/utilities-test.lisp); [40-model OpenRouter image generation](../test/cadr-ai/image-generation-test.lisp); available [DeepSeek](../test/cadr-ai/live-provider-test.lisp) and [Codex OAuth default-route](../test/cadr-cli/live-test.lisp) live gates |
 | <a id="cl-agent-loop"></a>`CL-AGENT-LOOP` | [`SIMPLE-TURN-EMITS-REFERENCE-LIFECYCLE-ORDER`, `ERROR-AND-ABORT-STOP-THE-RUN-CLEANLY`](../test/cadr-agent/loop-test.lisp), [`TOOL-CALL-RESULT-AND-NEXT-MODEL-TURN-COMPLETE`](../test/cadr-agent/tool-loop-test.lisp) |
 | <a id="cl-agent-schema"></a>`CL-AGENT-SCHEMA` | [`NATIVE-SCHEMA-VALIDATES-NESTED-TOOL-ARGUMENTS`, `NATIVE-SCHEMA-SUPPORTS-COMPOSITION-AND-SCALAR-CONSTRAINTS`, `NATIVE-SCHEMA-DEFINITION-REJECTS-MALFORMED-KEYWORDS`](../test/cadr-agent/schema-test.lisp) |
 | <a id="cl-compaction"></a>`CL-COMPACTION` | [`AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT`, `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
@@ -332,7 +332,7 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-wave2-harness"></a>`CL-WAVE2-HARNESS` | [resources/skills/system prompt](../test/cadr-agent/resources-test.lisp), [UTF-8 truncation](../test/cadr-agent/truncate-test.lisp), [execution environment](../test/cadr-agent/execution-env-test.lisp), [memory/JSONL repo/storage](../test/cadr-agent/storage-test.lisp), [SQLite adapter/migrations](../test/cadr-agent/sqlite-storage-test.lisp) |
 | <a id="cl-wave2-session"></a>`CL-WAVE2-SESSION` | [v3 disk format and migration](../test/cadr-agent/session-v3-test.lisp), [tree/context/compaction](../test/cadr-agent/storage-test.lisp), [CLI resume and migration](../test/cadr-cli/session-command-test.lisp) |
 | <a id="cl-wave2-ext"></a>`CL-WAVE2-EXT` | [legacy source compatibility gate](../test/cadr-agent/extensions-test.lisp), [approved lifecycle/UI/runtime expansion](../test/cadr-agent/extensions-wave2-test.lisp), [RPC UI process fixture](../test/fixtures/rpc-process-client.py) |
-| <a id="cl-wave2-modes"></a>`CL-WAVE2-MODES` | [mode selection, stdin, text and JSON](../test/cadr-cli/modes-test.lisp), [real-process mode/SIGTERM gate](../scripts/test-wave2-process-modes.sh), [live print](../scripts/live-print-smoke.sh) |
+| <a id="cl-wave2-modes"></a>`CL-WAVE2-MODES` | [mode selection, stdin, text and JSON](../test/cadr-cli/modes-test.lisp), [real-process mode/SIGTERM gate](../scripts/test-wave2-process-modes.sh), [credential-gated live print](../test/cadr-cli/live-test.lisp) |
 | <a id="cl-wave2-rpc"></a>`CL-WAVE2-RPC` | [framing, command/response/event/UI/bash semantics](../test/cadr-cli/rpc-test.lisp), [real-process intervention/UI/EOF gate](../scripts/test-wave2-process-modes.sh) |
 | <a id="cl-part-b"></a>`CL-PART-B` | [CLI/options](../test/cadr-cli/part-b-cli-test.lisp), [configuration/resources](../test/cadr-cli/part-b-config-test.lisp), [models/auth](../test/cadr-cli/part-b-models-test.lisp), [tools](../test/cadr-cli/part-b-tools-test.lisp), [SDK/utilities](../test/cadr-cli/part-b-sdk-test.lisp), [interactive/controllers/images](../test/cadr-cli/part-b-interactive-test.lisp), [packages](../test/cadr-cli/part-b-package-test.lisp), [extensions](../test/cadr-cli/extensions-test.lisp), and [llama.cpp](../test/cadr-cli/llama-extension-test.lisp) |
 
@@ -355,7 +355,7 @@ It has two non-`*.test.ts` suites:
 | <a id="coding-interactive"></a>`CODING-INTERACTIVE` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="storage-sqlite"></a>`STORAGE-SQLITE` | closed by Goal 8 Wave 5; [23 standalone storage checks](../test/cadr-storage/storage-test.lisp) cover adapter, migrations, repo and materialized state |
 | <a id="server"></a>`SERVER` | closed by Goal 8 Wave 5; [43 server checks](../test/cadr-server/server-test.lisp) plus the [native Unix-socket smoke](../scripts/server-smoke.sh) cover the package |
-| <a id="evals"></a>`EVALS` | closed by Goal 8 Wave 5; [16 eval checks](../test/cadr-evals/evals-test.lisp) and the [DeepSeek/Codex live gate](../scripts/live-evals-smoke.sh) cover the harness and two suites |
+| <a id="evals"></a>`EVALS` | closed by Goal 8 Wave 5; deterministic [eval checks](../test/cadr-evals/evals-test.lisp) and the [DeepSeek/Codex live gates](../test/cadr-evals/live-evals-test.lisp) cover the harness and two suites |
 | <a id="diff-lisp-ecosystem"></a>`DIFF-LISP-ECOSYSTEM` | approved Lisp extension/skill/template/package format and implementation/build-language differences; capability gaps inside those systems remain separately missing |
 
 ### Applicable but uncovered backlog
