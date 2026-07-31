@@ -214,6 +214,7 @@ Phase 9 后的生产依赖：
 | `cl+ssl` | HTTPS TLS | 第一个在册自研例外；绑定系统 OpenSSL，不自研密码学 |
 | `cl-sqlite`（ASDF `sqlite`） | session storage SQLite adapter | 第二个在册自研例外；经 CFFI 绑定系统 `libsqlite3`，项目自研 storage/repository contract 而不重写数据库引擎 |
 | `cl-ppcre` | `grep`、glob 和 JSON Schema `pattern` | 完整正则引擎按 `docs/progress/goal-v2.md` 明确暂缓；用户 pattern 不交给 shell |
+| `cl-jpeg`、`png-read` | JPEG/PNG 像素 codec | 用户在 Goal 8 Part B 编码前批准的纯 Lisp 可替换类目；不增加系统 ABI 或安全边界 |
 | `uiop` / ASDF、`sb-thread`、`sb-bsd-sockets`、`sb-posix` | 路径、进程、线程、socket、终端和构建 | SBCL/ASDF 自带设施，不计第三方生产依赖 |
 
 `fiveam` 只存在于测试 system。`babel`、`bordeaux-threads`、
@@ -222,6 +223,9 @@ production system 直接依赖；其中部分仍会作为 `cl+ssl` 或 `cl-sqlit
 的 Quicklisp 传递依赖进入 image。`cl-sqlite` 直接依赖 `iterate` 与 CFFI；
 Linux/SBCL 下的 CFFI 闭包为 Alexandria、Babel 与 trivial-features。完整
 归属见 `docs/dependency-audit.md`，这些传递项不构成新的独立例外。
+`png-read` 的闭包为 Babel、Chipz、Iterate；其中 Babel/Iterate 已由
+`cl-sqlite` 闭包进入 image，Chipz 是本次唯一新增传递系统。`cl-jpeg` 只有
+ASDF 依赖。
 
 不使用 Node/Bun，不调用 provider 的 JavaScript SDK。实现直接使用官方 HTTP
 协议，因此 payload 对拍和原始 SSE 回放是硬门槛。
@@ -1213,6 +1217,26 @@ skill 运行时。
 若实现需要改变上述导出符号、handler arity 或 hook 组合语义，必须重新走
 人工确认，而不能在编码中静默漂移。
 
+### 18.8 Goal 8 Part B 限定扩充与重冻
+
+用户只批准固定审计提交已有的 additive surface：
+
+- `define-shortcut`、`define-flag`、message/entry/tool renderer；
+- handler context 的 idle/wait、custom UI、autocomplete、theme 与 tool
+  expansion；
+- 可跨同一 generation 捕获、在 reload/retirement 后 stale 的 load-scope
+  `extension-api`，提供 send/exec/flag/active-tools；
+- bare/named/hidden inline factories；
+- `define-native-provider` 与 `cadr-ai` additive
+  login/check/refresh-context contract；
+- bundled llama.cpp provider 与 `/llama`，management SSE 显式禁用 read
+  timeout，inference 复用 OpenAI Chat Completions。
+
+既有宏 lambda list、旧事件 payload/result 与 handler-scope stale 语义均未
+改变。TUI glue 只在 `cadr-cli` 复用已有组件；相对 Goal 8 开工提交，
+`src/cadr-tui` production object ID 零变化。完整 API 基线证据与解冻边界见
+[`docs/proposals/goal-v8-part-b.md`](proposals/goal-v8-part-b.md)。
+
 ## 19. Phase 8：TUI 架构
 
 Phase 8 新增独立 ASDF system `cadr-tui`。依赖方向扩展为：
@@ -1434,13 +1458,47 @@ union、一次 response、event 转发、session 控制、bash/abort、EOF clean
 Goal 7 收尾时的 extension export 文本 SHA-256 为
 `cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
 Goal 8 Part B 预裁第 0.5(3) 随 provider request lifecycle 新增公开
-`provider-request-replacement` 三项导出，因此该 SHA **不再保持不变**；当前
-重冻锚点为
-`e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a`，
+`provider-request-replacement` 三项导出，随后按用户批准增加 additive
+extension/native-provider API，因此历史 SHA 均不再是当前锚点。Goal 8
+Part B 收尾重冻锚点为
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`，
 旧源兼容 fixture SHA-256
 `e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`，
 RPC wire/process fixture SHA-256
 `6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`，
 UI extension fixture SHA-256
 `c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
-逐文件 Git object ID 记录在提案第 9 节；此后该扩大面恢复“发布即稳定”。
+重冻 object ID：
+
+```text
+e94a3f1c1c80ffb784a94e8bbef9c8645e8504da  cadr-ai.asd
+7d657fa28a05a98b7ea673ac73ff26e0bff5d923  cadr-agent.asd
+aebccdb3796edc419d916403b2af3c52e378b3db  cadr-cli.asd
+77a0a261ee2ab365875924878d803f10be72bb9f  src/cadr-ai/models-runtime.lisp
+a9cdcddc18d4acacc28bf7e04814d4f61fe6f002  src/cadr-ai/package.lisp
+f9779b379a9374f39f4647a89a07181fc4206feb  test/cadr-ai/models-runtime-test.lisp
+54366ea418de090192b9320469caae497d255b01  src/cadr-agent/extensions.lisp
+bd78aa73d5f75fc8a21366fc747188c1ee35023c  src/cadr-agent/package.lisp
+12f9de30da61bceec9a51e186e577d64b12367d6  src/cadr-agent/loop.lisp
+08beda50203d7af790d1690a06090ca7df82da23  src/cadr-agent/tool.lisp
+c097b312567386421da5cdae0f1c13d039b21bde  test/cadr-agent/extensions-test.lisp
+cf16c937b667eb2252a45ec93585edc8d0a4d60a  test/cadr-agent/extensions-wave2-test.lisp
+5cb7dbafbffb7b82c408312b13795c3116f2da63  test/cadr-agent/extensions-wave3-test.lisp
+9e598d9aad1f93ee1b17d7bff8fae36a91c2b4f9  src/cadr-cli/extensions.lisp
+b4e190b5b24e6479570829767f8c6df7360d5449  src/cadr-cli/resource-loader.lisp
+1c76c8990bd3e34a934bf8d966001441561d0f0a  src/cadr-cli/interactive-services.lisp
+656dc50d5e3616d54bbcb150ddfedabe4b2a785b  src/cadr-cli/tui.lisp
+ecfd5a50a395628bc5e424aedb72d087c14fb137  src/cadr-cli/main.lisp
+a2a35209e968becd791c9ce336bf47328aba5ec5  src/cadr-cli/modes/rpc/mode.lisp
+ab8de4c1a4a5434dce31c0392fd51ae67ea61872  src/cadr-cli/model-services.lisp
+cdc2cfbb966620d7b6f0a8c90e7ea37d5fb05c40  test/cadr-cli/extensions-test.lisp
+762385be59337bbf131e23f07062645edbd12633  test/cadr-cli/part-b-interactive-test.lisp
+8f13570644842cc8780ce0c3cc955589a339ccda  test/cadr-cli/llama-extension-test.lisp
+7ac5d70c2c12af9ef4a3c748c24e7d24474cb959  src/cadr-cli/extensions/llama/client.lisp
+3bfbdf66495fd864119a76eb9cba0db2f2e63c4a  src/cadr-cli/extensions/llama/huggingface.lisp
+d845e5e14fd9c9b864e65297e58728ae1f1e7c2f  src/cadr-cli/extensions/llama/provider.lisp
+5838bab8cf028e1632897989c92365521fe97087  src/cadr-cli/extensions/llama/extension.lisp
+```
+
+此后该扩大面恢复“发布即稳定”；后续 goal 不得修改上述对象而不重新走人工
+裁决。

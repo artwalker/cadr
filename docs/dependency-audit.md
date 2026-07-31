@@ -8,7 +8,7 @@ Audit date: 2026-07-31.
 |---|---|---|
 | `cadr-ai` | `cl+ssl` | Retained solely as the permitted system-OpenSSL TLS binding. HTTP itself is native. |
 | `cadr-agent` | `cl-ppcre`, `sqlite`, `cadr-ai` | `sqlite` is the ASDF system supplied by `cl-sqlite`, the second registered self-build exception; it binds the system SQLite library through CFFI. `cl-ppcre` is the explicitly deferred full regex engine used by JSON Schema `pattern`; `cadr-ai` is in-repository. |
-| `cadr-cli` | `cl-ppcre`, `cadr-agent`, `cadr-tui` | `cl-ppcre` is also used directly by glob/grep; the other systems are in-repository. |
+| `cadr-cli` | `cl-ppcre`, `cl-jpeg`, `png-read`, `cadr-agent`, `cadr-tui` | `cl-ppcre` is used directly by glob/grep; `cl-jpeg` and `png-read` are the approved pure-Lisp replaceable image codecs; the other systems are in-repository. |
 | `cadr-tui` | `sb-posix` | SBCL contrib used for terminal state; not a third-party dependency. |
 
 ASDF/UIOP, `sb-thread`, `sb-bsd-sockets`, `sb-posix`, `sb-gray`, and SBCL

@@ -23,6 +23,8 @@ Test classification is deliberately strict:
   is missing from the CL suite.
 - `M` = 对应缺失功能: the file contains behavior outside the current
   implementation, including files that are only partially covered.
+- `N/A` = 经用户逐文件裁决、仅因实现语言或构建生态必然不同而不适用。
+  `N/A` 不能由实现者自行扩张，也不能掩盖任何仍适用的行为。
 
 Live-gated blocks use **credential-gate equivalence**. When the baseline wraps
 a live block in `skipIf(!KEY)` (or an equivalent availability gate), cadr may
@@ -167,8 +169,8 @@ proxy/default-stream helpers.
 | Steering/follow-up queues and queue modes | 已实现 | [CL-WAVE2-AGENT](#cl-wave2-agent) |
 | `AgentHarness`, environment, repo/storage public abstractions | 已实现 | [CL-WAVE2-HARNESS](#cl-wave2-harness) |
 | Tree session and compaction core | 已实现 | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| Built-in read/write/edit/bash/find/grep/ls harness set | 缺失 | cadr has read/write/edit/bash/glob/grep, but no reference `find`/`ls` APIs and no generic execution-environment contract; [CODING-TOOLS](#coding-tools) |
-| Skills/templates/system prompt | 有意差异 | Lisp registrations replace Markdown/TS resource formats; [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
+| Built-in read/write/edit/bash/find/grep/ls harness set | 已实现 | Exact public tool names and execution-environment behavior are covered by [CL-PART-B](#cl-part-b) |
+| Skills/templates/system prompt | 有意差异 | Lisp registrations replace Markdown/TS resource formats; [CL-PART-B](#cl-part-b) |
 | Proxy/default-stream compatibility helpers | 缺失 | [AGENT-HARNESS](#agent-harness) |
 
 ### 2.3 `coding-agent`
@@ -217,14 +219,14 @@ and `get_commands`.
 |---|---|---|
 | Interactive TUI and line fallback | 已实现 | [main](../src/cadr-cli/main.lisp), [tui adapter](../src/cadr-cli/tui.lisp), [CL-TUI](#cl-tui) |
 | Text/JSON print and RPC modes | 已实现 | [CL-WAVE2-MODES](#cl-wave2-modes), [CL-WAVE2-RPC](#cl-wave2-rpc) |
-| Full CLI option/command contract | 缺失 | option list above versus [arguments](../src/cadr-cli/arguments.lisp) |
-| Built-in commands | 缺失（基础已实现） | cadr has sessions/switch/branch/compact/export/auth/reload/install; reference also has package management, configuration, import/clone/tree/model/thinking/theme and other interactive commands |
-| Public SDK/runtime/services | 缺失 | [CODING-CLI-SDK](#coding-cli-sdk) |
-| Model registry/runtime and scoped model selection | 缺失 | [CODING-MODELS](#coding-models) |
-| Tool set and mutation/runtime semantics | 缺失（基础已实现） | [tools](../src/cadr-cli/tools/), [CL-TOOLS](#cl-tools), [CODING-TOOLS](#coding-tools) |
+| Full CLI option/command contract | 已实现 | [arguments](../src/cadr-cli/arguments.lisp), [CL-PART-B](#cl-part-b) |
+| Built-in commands | 已实现 | Package/config/auth/session/model/theme/tree/import/clone and interactive commands are covered by [CL-PART-B](#cl-part-b) |
+| Public SDK/runtime/services | 已实现 | [CL-PART-B](#cl-part-b) |
+| Model registry/runtime and scoped model selection | 已实现 | [CL-PART-B](#cl-part-b) |
+| Tool set and mutation/runtime semantics | 已实现 | [tools](../src/cadr-cli/tools/), [CL-TOOLS](#cl-tools), [CL-PART-B](#cl-part-b) |
 | Session JSONL format | 已实现 | v3 header, entry union, delayed persistence and v1/v2 migration are covered by [CL-WAVE2-SESSION](#cl-wave2-session) |
-| Extension capability | 有意差异 | Original lifecycle/UI/runtime capabilities are covered; only the Lisp format/ecosystem differs. [CL-WAVE2-EXT](#cl-wave2-ext), [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| Settings, themes, packages, context files, remote catalogs | 缺失 except Lisp extension install subset | [CODING-CONFIG](#coding-config), [CODING-INTERACTIVE](#coding-interactive) |
+| Extension capability | 有意差异 | Original lifecycle/UI/runtime capabilities are covered; only the Lisp format/ecosystem differs. [CL-WAVE2-EXT](#cl-wave2-ext), [CL-PART-B](#cl-part-b) |
+| Settings, themes, packages, context files, remote catalogs | 已实现 | [CL-PART-B](#cl-part-b) |
 
 ### 2.4 `tui`
 
@@ -332,6 +334,7 @@ It has two non-`*.test.ts` suites:
 | <a id="cl-wave2-ext"></a>`CL-WAVE2-EXT` | [legacy source compatibility gate](../test/cadr-agent/extensions-test.lisp), [approved lifecycle/UI/runtime expansion](../test/cadr-agent/extensions-wave2-test.lisp), [RPC UI process fixture](../test/fixtures/rpc-process-client.py) |
 | <a id="cl-wave2-modes"></a>`CL-WAVE2-MODES` | [mode selection, stdin, text and JSON](../test/cadr-cli/modes-test.lisp), [real-process mode/SIGTERM gate](../scripts/test-wave2-process-modes.sh), [live print](../scripts/live-print-smoke.sh) |
 | <a id="cl-wave2-rpc"></a>`CL-WAVE2-RPC` | [framing, command/response/event/UI/bash semantics](../test/cadr-cli/rpc-test.lisp), [real-process intervention/UI/EOF gate](../scripts/test-wave2-process-modes.sh) |
+| <a id="cl-part-b"></a>`CL-PART-B` | [CLI/options](../test/cadr-cli/part-b-cli-test.lisp), [configuration/resources](../test/cadr-cli/part-b-config-test.lisp), [models/auth](../test/cadr-cli/part-b-models-test.lisp), [tools](../test/cadr-cli/part-b-tools-test.lisp), [SDK/utilities](../test/cadr-cli/part-b-sdk-test.lisp), [interactive/controllers/images](../test/cadr-cli/part-b-interactive-test.lisp), [packages](../test/cadr-cli/part-b-package-test.lisp), [extensions](../test/cadr-cli/extensions-test.lisp), and [llama.cpp](../test/cadr-cli/llama-extension-test.lisp) |
 
 ### Missing-feature IDs
 
@@ -344,12 +347,12 @@ It has two non-`*.test.ts` suites:
 | <a id="ai-image-gen"></a>`AI-IMAGE-GEN` | closed by Goal 8 Part A; see [CL-AI-WAVE3](#cl-ai-wave3) |
 | <a id="agent-harness"></a>`AGENT-HARNESS` | remaining proxy/default-stream compatibility helpers and exact built-in harness tool set |
 | <a id="coding-rpc"></a>`CODING-RPC` | Wave 2 RPC is complete; this ID is retained only for later server/client packaging integration |
-| <a id="coding-cli-sdk"></a>`CODING-CLI-SDK` | remaining full CLI, SDK/runtime/services and exported utilities; print/text/JSON modes are complete |
-| <a id="coding-models"></a>`CODING-MODELS` | model runtime, scopes/cycling, models store, runtime credentials and provider composition |
-| <a id="coding-session"></a>`CODING-SESSION` | Wave 2 core is complete; remaining interactive session-selector surface stays under `CODING-INTERACTIVE` |
-| <a id="coding-tools"></a>`CODING-TOOLS` | exact read/bash/edit/write/find/grep/ls API and concurrent mutation/streaming/platform edge behavior |
-| <a id="coding-config"></a>`CODING-CONFIG` | settings manager, resource loader, configurable keybindings, project context/trust and migrations |
-| <a id="coding-interactive"></a>`CODING-INTERACTIVE` | complete interactive command/component behavior, clipboard/images, themes, syntax and selectors |
+| <a id="coding-cli-sdk"></a>`CODING-CLI-SDK` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
+| <a id="coding-models"></a>`CODING-MODELS` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
+| <a id="coding-session"></a>`CODING-SESSION` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
+| <a id="coding-tools"></a>`CODING-TOOLS` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
+| <a id="coding-config"></a>`CODING-CONFIG` | closed except the approved `config.test.ts` build-ecosystem `N/A`; see [CL-PART-B](#cl-part-b) |
+| <a id="coding-interactive"></a>`CODING-INTERACTIVE` | closed by Goal 8 Part B; see [CL-PART-B](#cl-part-b) |
 | <a id="storage-sqlite"></a>`STORAGE-SQLITE` | standalone storage package integration; the agent harness SQLite adapter, migrations, materialized views and repo/storage contracts are complete |
 | <a id="server"></a>`SERVER` | complete server package |
 | <a id="evals"></a>`EVALS` | complete eval harness, runner and two eval suites |
@@ -357,16 +360,16 @@ It has two non-`*.test.ts` suites:
 
 ### Applicable but uncovered backlog
 
-There are no `U` files in the strict manifest. Goal 5 closed
-`U-SEARCH-GITIGNORE` and `U-TUI-RI`; similar-looking files remain `M` when
-they also cover an unimplemented provider, queue, compatibility option or
-platform behavior.
+There are no `U` or `M` files in the strict manifest. Goal 5 closed
+`U-SEARCH-GITIGNORE` and `U-TUI-RI`; Goal 8 Parts A and B closed the remaining
+applicable files. `config.test.ts` is the sole user-approved `N/A`.
 
 ### `docs/test-matrix.md` audit notes
 
-The matrix retains the earlier phase tables and now includes Wave 3. The
-current suite has **1988** checks; exact package totals are in the Goal 8
-progress report. Earlier conservative AI notes are superseded by Part A:
+The matrix retains the earlier phase tables and now includes Wave 3 and
+Goal 8 Part B. The current suite has **2905** checks; exact package totals are
+in the Goal 8 progress report. Earlier conservative AI notes are superseded by
+Part A:
 malformed stream/tool JSON, complete provider matrices, independent protocols,
 auth and catalog/runtime behavior now have linked deterministic evidence.
 Its Phase 6 table describes the historical JSONL v2 format. Wave 2 now
@@ -379,19 +382,18 @@ It has no rows
 The appendix is sorted exactly like
 `find packages -type f -name '*.test.ts' | sort`. Each path appears once.
 
-| Package | C | U | M | Total |
-|---|---:|---:|---:|---:|
-| `ai` | 120 | 0 | 0 | 120 |
-| `agent` | 18 | 0 | 0 | 18 |
-| `coding-agent` | 59 | 0 | 128 | 187 |
-| `tui` | 27 | 0 | 0 | 27 |
-| `storage` / `server` / `evals` | 0 | 0 | 0 | 0 |
-| **Total** | **224** | **0** | **128** | **352** |
+| Package | C | U | M | N/A | Total |
+|---|---:|---:|---:|---:|---:|
+| `ai` | 120 | 0 | 0 | 0 | 120 |
+| `agent` | 18 | 0 | 0 | 0 | 18 |
+| `coding-agent` | 186 | 0 | 0 | 1 | 187 |
+| `tui` | 27 | 0 | 0 | 0 | 27 |
+| `storage` / `server` / `evals` | 0 | 0 | 0 | 0 | 0 |
+| **Total** | **351** | **0** | **0** | **1** | **352** |
 
-The 1988 CL assertions cover all 120 AI files, the complete 27-file TUI
-surface, all 18 agent harness files, 58 Wave 2 coding-agent session/mode/RPC
-files, and the nested-gitignore regression. Whole-file classification is
-`224/0/128`.
+The 2905 CL assertions cover all 120 AI files, the complete 27-file TUI
+surface, all 18 agent harness files, and 186 applicable coding-agent files.
+Whole-file classification is `351 C / 0 U / 0 M / 1 N/A`.
 
 | Class | Baseline test file | Evidence/gap |
 |---|---|---|
@@ -544,97 +546,97 @@ files, and the nested-gitignore regression. Whole-file classification is
 | C | `packages/coding-agent/test/agent-session-runtime-events.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
 | C | `packages/coding-agent/test/agent-session-stats.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/agent-session-tree-navigation.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/ansi-utils.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/ansi-utils.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/args.test.ts` | [CL-WAVE2-MODES](#cl-wave2-modes) |
-| M | `packages/coding-agent/test/assistant-message.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/auth-storage.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/bash-close-hang-windows.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/bash-execution-width.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/block-images.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
+| C | `packages/coding-agent/test/assistant-message.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/auth-storage.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/bash-close-hang-windows.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/bash-execution-width.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/block-images.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/branch-summary-extensions.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/cache-stats.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/changelog.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/clipboard-image-bmp-conversion.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/clipboard-image.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/clipboard-native.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/clipboard.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
+| C | `packages/coding-agent/test/cache-stats.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/changelog.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/clipboard-image-bmp-conversion.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/clipboard-image.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/clipboard-native.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/clipboard.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/compaction-extensions-example.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
 | C | `packages/coding-agent/test/compaction-extensions.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
 | C | `packages/coding-agent/test/compaction-serialization.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/compaction-summary-reasoning.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/compaction.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/config-value-migration.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/config.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/credential-print.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/custom-message.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/edit-tool-legacy-input.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/edit-tool-no-full-redraw.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/experimental.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/export-html-skill-block.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/export-html-whitespace.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/export-html-xss.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/extensions-discovery.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/extensions-input-event.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/extensions-runner.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/external-editor.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/file-mutation-queue.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/first-time-setup-fork.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/first-time-setup.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/footer-data-provider.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/footer-width.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/format-resume-command.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/frontmatter.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/git-merge-and-resolve-extension.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/git-ssh-url.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/git-update.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/http-dispatcher.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/image-process.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/image-processing.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/image-resize-callers.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
+| C | `packages/coding-agent/test/config-value-migration.test.ts` | [CL-PART-B](#cl-part-b) |
+| N/A | `packages/coding-agent/test/config.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/credential-print.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/custom-message.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/edit-tool-legacy-input.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/edit-tool-no-full-redraw.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/experimental.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/export-html-skill-block.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/export-html-whitespace.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/export-html-xss.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/extensions-discovery.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/extensions-input-event.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/extensions-runner.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/external-editor.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/file-mutation-queue.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/first-time-setup-fork.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/first-time-setup.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/footer-data-provider.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/footer-width.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/format-resume-command.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/frontmatter.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/git-merge-and-resolve-extension.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/git-ssh-url.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/git-update.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/http-dispatcher.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/image-process.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/image-processing.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/image-resize-callers.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/initial-message.test.ts` | [CL-WAVE2-MODES](#cl-wave2-modes) |
-| M | `packages/coding-agent/test/input-transform-streaming-example.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/interactive-mode-anthropic-warning.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/interactive-mode-clone-command.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/interactive-mode-compaction.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/interactive-mode-import-command.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/interactive-mode-startup-input.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/interactive-mode-status.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/interactive-mode-suspend.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/keybindings-migration.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/llama-extension.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/max-thinking.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/model-registry.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/model-resolver.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/model-runtime-auth-options.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/model-runtime-cloudflare-compat.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/model-runtime-modify-models-compat.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/models-store.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/oauth-selector.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/package-command-paths.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/package-manager-ssh.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/package-manager.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/path-utils.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/paths.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/pi-user-agent.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/plan-mode-extension.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/plan-mode-utils.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
+| C | `packages/coding-agent/test/input-transform-streaming-example.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-anthropic-warning.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-clone-command.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-compaction.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-import-command.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-startup-input.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-status.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/interactive-mode-suspend.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/keybindings-migration.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/llama-extension.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/max-thinking.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/model-registry.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/model-resolver.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/model-runtime-auth-options.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/model-runtime-cloudflare-compat.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/model-runtime-modify-models-compat.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/models-store.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/oauth-selector.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/package-command-paths.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/package-manager-ssh.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/package-manager.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/path-utils.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/paths.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/pi-user-agent.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/plan-mode-extension.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/plan-mode-utils.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/print-mode.test.ts` | [CL-WAVE2-MODES](#cl-wave2-modes) |
-| M | `packages/coding-agent/test/prompt-templates.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/radius.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/remote-catalog-provider.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/resolve-config-value.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/resource-loader.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/restore-sandbox-env.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/prompt-templates.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/radius.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/remote-catalog-provider.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/resolve-config-value.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/resource-loader.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/restore-sandbox-env.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/rpc-client-clone.test.ts` | [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | C | `packages/coding-agent/test/rpc-client-process-exit.test.ts` | [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | C | `packages/coding-agent/test/rpc-jsonl.test.ts` | [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | C | `packages/coding-agent/test/rpc-prompt-response-semantics.test.ts` | [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | C | `packages/coding-agent/test/rpc.test.ts` | [CL-WAVE2-RPC](#cl-wave2-rpc) |
-| M | `packages/coding-agent/test/runtime-credentials.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/sdk-openrouter-attribution.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/runtime-credentials.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/sdk-openrouter-attribution.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/sdk-session-manager.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/sdk-skills.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/sdk-stream-options.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/sdk-skills.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/sdk-stream-options.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/session-cwd.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/session-file-invalid.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/session-id-readonly.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
@@ -646,14 +648,14 @@ files, and the nested-gitignore regression. Whole-file classification is
 | C | `packages/coding-agent/test/session-manager/migration.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/session-manager/save-entry.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/session-manager/tree-traversal.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/session-selector-path-delete.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/session-selector-rename.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/session-selector-search.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/settings-manager-bug.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/settings-manager.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/skills.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
+| C | `packages/coding-agent/test/session-selector-path-delete.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/session-selector-rename.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/session-selector-search.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/settings-manager-bug.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/settings-manager.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/skills.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/startup-session-name.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/status-indicator.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
+| C | `packages/coding-agent/test/status-indicator.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/stdout-cleanliness.test.ts` | [CL-WAVE2-MODES](#cl-wave2-modes) |
 | C | `packages/coding-agent/test/suite/agent-session-bash-persistence.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/suite/agent-session-compaction.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
@@ -662,65 +664,65 @@ files, and the nested-gitignore regression. Whole-file classification is
 | C | `packages/coding-agent/test/suite/agent-session-queue.test.ts` | [CL-WAVE2-AGENT](#cl-wave2-agent) |
 | C | `packages/coding-agent/test/suite/agent-session-retry-events.test.ts` | [CL-WAVE2-AGENT](#cl-wave2-agent) |
 | C | `packages/coding-agent/test/suite/agent-session-runtime.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/suite/lax-message-content.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/suite/lax-message-content.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/1717-2113-agent-session-event-settlement.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/suite/regressions/2023-queued-slash-command-followup.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/suite/regressions/2753-reload-stale-resource-settings.test.ts` | [CODING-CONFIG](#coding-config) |
-| M | `packages/coding-agent/test/suite/regressions/2781-skill-collision-precedence.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/suite/regressions/2791-fswatch-error-crash.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/suite/regressions/2835-tools-allowlist-filters-extension-tools.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
+| C | `packages/coding-agent/test/suite/regressions/2023-queued-slash-command-followup.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/2753-reload-stale-resource-settings.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/2781-skill-collision-precedence.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/2791-fswatch-error-crash.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/2835-tools-allowlist-filters-extension-tools.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/2860-replaced-session-context.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/suite/regressions/3217-scoped-model-order.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/suite/regressions/3302-find-path-glob.test.ts` | [CODING-TOOLS](#coding-tools) |
+| C | `packages/coding-agent/test/suite/regressions/3217-scoped-model-order.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/3302-find-path-glob.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/3303-find-nested-gitignore.test.ts` | [CL-TOOLS](#cl-tools) |
-| M | `packages/coding-agent/test/suite/regressions/3317-network-connection-lost-retry.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/suite/regressions/3616-settings-inmemory-reload.test.ts` | [CODING-CONFIG](#coding-config) |
+| C | `packages/coding-agent/test/suite/regressions/3317-network-connection-lost-retry.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/3592-no-builtin-tools-keeps-extension-tools.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/3616-settings-inmemory-reload.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/3686-session-name-event.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/suite/regressions/3688-tree-cancel-compacting.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/suite/regressions/3982-message-end-cost-override.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/suite/regressions/4167-thinking-toggle-pending-tool-render.test.ts` | [CODING-TOOLS](#coding-tools) |
+| C | `packages/coding-agent/test/suite/regressions/3688-tree-cancel-compacting.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/3982-message-end-cost-override.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/4167-thinking-toggle-pending-tool-render.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/5080-signal-shutdown-extension-cleanup.test.ts` | [CL-WAVE2-MODES](#cl-wave2-modes) |
-| M | `packages/coding-agent/test/suite/regressions/5109-exclude-tools.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/suite/regressions/5208-late-bash-output.test.ts` | [CODING-TOOLS](#coding-tools) |
+| C | `packages/coding-agent/test/suite/regressions/5109-exclude-tools.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/5208-late-bash-output.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/5217-compaction-reason.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/suite/regressions/5303-bash-output-truncation.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/suite/regressions/5433-extension-oauth-prompt-input.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/suite/regressions/5596-missing-theme-export.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/suite/regressions/5661-uppercase-header-values.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/suite/regressions/5303-bash-output-truncation.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/5433-extension-oauth-prompt-input.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/5596-missing-theme-export.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/5661-uppercase-header-values.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/5724-sigterm-signal-exit.test.ts` | [CL-WAVE2-MODES](#cl-wave2-modes) |
 | C | `packages/coding-agent/test/suite/regressions/5868-rpc-unknown-command-id.test.ts` | [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | C | `packages/coding-agent/test/suite/regressions/5943-session-start-notify.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
 | C | `packages/coding-agent/test/suite/regressions/5996-session-name-newlines.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/suite/regressions/6019-explicit-provider-retry-message.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/suite/regressions/6162-extension-active-tools-next-turn.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/suite/regressions/6260-inline-extension-naming.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
+| C | `packages/coding-agent/test/suite/regressions/6019-explicit-provider-retry-message.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/6162-extension-active-tools-next-turn.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/6260-inline-extension-naming.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/6324-branch-summary-ambient-auth.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/suite/regressions/6363-agent-settled-event.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/suite/regressions/6363-agent-settled-event.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/6647-compaction-retries-transient-stream-drop.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| M | `packages/coding-agent/test/suite/regressions/6904-dns-transport-retry.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/suite/regressions/6949-unavailable-scoped-model.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/suite/regressions/6999-models-json-hot-reload.test.ts` | [CODING-MODELS](#coding-models) |
-| M | `packages/coding-agent/test/suite/regressions/7209-model-selector-filter-resets-selection.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/suite/regressions/extension-factory-cache.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
+| C | `packages/coding-agent/test/suite/regressions/6904-dns-transport-retry.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/6949-unavailable-scoped-model.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/6999-models-json-hot-reload.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/7209-model-selector-filter-resets-selection.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/suite/regressions/extension-factory-cache.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/coding-agent/test/suite/regressions/pre-prompt-compaction-no-continue.test.ts` | [CL-WAVE2-SESSION](#cl-wave2-session) |
 | C | `packages/coding-agent/test/suite/regressions/startup-session-rebind-duplicate-subscription.test.ts` | [CL-WAVE2-EXT](#cl-wave2-ext) |
-| M | `packages/coding-agent/test/suite/regressions/tree-during-streaming.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/syntax-highlight.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/system-prompt.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/test-harness.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/theme-detection.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/theme-export.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/theme-picker.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/tool-execution-component.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/tools.test.ts` | [CODING-TOOLS](#coding-tools) |
-| M | `packages/coding-agent/test/tree-selector.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/trigger-compact-extension.test.ts` | [DIFF-LISP-ECOSYSTEM](#diff-lisp-ecosystem) |
-| M | `packages/coding-agent/test/truncate-to-width.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/trust-manager.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
-| M | `packages/coding-agent/test/trust-selector.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/user-message.test.ts` | [CODING-INTERACTIVE](#coding-interactive) |
-| M | `packages/coding-agent/test/version-check.test.ts` | [CODING-CLI-SDK](#coding-cli-sdk) |
+| C | `packages/coding-agent/test/suite/regressions/tree-during-streaming.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/syntax-highlight.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/system-prompt.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/test-harness.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/theme-detection.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/theme-export.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/theme-picker.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/tool-execution-component.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/tools.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/tree-selector.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/trigger-compact-extension.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/truncate-to-width.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/trust-manager.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/trust-selector.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/user-message.test.ts` | [CL-PART-B](#cl-part-b) |
+| C | `packages/coding-agent/test/version-check.test.ts` | [CL-PART-B](#cl-part-b) |
 | C | `packages/tui/test/autocomplete.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/bug-regression-isimageline-startswith-bug.test.ts` | [CL-TUI](#cl-tui) |
 | C | `packages/tui/test/editor.test.ts` | [CL-TUI](#cl-tui) |
@@ -761,6 +763,7 @@ The user approved the order Wave 0 → pulled-forward TUI → Wave 1 → 2 → 3
 | Wave 1 | complete | shared OpenAI-Completions/Responses and Anthropic compatibility; compatible providers/catalogs | generated fixtures plus credential-gated smokes |
 | Wave 2 | complete | exact agent harness, session v3, queues, print/JSON and RPC | 76 reference files are `C`; 1716 CL checks plus process/live gates |
 | Wave 3 | complete | independent APIs, auth flows, exact catalogs, model/image/faux runtimes | 641 AI checks plus DeepSeek and Codex OAuth live smokes |
+| Goal 8 Part B | complete | complete coding-agent runtime, tools, configuration, models, packages, interactive UI and approved extension/llama surfaces | 127 former `M` files are `C`; `config.test.ts` is the sole approved `N/A`; 2905 CL checks |
 | Wave 5 | not started | standalone storage packaging, server and eval harness | Unix-socket RPC and eval smokes; harness SQLite adapter already landed in Wave 2 |
 
 Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session

@@ -111,11 +111,11 @@ provider 粘合点。TUI、extension、agent tool 与 CLI tool 冻结路径相�
 
 Goal meter 收尾快照：`1,526,490` tokens，`4,609` 秒（累计值）。
 
-## Part B：预授权增量已落账，四项待裁
+## Part B：完整 coding-agent 行为面
 
-状态：**blocked**。以下只记录预授权范围内已经完成的增量；四项越界事项均未
-实现，逐项提案见
-[`docs/proposals/goal-v8-part-b.md`](../proposals/goal-v8-part-b.md)。
+状态：完成并提交。用户已逐项批准
+[`docs/proposals/goal-v8-part-b.md`](../proposals/goal-v8-part-b.md) 的四项
+裁决；实现严格按提案第 5 节顺序执行。
 
 ### 预授权提交
 
@@ -130,36 +130,64 @@ Goal meter 收尾快照：`1,526,490` tokens，`4,609` 秒（累计值）。
 5. `d0a90f9e009aadcca4f3fb482596c21e4314308b` — REPL/RPC/TUI glue 与
    startup lifecycle wiring。
 
-### 扩展导出锚点修正
+### 获批项提交
 
-预裁第 0.5(3) 的 `before_provider_request` replacement 合约新增公开导出：
+1. `1b0350d37` — 先行登记 `cl-jpeg`、`png-read` 及传递闭包，分类为
+   纯 Lisp 可替换依赖；
+2. `68b07c010` — JPEG/PNG 真像素解码、EXIF orientation、Lanczos3 缩放与
+   编码大小降级；
+3. `602e03902`、`0f7836754` — additive extension API、load-scope handle、
+   renderer/flag/shortcut、inline factory 与 CLI-owned UI bridge；
+4. `158bc3128` — `cadr-ai` native provider 最小 runtime 合约，仅修改
+   `models-runtime.lisp`、`package.lisp` 与对应 test；`cadr-ai.asd` 无需改动；
+5. `cbd50a040`、`ee981f6a8` — `define-native-provider`、llama.cpp bundled
+   extension、Hugging Face GGUF 查询与无 read-timeout 的 `/models/sse`；
+6. `config.test.ts` 按用户裁决整文件记为 `N/A`，边界不扩张到
+   `version-check.test.ts` 或资源包更新。
 
-```lisp
-provider-request-replacement
-make-provider-request-replacement
-provider-request-replacement-payload
-```
+### 扩展重冻
 
-因此不能继续宣称 Goal 7 的 export SHA 保持不变。按 Goal 7 的相同取样命令：
+按 Goal 7 相同取样命令重算：
 
 ```text
 sed -n '/#:define-tool/,/#:make-extension-hook-result/p' \
   src/cadr-agent/package.lisp | sha256sum
-e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a  -
+e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046  -
 ```
 
-当前 extension 相关 Git object ID：
+重冻 object ID：
 
 ```text
-89f22526fae6d1395e7af6475e2f78df2a70f86d  src/cadr-agent/extensions.lisp
-0d5ff60edf348d23f98bd30a352d0dccafd8877f  src/cadr-agent/package.lisp
-dd137c9957abf4b184313206c63182ccbb7bc1c6  test/cadr-agent/extensions-wave3-test.lisp
-3f903689bd0f8ac59c4412e8b3d332a26df24cca  src/cadr-cli/extensions.lisp
-4c439bf877d1f82d4ca4628ac52ec20ba2c458e4  src/cadr-cli/sdk-services.lisp
-28b02f016dea4b235d8ef235fa3c2dbb07c42a26  test/cadr-cli/extensions-test.lisp
+e94a3f1c1c80ffb784a94e8bbef9c8645e8504da  cadr-ai.asd
+7d657fa28a05a98b7ea673ac73ff26e0bff5d923  cadr-agent.asd
+aebccdb3796edc419d916403b2af3c52e378b3db  cadr-cli.asd
+77a0a261ee2ab365875924878d803f10be72bb9f  src/cadr-ai/models-runtime.lisp
+a9cdcddc18d4acacc28bf7e04814d4f61fe6f002  src/cadr-ai/package.lisp
+f9779b379a9374f39f4647a89a07181fc4206feb  test/cadr-ai/models-runtime-test.lisp
+54366ea418de090192b9320469caae497d255b01  src/cadr-agent/extensions.lisp
+bd78aa73d5f75fc8a21366fc747188c1ee35023c  src/cadr-agent/package.lisp
+12f9de30da61bceec9a51e186e577d64b12367d6  src/cadr-agent/loop.lisp
+08beda50203d7af790d1690a06090ca7df82da23  src/cadr-agent/tool.lisp
+c097b312567386421da5cdae0f1c13d039b21bde  test/cadr-agent/extensions-test.lisp
+cf16c937b667eb2252a45ec93585edc8d0a4d60a  test/cadr-agent/extensions-wave2-test.lisp
+5cb7dbafbffb7b82c408312b13795c3116f2da63  test/cadr-agent/extensions-wave3-test.lisp
+9e598d9aad1f93ee1b17d7bff8fae36a91c2b4f9  src/cadr-cli/extensions.lisp
+b4e190b5b24e6479570829767f8c6df7360d5449  src/cadr-cli/resource-loader.lisp
+1c76c8990bd3e34a934bf8d966001441561d0f0a  src/cadr-cli/interactive-services.lisp
+656dc50d5e3616d54bbcb150ddfedabe4b2a785b  src/cadr-cli/tui.lisp
+ecfd5a50a395628bc5e424aedb72d087c14fb137  src/cadr-cli/main.lisp
+a2a35209e968becd791c9ce336bf47328aba5ec5  src/cadr-cli/modes/rpc/mode.lisp
+ab8de4c1a4a5434dce31c0392fd51ae67ea61872  src/cadr-cli/model-services.lisp
+cdc2cfbb966620d7b6f0a8c90e7ea37d5fb05c40  test/cadr-cli/extensions-test.lisp
+762385be59337bbf131e23f07062645edbd12633  test/cadr-cli/part-b-interactive-test.lisp
+8f13570644842cc8780ce0c3cc955589a339ccda  test/cadr-cli/llama-extension-test.lisp
+7ac5d70c2c12af9ef4a3c748c24e7d24474cb959  src/cadr-cli/extensions/llama/client.lisp
+3bfbdf66495fd864119a76eb9cba0db2f2e63c4a  src/cadr-cli/extensions/llama/huggingface.lisp
+d845e5e14fd9c9b864e65297e58728ae1f1e7c2f  src/cadr-cli/extensions/llama/provider.lisp
+5838bab8cf028e1632897989c92365521fe97087  src/cadr-cli/extensions/llama/extension.lisp
 ```
 
-Goal 7 的三个兼容 fixture SHA 保持不变：
+Goal 7 三个 fixture SHA 保持不变：
 
 ```text
 e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442  test/fixtures/extensions/legacy-wave2-api.lisp
@@ -167,6 +195,23 @@ e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442  test/fixtures/
 c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486  test/fixtures/extensions/rpc-ui.lisp
 ```
 
-上述新 export SHA 是预授权增量提交后的当前锚点，不构成对本提案四项的预先
-批准。若用户批准第 2 或第 3 项并新增公共导出，关账时必须再次重算、记录和
-重冻。
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
+继续全绿；相对 Goal 8 开工提交执行
+`git diff 664e6b80...HEAD -- src/cadr-tui` 为空，TUI production 冻结红线
+未触碰。上述扩大面从此恢复“发布即稳定”。
+
+### 全量门禁与账本
+
+```text
+./scripts/test-cl.sh
+cadr-ai      668/668
+cadr-agent   588/588
+cadr-tui     593/593
+cadr-cli    1056/1056
+total       2905/2905
+```
+
+Part B 把开工时 coding-agent 的 128 个 `M` 重分类为 127 个 `C` 和一个经
+用户裁决的 `N/A`；逐文件变更清单就是 parity-map manifest 中所有
+`CL-PART-B` 行及 `config.test.ts` 行。收尾账本：
+`351 C / 0 U / 0 M / 1 N/A`。
