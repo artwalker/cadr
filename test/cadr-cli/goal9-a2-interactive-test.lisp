@@ -267,9 +267,12 @@
     (write-text
      (merge-pathnames "src/main.lisp" root)
      "(in-package #:example)")
-    (let ((provider
-            (cadr-cli::make-tui-autocomplete-provider
-             :base-path root)))
+    (make-fake-fd-program
+     root '("notes.md" "src/" "src/main.lisp"))
+    (with-test-path-prefix (root)
+     (let ((provider
+             (cadr-cli::make-tui-autocomplete-provider
+              :base-path root)))
       (let* ((decoder (cadr-tui:make-input-decoder))
              (editor (cadr-tui:make-multiline-editor)))
         (cadr-tui:editor-set-autocomplete-provider
@@ -351,7 +354,7 @@
              (cadr-tui:editor-text editor)))
         (goal9-a2-feed-editor
          editor decoder (string (code-char 31)))
-        (is (string= "@main" (cadr-tui:editor-text editor)))))))
+        (is (string= "@main" (cadr-tui:editor-text editor))))))))
 
 (test goal9-a2-overlay-selectors-focus-cjk-and-resize-snapshots
   (with-test-directory (root)

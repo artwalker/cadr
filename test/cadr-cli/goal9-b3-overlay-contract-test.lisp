@@ -841,10 +841,13 @@
     (write-text (merge-pathnames "alpha.txt" directory) "alpha")
     (ensure-directories-exist
      (merge-pathnames "alpine/anchor" directory))
-    (let* ((provider
+    (let* ((fd
+             (make-fake-fd-program
+              directory '("alpha.txt" "alpine/")))
+           (provider
              (cadr-tui:make-autocomplete-provider
               :base-path directory
-              :fd-path #P"/root/.local/bin/fd"))
+              :fd-path fd))
            (editor
              (cadr-tui:make-multiline-editor :text "@a")))
       (cadr-tui:editor-set-autocomplete-provider editor provider)

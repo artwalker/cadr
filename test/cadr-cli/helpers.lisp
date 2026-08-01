@@ -28,6 +28,31 @@
 (defun read-text (path)
   (uiop:read-file-string path :external-format :utf-8))
 
+(defun make-fake-fd-program (directory paths)
+  (let ((program (merge-pathnames "fd" directory)))
+    (with-open-file
+        (stream program
+                :direction :output
+                :if-exists :supersede
+                :if-does-not-exist :create)
+      (write-line "#!/bin/sh" stream)
+      (dolist (path paths)
+        (format stream "printf '%s\\n' '~A'~%" path)))
+    (uiop:run-program
+     (list "chmod" "+x" (namestring program)))
+    program))
+
+(defmacro with-test-path-prefix ((directory) &body body)
+  `(let ((previous-path (uiop:getenv "PATH")))
+     (unwind-protect
+          (progn
+            (setf (uiop:getenv "PATH")
+                  (format nil "~A~@[:~A~]"
+                          (namestring ,directory)
+                          previous-path))
+            ,@body)
+       (setf (uiop:getenv "PATH") previous-path))))
+
 (defun args (&rest pairs)
   (apply #'cadr-ai::json-object pairs))
 
