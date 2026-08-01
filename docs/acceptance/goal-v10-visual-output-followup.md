@@ -342,3 +342,31 @@ lacked its separating blank row.  `render-tool-block` now inserts exactly one
 blank row before output and before `Elapsed`/`Took`, locked by
 `GOAL10-TOOL-BLOCK-INTERNAL-SPACERS-MATCH-BASELINE`.  No preview budget or
 collapsed successful-read height was changed to fake the screenshot.
+
+### Fifth A/B mechanical verification
+
+```text
+$ ./scripts/test-cl.sh
+7706 checks / 7706 pass / 0 skip / 0 fail
+
+$ ./scripts/verify.sh
+exit: 0
+deterministic stages: 11/11 PASS
+terminal lifecycle PTY: 6/6 PASS
+live stages: 2/2 PASS
+live FiveAM items: 7 PASS, 1 SKIP (ANTHROPIC_API_KEY is not set), 0 FAIL
+live FiveAM checks: 31 PASS, 1 SKIP, 0 FAIL
+Goal 11 gate: PASS
+  mouse/wheel: 36.00/40.00ms
+  continuous p99/GC max: 56.00/84.00ms
+```
+
+The delivery binary passed the mandatory freshness gate:
+
+```text
+binary build time: 2026-08-01 23:46:54.986162021 +0800
+latest src commit: 15bc6ae084d37a4b760e959bccf540ec1fe68c73
+latest src commit time: 2026-08-01T23:44:52+08:00
+freshness gate: PASS
+version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```

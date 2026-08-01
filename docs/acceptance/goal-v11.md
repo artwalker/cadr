@@ -211,7 +211,7 @@ README、architecture、test matrix 和 `docs/performance.md` 共同冻结双验
 
 ## Fifth A/B follow-up — continuous mouse and wheel streams
 
-状态：完成。实现提交 `15bc6ae08`；最终报告归档待本轮收尾提交。
+状态：完成。实现提交 `15bc6ae08`；性能证据提交 `5a62cbc82`。
 
 旧 Goal 11 只覆盖单帧、key→frame、stream delta 与长会话 checkpoint；既有
 alt-screen regressions 只验证 scroll/selection 的结果，没有量化连续 SGR mouse
@@ -258,5 +258,28 @@ python3 scripts/goal11-performance-gate.py \
   PASS：mouse/wheel 36.00/36.00ms；continuous p99 52.00ms；GC max 68.00ms
 ```
 
-`verify.sh` 与交付二进制新鲜度证据在最终报告提交后执行并补记，避免文档提交
-被误当作最后一次 source build。
+最终发布路径复测：
+
+```text
+./scripts/verify.sh
+  exit 0
+  root cadr binary freshness: PASS
+  deterministic FiveAM: 7706 checks / 7706 pass / 0 skip / 0 fail
+  isolated cadr build: PASS（重复同一 7706-check gate）
+  isolated cadr-server build: PASS（重复同一 7706-check gate）
+  Goal 11 gate: PASS
+    frame/key/stream 4.00/8.00/4.00ms
+    mouse/wheel 36.00/40.00ms
+    continuous p99 56.00ms；GC max 84.00ms
+    append exponent 0.073；cold start 163.26ms
+    1200-turn heap growth 39.1MiB；exponent 0.964；GC max 52.0ms
+    load/resume/continue 288/296/300ms
+  retained process/PTY/socket/TUI harnesses: PASS
+  live FiveAM: 8 items；7 pass；1 Anthropic credential skip；0 fail
+  DeepSeek live TUI: PASS
+```
+
+交付二进制于 `2026-08-01 23:46:54.986162021 +0800` 构建；最后一次
+`src/` 提交为 `15bc6ae084d37a4b760e959bccf540ec1fe68c73`，时间
+`2026-08-01T23:44:52+08:00`。新鲜度门禁通过，版本为
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。
