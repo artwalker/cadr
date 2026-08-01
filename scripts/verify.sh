@@ -106,6 +106,21 @@ run_isolated_script() {
   )
 }
 
+run_goal11_gate() {
+  (
+    cd "$ISOLATED_PROJECT"
+    ./scripts/bench.sh \
+      --label verify-isolated \
+      --output "$VERIFY_ROOT/goal11-performance.json"
+    ./scripts/goal11-stability.sh \
+      --label verify-isolated \
+      --output "$VERIFY_ROOT/goal11-stability.json"
+    python3 scripts/goal11-performance-gate.py \
+      --bench "$VERIFY_ROOT/goal11-performance.json" \
+      --stability "$VERIFY_ROOT/goal11-stability.json"
+  )
+}
+
 print_summary() {
   local index
   printf '\nDeterministic stages\n'
@@ -158,6 +173,15 @@ else
   skip_deterministic "isolated cadr build" "deterministic prerequisite failed"
   skip_deterministic "isolated cadr-server build" "deterministic prerequisite failed"
   DETERMINISTIC_READY=0
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "Goal 11 performance and stability gate" \
+    run_goal11_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "Goal 11 performance and stability gate" \
+    "isolated build unavailable"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

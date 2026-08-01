@@ -565,6 +565,13 @@
     :output :string
     :error-output :string)))
 
+(defun optional-trimmed-command-output
+    (arguments fallback)
+  (handler-case
+      (let ((value (trimmed-command-output arguments)))
+        (if (plusp (length value)) value fallback))
+    (error () fallback)))
+
 (defun provenance-json ()
   (let ((project
           (namestring
@@ -572,8 +579,9 @@
     (json-object
      "label" *label*
      "source_revision"
-     (trimmed-command-output
-      (list "git" "-C" project "rev-parse" "HEAD"))
+     (optional-trimmed-command-output
+      (list "git" "-C" project "rev-parse" "HEAD")
+      "isolated-copy")
      "agent_runtime_object_id"
      (trimmed-command-output
       (list "git" "-C" project "hash-object"

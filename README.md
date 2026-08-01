@@ -15,6 +15,11 @@ That implementation and its tests are the behavioral reference for provider
 payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
 and terminal interaction.
 
+Parity has two independent gates: observable behavior must match the fixed
+reference byte-for-byte, while performance and long-run stability must stay
+inside the measured budgets in [`docs/performance.md`](docs/performance.md).
+Passing one axis never excuses failure on the other.
+
 The former
 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is retained only as a
 historical audit anchor.
@@ -320,8 +325,9 @@ accidental name collisions; it is not a security boundary.
   because that workflow injects no provider credentials; `test-cl.sh` instead
   excludes those blocks and `test-live.sh` runs them explicitly.
 - By explicit user decision, `scripts/verify.sh` is a local-only release gate
-  that composes the deterministic, isolated-build, process/PTY, and available
-  live stages; Cadr does not add a remote CI workflow for it.
+  that composes deterministic tests, isolated builds, performance/stability,
+  process/PTY, and available live stages; Cadr does not add a remote CI
+  workflow for it.
 - External shell harnesses remain only where a unit test cannot faithfully
   observe the real boundary:
   `acceptance-smoke.sh` (native image and cross-process sessions),
@@ -338,8 +344,9 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Current Goal 9 closeout run: 7040 checks / 7040 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` public builds repeat the same gate |
+| Deterministic ASDF gate | Current Goal 11 closeout run: 7128 checks / 7128 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` public builds repeat the same gate |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
+| Non-functional | N=5000 frame/key/stream each 4.00ms; 1200-turn/10-hour faux run has linear retained state, stable FD/thread counts, and 10MiB load/resume/continue below 0.33s |
 | Live-proven | Part D `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist and Goal 9 Part B three-round dual-terminal A/B acceptance passed |
@@ -349,17 +356,20 @@ introduced. Proposed mechanisms beyond original pi belong in
 ```
 
 That release-local entry runs deterministic FiveAM, isolated builds of both
-native images, every retained process/PTY harness, credential-gated live
-FiveAM, and the DeepSeek live TUI when its key is available. It prints separate
-deterministic and live tables and exits nonzero for any executed failure; absent
-credentials are reported as explicit skips. It does not create or invoke a
-remote CI workflow. Individual stages remain available for diagnosis:
+native images, the Goal 11 performance/stability gate, every retained
+process/PTY harness, credential-gated live FiveAM, and the DeepSeek live TUI
+when its key is available. It prints separate deterministic and live tables and
+exits nonzero for any executed failure; absent credentials are reported as
+explicit skips. It does not create or invoke a remote CI workflow. Individual
+stages remain available for diagnosis:
 
 ```bash
 ./scripts/test-cl.sh
 ./scripts/test-live.sh
 ./build.sh
 ./build-server.sh
+./scripts/bench.sh --output /tmp/cadr-performance.json
+./scripts/goal11-stability.sh --output /tmp/cadr-stability.json
 ./scripts/acceptance-smoke.sh
 ./scripts/test-wave2-process-modes.sh
 ./scripts/migration-smoke.sh
@@ -385,6 +395,9 @@ Goal 9 visual-parity evidence and completed B3 human acceptance are in
 Goal 9 release-preparation, repository-hygiene, and final local verification
 evidence is in
 [docs/acceptance/goal-v9-part-e.md](docs/acceptance/goal-v9-part-e.md).
+Goal 11 methodology, before/after data, stability evidence, and threshold
+rationale are in [docs/performance.md](docs/performance.md) and
+[docs/acceptance/goal-v11.md](docs/acceptance/goal-v11.md).
 
 ## License
 

@@ -4,7 +4,8 @@
 harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
 冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
 命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
-Goal 9 已将行为基线重锁到 `74caa2649`，完成 Part A–E，并等待整体人工验收**
+Goal 9 已将行为基线重锁到 `74caa2649`，完成 Part A–E；Goal 11 已建立非功能
+属性第二验收轴并完成性能、内存与长时稳定性门禁，等待真实终端长时验收**
 
 Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF test systems
 只含可重复测试，独立 live systems 由 `scripts/test-live.sh` 完整汇总。
@@ -1631,10 +1632,11 @@ Extension export SHA 继续为
 ## 25. Goal 9 Part D 本地验证入口
 
 `scripts/verify.sh` 是发布前本地单一入口，顺序固定为：确定性 FiveAM、临时
-工作树内的 `cadr`/`cadr-server` 公共构建入口、保留的 native/process/PTY
-harness、凭据可用性门控的 live FiveAM、可用时的 DeepSeek 真实 TUI。隔离副本
-排除 Git metadata、现有二进制、凭据/测试 HOME、环境文件与编辑器缓存；真实
-OAuth refresh 仍由 canonical `~/.cadr/auth.json` 的既有锁与原子写路径负责。
+工作树内的 `cadr`/`cadr-server` 公共构建入口、Goal 11 非功能门禁、保留的
+native/process/PTY harness、凭据可用性门控的 live FiveAM、可用时的 DeepSeek
+真实 TUI。隔离副本排除 Git metadata、现有二进制、凭据/测试 HOME、环境文件
+与编辑器缓存；真实 OAuth refresh 仍由 canonical `~/.cadr/auth.json` 的既有锁
+与原子写路径负责。
 
 脚本分别汇总 deterministic 与 live，不把真实 LLM 结果冒充确定性证据。任何
 已运行项失败最终返回非零，但 live FiveAM 的逐项报告和后续可运行 live harness
@@ -1653,3 +1655,32 @@ CLI、server CLI、TUI banner、HTTP User-Agent 与 Radius registration 分发�
 Obsidian/test-home 状态与 Python bytecode 由 `.gitignore` 隔离。文档职责从
 `docs/README.md` 导航，里程碑由根 `CHANGELOG.md` 维护；历史报告仍是证据，不能
 覆盖当前 architecture/parity/test contracts。
+
+## 27. Goal 11 非功能属性验收轴
+
+行为 parity 与非功能属性是两条独立门禁。前者要求 payload、session、事件、
+工具 result、JSON/RPC 与终端快照逐字节等价；后者要求同一输出在固定负载下的
+时间、分配、常驻内存和资源生命周期不发生数量级退化。任何一轴通过都不能抵消
+另一轴失败。
+
+度量入口分为两层：
+
+1. `scripts/bench.sh` 在固定 100×40 virtual terminal、固定五类 mixed entry、
+   N ∈ {0,50,200,1000,5000} 下测 steady frame、key→frame、stream delta、append、
+   heap/RSS 与 native-image cold start；
+2. `scripts/goal11-stability.sh` 以 production faux provider 驱动真实 agent、v3
+   session、TUI event projection 和逐事件 render，模拟 1200 轮/10 小时；另以
+   真实 ≥10MiB JSONL 测 load/resume/continue latency 与 sampled heap/RSS peak。
+
+Part C 仅采用固定 TS 基线已有的 component cache 与 array-style O(1) append；
+Part D 进一步把 agent messages 与 session entries 的 append 恢复为相同策略。
+没有引入 viewport pruning、virtual scrolling、transcript memoization 或行为可见
+的截断。公开 list 被整体替换时，private tail 只在下一次 append 做一次修复；
+session wire 与 agent event 不变。
+
+`scripts/goal11-performance-gate.py` 是 machine-readable report 的唯一阈值判定器，
+并由 `scripts/verify.sh` 在隔离构建后、process/PTY harness 前调用。50ms frame、
+20 delta/s、append exponent 0.35、750ms cold start、1200-turn heap exponent 1.30、
+500ms full GC、10MiB session 5s 等阈值均相对当前实测留有 12×以上的主要时延
+余量，却会稳定击穿优化前 466–488ms frame、2.15 delta/s 与 linear append。
+方法、完整数据与阈值理由由 `docs/performance.md` 维护。

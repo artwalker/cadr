@@ -133,6 +133,9 @@
            '("scripts/test-cl.sh"
              "build.sh"
              "build-server.sh"
+             "scripts/bench.sh"
+             "scripts/goal11-stability.sh"
+             "scripts/goal11-performance-gate.py"
              "scripts/acceptance-smoke.sh"
              "scripts/test-wave2-process-modes.sh"
              "scripts/migration-smoke.sh"
@@ -145,6 +148,7 @@
            '("deterministic FiveAM"
              "isolated cadr build"
              "isolated cadr-server build"
+             "Goal 11 performance and stability gate"
              "native acceptance smoke"
              "native process modes"
              "migration PTY smoke"
@@ -167,6 +171,8 @@
         (is (search path source)))
       (is (search "mktemp -d" source))
       (is (search "--exclude=.git" source))
+      (is (search "goal11-performance.json" source))
+      (is (search "goal11-stability.json" source))
       (is (search "DEEPSEEK_API_KEY" source))
       (is (search "Deterministic stages" source))
       (is (search "Live stages" source))

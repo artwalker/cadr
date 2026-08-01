@@ -172,3 +172,39 @@ python3 scripts/goal11-performance-gate.py \
   --stability /tmp/cadr-goal11-stability-final.json
   PASS: frame/key/stream 4.00ms; heap exponent 0.966; GC max 80.0ms
 ```
+
+## Part E — release gate and documentation
+
+状态：完成。`scripts/verify.sh` 在隔离构建之后、process/PTY harness 之前重新生成
+完整 benchmark 与 10 小时稳定性报告，并以
+`scripts/goal11-performance-gate.py` 判定预算；任何失败都会阻止后续阶段，不能以
+历史归档或弱断言代替本次测量。隔离副本没有 `.git` 时，报告的 source revision
+明确记为 `isolated-copy`，production object ID 仍由 `git hash-object` 固定。
+
+测试先行红证据：`GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT`
+在实现前为 35 checks / 29 pass / 6 fail，缺失三个脚本、stage 名和两个输出文件；
+实现后为 35/35。
+
+最终一键验收：
+
+```text
+./scripts/verify.sh
+  exit 0
+  deterministic FiveAM: 7128 checks / 7128 pass / 0 skip / 0 fail
+  isolated cadr build: PASS（重复同一 7128-check gate）
+  isolated cadr-server build: PASS（重复同一 7128-check gate）
+  Goal 11 gate: PASS
+    frame/key/stream 4.00/4.00/4.00ms
+    append exponent 0.029
+    cold start 154.08ms
+    1200-turn heap growth 40.3MiB, exponent 0.966
+    full-GC max 68.0ms
+    load/resume/continue 264/260/256ms
+  retained process/PTY/socket/TUI harnesses: PASS
+  live FiveAM: 8 items, 7 pass, 1 Anthropic credential skip, 0 fail
+  DeepSeek live TUI: PASS
+```
+
+README、architecture、test matrix 和 `docs/performance.md` 共同冻结双验收轴：
+功能 parity 与非功能预算缺一不可。Goal 11 的机械门禁已闭合；真实用户日常长会话
+体感仍由用户终局验收，不以 synthetic benchmark 冒充。

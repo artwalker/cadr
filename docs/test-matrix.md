@@ -36,7 +36,7 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 |---|---|---|
 | One production version source | `GOAL9-PART-E-PRODUCTION-VERSION-HAS-ONE-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; production literal audit rejects drift |
 | Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
-| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7040 deterministic checks pass in the root test and both isolated builds; retained harnesses and all available live paths pass |
+| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7128 deterministic checks pass in the root test and both isolated builds; Goal 11 budgets, retained harnesses, and all available live paths pass |
 
 ## Phase 1: cadr-ai
 
@@ -143,6 +143,14 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Live evals | `scripts/test-live.sh` → `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
 | Single local release gate | `scripts/verify.sh`, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT` | Deterministic FiveAM → isolated dual build → retained process/PTY harnesses → availability-gated live FiveAM → DeepSeek live TUI; separate deterministic/live summaries, no remote CI |
+
+## Goal 11: non-functional parity
+
+| Contract | Common Lisp coverage | Evidence |
+|---|---|---|
+| Deterministic latency/allocation benchmark | `scripts/bench.sh`, `scripts/goal11-bench.lisp`, `scripts/goal11-cold-start.py` | Fixed mixed transcripts measure frame, key-to-frame, stream-to-frame, append, heap/RSS and real-PTY cold start with raw samples and provenance |
+| Long-session stability | `scripts/goal11-stability.sh`, `scripts/goal11-stability.lisp` | 1200 faux turns, 14,400 rendered frames, five resource checkpoints, full-GC pauses, cleanup, and 10MiB session load/resume/continue |
+| Release budget gate | `scripts/goal11-performance-gate.py`, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT` | `scripts/verify.sh` regenerates both reports in its isolated tree and fails before process/live stages when any approved budget is exceeded |
 
 ## Phase 8: pure Common Lisp TUI
 
