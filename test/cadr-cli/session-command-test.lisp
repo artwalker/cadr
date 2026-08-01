@@ -9,6 +9,31 @@
    :base-url "https://example.invalid"
    :max-tokens 128))
 
+(test non-changelog-commands-never-resolve-the-changelog-path
+  (let ((calls 0)
+        (output (make-string-output-stream))
+        (original
+          (symbol-function
+           'cadr-cli::default-changelog-path)))
+    (unwind-protect
+         (progn
+           (setf
+            (symbol-function
+             'cadr-cli::default-changelog-path)
+            (lambda ()
+              (incf calls)
+              (error "changelog path must stay lazy")))
+           (is
+            (cadr-cli::handle-session-command
+             "/hotkeys" nil :output output))
+           (is (zerop calls))
+           (is (search "Keyboard Shortcuts"
+                       (get-output-stream-string output))))
+      (setf
+       (symbol-function
+        'cadr-cli::default-changelog-path)
+       original))))
+
 (test resume-option-selects-exact-session-and-conflicts-with-continue
   (with-test-directory (root)
     (let ((sessions (merge-pathnames "sessions/" root))

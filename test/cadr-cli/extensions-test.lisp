@@ -5,11 +5,13 @@
   (format nil "~A~%" body))
 
 (defun make-test-extension-manager
-    (cwd global output &optional explicit secret-function)
+    (cwd global output
+     &optional explicit secret-function extension-factories)
   (cadr-cli::make-cli-extension-manager
    :cwd cwd
    :global-directory global
    :explicit-paths explicit
+   :extension-factories extension-factories
    :output output
    :secret-function secret-function))
 
@@ -194,6 +196,65 @@
                  (length (remove-duplicates packages
                                             :test #'string=))))
           (is (every #'find-package packages)))))))
+
+(test extension-reload-keeps-extension-output-and-isolates-asdf-diagnostics
+  (with-test-directory (root)
+    (let* ((cwd (merge-pathnames "project/" root))
+           (global (merge-pathnames "global/" root))
+           (output (make-string-output-stream))
+           (manager
+             (make-test-extension-manager
+              cwd global output)))
+      (write-text
+       (merge-pathnames "output.lisp" global)
+       (extension-source
+        (format
+         nil
+         "(format t \"extension stdout visible~~%\")~%(signal 'asdf/plan:system-out-of-date :name \"cadr-cli\")~%(format *error-output* \"extension stderr visible~~%\")")))
+      (let ((report
+              (cadr-cli::reload-cli-extensions
+               manager))
+            (text
+              (get-output-stream-string output)))
+        (is (null (getf report :errors)))
+        (is (search "extension stdout visible" text))
+        (is (search "extension stderr visible" text))
+        (is (not
+             (search
+              "system cadr-cli is out of date"
+              text)))))))
+
+(test inline-extension-output-uses-the-same-diagnostic-boundary
+  (with-test-directory (root)
+    (let* ((cwd (merge-pathnames "project/" root))
+           (global (merge-pathnames "global/" root))
+           (output (make-string-output-stream))
+           (manager
+             (make-test-extension-manager
+              cwd global output nil nil
+              (list
+               (list
+                :name "output-boundary"
+                :factory
+                (lambda (api)
+                  (declare (ignore api))
+                  (format t "inline stdout visible~%")
+                  (signal
+                   'asdf/plan:system-out-of-date
+                   :name "cadr-cli")
+                  (format *error-output*
+                          "inline stderr visible~%")))))))
+      (let ((report
+              (cadr-cli::reload-cli-extensions manager))
+            (text
+              (get-output-stream-string output)))
+        (is (null (getf report :errors)))
+        (is (search "inline stdout visible" text))
+        (is (search "inline stderr visible" text))
+        (is (not
+             (search
+              "system cadr-cli is out of date"
+              text)))))))
 
 (test discovered-extension-source-registers-markdown-transformer
   (with-test-directory (root)
@@ -562,6 +623,9 @@
            (runner
              (lambda (argv)
                (setf captured argv)
+               (format t "git wrapper stdout must stay hidden~%")
+               (format *error-output*
+                       "git wrapper stderr must stay hidden~%")
                (let ((target
                        (pathname (car (last argv)))))
                  (write-text
@@ -578,6 +642,11 @@
            (butlast captured)))
       (is (probe-file
            (merge-pathnames "demo/extension.lisp" global)))
+      (let ((text (get-output-stream-string output)))
+        (is (search "Installed https://example.com/acme/demo.git"
+                    text))
+        (is (null (search "git wrapper stdout" text)))
+        (is (null (search "git wrapper stderr" text))))
       (signals error
         (cadr-cli::install-extension-package
          manager

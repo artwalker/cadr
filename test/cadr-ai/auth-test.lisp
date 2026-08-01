@@ -71,6 +71,34 @@
                  url)
          (get-output-stream-string output)))))
 
+(test oauth-browser-launch-isolates-browser-diagnostics
+  (let ((captured nil)
+        (original
+          (symbol-function 'uiop:launch-program)))
+    (unwind-protect
+         (progn
+           (setf
+            (symbol-function 'uiop:launch-program)
+            (lambda (command &rest arguments)
+              (setf captured
+                    (cons command arguments))
+              :process))
+           (funcall
+            cadr-ai::*oauth-browser-open-function*
+            "https://example.invalid/oauth")
+           (is (equal
+                '("xdg-open"
+                  "https://example.invalid/oauth")
+                (first captured)))
+           (is (null (getf (rest captured) :output)))
+           (is (null
+                (getf
+                 (rest captured)
+                 :error-output))))
+      (setf
+       (symbol-function 'uiop:launch-program)
+       original))))
+
 (test anthropic-authorization-url-matches-fixed-reference
   (let ((url
           (cadr-ai:anthropic-authorization-url

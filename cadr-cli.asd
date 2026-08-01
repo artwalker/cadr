@@ -100,6 +100,7 @@
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")
                              (:file "goal9-b3-overlay-contract-test")
+                             (:file "goal9-b3-base-screen-contract-test")
                              (:file "goal9-a2-interactive-test")
                              (:file "goal9-a2-workflows-test")
                              (:file "goal9-a2-process-faux-test")

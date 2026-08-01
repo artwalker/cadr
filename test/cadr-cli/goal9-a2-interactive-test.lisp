@@ -264,11 +264,12 @@
 (test goal9-a2-completion-pty-events-snapshot-selection-cancel-and-undo
   (with-test-directory (root)
     (write-text (merge-pathnames "notes.md" root) "notes")
+    (write-text (merge-pathnames "notes.txt" root) "notes")
     (write-text
      (merge-pathnames "src/main.lisp" root)
      "(in-package #:example)")
     (make-fake-fd-program
-     root '("notes.md" "src/" "src/main.lisp"))
+     root '("notes.md" "notes.txt" "src/" "src/main.lisp"))
     (with-test-path-prefix (root)
      (let ((provider
              (cadr-cli::make-tui-autocomplete-provider
@@ -307,6 +308,10 @@
         (cadr-tui:editor-set-autocomplete-provider
          editor provider)
         (goal9-a2-feed-editor editor decoder "./no")
+        (is (not
+             (cadr-tui:editor-autocomplete-visible-p
+              editor)))
+        (goal9-a2-feed-editor editor decoder (string #\Tab))
         (is
          (find
           "./notes.md"

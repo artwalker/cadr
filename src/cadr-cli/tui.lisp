@@ -458,14 +458,20 @@
        key lines))))
   state)
 
-(defun render-tui-widgets (entries width)
-  (loop for entry in
-        (sort (copy-list entries)
-              #'string< :key #'car)
-        append
-        (loop for line in (cdr entry)
-              append
-              (cadr-tui:wrap-text line width))))
+(defun render-tui-widgets
+    (entries width &key spacer-when-empty-p leading-spacer-p)
+  (if
+      (null entries)
+      (and spacer-when-empty-p (list ""))
+      (nconc
+       (and leading-spacer-p (list ""))
+       (loop for entry in
+             (sort (copy-list entries)
+                   #'string< :key #'car)
+             append
+             (loop for line in (cdr entry)
+                   append
+                   (cadr-tui:wrap-text line width))))))
 
 (defun replace-tui-entries (state entries)
   (let ((tail (last entries)))
@@ -524,6 +530,27 @@
        (make-tui-entry
         :type :notice
         :text trimmed))))
+  state)
+
+(defun add-tui-status (state text)
+  (let ((trimmed
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return)
+           (or text ""))))
+    (when (plusp (length trimmed))
+      (let ((last-entry
+              (and (tui-state-entries state)
+                   (car (tui-state-entries-tail state)))))
+        (if (and last-entry
+                 (eq (tui-entry-type last-entry) :status))
+            (progn
+              (setf (tui-entry-text last-entry) trimmed)
+              (invalidate-tui-entry-render-cache last-entry))
+            (append-tui-entry
+             state
+             (make-tui-entry
+              :type :status
+              :text trimmed))))))
   state)
 
 (defun terminal-hyperlink (url label)
@@ -1911,6 +1938,18 @@
       (format nil "session> ~A"
               (tui-entry-text entry))
       width))
+    (:status
+     (cons
+      ""
+      (loop for line in
+            (cadr-tui:wrap-text
+             (tui-entry-text entry)
+             (max 1 (- width 2)))
+            collect
+            (concatenate
+             'string " "
+             (cadr-tui:theme-foreground
+              :dim line :enabled-p t)))))
     (:auth-url
      (render-auth-url-lines
       (tui-entry-text entry)
@@ -2175,11 +2214,15 @@
            (widget-above-lines
              (render-tui-widgets
               (tui-state-widgets-above state)
-              width))
+              width
+              :spacer-when-empty-p (null overlay)
+              :leading-spacer-p (null overlay)))
            (widget-below-lines
              (render-tui-widgets
               (tui-state-widgets-below state)
-              width))
+              width
+              :spacer-when-empty-p nil
+              :leading-spacer-p nil))
            (non-content-lines
              (+ (length status-indicator)
                 (length widget-above-lines)
@@ -2297,7 +2340,12 @@
               (max 0
                    (- rendered-content-height
                       (length visible)))
-              :initial-element "")))
+              :initial-element ""))
+           (cursor-row
+             (+ rendered-content-height
+                (length status-indicator)
+                (length widget-above-lines)
+                editor-row)))
       (values
        (if top-align-content-p
            (nconc visible padding
@@ -2312,10 +2360,7 @@
                   editor-lines
                   widget-below-lines
                   footer-lines))
-       (+ rendered-content-height
-          (length status-indicator)
-          (length widget-above-lines)
-          editor-row)
+       cursor-row
        editor-column))))
 
 (defun set-tui-tools-expanded
@@ -2630,6 +2675,15 @@
         (funcall start-function line)
         :started)))
 
+(defun call-with-tui-command-error-notice
+    (function notice-function)
+  (handler-case
+      (funcall function)
+    (error (condition)
+      (funcall
+       notice-function
+       (format nil "~A" condition)))))
+
 (defun call-with-sigcont-handler
     (handler thunk)
   #+sbcl
@@ -2661,8 +2715,8 @@
    (list "cmd" "/c" "start" "" url)
    #-(or darwin win32)
    (list "xdg-open" url)
-   :output :interactive
-   :error-output :interactive))
+   :output nil
+   :error-output nil))
 
 (defun suspend-tui
     (platform
@@ -3078,6 +3132,7 @@
        bash-function
        set-event-consumer
        set-notice-consumer
+       set-status-consumer
        set-auth-url-consumer
        set-model-consumer
        set-extension-ui-function
@@ -3411,6 +3466,10 @@
          (notice (text)
            (sb-thread:with-mutex (lock)
              (add-tui-notice state text))
+           (request-render))
+         (status (text)
+           (sb-thread:with-mutex (lock)
+             (add-tui-status state text))
            (request-render))
          (show-auth-url (url)
            (sb-thread:with-mutex (lock)
@@ -3755,37 +3814,35 @@
                      :off))))
              (request-render)
              (setf
-              worker
+             worker
               (sb-thread:make-thread
                (lambda ()
                  (unwind-protect
-                      (handler-case
-                          (multiple-value-bind
-                                (kind result)
-                              (dispatch-user-input
-                               line prompt-function
-                               :command-function
-                               command-function
-                               :template-function
-                               template-function
-                               :bash-function
-                               bash-function)
-                            (when
-                                (eq kind
-                                    :unknown-command)
-                              (notice
-                               "Unknown command"))
-                            (when
-                                (and
-                                 (eq kind :command)
-                                 (stringp result)
-                                 (plusp
-                                  (length result)))
-                              (notice result)))
-                        (condition (condition)
-                          (notice
-                           (format nil "~A"
-                                   condition))))
+                      (call-with-tui-command-error-notice
+                       (lambda ()
+                         (multiple-value-bind
+                               (kind result)
+                             (dispatch-user-input
+                              line prompt-function
+                              :command-function
+                              command-function
+                              :template-function
+                              template-function
+                              :bash-function
+                              bash-function)
+                           (when
+                               (eq kind
+                                   :unknown-command)
+                             (notice
+                              "Unknown command"))
+                           (when
+                               (and
+                                (eq kind :command)
+                                (stringp result)
+                                (plusp
+                                 (length result)))
+                             (notice result))))
+                       #'notice)
                    (sb-thread:with-mutex (lock)
                      (setf busy-p nil)
                      (cadr-tui:editor-set-border-mode
@@ -4425,6 +4482,9 @@
       (when set-notice-consumer
         (funcall set-notice-consumer
                  #'notice))
+      (when set-status-consumer
+        (funcall set-status-consumer
+                 #'status))
       (when set-auth-url-consumer
         (funcall set-auth-url-consumer
                  #'show-auth-url))
@@ -4626,6 +4686,8 @@
           (funcall set-event-consumer nil))
         (when set-notice-consumer
           (funcall set-notice-consumer nil))
+        (when set-status-consumer
+          (funcall set-status-consumer nil))
         (when set-auth-url-consumer
           (funcall set-auth-url-consumer nil))
         (when set-model-consumer

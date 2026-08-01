@@ -48,6 +48,81 @@
 (defun footer-sync-submit-input (text)
   (format nil "~A~C" text #\Return))
 
+(test tui-command-boundary-ignores-benign-infrastructure-signals
+  (let ((notices nil))
+    (is
+     (eq
+      :continued
+      (cadr-cli::call-with-tui-command-error-notice
+       (lambda ()
+         (signal
+          'asdf/plan:system-out-of-date
+          :name "cadr-cli")
+         :continued)
+       (lambda (message)
+         (push message notices)))))
+    (is (null notices))
+    (cadr-cli::call-with-tui-command-error-notice
+     (lambda ()
+       (error "product failure"))
+     (lambda (message)
+       (push message notices)))
+    (is (equal '("product failure") notices))))
+
+(test tui-status-entries-match-baseline-copy-spacing-and-coalescing
+  (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::add-tui-status
+     state
+     "Reloaded keybindings, extensions, skills, prompts, themes, and context files")
+    (is (= 1 (length (cadr-cli::tui-state-entries state))))
+    (is
+     (equal
+      '(""
+        " Reloaded keybindings, extensions, skills, prompts, themes, and context files")
+      (mapcar
+       #'cadr-tui:strip-terminal-sequences
+       (cadr-cli::render-tui-entry
+        (first (cadr-cli::tui-state-entries state))
+        90))))
+    (cadr-cli::add-tui-status state "second status")
+    (is (= 1 (length (cadr-cli::tui-state-entries state))))
+    (is (string=
+         "second status"
+         (cadr-cli::tui-entry-text
+          (first (cadr-cli::tui-state-entries state)))))
+    (is (null
+         (search
+          "session>"
+          (format
+           nil "~{~A~^~%~}"
+           (cadr-cli::render-tui-entry
+            (first (cadr-cli::tui-state-entries state))
+            90)))))))
+
+(test tui-url-launch-isolates-desktop-launcher-diagnostics
+  (let ((captured nil)
+        (original
+          (symbol-function 'uiop:launch-program)))
+    (unwind-protect
+         (progn
+           (setf
+            (symbol-function 'uiop:launch-program)
+            (lambda (command &rest arguments)
+              (setf captured (cons command arguments))
+              :process))
+           (cadr-cli::open-tui-url
+            "https://example.invalid/docs")
+           (is (equal
+                '("xdg-open"
+                  "https://example.invalid/docs")
+                (first captured)))
+           (is (null (getf (rest captured) :output)))
+           (is (null
+                (getf (rest captured) :error-output))))
+      (setf
+       (symbol-function 'uiop:launch-program)
+       original))))
+
 (defun rendered-footer-text (state)
   (multiple-value-bind (lines row column)
       (cadr-cli::render-tui-state
@@ -2046,7 +2121,7 @@
 (test tui-input-sequence-produces-virtual-screen-snapshot
   (let* ((terminal
            (cadr-tui:make-virtual-terminal
-            :columns 48 :rows 8))
+            :columns 48 :rows 9))
          (renderer
            (cadr-tui:make-terminal-renderer
             terminal))
@@ -2068,7 +2143,7 @@
        editor event))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
-         state editor 48 8)
+         state editor 48 9)
       (cadr-tui:render-frame
        renderer lines
        :cursor-row row

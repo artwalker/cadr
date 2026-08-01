@@ -1194,9 +1194,10 @@
      (and value
           (plusp (length value))
           (pathname value)))
-   (ignore-errors
-     (asdf:system-relative-pathname
-      "cadr-cli" "CHANGELOG.md"))
+   (handler-case
+       (asdf:system-relative-pathname
+        "cadr-cli" "CHANGELOG.md")
+     (condition () nil))
    #p"CHANGELOG.md"))
 
 (defparameter +interactive-hotkey-definitions+
@@ -1334,8 +1335,7 @@
        (copy-function #'default-copy-text)
        (share-runner
          #'default-share-command-runner)
-       (changelog-path
-         (default-changelog-path))
+       changelog-path
        keybindings
        (confirm-function
          (lambda (title message)
@@ -1405,7 +1405,8 @@
       ((string= command "/changelog")
        (let ((entries
                (parse-changelog
-                changelog-path)))
+                (or changelog-path
+                    (default-changelog-path)))))
          (format output "What's New~%~%")
          (if entries
              (loop
@@ -1756,7 +1757,8 @@
        resource-reload-function
        system-prompt-function
        model-refresh-function
-       keybindings-reload-function)
+       keybindings-reload-function
+       completion-function)
   (run-session-lifecycle
    agent :session-shutdown
    :reason :reload)
@@ -1782,6 +1784,10 @@
     (run-session-lifecycle
      agent :session-start
      :reason :reload)
+    (when completion-function
+      (funcall
+       completion-function
+       "Reloaded keybindings, extensions, skills, prompts, themes, and context files"))
     resources))
 
 (defun make-cli-settings-selector-state
@@ -2331,6 +2337,7 @@
          (repl-p (eq mode :repl))
          (event-consumer nil)
          (notice-consumer nil)
+         (status-consumer nil)
          (auth-url-consumer nil)
          (model-consumer nil)
          (abort-requested-p nil)
@@ -3189,7 +3196,14 @@
                        (cadr-tui:make-keybindings-manager
                         :user-bindings
                         (settings-keybindings
-                         settings-manager))))))
+                         settings-manager))))
+                    :completion-function
+                    (lambda (message)
+                      (if status-consumer
+                          (funcall status-consumer message)
+                          (progn
+                            (format frontend-output "~A~%" message)
+                            (finish-output frontend-output))))))
                   t)
                 (handle-extension-command
                  line extension-manager))))
@@ -3568,6 +3582,9 @@
            :set-notice-consumer
            (lambda (consumer)
              (setf notice-consumer consumer))
+           :set-status-consumer
+           (lambda (consumer)
+             (setf status-consumer consumer))
            :set-auth-url-consumer
            (lambda (consumer)
              (setf auth-url-consumer consumer))

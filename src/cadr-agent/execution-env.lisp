@@ -594,6 +594,15 @@
         (setf (symbol-value error-place)
               cause)))))
 
+(defun execution-wrapper-argv
+    (group-path shell command)
+  (list
+   "/bin/sh" "-c"
+   "exec /usr/bin/setsid --fork --wait /bin/sh -c 'printf %s \"$$\" > \"$1\"; exec \"$2\" -lc \"$3\" 2>&3' cadr-exec-wrapper \"$1\" \"$2\" \"$3\" 3>&2 2>/dev/null"
+   "cadr-setsid-wrapper"
+   (namestring group-path)
+   shell command))
+
 (defun execution-env-exec
     (execution-environment command
      &key cwd environment
@@ -653,14 +662,8 @@
              (process
                (handler-case
                    (uiop:launch-program
-                    (list
-                     "/usr/bin/setsid"
-                     "--fork" "--wait"
-                     "/bin/sh" "-c"
-                     "printf '%s' \"$$\" > \"$1\"; exec \"$2\" -lc \"$3\""
-                     "cadr-exec-wrapper"
-                     (namestring group-path)
-                     shell command)
+                    (execution-wrapper-argv
+                     group-path shell command)
                     :directory working-directory
                     :environment
                     (merge-execution-environment

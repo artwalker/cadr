@@ -216,3 +216,34 @@
              error)))))
       (cadr-agent::execution-env-cleanup
        environment))))
+
+(test node-execution-environment-keeps-child-stderr-and-isolates-setsid-stderr
+  (with-session-directories (sessions cwd other-cwd)
+    (values sessions other-cwd)
+    (let* ((environment
+             (cadr-agent::make-node-execution-env
+              :cwd cwd))
+           (argv
+             (cadr-agent::execution-wrapper-argv
+              #p"/tmp/cadr-test.pgid"
+              "/bin/bash"
+              "printf child-stderr >&2"))
+           (wrapper (third argv)))
+      (is (search "3>&2 2>/dev/null" wrapper))
+      (is (search "2>&3" wrapper))
+      (let ((result
+              (execution-value
+               (lambda ()
+                 (cadr-agent::execution-env-exec
+                  environment
+                  "printf child-stderr >&2")))))
+        (is (string=
+             "child-stderr"
+             (cadr-agent::execution-result-stderr
+              result)))
+        (is (null
+             (search
+              "setsid"
+              (cadr-agent::execution-result-stderr
+               result)))))
+      (cadr-agent::execution-env-cleanup environment))))

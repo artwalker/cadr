@@ -393,6 +393,44 @@
                #\-)
            output))))
 
+(defun call-with-extension-output-boundary
+    (manager function)
+  (let ((diagnostics
+          (make-broadcast-stream)))
+    (unwind-protect
+         (let ((*standard-output*
+                 (cli-extension-manager-output manager))
+               (*error-output*
+                 (cli-extension-manager-output manager))
+               (*trace-output* diagnostics)
+               (*load-verbose* nil)
+               (*load-print* nil)
+               (*compile-verbose* nil)
+               (*compile-print* nil)
+               (asdf:*verbose-out* diagnostics))
+           (handler-bind
+               ((warning
+                  (lambda (condition)
+                    (let ((restart
+                            (find-restart
+                             'muffle-warning condition)))
+                      (when restart
+                        (invoke-restart restart))))))
+             (funcall function)))
+      (close diagnostics))))
+
+(defun call-with-infrastructure-output-isolated
+    (function)
+  (let ((diagnostics
+          (make-broadcast-stream)))
+    (unwind-protect
+         (let ((*standard-output* diagnostics)
+               (*error-output* diagnostics)
+               (*trace-output* diagnostics)
+               (asdf:*verbose-out* diagnostics))
+           (funcall function))
+      (close diagnostics))))
+
 (defun load-extension-source (manager source)
   (let* ((generation
            (next-extension-generation))
@@ -420,23 +458,20 @@
             :package package)))
     (handler-case
         (progn
-          (let ((*package* package)
-                (*load-verbose* nil)
-                (*load-print* nil)
-                (*standard-output*
-                  (cli-extension-manager-output manager))
-                (*error-output*
-                  (cli-extension-manager-output manager)))
-            (cadr-agent::call-with-extension-load
-             (cli-extension-manager-host manager)
-             bundle
+          (let ((*package* package))
+            (call-with-extension-output-boundary
+             manager
              (lambda ()
-               (load
-                (extension-source-record-path source)
-                :verbose nil
-                :print nil))))
+               (cadr-agent::call-with-extension-load
+                (cli-extension-manager-host manager)
+                bundle
+                (lambda ()
+                  (load
+                   (extension-source-record-path source)
+                   :verbose nil
+                   :print nil))))))
           bundle)
-      (condition (condition)
+      (error (condition)
         (ignore-errors (delete-package package))
         (error
          'cadr-agent:extension-registration-error
@@ -496,13 +531,16 @@
                  (not
                   (null
                    (getf input :hidden-p)))))))
-    (cadr-agent::call-with-extension-load
-     (cli-extension-manager-host manager)
-     bundle
+    (call-with-extension-output-boundary
+     manager
      (lambda ()
-       (funcall
-        factory
-        (cadr-agent:current-extension-api))))
+       (cadr-agent::call-with-extension-load
+        (cli-extension-manager-host manager)
+        bundle
+        (lambda ()
+          (funcall
+           factory
+           (cadr-agent:current-extension-api))))))
     bundle))
 
 (defun same-extension-source-p (bundle source)
@@ -534,7 +572,7 @@
                          (load-extension-source
                           manager source)
                        (incf loaded))
-                   (condition (condition)
+                   (error (condition)
                      (push (princ-to-string condition)
                            errors)
                      (extension-manager-notify
@@ -566,7 +604,7 @@
                 anonymous-index)
                bundles)
               (incf loaded))
-          (condition (condition)
+          (error (condition)
             (push (princ-to-string condition)
                   errors)
             (extension-manager-notify
@@ -836,17 +874,13 @@
                  (namestring destination))))
       (unwind-protect
            (progn
-             (let ((*standard-output*
-                     (cli-extension-manager-output
-                      manager))
-                   (*error-output*
-                     (cli-extension-manager-output
-                      manager)))
-               (funcall
-                runner
-                (list
-                 "git" "clone" "--" source
-                 (namestring staging))))
+             (call-with-infrastructure-output-isolated
+              (lambda ()
+                (funcall
+                 runner
+                 (list
+                  "git" "clone" "--" source
+                  (namestring staging)))))
              (unless
                  (probe-file
                   (merge-pathnames

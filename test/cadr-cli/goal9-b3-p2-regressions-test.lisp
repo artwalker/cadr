@@ -146,7 +146,7 @@
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
          state editor width rows)
-      (is (= 17 row))
+      (is (= 12 row))
       (is (zerop column))
       (is
        (equal
@@ -159,9 +159,9 @@
          ""
          ""
          ""
+         blank-row
+         blank-row
          ""
-         blank-row
-         blank-row
          border
          blank-row
          border

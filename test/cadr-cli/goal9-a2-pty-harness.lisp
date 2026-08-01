@@ -144,8 +144,7 @@
     40 10
     '("────────────────────────────────────────"
       "./no"
-      "────────────────────────────────────────"
-      "→ notes.md"))
+      "────────────────────────────────────────"))
    (padded-contract-snapshot
     40 10
     '("────────────────────────────────────────"
@@ -177,7 +176,7 @@
   '("./no" "./notes.md" "./no" "/" "/m"))
 
 (defparameter +completion-visible+
-  '(t nil nil t nil))
+  '(nil nil nil t nil))
 
 (defun run-completion-contract (terminal renderer)
   (let* ((root

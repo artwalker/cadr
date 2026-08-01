@@ -1261,26 +1261,24 @@
                  (return-from editor-handle-event
                    (values :submit expanded))))))))
     (when (multiline-editor-autocomplete-provider editor)
-      (cond
-        ((eq kind :text)
-         (editor-refresh-autocomplete editor))
-        ((member kind '(:backspace :delete))
-         (when
-             (or autocomplete-visible-before-p
-                 (editor-natural-autocomplete-context-p
-                  editor))
-           (editor-refresh-autocomplete
-            editor
-            :force-p
-            (and
-             autocomplete-visible-before-p
-             autocomplete-prefix-before
-             (not
-              (or
-               (string-prefix-p
-                "/" autocomplete-prefix-before)
-               (string-prefix-p
-                "@" autocomplete-prefix-before)))))))))
+      (when
+          (and
+           (member kind '(:text :backspace :delete))
+           (or autocomplete-visible-before-p
+               (editor-natural-autocomplete-context-p
+                editor)))
+        (editor-refresh-autocomplete
+         editor
+         :force-p
+         (and
+          autocomplete-visible-before-p
+          autocomplete-prefix-before
+          (not
+           (or
+            (string-prefix-p
+             "/" autocomplete-prefix-before)
+            (string-prefix-p
+             "@" autocomplete-prefix-before)))))))
     (values nil nil)))
 
 (defun editor-word-wrap-line-spans

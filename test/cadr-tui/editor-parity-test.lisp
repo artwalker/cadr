@@ -247,7 +247,7 @@
            (is (not
                 (cadr-tui:editor-autocomplete-visible-p
                  editor)))))
-       (dolist (text '("/he" "./R"))
+       (dolist (text '("/he"))
          (let ((editor
                  (cadr-tui:make-multiline-editor)))
            (cadr-tui:editor-set-autocomplete-provider
@@ -259,7 +259,177 @@
            (editor-event editor :backspace)
            (is
             (cadr-tui:editor-autocomplete-visible-p
-             editor))))))))
+             editor))))
+       (let ((editor
+               (cadr-tui:make-multiline-editor)))
+         (cadr-tui:editor-set-autocomplete-provider
+          editor provider)
+         (editor-type editor "./")
+         (is (not
+              (cadr-tui:editor-autocomplete-visible-p
+               editor)))
+         (editor-event editor :tab)
+         (is
+          (cadr-tui:editor-autocomplete-visible-p
+           editor))
+         (editor-event editor :text "R")
+         (is
+          (cadr-tui:editor-autocomplete-visible-p
+           editor))
+         (editor-event editor :backspace)
+         (is
+          (cadr-tui:editor-autocomplete-visible-p
+           editor)))))))
+
+(test editor-text-autocomplete-matches-baseline-trigger-gate
+  (with-autocomplete-tree
+   (lambda (root)
+     (let* ((calls nil)
+            (provider
+              (cadr-tui:make-autocomplete-provider
+               :base-path root
+               :commands
+               (list
+                (cadr-tui:make-autocomplete-command
+                 :name "help"))))
+            (editor (cadr-tui:make-multiline-editor))
+            (original
+              (symbol-function
+               'cadr-tui:autocomplete-get-suggestions)))
+       (unwind-protect
+            (progn
+              (setf
+               (symbol-function
+                'cadr-tui:autocomplete-get-suggestions)
+               (lambda (actual-provider lines line column
+                        &key force-p)
+                 (push (list (copy-list lines)
+                             line column force-p)
+                       calls)
+                 (funcall original actual-provider lines
+                          line column :force-p force-p)))
+              (cadr-tui:editor-set-autocomplete-provider
+               editor provider)
+
+              ;; Baseline never asks the provider for an empty natural
+              ;; prefix, a space, or repeated spaces.
+              (editor-event editor :text "")
+              (editor-event editor :text " ")
+              (editor-event editor :text " ")
+              (is (null calls))
+              (is (not
+                   (cadr-tui:editor-autocomplete-visible-p
+                    editor)))
+
+              ;; Slash commands trigger only at the start of the message.
+              (cadr-tui:editor-set-text editor "")
+              (editor-event editor :text "/")
+              (is (= 1 (length calls)))
+              (is (not (fourth (first calls))))
+              (is
+               (cadr-tui:editor-autocomplete-visible-p
+                editor))
+              (editor-event editor :text " ")
+              (is (= 2 (length calls)))
+              (is (not
+                   (cadr-tui:editor-autocomplete-visible-p
+                    editor)))
+
+              ;; Plain path fragments require explicit Tab completion.
+              (setf calls nil)
+              (cadr-tui:editor-set-text editor "")
+              (editor-type editor "./")
+              (is (null calls))
+              (is (not
+                   (cadr-tui:editor-autocomplete-visible-p
+                    editor)))
+              (editor-event editor :tab)
+              (is (= 1 (length calls)))
+              (is (fourth (first calls)))
+              (is
+               (cadr-tui:editor-autocomplete-visible-p
+                editor))
+
+              ;; A force-mode picker keeps force semantics while text is
+              ;; edited, including a space.
+              (editor-event editor :text " ")
+              (is (= 2 (length calls)))
+              (is (fourth (first calls)))
+              (is
+               (cadr-tui:editor-autocomplete-visible-p
+                editor)))
+         (setf
+          (symbol-function
+           'cadr-tui:autocomplete-get-suggestions)
+          original))))))
+
+(test editor-delete-to-empty-and-symbol-triggers-match-baseline
+  (with-autocomplete-tree
+   (lambda (root)
+     (let* ((now 0)
+            (calls nil)
+            (provider
+              (cadr-tui:make-autocomplete-provider
+               :base-path root
+               :commands
+               (list
+                (cadr-tui:make-autocomplete-command
+                 :name "help"))))
+            (editor (cadr-tui:make-multiline-editor))
+            (original
+              (symbol-function
+               'cadr-tui:autocomplete-get-suggestions)))
+       (unwind-protect
+            (progn
+              (setf
+               (symbol-function
+                'cadr-tui:autocomplete-get-suggestions)
+               (lambda (actual-provider lines line column
+                        &key force-p)
+                 (push (list (copy-list lines)
+                             line column force-p)
+                       calls)
+                 (funcall original actual-provider lines
+                          line column :force-p force-p)))
+              (cadr-tui:editor-set-autocomplete-clock
+               editor (lambda () now))
+              (cadr-tui:editor-set-autocomplete-provider
+               editor provider)
+
+              ;; @ at a token boundary is natural; embedded @ is not.
+              (editor-event editor :text "@")
+              (incf now 1/50)
+              (is (cadr-tui:editor-poll-autocomplete editor))
+              (is (= 1 (length calls)))
+              (setf calls nil)
+              (cadr-tui:editor-set-text editor "x")
+              (editor-event editor :text "@")
+              (incf now 1/50)
+              (is (not
+                   (cadr-tui:editor-poll-autocomplete editor)))
+              (is (null calls))
+
+              ;; Deleting a visible slash picker back to empty re-queries
+              ;; once and closes it; later empty deletes stay quiet.
+              (cadr-tui:editor-set-text editor "")
+              (editor-event editor :text "/")
+              (is
+               (cadr-tui:editor-autocomplete-visible-p
+                editor))
+              (setf calls nil)
+              (editor-event editor :backspace)
+              (is (= 1 (length calls)))
+              (is (not
+                   (cadr-tui:editor-autocomplete-visible-p
+                    editor)))
+              (setf calls nil)
+              (editor-event editor :backspace)
+              (editor-event editor :delete)
+              (is (null calls)))
+         (setf
+          (symbol-function
+           'cadr-tui:autocomplete-get-suggestions)
+          original))))))
 
 (test editor-autocomplete-honors-configured-visible-row-limit
   (let* ((provider
@@ -381,18 +551,22 @@
                    (cadr-tui:editor-poll-autocomplete editor)))
               (is (= 1 (length calls)))
 
-              ;; Ordinary path completion remains synchronous.
+              ;; Ordinary path fragments stay closed until explicit Tab;
+              ;; force completion itself remains synchronous.
               (setf calls nil)
               (cadr-tui:editor-set-text editor "")
               (editor-event editor :text ".")
-              (is (= 1 (length calls)))
+              (is (null calls))
               (editor-event editor :text "/")
-              (is (= 2 (length calls)))
+              (is (null calls))
+              (editor-event editor :tab)
+              (is (= 1 (length calls)))
               (is (equal '("./")
                          (first (first calls))))
+              (is (fourth (first calls)))
               (is (not
                    (cadr-tui:editor-poll-autocomplete editor)))
-              (is (= 2 (length calls)))
+              (is (= 1 (length calls)))
 
               ;; Explicit Tab/force bypasses the debounce window.
               (setf calls nil)

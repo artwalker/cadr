@@ -796,7 +796,7 @@
         (when (model-registry-native-runtime registry)
           (sync-model-registry-native-providers
            registry)))
-    (condition (condition)
+    (error (condition)
       (setf (model-registry-error registry)
             (princ-to-string condition))))
   registry)

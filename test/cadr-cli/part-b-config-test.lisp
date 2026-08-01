@@ -53,6 +53,7 @@
 (test reload-clears-command-cache-and-refreshes-runtime-surfaces-in-order
   (let* ((runs 0)
          (steps nil)
+         (completion-message nil)
          (manager
            (cadr-cli::make-memory-settings-manager))
          (model
@@ -98,11 +99,18 @@
          (push :models steps))
        :keybindings-reload-function
        (lambda ()
-         (push :keybindings steps)))
+         (push :keybindings steps))
+       :completion-function
+       (lambda (message)
+         (push :completion steps)
+         (setf completion-message message)))
       (is (equal
            '(:extensions :resources :prompt
-             :models :keybindings)
+             :models :keybindings :completion)
            (nreverse steps)))
+      (is (string=
+           "Reloaded keybindings, extensions, skills, prompts, themes, and context files"
+           completion-message))
       (is (string=
            "reloaded"
            (cadr-agent::agent-system-prompt agent)))

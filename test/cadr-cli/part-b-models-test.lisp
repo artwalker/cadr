@@ -378,6 +378,36 @@
               (cadr-cli:model-registry-error
                registry))))))))
 
+(test model-registry-refresh-does-not-promote-benign-signals-to-user-errors
+  (let ((registry
+          (cadr-cli::%make-model-registry))
+        (original
+          (symbol-function
+           'cadr-cli::read-models-config)))
+    (unwind-protect
+         (progn
+           (setf
+            (symbol-function
+             'cadr-cli::read-models-config)
+            (lambda (path)
+              (declare (ignore path))
+              (signal
+               'asdf/plan:system-out-of-date
+               :name "cadr-cli")
+              (cadr-cli::empty-json-object)))
+           (cadr-cli:refresh-model-registry registry)
+           (is (null
+                (cadr-cli:model-registry-error
+                 registry)))
+           (is (plusp
+                (length
+                 (cadr-cli:model-registry-all
+                  registry)))))
+      (setf
+       (symbol-function
+        'cadr-cli::read-models-config)
+       original))))
+
 (defun model-scope-test-model
     (provider id name)
   (cadr-ai:make-model
