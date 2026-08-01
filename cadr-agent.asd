@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-agent"
   :description "Common Lisp agent runtime for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cl-ppcre"
                "sqlite"

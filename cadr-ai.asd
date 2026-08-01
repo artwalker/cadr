@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-ai"
   :description "Common Lisp provider layer for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cl+ssl")
   :serial t

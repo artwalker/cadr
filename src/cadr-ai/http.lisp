@@ -411,7 +411,9 @@
       (push '("Connection" . "close")
             result))
     (unless (header-present-p result "user-agent")
-      (push '("User-Agent" . "cadr/0.1.0")
+      (push (cons "User-Agent"
+                  (format nil "cadr/~A"
+                          (cadr-version)))
             result))
     result))
 

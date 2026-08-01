@@ -24,6 +24,10 @@ implementation. `cadr` is an independent project and has no affiliation with
 the original pi project or its maintainers. Both projects use the MIT License;
 see [LICENSE](LICENSE).
 
+Documentation responsibilities and maintenance entry points are indexed in
+[`docs/README.md`](docs/README.md). Project milestones are recorded in
+[`CHANGELOG.md`](CHANGELOG.md).
+
 ## Build
 
 Requirements:
@@ -44,7 +48,9 @@ QUICKLISP_SETUP="$HOME/quicklisp/setup.lisp" ./build-server.sh
 
 The builds produce `./cadr` and the optional Unix-socket supervisor
 `./cadr-server`. If SBCL lacks `sb-core-compression`, either build emits an
-uncompressed image instead of failing.
+uncompressed image instead of failing. `version.sexp` is the single production
+version source for every ASDF system, both binaries, the TUI banner, HTTP user
+agent, and Radius registration.
 
 ## Dependency policy
 
@@ -332,7 +338,7 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Current Goal 9 Part D run: 6952 checks / 6952 pass / 0 skip / 0 fail; isolated `cadr` and `cadr-server` public builds repeat the same gate |
+| Deterministic ASDF gate | Current Goal 9 Part E run: 7019 checks / 7019 pass / 0 skip / 0 fail; isolated and root `cadr`/`cadr-server` public builds repeat the same gate |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Live-proven | Part D `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
@@ -376,6 +382,9 @@ The final mechanical evidence and pending human checklist are in
 [docs/acceptance/goal-v8-final.md](docs/acceptance/goal-v8-final.md).
 Goal 9 visual-parity evidence and the pending B3 human checklist are in
 [docs/acceptance/goal-v9-part-b.md](docs/acceptance/goal-v9-part-b.md).
+Goal 9 release-preparation, repository-hygiene, and final local verification
+evidence is in
+[docs/acceptance/goal-v9-part-e.md](docs/acceptance/goal-v9-part-e.md).
 
 ## License
 

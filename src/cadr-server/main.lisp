@@ -1,5 +1,9 @@
 (in-package #:cadr-server)
 
+(defun server-version-line ()
+  (format nil "cadr-server ~A"
+          (cadr-ai::cadr-version)))
+
 (defun print-server-usage
     (&optional
        (stream *standard-output*))
@@ -129,8 +133,8 @@
           ((member command
                    '("-v" "--version")
                    :test #'string=)
-           (format t
-                   "cadr-server 0.1.0~%"))
+           (format t "~A~%"
+                   (server-version-line)))
           ((string= command "serve")
            (run-server))
           ((string= command "list")

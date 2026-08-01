@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-cli"
   :description "Common Lisp coding-agent CLI for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cl-ppcre"
                "cl-jpeg"

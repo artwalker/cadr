@@ -507,7 +507,8 @@
   (mapcar accessor resources))
 
 (defun make-tui-startup-lines
-    (resources &key (version "0.1.0"))
+    (resources
+     &key (version (cadr-ai::cadr-version)))
   (labels
       ((section (title names)
          (when names

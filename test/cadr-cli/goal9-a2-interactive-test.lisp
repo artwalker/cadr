@@ -81,6 +81,9 @@
   (multiple-value-bind (compact expanded)
       (cadr-cli::make-tui-startup-lines
        (cadr-cli::make-resource-snapshot))
+    (is (string=
+         (format nil "cadr v~A" (cadr-ai::cadr-version))
+         (first compact)))
     (is (find
          "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
          compact :test #'string=))

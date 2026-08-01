@@ -320,6 +320,37 @@
              response)))
     (is (null result))))
 
+(test goal9-part-e-version-reaches-server-cli-and-radius-registration
+  (let ((version (cadr-ai::cadr-version)))
+    (is (string=
+         (format nil "cadr-server ~A" version)
+         (cadr-server::server-version-line)))
+    (with-server-directory (directory)
+      (let* ((presence
+               (make-instance
+                'cadr-server::http-radius-presence
+                :directory directory
+                :token "test"
+                :base-url "https://radius.invalid/v1/"))
+             (captured nil)
+             (symbol 'cadr-server::radius-post)
+             (original (symbol-function symbol)))
+        (unwind-protect
+             (progn
+               (setf
+                (symbol-function symbol)
+                (lambda (actual-presence path body)
+                  (declare (ignore actual-presence path))
+                  (setf captured body)
+                  (cadr-ai::json-object
+                   "id" "machine-1"
+                   "heartbeatIntervalMs" 30000)))
+               (cadr-server::register-radius-machine presence)
+               (is (string=
+                    version
+                    (cadr-ai::json-get captured "version"))))
+          (setf (symbol-function symbol) original))))))
+
 (test spawn-cli-options-match-the-reference-flags
   (let ((request
           (cadr-server::spawn-request-from-arguments

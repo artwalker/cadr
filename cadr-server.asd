@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-server"
   :description "Unix socket supervisor for cadr RPC instances"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cadr-ai"
                "sb-bsd-sockets"

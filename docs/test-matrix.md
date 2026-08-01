@@ -30,6 +30,14 @@ process/PTY/socket/migration boundaries; the complete script audit and exact cla
 The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 `packages/coding-agent/test/config.test.ts` remains the sole approved `N/A`.
 
+## Goal 9 Part E: release preparation and repository hygiene
+
+| Contract | Common Lisp coverage | Evidence |
+|---|---|---|
+| One production version source | `GOAL9-PART-E-PRODUCTION-VERSION-HAS-ONE-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; production literal audit rejects drift |
+| Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
+| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7019 deterministic checks pass in the root test and both isolated builds; retained harnesses and all available live paths pass |
+
 ## Phase 1: cadr-ai
 
 | TypeScript behavior source | Common Lisp coverage | Evidence |

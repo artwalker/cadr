@@ -9,6 +9,19 @@
 .env
 *.log
 
+# Local agent, test-home, and editor state
+/.codex
+/.tmp-home/
+/.obsidian/
+/docs/.obsidian/
+
+# Local goal inputs; accepted goals live under docs/progress/
+/goal*.md
+
+# Python bytecode
+__pycache__/
+*.py[cod]
+
 # Editor and OS files
 .DS_Store
 .idea/

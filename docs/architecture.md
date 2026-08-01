@@ -4,7 +4,7 @@
 harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
 冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
 命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
-Goal 9 已将行为基线重锁到 `74caa2649` 并完成 Part A 增量实现**
+Goal 9 已将行为基线重锁到 `74caa2649`，完成 Part A–E，并等待整体人工验收**
 
 Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF test systems
 只含可重复测试，独立 live systems 由 `scripts/test-live.sh` 完整汇总。
@@ -1639,3 +1639,17 @@ OAuth refresh 仍由 canonical `~/.cadr/auth.json` 的既有锁与原子写路�
 脚本分别汇总 deterministic 与 live，不把真实 LLM 结果冒充确定性证据。任何
 已运行项失败最终返回非零，但 live FiveAM 的逐项报告和后续可运行 live harness
 仍会完成；凭据缺失只形成带原因的 skip。此入口纯本地，不创建远端 CI 配置。
+
+## 26. Goal 9 Part E 版本与仓库卫生
+
+根目录 `version.sexp` 是唯一生产版本源。八个生产 ASDF system 通过
+`(:read-file-form "version.sexp")` 读取它；`cadr-ai` 的内部版本 helper 再向
+CLI、server CLI、TUI banner、HTTP User-Agent 与 Radius registration 分发同一
+值。不新增公开 export，也不复制版本常量。当前开发版本为 `0.1.0`；本 goal
+不创建 tag，实际发布版本由用户裁决。
+
+仓库根目录只保留当前构建与用户入口；空的 TypeScript 时代 `packages/` 目录已
+删除。已接受的 Goal 9/10 文本归档于 `docs/progress/`，本地 goal 草稿、Codex/
+Obsidian/test-home 状态与 Python bytecode 由 `.gitignore` 隔离。文档职责从
+`docs/README.md` 导航，里程碑由根 `CHANGELOG.md` 维护；历史报告仍是证据，不能
+覆盖当前 architecture/parity/test contracts。

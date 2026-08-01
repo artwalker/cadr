@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-evals"
   :description "Behavioral evaluation harness for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cadr-cli")
   :serial t

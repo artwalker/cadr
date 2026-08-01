@@ -283,4 +283,10 @@
       "api.deepseek.com"
       (cdr
        (assoc "Host" headers
+              :test #'string-equal))))
+    (is
+     (string=
+      (format nil "cadr/~A" (cadr-ai::cadr-version))
+      (cdr
+       (assoc "User-Agent" headers
               :test #'string-equal))))))

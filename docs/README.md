@@ -1,0 +1,35 @@
+# Cadr documentation index
+
+Start with the project [README](../README.md) for installation and user-facing
+behavior, and the [CHANGELOG](../CHANGELOG.md) for milestone history. Current
+contracts live in the top-level documents below; historical goal/phase reports
+remain evidence and must not silently override a current contract.
+
+## Current contracts
+
+- [architecture.md](architecture.md): system boundaries, data/control flow,
+  stable interfaces, frozen surfaces, and accepted implementation decisions.
+- [parity-map.md](parity-map.md): fixed upstream baseline and the exhaustive
+  feature/test classification ledger.
+- [visual-parity.md](visual-parity.md): TUI visual, content, runtime-state, and
+  full-overlay comparison contract.
+- [test-matrix.md](test-matrix.md): deterministic, fixture, process/PTY, live,
+  and human verification levels and their entry points.
+- [dependency-audit.md](dependency-audit.md): production dependencies,
+  transitive closure, authorization class, and replacement boundary.
+- [open-questions.md](open-questions.md): proposed mechanisms awaiting human
+  decision; entries here are not authorization to implement.
+
+## Evidence directories
+
+- [progress/](progress/): accepted goal specifications, phase reports,
+  migration records, commit hashes, and immutable historical evidence.
+- [proposals/](proposals/): scoped API/architecture proposals that require
+  explicit user approval before implementation.
+- [acceptance/](acceptance/): mechanical, live, smoke, and human acceptance
+  reports for completed Parts.
+
+When behavior, tests, or dependencies change, update the relevant current
+contract and its acceptance report in the same submitted Part. Historical
+reports may gain a clearly labelled superseding note, but their original
+evidence must remain distinguishable.

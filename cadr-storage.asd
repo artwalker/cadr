@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-storage"
   :description "Standalone SQLite session storage package for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cadr-agent")
   :serial t

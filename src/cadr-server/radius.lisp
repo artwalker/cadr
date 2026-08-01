@@ -358,7 +358,7 @@
              "hostname" (machine-instance)
              "platform" (software-type)
              "arch" (machine-type)
-             "version" "0.1.0"
+             "version" (cadr-ai::cadr-version)
              "capabilities"
              (cadr-ai::json-object
               "spawn" t

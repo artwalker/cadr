@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-protocol"
   :description "Strict CBOR remote-session protocol for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :serial t
   :components ((:module "src/cadr-protocol"

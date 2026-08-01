@@ -1,5 +1,12 @@
 (in-package #:cadr-ai)
 
+(defparameter +cadr-version+
+  (asdf:component-version
+   (asdf:find-system "cadr-ai")))
+
+(defun cadr-version ()
+  +cadr-version+)
+
 (defparameter +non-retryable-assistant-error-fragments+
   '("gousagelimiterror"
     "freeusagelimiterror"

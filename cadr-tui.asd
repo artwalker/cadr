@@ -1,6 +1,6 @@
 (asdf:defsystem "cadr-tui"
   :description "Pure Common Lisp terminal UI primitives for cadr"
-  :version "0.1.0"
+  :version (:read-file-form "version.sexp")
   :license "MIT"
   :depends-on ("cl-ppcre"
                "sb-posix")
