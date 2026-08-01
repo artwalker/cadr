@@ -99,47 +99,69 @@
 (test autocomplete-at-search-is-recursive-hidden-and-stably-ranked
   (with-autocomplete-tree
    (lambda (root)
-     (let* ((fd #P"/root/.local/bin/fd")
-            (provider
-              (cadr-tui:make-autocomplete-provider
-               :base-path root :fd-path fd))
-            (nested
-              (cadr-tui:autocomplete-get-suggestions
-               provider '("@auto") 0 5))
-            (hidden
-              (cadr-tui:autocomplete-get-suggestions
-               provider '("@.pi") 0 4))
-            (spaced
-              (cadr-tui:autocomplete-get-suggestions
-               provider '("@my") 0 3)))
-       (is (member
-            "@packages/tui/src/autocomplete.ts"
-            (mapcar
-             #'cadr-tui:autocomplete-item-value
-             (cadr-tui:autocomplete-suggestions-items
-              nested))
-            :test #'string=))
-       (is (member
-            "@.pi/"
-            (mapcar
-             #'cadr-tui:autocomplete-item-value
-             (cadr-tui:autocomplete-suggestions-items
-              hidden))
-            :test #'string=))
-       (is (member
-            "@\"my folder/\""
-            (mapcar
-             #'cadr-tui:autocomplete-item-value
-             (cadr-tui:autocomplete-suggestions-items
-              spaced))
-            :test #'string=))
-       (is (notany
-            (lambda (item)
-              (search "@.git"
-                      (cadr-tui:autocomplete-item-value
-                       item)))
-            (cadr-tui:autocomplete-suggestions-items
-             hidden)))))))
+     (let ((fd (merge-pathnames "fake-fd.sh" root)))
+       (with-open-file
+           (stream fd
+                   :direction :output
+                   :if-exists :supersede
+                   :if-does-not-exist :create)
+         (write-line "#!/bin/sh" stream)
+         (dolist (path
+                   '("README.md"
+                     "update.sh"
+                     "packages/"
+                     "packages/tui/"
+                     "packages/tui/src/"
+                     "packages/tui/src/autocomplete.ts"
+                     "my folder/"
+                     "my folder/test.txt"
+                     ".pi/"
+                     ".pi/config.json"
+                     ".git/"
+                     ".git/config"))
+           (format stream "printf '%s\\n' '~A'~%" path)))
+       (uiop:run-program
+        (list "chmod" "+x" (namestring fd)))
+       (let* ((provider
+                (cadr-tui:make-autocomplete-provider
+                 :base-path root :fd-path fd))
+              (nested
+                (cadr-tui:autocomplete-get-suggestions
+                 provider '("@auto") 0 5))
+              (hidden
+                (cadr-tui:autocomplete-get-suggestions
+                 provider '("@.pi") 0 4))
+              (spaced
+                (cadr-tui:autocomplete-get-suggestions
+                 provider '("@my") 0 3)))
+         (is (member
+              "@packages/tui/src/autocomplete.ts"
+              (mapcar
+               #'cadr-tui:autocomplete-item-value
+               (cadr-tui:autocomplete-suggestions-items
+                nested))
+              :test #'string=))
+         (is (member
+              "@.pi/"
+              (mapcar
+               #'cadr-tui:autocomplete-item-value
+               (cadr-tui:autocomplete-suggestions-items
+                hidden))
+              :test #'string=))
+         (is (member
+              "@\"my folder/\""
+              (mapcar
+               #'cadr-tui:autocomplete-item-value
+               (cadr-tui:autocomplete-suggestions-items
+                spaced))
+              :test #'string=))
+         (is (notany
+              (lambda (item)
+                (search "@.git"
+                        (cadr-tui:autocomplete-item-value
+                         item)))
+              (cadr-tui:autocomplete-suggestions-items
+               hidden))))))))
 
 (test autocomplete-quoted-completion-does-not-duplicate-closing-quote
   (with-autocomplete-tree
