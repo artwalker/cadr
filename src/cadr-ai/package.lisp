@@ -316,6 +316,7 @@
    #:oauth-credential-refresh
    #:oauth-credential-expires
    #:oauth-credential-account-id
+   #:oauth-credential-metadata
    #:auth-file-mode
    #:read-auth-credential
    #:write-auth-credential
@@ -371,6 +372,7 @@
    #:runtime-provider-name
    #:runtime-provider-models
    #:runtime-provider-api-key-login-function
+   #:runtime-provider-oauth-login-function
    #:runtime-provider-auth-check-function
    #:runtime-provider-refresh-context-function
    #:models-refresh-result
@@ -388,6 +390,8 @@
    #:models-runtime-auth
    #:models-runtime-check-auth
    #:models-runtime-login-api-key
+   #:models-runtime-login-oauth
+   #:models-runtime-login
    #:models-runtime-available-models
    #:models-runtime-refresh
    #:models-runtime-complete

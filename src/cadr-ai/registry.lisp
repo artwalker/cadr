@@ -498,6 +498,8 @@
     "GROQ_API_KEY"
     "HF_TOKEN"
     "KIMI_API_KEY"
+    "KIMI_CODE_OAUTH_HOST"
+    "KIMI_OAUTH_HOST"
     "MINIMAX_API_KEY"
     "MINIMAX_CN_API_KEY"
     "MISTRAL_API_KEY"
@@ -509,6 +511,7 @@
     "QWEN_TOKEN_PLAN_API_KEY"
     "QWEN_TOKEN_PLAN_CN_API_KEY"
     "RADIUS_API_KEY"
+    "RADIUS_GATEWAY_URL"
     "TOGETHER_API_KEY"
     "AI_GATEWAY_API_KEY"
     "XAI_API_KEY"
@@ -626,6 +629,8 @@
 
 (defun built-in-oauth-to-auth (provider-id credential)
   (case provider-id
+    (:github-copilot
+     (github-copilot-oauth-to-auth credential))
     (:kimi-coding
      (make-runtime-auth-result
       :headers
@@ -685,9 +690,13 @@
                        '(:api-key :headers :environment :auth-type))
           append (list key value)))
 
-(defun make-built-in-runtime-provider (definition)
+(defun make-built-in-runtime-provider (definition &optional environment)
   (let ((provider-id
-          (provider-definition-id definition)))
+          (provider-definition-id definition))
+        (radius-gateway
+          (normalize-radius-gateway
+           (or (environment-value environment "RADIUS_GATEWAY_URL")
+               (provider-definition-base-url definition)))))
     (make-runtime-provider
      :id provider-id
      :name (provider-definition-name definition)
@@ -706,14 +715,51 @@
      (lambda (credential environment overrides)
        (built-in-api-key-auth
         definition credential environment overrides))
+     :oauth-login-function
+     (case provider-id
+       (:anthropic #'login-anthropic-runtime-oauth)
+       (:github-copilot #'login-github-copilot-oauth)
+       (:kimi-coding
+        (lambda (interaction)
+          (login-kimi-oauth interaction environment)))
+       (:openai-codex #'login-openai-runtime-oauth)
+       (:openrouter #'login-openrouter-oauth)
+       (:radius
+        (lambda (interaction)
+          (login-radius-oauth radius-gateway interaction)))
+       (:xai #'login-xai-oauth)
+       (otherwise nil))
      :oauth-refresh-function
      (case provider-id
        (:anthropic #'refresh-anthropic-oauth-credential)
+       (:github-copilot #'refresh-github-copilot-oauth-credential)
+       (:kimi-coding
+        (lambda (credential)
+          (refresh-kimi-oauth-credential credential environment)))
        (:openai-codex #'refresh-openai-oauth-credential)
+       (:openrouter #'refresh-openrouter-oauth-credential)
+       (:radius
+        (lambda (credential)
+          (refresh-radius-oauth-credential radius-gateway credential)))
+       (:xai #'refresh-xai-oauth-credential)
        (otherwise nil))
      :oauth-to-auth-function
      (lambda (credential)
        (built-in-oauth-to-auth provider-id credential))
+     :filter-function
+     (and
+      (eq provider-id :github-copilot)
+      (lambda (models credential)
+        (let ((available
+                (and (typep credential 'oauth-credential)
+                     (github-copilot-metadata-value
+                      credential "availableModelIds"))))
+          (if (vectorp available)
+              (remove-if-not
+               (lambda (model)
+                 (find (model-id model) available :test #'string=))
+               models)
+              models))))
      :complete-function
      (lambda (model context options)
        (built-in-runtime-dispatch
@@ -736,5 +782,6 @@
     (dolist (definition (list-provider-definitions))
       (models-runtime-set-provider
        runtime
-       (make-built-in-runtime-provider definition)))
+       (make-built-in-runtime-provider
+        definition (models-runtime-environment runtime))))
     runtime))

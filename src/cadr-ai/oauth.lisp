@@ -632,7 +632,8 @@
           (error 'authentication-error
                  :message
                  "OpenAI OAuth token does not contain chatgpt_account_id"))
-        (write-auth-credential auth-path credential)
+        (when auth-path
+          (write-auth-credential auth-path credential))
         credential))))
 
 (defun login-anthropic-oauth
@@ -662,5 +663,6 @@
              (credential
                (exchange-anthropic-authorization-code
                 code state verifier)))
-        (write-auth-credential auth-path credential)
+        (when auth-path
+          (write-auth-credential auth-path credential))
         credential))))

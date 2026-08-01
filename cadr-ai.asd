@@ -23,6 +23,7 @@
                              (:file "models-runtime")
                              (:file "crypto")
                              (:file "provider-auth")
+                             (:file "oauth-flows")
                              (:file "registry")
                              (:file "images")
                              (:module "providers"
@@ -70,7 +71,8 @@
                              (:file "image-generation-test")
                              (:file "auth-test")
                              (:file "goal12-capabilities-test")
-                             (:file "goal12-provider-capabilities-test"))))
+                             (:file "goal12-provider-capabilities-test")
+                             (:file "goal12-auth-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-ai/tests :run-tests)

@@ -13,7 +13,10 @@
   (access "" :type string)
   (refresh "" :type string)
   (expires 0 :type integer)
-  (account-id nil :type (or null string)))
+  (account-id nil :type (or null string))
+  ;; Provider-owned fields from the baseline OAuthCredential index signature.
+  ;; Keys are JSON field names; values must be JSON-serializable.
+  (metadata nil :type list))
 
 (defparameter *provider-auth-locks* (make-hash-table))
 (defparameter *provider-auth-locks-lock*
@@ -68,6 +71,11 @@
        (when (oauth-credential-account-id credential)
          (json-put object "accountId"
                    (oauth-credential-account-id credential)))
+       (dolist (entry (oauth-credential-metadata credential))
+         (unless (member (car entry)
+                         '("type" "access" "refresh" "expires" "accountId")
+                         :test #'string=)
+           (json-put object (car entry) (cdr entry))))
        object))))
 
 (defun json-credential (provider object)
@@ -86,7 +94,14 @@
           :access (or (json-get object "access") "")
           :refresh (or (json-get object "refresh") "")
           :expires (or (json-get object "expires") 0)
-          :account-id (json-get object "accountId")))
+          :account-id (json-get object "accountId")
+          :metadata
+          (remove-if
+           (lambda (entry)
+             (member (car entry)
+                     '("type" "access" "refresh" "expires" "accountId")
+                     :test #'string=))
+           (json-object-alist object))))
         (t nil)))))
 
 (defun read-auth-object (path)

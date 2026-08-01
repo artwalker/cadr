@@ -71,10 +71,43 @@
 (defun valid-runtime-auth-prompt-p (prompt)
   (and
    (listp prompt)
-   (member (getf prompt :type) '(:text :secret))
+   (member (getf prompt :type) '(:text :secret :select :manual-code))
    (stringp (getf prompt :message))
    (or (null (getf prompt :placeholder))
-       (stringp (getf prompt :placeholder)))))
+       (stringp (getf prompt :placeholder)))
+   (if (eq :select (getf prompt :type))
+       (let ((options (getf prompt :options)))
+         (and
+          (listp options)
+          (plusp (length options))
+          (every
+           (lambda (option)
+             (and (listp option)
+                  (stringp (getf option :id))
+                  (stringp (getf option :label))
+                  (or (null (getf option :description))
+                      (stringp (getf option :description)))))
+           options)))
+       (null (getf prompt :options)))))
+
+(defun valid-runtime-auth-event-p (event)
+  (and
+   (listp event)
+   (case (getf event :type)
+     ((:info :progress)
+      (stringp (getf event :message)))
+     (:auth-url
+      (and (stringp (getf event :url))
+           (or (null (getf event :instructions))
+               (stringp (getf event :instructions)))))
+     (:device-code
+      (and (stringp (getf event :user-code))
+           (stringp (getf event :verification-uri))
+           (or (null (getf event :interval-seconds))
+               (numberp (getf event :interval-seconds)))
+           (or (null (getf event :expires-in-seconds))
+               (numberp (getf event :expires-in-seconds)))))
+     (otherwise nil))))
 
 (defun runtime-auth-interaction-aborted-p (interaction)
   (let ((abort-p
@@ -101,11 +134,7 @@
     (funcall function (copy-list prompt))))
 
 (defun runtime-auth-interaction-notify (interaction event)
-  (unless
-      (and
-       (listp event)
-       (keywordp (getf event :type))
-       (stringp (getf event :message)))
+  (unless (valid-runtime-auth-event-p event)
     (error 'models-runtime-error
            :code :auth
            :message "Invalid runtime authentication event"))
@@ -139,6 +168,7 @@
   api-key-login-function
   auth-check-function
   auth-resolver
+  oauth-login-function
   oauth-refresh-function
   oauth-to-auth-function
   refresh-function
@@ -454,6 +484,74 @@
                            provider-id)
                    :cause cause)))
         credential))))
+
+(defun models-runtime-provider-for-login (runtime provider-id)
+  (or (models-runtime-provider runtime provider-id)
+      (error 'models-runtime-error
+             :code :provider
+             :message (format nil "Unknown provider: ~A" provider-id))))
+
+(defun persist-runtime-login-credential
+    (runtime provider-id credential expected-type)
+  (unless (typep credential expected-type)
+    (error 'models-runtime-error
+           :code :auth
+           :message
+           (format nil "Login returned an invalid credential for ~A"
+                   provider-id)))
+  (etypecase credential
+    (api-key-credential
+     (setf (api-key-credential-provider credential) provider-id))
+    (oauth-credential
+     (setf (oauth-credential-provider credential) provider-id)))
+  (handler-case
+      (credential-store-modify
+       (models-runtime-credential-store runtime)
+       provider-id
+       (lambda (current)
+         (declare (ignore current))
+         credential))
+    (error (cause)
+      (error 'models-runtime-error
+             :code :auth
+             :message
+             (format nil "Credential store modify failed for ~A"
+                     provider-id)
+             :cause cause)))
+  credential)
+
+(defun models-runtime-login-oauth
+    (runtime provider-id interaction)
+  (let* ((provider
+           (models-runtime-provider-for-login runtime provider-id))
+         (login (runtime-provider-oauth-login-function provider)))
+    (unless login
+      (error 'models-runtime-error
+             :code :auth
+             :message
+             (format nil "~A does not support OAuth login"
+                     (runtime-provider-name provider))))
+    (persist-runtime-login-credential
+     runtime provider-id
+     (handler-case
+         (funcall login interaction)
+       (models-runtime-error (condition)
+         (error condition))
+       (error (cause)
+         (error 'models-runtime-error
+                :code :auth
+                :message
+                (format nil "OAuth login failed for ~A" provider-id)
+                :cause cause)))
+     'oauth-credential)))
+
+(defun models-runtime-login
+    (runtime provider-id auth-type interaction)
+  (ecase auth-type
+    (:api-key
+     (models-runtime-login-api-key runtime provider-id interaction))
+    (:oauth
+     (models-runtime-login-oauth runtime provider-id interaction))))
 
 (defun models-runtime-available-models
     (runtime &optional provider-id)
