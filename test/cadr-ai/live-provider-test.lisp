@@ -1,5 +1,5 @@
-(in-package #:cadr-ai/tests)
-(in-suite cadr-ai-suite)
+(in-package #:cadr-ai/live-tests)
+(in-suite cadr-ai-live-suite)
 
 (defun live-environment-value (name)
   (let ((value (uiop:getenv name)))

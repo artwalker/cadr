@@ -103,8 +103,19 @@
                              (:file "data-migration-test")
                              (:file "build-test")
                              (:file "live-auth-test")
-                             (:file "live-test"))))
+                             (:file "live-gate-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-cli/tests :run-tests)
                (error "cadr-cli tests failed"))))
+
+(asdf:defsystem "cadr-cli/live-tests"
+  :description "Credential-gated live tests for cadr-cli"
+  :depends-on ("fiveam"
+               "cadr-cli"
+               "cadr-live-test-support")
+  :serial t
+  :components ((:module "test/cadr-cli"
+                :serial t
+                :components ((:file "live-package")
+                             (:file "live-test")))))

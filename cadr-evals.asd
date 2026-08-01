@@ -28,11 +28,21 @@
                              (:file "pi-harness-test")
                              (:file "artifacts-test")
                              (:file "harness-table-test")
-                             (:file "summary-test")
-                             (:file "live-evals-test"))))
+                             (:file "summary-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call
                       :cadr-evals/tests
                       :run-tests)
                (error "cadr-evals tests failed"))))
+
+(asdf:defsystem "cadr-evals/live-tests"
+  :description "Credential-gated live tests for cadr-evals"
+  :depends-on ("fiveam"
+               "cadr-evals"
+               "cadr-live-test-support")
+  :serial t
+  :components ((:module "test/cadr-evals"
+                :serial t
+                :components ((:file "live-package")
+                             (:file "live-evals-test")))))

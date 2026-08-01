@@ -1,5 +1,5 @@
-(in-package #:cadr-evals/tests)
-(in-suite cadr-evals-suite)
+(in-package #:cadr-evals/live-tests)
+(in-suite cadr-evals-live-suite)
 
 (defun live-eval-environment-value (name)
   (let ((value (uiop:getenv name)))

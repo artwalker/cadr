@@ -67,9 +67,17 @@
                              (:file "openai-completions-test")
                              (:file "image-model-test")
                              (:file "image-generation-test")
-                             (:file "auth-test")
-                             (:file "live-provider-test"))))
+                             (:file "auth-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-ai/tests :run-tests)
                (error "cadr-ai tests failed"))))
+
+(asdf:defsystem "cadr-ai/live-tests"
+  :description "Credential-gated live tests for cadr-ai"
+  :depends-on ("fiveam" "cadr-ai")
+  :serial t
+  :components ((:module "test/cadr-ai"
+                :serial t
+                :components ((:file "live-package")
+                             (:file "live-provider-test")))))
