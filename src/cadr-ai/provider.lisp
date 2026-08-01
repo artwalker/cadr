@@ -521,6 +521,7 @@
                     (check-abort abort-p)
                     (request-json
                      request
+                     :abort-p abort-p
                      :on-response
                      (lambda (status headers)
                        (notify-provider-response
@@ -568,6 +569,7 @@
                   (reduce-provider-sse-event
                    provider state event on-event)
                   (check-abort abort-p))
+                :abort-p abort-p
                 :on-response
                 (lambda (status headers)
                   (when (typep provider 'bedrock-provider)

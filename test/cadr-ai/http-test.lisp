@@ -178,6 +178,101 @@
       (when (bordeaux-threads:thread-alive-p server)
         (bordeaux-threads:join-thread server)))))
 
+(test silent-sse-request-aborts-without-waiting-for-the-server
+  (let* ((listener
+           (usocket:socket-listen
+            "127.0.0.1" 0
+            :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (response-seen
+           (sb-thread:make-semaphore :count 0))
+         (release-server
+           (sb-thread:make-semaphore :count 0))
+         (client-done
+           (sb-thread:make-semaphore :count 0))
+         (abort-p nil)
+         (message nil)
+         (server-error nil)
+         (server
+           (bordeaux-threads:make-thread
+            (lambda ()
+              (handler-case
+                  (let ((client
+                          (usocket:socket-accept
+                           listener
+                           :element-type '(unsigned-byte 8))))
+                    (unwind-protect
+                         (let ((stream
+                                 (usocket:socket-stream client)))
+                           (read-http-request-headers stream)
+                           (write-http-string
+                            stream
+                            (format
+                             nil
+                             "HTTP/1.1 200 OK~C~CContent-Type: text/event-stream~C~CConnection: close~C~C~C~C"
+                             #\Return #\Linefeed
+                             #\Return #\Linefeed
+                             #\Return #\Linefeed
+                             #\Return #\Linefeed))
+                           (sb-thread:wait-on-semaphore
+                            release-server))
+                      (when client
+                        (usocket:socket-close client))))
+                (error (condition)
+                  (setf server-error condition))))
+            :name "cadr-test-silent-sse-server"))
+         (provider (make-openai-provider :api-key "test"))
+         (model
+           (make-model
+            :id "gpt-test"
+            :provider :openai
+            :api :openai-responses
+            :base-url (format nil "http://127.0.0.1:~D" port)
+            :max-tokens 4096))
+         (client
+           (sb-thread:make-thread
+            (lambda ()
+              (unwind-protect
+                   (let ((*http-request-function*
+                           #'cadr-ai::native-http-request))
+                     (setf
+                      message
+                      (stream-chat
+                       provider model (sample-context)
+                       (lambda (event)
+                         (declare (ignore event)))
+                       :abort-p (lambda () abort-p)
+                       :on-response
+                       (lambda (response callback-model)
+                         (declare (ignore response callback-model))
+                         (sb-thread:signal-semaphore
+                          response-seen)))))
+                (sb-thread:signal-semaphore client-done)))
+            :name "cadr-test-silent-sse-client")))
+    (unwind-protect
+         (progn
+           (is (sb-thread:wait-on-semaphore response-seen :timeout 2))
+           (setf abort-p t)
+           (let ((aborted-within-bound-p
+                   (sb-thread:wait-on-semaphore
+                    client-done :timeout 0.5)))
+             (is-true aborted-within-bound-p)
+             (unless aborted-within-bound-p
+               (sb-thread:signal-semaphore release-server)
+               (sb-thread:wait-on-semaphore client-done :timeout 2)))
+           (is (eq :aborted
+                   (assistant-message-stop-reason message))))
+      (sb-thread:signal-semaphore release-server)
+      (ignore-errors
+        (usocket:socket-close listener))
+      (when (sb-thread:thread-alive-p client)
+        (sb-thread:join-thread client))
+      (when (bordeaux-threads:thread-alive-p server)
+        (bordeaux-threads:join-thread server))
+      (when server-error
+        (error server-error)))))
+
 (test socket-timeouts-remain-distinct-retryable-transport-errors
   (multiple-value-bind (provider model)
       (provider-case :anthropic)

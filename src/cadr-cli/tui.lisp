@@ -2156,6 +2156,26 @@
     (string message)
     (t (princ-to-string message))))
 
+(defun restore-queued-messages-to-editor (editor queued)
+  (let ((count (length queued)))
+    (when (plusp count)
+      (let* ((queued-text
+               (format nil "~{~A~^~%~%~}" queued))
+             (current
+               (cadr-tui:editor-text editor))
+             (combined
+               (if
+                   (zerop
+                    (length
+                     (string-trim
+                      '(#\Space #\Tab #\Newline #\Return)
+                      current)))
+                   queued-text
+                   (format nil "~A~%~%~A"
+                           queued-text current))))
+        (cadr-tui:editor-set-text editor combined)))
+    count))
+
 (defun render-tui-pending-message-lines (state width)
   (let ((steering
           (tui-state-steering-messages state))
@@ -4239,31 +4259,18 @@
            (let* ((queued
                     (and dequeue-function
                          (funcall dequeue-function)))
-                  (count (length queued)))
+                  (count
+                    (restore-queued-messages-to-editor
+                     editor queued)))
              (if (zerop count)
                  (when notify-p
                    (notice "No queued messages to restore"))
-                 (let* ((queued-text
-                          (format nil "~{~A~^~%~%~}" queued))
-                        (current
-                          (cadr-tui:editor-text editor))
-                        (combined
-                          (if
-                              (zerop
-                               (length
-                                (string-trim
-                                 '(#\Space #\Tab #\Newline #\Return)
-                                 current)))
-                              queued-text
-                              (format nil "~A~%~%~A"
-                                      queued-text current))))
-                   (cadr-tui:editor-set-text editor combined)
-                   (when notify-p
-                     (notice
-                      (format
-                       nil
-                       "Restored ~D queued message~:P to editor"
-                       count)))))
+                 (when notify-p
+                   (notice
+                    (format
+                     nil
+                     "Restored ~D queued message~:P to editor"
+                     count))))
              count))
          (accept-selection (value)
            (let ((kind overlay-kind))

@@ -1992,6 +1992,35 @@
             (format nil "~{~A~^~%~}"
                     lines))))))))
 
+(test goal10-operation-aborted-matches-baseline-text-padding
+  (let* ((message
+           (cadr-ai:make-assistant-message
+            :api :openai-responses
+            :provider :openai
+            :model "mock"
+            :stop-reason :aborted
+            :error-message "Request was aborted"))
+         (state
+           (cadr-cli::make-tui-state
+            :model "mock"
+            :messages (list message)))
+         (editor (cadr-tui:make-multiline-editor)))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state state editor 80 12)
+      (declare (ignore row column))
+      (let* ((plain (mapcar #'cadr-tui::strip-ansi lines))
+             (abort-line
+               (find-if
+                (lambda (line)
+                  (search "Operation aborted" line))
+                plain)))
+        (is (stringp abort-line))
+        ;; Baseline Text(..., outputPad=1, paddingY=0) prefixes one cell.
+        (is (char= #\Space (char abort-line 0)))
+        (is (char= #\O (char abort-line 1)))
+        (is (null (search "Abort requested" abort-line)))
+        (is (null (search "session>" abort-line)))))))
+
 (test tui-compaction-rebuilds-chat-appends-summary-and-keeps-steering-input
   (let* ((old
            (cadr-ai:make-user-message

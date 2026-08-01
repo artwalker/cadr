@@ -65,7 +65,20 @@
       (is (string=
            "a"
            (cadr-tui:input-event-text
-            (first events)))))))
+           (first events)))))))
+
+(test input-decoder-preserves-configurable-alt-key-actions
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager))
+           (let ((events
+                   (cadr-tui:feed-input
+                    (cadr-tui:make-input-decoder)
+                    (format nil "~Cp" #\Escape))))
+             (is (equal '(:dequeue) (event-kinds events)))))
+      (cadr-tui:set-keybindings previous))))
 
 (test multiline-editor-edits-by-grapheme-and-submits
   (let ((editor (cadr-tui:make-multiline-editor)))

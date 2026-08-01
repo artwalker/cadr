@@ -188,6 +188,19 @@
             :steering (list steering-message)
             :follow-up (list follow-up-message))))
     (cadr-cli::tui-handle-agent-event state event)
+    (is
+     (equal
+      '(""
+        " Steering: change direction"
+        " Follow-up: after this"
+        " ↳ alt+up to edit all queued messages")
+      (mapcar
+       (lambda (line)
+         (string-right-trim
+          '(#\Space)
+          (cadr-tui::strip-ansi line)))
+       (cadr-cli::render-tui-pending-message-lines
+        state 80))))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
          state editor 80 16 :busy-p t)
@@ -196,6 +209,95 @@
         (is (search "Steering: change direction" screen))
         (is (search "Follow-up: after this" screen))
         (is (search "alt+up to edit all queued messages" screen))))))
+
+(test goal10-busy-tui-dequeue-restores-both-queues-to-the-editor
+  (let ((started (sb-thread:make-semaphore :count 0))
+        (release (sb-thread:make-semaphore :count 0))
+        (worker-done (sb-thread:make-semaphore :count 0))
+        (worker-done-p nil)
+        (dequeue-count 0))
+    (let (terminal)
+      (setf
+       terminal
+       (make-instance
+             'goal9-p2-key-terminal
+             :columns 80 :rows 16
+             :inputs
+             (list
+              (format nil "start~C" #\Return)
+              (lambda ()
+                (sb-thread:wait-on-semaphore started)
+                (format nil "steer~C" #\Return))
+              "follow"
+              (format nil "~C[13;3u" #\Escape)
+              (format nil "~Cp" #\Escape)
+              (lambda ()
+                (sb-thread:wait-on-semaphore worker-done)
+                (format nil "~C[99;5u" #\Escape))
+              (format nil "~C[99;5u" #\Escape))
+             :worker-done-p
+             (lambda () worker-done-p)))
+      (cadr-cli::run-tui
+       (lambda (line)
+         (declare (ignore line))
+         (sb-thread:signal-semaphore started)
+         (sb-thread:wait-on-semaphore release)
+         (setf worker-done-p t)
+         (sb-thread:signal-semaphore worker-done))
+       :busy-input-function
+       (lambda (line)
+         (declare (ignore line)))
+       :follow-up-input-function
+       (lambda (line)
+         (declare (ignore line)))
+       :dequeue-function
+       (lambda ()
+         (incf dequeue-count)
+         (sb-thread:signal-semaphore release)
+         '("steer" "follow"))
+       :model "faux"
+       :terminal terminal)
+      (is (= 1 dequeue-count))
+      (is
+       (search
+        "Restored 2 queued messages to editor"
+        (goal9-a2-screen-text
+         (cadr-tui:virtual-terminal-snapshot terminal))))))
+  (let ((editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-text editor "draft")
+    (is
+     (= 2
+        (cadr-cli::restore-queued-messages-to-editor
+         editor '("steer" "follow"))))
+    (is
+     (string=
+      (format nil "steer~%~%follow~%~%draft")
+      (cadr-tui:editor-text editor)))))
+
+(test goal10-pending-hint-uses-the-configured-dequeue-key
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager
+             :user-bindings
+             '(("app.message.dequeue" . ("ctrl+g")))))
+           (let ((state
+                   (cadr-cli::make-tui-state
+                    :model "faux")))
+             (setf
+              (cadr-cli::tui-state-follow-up-messages state)
+              (list
+               (cadr-ai:make-user-message
+                :content "later")))
+             (is
+              (search
+               "ctrl+g to edit all queued messages"
+               (format
+                nil "~{~A~^~%~}"
+                (cadr-cli::render-tui-pending-message-lines
+                 state 80))))))
+      (cadr-tui:set-keybindings previous))))
 
 (test goal10-busy-tui-enter-and-alt-enter-use-distinct-queues
   (let ((started (sb-thread:make-semaphore :count 0))

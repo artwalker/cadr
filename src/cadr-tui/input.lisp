@@ -270,6 +270,34 @@
                        (decode-next)))))))
            (when
                (and
+                (> (length
+                    (input-decoder-buffer decoder))
+                   1)
+                (char=
+                 (char
+                  (input-decoder-buffer decoder)
+                  0)
+                 #\Escape)
+                (not
+                 (char=
+                  (char
+                   (input-decoder-buffer decoder)
+                   1)
+                  #\[)))
+             (let ((data
+                     (subseq
+                      (input-decoder-buffer decoder)
+                      0 2)))
+               (multiple-value-bind
+                     (recognized-p event)
+                   (decode-complete-escape-event data)
+                 (when recognized-p
+                   (consume-buffer-prefix decoder 2)
+                   (when event (push event events))
+                   (return-from decode-next
+                     (decode-next))))))
+           (when
+               (and
                 (char=
                  (char
                   (input-decoder-buffer decoder)

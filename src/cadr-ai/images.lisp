@@ -202,7 +202,7 @@
                 (call-with-provider-retries
                  (lambda ()
                    (check-abort abort-p)
-                   (request-json request))
+                   (request-json request :abort-p abort-p))
                  :retry-allowed-p
                  (lambda (condition)
                    (let ((delay

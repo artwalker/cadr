@@ -15,6 +15,55 @@
 
 (define-condition native-http-timeout (error) ())
 
+(defparameter *native-http-abort-p* nil)
+
+(defun signal-http-request-aborted ()
+  (error 'request-aborted :message "Request was aborted"))
+
+(defun call-with-abortable-stream-operation
+    (stream abort-p function &optional abort-function)
+  (if (null abort-p)
+      (funcall function)
+      (let ((finished
+              (sb-thread:make-semaphore :count 0))
+            (aborted-p nil)
+            (watcher nil))
+        (when (funcall abort-p)
+          (signal-http-request-aborted))
+        (setf
+         watcher
+         (sb-thread:make-thread
+          (lambda ()
+            (loop
+              (when (funcall abort-p)
+                (setf aborted-p t)
+                (ignore-errors
+                  (if abort-function
+                      (funcall abort-function)
+                      (close stream :abort t)))
+                (return))
+              (when
+                  (sb-thread:wait-on-semaphore
+                   finished :timeout 0.005)
+                (return))))
+          :name "cadr-http-abort-watcher"))
+        (unwind-protect
+             (handler-case
+                 (multiple-value-prog1
+                     (funcall function)
+                   (when (or aborted-p
+                             (funcall abort-p))
+                     (signal-http-request-aborted)))
+               (request-aborted (condition)
+                 (error condition))
+               (error (condition)
+                 (if (or aborted-p
+                         (funcall abort-p))
+                     (signal-http-request-aborted)
+                     (error condition))))
+          (sb-thread:signal-semaphore finished)
+          (sb-thread:join-thread watcher)))))
+
 (defstruct parsed-url
   scheme
   host
@@ -194,7 +243,10 @@
    (chunk-remaining :initform 0
                     :accessor http-chunk-remaining)
    (finished-p :initform nil
-               :accessor http-body-finished-p)))
+               :accessor http-body-finished-p)
+   (abort-function :initarg :abort-function
+                   :initform nil
+                   :reader http-body-abort-function)))
 
 (defmethod stream-element-type
     ((stream http-body-stream))
@@ -296,7 +348,7 @@
   (parse-integer value))
 
 (defun make-http-body-stream
-    (source headers)
+    (source headers &optional abort-function)
   (let ((transfer
           (header-value headers
                         "transfer-encoding"))
@@ -312,23 +364,26 @@
         'http-body-stream
         :source source
         :mode :chunked
-        :remaining 0))
+        :remaining 0
+        :abort-function abort-function))
       (length
        (make-instance
         'http-body-stream
         :source source
         :mode :length
         :remaining
-        (parse-content-length length)))
+        (parse-content-length length)
+        :abort-function abort-function))
       (t
        (make-instance
         'http-body-stream
         :source source
         :mode :close
-        :remaining 0)))))
+        :remaining 0
+        :abort-function abort-function)))))
 
 (defun connect-http-stream
-    (parsed connect-timeout read-timeout)
+    (parsed connect-timeout read-timeout &optional abort-p)
   (let* ((host
            (parsed-url-host parsed))
          (entry
@@ -342,32 +397,42 @@
             :type :stream
             :protocol :tcp)))
     (handler-case
-        (progn
-          (if connect-timeout
-              (sb-sys:with-deadline
-                  (:seconds connect-timeout)
-                (sb-bsd-sockets:socket-connect
-                 socket address
-                 (parsed-url-port parsed)))
-              (sb-bsd-sockets:socket-connect
-               socket address
-               (parsed-url-port parsed)))
-          (let ((plain
-                  (sb-bsd-sockets:socket-make-stream
-                   socket
-                   :input t :output t
-                   :element-type
-                   '(unsigned-byte 8)
-                   :buffering :none
-                   :timeout read-timeout)))
-            (if (string=
-                 "https"
-                 (parsed-url-scheme parsed))
-                (cl+ssl:make-ssl-client-stream
-                 plain
-                 :hostname host
-                 :verify :required)
-                plain)))
+        (call-with-abortable-stream-operation
+         nil abort-p
+         (lambda ()
+           (if connect-timeout
+               (sb-sys:with-deadline
+                   (:seconds connect-timeout)
+                 (sb-bsd-sockets:socket-connect
+                  socket address
+                  (parsed-url-port parsed)))
+               (sb-bsd-sockets:socket-connect
+                socket address
+                (parsed-url-port parsed)))
+           (let ((plain
+                   (sb-bsd-sockets:socket-make-stream
+                    socket
+                    :input t :output t
+                    :element-type
+                    '(unsigned-byte 8)
+                    :buffering :none
+                    :timeout read-timeout)))
+             (values
+              (if (string=
+                   "https"
+                   (parsed-url-scheme parsed))
+                  (cl+ssl:make-ssl-client-stream
+                   plain
+                   :hostname host
+                   :verify :required)
+                  plain)
+              socket)))
+         (lambda ()
+           (ignore-errors
+             (sb-bsd-sockets:socket-shutdown
+              socket :direction :io))
+           (ignore-errors
+             (sb-bsd-sockets:socket-close socket))))
       (sb-sys:io-timeout ()
         (ignore-errors
           (sb-bsd-sockets:socket-close
@@ -467,39 +532,47 @@
            force-string
            force-binary)
   (declare (ignore force-binary))
-  (let* ((parsed (parse-http-url url))
-         (stream
-           (connect-http-stream
-            parsed connect-timeout
-            read-timeout)))
-    (handler-case
-        (progn
-          (write-http-request
-           stream parsed method headers content)
-          (multiple-value-bind (status response-headers)
-              (parse-response-headers stream)
-            (let ((body
-                    (make-http-body-stream
-                     stream response-headers)))
-              (if want-stream
-                  (values body status
-                          response-headers)
-                  (unwind-protect
-                       (let ((octets
-                               (slurp-stream-octets
-                                body)))
-                         (values
-                          (if force-string
-                              (utf8-string octets)
-                              octets)
-                          status
-                          response-headers))
-                    (close body))))))
-      (error (condition)
-        (when (open-stream-p stream)
-          (ignore-errors (close stream
-                                :abort t)))
-        (error condition)))))
+  (let ((parsed (parse-http-url url)))
+    (multiple-value-bind (stream socket)
+        (connect-http-stream
+         parsed connect-timeout
+         read-timeout
+         *native-http-abort-p*)
+      (flet ((abort-connection ()
+               (sb-bsd-sockets:socket-shutdown
+                socket :direction :io)))
+        (handler-case
+            (call-with-abortable-stream-operation
+             stream *native-http-abort-p*
+             (lambda ()
+               (write-http-request
+                stream parsed method headers content)
+               (multiple-value-bind (status response-headers)
+                   (parse-response-headers stream)
+                 (let ((body
+                         (make-http-body-stream
+                          stream response-headers
+                          #'abort-connection)))
+                   (if want-stream
+                       (values body status
+                               response-headers)
+                       (unwind-protect
+                            (let ((octets
+                                    (slurp-stream-octets
+                                     body)))
+                              (values
+                               (if force-string
+                                   (utf8-string octets)
+                                   octets)
+                               status
+                               response-headers))
+                         (close body))))))
+             #'abort-connection)
+          (error (condition)
+            (when (open-stream-p stream)
+              (ignore-errors
+                (close stream :abort t)))
+            (error condition)))))))
 
 (unless *http-request-function*
   (setf *http-request-function*
@@ -557,6 +630,8 @@
              options)
     (api-error (condition)
       (error condition))
+    (request-aborted (condition)
+      (error condition))
     (native-http-timeout (cause)
       (error
        'timeout-error
@@ -600,14 +675,16 @@
     (request &key
                (connect-timeout 10)
                (read-timeout 60)
+               abort-p
                on-response)
   (multiple-value-bind (body status headers)
-      (invoke-http-request
-       request
-       :connect-timeout connect-timeout
-       :read-timeout read-timeout
-       :want-stream nil
-       :force-string t)
+      (let ((*native-http-abort-p* abort-p))
+        (invoke-http-request
+         request
+         :connect-timeout connect-timeout
+         :read-timeout read-timeout
+         :want-stream nil
+         :force-string t))
     (let ((text (normalize-response-body body)))
       (when on-response
         (funcall on-response status headers))
@@ -630,15 +707,17 @@
 (defun request-sse
     (request consumer
      &key (connect-timeout 10)
+       abort-p
        on-response)
   (multiple-value-bind (body status headers)
-      (invoke-http-request
-       request
-       :connect-timeout connect-timeout
-       ;; SSE may remain silent during model thinking.
-       :read-timeout nil
-       :want-stream t
-       :force-binary t)
+      (let ((*native-http-abort-p* abort-p))
+        (invoke-http-request
+         request
+         :connect-timeout connect-timeout
+         ;; SSE may remain silent during model thinking.
+         :read-timeout nil
+         :want-stream t
+         :force-binary t))
     (unwind-protect
          (progn
            (when on-response
@@ -647,7 +726,12 @@
              (signal-api-error
               request (slurp-stream body)
               status headers))
-           (read-sse-stream body consumer)
+           (call-with-abortable-stream-operation
+            body abort-p
+            (lambda ()
+              (read-sse-stream body consumer))
+            (and (typep body 'http-body-stream)
+                 (http-body-abort-function body)))
            (values status headers))
       (when (open-stream-p body)
         (close body)))))
@@ -823,14 +907,16 @@
 (defun request-aws-event-stream
     (request consumer
      &key (connect-timeout 10)
+       abort-p
        on-response)
   (multiple-value-bind (body status headers)
-      (invoke-http-request
-       request
-       :connect-timeout connect-timeout
-       :read-timeout nil
-       :want-stream t
-       :force-binary t)
+      (let ((*native-http-abort-p* abort-p))
+        (invoke-http-request
+         request
+         :connect-timeout connect-timeout
+         :read-timeout nil
+         :want-stream t
+         :force-binary t))
     (unwind-protect
          (progn
            (when on-response
@@ -839,7 +925,12 @@
              (signal-api-error
               request (slurp-stream body)
               status headers))
-           (read-aws-event-stream body consumer)
+           (call-with-abortable-stream-operation
+            body abort-p
+            (lambda ()
+              (read-aws-event-stream body consumer))
+            (and (typep body 'http-body-stream)
+                 (http-body-abort-function body)))
            (values status headers))
       (when (open-stream-p body)
         (close body)))))
@@ -847,14 +938,17 @@
 (defun request-provider-events
     (request consumer
      &key (connect-timeout 10)
+       abort-p
        on-response)
   (ecase (request-spec-stream-format request)
     (:sse
      (request-sse request consumer
                   :connect-timeout connect-timeout
+                  :abort-p abort-p
                   :on-response on-response))
     (:aws-event-stream
      (request-aws-event-stream
       request consumer
       :connect-timeout connect-timeout
+      :abort-p abort-p
       :on-response on-response))))
