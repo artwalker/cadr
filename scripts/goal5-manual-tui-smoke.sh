@@ -42,10 +42,17 @@ if [ "$attempt" -ge 100 ]; then
 fi
 
 tmux send-keys -t "$SESSION" -l "f"
-sleep 0.3
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$SCREEN" |
-  grep -Fq "input target: EDITOR"; then
+attempt=0
+while [ "$attempt" -lt 30 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" |
+    grep -Fq "input target: EDITOR"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 30 ]; then
   echo "goal5 manual TUI smoke: focus did not return to editor" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
@@ -58,27 +65,37 @@ if ! printf '%s\n' "$SCREEN" |
 fi
 
 tmux send-keys -t "$SESSION" -l "i"
-sleep 0.3
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$SCREEN" |
-  grep -Fq "forced fallback"; then
+attempt=0
+while [ "$attempt" -lt 30 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" |
+    grep -Fq "forced fallback"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 30 ]; then
   echo "goal5 manual TUI smoke: fallback toggle did not render" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi
 
 tmux resize-window -t "$SESSION" -x 58 -y 20
-sleep 0.3
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$SCREEN" |
-  grep -Fq "input target: EDITOR"; then
+attempt=0
+while [ "$attempt" -lt 30 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" |
+    grep -Fq "input target: EDITOR" &&
+    printf '%s\n' "$SCREEN" |
+      grep -Fq "goal5-pixel.png"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 30 ]; then
   echo "goal5 manual TUI smoke: resize lost the overlay state" >&2
-  printf '%s\n' "$SCREEN" >&2
-  exit 1
-fi
-if ! printf '%s\n' "$SCREEN" |
-  grep -Fq "goal5-pixel.png"; then
-  echo "goal5 manual TUI smoke: resize lost the image fallback" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi

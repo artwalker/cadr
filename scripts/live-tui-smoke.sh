@@ -38,8 +38,8 @@ tmux send-keys -t "$SESSION" Enter
 attempt=0
 while [ "$attempt" -lt 300 ]; do
   SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-  if printf '%s\n' "$SCREEN" | grep -Fq "session:" &&
-    printf '%s\n' "$SCREEN" | grep -Fq "›"; then
+  if printf '%s\n' "$SCREEN" | grep -Fq "Cadr can explain its own features" &&
+    printf '%s\n' "$SCREEN" | grep -Fq "deepseek-v4-flash"; then
     break
   fi
   attempt=$((attempt + 1))
@@ -56,7 +56,7 @@ tmux send-keys -t "$SESSION" -l "/"
 attempt=0
 while [ "$attempt" -lt 20 ]; do
   SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-  if printf '%s\n' "$SCREEN" | grep -Fq "sessions"; then
+  if printf '%s\n' "$SCREEN" | grep -Fq "scoped-models"; then
     break
   fi
   attempt=$((attempt + 1))
@@ -80,26 +80,47 @@ while [ "$attempt" -lt 20 ]; do
   sleep 0.1
 done
 tmux send-keys -t "$SESSION" Tab
-sleep 0.2
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$SCREEN" | grep -Fq "/scoped-models"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" | grep -Fxq "/scoped-models"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: autocomplete selection did not apply" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi
 
 tmux send-keys -t "$SESSION" C-_
-sleep 0.2
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if printf '%s\n' "$SCREEN" | grep -Fq "/scoped-models"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" | grep -Fxq "/scoped-"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: autocomplete undo did not restore the prefix" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi
 tmux send-keys -t "$SESSION" C-a C-k
-sleep 0.2
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if printf '%s\n' "$SCREEN" | grep -Fq "› /"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if ! printf '%s\n' "$SCREEN" | grep -Fxq "/scoped-"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: editor prefix cleanup failed" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
@@ -107,32 +128,52 @@ fi
 
 tmux send-keys -t "$SESSION" -l "killringprobe"
 tmux send-keys -t "$SESSION" C-w
-sleep 0.2
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if printf '%s\n' "$SCREEN" | grep -Fq "killringprobe"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if ! printf '%s\n' "$SCREEN" | grep -Fxq "killringprobe"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: kill-ring deletion did not update the editor" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi
 
 tmux send-keys -t "$SESSION" C-y
-sleep 0.2
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$SCREEN" | grep -Fq "killringprobe"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$SCREEN" | grep -Fxq "killringprobe"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: yank did not restore killed text" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi
 
 tmux send-keys -t "$SESSION" C-_
-sleep 0.2
-SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-if printf '%s\n' "$SCREEN" | grep -Fq "killringprobe"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+  if ! printf '%s\n' "$SCREEN" | grep -Fxq "killringprobe"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: undo did not revert yank" >&2
   printf '%s\n' "$SCREEN" >&2
   exit 1
 fi
-sleep 0.2
 
 tmux send-keys -t "$SESSION" -l \
   "创建 hello.txt，内容严格为 hello，并读取确认。"
@@ -206,15 +247,23 @@ if [ "$attempt" -ge 120 ]; then
   exit 1
 fi
 
-sleep 2
-OUTPUT="$(tmux capture-pane -t "$SESSION" -p)"
-if ! printf '%s\n' "$OUTPUT" | grep -Fq "hello world"; then
+attempt=0
+while [ "$attempt" -lt 20 ]; do
+  OUTPUT="$(tmux capture-pane -t "$SESSION" -p)"
+  if printf '%s\n' "$OUTPUT" | grep -Fq "hello world"; then
+    break
+  fi
+  attempt=$((attempt + 1))
+  sleep 0.1
+done
+if [ "$attempt" -ge 20 ]; then
   echo "live TUI smoke: rendered screen lacks the verified result" >&2
   printf '%s\n' "$OUTPUT" >&2
   exit 1
 fi
 
-tmux send-keys -t "$SESSION" C-c
+tmux send-keys -t "$SESSION" -l "/quit"
+tmux send-keys -t "$SESSION" Enter
 attempt=0
 while [ "$attempt" -lt 20 ]; do
   if [ -f "$SMOKE_ROOT/terminal-restored" ]; then
