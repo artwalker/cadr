@@ -181,11 +181,12 @@
     (is-true source)
     (when source
       (dolist (required
-                `(,(format nil "permissions:~%  contents: read")
+                  `(,(format nil "permissions:~%  contents: read")
                   "runs-on: ubuntu-24.04"
-                  "HOME: ${{ runner.temp }}/cadr-home"
-                  "QUICKLISP_SETUP: ${{ runner.temp }}/cadr-home/quicklisp/setup.lisp"
-                  "SBCL: ${{ runner.temp }}/sbcl/bin/sbcl"
+                  "HOME=%s/cadr-home"
+                  "QUICKLISP_SETUP=%s/cadr-home/quicklisp/setup.lisp"
+                  "SBCL=%s/sbcl/bin/sbcl"
+                  "$GITHUB_ENV"
                   "ANTHROPIC_API_KEY: \"\""
                   "DEEPSEEK_API_KEY: \"\""
                   "OPENAI_API_KEY: \"\""
@@ -227,6 +228,9 @@
                   "actions/upload-artifact"
                   "actions/download-artifact"
                   "sudo sh install.sh"
+                  "HOME: ${{ runner.temp"
+                  "SBCL: ${{ runner.temp"
+                  "QUICKLISP_SETUP: ${{ runner.temp"
                   "secrets."))
         (is (not (search forbidden source :test #'char-equal))
             "Forbidden CI mechanism: ~A" forbidden)))))

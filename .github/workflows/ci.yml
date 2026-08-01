@@ -11,9 +11,6 @@ jobs:
   verify:
     runs-on: ubuntu-24.04
     env:
-      HOME: ${{ runner.temp }}/cadr-home
-      QUICKLISP_SETUP: ${{ runner.temp }}/cadr-home/quicklisp/setup.lisp
-      SBCL: ${{ runner.temp }}/sbcl/bin/sbcl
       ANTHROPIC_API_KEY: ""
       DEEPSEEK_API_KEY: ""
       OPENAI_API_KEY: ""
@@ -22,6 +19,17 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         with:
           persist-credentials: false
+
+      - name: Configure isolated environment
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cadr-home"
+          {
+            printf 'HOME=%s/cadr-home\n' "$RUNNER_TEMP"
+            printf 'QUICKLISP_SETUP=%s/cadr-home/quicklisp/setup.lisp\n' "$RUNNER_TEMP"
+            printf 'SBCL=%s/sbcl/bin/sbcl\n' "$RUNNER_TEMP"
+          } >> "$GITHUB_ENV"
 
       - name: Install system dependencies
         run: |
