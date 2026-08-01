@@ -228,3 +228,195 @@
                (faux-stream '*responses* '*contexts*))))
         (agent-prompt agent "run")
         (is (not (null second-saw-first)))))))
+
+(test goal10-tool-execution-condition-keeps-stack-live-and-retries-with-new-arguments
+  (let ((cleanup-ran-p nil)
+        (attempts nil)
+        (condition-seen-p nil))
+    (let* ((tool
+             (make-tool
+              :name "restartable"
+              :description "Restartable"
+              :parameters (object-schema "value")
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id))
+                (let ((value
+                        (cadr-ai::json-get arguments "value")))
+                  (push value attempts)
+                  (unwind-protect
+                       (if (string= value "bad")
+                           (error "executor exploded")
+                           (list (make-text-content :text value)))
+                    (setf cleanup-ran-p t))))))
+           (bundle
+             (make-test-extension-bundle
+              "restart-condition"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :tool-call-error
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let* ((payload
+                            (cadr-agent:extension-event-payload event))
+                          (condition (getf payload :condition)))
+                     (setf condition-seen-p
+                           (typep condition
+                                  'cadr-agent:tool-execution-error))
+                     (is-false cleanup-ran-p)
+                     (is-true
+                      (find-restart
+                       'cadr-agent:retry-tool-call))
+                     (list
+                      :action :retry
+                      :arguments
+                      (cadr-ai::json-object
+                       "value" "good"))))))))
+           (host (make-test-extension-host (list bundle)))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "restart-1" :name "restartable"
+                 :arguments
+                 (cadr-ai::json-object "value" "bad")))
+               :tool-use)
+              (assistant
+               (list (make-text-content :text "done")))))
+           (*contexts* nil)
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list tool)
+              :extension-host host
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare (special *responses* *contexts*))
+      (agent-prompt agent "run")
+      (is-true condition-seen-p)
+      (is-true cleanup-ran-p)
+      (is (equal '("bad" "good")
+                 (nreverse attempts)))
+      (let ((result (third (agent-messages agent))))
+        (is-false (tool-result-message-is-error result))
+        (is (string= "good" (text-result result)))))))
+
+(test goal10-schema-failure-skip-preserves-the-old-result-text
+  (let ((condition-message nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "skip-condition"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :tool-call-error
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf condition-message
+                         (cadr-ai:cadr-error-message
+                          (getf
+                           (cadr-agent:extension-event-payload event)
+                           :condition)))
+                   (is-true
+                    (find-restart
+                     'cadr-agent:skip-tool-call))
+                   (list :action :skip))))))
+           (host (make-test-extension-host (list bundle)))
+           (tool
+             (make-tool
+              :name "schema"
+              :description "Schema"
+              :parameters (object-schema "value")
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (error "must not execute"))))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "schema-1" :name "schema"
+                 :arguments (cadr-ai::json-object)))
+               :tool-use)
+              (assistant
+               (list (make-text-content :text "done")))))
+           (*contexts* nil)
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list tool)
+              :extension-host host
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare (special *responses* *contexts*))
+      (agent-prompt agent "run")
+      (let ((result (third (agent-messages agent))))
+        (is-true (tool-result-message-is-error result))
+        (is (string= condition-message
+                     (text-result result)))))))
+
+(test goal10-abort-restart-commits-error-without-another-provider-request
+  (let ((provider-calls 0))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "abort-condition"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :tool-call-error
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (is-true
+                    (find-restart
+                     'cadr-agent:abort-agent-run))
+                   (list
+                    :action :abort
+                    :reason "stopped by host"))))))
+           (host (make-test-extension-host (list bundle)))
+           (tool
+             (make-tool
+              :name "abortable"
+              :description "Abortable"
+              :parameters (object-schema)
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (error "abort this run"))))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "abort-1" :name "abortable"
+                 :arguments (cadr-ai::json-object)))
+               :tool-use)
+              (assistant
+               (list
+                (make-text-content
+                 :text "must not be requested")))))
+           (*contexts* nil)
+           (stream (faux-stream '*responses* '*contexts*))
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list tool)
+              :extension-host host
+              :stream-function
+              (lambda (&rest arguments)
+                (incf provider-calls)
+                (apply stream arguments)))))
+      (declare (special *responses* *contexts*))
+      (agent-prompt agent "run")
+      (is (= 1 provider-calls))
+      (let ((result (third (agent-messages agent))))
+        (is-true (tool-result-message-is-error result))
+        (is (string= "stopped by host"
+                     (text-result result)))))))

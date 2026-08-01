@@ -9,14 +9,17 @@
     :after-provider-response
     :user-bash))
 
-(test wave3-extension-event-set-is-exactly-the-baseline-thirty-three
-  (is (= 33
+(test goal10-extension-event-set-is-refrozen-at-thirty-four
+  (is (= 34
          (length
           cadr-agent::+extension-hook-events+)))
-  (is (= 33
+  (is (= 34
          (length
           (remove-duplicates
            cadr-agent::+extension-hook-events+))))
+  (is (member
+       :tool-call-error
+       cadr-agent::+extension-hook-events+))
   (dolist (event +wave3-extension-events+)
     (is (member
          event

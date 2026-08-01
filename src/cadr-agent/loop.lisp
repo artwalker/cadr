@@ -239,6 +239,216 @@
        (copy-list
         (tool-outcome-appended-messages outcome))))))
 
+(defstruct tool-restart-state
+  agent
+  original-call
+  current-call
+  current-arguments
+  (current-appended-messages nil :type list)
+  (prior-appended-messages nil :type list)
+  (attempt 1 :type (integer 1 *))
+  (abort-p nil :type boolean))
+
+(defun make-tool-restart-state-for-call (agent call)
+  (make-tool-restart-state
+   :agent agent
+   :original-call call
+   :current-call call
+   :current-arguments
+   (cadr-ai:tool-call-arguments call)))
+
+(defun tool-restart-state-effective-call
+    (state call appended-messages)
+  (setf
+   (tool-restart-state-current-call state) call
+   (tool-restart-state-current-arguments state)
+   (cadr-ai:tool-call-arguments call)
+   (tool-restart-state-current-appended-messages state)
+   appended-messages))
+
+(defun accumulate-tool-restart-messages (state)
+  (setf
+   (tool-restart-state-prior-appended-messages state)
+   (nconc
+    (tool-restart-state-prior-appended-messages state)
+    (copy-list
+     (tool-restart-state-current-appended-messages
+      state)))
+   (tool-restart-state-current-appended-messages state)
+   nil))
+
+(defun finish-tool-restart-outcome (state outcome)
+  (setf
+   (tool-outcome-appended-messages outcome)
+   (nconc
+    (copy-list
+     (tool-restart-state-prior-appended-messages state))
+    (tool-outcome-appended-messages outcome)))
+  outcome)
+
+(defun run-tool-call-error-hooks
+    (state condition turn-index)
+  (declare (ignore turn-index))
+  (let* ((agent (tool-restart-state-agent state))
+         (host (agent-extension-host agent)))
+    (when host
+      (let ((result
+              (run-extension-lifecycle-hooks
+               host :tool-call-error
+               :payload
+               (list
+                :condition condition
+                :tool-call
+                (tool-restart-state-current-call state)
+                :arguments
+                (tool-restart-state-current-arguments state)
+                :attempt
+                (tool-restart-state-attempt state)
+                :restart-names
+                '(retry-tool-call
+                  skip-tool-call
+                  abort-agent-run)))))
+        (when result
+          (ecase (getf result :action)
+            (:retry
+             (invoke-restart
+              'retry-tool-call
+              (copy-extension-value
+               (getf result :arguments))))
+            (:skip
+             (invoke-restart
+              'skip-tool-call
+              (getf result :reason)))
+            (:abort
+             (invoke-restart
+              'abort-agent-run
+              (getf result :reason)))))))))
+
+(defun call-tool-operation-with-restarts
+    (state turn-index function)
+  (let ((failure nil)
+        (failure-tag (gensym "TOOL-FAILURE"))
+        (failure-marker (gensym "TOOL-FAILURE-MARKER")))
+    (restart-case
+        (let ((value
+                (catch failure-tag
+                  (let ((*tool-execution-error-fallback*
+                          (lambda (condition)
+                            (throw failure-tag
+                              (cons failure-marker condition)))))
+                    (handler-bind
+                        ((tool-execution-error
+                           (lambda (condition)
+                             (setf failure condition)
+                             (run-tool-call-error-hooks
+                              state condition turn-index)
+                             ;; Transfer before outer error handlers (including
+                             ;; test runners) can mistake this continuable
+                             ;; signal for an uncaught failure.
+                             (funcall
+                              *tool-execution-error-fallback*
+                              condition))))
+                      (funcall function))))))
+          (if (and (consp value)
+                   (eq failure-marker (car value)))
+              (let ((condition (cdr value)))
+                (setf failure condition)
+                (values
+                 (make-error-tool-result
+                  (tool-restart-state-current-call state)
+                  (cadr-ai:cadr-error-message condition)
+                  (tool-restart-state-current-appended-messages
+                   state))
+                 nil))
+              (values value nil)))
+      (retry-tool-call (replacement-arguments)
+        (unless (hash-table-p replacement-arguments)
+          (error
+           'cadr-ai:configuration-error
+           :message
+           "RETRY-TOOL-CALL requires a JSON object hash-table"))
+        (accumulate-tool-restart-messages state)
+        (incf (tool-restart-state-attempt state))
+        (let ((original
+                (tool-restart-state-original-call state)))
+          (setf
+           (tool-restart-state-current-call state)
+           (cadr-ai:make-tool-call
+            :id (cadr-ai:tool-call-id original)
+            :name (cadr-ai:tool-call-name original)
+            :arguments replacement-arguments)
+           (tool-restart-state-current-arguments state)
+           replacement-arguments))
+        (values nil :retry))
+      (skip-tool-call (&optional reason)
+        (values
+         (make-error-tool-result
+          (tool-restart-state-current-call state)
+          (or reason
+              (and failure
+                   (cadr-ai:cadr-error-message failure)))
+          (tool-restart-state-current-appended-messages
+           state))
+         nil))
+      (abort-agent-run (&optional reason)
+        (setf (tool-restart-state-abort-p state) t)
+        (agent-abort (tool-restart-state-agent state))
+        (values
+         (make-error-tool-result
+          (tool-restart-state-current-call state)
+          (or reason
+              (and failure
+                   (cadr-ai:cadr-error-message failure)))
+          (tool-restart-state-current-appended-messages
+           state))
+         nil)))))
+
+(defun prepare-tool-restart-state
+    (state turn-index)
+  (loop
+    (multiple-value-bind (entry decision)
+        (call-tool-operation-with-restarts
+         state turn-index
+         (lambda ()
+           (prepare-tool-execution
+            (tool-restart-state-agent state)
+            (tool-restart-state-current-call state)
+            :turn-index turn-index
+            :on-effective-call
+            (lambda (call appended-messages)
+              (tool-restart-state-effective-call
+               state call appended-messages)))))
+      (unless (eq decision :retry)
+        (return entry)))))
+
+(defun execute-tool-restart-state
+    (state prepared turn-index)
+  (loop
+    with entry = prepared
+    do
+    (when (typep entry 'tool-outcome)
+      (return
+       (finish-tool-restart-outcome state entry)))
+    (setf
+     (tool-restart-state-current-call state)
+     (prepared-tool-call-call entry)
+     (tool-restart-state-current-arguments state)
+     (prepared-tool-call-arguments entry)
+     (tool-restart-state-current-appended-messages state)
+     (prepared-tool-call-appended-messages entry))
+    (multiple-value-bind (outcome decision)
+        (call-tool-operation-with-restarts
+         state turn-index
+         (lambda ()
+           (execute-prepared-tool entry)))
+      (if (eq decision :retry)
+          (setf entry
+                (prepare-tool-restart-state
+                 state turn-index))
+          (return
+           (finish-tool-restart-outcome
+            state outcome))))))
+
 (defun execute-tool-batch
     (agent calls &key turn-index)
   (dolist (call calls)
@@ -250,12 +460,18 @@
       :arguments (cadr-ai:tool-call-arguments call)))
     (emit-agent-event agent :tool-execution-start
                       :tool-call call))
-  (let* ((prepared
+  (let* ((states
            (mapcar
             (lambda (call)
-              (prepare-tool-execution
-               agent call :turn-index turn-index))
+              (make-tool-restart-state-for-call
+               agent call))
             calls))
+         (prepared
+           (mapcar
+            (lambda (state)
+              (prepare-tool-restart-state
+               state turn-index))
+            states))
          (parallel-p
            (every
             (lambda (entry)
@@ -270,15 +486,20 @@
     (if parallel-p
         (let ((threads nil))
           (loop for entry in prepared
+                for state in states
                 for index from 0
                 do
                 (if (typep entry 'tool-outcome)
                     (progn
                       (setf
                        (aref outcomes index)
-                       (complete-tool-outcome
-                        agent entry turn-index)))
+                      (complete-tool-outcome
+                        agent
+                        (finish-tool-restart-outcome
+                         state entry)
+                        turn-index)))
                     (let ((thread-entry entry)
+                          (thread-state state)
                           (thread-index index))
                       (push
                        (sb-thread:make-thread
@@ -286,8 +507,10 @@
                           (let ((outcome
                                   (complete-tool-outcome
                                    agent
-                                   (execute-prepared-tool
-                                    thread-entry)
+                                   (execute-tool-restart-state
+                                    thread-state
+                                    thread-entry
+                                    turn-index)
                                    turn-index)))
                             (setf (aref outcomes thread-index)
                                   outcome)))
@@ -300,16 +523,24 @@
           (dolist (thread threads)
             (sb-thread:join-thread thread)))
         (loop for entry in prepared
+              for state in states
               for index from 0
               for outcome =
                 (complete-tool-outcome
                  agent
                  (if (typep entry 'tool-outcome)
-                     entry
-                     (execute-prepared-tool entry))
+                     (finish-tool-restart-outcome
+                      state entry)
+                     (execute-tool-restart-state
+                      state entry turn-index))
                  turn-index)
               do (setf (aref outcomes index) outcome)))
-    (tool-outcomes-values agent outcomes)))
+    (multiple-value-bind (results appended)
+        (tool-outcomes-values agent outcomes)
+      (values
+       results appended
+       (some #'tool-restart-state-abort-p
+             states)))))
 
 (defun execute-truncated-tool-batch
     (agent calls &key turn-index)
@@ -653,17 +884,23 @@
                    streamed-message)
                   '(:error :aborted))))
           (when (and calls (not terminal-p))
-            (multiple-value-setq
-                (results tool-hook-messages)
-              (if
-                  (eq
-                   :length
-                   (cadr-ai:assistant-message-stop-reason
-                    streamed-message))
-                  (execute-truncated-tool-batch
-                   agent calls :turn-index turn)
-                  (execute-tool-batch
-                   agent calls :turn-index turn))))
+            (multiple-value-bind
+                  (batch-results batch-hook-messages
+                   abort-from-tool-p)
+                (if
+                    (eq
+                     :length
+                     (cadr-ai:assistant-message-stop-reason
+                      streamed-message))
+                    (execute-truncated-tool-batch
+                     agent calls :turn-index turn)
+                    (execute-tool-batch
+                     agent calls :turn-index turn))
+              (setf
+               results batch-results
+               tool-hook-messages batch-hook-messages)
+              (when abort-from-tool-p
+                (setf terminal-p t))))
           (multiple-value-bind
                 (message turn-hook-messages)
               (run-turn-end-hooks

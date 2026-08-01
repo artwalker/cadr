@@ -926,3 +926,302 @@
               (cadr-ai:assistant-message-usage
                (agent-event-message
                 message-end))))))))))
+
+(test goal10-tool-call-error-hook-retries-at-the-live-condition-site
+  (let ((sequence nil)
+        (payload-argument-after-mutation nil)
+        (executions 0)
+        (events nil)
+        (notifications nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "tool-call-error-retry"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :tool-call-before
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (push :before sequence)
+                   (cadr-agent:make-extension-hook-result
+                    :replacement
+                    (cadr-agent:extension-event-tool-call event))))
+                (cadr-agent:define-event-hook
+                 :tool-call-error
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (push :error sequence)
+                   (let* ((payload
+                            (cadr-agent:extension-event-payload event))
+                          (arguments (getf payload :arguments)))
+                     (is (typep
+                          (getf payload :condition)
+                          'cadr-agent:tool-execution-error))
+                     (is (= 1 (getf payload :attempt)))
+                     (is
+                      (equal
+                       '(cadr-agent:retry-tool-call
+                         cadr-agent:skip-tool-call
+                         cadr-agent:abort-agent-run)
+                       (getf payload :restart-names)))
+                     (setf (gethash "value" arguments) "mutated")
+                     (setf
+                      payload-argument-after-mutation
+                      (cadr-ai::json-get
+                       (getf
+                        (cadr-agent:extension-event-payload event)
+                        :arguments)
+                       "value"))
+                     (list
+                      :action :retry
+                      :arguments
+                      (cadr-ai::json-object "value" "good")))))
+                (cadr-agent:define-event-hook
+                 :tool-call-after
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :after sequence)
+                   nil)))))
+           (host
+             (let ((value
+                     (cadr-agent::make-extension-host
+                      :cwd #P"/tmp/"
+                      :mode :repl
+                      :notify-function
+                      (lambda (message level)
+                        (push (list level message)
+                              notifications)))))
+               (cadr-agent::replace-extension-bundles
+                value (list bundle))
+               value))
+           (tool
+             (make-tool
+              :name "retry-hook"
+              :description "Retry hook"
+              :parameters (object-schema "value")
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id))
+                (incf executions)
+                (let ((value
+                        (cadr-ai::json-get arguments "value")))
+                  (if (string= value "bad")
+                      (error "bad attempt")
+                      (list (make-text-content :text value)))))))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "hook-retry-1" :name "retry-hook"
+                 :arguments
+                 (cadr-ai::json-object "value" "bad")))
+               :tool-use)
+              (assistant
+               (list (make-text-content :text "done")))))
+           (*contexts* nil)
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list tool)
+              :extension-host host
+              :stream-function
+              (faux-stream '*responses* '*contexts*)
+              :on-event
+              (lambda (event)
+                (push (agent-event-type event) events)))))
+      (declare (special *responses* *contexts*))
+      (agent-prompt agent "run")
+      (is (= 2 executions))
+      (is (string= "bad" payload-argument-after-mutation))
+      (is (equal '(:before :error :before :after)
+                 (nreverse sequence)))
+      (is (= 1 (count :tool-execution-start events)))
+      (is (= 1 (count :tool-execution-end events)))
+      (is (not (member :tool-call-error events)))
+      (is (null notifications)
+          "Unexpected hook failure: ~S"
+          notifications)
+      (let ((result (third (agent-messages agent))))
+        (is-false (tool-result-message-is-error result))
+        (is (string= "good" (text-result result)))))))
+
+(test goal10-parallel-tool-error-restarts-are-call-local
+  (let ((seen nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "parallel-tool-errors"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :tool-call-error
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let* ((payload
+                            (cadr-agent:extension-event-payload event))
+                          (call (getf payload :tool-call))
+                          (id (cadr-ai:tool-call-id call)))
+                     (push
+                      (list
+                       id
+                       (cadr-ai::json-get
+                        (getf payload :arguments) "value")
+                       (mapcar
+                        (lambda (name)
+                          (not (null (find-restart name))))
+                        (getf payload :restart-names)))
+                      seen)
+                     (list
+                      :action :retry
+                      :arguments
+                      (cadr-ai::json-object
+                       "value" (format nil "~A-ok" id)))))))))
+           (tool
+             (make-tool
+              :name "parallel-fail"
+              :description "Parallel fail"
+              :parameters (object-schema "value")
+              :execution-mode :parallel
+              :executor
+              (lambda (call-id arguments)
+                (let ((value
+                        (cadr-ai::json-get arguments "value")))
+                  (if (string= value "fail")
+                      (error "~A failed" call-id)
+                      (list (make-text-content :text value)))))))
+           (host (make-test-extension-host (list bundle)))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "left" :name "parallel-fail"
+                 :arguments
+                 (cadr-ai::json-object "value" "fail"))
+                (make-tool-call
+                 :id "right" :name "parallel-fail"
+                 :arguments
+                 (cadr-ai::json-object "value" "fail")))
+               :tool-use)
+              (assistant
+               (list (make-text-content :text "done")))))
+           (*contexts* nil)
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list tool)
+              :extension-host host
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare (special *responses* *contexts*))
+      (agent-prompt agent "run")
+      (is (= 2 (length seen)))
+      (dolist (entry seen)
+        (is (string= "fail" (second entry)))
+        (is (equal '(t t t) (third entry))))
+      (is
+       (equal
+        '("left-ok" "right-ok")
+        (loop for message in (agent-messages agent)
+              when (typep message 'tool-result-message)
+                collect (text-result message)))))))
+
+(test goal10-schema-retry-revalidates-every-attempt-and-finalizes-once
+  (let ((sequence nil)
+        (executions 0)
+        (events nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "schema-retry"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :tool-call-before
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :before sequence)
+                   nil))
+                (cadr-agent:define-event-hook
+                 :tool-call-error
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let* ((payload
+                            (cadr-agent:extension-event-payload event))
+                          (attempt (getf payload :attempt)))
+                     (push (list :error attempt) sequence)
+                     (list
+                      :action :retry
+                      :arguments
+                      (if (= attempt 1)
+                          (cadr-ai::json-object "value" 7)
+                          (cadr-ai::json-object "value" "valid"))))))
+                (cadr-agent:define-event-hook
+                 :tool-call-after
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (push :after sequence)
+                   nil)))))
+           (tool
+             (make-tool
+              :name "schema-retry"
+              :description "Schema retry"
+              :parameters
+              (cadr-ai::json-object
+               "type" "object"
+               "properties"
+               (cadr-ai::json-object
+                "value"
+                (cadr-ai::json-object "type" "string"))
+               "required" (vector "value"))
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id))
+                (incf executions)
+                (list
+                 (make-text-content
+                  :text
+                  (cadr-ai::json-get arguments "value"))))))
+           (host (make-test-extension-host (list bundle)))
+           (*responses*
+             (list
+              (assistant
+               (list
+                (make-tool-call
+                 :id "schema-retry-1"
+                 :name "schema-retry"
+                 :arguments (cadr-ai::json-object)))
+               :tool-use)
+              (assistant
+               (list (make-text-content :text "done")))))
+           (*contexts* nil)
+           (agent
+             (make-agent
+              :provider :mock
+              :model (mock-model)
+              :tools (list tool)
+              :extension-host host
+              :stream-function
+              (faux-stream '*responses* '*contexts*)
+              :on-event
+              (lambda (event)
+                (push (agent-event-type event) events)))))
+      (declare (special *responses* *contexts*))
+      (agent-prompt agent "run")
+      (is (= 1 executions))
+      (is
+       (equal
+        '(:before (:error 1) :before (:error 2) :before :after)
+        (nreverse sequence)))
+      (is (= 1 (count :tool-execution-start events)))
+      (is (= 1 (count :tool-execution-end events)))
+      (let ((result (third (agent-messages agent))))
+        (is-false (tool-result-message-is-error result))
+        (is (string= "valid" (text-result result)))))))

@@ -681,12 +681,40 @@
 (defun extension-event-tool-results (event)
   (%extension-event-tool-results event))
 
+(defun copy-extension-value (value)
+  (cond
+    ((stringp value)
+     (copy-seq value))
+    ((hash-table-p value)
+     (let ((copy
+             (make-hash-table
+              :test (hash-table-test value)
+              :size (hash-table-size value))))
+       (maphash
+        (lambda (key item)
+          (setf
+           (gethash (copy-extension-value key) copy)
+           (copy-extension-value item)))
+        value)
+       copy))
+    ((consp value)
+     (cons
+      (copy-extension-value (car value))
+      (copy-extension-value (cdr value))))
+    ((vectorp value)
+     (map 'vector #'copy-extension-value value))
+    (t value)))
+
 (defun extension-event-payload (event)
   (unless (typep event 'extension-event)
     (error
      'extension-execution-error
      :message "Expected an EXTENSION-EVENT"))
-  (copy-tree (%extension-event-payload event)))
+  (if (eq :tool-call-error
+          (%extension-event-type event))
+      (copy-extension-value
+       (%extension-event-payload event))
+      (copy-tree (%extension-event-payload event))))
 
 ;;; Registration model
 
@@ -951,6 +979,7 @@
     :turn-end
     :tool-call-before
     :tool-call-after
+    :tool-call-error
     :session-start
     :session-info-changed
     :session-before-switch
@@ -3040,6 +3069,32 @@
         :session-before-tree))
      (and result
           (validate-session-before-result event result)))
+    ((eq event :tool-call-error)
+     (when result
+       (unless (strict-keyword-plist-p result)
+         (error
+          ":TOOL-CALL-ERROR handler must return a keyword plist or NIL"))
+       (let ((action (getf result :action)))
+         (case action
+           (:retry
+            (validate-lifecycle-result-keys
+             event result '(:action :arguments))
+            (unless (hash-table-p
+                     (getf result :arguments))
+              (error
+               ":TOOL-CALL-ERROR :RETRY requires hash-table :ARGUMENTS")))
+           ((:skip :abort)
+            (validate-lifecycle-result-keys
+             event result '(:action :reason))
+            (let ((reason (getf result :reason)))
+              (unless (or (null reason)
+                          (stringp reason))
+                (error
+                 ":TOOL-CALL-ERROR :REASON must be a string or NIL"))))
+           (otherwise
+            (error
+             ":TOOL-CALL-ERROR :ACTION must be :RETRY, :SKIP, or :ABORT")))))
+     result)
     ((eq event :context)
      (when result
        (validate-lifecycle-result-keys
@@ -3178,7 +3233,10 @@
 (defun make-lifecycle-event (event payload)
   (%make-extension-event
    :type event
-   :payload (copy-tree payload)
+   :payload
+   (if (eq event :tool-call-error)
+       (copy-extension-value payload)
+       (copy-tree payload))
    :message (getf payload :message)
    :tool-call (getf payload :tool-call)
    :tool-result (getf payload :tool-result)
@@ -3187,6 +3245,8 @@
 (defun lifecycle-event-payload-for-handler
     (event original state)
   (case event
+    (:tool-call-error
+     (copy-extension-value original))
     (:context
      (list :messages (copy-list (getf state :messages))))
     (:before-agent-start
@@ -3334,6 +3394,7 @@
       :session-before-compact
       :session-before-tree)
      last-result)
+    (:tool-call-error last-result)
     (:context
      (list :messages (copy-list (getf state :messages))))
     (:before-agent-start
@@ -3451,6 +3512,9 @@
                           '(:yes :no)))
                         (and
                          (eq event :user-bash)
+                         result)
+                        (and
+                         (eq event :tool-call-error)
                          result))
                      (return)))
                (condition (condition)

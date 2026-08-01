@@ -141,8 +141,26 @@
     :content (list (cadr-ai:make-text-content :text text))
     :is-error t)))
 
+(defvar *tool-execution-error-fallback* nil)
+
+(defun signal-tool-execution-error
+    (message condition tool call)
+  (let ((wrapped
+          (make-condition
+           'tool-execution-error
+           :message message
+           :cause condition
+           :tool tool
+           :tool-call-id
+           (cadr-ai:tool-call-id call))))
+    (signal wrapped)
+    (if *tool-execution-error-fallback*
+        (funcall
+         *tool-execution-error-fallback* wrapped)
+        (error wrapped))))
+
 (defun prepare-tool-execution
-    (agent call &key turn-index)
+    (agent call &key turn-index on-effective-call)
   (let ((effective-call call)
         (appended-messages nil))
     (when (agent-extension-host agent)
@@ -161,6 +179,10 @@
              effective-call
              (or reason "Tool execution was blocked")
              appended-messages)))))
+    (when on-effective-call
+      (funcall
+       on-effective-call
+       effective-call appended-messages))
     (let ((tool
             (find-tool
              (agent-tool-registry agent)
@@ -172,49 +194,55 @@
          (format nil "Tool ~A not found"
                  (cadr-ai:tool-call-name effective-call))
          appended-messages)))
-    (handler-case
-        (let ((arguments
-                (validate-tool-arguments
-                 tool
-                 (cadr-ai:tool-call-arguments
-                  effective-call))))
-          (make-prepared-tool-call
-           :call effective-call
-           :tool tool
-           :arguments arguments
-           :appended-messages appended-messages))
-      (error (condition)
-        (make-error-tool-result
-         effective-call
-         (if (typep condition 'cadr-ai:cadr-error)
-             (cadr-ai:cadr-error-message condition)
-             (princ-to-string condition))
-         appended-messages))))))
+    (let ((arguments
+            (handler-bind
+                ((error
+                   (lambda (condition)
+                     (unless
+                         (typep condition
+                                'tool-execution-error)
+                       (signal-tool-execution-error
+                        (if
+                            (typep condition
+                                   'cadr-ai:cadr-error)
+                            (cadr-ai:cadr-error-message
+                             condition)
+                            (princ-to-string condition))
+                        condition tool effective-call)))))
+              (validate-tool-arguments
+               tool
+               (cadr-ai:tool-call-arguments
+                effective-call)))))
+      (make-prepared-tool-call
+       :call effective-call
+       :tool tool
+       :arguments arguments
+       :appended-messages appended-messages)))))
 
 (defun execute-prepared-tool (prepared)
   (let ((call (prepared-tool-call-call prepared))
         (tool (prepared-tool-call-tool prepared)))
-    (handler-case
-        (multiple-value-bind (content details)
-            (funcall
-             (cadr-ai:tool-executor tool)
-             (cadr-ai:tool-call-id call)
-             (prepared-tool-call-arguments prepared))
-          (make-tool-outcome
-           :call call
-           :appended-messages
-           (prepared-tool-call-appended-messages
-            prepared)
-           :result
-           (cadr-ai:make-tool-result-message
-            :tool-call-id (cadr-ai:tool-call-id call)
-            :tool-name (cadr-ai:tool-call-name call)
-            :content (or content nil)
-            :details details
-            :is-error nil)))
-      (error (condition)
-        (make-error-tool-result
-         call
-         (princ-to-string condition)
-         (prepared-tool-call-appended-messages
-          prepared))))))
+    (handler-bind
+        ((error
+           (lambda (condition)
+             (unless
+                 (typep condition 'tool-execution-error)
+               (signal-tool-execution-error
+                (princ-to-string condition)
+                condition tool call)))))
+      (multiple-value-bind (content details)
+          (funcall
+           (cadr-ai:tool-executor tool)
+           (cadr-ai:tool-call-id call)
+           (prepared-tool-call-arguments prepared))
+        (make-tool-outcome
+         :call call
+         :appended-messages
+         (prepared-tool-call-appended-messages prepared)
+         :result
+         (cadr-ai:make-tool-result-message
+          :tool-call-id (cadr-ai:tool-call-id call)
+          :tool-name (cadr-ai:tool-call-name call)
+          :content (or content nil)
+          :details details
+          :is-error nil))))))

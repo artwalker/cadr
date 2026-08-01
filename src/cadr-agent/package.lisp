@@ -49,6 +49,9 @@
    #:tool-execution-error
    #:tool-execution-error-tool
    #:tool-execution-error-tool-call-id
+   #:retry-tool-call
+   #:skip-tool-call
+   #:abort-agent-run
    #:session-error
    #:session-error-path
    #:session-error-line
