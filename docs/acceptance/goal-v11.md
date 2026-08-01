@@ -211,7 +211,7 @@ README、architecture、test matrix 和 `docs/performance.md` 共同冻结双验
 
 ## Fifth A/B follow-up — continuous mouse and wheel streams
 
-状态：实现完成，等待本轮最终机械验证落账。
+状态：完成。实现提交 `15bc6ae08`；最终报告归档待本轮收尾提交。
 
 旧 Goal 11 只覆盖单帧、key→frame、stream delta 与长会话 checkpoint；既有
 alt-screen regressions 只验证 scroll/selection 的结果，没有量化连续 SGR mouse
@@ -236,8 +236,27 @@ alt-screen regressions 只验证 scroll/selection 的结果，没有量化连续
 
 优化没有引入 fixed baseline 不存在的 transcript cache、viewport pruning 或
 virtual scrolling。它只恢复 differential redraw，并把 width/image/reset/copy
-改为同语义的无中间字符串扫描。完整 1024-event pre-commit run 为：mouse
-36.001ms / 2,832,352 bytes，wheel 40.001ms / 3,668,816 bytes；continuous
-median 40.000ms、p95 48.002ms、p99 56.002ms、max 84.004ms，447 个
-GC-affected events 的 max 68.003ms。最终 committed benchmark、全量测试、
-verify 与 binary freshness 证据在本节收尾时补记。
+改为同语义的无中间字符串扫描。最终 committed 1024-event run 为：mouse / wheel
+均为 36.001ms，allocation 2,832,352 / 3,668,816 bytes；continuous median
+36.001ms、p95 48.001ms、p99 52.001ms、max 68.002ms，447 个 GC-affected
+events 的 max 68.002ms；cold start 157.428ms。报告 HEAD
+`15bc6ae084d37a4b760e959bccf540ec1fe68c73`，TUI object
+`9c6d20fc7ae5e722eacbfd2e5d9eeba4883d1600`，SHA-256
+`1d2d3d1faac43006e56b08a505487035c0d8a6dffdc0b52ab069a45c0d0d8f1e`。
+
+机械验证：
+
+```text
+python3 test/goal11-performance-gate-test.py
+  2 tests / OK；逐项证明 mouse、wheel、allocation、event count、p99、GC max
+  与“跨 nursery 却未观察到 GC”任一越界都会失败
+./scripts/test-cl.sh
+  7706 checks / 7706 pass / 0 skip / 0 fail
+python3 scripts/goal11-performance-gate.py \
+  --bench /tmp/cadr-goal11-fifth-final.json \
+  --stability docs/benchmarks/goal-v11-stability.json
+  PASS：mouse/wheel 36.00/36.00ms；continuous p99 52.00ms；GC max 68.00ms
+```
+
+`verify.sh` 与交付二进制新鲜度证据在最终报告提交后执行并补记，避免文档提交
+被误当作最后一次 source build。

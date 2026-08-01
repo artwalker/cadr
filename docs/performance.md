@@ -247,10 +247,13 @@ heap/RSS 峰值各不超过 baseline 512MiB。
 基线 `isImageLine` 的 fast/slow prefix 语义相同，但避免 SBCL generic `search`
 在普通 ANSI line 上占掉大半帧。
 
-完整 1024-event pre-commit run 已完成：N=5000 mouse/wheel median
-36.001/40.001ms，allocation 2,832,352/3,668,816 bytes；continuous median
-40.000ms、p95 48.002ms、p99 56.002ms、max 84.004ms，447 个 GC-affected
-events 的 max 为 68.003ms。相对 8-event 诊断，median latency 降约 22.4×、
+最终 committed 1024-event run（HEAD `15bc6ae084d3…`）已完成：N=5000
+mouse/wheel median 均为 36.001ms，allocation 2,832,352/3,668,816 bytes；
+continuous median 36.001ms、p95 48.001ms、p99 52.001ms、max 68.002ms，
+447 个 GC-affected events 的 max 为 68.002ms。相对 8-event 诊断，median
+latency 降约 24.9×、
 median allocation 降约 54×；默认规模现在能完整跑完并保留全部 1024 个原始
-样本。最终 committed JSON 与 cold-start 数字在交付验证后写回
-[`benchmarks/goal-v11-final.json`](benchmarks/goal-v11-final.json)。
+样本。cold start median 157.428ms（MAD 3.222ms），TUI append exponent
+0.029。完整 JSON 为
+[`benchmarks/goal-v11-final.json`](benchmarks/goal-v11-final.json)，SHA-256
+`1d2d3d1faac43006e56b08a505487035c0d8a6dffdc0b52ab069a45c0d0d8f1e`。
