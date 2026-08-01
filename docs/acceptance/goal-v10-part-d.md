@@ -45,6 +45,10 @@ Commit `65052f7a6` implements `--slynk <port>` with these fixed properties:
 - an actual Slynk protocol client inspected the active session and redefined a
   tool function; the next call changed while agent identity, session identity,
   and history were retained;
+- the built native `./cadr` image was also started with `--slynk 45433 --mode
+  rpc`; a separate Slynk wire client evaluated the live image, observed
+  `cadr-cli:active-agent`, and read the exact `0.2.0` release identity; EOF
+  stopped the process and `ss` confirmed that the listener was gone;
 - the source path loads Slynk only when enabled, while production build
   preloads only `slynk/mrepl` into the native image.
 
@@ -99,12 +103,16 @@ bc2c6e079e69e313a6806ca72d520a8f2116f2ce  src/cadr-agent/package.lisp
 18ce01bc091165d1ee605b0e3617a27eb1447038  cadr-cli.asd
 3501bff3c5b1bfd6729deb75d783d1ba46f921ab  src/cadr-cli/arguments.lisp
 431dc8c8a2cd19e46b7fa6acd1901fb0e5324040  src/cadr-cli/remote-repl.lisp
-099b5cb9459711ae3a355d2e2c6d56c9f7517f4e  src/cadr-cli/main.lisp
+62774c4a377ed0fb102719f2008cf4704be80178  src/cadr-cli/main.lisp
 a21511b7c086baf84ce191bd528ed7bc5575abaf  src/cadr-cli/package.lisp
 8056d085b06e86a280d97a4d34a36ac4430d595c  scripts/test-cl.sh
 c60433c7befb591b19ccc86bfd60dedb4dff7285  build.sh
 65c7a511cf1a61c952a36b80873a531109a56384  build.lisp
 ```
+
+`src/cadr-cli/main.lisp` was re-frozen after the separately approved Part E
+release-identity change. The Slynk branch, listener policy, cleanup path, and
+active-agent surface are unchanged; only the `--version` branch changed.
 
 Any later extension event, restart semantic, Slynk surface, dependency, or
 listener-policy change requires a new written proposal and explicit user

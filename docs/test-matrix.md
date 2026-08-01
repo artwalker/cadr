@@ -34,7 +34,7 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 
 | Contract | Common Lisp coverage | Evidence |
 |---|---|---|
-| One production version source | `GOAL9-PART-E-PRODUCTION-VERSION-HAS-ONE-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; production literal audit rejects drift |
+| One production version source | `GOAL10-PART-E-RELEASE-IDENTITY-HAS-ONE-VERSION-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; CLI/README/CHANGELOG/Release-draft identity is exact and production literal audit rejects drift |
 | Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
 | Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7128 deterministic checks pass in the root test and both isolated builds; Goal 11 budgets, retained harnesses, and all available live paths pass |
 

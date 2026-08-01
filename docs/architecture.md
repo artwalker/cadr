@@ -1655,8 +1655,10 @@ native/process/PTY harness、凭据可用性门控的 live FiveAM、可用时的
 根目录 `version.sexp` 是唯一生产版本源。八个生产 ASDF system 通过
 `(:read-file-form "version.sexp")` 读取它；`cadr-ai` 的内部版本 helper 再向
 CLI、server CLI、TUI banner、HTTP User-Agent 与 Radius registration 分发同一
-值。不新增公开 export，也不复制版本常量。当前开发版本为 `0.1.0`；本 goal
-不创建 tag，实际发布版本由用户裁决。
+值。不新增公开 export，也不复制版本常量。当前发布候选版本为 `0.2.0`；
+`cadr-release-identity` 从该版本源组合已冻结的上游关系，CLI 输出
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。README、CHANGELOG
+与 Release 草案逐字锁定同一标识。tag 与 GitHub Release 仍等待用户确认。
 
 仓库根目录只保留当前构建与用户入口；空的 TypeScript 时代 `packages/` 目录已
 删除。已接受的 Goal 9/10 文本归档于 `docs/progress/`，本地 goal 草稿、Codex/

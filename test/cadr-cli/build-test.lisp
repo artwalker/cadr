@@ -15,14 +15,20 @@
     (is (not (member :compression without)))
     (is (eq t (getf with :compression)))))
 
-(test goal9-part-e-production-version-has-one-source
+(test goal10-part-e-release-identity-has-one-version-source
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (version-path (merge-pathnames "version.sexp" root))
          (version
            (and
             (probe-file version-path)
             (with-open-file (stream version-path :direction :input)
-              (read stream nil nil)))))
+              (read stream nil nil))))
+         (identity
+           (and version
+                (format
+                 nil
+                 "cadr ~A · aligned with pi v0.83.0 (+38, 74caa2649)"
+                 version))))
     (is (stringp version))
     (when (stringp version)
       (dolist (system
@@ -34,6 +40,9 @@
              (asdf:component-version
               (asdf:find-system system)))))
       (is (string= version (cadr-ai::cadr-version)))
+      (is (string=
+           identity
+           (cadr-ai::cadr-release-identity)))
       (multiple-value-bind (compact expanded)
           (cadr-cli::make-tui-startup-lines
            (cadr-cli::make-resource-snapshot))
@@ -57,10 +66,17 @@
             (setf (uiop:getenv "HOME") old-home))
           (is (= 0 status))
           (is (string=
-               (format nil "cadr ~A~%" version)
+               (format nil "~A~%" identity)
                (get-output-stream-string output)))
           (is (string= ""
                        (get-output-stream-string errors)))))
+      (dolist (relative
+                '("README.md" "CHANGELOG.md"
+                  "docs/acceptance/goal-v10-part-e.md"))
+        (is (search
+             identity
+             (uiop:read-file-string
+              (merge-pathnames relative root)))))
       (dolist (relative
                 '("cadr-ai.asd" "cadr-agent.asd" "cadr-tui.asd"
                   "cadr-cli.asd" "cadr-storage.asd" "cadr-server.asd"

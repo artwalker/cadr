@@ -1,5 +1,7 @@
 # cadr
 
+**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**
+
 `cadr` is a native Common Lisp coding agent for SBCL, behaviorally aligned
 with the original pi while remaining idiomatic Lisp.
 
@@ -58,7 +60,7 @@ The builds produce `./cadr` and the optional Unix-socket supervisor
 `./cadr-server`. If SBCL lacks `sb-core-compression`, either build emits an
 uncompressed image instead of failing. `version.sexp` is the single production
 version source for every ASDF system, both binaries, the TUI banner, HTTP user
-agent, and Radius registration.
+agent, Radius registration, and the release identity printed by `--version`.
 
 ## Dependency policy
 
@@ -237,10 +239,9 @@ Non-interactive startup refuses automatic migration and prints an exact
 manual `mv` command. `--yolo` never authorizes migration and remains
 unsupported by the core CLI.
 
-Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` remain readable
-through the `0.1.x` transition release with a deprecation warning. Support is
-removed in `0.2.0`; new configuration must use `CADR_PROVIDER`, `CADR_MODEL`,
-and `CADR_BASE_URL`.
+Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` were readable only
+through the `0.1.x` transition release. Support is removed in `0.2.0`; new
+configuration must use `CADR_PROVIDER`, `CADR_MODEL`, and `CADR_BASE_URL`.
 
 ## Lisp extensions
 

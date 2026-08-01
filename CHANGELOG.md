@@ -2,9 +2,14 @@
 
 All notable changes to Cadr are documented in this file. The format follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); the project has not
-yet cut a Cadr release tag, so completed work remains under `Unreleased`.
+yet cut a Cadr release tag. The `0.2.0` entry is frozen for the user-approved
+tag/Release step.
 
 ## [Unreleased]
+
+## [0.2.0] - 2026-08-01
+
+**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**
 
 ### Added
 
@@ -32,6 +37,11 @@ yet cut a Cadr release tag, so completed work remains under `Unreleased`.
   former manual acceptance paths, completed mechanical/runtime TUI parity,
   identified OpenAI traffic as `originator=cadr`, and added the local
   deterministic/build/process/PTY/live verification gate.
+- Goal 10: established the private backup and real CI gate, retained the
+  newer-than-tag baseline by explicit no-op adjudication, and added the
+  approved Lisp-native tool restarts plus opt-in loopback Slynk REPL.
+- Goal 11: added deterministic performance, allocation, cold-start, long-run
+  memory/resource, and large-session latency release gates.
 
 ### Changed
 
@@ -41,8 +51,11 @@ yet cut a Cadr release tag, so completed work remains under `Unreleased`.
 - Aligned the security model with original pi: tools execute directly by
   default, optional approval is an extension hook, and containerization remains
   the strong isolation boundary.
-- Centralized the current `0.1.0` development version in `version.sexp`; all
-  production version displays and protocol metadata derive from it.
+- Released version `0.2.0` from the single `version.sexp` production source;
+  the CLI identity also records alignment with pi `v0.83.0` plus 38 commits at
+  `74caa2649`.
+- Removed the completed `0.1.x` fallback for `PI_CL_PROVIDER`, `PI_CL_MODEL`,
+  and `PI_CL_BASE_URL`; use the `CADR_*` names.
 
 ### Fixed
 
@@ -63,3 +76,5 @@ yet cut a Cadr release tag, so completed work remains under `Unreleased`.
   from errors, sessions, transport logs, and reports.
 - Third-party dependencies are frozen by the audited allowlist; any new direct
   or transitive dependency blocks implementation until explicit pre-approval.
+- Slynk is default-off, loopback-only, explicitly enabled, and documented as
+  an arbitrary-evaluation debugging service rather than a sandbox.

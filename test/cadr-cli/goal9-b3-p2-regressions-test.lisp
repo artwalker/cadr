@@ -127,7 +127,9 @@
             plain)))))))
 
 (test goal9-b3-cold-startup-content-is-top-aligned
-  (let* ((width 60)
+  (let* ((version-line
+           (format nil "cadr v~A" (cadr-ai::cadr-version)))
+         (width 60)
          (rows 16)
          (blank-row
            (make-string width :initial-element #\Space))
@@ -137,8 +139,9 @@
            (cadr-cli::make-tui-state
             :model "faux"
             :startup-compact-lines
-            '("cadr v0.1.0"
-              "escape interrupt · ctrl+c/ctrl+d clear/exit")))
+            (list
+             version-line
+             "escape interrupt · ctrl+c/ctrl+d clear/exit")))
          (editor (cadr-tui:make-multiline-editor)))
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
@@ -149,7 +152,7 @@
        (equal
         (list
          ""
-         "cadr v0.1.0"
+         version-line
          "escape interrupt · ctrl+c/ctrl+d clear/exit"
          ""
          ""

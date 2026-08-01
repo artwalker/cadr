@@ -18,7 +18,8 @@
 > 逐项裁决。D2 必须默认关闭、只由显式 CLI 开启、固定监听
 > `127.0.0.1`；构建与确定性测试必须用全新空临时 `HOME` 防止构建机
 > `.slynkrc` 副作用进入 image。完整裁决见
-> `docs/proposals/goal-v10-part-d-lisp-native-capabilities.md`。
+> `docs/proposals/goal-v10-part-d-lisp-native-capabilities.md`。实现与重冻结已完成，
+> 验收证据见 `docs/acceptance/goal-v10-part-d.md`。
 >
 > **2026-08-01 Part B 最终裁决**：Part B 结为 no-op。`v0.83.0`
 > (`845d6ff1f`) 比当前 `74caa2649` 基线落后 38 个提交，且少
@@ -52,7 +53,10 @@
 `docs/acceptance/goal-v10-part-b.md`。本 Part 未改变 baseline、fixture、源码或
 parity 分类。
 
-**必须在 Part D 之前完成**：先与上游对齐到底，再叠加自研能力，这样 parity 账本上剩余的差异全部是"我们有意为之"，而不会与"上游又动了"混在一起。
+**历史顺序约束**：原要求 Part B 必须在 Part D 之前完成，用于防止
+parity 账本混入上游位移。2026-08-01 裁决确认当前无可用升级点并将
+Part B 结为 no-op 后，该前置条件已满足；以下原始步骤仅保留为历史设计，
+本 goal 不执行。
 
 1. **基线必须锁定在上游的发布 tag，不再锁开发分支 tip**（用户 2026-08-01 裁定）。取执行时刻 `earendil-works/pi` 的最新稳定 tag（如 `v0.84.0`），记录其 tag 名与对应 commit hash，二者一并写入报告与全部文档；旧基线 `74caa2649` 降为历史锚点（`71efc6f0` 仍保留为最初锚点）。
 
@@ -86,15 +90,23 @@ parity 分类。
 **约束**：无论批准与否，此二者均**不得改变任何既有可观察行为**（发给服务端的 payload、喂给模型的提示与工具描述、终端呈现）。实现后须在 README 差异清单与 parity-map 中显式登记为"相对基线的有意新增"，并说明其不影响 parity 判定。
 
 **裁决状态（2026-08-01）**：两项能力及 Slynk 依赖均已批准；批准不授权
-提前施工。Part B 完成 `v0.84.0` 对齐并复审本文 object ID 后，方可按提案
-实现。`:tool-call-error` 是获批的第 34 个扩展事件，收尾须重算 export SHA、
-同步 architecture/README 并重新冻结事件全集。Slynk 依赖须登记为独立的
-“显式启用的调试服务”类目，并落实空临时 `HOME` 构建/测试回归。
+提前施工。Part B 的 no-op 裁决满足了实现前置条件。D1 提交
+`55094c9d7`、D2 提交 `65052f7a6`、文档与重冻结提交
+`c12c03ba1`；完整证据见 `docs/acceptance/goal-v10-part-d.md`。
 
 ## 五、Part E：首个正式发布
 
+**状态**：`0.2.0` 代码、测试、文档与 Release 草案已准备；尚未创建
+tag 或 GitHub Release，正按约定等待用户确认。冻结标识为
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，证据与发布文案见
+`docs/acceptance/goal-v10-part-e.md`。
+
 1. 依据 goal 9 Part E 的 CHANGELOG 与单一版本号来源，产出首个正式版本（建议 `0.2.0`，理由写入报告）。
-2. **版本标识必须写明所对齐的上游发布版本**，形式为 `cadr 0.2.0 · aligned with pi vX.Y.Z`（Part B 所锁 tag）。该标识出现在 `--version` 输出、README 头部、CHANGELOG 条目与 Release 说明中，四处一致且来源单一。
+2. **版本标识必须写明所对齐的上游发布版本及实际基线关系**。
+   Part B no-op 裁决后的精确形式为
+   `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。该标识出现在
+   `--version` 输出、README 头部、CHANGELOG 条目与 Release 说明中，
+   四处一致；数字版本仅由 `version.sexp` 供给生产代码。
 3. `git tag` 与 GitHub Release：**tag 名、版本号与是否发布由用户确认后执行**，不得自行发布。
 4. Release 附：构建说明、验证等级总表（哪些 provider 是 live 验证、哪些是 fixture 对拍）、差异清单、对齐的上游 tag 与 commit hash、致谢与免责。
 4. 文档终稿检查：README、architecture、parity-map、visual-parity、dependency-audit、open-questions 全部与实现同步。
@@ -102,7 +114,9 @@ parity 分类。
 ## 六、验收标准
 
 1. Part A：私有仓库存在、分支与 tag 齐全、clone 后能构建；无凭据泄漏。
-2. Part B：新基线**为上游发布 tag**（tag 名与 hash 均已记录）；全量 `C` 或经裁决 `N/A`；fixture 重生成差异逐条有交代；新 TUI 功能已入视觉对齐表与 A/B 清单。
+2. Part B：按最终裁决证明无领先当前基线的发布 tag，保持
+   `74caa2649` 且不反向降级；已记录 package/测试计数和既有
+   `362 C / 0 U / 0 M / 1 N/A / 363` 结论。
 3. Part C：CI 在远程真实跑绿，链接与差异说明齐备。
 4. Part D：提案经用户逐项裁决；获批项实现后既有可观察行为零变更（以 payload 对拍与运行时快照证明），差异清单已登记。
 5. Part E：版本号单一来源、CHANGELOG 完整、Release 内容齐备且经用户确认后发布。

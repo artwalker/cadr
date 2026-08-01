@@ -143,56 +143,28 @@
                          #'cadr-ai:stream-event-type
                          (nreverse events)))))))))))))
 
-(test legacy-environment-values-work-for-one-transition-release-and-warn
+(test goal10-version-0-2-no-longer-reads-legacy-environment-values
   (let* ((values
-           (list
-            (cons (cadr-cli::legacy-environment-name "PROVIDER")
-                  "deepseek")
-            (cons (cadr-cli::legacy-environment-name "MODEL")
-                  "legacy-model")
-            (cons (cadr-cli::legacy-environment-name "BASE_URL")
-                  "https://legacy.example")))
-         (warnings (make-string-output-stream))
+           '(("PI_CL_PROVIDER" . "deepseek")
+             ("PI_CL_MODEL" . "legacy-model")
+             ("PI_CL_BASE_URL" . "https://legacy.example")))
          (cadr-cli::*environment-function*
            (lambda (name)
-             (cdr (assoc name values :test #'string=))))
-         (cadr-cli::*deprecation-warning-stream* warnings))
-    (let ((config
-            (cadr-cli:resolve-provider-config
-             :config-path #P"/definitely/missing/config.json"
-             :auth-path #P"/definitely/missing/auth.json"
-             :allow-missing-auth-p t)))
-      (is (string= "deepseek"
-                   (cadr-cli:provider-config-name config)))
-      (is (string= "legacy-model"
-                   (cadr-ai:model-id
-                    (cadr-cli:provider-config-model config))))
-      (is (string= "https://legacy.example"
-                   (cadr-ai:model-base-url
-                    (cadr-cli:provider-config-model config)))))
-    (let ((text (get-output-stream-string warnings)))
-      (dolist (suffix '("PROVIDER" "MODEL" "BASE_URL"))
-        (is (search
-             (cadr-cli::legacy-environment-name suffix)
-             text)))
-      (is (search "0.2.0" text)))))
+             (cdr (assoc name values :test #'string=)))))
+    (signals cadr-ai:configuration-error
+      (cadr-cli:resolve-provider-config
+       :config-path #P"/definitely/missing/config.json"
+       :auth-path #P"/definitely/missing/auth.json"
+       :allow-missing-auth-p t))))
 
-(test new-environment-values-win-without-reading-legacy-values
+(test cadr-environment-values-resolve-provider-model-and-base-url
   (let* ((values
-           `(("CADR_PROVIDER" . "deepseek")
+           '(("CADR_PROVIDER" . "deepseek")
              ("CADR_MODEL" . "new-model")
-             ("CADR_BASE_URL" . "https://new.example")
-             (,(cadr-cli::legacy-environment-name "PROVIDER")
-              . "deepseek")
-             (,(cadr-cli::legacy-environment-name "MODEL")
-              . "legacy-model")
-             (,(cadr-cli::legacy-environment-name "BASE_URL")
-              . "https://legacy.example")))
-         (warnings (make-string-output-stream))
+             ("CADR_BASE_URL" . "https://new.example")))
          (cadr-cli::*environment-function*
            (lambda (name)
-             (cdr (assoc name values :test #'string=))))
-         (cadr-cli::*deprecation-warning-stream* warnings))
+             (cdr (assoc name values :test #'string=)))))
     (let ((config
             (cadr-cli:resolve-provider-config
              :config-path #P"/definitely/missing/config.json"
@@ -205,8 +177,7 @@
                     (cadr-cli:provider-config-model config))))
       (is (string= "https://new.example"
                    (cadr-ai:model-base-url
-                    (cadr-cli:provider-config-model config)))))
-    (is (string= "" (get-output-stream-string warnings)))))
+                    (cadr-cli:provider-config-model config)))))))
 
 (test non-baseline-ollama-provider-is-not-registered
   (let ((cadr-cli::*environment-function* (constantly nil)))

@@ -3991,8 +3991,8 @@
              (print-cli-usage)
              0)
             ((cli-arguments-version-p arguments)
-             (format t "cadr ~A~%"
-                     (cadr-ai::cadr-version))
+             (format t "~A~%"
+                     (cadr-ai::cadr-release-identity))
              0)
             ((cli-arguments-list-models arguments)
              (print-cli-models

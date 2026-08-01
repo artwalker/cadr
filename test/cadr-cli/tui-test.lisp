@@ -2691,19 +2691,23 @@
                   screen)))))
 
 (test goal9-startup-header-precedes-chat-and-expands-with-tools
-  (let* ((state
+  (let* ((version-line
+           (format nil "cadr v~A" (cadr-ai::cadr-version)))
+         (state
            (cadr-cli::make-tui-state
             :model "mock"
             :startup-compact-lines
-            '("cadr v0.1.0"
-              "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash"
-              "Press ctrl+o to show full startup help and loaded resources.")
+            (list
+             version-line
+             "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash"
+             "Press ctrl+o to show full startup help and loaded resources.")
             :startup-expanded-lines
-            '("cadr v0.1.0"
-              "escape to interrupt"
-              "ctrl+c twice to exit"
-              "/ for commands"
-              "! to run bash")))
+            (list
+             version-line
+             "escape to interrupt"
+             "ctrl+c twice to exit"
+             "/ for commands"
+             "! to run bash")))
          (editor
            (cadr-tui:make-multiline-editor)))
     (cadr-cli::add-tui-notice state "restored chat")
@@ -2718,7 +2722,7 @@
                 #'cadr-tui:strip-terminal-sequences
                 lines))))
       (let* ((compact (plain-render))
-             (logo (position "cadr v0.1.0"
+             (logo (position version-line
                              compact :test #'string=))
              (chat
                (position-if
