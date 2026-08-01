@@ -7,7 +7,7 @@
        (cadr-ai:pkce-challenge
         "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk"))))
 
-(test openai-authorization-url-matches-fixed-reference
+(test openai-authorization-url-uses-approved-cadr-originator-difference
   (let ((url (cadr-ai:openai-authorization-url
               "challenge" "state-1")))
     (is (search "https://auth.openai.com/oauth/authorize?" url))
@@ -18,7 +18,8 @@
     (is (search "state=state-1" url))
     (is (search "id_token_add_organizations=true" url))
     (is (search "codex_cli_simplified_flow=true" url))
-    (is (search "originator=pi" url))))
+    (is (search "originator=cadr" url))
+    (is (not (search "originator=pi" url)))))
 
 (test openai-token-credentials-use-openai-codex-provider-identity
   (let* ((payload
@@ -174,7 +175,7 @@
                     (cadr-ai:read-auth-credential
                      path :openai-codex)))))))
 
-(test openai-oauth-uses-codex-url-and-reference-headers
+(test openai-oauth-uses-codex-url-and-approved-cadr-originator-header
   (let* ((provider
            (cadr-ai:make-openai-codex-provider
             :oauth-access-token "oauth-secret"
@@ -198,7 +199,7 @@
     (is (string= "acct-7"
                  (cdr (assoc "chatgpt-account-id" headers
                              :test #'string-equal))))
-    (is (string= "pi"
+    (is (string= "cadr"
                  (cdr (assoc "originator" headers
                              :test #'string-equal))))
     (is (string= "responses=experimental"

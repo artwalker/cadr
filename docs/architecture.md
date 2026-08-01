@@ -849,7 +849,7 @@ OAuth 解析采用双重检查锁：access token 剩余有效期不足五分钟�
 provider 级锁，再重新读取 auth 文件；只有仍将过期的请求执行 refresh，
 随后在释放锁前持久化旋转后的凭据。
 
-OpenAI Codex OAuth 严格采用固定 TS 审计提交的参数：
+OpenAI Codex OAuth 除客户端身份外严格采用固定 TS 审计提交的参数：
 
 - authorize：`https://auth.openai.com/oauth/authorize`
 - token：`https://auth.openai.com/oauth/token`
@@ -859,10 +859,14 @@ OpenAI Codex OAuth 严格采用固定 TS 审计提交的参数：
 - PKCE：S256，并校验随机 state
 - authorize 附加
   `id_token_add_organizations=true`、
-  `codex_cli_simplified_flow=true`、`originator=pi`
+  `codex_cli_simplified_flow=true`、`originator=cadr`
 - Responses 请求头包含 bearer token、JWT 中提取的
-  `chatgpt-account-id`、`originator: pi` 和
+  `chatgpt-account-id`、`originator: cadr` 和
   `OpenAI-Beta: responses=experimental`
+
+`originator=cadr` 是 Goal 9 Part C 经用户批准的客户端身份差异：它只改变
+第三方归因，不改变 OAuth、provider 身份、Responses payload 或事件语义。基线的
+`originator=pi` 不得用于 Cadr 流量。
 
 本地一次性 callback server 只监听 `127.0.0.1:1455`，只接受
 `/auth/callback`，验证 state 后立即关闭。`/login openai` 的用户命令映射

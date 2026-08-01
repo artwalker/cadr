@@ -290,9 +290,12 @@ The exhaustive exemption list and reasons:
   CHANGELOGs remain unmodified in Git history and the `pi-mono-legacy`
   worktree, where their historical product names are immutable.
 
-A broader audit also intentionally retains `originator=pi` in the OpenAI OAuth
-and Codex wire protocol plus their tests. That value is required by the fixed
-reference protocol and is not a cadr product or package name. The current
+The migration closeout originally retained `originator=pi` in the OpenAI OAuth
+and Codex wire protocol because it matched the then-fixed reference. Goal 9
+Part C later superseded that historical decision with the user's explicit
+approval to send `originator=cadr`: client attribution is not a protocol
+behavior requirement, and Cadr traffic must not be attributed to the upstream
+client. OAuth/provider/payload semantics remain unchanged. The current
 behavioral attribution is
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`; references to
 `earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508` are retained only

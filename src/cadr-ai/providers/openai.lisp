@@ -257,7 +257,7 @@
                  :message
                  "OpenAI OAuth credential is missing account ID"))
         `(("chatgpt-account-id" . ,account-id)
-          ("originator" . "pi")
+          ("originator" . ,+openai-originator+)
           ("openai-beta" . "responses=experimental")))
       (responses-session-headers model session-id cache-retention)
       (model-headers model))

@@ -11,6 +11,7 @@
   "https://auth.openai.com/oauth/token")
 (defparameter +openai-oauth-redirect-uri+
   "http://localhost:1455/auth/callback")
+(defparameter +openai-originator+ "cadr")
 
 (defparameter +anthropic-oauth-client-id+
   "9d1c250a-e61b-44d9-88ed-5944d1962f5e")
@@ -261,7 +262,7 @@
       ("state" . ,state)
       ("id_token_add_organizations" . "true")
       ("codex_cli_simplified_flow" . "true")
-      ("originator" . "pi")))))
+      ("originator" . ,+openai-originator+)))))
 
 (defun anthropic-authorization-url (challenge state)
   (format

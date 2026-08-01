@@ -13,8 +13,10 @@ Status meanings:
   implemented and has linked Common Lisp evidence.
 - **缺失**: absent or only partially implemented. A partial adapter is not
   promoted to “已实现”.
-- **有意差异**: an existing, approved language/build ecosystem difference
-  listed in [README](../README.md#differences-from-typescript-pi).
+- **有意差异**: an existing user-approved difference listed in
+  [README](../README.md#differences-from-typescript-pi). Unless a row says
+  otherwise, these remain limited to language/build ecosystem differences;
+  `originator=cadr` is the explicit Goal 9 Part C identity-only exception.
 
 Test classification is deliberately strict:
 
@@ -130,7 +132,7 @@ credential is inferred.
 | 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
 | 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 已实现; shared adapter and exact catalog | fixture; no NVIDIA credential |
 | 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 已实现; full deterministic Responses compatibility matrix | fixture; no OpenAI API-key credential |
-| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; one identity across login/store/default routing and Codex response transport | fixture + [live-proven](../test/cadr-cli/live-test.lisp) |
+| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; one provider identity across login/store/default routing and Codex response transport; `originator=cadr` is an approved client-attribution difference | deterministic login/request tests + [Goal 9 Part C live gate](acceptance/goal-v9-part-c.md) |
 | 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 已实现; four-API model routing | fixture; no OpenCode credential |
 | 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 已实现; three-API model routing | fixture; no OpenCode credential |
 | 26 | `openrouter` | `openai-completions` | API key or OAuth | 已实现; OAuth shapes, cache-control variants and exact catalog | fixture; no OpenRouter credential |
@@ -533,8 +535,8 @@ forward by status alone:
 | C | `packages/ai/test/oauth-auth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/oauth-device-code.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/openai-codex-cache-affinity-e2e.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
-| C | `packages/ai/test/openai-codex-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
-| C | `packages/ai/test/openai-codex-stream.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
+| C | `packages/ai/test/openai-codex-oauth.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3); approved `originator=cadr` identity difference is locked by `OPENAI-AUTHORIZATION-URL-USES-APPROVED-CADR-ORIGINATOR-DIFFERENCE` |
+| C | `packages/ai/test/openai-codex-stream.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3); approved request-header difference is locked by `OPENAI-OAUTH-USES-CODEX-URL-AND-APPROVED-CADR-ORIGINATOR-HEADER` |
 | C | `packages/ai/test/openai-completions-cache-control-format.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/openai-completions-empty-tools.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |
 | C | `packages/ai/test/openai-completions-prompt-cache.test.ts` | [CL-AI-WAVE3](#cl-ai-wave3) |

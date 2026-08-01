@@ -468,4 +468,10 @@
              (cdr
               (assoc "authorization"
                      request-headers
+                     :test #'string-equal))))
+        (is (string=
+             "cadr"
+             (cdr
+              (assoc "originator"
+                     request-headers
                      :test #'string-equal))))))))

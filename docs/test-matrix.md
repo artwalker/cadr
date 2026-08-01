@@ -70,10 +70,10 @@ they are not current gaps.
 | OAuth persistence | auth round-trip, provider-error redaction, and logout tests | Atomic auth.json, mode 0600, OAuth tokens absent from transport/API/assistant errors |
 | Refresh locking | `OAUTH-REFRESH-IS-DOUBLE-CHECKED-UNDER-LOCK` | Six concurrent callers perform one refresh |
 | Refresh replay to request | `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST` | Expired → recorded token response → Codex request |
-| Codex request contract | `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS` | URL, bearer, account, originator, beta headers |
+| Codex request contract | `OPENAI-OAUTH-USES-CODEX-URL-AND-APPROVED-CADR-ORIGINATOR-HEADER` | URL, bearer, account, approved `originator=cadr` identity difference, beta headers |
 | Slash auth commands | config-auth REPL and dispatch tests | `/login`, `/logout`, provider re-resolution |
 | Live DeepSeek | `scripts/test-live.sh` → `test/cadr-ai/live-provider-test.lisp` | Credential-gated exact response, terminal events and positive usage |
-| OpenAI OAuth login/default route | `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST` | Temporary auth/config plus login and HTTP stubs prove `openai-codex` storage, default resolution and Codex transport without homedir state |
+| OpenAI OAuth login/default route | `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST` | Temporary auth/config plus login and HTTP stubs prove `openai-codex` storage, default resolution, `originator=cadr`, and Codex transport without homedir state |
 | Live OpenAI OAuth | `scripts/test-live.sh` → `test/cadr-cli/live-test.lisp` | Credential-gated, explicit `openai-codex/gpt-5.5` in an isolated HOME; canonical credential sharing plus isolated injection, no user settings/session/extensions |
 
 ## Phase 6: tree sessions, compaction, resume, and export

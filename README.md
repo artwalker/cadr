@@ -305,6 +305,9 @@ accidental name collisions; it is not a security boundary.
   the few original pi selectors that clamp at a boundary.
 - By explicit user decision, bash tool titles omit the explicit-timeout suffix
   and always render as `$ <command>`.
+- By explicit user decision, OpenAI OAuth authorization requests and Codex
+  Responses requests identify this client with `originator=cadr`, rather than
+  attributing Cadr traffic to the reference client's `originator=pi`.
 - Deterministic and live FiveAM tests have separate entry points. This is an
   explicit organizational difference with the same CI effect as the reference:
   its credential-gated live blocks remain in Vitest but all skip in official CI
@@ -330,7 +333,7 @@ introduced. Proposed mechanisms beyond original pi belong in
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Live-proven | Dedicated `test-live.sh`: 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail; DeepSeek streaming/print/extension/repo/eval and OpenAI Codex CLI/eval ran with explicit provider/model and no user settings dependency |
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
-| Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; Goal 9 Part B awaits the third-round B3 dual-terminal sweep |
+| Human acceptance | Goal 5 TUI checklist and Goal 9 Part B three-round dual-terminal A/B acceptance passed |
 
 ```bash
 ./scripts/test-cl.sh
