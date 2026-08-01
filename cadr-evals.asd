@@ -18,7 +18,8 @@
 (asdf:defsystem "cadr-evals/tests"
   :description "Tests for cadr-evals"
   :depends-on ("fiveam"
-               "cadr-evals")
+               "cadr-evals"
+               "cadr-live-test-support")
   :serial t
   :components ((:module "test/cadr-evals"
                 :serial t

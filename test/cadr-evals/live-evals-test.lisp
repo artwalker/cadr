@@ -11,14 +11,6 @@
            (and (plusp (length trimmed))
                 trimmed)))))
 
-(defun live-eval-auth-credential (provider)
-  (let ((path (cadr-cli::default-auth-path)))
-    (and (probe-file path)
-         (handler-case
-             (cadr-ai:read-auth-credential
-              path provider)
-           (condition () nil)))))
-
 (defun make-live-deepseek-eval-resolver
     (api-key)
   (lambda (provider model)
@@ -70,18 +62,12 @@
 
 (defmacro with-live-openai-codex
     (&body body)
-  `(let ((stored
-           (live-eval-auth-credential
-            :openai-codex)))
+  `(let ((credential
+           (cadr-live-test-support:prepare-openai-codex-credential)))
      (if
-         (typep stored
+         (typep credential
                 'cadr-ai:oauth-credential)
-         (let* ((credential
-                  (cadr-ai:resolve-oauth-credential
-                   (cadr-cli::default-auth-path)
-                   :openai-codex
-                   #'cadr-ai:refresh-openai-oauth-credential))
-                (cadr-evals::*eval-model-resolver*
+         (let ((cadr-evals::*eval-model-resolver*
                   (make-live-openai-codex-eval-resolver
                    credential)))
            ,@body)

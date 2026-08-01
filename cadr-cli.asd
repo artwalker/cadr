@@ -66,7 +66,8 @@
 (asdf:defsystem "cadr-cli/tests"
   :description "Tests for cadr-cli"
   :depends-on ("fiveam"
-               "cadr-cli")
+               "cadr-cli"
+               "cadr-live-test-support")
   :serial t
   :components ((:module "test/cadr-cli"
                 :serial t
@@ -101,6 +102,7 @@
                              (:file "migration-test")
                              (:file "data-migration-test")
                              (:file "build-test")
+                             (:file "live-auth-test")
                              (:file "live-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))

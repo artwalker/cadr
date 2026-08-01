@@ -11,14 +11,6 @@
            (and (plusp (length trimmed))
                 trimmed)))))
 
-(defun live-cli-auth-credential (provider)
-  (let ((path (cadr-cli::default-auth-path)))
-    (and (probe-file path)
-         (handler-case
-             (cadr-ai:read-auth-credential
-              path provider)
-           (condition () nil)))))
-
 (defun run-live-cli (arguments)
   (let ((output (make-string-output-stream))
         (errors (make-string-output-stream)))
@@ -34,7 +26,7 @@
        (get-output-stream-string errors)))))
 
 (defun run-isolated-live-cli
-    (directory arguments &key auth-source)
+    (directory arguments &key oauth-credential)
   (let* ((home
            (merge-pathnames "home/" directory))
          (workspace
@@ -48,9 +40,10 @@
      (merge-pathnames "anchor" home))
     (ensure-directories-exist
      (merge-pathnames "anchor" workspace))
-    (when auth-source
+    (when oauth-credential
       (ensure-directories-exist isolated-auth)
-      (uiop:copy-file auth-source isolated-auth))
+      (cadr-ai:write-auth-credential
+       isolated-auth oauth-credential))
     (unwind-protect
          (progn
            (setf (uiop:getenv "HOME")
@@ -93,38 +86,48 @@
           (is (string= "" errors))))))
 
 (test live-openai-codex-explicit-model-uses-oauth-credential
-  (let* ((auth-source
-           (cadr-cli::default-auth-path))
+  (let* ((auth-path
+           (cadr-cli:default-auth-path))
          (credential
-           (live-cli-auth-credential
-            :openai-codex)))
+           (cadr-live-test-support:prepare-openai-codex-credential
+            auth-path)))
     (if
         (not
          (typep credential
                 'cadr-ai:oauth-credential))
         (skip "OpenAI Codex OAuth is not configured")
         (with-test-directory (directory)
-          (multiple-value-bind
-                (status output errors)
-              (run-isolated-live-cli
-               directory
-               '("--provider" "openai-codex"
-                 "--model" "gpt-5.5"
-                 "--print"
-                 "--no-session"
-                 "--no-tools"
-                 "--no-extensions"
-                 "--no-skills"
-                 "--no-prompt-templates"
-                 "--no-context-files"
-                 "--system-prompt"
-                 "Follow the requested output format exactly and do not call tools."
-                 "Reply with exactly OAUTH_EXPLICIT_OK and nothing else.")
-               :auth-source auth-source)
-            (is (= 0 status))
-            (is (string=
-                 "OAUTH_EXPLICIT_OK"
-                 (string-trim
-                  '(#\Space #\Tab #\Newline #\Return)
-                  output)))
-            (is (string= "" errors)))))))
+          (let ((auth-contents
+                  (uiop:read-file-string
+                   auth-path :external-format :utf-8)))
+            (multiple-value-bind
+                  (status output errors)
+                (run-isolated-live-cli
+                 directory
+                 '("--provider" "openai-codex"
+                   "--model" "gpt-5.5"
+                   "--print"
+                   "--no-session"
+                   "--no-tools"
+                   "--no-extensions"
+                   "--no-skills"
+                   "--no-prompt-templates"
+                   "--no-context-files"
+                   "--system-prompt"
+                   "Follow the requested output format exactly and do not call tools."
+                   "Reply with exactly OAUTH_EXPLICIT_OK and nothing else.")
+                 :oauth-credential credential)
+              (is (= 0 status)
+                  "CLI stderr: ~A" errors)
+              (is (string=
+                   "OAUTH_EXPLICIT_OK"
+                   (string-trim
+                    '(#\Space #\Tab #\Newline #\Return)
+                    output)))
+              (is (string= "" errors))
+              (is
+               (string=
+                auth-contents
+                (uiop:read-file-string
+                 auth-path
+                 :external-format :utf-8)))))))))
