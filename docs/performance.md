@@ -129,5 +129,40 @@ virtual-terminal state，而 pi 写入无 I/O mock terminal；因此绝对倍率
 
 ## Optimized results and gates
 
-Goal 11 Parts C–E 完成时在此追加优化前后同机对比、长时稳定性结果和发布
-门禁阈值。Part A–B 未修改任何性能相关生产代码。
+### Part C — baseline mechanisms restored
+
+实现只使用 Part B 已确认的基线机制：
+
+- `tui-entry` 缓存稳定条目的完整 rendered lines，key 为 width、theme object
+  与 extension snapshot；streaming、running tool 和 custom tool renderer 不缓存。
+  tool 完成、折叠切换、theme 变更与 extension reload 都会失效。实现位于
+  `src/cadr-cli/tui.lisp:3-24, 506-514, 1806-1975`。
+- `tui-state` 保存 list tail 与其所属 head；正常追加直接接到 tail。集中替换
+  入口同步重建 tail，历史测试/fixture 若直接 `setf entries`，下一次追加只做
+  一次自修复且不会污染旧链。实现位于
+  `src/cadr-cli/tui.lisp:21-39, 470-504`，两个 production reset 已改走集中入口
+  （`:1119, :3980`）。
+
+基准的 `frame_render` 在 Part C 起显式预热一次 fixture，测量稳定帧；这是缓存
+存在后才有意义的方法校正。优化前没有 rendered-line cache，预热后仍会完整
+重算，因此归档的 before 数字仍是等价比较锚点。追加 repetitions 同时提高，
+避免 O(1) 操作落到 SBCL timer 分辨率以下。
+
+完整 after JSON：
+[`benchmarks/goal-v11-after-part-c.json`](benchmarks/goal-v11-after-part-c.json)，
+HEAD `56a50ca9cc03…`，TUI object `5b0b4790cd0e…`。
+
+| metric at N=5000 | before | after | improvement | scaling |
+|---|---:|---:|---:|---|
+| steady frame | 488.01ms / 139.58MB | 4.00ms / 0.72MB | 122× time / 194× allocation | linear 0.884 → constant 0.131 |
+| key→frame | 480.01ms / 138.62MB | 4.00ms / 1.38MB | 120× / 101× | linear 0.861 → constant 0.050 |
+| stream delta→frame | 466.01ms / 138.63MB | 4.00ms / 1.40MB | 116× / 99× | linear 0.878 → constant 0.066 |
+| stream throughput | 2.15 delta/s | 250 delta/s | 116× | — |
+| append | 5.200µs | 0.020µs | 260× | linear 0.910 → constant -0.021 |
+
+冷启动为 159.1ms（MAD 3.0ms），与 before 163.5ms 同一量级；未用缓存伪造
+启动收益。未渲染的 5000-entry fixture heap/RSS 增量从约 2.95/2.87MiB 增为
+3.18/3.17MiB，来自每条 entry 的 cache metadata 槽位；渲染后 cache 的长期
+驻留成本与回收行为由 Part D 单独测量。
+
+Goal 11 Parts D–E 完成时在此追加长时稳定性结果和发布门禁阈值。

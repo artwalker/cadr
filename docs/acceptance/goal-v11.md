@@ -78,3 +78,46 @@ sha256sum /tmp/cadr-goal11-pi-baseline.json \
 ```
 
 Part B 未修改 production code。
+
+## Part C — long-session rendering and append complexity
+
+状态：完成。实现提交 `56a50ca9c`。
+
+测试先行证据：新增 cache 测试在实现前稳定失败为 4 pass / 1 fail，失败点是
+相同 width/theme 的第二次 render 未复用首个 line list；实现后本 Part 四项
+回归为 20/20。源码位置与测试名：
+
+| requirement | production source | regression test |
+|---|---|---|
+| stable per-entry rendered-line cache; width/theme invalidation | `src/cadr-cli/tui.lisp:3-24, 1806-1975` | `GOAL11-STABLE-ENTRY-RENDER-CACHE-MATCHES-BASELINE-INVALIDATION` |
+| streaming bypass; completed tool cache; expand invalidation | `src/cadr-cli/tui.lisp:506-514, 1519-1529, 1920-1975, 2323-2333` | `GOAL11-STREAMING-AND-TOOL-MUTATIONS-INVALIDATE-ENTRY-RENDER-CACHE` |
+| O(1) tail append and safe direct-SETF recovery | `src/cadr-cli/tui.lisp:21-39, 470-504, 1119, 3980` | `GOAL11-TUI-ENTRY-APPEND-MAINTAINS-O1-TAIL-INVARIANT` |
+| mixed user/assistant/tool/notice transcript bytes unchanged | `src/cadr-cli/tui.lisp:1806-2000` | `GOAL11-CACHED-MIXED-TRANSCRIPT-IS-BYTE-IDENTICAL` |
+
+完整性能归档：
+[`docs/benchmarks/goal-v11-after-part-c.json`](../benchmarks/goal-v11-after-part-c.json)，
+SHA-256 `4d6accbe834b5b6a8aa198b6a8aab178deae21b4c443dd480062276285b93f9a`。
+N=5000 的 frame/key/stream 从 488.01/480.01/466.01ms 降至全部 4.00ms；
+frame allocation 从 139.58MB 降至 0.72MB；stream throughput 从 2.15 升至
+250 delta/s。append 从 5.200µs linear 降为 0.020µs constant。详细方法、
+倍率与内存代价见 [`docs/performance.md`](../performance.md#part-c--baseline-mechanisms-restored)。
+
+机械验证：
+
+```text
+四项 Goal 11 targeted regressions
+  20 checks / 20 pass / 0 skip / 0 fail
+./scripts/test-cl.sh
+  7110 checks / 7110 pass / 0 skip / 0 fail
+./build.sh
+  exit 0; SBCL 2.6.7 无 sb-core-compression，按既定契约降级为无压缩 image
+./scripts/bench.sh --label after-part-c \
+  --output /tmp/cadr-goal11-after-part-c-committed.json
+  exit 0; N=0/50/200/1000/5000 全部四条路径与真实 PTY 冷启动完成
+sha256sum /tmp/cadr-goal11-after-part-c-committed.json \
+  docs/benchmarks/goal-v11-after-part-c.json
+  4d6accbe834b5b6a8aa198b6a8aab178deae21b4c443dd480062276285b93f9a（两者一致）
+```
+
+未加入 transcript memoization、viewport pruning 或 virtual scrolling；输出
+语义无变更。
