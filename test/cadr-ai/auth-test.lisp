@@ -259,7 +259,7 @@
              (cadr-ai:assistant-message-error-message
               message)))
       (is (not (search secret error-text)))
-      (is (search "[REDACTED]" error-text)))
+      (is (string= "fetch failed" error-text)))
     (let* ((message
              (cadr-ai:stream-chat
               provider model context
@@ -269,7 +269,7 @@
              (cadr-ai:assistant-message-error-message
               message)))
       (is (not (search secret error-text)))
-      (is (search "[REDACTED]" error-text)))
+      (is (string= "fetch failed" error-text)))
     (let* ((request
              (cadr-ai:build-request
               provider model context :stream-p nil))

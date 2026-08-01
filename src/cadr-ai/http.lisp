@@ -20,6 +20,16 @@
 (defun signal-http-request-aborted ()
   (error 'request-aborted :message "Request was aborted"))
 
+(defun http-abort-requested-p (abort-p)
+  (and abort-p
+       (not (null (ignore-errors (funcall abort-p))))))
+
+(defun signal-native-http-network-error (cause)
+  (error 'network-error
+         :message "fetch failed"
+         :cause cause
+         :retryable-p t))
+
 (defun call-with-abortable-stream-operation
     (stream abort-p function &optional abort-function)
   (if (null abort-p)
@@ -27,7 +37,8 @@
       (let ((finished
               (sb-thread:make-semaphore :count 0))
             (aborted-p nil)
-            (watcher nil))
+            (watcher nil)
+            (operation-thread sb-thread:*current-thread*))
         (when (funcall abort-p)
           (signal-http-request-aborted))
         (setf
@@ -41,6 +52,13 @@
                   (if abort-function
                       (funcall abort-function)
                       (close stream :abort t)))
+                ;; Closing a socket does not reliably wake SBCL while cl+ssl is
+                ;; blocked inside SSL_connect. Interrupt the Lisp operation as
+                ;; well so an abort cannot wait for the TLS peer to respond.
+                (unless (sb-thread:try-semaphore finished)
+                  (sb-thread:interrupt-thread
+                   operation-thread
+                   #'signal-http-request-aborted))
                 (return))
               (when
                   (sb-thread:wait-on-semaphore
@@ -336,10 +354,30 @@
           t))
        byte))))
 
+(defmethod sb-gray:stream-read-byte :around
+    ((stream http-body-stream))
+  (handler-case
+      (call-next-method)
+    (transport-error (condition)
+      (error condition))
+    (error (cause)
+      (signal-native-http-network-error cause))))
+
 (defmethod close ((stream http-body-stream)
                   &key abort)
   (close (http-body-source stream)
          :abort abort))
+
+(defun close-http-body-safely (body abort-p)
+  (when (open-stream-p body)
+    (handler-case
+        (close body
+               :abort
+               (http-abort-requested-p abort-p))
+      (error (cause)
+        (ignore-errors (close body :abort t))
+        (unless (http-abort-requested-p abort-p)
+          (signal-native-http-network-error cause))))))
 
 (defun parse-content-length (value)
   (unless (and (plusp (length value))
@@ -438,11 +476,16 @@
           (sb-bsd-sockets:socket-close
            socket))
         (error 'native-http-timeout))
+      (transport-error (condition)
+        (ignore-errors
+          (sb-bsd-sockets:socket-close socket))
+        (error condition))
       (error (condition)
         (ignore-errors
           (sb-bsd-sockets:socket-close
            socket))
-        (error condition)))))
+        (signal-native-http-network-error
+         condition)))))
 
 (defun request-headers
     (parsed headers content-length)
@@ -572,7 +615,10 @@
             (when (open-stream-p stream)
               (ignore-errors
                 (close stream :abort t)))
-            (error condition)))))))
+            (if (typep condition 'transport-error)
+                (error condition)
+                (signal-native-http-network-error
+                 condition))))))))
 
 (unless *http-request-function*
   (setf *http-request-function*
@@ -632,6 +678,8 @@
       (error condition))
     (request-aborted (condition)
       (error condition))
+    (transport-error (condition)
+      (error condition))
     (native-http-timeout (cause)
       (error
        'timeout-error
@@ -661,15 +709,7 @@
        :cause cause
        :retryable-p t))
     (error (cause)
-      (error 'network-error
-             :message
-             (format nil
-                     "HTTP request failed: ~A"
-                     (redact-request-text
-                      request
-                      (princ-to-string cause)))
-             :cause cause
-             :retryable-p t))))
+      (signal-native-http-network-error cause))))
 
 (defun request-json
     (request &key
@@ -734,7 +774,7 @@
                  (http-body-abort-function body)))
            (values status headers))
       (when (open-stream-p body)
-        (close body)))))
+        (close-http-body-safely body abort-p)))))
 
 (defun read-exact-octets (stream count &optional eof-value)
   (let ((result
@@ -933,7 +973,7 @@
                  (http-body-abort-function body)))
            (values status headers))
       (when (open-stream-p body)
-        (close body)))))
+        (close-http-body-safely body abort-p)))))
 
 (defun request-provider-events
     (request consumer

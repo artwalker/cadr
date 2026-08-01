@@ -28,6 +28,28 @@
         (prog1 (aref octets position)
           (incf (delayed-stream-position stream))))))
 
+(defclass abort-close-diagnostic-stream
+    (trivial-gray-streams:fundamental-binary-input-stream)
+  ((abort-function
+     :initarg :abort-function
+     :reader abort-close-stream-abort-function)))
+
+(defmethod stream-element-type
+    ((stream abort-close-diagnostic-stream))
+  (declare (ignore stream))
+  '(unsigned-byte 8))
+
+(defmethod trivial-gray-streams:stream-read-byte
+    ((stream abort-close-diagnostic-stream))
+  (funcall (abort-close-stream-abort-function stream))
+  :eof)
+
+(defmethod close
+    ((stream abort-close-diagnostic-stream) &key abort)
+  (declare (ignore stream abort))
+  (error
+   "A failure in SB-SYS:INT-SAP SSL_shutdown ../ssl/ssllib.c"))
+
 (defun read-http-request-headers (stream)
   (loop with suffix = 0
         for byte = (read-byte stream nil :eof)
@@ -262,7 +284,16 @@
                (sb-thread:signal-semaphore release-server)
                (sb-thread:wait-on-semaphore client-done :timeout 2)))
            (is (eq :aborted
-                   (assistant-message-stop-reason message))))
+                   (assistant-message-stop-reason message)))
+           (is (string=
+                "Request was aborted"
+                (assistant-message-error-message message)))
+           (dolist (fragment '("SB-SYS" "SSL_" "../ssl/"))
+             (is
+              (null
+               (search
+                fragment
+                (assistant-message-error-message message))))))
       (sb-thread:signal-semaphore release-server)
       (ignore-errors
         (usocket:socket-close listener))
@@ -270,6 +301,173 @@
         (sb-thread:join-thread client))
       (when (bordeaux-threads:thread-alive-p server)
         (bordeaux-threads:join-thread server))
+      (when server-error
+        (error server-error)))))
+
+(test tls-handshake-abort-closes-socket-without-native-diagnostic
+  (let* ((listener
+           (usocket:socket-listen
+            "127.0.0.1" 0
+            :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (client-hello-seen
+           (sb-thread:make-semaphore :count 0))
+         (release-server
+           (sb-thread:make-semaphore :count 0))
+         (client-done
+           (sb-thread:make-semaphore :count 0))
+         (abort-p nil)
+         (caught nil)
+         (server-error nil)
+         (server
+           (sb-thread:make-thread
+            (lambda ()
+              (handler-case
+                  (let ((client
+                          (usocket:socket-accept
+                           listener
+                           :element-type '(unsigned-byte 8))))
+                    (unwind-protect
+                         (let ((stream
+                                 (usocket:socket-stream client)))
+                           (read-byte stream)
+                           (sb-thread:signal-semaphore
+                            client-hello-seen)
+                           (sb-thread:wait-on-semaphore
+                            release-server))
+                      (usocket:socket-close client)))
+                (error (condition)
+                  (setf server-error condition))))
+            :name "cadr-test-tls-handshake-server"))
+         (request
+           (cadr-ai::make-request-spec
+            :url
+            (format nil "https://127.0.0.1:~D/stream" port)
+            :method :post
+            :payload (cadr-ai::json-object)
+            :stream-p t
+            :provider :openai))
+         (client
+           (sb-thread:make-thread
+            (lambda ()
+              (unwind-protect
+                   (handler-case
+                       (let ((*http-request-function*
+                               #'cadr-ai::native-http-request))
+                         (cadr-ai::request-sse
+                          request
+                          (lambda (event)
+                            (declare (ignore event)))
+                          :connect-timeout 1
+                          :abort-p (lambda () abort-p)))
+                     (condition (condition)
+                       (setf caught condition)))
+                (sb-thread:signal-semaphore client-done)))
+            :name "cadr-test-tls-handshake-client")))
+    (unwind-protect
+         (progn
+           (is
+            (sb-thread:wait-on-semaphore
+             client-hello-seen :timeout 2))
+           (setf abort-p t)
+           (is
+            (sb-thread:wait-on-semaphore
+             client-done :timeout 1))
+           (is (typep caught 'cadr-ai:request-aborted))
+           (let ((visible (princ-to-string caught)))
+             (is (string= "Request was aborted" visible))
+             (dolist (fragment '("SB-SYS" "SSL_" "../ssl/"))
+               (is (null (search fragment visible))))))
+      (sb-thread:signal-semaphore release-server)
+      (ignore-errors (usocket:socket-close listener))
+      (when (sb-thread:thread-alive-p client)
+        (sb-thread:join-thread client :timeout 2 :default nil))
+      (when (sb-thread:thread-alive-p server)
+        (sb-thread:join-thread server :timeout 2 :default nil))
+      (when server-error
+        (error server-error)))))
+
+(test established-connection-before-headers-aborts-without-native-diagnostic
+  (let* ((listener
+           (usocket:socket-listen
+            "127.0.0.1" 0
+            :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (request-seen
+           (sb-thread:make-semaphore :count 0))
+         (release-server
+           (sb-thread:make-semaphore :count 0))
+         (client-done
+           (sb-thread:make-semaphore :count 0))
+         (abort-p nil)
+         (caught nil)
+         (server-error nil)
+         (server
+           (sb-thread:make-thread
+            (lambda ()
+              (handler-case
+                  (let ((client
+                          (usocket:socket-accept
+                           listener
+                           :element-type '(unsigned-byte 8))))
+                    (unwind-protect
+                         (let ((stream
+                                 (usocket:socket-stream client)))
+                           (read-http-request-headers stream)
+                           (sb-thread:signal-semaphore request-seen)
+                           (sb-thread:wait-on-semaphore
+                            release-server))
+                      (usocket:socket-close client)))
+                (error (condition)
+                  (setf server-error condition))))
+            :name "cadr-test-established-http-server"))
+         (request
+           (cadr-ai::make-request-spec
+            :url
+            (format nil "http://127.0.0.1:~D/stream" port)
+            :method :post
+            :payload (cadr-ai::json-object)
+            :stream-p t
+            :provider :openai))
+         (client
+           (sb-thread:make-thread
+            (lambda ()
+              (unwind-protect
+                   (handler-case
+                       (let ((*http-request-function*
+                               #'cadr-ai::native-http-request))
+                         (cadr-ai::request-sse
+                          request
+                          (lambda (event)
+                            (declare (ignore event)))
+                          :connect-timeout 1
+                          :abort-p (lambda () abort-p)))
+                     (condition (condition)
+                       (setf caught condition)))
+                (sb-thread:signal-semaphore client-done)))
+            :name "cadr-test-established-http-client")))
+    (unwind-protect
+         (progn
+           (is
+            (sb-thread:wait-on-semaphore
+             request-seen :timeout 2))
+           (setf abort-p t)
+           (is
+            (sb-thread:wait-on-semaphore
+             client-done :timeout 1))
+           (is (typep caught 'cadr-ai:request-aborted))
+           (let ((visible (princ-to-string caught)))
+             (is (string= "Request was aborted" visible))
+             (dolist (fragment '("SB-SYS" "SSL_" "../ssl/"))
+               (is (null (search fragment visible))))))
+      (sb-thread:signal-semaphore release-server)
+      (ignore-errors (usocket:socket-close listener))
+      (when (sb-thread:thread-alive-p client)
+        (sb-thread:join-thread client))
+      (when (sb-thread:thread-alive-p server)
+        (sb-thread:join-thread server))
       (when server-error
         (error server-error)))))
 
@@ -290,6 +488,126 @@
               (fail "Expected timeout-error"))
           (cadr-ai:timeout-error (condition)
             (is (cadr-ai:cadr-error-retryable-p condition))))))))
+
+(test transport-errors-hide-native-ssl-diagnostics-from-user-text
+  (multiple-value-bind (provider model)
+      (provider-case :anthropic)
+    (let* ((request
+             (build-request
+              provider model (sample-context)
+              :stream-p nil :max-tokens 4096))
+           (diagnostic
+             "A failure in SB-SYS:INT-SAP SSL_shutdown ../ssl/ssllib.c"))
+      (let ((*http-request-function*
+              (lambda (url &rest arguments)
+                (declare (ignore url arguments))
+                (error "~A" diagnostic))))
+        (handler-case
+            (progn
+              (cadr-ai::request-json request)
+              (fail "Expected network-error"))
+          (cadr-ai:network-error (condition)
+            (is (string= "fetch failed"
+                         (cadr-ai:cadr-error-message condition)))
+            (dolist (fragment '("SB-SYS" "SSL_" "../ssl/"))
+              (is (null
+                   (search fragment
+                           (cadr-ai:cadr-error-message condition)))))))))))
+
+(test abort-at-every-http-phase-hides-native-tls-diagnostics
+  (dolist (phase '(:tls-handshake :streaming :established))
+    (let* ((entered (sb-thread:make-semaphore :count 0))
+           (release (sb-thread:make-semaphore :count 0))
+           (abort-p nil)
+           (caught nil)
+           (worker
+             (sb-thread:make-thread
+              (lambda ()
+                (handler-case
+                    (cadr-ai::call-with-abortable-stream-operation
+                     nil (lambda () abort-p)
+                     (lambda ()
+                       (sb-thread:signal-semaphore entered)
+                       (sb-thread:wait-on-semaphore release)
+                       (error
+                        "~A: SB-SYS:INT-SAP SSL_shutdown ../ssl/ssllib.c"
+                        phase))
+                     (lambda ()
+                       (sb-thread:signal-semaphore release)))
+                  (condition (condition)
+                    (setf caught condition))))
+              :name (format nil "cadr-test-http-abort-~A" phase))))
+      (is (sb-thread:wait-on-semaphore entered :timeout 1))
+      (setf abort-p t)
+      (sb-thread:join-thread worker)
+      (is (typep caught 'cadr-ai:request-aborted))
+      (let ((visible (princ-to-string caught)))
+        (is (string= "Request was aborted" visible))
+        (dolist (fragment '("SB-SYS" "SSL_" "../ssl/"))
+          (is (null (search fragment visible))))))))
+
+(test abort-interrupts-blocking-http-operation-when-close-cannot-wake-it
+  (let* ((entered (sb-thread:make-semaphore :count 0))
+         (release (sb-thread:make-semaphore :count 0))
+         (done (sb-thread:make-semaphore :count 0))
+         (abort-p nil)
+         (caught nil)
+         (worker
+           (sb-thread:make-thread
+            (lambda ()
+              (unwind-protect
+                   (handler-case
+                       (cadr-ai::call-with-abortable-stream-operation
+                        nil (lambda () abort-p)
+                        (lambda ()
+                          (sb-thread:signal-semaphore entered)
+                          (sb-thread:wait-on-semaphore release))
+                        (lambda ()))
+                     (condition (condition)
+                       (setf caught condition)))
+                (sb-thread:signal-semaphore done)))
+            :name "cadr-test-http-abort-interrupts-blocking-operation")))
+    (unwind-protect
+         (progn
+           (is (sb-thread:wait-on-semaphore entered :timeout 1))
+           (setf abort-p t)
+           (is (sb-thread:wait-on-semaphore done :timeout 0.5))
+           (is (typep caught 'cadr-ai:request-aborted))
+           (is (string= "Request was aborted" (princ-to-string caught))))
+      (sb-thread:signal-semaphore release)
+      (sb-thread:join-thread worker :timeout 2 :default nil))))
+
+(test streaming-abort-is-not-overridden-by-close-time-ssl-diagnostic
+  (let* ((abort-p nil)
+         (request
+           (cadr-ai::make-request-spec
+            :url "https://example.invalid/stream"
+            :method :post
+            :payload (cadr-ai::json-object)
+            :stream-p t
+            :provider :openai)))
+    (let ((*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (values
+               (make-instance
+                'abort-close-diagnostic-stream
+                :abort-function
+                (lambda () (setf abort-p t)))
+               200
+               (cadr-ai::json-object)))))
+      (handler-case
+          (progn
+            (cadr-ai::request-sse
+             request (lambda (event) (declare (ignore event)))
+             :abort-p (lambda () abort-p))
+            (fail "Expected request-aborted"))
+        (cadr-ai:request-aborted (condition)
+          (is (string= "Request was aborted"
+                       (cadr-ai:cadr-error-message condition))))
+        (condition (condition)
+          (fail "Abort leaked native transport diagnostic: ~A"
+                condition))))))
 
 (test native-http-body-decodes-chunked-framing
   (let* ((source
