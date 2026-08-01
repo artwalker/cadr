@@ -283,3 +283,45 @@ python3 scripts/goal11-performance-gate.py \
 `src/` 提交为 `15bc6ae084d37a4b760e959bccf540ec1fe68c73`，时间
 `2026-08-01T23:44:52+08:00`。新鲜度门禁通过，版本为
 `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。
+
+## Goal 12 A0 correction — fixed paired alt-screen baseline
+
+状态：完成。门禁/基准提交 `82db71b8c`。
+
+上一节的 1024-event cadr 数据有效，但原 pi `14–18ms` 数字来自 main-screen，
+没有驱动 production `TuiAltScreen` raw mouse/wheel handler，不能据此裁决连续输入。
+A0 以同机、同 100×40、N=5000、同 1024-event trace、五个 fresh fixture、默认
+runtime GC 重新对拍；两边都走 production input/request-render，并立即 flush requested
+frame，排除共同的 16ms scheduler wait。
+
+归档 pi baseline 为 median/p95/p99/max
+315.576/347.536/365.552/427.549ms；cadr 为
+32.001/40.001/48.001/68.002ms。mouse/wheel 单点分别为 pi
+276.150/297.999ms、cadr 32.000/36.000ms。cadr 全部 tail 均低于 pi，故用户可感知
+的长 transcript 成本来自两边共有的 full-document O(N) render，不存在需要用
+non-baseline mechanism 修正的 cadr 数量级退化。
+
+门禁新增完整 artifact SHA、source/dist/dependency provenance、五轮原始样本重算和
+同机相对阈值；不同主机明确降为 `informational-host-mismatch`。测试
+`GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` 与
+`test_committed_fixed_baseline_artifact_passes_full_contract` 锁定该合同。
+
+```text
+python3 test/goal11-performance-gate-test.py
+  5 tests / OK
+./scripts/test-cl.sh
+  PASS（全部确定性 suite，0 fail）
+python3 scripts/goal11-performance-gate.py \
+  --bench /tmp/goal12-a0-cadr.json \
+  --stability docs/benchmarks/goal-v11-stability.json \
+  --baseline docs/benchmarks/goal-v11-pi-baseline.json
+  Goal 11 gate: PASS
+  mouse/wheel 32.00/36.00ms
+  continuous p99 52.00ms；GC max 64.00ms
+  baseline relative gate enforced；mouse/wheel/p99 ratio 0.12/0.12/0.13×
+```
+
+完整证据：pi artifact SHA-256
+`56e09adc50af1c9433111cc018b095c059f99bf7ada366f5d437f64d64b46ad9`；
+cadr artifact SHA-256
+`8f85b41714f142f721218009bf40524e0ff842c4c6c3d76dda486595ca05d414`。

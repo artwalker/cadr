@@ -120,18 +120,22 @@ node --expose-gc scripts/goal11-pi-baseline-bench.mjs \
   > /tmp/cadr-goal11-pi-baseline.json
 ```
 
-脚本拒绝任何不是 `74caa2649f10…` 的 worktree，直接加载该 object 已构建的
-production `TuiMainScreen`、`Editor`、user/assistant、read tool 与 bash tool
-component。每条历史都是独立 production component；100×40、同样 N 梯度、
-固定五项混合、1 次 warm-up、5 次样本，fixture 构建不计时。完整数据见
+脚本拒绝任何不是 `74caa2649f10…` 的 worktree。归档对象先以空构建缓存执行
+`tui`、`ai build:offline`、`agent`、`coding-agent` 的 clean build，再加载 production
+`TuiMainScreen`、`TuiAltScreen`、`Editor`、user/assistant、read tool 与 bash tool
+component。归档同时锁定 source object ID、四棵 loaded `dist/` tree SHA-256、
+`package-lock.json` object ID 与完整 installed dependency tree SHA-256；整个 JSON
+另由 SHA-256 `56e09adc50af1c9433111cc018b095c059f99bf7ada366f5d437f64d64b46ad9`
+锁定。每条历史都是独立 production component；100×40、同样 N 梯度、1 次
+warm-up、5 次样本，fixture 构建不计时。完整数据见
 [`benchmarks/goal-v11-pi-baseline.json`](benchmarks/goal-v11-pi-baseline.json)。
 
 | metric at N=5000 | cadr before | pi `74caa2649` | ratio |
 |---|---:|---:|---:|
-| frame | 488.0ms | 14.46ms | 33.7× |
-| key→frame | 480.0ms | 15.06ms | 31.9× |
-| stream delta→frame | 466.0ms | 17.94ms | 26.0× |
-| append | 5.200µs, linear | 0.0136µs, constant | 382× at N=5000 |
+| frame | 488.0ms | 16.43ms | 29.7× |
+| key→frame | 480.0ms | 16.61ms | 28.9× |
+| stream delta→frame | 466.0ms | 17.31ms | 26.9× |
+| append | 5.200µs, linear | 0.00683µs, constant | 761× at N=5000 |
 
 pi 的三条 frame path 仍为线性（log-log exponent 1.050/0.962/0.996），append
 为常数（-0.092）。这不是逐字相同 runtime 的绝对吞吐对拍：cadr 还驱动其
@@ -227,6 +231,14 @@ nursery 时必须实际观察到 GC；TUI/agent/session append exponent 小于 0
 FD/thread 必须逐点恒定；10MiB load/resume/continue 各不超过 5s，sampled
 heap/RSS 峰值各不超过 baseline 512MiB。
 
+同机还对 mouse、wheel 与默认 GC 的五轮 1024-event trace 执行固定基线门禁：
+对 median/p95/p99 的上限为
+`max(2 × pi_q, pi_q + max(5ms, 6 × pi_run_MAD_q))`，max 只作诊断。
+候选机名不是归档机 `Friend-MachineD` 时，该相对门禁明确报告
+`informational-host-mismatch`；它不会拿另一台机器的绝对微秒数冒充可比数据。
+原有 50/150/500ms 绝对预算仍跨机器运行，但同样受主机性能影响，不能称为
+host-independent。
+
 ### Fifth A/B — continuous alternate-screen input
 
 旧基准只测普通 frame、键盘和 stream delta；alt-screen 测试只断言滚动与选择
@@ -257,3 +269,39 @@ median allocation 降约 54×；默认规模现在能完整跑完并保留全部
 0.029。完整 JSON 为
 [`benchmarks/goal-v11-final.json`](benchmarks/goal-v11-final.json)，SHA-256
 `1d2d3d1faac43006e56b08a505487035c0d8a6dffdc0b52ab069a45c0d0d8f1e`。
+
+### Goal 12 A0 — paired continuous-input baseline
+
+旧 `14–18ms` 对照只驱动 `TuiMainScreen`，不能作为 alt-screen mouse/wheel
+标尺。A0 改为两边都走 production raw-input handler 和 production render request，
+并立即 flush 被请求的一帧；只排除共同的 16ms scheduler wait。固定条件为
+100×40、N=5000、五个全新 fixture、每轮 1024 个完全相同的事件（342 drag、
+341 wheel-up、341 wheel-down），trace SHA-256 为
+`2dfea100e8e8825a96ea55795c39e6cea2f265c6aa1a4b98f4edba8b4e5edb61`。
+基线路径证据为 `packages/tui/src/TuiAltScreen.ts:73-84,147-180,234-277,350-425`
+与 `packages/tui/src/tui.ts:730-770`；cadr 路径为
+`src/cadr-cli/tui.lisp:721-790,4734-4736` 和
+`src/cadr-tui/renderer.lisp:857-880`。
+
+| paired N=5000 metric | pi `74caa2649` | cadr `82db71b8c` | cadr / pi |
+|---|---:|---:|---:|
+| mouse event→frame median | 276.150ms | 32.000ms | 0.12× |
+| wheel event→frame median | 297.999ms | 36.000ms | 0.12× |
+| continuous median | 315.576ms | 32.001ms | 0.10× |
+| continuous p95 | 347.536ms | 40.001ms | 0.12× |
+| continuous p99 | 365.552ms | 48.001ms | 0.13× |
+| continuous max | 427.549ms | 68.002ms | 0.16× |
+
+分配量不伪装成同一种 byte：cadr 的 SBCL `get-bytes-consed` 是精确分配计数，
+continuous median 为 2,865,296 bytes/event；pi 的 V8 inspector sampled
+allocation estimate 为 112,307,351 bytes/event，另测得 retained-heap delta
+47,290 bytes/event、high-water delta 73,522 bytes/event。它们只证明两边都实际
+采样分配，不用于 byte-for-byte 门禁。
+
+结论：固定基线同样是 O(N) full document render → viewport slice → changed-row
+write，而且此 synthetic N=5000 trace 比 cadr 慢 6.3–9.9×。cadr 的 32–48ms
+主体延迟仍可被人感知，但不是相对基线新增的机制或数量级退化；继续加入 baseline
+没有的 virtual scrolling/transcript memoization 反而违反项目原则。因此 A0 关闭，
+保留既有 absolute stress gate，并新增上述同机 baseline-derived gate。候选完整数据为
+[`benchmarks/goal-v12-a0-cadr.json`](benchmarks/goal-v12-a0-cadr.json)，SHA-256
+`8f85b41714f142f721218009bf40524e0ff842c4c6c3d76dda486595ca05d414`。
