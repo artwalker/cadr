@@ -239,7 +239,9 @@
        (string= (assistant-message-model message)
                 (model-id model))))
 
-(defun copy-history-content-block (block same-model-p normalize-id)
+(defun copy-history-content-block
+    (block same-model-p normalize-id source-message target-model
+     foreign-id-normalizer)
   (cond
     ((typep block 'text-content)
      (list
@@ -271,7 +273,12 @@
      (let ((normalized-id
              (if same-model-p
                  (tool-call-id block)
-                 (funcall normalize-id (tool-call-id block)))))
+                 (if foreign-id-normalizer
+                     (funcall foreign-id-normalizer
+                              (tool-call-id block)
+                              target-model
+                              source-message)
+                     (funcall normalize-id (tool-call-id block))))))
        (list
         (make-tool-call
          :id normalized-id
@@ -282,7 +289,8 @@
               (tool-call-thought-signature block))))))
     (t nil)))
 
-(defun prepare-messages-for-model (messages model normalize-id)
+(defun prepare-messages-for-model
+    (messages model normalize-id &optional foreign-id-normalizer)
   "Make stored history valid for MODEL without mutating the session objects."
   (let ((id-map (make-hash-table :test #'equal))
         (transformed nil))
@@ -296,8 +304,9 @@
                     (loop for block in (assistant-message-content message)
                           append
                           (let ((copies
-                                  (copy-history-content-block
-                                   block same-model-p normalize-id)))
+                                   (copy-history-content-block
+                                   block same-model-p normalize-id
+                                   message model foreign-id-normalizer)))
                             (when (and (typep block 'tool-call)
                                        copies)
                               (setf
@@ -333,6 +342,8 @@
            :tool-name (tool-result-message-tool-name message)
            :content (tool-result-message-content message)
            :details (tool-result-message-details message)
+           :added-tool-names
+           (copy-list (tool-result-message-added-tool-names message))
            :is-error (tool-result-message-is-error message)
            :timestamp (tool-result-message-timestamp message))
           transformed))

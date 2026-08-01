@@ -279,18 +279,50 @@
      "mistral-medium-3.5")
    :test #'string=))
 
+(defun derive-mistral-tool-call-id (id attempt)
+  (let ((normalized
+          (coerce
+           (remove-if-not #'alphanumericp id)
+           'string)))
+    (if (and (zerop attempt) (= 9 (length normalized)))
+        normalized
+        (subseq
+         (short-hash
+          (if (zerop attempt)
+              (if (plusp (length normalized)) normalized id)
+              (format nil "~A:~D"
+                      (if (plusp (length normalized)) normalized id)
+                      attempt)))
+         0 9))))
+
+(defun make-mistral-tool-call-id-normalizer ()
+  (let ((forward (make-hash-table :test #'equal))
+        (reverse (make-hash-table :test #'equal)))
+    (lambda (id)
+      (or
+       (gethash id forward)
+       (loop for attempt from 0
+             for candidate = (derive-mistral-tool-call-id id attempt)
+             for owner = (gethash candidate reverse)
+             when (or (null owner) (string= owner id))
+               do (setf (gethash id forward) candidate
+                        (gethash candidate reverse) id)
+                  (return candidate))))))
+
 (defmethod build-request
     ((provider mistral-provider) model context
      &key stream-p max-tokens temperature reasoning
        cache-retention session-id tool-choice metadata)
   (declare (ignore metadata))
   (ensure-supported-content model context)
-  (let ((payload
+  (let* ((normalize-id (make-mistral-tool-call-id-normalizer))
+         (payload
           (json-object
            "model" (model-id model)
            "stream" (and stream-p t)
            "messages"
-           (openai-chat-messages model context)))
+           (openai-chat-messages
+            model context :normalize-id normalize-id)))
         (key (require-api-key provider)))
     (when max-tokens
       (json-put payload "max_tokens" max-tokens))
@@ -1193,9 +1225,7 @@
                 :delta delta)))
 
 (defun parse-partial-json-object (text)
-  (handler-case
-      (parse-json text)
-    (error () (json-object))))
+  (parse-streaming-json text))
 
 (defmethod reduce-provider-sse-event
     ((provider bedrock-provider) state event emit)

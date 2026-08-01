@@ -78,8 +78,19 @@
                   :moonshotai-cn :together)
                 :test #'eq))))))
 
-(defun openai-chat-messages (model context)
-  (let ((messages nil))
+(defun deferred-tool-names (messages)
+  (let ((names (make-hash-table :test #'equal)))
+    (dolist (message messages)
+      (when (typep message 'tool-result-message)
+        (dolist (name (tool-result-message-added-tool-names message))
+          (setf (gethash name names) t))))
+    names))
+
+(defun openai-chat-messages
+    (model context &key (normalize-id #'normalize-provider-id)
+                       deferred-tools-mode)
+  (let ((messages nil)
+        (loaded-tool-names (make-hash-table :test #'equal)))
     (when (non-empty-string-p (context-system-prompt context))
       (push
        (json-object "role"
@@ -94,7 +105,7 @@
          (prepare-messages-for-model
           (context-messages context)
           model
-          #'normalize-provider-id))
+          normalize-id))
       (cond
         ((typep message 'user-message)
          (let ((content
@@ -145,7 +156,22 @@
                         "type" "image_url"
                         "image_url"
                         (json-object "url" (data-url block)))))))
-            messages)))))
+            messages))
+         (when (eq deferred-tools-mode :kimi)
+           (let ((loaded nil))
+             (dolist (name (tool-result-message-added-tool-names message))
+               (let ((tool
+                       (find name (context-tools context)
+                             :key #'tool-name :test #'string=)))
+                 (when (and tool (not (gethash name loaded-tool-names)))
+                   (setf (gethash name loaded-tool-names) t)
+                   (push tool loaded))))
+             (when loaded
+               (push
+                (json-object
+                 "role" "system"
+                 "tools" (openai-chat-tools model (nreverse loaded)))
+                messages)))))))
     (list-json-array (nreverse messages))))
 
 (defun completions-strict-mode-p (model)
@@ -161,19 +187,42 @@
   (list-json-array
    (loop for tool in tools
          collect
-         (json-object
-          "type" "function"
-          "function"
-          (let ((function
+         (let ((grammar
+                 (resolve-grammar-constrained-sampling
+                  tool
+                  (model-compat-value
+                   model :supports-openai-grammar-tools nil))))
+           (if grammar
+               (json-object
+                "type" "custom"
+                "custom"
+                (json-object
+                 "name" (tool-name tool)
+                 "description" (tool-description tool)
+                 "format"
+                 (json-object
+                  "type" "grammar"
+                  "grammar"
                   (json-object
-                   "name" (tool-name tool)
-                   "description" (tool-description tool)
-                   "parameters" (tool-parameters tool))))
-            (when (completions-strict-mode-p model)
-              (json-put
-               function "strict"
-               (tool-strict-p tool)))
-            function)))))
+                   "syntax"
+                   (string-downcase
+                    (symbol-name (getf grammar :format)))
+                   "definition" (getf grammar :definition)))))
+               (json-object
+                "type" "function"
+                "function"
+                (let ((function
+                        (json-object
+                         "name" (tool-name tool)
+                         "description" (tool-description tool)
+                         "parameters" (tool-parameters tool))))
+                  (when (completions-strict-mode-p model)
+                    (json-put
+                     function "strict"
+                     (not (null
+                           (resolve-json-schema-strict-sampling
+                            tool t)))))
+                  function)))))))
 
 (defun completions-provider-match-p (model providers fragments)
   (or (member (model-provider model) providers :test #'eq)
@@ -337,10 +386,23 @@
   (declare (ignore metadata))
   (ensure-supported-content model context)
   (let* ((token (provider-bearer-token provider))
+         (deferred-mode
+           (model-compat-value model :deferred-tools-mode nil))
+         (deferred-names
+           (and (eq deferred-mode :kimi)
+                (deferred-tool-names (context-messages context))))
+         (active-tools
+           (if deferred-names
+               (remove-if
+                (lambda (tool) (gethash (tool-name tool) deferred-names))
+                (context-tools context))
+               (context-tools context)))
          (payload
            (json-object
             "model" (model-id model)
-            "messages" (openai-chat-messages model context)
+            "messages"
+            (openai-chat-messages
+             model context :deferred-tools-mode deferred-mode)
             "stream" (and stream-p t))))
     (when (and stream-p
                (model-compat-value
@@ -358,9 +420,9 @@
       (json-put payload "temperature" temperature))
     (when (completions-supports-store-p model)
       (json-put payload "store" nil))
-    (when (context-tools context)
+    (when active-tools
       (json-put payload "tools"
-                (openai-chat-tools model (context-tools context))))
+                (openai-chat-tools model active-tools)))
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
@@ -410,7 +472,7 @@
      :name (or (json-get function "name") "")
      :arguments
      (if (non-empty-string-p arguments)
-         (parse-json arguments)
+         (parse-json-with-repair arguments)
          (json-object)))))
 
 (defun parse-chat-message-content (message)
@@ -591,7 +653,13 @@
           (gethash key
                    (provider-stream-state-partial-json state)
                    "")
-          arguments))
+         arguments))
+        (setf
+         (tool-call-arguments block)
+         (parse-streaming-json
+          (gethash key
+                   (provider-stream-state-partial-json state)
+                   "")))
         (emit-event emit :tool-call-delta message
                     :content-index content-index
                     :delta arguments)))
@@ -622,7 +690,7 @@
               (setf
                (tool-call-arguments block)
                (if (non-empty-string-p json)
-                   (parse-json json)
+                   (parse-streaming-json json)
                    (json-object)))
               (emit-event emit :tool-call-end message
                           :content-index index

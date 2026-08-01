@@ -116,11 +116,73 @@
                (json-put block "cache_control" cache-control))))))))
   messages)
 
-(defun anthropic-messages (model messages &optional cache-control)
+(defun anthropic-tool-reference-support-p (model)
+  (model-compat-value
+   model :supports-tool-references
+   (and
+    (eq (model-provider model) :anthropic)
+    (not (search "haiku" (model-id model)))
+    (let ((prefix
+            (find-if
+             (lambda (value)
+               (uiop:string-prefix-p value (model-id model)))
+             '("claude-opus-" "claude-sonnet-" "claude-fable-"))))
+      (when prefix
+        (let* ((start (length prefix))
+               (major (parse-integer (model-id model)
+                                     :start start :junk-allowed t))
+               (major-end
+                 (and major
+                      (position-if-not #'digit-char-p (model-id model)
+                                       :start start)))
+               (minor
+                 (and major-end
+                      (< major-end (length (model-id model)))
+                      (char= (char (model-id model) major-end) #\-)
+                      (parse-integer (model-id model)
+                                     :start (1+ major-end)
+                                     :junk-allowed t))))
+          (and major
+               (or (> major 4)
+                   (and (= major 4) minor (>= minor 5))))))))))
+
+(defun anthropic-tool-result-blocks
+    (message allow-empty-signature-p deferred-tools loaded-tool-names)
+  (let ((references nil))
+    (dolist (name (tool-result-message-added-tool-names message))
+      (when (and deferred-tools
+                 (gethash name deferred-tools)
+                 (not (gethash name loaded-tool-names)))
+        (setf (gethash name loaded-tool-names) t)
+        (push (json-object "type" "tool_reference" "tool_name" name)
+              references)))
+    (let* ((ordinary
+             (aref
+              (anthropic-message-content message allow-empty-signature-p)
+              0))
+           (ordinary-content (json-get ordinary "content")))
+      (if (null references)
+          (list ordinary)
+          (progn
+            (json-put ordinary "content"
+                      (list-json-array (nreverse references)))
+            (append
+             (list ordinary)
+             (cond
+               ((stringp ordinary-content)
+                (and (plusp (length ordinary-content))
+                     (list (json-object "type" "text"
+                                        "text" ordinary-content))))
+               ((vectorp ordinary-content) (coerce ordinary-content 'list))
+               (t nil))))))))
+
+(defun anthropic-messages
+    (model messages &optional cache-control deferred-tools)
   (let ((prepared
           (prepare-messages-for-model
            messages model #'normalize-provider-id))
         (result nil)
+        (loaded-tool-names (make-hash-table :test #'equal))
         (allow-empty-signature-p
           (model-compat-value model :allow-empty-signature nil)))
     (loop with index = 0
@@ -133,13 +195,14 @@
                (loop while (and (< index (length prepared))
                                 (typep (nth index prepared)
                                        'tool-result-message))
-                     do (push
-                         (aref
-                          (anthropic-message-content
-                           (nth index prepared)
-                           allow-empty-signature-p)
-                          0)
-                         blocks)
+                     do (dolist
+                            (block
+                             (anthropic-tool-result-blocks
+                              (nth index prepared)
+                              allow-empty-signature-p
+                              deferred-tools
+                              loaded-tool-names))
+                          (push block blocks))
                         (incf index))
                (push
                 (json-object
@@ -174,7 +237,8 @@
      (list-json-array (nreverse result))
      cache-control)))
 
-(defun anthropic-tools (model tools cache-control)
+(defun anthropic-tools
+    (model tools cache-control &optional defer-loading-p)
   (list-json-array
    (loop for tool in tools
          for index from 0
@@ -192,10 +256,13 @@
                     (tool-strict-p tool))
            (json-put encoded "strict" t))
          (when (and cache-control
+                    (not defer-loading-p)
                     (model-compat-value
                      model :supports-cache-control-on-tools t)
                     (= index (1- (length tools))))
            (json-put encoded "cache_control" cache-control))
+         (when defer-loading-p
+           (json-put encoded "defer_loading" t))
          collect encoded)))
 
 (defun anthropic-thinking-options (model reasoning)
@@ -234,14 +301,26 @@
          (key (or oauth-token (require-api-key provider)))
          (cache-control
            (anthropic-cache-control model cache-retention))
+         (immediate-tools nil)
+         (deferred-tools nil)
          (payload
            (json-object
             "model" (model-id model)
-            "messages" (anthropic-messages
-                        model (context-messages context)
-                        cache-control)
             "max_tokens" (or max-tokens (model-max-tokens model))
             "stream" (and stream-p t))))
+    (multiple-value-setq (immediate-tools deferred-tools)
+      (split-deferred-tools
+       context (anthropic-tool-reference-support-p model)))
+    (when (and (null immediate-tools)
+               (plusp (hash-table-count deferred-tools)))
+      (setf immediate-tools
+            (loop for tool being the hash-values of deferred-tools
+                  collect tool)
+            deferred-tools (make-hash-table :test #'equal)))
+    (json-put
+     payload "messages"
+     (anthropic-messages
+      model (context-messages context) cache-control deferred-tools))
     (when (non-empty-string-p (context-system-prompt context))
       (let ((block
               (json-object
@@ -250,10 +329,22 @@
          (when cache-control
            (json-put block "cache_control" cache-control))
         (json-put payload "system" (json-array block))))
-    (when (context-tools context)
-      (json-put payload "tools"
-                (anthropic-tools
-                 model (context-tools context) cache-control)))
+    (when (or immediate-tools
+              (plusp (hash-table-count deferred-tools)))
+      (json-put
+       payload "tools"
+       (list-json-array
+        (append
+         (coerce
+          (anthropic-tools model immediate-tools cache-control)
+          'list)
+         (coerce
+          (anthropic-tools
+           model
+           (loop for tool being the hash-values of deferred-tools
+                 collect tool)
+           nil t)
+          'list)))))
     (when (and (not (null temperature))
                (null reasoning)
                (model-compat-value model :supports-temperature t))
@@ -466,6 +557,11 @@
                          provider-index
                          (provider-stream-state-partial-json state))
                         (concatenate 'string previous fragment))
+                  (setf (tool-call-arguments block)
+                        (parse-streaming-json
+                         (gethash
+                          provider-index
+                          (provider-stream-state-partial-json state))))
                   (emit-event emit :tool-call-delta message
                               :content-index content-index
                               :delta fragment)))))))
@@ -488,7 +584,8 @@
                              (provider-stream-state-partial-json state)
                              "")))
                   (when (non-empty-string-p json)
-                    (setf (tool-call-arguments block) (parse-json json)))
+                    (setf (tool-call-arguments block)
+                          (parse-streaming-json json)))
                   (emit-event emit :tool-call-end message
                               :content-index content-index
                               :tool-call block)))))))

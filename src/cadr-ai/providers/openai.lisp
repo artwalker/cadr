@@ -11,9 +11,58 @@
   (and (model-reasoning-p model)
        (model-compat-value model :supports-developer-role t)))
 
-(defun openai-input-items (model context)
+(defun normalize-openai-id-part (value)
+  (let* ((sanitized (normalize-provider-id value))
+         (trimmed (string-right-trim "_" sanitized)))
+    trimmed))
+
+(defun responses-normalize-tool-call-id (id target source)
+  (if (not (member (model-provider target)
+                   '(:openai :openai-codex :opencode)
+                   :test #'eq))
+      (normalize-openai-id-part id)
+      (multiple-value-bind (call-id item-id)
+          (split-openai-tool-call-id id)
+        (let* ((normalized-call-id (normalize-openai-id-part call-id))
+               (foreign-p
+                 (or (not (eq (assistant-message-provider source)
+                              (model-provider target)))
+                     (not (eq (assistant-message-api source)
+                              (model-api target)))))
+               (normalized-item-id
+                 (and item-id
+                      (if foreign-p
+                          (format nil "fc_~A" (short-hash item-id))
+                          (normalize-openai-id-part item-id)))))
+          (when (and normalized-item-id
+                     (not (uiop:string-prefix-p "fc_" normalized-item-id)))
+            (setf normalized-item-id
+                  (normalize-openai-id-part
+                   (format nil "fc_~A" normalized-item-id))))
+          (if normalized-item-id
+              (format nil "~A|~A" normalized-call-id normalized-item-id)
+              normalized-call-id)))))
+
+(defun parse-openai-text-signature (signature)
+  (when (non-empty-string-p signature)
+    (if (char= (char signature 0) #\{)
+        (handler-case
+            (let ((object (parse-json signature)))
+              (when (and (= 1 (or (json-get object "v") 0))
+                         (stringp (json-get object "id")))
+                (values (json-get object "id")
+                        (let ((phase (json-get object "phase")))
+                          (and (member phase '("commentary" "final_answer")
+                                       :test #'string=)
+                               phase)))))
+          (error () (values signature nil)))
+        (values signature nil))))
+
+(defun openai-input-items
+    (model context &key grammar-properties deferred-tools tool-options)
   (let ((items nil)
-        (message-index 0))
+        (message-index 0)
+        (loaded-tool-names (make-hash-table :test #'equal)))
     (when (non-empty-string-p (context-system-prompt context))
       (push (json-object "role"
                          (if (responses-developer-role-p model)
@@ -25,7 +74,8 @@
              (prepare-messages-for-model
               (context-messages context)
               model
-              #'normalize-provider-id))
+              #'normalize-provider-id
+              #'responses-normalize-tool-call-id))
       (cond
         ((typep message 'user-message)
          (let* ((source (user-message-content message))
@@ -61,33 +111,59 @@
            (dolist (block (assistant-message-content message))
              (cond
                ((typep block 'text-content)
-                (push
-                 (json-object
-                  "type" "message"
-                  "id" (format nil "msg_cadr_~D~@[_~D~]"
-                               message-index
-                               (and (plusp text-index) text-index))
-                  "role" "assistant"
-                  "status" "completed"
-                  "content"
-                  (json-array
-                   (json-object
-                    "type" "output_text"
-                    "text" (text-content-text block)
-                    "annotations" #())))
-                 items)
+                (multiple-value-bind (signature-id phase)
+                    (parse-openai-text-signature
+                     (text-content-signature block))
+                  (let* ((fallback
+                           (format nil "msg_cadr_~D~@[_~D~]"
+                                   message-index
+                                   (and (plusp text-index) text-index)))
+                         (item-id
+                           (cond
+                             ((null signature-id) fallback)
+                             ((> (length signature-id) 64)
+                              (format nil "msg_~A" (short-hash signature-id)))
+                             (t signature-id)))
+                         (item
+                           (json-object
+                            "type" "message"
+                            "id" item-id
+                            "role" "assistant"
+                            "status" "completed"
+                            "content"
+                            (json-array
+                             (json-object
+                              "type" "output_text"
+                              "text" (text-content-text block)
+                              "annotations" #())))))
+                    (when phase (json-put item "phase" phase))
+                    (push item items)))
                 (incf text-index))
                ((typep block 'tool-call)
                 (multiple-value-bind (call-id item-id)
                     (split-openai-tool-call-id (tool-call-id block))
-                  (let ((item
-                          (json-object
-                           "type" "function_call"
-                           "call_id" call-id
-                           "name" (tool-call-name block)
-                           "arguments"
-                           (stringify-json
-                            (tool-call-arguments block)))))
+                  (let* ((custom-property
+                           (and grammar-properties
+                                (gethash (tool-call-name block)
+                                         grammar-properties)))
+                         (item
+                           (if custom-property
+                               (json-object
+                                "type" "custom_tool_call"
+                                "call_id" call-id
+                                "name" (tool-call-name block)
+                                "input"
+                                (get-grammar-tool-input
+                                 (tool-call-name block)
+                                 (tool-call-arguments block)
+                                 custom-property))
+                               (json-object
+                                "type" "function_call"
+                                "call_id" call-id
+                                "name" (tool-call-name block)
+                                "arguments"
+                                (stringify-json
+                                 (tool-call-arguments block))))))
                     (when item-id
                       (json-put item "id" item-id))
                     (push item items))))))))
@@ -98,7 +174,12 @@
            (declare (ignore item-id))
            (push
             (json-object
-             "type" "function_call_output"
+             "type"
+             (if (and grammar-properties
+                      (gethash (tool-result-message-tool-name message)
+                               grammar-properties))
+                 "custom_tool_call_output"
+                 "function_call_output")
              "call_id" call-id
              "output"
              (let ((text
@@ -107,7 +188,43 @@
                (if (non-empty-string-p text)
                    text
                    "(no tool output)")))
-            items))
+            items)
+           (let ((loaded nil))
+             (dolist (name (tool-result-message-added-tool-names message))
+               (let ((tool (and deferred-tools (gethash name deferred-tools))))
+                 (when (and tool (not (gethash name loaded-tool-names)))
+                   (setf (gethash name loaded-tool-names) t)
+                   (push tool loaded))))
+             (when loaded
+               (setf loaded (nreverse loaded))
+               (let* ((names (mapcar #'tool-name loaded))
+                      (search-id
+                        (format nil "pi_tool_load_~A"
+                                (short-hash
+                                 (format nil "~A:~{~A~^,~}"
+                                         (tool-result-message-tool-call-id message)
+                                         names)))))
+                 (push
+                  (json-object
+                   "type" "tool_search_call"
+                   "call_id" search-id
+                   "execution" "client"
+                   "status" "completed"
+                   "arguments"
+                   (json-object "query" (format nil "~{~A~^ ~}" names)
+                                "limit" (length names)))
+                  items)
+                 (push
+                  (json-object
+                   "type" "tool_search_output"
+                   "call_id" search-id
+                   "execution" "client"
+                   "status" "completed"
+                   "tools"
+                   (openai-tools model loaded
+                                 :defer-loading-p t
+                                 :options tool-options))
+                  items))))
          (when (content-has-images-p
                 (tool-result-message-content message))
            (push
@@ -125,23 +242,49 @@
                       (json-object
                        "type" "input_image"
                        "image_url" (data-url block)))))
-            items))))
+            items)))))
       (incf message-index))
     (list-json-array (nreverse items))))
 
-(defun openai-tools (model tools)
+(defun openai-tools (model tools &key defer-loading-p options)
   (list-json-array
    (loop for tool in tools
          collect
-         (let ((encoded
-                 (json-object
-                  "type" "function"
-                  "name" (tool-name tool)
-                  "description" (tool-description tool)
-                  "parameters" (tool-parameters tool))))
-           (when (model-compat-value
-                  model :supports-strict-mode nil)
-             (json-put encoded "strict" (tool-strict-p tool)))
+         (let* ((supports-strict
+                  (if (member :supports-strict-mode options :test #'eq)
+                      (getf options :supports-strict-mode)
+                      (model-compat-value model :supports-strict-mode nil)))
+                (supports-grammar
+                  (if (member :supports-openai-grammar-tools options :test #'eq)
+                      (getf options :supports-openai-grammar-tools)
+                      (model-compat-value model :supports-openai-grammar-tools nil)))
+                (grammar
+                  (resolve-grammar-constrained-sampling tool supports-grammar))
+                (encoded
+                  (if grammar
+                      (json-object
+                       "type" "custom"
+                       "name" (tool-name tool)
+                       "description" (tool-description tool)
+                       "format"
+                       (json-object
+                        "type" "grammar"
+                        "syntax"
+                        (string-downcase
+                         (symbol-name (getf grammar :format)))
+                        "definition" (getf grammar :definition)))
+                      (json-object
+                       "type" "function"
+                       "name" (tool-name tool)
+                       "description" (tool-description tool)
+                       "parameters" (tool-parameters tool)))))
+           (when (and (not grammar) supports-strict)
+             (json-put
+              encoded "strict"
+              (not (null
+                    (resolve-json-schema-strict-sampling tool t)))))
+           (when defer-loading-p
+             (json-put encoded "defer_loading" t))
            encoded))))
 
 (defun responses-session-affinity-format (model)
@@ -198,12 +341,33 @@
   (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
          (account-id (provider-oauth-account-id provider))
+         (supports-tool-search
+           (model-compat-value model :supports-tool-search nil))
+         (supports-grammar
+           (model-compat-value model :supports-openai-grammar-tools nil))
+         (grammar-properties
+           (create-grammar-tool-input-properties
+            (context-tools context) supports-grammar))
+         (immediate-tools nil)
+         (deferred-tools nil)
          (payload
            (json-object
             "model" (model-id model)
-            "input" (openai-input-items model context)
             "stream" (and stream-p t)
             "store" nil)))
+    (multiple-value-setq (immediate-tools deferred-tools)
+      (split-deferred-tools context supports-tool-search))
+    (json-put
+     payload "input"
+     (openai-input-items
+      model context
+      :grammar-properties grammar-properties
+      :deferred-tools deferred-tools
+      :tool-options
+      (list
+       :supports-strict-mode
+       (model-compat-value model :supports-strict-mode nil)
+       :supports-openai-grammar-tools supports-grammar)))
     (let ((retention
             (normalize-cache-retention cache-retention)))
       (unless (eq retention :none)
@@ -224,9 +388,9 @@
       (json-put payload "max_output_tokens" (max 16 max-tokens)))
     (when (not (null temperature))
       (json-put payload "temperature" temperature))
-    (when (context-tools context)
+    (when immediate-tools
       (json-put payload "tools"
-                (openai-tools model (context-tools context))))
+                (openai-tools model immediate-tools)))
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
     (add-responses-reasoning payload model reasoning)
@@ -299,7 +463,7 @@
              :arguments
              (let ((arguments (json-get item "arguments")))
                (if (non-empty-string-p arguments)
-                   (parse-json arguments)
+                   (parse-json-with-repair arguments)
                    (json-object))))))
           (t nil))))
 
@@ -461,6 +625,11 @@
                       output-index
                       (provider-stream-state-partial-json state))
                      (concatenate 'string old delta))
+               (setf (tool-call-arguments block)
+                     (parse-streaming-json
+                      (gethash
+                       output-index
+                       (provider-stream-state-partial-json state))))
                (emit-event emit :tool-call-delta message
                            :content-index content-index
                            :delta delta)))))
@@ -536,7 +705,7 @@
                              ""))))
                   (when (non-empty-string-p arguments)
                     (setf (tool-call-arguments block)
-                          (parse-json arguments))))
+                          (parse-streaming-json arguments))))
                 (emit-event emit :tool-call-end message
                             :content-index content-index
                             :tool-call block))))))
