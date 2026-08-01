@@ -75,8 +75,59 @@ O(N²)。
 2.8MiB，整体曲线为线性。新进程到首个真实 TUI 帧为 163,502µs，
 MAD 4,518µs（五个样本 156–175ms）。
 
-## Baseline strategy, optimized results, and gates
+## Fixed TS baseline strategy
 
-Goal 11 Parts B–E 完成时在此追加 TS 基线 `file:line` 证据、优化前后同机
-对比、长时稳定性结果和发布门禁阈值。Part A 期间未修改任何性能相关生产
-代码。
+审计对象固定为 `74caa2649`，不是持续移动的上游 `main`。结论很明确：pi
+同样每帧遍历完整组件树，并没有 viewport-before-render、虚拟滚动或持久化的
+历史前缀帧；它的优势来自组件级缓存、O(1) 追加、render request 合并，以及
+只向终端写变化行。
+
+| dimension | baseline behavior and evidence |
+|---|---|
+| history append | `Container.children` 是数组，`addChild()` 直接 `push`，即 O(1)；`packages/tui/src/tui.ts:211-216`。interactive mode 只把新 message/tool component 加到 `chatContainer`；`packages/coding-agent/src/modes/interactive/interactive-mode.ts:2942-2962, 3318-3369`。 |
+| per-component cache | `Markdown` 以 source text + width 缓存完整 rendered lines，变更时显式失效；`packages/tui/src/components/markdown.ts:121-169, 239-244`。`Text` 使用同一策略；`packages/tui/src/components/text.ts:13-57, 99-104`。bash 折叠预览另有 width-aware cache；`packages/coding-agent/src/modes/interactive/components/bash-execution.ts:148-166`。 |
+| streaming invalidation | 每个 delta 只重建当前 `AssistantMessageComponent`，稳定历史 component 不变，然后请求一帧；`packages/coding-agent/src/modes/interactive/interactive-mode.ts:2966-2998`。component 本身在内容变化时重建子树；`packages/coding-agent/src/modes/interactive/components/assistant-message.ts:89-170`。 |
+| full traversal | `Container.render()` 每帧遍历每个 child 并拼接其 lines；`packages/tui/src/tui.ts:235-244`。main-screen 明确先 `render(width)` 全部 component；`packages/tui/src/TuiMainScreen.ts:146-173`。因此稳定帧仍是 O(N)，缓存只压低每项常数。 |
+| viewport/virtual scroll | alt-screen 先渲染完整 document，之后才以 `scrollTop` slice viewport；`packages/tui/src/TuiAltScreen.ts:350-371`。没有 render 前裁剪或虚拟滚动。 |
+| differential write | main-screen 扫描新旧全部 lines 找变化区间，再只写变化 lines；`packages/tui/src/TuiMainScreen.ts:260-287, 354-386`。alt-screen 同样只写变化 row；`packages/tui/src/TuiAltScreen.ts:398-425`。这减少终端 I/O，不消除前面的 O(N) render traversal。 |
+| render coalescing | 重复 request 合并，并以 16ms 最小间隔调度；`packages/tui/src/tui.ts:321, 730-770`。 |
+
+所以 Part C 只采用基线已有的两种机制：给稳定条目加入 width/content-sensitive
+rendered-line cache，并把 Lisp list 尾插改为维护尾指针的 O(1) 追加。不会加入
+整段 transcript memoization、viewport pruning 或虚拟滚动；这些都超出基线，
+按全局原则必须另交提案。
+
+### Same-machine structural comparison
+
+对照入口：
+
+```sh
+node --expose-gc scripts/goal11-pi-baseline-bench.mjs \
+  /tmp/cadr-parity-74caa2649 \
+  > /tmp/cadr-goal11-pi-baseline.json
+```
+
+脚本拒绝任何不是 `74caa2649f10…` 的 worktree，直接加载该 object 已构建的
+production `TuiMainScreen`、`Editor`、user/assistant、read tool 与 bash tool
+component。每条历史都是独立 production component；100×40、同样 N 梯度、
+固定五项混合、1 次 warm-up、5 次样本，fixture 构建不计时。完整数据见
+[`benchmarks/goal-v11-pi-baseline.json`](benchmarks/goal-v11-pi-baseline.json)。
+
+| metric at N=5000 | cadr before | pi `74caa2649` | ratio |
+|---|---:|---:|---:|
+| frame | 488.0ms | 14.46ms | 33.7× |
+| key→frame | 480.0ms | 15.06ms | 31.9× |
+| stream delta→frame | 466.0ms | 17.94ms | 26.0× |
+| append | 5.200µs, linear | 0.0136µs, constant | 382× at N=5000 |
+
+pi 的三条 frame path 仍为线性（log-log exponent 1.050/0.962/0.996），append
+为常数（-0.092）。这不是逐字相同 runtime 的绝对吞吐对拍：cadr 还驱动其
+virtual-terminal state，而 pi 写入无 I/O mock terminal；因此绝对倍率只作
+同机客观标尺，算法判定与 `file:line` 才是实现约束。即使按该限制解释，cadr
+5000 条目下 466–488ms 仍远超 pi 的 14–18ms，问题是实质性的高常数与 O(N)
+追加，不是“Lisp 天生慢”的借口。
+
+## Optimized results and gates
+
+Goal 11 Parts C–E 完成时在此追加优化前后同机对比、长时稳定性结果和发布
+门禁阈值。Part A–B 未修改任何性能相关生产代码。
