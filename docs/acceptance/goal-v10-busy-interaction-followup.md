@@ -42,8 +42,10 @@ The root `./cadr` used for the third A/B predated the first busy-interaction
 commit: its recorded mtime was 18:45, while `c3cef6dfd` was committed at 19:39.
 That stale image explains both the missing pending rows and the obsolete
 `session> Abort requested` row even though neither behavior remained in source.
-The root image was rebuilt after this correction; it is now a 20:33 build of
-`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`.
+The prior delivery report incorrectly treated the 20:33 root image as current,
+but `badc7319d` was committed at 20:34. The image was therefore stale at handoff
+despite the successful isolated build. The delivery-time evidence below
+supersedes that claim.
 
 The audit nevertheless found two real gaps: the legacy terminal encoding for
 the default `alt+up` binding was not decoded as dequeue, and a silent native
@@ -119,8 +121,8 @@ Deterministic suite, final run after all changes:
 
 ```text
 $ ./scripts/test-cl.sh
-checks: 7321
-pass:   7321
+checks: 7334
+pass:   7334
 skip:   0
 fail:   0
 ```
@@ -135,13 +137,15 @@ Full verification:
 ```text
 $ ./scripts/verify.sh
 exit: 0
-deterministic stages: 10/10 PASS
+deterministic stages: 11/11 PASS
 terminal lifecycle PTY: 6/6 PASS
 live stages: 2/2 PASS
 live FiveAM items: 7 PASS, 1 SKIP (ANTHROPIC_API_KEY is not set), 0 FAIL
 live FiveAM checks: 31 PASS, 1 SKIP, 0 FAIL
 ```
 
-The root `./build.sh` then completed with the documented no-compression
-fallback (`SBCL lacks sb-core-compression`) and the rebuilt `./cadr --version`
-printed the expected 0.2.0 alignment string.
+The earlier statement that the 20:33 root image represented `badc7319d` was
+false: the commit followed the image by 77 seconds. The permanent correction is
+`scripts/check-root-binary.sh`, the first local `verify.sh` stage, and the
+mandatory `docs/delivery-checklist.md` procedure. Final build-time and version
+evidence for this correction is recorded after the implementation commit.

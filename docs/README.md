@@ -21,6 +21,8 @@ remain evidence and must not silently override a current contract.
   decision; entries here are not authorization to implement.
 - [performance.md](performance.md): deterministic non-functional methodology,
   fixed-reference comparison, archived results, and release thresholds.
+- [delivery-checklist.md](delivery-checklist.md): mandatory root-image rebuild,
+  freshness proof, full verification, and delivery-report evidence.
 
 ## Evidence directories
 

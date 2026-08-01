@@ -399,10 +399,20 @@ introduced. Proposed mechanisms beyond original pi belong in
 | Human acceptance | Goal 5 TUI checklist and Goal 9 Part B three-round dual-terminal A/B acceptance passed |
 
 ```bash
+./build.sh
+./scripts/check-root-binary.sh
 ./scripts/verify.sh
 ```
 
-That release-local entry runs deterministic FiveAM, isolated builds of both
+Before user-facing delivery, the root image must be rebuilt and the freshness
+check must show that its build time is later than both the newest `src/` commit
+and working-source mtime. The delivery report must include that time and the
+exact `--version` output. `verify.sh` repeats this check when a root image is
+present; a stale image fails before the expensive stages. A clean CI checkout
+has no root image, so that stage is N/A there and the isolated build remains the
+CI artifact gate. See the [delivery checklist](docs/delivery-checklist.md).
+
+The release-local entry then runs deterministic FiveAM, isolated builds of both
 native images, the Goal 11 performance/stability gate, every retained
 process/PTY harness, credential-gated live FiveAM, and the DeepSeek live TUI
 when its key is available. It prints separate deterministic and live tables and
@@ -414,6 +424,7 @@ stages remain available for diagnosis:
 ./scripts/test-cl.sh
 ./scripts/test-live.sh
 ./build.sh
+./scripts/check-root-binary.sh
 ./build-server.sh
 ./scripts/bench.sh --output /tmp/cadr-performance.json
 ./scripts/goal11-stability.sh --output /tmp/cadr-stability.json

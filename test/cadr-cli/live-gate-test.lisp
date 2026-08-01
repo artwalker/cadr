@@ -130,7 +130,8 @@
            (and (probe-file path)
                 (uiop:read-file-string path)))
          (script-paths
-           '("scripts/test-cl.sh"
+           '("scripts/check-root-binary.sh"
+             "scripts/test-cl.sh"
              "build.sh"
              "build-server.sh"
              "scripts/bench.sh"
@@ -145,7 +146,8 @@
              "scripts/test-live.sh"
              "scripts/live-tui-smoke.sh"))
          (stage-labels
-           '("deterministic FiveAM"
+           '("root cadr binary freshness"
+             "deterministic FiveAM"
              "isolated cadr build"
              "isolated cadr-server build"
              "Goal 11 performance and stability gate"
@@ -177,6 +179,81 @@
       (is (search "Deterministic stages" source))
       (is (search "Live stages" source))
       (is (not (search ".github/workflows" source))))))
+
+(test delivery-binary-freshness-check-rejects-missing-stale-and-dirty-images
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (checker
+           (merge-pathnames "scripts/check-root-binary.sh" root)))
+    (is-true (probe-file checker))
+    (when (probe-file checker)
+      (with-test-directory (fixture-root)
+        (let* ((project (merge-pathnames "project/" fixture-root))
+               (source (merge-pathnames "src/example.lisp" project))
+               (binary (merge-pathnames "cadr" project)))
+          (write-text
+           source
+           (format nil "(in-package #:cl-user)~%"))
+          (dolist
+              (argv
+               (list
+                (list "git" "init" "-q" (namestring project))
+                (list "git" "-C" (namestring project)
+                      "config" "user.email" "cadr@example.invalid")
+                (list "git" "-C" (namestring project)
+                      "config" "user.name" "cadr test")
+                (list "git" "-C" (namestring project)
+                      "add" "src/example.lisp")
+                (list
+                 "env"
+                 "GIT_AUTHOR_DATE=2030-01-01T00:00:00Z"
+                 "GIT_COMMITTER_DATE=2030-01-01T00:00:00Z"
+                 "git" "-C" (namestring project)
+                 "commit" "-q" "-m" "fixture")))
+            (uiop:run-program argv :output nil :error-output nil))
+          (labels
+              ((check ()
+                 (multiple-value-bind (output error-output status)
+                     (uiop:run-program
+                      (list
+                       (namestring checker)
+                       "--project-directory"
+                       (namestring project))
+                      :output :string
+                      :error-output :string
+                      :ignore-error-status t)
+                   (values
+                    status
+                    (concatenate 'string output error-output)))))
+            (multiple-value-bind (status output) (check)
+              (is (not (zerop status)))
+              (is (search "root cadr binary is missing" output)))
+            (write-text
+             binary
+             (format
+              nil
+              "#!/bin/sh~%printf '%s\\n' 'cadr fixture-version'~%"))
+            (uiop:run-program
+             (list "chmod" "+x" (namestring binary)))
+            (uiop:run-program
+             (list "touch" "-d" "2029-01-01T00:00:00Z"
+                   (namestring binary)))
+            (multiple-value-bind (status output) (check)
+              (is (not (zerop status)))
+              (is (search "root cadr binary is stale" output))
+              (is (search "2030-01-01T00:00:00+00:00" output)))
+            (uiop:run-program
+             (list "touch" "-d" "2031-01-01T00:00:00Z"
+                   (namestring binary)))
+            (multiple-value-bind (status output) (check)
+              (is (zerop status))
+              (is (search "cadr fixture-version" output))
+              (is (search "root cadr binary is fresh" output)))
+            (uiop:run-program
+             (list "touch" "-d" "2032-01-01T00:00:00Z"
+                   (namestring source)))
+            (multiple-value-bind (status output) (check)
+              (is (not (zerop status)))
+              (is (search "root cadr binary is stale" output)))))))))
 
 (test goal10-part-c-ci-workflow-is-pinned-minimal-and-credential-free
   (let* ((root (asdf:system-source-directory "cadr-cli"))
