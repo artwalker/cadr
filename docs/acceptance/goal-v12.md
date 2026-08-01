@@ -116,3 +116,39 @@ image 不存在时保留完整文字公告。Daxnuts 使用基线精确 32×32 R
 `ANTHROPIC_API_KEY`）。根目录 `cadr` 构建时间为
 `2026-08-02 06:24:33.660346183 +0800`，晚于当时最后一个 `src/` 提交
 `86ff53909` 的 `2026-08-02T06:11:50+08:00`，二进制新鲜度门禁 PASS。
+
+## Part C2 — Agent/session/coding core（22）
+
+状态：实现与回归已落账。实现提交 `2799ffc82`、`19dc334b7`；本章与账本证据提交
+见本节所在提交。
+
+本批补齐 6 个 `agent` 与 16 个 `coding-agent` source capabilities。Agent 层新增
+abandoned-branch 的收集、file-operation 累积、token-budget 准备与摘要生成，完整
+message projection，以及 authenticated `/api/stream` proxy reducer；`agent-navigate-tree`
+现在在调用者要求时走完整 branch-summary 路径，同时保持原有前两个返回值与不摘要默认
+路径不变。工具执行上下文改为 CLOS class/generic protocol，使测试、嵌入者或远端执行器可
+替换 read/write/edit/bash backend，而 production 默认 backend 仍是原生文件系统与进程。
+
+Coding-agent 层新增集中 auth guidance、`:medium` 默认 thinking 常量、具名 EventBus、
+runtime timings、可恢复 watcher、JSON-with-comments scanner、路径/cloud-sync、shell/env/
+detached-process、fd/rg tool manager、Windows native quarantine，以及有界 UTF-8 output
+accumulator。构造选择是小型原生模块与 CLOS 泛函数，不复制 TypeScript class：需要后端
+替换的位置使用多态，纯值/生命周期能力保持普通函数与 structure，避免给简单工具制造无用
+对象层。
+
+可观察行为：默认 production 路径、现有 session wire、agent event/JSON/RPC、基础屏幕、
+15 个 overlay 与 payload fixtures 均未改变。新增 branch summary 只在已有显式
+`summarize-p` 路径触发；EventBus 与 runtime timing 未接入固定 agent event spine；工具
+backend 默认方法逐字复用原操作。因此本批是补 source surface，不靠规范化或弱断言改变
+既有合同。
+
+门禁：`GOAL12-AGENT-*` 覆盖 file operations、branch preparation/generation、tree hook
+payload、bash/custom/summary message projection、proxy text/thinking/tool/usage/error reduction
+与 execution-context dispatch；`GOAL12-CODING-CORE-*` 覆盖 guidance、default、EventBus、
+timings、JSON/path/shell/watcher、fd/rg 与 Windows fallback、split UTF-8 accumulator、temp-file
+lifecycle 及四个 built-in tools 的 backend replacement。最终确定性套件为
+`7895 checks / 7895 pass / 0 skip / 0 fail`。
+
+账本由 `coding-agent 147/27/115` 更新为 `163/27/99`，`agent 25/11/6`
+更新为 `31/11/0`，全仓更新为 `384 已实现 / 72 有意差异 / 139 缺失`。剩余项精确为
+99 examples、36 AI、2 eval 与 2 个用户明确暂缓的 Apple Terminal rows。
