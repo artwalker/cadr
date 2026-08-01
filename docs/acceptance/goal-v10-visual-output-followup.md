@@ -25,8 +25,7 @@ The surrounding audit found no other mismatch:
 | Below-editor widgets | no implicit spacer (`interactive-mode.ts:2044-2072`) | aligned |
 | Editor/footer | editor padding and output padding are horizontal only; editor, below widgets, footer are adjacent (`interactive-mode.ts:497-505,743-746`) | aligned |
 
-The 15 accepted overlay SHA snapshots are unchanged. Eleven additional full
-base-screen SHA snapshots cover cold start, single turn, multiple turns,
+Eleven additional full base-screen SHA snapshots cover cold start, single turn, multiple turns,
 thinking, collapsed and expanded tools, active status, above/below widgets,
 overflow scrolling, and narrow width. The exact hashes are in
 `docs/visual-parity.md` and are enforced by
@@ -65,6 +64,86 @@ Earlier coverage exercised deletion after an already valid completion prefix;
 it never asserted provider-call count for empty `:text`, Space, repeated Space,
 or a closed plain path fragment. Consequently a root directory listing could
 open without violating any old assertion.
+
+## Fourth A/B: transport abort and terminal bytes
+
+### TLS transport normalization
+
+The leak came from two coupled gaps in `src/cadr-ai/http.lisp`. Native socket,
+cl+ssl handshake, and stream-read errors were allowed to retain their raw
+condition text, and abort cleanup called ordinary `close`, whose
+`SSL_shutdown` condition could replace the intended request-aborted condition.
+Closing the file descriptor also did not reliably wake SBCL while cl+ssl was
+blocked in `SSL_connect`.
+
+The transport boundary now preserves structured HTTP/API/timeout errors but
+normalizes every other native failure to exactly `fetch failed`. Abort closes
+the body with `:abort t`, ignores cleanup-only TLS failures, and interrupts the
+blocked Lisp operation after socket shutdown. This matches the baseline split:
+the provider path turns abort into `Request was aborted`, while
+`assistant-message.ts:190-200` renders that as `Operation aborted`; a generic
+fetch failure remains `fetch failed`.
+
+Permanent regressions cover all three real phases and forbidden fragments:
+
+- `TLS-HANDSHAKE-ABORT-CLOSES-SOCKET-WITHOUT-NATIVE-DIAGNOSTIC`
+- `ESTABLISHED-CONNECTION-BEFORE-HEADERS-ABORTS-WITHOUT-NATIVE-DIAGNOSTIC`
+- `SILENT-SSE-REQUEST-ABORTS-WITHOUT-WAITING-FOR-THE-SERVER`
+- `ABORT-INTERRUPTS-BLOCKING-HTTP-OPERATION-WHEN-CLOSE-CANNOT-WAKE-IT`
+- `STREAMING-ABORT-IS-NOT-OVERRIDDEN-BY-CLOSE-TIME-SSL-DIAGNOSTIC`
+- `TRANSPORT-ERRORS-HIDE-NATIVE-SSL-DIAGNOSTICS-FROM-USER-TEXT`
+
+Every visible error assertion rejects `SB-SYS`, `SSL_`, and `../ssl/`.
+
+### Real Alt key decoding
+
+Baseline `packages/tui/src/keys.ts:587-650` parses modified CSI arrows,
+functional keys, and Home/End in the same key parser as Kitty CSI-u. Cadr had
+the modifier-bit decoder but never admitted `ESC[1;3A` to it; the byte framer
+instead consumed only `ESC[` and let `[1;3A` reach the editor as text.
+
+The shared terminal sequence framer now treats CSI, SS3, OSC, DCS, and APC as
+atomic input. It decodes Windows Terminal/xterm modified arrows, xterm
+modifyOtherKeys `ESC[27;3;13~`, Kitty `ESC[13;3u`, and legacy `ESC CR` when the
+Kitty protocol is inactive. Complete unknown sequences are discarded atomically.
+The busy TUI regression sends real bytes and proves Enter queues steering while
+Alt+Enter queues follow-up, and `ESC[1;3A` dequeues both for editing.
+
+Regressions:
+
+- `MODIFIED-CSI-ARROWS-AND-ALT-ENTER-MATCH-REAL-TERMINAL-SEQUENCES`
+- `INPUT-DECODER-HANDLES-REAL-XTERM-AND-WINDOWS-ALT-SEQUENCES`
+- `GOAL10-BUSY-TUI-ENTER-AND-ALT-ENTER-USE-DISTINCT-QUEUES`
+- `GOAL10-BUSY-TUI-DEQUEUE-RESTORES-BOTH-QUEUES-TO-THE-EDITOR`
+- `GOAL10-PENDING-HINT-USES-THE-CONFIGURED-DEQUEUE-KEY`
+
+The older `INPUT-DECODER-PRESERVES-CONFIGURABLE-ALT-KEY-ACTIONS` used only the
+synthetic legacy `ESC p` alias. It proved action lookup, not the terminal byte
+contract, so it could not catch the real decoder failure.
+
+### Abort spacing and selector placement
+
+Baseline `assistant-message.ts:195` adds exactly one `Spacer(1)` before
+`Operation aborted`. Cadr's assistant wrapper and error fragment both added a
+spacer, producing two. The wrapper now adds its generic leading spacer only
+when ordinary assistant content exists; the abort fragment remains horizontally
+padded by one cell and vertically preceded by exactly one blank row. Regression:
+`GOAL10-OPERATION-ABORTED-HAS-EXACTLY-ONE-BASELINE-SPACER`.
+
+Baseline root order permanently retains chat above the editor
+(`interactive-mode.ts:734-746`); `showSelector` replaces only the editor
+container (`:4161-4175`). Cadr previously treated overlay lines as transcript
+content and therefore erased history. All selectors now occupy the editor slot,
+with transcript cropped only by the remaining viewport. The 15 full-screen SHA
+fixtures were regenerated with fixed nonempty user/assistant history and an
+editor sentinel that must disappear. In addition to the SHA gate,
+`GOAL10-EVERY-OVERLAY-SNAPSHOT-PRESERVES-NONEMPTY-TRANSCRIPT` checks all 15
+surfaces.
+
+The old overlay SHA fixtures used empty transcript state. Clearing an empty
+transcript was observationally identical to retaining it, so their hashes could
+not detect the architecture error. This is why the gate itself—not merely the
+expected hash—had to change.
 
 ## `/reload` root cause and baseline result
 
@@ -118,6 +197,7 @@ output remain visible.
 | Legacy extension Git install | raw Git/wrapper output isolated; explicit redacted `Installed …` result visible | `INSTALL-VALIDATES-URL-USES-ARGV-AND-NEVER-OVERWRITES` |
 | Extension `exec` | real child stdout and stderr remain separate and streamable; outer `setsid` stderr is discarded through a dedicated FD boundary | `NODE-EXECUTION-ENVIRONMENT-KEEPS-CHILD-STDERR-AND-ISOLATES-SETSID-STDERR` |
 | Built-in bash tool | command stdout/stderr is the tool contract; `setsid` stderr stays on the null wrapper channel | `GOAL9-B3-BASH-TIMEOUT-NEVER-LEAKS-WRAPPER-DIAGNOSTICS` |
+| Provider HTTP/TLS transport | ordinary native failure is exactly `fetch failed`; abort is `Request was aborted` and cleanup is silent; SAP/OpenSSL/C source diagnostics are forbidden at handshake, connected-before-headers, and streaming phases | `TRANSPORT-ERRORS-HIDE-NATIVE-SSL-DIAGNOSTICS-FROM-USER-TEXT`; `TLS-HANDSHAKE-ABORT-CLOSES-SOCKET-WITHOUT-NATIVE-DIAGNOSTIC`; `ESTABLISHED-CONNECTION-BEFORE-HEADERS-ABORTS-WITHOUT-NATIVE-DIAGNOSTIC`; `SILENT-SSE-REQUEST-ABORTS-WITHOUT-WAITING-FOR-THE-SERVER` |
 | Model catalog refresh | parse/network errors remain registry errors; benign implementation signals are not promoted to the model selector/user channel | `MODEL-REGISTRY-REFRESH-DOES-NOT-PROMOTE-BENIGN-SIGNALS-TO-USER-ERRORS` |
 | OAuth browser launch | authorization URL and explicit fallback message visible; `xdg-open` diagnostics discarded, matching baseline `open-browser.ts:18-23` | `OAUTH-BROWSER-LAUNCH-ISOLATES-BROWSER-DIAGNOSTICS` |
 | Generic URL launch | selected URL remains the product action; desktop launcher diagnostics discarded | `TUI-URL-LAUNCH-ISOLATES-DESKTOP-LAUNCHER-DIAGNOSTICS` |
@@ -128,21 +208,27 @@ output remain visible.
 | Build/test/catalog scripts | developer-only process channel; diagnostics remain visible and never enter a running agent's user channel | isolated build and `verify.sh` stages below |
 
 This is the same failure family as the earlier `setsid: child …` leak: an
-implementation layer was sharing an observable product channel. The new tests
-assert the boundary itself, not merely that one historical diagnostic string
-is absent.
+implementation layer was sharing an observable product channel. The previous
+audit missed TLS because it enumerated process/loader/browser channels but no
+provider transport boundary; its only network-abort gate used cleartext HTTP
+and asserted the final stop reason, not cleanup output. The new tests assert the
+boundary itself, not merely that one historical diagnostic string is absent.
 
 Post-follow-up production object IDs:
 
 ```text
-827c3edd901b5193d4dad3d06dc0827f585839a8  cadr-cli.asd
-9b60e5aa5c07e33be46b866d5d1b9fb186e29279  src/cadr-agent/execution-env.lisp
-8d4f40d4eb253f35c0b912432d1130a6f58074ae  src/cadr-ai/oauth.lisp
-6b6acfc13bf0ed416b508f9cffa850891a539b94  src/cadr-cli/extensions.lisp
-308f6f168273fcf55c75eae5eac74039a8b0a567  src/cadr-cli/main.lisp
-71122121ffdf1a82ec2a5a7abc88a33a39167042  src/cadr-cli/model-services.lisp
-9fefb518cc7a2712805d4570ed7b5276a942081c  src/cadr-cli/tui.lisp
-5649eb933f20637da4d3b951e9615ad192c76b4d  src/cadr-tui/editor.lisp
+172a745fcd43c92586c51d215a7bff12c4696adb  cadr-cli.asd
+ad84c128f9e6fa7fc273b2106d34d8154326d436  src/cadr-agent/execution-env.lisp
+9a3a5a1b1d04d7942c09a345544106eac083e454  src/cadr-ai/http.lisp
+c028d2407fd01d1e8a1cb6c037c8f0f0da71ae0e  src/cadr-ai/oauth.lisp
+ac875cbea570d672c568b03471852f43ff4107cd  src/cadr-cli/extensions.lisp
+ec89d42a881df90e33c89730d43d68a603a9cee7  src/cadr-cli/main.lisp
+8a523cf7552330743a3bef23a28f326ac6d46ed9  src/cadr-cli/model-services.lisp
+6478c1b8fb1553d025319b214135378f7f5c856e  src/cadr-cli/tui.lisp
+7797f9eeb3f98906ae48307053ec01b3bed66760  src/cadr-tui/editor.lisp
+23ec88ad788612cd1d6efaa97613e53ef96df0e3  src/cadr-tui/input.lisp
+aaf9b37635b8bf1af94075c8126b32b3ab8336bc  src/cadr-tui/keys.lisp
+18f3f502d9014e2bedc9436139616a2559b1e7a0  src/cadr-tui/stdin-buffer.lisp
 ```
 
 ## Mechanical verification
@@ -155,6 +241,9 @@ $ rg -n 'system cadr-cli is out of date|:output :interactive|:error-output :inte
 
 $ rg -n -U '\(\(eq kind :text\)\n[[:space:]]+\(editor-refresh-autocomplete' src/cadr-tui/editor.lisp
 (no matches; exit 1)
+
+$ rg -n 'SSL_shutdown:shutdown while in init|SB-SYS:INT-SAP|ERR_print_errors|\.\./ssl/ssllib\.c' src
+(no matches; exit 1)
 ```
 
 Native 100×24 PTY after a fresh `./build.sh`, then `/reload`:
@@ -165,12 +254,22 @@ Native 100×24 PTY after a fresh `./build.sh`, then `/reload`:
 
 The capture contains neither `session>` nor `system cadr-cli is out of date`.
 
+Root binary freshness after the final source commit:
+
+```text
+binary build time: 2026-08-01 22:14:56.047611847 +0800
+latest src commit: a0a5ec1828d1eb4e8c445f77b6ae2802b9870b52
+latest src commit time: 2026-08-01T22:12:30+08:00
+freshness gate: PASS
+version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
 Deterministic suite:
 
 ```text
 $ ./scripts/test-cl.sh
-checks: 7273
-pass:   7273
+checks: 7475
+pass:   7475
 skip:   0
 fail:   0
 ```
@@ -180,7 +279,7 @@ Full verification entry point:
 ```text
 $ ./scripts/verify.sh
 exit: 0
-deterministic stages: 10/10 PASS
+deterministic stages: 11/11 PASS
 terminal lifecycle PTY: 6/6 PASS
 live stages: 2/2 PASS
 live FiveAM items: 7 PASS, 1 SKIP (ANTHROPIC_API_KEY is not set), 0 FAIL

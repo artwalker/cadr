@@ -23,6 +23,13 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
   CJK、combining mark、emoji ZWJ 中间态；
 - 命令、键位、overlay 和 footer 必须验证从 input decoder 到运行时状态再到最终
   virtual screen 的完整链路，不能只比提示文案或构造后的静态组件；
+- 键位门禁必须喂入真实终端原始字节：legacy、Kitty、xterm
+  modifyOtherKeys、带 modifier 的 CSI 方向键均单独覆盖；完整但未知的 escape
+  sequence 必须原子丢弃，绝不能把参数字节降级成 editor 文本；
+- provider transport 必须覆盖 TLS handshake、已连接但未收 headers、流式读取三种
+  abort 时机；abort 只允许收敛为 `Request was aborted`/`Operation aborted`，普通
+  native transport failure 只允许归一化为 `fetch failed`，禁止泄漏 SAP、OpenSSL
+  函数名或构建机 C 源码路径；
 - 工具成功/失败/参数回显和每个 overlay 的每一行提示文案必须以完整字符串或
   完整 virtual-screen snapshot 逐字断言；只搜索关键词、只检查样式 token 或仅
   断言事件类型不构成视觉合约证据。
@@ -250,10 +257,10 @@ A/B 已由用户确认，Part B 已关闭。
 | provider thinking | 每个 provider × 每个 thinking level × catalog 命中/未知 model→payload 与 start/delta/end |
 | tool | start/running/partial→success 或 error→collapsed/expanded |
 | tool model result | 每个注册内置工具的 success/error/continuation/truncation result→逐字文案、原始 path、UTF-16/行数/byte/limit 数值口径；与 TUI preview 分层断言 |
-| exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 与 11 个 base-screen 状态分别锁定整屏 SHA-256 |
+| exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 必须带非空 transcript，另有 11 个 base-screen 状态，分别锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
-| application keys | raw/Kitty input→configured action→busy/idle behavior |
-| busy interaction | long-running child→Escape→process-group termination→error tool result→idle；silent provider SSE→active socket shutdown→aborted assistant→idle；parallel tools→shared cancellation；busy Enter/Alt+Enter→steering/follow-up queue→exact pending rows→configured dequeue key→both queues restored to editor→mode-controlled drain；repeated Escape→single silent abort |
+| application keys | raw legacy/Kitty/xterm/Windows Terminal bytes→configured action→busy/idle behavior；未知完整 sequence→atomic ignore |
+| busy interaction | long-running child→Escape→process-group termination→error tool result→idle；TLS handshake/connected-before-headers/silent SSE→active socket shutdown + blocked Lisp operation interrupt→aborted assistant→idle；parallel tools→shared cancellation；busy Enter/Alt+Enter→steering/follow-up queue→exact pending rows→configured dequeue key→both queues restored to editor→mode-controlled drain；repeated Escape→single silent abort |
 
 The busy-interaction row is a lifecycle contract, not a static key or screen
 contract. Its permanent gates couple the production TUI input loop to a faux
@@ -266,15 +273,18 @@ agent and a real detached bash process: `GOAL10-BUSY-BASH-ABORT-KILLS-GROUP-REPO
 keybinding assertions, queue unit tests, and idle full-screen SHA snapshots do
 not satisfy this row.
 
-The third user A/B added two missing cross-layer gates. A real silent local SSE
-socket now proves that Escape interrupts the blocking read rather than waiting
-for another provider delta, and the legacy `ESC p` encoding of the default
-`alt+up` binding is driven through the production decoder before the dequeue
-action restores steering followed by follow-up text. Pending rows are asserted
-as exact copy, including their spacer, labels, configured key hint, and display
-order. The abort line remains the baseline `Text(..., outputPad=1)` rendering:
-one horizontal padding cell followed by `Operation aborted`, with no
-`Abort requested` or `session>` row.
+The third and fourth user A/B rounds added the missing cross-layer gates. Local
+servers now hold the request at TLS handshake, connected-before-headers, and
+silent SSE phases. Abort closes the socket and interrupts the blocked SBCL
+operation, so it does not wait for a peer byte and cl+ssl cleanup cannot replace
+the product condition with `SSL_shutdown` diagnostics. The production decoder
+is driven with xterm/Windows Terminal `ESC[1;3A`, xterm modifyOtherKeys
+`ESC[27;3;13~`, Kitty `ESC[13;3u`, and the legacy `ESC CR` fallback. Thus
+`alt+up` dequeues while Alt+Enter and Enter remain distinct follow-up/steering
+actions. Pending rows are exact-copy asserted. The abort component owns exactly
+one `Spacer(1)` above the baseline `Text(..., outputPad=1)` rendering: one blank
+row, then one horizontal padding cell followed by `Operation aborted`, with no
+`Abort requested`, `session>`, `SB-SYS`, `SSL_`, or `../ssl/` row.
 
 ### B2 基础屏幕整屏合约
 
@@ -290,10 +300,12 @@ one horizontal padding cell followed by `Operation aborted`, with no
 | below-editor widget | `interactive-mode.ts:2044-2072`：空态零行，非空态无 leading/trailing spacer；根顺序在 editor 与 footer 之间（`:743-746`）。 | `src/cadr-cli/tui.lisp:2187-2192,2311-2324` 同构；below-widget 整屏与复合顺序测试锁定。已核实一致。 |
 | editor 与 footer | `interactive-mode.ts:497-505` 的 editor padding 只作为 `paddingX`；`packages/tui/src/components/editor.ts:482-530` 只改变横向内容宽度。`settings-manager.ts:120,1201-1202` 明定 output padding 是 chat message 的 horizontal padding，并由 `user-message.ts:38-57`、`assistant-message.ts:100-114` 使用。editor、below widgets、footer 在根容器中直接相邻（`interactive-mode.ts:743-746`）。 | 未发现垂直间距偏差；editor→below widget→footer 无固定空行，复合顺序与整屏矩阵锁定。 |
 
-因此实际修复是恢复 host-owned above-editor spacer，不是把用户的 padding 配置从
-`1` 调成别的数。Cadr 的 overlay 是独立 content-replacement 路径；该路径保持原
-15 个已验收整屏合约不变，避免把基础屏幕修复扩散到 overlay。原 15 个 SHA 在修复
-后逐项复跑均未变化。
+因此基础屏幕修复是恢复 host-owned above-editor spacer，不是把用户的 padding 配置从
+`1` 调成别的数。第四轮又纠正 overlay 架构：基线 root 始终保留 chat container
+（`interactive-mode.ts:734-746`），`showSelector` 只把 editor container 的 editor
+替换为 selector（`:4161-4175`）。Cadr 现在同样保留并按剩余 viewport 裁剪
+transcript，只在 editor slot 渲染 overlay；旧的 15 个空 transcript 快照无法证明这条
+合约，现已全部以固定非空 transcript 和“editor sentinel 不可见”重新生成。
 
 新增 `test/cadr-cli/goal9-b3-base-screen-contract-test.lisp`，固定时间、spinner、尺寸、
 provider/model/cwd，并对 virtual terminal 全屏逐字节计算 SHA-256：
@@ -329,10 +341,12 @@ autocomplete 的自然触发按基线 `editor.ts:2085-2100,2140-2163,2219-2229,2
 空格、`/`、`@`、路径片段、删除到空以及打开弹层后输入空格。
 
 用户输出通道同时按“产品输出可见、基础设施诊断隔离”审计。扩展主动写入 stdout/stderr
-仍可见；ASDF/编译器/loader verbose、`setsid` 包装器、桌面 URL launcher 与 OAuth browser
-launcher 的诊断不得进入 transcript、tool result 或模型上下文。模型目录刷新只把真实
-网络/解析错误呈现为产品错误；前台 package-manager CLI 的安装进度仍按基线保留。完整
-边界清单与逐项回归测试见 `docs/acceptance/goal-v10-visual-output-followup.md`。
+仍可见；ASDF/编译器/loader verbose、`setsid` 包装器、桌面 URL launcher、OAuth browser
+launcher，以及 cl+ssl/OpenSSL/SBCL socket diagnostics 不得进入 transcript、tool result
+或模型上下文。provider transport 的普通失败逐字为 `fetch failed`；用户 abort 逐字为
+`Request was aborted`，由 TUI 显示 `Operation aborted`。模型目录刷新只把真实网络/解析
+错误呈现为产品错误；前台 package-manager CLI 的安装进度仍按基线保留。完整边界清单
+与逐项回归测试见 `docs/acceptance/goal-v10-visual-output-followup.md`。
 
 ### B2 overlay 完整逐行合约
 
@@ -361,6 +375,27 @@ launcher 的诊断不得进入 transcript、tool result 或模型上下文。模
 
 15 个 overlay（含独立 `/logout` surface）的完整 virtual-screen SHA-256 由
 `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` 锁定；
+每个 fixture 都含固定 user/assistant transcript，且断言 editor sentinel 被 selector
+替换。第四轮重建后的 SHA-256 为：
+
+| Overlay | SHA-256 |
+|---|---|
+| model | `F00B20118A954C3CCFA6780ACECC9AAD5887EDD168913EEDC121D9250354AD3F` |
+| model-scoped | `E45CF44928EA432C79CC93DBD359FA92ECCA37B2D6D97FA8A3463559AFEDE4D8` |
+| settings | `BF8F74675A66393CE5F4A50785B71F78F7F54B3617358DF4D4A9C70E2C1C3AFA` |
+| resume | `97547661CA2C621716565AD8322C0A886B922114D4798EAD4AEFC9AEF0FF6B4B` |
+| fork | `3741D9EBD09665BE6701FD957B2071E07A621804192CD2E0E1E4E765A577FF60` |
+| tree | `3E181C19A4FF90C824918E713E3B738E00C4F456BC6AEBB3AB7F2BF9235B597F` |
+| scoped-models | `C70BE56733530B2E2839E3EDF65B0FE93A09EEC09C2C3B67A6BF70DE22136038` |
+| trust | `ADCAA3E3FBE6FCC0075819C16FB67B5DC1EA6F5B7A4C8B3B5C6B6810E8A9F18C` |
+| login-method | `ED15EB102E30928C4F4D5B3470FE1FE9D5F6B15C1294188FAE8327393FF57F85` |
+| login-provider | `B3A4E71D71A37664D521F5F123D81B0E3B92E4DAB5E638FD14A311FF274F905E` |
+| logout-provider | `CC22C0F6983E1975602A5AF28FCC22715A4152374C39577154D33365014B8B5D` |
+| api-key | `E9A09DFE359B3AD1519A108F04A0405FA5F6F607B5A7F76F3EC90A9F56151179` |
+| import | `CBB6A2FFE4C7F41DB4E4F73739D8D78BC4DBB04844016E6429E85B9E78D883F1` |
+| extension-select | `D43F8F701FE98E73037B44854626149F5427B4D5A29CC48A5755425DD918ACE6` |
+| extension-custom | `13C40C8025174E52DB871376BA85033BE5EEDD9F349163D36911A4C7DE01E0C5` |
+
 `@path` 整屏与循环由
 `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` 锁定。
 settings 的 25/27 能力分支、完整文案、搜索、窄屏和 submenu 由
@@ -375,6 +410,15 @@ surface 由 `GOAL9-B3-EXTENSION-SELECTOR-STYLES-COUNTDOWN-KEYS-AND-TOOL-TOGGLE-A
 `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` 锁定；
 provider × API × thinking level × catalog hit/miss 矩阵由
 `EVERY-BUILT-IN-PROVIDER-AND-API-HAS-THINKING-LEVEL-HIT-MISS-CONTRACT` 锁定。
+
+此前门禁漏掉第四轮三类缺陷的原因是测试输入本身过弱：transport output audit
+没有 provider/TLS 行，silent-SSE 只使用 cleartext HTTP 并只断言 stop reason；
+Alt 键测试只喂了合成的 legacy `ESC p`，没有真实 CSI/Kitty/modifyOtherKeys 字节；
+15 个 overlay 整屏 fixture 的 transcript 为空，所以“清空 transcript”和“正确保留
+空 transcript”产生同一结果。新增测试分别锁定三个 TLS abort phase 与禁止片段、
+真实终端 byte→action→queue 全链路、以及所有 overlay 的非空 transcript/editor-slot
+替换。`assistant-message.ts:190-200` 还证明 abort fragment 自带唯一 `Spacer(1)`，故
+外层不再为纯 error fragment 额外添加第二行。
 
 ## B3. 双终端 A/B 门禁
 
