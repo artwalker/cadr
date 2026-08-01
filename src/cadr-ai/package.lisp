@@ -261,6 +261,46 @@
    #:grammar-json-buffer
    #:make-grammar-json-buffer
    #:append-grammar-json-delta
+   #:get-grammar-tool-input
+   #:resolve-json-schema-strict-sampling
+   #:resolve-grammar-constrained-sampling
+   #:create-grammar-tool-input-properties
+   #:split-deferred-tools
+   #:short-hash
+   #:repair-json
+   #:parse-json-with-repair
+   #:parse-streaming-json
+   #:event-stream
+   #:make-event-stream
+   #:event-stream-push
+   #:event-stream-end
+   #:event-stream-next
+   #:event-stream-result
+   #:register-session-resource-cleanup
+   #:cleanup-session-resources
+   #:clear-session-resource-cleanups
+   #:resolve-http-proxy-url-for-target
+   #:+unsupported-proxy-protocol-message+
+   #:register-images-api-provider
+   #:get-images-api-provider
+   #:clear-images-api-providers
+   #:images-provider
+   #:make-images-provider
+   #:images-provider-id
+   #:images-provider-name
+   #:images-provider-models
+   #:images-provider-generate-function
+   #:images-models
+   #:make-images-models
+   #:images-models-set-provider
+   #:images-models-delete-provider
+   #:images-models-clear-providers
+   #:images-models-providers
+   #:images-models-provider
+   #:images-models-models
+   #:images-models-model
+   #:images-models-refresh
+   #:images-models-generate
    #:validate-tool-call
    #:validate-tool-arguments
    #:uuid-v7
