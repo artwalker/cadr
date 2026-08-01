@@ -3246,3 +3246,160 @@
                  :syntax-number)
                 rendered)))
       (cadr-tui:reset-current-theme))))
+
+(test goal11-stable-entry-render-cache-matches-baseline-invalidation
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :true-color-p t)))
+    (cadr-tui:set-current-theme
+     :dark :capabilities caps)
+    (unwind-protect
+         (let* ((entry
+                  (cadr-cli::make-tui-entry
+                   :type :user
+                   :text
+                   "Cache **this** 中文 and emoji 🚀 exactly."))
+                (first
+                  (cadr-cli::render-tui-entry entry 48))
+                (second
+                  (cadr-cli::render-tui-entry entry 48))
+                (narrow
+                  (cadr-cli::render-tui-entry entry 24)))
+           (is (eq first second))
+           (is (not (eq second narrow)))
+           (is (equal
+                narrow
+                (cadr-cli::render-tui-entry entry 24)))
+           (cadr-tui:set-current-theme
+            :light :capabilities caps)
+           (let ((light
+                   (cadr-cli::render-tui-entry
+                    entry 24)))
+             (is (not (eq narrow light)))
+             (is (not (equal narrow light)))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal11-streaming-and-tool-mutations-invalidate-entry-render-cache
+  (let* ((streaming
+           (cadr-cli::make-tui-entry
+            :type :assistant
+            :streaming-p t
+            :content-blocks
+            (list (cons :assistant "partial"))))
+         (stream-first
+           (cadr-cli::render-tui-entry streaming 48))
+         (stream-second
+           (cadr-cli::render-tui-entry streaming 48))
+         (state (cadr-cli::make-tui-state))
+         (tool
+           (cadr-cli::make-tui-entry
+            :type :tool
+            :tool-block
+            (cadr-tui:make-tool-block
+             :name "bash"
+             :summary "printf ok"
+             :output "ok"
+             :status :complete
+             :started-at 1d0
+             :ended-at 1.01d0
+             :collapsed-p t))))
+    (is (not (eq stream-first stream-second)))
+    (setf (cadr-cli::tui-entry-streaming-p streaming)
+          nil)
+    (let ((finished
+            (cadr-cli::render-tui-entry
+             streaming 48)))
+      (is (eq
+           finished
+           (cadr-cli::render-tui-entry
+            streaming 48))))
+    (cadr-cli::replace-tui-entries state (list tool))
+    (let ((collapsed
+            (cadr-cli::render-tui-entry tool 48)))
+      (is (eq
+           collapsed
+           (cadr-cli::render-tui-entry tool 48)))
+      (cadr-cli::set-tui-tools-expanded state t)
+      (let ((expanded
+              (cadr-cli::render-tui-entry tool 48)))
+        (is (not (eq collapsed expanded)))
+        (is (search "ok"
+                    (format nil "~{~A~^~%~}"
+                            expanded)))
+        (is (eq
+             expanded
+             (cadr-cli::render-tui-entry
+              tool 48)))))))
+
+(test goal11-tui-entry-append-maintains-o1-tail-invariant
+  (let* ((state (cadr-cli::make-tui-state))
+         (entries
+           (loop for index below 5000
+                 collect
+                 (cadr-cli::make-tui-entry
+                  :type :notice
+                  :text (write-to-string index))))
+         (head entries)
+         (old-tail (last entries))
+         (appended
+           (cadr-cli::make-tui-entry
+            :type :notice :text "appended")))
+    (cadr-cli::replace-tui-entries state entries)
+    (is (eq old-tail
+            (cadr-cli::tui-state-entries-tail state)))
+    (cadr-cli::append-tui-entry state appended)
+    (is (eq head (cadr-cli::tui-state-entries state)))
+    (is (eq appended (cadr old-tail)))
+    (is (eq (cdr old-tail)
+            (cadr-cli::tui-state-entries-tail state)))
+    (is (eq head
+            (cadr-cli::tui-state-entries-tail-head state)))
+    ;; Direct SETF is tolerated for internal fixtures: the next append repairs
+    ;; the tail without corrupting the previously owned list.
+    (let* ((replacement
+             (cadr-cli::make-tui-entry
+              :type :notice :text "replacement"))
+           (next
+             (cadr-cli::make-tui-entry
+              :type :notice :text "next")))
+      (setf (cadr-cli::tui-state-entries state)
+            (list replacement))
+      (cadr-cli::append-tui-entry state next)
+      (is (equal (list replacement next)
+                 (cadr-cli::tui-state-entries state)))
+      (is (= 5001 (length head))))))
+
+(test goal11-cached-mixed-transcript-is-byte-identical
+  (let* ((tool
+           (cadr-tui:make-tool-block
+            :name "read"
+            :summary "docs/example.md:1-4"
+            :output (format nil "alpha~%beta~%gamma~%delta")
+            :status :complete
+            :started-at 1d0
+            :ended-at 1.02d0
+            :collapsed-p t))
+         (entries
+           (list
+            (cadr-cli::make-tui-entry
+             :type :user
+             :text "Explain **cache behavior** 中文 🚀.")
+            (cadr-cli::make-tui-entry
+             :type :assistant
+             :content-blocks
+             (list
+              (cons :assistant-thinking "checking")
+              (cons :assistant "Stable `answer`.")))
+            (cadr-cli::make-tui-entry
+             :type :tool :tool-block tool)
+            (cadr-cli::make-tui-entry
+             :type :notice :text "done")))
+         (first
+           (cadr-cli::render-tui-entries
+            entries 52 :now 2d0))
+         (second
+           (cadr-cli::render-tui-entries
+            entries 52 :now 3d0)))
+    (is (equal first second))
+    (is (every #'string=
+               first second))))

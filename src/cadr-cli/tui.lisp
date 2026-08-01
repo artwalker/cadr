@@ -16,7 +16,12 @@
   custom-call-render
   (custom-call-rendered-p nil :type boolean)
   custom-result-render
-  (custom-result-rendered-p nil :type boolean))
+  (custom-result-rendered-p nil :type boolean)
+  (render-cache-valid-p nil :type boolean)
+  render-cache-width
+  render-cache-theme
+  render-cache-extension-snapshot
+  (render-cache-lines nil :type list))
 
 (defstruct (tui-state
             (:constructor %make-tui-state))
@@ -30,6 +35,8 @@
   (startup-expanded-lines nil :type list)
   session
   (entries nil :type list)
+  entries-tail
+  entries-tail-head
   current-assistant
   (input-tokens 0 :type (integer 0 *))
   (output-tokens 0 :type (integer 0 *))
@@ -460,11 +467,50 @@
               append
               (cadr-tui:wrap-text line width))))
 
+(defun replace-tui-entries (state entries)
+  (let ((tail (last entries)))
+    (setf
+     (tui-state-entries state) entries
+     (tui-state-entries-tail state) tail
+     (tui-state-entries-tail-head state) entries))
+  state)
+
 (defun append-tui-entry (state entry)
+  (let* ((entries (tui-state-entries state))
+         (tail (tui-state-entries-tail state))
+         (cell (list entry)))
+    (cond
+      ((null entries)
+       (setf
+        (tui-state-entries state) cell
+        (tui-state-entries-tail state) cell
+        (tui-state-entries-tail-head state) cell))
+      ((and tail
+            (eq entries
+                (tui-state-entries-tail-head state))
+            (null (cdr tail)))
+       (setf
+        (cdr tail) cell
+        (tui-state-entries-tail state) cell))
+      (t
+       ;; Internal fixtures historically SETF ENTRIES directly. Repair that
+       ;; boundary once; production replacements use REPLACE-TUI-ENTRIES.
+       (let ((recovered-tail (last entries)))
+         (setf
+          (cdr recovered-tail) cell
+          (tui-state-entries-tail state) cell
+          (tui-state-entries-tail-head state)
+          entries)))))
+  entry)
+
+(defun invalidate-tui-entry-render-cache (entry)
   (setf
-   (tui-state-entries state)
-   (nconc (tui-state-entries state)
-          (list entry)))
+   (tui-entry-render-cache-valid-p entry) nil
+   (tui-entry-render-cache-width entry) nil
+   (tui-entry-render-cache-theme entry) nil
+   (tui-entry-render-cache-extension-snapshot entry)
+   nil
+   (tui-entry-render-cache-lines entry) nil)
   entry)
 
 (defun add-tui-notice (state text)
@@ -1070,8 +1116,8 @@
             (tui-state-latest-cache-hit-rate state)
             (tui-state-cost state)
             (tui-state-cost-known-p state)))))
+    (replace-tui-entries state nil)
     (setf
-     (tui-state-entries state) nil
      (tui-state-current-assistant state) nil
      (tui-state-input-tokens state) 0
      (tui-state-output-tokens state) 0
@@ -1473,6 +1519,7 @@
                       state
                       (cadr-ai:tool-call-id call)))))
          (when entry
+           (invalidate-tui-entry-render-cache entry)
            (setf
             (cadr-tui:tool-block-output
              (tui-entry-tool-block entry))
@@ -1756,7 +1803,7 @@
          background-token line
          :enabled-p t)))
 
-(defun render-tui-entry
+(defun render-tui-entry-uncached
     (entry width &key extension-host now)
   (case (tui-entry-type entry)
     (:user
@@ -1869,6 +1916,63 @@
       (tui-entry-text entry)
       width))
     (otherwise nil)))
+
+(defun tui-entry-render-cacheable-p (entry)
+  (and
+   (not (tui-entry-streaming-p entry))
+   (or
+    (not (eq (tui-entry-type entry) :tool))
+    (let ((block (tui-entry-tool-block entry)))
+      (and
+       block
+       (not
+        (eq (cadr-tui:tool-block-status block)
+            :running))
+       (not (tui-entry-custom-call-rendered-p entry))
+       (not
+        (tui-entry-custom-result-rendered-p entry)))))))
+
+(defun render-tui-entry
+    (entry width &key extension-host now)
+  (let* ((cacheable-p
+           (tui-entry-render-cacheable-p entry))
+         (theme
+           (and cacheable-p
+                (cadr-tui:current-theme)))
+         (snapshot
+           (and
+            cacheable-p
+            extension-host
+            (cadr-agent::extension-host-current-snapshot
+             extension-host))))
+    (if
+        (and
+         cacheable-p
+         (tui-entry-render-cache-valid-p entry)
+         (= width
+            (tui-entry-render-cache-width entry))
+         (eq theme
+             (tui-entry-render-cache-theme entry))
+         (eq
+          snapshot
+          (tui-entry-render-cache-extension-snapshot
+           entry)))
+        (tui-entry-render-cache-lines entry)
+        (let ((lines
+                (render-tui-entry-uncached
+                 entry width
+                 :extension-host extension-host
+                 :now now)))
+          (when cacheable-p
+            (setf
+             (tui-entry-render-cache-valid-p entry) t
+             (tui-entry-render-cache-width entry) width
+             (tui-entry-render-cache-theme entry) theme
+             (tui-entry-render-cache-extension-snapshot
+              entry)
+             snapshot
+             (tui-entry-render-cache-lines entry) lines))
+          lines))))
 
 (defun render-tui-entries
     (entries width &key extension-host now)
@@ -2221,6 +2325,7 @@
    (not (null expanded-p)))
   (dolist (entry (tui-state-entries state))
     (when (eq (tui-entry-type entry) :tool)
+      (invalidate-tui-entry-render-cache entry)
       (setf
        (cadr-tui:tool-block-collapsed-p
         (tui-entry-tool-block entry))
@@ -3872,8 +3977,8 @@
            (when selected-path
              (setf
               active-session-path selected-path))
+           (replace-tui-entries state nil)
            (setf
-            (tui-state-entries state) nil
             (tui-state-current-assistant state)
             nil
             (tui-state-input-tokens state)

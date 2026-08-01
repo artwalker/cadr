@@ -263,9 +263,8 @@
              :provider :faux
              :model "faux-bench"
              :stop-reason :stop))))
-    (setf
-     (cadr-cli::tui-state-entries state)
-     (make-entry-list count))
+    (cadr-cli::replace-tui-entries
+     state (make-entry-list count))
     (when message
       (cadr-cli::tui-handle-agent-event
        state
@@ -310,16 +309,18 @@
 (defun append-repetitions (count)
   (cond
     ((zerop count) 500000)
-    ((<= count 50) 200000)
-    ((<= count 200) 100000)
-    ((<= count 1000) 30000)
-    (t 10000)))
+    ((<= count 50) 400000)
+    ((<= count 200) 300000)
+    (t 200000)))
 
 (defun frame-statistics (count)
   (collect-statistics
    (lambda ()
      (let ((fixture
              (make-frame-fixture-for-count count)))
+       ;; Measure a steady frame. The first render populates the same
+       ;; component caches that production populates on initial display.
+       (render-fixture fixture)
        (lambda ()
          (render-fixture fixture))))
    (frame-repetitions count)))
@@ -377,21 +378,25 @@
               (cadr-cli::make-tui-entry
                :type :notice
                :text "append benchmark")))
-       (setf
-        (cadr-cli::tui-state-entries state)
-        entries)
+       (cadr-cli::replace-tui-entries state entries)
        (lambda ()
          (prog1
              (cadr-cli::append-tui-entry
               state entry)
            (if tail
                (progn
-                 (setf (cdr tail) nil)
                  (setf
+                  (cdr tail) nil
                   (cadr-cli::tui-state-entries state)
+                  entries
+                  (cadr-cli::tui-state-entries-tail state)
+                  tail
+                  (cadr-cli::tui-state-entries-tail-head state)
                   entries))
                (setf
-                (cadr-cli::tui-state-entries state)
+                (cadr-cli::tui-state-entries state) nil
+                (cadr-cli::tui-state-entries-tail state) nil
+                (cadr-cli::tui-state-entries-tail-head state)
                 nil))))))
    (append-repetitions count)))
 
@@ -491,10 +496,9 @@
         (base-heap nil)
         (base-rss nil))
     (dolist (count *entry-counts*)
-      (setf
-       (cadr-cli::tui-state-entries state)
-       (make-entry-list count)
-       *sink* state)
+      (cadr-cli::replace-tui-entries
+       state (make-entry-list count))
+      (setf *sink* state)
       (sb-ext:gc :full t)
       (let ((heap (sb-kernel:dynamic-usage))
             (rss (resident-bytes)))
