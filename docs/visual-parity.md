@@ -26,6 +26,9 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 - 工具成功/失败/参数回显和每个 overlay 的每一行提示文案必须以完整字符串或
   完整 virtual-screen snapshot 逐字断言；只搜索关键词、只检查样式 token 或仅
   断言事件类型不构成视觉合约证据。
+- 无 overlay 的基础屏幕与 overlay 同级：冷启动、单轮、多轮、thinking、tool
+  折叠/展开、active status、widget、滚动 viewport 和窄屏都必须锁定完整 virtual
+  terminal 字节；组件级顺序、行数或关键词断言不能代替整屏门禁。
 
 确定性门禁优先使用 faux provider + virtual terminal；只有真实进程、终端模式或
 信号生命周期无法在进程内等价覆盖时才使用 PTY。每个现场缺陷先保留能复现原故障
@@ -178,7 +181,7 @@ background reset    = ESC[49m
 
 | ID | 基线合约与 Cadr 证据 | 状态 |
 |---|---|---|
-| LY-01 | root 顺序为 startup/chat/pending/status/widgets/editor/footer；`src/cadr-cli/tui.lisp:1997` `render-tui-state`，`GOAL9-ROOT-LAYOUT-PUTS-EDITOR-BEFORE-TWO-LINE-FOOTER`。 | 不一致（已改齐） |
+| LY-01 | root 顺序为 startup/chat/pending/status/widgets/editor/footer；above-editor widget container 在空态保留一行、非空态保留一行 leading spacer，below-editor container 不自带 spacer；`src/cadr-cli/tui.lisp:461-474,2109-2329`，`GOAL9-B3-BASE-SCREEN-ABOVE-EDITOR-SPACER-MATCHES-BASELINE-COMPOSITION`。 | 不一致（已改齐） |
 | LY-02 | user 全宽背景 X=1/Y=1；assistant 无背景且可见内容前一空行；thinking muted+italic；`src/cadr-cli/tui.lisp:1689,1758,1872`。 | 不一致（已改齐） |
 | LY-03 | tool 前 spacer、X=1/Y=1、状态背景；`src/cadr-tui/components.lisp:1567` `render-tool-block`。 | 不一致（已改齐） |
 | LY-04 | editor 只有上下 `─`，高度 `max(5,floor(rows*0.3))`，滚动信息在边框；`src/cadr-tui/editor.lisp:1551` `render-editor`。 | 不一致（已改齐） |
@@ -247,9 +250,67 @@ A/B 已由用户确认，Part B 已关闭。
 | provider thinking | 每个 provider × 每个 thinking level × catalog 命中/未知 model→payload 与 start/delta/end |
 | tool | start/running/partial→success 或 error→collapsed/expanded |
 | tool model result | 每个注册内置工具的 success/error/continuation/truncation result→逐字文案、原始 path、UTF-16/行数/byte/limit 数值口径；与 TUI preview 分层断言 |
-| exact copy | tool success/error/args 与全部 overlay 每一行→完整 snapshot 逐字相等；15 个 overlay 另锁定整屏 SHA-256 |
+| exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 与 11 个 base-screen 状态分别锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw/Kitty input→configured action→busy/idle behavior |
+
+### B2 基础屏幕整屏合约
+
+用户 A/B 发现的最后一行 transcript 与 editor 上边框过近，并非 `Output padding`
+或 `Editor padding` 的数值问题。基线构成如下：
+
+| 区域 | 基线 `74caa2649` 证据 | Cadr 结论 |
+|---|---|---|
+| transcript 顶部 | `interactive-mode.ts:758-817`：header 自带前后各一个 `Spacer(1)`；无 header/chat 时没有额外固定顶部 margin，剩余 viewport 空间由根布局吸收。 | `render-tui-state` 的 startup 前后各一空行；冷启动、单轮、多轮整屏快照锁定。已核实一致。 |
+| transcript 条目间 | `interactive-mode.ts:3318-3369`：已有 chat 后的新 user 前加一个 spacer，assistant 直接追加；`assistant-message.ts:100-114` 仅在可见 assistant 内容前加一个 spacer。 | `src/cadr-cli/tui.lisp:1983-1999` 同构；单轮、多轮、thinking 快照锁定。已核实一致。 |
+| status 前后 | `packages/tui/src/components/loader.ts:43-45`：active loader 自带一个前置空行；`status-indicator.ts:105-113`：idle status 占两个全宽空行；status container 不另加尾部 margin。 | `src/cadr-cli/tui.lisp:925-967` 同构；active/idle 与复合顺序测试锁定。已核实一致。 |
+| above-editor widget | `interactive-mode.ts:2044-2072`：空容器也放一个 `Spacer(1)`；非空容器先放一个 leading `Spacer(1)`，widget 后不加 spacer。该容器位于 status 与 editor 之间（`:734-746`）。 | 原实现空态返回零行，正是截图差异根因；`src/cadr-cli/tui.lisp:461-474,2181-2186` 已按同一规则修正 base-screen 路径。 |
+| below-editor widget | `interactive-mode.ts:2044-2072`：空态零行，非空态无 leading/trailing spacer；根顺序在 editor 与 footer 之间（`:743-746`）。 | `src/cadr-cli/tui.lisp:2187-2192,2311-2324` 同构；below-widget 整屏与复合顺序测试锁定。已核实一致。 |
+| editor 与 footer | `interactive-mode.ts:497-505` 的 editor padding 只作为 `paddingX`；`packages/tui/src/components/editor.ts:482-530` 只改变横向内容宽度。`settings-manager.ts:120,1201-1202` 明定 output padding 是 chat message 的 horizontal padding，并由 `user-message.ts:38-57`、`assistant-message.ts:100-114` 使用。editor、below widgets、footer 在根容器中直接相邻（`interactive-mode.ts:743-746`）。 | 未发现垂直间距偏差；editor→below widget→footer 无固定空行，复合顺序与整屏矩阵锁定。 |
+
+因此实际修复是恢复 host-owned above-editor spacer，不是把用户的 padding 配置从
+`1` 调成别的数。Cadr 的 overlay 是独立 content-replacement 路径；该路径保持原
+15 个已验收整屏合约不变，避免把基础屏幕修复扩散到 overlay。原 15 个 SHA 在修复
+后逐项复跑均未变化。
+
+新增 `test/cadr-cli/goal9-b3-base-screen-contract-test.lisp`，固定时间、spinner、尺寸、
+provider/model/cwd，并对 virtual terminal 全屏逐字节计算 SHA-256：
+
+| 状态 | 尺寸 | SHA-256 |
+|---|---:|---|
+| cold-start | 80×24 | `5102494F404ADB0CC36AEB3940AAE85830DD0CC5FE66127ECCDE0FE09202D23E` |
+| single-turn | 80×24 | `77F4369AD0FD44A501A96F821867B62BAD01D5245E50BE4044E43B6343F465B5` |
+| multi-turn | 80×28 | `92B70B0A5AEC03E479070C28FF7EAC3115525E1F1D02E3B7D47F1674747E7CF2` |
+| thinking | 80×24 | `EF82D0A6E08641DB6F5FE3CDD386C7779C0046CB3E4C5BFFE52322EF5C1B97A6` |
+| tool-collapsed | 80×24 | `6AAFA85128D905438B48EB093DF6D7ECC11413303900D4DC4BFDF457CC98B0D4` |
+| tool-expanded | 80×24 | `B97F11DB0C3021FED3023805CA2905EA94C859B9C6CC856B7918E7EC36DD3D6C` |
+| active-status | 80×24 | `22FB2A4E820335552735EA74D439FE697102732E4AD6EF2684D1115868828DD3` |
+| above-widget | 80×24 | `723E9B4B442AC85D881479D6642FF7D90019AABE92593D604F5447A96885690A` |
+| below-widget | 80×24 | `27DFC8E6EE6549CB326C15258E4E870CE16A6855A4D7100F04AF04CB34189BCB` |
+| overflow-scrolled-to-top | 52×14 | `BA8D976E24E62AFFBA1EAF91EBA40934EF1C0602B13995ACC3D3B56F2C46034A` |
+| narrow-width | 32×14 | `A417E912682A61AEB48FD0653D9E2CF1BBECF46D34ED09F44F64896619948596` |
+
+此前 7192 条检查没有捕获该缺陷，因为基础屏幕只有组件级 fragment、root 顺序、
+status 行数和局部 virtual-terminal 断言；完整整屏 SHA 只覆盖 15 个 overlay 与
+autocomplete。那些断言能证明“部件存在且顺序大致正确”，却不能证明空 widget
+container 必须贡献一行。新增门禁把无 overlay 的运行时状态提升到与 overlay 同等
+强度，并以 `GOAL9-B3-BASE-SCREEN-STATUS-WIDGET-EDITOR-FOOTER-ORDER-IS-EXACT`
+单独锁定 status→widget→editor→footer 的完整间距序列。
+
+### B2 autocomplete 触发与用户输出通道
+
+autocomplete 的自然触发按基线 `editor.ts:2085-2100,2140-2163,2219-2229,2347-2350`
+统一为同一套上下文门禁：空输入、空格、连续空格与普通路径片段不触发；`/` 只在消息
+起始位置触发，`@` 与注册字符只在 token 边界触发；显式 Tab 可强制路径补全。弹层
+已打开时，text/backspace/delete 保留原 natural/force 模式重新查询；输入空格后若自然
+候选不再匹配则关闭，强制路径弹层仍保持 force 模式。对应门禁覆盖空前缀、空格、连续
+空格、`/`、`@`、路径片段、删除到空以及打开弹层后输入空格。
+
+用户输出通道同时按“产品输出可见、基础设施诊断隔离”审计。扩展主动写入 stdout/stderr
+仍可见；ASDF/编译器/loader verbose、`setsid` 包装器、桌面 URL launcher 与 OAuth browser
+launcher 的诊断不得进入 transcript、tool result 或模型上下文。模型目录刷新只把真实
+网络/解析错误呈现为产品错误；前台 package-manager CLI 的安装进度仍按基线保留。完整
+边界清单与逐项回归测试见 `docs/acceptance/goal-v10-visual-output-followup.md`。
 
 ### B2 overlay 完整逐行合约
 
@@ -274,7 +335,7 @@ A/B 已由用户确认，Part B 已关闭。
 | `/sessions`、`/switch`、`/branch`、`/install` | 基线无对应 slash/TUI surface | Cadr 已从内置 slash dispatch、overlay 与 autocomplete 全部删除；直接输入只按普通未知输入路径处理，不构成命令 alias 或隐藏 backend | 无 | 无 | 无 | 无 | 无 | 不适用 |
 | `/compact` | 基线无 overlay | 当前直接执行 compaction，并在 status/transcript 呈现进度或结果 | 无 | 无 | 无 | 无 | compaction status | 不适用 |
 | `/export` | 基线无 overlay | 当前直接按默认 HTML 或显式 path 导出并 notice 结果 | 无 | 无 | 无 | 无 | 输出 path | 不适用 |
-| `/reload` | 基线无 overlay | 当前直接 reload keybindings/extensions/skills/prompts/themes/context 并 notice 结果 | 无 | 无 | 无 | 无 | reload summary | 不适用 |
+| `/reload` | 基线无 overlay | 当前直接 reload keybindings/extensions/skills/prompts/themes/context；成功后以无 `session>` 前缀的 dim status 显示基线原文 | 无 | 无 | 无 | 无 | reload summary | 不适用 |
 
 15 个 overlay（含独立 `/logout` surface）的完整 virtual-screen SHA-256 由
 `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` 锁定；

@@ -100,19 +100,21 @@ bc2c6e079e69e313a6806ca72d520a8f2116f2ce  src/cadr-agent/package.lisp
 44cd0609bc31cbdc609190202f9c190422365674  src/cadr-agent/tool.lisp
 798347aea9c74aded413ba7e452d3dca62b53cb4  src/cadr-agent/loop.lisp
 2ecd00a85c043193e35d5603015376564d460f2c  src/cadr-agent/extensions.lisp
-18ce01bc091165d1ee605b0e3617a27eb1447038  cadr-cli.asd
+827c3edd901b5193d4dad3d06dc0827f585839a8  cadr-cli.asd
 3501bff3c5b1bfd6729deb75d783d1ba46f921ab  src/cadr-cli/arguments.lisp
 431dc8c8a2cd19e46b7fa6acd1901fb0e5324040  src/cadr-cli/remote-repl.lisp
-62774c4a377ed0fb102719f2008cf4704be80178  src/cadr-cli/main.lisp
+308f6f168273fcf55c75eae5eac74039a8b0a567  src/cadr-cli/main.lisp
 a21511b7c086baf84ce191bd528ed7bc5575abaf  src/cadr-cli/package.lisp
 8056d085b06e86a280d97a4d34a36ac4430d595c  scripts/test-cl.sh
 c60433c7befb591b19ccc86bfd60dedb4dff7285  build.sh
 65c7a511cf1a61c952a36b80873a531109a56384  build.lisp
 ```
 
-`src/cadr-cli/main.lisp` was re-frozen after the separately approved Part E
-release-identity change. The Slynk branch, listener policy, cleanup path, and
-active-agent surface are unchanged; only the `--version` branch changed.
+`src/cadr-cli/main.lisp` and `cadr-cli.asd` were re-frozen after the separately
+approved Part E release-identity change and the user-directed visual/output
+follow-up. The latter adds only the internal TUI status consumer and base-screen
+regression system entry. The Slynk branch, listener policy, cleanup path, and
+active-agent surface are unchanged.
 
 Any later extension event, restart semantic, Slynk surface, dependency, or
 listener-policy change requires a new written proposal and explicit user
