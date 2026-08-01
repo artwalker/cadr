@@ -229,6 +229,91 @@
         (agent-prompt agent "run")
         (is (not (null second-saw-first)))))))
 
+(test goal10-busy-parallel-tool-abort-reaches-all-running-executors
+  (let ((started
+          (sb-thread:make-semaphore :count 0))
+        (finished
+          (sb-thread:make-semaphore :count 0))
+        (executors-finished 0)
+        (stream-calls 0)
+        (agent nil)
+        (worker nil))
+    (labels
+        ((blocking-tool (name)
+           (make-tool
+            :name name
+            :description name
+            :parameters (object-schema)
+            :execution-mode :parallel
+            :executor
+            (lambda (call-id arguments)
+              (declare (ignore call-id arguments))
+              (sb-thread:signal-semaphore started)
+              (loop until
+                    (cadr-agent::current-tool-aborted-p)
+                    do (sleep 0.001))
+              (incf executors-finished)
+              (error "Operation aborted")))))
+      (let* ((first (blocking-tool "first"))
+             (second (blocking-tool "second"))
+             (stream
+               (lambda
+                   (provider model context on-event
+                    &key max-tokens temperature abort-p)
+                 (declare
+                  (ignore provider model context
+                          max-tokens temperature))
+                 (incf stream-calls)
+                 (let ((message
+                         (if (= stream-calls 1)
+                             (assistant
+                              (list
+                               (make-tool-call
+                                :id "parallel-1" :name "first"
+                                :arguments (cadr-ai::json-object))
+                               (make-tool-call
+                                :id "parallel-2" :name "second"
+                                :arguments (cadr-ai::json-object)))
+                              :tool-use)
+                             (assistant
+                              nil
+                              (if (and abort-p (funcall abort-p))
+                                  :aborted
+                                  :stop)))))
+                   (funcall
+                    on-event
+                    (make-stream-event
+                     :type :start :message message))
+                   message))))
+        (setf
+         agent
+         (make-agent
+          :provider :mock
+          :model (mock-model)
+          :tools (list first second)
+          :stream-function stream)
+         worker
+         (sb-thread:make-thread
+          (lambda ()
+            (unwind-protect
+                 (agent-prompt agent "run both")
+              (sb-thread:signal-semaphore finished)))
+          :name "cadr-parallel-abort-test"))
+        (is (sb-thread:wait-on-semaphore started :timeout 2))
+        (is (sb-thread:wait-on-semaphore started :timeout 2))
+        (cadr-agent:agent-abort agent)
+        (is (sb-thread:wait-on-semaphore finished :timeout 5))
+        (sb-thread:join-thread worker)
+        (is (= 2 executors-finished))
+        (let ((results
+                (remove-if-not
+                 (lambda (message)
+                   (typep message 'tool-result-message))
+                 (agent-messages agent))))
+          (is (= 2 (length results)))
+          (is (every #'tool-result-message-is-error results)))
+        (is-false (cadr-agent:agent-busy-p agent))))))
+
 (test goal10-tool-execution-condition-keeps-stack-live-and-retries-with-new-arguments
   (let ((cleanup-ran-p nil)
         (attempts nil)

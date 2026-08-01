@@ -144,3 +144,117 @@
         (is (not
              (probe-file
               (pathname (format nil "/proc/~D/" pid)))))))))
+
+(test goal10-busy-bash-abort-kills-group-reports-error-and-settles-agent
+  (with-test-directory (directory)
+    (let* ((ready (merge-pathnames "abort-ready.fifo" directory))
+           (pid-path (merge-pathnames "abort.pid" directory))
+           (done (sb-thread:make-semaphore :count 0))
+           (events nil)
+           (stream-calls 0)
+           (worker-error nil)
+           (agent nil)
+           (worker nil))
+      (sb-posix:mkfifo (namestring ready) #o600)
+      (labels
+          ((assistant-message (content stop-reason)
+             (cadr-ai:make-assistant-message
+              :content content
+              :api :openai-responses
+              :provider :openai
+              :model "faux"
+              :stop-reason stop-reason))
+           (stream
+               (provider model context on-event
+                &key max-tokens temperature abort-p)
+             (declare
+              (ignore provider model context max-tokens temperature))
+             (incf stream-calls)
+             (let ((message
+                     (if (= stream-calls 1)
+                         (assistant-message
+                          (list
+                           (cadr-ai:make-tool-call
+                            :id "abort-bash-1"
+                            :name "bash"
+                            :arguments
+                            (args
+                             "command"
+                             "printf '%s' $$ > abort.pid; printf 'ready\\n' > abort-ready.fifo; exec /usr/bin/tail -f /dev/null")))
+                          :tool-use)
+                         (assistant-message
+                          nil
+                          (if (and abort-p (funcall abort-p))
+                              :aborted
+                              :stop)))))
+               (funcall
+                on-event
+                (cadr-ai:make-stream-event
+                 :type :start :message message))
+               message)))
+        (setf
+         agent
+         (cadr-agent:make-agent
+          :provider :openai
+          :model
+          (cadr-ai:make-model
+           :id "faux" :provider :openai
+           :api :openai-responses
+           :base-url "https://example.invalid"
+           :max-tokens 1024)
+          :tools (list (make-bash-tool directory))
+          :stream-function #'stream
+          :on-event (lambda (event) (push event events)))
+         worker
+         (sb-thread:make-thread
+          (lambda ()
+            (unwind-protect
+                 (handler-case
+                     (cadr-agent:agent-prompt agent "run")
+                   (error (condition)
+                     (setf worker-error condition)))
+              (sb-thread:signal-semaphore done)))
+          :name "cadr-bash-abort-test"))
+        (with-open-file (stream ready :direction :input)
+          (is (string= "ready" (read-line stream))))
+        (cadr-agent:agent-abort agent)
+        (is (sb-thread:wait-on-semaphore done :timeout 5))
+        (sb-thread:join-thread worker)
+        (is (null worker-error))
+        (is-false (cadr-agent:agent-busy-p agent))
+        (let* ((results
+                 (remove-if-not
+                  (lambda (message)
+                    (typep message
+                           'cadr-ai:tool-result-message))
+                  (cadr-agent:agent-messages agent)))
+               (result (first results)))
+          (is (= 1 (length results)))
+          (is-true
+           (cadr-ai:tool-result-message-is-error result))
+          (is (string=
+               "Command aborted"
+               (cadr-ai:text-content-text
+                (first
+                 (cadr-ai:tool-result-message-content
+                  result))))))
+        (let* ((pid
+                 (parse-integer
+                  (string-trim
+                   '(#\Space #\Tab #\Newline #\Return)
+                   (read-text pid-path))))
+               (stat-path
+                 (pathname (format nil "/proc/~D/stat" pid)))
+               (stat
+                 (and (probe-file stat-path)
+                      (ignore-errors (read-text stat-path))))
+               (close
+                 (and stat (position #\) stat :from-end t)))
+               (state
+                 (and close
+                      (< (+ close 2) (length stat))
+                      (char stat (+ close 2)))))
+          (is (member state '(nil #\Z #\X #\x))))
+        (is (= 1
+               (count :agent-settled events
+                      :key #'cadr-agent:agent-event-type)))))))

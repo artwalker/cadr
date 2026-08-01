@@ -3081,7 +3081,9 @@
                  extension-manager)
                 cwd command
                 :exclude-from-context-p
-                exclude-p)
+                exclude-p
+                :abort-p
+                (lambda () abort-requested-p))
              (declare (ignore details))
              (if content
                  (cadr-ai:text-content-text
@@ -3778,6 +3780,27 @@
                (unless handled-p
                  (cadr-agent:agent-steer
                   agent message))))
+           :follow-up-input-function
+           (lambda (text)
+             (multiple-value-bind
+                   (message handled-p)
+                 (cadr-agent::apply-agent-input-hooks
+                  agent text :interactive
+                  :streaming-behavior :follow-up)
+               (unless handled-p
+                 (cadr-agent:agent-follow-up
+                  agent message))))
+           :dequeue-function
+           (lambda ()
+             (multiple-value-bind (steering follow-up)
+                 (cadr-agent::clear-live-agent-queues
+                  agent)
+               (mapcar
+                (lambda (message)
+                  (cadr-ai::content-text
+                   (cadr-ai:user-message-content
+                    message)))
+                (append steering follow-up))))
            :model-items-function #'model-items
            :model-selector-function
            #'model-selector
@@ -3832,7 +3855,8 @@
                settings-manager)))
            :abort-function
            (lambda ()
-             (setf abort-requested-p t))
+             (setf abort-requested-p t)
+             (cadr-agent:agent-abort agent))
            :reset-abort-function
            (lambda ()
              (setf abort-requested-p nil))

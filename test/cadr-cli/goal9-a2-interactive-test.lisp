@@ -69,13 +69,18 @@
 
 (defmethod cadr-tui:terminal-read-input
     ((terminal goal9-p2-key-terminal))
-  (or
-   (pop (goal9-p2-key-terminal-inputs terminal))
-   (when
-       (funcall
-        (goal9-p2-key-terminal-worker-done-p terminal))
-     (format nil "~C[100;5u" #\Escape))
-   ""))
+  (let ((input
+          (pop
+           (goal9-p2-key-terminal-inputs terminal))))
+    (or
+     (if (functionp input)
+         (funcall input)
+         input)
+     (when
+         (funcall
+          (goal9-p2-key-terminal-worker-done-p terminal))
+       (format nil "~C[100;5u" #\Escape))
+     "")))
 
 (test goal9-p2-baseline-key-hints-and-decoder-actions-agree
   (multiple-value-bind (compact expanded)
@@ -169,6 +174,298 @@
           "draft"
           (goal9-a2-screen-text
            (cadr-tui:virtual-terminal-snapshot terminal)))))))
+
+(test goal10-busy-tui-routes-steering-follow-up-and-shows-pending-copy
+  (let* ((state (cadr-cli::make-tui-state :model "faux"))
+         (editor (cadr-tui:make-multiline-editor))
+         (steering-message
+           (cadr-ai:make-user-message :content "change direction"))
+         (follow-up-message
+           (cadr-ai:make-user-message :content "after this"))
+         (event
+           (cadr-agent::make-agent-event
+            :type :queue-update
+            :steering (list steering-message)
+            :follow-up (list follow-up-message))))
+    (cadr-cli::tui-handle-agent-event state event)
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 80 16 :busy-p t)
+      (declare (ignore row column))
+      (let ((screen (format nil "~{~A~^~%~}" lines)))
+        (is (search "Steering: change direction" screen))
+        (is (search "Follow-up: after this" screen))
+        (is (search "alt+up to edit all queued messages" screen))))))
+
+(test goal10-busy-tui-enter-and-alt-enter-use-distinct-queues
+  (let ((started (sb-thread:make-semaphore :count 0))
+        (release (sb-thread:make-semaphore :count 0))
+        (worker-done-p nil)
+        (steering nil)
+        (follow-up nil))
+    (let ((terminal
+            (make-instance
+             'goal9-p2-key-terminal
+             :columns 80 :rows 16
+             :inputs
+             (list
+              (format nil "start~C" #\Return)
+              (format nil "steer~C" #\Return)
+              "follow"
+              (format nil "~C[13;3u" #\Escape))
+             :worker-done-p
+             (lambda () worker-done-p))))
+      (cadr-cli::run-tui
+       (lambda (line)
+         (declare (ignore line))
+         (sb-thread:signal-semaphore started)
+         (sb-thread:wait-on-semaphore release)
+         (setf worker-done-p t))
+       :busy-input-function
+       (lambda (line)
+         (push line steering))
+       :follow-up-input-function
+       (lambda (line)
+         (push line follow-up)
+         (sb-thread:signal-semaphore release))
+       :model "faux"
+       :terminal terminal)
+      (is (sb-thread:wait-on-semaphore started :timeout 1))
+      (is (equal '("steer") (nreverse steering)))
+      (is (equal '("follow") (nreverse follow-up))))))
+
+(test goal10-busy-tui-steering-is-delivered-after-the-active-turn
+  (let ((release (sb-thread:make-semaphore :count 0))
+        (worker-done-p nil)
+        (stream-calls 0)
+        (event-consumer nil)
+        (agent nil))
+    (labels
+        ((assistant-message (text)
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-text-content :text text))
+            :api :openai-responses
+            :provider :openai
+            :model "faux"
+            :stop-reason :stop))
+         (stream
+             (provider model context on-event
+              &key max-tokens temperature abort-p)
+           (declare
+            (ignore provider model context
+                    max-tokens temperature abort-p))
+           (incf stream-calls)
+           (when (= stream-calls 1)
+             (sb-thread:wait-on-semaphore release))
+           (let ((message
+                   (assistant-message
+                    (if (= stream-calls 1)
+                        "first done"
+                        "steering handled"))))
+             (funcall
+              on-event
+              (cadr-ai:make-stream-event
+               :type :start :message message))
+             message)))
+      (setf
+       agent
+       (cadr-agent:make-agent
+        :provider :openai
+        :model
+        (cadr-ai:make-model
+         :id "faux" :provider :openai
+         :api :openai-responses
+         :base-url "https://example.invalid"
+         :max-tokens 1024)
+        :stream-function #'stream
+        :on-event
+        (lambda (event)
+          (when event-consumer
+            (funcall event-consumer event)))))
+      (let ((terminal
+              (make-instance
+               'goal9-p2-key-terminal
+               :columns 80 :rows 16
+               :inputs
+               (list
+                (format nil "start~C" #\Return)
+                (format nil "change direction~C" #\Return))
+               :worker-done-p
+               (lambda () worker-done-p))))
+        (cadr-cli::run-tui
+         (lambda (line)
+           (unwind-protect
+                (cadr-agent:agent-prompt agent line)
+             (setf worker-done-p t)))
+         :set-event-consumer
+         (lambda (consumer)
+           (setf event-consumer consumer))
+         :busy-input-function
+         (lambda (line)
+           (cadr-agent:agent-steer agent line)
+           (sb-thread:signal-semaphore release))
+         :model "faux"
+         :terminal terminal))
+      (is-false (cadr-agent:agent-busy-p agent))
+      (is (= 2 stream-calls))
+      (is
+       (equal
+        '("start" "change direction")
+        (loop for message in (cadr-agent:agent-messages agent)
+              when (typep message 'cadr-ai:user-message)
+                collect
+                (cadr-ai::content-text
+                 (cadr-ai:user-message-content message))))))))
+
+(test goal10-busy-tui-repeated-escape-does-not-spam-abort-notices
+  (let ((release (sb-thread:make-semaphore :count 0))
+        (worker-done-p nil)
+        (abort-count 0))
+    (let ((terminal
+            (make-instance
+             'goal9-p2-key-terminal
+             :columns 80 :rows 16
+             :inputs
+             (list
+              (format nil "start~C" #\Return)
+              (string #\Escape)
+              (string #\Escape))
+             :worker-done-p
+             (lambda () worker-done-p))))
+      (cadr-cli::run-tui
+       (lambda (line)
+         (declare (ignore line))
+         (sb-thread:wait-on-semaphore release)
+         (setf worker-done-p t))
+       :abort-function
+       (lambda ()
+         (incf abort-count)
+         (sb-thread:signal-semaphore release))
+       :model "faux"
+       :terminal terminal)
+      (is (= 1 abort-count))
+      (is (null
+           (search
+            "Abort requested"
+            (goal9-a2-screen-text
+             (cadr-tui:virtual-terminal-snapshot terminal))))))))
+
+(test goal10-busy-tui-escape-aborts-active-tool-and-returns-idle
+  (let ((tool-started
+          (sb-thread:make-semaphore :count 0))
+        (worker-done-p nil)
+        (gate-opened-p nil)
+        (abort-count 0)
+        (stream-calls 0)
+        (agent nil))
+    (let* ((tool
+             (cadr-ai:make-tool
+              :name "blocking"
+              :description "blocking"
+              :parameters
+              (cadr-cli::object-schema
+               (cadr-ai::json-object) nil)
+              :execution-mode :sequential
+              :executor
+              (lambda (call-id arguments)
+                (declare (ignore call-id arguments))
+                (sb-thread:signal-semaphore tool-started)
+                (loop until
+                      (cadr-agent::current-tool-aborted-p)
+                      do (sleep 0.001))
+                (error "Command aborted"))))
+           (stream
+             (lambda
+                 (provider model context on-event
+                  &key max-tokens temperature abort-p)
+               (declare
+                (ignore provider model context
+                        max-tokens temperature))
+               (incf stream-calls)
+               (let ((message
+                       (cadr-ai:make-assistant-message
+                        :content
+                        (if (= stream-calls 1)
+                            (list
+                             (cadr-ai:make-tool-call
+                              :id "busy-tui-abort-1"
+                              :name "blocking"
+                              :arguments (cadr-ai::json-object)))
+                            nil)
+                        :api :openai-responses
+                        :provider :openai
+                        :model "faux"
+                        :stop-reason
+                        (if (= stream-calls 1)
+                            :tool-use
+                            (if (and abort-p (funcall abort-p))
+                                :aborted
+                                :stop)))))
+                 (funcall
+                  on-event
+                  (cadr-ai:make-stream-event
+                   :type :start :message message))
+                 message))))
+      (setf
+       agent
+       (cadr-agent:make-agent
+        :provider :openai
+        :model
+        (cadr-ai:make-model
+         :id "faux" :provider :openai
+         :api :openai-responses
+         :base-url "https://example.invalid"
+         :max-tokens 1024)
+        :tools (list tool)
+        :stream-function stream))
+      (let ((terminal
+              (make-instance
+               'goal9-p2-key-terminal
+               :columns 80 :rows 16
+               :inputs
+               (list
+                (format nil "run~C" #\Return)
+                (lambda ()
+                  (setf
+                   gate-opened-p
+                   (sb-thread:wait-on-semaphore
+                    tool-started :timeout 2))
+                  (string #\Escape)))
+               :worker-done-p
+               (lambda () worker-done-p))))
+        (cadr-cli::run-tui
+         (lambda (line)
+           (unwind-protect
+                (cadr-agent:agent-prompt agent line)
+             (setf worker-done-p t)))
+         :abort-function
+         (lambda ()
+           (incf abort-count)
+           (cadr-agent:agent-abort agent))
+         :model "faux"
+         :terminal terminal))
+      (is-true gate-opened-p)
+      (is (= 1 abort-count))
+      (is-false (cadr-agent:agent-busy-p agent))
+      (let ((results
+              (remove-if-not
+               (lambda (message)
+                 (typep message
+                        'cadr-ai:tool-result-message))
+               (cadr-agent:agent-messages agent))))
+        (is (= 1 (length results)))
+        (is-true
+         (cadr-ai:tool-result-message-is-error
+          (first results)))
+        (is
+         (string=
+          "Command aborted"
+          (cadr-ai:text-content-text
+           (first
+            (cadr-ai:tool-result-message-content
+             (first results))))))))))
 
 (test goal9-a2-input-editor-pty-events-and-virtual-screen-cover-full-contract
   (let* ((decoder (cadr-tui:make-input-decoder))

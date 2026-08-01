@@ -52,6 +52,8 @@
   (multiple-providers-p nil :type boolean)
   (subscription-p nil :type boolean)
   (statuses nil :type list)
+  (steering-messages nil :type list)
+  (follow-up-messages nil :type list)
   (widgets-above nil :type list)
   (widgets-below nil :type list)
   (tools-expanded-p nil :type boolean)
@@ -1371,6 +1373,14 @@
        (setf
         (tui-state-status-message state)
         nil))
+      (:queue-update
+       (setf
+        (tui-state-steering-messages state)
+        (copy-list
+         (cadr-agent:agent-event-steering event))
+        (tui-state-follow-up-messages state)
+        (copy-list
+         (cadr-agent:agent-event-follow-up event))))
       (:message-start
        (typecase message
          (cadr-ai:user-message
@@ -2138,6 +2148,52 @@
            (nth index compact))
          indices)))))
 
+(defun tui-queued-message-text (message)
+  (typecase message
+    (cadr-ai:user-message
+     (cadr-ai::content-text
+      (cadr-ai:user-message-content message)))
+    (string message)
+    (t (princ-to-string message))))
+
+(defun render-tui-pending-message-lines (state width)
+  (let ((steering
+          (tui-state-steering-messages state))
+        (follow-up
+          (tui-state-follow-up-messages state)))
+    (when (or steering follow-up)
+      (flet ((pending-line (text)
+               (cadr-tui:theme-foreground
+                :dim
+                (cadr-tui:truncate-to-width
+                 (concatenate 'string " " text)
+                 width "")
+                :enabled-p t)))
+        (nconc
+         (list "")
+         (mapcar
+          (lambda (message)
+            (pending-line
+             (format nil "Steering: ~A"
+                     (tui-queued-message-text message))))
+          steering)
+         (mapcar
+          (lambda (message)
+            (pending-line
+             (format nil "Follow-up: ~A"
+                     (tui-queued-message-text message))))
+          follow-up)
+         (list
+          (pending-line
+           (format
+            nil "↳ ~A to edit all queued messages"
+            (or
+             (first
+              (cadr-tui:keybinding-keys
+               (cadr-tui:get-keybindings)
+               "app.message.dequeue"))
+             "alt+up")))))))))
+
 (defun render-tui-state
     (state editor width rows
      &key overlay busy-p extension-host
@@ -2151,7 +2207,10 @@
        editor width
        :terminal-rows rows
        :focused-p (null overlay))
-    (let* ((status-indicator
+    (let* ((pending-message-lines
+             (render-tui-pending-message-lines
+              state width))
+           (status-indicator
              (or
               (render-tui-status-indicator
                (tui-state-status-message state)
@@ -2224,7 +2283,8 @@
               :spacer-when-empty-p nil
               :leading-spacer-p nil))
            (non-content-lines
-             (+ (length status-indicator)
+             (+ (length pending-message-lines)
+                (length status-indicator)
                 (length widget-above-lines)
                 (length editor-lines)
                 (length widget-below-lines)
@@ -2343,18 +2403,21 @@
               :initial-element ""))
            (cursor-row
              (+ rendered-content-height
+                (length pending-message-lines)
                 (length status-indicator)
                 (length widget-above-lines)
                 editor-row)))
       (values
        (if top-align-content-p
            (nconc visible padding
+                  pending-message-lines
                   status-indicator
                   widget-above-lines
                   editor-lines
                   widget-below-lines
                   footer-lines)
            (nconc padding visible
+                  pending-message-lines
                   status-indicator
                   widget-above-lines
                   editor-lines
@@ -3153,6 +3216,8 @@
        preview-theme-function
        session-state-function
        busy-input-function
+       follow-up-input-function
+       dequeue-function
        model-items-function
        model-selector-function
        scoped-models-selector-function
@@ -3282,6 +3347,7 @@
          (overlay nil)
          (overlay-kind nil)
          (busy-p nil)
+         (abort-requested-p nil)
          (done-p nil)
          (last-clear-at nil)
          (worker nil)
@@ -3785,12 +3851,13 @@
                     compaction-tokens-before
                     :clock-function clock-function))
                  (tui-handle-agent-event
-                 state event
+                  state event
                   :extension-host extension-host
                   :clock-function clock-function)))
            (refresh-footer-state))
          (start-work (line)
            (unless busy-p
+             (setf abort-requested-p nil)
              (when reset-abort-function
                (funcall reset-abort-function))
              (sb-thread:with-mutex (lock)
@@ -3814,7 +3881,7 @@
                      :off))))
              (request-render)
              (setf
-             worker
+              worker
               (sb-thread:make-thread
                (lambda ()
                  (unwind-protect
@@ -3844,7 +3911,8 @@
                              (notice result))))
                        #'notice)
                    (sb-thread:with-mutex (lock)
-                     (setf busy-p nil)
+                     (setf busy-p nil
+                           abort-requested-p nil)
                      (cadr-tui:editor-set-border-mode
                       editor :thinking
                       (or
@@ -4154,6 +4222,49 @@
                  line busy-p
                  busy-input-function
                  #'start-work)))))
+         (submit-follow-up ()
+           (let ((text
+                   (string-trim
+                    '(#\Space #\Tab #\Newline #\Return)
+                    (cadr-tui::editor-expanded-text
+                     editor))))
+             (when (plusp (length text))
+               (cadr-tui:editor-add-history editor text)
+               (cadr-tui::editor-clear editor)
+               (if (and busy-p follow-up-input-function)
+                   (funcall follow-up-input-function text)
+                   (submit text))
+               (request-render))))
+         (restore-queued-messages (&key notify-p)
+           (let* ((queued
+                    (and dequeue-function
+                         (funcall dequeue-function)))
+                  (count (length queued)))
+             (if (zerop count)
+                 (when notify-p
+                   (notice "No queued messages to restore"))
+                 (let* ((queued-text
+                          (format nil "~{~A~^~%~%~}" queued))
+                        (current
+                          (cadr-tui:editor-text editor))
+                        (combined
+                          (if
+                              (zerop
+                               (length
+                                (string-trim
+                                 '(#\Space #\Tab #\Newline #\Return)
+                                 current)))
+                              queued-text
+                              (format nil "~A~%~%~A"
+                                      queued-text current))))
+                   (cadr-tui:editor-set-text editor combined)
+                   (when notify-p
+                     (notice
+                      (format
+                       nil
+                       "Restored ~D queued message~:P to editor"
+                       count)))))
+             count))
          (accept-selection (value)
            (let ((kind overlay-kind))
              (setf overlay nil
@@ -4424,10 +4535,11 @@
                (case (cadr-tui:input-event-kind event)
                  ((:escape :interrupt)
                   (if busy-p
-                      (progn
+                      (unless abort-requested-p
+                        (setf abort-requested-p t)
+                        (restore-queued-messages)
                         (when abort-function
-                          (funcall abort-function))
-                        (notice "Abort requested"))
+                          (funcall abort-function)))
                       (progn
                         (handle-tui-editor-event
                          state editor event)
@@ -4460,6 +4572,11 @@
                         (request-render))))
                  (:toggle-tools
                   (toggle-last-tool-block state)
+                  (request-render))
+                 (:follow-up
+                  (submit-follow-up))
+                 (:dequeue
+                  (restore-queued-messages :notify-p t)
                   (request-render))
                  (otherwise
                   (multiple-value-bind

@@ -143,6 +143,12 @@
 
 (defvar *tool-execution-error-fallback* nil)
 
+(defvar *tool-abort-p* nil)
+
+(defun current-tool-aborted-p ()
+  (and *tool-abort-p*
+       (funcall *tool-abort-p*)))
+
 (defun signal-tool-execution-error
     (message condition tool call)
   (let ((wrapped

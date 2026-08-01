@@ -440,7 +440,12 @@
         (call-tool-operation-with-restarts
          state turn-index
          (lambda ()
-           (execute-prepared-tool entry)))
+           (let ((*tool-abort-p*
+                   (lambda ()
+                     (agent-aborted-p
+                      (tool-restart-state-agent
+                       state)))))
+             (execute-prepared-tool entry))))
       (if (eq decision :retry)
           (setf entry
                 (prepare-tool-restart-state

@@ -95,6 +95,8 @@
   '(("app.interrupt" . :interrupt)
     ("app.clear" . :clear)
     ("app.exit" . :eof)
+    ("app.message.followUp" . :follow-up)
+    ("app.message.dequeue" . :dequeue)
     ("tui.editor.cursorUp" . :up)
     ("tui.editor.cursorDown" . :down)
     ("tui.editor.cursorLeft" . :left)

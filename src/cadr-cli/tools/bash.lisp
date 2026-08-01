@@ -138,9 +138,15 @@
       (sb-thread:join-thread reader))
     forced-p))
 
-(defun run-bash-command (cwd command timeout)
+(defun run-bash-command
+    (cwd command timeout
+     &key
+       (abort-p
+         #'cadr-agent::current-tool-aborted-p))
   (when (and timeout (<= timeout 0))
     (error "timeout must be positive"))
+  (when (and abort-p (funcall abort-p))
+    (error "Command aborted"))
   (let* ((output-path (bash-output-path))
          (group-path
            (pathname
@@ -202,18 +208,24 @@
                   (unless forced-output-close-p
                     (setf reader-error condition)))))
             :name "cadr-bash-output-reader"))
+         (aborted-p nil)
          (timed-out-p nil)
          (exit-code nil))
     (unwind-protect
          (progn
            (loop while (uiop:process-alive-p process)
                  do
-                 (when (and deadline
-                            (>= (get-internal-real-time)
-                                deadline))
-                   (setf timed-out-p t)
-                   (terminate-process-group group-id)
-                   (return))
+                 (cond
+                   ((and abort-p (funcall abort-p))
+                    (setf aborted-p t)
+                    (terminate-process-group group-id)
+                    (return))
+                   ((and deadline
+                         (>= (get-internal-real-time)
+                             deadline))
+                    (setf timed-out-p t)
+                    (terminate-process-group group-id)
+                    (return)))
                  (sleep 0.01))
            (setf exit-code
                  (or (uiop:wait-process process)
@@ -243,6 +255,10 @@
                  (unless preserve-output-p
                    (when (probe-file output-path)
                      (delete-file output-path)))
+                 (when aborted-p
+                   (error
+                    (append-bash-status
+                     text "Command aborted")))
                  (when timed-out-p
                    (error
                     (append-bash-status
@@ -327,7 +343,7 @@
 
 (defun execute-user-bash
     (extension-host cwd command
-     &key exclude-from-context-p timeout)
+     &key exclude-from-context-p timeout abort-p)
   (let ((interception
           (and extension-host
                (cadr-agent::run-extension-lifecycle-hooks
@@ -359,7 +375,8 @@
               result)
              (values result details))))
       (t
-       (run-bash-command cwd command timeout)))))
+       (run-bash-command
+        cwd command timeout :abort-p abort-p)))))
 
 (defun make-bash-tool (cwd)
   (cadr-ai:make-tool

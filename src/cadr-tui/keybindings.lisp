@@ -4,6 +4,8 @@
   '(("app.interrupt" . ("escape"))
     ("app.clear" . ("ctrl+c"))
     ("app.exit" . ("ctrl+d"))
+    ("app.message.followUp" . ("alt+enter"))
+    ("app.message.dequeue" . ("alt+up"))
     ("tui.editor.cursorUp" . ("up"))
     ("tui.editor.cursorDown" . ("down"))
     ("tui.editor.cursorLeft" . ("left" "ctrl+b"))
