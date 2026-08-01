@@ -253,7 +253,7 @@ A/B 已由用户确认，Part B 已关闭。
 | exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 与 11 个 base-screen 状态分别锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw/Kitty input→configured action→busy/idle behavior |
-| busy interaction | long-running child→Escape→process-group termination→error tool result→idle；parallel tools→shared cancellation；busy Enter/Alt+Enter→steering/follow-up queue→pending copy→mode-controlled drain；repeated Escape→single silent abort |
+| busy interaction | long-running child→Escape→process-group termination→error tool result→idle；silent provider SSE→active socket shutdown→aborted assistant→idle；parallel tools→shared cancellation；busy Enter/Alt+Enter→steering/follow-up queue→exact pending rows→configured dequeue key→both queues restored to editor→mode-controlled drain；repeated Escape→single silent abort |
 
 The busy-interaction row is a lifecycle contract, not a static key or screen
 contract. Its permanent gates couple the production TUI input loop to a faux
@@ -265,6 +265,16 @@ agent and a real detached bash process: `GOAL10-BUSY-BASH-ABORT-KILLS-GROUP-REPO
 `GOAL10-BUSY-TUI-REPEATED-ESCAPE-DOES-NOT-SPAM-ABORT-NOTICES`. Static
 keybinding assertions, queue unit tests, and idle full-screen SHA snapshots do
 not satisfy this row.
+
+The third user A/B added two missing cross-layer gates. A real silent local SSE
+socket now proves that Escape interrupts the blocking read rather than waiting
+for another provider delta, and the legacy `ESC p` encoding of the default
+`alt+up` binding is driven through the production decoder before the dequeue
+action restores steering followed by follow-up text. Pending rows are asserted
+as exact copy, including their spacer, labels, configured key hint, and display
+order. The abort line remains the baseline `Text(..., outputPad=1)` rendering:
+one horizontal padding cell followed by `Operation aborted`, with no
+`Abort requested` or `session>` row.
 
 ### B2 基础屏幕整屏合约
 

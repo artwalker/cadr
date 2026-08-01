@@ -129,6 +129,26 @@ Equivalent command-line options are `--provider`, `--model`, and
 }
 ```
 
+Interactive keybindings can be overridden in the `keybindings` object of
+`~/.cadr/settings.json`; a trusted project's `.cadr/settings.json` can override
+the same action ids. A value may be one key or an array of keys, and `/reload`
+applies edits without restarting the session. For example, when Windows
+Terminal owns `Alt+Enter`, move follow-up queueing to `Ctrl+G` while retaining
+the default dequeue action:
+
+```json
+{
+  "keybindings": {
+    "app.message.followUp": "ctrl+g",
+    "app.message.dequeue": "alt+up"
+  }
+}
+```
+
+The configurable surface includes every Cadr application, editor, selector,
+and fullscreen action id; defaults remain `alt+enter` for follow-up and
+`alt+up` for restoring all queued messages to the editor.
+
 ## Usage
 
 ```bash
