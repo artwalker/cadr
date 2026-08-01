@@ -521,7 +521,7 @@
    (tui-entry-render-cache-lines entry) nil)
   entry)
 
-(defun add-tui-notice (state text)
+(defun add-tui-message-entry (state type text)
   (let ((trimmed
           (string-trim
            '(#\Space #\Tab #\Newline #\Return)
@@ -530,7 +530,7 @@
       (append-tui-entry
        state
        (make-tui-entry
-        :type :notice
+        :type type
         :text trimmed))))
   state)
 
@@ -554,6 +554,20 @@
               :type :status
               :text trimmed))))))
   state)
+
+(defun add-tui-notice (state text)
+  ;; NOTICE carries arbitrary frontend output.  It uses the same visual shape
+  ;; as baseline status text, but must not coalesce adjacent lines.
+  (add-tui-message-entry state :notice text))
+
+(defun add-tui-error (state text)
+  (add-tui-message-entry state :error text))
+
+(defun add-tui-warning (state text)
+  (add-tui-message-entry state :warning text))
+
+(defun add-tui-success (state text)
+  (add-tui-message-entry state :success text))
 
 (defun terminal-hyperlink (url label)
   (format nil "~C]8;;~A~C~A~C]8;;~C"
@@ -1613,9 +1627,7 @@
       (:compaction-start
        (setf
         (tui-state-status-message state)
-        "Compacting context...")
-       (add-tui-notice state
-                       "Compacting context…"))
+        "Compacting context..."))
       (:compaction-end
        (setf
         (tui-state-status-message state)
@@ -1638,13 +1650,13 @@
               "~@[~:D tokens compacted~]~@[~%~A~]"
               compaction-tokens-before
               compaction-summary)))
-           (add-tui-notice state
+           (add-tui-status state
                            "Context compacted")))
       (:compaction-error
        (setf
         (tui-state-status-message state)
         nil)
-       (add-tui-notice
+       (add-tui-error
         state
         (format nil
                 "Context compaction failed: ~A"
@@ -1944,10 +1956,17 @@
               (tui-entry-text entry))
       width))
     (:notice
-     (cadr-tui:wrap-text
-      (format nil "session> ~A"
-              (tui-entry-text entry))
-      width))
+     (cons
+      ""
+      (loop for line in
+            (cadr-tui:wrap-text
+             (tui-entry-text entry)
+             (max 1 (- width 2)))
+            collect
+            (concatenate
+             'string " "
+             (cadr-tui:theme-foreground
+              :dim line :enabled-p t)))))
     (:status
      (cons
       ""
@@ -1960,6 +1979,46 @@
              'string " "
              (cadr-tui:theme-foreground
               :dim line :enabled-p t)))))
+    (:error
+     (cons
+      ""
+      (loop for line in
+            (cadr-tui:wrap-text
+             (format nil "Error: ~A"
+                     (tui-entry-text entry))
+             (max 1 (- width 2)))
+            collect
+            (concatenate
+             'string " "
+             (cadr-tui:theme-foreground
+              :error line :enabled-p t)))))
+    (:warning
+     (cons
+      ""
+      (loop for line in
+            (cadr-tui:wrap-text
+             (format nil "Warning: ~A"
+                     (tui-entry-text entry))
+             (max 1 (- width 2)))
+            collect
+            (concatenate
+             'string " "
+             (cadr-tui:theme-foreground
+              :warning line :enabled-p t)))))
+    (:success
+     (append
+      '("" "")
+      (loop for line in
+            (cadr-tui:wrap-text
+             (format nil "✓ ~A"
+                     (tui-entry-text entry))
+             (max 1 (- width 2)))
+            collect
+            (concatenate
+             'string " "
+             (cadr-tui:theme-foreground
+              :accent line :enabled-p t)))
+      '("")))
     (:auth-url
      (render-auth-url-lines
       (tui-entry-text entry)
@@ -3204,6 +3263,7 @@
        set-event-consumer
        set-notice-consumer
        set-status-consumer
+       set-warning-consumer
        set-auth-url-consumer
        set-model-consumer
        set-extension-ui-function
@@ -3373,7 +3433,7 @@
          (terminal-progress-active-p nil))
     (declare (ignore active-theme))
     (dolist (text initial-notices)
-      (add-tui-notice state text))
+      (add-tui-warning state text))
     (labels
         ((render-now ()
            (sb-thread:with-mutex (lock)
@@ -3544,6 +3604,18 @@
          (status (text)
            (sb-thread:with-mutex (lock)
              (add-tui-status state text))
+           (request-render))
+         (warning (text)
+           (sb-thread:with-mutex (lock)
+             (add-tui-warning state text))
+           (request-render))
+         (show-error (text)
+           (sb-thread:with-mutex (lock)
+             (add-tui-error state text))
+           (request-render))
+         (success (text)
+           (sb-thread:with-mutex (lock)
+             (add-tui-success state text))
            (request-render))
          (show-auth-url (url)
            (sb-thread:with-mutex (lock)
@@ -3743,6 +3815,18 @@
              (:add-autocomplete-provider
               (add-extension-autocomplete-provider
                (getf arguments :factory)))
+             (:notify
+              (case (getf arguments :level)
+                (:error
+                 (show-error
+                  (getf arguments :message)))
+                (:warning
+                 (warning
+                  (getf arguments :message)))
+                (otherwise
+                 (status
+                  (getf arguments :message))))
+              nil)
              (:set-status
               (let ((key (getf arguments :key))
                     (text (getf arguments :text)))
@@ -3908,7 +3992,7 @@
                            (when
                                (eq kind
                                    :unknown-command)
-                             (notice
+                             (show-error
                               "Unknown command"))
                            (when
                                (and
@@ -3917,7 +4001,7 @@
                                 (plusp
                                  (length result)))
                              (notice result))))
-                       #'notice)
+                       #'show-error)
                    (sb-thread:with-mutex (lock)
                      (setf busy-p nil
                            abort-requested-p nil)
@@ -4013,7 +4097,7 @@
                   scoped-models-selector-function)))
            (if overlay
                (request-render)
-               (notice "No models available")))
+               (status "No models available")))
          (open-trust-selector ()
            (setf
             overlay-kind :trust
@@ -4022,7 +4106,7 @@
                  (funcall trust-selector-function)))
            (if overlay
                (request-render)
-               (notice
+               (status
                 "Project trust is unavailable")))
          (open-settings-selector ()
            (setf
@@ -4033,7 +4117,7 @@
                   settings-selector-function)))
            (if overlay
                (request-render)
-               (notice "Settings are unavailable")))
+               (status "Settings are unavailable")))
          (open-import-confirmation (line path)
            (setf
             overlay-kind :import-confirmation
@@ -4061,7 +4145,7 @@
                   (make-oauth-selector-state
                    :mode :login
                    :options options))
-                 (notice
+                 (status
                   "No login methods available")))
            (request-render))
          (open-logout-provider-selector ()
@@ -4077,7 +4161,7 @@
                      :mode :logout
                      :options options))
                    (request-render))
-                 (notice
+                 (status
                   "No stored credentials to remove. /logout only removes credentials saved by /login; environment variables and models.json config are unchanged."))))
          (open-api-key-input (option)
            (setf
@@ -4098,7 +4182,7 @@
                     (make-user-message-selector-state
                      :items items))
                    (request-render))
-                 (notice
+                 (status
                   "No messages to fork from"))))
          (replace-session-state
              (selected-session selected-messages
@@ -4193,7 +4277,7 @@
                        selected-session
                        selected-messages
                        selected-path)
-                      (notice
+                      (success
                        "New session started")))))
                ((string= trimmed "/quit")
                 (setf done-p t))
@@ -4252,9 +4336,9 @@
                      editor queued)))
              (if (zerop count)
                  (when notify-p
-                   (notice "No queued messages to restore"))
+                   (status "No queued messages to restore"))
                  (when notify-p
-                   (notice
+                   (status
                     (format
                      nil
                      "Restored ~D queued message~:P to editor"
@@ -4294,7 +4378,7 @@
                       (funcall
                        on-logout-selected
                        (oauth-selector-option-id value))
-                      (notice
+                      (status
                        (if
                            (eq
                             (oauth-selector-option-auth-type value)
@@ -4319,7 +4403,7 @@
                        api-key-login-function
                        provider
                        (getf value :key))
-                      (notice
+                      (status
                        (format
                         nil "Saved API key for ~A"
                         (oauth-selector-option-name
@@ -4335,7 +4419,7 @@
                           (funcall
                            on-import-confirmed
                            (getf value :line)))
-                        (notice "Import cancelled")))
+                        (status "Import cancelled")))
                    (:session
                     (when on-session-selected
                       (multiple-value-bind
@@ -4368,7 +4452,7 @@
                            (or editor-text ""))
                           (synchronize-tui-editor-input-border
                            state editor)
-                          (add-tui-notice
+                          (add-tui-status
                            state
                            "Forked to new session")))))
                    (:tree
@@ -4383,8 +4467,8 @@
                            selected-messages)))))
                    (:extension-custom
                     (finish-custom-ui value)))
-               (condition (condition)
-                 (add-tui-notice
+               (error (condition)
+                 (add-tui-error
                   state
                   (format nil "~A" condition)))))
            (refresh-footer-state))
@@ -4597,6 +4681,9 @@
       (when set-status-consumer
         (funcall set-status-consumer
                  #'status))
+      (when set-warning-consumer
+        (funcall set-warning-consumer
+                 #'warning))
       (when set-auth-url-consumer
         (funcall set-auth-url-consumer
                  #'show-auth-url))
@@ -4681,7 +4768,7 @@
                              (flush-render))
                            #'suspend-current-process
                            #'call-with-sigcont-handler
-                           :notice-function #'notice))
+                           :notice-function #'status))
                         (t
                          (multiple-value-bind
                             (action value handled-p)

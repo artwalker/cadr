@@ -285,3 +285,60 @@ live stages: 2/2 PASS
 live FiveAM items: 7 PASS, 1 SKIP (ANTHROPIC_API_KEY is not set), 0 FAIL
 live FiveAM checks: 31 PASS, 1 SKIP, 0 FAIL
 ```
+
+## Fifth A/B — notice channels and folded tool geometry
+
+### Notice-channel audit
+
+`session>` is the REPL protocol label, not a TUI decoration.  The leak came
+from treating every frontend notification as the historical `:notice` row and
+rendering that row as `session> <text>`.  The fixed boundary separates
+arbitrary multi-line frontend output (non-coalescing `:notice`) from baseline
+`showStatus` outcomes (coalescing `:status`) and gives error, warning, and the
+special `/new` success row their own render types.  All five render without the
+REPL label (`src/cadr-cli/tui.lisp:524-570,1958-2021`); the TUI wires distinct
+consumers at `:3600-3619,4675-4686`.
+
+Fixed-baseline evidence is
+`interactive-mode.ts:3232-3240,3803-3806,3916-3928,5916`: ordinary status is a
+dim `Text` row, errors and warnings have explicit product prefixes, dequeue is
+status text, and `/new` alone uses `✓ New session started`.  No `session>`
+string exists in the fixed coding-agent TUI sources.
+
+| Producer / message family | TUI channel after audit | Prefix and copy |
+|---|---|---|
+| queued-message empty/restored; model/trust/settings/login/fork empty states; logout/API-key/import/fork completion; model scope/trust persistence; suspend unsupported | status | no label; exact product text; consecutive status replaces the prior transient status |
+| reload and extension-command completion | status | no label; multi-line text remains one status value |
+| command/selector/compaction failure | error | `Error: `, one-cell horizontal padding, no protocol label |
+| startup and dynamic Anthropic subscription guidance | warning | `Warning: `, no protocol label |
+| extension `notify` | info→status, warning→warning, error→error | preserves the requested severity; no protocol label |
+| `/new` | success | exact `✓ New session started` shape |
+| extension-authored or command-returned arbitrary frontend text | notice | status visual shape, but adjacent lines are not coalesced and never gain `session>` |
+| compaction running/end | transient status indicator / status or structured summary | no invented transcript notice at start; errors use the error channel |
+
+The regression pair
+`GOAL10-NOTICE-CHANNEL-MATCHES-BASELINE-STATUS-WITHOUT-SESSION-PREFIX` and
+`GOAL10-USER-MESSAGE-CHANNELS-MATCH-BASELINE-PREFIX-COPY-AND-SPACING` locks
+non-coalescing frontend lines, every channel's exact rows, and the absence of
+`session>` across the complete channel set.  Existing tests covered the output
+source boundaries (setsid, ASDF, TLS) and one status message, but never rendered
+the generic notice type itself; therefore a product-authored notice could still
+leak the protocol label after all infrastructure diagnostics were clean.
+
+### Folded tool block disposition
+
+The reported successful collapsed `read` height is a verified non-difference.
+Fixed baseline `read.ts:164-187` returns no result rows when collapsed and not
+in error; `tool-execution.ts:63-75` contributes one outer spacer plus a
+`Box(1,1)`, so a title-only read occupies exactly four rows.  Cadr has the same
+four-row composition and a zero-line successful-read preview budget
+(`src/cadr-tui/components.lisp:1530-1539,1567-1660`).  Error read shows at most
+10 rows; the other fixed budgets remain bash 5 (tail), write 10, grep 15, and
+find/ls 20.
+
+The requested height/preview comparison did find a separate real difference:
+expanded result content lacked the renderer's leading newline, and bash timing
+lacked its separating blank row.  `render-tool-block` now inserts exactly one
+blank row before output and before `Elapsed`/`Took`, locked by
+`GOAL10-TOOL-BLOCK-INTERNAL-SPACERS-MATCH-BASELINE`.  No preview budget or
+collapsed successful-read height was changed to fake the screenshot.

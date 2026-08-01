@@ -139,6 +139,59 @@
             (first (cadr-cli::tui-state-entries state))
             90)))))))
 
+(test goal10-notice-channel-matches-baseline-status-without-session-prefix
+  (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::add-tui-notice
+     state "Restored 1 queued message to editor")
+    (is (= 1 (length (cadr-cli::tui-state-entries state))))
+    (is
+     (equal
+      '("" " Restored 1 queued message to editor")
+      (mapcar
+       #'cadr-tui:strip-terminal-sequences
+       (cadr-cli::render-tui-entry
+        (first (cadr-cli::tui-state-entries state))
+        80))))
+    (cadr-cli::add-tui-notice state "Import cancelled")
+    (is (= 2 (length (cadr-cli::tui-state-entries state))))
+    (is
+     (string=
+      "Import cancelled"
+      (cadr-cli::tui-entry-text
+       (second (cadr-cli::tui-state-entries state)))))
+    (is
+     (null
+      (search
+       "session>"
+       (format
+        nil "~{~A~^~%~}"
+        (cadr-cli::render-tui-entry
+         (cadr-cli::make-tui-entry
+         :type :notice :text "legacy notice entry")
+         80)))))))
+
+(test goal10-user-message-channels-match-baseline-prefix-copy-and-spacing
+  (labels
+      ((plain (type text)
+         (mapcar
+          #'cadr-tui:strip-terminal-sequences
+          (cadr-cli::render-tui-entry
+           (cadr-cli::make-tui-entry
+            :type type :text text)
+           80))))
+    (is (equal '("" " Error: broken")
+               (plain :error "broken")))
+    (is (equal '("" " Warning: caution")
+               (plain :warning "caution")))
+    (is (equal '("" "" " ✓ New session started" "")
+               (plain :success "New session started")))
+    (dolist (type '(:notice :status :error :warning :success))
+      (is (notany
+           (lambda (line) (search "session>" line))
+           (plain type "message"))
+          "~A user channel must not expose the REPL protocol label"
+          type))))
+
 (test tui-url-launch-isolates-desktop-launcher-diagnostics
   (let ((captured nil)
         (original
@@ -958,9 +1011,11 @@
           (cadr-tui:make-multiline-editor)))
     (loop for index from 1 to 12
           do
-          (cadr-cli::add-tui-notice
+          (cadr-cli::append-tui-entry
            state
-           (format nil "notice-~D" index)))
+           (cadr-cli::make-tui-entry
+            :type :notice
+            :text (format nil "notice-~D" index))))
     (multiple-value-bind
           (main-lines main-row main-column)
         (cadr-cli::render-tui-state
@@ -978,9 +1033,14 @@
          :full-document-p t)
       (declare (ignore alt-column))
       (is (> (length alt-lines) 8))
-      (is (find "session> notice-1"
-                alt-lines
+      (is (find " notice-1"
+                (mapcar
+                 #'cadr-tui:strip-terminal-sequences
+                 alt-lines)
                 :test #'string=))
+      (is (notany
+           (lambda (line) (search "session>" line))
+           alt-lines))
       (is (< alt-row
              (length alt-lines))))))
 
@@ -1341,7 +1401,9 @@
       '(""
         "                                                            "
         " $ exit 7                                                   "
+        "                                                            "
         " Command exited with code 7                                 "
+        "                                                            "
         " Took 0.0s                                                  "
         "                                                            ")
       plain))))
@@ -1378,6 +1440,7 @@
         '(""
           "                                                            "
           " write notes.txt                                            "
+          "                                                            "
           " alpha                                                      "
           " beta                                                       "
           " gamma                                                      "
@@ -1404,6 +1467,7 @@
         '(""
           "                                                            "
           " write notes.txt                                            "
+          "                                                            "
           " alpha                                                      "
           " beta                                                       "
           " gamma                                                      "

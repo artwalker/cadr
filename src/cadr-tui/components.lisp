@@ -1636,8 +1636,10 @@
              (append
               (list "")
               header-lines
-              output-lines
-              (and timing-line (list timing-line))
+              (and output-lines
+                   (cons "" output-lines))
+              (and timing-line
+                   (list "" timing-line))
               (list ""))))
       (cons
        ""

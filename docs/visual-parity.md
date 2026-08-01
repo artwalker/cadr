@@ -348,6 +348,19 @@ launcher，以及 cl+ssl/OpenSSL/SBCL socket diagnostics 不得进入 transcript
 错误呈现为产品错误；前台 package-manager CLI 的安装进度仍按基线保留。完整边界清单
 与逐项回归测试见 `docs/acceptance/goal-v10-visual-output-followup.md`。
 
+第五轮补齐 notice 通道自身的视觉边界：`session>` 只属于 REPL 协议，不属于任何
+TUI notice/status/error/warning/success 行。普通 status、错误、警告、`/new` success
+与 extension `notify` 已按基线分流；任意多行 frontend output 保留逐行内容但不再带
+内部标签。折叠态成功 `read` 的“外层一行 + Box 上下各一行 + 标题一行”共四行且
+无内容预览，已按 `read.ts:164-187`、`tool-execution.ts:63-75` 核实为非差异；展开态
+output 与 bash timing 前各一空行才是本轮修正的真实布局差异。
+
+Markdown 围栏与标题标记也登记为已核实非差异：固定基线
+`packages/tui/src/components/markdown.ts:383` 原样保留“```lang”行并仅施加
+`codeBlockBorder` 样式，`:341` 的 `headingPrefix` 原样保留重复 `#`。终端显示保留
+Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown；Cadr 不应把这些
+标记吞掉或改成仅视觉格式。
+
 ### B2 overlay 完整逐行合约
 
 第三轮不再以“抽查六个 overlay”代表全部交互面。下表已由当前机械门禁锁定；

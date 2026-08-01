@@ -534,6 +534,40 @@
                   rendered)))
         (cadr-tui:reset-current-theme)))))
 
+(test goal10-tool-block-internal-spacers-match-baseline
+  (labels
+      ((plain-lines (block)
+         (mapcar
+          #'cadr-tui:strip-terminal-sequences
+          (cadr-tui:render-tool-block block 72)))
+       (blank-p (line)
+         (every
+          (lambda (character) (char= character #\Space))
+          line)))
+    (dolist (name '("read" "write" "grep" "find" "ls" "edit"))
+      (let ((lines
+              (plain-lines
+               (cadr-tui:make-tool-block
+                :name name :summary "args"
+                :output "result"
+                :status :complete
+                :collapsed-p nil))))
+        (is (blank-p (nth 3 lines))
+            "~A must keep the baseline header/result spacer" name)
+        (is (search "result" (nth 4 lines)))))
+    (let ((lines
+            (plain-lines
+             (cadr-tui:make-tool-block
+              :name "bash" :summary "printf result"
+              :output "result"
+              :status :complete
+              :started-at 1d0 :ended-at 1.1d0
+              :collapsed-p nil))))
+      (is (blank-p (nth 3 lines)))
+      (is (search "result" (nth 4 lines)))
+      (is (blank-p (nth 5 lines)))
+      (is (search "Took 0.1s" (nth 6 lines))))))
+
 (test goal9-tool-preview-is-tab-normalized-and-ansi-width-safe
   (let* ((escape (string #\Escape))
          (block

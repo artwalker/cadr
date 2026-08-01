@@ -2338,6 +2338,7 @@
          (event-consumer nil)
          (notice-consumer nil)
          (status-consumer nil)
+         (warning-consumer nil)
          (auth-url-consumer nil)
          (model-consumer nil)
          (abort-requested-p nil)
@@ -3284,9 +3285,9 @@
                       :not-subscription)))
                (when
                    (and warning
-                        notice-consumer)
+                        warning-consumer)
                  (funcall
-                  notice-consumer warning))
+                  warning-consumer warning))
                model-id)))
          (resolve-model-reference (reference)
            (refresh-available-models)
@@ -3340,9 +3341,9 @@
          (persist-model-scope (enabled-ids)
            (settings-set-enabled-models
             settings-manager enabled-ids)
-           (when notice-consumer
+           (when status-consumer
              (funcall
-              notice-consumer
+              status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
            (refresh-available-models)
@@ -3388,9 +3389,9 @@
            (project-trust-set-many
             trust-store
             (getf selection :updates))
-           (when notice-consumer
+           (when status-consumer
              (funcall
-              notice-consumer
+              status-consumer
               (format
                nil
                "Saved trust decision: ~A. Restart cadr for this to take effect."
@@ -3587,6 +3588,9 @@
            :set-status-consumer
            (lambda (consumer)
              (setf status-consumer consumer))
+           :set-warning-consumer
+           (lambda (consumer)
+             (setf warning-consumer consumer))
            :set-auth-url-consumer
            (lambda (consumer)
              (setf auth-url-consumer consumer))
