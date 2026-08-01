@@ -172,9 +172,10 @@
          tool (args "command" "exit 7"))))
       (is
        (string=
-        "Command timed out after 0.05 seconds"
+        "Command timed out after 1 seconds"
         (captured-tool-error
-         tool (args "command" "sleep 1" "timeout" 0.05))))
+         tool
+         (args "command" "exec /usr/bin/tail -f /dev/null" "timeout" 1))))
       (multiple-value-bind (result details)
           (invoke-tool
            tool
@@ -203,6 +204,19 @@
           (is (and path (probe-file path)))
           (when (and path (probe-file path))
             (delete-file path)))))))
+
+(test goal9-b3-bash-timeout-never-leaks-wrapper-diagnostics
+  (with-test-directory (directory)
+    (let* ((tool (make-bash-tool directory))
+           (message
+             (captured-tool-error
+              tool
+              (args
+               "command" "exec /usr/bin/tail -f /dev/null"
+               "timeout" 1))))
+      (is (search "Command timed out after 1 seconds" message))
+      (is (null (search "setsid:" message)))
+      (is (null (search "cadr-bash-wrapper" message))))))
 
 (test goal9-b3-search-tool-results-match-baseline-copy-and-counts
   (with-test-directory (directory)

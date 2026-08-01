@@ -65,8 +65,8 @@
          tool
          (args
           "command"
-          "/bin/bash -c 'trap \"\" TERM; while :; do sleep 1; done' & child=$!; printf '%s' \"$child\" > child.pid; wait"
-          "timeout" 0.2)))
+          "/bin/bash -c 'trap \"\" TERM; exec /usr/bin/tail -f /dev/null' & child=$!; printf '%s' \"$child\" > child.pid; wait"
+          "timeout" 1)))
       (let* ((pid
                (parse-integer
                 (string-trim
@@ -79,28 +79,54 @@
 
 (test bash-captures-active-post-exit-output-and-releases-idle-pipes
   (with-test-directory (directory)
-    (let ((tool (make-bash-tool directory)))
+    (let* ((tool (make-bash-tool directory))
+           (ready (merge-pathnames "ready.fifo" directory))
+           (release (merge-pathnames "release.fifo" directory))
+           (content nil)
+           (details nil)
+           (worker-error nil))
+      (sb-posix:mkfifo (namestring ready) #o600)
+      (sb-posix:mkfifo (namestring release) #o600)
+      (let ((worker
+              (sb-thread:make-thread
+               (lambda ()
+                 (handler-case
+                     (multiple-value-setq (content details)
+                       (invoke-tool
+                        tool
+                        (args
+                         "command"
+                         "printf 'HEAD\\n'; (printf 'ready\\n' > ready.fifo; IFS= read -r token < release.fifo; printf 'TICK6\\n') &")))
+                   (error (condition)
+                     (setf worker-error condition)))))))
+        (with-open-file (stream ready :direction :input)
+          (is (string= "ready" (read-line stream))))
+        (with-open-file (stream release
+                                :direction :output
+                                :if-exists :overwrite
+                                :if-does-not-exist :error)
+          (write-line "go" stream)
+          (finish-output stream))
+        (sb-thread:join-thread worker))
+      (is (null worker-error))
+      (when (null worker-error)
+        (is (= 0 (getf details :exit-code)))
+        (is (search "HEAD" (result-text content)))
+        (is (search "TICK6" (result-text content))))
       (multiple-value-bind (content details)
           (invoke-tool
            tool
            (args
             "command"
-            "printf 'HEAD\\n'; (for i in 1 2 3 4 5 6; do sleep 0.05; printf 'TICK%s\\n' \"$i\"; done) &"))
+            "printf 'DONE\\n'; (/usr/bin/tail -f /dev/null) & child=$!; printf '%s' \"$child\" > idle.pid"))
         (is (= 0 (getf details :exit-code)))
-        (is (search "HEAD" (result-text content)))
-        (is (search "TICK6" (result-text content))))
-      (let ((started
-              (get-internal-real-time)))
-        (multiple-value-bind (content details)
-            (invoke-tool
-             tool
-             (args
-              "command"
-              "printf 'DONE\\n'; (sleep 30) &"))
-          (is (= 0 (getf details :exit-code)))
-          (is (search "DONE" (result-text content)))
-          (is
-           (< (/ (- (get-internal-real-time)
-                    started)
-                 internal-time-units-per-second)
-              2.0)))))))
+        (is (search "DONE" (result-text content))))
+      (let ((pid
+              (parse-integer
+               (string-trim
+                '(#\Space #\Tab #\Newline #\Return)
+                (read-text
+                 (merge-pathnames "idle.pid" directory))))))
+        (is (not
+             (probe-file
+              (pathname (format nil "/proc/~D/" pid)))))))))

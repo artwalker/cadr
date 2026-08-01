@@ -81,11 +81,6 @@
   (format nil "~A~:[~;~%~%~]~A"
           text (plusp (length text)) status))
 
-(defun strip-setsid-timeout-noise (text)
-  (cl-ppcre:regex-replace-all
-   "(?m)^setsid: child [0-9]+ did not exit normally: No such file or directory\\n?"
-   text ""))
-
 (defun read-process-group-id (path)
   (loop repeat 100
         when (probe-file path)
@@ -155,14 +150,17 @@
             (list
              "/usr/bin/setsid" "--fork" "--wait"
              "/bin/sh" "-c"
-             "printf '%s' \"$$\" > \"$1\"; exec /bin/bash -lc \"$2\""
+             "printf '%s' \"$$\" > \"$1\"; exec /bin/bash -lc \"$2\" 2>&1"
              "cadr-bash-wrapper"
              (namestring group-path)
              command)
             :directory cwd
             :input nil
             :output :stream
-            :error-output :output
+            ;; Command stderr is redirected to stdout inside the session.
+            ;; Keep setsid's own diagnostics on its separate null stderr so
+            ;; wrapper lifecycle races can never enter the tool result.
+            :error-output nil
             :wait nil))
          (group-id (read-process-group-id group-path))
          (deadline (process-deadline timeout))
@@ -227,15 +225,8 @@
              (lambda () last-output-time)))
            (when reader-error
              (error reader-error))
-           (let* ((raw-output
-                    (get-output-stream-string capture))
-                  (full-output
-                    (if timed-out-p
-                        (strip-setsid-timeout-noise
-                         raw-output)
-                        raw-output)))
-             (unless (string= raw-output full-output)
-               (write-utf8-file output-path full-output))
+           (let ((full-output
+                   (get-output-stream-string capture)))
              (multiple-value-bind (tail details)
                  (truncate-tail full-output)
                (let* ((truncated (getf details :truncated))
