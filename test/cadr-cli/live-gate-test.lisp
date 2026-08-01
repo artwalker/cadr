@@ -171,3 +171,62 @@
       (is (search "Deterministic stages" source))
       (is (search "Live stages" source))
       (is (not (search ".github/workflows" source))))))
+
+(test goal10-part-c-ci-workflow-is-pinned-minimal-and-credential-free
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (path (merge-pathnames ".github/workflows/ci.yml" root))
+         (source
+           (and (probe-file path)
+                (uiop:read-file-string path))))
+    (is-true source)
+    (when source
+      (dolist (required
+                `(,(format nil "permissions:~%  contents: read")
+                  "runs-on: ubuntu-24.04"
+                  "HOME: ${{ runner.temp }}/cadr-home"
+                  "QUICKLISP_SETUP: ${{ runner.temp }}/cadr-home/quicklisp/setup.lisp"
+                  "SBCL: ${{ runner.temp }}/sbcl/bin/sbcl"
+                  "ANTHROPIC_API_KEY: \"\""
+                  "DEEPSEEK_API_KEY: \"\""
+                  "OPENAI_API_KEY: \"\""
+                  "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
+                  "persist-credentials: false"
+                  "bsdutils"
+                  "ca-certificates"
+                  "sbcl-2.6.7-x86-64-linux-binary.tar.bz2?download"
+                  "4ed82aa7d5b1d87cbafb41ab9abc87d942d18eeac2485ee5a6c46b95aa694d19"
+                  "INSTALL_ROOT=\"$RUNNER_TEMP/sbcl\" sh install.sh"
+                  "https://beta.quicklisp.org/quicklisp.lisp"
+                  "4a7a5c2aebe0716417047854267397e24a44d0cce096127411e9ce9ccfeb2c17"
+                  ":dist-url \\\"http://beta.quicklisp.org/dist/quicklisp/2026-01-01/distinfo.txt\\\""
+                  "\"cl+ssl\""
+                  "\"cl-ppcre\""
+                  "\"sqlite\""
+                  "\"cl-jpeg\""
+                  "\"png-read\""
+                  "\"fiveam\""
+                  "\"babel\""
+                  "\"bordeaux-threads\""
+                  "\"flexi-streams\""
+                  "\"usocket\""
+                  "\"trivial-gray-streams\""
+                  "./scripts/verify.sh"
+                  "grep -Fx 'Items: 8, run: 0, pass: 0, skip: 8, fail: 0'"
+                  "grep -Fx 'Checks: 8, pass: 0, skip: 8, fail: 0'"
+                  "grep -Fx 'DeepSeek live TUI                                SKIP (DEEPSEEK_API_KEY is not set)'"))
+        (is (search required source) "Missing CI contract: ~A" required))
+      (is (= 1 (count-substring "./scripts/verify.sh" source)))
+      (is (= 3 (count-substring "\"$SBCL\"" source)))
+      (dolist (forbidden
+                '("./build.sh"
+                  "./build-server.sh"
+                  "./scripts/test-cl.sh"
+                  "./scripts/test-live.sh"
+                  "pull_request_target"
+                  "actions/cache"
+                  "actions/upload-artifact"
+                  "actions/download-artifact"
+                  "sudo sh install.sh"
+                  "secrets."))
+        (is (not (search forbidden source :test #'char-equal))
+            "Forbidden CI mechanism: ~A" forbidden)))))

@@ -1,0 +1,78 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-24.04
+    env:
+      HOME: ${{ runner.temp }}/cadr-home
+      QUICKLISP_SETUP: ${{ runner.temp }}/cadr-home/quicklisp/setup.lisp
+      SBCL: ${{ runner.temp }}/sbcl/bin/sbcl
+      ANTHROPIC_API_KEY: ""
+      DEEPSEEK_API_KEY: ""
+      OPENAI_API_KEY: ""
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install --yes --no-install-recommends \
+            bsdutils bzip2 ca-certificates curl jq libsqlite3-dev libssl-dev \
+            python3 tar tmux util-linux
+
+      - name: Install SBCL 2.6.7
+        shell: bash
+        run: |
+          set -euo pipefail
+          archive="$RUNNER_TEMP/sbcl-2.6.7-x86-64-linux-binary.tar.bz2"
+          curl --fail --location --show-error --silent \
+            'https://prdownloads.sourceforge.net/sbcl/sbcl-2.6.7-x86-64-linux-binary.tar.bz2?download' \
+            --output "$archive"
+          printf '%s  %s\n' \
+            '4ed82aa7d5b1d87cbafb41ab9abc87d942d18eeac2485ee5a6c46b95aa694d19' \
+            "$archive" | sha256sum --check --strict
+          tar --extract --bzip2 --file "$archive" --directory "$RUNNER_TEMP"
+          (
+            cd "$RUNNER_TEMP/sbcl-2.6.7-x86-64-linux"
+            INSTALL_ROOT="$RUNNER_TEMP/sbcl" sh install.sh
+          )
+          test "$("$SBCL" --noinform --version)" = 'SBCL 2.6.7'
+
+      - name: Install pinned Quicklisp distribution
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME"
+          bootstrap="$RUNNER_TEMP/quicklisp.lisp"
+          curl --fail --location --show-error --silent \
+            'https://beta.quicklisp.org/quicklisp.lisp' \
+            --output "$bootstrap"
+          printf '%s  %s\n' \
+            '4a7a5c2aebe0716417047854267397e24a44d0cce096127411e9ce9ccfeb2c17' \
+            "$bootstrap" | sha256sum --check --strict
+          "$SBCL" --noinform --non-interactive \
+            --load "$bootstrap" \
+            --eval "(quicklisp-quickstart:install :path \"${HOME}/quicklisp/\" :dist-url \"http://beta.quicklisp.org/dist/quicklisp/2026-01-01/distinfo.txt\")"
+          "$SBCL" --noinform --non-interactive \
+            --load "$QUICKLISP_SETUP" \
+            --eval '(ql:quickload (list "cl+ssl" "cl-ppcre" "sqlite" "cl-jpeg" "png-read" "fiveam" "babel" "bordeaux-threads" "flexi-streams" "usocket" "trivial-gray-streams"))'
+
+      - name: Run the complete credential-free gate
+        shell: bash
+        run: |
+          set -euo pipefail
+          log="$RUNNER_TEMP/cadr-verify.log"
+          ./scripts/verify.sh 2>&1 | tee "$log"
+          grep -Fx 'Items: 8, run: 0, pass: 0, skip: 8, fail: 0' "$log"
+          grep -Fx 'Checks: 8, pass: 0, skip: 8, fail: 0' "$log"
+          grep -Fx 'DeepSeek live TUI                                SKIP (DEEPSEEK_API_KEY is not set)' "$log"
