@@ -4,7 +4,8 @@ Date: 2026-08-01. Baseline: `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 This is a new task after `c0dc46a3c` and `dbff2f9ea`; neither prior commit
 implemented these runtime paths.
 Initial implementation and regression commit: `c3cef6dfd`. Third A/B
-correction implementation: `badc7319d`.
+correction implementation: `badc7319d`. Delivery-binary freshness gate:
+`df92e9fcb`.
 
 ## Baseline contract
 
@@ -147,5 +148,17 @@ live FiveAM checks: 31 PASS, 1 SKIP, 0 FAIL
 The earlier statement that the 20:33 root image represented `badc7319d` was
 false: the commit followed the image by 77 seconds. The permanent correction is
 `scripts/check-root-binary.sh`, the first local `verify.sh` stage, and the
-mandatory `docs/delivery-checklist.md` procedure. Final build-time and version
-evidence for this correction is recorded after the implementation commit.
+mandatory `docs/delivery-checklist.md` procedure. The deterministic regression
+`DELIVERY-BINARY-FRESHNESS-CHECK-REJECTS-MISSING-STALE-AND-DIRTY-IMAGES`
+first failed because the checker did not exist, then passed all 11 assertions
+for missing, post-build source commit, fresh, and uncommitted-newer-source
+states.
+
+Final user-facing image, rebuilt after `df92e9fcb`:
+
+```text
+binary build time: 2026-08-01 21:19:47.067039517 +0800
+latest src commit: badc7319daba122a345aead8c71af4e3a964a698 2026-08-01T20:34:30+08:00
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+root cadr binary is fresh
+```
