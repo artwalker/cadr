@@ -78,3 +78,41 @@ runnable examples 99。72 个“有意差异”逐行保留，尚未替用户批
 
 本轴的边界如实保留：它能发现缺失的 source capability，却不能证明同名实现内部逐字
 行为等价；parity-map、performance gate 与用户 A/B 仍不可替代。
+
+## Part C1 — TUI composition（19）
+
+状态：实现与回归已落账。实现提交 `76e85dcc4`、`86ff53909`；本章与账本证据提交
+见本节所在提交。
+
+本批把 19 个缺失 source capability 全部补为原生 Common Lisp 组合层，而未替换现有
+production CLI 的手工整屏装配，因此既有 transcript、基础屏幕和 15 个 overlay 的
+逐字节快照保持不变。构造选择是 CLOS 组合协议：组件/焦点生命周期用泛函数，容器用
+继承共享子组件失效与焦点传播，Box/Text/Spacer/Markdown/Image/Settings/Loader 等
+原语通过组合复用；没有逐行复制 TypeScript class，也没有新第三方依赖。
+
+新增能力分两层：
+
+- `src/cadr-tui/composition.lisp`：通用 component/focus/container/root 协议，缓存、
+  invalidation、overlay、输入监听与 renderer 调度，以及 10 个可复用组件；
+- `src/cadr-cli/interactive-components.lisp`：key hint、dynamic border、bordered loader、
+  countdown、Armin、Daxnuts 与 Earendil announcement。动画暴露显式 tick seam，回归不
+  依赖 sleep 或计时竞态。
+
+行为边界：本批建立的是此前缺失的可复用 source surface；默认 CLI 仍走原路径，故没有
+可观察行为变化，也没有用规范化或弱断言掩盖快照差异。Earendil 与基线一样在 bundled
+image 不存在时保留完整文字公告。Daxnuts 使用基线精确 32×32 RGB payload；Armin 覆盖
+七种动画状态。
+
+门禁：`GOAL12-TUI-*` 八条测试覆盖组件树、缓存失效、宽度/背景、图片 id、loader
+取消、settings 搜索与子菜单、两种 editor 共用协议以及 root/overlay/input；
+`GOAL12-CODING-AGENT-*` 五条测试覆盖全部依赖组件和 public barrel。账本由
+`coding-agent 139/27/123` 更新为 `147/27/115`，`tui 23/1/13` 更新为
+`34/1/2`，全仓更新为 `362 已实现 / 72 有意差异 / 161 缺失`；余项精确为
+99 examples 加 62 production/helper capabilities。
+
+验证：确定性套件 `7823 checks / 7823 pass / 0 skip / 0 fail`；完整
+`./scripts/verify.sh` 的 11 个 deterministic stage 与 2 个 live stage 全部 PASS，live
+报告为 `32 checks / 31 pass / 1 skip / 0 fail`（仅缺
+`ANTHROPIC_API_KEY`）。根目录 `cadr` 构建时间为
+`2026-08-02 06:24:33.660346183 +0800`，晚于当时最后一个 `src/` 提交
+`86ff53909` 的 `2026-08-02T06:11:50+08:00`，二进制新鲜度门禁 PASS。
