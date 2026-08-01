@@ -25,7 +25,7 @@ process/PTY/socket/migration boundaries; the complete script audit and exact cla
 | Terminal grapheme widths | `TERMINAL-CELL-WIDTH-*`, grapheme-safe truncation/editor suites | CJK, emoji, combining and regional-indicator clusters retain terminal-cell semantics |
 | Remote-session protocol v2 | `test/cadr-protocol/cbor-test.lisp`, `framing-test.lisp`, `protocol-test.lisp` | Strict CBOR, bounded four-byte framing and validated client/server codecs; 41 tests / 497 checks |
 | Comparative eval infrastructure | `test/cadr-evals/pi-harness-test.lisp`, `artifacts-test.lisp`, `harness-table-test.lisp`, `summary-test.lisp` | Explicit selection, isolated artifacts, iteration/group metadata, correctness/efficiency summaries and diagnostics |
-| Deterministic workflows | `test/cadr-cli/goal9-a2-workflows-test.lisp`, `goal9-a2-interactive-test.lisp` plus PTY harness | Session branching/isolation, text/JSON/RPC, extension reload/UI/renderers, editor/completion/overlays and faux streaming |
+| Deterministic workflows | `goal9-a2-workflows-test.lisp`, `goal9-a2-interactive-test.lisp`, `goal9-a2-process-faux-test.lisp` plus `scripts/goal9-a2-pty.sh` | Session/extension/rendering semantics; independent SBCL process × actual faux text/JSON/RPC; real-PTY editor/completion/overlay snapshots and terminal restoration |
 
 The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 `packages/coding-agent/test/config.test.ts` remains the sole approved `N/A`.
@@ -36,7 +36,7 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 |---|---|---|
 | One production version source | `GOAL9-PART-E-PRODUCTION-VERSION-HAS-ONE-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; production literal audit rejects drift |
 | Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
-| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7019 deterministic checks pass in the root test and both isolated builds; retained harnesses and all available live paths pass |
+| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7040 deterministic checks pass in the root test and both isolated builds; retained harnesses and all available live paths pass |
 
 ## Phase 1: cadr-ai
 

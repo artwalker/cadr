@@ -256,15 +256,15 @@ print(len(data), sum(len(value) for value in data.values()))'
 | Goal 8 人工项 | 永久门禁名 / 入口 | 覆盖证据 | 当前结果 |
 |---|---|---|---|
 | 会话 | `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED` | faux provider；new/name/switch/branch/compact/export/continue/resume；A/B 两分支双向无串线 | 与 workflow 组共同 3 tests / 67 checks 全绿 |
-| 模式 | `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT` | faux provider；print 只有最终文本，JSONL 每行可解析且事件顺序精确，RPC request/response/event 单次往返 | 与 workflow 组共同 3 tests / 67 checks 全绿 |
+| 模式 | `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT` + 三个 `GOAL9-A2-PROCESS-FAUX-*` 门禁 | 进程内语义层加独立 SBCL 进程 × actual faux provider 交集；真实 argv/parser、stdout/stderr/exit、JSONL 精确 12-event 与 `text_start/delta/end`、RPC 双 response/事件/EOF 往返 | workflow 组 67 checks + process-faux 21/21 全绿 |
 | 扩展 | `GOAL9-A2-EXTENSION-WORKFLOW-COVERS-LEGACY-UI-RENDERERS-AND-STALE-RELOAD` | 源文件真实 discovery/load；command/tool/hook/custom UI/message+tool renderer；`/reload` 后旧 generation stale；旧 API source 不改 | 与 workflow 组共同 3 tests / 67 checks 全绿 |
-| 启动与退出 | `scripts/goal9-a2-pty.sh`，场景 `normal`、`ctrl-c`、`suspend-resume` | 真 PTY；raw/ICANON/ECHO、cursor、bracketed paste；SIGTSTP 前还原、SIGCONT 后重入、最终还原；严格检查序列次数与顺序 | 3 个场景连续三轮均为 3/3；最终集成入口待提交 |
-| 输入编辑 | `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT` | PTY 解码事件 + 虚拟终端快照；多行/CJK/emoji/宽字符换行、按词移动、history、kill/yank/yank-pop、undo | 与交互组共同 4 tests / 86 checks 全绿 |
-| 补全 | `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO` | slash/path/`@`；键盘选择、取消、应用、undo | 与交互组共同 4 tests / 86 checks 全绿 |
-| Overlay | `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS` | session/tree/model/scoped-model/settings/trust 六类 selector；双 overlay focus；CJK 边框；72→14 列 resize | 与交互组共同 4 tests / 86 checks 全绿 |
+| 启动与退出 | `scripts/goal9-a2-pty.sh` 的 `normal`、`ctrl-c`、`suspend-resume` | 真 PTY；raw/ICANON/ECHO、cursor、bracketed paste；SIGTSTP 前还原、SIGCONT 后重入、最终还原；严格检查序列次数与顺序 | 与下列交互场景合计 6/6；已由 `scripts/verify.sh` 永久调用 |
+| 输入编辑 | `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT` + PTY `input-editor` | 语义层覆盖多行/CJK/emoji/宽字符换行、按词移动、history、kill/yank/yank-pop、undo；真实 `openpty` 输入后由同一 production `render-frame` 路径分别写 PTY 与 virtual terminal，6 帧逐 cell 快照 | 交互组 86 checks + PTY 6 snapshots 全绿 |
+| 补全 | `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO` + PTY `completion` | 语义层覆盖 slash/path/`@`、选择/取消/应用/undo；真实 PTY 锁定 path 与 slash 的选择、undo、cancel 及 5 帧快照 | 交互组 86 checks + PTY 5 snapshots 全绿 |
+| Overlay | `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS` + PTY `overlay` | 语义层覆盖六类 selector、双 overlay focus、CJK 边框与 resize；真实 PTY 锁定 settings 首末循环、搜索、退格、取消及 5 帧快照 | 交互组 86 checks + PTY 5 snapshots 全绿 |
 | 渲染（结构） | `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS` | faux stream；thinking/text/tool delta；Markdown 标题/列表/表格/code/link；工具展开折叠；token/cache/cost/session 状态栏 | 与交互组共同 4 tests / 86 checks 全绿 |
 
-上述行为测试没有调用真实 LLM。真实 PTY 门禁调用本地 SBCL 进程，faux/快照门禁进入 `cadr-cli/tests`；纯观感判断仍留给 Part B 的 A/B，不混入结构断言。
+上述行为测试没有调用真实 LLM。交互层采用分层交集：FiveAM 锁定全部语义分支，真实 `openpty` 锁定 raw process-terminal → input decoder/selector → production `render-frame`，并用同一路径写 virtual-terminal 快照；模式层则在独立 SBCL 进程中直接使用 actual faux provider。纯观感判断仍只由 Part B 的 A/B 负责。
 
 PTY 门禁输出格式：
 
@@ -272,7 +272,10 @@ PTY 门禁输出格式：
 normal: PASS stty-restored echo-restored cursor-cycles=1 bracketed-paste-cycles=1
 ctrl-c: PASS stty-restored echo-restored cursor-cycles=1 bracketed-paste-cycles=1
 suspend-resume: PASS stty-restored echo-restored cursor-cycles=2 bracketed-paste-cycles=2
-goal9 A2 PTY lifecycle: 3/3 passed
+input-editor: PASS real-pty raw-input snapshots=6 terminal-restored
+completion: PASS real-pty raw-input snapshots=5 terminal-restored
+overlay: PASS real-pty raw-input snapshots=5 terminal-restored
+goal9 A2 PTY deterministic gates: 6/6 passed
 ```
 
 ## 7. `--fork` 精确语义
@@ -318,7 +321,7 @@ goal9 A2 PTY lifecycle: 3/3 passed
 - `cadr-protocol/tests`：41 tests / 497 checks，全绿。
 - Part A2 workflow 定向组：3 tests / 67 checks，全绿。
 - Part A2 interactive 定向组：4 tests / 86 checks，全绿。
-- Part A2 PTY lifecycle：normal、Ctrl-C、suspend/resume，3/3 全绿。
+- Part A2 PTY deterministic gates：3 个 lifecycle + editor/completion/overlay，6/6 全绿。
 - `cadr-tui/tests`：691/691，全绿；另以隔离 HOME 重跑，同为 691/691。
 - 隔离 HOME 的全量 `./scripts/test-cl.sh`：4009 checks，4006 pass、3 个
   Codex OAuth 凭据门控 skip、0 fail。分套件为 AI 732、agent 621、TUI 691、
@@ -346,6 +349,18 @@ Part A / A2 关账事实：
 parity-map: 362 C / 0 U / 0 M / 1 N/A = 363
 full isolated-HOME suite: 4009 checks / 4006 pass / 3 OAuth skips / 0 fail
 credential-gated live: DeepSeek pass / Codex OAuth usage-limit
-A2 PTY: 3/3 pass
+A2 PTY: 6/6 pass
 Part A/A2 implementation commits: 15
 ```
+
+## 10. Goal 9 关账真实性补正
+
+关账独立审计发现两处原报告宣告强于事实：编辑/补全/overlay 的既有测试直接把
+字节交给 decoder，并非真实 PTY；模式测试分别证明了进程边界和 faux 语义，却没有
+证明二者交集。旧 lifecycle 仅有 3/3，增加新 driver 期望而尚未扩 harness 时稳定红
+`timed out waiting for GOAL9_A2_INPUT_EDITOR_READY`，证明缺口真实存在。
+
+补正提交 `a2298ac4d` 增加三个独立真实 PTY 交互场景，以及独立 SBCL 子进程中的
+actual faux text/JSON/RPC 三门禁。PTY 连续四次固定 `6/6`；process-faux 为
+`21/21`；最终确定性套件为 `7040 checks / 7040 pass / 0 skip / 0 fail`。没有修改
+生产代码、注册测试专用 provider、调用网络或新增依赖。

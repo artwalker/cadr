@@ -229,8 +229,8 @@ Markdown 门禁：
 
 第三轮机械账本：35 个编号项中 `一致` 2 项，`不一致（已改齐）` 31 项，
 `有意差异` 2 项，`pending` 0 项。定向门禁、隔离/当前用户全量、PTY lifecycle、
-隔离 native build 与提交证据均已落账；README 差异登记已同步。B3 第三轮真实双终端
-A/B 仍须由用户裁决。
+隔离 native build 与提交证据均已落账；README 差异登记已同步。B3 真实双终端
+A/B 已由用户确认，Part B 已关闭。
 
 ### B2 运行时补充门禁
 
@@ -322,16 +322,16 @@ CADR_OFFLINE=1 \
 
 | Scene | Exact operation | Compare | User confirmation |
 |---|---|---|---|
-| Cold start | 启动后 5 秒不输入。 | auto theme、startup spacing、editor border、footer、cursor、idle 稳定性。 |  |
-| Streaming | `Think for several seconds, then give exactly 12 numbered one-line steps for checking a CLI release.` | thinking、spinner、流式 repaint、footer/status transition。 |  |
-| Long output | `Output the integers 1 through 120, one per line, with no prose.`；滚到顶、一页、底。 | follow、scroll marker、clipping、footer anchor、回到 live tail。 |  |
-| Tool call | `Use bash to run printf 'alpha\\nbeta\\n'; then read README.md and report only its first heading.`；完成后 Ctrl+O。 | 状态背景、padding、title/arg/output 色、preview budget、展开稳定。 |  |
-| Diff | 在各自临时目录把 `alpha beta gamma` edit 为 `alpha delta gamma`。 | add/remove/context、word inverse、背景、折叠/展开。 |  |
-| Overlays | 依次打开/取消 `/model`、`/settings`、`/resume`、`/fork`、`/tree`、`/login`、`/logout`、`/scoped-models`、`/import`、`/trust` 与 extension custom UI；逐一覆盖搜索、空态、首末循环和翻页。 | 每一行标题/提示/搜索/条目/值/计数/描述、border、spacer、selectedBg、scroll、focus、无 stale。 |  |
-| Autocomplete | `/mo`→取消，`/model `→取消，`@REA`→移动→应用→undo。 | popup 位置、断点、selected row、description、cursor/IME、undo。 |  |
-| CJK/emoji | 重复粘贴 `中文ABC🙂👨‍👩‍👧‍👦 é` 至换行，按 grapheme 移动删除并提交。 | cell、cursor、border、wrap、transcript alignment。 |  |
-| Narrow resize | overlay 打开及 streaming 时依次 100×32→60×20→40×12→100×32。 | reflow、table/code wrap、footer truncation、overlay clipping、无 stale cell。 |  |
-| Error | `/model __goal9_missing_model__`；再让 bash 执行 `sh -c 'echo expected-error >&2; exit 7'`。 | error color/spacing、tool error background、footer recovery、focus。 |  |
-| Exit | `/quit`；重启后 Ctrl-C。 | cursor、bracketed paste/raw、alternate screen、无重复 final frame。 |  |
+| Cold start | 启动后 5 秒不输入。 | auto theme、startup spacing、editor border、footer、cursor、idle 稳定性。 | 已确认 |
+| Streaming | `Think for several seconds, then give exactly 12 numbered one-line steps for checking a CLI release.` | thinking、spinner、流式 repaint、footer/status transition。 | 已确认 |
+| Long output | `Output the integers 1 through 120, one per line, with no prose.`；滚到顶、一页、底。 | follow、scroll marker、clipping、footer anchor、回到 live tail。 | 已确认 |
+| Tool call | `Use bash to run printf 'alpha\\nbeta\\n'; then read README.md and report only its first heading.`；完成后 Ctrl+O。 | 状态背景、padding、title/arg/output 色、preview budget、展开稳定。 | 已确认 |
+| Diff | 在各自临时目录把 `alpha beta gamma` edit 为 `alpha delta gamma`。 | add/remove/context、word inverse、背景、折叠/展开。 | 已确认 |
+| Overlays | 依次打开/取消 `/model`、`/settings`、`/resume`、`/fork`、`/tree`、`/login`、`/logout`、`/scoped-models`、`/import`、`/trust` 与 extension custom UI；逐一覆盖搜索、空态、首末循环和翻页。 | 每一行标题/提示/搜索/条目/值/计数/描述、border、spacer、selectedBg、scroll、focus、无 stale。 | 已确认 |
+| Autocomplete | `/mo`→取消，`/model `→取消，`@REA`→移动→应用→undo。 | popup 位置、断点、selected row、description、cursor/IME、undo。 | 已确认 |
+| CJK/emoji | 重复粘贴 `中文ABC🙂👨‍👩‍👧‍👦 é` 至换行，按 grapheme 移动删除并提交。 | cell、cursor、border、wrap、transcript alignment。 | 已确认 |
+| Narrow resize | overlay 打开及 streaming 时依次 100×32→60×20→40×12→100×32。 | reflow、table/code wrap、footer truncation、overlay clipping、无 stale cell。 | 已确认 |
+| Error | `/model __goal9_missing_model__`；再让 bash 执行 `sh -c 'echo expected-error >&2; exit 7'`。 | error color/spacing、tool error background、footer recovery、focus。 | 已确认 |
+| Exit | `/quit`；重启后 Ctrl-C。 | cursor、bracketed paste/raw、alternate screen、无重复 final frame。 | 已确认 |
 
-Part B disposition: `第三轮机械门禁、全量、PTY、构建与提交已落账；等待 B3 用户确认`
+Part B disposition: `B3 双终端 A/B 已由用户确认；Part B 于 2026-08-01 验收通过并关闭`

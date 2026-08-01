@@ -1,7 +1,7 @@
 # Goal 9 Part B 阶段报告
 
-> 状态：live OAuth 顺序依赖已获顾问三次复跑确认；真实 LLM 门禁定位提案
-> 已获用户逐项批准并实施。Part C 尚未开始，等待本轮复核。
+> 状态：机械、运行时与 live 门禁均已落账；用户于 2026-08-01 明确裁决
+> Part B 验收通过并关闭，随后才开始 Part C。
 
 ## 1. 基线与机械账本
 
@@ -452,4 +452,12 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 精确启动命令、环境约束和 11 个逐场景检查项见
 [`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
 
-当前处置：`live 门禁提案已批准并实施；等待用户复核后再继续 Part C`。
+## 9. 最终用户验收
+
+用户在顾问独立复核后明确裁决 Part B 关闭。复核证据为：确定性套件连续三次
+`6921 checks / 6921 pass / 0 skip / 0 fail`，逐位一致；`test-live.sh` 的条目级与
+检查级汇总格式符合裁决，八项中七项实际运行并通过，一项因缺
+`ANTHROPIC_API_KEY` 明确跳过。该裁决覆盖上列 B3 双终端 A/B 门禁及全部后续补正，
+不再处于“等待用户确认”状态。
+
+当前处置：`Part B 已通过用户验收并关闭`。

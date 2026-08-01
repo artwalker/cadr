@@ -338,7 +338,7 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Current Goal 9 Part E run: 7019 checks / 7019 pass / 0 skip / 0 fail; isolated and root `cadr`/`cadr-server` public builds repeat the same gate |
+| Deterministic ASDF gate | Current Goal 9 closeout run: 7040 checks / 7040 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` public builds repeat the same gate |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Live-proven | Part D `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
@@ -378,9 +378,9 @@ The script-by-script evidence audit is in
 [docs/acceptance/goal-v8-smoke-audit.md](docs/acceptance/goal-v8-smoke-audit.md).
 Migration evidence and the exact residual-name exemptions are in
 [docs/progress/migration.md](docs/progress/migration.md).
-The final mechanical evidence and pending human checklist are in
+The final mechanical evidence and accepted human disposition are in
 [docs/acceptance/goal-v8-final.md](docs/acceptance/goal-v8-final.md).
-Goal 9 visual-parity evidence and the pending B3 human checklist are in
+Goal 9 visual-parity evidence and completed B3 human acceptance are in
 [docs/acceptance/goal-v9-part-b.md](docs/acceptance/goal-v9-part-b.md).
 Goal 9 release-preparation, repository-hygiene, and final local verification
 evidence is in
