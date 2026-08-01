@@ -5,9 +5,11 @@ Behavior baseline:
 The former `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is historical only.
 The v1 matrix remains below as historical evidence; later tables supersede its
 intermediate provider, session, extension, and test-count claims.
-Provider live checks are credential-gated FiveAM blocks. Shell harnesses are
-retained only for native process/PTY/socket/migration boundaries; the complete
-script audit and exact claim limits are in
+Provider live checks are credential-gated FiveAM blocks run by the dedicated
+`scripts/test-live.sh`; deterministic suites run through `scripts/test-cl.sh`.
+The live runner lists every pass, skip reason, and classified failure before
+returning nonzero. Shell harnesses are retained only for native
+process/PTY/socket/migration boundaries; the complete script audit and exact claim limits are in
 [`goal-v8-smoke-audit.md`](acceptance/goal-v8-smoke-audit.md).
 
 ## Goal 9 Part A: current baseline delta
@@ -70,9 +72,9 @@ they are not current gaps.
 | Refresh replay to request | `EXPIRED-OPENAI-TOKEN-REFRESHES-ONCE-THEN-BUILDS-REQUEST` | Expired → recorded token response → Codex request |
 | Codex request contract | `OPENAI-OAUTH-USES-CODEX-URL-AND-REFERENCE-HEADERS` | URL, bearer, account, originator, beta headers |
 | Slash auth commands | config-auth REPL and dispatch tests | `/login`, `/logout`, provider re-resolution |
-| Live DeepSeek | `test/cadr-ai/live-provider-test.lisp` | Credential-gated exact response, terminal events and positive usage |
+| Live DeepSeek | `scripts/test-live.sh` → `test/cadr-ai/live-provider-test.lisp` | Credential-gated exact response, terminal events and positive usage |
 | OpenAI OAuth login/default route | `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST` | Temporary auth/config plus login and HTTP stubs prove `openai-codex` storage, default resolution and Codex transport without homedir state |
-| Live OpenAI OAuth | `test/cadr-cli/live-test.lisp` | Credential-gated, explicit `openai-codex/gpt-5.5` in an isolated HOME; byte-for-byte auth copy, no user settings/session/extensions |
+| Live OpenAI OAuth | `scripts/test-live.sh` → `test/cadr-cli/live-test.lisp` | Credential-gated, explicit `openai-codex/gpt-5.5` in an isolated HOME; canonical credential sharing plus isolated injection, no user settings/session/extensions |
 
 ## Phase 6: tree sessions, compaction, resume, and export
 
@@ -118,7 +120,7 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Expanded frozen extension API | legacy compatibility and Wave 2 extension suites | Existing macro/event behavior unchanged; approved lifecycle/UI/runtime additions validated and used by the real loop |
 | Text/JSON modes | modes suite plus `scripts/test-wave2-process-modes.sh` | Mode priority, stdin merge, clean final text, JSONL events, error exits and SIGTERM cleanup |
 | RPC mode | RPC suite plus process fixture | Full command union, response IDs, events, LF framing, prompt intervention, bash abort and extension UI response/timeout/EOF cleanup |
-| Live one-shot print | `test/cadr-cli/live-test.lisp` | Credential-gated DeepSeek CLI handler exits 0 with exact stdout and empty stderr |
+| Live one-shot print | `scripts/test-live.sh` → `test/cadr-cli/live-test.lisp` | Credential-gated DeepSeek CLI handler exits 0 with exact stdout and empty stderr |
 
 ## Goal 8 Wave 5: storage, server, and evals
 
@@ -130,7 +132,7 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Radius presence | heartbeat retry suite | Credential gating, exponential transient backoff, three-404 re-registration threshold and dormant no-credential behavior |
 | Eval harness | `CADR-EVALS-SUITE` | Goal 8 harness plus Goal 9 artifact/table/summary expansion; explicit provider/model, isolated cleanup and normalized transcript/usage |
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
-| Live evals | `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
+| Live evals | `scripts/test-live.sh` → `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
 
 ## Phase 8: pure Common Lisp TUI

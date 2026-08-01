@@ -164,10 +164,10 @@ The eval harness requires an explicit provider and model:
   --model deepseek-v4-flash
 ```
 
-Credential-gated live blocks are part of the normal FiveAM suites. With the
-locally available credentials, `test/cadr-evals/live-evals-test.lisp` runs the
-DeepSeek and Codex OAuth evals; absent credentials skip exactly as in the
-reference vitest suites.
+Credential-gated live blocks run through `./scripts/test-live.sh`, separately
+from the deterministic `./scripts/test-cl.sh` gate. With the locally available
+credentials, `test/cadr-evals/live-evals-test.lisp` runs the DeepSeek and Codex
+OAuth evals; absent credentials are listed as skips with their reason.
 
 ### OAuth
 
@@ -305,9 +305,13 @@ accidental name collisions; it is not a security boundary.
   the few original pi selectors that clamp at a boundary.
 - By explicit user decision, bash tool titles omit the explicit-timeout suffix
   and always render as `$ <command>`.
-- Provider live checks use credential-gated FiveAM blocks, matching the
-  reference vitest mechanism. External shell harnesses remain only where a
-  unit test cannot faithfully observe the real boundary:
+- Deterministic and live FiveAM tests have separate entry points. This is an
+  explicit organizational difference with the same CI effect as the reference:
+  its credential-gated live blocks remain in Vitest but all skip in official CI
+  because that workflow injects no provider credentials; `test-cl.sh` instead
+  excludes those blocks and `test-live.sh` runs them explicitly.
+- External shell harnesses remain only where a unit test cannot faithfully
+  observe the real boundary:
   `acceptance-smoke.sh` (native image and cross-process sessions),
   `goal5-manual-tui-smoke.sh`/`live-tui-smoke.sh` (PTY, terminal rendering and
   termios), `migration-smoke.sh` (interactive data migration),
@@ -322,14 +326,15 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Full ASDF gate | Goal 9 B3 third-round current-user gate: 6877 checks, 6876 pass, one credential-gated Anthropic skip, zero failures |
+| Deterministic ASDF gate | Goal 9 live-gate split: five consecutive runs, each 6921 checks / 6921 pass / 0 skip / 0 fail |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
-| Live-proven | Credential-gated FiveAM with explicit provider/model and no user settings dependency: DeepSeek streaming/print/extension/repo/eval and OpenAI Codex CLI/eval; retained PTY smoke covers the live DeepSeek TUI |
-| Credential-gated | Providers without credentials skip live blocks exactly as the baseline does; fixtures are not presented as live evidence |
+| Live-proven | Dedicated `test-live.sh`: 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail; DeepSeek streaming/print/extension/repo/eval and OpenAI Codex CLI/eval ran with explicit provider/model and no user settings dependency |
+| Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist passed on 2026-07-30; Goal 9 Part B awaits the third-round B3 dual-terminal sweep |
 
 ```bash
 ./scripts/test-cl.sh
+./scripts/test-live.sh
 ./build.sh
 ./build-server.sh
 ./scripts/acceptance-smoke.sh
@@ -338,6 +343,12 @@ introduced. Proposed mechanisms beyond original pi belong in
 ./scripts/server-smoke.sh
 ./scripts/live-tui-smoke.sh
 ```
+
+`test-live.sh` runs every live item before returning. Any failure makes the
+command fail and is reported as a suspected product defect, suspected model
+output variation, or undetermined, with the basis and captured failure output.
+Goal 9 Part D's release verifier must run all locally available live items;
+overriding a red live stage requires explicit user approval of that report.
 
 Detailed coverage is in [docs/test-matrix.md](docs/test-matrix.md).
 The script-by-script evidence audit is in

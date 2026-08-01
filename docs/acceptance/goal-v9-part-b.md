@@ -1,7 +1,7 @@
 # Goal 9 Part B 阶段报告
 
 > 状态：live OAuth 顺序依赖已获顾问三次复跑确认；真实 LLM 门禁定位提案
-> `docs/proposals/goal-v9-live-test-gating.md` blocked，等待用户裁决。Part C 尚未开始。
+> 已获用户逐项批准并实施。Part C 尚未开始，等待本轮复核。
 
 ## 1. 基线与机械账本
 
@@ -288,13 +288,60 @@ SHA-256 与 `0600` 权限也均未变化。
 
 因此第 5 节此前的“五次全绿”只是一组含 live 的历史运行记录，不能再作为确定性
 证据。live 不应通过握手、放宽断言或重跑到绿来伪装稳定。其门禁位置、退出语义与
-Part D 发布前职责已进入 blocked 提案：
-[`goal-v9-live-test-gating.md`](../proposals/goal-v9-live-test-gating.md)。获批前不移动
-任何 live 测试。
+Part D 发布前职责当时进入 blocked 提案：
+[`goal-v9-live-test-gating.md`](../proposals/goal-v9-live-test-gating.md)；后续裁决与实施
+见第 3.7 节。
 
 永久报告纪律从本轮立即生效：凡宣告“连续 N 次全绿”，必须逐次附完整
 `checks / pass / skip / fail`，且入口不得包含真实网络/LLM 调用；含 live 的运行只能
 分阶段报告实际结果，任何失败不得被后续绿色覆盖。
+
+## 3.7 第八轮：确定性/live 门禁分离
+
+用户已逐项批准 live 门禁提案。`e779ee828` 将三个网络 live 文件移出普通 ASDF
+test systems，并新增专用 `cadr-*/live-tests` systems 与统一
+`./scripts/test-live.sh`。`test/cadr-cli/live-auth-test.lisp` 仍留在确定性 CLI suite：
+它只用临时 auth store 与网络桩，是 OAuth 轮换缺陷的确定性门禁，不是假 live。
+
+该分离向固定基线的官方 CI 实际效果靠拢：基线仍把 live block 写在 Vitest 内，但
+CI 不注入 provider 凭据，故只实际执行确定性部分；Cadr 用显式入口表达同一边界。
+这是组织方式差异，已登记 README，不改变任何 live prompt、断言、模型、凭据门控
+或生产 `src/`。
+
+确定性入口连续五次原始汇总：
+
+| run | checks | pass | skip | fail | 日志 |
+|---:|---:|---:|---:|---:|---|
+| 1 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-1.log` |
+| 2 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-2.log` |
+| 3 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-3.log` |
+| 4 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-4.log` |
+| 5 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-5.log` |
+
+独立 live 入口完整运行一次，未首项退出：
+
+| live item | 状态 | 原因/覆盖 |
+|---|---|---|
+| `LIVE-DEEPSEEK-CHAT-COMPLETIONS-STREAMS` | pass，5 checks | DeepSeek stream |
+| `LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT` | skip，1 check | `ANTHROPIC_API_KEY is not set` |
+| `LIVE-DEEPSEEK-PRINT-MODE-EMITS-ONLY-FINAL-TEXT` | pass，3 checks | DeepSeek CLI print |
+| `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` | pass，4 checks | canonical OAuth → isolated CLI |
+| `LIVE-DEEPSEEK-EVAL-SMOKE` | pass，4 checks | explicit DeepSeek eval |
+| `LIVE-OPENAI-CODEX-EVAL-SMOKE-USES-EXPLICIT-MODEL-AND-REAL-OAUTH` | pass，4 checks | explicit Codex eval |
+| `LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE` | pass，6 checks | self-extension behavior |
+| `LIVE-DEEPSEEK-REPOSITORY-FAIL-FIX-PASS-LOOP` | pass，5 checks | repository repair behavior |
+
+汇总为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，检查数为
+`32 checks / 31 pass / 1 skip / 0 fail`。本轮没有失败项；若有失败，runner 会逐项输出
+完整 FiveAM check/condition、captured output、`疑似产品缺陷 / 疑似模型输出波动 /
+无法判断` 与判断依据，全部项目结束后才以 exit `1` 返回。永久回归
+`LIVE-RUNNER-CONTINUES-AFTER-A-FAILED-ITEM`、
+`LIVE-REPORT-LISTS-EVERY-ITEM-AND-COMPLETE-COUNTS` 与
+`DETERMINISTIC-SYSTEMS-EXCLUDE-NETWORK-LIVE-FILES` 锁定这些边界。
+
+Part D `verify.sh` 必须调用 available live，失败默认阻断发布；只有用户看到上述完整
+报告后可显式解除，脚本不得自动忽略。按既定裁决，该接线在 Part D 落地，不提前创建
+不完整 verifier。
 
 ## 4. 色彩字节证据
 
@@ -394,6 +441,7 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 | `baaf6dd75` | 全套时序测试改用 semaphore/condition/join/FIFO/injected clock |
 | `29e9bade9` | PTY smoke 改为观察实际 screen/marker 状态，不再固定延迟断言 |
 | `4fdc38b05` | live OAuth canonical 共享刷新、隔离凭据注入与确定性轮换回归 |
+| `e779ee828` | deterministic/live ASDF 分离、完整 live 汇总与失败分类回归 |
 
 提交后须再次确认本轮路径无未提交变更；用户预存的
 `docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与
@@ -404,5 +452,4 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 精确启动命令、环境约束和 11 个逐场景检查项见
 [`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
 
-当前处置：`OAuth 修复已获顾问复核；live 门禁定位提案 blocked，等待用户逐项裁决`。
-获批前不改门禁，不开始 Part C。
+当前处置：`live 门禁提案已批准并实施；等待用户复核后再继续 Part C`。

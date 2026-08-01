@@ -6,6 +6,9 @@ harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 
 命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
 Goal 9 已将行为基线重锁到 `74caa2649` 并完成 Part A 增量实现**
 
+Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF test systems
+只含可重复测试，独立 live systems 由 `scripts/test-live.sh` 完整汇总。
+
 本文是 `docs/progress/goal-v1.md` 要求的第一个交付物，已于 2026-07-30
 获得人工确认。
 后续实现若改变本文中的公开接口、数据格式或行为约束，必须先同步修改本文，
@@ -123,6 +126,7 @@ cadr-cli -> cadr-agent -> cadr-ai
 cadr-ai.asd
 cadr-agent.asd
 cadr-cli.asd
+cadr-live-tests.asd
 build.lisp
 build.sh
 src/
@@ -194,6 +198,7 @@ test/
   cadr-agent/
   cadr-cli/
   cadr-tui/
+  cadr-live/
 scripts/
   export-ts-payloads.ts
   acceptance-smoke.sh
@@ -202,6 +207,7 @@ scripts/
   migration-smoke.sh
   server-smoke.sh
   test-cl.sh
+  test-live.sh
   test-wave2-process-modes.sh
 docs/
   architecture.md
@@ -215,6 +221,8 @@ ASDF systems：
 - `cadr-agent`、`cadr-agent/tests`
 - `cadr-cli`、`cadr-cli/tests`
 - `cadr-tui`、`cadr-tui/tests`
+- `cadr-ai/live-tests`、`cadr-cli/live-tests`、`cadr-evals/live-tests`
+- `cadr-live-tests`（只编排并汇总上述 live systems）
 
 Phase 9 后的生产依赖：
 
@@ -589,6 +597,14 @@ assistant> 流式文本
 3. 实现最小完整行为。
 4. 重跑目标 suite，直到通过。
 5. 运行所有已完成 phase 的回归测试。
+
+普通 `cadr-*/tests` 与 `scripts/test-cl.sh` 只运行离线确定性测试。真实 provider、
+OAuth 与模型行为测试放在 `cadr-*/live-tests`，统一由 `scripts/test-live.sh` 执行；
+它必须先运行全部 live item，再逐项报告 pass、skip 原因或 failure output、初步性质
+判断与依据，任一失败最终 exit `1`。这一显式入口差异与固定基线官方 CI 的实际效果
+同构：基线 CI 不注入 provider 凭据，因此普通 `npm test` 中的 live block 全部 skip。
+发布前 Part D verifier 必须执行本机 available live；解除红灯只能由用户基于完整报告
+显式裁决。
 
 `docs/test-matrix.md` 会逐项记录：
 
@@ -1546,10 +1562,11 @@ request/response，并在停止、异常退出和 server restart 时收敛状态
 要求显式 provider/model，不隐式回退；输入只允许 prompt/reload 序列，输出
 统一为 transcript、usage 与可选 selector。smoke 与 self-extension eval
 复用该公共 harness，测试可用 faux provider，环境中可用的 DeepSeek/Codex
-凭据在各 ASDF test system 内走 FiveAM credential gate，并注入显式
+凭据在独立 `cadr-*/live-tests` systems 内走 FiveAM credential gate，并注入显式
 provider/model resolver，不读取用户 settings、session 或扩展。这与基线
 `describe.skipIf(!KEY)` 机制同构。provider/CLI/eval live 行为不再另设 shell
-smoke 层。只观察原生 image、PTY/termios、Unix socket、跨进程迁移、signal
+smoke 层；`scripts/test-live.sh` 只是统一 FiveAM 入口与报告器，不复制测试语义。
+只观察原生 image、PTY/termios、Unix socket、跨进程迁移、signal
 或 RPC EOF 的 shell harness 继续保留；其逐项边界见
 `docs/acceptance/goal-v8-smoke-audit.md`。
 

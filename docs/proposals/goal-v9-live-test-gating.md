@@ -1,7 +1,7 @@
 # Goal 9 live 测试门禁定位提案
 
-状态：**blocked，等待用户逐项裁决；获批前不调整任何 live 测试、ASDF system、
-`test-cl.sh` 或后续 `verify.sh` 的门禁位置。**
+状态：**第 1–3 项已由用户逐项批准；测试入口与完整汇总已在
+`e779ee828` 实施。Part D `verify.sh` 按已批准规则在既定 Part D 落地。**
 
 固定基线：`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`，
 checkout `/tmp/cadr-parity-74caa2649`。本文基线 `file:line` 均指该提交。
@@ -84,11 +84,11 @@ rg -n 'ANTHROPIC_API_KEY|OPENAI_API_KEY|DEEPSEEK_API_KEY|OPENAI_CODEX|PI_AUTH_JS
 `test-cl.sh` 每次都会执行 live；一个行为型 LLM smoke 失败便让后续确定性 suite 没有
 结果。于是“全量 checks”本身随模型输出变化，不能作为稳定工程门禁。
 
-## 4. 建议裁决
+## 4. 用户裁决
 
 ### 4.1 裁决一：分离确定性与 live 入口
 
-建议批准：
+用户批准并已实施：
 
 1. `./scripts/test-cl.sh` 只运行离线确定性 FiveAM suites；网络 provider live 文件从
    三个普通 ASDF test systems 移入独立 live systems；
@@ -97,14 +97,13 @@ rg -n 'ANTHROPIC_API_KEY|OPENAI_API_KEY|DEEPSEEK_API_KEY|OPENAI_CODEX|PI_AUTH_JS
 3. `live-auth-test.lisp` 保留在确定性 CLI suite；
 4. 无凭据仍逐项 skip 并打印原因，语义与基线 `skipIf(!KEY)` 同构。
 
-这是相对固定基线新增的测试入口机制，故在本提案获批前保持 blocked。
-
-**建议：批准。** 理由是官方基线 CI 本就通过“不提供凭据”把确定性 CI 与 live
+这是相对固定基线新增的测试入口机制，已登记进 README 差异清单。官方基线 CI
+本就通过“不提供凭据”把确定性 CI 与 live
 事实分开；Cadr 只是把这一隐式边界变成可审计的显式入口。
 
 ### 4.2 裁决二：live 失败的阻断范围
 
-建议批准以下双层语义：
+用户批准并已实施以下双层语义：
 
 - live 失败不得改变 `test-cl.sh` 的结果，也不得阻止尚未运行的确定性 suite；
 - `test-live.sh` 必须运行完所有已启用 provider/surface 后汇总，任一已启用项失败则
@@ -112,13 +111,15 @@ rg -n 'ANTHROPIC_API_KEY|OPENAI_API_KEY|DEEPSEEK_API_KEY|OPENAI_CODEX|PI_AUTH_JS
 - 不把失败自动改成 skip/warning，不自动反复运行直到转绿；
 - 某次 live 失败只能由用户明确裁决为“接受外部波动”或“产品 blocker”，不得由后续
   一次绿色覆盖。
+- 汇总逐项列出已运行项、已跳过项与原因、失败项与完整失败输出；每个失败还必须标注
+  `疑似产品缺陷`、`疑似模型输出波动` 或 `无法判断` 及判断依据。
 
-**建议：批准。** live 不应污染确定性门禁，但 dedicated live 命令必须保留真实
-非零信号，否则分离会退化成藏红灯。
+Dedicated live 命令保留真实非零信号，并在最终退出前运行全部八项，避免分离退化成
+藏红灯。
 
 ### 4.3 裁决三：Goal 9 Part D 与发布前门禁
 
-建议批准：Part D 的 `scripts/verify.sh` 固定按以下阶段执行并分别报告：
+用户批准：Part D 的 `scripts/verify.sh` 固定按以下阶段执行并分别报告：
 
 ```text
 deterministic FiveAM -> isolated build -> deterministic process/PTY smoke
@@ -136,8 +137,8 @@ deterministic FiveAM -> isolated build -> deterministic process/PTY smoke
 5. CI 无凭据时只证明 deterministic gate，与基线官方 CI 同构；README/报告必须列明
    本地 `verify.sh` 比 CI 多出的 live 覆盖。
 
-**建议：批准。** 这使 live 不再决定工程套件是否可重复，同时仍是本地验收和发布前
-必须面对的真实信号。
+解除发布阻断只能由用户在看到完整 live 报告后显式确认；脚本不得自行把任何失败
+判为可忽略。该接线仍按既定范围留到 Part D，不在本次提前创建半成品 `verify.sh`。
 
 ### 4.4 已确立规则：证据语言与数字纪律
 
@@ -154,24 +155,27 @@ deterministic FiveAM -> isolated build -> deterministic process/PTY smoke
 
 这直接撤销此前把含 live 的五连跑称为确定性全绿的错误口径。
 
-## 5. 最小实现与解冻范围（仅在批准后）
+## 5. 实际实现与解冻范围
 
-预计只修改测试与文档：
+实际只修改测试与文档：
 
 ```text
 cadr-ai.asd
 cadr-cli.asd
 cadr-evals.asd
-cadr-live-test-support.asd
-scripts/test-cl.sh
+cadr-live-tests.asd                # new aggregate live system
 scripts/test-live.sh                 # new
+test/cadr-live-support.lisp
+test/cadr-live/{package,runner}.lisp # new
 test/cadr-ai/live-provider-test.lisp
 test/cadr-cli/live-test.lisp
 test/cadr-evals/live-evals-test.lisp
-test/*/live-package.lisp             # 按需要新增专用 FiveAM suite
-docs/architecture.md
+test/*/live-package.lisp             # new dedicated FiveAM suites
+test/cadr-cli/live-gate-test.lisp    # deterministic runner/report regression
 docs/test-matrix.md
-docs/parity-map.md
+docs/architecture.md
+docs/open-questions.md
+docs/proposals/goal-v9-live-test-gating.md
 README.md
 docs/acceptance/goal-v9-part-b.md
 scripts/verify.sh                    # 仅在既定 Part D 实现
@@ -192,12 +196,22 @@ scripts/verify.sh                    # 仅在既定 Part D 实现
 | 仅在 CI 注入真实凭据 | 基线 CI 没这样做；token 轮换、成本、外部波动会污染确定性 CI |
 | 将 live 与 deterministic 数字继续合并 | checks 会因中止位置变化，无法比较覆盖回归 |
 
-## 7. 请求用户裁决
+## 7. 实施验收
 
-请逐项裁决：
+`./scripts/test-cl.sh` 连续五次结果完全一致：
 
-1. 分离 `test-cl.sh` 与 `test-live.sh`；
-2. live 全面执行后汇总，失败只阻断 live/verify，不截断确定性 suite；
-3. Part D `verify.sh` 与发布前必须实际运行本机可用 live，失败需用户明确裁决；
+| run | checks | pass | skip | fail |
+|---:|---:|---:|---:|---:|
+| 1 | 6921 | 6921 | 0 | 0 |
+| 2 | 6921 | 6921 | 0 | 0 |
+| 3 | 6921 | 6921 | 0 | 0 |
+| 4 | 6921 | 6921 | 0 | 0 |
+| 5 | 6921 | 6921 | 0 | 0 |
 
-前三项获批前，本提案保持 blocked，不开始实现；第 4.4 节从本轮起已经生效。
+`./scripts/test-live.sh` 完整运行八项后为 `32 checks / 31 pass / 1 skip /
+0 fail`。实际执行七项：DeepSeek provider stream、DeepSeek print、OpenAI Codex OAuth
+CLI、DeepSeek/Codex eval、DeepSeek self-extension、DeepSeek repository repair；Anthropic
+multi-turn 因 `ANTHROPIC_API_KEY is not set` 明确 skip。没有失败项，故本轮没有失败
+输出或性质判断；汇总器的失败输出、三类判断、不中途截断与非零退出由确定性回归锁定。
+
+这五轮只证明 deterministic gate；单次 live 结果单独列账，不合并为“全量全绿”。
