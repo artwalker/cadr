@@ -165,4 +165,55 @@ HEAD `56a50ca9cc03…`，TUI object `5b0b4790cd0e…`。
 3.18/3.17MiB，来自每条 entry 的 cache metadata 槽位；渲染后 cache 的长期
 驻留成本与回收行为由 Part D 单独测量。
 
-Goal 11 Parts D–E 完成时在此追加长时稳定性结果和发布门禁阈值。
+### Part D — ten-hour deterministic stability run
+
+入口 `scripts/goal11-stability.sh` 用 production faux provider、真实 agent/session
+持久化路径、TUI event projection 与虚拟终端逐事件渲染，按每分钟两轮把 1200
+轮解释为 10 小时交互量。它在 0/300/600/900/1200 轮强制 full GC，记录
+heap/RSS、GC pause、FD 与 Lisp/OS thread；另生成至少 10MiB 的真实 v3 JSONL，
+对 `load-session`、`resume-session`、`continue-session` 各自以 1ms sampler 记录
+heap/RSS 峰值。完整 committed 数据见
+[`benchmarks/goal-v11-stability.json`](benchmarks/goal-v11-stability.json)。
+
+| stability metric | result |
+|---|---:|
+| faux turns / rendered agent events | 1200 / 14,400 |
+| retained heap, turn 0 → 1200 | 35.86MiB → 78.17MiB; exponent 0.966 |
+| full-GC pause, turn 0 → max | 52.0ms → 80.0ms |
+| FD / Lisp threads / OS threads | 5 / 1 / 2 at every checkpoint and after cleanup |
+| post-cleanup heap vs pre-run | -0.09MiB |
+| JSONL size / entries | 10,507,435 bytes / 2400 |
+| load / resume / continue latency | 328 / 268 / 276ms |
+| sampled peak RSS above operation baseline | 99.8 / 98.7 / 98.5MiB |
+
+增长来自仍被 agent、session、TUI cache 与 faux prompt cache 正常引用的 2400 条
+message/entry，曲线为线性而非泄漏；释放整个场景后 heap、FD 与线程均回到基线。
+GC pause 没有随 checkpoint 单调恶化。10MiB session 三条加载路径均低于 0.33s，
+保留 heap 约 73.1MiB，未发现需改变可观察行为的稳定性缺陷。
+
+场景审计反而发现 agent message 与 session entry 的内存 append 仍用 list `nconc`，
+与 Part C 已修的 TUI 同属累计 O(N²)。固定 TS 基线分别用
+`Agent.state.messages.push()`（`packages/agent/src/agent.ts:541`）和
+`SessionManager.fileEntries.push()`（`packages/coding-agent/src/core/session-manager.ts:1044-1048`）。
+因此沿用同一基线机制，为二者维护 private tail；公开 list 被整体替换后下一次
+append 做一次安全修复。旧 object 上 agent append 的 exponent 为 0.994，N=20000
+为 21.593µs；新实现 exponent -0.035，N=20000 为 0.110µs（196×）。session
+append 受每条随机 ID 生成的约 0.1ms 固定成本主导，但 N=20000 仍从 135.394µs
+降为 109.678µs；结构门禁直接锁定 cons tail 连接，避免计时噪声掩盖回归。
+
+## Performance gates
+
+`scripts/goal11-performance-gate.py` 对完整 performance/stability JSON 执行硬门禁。
+阈值故意给 CI/机器差异留出数量级余量，但仍会击穿本 goal 的旧缺陷：N=5000
+frame/key/stream 各不超过 50ms、frame allocation 不超过 16MiB、stream 至少
+20 delta/s、TUI/agent/session append exponent 小于 0.35、冷启动不超过 750ms；
+1200-turn heap 不超过 128MiB 且 exponent 不超过 1.30、full GC 不超过 500ms、
+FD/thread 必须逐点恒定；10MiB load/resume/continue 各不超过 5s，sampled
+heap/RSS 峰值各不超过 baseline 512MiB。
+
+当前最终 performance JSON 见
+[`benchmarks/goal-v11-final.json`](benchmarks/goal-v11-final.json)：N=5000
+frame/key/stream 均为 4.00ms，TUI append exponent -0.047，冷启动 165.2ms。
+这些阈值分别约为当前时延的 12.5×、吞吐下限的 12.5×反向留白，以及加载时延
+的 15×以上；它们容纳常规主机差异，但旧 466–488ms frame、2.15 delta/s 与
+linear append 会确定性失败。

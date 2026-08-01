@@ -121,3 +121,54 @@ sha256sum /tmp/cadr-goal11-after-part-c-committed.json \
 
 未加入 transcript memoization、viewport pruning 或 virtual scrolling；输出
 语义无变更。
+
+## Part D — long-run stability and large sessions
+
+状态：完成。实现提交 `ec5834ec2`。
+
+新增 `scripts/goal11-stability.sh` / `scripts/goal11-stability.lisp`，以 production
+faux provider 驱动 1200 轮真实 agent/session/TUI event path 并渲染 14,400 帧，
+相当于每分钟两轮下 10 小时交互。五个 checkpoint 的 FD/Lisp thread/OS thread
+始终为 5/1/2；retained heap 从 35.86MiB 线性增长到 78.17MiB（exponent
+0.966），full GC 最大 80.0ms；释放场景后 heap 回到 35.77MiB，未发现泄漏或
+资源残留。
+
+真实 10,507,435-byte / 2400-entry JSONL 的 load/resume/continue 分别为
+328/268/276ms，1ms sampler 记录的 RSS 峰值约 168MiB，三次操作后保留 heap
+约 73MiB。报告没有把 retained conversation state 误报为 leak，也没有把 sampled
+peak 冒充精确瞬时上界。
+
+场景发现 agent messages 与 session entries 的 append 仍线性遍历。固定基线
+分别用 array `push`，故以同一 private-tail 机制修复；不改变 public list、session
+bytes、事件或 TUI 输出。源码位置与回归测试：
+
+| requirement | production source | regression test |
+|---|---|---|
+| agent message O(1) append and whole-list replacement recovery | `src/cadr-agent/runtime.lisp:23-31`, `src/cadr-agent/tool.lisp:74-116`, `src/cadr-agent/loop.lisp:127-166` | `GOAL11-AGENT-MESSAGE-APPEND-MAINTAINS-O1-TAIL-INVARIANT` |
+| session entry O(1) append and loaded-session tail restoration | `src/cadr-agent/session.lisp:34-50, 802-890, 1860-1880` | `GOAL11-SESSION-APPEND-MAINTAINS-O1-TAIL-INVARIANT` |
+
+测试先行红证据为 cadr-agent suite 625 checks / 623 pass / 2 fail，两个失败均为
+新增 tail accessor 尚不存在；实现后该 suite 635/635。旧 object 的 agent append
+在 N=20000 为 21.593µs、exponent 0.994；新 object 为 0.110µs、exponent
+-0.035。session 的随机 ID 固定成本掩盖 slope，但 N=20000 从 135.394µs 降至
+109.678µs，cons-tail identity 测试直接锁定复杂度机制。
+
+完整机器可读结果：
+[`docs/benchmarks/goal-v11-stability.json`](../benchmarks/goal-v11-stability.json)。
+门禁脚本对 committed performance/stability JSON 输出 `goal11 gate: PASS`。
+
+机械验证：
+
+```text
+./scripts/test-cl.sh
+  exit 0; all deterministic systems green
+./build.sh
+  exit 0; unsupported sb-core-compression correctly falls back to uncompressed image
+./scripts/goal11-stability.sh --label after-goal11 \
+  --output /tmp/cadr-goal11-stability-final.json
+  exit 0; 1200 turns, 10.0 simulated hours, 10,507,435-byte JSONL
+python3 scripts/goal11-performance-gate.py \
+  --bench /tmp/cadr-goal11-bench-final.json \
+  --stability /tmp/cadr-goal11-stability-final.json
+  PASS: frame/key/stream 4.00ms; heap exponent 0.966; GC max 80.0ms
+```
