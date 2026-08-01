@@ -2,7 +2,9 @@
 
 ## 1. Scope and counting rules
 
-Behavioral baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+Behavioral baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
+(`v0.83.0-38-g74caa2649`). No release tag leads this commit, so Goal 10 Part B
+is a user-adjudicated no-op; the fixed baseline remains unchanged.
 The audit uses the detached worktree `/tmp/cadr-parity-74caa2649`. The former
 baseline `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` and its checkout are retained
 only as a historical delta anchor; neither is a current parity source of truth.
@@ -16,7 +18,9 @@ Status meanings:
 - **有意差异**: an existing user-approved difference listed in
   [README](../README.md#differences-from-typescript-pi). Unless a row says
   otherwise, these remain limited to language/build ecosystem differences;
-  `originator=cadr` is the explicit Goal 9 Part C identity-only exception.
+  `originator=cadr` is the explicit Goal 9 Part C identity-only exception,
+  while Goal 10 Part D adds only the separately approved tool restarts and
+  opt-in Slynk debugging service.
 
 Test classification is deliberately strict:
 
@@ -177,6 +181,7 @@ proxy/default-stream helpers.
 | Built-in read/write/edit/bash/find/grep/ls harness set | 已实现 | Exact public tool names and execution-environment behavior are covered by [CL-PART-B](#cl-part-b) |
 | Skills/templates/system prompt | 有意差异 | Lisp registrations replace Markdown/TS resource formats; [CL-PART-B](#cl-part-b) |
 | Stream configuration/provider-request hooks and permanent shutdown | 已实现 | [CL-WAVE2-HARNESS](#cl-wave2-harness), [CL-GOAL9-HARNESS](#cl-goal9-harness) |
+| Tool-failure condition/restarts | 有意差异 | Lisp-native `retry-tool-call`/`skip-tool-call`/`abort-agent-run` and event 34 `:tool-call-error`; default behavior and all baseline wires remain unchanged. [CL-GOAL10-D](#cl-goal10-d) |
 
 ### 2.3 `coding-agent`
 
@@ -199,7 +204,10 @@ Reference CLI options at the baseline are:
 `--approve/-a`, `--no-approve/-na`, `--help/-h`, and `--version/-v`, plus
 `@file` arguments and extension-defined flags.
 
-cadr currently exposes `--provider`, `--model`, `--base-url`,
+cadr currently exposes the complete baseline contract plus the intentional
+`--slynk <port>` debugging option. The latter is default-off and fixed to
+loopback; it is not counted as missing or additional baseline behavior.
+Historically, the early implementation exposed `--provider`, `--model`, `--base-url`,
 `--system-prompt`, `--continue`, `--resume`, repeatable `--extension`,
 `--mode text|json|rpc`, `--print/-p`, `--no-tui`, `--help`, and `--version`.
 
@@ -231,6 +239,7 @@ and `get_commands`.
 | Tool set and mutation/runtime semantics | 已实现 | [tools](../src/cadr-cli/tools/), [CL-TOOLS](#cl-tools), [CL-PART-B](#cl-part-b) |
 | Session JSONL format | 已实现 | v3 header, entry union, delayed persistence and v1/v2 migration are covered by [CL-WAVE2-SESSION](#cl-wave2-session) |
 | Extension capability | 有意差异 | Original lifecycle/UI/runtime capabilities are covered; only the Lisp format/ecosystem differs. [CL-WAVE2-EXT](#cl-wave2-ext), [CL-PART-B](#cl-part-b) |
+| Runtime Slynk REPL | 有意差异 | Explicit `--slynk <port>`, loopback-only listener, live `active-agent`, cleanup and empty-HOME build isolation. [CL-GOAL10-D](#cl-goal10-d) |
 | Settings, themes, packages, context files, remote catalogs | 已实现 | [CL-PART-B](#cl-part-b) |
 
 ### 2.4 `tui`
@@ -354,6 +363,7 @@ contract in pure Lisp without adding a dependency.
 | <a id="cl-goal9-tui"></a>`CL-GOAL9-TUI` | [alternate-screen viewport/input/image/link/selection/restore](../test/cadr-tui/alt-screen-test.lisp), [terminal grapheme widths](../test/cadr-tui/unicode-test.lisp), [Markdown transformer width](../test/cadr-tui/components-test.lisp), and [CLI frontend integration](../test/cadr-cli/tui-test.lisp) |
 | <a id="cl-goal9-evals"></a>`CL-GOAL9-EVALS` | [pi harness](../test/cadr-evals/pi-harness-test.lisp), [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), and [summary](../test/cadr-evals/summary-test.lisp) |
 | <a id="cl-goal9-protocol"></a>`CL-GOAL9-PROTOCOL` | [CBOR](../test/cadr-protocol/cbor-test.lisp), [framing](../test/cadr-protocol/framing-test.lisp), and [v2 schemas/codecs](../test/cadr-protocol/protocol-test.lisp); 41 tests / 497 checks |
+| <a id="cl-goal10-d"></a>`CL-GOAL10-D` | [tool condition/restart and default-path tests](../test/cadr-agent/tool-loop-test.lisp), [event 34 lifecycle/parallel tests](../test/cadr-agent/extensions-wave2-test.lisp), [event-set freeze](../test/cadr-agent/extensions-wave3-test.lisp), and [real Slynk protocol/build-isolation tests](../test/cadr-cli/remote-repl-test.lisp) |
 | <a id="cl-agent-loop"></a>`CL-AGENT-LOOP` | [`SIMPLE-TURN-EMITS-REFERENCE-LIFECYCLE-ORDER`, `ERROR-AND-ABORT-STOP-THE-RUN-CLEANLY`](../test/cadr-agent/loop-test.lisp), [`TOOL-CALL-RESULT-AND-NEXT-MODEL-TURN-COMPLETE`](../test/cadr-agent/tool-loop-test.lisp) |
 | <a id="cl-agent-schema"></a>`CL-AGENT-SCHEMA` | [`NATIVE-SCHEMA-VALIDATES-NESTED-TOOL-ARGUMENTS`, `NATIVE-SCHEMA-SUPPORTS-COMPOSITION-AND-SCALAR-CONSTRAINTS`, `NATIVE-SCHEMA-DEFINITION-REJECTS-MALFORMED-KEYWORDS`](../test/cadr-agent/schema-test.lisp) |
 | <a id="cl-compaction"></a>`CL-COMPACTION` | [`AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT`, `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |

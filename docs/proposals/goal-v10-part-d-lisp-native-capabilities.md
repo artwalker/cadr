@@ -1,6 +1,6 @@
 # Goal 10 Part D Lisp 原生能力提案
 
-状态：**2026-08-01 已逐项批准；实现仍由 Part B 完成门禁。未修改生产代码、ASDF 或依赖审计。**
+状态：**2026-08-01 已逐项批准并实施。Part B 后续由用户裁定为 no-op，执行顺序门禁解除；实现与重冻证据见 `docs/acceptance/goal-v10-part-d.md`。**
 
 当前 cadr 实现基点：
 `7fb06d093d5eebd7163e3271fdc3451c31aa213a`。当前行为基线仍为

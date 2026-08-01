@@ -5,7 +5,8 @@ harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 
 冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
 命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
 Goal 9 已将行为基线重锁到 `74caa2649`，完成 Part A–E；Goal 11 已建立非功能
-属性第二验收轴并完成性能、内存与长时稳定性门禁，等待真实终端长时验收**
+属性第二验收轴并完成性能、内存与长时稳定性门禁；Goal 10 Part D 的获批
+condition/restart 与 opt-in Slynk 已实施并重新冻结**
 
 Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF test systems
 只含可重复测试，独立 live systems 由 `scripts/test-live.sh` 完整汇总。
@@ -27,7 +28,7 @@ Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF 
 
 - 行为参考仓库：`https://github.com/earendil-works/pi`
 - 固定审计提交：`74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-  （2026-07-30）
+  （`pi v0.83.0 + 38 commits`，2026-07-30）
 - 历史审计锚点：
   `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`；仅用于 Goal 4–8 的
   历史对照，不再参与当前 parity 判定
@@ -233,6 +234,7 @@ Phase 9 后的生产依赖：
 | `cl-sqlite`（ASDF `sqlite`） | session storage SQLite adapter | 第二个在册自研例外；经 CFFI 绑定系统 `libsqlite3`，项目自研 storage/repository contract 而不重写数据库引擎 |
 | `cl-ppcre` | `grep`、glob 和 JSON Schema `pattern` | 完整正则引擎按 `docs/progress/goal-v2.md` 明确暂缓；用户 pattern 不交给 shell |
 | `cl-jpeg`、`png-read` | JPEG/PNG 像素 codec | 用户在 Goal 8 Part B 编码前批准的纯 Lisp 可替换类目；不增加系统 ABI 或安全边界 |
+| `slynk/mrepl` | 显式 `--slynk` 运行时 REPL | Goal 10 Part D 单独批准的“显式启用调试服务”；默认关闭，只固定监听 loopback，允许任意进程内求值，绝非安全边界 |
 | `uiop` / ASDF、`sb-thread`、`sb-bsd-sockets`、`sb-posix` | 路径、进程、线程、socket、终端和构建 | SBCL/ASDF 自带设施，不计第三方生产依赖 |
 
 `fiveam` 只存在于测试 system。`babel`、`bordeaux-threads`、
@@ -244,6 +246,9 @@ Linux/SBCL 下的 CFFI 闭包为 Alexandria、Babel 与 trivial-features。完�
 `png-read` 的闭包为 Babel、Chipz、Iterate；其中 Babel/Iterate 已由
 `cl-sqlite` 闭包进入 image，Chipz 是本次唯一新增传递系统。`cl-jpeg` 只有
 ASDF 依赖。
+Slynk 精确闭包为 `slynk/mrepl → slynk → ASDF`；发布构建只预载
+`slynk/mrepl`，不包含其他 contrib。其加载在全新空临时 `HOME` 中完成，避免
+构建用户 `.slynkrc` 或 `.slynk.lisp` 副作用进入 native image。
 
 不使用 Node/Bun，不调用 provider 的 JavaScript SDK。实现直接使用官方 HTTP
 协议，因此 payload 对拍和原始 SSE 回放是硬门槛。
@@ -1402,6 +1407,8 @@ Phase 9 保持 provider、agent、extension、session 与前端公开协议不�
 - 两个在册自研例外仅为 `cl+ssl` 与 `cl-sqlite`；
 - `cl+ssl` 是唯一加密依赖；`cl-sqlite` 只绑定系统 `libsqlite3`；
 - 唯一明确暂缓依赖为完整正则引擎 `cl-ppcre`；
+- Goal 10 另有独立批准、仅显式启用的 Slynk 调试服务类目，不把它归入
+  自研例外或纯 Lisp 可替换类目；
 - 其他 `.asd` production system 依赖均为本项目 system 或 SBCL/ASDF
   自带设施；
 - 测试 system 可保留历史库以构造独立 fixture 和对照，但生产源码不得
@@ -1624,9 +1631,10 @@ d09bb77c6c45dd4c7fc3a0d354cf589f066effd8  cadr-evals.asd
 593c7d773b13107f2f3758ccc49abc66005f941d  scripts/test-cl.sh
 ```
 
-Extension export SHA 继续为
-`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
-此锚点后的公开 surface 变更必须进入新 goal 并先走人工裁决；依赖门禁与
+Goal 8 当时宣告的 extension export SHA
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`
+是历史值，后续已漂移，不能再作为当前冻结锚点。Goal 10 Part D 的当前重冻值
+见第 28 节。公开 surface 变更必须进入新 goal 并先走人工裁决；依赖门禁与
 “完成即提交”门禁继续全局生效。
 
 ## 25. Goal 9 Part D 本地验证入口
@@ -1684,3 +1692,33 @@ session wire 与 agent event 不变。
 500ms full GC、10MiB session 5s 等阈值均相对当前实测留有 12×以上的主要时延
 余量，却会稳定击穿优化前 466–488ms frame、2.15 delta/s 与 linear append。
 方法、完整数据与阈值理由由 `docs/performance.md` 维护。
+
+## 28. Goal 10 Part D Lisp 原生能力
+
+本节是全局“不得默认新增机制”原则的显式人工裁决例外，只覆盖批准提案中的
+两项能力；不能类推授权其他机制。
+
+工具 executor 或 schema 校验失败时，核心在原栈仍存活时建立
+`tool-execution-error` 与三个动态 restart：`retry-tool-call` 用新的 JSON object
+从 `:tool-call-before` 重走并重新校验，`skip-tool-call` 生成旧文案的 error
+result，`abort-agent-run` 先提交 error result 再走既有 abort。每个逻辑 call
+只产生一次 start/after/end；`:tool-call-error` 只在每次失败 attempt 的
+extension lifecycle 内出现，不进入 agent event、session、JSON 或 RPC wire。
+无 hook 选择时沿用原 error result，print/JSON/RPC/TUI 默认行为不变。
+
+`:tool-call-error` 是扩展事件全集第 34 个。其 payload 固定为
+`condition/tool-call/arguments/attempt/restart-names`；arguments 深复制，合法
+返回仅为 retry/skip/abort 三种动作。当前 extension export SHA-256 为
+`bb4665245ef9df19b274535071fcc5f6e56c79ab29db2152cd41afaa4df3b1e0`，34-event
+源码块 SHA-256 为
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
+今后新增事件或改变 restart 语义仍须书面提案和用户逐项批准。
+
+`--slynk <port>` 是唯一启用入口，端口必须为十进制 `1..65535`，调用固定为
+`slynk:create-server :interface "127.0.0.1" :style :spawn :dont-close t`。
+配置和环境变量不能静默开启，bind 失败致命；退出时关闭 listener 并清空
+`cadr-cli:active-agent`。loopback 不是沙箱，跨机访问由用户建立 SSH tunnel，
+强隔离仍由容器、虚拟机或受限用户负责。
+
+重冻实现 object ID 与测试证据完整列于
+[`docs/acceptance/goal-v10-part-d.md`](acceptance/goal-v10-part-d.md)。

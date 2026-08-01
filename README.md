@@ -77,6 +77,11 @@ the `cl-sqlite` closure, while Chipz is the only newly admitted transitive
 system. These libraries add no system ABI or security boundary and may be
 replaced by an in-tree implementation without changing public contracts.
 
+The separately authorized **explicitly enabled debugging service** category
+contains `slynk/mrepl` at Quicklisp snapshot `sly-20260101-git` (upstream
+commit `e01c7b4b`, archive MD5 `129945ec9a674a1efe353e2d3742fb00`). Its full
+closure is `slynk/mrepl → slynk → ASDF`; no other Slynk contrib is included.
+
 The exact production and transitive audit is in
 [`docs/dependency-audit.md`](docs/dependency-audit.md).
 
@@ -131,6 +136,7 @@ Equivalent command-line options are `--provider`, `--model`, and
 ./cadr --mode json "Explain this repository"
 ./cadr --mode rpc
 ./cadr --no-tui
+./cadr --slynk 4005
 ```
 
 Interactive terminals use the full-screen TUI. `--no-tui` explicitly selects
@@ -147,6 +153,13 @@ command surface follows the original pi command list.
 the current project's sessions before the global session set. It creates a new
 session containing the source conversation. It does not accept a message entry
 ID; use interactive `/fork` to select a user-message entry.
+
+`--slynk <port>` explicitly starts a runtime REPL on `127.0.0.1` and exposes
+the current agent as `(cadr-cli:active-agent)`. It is always off by default,
+cannot be enabled by config or environment variables, and never listens on a
+non-loopback address. Slynk permits arbitrary evaluation inside the cadr
+process; loopback is not a sandbox. Use an SSH tunnel for remote access and a
+container, VM, or restricted user when inspecting untrusted code.
 
 ### Server
 
@@ -246,6 +259,10 @@ macros are:
 
 It also exposes the original pi lifecycle events, runtime tool/provider
 registration, message/session actions, and RPC-capable extension UI context.
+The user-approved Lisp-native `:tool-call-error` event is the sole additional
+lifecycle event. At the live failure site it exposes `retry-tool-call`,
+`skip-tool-call`, and `abort-agent-run` restarts; one logical call still emits
+one start/after/end sequence, and the default path remains byte-identical.
 The exact frozen surface and reference locations are recorded in
 [`docs/proposals/goal-v7-extension-api.md`](docs/proposals/goal-v7-extension-api.md).
 
@@ -312,6 +329,12 @@ accidental name collisions; it is not a security boundary.
   of using the TypeScript/Bun toolchain.
 - Extensions are Lisp packages and forms rather than JavaScript modules and
   npm packages.
+- Tool failures expose Common Lisp restarts plus the opt-in
+  `:tool-call-error` extension event; this is an explicitly approved
+  Lisp-native addition and is not placed on agent-event, JSON, or RPC wires.
+- `--slynk <port>` is an explicitly approved, default-off, loopback-only
+  runtime debugging service. Original pi has no equivalent in-process Lisp
+  REPL.
 - By explicit user decision, every selector wraps in both directions, including
   the few original pi selectors that clamp at a boundary.
 - By explicit user decision, bash tool titles omit the explicit-timeout suffix

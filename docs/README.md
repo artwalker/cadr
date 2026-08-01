@@ -31,6 +31,10 @@ remain evidence and must not silently override a current contract.
 - [acceptance/](acceptance/): mechanical, live, smoke, and human acceptance
   reports for completed Parts.
 
+Current Goal 10 reports: [Part B no-op](acceptance/goal-v10-part-b.md),
+[Part D Lisp-native capabilities](acceptance/goal-v10-part-d.md), and
+[Part E release preparation](acceptance/goal-v10-part-e.md).
+
 When behavior, tests, or dependencies change, update the relevant current
 contract and its acceptance report in the same submitted Part. Historical
 reports may gain a clearly labelled superseding note, but their original

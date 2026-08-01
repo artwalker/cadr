@@ -1,6 +1,6 @@
 # Production dependency audit
 
-Audit date: 2026-07-31.
+Audit date: 2026-08-01.
 
 ## Production systems
 
@@ -58,6 +58,29 @@ The complete `png-read` closure in the audited Quicklisp distribution is:
 through the registered `cl-sqlite` closure. `chipz` is the only newly admitted
 transitive system. ASDF is implementation-provided. This authorization was
 recorded before `cadr-cli.asd` was changed, as required by the dependency gate.
+
+## Explicitly enabled debugging service
+
+Goal 10 Part D separately authorized Slynk for the opt-in `--slynk <port>`
+runtime REPL. It is not a self-build exception or a pure-Lisp replaceable
+library: it is a debugging service that permits arbitrary in-process Common
+Lisp evaluation and is therefore a distinct security-relevant category.
+
+The audited snapshot is Quicklisp 2026-01-01 `sly-20260101-git`, upstream
+commit `e01c7b4b`, archive MD5 `129945ec9a674a1efe353e2d3742fb00`.
+The complete admitted closure is:
+
+- `slynk/mrepl` → `slynk` → ASDF;
+- the SBCL backend may `require` implementation contribs, which are not
+  third-party systems.
+
+`slynk/fancy-inspector`, `slynk/arglists`, `slynk/profiler`,
+`slynk/stickers`, and every other contrib remain excluded. Production builds
+preload only `slynk/mrepl` into the native image; a source checkout loads it
+only after the explicit `--slynk` option. Both build and deterministic test
+entry points use a fresh empty temporary `HOME` while preserving the resolved
+absolute `QUICKLISP_SETUP`, preventing build-user `.slynkrc` or `.slynk.lisp`
+side effects from entering the image or tests.
 
 ## Test and exception-transitive systems
 
