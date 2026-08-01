@@ -1,7 +1,7 @@
 # Goal 9 Part B 阶段报告
 
-> 状态：第四轮 tool result 补正、机械门禁与全量已绿；提交证据见第 7 节。
-> 等待用户重新执行 B3 双终端 A/B，Part C 尚未开始。
+> 状态：第五轮 timeout 噪音与时序确定性补正已落账；全量连续 5 次零失败。
+> 按用户要求暂停，等待重新验收；Part C 尚未开始。
 
 ## 1. 基线与机械账本
 
@@ -176,6 +176,59 @@ write 只有 ASCII，导致 UTF-8 bytes 与 UTF-16 units 恰好相等；其余�
 grep 另用 CJK/emoji 构造“Common Lisp 字符数小于 500、UTF-16 码元数大于 500”
 的边界，防止同类计数口径再次被 ASCII 掩盖。
 
+## 3.4 第五轮：timeout 噪音与时序确定性补正
+
+`setsid: child ... did not exit normally: Success` 不是可忽略的测试噪音。旧实现把
+`setsid` 自身 stderr 与命令 stdout/stderr 合并到同一 pipe，wrapper 退出竞态因此会
+污染模型可见 tool result。`src/cadr-cli/tools/bash.lisp:141-163` 现把命令 stderr 在
+child session 内以 `2>&1` 合并到命令 stdout，同时令 `setsid` 自身
+`:error-output nil`；没有使用 regex 擦除，故用户命令真实输出中即使包含 `setsid:`
+也不会被误删。
+
+timeout 门禁改用不会自行退出的 `exec /usr/bin/tail -f /dev/null`，且 deadline 在
+process-group ID 显式建立后才开始；它验证的只可能是 timeout，不再与 `sleep 1` 的
+自然结束争抢 50 ms 窗口。永久门禁为
+`GOAL9-B3-BASH-RESULT-STATUS-AND-TRUNCATION-COPY-MATCH-BASELINE` 与
+`GOAL9-B3-BASH-TIMEOUT-NEVER-LEAKS-WRAPPER-DIAGNOSTICS`
+（`test/cadr-cli/tool-result-parity-test.lisp:159-219`），后者单独断言 result 不含
+`setsid:` 或 `cadr-bash-wrapper`。
+
+原 6203 checks 没捕获的原因是：bash 用例只在一次 50 ms 竞速中精确比较最终文案，
+既未隔离 wrapper fd，也未单独断言 wrapper 词汇永不出现；preflight 用例又把
+“50 ms 内 shutdown thread 没结束”当成 shutdown 已开始的替代证据，scheduler
+稍慢就会在 release 前尚未写入 shutdown flag。其余并发门禁也多只验最终状态，
+没有证明中间态确实已到达。新增检查锁的是显式状态转移，不再靠运行得够快取胜。
+
+时序审计不是只修两条已知红灯。以下自动化面已全部从“等一小段时间然后猜状态”
+改成可观察状态握手：
+
+| 范围 | 旧竞态 | 当前确定性同步 |
+|---|---|---|
+| agent shutdown/preflight/compaction/tree | `sleep 1ms` 轮询或 50 ms 反向 semaphore timeout | 在 agent lock 下等待 shutdown flag 的 condition broadcast，并断言 active operation/mutation count；见 `test/cadr-agent/shutdown-test.lisp:24-365`。 |
+| parallel tools、file mutation | 用 10–80 ms 延迟制造先后顺序 | entered/release semaphore；realpath alias 另断言共享同一 mutex；见 `tool-loop-test.lisp:102`、`part-b-tools-test.lisp:76`。 |
+| execution-env/bash subprocess | 短 timeout 与有限 `sleep` 进程竞速；后台输出靠延迟 | 不自行退出的 `tail -f /dev/null`；FIFO 明确握手后台 writer ready/release，并以 `/proc/<pid>` 证明清理；见 `execution-env-test.lisp:182`、`bash-test.lisp:80`。 |
+| SSE/真实 HTTP socket | delayed stream 与第二帧靠 wall-clock sleep | stream entered/release semaphore；首个 SSE callback 释放 server 第二帧；见 `test/cadr-ai/http-test.lisp:47-177`。 |
+| RPC prompt/UI/bash | 10 ms 轮询 thread、pending hash 与输出 | join 已捕获 worker；newline-notifying Gray stream 驱动 JSON record handshake；bash worker 同步 join/abort；见 `test/cadr-cli/helpers.lisp:46-95`、`rpc-test.lisp:5-380`。 |
+| footer debounce/render | 10–50 ms sleep/poll | 注入 monotonic clock，跨越 debounce 边界前后逐次调用并断言；见 `interactive-services.lisp:2113-2290`、`part-b-interactive-test.lisp:668-883`。 |
+| extension/TUI overlay | worker polling再固定等 20 ms | overlay 安装完成 callback 发 semaphore；git daemon 读取 `Ready to rumble`；见 `goal9-b3-overlay-contract-test.lisp:650-742`、`extensions-test.lisp:614-686`。 |
+| TUI command/event | 轮询 footer/model/theme/progress flags | command callback 在返回前完成状态更新；busy abort 用 semaphore；RPC workflow join worker；见 `tui-test.lisp`、`goal9-a2-interactive-test.lisp:115`、`goal9-a2-workflows-test.lisp:187`。 |
+| PTY smoke | 发键/resize 后固定 sleep 再截图；等待已删除的 `sessions` 文案和旧 prompt glyph | 每个动作轮询其确切可见状态或 terminal-restored marker；当前 slash surface、无 glyph editor 与 `/quit` 路径逐项校正；见 `scripts/{goal5-manual-tui-smoke,live-tui-smoke}.sh`。 |
+
+全仓 `sleep`/timeout 审计的剩余项分三类，均不以时间流逝决定断言真假：
+
+- `test/cadr-tui/manual-acceptance-test.lisp:250` 只给人工交互 event loop 限速，自动
+  FiveAM 测试不会调用该 runner。
+- `test/cadr-cli/tui-test.lisp:1178-1207` 的 `"sleep 1"` 是不执行的标题 fixture；
+  extension/RPC/sdk 的 `timeout-ms` 是 payload/立即取消语义，retry 测试注入假的
+  sleep function。
+- process/PTY smoke 中保留的 `sleep` 只是在有界循环中降低 polling 频率；成功条件
+  是 port file、Unix socket、request marker、精确 screen state 或恢复 marker，
+  不再有固定延迟后直接断言的路径。
+
+此前报告把 `SHUTDOWN-DURING-PREFLIGHT-PREVENTS-PROVIDER-START` 的首跑失败写成
+“立即复跑全绿”，该收尾判定是错的，现明确撤回。今后任何测试若需复跑才绿，本轮
+即未完成：必须保留首次红灯、定位不确定性并改为显式同步，不能用第二次结果覆盖它。
+
 ## 4. 色彩字节证据
 
 同一 dark palette 输入的 capture：
@@ -191,65 +244,57 @@ background reset    = ESC[49m
 
 原始 capture：`/tmp/cadr-goal9-color-capture.txt`。
 
-## 5. 第四轮最终机械证据
+## 5. 第五轮最终机械证据
 
-| 证据 | 命令/范围 | checks | pass | skip | fail | 输出记录 |
-|---|---|---:|---:|---:|---:|---|
-| tool result 专用门禁 | 7 个注册工具的完整 result 文案与数值边界 | 24 | 24 | 0 | 0 | 本轮五个 `GOAL9-B3-*-RESULT-*` FiveAM 测试 |
-| 隔离确定性全量 | 临时空 `HOME`，显式 unset 四类 live credential，`./scripts/test-cl.sh` | 6879 | 6871 | 8 | 0 | `/tmp/cadr-goal9-tool-result-isolated-rerun.log` |
-| 当前用户状态全量 | `./scripts/test-cl.sh` | 6902 | 6901 | 1 | 0 | `/tmp/cadr-goal9-tool-result-current-final.log` |
-| 本机可用 live 门禁 | 当前与隔离 totals 的增量；DeepSeek 与 Codex OAuth 均真实执行 | 23 | 23 | 0 | 0 | `/tmp/cadr-goal9-tool-result-current-final.log` |
-| PTY lifecycle | `./scripts/goal9-a2-pty.sh` | 3 | 3 | 0 | 0 | normal、ctrl-c、suspend-resume 均 PASS |
+代码冻结在 `be243c0ab` 与 `baaf6dd75` 后，使用当前用户 settings/auth 状态连续执行
+同一条 `./scripts/test-cl.sh` 五次；没有失败后重跑、没有丢弃任何一轮：
 
-当前用户全量中的唯一 skip 为没有 `ANTHROPIC_API_KEY` 的
-`LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT`。DeepSeek streaming/print、
-Codex OAuth CLI、DeepSeek/Codex eval 及两个 DeepSeek 进程级 eval 均真实执行。
+| run | checks | pass | skip | fail | 完整日志 |
+|---:|---:|---:|---:|---:|---|
+| 1 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-1.log` |
+| 2 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-2.log` |
+| 3 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-3.log` |
+| 4 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-4.log` |
+| 5 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-5.log` |
 
-证据真实性补充：第一次保存隔离重跑时，既有
-`SHUTDOWN-DURING-PREFLIGHT-PREVENTS-PROVIDER-START` 时序测试偶发 2 个断言失败；
-本轮没有改动 `cadr-agent`，按“顺手发现只记录不修”处理。相同隔离命令立即重跑
-6879 checks 全绿，当前用户状态 6902 checks 亦全绿；本轮首次隔离运行同一既有
-时序门禁再次发生相同 2 个断言失败，未改产品代码，原命令立即复跑全绿。失败日志
-保留为 `/tmp/cadr-goal9-tool-result-isolated.log`。
+每轮唯一 skip 都是本机没有 `ANTHROPIC_API_KEY` 的
+`LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT`；DeepSeek 与 Codex OAuth live
+门禁均实际执行。分层复核为 `cadr-agent 623/623`、`cadr-cli 2508/2508`、
+`cadr-ai 1911 checks / 1910 pass / 1 skip / 0 fail`。
+
+外挂 PTY smoke 同样改为状态同步后真实执行：
+
+- `./scripts/goal5-manual-tui-smoke.sh`：overlay focus、CJK、image fallback、resize、
+  terminal restore 全部通过。
+- `./scripts/live-tui-smoke.sh`：当前 slash surface、autocomplete/undo/kill-ring、
+  DeepSeek 两轮 write/edit、resize、CJK、`/quit` terminal restore 全部通过；日志
+  `/tmp/cadr-goal9-live-tui-smoke.log`。
 
 残留 grep 命令与原始输出：
 
 ```text
-$ rg -n 'format nil " \(timeout ~As\)"|timeout ~As' src/cadr-cli/tui.lisp
+$ rg -n 'strip-setsid-timeout-noise|:error-output :output' src/cadr-cli/tools/bash.lisp
 (no output; exit 1)
 
-$ rg -n 'Wrote ~D UTF-8 bytes|Wrote [0-9]+ UTF-8 bytes|Applied ~D replacement|Converted ~A to PNG' src test
-(no output; exit 1)
+$ rg -n '2>&1|:error-output nil' src/cadr-cli/tools/bash.lisp
+153:             "printf '%s' \"$$\" > \"$1\"; exec /bin/bash -lc \"$2\" 2>&1"
+163:            :error-output nil
 
-$ rg -n 'tab scope \(all/scoped\)' src/cadr-cli/tui.lisp test/cadr-cli
-(no output; exit 1)
+$ rg -n '\(sleep\s' test
+test/cadr-tui/manual-acceptance-test.lisp:250:                  (sleep 0.02d0))
 
-$ rg -n 'up/down navigate · enter change · escape close' src
-(no output; exit 1)
-
-$ rg -n 'timeout 10s|Successfully wrote 16 bytes' test/cadr-cli/tui-test.lisp
-1247:      (is (null (search " (timeout 10s)" rendered)))
-1290:              :text "Successfully wrote 16 bytes to notes.txt"))
-
-$ rg -n 'tool-preview-budget|\(string-equal name "read"\)' src/cadr-tui/components.lisp
-1213:(defun tool-preview-budget (name)
-1216:    ((string-equal name "read") 0)
-1532:                (tool-preview-budget
-
-$ rg -n 'utf16-code-unit-length|Successfully wrote' src/cadr-cli/truncation.lisp src/cadr-cli/tools/write.lisp
-src/cadr-cli/truncation.lisp:21:(defun utf16-code-unit-length (text)
-src/cadr-cli/truncation.lisp:86:  (if (<= (utf16-code-unit-length line) max-units)
-src/cadr-cli/tools/write.lisp:42:          (format nil "Successfully wrote ~D bytes to ~A"
-src/cadr-cli/tools/write.lisp:43:                  (utf16-code-unit-length content)
+$ rg -n 'setsid:|cadr-bash-wrapper' test/cadr-cli/tool-result-parity-test.lisp
+218:      (is (null (search "setsid:" message)))
+219:      (is (null (search "cadr-bash-wrapper" message))))))
 ```
 
-模型可见 executor result 与 TUI preview 现在分别有门禁；后者继续展示 write
-request content，前者按基线返回 UTF-16 码元计数 receipt。
+模型可见 executor result 与 TUI preview 仍分别有门禁；write 的 UTF-16 receipt
+语义没有被本轮时序补正改动。
 
-## 6. 隔离构建产物
+## 6. 第四轮隔离构建产物（历史证据）
 
-最终隔离构建须在本轮实现稳定后重跑，并记录 SBCL compression 分支、退出码、
-产物 mode/size、`--version` 与 SHA-256：
+以下 hash 是第四轮产物，不冒充第五轮源码构建证据；本轮用户指定的验收门槛是
+连续 5 次全量与保留 smoke，未要求重建发布二进制：
 
 ```text
 compression branch: SBCL lacks sb-core-compression; both builds used the documented uncompressed fallback
@@ -261,7 +306,7 @@ cadr-server SHA-256: a973aaa04f1d0f85ee6a59fbe767209fb45b0269e89df48790af05c0a60
 logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 ```
 
-## 7. 第三、四轮提交
+## 7. 第三至第五轮提交
 
 | commit | 内容 |
 |---|---|
@@ -272,6 +317,9 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 | `034f69e0f` | 明确完成态 Markdown fence 为已核实非差异 |
 | `21ae81f13` | 补齐 `/logout` 独立整屏 SHA，并刷新第三轮全量数字 |
 | `1c442d271` | 第四轮模型可见 tool result 与永久回归门禁 |
+| `be243c0ab` | 隔离 `setsid` wrapper stderr、确定性 timeout target 与无噪音回归 |
+| `baaf6dd75` | 全套时序测试改用 semaphore/condition/join/FIFO/injected clock |
+| `29e9bade9` | PTY smoke 改为观察实际 screen/marker 状态，不再固定延迟断言 |
 
 提交后须再次确认本轮路径无未提交变更；用户预存的
 `docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与
@@ -282,5 +330,5 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 精确启动命令、环境约束和 11 个逐场景检查项见
 [`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
 
-当前处置：`第四轮 tool result 补正、全量与提交已落账；等待用户重新逐项确认`。
+当前处置：`第五轮 timeout/时序补正、连续五轮全量与提交已落账；按要求暂停`。
 收到确认前不开始 Part C。
