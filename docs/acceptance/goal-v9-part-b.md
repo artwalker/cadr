@@ -1,6 +1,6 @@
 # Goal 9 Part B 阶段报告
 
-> 状态：第五轮 timeout 噪音与时序确定性补正已落账；全量连续 5 次零失败。
+> 状态：第六轮 live OAuth 共享状态补正已落账；全量连续 5 次零失败。
 > 按用户要求暂停，等待重新验收；Part C 尚未开始。
 
 ## 1. 基线与机械账本
@@ -229,6 +229,50 @@ process-group ID 显式建立后才开始；它验证的只可能是 timeout，�
 “立即复跑全绿”，该收尾判定是错的，现明确撤回。今后任何测试若需复跑才绿，本轮
 即未完成：必须保留首次红灯、定位不确定性并改为显式同步，不能用第二次结果覆盖它。
 
+## 3.5 第六轮：live OAuth 顺序依赖与共享状态补正
+
+顾问的 `6220 checks / 6216 pass / 1 skip / 3 fail` 不是另一套测试规模：
+`6220 = cadr-ai 1911 + cadr-agent 623 + cadr-tui 1178 + cadr-cli 2508`。三个 fail
+正是 `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` 的 status、stdout、
+stderr 三条断言；CLI suite 失败后 ASDF 没有继续 storage/server/evals/protocol。
+
+此前宣告的五次 `6919/6918/1/0` 是当时真实运行结果，但不足以证明 refresh 路径。
+那五次运行期间 canonical `~/.cadr/auth.json` 中的 access token 离 5 分钟主动刷新
+窗口仍很远，文件 SHA-256 始终为
+`1b2d7e98b4d1576d0df894b3188a7ff161f0eb885e074320780d7db99e080539`；因此只验证了
+fresh-access 路径。把它汇报成覆盖 live OAuth 生命周期，是证据范围夸大。
+
+旧 CLI live 测试逐次把整个真实 `auth.json` 复制进临时 HOME。隔离 CLI 在副本上调用
+`resolve-oauth-credential`；进入刷新窗口时，OpenAI 返回的新 access/refresh token
+只写回临时副本，canonical 文件仍保存已经消费的旧 refresh token。后续测试或后续
+suite run 再从 canonical 复制，便会稳定走无效 token。确定性 rotating-token 仿真
+直接复现：独立副本 A 刷新成功，副本 B 得到 `invalid_grant`，且 canonical 仍为旧
+token；改用共享 canonical 原子刷新后，两次读取只刷新一次且 canonical 保存新 token。
+
+当前机制只有一个真源：`test/cadr-live-support.lisp` 每次都重新读取 canonical auth，
+不缓存用户凭据；若凭据已进入刷新窗口，则通过既有 `auth-storage-modify` 文件锁执行
+一次 read-modify-write，把轮换后的 token 原子写回 canonical，再把这一份 fresh
+credential 写入 CLI 临时 store。eval live 测试复用同一 helper，不再单独读取并刷新。
+该 helper 是独立 ASDF test system，CLI/evals 不再各自编译、加载同一源码副本。
+
+真实文件安全结论：refresh 确实必须写回真实 canonical 文件，否则 rotating refresh
+token 必然把用户凭据留成废值；该写入只在过期窗口发生，并保留 mode `0600` 与其他
+provider。fresh credential 路径逐字比较文件内容，证明不重写；refresh 失败路径同样
+逐字不变；隔离 CLI 调用前后也逐字断言 canonical 不变。永久门禁为：
+
+- `LIVE-OAUTH-SUITE-CREDENTIAL-REFRESHES-ONCE-AND-WRITES-THROUGH-CANONICAL-STORE`
+- `LIVE-OAUTH-SUITE-DOES-NOT-REWRITE-A-FRESH-CANONICAL-CREDENTIAL`
+- `LIVE-OAUTH-SUITE-FAILED-REFRESH-KEEPS-CANONICAL-CREDENTIAL-INTACT`
+- `LIVE-OAUTH-SUITE-REREADS-THE-CANONICAL-STORE-ON-EVERY-USE`
+- `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL`
+
+这次差异不是“我这边能过、顾问环境有问题”：两边使用同一用户凭据和同一测试命令，
+决定旧代码走哪条路径的是运行时 token 是否已进入刷新窗口，以及 canonical 是否已被
+此前的副本刷新消费。当前五次运行使用修正后的 `4fdc38b05`；顾问三次失败使用旧
+`62eee0579`。确定性仿真负责覆盖轮换分支，真实五连跑负责覆盖完整套件顺序。
+顺序依赖与共享状态污染从此与 flaky 同级：单次或单机转绿不能结案，必须证明套件
+顺序无关、canonical 状态安全，并以连续全量运行锁定。
+
 ## 4. 色彩字节证据
 
 同一 dark palette 输入的 capture：
@@ -244,23 +288,28 @@ background reset    = ESC[49m
 
 原始 capture：`/tmp/cadr-goal9-color-capture.txt`。
 
-## 5. 第五轮最终机械证据
+## 5. 第六轮最终机械证据
 
-代码冻结在 `be243c0ab` 与 `baaf6dd75` 后，使用当前用户 settings/auth 状态连续执行
-同一条 `./scripts/test-cl.sh` 五次；没有失败后重跑、没有丢弃任何一轮：
+代码提交为 `4fdc38b05` 后，使用当前用户 settings/auth 状态连续执行同一条
+`./scripts/test-cl.sh` 五次；没有失败后重跑、没有丢弃任何一轮：
 
 | run | checks | pass | skip | fail | 完整日志 |
 |---:|---:|---:|---:|---:|---|
-| 1 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-1.log` |
-| 2 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-2.log` |
-| 3 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-3.log` |
-| 4 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-4.log` |
-| 5 | 6919 | 6918 | 1 | 0 | `/tmp/cadr-goal9-flake-run-5.log` |
+| 1 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-1.log` |
+| 2 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-2.log` |
+| 3 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-3.log` |
+| 4 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-4.log` |
+| 5 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-5.log` |
 
 每轮唯一 skip 都是本机没有 `ANTHROPIC_API_KEY` 的
 `LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT`；DeepSeek 与 Codex OAuth live
-门禁均实际执行。分层复核为 `cadr-agent 623/623`、`cadr-cli 2508/2508`、
+门禁均实际执行。分层复核为 `cadr-agent 623/623`、`cadr-cli 2522/2522`、
 `cadr-ai 1911 checks / 1910 pass / 1 skip / 0 fail`。
+
+五轮 canonical auth SHA-256 在每轮前后均为
+`1b2d7e98b4d1576d0df894b3188a7ff161f0eb885e074320780d7db99e080539`；本次真实运行
+没有触发刷新，也没有改写用户 auth。轮换写回由第 3.5 节确定性测试覆盖，不能拿 fresh
+token 的五连跑冒充 refresh 分支证据。
 
 外挂 PTY smoke 同样改为状态同步后真实执行：
 
@@ -306,7 +355,7 @@ cadr-server SHA-256: a973aaa04f1d0f85ee6a59fbe767209fb45b0269e89df48790af05c0a60
 logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 ```
 
-## 7. 第三至第五轮提交
+## 7. 第三至第六轮提交
 
 | commit | 内容 |
 |---|---|
@@ -320,6 +369,7 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 | `be243c0ab` | 隔离 `setsid` wrapper stderr、确定性 timeout target 与无噪音回归 |
 | `baaf6dd75` | 全套时序测试改用 semaphore/condition/join/FIFO/injected clock |
 | `29e9bade9` | PTY smoke 改为观察实际 screen/marker 状态，不再固定延迟断言 |
+| `4fdc38b05` | live OAuth canonical 共享刷新、隔离凭据注入与确定性轮换回归 |
 
 提交后须再次确认本轮路径无未提交变更；用户预存的
 `docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与
@@ -330,5 +380,5 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 精确启动命令、环境约束和 11 个逐场景检查项见
 [`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
 
-当前处置：`第五轮 timeout/时序补正、连续五轮全量与提交已落账；按要求暂停`。
+当前处置：`第六轮 live OAuth 顺序/共享状态补正、连续五轮全量与提交已落账；按要求暂停`。
 收到确认前不开始 Part C。
