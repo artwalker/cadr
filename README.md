@@ -11,6 +11,9 @@ CADR Lisp Machine.
 
 Behavior is pinned to
 [`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`](https://github.com/earendil-works/pi/tree/74caa2649f10ed71b4378ce69f5d9fbfd2466ca5).
+That commit is `v0.83.0-38-g74caa2649`: it is 38 commits ahead of the latest
+published `v0.83.0` tag, so Goal 10 correctly retained it instead of
+downgrading to the tag.
 That implementation and its tests are the behavioral reference for provider
 payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
 and terminal interaction.
