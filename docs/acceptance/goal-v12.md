@@ -36,3 +36,45 @@ lock object、dependency tree、事件 trace、五轮原始样本与汇总重算
 为何旧门禁没捕获：它有连续 Cadr trace，却没有同类 pi alt-screen trace；结构与事件
 结果断言不能回答“相对原版多慢才算缺陷”。本次新增的是成对、同路径、原始样本可重算
 的基线合同，不再用 main-screen 数字替代 mouse/wheel 标尺。
+
+## Part A — full fixed-baseline source audit
+
+状态：完成审计，等待用户裁决；未进入 Part C。
+
+固定基线 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` 下，命令
+
+```sh
+git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only 74caa2649 -- packages \
+  | awk '$0 !~ /\.test\.ts$/ && $0 ~ /\.ts$/' | sort
+```
+
+产生 595 个唯一文件，manifest SHA-256 为
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`。
+每个文件的 top-level/exported surface、功能、具体 Cadr 符号/位置、三类判定与完整
+baseline line span 均写入 [`docs/source-parity.md`](../source-parity.md)。账本 SHA-256
+为 `4603646c6a780466af6df2900b02afc6696b1fff00463c0eed3381ec92417aac`。
+
+| package | files | 已实现 | 有意差异 | 缺失 |
+|---|---:|---:|---:|---:|
+| ai | 183 | 117 | 30 | 36 |
+| coding-agent | 289 | 139 | 27 | 123 |
+| agent | 42 | 25 | 11 | 6 |
+| tui | 37 | 23 | 1 | 13 |
+| server | 13 | 13 | 0 | 0 |
+| storage | 12 | 12 | 0 | 0 |
+| evals | 10 | 6 | 2 | 2 |
+| protocol | 9 | 8 | 1 | 0 |
+| **total** | **595** | **343** | **72** | **180** |
+
+180 个缺失项中，99 个是 shipped runnable examples，81 个是 production/helper
+capabilities。建议批次按依赖排序为：TUI composition 19、Apple Terminal modifier 2、
+agent/session/coding core 22、AI catalog/OAuth/transport/stream 36、eval lifecycle 2、
+runnable examples 99。72 个“有意差异”逐行保留，尚未替用户批准。
+
+机械复核：rendered paths 595、unique 595；与 manifest `diff -u` 无输出；三类计数
+343/72/180；595/595 行均含精确 baseline `file:start-end` 证据。Part A 自有变更
+仅为 `docs/source-parity.md` 与本报告，`src/` 零变更；用户既有的
+`docs/acceptance/goal-v8-final.md` 工作区改动保持原样且未纳入。
+
+本轴的边界如实保留：它能发现缺失的 source capability，却不能证明同名实现内部逐字
+行为等价；parity-map、performance gate 与用户 A/B 仍不可替代。
