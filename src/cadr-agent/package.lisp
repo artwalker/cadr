@@ -22,6 +22,50 @@
    #:agent-set-model
    #:agent-set-thinking-level
    #:agent-navigate-tree
+   #:collect-entries-for-branch-summary
+   #:prepare-branch-entries
+   #:generate-branch-summary
+   #:branch-summary-preparation
+   #:branch-summary-preparation-messages
+   #:branch-summary-preparation-file-operations
+   #:branch-summary-preparation-total-tokens
+   #:branch-summary-result
+   #:branch-summary-result-summary
+   #:branch-summary-result-usage
+   #:branch-summary-result-read-files
+   #:branch-summary-result-modified-files
+   #:+compaction-summary-prefix+
+   #:+compaction-summary-suffix+
+   #:+branch-summary-prefix+
+   #:+branch-summary-suffix+
+   #:bash-execution-message
+   #:make-bash-execution-message
+   #:bash-execution-message-command
+   #:bash-execution-message-output
+   #:bash-execution-message-exit-code
+   #:bash-execution-message-cancelled-p
+   #:bash-execution-message-truncated-p
+   #:bash-execution-message-full-output-path
+   #:bash-execution-message-timestamp
+   #:bash-execution-message-exclude-from-context-p
+   #:bash-execution-to-text
+   #:custom-agent-message
+   #:make-custom-agent-message
+   #:branch-summary-message
+   #:make-branch-summary-message
+   #:compaction-summary-agent-message
+   #:make-compaction-summary-agent-message
+   #:convert-agent-messages-to-llm
+   #:file-operations
+   #:make-file-operations
+   #:file-operations-read
+   #:file-operations-written
+   #:file-operations-edited
+   #:extract-file-operations-from-message
+   #:compute-file-operation-lists
+   #:format-file-operations
+   #:serialize-conversation
+   #:stream-proxy
    #:agent-steering-mode
    #:agent-follow-up-mode
    #:agent-event
@@ -218,6 +262,7 @@
    #:truncate-harness-tail
    #:truncate-harness-line
    #:harness-operation-error
+   #:make-harness-operation-error
    #:harness-operation-error-code
    #:harness-operation-error-message
    #:harness-operation-error-path
@@ -228,10 +273,19 @@
    #:execution-file-info-size
    #:execution-file-info-mtime-ms
    #:execution-result
+   #:make-execution-result
    #:execution-result-stdout
    #:execution-result-stderr
    #:execution-result-exit-code
    #:node-execution-env
+   #:execution-tool-context
+   #:make-execution-tool-context
+   #:execution-tool-context-env
+   #:execution-tool-resolve-path
+   #:execution-tool-read-text
+   #:execution-tool-read-binary
+   #:execution-tool-write
+   #:execution-tool-exec
    #:make-node-execution-env
    #:execution-env-absolute-path
    #:execution-env-join-path

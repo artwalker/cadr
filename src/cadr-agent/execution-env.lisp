@@ -1,5 +1,45 @@
 (in-package #:cadr-agent)
 
+(defclass execution-tool-context ()
+  ((env :initarg :env :reader execution-tool-context-env)))
+
+(defun make-execution-tool-context (&key env)
+  (make-instance 'execution-tool-context
+                 :env (or env (make-node-execution-env))))
+
+(defgeneric execution-tool-resolve-path (context path &optional base-directory))
+(defgeneric execution-tool-read-text (context path))
+(defgeneric execution-tool-read-binary (context path))
+(defgeneric execution-tool-write (context path content))
+(defgeneric execution-tool-exec
+    (context command &key cwd timeout signal on-stdout on-stderr))
+
+(defmethod execution-tool-resolve-path
+    ((context execution-tool-context) path &optional base-directory)
+  (execution-env-absolute-path
+   (execution-tool-context-env context)
+   (if base-directory
+       (execution-env-join-path
+        (execution-tool-context-env context) base-directory path)
+       path)))
+
+(defmethod execution-tool-read-text ((context execution-tool-context) path)
+  (execution-env-read-text-file (execution-tool-context-env context) path))
+
+(defmethod execution-tool-read-binary ((context execution-tool-context) path)
+  (execution-env-read-binary-file (execution-tool-context-env context) path))
+
+(defmethod execution-tool-write ((context execution-tool-context) path content)
+  (execution-env-write-file (execution-tool-context-env context) path content))
+
+(defmethod execution-tool-exec
+    ((context execution-tool-context) command
+     &key cwd timeout signal on-stdout on-stderr)
+  (execution-env-exec
+   (execution-tool-context-env context) command
+   :cwd cwd :timeout timeout :signal signal
+   :on-stdout on-stdout :on-stderr on-stderr))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require :sb-posix))
 
