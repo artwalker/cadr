@@ -10,6 +10,15 @@
 > Part B 的 bearer-token SHA-256、定长比较与 socket suffix 最小实现面已按
 > `docs/proposals/goal-v10-part-b-baseline.md` 第 0 节预授权；新增密码学依赖或
 > 超出批准文件面仍须 blocked。
+>
+> **2026-08-01 Part D 裁决**：D1 condition/restart、D2 Slynk capability
+> 与 D2 精确依赖闭包均已逐项批准，但实现仍须等待 Part B 完成。D1 获准新增
+> 第 34 个扩展事件 `:tool-call-error`，仅为本次完整提案解除 Goal 8 的
+> “33 个封顶”；实现后按 34 个事件重新冻结，今后任何新增仍须重新提案并
+> 逐项裁决。D2 必须默认关闭、只由显式 CLI 开启、固定监听
+> `127.0.0.1`；构建与确定性测试必须用全新空临时 `HOME` 防止构建机
+> `.slynkrc` 副作用进入 image。完整裁决见
+> `docs/proposals/goal-v10-part-d-lisp-native-capabilities.md`。
 
 - **goal 9 全部 Part（A/A2/B/C/D/E）验收通过后**方可开始。
 - 本 goal 收拢 goal 9 之后的全部待办，**不接受范围缩减**：工作量大的拆成更多 Part 顺序推进，不得移出范围或推给后续 goal。唯一合法的缩范围形式是标记 blocked、说明理由、交用户裁决。
@@ -63,6 +72,12 @@
 2. **slynk 远程 REPL 接入运行中的 agent**：目标是从编辑器连入正在运行的 cadr，检查 agent 状态、重定义工具函数，下一轮即生效且不丢会话。提案须明确：**默认关闭**、显式开关与仅监听 loopback、与"默认 YOLO + 容器隔离"安全立场的关系、以及 slynk 作为新第三方依赖需单独授权（受 (a) 类 blocked 约束）。
 
 **约束**：无论批准与否，此二者均**不得改变任何既有可观察行为**（发给服务端的 payload、喂给模型的提示与工具描述、终端呈现）。实现后须在 README 差异清单与 parity-map 中显式登记为"相对基线的有意新增"，并说明其不影响 parity 判定。
+
+**裁决状态（2026-08-01）**：两项能力及 Slynk 依赖均已批准；批准不授权
+提前施工。Part B 完成 `v0.84.0` 对齐并复审本文 object ID 后，方可按提案
+实现。`:tool-call-error` 是获批的第 34 个扩展事件，收尾须重算 export SHA、
+同步 architecture/README 并重新冻结事件全集。Slynk 依赖须登记为独立的
+“显式启用的调试服务”类目，并落实空临时 `HOME` 构建/测试回归。
 
 ## 五、Part E：首个正式发布
 

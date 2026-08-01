@@ -1,15 +1,15 @@
 # Goal 10 Part D Lisp 原生能力提案
 
-状态：**blocked，等待用户逐项裁决；未修改生产代码、ASDF 或依赖审计。**
+状态：**2026-08-01 已逐项批准；实现仍由 Part B 完成门禁。未修改生产代码、ASDF 或依赖审计。**
 
 当前 cadr 实现基点：
 `7fb06d093d5eebd7163e3271fdc3451c31aa213a`。当前行为基线仍为
 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`；Part B 只会在上游稳定
-`v0.84.0` 发布后重锁。本文可先裁决，但任何实现必须同时满足：
+`v0.84.0` 发布后重锁。本文已完成裁决，但任何实现必须同时满足：
 
 1. Part B 已完成，且本文的源码位置与 object ID 已对新基线复审；
-2. 用户批准对应能力；
-3. 对 Slynk 还需单独批准第三方依赖及其完整闭包。
+2. 实现严格留在本文获批的能力、依赖与文件面内；若最小实现面扩大，
+   重新 blocked 交用户裁决。
 
 ## 1. 总边界
 
@@ -346,19 +346,35 @@ ASDF 依赖面与构建/测试 HOME 隔离。获批实现后，收尾必须记�
 `slynk/mrepl` 依赖，同步删除差异/依赖登记。无 session/config 迁移，旧二进制
 与新二进制读取的数据格式完全相同。
 
-## 4. 用户裁决项
+## 4. 用户裁决与实现门禁
 
-请分别裁决：
+用户于 2026-08-01 逐项裁决：
 
-1. `D1`：批准 / 驳回 condition/restart + `:tool-call-error` 提案；
-2. `D2-capability`：批准 / 驳回默认关闭、`--slynk <port>`、
-   loopback-only 与 `active-agent` 契约；
-3. `D2-dependency`：单独批准 / 驳回 Quicklisp 2026-01-01
-   `slynk/mrepl → slynk → ASDF` 闭包。
+1. `D1` **批准**：按第 2 节实现 condition/restart 与
+   `:tool-call-error`。该事件是扩展事件全集第 34 个；Goal 8 的“33 个封顶”
+   只为本次经完整提案、逐项裁决的新增解除。实现收尾时以 34 个事件的
+   全集重新冻结；今后任何新增仍须重新提交书面提案并逐项裁决，不得从本次
+   授权类推。届时重算 extension export SHA，同步 `docs/architecture.md`
+   与 README，并把 `:tool-call-error` 标为相对基线的有意新增；
+2. `D2-capability` **批准**：严格按第 3 节实现默认关闭、仅显式
+   `--slynk <port>`、固定 `127.0.0.1`、跨机由用户自建 SSH tunnel 的
+   `active-agent` 契约。README 必须如实说明这是任意求值通道，loopback
+   不是沙箱，强隔离应使用容器、虚拟机或受限用户；
+3. `D2-dependency` **批准**：依赖精确锁定 Quicklisp 2026-01-01
+   `slynk/mrepl → slynk → ASDF`、上游 commit
+   `e01c7b4b66876073b07edbc797188435eb098698`、archive MD5
+   `129945ec9a674a1efe353e2d3742fb00`，且不得引入第 3.2 节排除的 contrib。
+   `docs/dependency-audit.md` 与 README 实现时新增独立的“显式启用的调试
+   服务”类目，不归入“纯 Lisp 可替换”；
+4. `.slynkrc` 防烘入措施是强制门禁：构建与确定性测试均须在全新空临时
+   `HOME` 中启动 SBCL，保留预先解析的绝对 `QUICKLISP_SETUP`，退出清理；
+   不补丁第三方源码，不信任构建机点文件，并以回归证明发布 image 不含其
+   任何副作用。
 
-`D2-capability` 和 `D2-dependency` 必须同时批准才能实现第 2 项。任何项未获
-批准都继续保持 blocked，不以“先加依赖再说”绕过门禁。
+批准不解除执行顺序：Part B 必须先锁定并完成 `v0.84.0` 对齐，之后才能
+复审 object ID 并开始 Part D 实现。当前不得提前修改生产代码、ASDF、依赖
+清单、README 冻结值或 architecture 冻结值。
 
-提案收尾复核（2026-08-01 14:33 CST）：上游 GitHub Latest 仍为
-`v0.83.0`（发布于 2026-07-29），`v0.84.0` tag ref 仍返回 404；
-Part B 继续暂挂，未改锁 HEAD。
+裁决落账复核（2026-08-01）：上游 GitHub Latest 仍为 `v0.83.0`
+（发布于 2026-07-29），`v0.84.0` tag ref 仍返回 404；Part B 继续暂挂，
+未改锁 HEAD。
