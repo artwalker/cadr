@@ -21,12 +21,26 @@
             :validate t
             :if-does-not-exist :ignore))))))
 
+(defun wait-for-agent-shutdown-start (agent)
+  (sb-thread:with-mutex
+      ((cadr-agent::agent-state-lock agent))
+    (loop until (cadr-agent:agent-shutdown-p agent)
+          do
+          (sb-thread:condition-wait
+           (cadr-agent::agent-retry-condition agent)
+           (cadr-agent::agent-state-lock agent)))))
+
+(defun agent-active-counts (agent)
+  (sb-thread:with-mutex
+      ((cadr-agent::agent-state-lock agent))
+    (values
+     (cadr-agent::agent-operation-count agent)
+     (cadr-agent::agent-mutation-count agent))))
+
 (test shutdown-is-permanent-idempotent-and-awaits-active-prompt
   (let* ((entered
            (sb-thread:make-semaphore :count 0))
          (release
-           (sb-thread:make-semaphore :count 0))
-         (shutdown-finished
            (sb-thread:make-semaphore :count 0))
          (agent nil)
          (provider-calls 0)
@@ -72,12 +86,10 @@
        (sb-thread:make-thread
         (lambda ()
           (cadr-agent:agent-shutdown agent)
-          (cadr-agent:agent-shutdown agent)
-          (sb-thread:signal-semaphore shutdown-finished))))
-      (is
-       (not
-        (sb-thread:wait-on-semaphore
-         shutdown-finished :timeout 0.05)))
+          (cadr-agent:agent-shutdown agent))))
+      (wait-for-agent-shutdown-start agent)
+      (is (sb-thread:thread-alive-p shutdown-thread))
+      (is (= 1 (nth-value 0 (agent-active-counts agent))))
       (sb-thread:signal-semaphore release)
       (sb-thread:join-thread prompt-thread)
       (sb-thread:join-thread shutdown-thread)
@@ -162,6 +174,7 @@
             (sb-thread:make-thread
              (lambda ()
                (cadr-agent:agent-shutdown agent)))))
+      (wait-for-agent-shutdown-start agent)
       (sb-thread:signal-semaphore release)
       (sb-thread:join-thread prompt-thread)
       (sb-thread:join-thread shutdown-thread))
@@ -196,16 +209,15 @@
                (cadr-agent:agent-shutdown agent)
                (sb-thread:signal-semaphore
                 shutdown-finished)))))
-      (is
-       (not
-        (sb-thread:wait-on-semaphore
-         shutdown-finished :timeout 0.05)))
+      (wait-for-agent-shutdown-start agent)
+      (is (sb-thread:thread-alive-p shutdown-thread))
+      (is (= 1 (nth-value 1 (agent-active-counts agent))))
       (sb-thread:signal-semaphore release)
       (sb-thread:join-thread mutation-thread)
       (sb-thread:join-thread shutdown-thread)
       (is
        (sb-thread:wait-on-semaphore
-        shutdown-finished :timeout 0.05)))))
+        shutdown-finished)))))
 
 (test shutdown-prevents-compaction-result-and-tree-move
   (with-shutdown-test-session (session)
@@ -268,15 +280,8 @@
                 (sb-thread:make-thread
                  (lambda ()
                    (cadr-agent:agent-shutdown agent)))))
-          (loop repeat 1000
-                until
-                (cadr-agent:agent-shutdown-p
-                 agent)
-                do (sleep 0.001)
-                finally
-                (is
-                 (cadr-agent:agent-shutdown-p
-                  agent)))
+          (wait-for-agent-shutdown-start agent)
+          (is (cadr-agent:agent-shutdown-p agent))
           (sb-thread:signal-semaphore release)
           (sb-thread:join-thread compaction-thread)
           (sb-thread:join-thread shutdown-thread))
@@ -344,18 +349,18 @@
                     (setf navigation-error condition)))))))
       (declare (ignore _reply))
       (sb-thread:wait-on-semaphore entered)
-      (let* ((shutdown-finished
-              (sb-thread:make-semaphore :count 0))
-            (shutdown-thread
+      (let ((shutdown-thread
               (sb-thread:make-thread
                (lambda ()
-                 (cadr-agent:agent-shutdown agent)
-                 (sb-thread:signal-semaphore
-                  shutdown-finished)))))
+                 (cadr-agent:agent-shutdown agent)))))
         (is
-         (not
-          (sb-thread:wait-on-semaphore
-           shutdown-finished :timeout 0.05)))
+         (progn
+           (wait-for-agent-shutdown-start agent)
+           (and
+            (sb-thread:thread-alive-p shutdown-thread)
+            (= 1
+               (nth-value 0
+                          (agent-active-counts agent))))))
         (sb-thread:signal-semaphore release)
         (sb-thread:join-thread navigation-thread)
         (sb-thread:join-thread shutdown-thread)

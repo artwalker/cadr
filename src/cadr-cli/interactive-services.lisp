@@ -2113,6 +2113,8 @@
                 :type real)
   (debounce-seconds 0.5d0
                     :type real)
+  (clock-function #'get-internal-real-time
+                  :type function)
   stop-semaphore
   thread
   (lock
@@ -2216,7 +2218,8 @@
 (defun footer-debounce-elapsed-p (provider)
   (>=
    (-
-    (get-internal-real-time)
+    (funcall
+     (footer-data-provider-clock-function provider))
     (footer-data-provider-pending-source-since
      provider))
    (round
@@ -2254,7 +2257,8 @@
           signature
           (footer-data-provider-pending-source-since
            provider)
-          (get-internal-real-time)))
+          (funcall
+           (footer-data-provider-clock-function provider))))
         ((footer-debounce-elapsed-p provider)
          (refresh-footer-data-provider
           provider)
@@ -2270,7 +2274,8 @@
 (defun make-footer-data-provider
     (cwd &key
            (poll-seconds 0.5d0)
-           (debounce-seconds 0.5d0))
+           (debounce-seconds 0.5d0)
+           (clock-function #'get-internal-real-time))
   (let* ((provider
            (%make-footer-data-provider
             :cwd
@@ -2281,6 +2286,7 @@
             :poll-seconds poll-seconds
             :debounce-seconds
             debounce-seconds
+            :clock-function clock-function
             :stop-semaphore
             (sb-thread:make-semaphore
              :count 0)))

@@ -651,6 +651,8 @@
   (let ((extension-ui nil)
         (worker nil)
         (result :pending)
+        (overlay-opened
+          (sb-thread:make-semaphore :count 0))
         (terminal nil))
     (setf
      terminal
@@ -664,13 +666,7 @@
        (footer-sync-submit-input "/quit"))
       :before-second-read
       (lambda ()
-        (loop repeat 200
-              until worker
-              do (sleep 0.005)
-              finally
-              (unless worker
-                (error "Extension select worker was never started")))
-        (sleep 0.02))))
+        (sb-thread:wait-on-semaphore overlay-opened))))
     (cadr-cli::run-tui
      (constantly nil)
      :model "mock"
@@ -678,6 +674,9 @@
      :set-extension-ui-function
      (lambda (function)
        (setf extension-ui function))
+     :extension-overlay-opened-function
+     (lambda ()
+       (sb-thread:signal-semaphore overlay-opened))
      :command-function
      (lambda (line)
        (when (string= line "/extension-select")
@@ -698,7 +697,9 @@
 (test goal9-b3-extension-confirm-runs-through-the-live-tui-overlay-bridge
   (let ((extension-ui nil)
         (worker nil)
-        (result :pending))
+        (result :pending)
+        (overlay-opened
+          (sb-thread:make-semaphore :count 0)))
     (cadr-cli::run-tui
      (constantly nil)
      :model "mock"
@@ -713,16 +714,13 @@
        (footer-sync-submit-input "/quit"))
       :before-second-read
       (lambda ()
-        (loop repeat 200
-              until worker
-              do (sleep 0.005)
-              finally
-              (unless worker
-                (error "Extension confirm worker was never started")))
-        (sleep 0.02)))
+        (sb-thread:wait-on-semaphore overlay-opened)))
      :set-extension-ui-function
      (lambda (function)
        (setf extension-ui function))
+     :extension-overlay-opened-function
+     (lambda ()
+       (sb-thread:signal-semaphore overlay-opened))
      :command-function
      (lambda (line)
        (when (string= line "/extension-confirm")

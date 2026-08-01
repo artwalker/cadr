@@ -11,6 +11,7 @@
     :accessor footer-sync-test-terminal-reads)
    (before-second-read
     :initarg :before-second-read
+    :initform (constantly nil)
     :accessor
     footer-sync-test-terminal-before-second-read)
    (before-read-number
@@ -46,14 +47,6 @@
 
 (defun footer-sync-submit-input (text)
   (format nil "~A~C" text #\Return))
-
-(defun wait-for-footer-sync (predicate)
-  (loop repeat 200
-        when (funcall predicate)
-          do (return t)
-        do (sleep 0.005)
-        finally
-        (error "Timed out waiting for footer model synchronization")))
 
 (defun rendered-footer-text (state)
   (multiple-value-bind (lines row column)
@@ -124,13 +117,7 @@
                (footer-sync-submit-input "")
                (footer-sync-submit-input
                 "/quit"))
-              :before-read-number 3
-              :before-second-read
-              (lambda ()
-                (wait-for-footer-sync
-                 (lambda ()
-                   (string= selected-model
-                            "gpt-5.5"))))))
+              :before-read-number 3))
            (mock-login-function
              (lambda
                  (path &key output auth-url-function)
@@ -194,13 +181,7 @@
              (footer-sync-submit-input
               "/model gpt-5.6-luna")
              (footer-sync-submit-input
-              "/quit"))
-            :before-second-read
-            (lambda ()
-              (wait-for-footer-sync
-               (lambda ()
-                 (string= selected-model
-                          "gpt-5.6-luna")))))))
+              "/quit")))))
     (let ((state
             (cadr-cli::run-tui
              (constantly nil)
@@ -237,12 +218,7 @@
               :inputs
               (list
                (footer-sync-submit-input "/refresh")
-               (footer-sync-submit-input "/quit"))
-              :before-second-read
-              (lambda ()
-                (wait-for-footer-sync
-                 (lambda ()
-                   (> footer-calls 1))))))
+               (footer-sync-submit-input "/quit"))))
            (state
              (cadr-cli::run-tui
               (constantly nil)
@@ -367,7 +343,6 @@
 (test goal9-terminal-progress-setting-is-read-for-every-agent-event
   (let ((event-consumer nil)
         (enabled-p nil)
-        (events-complete-p nil)
         (setting-reads nil))
     (let* ((terminal
              (make-instance
@@ -376,11 +351,7 @@
               :inputs
               (list
                (footer-sync-submit-input "/progress")
-               (footer-sync-submit-input "/quit"))
-              :before-second-read
-              (lambda ()
-                (wait-for-footer-sync
-                 (lambda () events-complete-p)))))
+               (footer-sync-submit-input "/quit"))))
            (state
              (cadr-cli::run-tui
               (constantly nil)
@@ -415,8 +386,7 @@
                    event-consumer
                    (cadr-agent::make-agent-event
                     :type :compaction-end))
-                  (setf enabled-p nil
-                        events-complete-p t))
+                  (setf enabled-p nil))
                 t))))
       (declare (ignore state))
       (is (equal
@@ -548,17 +518,7 @@
             :inputs
             (list
              (footer-sync-submit-input "/theme")
-             (footer-sync-submit-input "/quit"))
-            :before-second-read
-            (lambda ()
-              (wait-for-footer-sync
-               (lambda ()
-                 (and
-                  updated-p
-                  (string=
-                   "#112233"
-                   (cadr-tui:theme-color-value
-                    :accent)))))))))
+             (footer-sync-submit-input "/quit")))))
     (unwind-protect
          (progn
            (cadr-cli::run-tui
@@ -2876,6 +2836,7 @@
     :accessor dynamic-theme-test-terminal-reads)
    (before-second-read
     :initarg :before-second-read
+    :initform (constantly nil)
     :reader dynamic-theme-test-terminal-before-second-read)))
 
 (defmethod cadr-tui:terminal-read-input
@@ -3011,11 +2972,7 @@
               :inputs
               (list
                (footer-sync-submit-input "/theme")
-               (footer-sync-submit-input "/quit"))
-              :before-second-read
-              (lambda ()
-                (wait-for-footer-sync
-                 (lambda () updated-p)))))
+               (footer-sync-submit-input "/quit"))))
            (state
              (cadr-cli::run-tui
               (constantly nil)
@@ -3050,6 +3007,7 @@
                   (setf updated-p t))
                 t))))
       (declare (ignore state))
+      (is (eq t updated-p))
       (is (equal
            '(nil t)
            (color-scheme-test-notification-values

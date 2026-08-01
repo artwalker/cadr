@@ -5,7 +5,8 @@
     (trivial-gray-streams:fundamental-binary-input-stream)
   ((octets :initarg :octets :reader delayed-stream-octets)
    (position :initform 0 :accessor delayed-stream-position)
-   (delay :initarg :delay :reader delayed-stream-delay)
+   (entered :initarg :entered :reader delayed-stream-entered)
+   (release :initarg :release :reader delayed-stream-release)
    (delayed-p :initform nil :accessor delayed-stream-delayed-p)))
 
 (defmethod stream-element-type ((stream delayed-binary-input-stream))
@@ -16,7 +17,10 @@
     ((stream delayed-binary-input-stream))
   (unless (delayed-stream-delayed-p stream)
     (setf (delayed-stream-delayed-p stream) t)
-    (sleep (delayed-stream-delay stream)))
+    (sb-thread:signal-semaphore
+     (delayed-stream-entered stream))
+    (sb-thread:wait-on-semaphore
+     (delayed-stream-release stream)))
   (let ((position (delayed-stream-position stream))
         (octets (delayed-stream-octets stream)))
     (if (= position (length octets))
@@ -47,29 +51,50 @@
                                    :stream-p t
                                    :max-tokens 4096))
            (captured-arguments nil)
-           (events nil))
-      (let ((*http-request-function*
-              (lambda (url &rest arguments)
-                (declare (ignore url))
-                (setf captured-arguments arguments)
-                (values
-                 (make-instance
-                  'delayed-binary-input-stream
-                  :delay 0.08
-                  :octets (babel:string-to-octets
-                           (format nil "data: {\"ok\":true}~%~%")
-                           :encoding :utf-8))
-                 200
-                 '(("content-type" . "text/event-stream"))))))
-      (request-sse request (lambda (event) (push event events))
-                   :connect-timeout 1)
+           (events nil)
+           (entered
+             (sb-thread:make-semaphore :count 0))
+           (release
+             (sb-thread:make-semaphore :count 0))
+           (request-error nil)
+           (request-function
+             (lambda (url &rest arguments)
+               (declare (ignore url))
+               (setf captured-arguments arguments)
+               (values
+                (make-instance
+                 'delayed-binary-input-stream
+                 :entered entered
+                 :release release
+                 :octets (babel:string-to-octets
+                          (format nil "data: {\"ok\":true}~%~%")
+                          :encoding :utf-8))
+                200
+                '(("content-type" . "text/event-stream"))))))
+      (let ((thread
+              (sb-thread:make-thread
+               (lambda ()
+                 (let ((*http-request-function*
+                         request-function))
+                   (handler-case
+                       (request-sse
+                        request
+                        (lambda (event) (push event events))
+                        :connect-timeout 1)
+                     (error (condition)
+                       (setf request-error condition))))))))
+        (sb-thread:wait-on-semaphore entered)
+        (is (sb-thread:thread-alive-p thread))
+        (sb-thread:signal-semaphore release)
+        (sb-thread:join-thread thread))
+      (is (null request-error))
       (is (not (null (member :read-timeout
                              captured-arguments
                              :test #'eq))))
       (is (null (getf captured-arguments :read-timeout)))
       (is (eql t (getf captured-arguments :want-stream)))
       (is (= 1 (length events)))
-      (is (string= "{\"ok\":true}" (sse-event-data (first events))))))))
+      (is (string= "{\"ok\":true}" (sse-event-data (first events)))))))
 
 (test native-http-consumes-a-real-streaming-http-socket
   (let* ((listener
@@ -79,6 +104,8 @@
             :element-type '(unsigned-byte 8)))
          (port (usocket:get-local-port listener))
          (events nil)
+         (release-second-event
+           (sb-thread:make-semaphore :count 0))
          (server-error nil)
          (server
            (bordeaux-threads:make-thread
@@ -107,7 +134,8 @@
                                     "data: {\"part\":1}~C~C~C~C"
                                     #\Return #\Linefeed
                                     #\Return #\Linefeed))
-                           (sleep 0.05)
+                           (sb-thread:wait-on-semaphore
+                            release-second-event)
                            (write-http-string
                             stream
                             (format nil
@@ -132,7 +160,12 @@
                    :provider :anthropic)))
            (request-sse
             request
-            (lambda (event) (push event events))
+            (lambda (event)
+              (push event events)
+              (when (string= "{\"part\":1}"
+                             (sse-event-data event))
+                (sb-thread:signal-semaphore
+                 release-second-event)))
             :connect-timeout 1)
            (bordeaux-threads:join-thread server)
            (when server-error

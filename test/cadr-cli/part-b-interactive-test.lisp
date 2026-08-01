@@ -668,7 +668,8 @@
              (merge-pathnames ".git/" repo))
            (head
              (merge-pathnames
-              "HEAD" git-directory)))
+              "HEAD" git-directory))
+           (now 0))
       (ensure-directories-exist
        (merge-pathnames "placeholder"
                         nested))
@@ -680,8 +681,9 @@
       (let* ((provider
                (cadr-cli:make-footer-data-provider
                 nested
-                :poll-seconds 0.01
-                :debounce-seconds 0.02))
+                :poll-seconds 3600
+                :debounce-seconds 0.02
+                :clock-function (lambda () now)))
              (changes 0)
              (unsubscribe
                (cadr-cli:footer-data-provider-on-branch-change
@@ -697,15 +699,12 @@
                (write-text
                 head
                 "ref: refs/heads/feature")
-               (loop repeat 200
-                     until
-                     (string=
-                      "feature"
-                      (or
-                       (cadr-cli:footer-data-provider-git-branch
-                        provider)
-                       ""))
-                     do (sleep 0.01))
+               (cadr-cli::poll-footer-data-provider provider)
+               (setf now
+                     (round
+                      (* 0.02
+                         internal-time-units-per-second)))
+               (cadr-cli::poll-footer-data-provider provider)
                (is (string=
                     "feature"
                     (cadr-cli:footer-data-provider-git-branch
@@ -714,7 +713,7 @@
                (write-text
                 head
                 "ref: refs/heads/feature")
-               (sleep 0.05)
+               (cadr-cli::poll-footer-data-provider provider)
                (is (= 1 changes))
                (cadr-cli:footer-data-provider-set-status
                 provider "one" "ready")
@@ -754,6 +753,7 @@
              (merge-pathnames "commondir"
                               worktree-git))
            (symbolic-calls 0)
+           (now 0)
            (provider nil))
       (ensure-directories-exist
        (merge-pathnames "placeholder"
@@ -781,8 +781,9 @@
         (setf provider
               (cadr-cli:make-footer-data-provider
                worktree
-               :poll-seconds 0.01
-               :debounce-seconds 0.02))
+               :poll-seconds 3600
+               :debounce-seconds 0.02
+               :clock-function (lambda () now)))
         (unwind-protect
              (progn
                (is (string=
@@ -791,22 +792,19 @@
                      provider)))
                (is (plusp symbolic-calls))
                (delete-file head)
-               (sleep 0.05)
+               (cadr-cli::poll-footer-data-provider provider)
                (is (string=
                     "main"
                     (cadr-cli:footer-data-provider-git-branch
                      provider)))
                (write-text
                 head "ref: refs/heads/recovered")
-               (loop repeat 200
-                     until
-                     (string=
-                      "recovered"
-                      (or
-                       (cadr-cli:footer-data-provider-git-branch
-                        provider)
-                       ""))
-                     do (sleep 0.01))
+               (cadr-cli::poll-footer-data-provider provider)
+               (setf now
+                     (round
+                      (* 0.02
+                         internal-time-units-per-second)))
+               (cadr-cli::poll-footer-data-provider provider)
                (is (string=
                     "recovered"
                     (cadr-cli:footer-data-provider-git-branch
@@ -832,6 +830,7 @@
               reftable-directory))
            (calls 0)
            (branch "main")
+           (now 0)
            (provider nil))
       (ensure-directories-exist tables)
       (write-text head
@@ -845,28 +844,37 @@
         (setf provider
               (cadr-cli:make-footer-data-provider
                repo
-               :poll-seconds 0.01
-               :debounce-seconds 0.05))
+               :poll-seconds 3600
+               :debounce-seconds 0.05
+               :clock-function (lambda () now)))
         (unwind-protect
              (progn
                (is (= 1 calls))
-               (sleep 0.08)
+               (cadr-cli::poll-footer-data-provider provider)
                (is (= 1 calls))
                (setf branch "feature")
                (write-text tables "1")
-               (sleep 0.01)
+               (cadr-cli::poll-footer-data-provider provider)
+               (setf now 10)
                (write-text tables "2")
-               (sleep 0.01)
+               (cadr-cli::poll-footer-data-provider provider)
+               (setf now 20)
                (write-text tables "3")
-               (loop repeat 200
-                     until
-                     (string=
-                      "feature"
-                      (or
-                       (cadr-cli:footer-data-provider-git-branch
-                        provider)
-                       ""))
-                     do (sleep 0.01))
+               (cadr-cli::poll-footer-data-provider provider)
+               (setf now
+                     (1-
+                      (+ 20
+                         (round
+                          (* 0.05
+                             internal-time-units-per-second)))))
+               (cadr-cli::poll-footer-data-provider provider)
+               (is (= 1 calls))
+               (setf now
+                     (+ 20
+                        (round
+                         (* 0.05
+                            internal-time-units-per-second))))
+               (cadr-cli::poll-footer-data-provider provider)
                (is (string=
                     "feature"
                     (cadr-cli:footer-data-provider-git-branch

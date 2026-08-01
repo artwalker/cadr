@@ -649,16 +649,22 @@
               (uiop:launch-program
                (list
                 "git" "daemon"
+                "--verbose"
                 "--reuseaddr"
                 "--export-all"
                 (format nil "--base-path=~A"
                         (namestring repositories))
                 "--listen=127.0.0.1"
                 (format nil "--port=~D" port)
-                (namestring repositories))
-               :output nil
-               :error-output nil))
-             (sleep 0.2)
+               (namestring repositories))
+               :output :stream
+               :error-output :output))
+             (let ((ready
+                     (read-line
+                      (uiop:process-info-output daemon)
+                      nil nil)))
+               (is (and ready
+                        (search "Ready to rumble" ready))))
              (cadr-cli::install-extension-package
               manager
               (format nil
@@ -675,4 +681,6 @@
                (is (string= "yes" text))))
         (when daemon
           (uiop:terminate-process daemon)
-          (uiop:wait-process daemon))))))
+          (uiop:wait-process daemon)
+          (ignore-errors
+            (close (uiop:process-info-output daemon))))))))

@@ -43,3 +43,53 @@
         while position
         count position
         do (setf start (+ position (length needle)))))
+
+(defclass notifying-string-output-stream
+    (trivial-gray-streams:fundamental-character-output-stream)
+  ((delegate
+    :initform (make-string-output-stream)
+    :reader notifying-output-delegate)
+   (notification
+    :initform (sb-thread:make-semaphore :count 0)
+    :reader notifying-output-notification)
+   (lock
+    :initform (sb-thread:make-mutex
+               :name "cadr test notifying output")
+    :reader notifying-output-lock)))
+
+(defmethod trivial-gray-streams:stream-write-char
+    ((stream notifying-string-output-stream) character)
+  (sb-thread:with-mutex ((notifying-output-lock stream))
+    (write-char character (notifying-output-delegate stream)))
+  (when (char= character #\Newline)
+    (sb-thread:signal-semaphore
+     (notifying-output-notification stream)))
+  character)
+
+(defmethod trivial-gray-streams:stream-write-string
+    ((stream notifying-string-output-stream) string
+     &optional (start 0) end)
+  (let ((end (or end (length string))))
+    (sb-thread:with-mutex ((notifying-output-lock stream))
+      (write-string
+       string (notifying-output-delegate stream)
+       :start start :end end))
+    (loop for index from start below end
+          when (char= (char string index) #\Newline)
+            do
+            (sb-thread:signal-semaphore
+             (notifying-output-notification stream))))
+  string)
+
+(defun notifying-output-string (stream)
+  (sb-thread:with-mutex ((notifying-output-lock stream))
+    (get-output-stream-string
+     (notifying-output-delegate stream))))
+
+(defun join-rpc-prompt-worker (state)
+  (let ((thread
+          (sb-thread:with-mutex
+              ((cadr-cli::rpc-state-activity-lock state))
+            (cadr-cli::rpc-state-prompt-thread state))))
+    (when thread
+      (sb-thread:join-thread thread))))

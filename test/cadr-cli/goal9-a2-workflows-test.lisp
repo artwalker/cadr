@@ -187,16 +187,7 @@
           collect (cadr-ai::parse-json line)))
 
 (defun goal9-a2-wait-for-rpc-prompt (state)
-  (cadr-agent:agent-wait-for-idle
-   (cadr-cli::rpc-state-agent state))
-  (loop repeat 200
-        until
-        (null (cadr-cli::rpc-state-prompt-thread state))
-        do (sleep 0.01)
-        finally
-        (unless (null
-                 (cadr-cli::rpc-state-prompt-thread state))
-          (error "Timed out waiting for RPC prompt worker"))))
+  (join-rpc-prompt-worker state))
 
 (test goal9-a2-print-json-and-rpc-modes-cover-the-real-contract
   (multiple-value-bind (agent remaining)

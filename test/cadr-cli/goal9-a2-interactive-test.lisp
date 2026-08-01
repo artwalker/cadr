@@ -113,7 +113,8 @@
              (first (cadr-tui:flush-input decoder)))))))
 
 (test goal9-p2-ctrl-c-clears-busy-draft-and-escape-interrupts
-  (let ((aborted-p nil)
+  (let ((abort-requested
+          (sb-thread:make-semaphore :count 0))
         (worker-done-p nil)
         (abort-count 0))
     (let ((terminal
@@ -131,12 +132,12 @@
       (cadr-cli::run-tui
        (lambda (line)
          (declare (ignore line))
-         (loop until aborted-p do (sleep 0.001))
+         (sb-thread:wait-on-semaphore abort-requested)
          (setf worker-done-p t))
        :abort-function
        (lambda ()
          (incf abort-count)
-         (setf aborted-p t))
+         (sb-thread:signal-semaphore abort-requested))
        :model "faux"
        :terminal terminal)
       (is (= 1 abort-count))

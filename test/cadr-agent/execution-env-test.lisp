@@ -178,8 +178,8 @@
                   (nreverse stderr-chunks)))))
       (multiple-value-bind (value error)
           (cadr-agent::execution-env-exec
-           environment "sleep 1"
-           :timeout 0.05)
+           environment "exec /usr/bin/tail -f /dev/null"
+           :timeout 1)
         (is (null value))
         (is
          (eq

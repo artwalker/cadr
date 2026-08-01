@@ -5,10 +5,23 @@
   (loop
     for line in
     (uiop:split-string
-     (get-output-stream-string stream)
+     (if (typep stream 'notifying-string-output-stream)
+         (notifying-output-string stream)
+         (get-output-stream-string stream))
      :separator '(#\Newline))
     unless (zerop (length line))
       collect (cadr-ai::parse-json line)))
+
+(defun wait-for-rpc-records (stream predicate)
+  (loop with records = nil
+        do
+        (setf records
+              (nconc records (rpc-output-records stream)))
+        when (funcall predicate records)
+          return records
+        do
+        (sb-thread:wait-on-semaphore
+         (notifying-output-notification stream))))
 
 (defun make-rpc-test-agent
     (directory &optional responses)
@@ -173,14 +186,7 @@
       (cadr-cli::rpc-handle-line
        state
        "{\"id\":\"p1\",\"type\":\"prompt\",\"message\":\"hello\"}")
-      (cadr-agent:agent-wait-for-idle
-       (cadr-cli::rpc-state-agent state))
-      (loop repeat 100
-            until
-            (null
-             (cadr-cli::rpc-state-prompt-thread
-              state))
-            do (sleep 0.01))
+      (join-rpc-prompt-worker state)
       (let* ((records
                (rpc-output-records output))
              (responses
@@ -214,7 +220,8 @@
 (test rpc-extension-ui-response-cancel-timeout-signal-unknown-and-eof
   (with-test-directory (directory)
     (let* ((output
-             (make-string-output-stream))
+             (make-instance
+              'notifying-string-output-stream))
            (state
              (make-rpc-test-state
               directory output))
@@ -233,31 +240,29 @@
                     :options ("a" "b")
                     :timeout-ms 1000))))
               :name "rpc-ui-select-test")))
-      (loop repeat 100
-            for records =
-              (rpc-output-records output)
-            for request =
-              (find
-               "extension_ui_request"
-               records
-               :key
-               (lambda (record)
-                 (cadr-ai::json-get
-                  record "type"))
-               :test #'string=)
-            when request
-              do
-              (cadr-cli::rpc-handle-ui-response
-               state
-               (cadr-ai::json-object
-                "type"
-                "extension_ui_response"
-                "id"
-                (cadr-ai::json-get
-                 request "id")
-                "value" "b"))
-              (return)
-            do (sleep 0.01))
+      (let* ((records
+               (wait-for-rpc-records
+                output
+                (lambda (records)
+                  (find
+                   "extension_ui_request" records
+                   :key
+                   (lambda (record)
+                     (cadr-ai::json-get record "type"))
+                   :test #'string=))))
+             (request
+               (find
+                "extension_ui_request" records
+                :key
+                (lambda (record)
+                  (cadr-ai::json-get record "type"))
+                :test #'string=)))
+        (cadr-cli::rpc-handle-ui-response
+         state
+         (cadr-ai::json-object
+          "type" "extension_ui_response"
+          "id" (cadr-ai::json-get request "id")
+          "value" "b")))
       (sb-thread:join-thread thread)
       (is (string= "b" selected))
       (is
@@ -265,7 +270,7 @@
         (funcall
          callback :input
          '(:title "Input"
-           :timeout-ms 1))))
+           :timeout-ms 0))))
       (let ((signal
               (cadr-agent::make-extension-cancellation-signal)))
         (cadr-agent::abort-extension-cancellation-signal
@@ -309,13 +314,17 @@
                    callback :editor
                    '(:title "Edit"))))
                :name "rpc-ui-eof-test")))
-        (loop repeat 100
-              until
-              (plusp
-               (hash-table-count
-                (cadr-cli::rpc-state-pending
-                 state)))
-              do (sleep 0.01))
+        (wait-for-rpc-records
+         output
+         (lambda (records)
+           (find-if
+            (lambda (record)
+              (and
+               (string= "extension_ui_request"
+                        (cadr-ai::json-get record "type"))
+               (string= "editor"
+                        (cadr-ai::json-get record "method"))))
+            records)))
         (cadr-cli::rpc-close-pending-dialogs
          state)
         (sb-thread:join-thread eof-thread)
@@ -336,105 +345,59 @@
       (cadr-cli::rpc-handle-line
        state
        "{\"id\":\"bash-1\",\"type\":\"bash\",\"command\":\"printf 'out'; printf 'err' >&2; exit 7\"}")
-      (loop repeat 500
-            for records = (rpc-output-records output)
-            for response =
-              (find
-               "bash-1" records
-               :key
-               (lambda (record)
-                 (cadr-ai::json-get record "id"))
-               :test #'string=)
-            when response
-              do
-              (let ((data
-                      (cadr-ai::json-get
-                       response "data")))
-                (is
-                 (string=
-                  "outerr"
-                  (cadr-ai::json-get
-                   data "output")))
-                (is (= 7
-                       (cadr-ai::json-get
-                        data "exitCode")))
-                (is
-                 (not
-                  (cadr-ai::json-get
-                   data "cancelled")))
-                (is
-                 (not
-                  (cadr-ai::json-get
-                   data "truncated")))
-                (is
-                 (not
-                  (cadr-ai::json-present-p
-                   data "fullOutputPath"))))
-              (return)
-            do (sleep 0.01)
-            finally
-            (fail
-             "Timed out waiting for bash response"))
+      (let ((thread
+              (cadr-cli::rpc-state-bash-thread state)))
+        (when thread
+          (sb-thread:join-thread thread)))
+      (let* ((records (rpc-output-records output))
+             (response
+               (find
+                "bash-1" records
+                :key
+                (lambda (record)
+                  (cadr-ai::json-get record "id"))
+                :test #'string=))
+             (data
+               (and response
+                    (cadr-ai::json-get response "data"))))
+        (is (not (null response)))
+        (is (string= "outerr"
+                     (cadr-ai::json-get data "output")))
+        (is (= 7 (cadr-ai::json-get data "exitCode")))
+        (is (not (cadr-ai::json-get data "cancelled")))
+        (is (not (cadr-ai::json-get data "truncated")))
+        (is (not
+             (cadr-ai::json-present-p
+              data "fullOutputPath"))))
       (cadr-cli::rpc-handle-line
        state
-       "{\"id\":\"bash-2\",\"type\":\"bash\",\"command\":\"sleep 30\"}")
-      (loop repeat 500
-            when
-            (let ((thread
-                    (cadr-cli::rpc-state-bash-thread
-                     state)))
-              (and
-               thread
-               (sb-thread:thread-alive-p thread)))
-              do (return)
-            do (sleep 0.01)
-            finally
-            (fail
-             "Timed out waiting for bash worker; records: ~S"
-             (list
-              :records (rpc-output-records output)
-              :thread
-              (cadr-cli::rpc-state-bash-thread state)
-              :token
-              (cadr-cli::rpc-state-bash-token state))))
+       "{\"id\":\"bash-2\",\"type\":\"bash\",\"command\":\"exec /usr/bin/tail -f /dev/null\"}")
+      (is (sb-thread:thread-alive-p
+           (cadr-cli::rpc-state-bash-thread state)))
       (cadr-cli::rpc-handle-line
        state
        "{\"id\":\"abort-1\",\"type\":\"abort_bash\"}")
-      (loop repeat 500
-            for records = (rpc-output-records output)
-            for bash-response =
-              (find
-               "bash-2" records
-               :key
-               (lambda (record)
-                 (cadr-ai::json-get record "id"))
-               :test #'string=)
-            for abort-response =
-              (find
-               "abort-1" records
-               :key
-               (lambda (record)
-                 (cadr-ai::json-get record "id"))
-               :test #'string=)
-            when (and bash-response abort-response)
-              do
-              (let ((data
-                      (cadr-ai::json-get
-                       bash-response "data")))
-                (is
-                 (eq t
-                     (cadr-ai::json-get
-                      data "cancelled")))
-                (is
-                 (eq 'null
-                     (cadr-ai::json-get
-                      data "exitCode")))
-                (is
-                 (eq t
-                     (cadr-ai::json-get
-                      abort-response "success"))))
-              (return)
-            do (sleep 0.01)
-            finally
-            (fail
-             "Timed out waiting for abort responses")))))
+      (let* ((records (rpc-output-records output))
+             (bash-response
+               (find
+                "bash-2" records
+                :key
+                (lambda (record)
+                  (cadr-ai::json-get record "id"))
+                :test #'string=))
+             (abort-response
+               (find
+                "abort-1" records
+                :key
+                (lambda (record)
+                  (cadr-ai::json-get record "id"))
+                :test #'string=))
+             (data
+               (and bash-response
+                    (cadr-ai::json-get bash-response "data"))))
+        (is (not (null bash-response)))
+        (is (not (null abort-response)))
+        (is (eq t (cadr-ai::json-get data "cancelled")))
+        (is (eq 'null (cadr-ai::json-get data "exitCode")))
+        (is (eq t
+                (cadr-ai::json-get abort-response "success")))))))

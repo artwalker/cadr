@@ -101,6 +101,10 @@
 
 (test all-parallel-tools-finish-by-completion-but-results-stay-in-source-order
   (let* ((finish-order nil)
+         (slow-started
+           (sb-thread:make-semaphore :count 0))
+         (release-slow
+           (sb-thread:make-semaphore :count 0))
          (slow
            (make-tool
             :name "slow"
@@ -110,7 +114,8 @@
             :executor
             (lambda (call-id arguments)
               (declare (ignore arguments))
-              (sleep 0.08)
+              (sb-thread:signal-semaphore slow-started)
+              (sb-thread:wait-on-semaphore release-slow)
               (push call-id finish-order)
               (list (make-text-content :text "slow")))))
          (fast
@@ -122,7 +127,9 @@
             :executor
             (lambda (call-id arguments)
               (declare (ignore arguments))
+              (sb-thread:wait-on-semaphore slow-started)
               (push call-id finish-order)
+              (sb-thread:signal-semaphore release-slow)
               (list (make-text-content :text "fast")))))
          (*responses*
            (list
@@ -176,7 +183,6 @@
               :executor
               (lambda (call-id arguments)
                 (declare (ignore call-id arguments))
-                (sleep 0.04)
                 (setf first-done t)
                 (list (make-text-content :text "first")))))
            (second

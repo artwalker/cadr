@@ -2975,6 +2975,7 @@
        set-auth-url-consumer
        set-model-consumer
        set-extension-ui-function
+       extension-overlay-opened-function
        footer-state-function
        footer-cwd
        (available-provider-count 0)
@@ -3369,7 +3370,9 @@
              (sb-thread:with-mutex (lock)
                (setf overlay-kind :extension-custom
                      overlay component))
-             (request-render))
+             (request-render)
+             (when extension-overlay-opened-function
+               (funcall extension-overlay-opened-function)))
            (let* ((deadline
                     (and timeout-ms
                          (+ (get-internal-real-time)

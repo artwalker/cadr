@@ -78,9 +78,17 @@
     (let* ((file (merge-pathnames "shared.txt" directory))
            (alias (merge-pathnames "alias.txt" directory))
            (order nil)
-           (guard (sb-thread:make-mutex :name "part-b-order")))
+           (guard (sb-thread:make-mutex :name "part-b-order"))
+           (first-entered
+             (sb-thread:make-semaphore :count 0))
+           (release-first
+             (sb-thread:make-semaphore :count 0))
+           (second-started
+             (sb-thread:make-semaphore :count 0)))
       (write-text file "seed")
       (sb-posix:symlink (namestring file) (namestring alias))
+      (is (eq (cadr-cli::file-mutation-lock file)
+              (cadr-cli::file-mutation-lock alias)))
       (let ((first
               (sb-thread:make-thread
                (lambda ()
@@ -89,20 +97,24 @@
                   (lambda ()
                     (sb-thread:with-mutex (guard)
                       (push :first-start order))
-                    (sleep 0.05)
+                    (sb-thread:signal-semaphore first-entered)
+                    (sb-thread:wait-on-semaphore release-first)
                     (sb-thread:with-mutex (guard)
-                      (push :first-end order)))))))
-            (second
-              (sb-thread:make-thread
-               (lambda ()
-                 (sleep 0.01)
-                 (cadr-cli::with-file-mutation-queue
-                  alias
-                  (lambda ()
-                    (sb-thread:with-mutex (guard)
-                      (push :second order))))))))
-        (sb-thread:join-thread first)
-        (sb-thread:join-thread second))
+                      (push :first-end order))))))))
+        (sb-thread:wait-on-semaphore first-entered)
+        (let ((second
+                (sb-thread:make-thread
+                 (lambda ()
+                   (sb-thread:signal-semaphore second-started)
+                   (cadr-cli::with-file-mutation-queue
+                    alias
+                    (lambda ()
+                      (sb-thread:with-mutex (guard)
+                        (push :second order))))))))
+          (sb-thread:wait-on-semaphore second-started)
+          (sb-thread:signal-semaphore release-first)
+          (sb-thread:join-thread first)
+          (sb-thread:join-thread second)))
       (is (equal '(:first-start :first-end :second)
                  (nreverse order))))))
 
