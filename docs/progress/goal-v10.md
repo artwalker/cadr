@@ -2,6 +2,13 @@
 
 ## 〇、定位与总规则
 
+> **2026-08-01 执行顺序裁决**：Part A 验收通过后，顺序调整为
+> `C → B（等待 v0.84.0）→ D → E`。Part C 对 Part B 零依赖；“B 必须先于 D”
+> 仍然有效。Part C 完成时若 `v0.84.0` 尚未发布，必须暂停报告，不得改锁 HEAD。
+> Part B 的 bearer-token SHA-256、定长比较与 socket suffix 最小实现面已按
+> `docs/proposals/goal-v10-part-b-baseline.md` 第 0 节预授权；新增密码学依赖或
+> 超出批准文件面仍须 blocked。
+
 - **goal 9 全部 Part（A/A2/B/C/D/E）验收通过后**方可开始。
 - 本 goal 收拢 goal 9 之后的全部待办，**不接受范围缩减**：工作量大的拆成更多 Part 顺序推进，不得移出范围或推给后续 goal。唯一合法的缩范围形式是标记 blocked、说明理由、交用户裁决。
 - Part 间自动推进，不等用户指令。**仅三类情况 blocked**：(a) 新第三方依赖；(b) 密码学路径超出既有裁决；(c) 新增能力提案未获裁决（Part D 专有）。

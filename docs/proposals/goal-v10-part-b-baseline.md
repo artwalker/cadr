@@ -1,6 +1,23 @@
 # Goal 10 Part B 基线裁决提案
 
-状态：**blocked，等待用户裁决；未创建降级 checkout、未改 parity/fixture/生产代码。**
+状态：**用户已裁决：Part B 暂挂等待 `v0.84.0`；先执行零依赖的 Part C。**
+
+## 0. 用户裁决（2026-08-01）
+
+本文保留最初 blocked 时的事实与选项，以下裁决取代第 4、5 节的执行建议：
+
+1. 不锁 `v0.83.0`：它比当前基线倒退 38 commits，不符合追新目标。
+2. 不例外锁 `origin/main@4488ad55c`：上游正连续重构会话存储层与 server
+   协议，开发中提交不作为新基线。
+3. 顺序调整为 `Part C → Part B（等待 v0.84.0）→ Part D → Part E`。
+   Part C 只依赖已验收的 Part A 仓库与 Goal 9 Part D `verify.sh`；原有
+   “Part B 必须在 Part D 之前”约束保持不变。
+4. Part C 完成后若 `v0.84.0` 仍未发布，暂停并报告，不得自行改锁 HEAD。
+5. 第 3 节所列最小密码学面已获预授权：bearer-token digest 必须复用
+   `src/cadr-ai/oauth.lisp:63` 的纯 Lisp `sha256-bytes`；定长字节比较用不提前
+   退出的循环，不引入新算法或依赖。测试须覆盖正确 token、错误 token、不同
+   长度、并发 handshake、日志/错误不泄露 token、socket suffix 固定向量。
+   若需新密码学依赖或超出提案列出的文件范围，重新 blocked。
 
 ## 1. 确切冲突
 
