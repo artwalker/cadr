@@ -26,6 +26,7 @@
                              (:file "input-component")
                              (:file "components")
                              (:file "renderer")
+                             (:file "composition")
                              (:file "terminal"))))
   :in-order-to ((test-op (test-op "cadr-tui/tests"))))
 
@@ -56,6 +57,7 @@
                              (:file "input-component-test")
                              (:file "components-test")
                              (:file "component-parity-test")
+                             (:file "composition-test")
                              (:file "renderer-test")
                              (:file "alt-screen-test")
                              (:file "terminal-test")
