@@ -1,7 +1,7 @@
 # Goal 9 Part B 阶段报告
 
-> 状态：第六轮 live OAuth 共享状态补正已落账；全量连续 5 次零失败。
-> 按用户要求暂停，等待重新验收；Part C 尚未开始。
+> 状态：live OAuth 顺序依赖已获顾问三次复跑确认；真实 LLM 门禁定位提案
+> `docs/proposals/goal-v9-live-test-gating.md` blocked，等待用户裁决。Part C 尚未开始。
 
 ## 1. 基线与机械账本
 
@@ -273,6 +273,29 @@ provider。fresh credential 路径逐字比较文件内容，证明不重写；r
 顺序依赖与共享状态污染从此与 flaky 同级：单次或单机转绿不能结案，必须证明套件
 顺序无关、canonical 状态安全，并以连续全量运行锁定。
 
+## 3.6 第七轮：真实 LLM 波动与证据口径纠正
+
+顾问在 OAuth 修复后连续三次复跑；此前必红的
+`LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` 三次均通过，确认
+`4fdc38b05` 只修测试凭据复制/共享，没有掩盖生产刷新缺陷。三轮真实 auth 的
+SHA-256 与 `0600` 权限也均未变化。
+
+但三轮混合全量结果为：第一轮 `6436 checks / 5 fail`，失败面是
+`LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE`；第二、三轮均为
+`6933 checks / 0 fail`。用户输入没有提供三轮各自的 pass/skip 原始数字，本报告不
+反推补写。第一轮停在 evals 后，没有 protocol 结果；这不是时序竞态或共享状态污染，
+而是模型未必每次完成写扩展、reload、调用工具闭环的固有行为波动。
+
+因此第 5 节此前的“五次全绿”只是一组含 live 的历史运行记录，不能再作为确定性
+证据。live 不应通过握手、放宽断言或重跑到绿来伪装稳定。其门禁位置、退出语义与
+Part D 发布前职责已进入 blocked 提案：
+[`goal-v9-live-test-gating.md`](../proposals/goal-v9-live-test-gating.md)。获批前不移动
+任何 live 测试。
+
+永久报告纪律从本轮立即生效：凡宣告“连续 N 次全绿”，必须逐次附完整
+`checks / pass / skip / fail`，且入口不得包含真实网络/LLM 调用；含 live 的运行只能
+分阶段报告实际结果，任何失败不得被后续绿色覆盖。
+
 ## 4. 色彩字节证据
 
 同一 dark palette 输入的 capture：
@@ -288,10 +311,11 @@ background reset    = ESC[49m
 
 原始 capture：`/tmp/cadr-goal9-color-capture.txt`。
 
-## 5. 第六轮最终机械证据
+## 5. 第六轮历史混合运行证据（非确定性）
 
-代码提交为 `4fdc38b05` 后，使用当前用户 settings/auth 状态连续执行同一条
-`./scripts/test-cl.sh` 五次；没有失败后重跑、没有丢弃任何一轮：
+代码提交为 `4fdc38b05` 后，曾使用当前用户 settings/auth 状态连续执行同一条
+`./scripts/test-cl.sh` 五次。当时五轮原始数字如下，但该入口包含真实 LLM 调用，
+本表不得再用于宣告确定性“连续全绿”：
 
 | run | checks | pass | skip | fail | 完整日志 |
 |---:|---:|---:|---:|---:|---|
@@ -380,5 +404,5 @@ logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 精确启动命令、环境约束和 11 个逐场景检查项见
 [`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
 
-当前处置：`第六轮 live OAuth 顺序/共享状态补正、连续五轮全量与提交已落账；按要求暂停`。
-收到确认前不开始 Part C。
+当前处置：`OAuth 修复已获顾问复核；live 门禁定位提案 blocked，等待用户逐项裁决`。
+获批前不改门禁，不开始 Part C。
