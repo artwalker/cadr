@@ -5,9 +5,9 @@
 ## 1. 远端门禁
 
 - 工作流：`.github/workflows/ci.yml`，触发于 push 与 pull request。
-- 成功运行：<https://github.com/artwalker/cadr/actions/runs/30685704883>
-- head：`1691bc643efe112ee8770b8fd390a9bbf35fe6a4`
-- job：`verify`，结论 `success`，耗时 `2m37s`。
+- 成功运行：<https://github.com/artwalker/cadr/actions/runs/30685999360>
+- head：`4bf24c96ea67210f7f11603e49933702f80a3dae`
+- job：`verify`，结论 `success`，耗时 `2m46s`。
 - 工作流只调用一次 `./scripts/verify.sh`；没有平行复制 build/test 逻辑。
 - 权限只有 `contents: read`；checkout 固定为
   `actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd` 且关闭
@@ -91,6 +91,11 @@ CI 没有注入 provider 凭据，因此 credential-gated FiveAM 正常完成并
    `/root/.local/bin/fd`。改为测试自行创建确定性 fake fd。
 3. run `30685606013` 继续暴露两条 CLI autocomplete 测试依赖开发机 PATH 中的
    fd。新增共享 test helper，显式注入 fake fd 与临时 PATH；未修改产品代码。
+4. run `30685837703` 在第三次确定性套件中暴露
+   `BASH-TIMEOUT-KILLS-THE-PROCESS-GROUP` 把 `/proc/<pid>` 存在等同于进程仍可
+   执行。容器 PID 1 可以暂留已被 SIGKILL 的孤儿 zombie；测试现读取 proc state，
+   只接受进程消失或 `Z/X` 终态，仍拒绝任何可运行状态。该测试本地连续运行 12
+   次全绿后才重新推送；没有靠复跑原断言结案。
 
 本地此前未捕获后两项，是因为开发机同时存在 `/root/.local/bin/fd` 与
 `/usr/bin/fdfind`；clean runner 没有。修复后全测试树搜索不再含真实 fd 的主机
@@ -107,9 +112,10 @@ CI 没有注入 provider 凭据，因此 credential-gated FiveAM 正常完成并
 | `0797a7472` | 将 runner 路径延迟到 job 执行期 |
 | `a1f23d8a2` | TUI autocomplete fixture 去主机耦合 |
 | `1691bc643` | CLI autocomplete fixture 去主机耦合 |
+| `4bf24c96e` | timeout 进程组测试按执行状态而非 proc inode 判定 |
 
 - 新增第三方项目依赖：`0`；CI 安装的是既有运行/测试闭包。
 - `origin` 未修改，工作流只推送至 private `backup`。
 - 用户既有的 `docs/acceptance/goal-v8-final.md` 修改未暂存、未提交。
-- Part C 实施与远端迭代约 20 分钟；系统未提供可按 Part 审计的 token 数，未
+- Part C 实施与远端迭代约 35 分钟；系统未提供可按 Part 审计的 token 数，未
   伪造估值。
