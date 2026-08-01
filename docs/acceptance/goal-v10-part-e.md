@@ -1,7 +1,8 @@
 # Goal 10 Part E release preparation
 
-Date: 2026-08-01. Status: implementation and release materials complete;
-tag and GitHub Release intentionally await explicit user confirmation.
+Date: 2026-08-01. Status: implementation and release materials committed in
+`80d962069`; the final release gate passed. Tag and GitHub Release intentionally
+await explicit user confirmation.
 
 ## Frozen identity
 
@@ -67,6 +68,20 @@ Rerun `./scripts/verify.sh` immediately before publication if HEAD changes.
   `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`.
 - `GOAL10-PART-E-RELEASE-IDENTITY-HAS-ONE-VERSION-SOURCE`: `32/32` checks.
 
-The final `./scripts/verify.sh` result and committed Part E hash are recorded
-after the release-preparation commit; publication still requires a fresh gate
-if HEAD subsequently changes.
+Final `./scripts/verify.sh` result on `80d962069`:
+
+| Stage | Result |
+|---|---|
+| deterministic FiveAM | PASS; 7192/7192, 0 skip, 0 fail |
+| isolated `cadr` build | PASS; repeated the 7192-check gate |
+| isolated `cadr-server` build | PASS; repeated the 7192-check gate |
+| Goal 11 performance/stability | PASS; 4.00ms frame/key/stream, 162.32ms cold start, 1200-turn heap growth 40.3MiB, max GC 68.0ms, 10MiB load/resume/continue 284/284/272ms |
+| retained native/process/PTY/socket/TUI harnesses | PASS; all six stages |
+| credential-gated live FiveAM | PASS; 8 items, 7 run/pass, Anthropic skipped for missing credential; 32 checks, 31 pass, 1 skip, 0 fail |
+| DeepSeek live TUI | PASS; two-turn edit, resize, CJK, autocomplete, undo, kill-ring, and terminal restoration |
+
+The deterministic table and live table both contain only `PASS`; the sole live
+skip is explicit and credential-equivalent to the baseline mechanism. The
+native image's separate real Slynk protocol probe is recorded in Part D.
+Publication requires a fresh gate if HEAD changes after this docs-only
+closeout.

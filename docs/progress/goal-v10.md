@@ -1,5 +1,10 @@
 # GOAL v10: 备份、追新、CI、Lisp 原生能力与首个发布
 
+> **完成状态（2026-08-01）**：Part A–E 的代码、测试、账本与发布资料已全部
+> 提交，最终 `./scripts/verify.sh` 全绿。Part B 按用户裁决为 no-op；不再
+> 轮询上游。Goal 10 在“准备完毕、对外发布待确认”的既定边界完成；
+> `v0.2.0` tag 与 GitHub Release 均尚未创建，必须由用户另行明确授权。
+
 ## 〇、定位与总规则
 
 > **2026-08-01 执行顺序裁决**：Part A 验收通过后，顺序调整为
@@ -128,3 +133,19 @@ tag 或 GitHub Release，正按约定等待用户确认。冻结标识为
 - **验证脚本不得以规范化、改写输入或弱化断言的方式取得通过**（goal 8 补正的教训）。
 - **断言必须覆盖内容本身而非仅结构**：流式文本须有"组装后逐字符等于原文"的等价断言；provider × 能力矩阵须逐项覆盖；工具与 overlay 的完整文案须逐字快照（goal 9 Part B 三轮教训）。
 - 完成 Part E 后暂停，等待用户终局验收。
+
+## 八、收尾账本
+
+- Part A：私有备份、全历史凭据审计与独立 clone/build 已经用户验收；
+  详见 `docs/acceptance/goal-v10-part-a.md`。
+- Part C：提交 `dc8052ee6` 至 `4bf24c96e`，私有远程 CI 已真实跑绿；
+  详见 `docs/acceptance/goal-v10-part-c.md`。
+- Goal 11 前置：提交 `6ee7d84f3` 至 `d84a20dae`，非功能门禁已关闭。
+- Part D：`55094c9d7`、`65052f7a6`、`c12c03ba1`；restart、第 34 事件、
+  Slynk 与重冻结已落账。
+- Part B no-op：`5fbfc2fac`；保持 `74caa2649` 基线且记录
+  `v0.83.0` 落后 38 个提交的确切关系。
+- Part E：`80d962069`；版本、精确对齐标识、CHANGELOG、Release 草案与
+  `PI_CL_*` 迁移窗口收口已落账。
+- 最终验证：`7192 checks / 7192 pass / 0 skip / 0 fail`；两个隔离构建、
+  Goal 11 gate、全部保留 harness、可用 live FiveAM 与 DeepSeek TUI 全部通过。

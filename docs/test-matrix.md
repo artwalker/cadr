@@ -36,7 +36,7 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 |---|---|---|
 | One production version source | `GOAL10-PART-E-RELEASE-IDENTITY-HAS-ONE-VERSION-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; CLI/README/CHANGELOG/Release-draft identity is exact and production literal audit rejects drift |
 | Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
-| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7128 deterministic checks pass in the root test and both isolated builds; Goal 11 budgets, retained harnesses, and all available live paths pass |
+| Release-local verification | `scripts/verify.sh` plus root `build.sh`/`build-server.sh` | 7192 deterministic checks pass in the root test and both isolated builds; Goal 11 budgets, retained harnesses, and all available live paths pass |
 
 ## Phase 1: cadr-ai
 
@@ -235,6 +235,6 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Complete data move | `INTERACTIVE-USER-DATA-MIGRATION-MOVES-THE-COMPLETE-TREE` | Sessions, extensions, and auth move together; source disappears; auth becomes 0600 |
 | Session continuation | same unit test plus `scripts/migration-smoke.sh` | `--continue` resumes the migrated session without creating a second file |
 | Fail-closed migration | noninteractive, decline, and yolo migration tests | No automatic move without explicit interactive consent; manual command is emitted |
-| Environment transition | legacy/new environment tests | Old values warn through 0.1.x; new values win silently; removal is fixed at 0.2.0 |
+| Environment transition | `GOAL10-VERSION-0-2-NO-LONGER-READS-LEGACY-ENVIRONMENT-VALUES`, `CADR-ENVIRONMENT-VALUES-RESOLVE-PROVIDER-MODEL-AND-BASE-URL` | `PI_CL_*` alone no longer configures the CLI; `CADR_*` remains authoritative in 0.2.0 |
 | Native executable identity | `./build.sh`, `./cadr --version` | Output filename and version banner use cadr |
 | Git history | ancestry check in `docs/progress/migration.md` | Pre-migration baseline `c07b5a668` remains reachable |

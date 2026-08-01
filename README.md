@@ -371,10 +371,10 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Current Goal 11 closeout run: 7128 checks / 7128 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` public builds repeat the same gate |
+| Deterministic ASDF gate | Goal 10 closeout: 7192 checks / 7192 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` builds repeat the same gate |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Non-functional | N=5000 frame/key/stream each 4.00ms; 1200-turn/10-hour faux run has linear retained state, stable FD/thread counts, and 10MiB load/resume/continue below 0.33s |
-| Live-proven | Part D `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
+| Live-proven | Goal 10 closeout `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist and Goal 9 Part B three-round dual-terminal A/B acceptance passed |
 
