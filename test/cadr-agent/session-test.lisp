@@ -97,6 +97,34 @@
                (cadr-agent::session-path session)
                :external-format :utf-8))))))))
 
+(test goal11-session-append-maintains-o1-tail-invariant
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent::create-session
+              :directory sessions :cwd cwd :id "goal11-tail"))
+           (first-message
+             (cadr-ai:make-user-message :content "first"))
+           (second-message
+             (cadr-ai:make-user-message :content "second")))
+      (cadr-agent::session-append-message session first-message)
+      (let ((first-tail
+              (cadr-agent::session-%entries-tail session)))
+        (is (eq (cadr-agent::session-%entries session)
+                (cadr-agent::session-%entries-tail-head session)))
+        (is (eq first-tail
+                (last (cadr-agent::session-%entries session))))
+        (cadr-agent::session-append-message session second-message)
+        (is (eq (cdr first-tail)
+                (cadr-agent::session-%entries-tail session)))
+        (is (null
+             (cdr
+              (cadr-agent::session-%entries-tail session))))
+        (is (equal '("first" "second")
+                   (mapcar
+                    #'cadr-ai:user-message-content
+                    (cadr-agent::session-messages session))))))))
+
 (test session-loader-skips-malformed-jsonl-records-including-the-final-tail
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)

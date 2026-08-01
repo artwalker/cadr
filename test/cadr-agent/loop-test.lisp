@@ -1,6 +1,47 @@
 (in-package #:cadr-agent/tests)
 (in-suite cadr-agent-suite)
 
+(test goal11-agent-message-append-maintains-o1-tail-invariant
+  (let* ((initial
+           (list
+            (cadr-ai:make-user-message :content "first")))
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :messages initial))
+         (first-tail
+           (cadr-agent::agent-messages-tail agent)))
+    (is (eq (agent-messages agent)
+            (cadr-agent::agent-messages-tail-head agent)))
+    (is (eq first-tail (last (agent-messages agent))))
+    (cadr-agent::agent-append-message
+     agent
+     (cadr-ai:make-user-message :content "second"))
+    (is (eq (cdr first-tail)
+            (cadr-agent::agent-messages-tail agent)))
+    (is (null
+         (cdr (cadr-agent::agent-messages-tail agent))))
+    (is (equal '("first" "second")
+               (mapcar
+                #'cadr-ai:user-message-content
+                (agent-messages agent))))
+    ;; Public accessors allow callers to replace the list. The next append
+    ;; repairs the private tail once and then resumes constant-time appends.
+    (let ((replacement
+            (list
+             (cadr-ai:make-user-message :content "replacement"))))
+      (setf (agent-messages agent) replacement)
+      (cadr-agent::agent-append-message
+       agent
+       (cadr-ai:make-user-message :content "after-replacement"))
+      (is (eq replacement
+              (cadr-agent::agent-messages-tail-head agent)))
+      (is (equal '("replacement" "after-replacement")
+                 (mapcar
+                  #'cadr-ai:user-message-content
+                  (agent-messages agent)))))))
+
 (test simple-turn-emits-reference-lifecycle-order
   (let ((*responses*
           (list

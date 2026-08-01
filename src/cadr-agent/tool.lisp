@@ -87,16 +87,19 @@
                          (compaction-reserve-tokens 16384)
                          (compaction-keep-recent-tokens 20000)
                          abort-p)
-  (let ((agent
+  (let* ((initial-messages
+           (copy-list
+            (or messages
+                (and session
+                     (session-messages session)))))
+         (agent
           (%make-agent
            :provider provider
            :model model
            :system-prompt system-prompt
-           :messages
-           (copy-list
-            (or messages
-                (and session
-                     (session-messages session))))
+           :messages initial-messages
+           :messages-tail (last initial-messages)
+           :messages-tail-head initial-messages
            :base-tools (copy-list tools)
            :tool-registry (make-tool-registry tools)
            :tool-filter-function tool-filter-function

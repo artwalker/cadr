@@ -42,6 +42,8 @@
   (labels (make-hash-table :test #'equal)
           :type hash-table)
   (%entries nil :type list)
+  %entries-tail
+  %entries-tail-head
   (by-id (make-hash-table :test #'equal) :type hash-table)
   leaf-id
   (persisted-p nil :type boolean)
@@ -800,6 +802,26 @@
      :parent-session parent-session
      :modified-timestamp timestamp)))
 
+(defun ensure-session-entries-tail (session)
+  (let ((entries (session-%entries session)))
+    (cond
+      ((null entries)
+       (setf
+        (session-%entries-tail session) nil
+        (session-%entries-tail-head session) nil))
+      ((or
+        (not
+         (eq entries
+             (session-%entries-tail-head session)))
+        (null (session-%entries-tail session))
+        (not
+         (null
+          (cdr (session-%entries-tail session)))))
+       (setf
+        (session-%entries-tail session) (last entries)
+        (session-%entries-tail-head session) entries))))
+  (session-%entries-tail session))
+
 (defun append-session-entry (session entry)
   (sb-thread:with-mutex
       ((session-lock session))
@@ -842,14 +864,21 @@
             (session-path session) nil
             "Cannot create session: ~A" cause)))
        (setf (session-persisted-p session) t)))
-    (setf (session-%entries session)
-          (nconc (session-%entries session)
-                 (list entry))
-          (gethash (session-entry-id entry)
-                   (session-by-id session))
-          entry
-          (session-leaf-id session)
-          (session-entry-id entry))
+    (let ((cell (list entry)))
+      (if (session-%entries session)
+          (setf
+           (cdr (ensure-session-entries-tail session)) cell
+           (session-%entries-tail session) cell)
+          (setf
+           (session-%entries session) cell
+           (session-%entries-tail session) cell
+           (session-%entries-tail-head session) cell)))
+    (setf
+     (gethash (session-entry-id entry)
+              (session-by-id session))
+     entry
+     (session-leaf-id session)
+     (session-entry-id entry))
     (let ((activity
             (session-entry-activity-timestamp
              entry)))
@@ -1837,6 +1866,8 @@
        :name session-name
        :labels labels
        :%entries entries
+       :%entries-tail (last entries)
+       :%entries-tail-head entries
        :by-id by-id
        :persisted-p t
        :modified-timestamp modified-timestamp

@@ -124,12 +124,39 @@
          :attempt attempt)))
     final))
 
+(defun ensure-agent-messages-tail (agent)
+  (let ((messages (agent-messages agent)))
+    (cond
+      ((null messages)
+       (setf
+        (agent-messages-tail agent) nil
+        (agent-messages-tail-head agent) nil))
+      ((or
+        (not
+         (eq messages
+             (agent-messages-tail-head agent)))
+        (null (agent-messages-tail agent))
+        (not
+         (null
+          (cdr (agent-messages-tail agent)))))
+       (setf
+        (agent-messages-tail agent) (last messages)
+        (agent-messages-tail-head agent) messages))))
+  (agent-messages-tail agent))
+
 (defun append-agent-message (agent message)
   (when (agent-session agent)
     (session-append-message
      (agent-session agent) message))
-  (setf (agent-messages agent)
-        (nconc (agent-messages agent) (list message)))
+  (let ((cell (list message)))
+    (if (agent-messages agent)
+        (setf
+         (cdr (ensure-agent-messages-tail agent)) cell
+         (agent-messages-tail agent) cell)
+        (setf
+         (agent-messages agent) cell
+         (agent-messages-tail agent) cell
+         (agent-messages-tail-head agent) cell)))
   message)
 
 (defun assistant-tool-calls (message)

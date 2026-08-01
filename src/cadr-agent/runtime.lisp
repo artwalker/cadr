@@ -25,6 +25,8 @@
   model
   (system-prompt nil :type (or null string))
   (messages nil :type list)
+  messages-tail
+  messages-tail-head
   (base-tools nil :type list)
   tool-registry
   (tool-filter-function #'identity :type function)
