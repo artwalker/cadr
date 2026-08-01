@@ -253,6 +253,18 @@ A/B 已由用户确认，Part B 已关闭。
 | exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 与 11 个 base-screen 状态分别锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw/Kitty input→configured action→busy/idle behavior |
+| busy interaction | long-running child→Escape→process-group termination→error tool result→idle；parallel tools→shared cancellation；busy Enter/Alt+Enter→steering/follow-up queue→pending copy→mode-controlled drain；repeated Escape→single silent abort |
+
+The busy-interaction row is a lifecycle contract, not a static key or screen
+contract. Its permanent gates couple the production TUI input loop to a faux
+agent and a real detached bash process: `GOAL10-BUSY-BASH-ABORT-KILLS-GROUP-REPORTS-ERROR-AND-SETTLES-AGENT`,
+`GOAL10-BUSY-PARALLEL-TOOL-ABORT-REACHES-ALL-RUNNING-EXECUTORS`,
+`GOAL10-BUSY-TUI-ESCAPE-ABORTS-ACTIVE-TOOL-AND-RETURNS-IDLE`,
+`GOAL10-BUSY-TUI-ENTER-AND-ALT-ENTER-USE-DISTINCT-QUEUES`,
+`GOAL10-BUSY-TUI-STEERING-IS-DELIVERED-AFTER-THE-ACTIVE-TURN`, and
+`GOAL10-BUSY-TUI-REPEATED-ESCAPE-DOES-NOT-SPAM-ABORT-NOTICES`. Static
+keybinding assertions, queue unit tests, and idle full-screen SHA snapshots do
+not satisfy this row.
 
 ### B2 基础屏幕整屏合约
 
