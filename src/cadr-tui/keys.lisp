@@ -113,6 +113,21 @@
   (format nil "^~C\\[27;(\\d+);(\\d+)~~$"
           #\Escape))
 
+(defparameter +modified-arrow-pattern+
+  (format nil
+          "^~C\\[1;(\\d+)(?::(\\d+))?([ABCD])$"
+          #\Escape))
+
+(defparameter +modified-function-pattern+
+  (format nil
+          "^~C\\[(\\d+)(?:;(\\d+))?(?::(\\d+))?~~$"
+          #\Escape))
+
+(defparameter +modified-home-end-pattern+
+  (format nil
+          "^~C\\[1;(\\d+)(?::(\\d+))?([HF])$"
+          #\Escape))
+
 (defun regex-capture
     (text starts ends index)
   (let ((start (aref starts index))
@@ -170,6 +185,88 @@
        :codepoint
        (parse-integer
         (regex-capture data starts ends 1))))))
+
+(defun parse-modified-functional-key-data (data)
+  (flet ((event-value (text)
+           (if text (parse-integer text) 1)))
+    (multiple-value-bind
+          (start end starts ends)
+        (cl-ppcre:scan +modified-arrow-pattern+ data)
+      (declare (ignore end))
+      (when start
+        (let ((key
+                (case
+                    (char
+                     (regex-capture data starts ends 2)
+                     0)
+                  (#\A :up)
+                  (#\B :down)
+                  (#\C :right)
+                  (#\D :left))))
+          (return-from parse-modified-functional-key-data
+            (list
+             :codepoint key
+             :modifier
+             (1-
+              (parse-integer
+               (regex-capture data starts ends 0)))
+             :event
+             (event-value
+              (regex-capture data starts ends 1)))))))
+    (multiple-value-bind
+          (start end starts ends)
+        (cl-ppcre:scan +modified-home-end-pattern+ data)
+      (declare (ignore end))
+      (when start
+        (return-from parse-modified-functional-key-data
+          (list
+           :codepoint
+           (if
+               (char=
+                #\H
+                (char
+                 (regex-capture data starts ends 2)
+                 0))
+               :home
+               :end)
+           :modifier
+           (1-
+            (parse-integer
+             (regex-capture data starts ends 0)))
+           :event
+           (event-value
+            (regex-capture data starts ends 1))))))
+    (multiple-value-bind
+          (start end starts ends)
+        (cl-ppcre:scan +modified-function-pattern+ data)
+      (declare (ignore end))
+      (when start
+        (let* ((number
+                 (parse-integer
+                  (regex-capture data starts ends 0)))
+               (key
+                 (cdr
+                  (assoc number
+                         '((2 . :insert)
+                           (3 . :delete)
+                           (5 . :page-up)
+                           (6 . :page-down)
+                           (7 . :home)
+                           (8 . :end))))))
+          (when key
+            (return-from parse-modified-functional-key-data
+              (list
+               :codepoint key
+               :modifier
+               (let ((text
+                       (regex-capture data starts ends 1)))
+                 (1-
+                  (if text
+                      (parse-integer text)
+                      1)))
+               :event
+               (event-value
+                (regex-capture data starts ends 2))))))))))
 
 (defun normalized-kitty-codepoint (value modifier)
   (let ((mapped (cdr (assoc value +kitty-keypad-map+))))
@@ -268,6 +365,13 @@
          (getf kitty :codepoint)
          (getf kitty :modifier)
          (getf kitty :base)))))
+  (let ((modified-functional
+          (parse-modified-functional-key-data data)))
+    (when modified-functional
+      (return-from parse-key
+        (key-name-for-codepoint
+         (getf modified-functional :codepoint)
+         (getf modified-functional :modifier)))))
   (let ((modified
           (parse-modify-other-keys-data data)))
     (when modified
@@ -282,6 +386,13 @@
                             #\Escape #\Return))
            (string= data (string #\Newline)))
       (return-from parse-key "shift+enter")))
+  (when
+      (and
+       (not *kitty-protocol-active-p*)
+       (string=
+        data
+        (format nil "~C~C" #\Escape #\Return)))
+    (return-from parse-key "alt+enter"))
   (let ((legacy
           (assoc data +legacy-key-sequences+
                  :test #'string=)))

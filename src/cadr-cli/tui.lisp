@@ -1827,7 +1827,7 @@
       (let ((errors
               (assistant-stop-error-lines
                entry width)))
-        (when (or rendered errors)
+        (when rendered
           (setf rendered
                 (cons "" rendered)))
         (nconc rendered errors)))))
@@ -2214,6 +2214,36 @@
                "app.message.dequeue"))
              "alt+up")))))))))
 
+(defun render-tui-overlay-lines (overlay width now)
+  (cond
+    ((session-selector-state-p overlay)
+     (render-session-selector overlay width))
+    ((tree-selector-state-p overlay)
+     (render-tree-selector overlay width))
+    ((user-message-selector-state-p overlay)
+     (render-user-message-selector overlay width))
+    ((model-selector-state-p overlay)
+     (render-model-selector overlay width))
+    ((scoped-models-selector-state-p overlay)
+     (render-scoped-models-selector overlay width))
+    ((trust-selector-state-p overlay)
+     (render-trust-selector overlay width))
+    ((settings-selector-state-p overlay)
+     (render-settings-selector overlay width))
+    ((login-method-selector-state-p overlay)
+     (render-login-method-selector overlay width))
+    ((api-key-input-state-p overlay)
+     (render-api-key-input-state overlay width))
+    ((oauth-selector-state-p overlay)
+     (render-oauth-selector overlay width))
+    ((extension-custom-ui-state-p overlay)
+     (render-extension-custom-ui overlay width))
+    ((framed-select-state-p overlay)
+     (render-framed-select-state
+      overlay width :now now))
+    (t
+     (cadr-tui:render-select-list overlay width))))
+
 (defun render-tui-state
     (state editor width rows
      &key overlay busy-p extension-host
@@ -2294,19 +2324,37 @@
              (render-tui-widgets
               (tui-state-widgets-above state)
               width
-              :spacer-when-empty-p (null overlay)
-              :leading-spacer-p (null overlay)))
+              :spacer-when-empty-p t
+              :leading-spacer-p t))
            (widget-below-lines
              (render-tui-widgets
               (tui-state-widgets-below state)
               width
               :spacer-when-empty-p nil
               :leading-spacer-p nil))
+           (overlay-lines
+             (and overlay
+                  (render-tui-overlay-lines
+                   overlay width now)))
+           (fixed-lines-without-editor
+             (+ (length pending-message-lines)
+                (length status-indicator)
+                (length widget-above-lines)
+                (length widget-below-lines)
+                (length footer-lines)))
+           (active-editor-lines
+             (if overlay
+                 (fit-overlay-lines
+                  overlay-lines
+                  (max 0
+                       (- rows
+                          fixed-lines-without-editor)))
+                 editor-lines))
            (non-content-lines
              (+ (length pending-message-lines)
                 (length status-indicator)
                 (length widget-above-lines)
-                (length editor-lines)
+                (length active-editor-lines)
                 (length widget-below-lines)
                 (length footer-lines)))
            (content-height
@@ -2314,73 +2362,21 @@
                   (- rows
                      non-content-lines)))
            (entry-content
-             (if overlay
-                 (cond
-                   ((session-selector-state-p
-                     overlay)
-                    (render-session-selector
-                     overlay width))
-                   ((tree-selector-state-p
-                     overlay)
-                    (render-tree-selector
-                     overlay width))
-                   ((user-message-selector-state-p
-                     overlay)
-                    (render-user-message-selector
-                     overlay width))
-                   ((model-selector-state-p
-                     overlay)
-                    (render-model-selector
-                     overlay width))
-                   ((scoped-models-selector-state-p
-                     overlay)
-                    (render-scoped-models-selector
-                     overlay width))
-                   ((trust-selector-state-p
-                     overlay)
-                    (render-trust-selector
-                     overlay width))
-                   ((settings-selector-state-p
-                     overlay)
-                    (render-settings-selector
-                     overlay width))
-                   ((login-method-selector-state-p
-                     overlay)
-                    (render-login-method-selector
-                     overlay width))
-                   ((api-key-input-state-p overlay)
-                    (render-api-key-input-state
-                     overlay width))
-                   ((oauth-selector-state-p overlay)
-                    (render-oauth-selector
-                     overlay width))
-                   ((extension-custom-ui-state-p
-                     overlay)
-                    (render-extension-custom-ui
-                     overlay width))
-                   ((framed-select-state-p overlay)
-                    (render-framed-select-state
-                     overlay width :now now))
-                   (t
-                    (cadr-tui:render-select-list
-                     overlay width)))
-                 (render-tui-entries
-                  (tui-state-entries state)
-                  width
-                  :extension-host extension-host
-                  :now now)))
+             (render-tui-entries
+              (tui-state-entries state)
+              width
+              :extension-host extension-host
+              :now now))
            (startup-lines
-             (and
-              (null overlay)
-              (if
-                  (tui-state-tools-expanded-p state)
-                  (or
-                   (tui-state-startup-expanded-lines
-                    state)
-                   (tui-state-startup-compact-lines
-                    state))
+             (if
+                 (tui-state-tools-expanded-p state)
+                 (or
+                  (tui-state-startup-expanded-lines
+                   state)
                   (tui-state-startup-compact-lines
-                   state))))
+                   state))
+                 (tui-state-startup-compact-lines
+                  state)))
            (startup-lines
              (and startup-lines
                   (render-tui-startup-lines
@@ -2395,20 +2391,12 @@
                  entry-content))
            (top-align-content-p
              (and startup-lines
-                  (null entry-content)
-                  (null overlay)))
+                  (null entry-content)))
            (visible
              (cond
                ((and full-document-p
                      (null overlay))
                 all-content)
-               ((and
-                 overlay
-                 (plusp content-height)
-                 (> (length all-content)
-                    content-height))
-                (fit-overlay-lines
-                 all-content content-height))
                (t
                 (trailing-lines
                  all-content content-height))))
@@ -2426,25 +2414,25 @@
                 (length pending-message-lines)
                 (length status-indicator)
                 (length widget-above-lines)
-                editor-row)))
+                (if overlay 0 editor-row))))
       (values
        (if top-align-content-p
            (nconc visible padding
                   pending-message-lines
                   status-indicator
                   widget-above-lines
-                  editor-lines
+                  active-editor-lines
                   widget-below-lines
                   footer-lines)
            (nconc padding visible
                   pending-message-lines
                   status-indicator
                   widget-above-lines
-                  editor-lines
+                  active-editor-lines
                   widget-below-lines
                   footer-lines))
        cursor-row
-       editor-column))))
+       (if overlay 0 editor-column)))))
 
 (defun set-tui-tools-expanded
     (state expanded-p)

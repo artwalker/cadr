@@ -80,6 +80,69 @@
              (is (equal '(:dequeue) (event-kinds events)))))
       (cadr-tui:set-keybindings previous))))
 
+(test input-decoder-handles-real-xterm-and-windows-alt-sequences
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager))
+           (dolist
+               (case
+                `((,(format nil "~C[1;3A" #\Escape)
+                   :dequeue)
+                  (,(format nil "~C[27;3;13~~" #\Escape)
+                   :follow-up)
+                  (,(format nil "~C[13;3u" #\Escape)
+                   :follow-up)
+                  (,(format nil "~C~C" #\Escape #\Return)
+                   :follow-up)))
+             (destructuring-bind (data expected) case
+               (is
+                (equal
+                 (list expected)
+                 (event-kinds
+                  (cadr-tui:feed-input
+                   (cadr-tui:make-input-decoder)
+                   data))))))
+           (dolist
+               (data
+                (list
+                 (format nil "~C[1;99A" #\Escape)
+                 (format nil "~C[999~~" #\Escape)
+                 (format nil "~Cx" #\Escape)))
+             (let ((events
+                     (cadr-tui:feed-input
+                      (cadr-tui:make-input-decoder)
+                      data)))
+               (is
+                (null
+                 (find :text events
+                       :key #'cadr-tui:input-event-kind)))))
+           (dolist
+               (data
+                (list
+                 (format nil "~C[999~~ok" #\Escape)
+                 (format nil "~COZok" #\Escape)
+                 (format nil "~C]999;private~Cok"
+                         #\Escape (code-char 7))
+                 (format nil "~CPprivate~C\\ok"
+                         #\Escape #\Escape)
+                 (format nil "~C_private~C\\ok"
+                         #\Escape #\Escape)
+                 (format nil "~Cxok" #\Escape)))
+             (let ((events
+                     (cadr-tui:feed-input
+                      (cadr-tui:make-input-decoder)
+                      data)))
+               (is (= 1 (length events)))
+               (is (eq :text
+                       (cadr-tui:input-event-kind
+                        (first events))))
+               (is (string= "ok"
+                            (cadr-tui:input-event-text
+                             (first events)))))))
+      (cadr-tui:set-keybindings previous))))
+
 (test multiline-editor-edits-by-grapheme-and-submits
   (let ((editor (cadr-tui:make-multiline-editor)))
     (cadr-tui:editor-handle-event

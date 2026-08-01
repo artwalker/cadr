@@ -9,6 +9,9 @@
    (reads
     :initform 0
     :accessor footer-sync-test-terminal-reads)
+   (empty-reads
+    :initform 0
+    :accessor footer-sync-test-terminal-empty-reads)
    (before-second-read
     :initarg :before-second-read
     :initform (constantly nil)
@@ -28,9 +31,46 @@
     (funcall
      (footer-sync-test-terminal-before-second-read
       terminal)))
-  (or
-   (pop (footer-sync-test-terminal-inputs terminal))
-   ""))
+  (loop
+    for next = (first
+                (footer-sync-test-terminal-inputs terminal))
+    while (functionp next)
+    do
+    (if (funcall next terminal)
+        (pop (footer-sync-test-terminal-inputs terminal))
+        (return-from cadr-tui:terminal-read-input "")))
+  (if (footer-sync-test-terminal-inputs terminal)
+      (progn
+        (setf (footer-sync-test-terminal-empty-reads terminal) 0)
+        (pop (footer-sync-test-terminal-inputs terminal)))
+      (progn
+        (when
+            (> (incf
+                (footer-sync-test-terminal-empty-reads terminal))
+               200)
+          (error
+           "Virtual terminal exhausted its scripted input:~%~{~A~%~}"
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-tui:virtual-terminal-snapshot terminal))))
+        "")))
+
+(defun footer-sync-wait-for-screen-text (text)
+  (let ((attempts 0))
+    (lambda (terminal)
+      (let ((screen
+              (format
+               nil "~{~A~^~%~}"
+               (mapcar
+                #'cadr-tui:strip-terminal-sequences
+                (cadr-tui:virtual-terminal-snapshot terminal)))))
+        (or (search text screen)
+            (progn
+              (when (> (incf attempts) 200)
+                (error
+                 "Timed out waiting for ~S in virtual screen:~%~A"
+                 text screen))
+              nil))))))
 
 (defclass progress-event-test-terminal
     (footer-sync-test-terminal)
@@ -1401,7 +1441,10 @@
         :inputs
         (list
          (footer-sync-submit-input "/login")
+         (footer-sync-wait-for-screen-text
+          "Sign in with an account")
          (string #\Escape)
+         ""
          (footer-sync-submit-input "/quit"))
         :before-second-read
         (constantly nil)))
@@ -1426,6 +1469,8 @@
         :inputs
         (list
          (footer-sync-submit-input "/logout")
+         (footer-sync-wait-for-screen-text
+          "OpenAI Codex")
          (footer-sync-submit-input "")
          (footer-sync-submit-input "/quit"))
         :before-second-read
@@ -1512,15 +1557,21 @@
               :columns 80 :rows 16
               :inputs
               (append
-               (list
-                (footer-sync-submit-input "/login")
-                (format nil "~C[B" #\Escape)
-                (string #\Return))
+              (list
+               (footer-sync-submit-input "/login")
+               (footer-sync-wait-for-screen-text
+                "Sign in with an account")
+               (format nil "~C[B" #\Escape)
+               (string #\Return)
+               (footer-sync-wait-for-screen-text
+                "Select provider to configure:"))
                (loop repeat provider-index
                      collect
                      (format nil "~C[B" #\Escape))
                (list
                 (string #\Return)
+                (footer-sync-wait-for-screen-text
+                 "Login to Anthropic")
                 (footer-sync-submit-input
                  "persisted-secret")
                 (footer-sync-submit-input "/quit")))
@@ -2020,6 +2071,63 @@
         (is (char= #\O (char abort-line 1)))
         (is (null (search "Abort requested" abort-line)))
         (is (null (search "session>" abort-line)))))))
+
+(test goal10-operation-aborted-has-exactly-one-baseline-spacer
+  (let ((entry
+          (cadr-cli::make-tui-entry
+           :type :assistant
+           :stop-reason :aborted
+           :error-message "Request was aborted")))
+    (is
+     (equal
+      (list "" " Operation aborted")
+      (mapcar
+       (lambda (line)
+         (string-right-trim
+          '(#\Space)
+          (cadr-tui::strip-ansi line)))
+       (cadr-cli::render-tui-entry entry 80))))))
+
+(test goal10-selector-overlays-preserve-transcript-above-editor-area
+  (let* ((state
+           (cadr-cli::make-tui-state
+            :model "mock"
+            :messages
+            (list
+             (cadr-ai:make-user-message
+              :content "TRANSCRIPT-USER-SENTINEL")
+             (cadr-ai:make-assistant-message
+              :api :openai-responses
+              :provider :openai
+              :model "mock"
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text "TRANSCRIPT-ASSISTANT-SENTINEL"))
+              :stop-reason :stop))))
+         (editor (cadr-tui:make-multiline-editor))
+         (overlay
+           (cadr-cli::make-settings-selector-state
+            :options
+            (list
+             (cadr-cli::make-settings-option
+              :id "autocompact"
+              :label "Auto-compact"
+              :description "Automatically compact context"
+              :value t
+              :values (list t nil))))))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 80 24 :overlay overlay)
+      (declare (ignore row column))
+      (let ((screen
+              (cadr-tui:strip-terminal-sequences
+               (format nil "~{~A~^~%~}" lines))))
+        (is (search "TRANSCRIPT-USER-SENTINEL" screen))
+        (is (search "TRANSCRIPT-ASSISTANT-SENTINEL" screen))
+        (is (search "Auto-compact  true" screen))
+        (is (< (search "TRANSCRIPT-ASSISTANT-SENTINEL" screen)
+               (search "Auto-compact  true" screen)))))))
 
 (test tui-compaction-rebuilds-chat-appends-summary-and-keeps-steering-input
   (let* ((old

@@ -9,68 +9,11 @@
   pending-kitty-codepoint
   (timeout-milliseconds 10 :type (integer 0 *)))
 
-(defun terminal-final-byte-p (character)
-  (between-p (codepoint character) #x40 #x7e))
-
 (defun string-suffix-p (suffix string)
   (and (<= (length suffix) (length string))
        (string= suffix string
                 :start2 (- (length string)
                            (length suffix)))))
-
-(defun control-string-end (text start &key bell-p)
-  (loop for index from start below (length text)
-        when (or (and bell-p
-                      (= (codepoint (char text index)) 7))
-                 (and (char= (char text index) #\Escape)
-                      (< (1+ index) (length text))
-                      (char= (char text (1+ index)) #\\)))
-          do (return
-               (if (= (codepoint (char text index)) 7)
-                   (1+ index)
-                   (+ index 2)))))
-
-(defun complete-terminal-sequence-length (text)
-  (unless (and (plusp (length text))
-               (char= (char text 0) #\Escape))
-    (return-from complete-terminal-sequence-length 1))
-  (when (= (length text) 1)
-    (return-from complete-terminal-sequence-length nil))
-  (case (char text 1)
-    (#\[
-     (when (and (>= (length text) 3)
-                (char= (char text 2) #\M))
-       (return-from complete-terminal-sequence-length
-         (and (>= (length text) 6) 6)))
-     (loop for index from 2 below (length text)
-           for character = (char text index)
-           when (terminal-final-byte-p character)
-             do
-             (when (char= (char text 2) #\<)
-               (let ((payload (subseq text 3 index)))
-                 (unless
-                     (and (member character '(#\M #\m))
-                          (= 3
-                             (length
-                              (uiop:split-string
-                               payload :separator '(#\;))))
-                          (every
-                           (lambda (part)
-                             (and (plusp (length part))
-                                  (every #'digit-char-p part)))
-                           (uiop:split-string
-                            payload :separator '(#\;))))
-                   (return-from complete-terminal-sequence-length nil))))
-             (return-from complete-terminal-sequence-length
-               (1+ index)))
-     nil)
-    (#\]
-     (control-string-end text 2 :bell-p t))
-    ((#\P #\_)
-     (control-string-end text 2))
-    (#\O
-     (and (>= (length text) 3) 3))
-    (otherwise 2)))
 
 (defun kitty-unmodified-printable-codepoint (sequence)
   (when (and (> (length sequence) 3)

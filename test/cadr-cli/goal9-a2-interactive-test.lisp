@@ -230,7 +230,7 @@
                 (format nil "steer~C" #\Return))
               "follow"
               (format nil "~C[13;3u" #\Escape)
-              (format nil "~Cp" #\Escape)
+              (format nil "~C[1;3A" #\Escape)
               (lambda ()
                 (sb-thread:wait-on-semaphore worker-done)
                 (format nil "~C[99;5u" #\Escape))
@@ -300,41 +300,71 @@
       (cadr-tui:set-keybindings previous))))
 
 (test goal10-busy-tui-enter-and-alt-enter-use-distinct-queues
-  (let ((started (sb-thread:make-semaphore :count 0))
-        (release (sb-thread:make-semaphore :count 0))
-        (worker-done-p nil)
-        (steering nil)
-        (follow-up nil))
-    (let ((terminal
-            (make-instance
-             'goal9-p2-key-terminal
-             :columns 80 :rows 16
-             :inputs
-             (list
-              (format nil "start~C" #\Return)
-              (format nil "steer~C" #\Return)
-              "follow"
-              (format nil "~C[13;3u" #\Escape))
-             :worker-done-p
-             (lambda () worker-done-p))))
-      (cadr-cli::run-tui
-       (lambda (line)
-         (declare (ignore line))
-         (sb-thread:signal-semaphore started)
-         (sb-thread:wait-on-semaphore release)
-         (setf worker-done-p t))
-       :busy-input-function
-       (lambda (line)
-         (push line steering))
-       :follow-up-input-function
-       (lambda (line)
-         (push line follow-up)
-         (sb-thread:signal-semaphore release))
-       :model "faux"
-       :terminal terminal)
-      (is (sb-thread:wait-on-semaphore started :timeout 1))
-      (is (equal '("steer") (nreverse steering)))
-      (is (equal '("follow") (nreverse follow-up))))))
+  (let ((previous-kitty-p
+          (cadr-tui:kitty-protocol-active-p)))
+    (unwind-protect
+         (progn
+           ;; The virtual terminal models xterm/Windows Terminal here.  Do
+           ;; not inherit protocol negotiation state from an earlier test.
+           (cadr-tui:set-kitty-protocol-active nil)
+           (let ((started
+                   (sb-thread:make-semaphore :count 0))
+                 (release
+                   (sb-thread:make-semaphore :count 0))
+                 (started-p nil)
+                 (worker-done-p nil)
+                 (steering nil)
+                 (follow-up nil))
+             (let ((terminal
+                     (make-instance
+                      'goal9-p2-key-terminal
+                      :columns 80 :rows 16
+                      :inputs
+                      (list
+                       (format nil "start~C" #\Return)
+                       (lambda ()
+                         (unless
+                             (sb-thread:wait-on-semaphore
+                              started :timeout 1)
+                           (error "Busy worker did not start"))
+                         (format nil "steer~C" #\Return))
+                       "follow-xterm"
+                       (format nil "~C[27;3;13~~" #\Escape)
+                       "follow-legacy"
+                       (format nil "~C~C" #\Escape #\Return)
+                       (lambda ()
+                         (sb-thread:signal-semaphore release)
+                         (unless (= 2 (length follow-up))
+                           (error
+                            "Expected two follow-up messages, got ~S"
+                            follow-up))
+                         ""))
+                      :worker-done-p
+                      (lambda () worker-done-p))))
+               (cadr-cli::run-tui
+                (lambda (line)
+                  (declare (ignore line))
+                  (setf started-p t)
+                  (sb-thread:signal-semaphore started)
+                  (sb-thread:wait-on-semaphore release)
+                  (setf worker-done-p t))
+                :busy-input-function
+                (lambda (line)
+                  (push line steering))
+                :follow-up-input-function
+                (lambda (line)
+                  (push line follow-up)
+                  (when (= 2 (length follow-up))
+                    (sb-thread:signal-semaphore release)))
+                :model "faux"
+                :terminal terminal)
+               (is-true started-p)
+               (is (equal '("steer") (nreverse steering)))
+               (is
+                (equal '("follow-xterm" "follow-legacy")
+                       (nreverse follow-up))))))
+      (cadr-tui:set-kitty-protocol-active
+       previous-kitty-p))))
 
 (test goal10-busy-tui-steering-is-delivered-after-the-active-turn
   (let ((release (sb-thread:make-semaphore :count 0))
@@ -433,7 +463,12 @@
              (list
               (format nil "start~C" #\Return)
               (string #\Escape)
-              (string #\Escape))
+              ""
+              (string #\Escape)
+              ""
+              (lambda ()
+                (sb-thread:signal-semaphore release)
+                ""))
              :worker-done-p
              (lambda () worker-done-p))))
       (cadr-cli::run-tui
@@ -443,8 +478,7 @@
          (setf worker-done-p t))
        :abort-function
        (lambda ()
-         (incf abort-count)
-         (sb-thread:signal-semaphore release))
+         (incf abort-count))
        :model "faux"
        :terminal terminal)
       (is (= 1 abort-count))

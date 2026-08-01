@@ -8,13 +8,30 @@
   (make-string width :initial-element #\─))
 
 (defun goal9-b3-overlay-screen-snapshot
-    (overlay &key (width 80) (rows 40))
-  (let* ((state (cadr-cli::make-tui-state :model "mock"))
+    (overlay &key (width 80) (rows 60))
+  (let* ((state
+           (cadr-cli::make-tui-state
+            :model "mock"
+            :messages
+            (list
+             (cadr-ai:make-user-message
+              :content "overlay transcript user")
+             (cadr-ai:make-assistant-message
+              :api :openai-responses
+              :provider :openai
+              :model "mock"
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text "overlay transcript assistant"))
+              :stop-reason :stop))))
          (editor (cadr-tui:make-multiline-editor))
          (terminal
            (cadr-tui:make-virtual-terminal
             :columns width :rows rows))
          (renderer (cadr-tui:make-terminal-renderer terminal)))
+    (cadr-tui:editor-set-text
+     editor "OVERLAY-EDITOR-MUST-BE-HIDDEN")
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
          state editor width rows :overlay overlay)
@@ -124,26 +141,38 @@
 
 (test goal9-b3-every-overlay-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
-          '(("model" . "B6745E0488E0957C87EBDABC50C3E2500827CCD647B4EEB459CACDCAE924B871")
-            ("model-scoped" . "F82A3C2EF46D80A1A7A035028778AF4A71D68500F4952F3DDB3EDA67B555FC67")
-            ("settings" . "FBE5F9D316EDAD157A2064D1F716A22580E33866BA31BB3BD5716C738A5FAD50")
-            ("resume" . "764F89C0161E4934F63B7C270B3DAE5B9A5D27FC2F5315B69DE09EDC078B0DA9")
-            ("fork" . "8E5E858ED0D8FA5B1737A979AA3AB096CD7FA4D57DAC60D6E66CDD1702733839")
-            ("tree" . "7B6DF2F1CD06FFF9C3597BAD446717493050EB51ADE70A45475AE0DEE0B31566")
-            ("scoped-models" . "69EB80FDF363216B91774219151C59D8FE52212CA677EE1B4772B1120DF0FC97")
-            ("trust" . "91476A3411AD79385394054B0F1250067136A28086EEDF83A34C98E481626866")
-            ("login-method" . "E8B9832D6CBD13D2E4275992BB026B78B5FC58952AD54BAD2302AD73B922822D")
-            ("login-provider" . "D0BBBCD732D1DBD1CC63434C06A87E509817116694C4EC36B732383ABD9ABD6B")
-            ("logout-provider" . "8B64091A84F4BF61281FC767B91955066B3C0472E575E864C266D34AE95D1424")
-            ("api-key" . "A3E134010EAB3AC193B4F587DB22042515C633BD46A63953382F9B5E1CC2100C")
-            ("import" . "9F523B226D7639B0449AE7F3E6E6980F7D1B10B1D17DD03DA4D494E208802E3E")
-            ("extension-select" . "493B0D5F9A671AC464143BB174CBA9C73EF06D9C23F96A272B4A6EE6DEDD793C")
-            ("extension-custom" . "1DC11B688FAF08EFD7B9BED1D7C5A5DD26396A9ECE368E7DA25BAABC3FD6FE35"))))
+          '(("model" . "F00B20118A954C3CCFA6780ACECC9AAD5887EDD168913EEDC121D9250354AD3F")
+            ("model-scoped" . "E45CF44928EA432C79CC93DBD359FA92ECCA37B2D6D97FA8A3463559AFEDE4D8")
+            ("settings" . "BF8F74675A66393CE5F4A50785B71F78F7F54B3617358DF4D4A9C70E2C1C3AFA")
+            ("resume" . "97547661CA2C621716565AD8322C0A886B922114D4798EAD4AEFC9AEF0FF6B4B")
+            ("fork" . "3741D9EBD09665BE6701FD957B2071E07A621804192CD2E0E1E4E765A577FF60")
+            ("tree" . "3E181C19A4FF90C824918E713E3B738E00C4F456BC6AEBB3AB7F2BF9235B597F")
+            ("scoped-models" . "C70BE56733530B2E2839E3EDF65B0FE93A09EEC09C2C3B67A6BF70DE22136038")
+            ("trust" . "ADCAA3E3FBE6FCC0075819C16FB67B5DC1EA6F5B7A4C8B3B5C6B6810E8A9F18C")
+            ("login-method" . "ED15EB102E30928C4F4D5B3470FE1FE9D5F6B15C1294188FAE8327393FF57F85")
+            ("login-provider" . "B3A4E71D71A37664D521F5F123D81B0E3B92E4DAB5E638FD14A311FF274F905E")
+            ("logout-provider" . "CC22C0F6983E1975602A5AF28FCC22715A4152374C39577154D33365014B8B5D")
+            ("api-key" . "E9A09DFE359B3AD1519A108F04A0405FA5F6F607B5A7F76F3EC90A9F56151179")
+            ("import" . "CBB6A2FFE4C7F41DB4E4F73739D8D78BC4DBB04844016E6429E85B9E78D883F1")
+            ("extension-select" . "D43F8F701FE98E73037B44854626149F5427B4D5A29CC48A5755425DD918ACE6")
+            ("extension-custom" . "13C40C8025174E52DB871376BA85033BE5EEDD9F349163D36911A4C7DE01E0C5"))))
     (dolist (case (goal9-b3-overlay-screen-cases))
       (is
        (string=
         (cdr (assoc (car case) expected :test #'string=))
-        (goal9-b3-overlay-screen-sha256 (cdr case)))))))
+       (goal9-b3-overlay-screen-sha256 (cdr case)))))))
+
+(test goal10-every-overlay-snapshot-preserves-nonempty-transcript
+  (dolist (case (goal9-b3-overlay-screen-cases))
+    (let ((screen
+            (format
+             nil "~{~A~^~%~}"
+             (goal9-b3-overlay-screen-snapshot
+              (cdr case) :rows 60))))
+      (is (search "overlay transcript user" screen))
+      (is (search "overlay transcript assistant" screen))
+      (is (null
+           (search "OVERLAY-EDITOR-MUST-BE-HIDDEN" screen))))))
 
 (test goal9-b3-model-overlays-have-complete-baseline-line-contracts
   (let* ((width 80)

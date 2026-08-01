@@ -48,6 +48,33 @@
       (is (string= expected (cadr-tui:parse-key data)))
       (is (cadr-tui:matches-key data expected)))))
 
+(test modified-csi-arrows-and-alt-enter-match-real-terminal-sequences
+  (cadr-tui:set-kitty-protocol-active nil)
+  (dolist
+      (case
+       `((,(format nil "~C[1;3A" #\Escape) "alt+up")
+         (,(format nil "~C[1;3B" #\Escape) "alt+down")
+         (,(format nil "~C[1;3C" #\Escape) "alt+right")
+         (,(format nil "~C[1;3D" #\Escape) "alt+left")
+         (,(format nil "~C[1;3:2A" #\Escape) "alt+up")
+         (,(format nil "~C[3;3~~" #\Escape) "alt+delete")
+         (,(format nil "~C[1;3H" #\Escape) "alt+home")
+         (,(format nil "~C[27;3;13~~" #\Escape)
+          "alt+enter")
+         (,(format nil "~C[13;3u" #\Escape)
+          "alt+enter")
+         (,(format nil "~C~C" #\Escape #\Return)
+          "alt+enter")))
+    (destructuring-bind (data expected) case
+      (is (string= expected (cadr-tui:parse-key data)))
+      (is (cadr-tui:matches-key data expected))))
+  (cadr-tui:set-kitty-protocol-active t)
+  (is (string=
+       "shift+enter"
+       (cadr-tui:parse-key
+        (format nil "~C~C" #\Escape #\Return))))
+  (cadr-tui:set-kitty-protocol-active nil))
+
 (test legacy-key-parsing-covers-controls-navigation-and-functions
   (cadr-tui:set-kitty-protocol-active nil)
   (dolist

@@ -13,6 +13,63 @@
 (defparameter +paste-start+ (format nil "~C[200~~" #\Escape))
 (defparameter +paste-end+ (format nil "~C[201~~" #\Escape))
 
+(defun terminal-final-byte-p (character)
+  (between-p (codepoint character) #x40 #x7e))
+
+(defun control-string-end (text start &key bell-p)
+  (loop for index from start below (length text)
+        when (or (and bell-p
+                      (= (codepoint (char text index)) 7))
+                 (and (char= (char text index) #\Escape)
+                      (< (1+ index) (length text))
+                      (char= (char text (1+ index)) #\\)))
+          do (return
+               (if (= (codepoint (char text index)) 7)
+                   (1+ index)
+                   (+ index 2)))))
+
+(defun complete-terminal-sequence-length (text)
+  (unless (and (plusp (length text))
+               (char= (char text 0) #\Escape))
+    (return-from complete-terminal-sequence-length 1))
+  (when (= (length text) 1)
+    (return-from complete-terminal-sequence-length nil))
+  (case (char text 1)
+    (#\[
+     (when (and (>= (length text) 3)
+                (char= (char text 2) #\M))
+       (return-from complete-terminal-sequence-length
+         (and (>= (length text) 6) 6)))
+     (loop for index from 2 below (length text)
+           for character = (char text index)
+           when (terminal-final-byte-p character)
+             do
+             (when (char= (char text 2) #\<)
+               (let ((payload (subseq text 3 index)))
+                 (unless
+                     (and (member character '(#\M #\m))
+                          (= 3
+                             (length
+                              (uiop:split-string
+                               payload :separator '(#\;))))
+                          (every
+                           (lambda (part)
+                             (and (plusp (length part))
+                                  (every #'digit-char-p part)))
+                           (uiop:split-string
+                            payload :separator '(#\;))))
+                   (return-from complete-terminal-sequence-length nil))))
+             (return-from complete-terminal-sequence-length
+               (1+ index)))
+     nil)
+    (#\]
+     (control-string-end text 2 :bell-p t))
+    ((#\P #\_)
+     (control-string-end text 2))
+    (#\O
+     (and (>= (length text) 3) 3))
+    (otherwise 2)))
+
 (defparameter +escape-inputs+
   (list
    (cons (format nil "~C[A" #\Escape) :up)
@@ -45,12 +102,6 @@
 (defun string-prefix-p (prefix string)
   (and (<= (length prefix) (length string))
        (string= prefix string :end2 (length prefix))))
-
-(defun escape-prefix-p (buffer)
-  (or (string-prefix-p buffer +paste-start+)
-      (some (lambda (entry)
-              (string-prefix-p buffer (car entry)))
-            +escape-inputs+)))
 
 (defun normalize-paste (text)
   (with-output-to-string (output)
@@ -134,16 +185,6 @@
                 manager data name)
             do (return kind))))
 
-(defun input-csi-end-position (text)
-  (when
-      (and (> (length text) 1)
-           (char= (char text 0) #\Escape)
-           (char= (char text 1) #\[))
-    (loop for index from 2 below (length text)
-          for value = (codepoint (char text index))
-          when (between-p value #x40 #x7e)
-            do (return index))))
-
 (defun decode-complete-escape-event (data)
   (when (key-release-p data)
     (return-from decode-complete-escape-event
@@ -163,7 +204,9 @@
         (values
          t
          (make-input-event :kind kind)))))
-  (values nil nil))
+  ;; Complete terminal escape sequences are atomic. Unknown sequences are
+  ;; ignored as a unit; their payload must never become editor text.
+  (values t nil))
 
 (defun feed-input (decoder text)
   (setf (input-decoder-buffer decoder)
@@ -236,76 +279,36 @@
                 events)
                (return-from decode-next (decode-next))))
            (when
-               (and
-                (> (length
-                    (input-decoder-buffer decoder))
-                   1)
-                (char=
-                 (char
-                  (input-decoder-buffer decoder)
-                  0)
-                 #\Escape)
-                (char=
-                 (char
-                  (input-decoder-buffer decoder)
-                  1)
-                 #\[))
-             (let ((end
-                     (input-csi-end-position
+               (char=
+                (char
+                 (input-decoder-buffer decoder)
+                 0)
+                #\Escape)
+             (let ((length
+                     (complete-terminal-sequence-length
                       (input-decoder-buffer decoder))))
-               (unless end
+               (unless length
                  (return-from decode-next nil))
-               (let ((data
-                       (subseq
-                        (input-decoder-buffer decoder)
-                        0 (1+ end))))
-                 (multiple-value-bind
-                       (recognized-p event)
-                     (decode-complete-escape-event data)
-                   (when recognized-p
-                     (consume-buffer-prefix
-                      decoder (length data))
-                     (when event (push event events))
-                     (return-from decode-next
-                       (decode-next)))))))
-           (when
-               (and
-                (> (length
-                    (input-decoder-buffer decoder))
-                   1)
-                (char=
-                 (char
-                  (input-decoder-buffer decoder)
-                  0)
-                 #\Escape)
-                (not
-                 (char=
-                  (char
-                   (input-decoder-buffer decoder)
-                   1)
-                  #\[)))
-             (let ((data
-                     (subseq
-                      (input-decoder-buffer decoder)
-                      0 2)))
-               (multiple-value-bind
-                     (recognized-p event)
-                   (decode-complete-escape-event data)
-                 (when recognized-p
-                   (consume-buffer-prefix decoder 2)
-                   (when event (push event events))
-                   (return-from decode-next
-                     (decode-next))))))
-           (when
-               (and
-                (char=
-                 (char
-                  (input-decoder-buffer decoder)
-                  0)
-                 #\Escape)
-                (escape-prefix-p
-                 (input-decoder-buffer decoder)))
-             (return-from decode-next nil))
+               (let* ((data
+                        (subseq
+                         (input-decoder-buffer decoder)
+                         0 length))
+                      (explicit
+                        (assoc data +escape-inputs+
+                               :test #'string=)))
+                 (consume-buffer-prefix decoder length)
+                 (if explicit
+                     (push
+                      (make-input-event
+                       :kind (cdr explicit))
+                      events)
+                     (multiple-value-bind
+                           (recognized-p event)
+                         (decode-complete-escape-event data)
+                       (declare (ignore recognized-p))
+                       (when event (push event events))))
+                 (return-from decode-next
+                   (decode-next)))))
            (let* ((character
                     (char
                      (input-decoder-buffer decoder)
@@ -357,9 +360,8 @@
     (nreverse events)))
 
 (defun flush-input (decoder)
-  (if (string= (input-decoder-buffer decoder)
-               (string #\Escape))
-      (progn
-        (setf (input-decoder-buffer decoder) "")
-        (list (make-input-event :kind :escape)))
-      nil))
+  (let ((buffer (input-decoder-buffer decoder)))
+    (setf (input-decoder-buffer decoder) "")
+    (and
+     (string= buffer (string #\Escape))
+     (list (make-input-event :kind :escape)))))
