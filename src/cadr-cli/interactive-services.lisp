@@ -3262,9 +3262,8 @@
        (image-process-result-height result)
        (coerce scale 'double-float)))))
 
-(defun process-image-file (path)
-  (let* ((bytes (read-binary-file path))
-         (mime-type (detect-image-mime-type bytes)))
+(defun process-image-data (bytes)
+  (let ((mime-type (detect-image-mime-type bytes)))
     (when mime-type
       (if (member mime-type
                   '("image/gif" "image/webp")
@@ -3294,6 +3293,9 @@
                  (if (string= mime-type "image/bmp")
                      "[Image omitted: could not be converted to a supported inline image format.]"
                      "[Image omitted: could not be resized below the inline image size limit.]"))))))))
+
+(defun process-image-file (path)
+  (process-image-data (read-binary-file path)))
 
 (defparameter +syntax-highlight-languages+
   '("bash" "c" "cpp" "css" "diff" "go"

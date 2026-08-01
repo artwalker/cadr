@@ -6,18 +6,18 @@
 (defparameter +builtin-coding-tool-names+
   '("read" "bash" "edit" "write" "grep" "find" "ls"))
 
-(defun make-baseline-coding-tools (cwd)
-  (list (make-read-tool cwd)
-        (make-bash-tool cwd)
-        (make-edit-tool cwd)
-        (make-write-tool cwd)))
+(defun make-baseline-coding-tools (cwd &key context)
+  (list (make-read-tool cwd :context context)
+        (make-bash-tool cwd :context context)
+        (make-edit-tool cwd :context context)
+        (make-write-tool cwd :context context)))
 
-(defun make-coding-tools (cwd)
-  (make-baseline-coding-tools cwd))
+(defun make-coding-tools (cwd &key context)
+  (make-baseline-coding-tools cwd :context context))
 
-(defun make-all-coding-tools (cwd)
+(defun make-all-coding-tools (cwd &key context)
   (append
-   (make-baseline-coding-tools cwd)
+   (make-baseline-coding-tools cwd :context context)
    (list
     (make-grep-tool cwd)
     (make-find-tool cwd)

@@ -14,6 +14,8 @@
                              (:file "arguments")
                              (:file "migration")
                              (:file "utilities")
+                             (:file "core-support")
+                             (:file "tool-manager")
                              (:file "config")
                              (:file "settings")
                              (:file "package-manager")
@@ -23,6 +25,7 @@
                              (:file "interactive-services")
                              (:file "sdk-services")
                              (:file "truncation")
+                             (:file "output-accumulator")
                              (:module "tools"
                               :serial t
                               :components ((:file "path")
@@ -98,6 +101,7 @@
                              (:file "extensions-test")
                              (:file "llama-extension-test")
                              (:file "goal12-tui-composition-test")
+                             (:file "goal12-core-capabilities-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

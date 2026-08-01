@@ -121,6 +121,57 @@
    #:check-for-new-pi-version
    #:newer-release
    #:valid-thinking-level-p
+   #:+default-thinking-level+
+   #:get-provider-login-help
+   #:format-no-models-available-message
+   #:format-no-model-selected-message
+   #:format-no-api-key-found-message
+   #:event-bus
+   #:make-event-bus
+   #:event-bus-on
+   #:event-bus-emit
+   #:event-bus-clear
+   #:reset-timings
+   #:record-timing
+   #:print-timings
+   #:+fs-watch-retry-delay-milliseconds+
+   #:file-watcher
+   #:watch-with-error-handler
+   #:close-watcher
+   #:strip-json-comments
+   #:canonicalize-path
+   #:local-path-p
+   #:normalize-path-input
+   #:resolve-path-input
+   #:cwd-relative-path
+   #:format-path-relative-to-cwd-or-absolute
+   #:mark-path-ignored-by-cloud-sync
+   #:shell-config
+   #:shell-config-shell
+   #:shell-config-arguments
+   #:shell-config-command-transport
+   #:get-shell-config
+   #:get-shell-env
+   #:sanitize-binary-output
+   #:track-detached-child-pid
+   #:untrack-detached-child-pid
+   #:kill-tracked-detached-children
+   #:kill-process-tree
+   #:get-tool-path
+   #:ensure-tool
+   #:cleanup-windows-self-update-quarantine
+   #:quarantine-windows-native-dependencies
+   #:output-accumulator
+   #:make-output-accumulator
+   #:output-accumulator-append
+   #:output-accumulator-finish
+   #:output-accumulator-snapshot
+   #:output-accumulator-close-temp-file
+   #:output-accumulator-last-line-bytes
+   #:output-snapshot
+   #:output-snapshot-content
+   #:output-snapshot-truncation
+   #:output-snapshot-full-output-path
    #:thinking-theme-color-name
    #:format-key-text
    #:key-text

@@ -322,6 +322,41 @@
              "(no output)")))
        details))))
 
+(defun execute-bash-tool-command-with-context
+    (context cwd command timeout)
+  (multiple-value-bind (result operation-error)
+      (cadr-agent:execution-tool-exec
+       context command :cwd (namestring (uiop:ensure-directory-pathname cwd))
+       :timeout timeout)
+    (when operation-error
+      (let ((message (cadr-agent:harness-operation-error-message operation-error)))
+        (error
+         "~A"
+         (case (cadr-agent:harness-operation-error-code operation-error)
+           (:timeout (format nil "Command timed out after ~A seconds" timeout))
+           (:aborted "Command aborted")
+           (otherwise message)))))
+    (let* ((stdout (cadr-agent:execution-result-stdout result))
+           (stderr (cadr-agent:execution-result-stderr result))
+           (output
+             (cond
+               ((zerop (length stderr)) stdout)
+               ((zerop (length stdout)) stderr)
+               (t (format nil "~A~:[~;~%~]~A"
+                          stdout
+                          (not (char= #\Newline (char stdout (1- (length stdout)))))
+                          stderr))))
+           (exit-code (cadr-agent:execution-result-exit-code result)))
+      (unless (zerop exit-code)
+        (error "~A"
+               (append-bash-status
+                (if (plusp (length output)) output "(no output)")
+                (format nil "Command exited with code ~D" exit-code))))
+      (values
+       (list (cadr-ai:make-text-content
+              :text (if (plusp (length output)) output "(no output)")))
+       (list :exit-code exit-code)))))
+
 (defun normalized-extension-bash-result (result)
   (let ((output (or (getf result :output) ""))
         (exit-code (or (getf result :exit-code) 0)))
@@ -378,7 +413,7 @@
        (run-bash-command
         cwd command timeout :abort-p abort-p)))))
 
-(defun make-bash-tool (cwd)
+(defun make-bash-tool (cwd &key context)
   (cadr-ai:make-tool
    :name "bash"
    :description
@@ -395,7 +430,9 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (execute-bash-tool-command
-      cwd
-      (required-string arguments "command")
-      (cadr-ai::json-get arguments "timeout")))))
+     (let ((command (required-string arguments "command"))
+           (timeout (cadr-ai::json-get arguments "timeout")))
+       (if context
+           (execute-bash-tool-command-with-context
+            context cwd command timeout)
+           (execute-bash-tool-command cwd command timeout))))))

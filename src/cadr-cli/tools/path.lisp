@@ -47,6 +47,17 @@
          (merge-pathnames pathname
                           (uiop:ensure-directory-pathname cwd))))))
 
+(defun execution-context-value (value operation-error)
+  (when operation-error
+    (error "~A" (cadr-agent:harness-operation-error-message operation-error)))
+  value)
+
+(defun resolve-execution-context-path (context cwd path)
+  (multiple-value-bind (resolved operation-error)
+      (cadr-agent:execution-tool-resolve-path
+       context path (namestring (uiop:ensure-directory-pathname cwd)))
+    (execution-context-value resolved operation-error)))
+
 (defun path-variant-candidates (path)
   (let* ((text (namestring path))
          (ampm
@@ -120,6 +131,11 @@
                   (uiop:absolute-pathname-p
                    (pathname relative)))
         relative))))
+
+(defun format-path-relative-to-cwd-or-absolute (file-path cwd)
+  (substitute #\/ #\\
+              (or (cwd-relative-path file-path cwd)
+                  (resolve-path-input file-path cwd))))
 
 (defun local-path-p (value)
   (let ((text

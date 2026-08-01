@@ -1,15 +1,23 @@
 (in-package #:cadr-cli)
 
-(defun read-tool-file (cwd arguments)
+(defun read-tool-file (cwd arguments &key context)
   (let* ((offset (or (optional-integer arguments "offset" 1) 1))
          (limit (optional-integer arguments "limit"))
          (display-path (required-string arguments "path"))
          (path
-           (resolve-readable-tool-path
-            cwd display-path)))
+           (if context
+               (resolve-execution-context-path context cwd display-path)
+               (resolve-readable-tool-path cwd display-path)))
+         (bytes
+           (and context
+                (multiple-value-bind (value operation-error)
+                    (cadr-agent:execution-tool-read-binary context path)
+                  (execution-context-value value operation-error)))))
     (multiple-value-bind
           (image-bytes mime-type hints omitted-message)
-        (process-image-file path)
+        (if context
+            (process-image-data bytes)
+            (process-image-file path))
       (when mime-type
         (let ((note
                 (format
@@ -27,8 +35,9 @@
                    :data
                    (encode-base64-bytes image-bytes))))
              nil)))))
-    (let* ((text (uiop:read-file-string
-                  path :external-format :utf-8))
+    (let* ((text (if context
+                     (cadr-ai::utf8-string bytes)
+                     (uiop:read-file-string path :external-format :utf-8)))
            (lines (split-all-lines text))
            (start (if (zerop offset)
                       0
@@ -99,7 +108,7 @@
            (list (cadr-ai:make-text-content :text output))
            (and (getf details :truncated) details)))))))
 
-(defun make-read-tool (cwd)
+(defun make-read-tool (cwd &key context)
   (cadr-ai:make-tool
    :name "read"
    :description
@@ -115,4 +124,4 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (read-tool-file cwd arguments))))
+     (read-tool-file cwd arguments :context context))))

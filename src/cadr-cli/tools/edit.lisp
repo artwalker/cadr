@@ -540,7 +540,7 @@
                 do (format stream "~% ~A"
                            (aref old-lines index))))))))
 
-(defun make-edit-tool (cwd)
+(defun make-edit-tool (cwd &key context)
   (cadr-ai:make-tool
    :name "edit"
    :description
@@ -568,21 +568,25 @@
             (display-path
               (required-string arguments "path"))
             (path
-              (resolve-tool-path
-               cwd display-path))
+              (if context
+                  (resolve-execution-context-path context cwd display-path)
+                  (resolve-tool-path cwd display-path)))
             (replacement-count 0)
             (display-diff nil)
             (patch nil)
             (first-changed-line nil))
-       (unless (probe-file path)
+       (unless (or context (probe-file path))
          (error "Could not edit file: ~A. Error code: ENOENT."
                 display-path))
        (with-file-mutation-queue
         path
         (lambda ()
           (let* ((raw
-                   (uiop:read-file-string
-                    path :external-format :utf-8))
+                   (if context
+                       (multiple-value-bind (value operation-error)
+                           (cadr-agent:execution-tool-read-text context path)
+                         (execution-context-value value operation-error))
+                       (uiop:read-file-string path :external-format :utf-8)))
                  (ending (detect-line-ending raw)))
             (multiple-value-bind (bom body)
                 (strip-utf8-bom raw)
@@ -613,12 +617,16 @@
                    patch
                    (generate-edit-unified-patch
                     display-path original updated groups)))
-                (atomic-write-utf8
-                 path
-                 (concatenate
-                  'string bom
-                  (restore-line-endings
-                   updated ending))))))))
+                (let ((final-content
+                        (concatenate
+                         'string bom
+                         (restore-line-endings updated ending))))
+                  (if context
+                      (multiple-value-bind (value operation-error)
+                          (cadr-agent:execution-tool-write
+                           context path final-content)
+                        (execution-context-value value operation-error))
+                      (atomic-write-utf8 path final-content))))))))
        (values
         (list
          (cadr-ai:make-text-content

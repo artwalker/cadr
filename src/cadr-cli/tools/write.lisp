@@ -10,7 +10,7 @@
     (write-string content stream))
   path)
 
-(defun make-write-tool (cwd)
+(defun make-write-tool (cwd &key context)
   (cadr-ai:make-tool
    :name "write"
    :description
@@ -28,13 +28,18 @@
      (let* ((display-path
               (required-string arguments "path"))
             (path
-              (resolve-tool-path
-               cwd display-path))
+              (if context
+                  (resolve-execution-context-path context cwd display-path)
+                  (resolve-tool-path cwd display-path)))
             (content (required-string arguments "content")))
        (with-file-mutation-queue
         path
         (lambda ()
-          (write-utf8-file path content)))
+          (if context
+              (multiple-value-bind (value operation-error)
+                  (cadr-agent:execution-tool-write context path content)
+                (execution-context-value value operation-error))
+              (write-utf8-file path content))))
        (values
         (list
          (cadr-ai:make-text-content
