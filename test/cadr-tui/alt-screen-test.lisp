@@ -112,6 +112,37 @@
            (cadr-tui:renderer-viewport-top
             renderer)))))
 
+(test goal11-alt-input-reuses-baseline-differential-redraw
+  (let* ((terminal
+           (make-alt-recording-terminal :rows 4))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (lines
+           (loop for index from 1 to 20
+                 collect (format nil "line ~D" index)))
+         (clear-screen
+           (format nil "~C[2J" #\Escape)))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer lines)
+    (setf (alt-recording-events terminal) nil)
+    (cadr-tui:renderer-handle-input
+     renderer
+     (format nil "~C[<64;1;1M" #\Escape))
+    (alt-render renderer lines)
+    (is (not (alt-write-containing-p
+              terminal clear-screen)))
+    (setf (alt-recording-events terminal) nil)
+    (cadr-tui:renderer-handle-input
+     renderer
+     (format nil "~C[<0;2;2M" #\Escape))
+    (cadr-tui:renderer-handle-input
+     renderer
+     (format nil "~C[<32;5;3M" #\Escape))
+    (alt-render renderer lines)
+    (is (not (alt-write-containing-p
+              terminal clear-screen)))))
+
 (test alt-screen-supports-configurable-keyboard-navigation
   (let* ((terminal
            (make-alt-recording-terminal :rows 4))

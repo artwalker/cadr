@@ -19,12 +19,19 @@ median 与 MAD，并保留全部原始样本。`--quick` 只供开发期冒烟�
 
 会话条目按固定五项循环生成：用户 Markdown+CJK/emoji、助手 Markdown、
 折叠 read tool block、展开 bash tool block、图片 Markdown 占位+CJK/emoji。
-没有真实 LLM、网络或随机输入。四条热路径分别测量：
+没有真实 LLM、网络或随机输入。热路径分别测量：
 
 - `frame_render`：production `render-tui-state → render-frame → virtual-terminal`；
 - `key_to_frame`：原始输入字节经 input decoder/editor 后写出一帧；
 - `stream_delta_to_frame`：固定 text delta 经 agent event 组装后写出一帧，
   同时报告 delta/s；
+- `mouse_drag_to_frame`：alternate screen 中真实 SGR press/drag 字节经 selection
+  更新后写出一帧；
+- `wheel_to_frame`：alternate screen 中真实 SGR wheel-up/down 字节在长 transcript
+  中段滚动并写出一帧；
+- `continuous_alt_input`：在 5000-entry transcript 上混合 1024 个拖拽与滚轮
+  事件，逐事件保留 wall latency、分配量、p95/p99/max 与 GC-affected event
+  latency；
 - `append_entry`：在固定长度历史尾部追加一个条目并 O(1) 恢复 fixture。
 
 分配量来自 `sb-ext:get-bytes-consed`；堆占用来自
@@ -33,6 +40,11 @@ Python stdlib PTY harness 在全新临时 `HOME`、无 provider 凭据环境中�
 native `./cadr`，从 `Popen` 到首帧出现 `cadr v` 为止计时，再用 `/quit`
 验证干净退出。它是“新进程到首个真实 TUI 帧”，不是较弱的 `--version`
 路径，也不通过 drop caches 取得不可移植的伪冷磁盘数字。
+
+连续输入测量在 `unwind-protect` 内临时把 SBCL nursery 固定为 8MiB，退出时
+恢复原值。它故意让 1024-event run 穿过多次 GC；报告中的
+`gc_affected_max_us` 是用户实际承受的整次 event→frame wall latency，
+`gc_cpu_us` 只作诊断，绝不冒充精确 stop-the-world wall pause。
 
 复杂度标签由正 N 点的 log-log 斜率生成：`<0.35` 为 constant，
 `<1.5` 为 linear，其余为 quadratic-or-worse。标签是回归线索；门禁阈值
@@ -91,6 +103,7 @@ MAD 4,518µs（五个样本 156–175ms）。
 | viewport/virtual scroll | alt-screen 先渲染完整 document，之后才以 `scrollTop` slice viewport；`packages/tui/src/TuiAltScreen.ts:350-371`。没有 render 前裁剪或虚拟滚动。 |
 | differential write | main-screen 扫描新旧全部 lines 找变化区间，再只写变化 lines；`packages/tui/src/TuiMainScreen.ts:260-287, 354-386`。alt-screen 同样只写变化 row；`packages/tui/src/TuiAltScreen.ts:398-425`。这减少终端 I/O，不消除前面的 O(N) render traversal。 |
 | render coalescing | 重复 request 合并，并以 16ms 最小间隔调度；`packages/tui/src/tui.ts:321, 730-770`。 |
+| alternate-screen input | mouse drag 与 wheel 只更新 selection/scroll state 并请求 render；下一帧仍完整 render document，再 slice viewport 和 differential-write changed rows；`packages/tui/src/TuiAltScreen.ts:147-167, 350-425`。 |
 
 所以 Part C 只采用基线已有的两种机制：给稳定条目加入 width/content-sensitive
 rendered-line cache，并把 Lisp list 尾插改为维护尾指针的 O(1) 追加。不会加入
@@ -205,15 +218,39 @@ append 受每条随机 ID 生成的约 0.1ms 固定成本主导，但 N=20000 �
 
 `scripts/goal11-performance-gate.py` 对完整 performance/stability JSON 执行硬门禁。
 阈值故意给 CI/机器差异留出数量级余量，但仍会击穿本 goal 的旧缺陷：N=5000
-frame/key/stream 各不超过 50ms、frame allocation 不超过 16MiB、stream 至少
-20 delta/s、TUI/agent/session append exponent 小于 0.35、冷启动不超过 750ms；
+frame/key/stream/mouse/wheel 各不超过 50ms，frame/mouse/wheel allocation
+不超过 16MiB，stream 至少 20 delta/s；连续 alternate-screen run 必须恰好
+记录 1024 events、p99 不超过 150ms、GC-affected max 不超过 500ms，分配跨过
+nursery 时必须实际观察到 GC；TUI/agent/session append exponent 小于 0.35、
+冷启动不超过 750ms；
 1200-turn heap 不超过 128MiB 且 exponent 不超过 1.30、full GC 不超过 500ms、
 FD/thread 必须逐点恒定；10MiB load/resume/continue 各不超过 5s，sampled
 heap/RSS 峰值各不超过 baseline 512MiB。
 
-当前最终 performance JSON 见
-[`benchmarks/goal-v11-final.json`](benchmarks/goal-v11-final.json)：N=5000
-frame/key/stream 均为 4.00ms，TUI append exponent -0.047，冷启动 165.2ms。
-这些阈值分别约为当前时延的 12.5×、吞吐下限的 12.5×反向留白，以及加载时延
-的 15×以上；它们容纳常规主机差异，但旧 466–488ms frame、2.15 delta/s 与
-linear append 会确定性失败。
+### Fifth A/B — continuous alternate-screen input
+
+旧基准只测普通 frame、键盘和 stream delta；alt-screen 测试只断言滚动与选择
+语义，没有连续鼠标事件的 wall latency、allocation 或 GC tail。因而所有功能
+检查都能全绿，真实拖拽和滚轮仍可每帧重复扫描长 document 中每个 ANSI line，
+这是门禁维度缺失，不是已有断言偶然漏了一个常量。
+
+先量化得到的 pre-optimization 诊断在 N=5000、固定 8MiB nursery 下仅运行
+8 events 就已足够明确：median 896.041ms、p99/max 932.060ms、median allocation
+202,858,216 bytes/event，8/8 events 均跨 GC；默认 1024-event run 超过两分钟仍
+未完成，主动中止，不能伪装成完整结果。
+
+固定基线仍是 full document render + viewport slice + changed-row write，不允许
+借机引入 virtual scrolling 或 transcript memoization。本次只消除 Lisp 热路径的
+等价常数成本：稳定行不重复构造 reset/copy，scroll/selection 不强制 full clear，
+`visible-width` 直接扫描原字符串且以性质测试对拍旧 grapheme 语义，image prefix
+检测从每行两次通用 substring search 改为从 ESC 位置做同语义前缀判断。后者与
+基线 `isImageLine` 的 fast/slow prefix 语义相同，但避免 SBCL generic `search`
+在普通 ANSI line 上占掉大半帧。
+
+完整 1024-event pre-commit run 已完成：N=5000 mouse/wheel median
+36.001/40.001ms，allocation 2,832,352/3,668,816 bytes；continuous median
+40.000ms、p95 48.002ms、p99 56.002ms、max 84.004ms，447 个 GC-affected
+events 的 max 为 68.003ms。相对 8-event 诊断，median latency 降约 22.4×、
+median allocation 降约 54×；默认规模现在能完整跑完并保留全部 1024 个原始
+样本。最终 committed JSON 与 cold-start 数字在交付验证后写回
+[`benchmarks/goal-v11-final.json`](benchmarks/goal-v11-final.json)。

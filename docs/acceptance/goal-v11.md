@@ -208,3 +208,36 @@ python3 scripts/goal11-performance-gate.py \
 README、architecture、test matrix 和 `docs/performance.md` 共同冻结双验收轴：
 功能 parity 与非功能预算缺一不可。Goal 11 的机械门禁已闭合；真实用户日常长会话
 体感仍由用户终局验收，不以 synthetic benchmark 冒充。
+
+## Fifth A/B follow-up — continuous mouse and wheel streams
+
+状态：实现完成，等待本轮最终机械验证落账。
+
+旧 Goal 11 只覆盖单帧、key→frame、stream delta 与长会话 checkpoint；既有
+alt-screen regressions 只验证 scroll/selection 的结果，没有量化连续 SGR mouse
+输入的 event→frame latency、每事件分配或 GC tail。因此它们能证明“行为正确”，
+却无法捕获长 transcript 上每次拖拽/滚轮近一秒的卡顿。
+
+本轮新增的 production-path 门禁与实现证据：
+
+| requirement | production / gate source | regression test |
+|---|---|---|
+| real SGR drag and wheel event→frame metrics at every N | `scripts/goal11-bench.lisp` 的 `mouse-drag-statistics` / `wheel-statistics` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
+| fixed 1024-event stream, raw samples, p95/p99/max, allocation and GC-affected wall latency | `scripts/goal11-bench.lisp` 的 `continuous-alt-input-json` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
+| release budgets for median/allocation/event count/p99/GC max | `scripts/goal11-performance-gate.py` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
+| scroll/selection uses baseline differential redraw instead of forced full clear | `src/cadr-tui/renderer.lisp` 的 scroll/mouse paths | `GOAL11-ALT-INPUT-REUSES-BASELINE-DIFFERENTIAL-REDRAW` |
+| non-allocating width scan remains byte-for-byte equivalent in terminal cell semantics | `src/cadr-tui/unicode.lisp` | `GOAL11-VISIBLE-WIDTH-FAST-PATH-MATCHES-REFERENCE-GRAPHEME-SEMANTICS`（182 fixed combinations） |
+| image-line fast/slow detection preserves embedded Kitty/iTerm semantics | `src/cadr-tui/terminal-image.lisp` | `TERMINAL-IMAGE-ENCODING-SIZING-AND-DETECTION`（含 304k prefix fixture） |
+
+测试先行的旧路径诊断：N=5000、8MiB nursery 下，8-event sample median
+896.041ms、p99/max 932.060ms、median allocation 202,858,216 bytes/event；
+8/8 events 均跨 GC。1024-event 默认规模超过两分钟仍未完成，故中止并明确
+标注为不完整诊断。
+
+优化没有引入 fixed baseline 不存在的 transcript cache、viewport pruning 或
+virtual scrolling。它只恢复 differential redraw，并把 width/image/reset/copy
+改为同语义的无中间字符串扫描。完整 1024-event pre-commit run 为：mouse
+36.001ms / 2,832,352 bytes，wheel 40.001ms / 3,668,816 bytes；continuous
+median 40.000ms、p95 48.002ms、p99 56.002ms、max 84.004ms，447 个
+GC-affected events 的 max 68.003ms。最终 committed benchmark、全量测试、
+verify 与 binary freshness 证据在本节收尾时补记。

@@ -40,19 +40,45 @@ def check_bench(data: dict, failures: list[str]) -> list[str]:
     frame = point_at(metrics["frame_render"], 5000)
     key = point_at(metrics["key_to_frame"], 5000)
     stream = point_at(metrics["stream_delta_to_frame"], 5000)
+    mouse = point_at(metrics["mouse_drag_to_frame"], 5000)
+    wheel = point_at(metrics["wheel_to_frame"], 5000)
+    continuous = data["continuous_alt_input"]
     append_exponent = metrics["append_entry"]["scaling"]["log_log_exponent"]
     cold_start = data["cold_start"]["median_us"]
 
     check(frame["median_us"] <= 50_000, "N=5000 frame exceeds 50ms", failures)
     check(key["median_us"] <= 50_000, "N=5000 key-to-frame exceeds 50ms", failures)
     check(stream["median_us"] <= 50_000, "N=5000 stream frame exceeds 50ms", failures)
+    check(mouse["median_us"] <= 50_000,
+          "N=5000 mouse drag-to-frame exceeds 50ms", failures)
+    check(wheel["median_us"] <= 50_000,
+          "N=5000 wheel-to-frame exceeds 50ms", failures)
     check(frame["median_bytes"] <= 16 * 1024 * 1024,
           "N=5000 frame allocates more than 16MiB", failures)
+    check(mouse["median_bytes"] <= 16 * 1024 * 1024,
+          "N=5000 mouse drag allocates more than 16MiB", failures)
+    check(wheel["median_bytes"] <= 16 * 1024 * 1024,
+          "N=5000 wheel event allocates more than 16MiB", failures)
     check(stream["delta_per_second"] >= 20,
           "N=5000 stream throughput is below 20 delta/s", failures)
     check(append_exponent < 0.35,
           f"TUI append is not constant-time ({append_exponent:.3f})", failures)
     check(cold_start <= 750_000, "cold start exceeds 750ms", failures)
+    check(continuous["event_count"] == 1024,
+          "continuous alt-input benchmark did not record exactly 1024 events",
+          failures)
+    # The fixed 8MiB nursery deliberately forces GC during roughly half of
+    # the events.  Keep ordinary N=5000 event medians at 50ms, while giving
+    # the stress-run tail enough host variance to distinguish a pause from
+    # the former near-second full redraw path.
+    check(continuous["p99_us"] <= 150_000,
+          "continuous alt-input p99 exceeds 150ms", failures)
+    check(continuous["gc_affected_max_us"] <= 500_000,
+          "continuous alt-input GC-affected event exceeds 500ms", failures)
+    check(continuous["gc_affected_event_count"] > 0
+          or continuous["total_bytes"] < continuous["nursery_bytes"],
+          "continuous alt-input allocated a nursery without observing GC",
+          failures)
 
     memory_point = next(
         point for point in data["memory"]["points"] if point["n"] == 5000
@@ -63,6 +89,10 @@ def check_bench(data: dict, failures: list[str]) -> list[str]:
         f"frame={frame['median_us'] / 1000:.2f}ms",
         f"key={key['median_us'] / 1000:.2f}ms",
         f"stream={stream['median_us'] / 1000:.2f}ms",
+        f"mouse={mouse['median_us'] / 1000:.2f}ms",
+        f"wheel={wheel['median_us'] / 1000:.2f}ms",
+        f"continuous_p99={continuous['p99_us'] / 1000:.2f}ms",
+        f"continuous_gc_max={continuous['gc_affected_max_us'] / 1000:.2f}ms",
         f"append_exp={append_exponent:.3f}",
         f"cold={cold_start / 1000:.2f}ms",
     ]

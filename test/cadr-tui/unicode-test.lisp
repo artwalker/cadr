@@ -11,6 +11,34 @@
                                          #\Escape #\Escape))))
   (is (= 5 (cadr-tui:visible-width (format nil "a~Cb" #\Tab)))))
 
+(test goal11-visible-width-fast-path-matches-reference-grapheme-semantics
+  (labels
+      ((reference-width (text)
+         (loop for cluster in
+               (cadr-tui:grapheme-clusters
+                (cadr-tui::strip-ansi text))
+               sum (cadr-tui::grapheme-width cluster)))
+       (check (text)
+         (is (= (reference-width text)
+                (cadr-tui:visible-width text))
+             "Fast width path diverged for ~S" text)))
+    (let* ((escape (string #\Escape))
+           (segments
+             (list
+              "" "plain ASCII 123" "中文" "👩‍💻" "🇨🇳"
+              (format nil "e~C" #\Combining_Acute_Accent)
+              (format nil "~C" #\Tab)
+              "र्क" "ကာ" "ำ"
+              (format nil "~A[31mred~A[0m" escape escape)
+              (format nil "~A]8;;https://example.test~C链接~A]8;;~C"
+                      escape (code-char 7) escape (code-char 7))
+              (format nil "~A]133;A~Cprompt" escape (code-char 7)))))
+      (dolist (segment segments)
+        (check segment))
+      (dolist (left segments)
+        (dolist (right segments)
+          (check (concatenate 'string left right)))))))
+
 (test grapheme-clusters-do-not-split-composed-input
   (let ((clusters
           (cadr-tui:grapheme-clusters

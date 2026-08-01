@@ -34,6 +34,8 @@
 (defparameter *include-cold-start-p* t)
 (defparameter *label* "unspecified")
 (defparameter *sink* nil)
+(defparameter *continuous-event-count* 1024)
+(defparameter *continuous-nursery-bytes* (* 8 1024 1024))
 
 (defstruct frame-fixture
   state
@@ -74,6 +76,12 @@
              (setf *warmups*
                    (parse-positive-integer
                     (pop arguments) argument)))
+            ((string= argument "--continuous-events")
+             (unless arguments
+               (error "--continuous-events requires a value"))
+             (setf *continuous-event-count*
+                   (parse-positive-integer
+                    (pop arguments) argument)))
             ((string= argument "--output")
              (unless arguments
                (error "--output requires a value"))
@@ -108,6 +116,18 @@
     (lambda (value)
       (abs (- value center)))
     values)))
+
+(defun percentile (values fraction)
+  (let* ((sorted (sort (copy-list values) #'<))
+         (index
+           (max
+            0
+            (min
+             (1- (length sorted))
+             (1-
+              (ceiling
+               (* fraction (length sorted))))))))
+    (coerce (nth index sorted) 'double-float)))
 
 (defun elapsed-microseconds (start end)
   (* 1000000d0
@@ -239,7 +259,7 @@
         collect (make-mixed-entry index)))
 
 (defun make-frame-fixture-for-count
-    (count &key streaming-p)
+    (count &key streaming-p alt-p)
   (let* ((state
            (cadr-cli::make-tui-state
             :model "faux-bench"
@@ -254,7 +274,7 @@
             :columns 100 :rows 40))
          (renderer
            (cadr-tui:make-terminal-renderer
-            terminal))
+            terminal :alt-p alt-p))
          (message
            (and
             streaming-p
@@ -271,6 +291,8 @@
        (cadr-agent::make-agent-event
         :type :message-start
         :message message)))
+    (when alt-p
+      (cadr-tui:renderer-start renderer))
     (make-frame-fixture
      :state state
      :editor editor
@@ -285,7 +307,9 @@
        (frame-fixture-state fixture)
        (frame-fixture-editor fixture)
        100 40
-       :full-document-p nil
+       :full-document-p
+       (cadr-tui:alt-screen-renderer-p
+        (frame-fixture-renderer fixture))
        :now 2d0)
     (cadr-tui:render-frame
      (frame-fixture-renderer fixture)
@@ -365,6 +389,144 @@
             :delta " delta")))
          (render-fixture fixture))))
    (stream-repetitions count)))
+
+(defun sgr-mouse-input (button x y)
+  (format nil "~C[<~D;~D;~DM"
+          #\Escape button x y))
+
+(defun prepare-alt-input-fixture (count)
+  (let ((fixture
+          (make-frame-fixture-for-count
+           count :alt-p t)))
+    (render-fixture fixture)
+    (let* ((renderer (frame-fixture-renderer fixture))
+           (terminal (frame-fixture-terminal fixture))
+           (maximum
+             (max
+              0
+              (-
+               (cadr-tui::terminal-renderer-content-line-count
+                renderer)
+               (cadr-tui:terminal-rows terminal)))))
+      (cadr-tui::renderer-scroll-to-top renderer)
+      (cadr-tui:renderer-scroll-by
+       renderer (floor maximum 2))
+      (cadr-tui:renderer-handle-input
+       renderer (sgr-mouse-input 0 10 10))
+      (render-fixture fixture))
+    fixture))
+
+(defun mouse-drag-statistics (count)
+  (collect-statistics
+   (lambda ()
+     (let ((fixture (prepare-alt-input-fixture count))
+           (event-index 0))
+       (lambda ()
+         (incf event-index)
+         (cadr-tui:renderer-handle-input
+          (frame-fixture-renderer fixture)
+          (sgr-mouse-input
+           32
+           (if (oddp event-index) 20 70)
+           (if (oddp event-index) 8 30)))
+         (render-fixture fixture))))
+   (frame-repetitions count)))
+
+(defun wheel-statistics (count)
+  (collect-statistics
+   (lambda ()
+     (let ((fixture (prepare-alt-input-fixture count))
+           (event-index 0))
+       (lambda ()
+         (incf event-index)
+         (cadr-tui:renderer-handle-input
+          (frame-fixture-renderer fixture)
+          (sgr-mouse-input
+           (if (oddp event-index) 64 65)
+           50 20))
+         (render-fixture fixture))))
+   (frame-repetitions count)))
+
+(defun continuous-alt-input-json ()
+  (let* ((fixture (prepare-alt-input-fixture 5000))
+         (renderer (frame-fixture-renderer fixture))
+         (latencies nil)
+         (allocations nil)
+         (gc-affected-latencies nil)
+         (gc-runtime-before nil)
+         (nursery-before
+           (sb-ext:bytes-consed-between-gcs)))
+    (unwind-protect
+         (progn
+           (sb-ext:gc :full t)
+           (setf
+            (sb-ext:bytes-consed-between-gcs)
+            *continuous-nursery-bytes*)
+           (setf gc-runtime-before
+                 sb-ext:*gc-run-time*)
+           (dotimes (index *continuous-event-count*)
+             (let* ((gc-before sb-ext:*gc-run-time*)
+                    (bytes-before
+                      (sb-ext:get-bytes-consed))
+                    (started-at
+                      (get-internal-real-time))
+                    (input
+                      (case (mod index 3)
+                        (0
+                         (sgr-mouse-input
+                          32
+                          (if (evenp index) 20 70)
+                          (if (evenp index) 8 30)))
+                        (1
+                         (sgr-mouse-input 64 50 20))
+                        (otherwise
+                         (sgr-mouse-input 65 50 20)))))
+               (cadr-tui:renderer-handle-input
+                renderer input)
+               (setf *sink* (render-fixture fixture))
+               (let* ((ended-at
+                        (get-internal-real-time))
+                      (latency
+                        (elapsed-microseconds
+                         started-at ended-at)))
+                 (push latency latencies)
+                 (push
+                  (- (sb-ext:get-bytes-consed)
+                     bytes-before)
+                  allocations)
+                 (when (> sb-ext:*gc-run-time*
+                          gc-before)
+                   (push latency
+                         gc-affected-latencies)))))
+           (setf latencies (nreverse latencies)
+                 allocations (nreverse allocations))
+           (let ((center (median latencies)))
+             (json-object
+              "event_count" (length latencies)
+              "gc_affected_event_count"
+              (length gc-affected-latencies)
+              "gc_affected_max_us"
+              (if gc-affected-latencies
+                  (reduce #'max gc-affected-latencies)
+                  0d0)
+              "gc_cpu_us"
+              (elapsed-microseconds
+               gc-runtime-before sb-ext:*gc-run-time*)
+              "mad_us"
+              (median-absolute-deviation
+               latencies center)
+              "max_us" (reduce #'max latencies)
+              "median_bytes" (median allocations)
+              "median_us" center
+              "nursery_bytes" *continuous-nursery-bytes*
+              "p95_us" (percentile latencies 0.95d0)
+              "p99_us" (percentile latencies 0.99d0)
+              "samples_bytes" (json-array allocations)
+              "samples_us" (json-array latencies)
+              "total_bytes" (reduce #'+ allocations))))
+      (setf
+       (sb-ext:bytes-consed-between-gcs)
+       nursery-before))))
 
 (defun append-statistics (count)
   (collect-statistics
@@ -636,18 +798,24 @@
   (let ((frame-results nil)
         (key-results nil)
         (stream-results nil)
+        (mouse-results nil)
+        (wheel-results nil)
         (append-results nil))
     (dolist (count *entry-counts*)
       (format *error-output*
-              "goal11 bench: N=~D frame/key/stream/append~%"
+              "goal11 bench: N=~D frame/key/stream/mouse/wheel/append~%"
               count)
       (push (frame-statistics count) frame-results)
       (push (key-latency-statistics count) key-results)
       (push (stream-statistics count) stream-results)
+      (push (mouse-drag-statistics count) mouse-results)
+      (push (wheel-statistics count) wheel-results)
       (push (append-statistics count) append-results))
     (setf frame-results (nreverse frame-results)
           key-results (nreverse key-results)
           stream-results (nreverse stream-results)
+          mouse-results (nreverse mouse-results)
+          wheel-results (nreverse wheel-results)
           append-results (nreverse append-results))
     (json-object
      "entry_counts" (json-array *entry-counts*)
@@ -666,15 +834,24 @@
       (metric-json *entry-counts* frame-results)
       "key_to_frame"
       (metric-json *entry-counts* key-results)
+      "mouse_drag_to_frame"
+      (metric-json *entry-counts* mouse-results)
       "stream_delta_to_frame"
       (metric-json
        *entry-counts* stream-results
-       :throughput-p t))
+       :throughput-p t)
+      "wheel_to_frame"
+      (metric-json *entry-counts* wheel-results))
+     "continuous_alt_input"
+     (continuous-alt-input-json)
      "memory" (memory-json)
      "parameters"
      (json-object
       "height" 40
       "samples" *samples*
+      "continuous_events" *continuous-event-count*
+      "continuous_nursery_bytes"
+      *continuous-nursery-bytes*
       "warmups" *warmups*
       "width" 100)
      "provenance" (provenance-json)

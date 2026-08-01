@@ -16,6 +16,8 @@
   (make-hash-table))
 (defparameter *kitty-image-metadata-order* nil)
 (defparameter +kitty-image-metadata-limit+ 1000)
+(defparameter +kitty-control-prefix+
+  (format nil "~C_G" #\Escape))
 
 (defun register-kitty-image-metadata
     (&key image-id columns rows width-px height-px)
@@ -55,8 +57,7 @@
        :junk-allowed t))))
 
 (defun kitty-control-header-bounds (line)
-  (let* ((prefix
-           (format nil "~C_G" #\Escape))
+  (let* ((prefix +kitty-control-prefix+)
          (sequence-start
            (search prefix line))
          (controls-start
@@ -82,7 +83,7 @@
   (let ((id
           (and
            (search
-            (format nil "~C_G" #\Escape)
+            +kitty-control-prefix+
             line)
            (kitty-line-parameter-integer
             line "i="))))
@@ -252,10 +253,35 @@
 (defun reset-terminal-capabilities ()
   (setf *terminal-capabilities* nil))
 
+(declaim (inline image-prefix-at-p))
+
+(defun image-prefix-at-p (line position)
+  (let ((remaining (- (length line) position)))
+    (and
+     (plusp remaining)
+     (char= (char line position) #\Escape)
+     (or
+      (and
+       (>= remaining 3)
+       (char= (char line (1+ position)) #\_)
+       (char= (char line (+ position 2)) #\G))
+      (and
+       (>= remaining 12)
+       (char= (char line (1+ position)) #\])
+       (string=
+        "1337;File=" line
+        :start2 (+ position 2)
+        :end2 (+ position 12)))))))
+
 (defun image-line-p (line)
-  (or (search (format nil "~C_G" #\Escape) line)
-      (search (format nil "~C]1337;File=" #\Escape)
-              line)))
+  (loop with start = 0
+        for position =
+        (position #\Escape line :start start)
+        while position
+        when (image-prefix-at-p line position)
+          do (return t)
+        do (setf start (1+ position))
+        finally (return nil)))
 
 (defun allocate-image-id ()
   (1+ (random #xfffffffe)))

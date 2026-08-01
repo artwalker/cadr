@@ -180,6 +180,51 @@
       (is (search "Live stages" source))
       (is (not (search ".github/workflows" source))))))
 
+(test goal11-continuous-alt-input-benchmarks-are-release-gated
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (bench
+           (uiop:read-file-string
+            (merge-pathnames "scripts/goal11-bench.lisp" root)))
+         (gate
+           (uiop:read-file-string
+            (merge-pathnames
+             "scripts/goal11-performance-gate.py" root))))
+    (dolist (required
+              '("mouse_drag_to_frame"
+                "wheel_to_frame"
+                "continuous_alt_input"
+                "1024"
+                "renderer-handle-input"))
+      (is (search required bench)
+          "Missing continuous-input benchmark contract: ~A"
+          required))
+    (dolist (required
+              '("mouse_drag_to_frame"
+                "wheel_to_frame"
+                "continuous_alt_input"
+                "event_count"
+                "p99_us"
+                "gc_affected_max_us"))
+      (is (search required gate)
+          "Missing continuous-input release gate: ~A"
+          required))
+    (multiple-value-bind (output error-output status)
+        (uiop:run-program
+         (list
+          "python3"
+          (namestring
+           (merge-pathnames
+            "test/goal11-performance-gate-test.py"
+            root)))
+         :output :string
+         :error-output :string
+         :ignore-error-status t)
+      (is (zerop status)
+          "Synthetic gate regressions failed:~%~A~A"
+          output error-output)
+      (is (search "Ran 2 tests" error-output))
+      (is (search "OK" error-output)))))
+
 (test delivery-binary-freshness-check-rejects-missing-stale-and-dirty-images
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (checker

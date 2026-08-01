@@ -343,9 +343,203 @@
                        (incf width))))
                   (setf follows-mark-p nil))))))))))
 
+(defun grapheme-span-width (text start end)
+  (let ((index start)
+        (character-count 0)
+        first-character
+        (newline-p nil)
+        (emoji-p nil)
+        (all-spacing-p t)
+        (base-found-p nil)
+        (base-width 0)
+        (follows-mark-p nil))
+    (loop while (< index end)
+          for ansi-end = (ansi-sequence-end text index)
+          do
+          (cond
+            (ansi-end
+             (setf index ansi-end))
+            ((char= (char text index) #\Escape)
+             (incf index))
+            (t
+             (let* ((character (char text index))
+                    (value (codepoint character)))
+               (unless first-character
+                 (setf first-character character))
+               (incf character-count)
+               (when (member character '(#\Newline #\Return))
+                 (setf newline-p t))
+               (when
+                   (or
+                    (regional-indicator-p character)
+                    (emoji-codepoint-p character)
+                    (= value #x200d)
+                    (= value #xfe0f))
+                 (setf emoji-p t))
+               (unless (terminal-spacing-mark-p character)
+                 (setf all-spacing-p nil))
+               (cond
+                 ((not base-found-p)
+                  (unless (non-printing-character-p character)
+                    (setf base-found-p t
+                          base-width
+                          (if (wide-codepoint-p character)
+                              2
+                              1))))
+                 ((terminal-spacing-mark-p character)
+                  (incf base-width)
+                  (setf follows-mark-p nil))
+                 ((mark-character-p character)
+                  (setf follows-mark-p t))
+                 ((not (non-printing-character-p character))
+                  (cond
+                    ((or
+                      follows-mark-p
+                      (between-p value #xff00 #xffef))
+                     (incf
+                      base-width
+                      (if (wide-codepoint-p character)
+                          2
+                          1)))
+                    ((member value '(#x0e33 #x0eb3))
+                     (incf base-width)))
+                  (setf follows-mark-p nil)))
+               (incf index)))))
+    (cond
+      ((and (= character-count 1)
+            (char= first-character #\Tab))
+       3)
+      (newline-p 0)
+      (emoji-p 2)
+      (all-spacing-p character-count)
+      (base-found-p base-width)
+      (t 0))))
+
+(defun next-terminal-character (text start)
+  (loop with index = start
+        while (< index (length text))
+        for ansi-end = (ansi-sequence-end text index)
+        do
+        (cond
+          (ansi-end
+           (setf index ansi-end))
+          ((char= (char text index) #\Escape)
+           (incf index))
+          (t
+           (return (char text index))))))
+
+(defun next-grapheme-span-end (text start)
+  (let ((index start)
+        (seen-p nil)
+        (regional-count 0)
+        (join-next-p nil))
+    (loop while (< index (length text))
+          for ansi-end = (ansi-sequence-end text index)
+          do
+          (cond
+            (ansi-end
+             (setf index ansi-end))
+            ((char= (char text index) #\Escape)
+             (incf index))
+            (t
+             (let ((character (char text index)))
+               (cond
+                 ((not seen-p)
+                  (setf seen-p t
+                        regional-count
+                        (if
+                            (regional-indicator-p character)
+                            1
+                            0)))
+                 ((or
+                   (and
+                    join-next-p
+                    (not
+                     (member
+                      character
+                      '(#\Space #\Tab #\Newline #\Return))))
+                   (combining-character-p character)
+                   (= (codepoint character) #x200d))
+                  (when (regional-indicator-p character)
+                    (incf regional-count)))
+                 ((and
+                   (regional-indicator-p character)
+                   (= regional-count 1))
+                  (incf regional-count))
+                 (t
+                  (return-from next-grapheme-span-end
+                    index)))
+               (setf join-next-p
+                     (= (codepoint character) #x200d))
+               (incf index)))))
+    (length text)))
+
+(declaim (inline printable-ascii-character-p))
+(defun printable-ascii-character-p (character)
+  (let ((value (char-code character)))
+    (and (<= #x20 value)
+         (<= value #x7e))))
+
+(defun printable-ascii-run-end (text start)
+  (loop with index = start
+        while
+        (and (< index (length text))
+             (printable-ascii-character-p
+              (char text index)))
+        do (incf index)
+        finally (return index)))
+
 (defun visible-width (text)
-  (loop for cluster in (grapheme-clusters (strip-ansi text))
-        sum (grapheme-width cluster)))
+  (loop with index = 0
+        with width = 0
+        while (< index (length text))
+        for ansi-end = (ansi-sequence-end text index)
+        do
+        (cond
+          (ansi-end
+           (setf index ansi-end))
+          ((char= (char text index) #\Escape)
+           (incf index))
+          (t
+           (let ((character (char text index)))
+             (if (printable-ascii-character-p character)
+                 (let* ((run-end
+                          (printable-ascii-run-end
+                           text index))
+                        (next
+                          (and
+                           (< run-end (length text))
+                           (if (char= (char text run-end)
+                                      #\Escape)
+                               (next-terminal-character
+                                text run-end)
+                               (char text run-end))))
+                        (hold-final-p
+                          (and next
+                               (combining-character-p
+                                next)))
+                        (plain-end
+                          (if hold-final-p
+                              (1- run-end)
+                              run-end)))
+                   (incf width (- plain-end index))
+                   (if hold-final-p
+                       (let ((cluster-end
+                               (next-grapheme-span-end
+                                text plain-end)))
+                         (incf width
+                               (grapheme-span-width
+                                text plain-end cluster-end))
+                         (setf index cluster-end))
+                       (setf index plain-end)))
+                 (let ((end
+                         (next-grapheme-span-end
+                          text index)))
+                   (incf width
+                         (grapheme-span-width
+                          text index end))
+                   (setf index end))))))
+        finally (return width)))
 
 (defun normalize-terminal-output (text)
   (with-output-to-string (output)

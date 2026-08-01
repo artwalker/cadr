@@ -462,8 +462,8 @@
                 (format nil "~C~C"
                         #\Return #\Newline)
                 stream))
-             (format stream "~C~C[2K~A"
-                     #\Return #\Escape line))
+             (format stream "~C~C[2K~A~C[0m"
+                     #\Return #\Escape line #\Escape))
        (format stream
                "~C[0m~A~C~C~C[?25h~C[?2026l"
                #\Escape +autowrap-enable+
@@ -512,9 +512,7 @@
      next
      (terminal-renderer-stick-to-bottom-p
       renderer)
-     (= next maximum)
-     (terminal-renderer-invalid-p renderer)
-     t))
+     (= next maximum)))
   renderer)
 
 (defun renderer-scroll-to-top (renderer)
@@ -526,9 +524,7 @@
     (terminal-renderer-content-line-count
      renderer)
     (terminal-rows
-     (terminal-renderer-terminal renderer)))
-   (terminal-renderer-invalid-p renderer)
-   t)
+     (terminal-renderer-terminal renderer))))
   renderer)
 
 (defun renderer-scroll-to-bottom (renderer)
@@ -543,9 +539,7 @@
       0
       (- (terminal-renderer-content-line-count
           renderer)
-         (terminal-rows terminal)))
-     (terminal-renderer-invalid-p renderer)
-     t))
+         (terminal-rows terminal)))))
   renderer)
 
 (defun strip-osc133-zone-prefix (line)
@@ -569,7 +563,10 @@
         while end
         do (setf index end)
         finally
-        (return (subseq line index))))
+        (return
+          (if (zerop index)
+              line
+              (subseq line index)))))
 
 (defun sgr-mouse-event (data)
   (multiple-value-bind
@@ -855,9 +852,6 @@
               renderer))
             "")
            (cdr point))))))
-    (setf
-     (terminal-renderer-invalid-p renderer)
-     t)
     t))
 
 (defun renderer-handle-input (renderer data)
@@ -1047,7 +1041,8 @@
                            (+ row offset) 0)
             (format stream "~C[2K" #\Escape))
       (ansi-position stream row 0))
-    (write-string line stream)))
+    (write-string line stream)
+    (format stream "~C[0m" #\Escape)))
 
 (defun ansi-position (stream row column)
   (format stream "~C[~D;~DH"
@@ -1419,17 +1414,12 @@
         for line =
         (strip-osc133-zone-prefix source)
         collect
-        (let ((reset
-                (concatenate
-                 'string line
-                 (format nil "~C[0m" #\Escape))))
-          (if
-              (or
-               (image-line-p reset)
-               (<= (visible-width reset) width))
-              reset
-              (slice-by-column
-               reset 0 width t)))))
+        (if
+            (or (image-line-p line)
+                (<= (visible-width line) width))
+            line
+            (slice-by-column
+             line 0 width t))))
 
 (defun cropped-image-at-viewport-top
     (document top height)
@@ -1497,7 +1487,8 @@
          (height
            (max 1 (terminal-rows terminal)))
          (document
-           (prepare-alt-document lines width))
+           (prepare-alt-document
+            lines width))
          (maximum-top
            (max 0 (- (length document) height))))
     (setf
@@ -1505,7 +1496,7 @@
       renderer)
      (length document)
      (terminal-renderer-last-document renderer)
-     (copy-list document))
+     document)
     (if
         (terminal-renderer-stick-to-bottom-p
          renderer)

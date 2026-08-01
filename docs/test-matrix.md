@@ -148,9 +148,9 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 
 | Contract | Common Lisp coverage | Evidence |
 |---|---|---|
-| Deterministic latency/allocation benchmark | `scripts/bench.sh`, `scripts/goal11-bench.lisp`, `scripts/goal11-cold-start.py` | Fixed mixed transcripts measure frame, key-to-frame, stream-to-frame, append, heap/RSS and real-PTY cold start with raw samples and provenance |
+| Deterministic latency/allocation benchmark | `scripts/bench.sh`, `scripts/goal11-bench.lisp`, `scripts/goal11-cold-start.py` | Fixed mixed transcripts measure frame, key-to-frame, stream-to-frame, mouse drag-to-frame, wheel-to-frame, a 1024-event alternate-screen stream with allocation/GC tails, append, heap/RSS and real-PTY cold start with raw samples and provenance |
 | Long-session stability | `scripts/goal11-stability.sh`, `scripts/goal11-stability.lisp` | 1200 faux turns, 14,400 rendered frames, five resource checkpoints, full-GC pauses, cleanup, and 10MiB session load/resume/continue |
-| Release budget gate | `scripts/goal11-performance-gate.py`, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT` | `scripts/verify.sh` regenerates both reports in its isolated tree and fails before process/live stages when any approved budget is exceeded |
+| Release budget gate | `scripts/goal11-performance-gate.py`, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT`, `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` | `scripts/verify.sh` regenerates both reports in its isolated tree and fails before process/live stages when frame/input/allocation/GC or stability budgets are exceeded |
 
 ## Phase 8: pure Common Lisp TUI
 
