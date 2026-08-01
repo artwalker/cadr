@@ -74,8 +74,22 @@
                  (read-text
                   (merge-pathnames "child.pid" directory)))))
              (process-path
-               (pathname (format nil "/proc/~D/" pid))))
-        (is (not (probe-file process-path)))))))
+               (pathname (format nil "/proc/~D/stat" pid)))
+             (stat
+               (and (probe-file process-path)
+                    (ignore-errors
+                      (read-text process-path))))
+             (close
+               (and stat
+                    (position #\) stat :from-end t)))
+             (state
+               (and close
+                    (< (+ close 2) (length stat))
+                    (char stat (+ close 2)))))
+        ;; A container's PID 1 may retain an already-killed orphan as a
+        ;; zombie.  That process cannot execute; /proc existence alone does
+        ;; not mean the process group survived the timeout.
+        (is (member state '(nil #\Z #\X #\x)))))))
 
 (test bash-captures-active-post-exit-output-and-releases-idle-pipes
   (with-test-directory (directory)
