@@ -129,7 +129,6 @@
               (declare (ignore arguments))
               (sb-thread:wait-on-semaphore slow-started)
               (push call-id finish-order)
-              (sb-thread:signal-semaphore release-slow)
               (list (make-text-content :text "fast")))))
          (*responses*
            (list
@@ -153,7 +152,19 @@
              :tools (list slow fast)
              :stream-function
              (faux-stream '*responses* '*contexts*)
-             :on-event (lambda (event) (push event events)))))
+             :on-event
+             (lambda (event)
+               (push event events)
+               (when
+                   (and
+                    (eq :tool-execution-end
+                        (agent-event-type event))
+                    (string=
+                     "fast_1"
+                     (cadr-ai:tool-call-id
+                      (agent-event-tool-call event))))
+                 (sb-thread:signal-semaphore
+                  release-slow))))))
       (agent-prompt agent "run")
       (is (equal '("slow_1" "fast_1") finish-order))
       (let ((result-ids
