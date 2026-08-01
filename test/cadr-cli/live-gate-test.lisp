@@ -122,3 +122,52 @@
                 "cadr-cli/live-tests"
                 "cadr-evals/live-tests"))
       (is (not (null (asdf:find-system system nil)))))))
+
+(test goal9-part-d-verify-entrypoint-has-approved-stage-contract
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (path (merge-pathnames "scripts/verify.sh" root))
+         (source
+           (and (probe-file path)
+                (uiop:read-file-string path)))
+         (script-paths
+           '("scripts/test-cl.sh"
+             "build.sh"
+             "build-server.sh"
+             "scripts/acceptance-smoke.sh"
+             "scripts/test-wave2-process-modes.sh"
+             "scripts/migration-smoke.sh"
+             "scripts/server-smoke.sh"
+             "scripts/goal9-a2-pty.sh"
+             "scripts/goal5-manual-tui-smoke.sh"
+             "scripts/test-live.sh"
+             "scripts/live-tui-smoke.sh"))
+         (stage-labels
+           '("deterministic FiveAM"
+             "isolated cadr build"
+             "isolated cadr-server build"
+             "native acceptance smoke"
+             "native process modes"
+             "migration PTY smoke"
+             "Unix socket server smoke"
+             "terminal lifecycle PTY"
+             "deterministic TUI harness"
+             "credential-gated FiveAM"
+             "DeepSeek live TUI")))
+    (is-true source)
+    (when source
+      (let ((previous -1))
+        (dolist (stage stage-labels)
+          (let ((position
+                  (search stage source
+                          :start2 (1+ previous))))
+            (is-true position)
+            (when position
+              (setf previous position)))))
+      (dolist (path script-paths)
+        (is (search path source)))
+      (is (search "mktemp -d" source))
+      (is (search "--exclude=.git" source))
+      (is (search "DEEPSEEK_API_KEY" source))
+      (is (search "Deterministic stages" source))
+      (is (search "Live stages" source))
+      (is (not (search ".github/workflows" source))))))

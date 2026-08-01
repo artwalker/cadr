@@ -134,6 +134,7 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
 | Live evals | `scripts/test-live.sh` → `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
+| Single local release gate | `scripts/verify.sh`, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT` | Deterministic FiveAM → isolated dual build → retained process/PTY harnesses → availability-gated live FiveAM → DeepSeek live TUI; separate deterministic/live summaries, no remote CI |
 
 ## Phase 8: pure Common Lisp TUI
 

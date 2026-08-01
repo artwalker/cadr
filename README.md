@@ -313,6 +313,9 @@ accidental name collisions; it is not a security boundary.
   its credential-gated live blocks remain in Vitest but all skip in official CI
   because that workflow injects no provider credentials; `test-cl.sh` instead
   excludes those blocks and `test-live.sh` runs them explicitly.
+- By explicit user decision, `scripts/verify.sh` is a local-only release gate
+  that composes the deterministic, isolated-build, process/PTY, and available
+  live stages; Cadr does not add a remote CI workflow for it.
 - External shell harnesses remain only where a unit test cannot faithfully
   observe the real boundary:
   `acceptance-smoke.sh` (native image and cross-process sessions),
@@ -329,11 +332,22 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Goal 9 live-gate split: five consecutive runs, each 6921 checks / 6921 pass / 0 skip / 0 fail |
+| Deterministic ASDF gate | Current Goal 9 Part D run: 6952 checks / 6952 pass / 0 skip / 0 fail; isolated `cadr` and `cadr-server` public builds repeat the same gate |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
-| Live-proven | Dedicated `test-live.sh`: 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail; DeepSeek streaming/print/extension/repo/eval and OpenAI Codex CLI/eval ran with explicit provider/model and no user settings dependency |
+| Live-proven | Part D `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist and Goal 9 Part B three-round dual-terminal A/B acceptance passed |
+
+```bash
+./scripts/verify.sh
+```
+
+That release-local entry runs deterministic FiveAM, isolated builds of both
+native images, every retained process/PTY harness, credential-gated live
+FiveAM, and the DeepSeek live TUI when its key is available. It prints separate
+deterministic and live tables and exits nonzero for any executed failure; absent
+credentials are reported as explicit skips. It does not create or invoke a
+remote CI workflow. Individual stages remain available for diagnosis:
 
 ```bash
 ./scripts/test-cl.sh

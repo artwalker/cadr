@@ -1627,3 +1627,15 @@ Extension export SHA 继续为
 `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
 此锚点后的公开 surface 变更必须进入新 goal 并先走人工裁决；依赖门禁与
 “完成即提交”门禁继续全局生效。
+
+## 25. Goal 9 Part D 本地验证入口
+
+`scripts/verify.sh` 是发布前本地单一入口，顺序固定为：确定性 FiveAM、临时
+工作树内的 `cadr`/`cadr-server` 公共构建入口、保留的 native/process/PTY
+harness、凭据可用性门控的 live FiveAM、可用时的 DeepSeek 真实 TUI。隔离副本
+排除 Git metadata、现有二进制、凭据/测试 HOME、环境文件与编辑器缓存；真实
+OAuth refresh 仍由 canonical `~/.cadr/auth.json` 的既有锁与原子写路径负责。
+
+脚本分别汇总 deterministic 与 live，不把真实 LLM 结果冒充确定性证据。任何
+已运行项失败最终返回非零，但 live FiveAM 的逐项报告和后续可运行 live harness
+仍会完成；凭据缺失只形成带原因的 skip。此入口纯本地，不创建远端 CI 配置。
