@@ -185,6 +185,10 @@
          (bench
            (uiop:read-file-string
             (merge-pathnames "scripts/goal11-bench.lisp" root)))
+         (baseline-bench
+           (uiop:read-file-string
+            (merge-pathnames
+             "scripts/goal11-pi-baseline-bench.mjs" root)))
          (gate
            (uiop:read-file-string
             (merge-pathnames
@@ -208,6 +212,40 @@
       (is (search required gate)
           "Missing continuous-input release gate: ~A"
           required))
+    (dolist (required
+              '("TuiAltScreen"
+                "mouse_drag_to_frame"
+                "wheel_to_frame"
+                "continuous_alt_input"
+                "continuousEvents = 1024"
+                "retained_heap_delta_bytes_per_event"
+                "sampled_allocated_bytes_per_event"
+                "allocation_sample_event_count"
+                "loaded_dist_tree_sha256"
+                "installed_dependency_tree_sha256"
+                "paired_fresh_fixture_per_run"
+                "event_trace_sha256"
+                "renderer_mode"
+                "emitInput"))
+      (is (search required baseline-bench)
+          "Missing fixed-baseline continuous-input benchmark contract: ~A"
+          required))
+    (dolist (required
+              '("--baseline"
+                "baseline_mouse_ratio"
+                "baseline_wheel_ratio"
+                "baseline_continuous_p99_ratio"
+                "baseline_same_machine"
+                "baseline_relative_gate"
+                "FIXED_BASELINE_DIST_SHA256"
+                "FIXED_BASELINE_ARTIFACT_SHA256"
+                "gc_affected_samples_us"
+                "production-request-immediate-flush"
+                "paired_continuous_alt_input"
+                "event_trace_sha256"))
+      (is (search required gate)
+          "Missing baseline-derived continuous-input release gate: ~A"
+          required))
     (multiple-value-bind (output error-output status)
         (uiop:run-program
          (list
@@ -222,7 +260,7 @@
       (is (zerop status)
           "Synthetic gate regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 2 tests" error-output))
+      (is (search "Ran 5 tests" error-output))
       (is (search "OK" error-output)))))
 
 (test delivery-binary-freshness-check-rejects-missing-stale-and-dirty-images

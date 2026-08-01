@@ -1,14 +1,48 @@
 #!/usr/bin/env python3
 import argparse
+import hashlib
 import json
 import math
 import sys
 from pathlib import Path
+from statistics import median
+
+
+FIXED_BASELINE_REVISION = "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
+FIXED_CONTINUOUS_TRACE_SHA256 = (
+    "2dfea100e8e8825a96ea55795c39e6cea2f265c6aa1a4b98f4edba8b4e5edb61"
+)
+FIXED_BASELINE_DIST_SHA256 = {
+    "tui": "4d26ed735aabf37990f7da512a24d8e192ff930aa8a5444f7e36b3699c53aca1",
+    "ai": "d7c76723382d106984ab8a143f9acd7b69b3987c1a0f5e148849a992d53fa501",
+    "agent": "11220a2cddd0a78a0a3b41aa1080c2c84c59a2a089a6d82ed6b5d2f6f52f4d9a",
+    "coding_agent": "8238abe063e8108ac340b5f561edb5e7037ae19b4815564cfb8bdd7cba3f6c73",
+}
+FIXED_BASELINE_OBJECT_IDS = {
+    "package_lock_object_id": "a1c6dc39e419e54be4184be222b059f1e418c397",
+    "tui_object_id": "50cde5ce3d456184cfc7255f8c49b8fc096471c5",
+    "interactive_mode_object_id": "f9462d1a922ded236832b2007be015c017e91ebe",
+    "alt_screen_object_id": "d284647aca9faea1eed5455246485de55ab44908",
+}
+FIXED_BASELINE_DEPENDENCY_TREE_SHA256 = (
+    "dbb622f44cfd143ad437d716a1877ed0f15c34bef27ce527e375c00419d46212"
+)
+FIXED_BASELINE_ARTIFACT_SHA256 = (
+    "56e09adc50af1c9433111cc018b095c059f99bf7ada366f5d437f64d64b46ad9"
+)
 
 
 def load_json(path: str) -> dict:
     with Path(path).open(encoding="utf-8") as stream:
         return json.load(stream)
+
+
+def file_sha256(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as stream:
+        for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def point_at(metric: dict, count: int) -> dict:
@@ -35,7 +69,335 @@ def check(condition: bool, message: str, failures: list[str]) -> None:
         failures.append(message)
 
 
-def check_bench(data: dict, failures: list[str]) -> list[str]:
+def baseline_limit_us(value: float, run_mad: float) -> float:
+    return max(2 * value, value + max(5_000, 6 * run_mad))
+
+
+def percentile(values: list[float], fraction: float) -> float:
+    ordered = sorted(values)
+    index = max(0, min(len(ordered) - 1, math.ceil(fraction * len(ordered)) - 1))
+    return ordered[index]
+
+
+def check_point_samples(
+    point: dict,
+    label: str,
+    allocation_field: str,
+    allocation_summary_field: str,
+    failures: list[str],
+) -> None:
+    time_samples = point["samples_us"]
+    allocation_samples = point[allocation_field]
+    check(
+        len(time_samples) == 5 and len(allocation_samples) == 5,
+        f"{label} does not contain exactly five samples",
+        failures,
+    )
+    if len(time_samples) == 5:
+        center = median(time_samples)
+        check(
+            math.isclose(point["median_us"], center)
+            and math.isclose(
+                point["mad_us"], median(abs(value - center) for value in time_samples)
+            ),
+            f"{label} latency summary was not recomputed from samples",
+            failures,
+        )
+    if len(allocation_samples) == 5:
+        check(
+            math.isclose(
+                point[allocation_summary_field], median(allocation_samples)
+            ),
+            f"{label} allocation summary was not recomputed from samples",
+            failures,
+        )
+
+
+def check_paired_contract(
+    data: dict, baseline: dict, failures: list[str]
+) -> None:
+    parameters = data["parameters"]
+    baseline_parameters = baseline["parameters"]
+    paired = data["paired_continuous_alt_input"]
+    baseline_paired = baseline["continuous_alt_input"]
+    check(
+        data["kind"] == "cadr-goal11-performance"
+        and data["schema_version"] == 1
+        and baseline["kind"] == "pi-goal11-structural-baseline"
+        and baseline["schema_version"] == 2,
+        "paired benchmark report kind or schema differs",
+        failures,
+    )
+    expected_entry_counts = [0, 50, 200, 1000, 5000]
+    check(
+        data["entry_counts"] == expected_entry_counts
+        and baseline_parameters["entry_counts"] == expected_entry_counts
+        and parameters["samples"] == baseline_parameters["samples"] == 5
+        and parameters["warmups"] == baseline_parameters["warmups"] == 1,
+        "paired benchmark is not a full five-run report",
+        failures,
+    )
+    check(
+        baseline["provenance"]["source_revision"]
+        == FIXED_BASELINE_REVISION,
+        "fixed baseline revision is not 74caa2649",
+        failures,
+    )
+    check(
+        baseline["provenance"]["tracked_worktree_clean"] is True
+        and baseline["provenance"]["loaded_dist_tree_sha256"]
+        == FIXED_BASELINE_DIST_SHA256
+        and baseline["provenance"]["installed_dependency_tree_sha256"]
+        == FIXED_BASELINE_DEPENDENCY_TREE_SHA256
+        and all(
+            baseline["provenance"][field] == value
+            for field, value in FIXED_BASELINE_OBJECT_IDS.items()
+        ),
+        "fixed baseline build provenance differs",
+        failures,
+    )
+    for field in ("width", "height", "continuous_events"):
+        check(
+            parameters[field] == baseline_parameters[field],
+            f"paired benchmark {field.replace('_', ' ')} differs",
+            failures,
+        )
+    check(
+        parameters["width"] == 100
+        and parameters["height"] == 40
+        and parameters["continuous_events"] == 1024,
+        "paired benchmark dimensions differ from 100x40/1024",
+        failures,
+    )
+    check(
+        parameters["paired_fresh_fixture_per_run"] is True
+        and baseline_parameters["paired_fresh_fixture_per_run"] is True,
+        "paired benchmark does not use a fresh fixture per run",
+        failures,
+    )
+    check(
+        paired["event_trace_sha256"]
+        == baseline_paired["event_trace_sha256"]
+        == FIXED_CONTINUOUS_TRACE_SHA256,
+        "paired benchmark event trace differs",
+        failures,
+    )
+    expected_counts = {"drag": 342, "wheel_up": 341, "wheel_down": 341}
+    check(
+        paired["event_trace_counts"] == expected_counts
+        and baseline_paired["event_trace_counts"] == expected_counts,
+        "paired benchmark event counts differ from 342/341/341",
+        failures,
+    )
+    for field, expected, message in (
+        ("terminal_sink", "count-only", "paired benchmark terminal sink differs"),
+        ("gc_mode", "runtime-default", "paired benchmark GC mode differs"),
+        (
+            "renderer_mode",
+            "synchronous-requested-frame",
+            "paired benchmark renderer mode differs",
+        ),
+        (
+            "scheduler_mode",
+            "production-request-immediate-flush",
+            "paired benchmark scheduler mode differs",
+        ),
+    ):
+        check(
+            paired[field] == expected and baseline_paired[field] == expected,
+            message,
+            failures,
+        )
+    check(
+        paired["event_count"] == 1024
+        and baseline_paired["event_count"] == 1024,
+        "paired benchmark did not record exactly 1024 events",
+        failures,
+    )
+    check(
+        paired["rendered_frame_count"] == 1024
+        and baseline_paired["rendered_frame_count"] == 1024,
+        "paired benchmark skipped requested frames",
+        failures,
+    )
+    check(
+        paired["final_selection_active"] is True
+        and baseline_paired["final_selection_active"] is True,
+        "paired benchmark did not preserve the final drag selection",
+        failures,
+    )
+    check(
+        len(paired["runs"]) == 5 and len(baseline_paired["runs"]) == 5,
+        "paired benchmark does not contain exactly five runs",
+        failures,
+    )
+    for label, runs, allocation_field in (
+        ("candidate", paired["runs"], "samples_bytes"),
+        (
+            "baseline",
+            baseline_paired["runs"],
+            "samples_retained_heap_delta_bytes",
+        ),
+    ):
+        for index, run in enumerate(runs):
+            prefix = f"paired benchmark {label} run {index + 1}"
+            check(
+                run["event_count"] == 1024
+                and run["rendered_frame_count"] == 1024
+                and len(run["samples_us"]) == 1024
+                and len(run[allocation_field]) == 1024,
+                f"{prefix} does not contain 1024 measured frames",
+                failures,
+            )
+            check(
+                run["event_trace_sha256"] == FIXED_CONTINUOUS_TRACE_SHA256
+                and run["event_trace_counts"] == expected_counts,
+                f"{prefix} event trace differs",
+                failures,
+            )
+            check(
+                run["terminal_sink"] == "count-only"
+                and run["gc_mode"] == "runtime-default"
+                and run["renderer_mode"] == "synchronous-requested-frame"
+                and run["scheduler_mode"]
+                == "production-request-immediate-flush",
+                f"{prefix} execution mode differs",
+                failures,
+            )
+            check(
+                run["initial_viewport_top"] == run["final_viewport_top"],
+                "paired benchmark wheel trace did not return to its initial viewport",
+                failures,
+            )
+            check(
+                run["final_selection_active"] is True,
+                f"{prefix} did not preserve the final drag selection",
+                failures,
+            )
+            if len(run["samples_us"]) == 1024:
+                check(
+                    math.isclose(run["median_us"], median(run["samples_us"]))
+                    and math.isclose(
+                        run["p95_us"], percentile(run["samples_us"], 0.95)
+                    )
+                    and math.isclose(
+                        run["p99_us"], percentile(run["samples_us"], 0.99)
+                    )
+                    and math.isclose(run["max_us"], max(run["samples_us"])),
+                    f"{prefix} latency summary was not recomputed from samples",
+                    failures,
+                )
+            if len(run[allocation_field]) == 1024:
+                allocation_summary = (
+                    "median_retained_heap_delta_bytes"
+                    if label == "baseline"
+                    else "median_bytes"
+                )
+                check(
+                    math.isclose(
+                        run[allocation_summary], median(run[allocation_field])
+                    ),
+                    f"{prefix} allocation summary was not recomputed from samples",
+                    failures,
+                )
+    if len(paired["runs"]) == 5 and len(baseline_paired["runs"]) == 5:
+        for field in ("median_us", "p95_us", "p99_us"):
+            check(
+                math.isclose(
+                    paired[field], median(run[field] for run in paired["runs"])
+                )
+                and math.isclose(
+                    baseline_paired[field],
+                    median(run[field] for run in baseline_paired["runs"]),
+                ),
+                f"paired benchmark aggregate {field} was not recomputed from runs",
+                failures,
+            )
+            for label, report in (
+                ("candidate", paired),
+                ("fixed baseline", baseline_paired),
+            ):
+                run_values = [run[field] for run in report["runs"]]
+                center = median(run_values)
+                check(
+                    math.isclose(
+                        report[field.replace("_us", "_run_mad_us")],
+                        median(abs(value - center) for value in run_values),
+                    ),
+                    f"{label} aggregate {field} MAD was not recomputed from runs",
+                    failures,
+                )
+        check(
+            math.isclose(
+                paired["max_us"], max(run["max_us"] for run in paired["runs"])
+            )
+            and math.isclose(
+                baseline_paired["max_us"],
+                max(run["max_us"] for run in baseline_paired["runs"]),
+            ),
+            "paired benchmark aggregate max_us was not recomputed from runs",
+            failures,
+        )
+        check(
+            math.isclose(
+                paired["median_bytes"],
+                median(run["median_bytes"] for run in paired["runs"]),
+            )
+            and math.isclose(
+                baseline_paired["median_retained_heap_delta_bytes"],
+                median(
+                    run["median_retained_heap_delta_bytes"]
+                    for run in baseline_paired["runs"]
+                ),
+            ),
+            "paired benchmark aggregate allocation was not recomputed from runs",
+            failures,
+        )
+        check(
+            math.isclose(
+                baseline_paired["retained_heap_delta_bytes_per_event"],
+                median(
+                    run["retained_heap_delta_bytes_per_event"]
+                    for run in baseline_paired["runs"]
+                ),
+            )
+            and math.isclose(
+                baseline_paired[
+                    "retained_heap_high_water_delta_bytes_per_event"
+                ],
+                median(
+                    run["retained_heap_high_water_delta_bytes_per_event"]
+                    for run in baseline_paired["runs"]
+                ),
+            ),
+            "fixed baseline retained-heap summary was not recomputed from runs",
+            failures,
+        )
+    check(
+        paired["median_bytes"] > 0
+        and baseline_paired["sampled_allocated_bytes_per_event"] > 0,
+        "paired benchmark did not record allocation evidence",
+        failures,
+    )
+    for metric_name in ("mouse_drag_to_frame", "wheel_to_frame"):
+        baseline_point = point_at(baseline["metrics"][metric_name], 5000)
+        check(
+            baseline_point["sampled_allocated_bytes_per_event"] > 0
+            and baseline_point["allocation_sample_event_count"] == 32,
+            f"fixed baseline {metric_name} allocation sample is incomplete",
+            failures,
+        )
+    check(
+        baseline_paired["allocation_sample_event_count"] == 96,
+        "fixed baseline continuous allocation sample is incomplete",
+        failures,
+    )
+
+
+def check_bench(
+    data: dict, failures: list[str], baseline: dict
+) -> list[str]:
+    check_paired_contract(data, baseline, failures)
     metrics = data["metrics"]
     frame = point_at(metrics["frame_render"], 5000)
     key = point_at(metrics["key_to_frame"], 5000)
@@ -43,6 +405,46 @@ def check_bench(data: dict, failures: list[str]) -> list[str]:
     mouse = point_at(metrics["mouse_drag_to_frame"], 5000)
     wheel = point_at(metrics["wheel_to_frame"], 5000)
     continuous = data["continuous_alt_input"]
+    paired_continuous = data["paired_continuous_alt_input"]
+    baseline_mouse = point_at(
+        baseline["metrics"]["mouse_drag_to_frame"], 5000
+    )
+    baseline_wheel = point_at(
+        baseline["metrics"]["wheel_to_frame"], 5000
+    )
+    baseline_continuous = baseline["continuous_alt_input"]
+    for label, point, allocation_field, allocation_summary in (
+        ("candidate mouse", mouse, "samples_bytes", "median_bytes"),
+        ("candidate wheel", wheel, "samples_bytes", "median_bytes"),
+        (
+            "fixed baseline mouse",
+            baseline_mouse,
+            "samples_retained_heap_delta_bytes",
+            "median_retained_heap_delta_bytes",
+        ),
+        (
+            "fixed baseline wheel",
+            baseline_wheel,
+            "samples_retained_heap_delta_bytes",
+            "median_retained_heap_delta_bytes",
+        ),
+    ):
+        check_point_samples(
+            point, label, allocation_field, allocation_summary, failures
+        )
+    same_machine = (
+        data["machine"]["machine_instance"]
+        == baseline["machine"]["hostname"]
+    )
+    baseline_mouse_ratio = mouse["median_us"] / max(
+        1, baseline_mouse["median_us"]
+    )
+    baseline_wheel_ratio = wheel["median_us"] / max(
+        1, baseline_wheel["median_us"]
+    )
+    baseline_continuous_p99_ratio = paired_continuous["p99_us"] / max(
+        1, baseline_continuous["p99_us"]
+    )
     append_exponent = metrics["append_entry"]["scaling"]["log_log_exponent"]
     cold_start = data["cold_start"]["median_us"]
 
@@ -67,6 +469,57 @@ def check_bench(data: dict, failures: list[str]) -> list[str]:
     check(continuous["event_count"] == 1024,
           "continuous alt-input benchmark did not record exactly 1024 events",
           failures)
+    check(
+        continuous["rendered_frame_count"] == 1024
+        and len(continuous["samples_us"]) == 1024
+        and len(continuous["samples_bytes"]) == 1024,
+        "continuous alt-input stress report does not contain 1024 measured frames",
+        failures,
+    )
+    check(
+        continuous["event_trace_sha256"] == FIXED_CONTINUOUS_TRACE_SHA256
+        and continuous["event_trace_counts"]
+        == {"drag": 342, "wheel_up": 341, "wheel_down": 341}
+        and continuous["terminal_sink"] == "count-only"
+        and continuous["gc_mode"] == "forced-8mib-nursery"
+        and continuous["renderer_mode"] == "synchronous-requested-frame"
+        and continuous["scheduler_mode"]
+        == "production-request-immediate-flush"
+        and continuous["nursery_bytes"] == 8 * 1024 * 1024,
+        "continuous alt-input stress execution contract differs",
+        failures,
+    )
+    if (
+        len(continuous["samples_us"]) == 1024
+        and len(continuous["samples_bytes"]) == 1024
+    ):
+        check(
+            math.isclose(
+                continuous["median_us"], median(continuous["samples_us"])
+            )
+            and math.isclose(
+                continuous["p99_us"],
+                percentile(continuous["samples_us"], 0.99),
+            )
+            and math.isclose(continuous["max_us"], max(continuous["samples_us"]))
+            and math.isclose(
+                continuous["median_bytes"], median(continuous["samples_bytes"])
+            )
+            and math.isclose(
+                continuous["total_bytes"], sum(continuous["samples_bytes"])
+            ),
+            "continuous alt-input stress summary was not recomputed from samples",
+            failures,
+        )
+    gc_samples = continuous["gc_affected_samples_us"]
+    check(
+        continuous["gc_affected_event_count"] == len(gc_samples)
+        and math.isclose(
+            continuous["gc_affected_max_us"], max(gc_samples, default=0)
+        ),
+        "continuous alt-input GC summary was not recomputed from samples",
+        failures,
+    )
     # The fixed 8MiB nursery deliberately forces GC during roughly half of
     # the events.  Keep ordinary N=5000 event medians at 50ms, while giving
     # the stress-run tail enough host variance to distinguish a pause from
@@ -79,6 +532,36 @@ def check_bench(data: dict, failures: list[str]) -> list[str]:
           or continuous["total_bytes"] < continuous["nursery_bytes"],
           "continuous alt-input allocated a nursery without observing GC",
           failures)
+    # Fixed absolute microseconds are only comparable on the machine that
+    # produced the archived baseline. Other hosts retain the pre-existing broad
+    # absolute budgets above and report ratios without treating them as gates.
+    if same_machine:
+        check(
+            mouse["median_us"]
+            <= baseline_limit_us(
+                baseline_mouse["median_us"], baseline_mouse["mad_us"]
+            ),
+            "mouse drag exceeds fixed-baseline-derived limit",
+            failures,
+        )
+        check(
+            wheel["median_us"]
+            <= baseline_limit_us(
+                baseline_wheel["median_us"], baseline_wheel["mad_us"]
+            ),
+            "wheel event exceeds fixed-baseline-derived limit",
+            failures,
+        )
+        for field in ("median", "p95", "p99"):
+            check(
+                paired_continuous[f"{field}_us"]
+                <= baseline_limit_us(
+                    baseline_continuous[f"{field}_us"],
+                    baseline_continuous[f"{field}_run_mad_us"],
+                ),
+                f"continuous alt-input {field} exceeds fixed-baseline-derived limit",
+                failures,
+            )
 
     memory_point = next(
         point for point in data["memory"]["points"] if point["n"] == 5000
@@ -93,6 +576,12 @@ def check_bench(data: dict, failures: list[str]) -> list[str]:
         f"wheel={wheel['median_us'] / 1000:.2f}ms",
         f"continuous_p99={continuous['p99_us'] / 1000:.2f}ms",
         f"continuous_gc_max={continuous['gc_affected_max_us'] / 1000:.2f}ms",
+        f"baseline_same_machine={'yes' if same_machine else 'no'}",
+        "baseline_relative_gate="
+        + ("enforced" if same_machine else "informational-host-mismatch"),
+        f"baseline_mouse_ratio={baseline_mouse_ratio:.2f}x",
+        f"baseline_wheel_ratio={baseline_wheel_ratio:.2f}x",
+        f"baseline_continuous_p99_ratio={baseline_continuous_p99_ratio:.2f}x",
         f"append_exp={append_exponent:.3f}",
         f"cold={cold_start / 1000:.2f}ms",
     ]
@@ -176,13 +665,29 @@ def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--bench", required=True)
     parser.add_argument("--stability", required=True)
+    parser.add_argument(
+        "--baseline",
+        default=str(
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "benchmarks"
+            / "goal-v11-pi-baseline.json"
+        ),
+    )
     args = parser.parse_args()
 
     failures: list[str] = []
     try:
-        bench_summary = check_bench(load_json(args.bench), failures)
+        check(
+            file_sha256(args.baseline) == FIXED_BASELINE_ARTIFACT_SHA256,
+            "fixed baseline artifact SHA-256 differs",
+            failures,
+        )
+        bench_summary = check_bench(
+            load_json(args.bench), failures, load_json(args.baseline)
+        )
         stability_summary = check_stability(load_json(args.stability), failures)
-    except (KeyError, TypeError, ValueError, json.JSONDecodeError) as error:
+    except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"goal11 gate: invalid report: {error}", file=sys.stderr)
         return 2
 

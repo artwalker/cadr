@@ -18,15 +18,68 @@ def point(*, latency=4_000, allocation=1_000_000, throughput=None):
     value = {
         "n": 5000,
         "median_us": latency,
+        "mad_us": 0,
+        "samples_us": [latency] * 5,
         "median_bytes": allocation,
+        "mad_bytes": 0,
+        "samples_bytes": [allocation] * 5,
     }
     if throughput is not None:
         value["delta_per_second"] = throughput
     return value
 
 
+def paired_run(*, baseline=False, median_us=4_000, p95_us=5_000, p99_us=6_000):
+    samples = [median_us] * 972 + [p95_us] * 41 + [p99_us] * 11
+    run = {
+        "event_count": 1024,
+        "median_us": median_us,
+        "p95_us": p95_us,
+        "p99_us": p99_us,
+        "max_us": p99_us,
+        "event_trace_sha256": GATE.FIXED_CONTINUOUS_TRACE_SHA256,
+        "event_trace_counts": {
+            "drag": 342,
+            "wheel_up": 341,
+            "wheel_down": 341,
+        },
+        "terminal_sink": "count-only",
+        "gc_mode": "runtime-default",
+        "renderer_mode": "synchronous-requested-frame",
+        "scheduler_mode": "production-request-immediate-flush",
+        "rendered_frame_count": 1024,
+        "final_selection_active": True,
+        "initial_viewport_top": 100,
+        "final_viewport_top": 100,
+        "samples_us": samples,
+    }
+    run[
+        "samples_retained_heap_delta_bytes" if baseline else "samples_bytes"
+    ] = [1_000] * 1024
+    run[
+        "median_retained_heap_delta_bytes" if baseline else "median_bytes"
+    ] = 1_000
+    if baseline:
+        run["retained_heap_delta_bytes_per_event"] = 250_000
+        run["retained_heap_high_water_delta_bytes_per_event"] = 300_000
+    return run
+
+
 def valid_report():
     return {
+        "schema_version": 1,
+        "kind": "cadr-goal11-performance",
+        "entry_counts": [0, 50, 200, 1000, 5000],
+        "provenance": {"source_revision": "candidate"},
+        "machine": {"machine_instance": "same-machine"},
+        "parameters": {
+            "width": 100,
+            "height": 40,
+            "continuous_events": 1024,
+            "paired_fresh_fixture_per_run": True,
+            "samples": 5,
+            "warmups": 1,
+        },
         "metrics": {
             "frame_render": {"points": [point()]},
             "key_to_frame": {"points": [point()]},
@@ -41,15 +94,140 @@ def valid_report():
         },
         "continuous_alt_input": {
             "event_count": 1024,
+            "median_us": 50_000,
             "p99_us": 50_000,
+            "max_us": 50_000,
+            "median_bytes": 16_384,
             "gc_affected_max_us": 80_000,
             "gc_affected_event_count": 1,
+            "gc_affected_samples_us": [80_000],
             "total_bytes": 16 * 1024 * 1024,
             "nursery_bytes": 8 * 1024 * 1024,
+            "rendered_frame_count": 1024,
+            "event_trace_sha256": GATE.FIXED_CONTINUOUS_TRACE_SHA256,
+            "event_trace_counts": {
+                "drag": 342,
+                "wheel_up": 341,
+                "wheel_down": 341,
+            },
+            "terminal_sink": "count-only",
+            "gc_mode": "forced-8mib-nursery",
+            "renderer_mode": "synchronous-requested-frame",
+            "scheduler_mode": "production-request-immediate-flush",
+            "samples_us": [50_000] * 1024,
+            "samples_bytes": [16_384] * 1024,
+        },
+        "paired_continuous_alt_input": {
+            "event_count": 1024,
+            "median_us": 4_000,
+            "median_run_mad_us": 0,
+            "p95_us": 5_000,
+            "p95_run_mad_us": 0,
+            "p99_us": 6_000,
+            "p99_run_mad_us": 0,
+            "event_trace_sha256": GATE.FIXED_CONTINUOUS_TRACE_SHA256,
+            "event_trace_counts": {
+                "drag": 342,
+                "wheel_up": 341,
+                "wheel_down": 341,
+            },
+            "terminal_sink": "count-only",
+            "gc_mode": "runtime-default",
+            "renderer_mode": "synchronous-requested-frame",
+            "scheduler_mode": "production-request-immediate-flush",
+            "rendered_frame_count": 1024,
+            "final_selection_active": True,
+            "median_bytes": 1_000,
+            "max_us": 6_000,
+            "runs": [paired_run() for _ in range(5)],
         },
         "cold_start": {"median_us": 150_000},
         "memory": {
             "points": [{"n": 5000, "heap_delta_bytes": 1_000_000}]
+        },
+    }
+
+
+def valid_baseline_report():
+    return {
+        "schema_version": 2,
+        "kind": "pi-goal11-structural-baseline",
+        "provenance": {
+            "source_revision": (
+                "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
+            ),
+            "tracked_worktree_clean": True,
+            "loaded_dist_tree_sha256": dict(GATE.FIXED_BASELINE_DIST_SHA256),
+            "installed_dependency_tree_sha256": (
+                GATE.FIXED_BASELINE_DEPENDENCY_TREE_SHA256
+            ),
+            **GATE.FIXED_BASELINE_OBJECT_IDS,
+        },
+        "machine": {"hostname": "same-machine"},
+        "parameters": {
+            "width": 100,
+            "height": 40,
+            "continuous_events": 1024,
+            "paired_fresh_fixture_per_run": True,
+            "entry_counts": [0, 50, 200, 1000, 5000],
+            "samples": 5,
+            "warmups": 1,
+        },
+        "metrics": {
+            "mouse_drag_to_frame": {
+                "points": [{
+                    **point(latency=12_000),
+                    "median_retained_heap_delta_bytes": 1_000_000,
+                    "samples_retained_heap_delta_bytes": [1_000_000] * 5,
+                    "sampled_allocated_bytes_per_event": 100_000,
+                    "allocation_sample_event_count": 32,
+                }]
+            },
+            "wheel_to_frame": {
+                "points": [{
+                    **point(latency=10_000),
+                    "median_retained_heap_delta_bytes": 1_000_000,
+                    "samples_retained_heap_delta_bytes": [1_000_000] * 5,
+                    "sampled_allocated_bytes_per_event": 100_000,
+                    "allocation_sample_event_count": 32,
+                }]
+            },
+        },
+        "continuous_alt_input": {
+            "event_count": 1024,
+            "median_us": 10_000,
+            "median_run_mad_us": 0,
+            "p95_us": 12_000,
+            "p95_run_mad_us": 0,
+            "p99_us": 15_000,
+            "p99_run_mad_us": 0,
+            "retained_heap_delta_bytes_per_event": 250_000,
+            "retained_heap_high_water_delta_bytes_per_event": 300_000,
+            "event_trace_sha256": GATE.FIXED_CONTINUOUS_TRACE_SHA256,
+            "event_trace_counts": {
+                "drag": 342,
+                "wheel_up": 341,
+                "wheel_down": 341,
+            },
+            "terminal_sink": "count-only",
+            "gc_mode": "runtime-default",
+            "renderer_mode": "synchronous-requested-frame",
+            "scheduler_mode": "production-request-immediate-flush",
+            "rendered_frame_count": 1024,
+            "final_selection_active": True,
+            "sampled_allocated_bytes_per_event": 1_000_000,
+            "allocation_sample_event_count": 96,
+            "median_retained_heap_delta_bytes": 1_000,
+            "max_us": 15_000,
+            "runs": [
+                paired_run(
+                    baseline=True,
+                    median_us=10_000,
+                    p95_us=12_000,
+                    p99_us=15_000,
+                )
+                for _ in range(5)
+            ],
         },
     }
 
@@ -60,11 +238,21 @@ class ContinuousInputGateTest(unittest.TestCase):
         if mutate is not None:
             mutate(report)
         failures = []
-        GATE.check_bench(report, failures)
+        GATE.check_bench(report, failures, valid_baseline_report())
         return failures
 
     def test_valid_report_passes(self):
         self.assertEqual([], self.failures())
+
+    def test_committed_fixed_baseline_artifact_passes_full_contract(self):
+        path = ROOT / "docs" / "benchmarks" / "goal-v11-pi-baseline.json"
+        self.assertEqual(
+            GATE.FIXED_BASELINE_ARTIFACT_SHA256,
+            GATE.file_sha256(path),
+        )
+        failures = []
+        GATE.check_bench(valid_report(), failures, GATE.load_json(path))
+        self.assertEqual([], failures)
 
     def test_every_continuous_input_budget_is_enforced(self):
         cases = [
@@ -120,6 +308,247 @@ class ContinuousInputGateTest(unittest.TestCase):
         for expected, mutate in cases:
             with self.subTest(expected=expected):
                 failures = self.failures(mutate)
+                self.assertTrue(
+                    any(expected in failure for failure in failures), failures
+                )
+
+    def test_baseline_relative_budgets_reject_order_of_magnitude_drift(self):
+        cases = [
+            (
+                "mouse drag exceeds fixed-baseline-derived limit",
+                lambda report: report["metrics"]["mouse_drag_to_frame"][
+                    "points"
+                ][0].update(median_us=24_001),
+            ),
+            (
+                "wheel event exceeds fixed-baseline-derived limit",
+                lambda report: report["metrics"]["wheel_to_frame"][
+                    "points"
+                ][0].update(median_us=20_001),
+            ),
+            (
+                "continuous alt-input median exceeds fixed-baseline-derived limit",
+                lambda report: report["paired_continuous_alt_input"].update(
+                    median_us=20_001
+                ),
+            ),
+            (
+                "continuous alt-input p95 exceeds fixed-baseline-derived limit",
+                lambda report: report["paired_continuous_alt_input"].update(
+                    p95_us=24_001
+                ),
+            ),
+            (
+                "continuous alt-input p99 exceeds fixed-baseline-derived limit",
+                lambda report: report["paired_continuous_alt_input"].update(
+                    p99_us=30_001
+                ),
+            ),
+        ]
+        for expected, mutate in cases:
+            with self.subTest(expected=expected):
+                failures = self.failures(mutate)
+                self.assertTrue(
+                    any(expected in failure for failure in failures), failures
+                )
+
+    def test_baseline_limit_boundary_and_paired_contract_are_exact(self):
+        self.assertEqual(24_000, GATE.baseline_limit_us(12_000, 500))
+        self.assertEqual(28_000, GATE.baseline_limit_us(10_000, 3_000))
+        report = valid_report()
+        baseline = valid_baseline_report()
+        report["metrics"]["mouse_drag_to_frame"]["points"][0][
+            "median_us"
+        ] = 24_000
+        failures = []
+        GATE.check_bench(report, failures, baseline)
+        self.assertFalse(
+            any("mouse drag exceeds fixed-baseline" in item for item in failures),
+            failures,
+        )
+        cross_machine = valid_report()
+        cross_machine["machine"]["machine_instance"] = "other-machine"
+        cross_machine["paired_continuous_alt_input"]["p99_us"] = 300_000
+        failures = []
+        GATE.check_bench(cross_machine, failures, baseline)
+        self.assertFalse(
+            any("fixed-baseline-derived limit" in item for item in failures),
+            failures,
+        )
+        cases = [
+            (
+                "paired benchmark report kind or schema differs",
+                lambda candidate, _base: candidate.update(schema_version=0),
+            ),
+            (
+                "paired benchmark is not a full five-run report",
+                lambda candidate, _base: candidate["parameters"].update(samples=4),
+            ),
+            (
+                "fixed baseline revision is not 74caa2649",
+                lambda _report, base: base["provenance"].update(
+                    source_revision="wrong"
+                ),
+            ),
+            (
+                "fixed baseline build provenance differs",
+                lambda _report, base: base["provenance"][
+                    "loaded_dist_tree_sha256"
+                ].update(tui="wrong"),
+            ),
+            (
+                "candidate mouse does not contain exactly five samples",
+                lambda candidate, _base: candidate["metrics"][
+                    "mouse_drag_to_frame"
+                ]["points"][0].update(samples_us=[4_000] * 4),
+            ),
+            (
+                "fixed baseline wheel latency summary was not recomputed from samples",
+                lambda _candidate, base: base["metrics"][
+                    "wheel_to_frame"
+                ]["points"][0].update(median_us=10_001),
+            ),
+            (
+                "continuous alt-input stress report does not contain 1024 measured frames",
+                lambda candidate, _base: candidate[
+                    "continuous_alt_input"
+                ].update(rendered_frame_count=1023),
+            ),
+            (
+                "continuous alt-input stress execution contract differs",
+                lambda candidate, _base: candidate[
+                    "continuous_alt_input"
+                ].update(event_trace_sha256="wrong"),
+            ),
+            (
+                "continuous alt-input stress summary was not recomputed from samples",
+                lambda candidate, _base: candidate[
+                    "continuous_alt_input"
+                ]["samples_us"].__setitem__(0, 999_999),
+            ),
+            (
+                "continuous alt-input GC summary was not recomputed from samples",
+                lambda candidate, _base: candidate[
+                    "continuous_alt_input"
+                ].update(gc_affected_max_us=80_001),
+            ),
+            (
+                "paired benchmark width differs",
+                lambda candidate, _base: candidate["parameters"].update(
+                    width=99
+                ),
+            ),
+            (
+                "paired benchmark dimensions differ from 100x40/1024",
+                lambda candidate, base: (
+                    candidate["parameters"].update(width=99),
+                    base["parameters"].update(width=99),
+                ),
+            ),
+            (
+                "paired benchmark event trace differs",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(event_trace_sha256="wrong"),
+            ),
+            (
+                "paired benchmark event counts differ from 342/341/341",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ]["event_trace_counts"].update(drag=341),
+            ),
+            (
+                "paired benchmark terminal sink differs",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(terminal_sink="virtual-terminal"),
+            ),
+            (
+                "paired benchmark GC mode differs",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(gc_mode="forced"),
+            ),
+            (
+                "paired benchmark renderer mode differs",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(renderer_mode="coalesced"),
+            ),
+            (
+                "paired benchmark wheel trace did not return to its initial viewport",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ]["runs"][0].update(final_viewport_top=99),
+            ),
+            (
+                "paired benchmark candidate run 1 latency summary was not recomputed from samples",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ]["runs"][0]["samples_us"].__setitem__(0, 999_999),
+            ),
+            (
+                "paired benchmark candidate run 1 allocation summary was not recomputed from samples",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ]["runs"][0].update(median_bytes=2_000),
+            ),
+            (
+                "fixed baseline aggregate median_us MAD was not recomputed from runs",
+                lambda _candidate, base: base[
+                    "continuous_alt_input"
+                ].update(median_run_mad_us=1),
+            ),
+            (
+                "candidate aggregate median_us MAD was not recomputed from runs",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(median_run_mad_us=1),
+            ),
+            (
+                "paired benchmark aggregate p95_us was not recomputed from runs",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(p95_us=5_001),
+            ),
+            (
+                "paired benchmark did not record allocation evidence",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(median_bytes=0),
+            ),
+            (
+                "fixed baseline mouse_drag_to_frame allocation sample is incomplete",
+                lambda _candidate, base: base["metrics"][
+                    "mouse_drag_to_frame"
+                ]["points"][0].update(allocation_sample_event_count=31),
+            ),
+            (
+                "fixed baseline wheel_to_frame allocation sample is incomplete",
+                lambda _candidate, base: base["metrics"][
+                    "wheel_to_frame"
+                ]["points"][0].update(sampled_allocated_bytes_per_event=0),
+            ),
+            (
+                "fixed baseline continuous allocation sample is incomplete",
+                lambda _candidate, base: base[
+                    "continuous_alt_input"
+                ].update(allocation_sample_event_count=95),
+            ),
+            (
+                "paired benchmark skipped requested frames",
+                lambda candidate, _base: candidate[
+                    "paired_continuous_alt_input"
+                ].update(rendered_frame_count=1),
+            ),
+        ]
+        for expected, mutate in cases:
+            with self.subTest(expected=expected):
+                candidate = valid_report()
+                base = valid_baseline_report()
+                mutate(candidate, base)
+                failures = []
+                GATE.check_bench(candidate, failures, base)
                 self.assertTrue(
                     any(expected in failure for failure in failures), failures
                 )

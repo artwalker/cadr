@@ -36,6 +36,18 @@
 (defparameter *sink* nil)
 (defparameter *continuous-event-count* 1024)
 (defparameter *continuous-nursery-bytes* (* 8 1024 1024))
+(defparameter *paired-continuous-runs* 5)
+
+(defclass counting-terminal (cadr-tui:terminal)
+  ((written-units
+    :initform 0
+    :accessor counting-terminal-written-units)))
+
+(defmethod cadr-tui:terminal-write
+    ((terminal counting-terminal) text)
+  (incf (counting-terminal-written-units terminal)
+        (length text))
+  text)
 
 (defstruct frame-fixture
   state
@@ -43,6 +55,7 @@
   decoder
   terminal
   renderer
+  render-coordinator
   message)
 
 (defun parse-positive-integer (text option)
@@ -61,7 +74,9 @@
             ((string= argument "--quick")
              (setf *entry-counts* '(0 50 200)
                    *samples* 3
-                   *warmups* 1))
+                   *warmups* 1
+                   *continuous-event-count* 12
+                   *paired-continuous-runs* 1))
             ((string= argument "--no-cold-start")
              (setf *include-cold-start-p* nil))
             ((string= argument "--samples")
@@ -270,11 +285,20 @@
          (editor
            (cadr-tui:make-multiline-editor))
          (terminal
-           (cadr-tui:make-virtual-terminal
-            :columns 100 :rows 40))
+           (if alt-p
+               (make-instance
+                'counting-terminal
+                :columns 100 :rows 40)
+               (cadr-tui:make-virtual-terminal
+                :columns 100 :rows 40)))
          (renderer
            (cadr-tui:make-terminal-renderer
             terminal :alt-p alt-p))
+         (render-coordinator
+           (and
+            alt-p
+            (cadr-cli::make-tui-render-coordinator
+             :interval 0d0)))
          (message
            (and
             streaming-p
@@ -299,6 +323,7 @@
      :decoder (cadr-tui:make-input-decoder)
      :terminal terminal
      :renderer renderer
+     :render-coordinator render-coordinator
      :message message)))
 
 (defun render-fixture (fixture)
@@ -315,8 +340,24 @@
      (frame-fixture-renderer fixture)
      document
      :cursor-row row
-     :cursor-column column)
-    (length document)))
+     :cursor-column column)))
+
+(defun handle-alt-input-and-render (fixture input)
+  (unless
+      (cadr-tui:renderer-handle-input
+       (frame-fixture-renderer fixture)
+       input)
+    (error "Alt-screen benchmark input was not consumed"))
+  (cadr-cli::request-tui-render
+   (frame-fixture-render-coordinator fixture))
+  (let ((rendered nil))
+    (unless
+        (cadr-cli::flush-tui-render
+         (frame-fixture-render-coordinator fixture)
+         (lambda ()
+           (setf rendered (render-fixture fixture))))
+      (error "Alt-screen benchmark request did not render"))
+    rendered))
 
 (defun frame-repetitions (count)
   (cond
@@ -411,9 +452,8 @@
       (cadr-tui::renderer-scroll-to-top renderer)
       (cadr-tui:renderer-scroll-by
        renderer (floor maximum 2))
-      (cadr-tui:renderer-handle-input
-       renderer (sgr-mouse-input 0 10 10))
-      (render-fixture fixture))
+      (handle-alt-input-and-render
+       fixture (sgr-mouse-input 0 10 10)))
     fixture))
 
 (defun mouse-drag-statistics (count)
@@ -423,13 +463,12 @@
            (event-index 0))
        (lambda ()
          (incf event-index)
-         (cadr-tui:renderer-handle-input
-          (frame-fixture-renderer fixture)
+         (handle-alt-input-and-render
+          fixture
           (sgr-mouse-input
            32
            (if (oddp event-index) 20 70)
-           (if (oddp event-index) 8 30)))
-         (render-fixture fixture))))
+           (if (oddp event-index) 8 30))))))
    (frame-repetitions count)))
 
 (defun wheel-statistics (count)
@@ -439,17 +478,51 @@
            (event-index 0))
        (lambda ()
          (incf event-index)
-         (cadr-tui:renderer-handle-input
-          (frame-fixture-renderer fixture)
+         (handle-alt-input-and-render
+          fixture
           (sgr-mouse-input
            (if (oddp event-index) 64 65)
-           50 20))
-         (render-fixture fixture))))
+           50 20)))))
    (frame-repetitions count)))
 
-(defun continuous-alt-input-json ()
+(defun continuous-event-input (index)
+  (case (mod index 3)
+    (0
+     (sgr-mouse-input
+      32
+      (if (evenp index) 20 70)
+      (if (evenp index) 8 30)))
+    (1 (sgr-mouse-input 64 50 20))
+    (otherwise (sgr-mouse-input 65 50 20))))
+
+(defun continuous-event-trace-sha256 ()
+  (cadr-ai::octets-hex
+   (cadr-ai::sha256-bytes
+    (cadr-ai::utf8-octets
+     (format
+      nil "~{~A~^~%~}"
+      (loop for index below *continuous-event-count*
+            collect (continuous-event-input index)))))))
+
+(defun continuous-event-trace-counts-json ()
+  (let ((drag 0)
+        (wheel-up 0)
+        (wheel-down 0))
+    (dotimes (index *continuous-event-count*)
+      (case (mod index 3)
+        (0 (incf drag))
+        (1 (incf wheel-up))
+        (otherwise (incf wheel-down))))
+    (json-object
+     "drag" drag
+     "wheel_down" wheel-down
+     "wheel_up" wheel-up)))
+
+(defun continuous-alt-input-run (&key nursery-bytes)
   (let* ((fixture (prepare-alt-input-fixture 5000))
          (renderer (frame-fixture-renderer fixture))
+         (initial-viewport-top
+           (cadr-tui:renderer-viewport-top renderer))
          (latencies nil)
          (allocations nil)
          (gc-affected-latencies nil)
@@ -459,74 +532,158 @@
     (unwind-protect
          (progn
            (sb-ext:gc :full t)
-           (setf
-            (sb-ext:bytes-consed-between-gcs)
-            *continuous-nursery-bytes*)
-           (setf gc-runtime-before
-                 sb-ext:*gc-run-time*)
+           (when nursery-bytes
+             (setf
+              (sb-ext:bytes-consed-between-gcs)
+              nursery-bytes))
+           (setf gc-runtime-before sb-ext:*gc-run-time*)
            (dotimes (index *continuous-event-count*)
              (let* ((gc-before sb-ext:*gc-run-time*)
-                    (bytes-before
-                      (sb-ext:get-bytes-consed))
-                    (started-at
-                      (get-internal-real-time))
-                    (input
-                      (case (mod index 3)
-                        (0
-                         (sgr-mouse-input
-                          32
-                          (if (evenp index) 20 70)
-                          (if (evenp index) 8 30)))
-                        (1
-                         (sgr-mouse-input 64 50 20))
-                        (otherwise
-                         (sgr-mouse-input 65 50 20)))))
-               (cadr-tui:renderer-handle-input
-                renderer input)
-               (setf *sink* (render-fixture fixture))
-               (let* ((ended-at
-                        (get-internal-real-time))
-                      (latency
-                        (elapsed-microseconds
-                         started-at ended-at)))
+                    (bytes-before (sb-ext:get-bytes-consed))
+                    (started-at (get-internal-real-time)))
+               (setf
+                *sink*
+                (handle-alt-input-and-render
+                 fixture (continuous-event-input index)))
+               (let ((latency
+                       (elapsed-microseconds
+                        started-at
+                        (get-internal-real-time))))
                  (push latency latencies)
                  (push
                   (- (sb-ext:get-bytes-consed)
                      bytes-before)
                   allocations)
-                 (when (> sb-ext:*gc-run-time*
-                          gc-before)
-                   (push latency
-                         gc-affected-latencies)))))
+                 (when (> sb-ext:*gc-run-time* gc-before)
+                   (push latency gc-affected-latencies)))))
            (setf latencies (nreverse latencies)
-                 allocations (nreverse allocations))
+                 allocations (nreverse allocations)
+                 gc-affected-latencies
+                 (nreverse gc-affected-latencies))
            (let ((center (median latencies)))
-             (json-object
-              "event_count" (length latencies)
-              "gc_affected_event_count"
+             (list
+              :event-count (length latencies)
+              :gc-affected-event-count
               (length gc-affected-latencies)
-              "gc_affected_max_us"
+              :gc-affected-max-us
               (if gc-affected-latencies
                   (reduce #'max gc-affected-latencies)
                   0d0)
-              "gc_cpu_us"
+              :gc-affected-samples-us gc-affected-latencies
+              :gc-cpu-us
               (elapsed-microseconds
                gc-runtime-before sb-ext:*gc-run-time*)
-              "mad_us"
-              (median-absolute-deviation
-               latencies center)
-              "max_us" (reduce #'max latencies)
-              "median_bytes" (median allocations)
-              "median_us" center
-              "nursery_bytes" *continuous-nursery-bytes*
-              "p95_us" (percentile latencies 0.95d0)
-              "p99_us" (percentile latencies 0.99d0)
-              "samples_bytes" (json-array allocations)
-              "samples_us" (json-array latencies)
-              "total_bytes" (reduce #'+ allocations))))
+              :mad-us
+              (median-absolute-deviation latencies center)
+              :max-us (reduce #'max latencies)
+              :median-bytes (median allocations)
+              :median-us center
+              :p95-us (percentile latencies 0.95d0)
+              :p99-us (percentile latencies 0.99d0)
+              :samples-bytes allocations
+              :samples-us latencies
+              :total-bytes (reduce #'+ allocations)
+              :rendered-frame-count (length latencies)
+              :initial-viewport-top initial-viewport-top
+              :final-viewport-top
+              (cadr-tui:renderer-viewport-top renderer)
+              :final-selection-active
+              (not
+               (null
+                (cadr-tui::terminal-renderer-selection-anchor
+                 renderer))))))
       (setf
        (sb-ext:bytes-consed-between-gcs)
        nursery-before))))
+
+(defun continuous-run-json (run gc-mode)
+  (json-object
+   "event_count" (getf run :event-count)
+   "event_trace_counts"
+   (continuous-event-trace-counts-json)
+   "event_trace_sha256" (continuous-event-trace-sha256)
+   "final_selection_active" (getf run :final-selection-active)
+   "final_viewport_top" (getf run :final-viewport-top)
+   "gc_affected_event_count"
+   (getf run :gc-affected-event-count)
+   "gc_affected_max_us" (getf run :gc-affected-max-us)
+   "gc_affected_samples_us"
+   (json-array (getf run :gc-affected-samples-us))
+   "gc_cpu_us" (getf run :gc-cpu-us)
+   "gc_mode" gc-mode
+   "initial_viewport_top" (getf run :initial-viewport-top)
+   "mad_us" (getf run :mad-us)
+   "max_us" (getf run :max-us)
+   "median_bytes" (getf run :median-bytes)
+   "median_us" (getf run :median-us)
+   "p95_us" (getf run :p95-us)
+   "p99_us" (getf run :p99-us)
+   "rendered_frame_count" (getf run :rendered-frame-count)
+   "renderer_mode" "synchronous-requested-frame"
+   "samples_bytes" (json-array (getf run :samples-bytes))
+   "samples_us" (json-array (getf run :samples-us))
+   "scheduler_mode" "production-request-immediate-flush"
+   "terminal_sink" "count-only"
+   "total_bytes" (getf run :total-bytes)))
+
+(defun continuous-alt-input-json ()
+  (let ((run
+          (continuous-alt-input-run
+           :nursery-bytes *continuous-nursery-bytes*)))
+    (let ((result
+            (continuous-run-json run "forced-8mib-nursery")))
+      (setf (gethash "nursery_bytes" result)
+            *continuous-nursery-bytes*)
+      result)))
+
+(defun paired-continuous-alt-input-json ()
+  (let* ((runs
+           (loop repeat *paired-continuous-runs*
+                 collect (continuous-alt-input-run)))
+         (result
+           (json-object
+            "event_count" *continuous-event-count*
+            "event_trace_counts"
+            (continuous-event-trace-counts-json)
+            "event_trace_sha256" (continuous-event-trace-sha256)
+            "final_selection_active"
+            (every
+             (lambda (run)
+               (getf run :final-selection-active))
+             runs)
+            "gc_mode" "runtime-default"
+            "max_us"
+            (reduce #'max runs :key
+                    (lambda (run) (getf run :max-us)))
+            "median_bytes"
+            (median
+             (mapcar
+              (lambda (run) (getf run :median-bytes))
+              runs))
+            "rendered_frame_count" *continuous-event-count*
+            "renderer_mode" "synchronous-requested-frame"
+            "runs"
+            (json-array
+             (mapcar
+              (lambda (run)
+                (continuous-run-json run "runtime-default"))
+              runs))
+            "scheduler_mode" "production-request-immediate-flush"
+            "terminal_sink" "count-only")))
+    (dolist (field '((:median-us . "median")
+                     (:p95-us . "p95")
+                     (:p99-us . "p99")))
+      (let* ((values
+               (mapcar
+                (lambda (run) (getf run (car field)))
+                runs))
+             (center (median values))
+             (name (cdr field)))
+        (setf
+         (gethash (format nil "~A_us" name) result) center
+         (gethash (format nil "~A_run_mad_us" name) result)
+         (median-absolute-deviation values center))))
+    result))
 
 (defun append-statistics (count)
   (collect-statistics
@@ -844,12 +1001,15 @@
       (metric-json *entry-counts* wheel-results))
      "continuous_alt_input"
      (continuous-alt-input-json)
+     "paired_continuous_alt_input"
+     (paired-continuous-alt-input-json)
      "memory" (memory-json)
      "parameters"
      (json-object
       "height" 40
       "samples" *samples*
       "continuous_events" *continuous-event-count*
+      "paired_fresh_fixture_per_run" t
       "continuous_nursery_bytes"
       *continuous-nursery-bytes*
       "warmups" *warmups*
