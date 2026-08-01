@@ -122,6 +122,27 @@
    #:newer-release
    #:valid-thinking-level-p
    #:thinking-theme-color-name
+   #:format-key-text
+   #:key-text
+   #:key-display-text
+   #:key-hint
+   #:raw-key-hint
+   #:dynamic-border-component
+   #:make-dynamic-border-component
+   #:bordered-loader-component
+   #:make-bordered-loader-component
+   #:bordered-loader-set-on-abort
+   #:bordered-loader-signal
+   #:countdown-timer
+   #:make-countdown-timer
+   #:countdown-timer-tick
+   #:armin-component
+   #:make-armin-component
+   #:armin-component-tick
+   #:daxnuts-component
+   #:make-daxnuts-component
+   #:daxnuts-component-tick
+   #:make-earendil-announcement-component
    #:build-system-prompt
    #:native-image-save-arguments
    #:active-agent
