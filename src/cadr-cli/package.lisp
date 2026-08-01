@@ -124,6 +124,7 @@
    #:thinking-theme-color-name
    #:build-system-prompt
    #:native-image-save-arguments
+   #:active-agent
    #:executable-main
    #:main))
 

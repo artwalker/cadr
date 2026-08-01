@@ -18,6 +18,8 @@
    (truename
     (build-path (format nil "~A.asd" system)))))
 
+(let ((*debug-io* (make-broadcast-stream)))
+  (asdf:load-system "slynk/mrepl"))
 (asdf:load-system "cadr-cli")
 
 (unless (member :sb-core-compression *features*)

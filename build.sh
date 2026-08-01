@@ -19,15 +19,20 @@ if [ "$SBCL_MAJOR" -lt 2 ] ||
   exit 1
 fi
 
-QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
-if [ ! -f "$QUICKLISP_SETUP" ]; then
-  echo "cadr build: Quicklisp setup not found at $QUICKLISP_SETUP." >&2
+QUICKLISP_SETUP_SOURCE="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
+if [ ! -f "$QUICKLISP_SETUP_SOURCE" ]; then
+  echo "cadr build: Quicklisp setup not found at $QUICKLISP_SETUP_SOURCE." >&2
   exit 1
 fi
+QUICKLISP_SETUP_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$QUICKLISP_SETUP_SOURCE")" && pwd)"
+QUICKLISP_SETUP="$QUICKLISP_SETUP_DIRECTORY/$(basename -- "$QUICKLISP_SETUP_SOURCE")"
 export QUICKLISP_SETUP
 
 SCRIPT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 "$SCRIPT_DIRECTORY/scripts/test-cl.sh"
 
-exec "$SBCL_COMMAND" --noinform --disable-debugger \
+BUILD_HOME="$(mktemp -d /tmp/cadr-build-home.XXXXXX)"
+trap 'rm -rf -- "$BUILD_HOME"' EXIT
+
+HOME="$BUILD_HOME" "$SBCL_COMMAND" --noinform --disable-debugger \
   --script "$SCRIPT_DIRECTORY/build.lisp"

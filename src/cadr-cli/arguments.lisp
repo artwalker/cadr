@@ -14,6 +14,7 @@
   thinking
   mode
   name
+  slynk-port
   (print-p nil :type boolean)
   (messages nil :type list)
   (file-arguments nil :type list)
@@ -64,6 +65,7 @@
     ("--mode" . :mode)
     ("--name" . :name)
     ("-n" . :name)
+    ("--slynk" . :slynk)
     ("--session" . :session)
     ("--session-id" . :session-id)
     ("--fork" . :fork)
@@ -184,6 +186,27 @@
             "--mode must be text, json, or rpc"))))
     (:name
      (setf (cli-arguments-name arguments) value))
+    (:slynk
+     (if
+         (and
+          (plusp (length value))
+          (every
+           (lambda (character)
+             (digit-char-p character 10))
+           value))
+         (let ((port (parse-integer value :radix 10)))
+           (if (<= 1 port 65535)
+               (setf
+                (cli-arguments-slynk-port arguments)
+                port)
+               (error
+                'cadr-ai:configuration-error
+                :message
+                "--slynk must be a decimal port in the range 1..65535")))
+         (error
+          'cadr-ai:configuration-error
+          :message
+          "--slynk must be a decimal port in the range 1..65535")))
     (:session
      (setf (cli-arguments-session arguments) value))
     (:session-id
@@ -474,6 +497,7 @@
          "  -r, --resume                       Resume via selector (or exact id)"
          "      --mode <mode>                  text|json|rpc"
          "  -n, --name <name>                  Session name"
+         "      --slynk <port>                 Enable loopback Slynk REPL"
          "      --no-session                   Disable persistence"
          "      --session <path>               Session JSONL path"
          "      --session-id <id>              Explicit session id"

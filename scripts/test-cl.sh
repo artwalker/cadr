@@ -2,10 +2,21 @@
 set -eu
 
 SBCL_COMMAND="${SBCL:-sbcl}"
-QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
+QUICKLISP_SETUP_SOURCE="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 
-exec "$SBCL_COMMAND" --noinform --non-interactive \
+if [ ! -f "$QUICKLISP_SETUP_SOURCE" ]; then
+  echo "cadr test: Quicklisp setup not found at $QUICKLISP_SETUP_SOURCE." >&2
+  exit 1
+fi
+
+QUICKLISP_SETUP_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$QUICKLISP_SETUP_SOURCE")" && pwd)"
+QUICKLISP_SETUP="$QUICKLISP_SETUP_DIRECTORY/$(basename -- "$QUICKLISP_SETUP_SOURCE")"
+export QUICKLISP_SETUP
+TEST_HOME="$(mktemp -d /tmp/cadr-test-home.XXXXXX)"
+trap 'rm -rf -- "$TEST_HOME"' EXIT
+
+HOME="$TEST_HOME" "$SBCL_COMMAND" --noinform --non-interactive \
   --load "$QUICKLISP_SETUP" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-ai.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-agent.asd\"))" \

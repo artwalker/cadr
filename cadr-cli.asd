@@ -59,6 +59,7 @@
                                  (:file "mode")))))
                              (:file "repl")
                              (:file "tui")
+                             (:file "remote-repl")
                              (:file "main")
                              (:file "build-support"))))
   :in-order-to ((test-op (test-op "cadr-cli/tests"))))
@@ -67,6 +68,7 @@
   :description "Tests for cadr-cli"
   :depends-on ("fiveam"
                "cadr-cli"
+               "slynk/mrepl"
                "cadr-live-test-support")
   :serial t
   :components ((:module "test/cadr-cli"
@@ -90,6 +92,7 @@
                              (:file "modes-test")
                              (:file "rpc-test")
                              (:file "repl-test")
+                             (:file "remote-repl-test")
                              (:file "session-command-test")
                              (:file "extensions-test")
                              (:file "llama-extension-test")

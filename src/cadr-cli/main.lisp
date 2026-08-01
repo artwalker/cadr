@@ -3520,10 +3520,14 @@
                 "The agent has no persistent session"))
              (cadr-agent:session-set-label
               session entry-id label))))
-      (call-with-cli-signal-handlers
+      (call-with-remote-repl
        agent
+       (cli-arguments-slynk-port command)
        (lambda ()
-         (case mode
+         (call-with-cli-signal-handlers
+          agent
+          (lambda ()
+            (case mode
            (:tui
             (multiple-value-bind
                   (file-text file-images)
@@ -3927,12 +3931,12 @@
                 (run-print-mode
                  agent initial messages
                  :mode mode))))
-           (:rpc
-            (run-rpc-mode
-             agent extension-manager
-             :input *standard-input*
-             :output *standard-output*
-             :error-output *error-output*))))))))
+              (:rpc
+               (run-rpc-mode
+                agent extension-manager
+                :input *standard-input*
+                :output *standard-output*
+                :error-output *error-output*))))))))))
 
 (defun main (&optional
                (argv
