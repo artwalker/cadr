@@ -99,6 +99,7 @@
                              (:file "goal9-b3-overlay-contract-test")
                              (:file "goal9-a2-interactive-test")
                              (:file "goal9-a2-workflows-test")
+                             (:file "goal9-a2-process-faux-test")
                              (:file "migration-test")
                              (:file "data-migration-test")
                              (:file "build-test")

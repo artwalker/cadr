@@ -19,6 +19,7 @@ CURSOR_HIDE = ESC + b"[?25l"
 CURSOR_SHOW = ESC + b"[?25h"
 READY = b"GOAL9_A2_READY"
 RESUMED = b"GOAL9_A2_RESUMED"
+FRAME_SEPARATOR = b"\x1e"
 
 
 class GateFailure(RuntimeError):
@@ -181,6 +182,30 @@ def assert_sequence_contract(transcript, cycles):
                 f"terminal sequence cycle {cycle + 1} is out of order"
             )
         offset = off + len(BRACKETED_PASTE_OFF)
+
+
+def assert_interaction_sequence_contract(transcript):
+    for sequence in (
+        BRACKETED_PASTE_ON,
+        BRACKETED_PASTE_OFF,
+        CURSOR_SHOW,
+    ):
+        actual = transcript.count(sequence)
+        if actual != 1:
+            raise GateFailure(
+                f"{sequence!r}: expected 1, observed {actual}"
+            )
+    if transcript.count(CURSOR_HIDE) < 1:
+        raise GateFailure("interactive renderer never hid the cursor")
+    on = transcript.find(BRACKETED_PASTE_ON)
+    first_hide = transcript.find(CURSOR_HIDE)
+    last_hide = transcript.rfind(CURSOR_HIDE)
+    show = transcript.find(CURSOR_SHOW)
+    off = transcript.find(BRACKETED_PASTE_OFF)
+    if not (on < first_hide <= last_hide < show < off):
+        raise GateFailure(
+            "interactive terminal start/render/stop sequences are out of order"
+        )
 
 
 def child_command(project, sbcl, quicklisp):
@@ -417,6 +442,131 @@ def run_scenario(name, input_bytes, project, sbcl, quicklisp):
             os.close(slave_fd)
 
 
+def run_contract_scenario(
+    name, frames, markers, project, sbcl, quicklisp
+):
+    master_fd, slave_fd = os.openpty()
+    process = None
+    child_pid = None
+    transcript = bytearray()
+    with tempfile.TemporaryDirectory(
+        prefix="cadr-goal9-a2-contract-"
+    ) as temporary:
+        state_path = os.path.join(temporary, "supervisor.state")
+        fixture_root = os.path.join(temporary, "fixture")
+        os.makedirs(os.path.join(fixture_root, "src"))
+        with open(
+            os.path.join(fixture_root, "notes.md"),
+            "w",
+            encoding="utf-8",
+        ) as stream:
+            stream.write("notes")
+        with open(
+            os.path.join(fixture_root, "src", "main.lisp"),
+            "w",
+            encoding="utf-8",
+        ) as stream:
+            stream.write("(in-package #:goal9-a2)")
+        try:
+            before_stty = stty_token(slave_fd)
+            if not echo_enabled(slave_fd):
+                raise GateFailure("PTY baseline unexpectedly has ECHO disabled")
+            env = os.environ.copy()
+            env.update(
+                {
+                    "COLUMNS": "80",
+                    "LINES": "24",
+                    "TERM": "xterm-256color",
+                    "LC_ALL": env.get("LC_ALL", "C.UTF-8"),
+                    "GOAL9_A2_PTY_SCENARIO": name,
+                    "GOAL9_A2_PTY_FIXTURE_ROOT": fixture_root,
+                }
+            )
+            for variable in (
+                "KITTY_WINDOW_ID",
+                "ITERM_SESSION_ID",
+                "TMUX",
+                "TERM_PROGRAM",
+            ):
+                env.pop(variable, None)
+
+            def establish_controlling_terminal():
+                os.setsid()
+                fcntl.ioctl(0, termios.TIOCSCTTY, 0)
+
+            application_command = child_command(
+                project, sbcl, quicklisp
+            )
+            process = subprocess.Popen(
+                [
+                    sys.executable,
+                    os.path.abspath(__file__),
+                    "--supervise",
+                    state_path,
+                    "--",
+                    *application_command,
+                ],
+                stdin=slave_fd,
+                stdout=slave_fd,
+                stderr=slave_fd,
+                env=env,
+                close_fds=True,
+                preexec_fn=establish_controlling_terminal,
+            )
+            child_pid = wait_for_child_pid(state_path, 5)
+            prefix = name.upper().replace("-", "_")
+            read_until(
+                master_fd,
+                transcript,
+                f"GOAL9_A2_{prefix}_READY".encode(),
+                45,
+                process,
+            )
+            assert_runtime_is_raw(
+                slave_fd, before_stty, f"{name} running"
+            )
+            for frame, marker in zip(frames, markers, strict=True):
+                os.write(master_fd, frame + FRAME_SEPARATOR)
+                read_until(
+                    master_fd,
+                    transcript,
+                    marker.encode(),
+                    10,
+                    process,
+                )
+            status = wait_for_exit(process, 10)
+            read_available(master_fd, transcript)
+            if status != 0:
+                raise GateFailure(f"process exited {status}")
+            exit_marker = f"GOAL9_A2_{prefix}_EXIT:OK".encode()
+            if exit_marker not in transcript:
+                raise GateFailure(f"missing {exit_marker!r}")
+            assert_terminal_restored(
+                slave_fd, before_stty, f"{name} exit"
+            )
+            assert_interaction_sequence_contract(transcript)
+            print(
+                f"{name}: PASS real-pty raw-input snapshots="
+                f"{len(markers)} terminal-restored"
+            )
+        except BaseException as error:
+            if child_pid is not None:
+                try:
+                    os.kill(child_pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+            if process is not None and process.poll() is None:
+                process.kill()
+                process.wait()
+            raise GateFailure(
+                f"{name}: {error}\n--- transcript tail ---\n"
+                f"{transcript_tail(transcript)}"
+            ) from error
+        finally:
+            os.close(master_fd)
+            os.close(slave_fd)
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--project", required=True)
@@ -437,7 +587,62 @@ def main():
             arguments.sbcl,
             arguments.quicklisp,
         )
-    print("goal9 A2 PTY lifecycle: 3/3 passed")
+    contract_cases = (
+        (
+            "input-editor",
+            (
+                b"alpha beta\x1b[13;2u"
+                + "中文👩‍💻 omega".encode("utf-8"),
+                b"\x1b[1;5D",
+                b"\x1b[1;5C",
+                b"\x17",
+                b"\x19",
+                b"\x1f",
+            ),
+            tuple(
+                f"GOAL9_A2_INPUT_EDITOR_SNAPSHOT_{index}_OK"
+                for index in range(1, 7)
+            ),
+        ),
+        (
+            "completion",
+            (
+                b"./no",
+                b"\x09",
+                b"\x1f",
+                b"\x01\x0b/",
+                b"m\x1b",
+            ),
+            tuple(
+                f"GOAL9_A2_COMPLETION_SNAPSHOT_{index}_OK"
+                for index in range(1, 6)
+            ),
+        ),
+        (
+            "overlay",
+            (
+                b"\x1b[A",
+                b"\x1b[B",
+                b"ga",
+                b"\x7f\x7f",
+                b"\x1b",
+            ),
+            tuple(
+                f"GOAL9_A2_OVERLAY_SNAPSHOT_{index}_OK"
+                for index in range(1, 6)
+            ),
+        ),
+    )
+    for name, frames, markers in contract_cases:
+        run_contract_scenario(
+            name,
+            frames,
+            markers,
+            arguments.project,
+            arguments.sbcl,
+            arguments.quicklisp,
+        )
+    print("goal9 A2 PTY deterministic gates: 6/6 passed")
 
 
 if __name__ == "__main__":
@@ -450,7 +655,7 @@ if __name__ == "__main__":
             main()
         except GateFailure as error:
             print(
-                f"goal9 A2 PTY lifecycle: FAIL: {error}",
+                f"goal9 A2 PTY deterministic gates: FAIL: {error}",
                 file=sys.stderr,
             )
             raise SystemExit(1)
