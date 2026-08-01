@@ -3,8 +3,10 @@
 ## 〇、定位与总规则
 
 > **2026-08-01 执行顺序裁决**：Part A 验收通过后，顺序调整为
-> `C → B（等待 v0.84.0）→ D → E`。Part C 对 Part B 零依赖；“B 必须先于 D”
-> 仍然有效。Part C 完成时若 `v0.84.0` 尚未发布，必须暂停报告，不得改锁 HEAD。
+> `C → B（等待 v0.84.0）→ D → E`。Part C 对 Part B 零依赖。用户随后
+> 明确：Part D 的书面提案可在等待 `v0.84.0` 时先行；“B 必须先于 D”
+> 只约束 Part D 实现，避免 parity 账本混入旧基线。Part C 完成时若
+> `v0.84.0` 尚未发布，Part B 保持暂挂，不得改锁 HEAD。
 > Part B 的 bearer-token SHA-256、定长比较与 socket suffix 最小实现面已按
 > `docs/proposals/goal-v10-part-b-baseline.md` 第 0 节预授权；新增密码学依赖或
 > 超出批准文件面仍须 blocked。
