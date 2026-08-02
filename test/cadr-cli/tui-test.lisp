@@ -1185,7 +1185,7 @@
         (list
          "bash"
          (args "command" "printf ok" "timeout" 7)
-         "printf ok")
+         "printf ok (timeout 7s)")
         (list
          "read"
          (args "path" "README.md" "offset" 2
@@ -1352,10 +1352,10 @@
            :arguments
            (args "command" "sleep 1" "timeout" 7))))
     (is (string=
-         "sleep 1"
+         "sleep 1 (timeout 7s)"
          (cadr-cli::tool-arguments-summary call)))))
 
-(test goal9-b3-explicit-bash-timeout-never-appears-in-title
+(test goal13-explicit-bash-timeout-appears-only-when-model-supplies-it
   (let* ((state (cadr-cli::make-tui-state))
          (call
            (cadr-ai:make-tool-call
@@ -1376,11 +1376,67 @@
                      (mapcar
                       #'cadr-tui:strip-terminal-sequences
                       (cadr-tui:render-tool-block block 60)))))
-      (is (string= "sleep 1"
+      (is (string= "sleep 1 (timeout 10s)"
                    (cadr-tui:tool-block-summary block)))
       (is (search "$ sleep 1" rendered))
-      (is (null (search " (timeout 10s)" rendered)))
-      (is (null (search "timeout" rendered))))))
+      (is (search " (timeout 10s)" rendered)))))
+
+(test goal13-tool-title-colors-path-shortening-and-read-range-match-baseline
+  (let* ((home
+           (string-right-trim
+            "/" (namestring (user-homedir-pathname))))
+         (path (format nil "~A/projects/cadr/README.md" home))
+         (read-call
+           (cadr-ai:make-tool-call
+            :id "read-colors" :name "read"
+            :arguments
+            (args "path" path "offset" 2 "limit" 3)))
+         (read-summary
+           (cadr-cli::tool-arguments-summary read-call))
+         (read-block
+           (cadr-tui:make-tool-block
+            :name "read" :summary read-summary))
+         (read-header
+           (find-if
+            (lambda (line)
+              (search "README.md"
+                      (cadr-tui:strip-terminal-sequences line)))
+            (cadr-tui:render-tool-block
+             read-block 80 :ansi-theme-p t)))
+         (bash-block
+           (cadr-tui:make-tool-block
+            :name "bash"
+            :summary "sleep 1 (timeout 10s)"))
+         (bash-header
+           (find-if
+            (lambda (line)
+              (search "sleep 1"
+                      (cadr-tui:strip-terminal-sequences line)))
+            (cadr-tui:render-tool-block
+             bash-block 80 :ansi-theme-p t))))
+    (is (string= "~/projects/cadr/README.md:2-4" read-summary))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :accent "~/projects/cadr/README.md" :enabled-p t)
+      read-header))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :warning ":2-4" :enabled-p t)
+      read-header))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :tool-title
+       (cadr-tui:theme-bold "sleep 1" :enabled-p t)
+       :enabled-p t)
+      bash-header))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :muted " (timeout 10s)" :enabled-p t)
+      bash-header))))
 
 (test goal9-b3-bash-failure-tool-frame-is-an-exact-baseline-snapshot
   (let* ((block

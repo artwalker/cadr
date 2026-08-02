@@ -121,6 +121,7 @@
    #:crop-kitty-image-line
    #:render-terminal-image
    #:terminal-hyperlink
+   #:shortened-home-path
    #:image-fallback
    #:resolve-overlay-layout
    #:composite-overlay-line

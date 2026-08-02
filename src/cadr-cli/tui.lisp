@@ -1387,15 +1387,20 @@
                  ""))))
       (cond
         ((string-equal name "bash")
-         (safe-tool-summary-value
-          (value "command")
-          "[invalid command]"))
+         (let ((command
+                 (safe-tool-summary-value
+                  (value "command")
+                  "[invalid command]"))
+               (timeout (value "timeout")))
+           (if (numberp timeout)
+               (format nil "~A (timeout ~As)" command timeout)
+               command)))
         ((string-equal name "read")
          (let ((offset (value "offset"))
                (limit (value "limit")))
            (format
             nil "~A~A"
-            (path)
+            (cadr-tui:shortened-home-path (path))
             (if (or (numberp offset)
                     (numberp limit))
                 (let* ((start
@@ -1410,15 +1415,16 @@
                 ""))))
         ((or (string-equal name "write")
              (string-equal name "edit"))
-         (path))
+         (cadr-tui:shortened-home-path (path)))
         ((string-equal name "grep")
          (let ((pattern
                  (safe-tool-summary-value
                   (value "pattern")
                   "[invalid pattern]"))
                (base
-                 (safe-tool-summary-value
-                  (or (value "path") ".") "."))
+                 (cadr-tui:shortened-home-path
+                  (safe-tool-summary-value
+                   (or (value "path") ".") ".")))
                (glob (value "glob")))
            (format
             nil "/~A/ in ~A~A~A"
@@ -1435,14 +1441,16 @@
           (safe-tool-summary-value
            (value "pattern")
            "[invalid pattern]")
-          (safe-tool-summary-value
-           (or (value "path") ".") ".")
+          (cadr-tui:shortened-home-path
+           (safe-tool-summary-value
+            (or (value "path") ".") "."))
           (limit-suffix " (limit ~A)")))
         ((string-equal name "ls")
          (format
           nil "~A~A"
-          (safe-tool-summary-value
-           (or (value "path") ".") ".")
+          (cadr-tui:shortened-home-path
+           (safe-tool-summary-value
+            (or (value "path") ".") "."))
           (limit-suffix " (limit ~A)")))
         (t
          (generic-tool-arguments-summary

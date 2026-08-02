@@ -1592,11 +1592,46 @@
                :enabled-p ansi-theme-p)
               (let ((summary
                       (tool-block-summary block)))
-                (and
-                 (plusp (length summary))
-                 (theme-foreground
-                  :accent summary
-                  :enabled-p ansi-theme-p)))))
+                (when (plusp (length summary))
+                  (labels
+                      ((colored-parts
+                           (suffix-regex main-token suffix-token
+                            &key bold-main-p)
+                         (multiple-value-bind (start end)
+                             (cl-ppcre:scan suffix-regex summary)
+                           (declare (ignore end))
+                           (let* ((split (or start (length summary)))
+                                  (main (subseq summary 0 split))
+                                  (suffix (subseq summary split)))
+                             (concatenate
+                              'string
+                              (theme-foreground
+                               main-token
+                               (if bold-main-p
+                                   (theme-bold
+                                    main :enabled-p ansi-theme-p)
+                                   main)
+                               :enabled-p ansi-theme-p)
+                              (if (plusp (length suffix))
+                                  (theme-foreground
+                                   suffix-token suffix
+                                   :enabled-p ansi-theme-p)
+                                  ""))))))
+                    (cond
+                      ((string-equal
+                        (tool-block-name block) "bash")
+                       (colored-parts
+                        " \\(timeout [0-9]+(?:\\.[0-9]+)?s\\)$"
+                        :tool-title :muted :bold-main-p t))
+                      ((string-equal
+                        (tool-block-name block) "read")
+                       (colored-parts
+                        ":[0-9]+(?:-[0-9]+)?$"
+                        :accent :warning))
+                      (t
+                       (theme-foreground
+                        :accent summary
+                        :enabled-p ansi-theme-p))))))))
            (header-lines
              (wrap-logical-line
               header content-width))
