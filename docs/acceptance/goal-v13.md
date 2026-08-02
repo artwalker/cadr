@@ -466,7 +466,7 @@ The delivered root binary is newer than both the last source commit and source
 mtime:
 
 ```text
-binary build time: 2026-08-02 23:10:33.873096648 +0800
+binary build time: 2026-08-02 23:42:15.103484835 +0800
 latest src commit: 7da79c376c345e2b896821de2a25a621befb79a6 2026-08-02T23:03:11+08:00
 latest source mtime: 2026-08-02 22:48:28.922337273 +0800 src/cadr-tui/renderer.lisp
 binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
