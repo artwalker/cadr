@@ -47,7 +47,13 @@
          :model-id model)
       (values provider-object
               model-object
-              #'cadr-ai:stream-chat))))
+              (lambda (resolved-provider resolved-model context on-event
+                       &rest options &key &allow-other-keys)
+                (remf options :reasoning)
+                (apply #'cadr-ai:stream-chat
+                       resolved-provider resolved-model context on-event
+                       :reasoning :max
+                       options))))))
 
 (defmacro with-live-deepseek (&body body)
   `(let ((api-key
@@ -109,7 +115,7 @@
     (assert-live-smoke-eval
      (cadr-evals:run-smoke-eval
       :provider "openai-codex"
-      :model "gpt-5.5")
+      :model "gpt-5.6-luna")
      "openai-codex")))
 
 (test live-deepseek-self-extension-write-reload-and-invoke

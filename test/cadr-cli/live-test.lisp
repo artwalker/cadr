@@ -105,7 +105,8 @@
                 (run-isolated-live-cli
                  directory
                  '("--provider" "openai-codex"
-                   "--model" "gpt-5.5"
+                   "--model" "gpt-5.6-luna"
+                   "--thinking" "max"
                    "--print"
                    "--no-session"
                    "--no-tools"
