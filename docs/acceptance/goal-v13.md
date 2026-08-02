@@ -307,3 +307,36 @@ part of that run.  No snapshot hash, fixture, event, result text, or session
 content changed.
 
 Audit commit: `b5eead3ed`.  Rewrite commit: `44003ed90`.
+
+### Part C corrective found by the Part D audit
+
+The Part D semantic-color audit found that batch 5 passed explicit
+`pageBg/cardBg/infoBg` into the three template placeholders but omitted the
+baseline's additional `--exportPageBg`, `--exportCardBg`, and `--exportInfoBg`
+declarations from `THEME_VARS` (`core/export-html/index.ts:108-127`).  This was a
+real visible HTML/CSS contract gap, not a documentation-only issue.
+
+The new regression first failed on all three missing declarations.  It now
+uses three distinct explicit values and proves both routes:
+
+- the agent exporter emits all six baseline declarations (`--export*` plus
+  `--body-bg/--container-bg/--info-bg`);
+- interactive `/export` forwards all three active-theme values through the
+  production command path.
+
+The fixed template has no `var(--info-bg)` consumer.  That is also true of the
+fixed baseline, so the gate explicitly preserves non-consumption instead of
+inventing an information-card use.  The three first-party template assets are
+now SHA-256 locked alongside Marked and Highlight.js:
+
+```text
+template.html 916782b1184a9597527605ad751e2b3af30fcea23ba2194002969cd217a06881
+template.css  28c16e3827c23a62eef8283cac316b478f946e023093adad25ff9c9b891d41af
+template.js   1893cdb77587f592eef5717905391269886d6d7a4dc6a488417a73da374d9226
+```
+
+Corrective commit: `370677dd7`.
+
+```text
+cadr test summary: systems=8 checks=11723 pass=11723 skip=0 fail=0
+```

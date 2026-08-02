@@ -80,7 +80,7 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `bashMode` | user-bash editor/execution emphasis (`bash-execution.ts:130-151`) | same user-bash emphasis (`src/cadr-tui/theme.lisp:526-534`; `src/cadr-cli/tui.lisp:790-835`) | 一致 |
 | `pageBg` | exported session page background (`core/export-html/index.ts:108-167`) | active interactive theme and explicit `pageBg` flow into the template body background (`src/cadr-cli/main.lisp:3293-3348`; `src/cadr-agent/session.lisp:2440-2534`) | 不一致（已改齐） |
 | `cardBg` | exported session card background (same baseline range) | active `cardBg`, or the baseline-derived fallback, becomes the template container background (same Cadr ranges) | 不一致（已改齐） |
-| `infoBg` | exported session information-card background (same baseline range) | active `infoBg`, or the baseline-derived fallback, becomes the template information background (same Cadr ranges) | 不一致（已改齐） |
+| `infoBg` | emitted as `--exportInfoBg` and injected as `--info-bg`; the fixed template currently has no `var(--info-bg)` consumer (`core/export-html/index.ts:108-167`; `export-html/template.css:1-5`) | same exported declarations and deliberate non-consumption in the byte-identical fixed template (`src/cadr-agent/session.lisp:2307-2405`; `src/cadr-agent/export-html/template.css:1-5`) | 不一致（已改齐） |
 
 B1 final count: `36 一致 + 19 不一致（已改齐） / 0 不一致 / 0 有意差异 = 55`.
 
