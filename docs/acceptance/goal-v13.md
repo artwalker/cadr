@@ -51,3 +51,33 @@ cadr test summary: systems=8 checks=11498 pass=11498 skip=0 fail=0
 
 Part B begins from this committed state and is audit-only: no presentation code
 will change until the complete presentation ledger is committed.
+
+## Part B — complete presentation audit
+
+Part B audited the fixed baseline against Cadr without changing presentation
+code.  The fourth ledger is `docs/presentation-parity.md`; it contains all 55
+semantic theme tokens, 52 visible-element contracts, 10 path/number formats,
+and 6 non-terminal surfaces, each with baseline and Cadr `file:line` evidence.
+
+The result is `123 = 82 一致 + 39 不一致 + 2 有意差异`.  The 39 row-level
+differences reduce to 11 implementation clusters: tool subsegment colors,
+tool path shortening/links, invalid-argument copy, read/write highlighting,
+tool-specific result colors, edit preview, compact-read titles,
+skill/branch/compaction transcript components, tree timestamps, OAuth HTML,
+and session-export presentation.
+
+The audit found two important false positives in the older ledgers.  First,
+having all syntax tokens and a Markdown highlighter did not prove that read and
+write tool previews used them.  Second, parsing `pageBg/cardBg/infoBg` did not
+prove that the real exporter consumed those values: the parser had no
+production caller.  These are exactly the class of defects this fourth axis is
+meant to expose.
+
+Part B source-diff boundary from `e04d9230f`:
+
+```text
+docs/presentation-parity.md
+docs/acceptance/goal-v13.md
+```
+
+No `src/`, `test/`, build, script, or fixture file changed during Part B.
