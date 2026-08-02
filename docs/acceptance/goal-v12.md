@@ -184,3 +184,38 @@ IDs、deferred tools、reasoning/options 与 payload 以 fixture/精确事件断
 `ai 117/30/36` 更新为 `153/30/0`，全仓更新为
 `420 已实现 / 72 有意差异 / 103 缺失`；余项精确为 99 examples、2 eval 与
 2 个用户明确暂缓的 Apple Terminal rows。
+
+## Part C4 — Eval lifecycle（2）
+
+状态：实现与回归已落账。实现提交 `797a9cbbe`；本章与账本证据提交见本节所在提交。
+
+本批补齐 `extensions.eval.ts` 与 `vitest-evals/reporter.ts`。扩展 authoring suite
+现有与基线相同的两行 harness：删去 Guidelines/文档的 baseline，以及保留完整 prompt、
+仅删 CWD 尾部的 candidate；固定 create/reload/use 输入后，原生 judge 同时检查生成源码、
+规范 `cadr-agent` 扩展 API、loader errors、已注册 `hello`、成功的
+`hello({name: "Bob"}) -> Hello, Bob!` tool result 与逐字最终响应。Lisp loader 自动把每个
+扩展放入 `(:use :cl :cadr-agent)` 的隔离 package，因此规范 API 判据是源码使用
+`define-tool`/`cadr-agent:define-tool`，而不是照搬 TypeScript import；这是实现语言带来的必然
+映射，未降低功能合同。生成的 `hello.lisp` 作为 UTF-8 Common Lisp source artifact 留存。
+
+Reporter 采用 Common Lisp structure 表达 runner case 与生命周期状态，不复制 Vitest class。
+每个 harness case 追加 schema-v1 `runs.jsonl`，artifact root 固定 `0700`、JSONL 与 session/
+source 文件固定 `0600`；metadata 排除 run ID 与内嵌 session snapshot，保留 iteration 和其他
+自定义元数据。结束阶段从 iteration artifact、score、usage、timings、errors 与 test status
+构造 observation，调用既有 summary；中断时逐字输出
+`Eval comparisons unavailable: test run interrupted.`。`eval-main --suite extension-authoring`
+把两行 suite 接入该生命周期，原有 `smoke`/`extensions` 入口保持不变。
+
+测试先红后绿：新增 reporter 文件尚不存在时 ASDF 明确失败；实现后
+`cadr-evals` 为 `150 checks / 150 pass / 0 skip / 0 fail`。门禁为
+`EXTENSION-AUTHORING-PROMPT-VARIANTS-MATCH-BASELINE-BOUNDARIES`、
+`EXTENSION-AUTHORING-HARNESS-TABLE-REGISTERS-BASELINE-AND-CANDIDATE`、
+`EXTENSION-AUTHORING-JUDGE-REQUIRES-SOURCE-API-LOADER-TOOL-AND-RESPONSE`、
+`EXTENSION-AUTHORING-HARNESS-CAPTURES-SOURCE-ERRORS-TOOLS-AND-ARTIFACT`、
+`EXTENSION-AUTHORING-SUITE-RUNS-BOTH-ROWS-THROUGH-REPORTER-LIFECYCLE`、
+`EVAL-HARNESS-REPORTER-APPENDS-PERMISSIONED-RECORDS-AND-SUMMARIZES` 与
+`EVAL-HARNESS-REPORTER-INTERRUPTED-NOTICE-IS-EXACT`。
+
+账本由 `evals 6/2/2` 更新为 `8/2/0`，全仓更新为
+`422 已实现 / 72 有意差异 / 101 缺失`。剩余项精确为 99 examples 与两个用户明确
+暂缓的 Apple Terminal rows；本批没有新依赖，也没有改变既有可观察行为。

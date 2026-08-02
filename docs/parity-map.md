@@ -323,10 +323,10 @@ It also retains two `*.eval.ts` suites:
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
 | Generic eval harness and normalized transcript/usage | 已实现 | [eval tests](../test/cadr-evals/evals-test.lisp), [pi harness tests](../test/cadr-evals/pi-harness-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
-| Artifacts, harness table and summaries | 已实现 | [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), [summary](../test/cadr-evals/summary-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| Artifacts, harness table, reporter lifecycle and summaries | 已实现 | [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), [reporter](../test/cadr-evals/reporter-test.lisp), [summary](../test/cadr-evals/summary-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
 | Explicit provider/model runner | 已实现 | [run-evals](../scripts/run-evals.sh), [CL-GOAL9-EVALS](#cl-goal9-evals) |
 | Smoke eval | 已实现 | faux unit gate plus [DeepSeek/Codex live gate](../test/cadr-evals/live-evals-test.lisp), [EVALS](#evals) |
-| Self-extension eval | 已实现 | isolated write/reload/invoke gate in [eval tests](../test/cadr-evals/evals-test.lisp), [EVALS](#evals) |
+| Self-extension eval | 已实现 | isolated write/reload/invoke gate plus baseline/candidate prompt table, native source/API/loader/tool-call judge and source-artifact reporter lifecycle in [extension authoring tests](../test/cadr-evals/extension-authoring-test.lisp), [EVALS](#evals) |
 
 ### 2.8 `protocol`
 
