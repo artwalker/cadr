@@ -219,3 +219,17 @@ source 文件固定 `0600`；metadata 排除 run ID 与内嵌 session snapshot�
 账本由 `evals 6/2/2` 更新为 `8/2/0`，全仓更新为
 `422 已实现 / 72 有意差异 / 101 缺失`。剩余项精确为 99 examples 与两个用户明确
 暂缓的 Apple Terminal rows；本批没有新依赖，也没有改变既有可观察行为。
+
+## Part C5 — Apple Terminal modifier（2，暂缓）
+
+状态：按用户裁决登记暂缓，无生产代码或测试改动。
+
+两项分别是 `native-modifiers.ts` 的原生修饰键查询，以及 `terminal.ts` 中 Apple Terminal
+识别、Shift+Enter 原生状态查询与 live input normalization 的接线。当前目标环境为
+WSL/Windows Terminal；该终端通过可观察的 CSI/modifyOtherKeys/Kitty 字节序列传递修饰键，
+不依赖 macOS Apple Terminal 丢失 Shift 身份后的原生补查。因此本 goal 不投入平台专用实现。
+
+这不是“有意差异”豁免：能力仍未实现，`source-parity` 两行继续判为 `缺失` 并计入总数，
+仅在证据栏明确标记“暂缓：目标平台不适用”。账本保持
+`422 已实现 / 72 有意差异 / 101 缺失`；后续若 Apple Terminal 成为支持目标，应另立
+平台 goal 补齐原生查询与 `ProcessTerminal` 接线。
