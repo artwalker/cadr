@@ -23,7 +23,6 @@
                              (:file "model-services")
                              (:file "media")
                              (:file "interactive-services")
-                             (:file "sdk-services")
                              (:file "truncation")
                              (:file "output-accumulator")
                              (:module "tools"
@@ -50,6 +49,7 @@
                                  (:file "provider")
                                  (:file "extension")))))
                              (:file "extensions")
+                             (:file "sdk-services")
                              (:module "modes"
                               :serial t
                               :components
@@ -65,6 +65,7 @@
                              (:file "tui")
                              (:file "remote-repl")
                              (:file "main")
+                             (:file "sdk")
                              (:file "build-support"))))
   :in-order-to ((test-op (test-op "cadr-cli/tests"))))
 
@@ -102,6 +103,7 @@
                              (:file "llama-extension-test")
                              (:file "goal12-tui-composition-test")
                              (:file "goal12-core-capabilities-test")
+                             (:file "goal12-sdk-test")
                              (:file "goal12-examples-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
