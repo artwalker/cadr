@@ -30,7 +30,8 @@ Alignment is tracked on four independent axes:
   locks performance, allocation, memory, and long-run stability budgets;
 - the **presentation** ledger,
   [`docs/presentation-parity.md`](docs/presentation-parity.md), audits visible
-  copy, semantic styling, geometry, formatting, and truncation.
+  copy, semantic styling, geometry, formatting, truncation, and every external
+  output channel, including bytes written outside the TUI lifecycle.
 
 Passing one axis never excuses failure on another. `examples/manifest.sexp` is
 an auxiliary inventory for the fixed-baseline runnable examples, not a fifth
@@ -176,6 +177,7 @@ and fullscreen action id; defaults remain `alt+enter` for follow-up and
 ./cadr --provider deepseek
 ./cadr --continue
 ./cadr --resume <session-id>
+./cadr --session <path-or-id>
 ./cadr --fork <session-id-prefix>
 ./cadr --print "Explain this repository"
 ./cadr --mode json "Explain this repository"
@@ -192,7 +194,11 @@ non-TTY input or output selects one-shot text mode.
 
 Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Interactive
 session navigation uses `/resume`, `/fork`, and `/tree`; the remaining slash
-command surface follows the original pi command list.
+command surface follows the original pi command list. `--session` accepts a
+session file or full/partial ID. After a normal interactive exit, Cadr prints
+the exact `cadr --session <id>` command after restoring the terminal; a custom
+session directory is included as `--session-dir`. Signal and emergency exits
+do not print a resume hint.
 
 `--fork` accepts a session file path or a full/partial session ID, preferring
 the current project's sessions before the global session set. It creates a new
@@ -253,6 +259,12 @@ model when the previous route had no usable auth or belonged to another
 provider, so the same session and the next plain `./cadr` invocation can
 converse without provider/model flags. Refresh is locked per provider and token
 values are redacted from transport, API, assistant, and condition output.
+While the callback listener is active, the login dialog also accepts either an
+authorization code or the complete redirect URL. Browser callback and manual
+input race; the first valid result cancels the other path. The callback page
+uses Cadr's own single-path block-C grid mark rather than pi's brand asset; its
+800×800 monochrome square-grid construction deliberately keeps the baseline's
+visual language without reusing the baseline identity.
 `/login anthropic` implements the same abstraction but has not been live
 verified because no Claude subscription account was available. Subscription
 OAuth channels may be restricted by provider terms to official clients; use
@@ -398,6 +410,9 @@ accidental name collisions; it is not a security boundary.
 - By explicit user decision, OpenAI OAuth authorization requests and Codex
   Responses requests identify this client with `originator=cadr`, rather than
   attributing Cadr traffic to the reference client's `originator=pi`.
+- OAuth success and failure pages use Cadr's own block-C grid mark instead of
+  pi's logo. This is a branding difference only; the page shell, copy, styling,
+  escaping, and HTTP framing remain aligned.
 - Deterministic and live FiveAM tests have separate entry points. This is an
   explicit organizational difference with the same CI effect as the reference:
   its credential-gated live blocks remain in Vitest but all skip in official CI

@@ -1001,8 +1001,45 @@
             "Obsolete ledger count remains: ~A" obsolete)))
     (is
      (search
-      "GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=121 pending=0 intentional=2"
+      "GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
       presentation))
+    (is
+     (search
+      "GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0"
+      presentation))
+    (let ((channels
+            (goal13-ledger-section
+             presentation
+             "## Output-channel completeness gate"
+             "## B1.")))
+      (is (= 17
+             (goal13-count-ledger-rows
+              channels "^\\| C-[0-9]+ \\|")))
+      (is (= 17
+             (goal13-count-ledger-rows
+              channels "^\\| C-[0-9]+ .*\\| 已覆盖 \\|$")))
+      (dolist
+          (required
+           '("TUI screen"
+             "stdout/stderr before TUI"
+             "stdout after TUI teardown"
+             "`--print`"
+             "`--mode json`"
+             "`--mode rpc`"
+             "session JSONL"
+             "exported session files"
+             "`auth.json`"
+             "settings, trust and installed-package"
+             "SQLite"
+             "outbound provider"
+             "OAuth loopback"
+             "Unix-socket"
+             "process exit status"
+             "server control-process"
+             "eval runner"))
+        (is (search required channels)
+            "Missing observable output channel: ~A"
+            required)))
     (let ((b1 (goal13-ledger-section
                presentation "## B1." "## B2."))
           (b2 (goal13-ledger-section

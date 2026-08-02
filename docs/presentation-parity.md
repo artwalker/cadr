@@ -1,6 +1,7 @@
 # Presentation parity ledger
 
-<!-- GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=121 pending=0 intentional=2 -->
+<!-- GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4 -->
+<!-- GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0 -->
 
 Fixed baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 Audit point: Cadr `e04d9230f` (Goal 13 Part A complete).  This ledger audits
@@ -13,7 +14,7 @@ runnable-example inventory.
 
 The `GOAL13_PRESENTATION_LEDGER` comment is the machine-readable completeness
 identity. Its B1-B4 denominators must equal `55 + 52 + 10 + 6 = 123`, and its
-dispositions must equal `121 aligned + 0 pending + 2 intentional = 123`.
+dispositions must equal `119 aligned + 0 pending + 4 intentional = 123`.
 
 Status meanings:
 
@@ -21,6 +22,42 @@ Status meanings:
   formatting rule, and truncation behavior.
 - `不一致`: an implementation difference found by this audit; Part C owns it.
 - `有意差异`: a user-approved difference which must remain documented.
+
+## Output-channel completeness gate
+
+The old audit enumerated visible elements. That set is open-ended and missed
+copy written after alternate-screen teardown. The finite audit boundary is now
+every channel by which Cadr can affect an external observer. A gate is accepted
+only when it drives the real channel; a renderer snapshot cannot stand in for
+stdout, a fixture cannot stand in for a persisted file, and a payload builder
+cannot stand in for a process exit status.
+
+| ID | Observable channel | Fixed baseline output (`file:line`) | Cadr output | Gate | Coverage |
+|---|---|---|---|---|---|
+| C-01 | TUI screen while alternate screen is active | terminal composition and lifecycle (`interactive-mode.ts:785,3785-3791,6107-6121`) | `run-tui` composes the complete document through the terminal renderer (`src/cadr-cli/tui.lisp:4166-6230`) | 13 base-screen and 15 overlay full-screen snapshots plus their independent baseline assertions | 已覆盖 |
+| C-02 | stdout/stderr before TUI startup or without TUI takeover | help/version/list/config errors and one-shot command output (`main.ts:541-648`; `cli/args.ts:239-331`) | CLI metadata, migration diagnostics and configuration failures use the process streams before `run-tui` (`src/cadr-cli/main.lisp:2428-2775`) | `GOAL9-A2-PROCESS-FAUX-*`; `test-wave2-process-modes.sh`; acceptance smoke | 已覆盖 |
+| C-03 | stdout after TUI teardown | clean interactive exit prints dim `To resume this session:` plus the exact command; signal/emergency exits do not (`interactive-mode.ts:236-249,3622-3634`) | clean normal, Ctrl+C and suspend/resume returns print `cadr --session ...` after terminal stop; custom directories add `--session-dir`; SIGTERM/SIGHUP non-local exits bypass it (`src/cadr-cli/main.lisp:3945-4331`; `src/cadr-cli/utilities.lisp:445-477`) | `GOAL13-SESSION-IDS-AND-POST-TUI-RESUME-COPY-MATCH-THE-BASELINE`; real-PTY normal/Ctrl+C/suspend-resume ordering; signal process harness | 已覆盖 |
+| C-04 | `--print` stdout/stderr | final assistant text to raw stdout and request failures to stderr (`print-mode.ts:32-151`) | print consumer emits final text only; normalized errors use stderr (`src/cadr-cli/main.lisp:49-113,4338-4376`) | `GOAL9-A2-PROCESS-FAUX-PRINT-*`; process-mode harness | 已覆盖 |
+| C-05 | `--mode json` JSONL stdout | header plus complete agent events as one JSON object per line (`print-mode.ts:101-119`) | header/events use the frozen JSON projection and one-record-per-line framing (`src/cadr-cli/main.lisp:3185-3244,4338-4376`) | Wave 2 JSON fixtures; `GOAL9-A2-PROCESS-FAUX-JSON-*` | 已覆盖 |
+| C-06 | `--mode rpc` stdin/stdout JSONL | RPC request/response/event loop (`modes/rpc/rpc-mode.ts:53-184`; `modes/rpc/jsonl.ts:1-14`) | `run-rpc-mode` owns framed commands, responses and events (`src/cadr-cli/modes/rpc/mode.lisp:1-496`; `src/cadr-cli/modes/rpc/jsonl.lisp:1-60`) | RPC wire fixtures and `test-wave2-process-modes.sh` | 已覆盖 |
+| C-07 | session JSONL on disk | header and every appended/re-written entry (`session-manager.ts:979-1040,1620-1625`) | v3 header/entry envelopes and atomic migration writes (`src/cadr-agent/session.lisp:566-852,1427-1442`) | session v1/v2/v3 whole-tree round trips and migration smoke | 已覆盖 |
+| C-08 | exported session files | self-contained HTML with Base64 session data; default name derives from app/session-file basename (`core/export-html/index.ts:130-174,274-314`) | offline HTML preserves the exact session tree; default `cadr-session-<ISO>_<uuid>.html`; status reports the absolute path (`src/cadr-agent/session.lisp:2347-2555`; `src/cadr-cli/main.lisp:1331-1345,1546-1560`) | export asset/tree/theme tests and `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE` | 已覆盖 |
+| C-09 | `auth.json` | locked JSON credential store, mode 0600 and atomic replacement (`core/auth-storage.ts:46-149,188-334`) | provider-identity-preserving atomic 0600 store with refresh lock and redaction (`src/cadr-ai/auth.lisp:84-205`) | auth round-trip/permissions/refresh-race tests; deterministic login route; live credential integrity checks | 已覆盖 |
+| C-10 | settings, trust and installed-package state on disk | global/project settings plus trust/package metadata (`settings-manager.ts:200-252,610-630`; `trust-manager.ts:112-137`; `package-manager.ts:1920-1945`) | atomic global/project settings carry model, keybindings, trust and package entries (`src/cadr-cli/settings.lisp:180-469`; `src/cadr-cli/package-manager.lisp:586-665`) | settings reload/concurrency/keybinding/package-manager suites | 已覆盖 |
+| C-11 | SQLite session/server persistence | SQLite session store opens, creates, appends and forks repository records (`packages/storage/sqlite-node/src/sqlite/session-store.ts:66-271`) | standalone storage adapter and server repository persist schema-versioned rows (`src/cadr-agent/sqlite-storage.lisp:1-901`; `src/cadr-server/storage.lisp:1-120`) | `CADR-STORAGE-SUITE`; server protocol-and-storage round trip | 已覆盖 |
+| C-12 | outbound provider HTTP/WebSocket requests | provider-specific URL, headers, body and streaming transport (`packages/ai/src/api/openai-responses.ts:1-184`; `packages/ai/src/api/openai-responses-shared.ts:419-733`) | request specs feed the HTTP/SSE/WebSocket implementations without presentation rewriting (`src/cadr-ai/providers/openai.lisp:1-1130`; `src/cadr-ai/http.lisp:1-806`; `src/cadr-ai/websocket.lisp:1-586`) | complete payload fixtures, delta-boundary properties and credential-gated provider matrix | 已覆盖 |
+| C-13 | OAuth loopback HTTP response | byte-framed success/failure HTML callback page (`auth/oauth/openai-codex.ts:336-365`; `auth/oauth/oauth-page.ts:1-108`) | byte-accurate HTML with Cadr-owned grid mark and provider-specific escaped copy (`src/cadr-ai/oauth.lisp:579-813`) | OAuth HTML/framing/parser tests plus real `/login openai` | 已覆盖 |
+| C-14 | Cadr server Unix-socket responses | validated framed messages and Unix listener writes (`packages/protocol/src/codec.ts:50-158`; `packages/server/src/transports/unix/listener.ts:71-235`) | local socket supervisor returns frozen JSON protocol envelopes (`src/cadr-server/protocol.lisp:1-65`; `src/cadr-server/ipc.lisp:139-225`) | protocol suite and real multiprocess `server-smoke.sh` | 已覆盖 |
+| C-15 | process exit status | print errors, signals, package commands and fatal paths set explicit status (`print-mode.ts:34-150`; `main.ts:541-648,901-913`) | `main` returns deterministic mode status; signals map to 129/143 and build support passes it to `uiop:quit` (`src/cadr-cli/main.lisp:1562-1581,3944-4383`; `src/cadr-cli/build-support.lisp:1-13`) | process faux tests, signal PTY lifecycle and `test-wave2-process-modes.sh` | 已覆盖 |
+| C-16 | server control-process stdout/stderr | server CLI prints help/version, JSON responses, stream frames and listener state (`packages/server/src/cli.ts:13-94`; `packages/server/src/serve.ts:16-38`) | `cadr-server` prints the corresponding control responses and listener lifecycle outside its socket channel (`src/cadr-server/main.lisp:1-155`) | server suite plus real multiprocess `server-smoke.sh` | 已覆盖 |
+| C-17 | eval runner stdout/stderr and report artifacts | vitest-evals writes schema-versioned `runs.jsonl` and summaries (`packages/evals/src/vitest-evals/reporter.ts:24-61`; `summary.ts:95-177`) | `cadr-evals` emits the result envelope or normalized failure and writes matching run/artifact records (`src/cadr-evals/main.lisp:1-145`; `src/cadr-evals/reporter.lisp:125-180`; `src/cadr-evals/artifacts.lisp:78-116`) | deterministic eval suite, eval reporter/artifact round trips and credential-gated live eval entry | 已覆盖 |
+
+Completeness is machine-checked as `17 = 17 covered + 0 pending`. Direct
+extension output and package/tool subprocess output do not form extra channels:
+their user-observable bytes are deliberately projected into C-01/C-04/C-05/C-06,
+while raw implementation diagnostics are excluded by those channel gates.
+Build and test diagnostics are development-only channels and do not exist in
+the shipped `cadr`, `cadr-server`, or `cadr-evals` runtime surface.
 
 ## B1. Semantic theme-color assignment
 
@@ -201,14 +238,14 @@ B3 count after Part C selector-format batch: `6 一致 + 4 不一致（已改齐
 
 | ID | Surface | Baseline | Cadr | Status |
 |---|---|---|---|---|
-| H-01 | OAuth success HTML | complete responsive dark page, embedded mark, `<title>`/`<h1>` = `Authentication successful`, dim close message (`packages/ai/src/auth/oauth/oauth-page.ts:1-99`) | same complete shell, SVG mark, responsive viewport, title/heading and success message layout (`src/cadr-ai/oauth.lisp:550-659`) | 不一致（已改齐） |
-| H-02 | OAuth failure HTML | same shell with `Authentication failed`, escaped message and optional monospace details (`oauth-page.ts:3-17,102-108`) | same failure title/heading and optional `.details` region (`src/cadr-ai/oauth.lisp:565-665`) | 不一致（已改齐） |
+| H-01 | OAuth success HTML | complete responsive dark page, pi mark, `<title>`/`<h1>` = `Authentication successful`, dim close message (`packages/ai/src/auth/oauth/oauth-page.ts:1-99`) | the shell/copy/geometry remain aligned; the single-path white 800×800 grid mark is Cadr's block-C rather than pi's brand asset (`src/cadr-ai/oauth.lisp:579-688`) | 有意差异（Cadr 品牌标识） |
+| H-02 | OAuth failure HTML | same shell and pi mark with `Authentication failed`, escaped message and optional monospace details (`oauth-page.ts:3-17,102-108`) | same failure shell and Cadr-owned mark (`src/cadr-ai/oauth.lisp:594-694`) | 有意差异（Cadr 品牌标识） |
 | H-03 | callback-specific copy | route/state/missing-code/internal failures have distinct escaped messages (`openai-codex.ts:340-363`; `anthropic.ts:118-145`; `radius.ts:176-202`) | parser returns a typed outcome and provider-specific response copy for OpenAI, Anthropic and Radius (`src/cadr-ai/oauth.lisp:327-368,667-696,721-769`) | 不一致（已改齐） |
 | H-04 | HTML escaping | title, heading, message and details escape `&<>"'` (`oauth-page.ts:3-17`) | all four fields pass through one character-level HTML escaper before interpolation (`src/cadr-ai/oauth.lisp:553-573`) | 不一致（已改齐） |
 | H-05 | session export HTML | theme variables including `pageBg/cardBg/infoBg`, complete template/CSS/JS, Base64 session data, Marked and syntax highlighter (`core/export-html/index.ts:108-174`) | exact baseline template assets, Base64 session data, licensed vendored browser scripts, and active/default theme projection (`src/cadr-agent/session.lisp:2124-2555`; `src/cadr-cli/main.lisp:1533-1544,3293-3348`) | 不一致（已改齐） |
 | H-06 | HTTP response framing | UTF-8 HTML content type, byte-accurate content length and close (`openai-codex.ts:336-365`) | same wire-level framing and UTF-8 byte length (`src/cadr-ai/oauth.lisp:530-547`) | 一致 |
 
-B4 final count: `1 一致 + 5 不一致（已改齐） / 0 不一致 / 0 有意差异 = 6`.
+B4 final count: `1 一致 + 3 不一致（已改齐） / 0 不一致 / 2 有意差异 = 6`.
 
 ## Audit summary and Part C worklist
 
@@ -217,8 +254,8 @@ B4 final count: `1 一致 + 5 不一致（已改齐） / 0 不一致 / 0 有意�
 | B1 semantic colors | 55 | 0 | 0 | 55 |
 | B2 visible elements | 50 | 0 | 2 | 52 |
 | B3 paths/numbers | 10 | 0 | 0 | 10 |
-| B4 non-terminal content | 6 | 0 | 0 | 6 |
-| **Total** | **121** | **0** | **2** | **123** |
+| B4 non-terminal content | 4 | 0 | 2 | 6 |
+| **Total** | **119** | **0** | **4** | **123** |
 
 The 39 row-level mismatches collapse to these implementation clusters; one fix
 may close multiple B1/B2/B3 rows, but no row may be silently dropped:
@@ -236,9 +273,10 @@ may close multiple B1/B2/B3 rows, but no row may be silently dropped:
 11. session-export theme/template presentation.
 
 Part B changed no presentation source.  Part C must update each affected row to
-`不一致（已改齐）` with implementation and regression evidence.  The two
-intentional differences remain frozen: product branding and user-approved
-universal selector wrapping.
+`不一致（已改齐）` with implementation and regression evidence. The four
+row-level intentional dispositions remain frozen: product branding on the
+startup and both OAuth result surfaces, plus user-approved universal selector
+wrapping.
 
 All eleven implementation clusters are closed.  The final presentation ledger
-is `123 = 121 aligned/closed + 0 open + 2 intentional`.
+is `123 = 119 aligned/closed + 0 open + 4 intentional`.
