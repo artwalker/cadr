@@ -29,8 +29,23 @@ R	packages/demo/src/a.ts	packages/demo/src/b.ts	rename and re-audit the row
 Blank decisions, missing drift rows, stale rows, malformed records, unknown refs,
 or a missing disposition file fail closed. `scripts/test-source-parity-drift.sh`
 proves added/deleted/renamed detection, `*.test.ts` exclusion, the unresolved
-failure, and the complete-disposition success path. `scripts/verify.sh` runs that
-self-test before building.
+failure, and the complete-disposition success path.
+
+The fixed ledger itself is a separate real-input gate:
+
+```sh
+./scripts/check-source-parity-drift.sh \
+  --ledger-only --dispositions docs/source-parity.md
+```
+
+This mode enters only the six-column package tables headed by `Baseline file`,
+ignores prose and summary tables, accepts exactly the three ledger verdicts,
+and fails on malformed separators/rows, duplicates, a row count different from
+the Summary total, or a sorted-path SHA-256 different from the recorded manifest.
+It is explicit because CI's shallow checkout does not contain the detached
+TypeScript baseline object. A normal `--repo/--from/--to` invocation retains the
+stronger tree-versus-ledger path-set comparison. `scripts/verify.sh` runs both the
+synthetic A/D/R self-test and this real `docs/source-parity.md` gate before build.
 
 After every row has a human-authored disposition, update the fixed baseline and
 counts together in `docs/source-parity.md`, `docs/parity-map.md`,

@@ -121,6 +121,12 @@ run_goal11_gate() {
   )
 }
 
+run_source_parity_ledger_gate() {
+  local ledger="$PROJECT_DIRECTORY/docs/source-parity.md"
+  "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
+    --ledger-only --dispositions "$ledger"
+}
+
 print_summary() {
   local index
   printf '\nDeterministic stages\n'
@@ -140,7 +146,7 @@ print_summary() {
   done
 }
 
-for command in "$SBCL_COMMAND" python3 tmux script stty jq tar; do
+for command in "$SBCL_COMMAND" python3 tmux script stty jq tar sha256sum; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "verify: required command not found: $command" >&2
     exit 2
@@ -173,10 +179,17 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "real source parity ledger" \
+    run_source_parity_ledger_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic "real source parity ledger" "source drift self-test failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "deterministic FiveAM" \
     "$PROJECT_DIRECTORY/scripts/test-cl.sh" || DETERMINISTIC_READY=0
 else
-  skip_deterministic "deterministic FiveAM" "source drift prerequisite failed"
+  skip_deterministic "deterministic FiveAM" "source parity ledger prerequisite failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ] && copy_isolated_tree; then
