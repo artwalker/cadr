@@ -118,6 +118,48 @@
       (is (equal '(:first-start :first-end :second)
                  (nreverse order))))))
 
+(test goal12-cli-file-mutation-and-truncation-are-shared-with-agent
+  (with-test-directory (directory)
+    (let ((file (merge-pathnames "shared.txt" directory)))
+      (write-text file "seed")
+      (is (eq (cadr-cli::file-mutation-lock file)
+              (cadr-agent::file-mutation-queue-lock file)))))
+  (dolist (text
+           (list ""
+                 "alpha"
+                 (format nil "alpha~%beta~%")
+                 (format nil "éé~%abc")
+                 "aé🙂b"))
+    (dolist (maximum '(0 1 3 4 5 100))
+      (multiple-value-bind (cli-content cli-details)
+          (cadr-cli::truncate-head
+           text :max-lines 3 :max-bytes maximum)
+        (let ((shared
+                (cadr-agent::truncate-head
+                 text :max-lines 3 :max-bytes maximum)))
+          (is (string=
+               cli-content
+               (cadr-agent::truncation-result-content shared)))
+          (is (eql
+               (getf cli-details :truncated)
+               (cadr-agent::truncation-result-truncated-p shared)))))
+      (multiple-value-bind (cli-content cli-details)
+          (cadr-cli::truncate-tail
+           text :max-lines 3 :max-bytes maximum)
+        (let ((shared
+                (cadr-agent::truncate-tail
+                 text :max-lines 3 :max-bytes maximum)))
+          (is (string=
+               cli-content
+               (cadr-agent::truncation-result-content shared)))
+          (is (eql
+               (getf cli-details :truncated)
+               (cadr-agent::truncation-result-truncated-p shared)))))))
+  (multiple-value-bind (text truncated-p)
+      (cadr-cli::truncate-tool-line "🙂🙂x" 4)
+    (is (string= "🙂🙂... [truncated]" text))
+    (is (not (null truncated-p)))))
+
 (test path-utilities-match-baseline-edge-cases
   (with-test-directory (directory)
     (let* ((home (namestring (user-homedir-pathname)))

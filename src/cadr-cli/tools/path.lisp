@@ -230,25 +230,11 @@
 (defun boolean-property ()
   (cadr-ai::json-object "type" "boolean"))
 
-(defparameter *file-mutation-locks*
-  (make-hash-table :test #'equal))
-(defparameter *file-mutation-locks-guard*
-  (sb-thread:make-mutex :name "cadr file mutation lock registry"))
-
 (defun mutation-queue-key (path)
-  (namestring
-   (or (ignore-errors (truename path))
-       (uiop:ensure-absolute-pathname path))))
+  (cadr-agent::file-mutation-queue-key path))
 
 (defun file-mutation-lock (path)
-  (let ((key (mutation-queue-key path)))
-    (sb-thread:with-mutex (*file-mutation-locks-guard*)
-      (or (gethash key *file-mutation-locks*)
-          (setf
-           (gethash key *file-mutation-locks*)
-           (sb-thread:make-mutex
-            :name (format nil "cadr mutation ~A" key)))))))
+  (cadr-agent::file-mutation-queue-lock path))
 
 (defun with-file-mutation-queue (path function)
-  (sb-thread:with-mutex ((file-mutation-lock path))
-    (funcall function)))
+  (cadr-agent::with-file-mutation-queue path function))

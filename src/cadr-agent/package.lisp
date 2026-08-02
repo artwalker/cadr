@@ -49,6 +49,26 @@
    #:bash-execution-message-timestamp
    #:bash-execution-message-exclude-from-context-p
    #:bash-execution-to-text
+   #:+default-max-lines+
+   #:+default-max-bytes+
+   #:+grep-max-line-length+
+   #:truncation-result
+   #:truncation-result-content
+   #:truncation-result-truncated-p
+   #:truncation-result-truncated-by
+   #:truncation-result-total-lines
+   #:truncation-result-total-bytes
+   #:truncation-result-output-lines
+   #:truncation-result-output-bytes
+   #:truncation-result-last-line-partial-p
+   #:truncation-result-first-line-exceeds-limit-p
+   #:truncation-result-max-lines
+   #:truncation-result-max-bytes
+   #:format-size
+   #:truncate-head
+   #:truncate-tail
+   #:truncate-line
+   #:with-file-mutation-queue
    #:custom-agent-message
    #:make-custom-agent-message
    #:branch-summary-message
@@ -103,6 +123,7 @@
    #:extension-execution-error
    #:stale-extension-context
    #:define-tool
+   #:define-rich-tool
    #:define-command
    #:define-event-hook
    #:define-prompt-template
@@ -122,12 +143,36 @@
    #:extension-api-get-flag
    #:extension-api-get-active-tools
    #:extension-api-set-active-tools
+   #:extension-api-get-all-tools
+   #:extension-api-get-commands
+   #:extension-api-get-thinking-level
+   #:extension-api-set-thinking-level
+   #:extension-api-set-model
+   #:extension-api-get-session-name
+   #:extension-api-append-entry
+   #:extension-api-set-label
+   #:extension-api-events-on
+   #:extension-api-events-emit
    #:extension-context
    #:extension-context-cwd
    #:extension-context-agent
    #:extension-context-session
    #:extension-context-source-path
    #:extension-context-mode
+   #:extension-context-has-ui-p
+   #:extension-context-model
+   #:extension-context-scoped-models
+   #:extension-context-thinking-level
+   #:extension-context-model-registry-find
+   #:extension-context-model-registry-resolve-auth
+   #:extension-context-signal
+   #:extension-context-abort
+   #:extension-context-shutdown
+   #:extension-context-has-pending-messages-p
+   #:extension-context-context-usage
+   #:extension-context-system-prompt
+   #:extension-command-context-system-prompt-options
+   #:extension-command-context-new-session
    #:extension-context-idle-p
    #:extension-command-context-wait-for-idle
    #:extension-context-notify
@@ -141,7 +186,18 @@
    #:extension-context-set-widget
    #:extension-context-set-title
    #:extension-context-set-editor-text
+   #:extension-context-get-editor-text
+   #:extension-context-paste-to-editor
+   #:extension-context-set-header
+   #:extension-context-set-footer
+   #:extension-context-set-editor-component
+   #:extension-context-get-editor-component
+   #:extension-context-set-working-visible
+   #:extension-context-set-working-message
+   #:extension-context-set-working-indicator
+   #:extension-context-set-hidden-thinking-label
    #:extension-context-custom
+   #:extension-context-custom-component
    #:extension-context-add-autocomplete-provider
    #:extension-context-theme
    #:extension-context-all-themes
@@ -163,7 +219,9 @@
    #:extension-event-tool-results
    #:extension-event-payload
    #:extension-cancellation-signal
+   #:make-extension-cancellation-signal
    #:extension-cancellation-aborted-p
+   #:abort-extension-cancellation-signal
    #:provider-request-replacement
    #:make-provider-request-replacement
    #:provider-request-replacement-payload

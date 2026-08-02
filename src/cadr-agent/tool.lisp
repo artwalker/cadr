@@ -124,10 +124,16 @@
   arguments
   appended-messages)
 
+(defstruct tool-execution-result
+  (content nil :type list)
+  details
+  (terminate-p nil :type boolean))
+
 (defstruct tool-outcome
   call
   result
-  appended-messages)
+  appended-messages
+  (terminate-p nil :type boolean))
 
 (defun make-error-tool-result
     (call text &optional appended-messages)
@@ -145,9 +151,26 @@
 
 (defvar *tool-abort-p* nil)
 
+(defvar *tool-cancellation-signal* nil)
+
+(defvar *tool-update-function* nil)
+
 (defun current-tool-aborted-p ()
   (and *tool-abort-p*
        (funcall *tool-abort-p*)))
+
+(defun current-tool-cancellation-signal ()
+  *tool-cancellation-signal*)
+
+(defun current-tool-update-function ()
+  *tool-update-function*)
+
+(defun report-tool-update
+    (content &optional details terminate-p)
+  (let ((update *tool-update-function*))
+    (when update
+      (funcall
+       update content details (eq terminate-p t)))))
 
 (defun signal-tool-execution-error
     (message condition tool call)
@@ -225,30 +248,59 @@
        :arguments arguments
        :appended-messages appended-messages)))))
 
-(defun execute-prepared-tool (prepared)
-  (let ((call (prepared-tool-call-call prepared))
-        (tool (prepared-tool-call-tool prepared)))
-    (handler-bind
-        ((error
-           (lambda (condition)
-             (unless
-                 (typep condition 'tool-execution-error)
-               (signal-tool-execution-error
-                (princ-to-string condition)
-                condition tool call)))))
-      (multiple-value-bind (content details)
-          (funcall
-           (cadr-ai:tool-executor tool)
-           (cadr-ai:tool-call-id call)
-           (prepared-tool-call-arguments prepared))
-        (make-tool-outcome
-         :call call
-         :appended-messages
-         (prepared-tool-call-appended-messages prepared)
-         :result
-         (cadr-ai:make-tool-result-message
-          :tool-call-id (cadr-ai:tool-call-id call)
-          :tool-name (cadr-ai:tool-call-name call)
-          :content (or content nil)
-          :details details
-          :is-error nil))))))
+(defun execute-prepared-tool
+    (prepared &key cancellation-signal on-update)
+  (let* ((call (prepared-tool-call-call prepared))
+         (tool (prepared-tool-call-tool prepared))
+         (accepting-updates-p t)
+         (update-lock
+           (sb-thread:make-mutex
+            :name "cadr-tool-update-scope"))
+         (scoped-update
+           (lambda (content details terminate-p)
+             (sb-thread:with-recursive-lock
+                 (update-lock)
+               (when
+                   (and accepting-updates-p on-update)
+                 (funcall
+                  on-update
+                  (make-tool-execution-result
+                   :content (or content nil)
+                   :details details
+                   :terminate-p (eq terminate-p t))))))))
+    (unwind-protect
+         (let ((*tool-cancellation-signal*
+                 cancellation-signal)
+               (*tool-update-function* scoped-update))
+           (handler-bind
+               ((error
+                  (lambda (condition)
+                    (unless
+                        (typep condition 'tool-execution-error)
+                      (signal-tool-execution-error
+                       (princ-to-string condition)
+                       condition tool call)))))
+             (multiple-value-bind
+                   (content details terminate-p)
+                 (funcall
+                  (cadr-ai:tool-executor tool)
+                  (cadr-ai:tool-call-id call)
+                  (prepared-tool-call-arguments prepared))
+               (make-tool-outcome
+                :call call
+                :appended-messages
+                (prepared-tool-call-appended-messages
+                 prepared)
+                :terminate-p (eq terminate-p t)
+                :result
+                (cadr-ai:make-tool-result-message
+                 :tool-call-id
+                 (cadr-ai:tool-call-id call)
+                 :tool-name
+                 (cadr-ai:tool-call-name call)
+                 :content (or content nil)
+                 :details details
+                 :is-error nil)))))
+      (sb-thread:with-recursive-lock
+          (update-lock)
+        (setf accepting-updates-p nil)))))

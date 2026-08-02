@@ -4,6 +4,12 @@
 (defconstant +harness-default-max-bytes+
   (* 50 1024))
 
+(defconstant +default-max-lines+
+  +harness-default-max-lines+)
+(defconstant +default-max-bytes+
+  +harness-default-max-bytes+)
+(defconstant +grep-max-line-length+ 500)
+
 (defstruct harness-truncation-result
   (content "" :type string)
   (truncated-p nil :type boolean)
@@ -18,6 +24,42 @@
              :type (integer 0 *))
   (max-bytes +harness-default-max-bytes+
              :type (integer 0 *)))
+
+(deftype truncation-result ()
+  'harness-truncation-result)
+
+(defun truncation-result-content (result)
+  (harness-truncation-result-content result))
+
+(defun truncation-result-truncated-p (result)
+  (harness-truncation-result-truncated-p result))
+
+(defun truncation-result-truncated-by (result)
+  (harness-truncation-result-truncated-by result))
+
+(defun truncation-result-total-lines (result)
+  (harness-truncation-result-total-lines result))
+
+(defun truncation-result-total-bytes (result)
+  (harness-truncation-result-total-bytes result))
+
+(defun truncation-result-output-lines (result)
+  (harness-truncation-result-output-lines result))
+
+(defun truncation-result-output-bytes (result)
+  (harness-truncation-result-output-bytes result))
+
+(defun truncation-result-last-line-partial-p (result)
+  (harness-truncation-result-last-line-partial-p result))
+
+(defun truncation-result-first-line-exceeds-limit-p (result)
+  (harness-truncation-result-first-line-exceeds-limit-p result))
+
+(defun truncation-result-max-lines (result)
+  (harness-truncation-result-max-lines result))
+
+(defun truncation-result-max-bytes (result)
+  (harness-truncation-result-max-bytes result))
 
 (defun harness-utf8-length (text)
   (length (cadr-ai::utf8-octets text)))
@@ -195,3 +237,47 @@
        (format nil "~A... [truncated]"
                (subseq line 0 max-characters))
        t)))
+
+(defun truncate-head
+    (content &key
+               (max-lines +default-max-lines+)
+               (max-bytes +default-max-bytes+))
+  (truncate-harness-head
+   content :max-lines max-lines :max-bytes max-bytes))
+
+(defun truncate-tail
+    (content &key
+               (max-lines +default-max-lines+)
+               (max-bytes +default-max-bytes+))
+  (truncate-harness-tail
+   content :max-lines max-lines :max-bytes max-bytes))
+
+(defun format-size (bytes)
+  (cond
+    ((< bytes 1024)
+     (format nil "~DB" bytes))
+    ((< bytes (* 1024 1024))
+     (format nil "~,1FKB" (/ bytes 1024.0)))
+    (t
+     (format nil "~,1FMB" (/ bytes (* 1024.0 1024.0))))))
+
+(defun utf16-code-unit-length (text)
+  (loop for character across text
+        sum (if (> (char-code character) #xffff) 2 1)))
+
+(defun truncate-line
+    (line &optional (max-units +grep-max-line-length+))
+  (if (<= (utf16-code-unit-length line) max-units)
+      (values line nil)
+      (let ((end 0)
+            (units 0))
+        (loop for character across line
+              for width =
+                (if (> (char-code character) #xffff) 2 1)
+              while (<= (+ units width) max-units)
+              do (incf units width)
+                 (incf end))
+        (values
+         (format nil "~A... [truncated]"
+                 (subseq line 0 end))
+         t))))

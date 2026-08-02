@@ -39,6 +39,7 @@
   send-user-message-function
   set-session-name-function
   exec-function
+  action-function
   get-flag-function
   get-active-tools-function
   set-active-tools-function
@@ -56,7 +57,11 @@
   (lock (sb-thread:make-mutex
          :name "cadr-extension-host"))
   (hook-lock (sb-thread:make-mutex
-              :name "cadr-extension-hooks")))
+              :name "cadr-extension-hooks"))
+  (event-listeners (make-hash-table :test #'equal)
+                   :type hash-table)
+  (event-lock (sb-thread:make-mutex
+               :name "cadr-extension-events")))
 
 ;;; Public handler values
 
@@ -89,21 +94,42 @@
   payload)
 
 (defstruct (extension-cancellation-signal
-            (:constructor make-extension-cancellation-signal)
+            (:constructor %make-extension-cancellation-signal)
             (:conc-name %extension-cancellation-signal-))
   (aborted-p nil :type boolean)
+  aborted-function
+  abort-function
   (lock
     (sb-thread:make-mutex
      :name "cadr-extension-cancellation")))
+
+(defun make-extension-cancellation-signal
+    (&key aborted-function abort-function)
+  (unless (or (null aborted-function)
+              (functionp aborted-function))
+    (error 'extension-execution-error
+           :message "ABORTED-FUNCTION must be a function or NIL"))
+  (unless (or (null abort-function)
+              (functionp abort-function))
+    (error 'extension-execution-error
+           :message "ABORT-FUNCTION must be a function or NIL"))
+  (%make-extension-cancellation-signal
+   :aborted-function aborted-function
+   :abort-function abort-function))
 
 (defun extension-cancellation-aborted-p (signal)
   (unless (typep signal 'extension-cancellation-signal)
     (error
      'extension-execution-error
      :message "Expected an extension cancellation signal"))
-  (sb-thread:with-mutex
-      ((%extension-cancellation-signal-lock signal))
-    (%extension-cancellation-signal-aborted-p signal)))
+  (let ((local-p
+          (sb-thread:with-mutex
+              ((%extension-cancellation-signal-lock signal))
+            (%extension-cancellation-signal-aborted-p signal)))
+        (external
+          (%extension-cancellation-signal-aborted-function signal)))
+    (or local-p
+        (and external (not (null (funcall external)))))))
 
 (defun abort-extension-cancellation-signal (signal)
   (unless (typep signal 'extension-cancellation-signal)
@@ -115,6 +141,10 @@
     (setf
      (%extension-cancellation-signal-aborted-p signal)
      t))
+  (let ((function
+          (%extension-cancellation-signal-abort-function signal)))
+    (when function
+      (funcall function)))
   signal)
 
 (defstruct (extension-hook-result
@@ -123,7 +153,14 @@
   (replacement-p nil :type boolean)
   (append-messages nil :type list)
   (block-p nil :type boolean)
-  reason)
+  reason
+  terminate-p
+  (terminate-supplied-p nil :type boolean))
+
+(defstruct extension-event-listener
+  name
+  handler
+  bundle)
 
 (defstruct (provider-request-replacement
             (:constructor
@@ -136,13 +173,16 @@
        (replacement nil replacement-p)
        append-messages
        block-p
-       reason)
+       reason
+       (terminate-p nil terminate-supplied-p))
   (%make-extension-hook-result
    :replacement replacement
    :replacement-p replacement-p
    :append-messages append-messages
    :block-p (not (null block-p))
-   :reason reason))
+   :reason reason
+   :terminate-p (not (null terminate-p))
+   :terminate-supplied-p terminate-supplied-p))
 
 (defun assert-active-extension-context (context)
   (unless
@@ -173,6 +213,78 @@
 (defun extension-context-mode (context)
   (assert-active-extension-context context)
   (extension-host-mode (%extension-context-host context)))
+
+(defun extension-context-has-ui-p (context)
+  (not (null (member (extension-context-mode context) '(:tui :rpc)))))
+
+(defun invoke-extension-action (context action &rest arguments)
+  (assert-active-extension-context context)
+  (let* ((host (%extension-context-host context))
+         (function (extension-host-action-function host)))
+    (unless function
+      (error 'extension-execution-error
+             :message
+             (format nil "Extension action ~(~A~) is unavailable in this host"
+                     action)))
+    (funcall function action arguments)))
+
+(defun extension-context-model (context)
+  (invoke-extension-action context :model))
+
+(defun extension-context-scoped-models (context)
+  (copy-list (or (invoke-extension-action context :scoped-models) nil)))
+
+(defun extension-context-thinking-level (context)
+  (invoke-extension-action context :thinking-level))
+
+(defun extension-context-signal (context)
+  (invoke-extension-action context :signal))
+
+(defun extension-context-abort (context)
+  (invoke-extension-action context :abort))
+
+(defun extension-context-shutdown (context)
+  (invoke-extension-action context :shutdown))
+
+(defun extension-context-has-pending-messages-p (context)
+  (not (null (invoke-extension-action context :has-pending-messages-p))))
+
+(defun extension-context-context-usage (context)
+  (invoke-extension-action context :context-usage))
+
+(defun extension-context-system-prompt (context)
+  (invoke-extension-action context :system-prompt))
+
+(defun extension-command-context-system-prompt-options (context)
+  (unless (eq (%extension-context-kind
+               (assert-active-extension-context context))
+              :command)
+    (error 'extension-execution-error
+           :message
+           "get-system-prompt-options is only available to extension command contexts"))
+  (invoke-extension-action context :system-prompt-options))
+
+(defun extension-command-context-new-session
+    (context &key parent-session setup-function with-session-function)
+  (unless (eq (%extension-context-kind
+               (assert-active-extension-context context))
+              :command)
+    (error 'extension-execution-error
+           :message
+           "new-session is only available to extension command contexts"))
+  (invoke-extension-action
+   context :new-session
+   :parent-session parent-session
+   :setup-function setup-function
+   :with-session-function with-session-function))
+
+(defun extension-context-model-registry-find
+    (context provider model-id)
+  (invoke-extension-action context :model-registry-find provider model-id))
+
+(defun extension-context-model-registry-resolve-auth
+    (context model)
+  (invoke-extension-action context :model-registry-resolve-auth model))
 
 (defun extension-context-idle-p (context)
   (let ((agent (extension-context-agent context)))
@@ -401,6 +513,74 @@
    (list :text text))
   nil)
 
+(defun extension-context-get-editor-text (context)
+  (or (invoke-extension-ui context :get-editor-text nil) ""))
+
+(defun extension-context-paste-to-editor (context text)
+  (unless (stringp text)
+    (error 'extension-execution-error
+           :message "paste-to-editor requires a string"))
+  (invoke-extension-ui context :paste-to-editor (list :text text)))
+
+(defun validate-optional-component-factory (name factory)
+  (unless (or (null factory) (functionp factory))
+    (error 'extension-execution-error
+           :message (format nil "~A requires a function or NIL" name)))
+  factory)
+
+(defun extension-context-set-header (context factory)
+  (invoke-extension-ui
+   context :set-header
+   (list :factory (validate-optional-component-factory "set-header" factory))))
+
+(defun extension-context-set-footer (context factory)
+  (invoke-extension-ui
+   context :set-footer
+   (list :factory (validate-optional-component-factory "set-footer" factory))))
+
+(defun extension-context-set-editor-component (context factory)
+  (invoke-extension-ui
+   context :set-editor-component
+   (list :factory
+         (validate-optional-component-factory "set-editor-component" factory))))
+
+(defun extension-context-get-editor-component (context)
+  (invoke-extension-ui context :get-editor-component nil))
+
+(defun extension-context-set-working-visible (context visible-p)
+  (invoke-extension-ui
+   context :set-working-visible (list :visible-p (not (null visible-p)))))
+
+(defun extension-context-set-working-message
+    (context &optional message)
+  (unless (or (null message) (stringp message))
+    (error 'extension-execution-error
+           :message "set-working-message requires a string or NIL"))
+  (invoke-extension-ui context :set-working-message (list :message message)))
+
+(defun extension-context-set-working-indicator
+    (context &key (frames nil frames-supplied-p) interval-ms)
+  (unless (or (not frames-supplied-p)
+              (and (listp frames) (every #'stringp frames)))
+    (error 'extension-execution-error
+           :message "working indicator frames must be a list of strings"))
+  (unless (or (null interval-ms)
+              (and (integerp interval-ms) (plusp interval-ms)))
+    (error 'extension-execution-error
+           :message "working indicator interval-ms must be a positive integer or NIL"))
+  (invoke-extension-ui
+   context :set-working-indicator
+   (list :frames frames :frames-supplied-p frames-supplied-p
+         :interval-ms interval-ms)))
+
+(defun extension-context-set-hidden-thinking-label
+    (context &optional label)
+  (unless (or (null label) (stringp label))
+    (error 'extension-execution-error
+           :message "hidden thinking label must be a string or NIL"))
+  (invoke-extension-ui
+   context :set-hidden-thinking-label (list :label label)))
+
 (defun extension-context-custom
     (context factory &key overlay-p overlay-options)
   (unless (functionp factory)
@@ -412,6 +592,19 @@
    (list :factory factory
          :overlay-p (not (null overlay-p))
          :overlay-options overlay-options)))
+
+(defun extension-context-custom-component
+    (context factory &key overlay-p overlay-options on-handle)
+  (unless (functionp factory)
+    (error 'extension-execution-error
+           :message "custom-component requires a component factory function"))
+  (unless (or (null on-handle) (functionp on-handle))
+    (error 'extension-execution-error
+           :message "custom-component on-handle must be a function or NIL"))
+  (invoke-extension-ui
+   context :custom-component
+   (list :factory factory :overlay-p (not (null overlay-p))
+         :overlay-options overlay-options :on-handle on-handle)))
 
 (defun extension-context-add-autocomplete-provider
     (context factory)
@@ -663,6 +856,105 @@
    api #'extension-host-set-active-tools-function
    "set-active-tools" (copy-list tool-names)))
 
+(defun extension-api-host-action (api action &rest arguments)
+  (assert-active-extension-api api)
+  (let* ((host (%extension-api-host api))
+         (function (extension-host-action-function host)))
+    (unless function
+      (error 'extension-execution-error
+             :message
+             (format nil "Extension action ~(~A~) is unavailable in this host"
+                     action)))
+    (funcall function action arguments)))
+
+(defun extension-api-get-commands (api)
+  (copy-tree (or (extension-api-host-action api :commands) nil)))
+
+(defun extension-api-get-all-tools (api)
+  (copy-tree (or (extension-api-host-action api :all-tools) nil)))
+
+(defun extension-api-get-thinking-level (api)
+  (extension-api-host-action api :thinking-level))
+
+(defun extension-api-set-thinking-level (api level)
+  (extension-api-host-action api :set-thinking-level level))
+
+(defun extension-api-set-model (api model)
+  (extension-api-host-action api :set-model model))
+
+(defun extension-api-get-session-name (api)
+  (extension-api-host-action api :get-session-name))
+
+(defun extension-api-append-entry (api custom-type &optional data)
+  (unless (and (stringp custom-type) (plusp (length custom-type)))
+    (error 'extension-execution-error
+           :message "append-entry requires a non-empty custom type"))
+  (extension-api-host-action api :append-entry custom-type data))
+
+(defun extension-api-set-label (api entry-id label)
+  (unless (and (stringp entry-id)
+               (or (null label) (stringp label)))
+    (error 'extension-execution-error
+           :message "set-label requires an entry id and string or NIL label"))
+  (extension-api-host-action api :set-label entry-id label))
+
+(defun extension-api-events-on (api name handler)
+  (assert-active-extension-api api)
+  (unless (and (stringp name) (plusp (length name))
+               (functionp handler))
+    (error 'extension-execution-error
+           :message "events-on requires a non-empty name and handler function"))
+  (let ((host (%extension-api-host api)))
+    (sb-thread:with-mutex ((extension-host-event-lock host))
+      (setf
+       (gethash name (extension-host-event-listeners host))
+       (nconc
+        (gethash name (extension-host-event-listeners host))
+        (list
+         (make-extension-event-listener
+          :name name :handler handler :bundle (%extension-api-bundle api)))))))
+  (lambda ()
+    (let ((host (%extension-api-host api))
+          (bundle (%extension-api-bundle api)))
+      (sb-thread:with-mutex ((extension-host-event-lock host))
+        (setf
+         (gethash name (extension-host-event-listeners host))
+         (remove-if
+          (lambda (listener)
+            (and (eq bundle (extension-event-listener-bundle listener))
+                 (eq handler (extension-event-listener-handler listener))))
+          (gethash name (extension-host-event-listeners host))))))))
+
+(defun extension-api-events-emit (api name payload)
+  (assert-active-extension-api api)
+  (unless (and (stringp name) (plusp (length name)))
+    (error 'extension-execution-error
+           :message "events-emit requires a non-empty name"))
+  (let* ((host (%extension-api-host api))
+         (active-bundles
+           (extension-snapshot-bundles
+            (extension-host-current-snapshot host)))
+         (listeners
+           (sb-thread:with-mutex ((extension-host-event-lock host))
+             (let* ((all (gethash name (extension-host-event-listeners host)))
+                    (active
+                      (remove-if-not
+                       (lambda (listener)
+                         (member (extension-event-listener-bundle listener)
+                                 active-bundles :test #'eq))
+                       all)))
+               (setf (gethash name (extension-host-event-listeners host)) active)
+               (copy-list active)))))
+    (dolist (listener listeners)
+      (handler-case
+          (funcall (extension-event-listener-handler listener)
+                   (copy-extension-value payload))
+        (condition (condition)
+          (funcall (extension-host-notify-function host)
+                   (format nil "Extension event ~A failed: ~A" name condition)
+                   :error)))))
+  nil)
+
 (defun extension-event-type (event)
   (%extension-event-type event))
 
@@ -742,10 +1034,19 @@
 
 (defstruct extension-tool-definition
   name
+  label
   description
+  prompt-snippet
+  (prompt-guidelines nil :type list)
   parameters
+  constrained-sampling
+  render-shell
+  prepare-arguments
   execution-mode
+  (full-handler-p nil :type boolean)
   handler
+  render-call
+  render-result
   bundle)
 
 (defstruct extension-command-definition
@@ -927,10 +1228,71 @@
       (list
        (make-extension-tool-definition
         :name name
+        :label name
         :description description
         :parameters parameters
         :execution-mode execution-mode
         :handler handler
+        :bundle bundle)))))
+  name)
+
+(defun register-rich-extension-tool
+    (name &key label description prompt-snippet prompt-guidelines
+            parameters constrained-sampling render-shell
+            prepare-arguments (execution-mode :parallel)
+            handler render-call render-result)
+  (let ((bundle (require-extension-registration-bundle)))
+    (validate-extension-resource-name "tool" name)
+    (unless (and (stringp label) (plusp (length label)))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A label must be a non-empty string" name)))
+    (unless (stringp description)
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A description must be a string" name)))
+    (unless (or (null prompt-snippet) (stringp prompt-snippet))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A prompt snippet must be a string or NIL" name)))
+    (unless (and (listp prompt-guidelines) (every #'stringp prompt-guidelines))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A prompt guidelines must be strings" name)))
+    (validate-extension-schema name parameters)
+    (unless (or (null constrained-sampling) (listp constrained-sampling))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A constrained sampling must be a plist or NIL" name)))
+    (unless (member render-shell '(nil :default :self))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A render shell must be :DEFAULT, :SELF, or NIL" name)))
+    (unless (or (null prepare-arguments) (functionp prepare-arguments))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A prepare-arguments must be a function or NIL" name)))
+    (unless (member execution-mode '(:parallel :sequential))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A execution mode must be :PARALLEL or :SEQUENTIAL" name)))
+    (unless (functionp handler)
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A handler must be a function" name)))
+    (unless (and (or (null render-call) (functionp render-call))
+                 (or (null render-result) (functionp render-result)))
+      (error 'extension-registration-error
+             :message (format nil "Tool ~A renderers must be functions or NIL" name)))
+    (ensure-unique-extension-definition
+     (extension-bundle-tools bundle) name
+     #'extension-tool-definition-name "Tool")
+    (setf
+     (extension-bundle-tools bundle)
+     (nconc
+      (extension-bundle-tools bundle)
+      (list
+       (make-extension-tool-definition
+        :name name :label label :description description
+        :prompt-snippet prompt-snippet
+        :prompt-guidelines (copy-list prompt-guidelines)
+        :parameters parameters
+        :constrained-sampling (copy-tree constrained-sampling)
+        :render-shell render-shell
+        :prepare-arguments prepare-arguments
+        :execution-mode execution-mode :full-handler-p t
+        :handler handler :render-call render-call :render-result render-result
         :bundle bundle)))))
   name)
 
@@ -1378,6 +1740,22 @@
   `(register-extension-tool
     ,name ,description ,parameters ,execution-mode ,handler))
 
+(defmacro define-rich-tool
+    (name &key label description prompt-snippet prompt-guidelines
+               parameters constrained-sampling render-shell
+               prepare-arguments (execution-mode :parallel)
+               handler render-call render-result)
+  `(register-rich-extension-tool
+    ,name :label ,label :description ,description
+    :prompt-snippet ,prompt-snippet
+    :prompt-guidelines ,prompt-guidelines
+    :parameters ,parameters
+    :constrained-sampling ,constrained-sampling
+    :render-shell ,render-shell
+    :prepare-arguments ,prepare-arguments
+    :execution-mode ,execution-mode
+    :handler ,handler :render-call ,render-call :render-result ,render-result))
+
 (defmacro define-command
     (name &key description argument-hint handler)
   `(register-extension-command
@@ -1438,6 +1816,7 @@
        send-user-message-function
        set-session-name-function
        exec-function
+       action-function
        get-flag-function
        get-active-tools-function
        set-active-tools-function)
@@ -1460,6 +1839,7 @@
    :send-user-message-function send-user-message-function
    :set-session-name-function set-session-name-function
    :exec-function exec-function
+   :action-function action-function
    :get-flag-function get-flag-function
    :get-active-tools-function get-active-tools-function
    :set-active-tools-function set-active-tools-function))
@@ -1972,12 +2352,28 @@
            (and
             definition
             (extension-tool-renderer-definition-call
-             definition))))
-    (if function
+             definition)))
+         (rich-definition
+           (and (null function)
+                (find tool-name
+                      (extension-snapshot-tools
+                       (extension-host-current-snapshot host))
+                      :key #'extension-tool-definition-name
+                      :test #'string=)))
+         (rich-function
+           (and rich-definition
+                (extension-tool-definition-render-call rich-definition))))
+    (cond
+      (function
         (call-extension-renderer
          host definition "Tool call renderer"
-         function (list arguments context))
-        (values nil nil))))
+         function (list arguments context)))
+      (rich-function
+       (call-extension-renderer
+        host rich-definition "Rich tool call renderer"
+        rich-function
+        (list arguments (getf context :theme) context)))
+      (t (values nil nil)))))
 
 (defun render-extension-tool-result
     (host tool-name result options context)
@@ -1987,14 +2383,30 @@
          (function
            (and
             definition
-            (extension-tool-renderer-definition-result
-             definition))))
-    (if function
+             (extension-tool-renderer-definition-result
+              definition)))
+         (rich-definition
+           (and (null function)
+                (find tool-name
+                      (extension-snapshot-tools
+                       (extension-host-current-snapshot host))
+                      :key #'extension-tool-definition-name
+                      :test #'string=)))
+         (rich-function
+           (and rich-definition
+                (extension-tool-definition-render-result rich-definition))))
+    (cond
+      (function
         (call-extension-renderer
          host definition "Tool result renderer"
          function
-         (list result options context))
-        (values nil nil))))
+         (list result options context)))
+      (rich-function
+       (call-extension-renderer
+        host rich-definition "Rich tool result renderer"
+        rich-function
+        (list result options (getf context :theme) context)))
+      (t (values nil nil)))))
 
 (defun invoke-extension-shortcut
     (host key)
@@ -2037,6 +2449,8 @@
          (extension-tool-definition-description captured)
          :parameters
          (extension-tool-definition-parameters captured)
+         :constrained-sampling
+         (extension-tool-definition-constrained-sampling captured)
          :execution-mode
          (extension-tool-definition-execution-mode captured)
          :executor
@@ -2045,10 +2459,24 @@
                (call-with-extension-definition
                 host captured-snapshot captured
                 (lambda (context)
-                  (funcall
-                   (extension-tool-definition-handler
-                    captured)
-                   call-id arguments context)))
+                  (let* ((prepared
+                           (if (extension-tool-definition-prepare-arguments
+                                captured)
+                               (funcall
+                                (extension-tool-definition-prepare-arguments captured)
+                                arguments)
+                               arguments))
+                         (signal
+                           (or (current-tool-cancellation-signal)
+                               (make-extension-cancellation-signal)))
+                         (update (current-tool-update-function)))
+                    (if (extension-tool-definition-full-handler-p captured)
+                        (funcall
+                         (extension-tool-definition-handler captured)
+                         call-id prepared signal update context)
+                        (funcall
+                         (extension-tool-definition-handler captured)
+                         call-id prepared context)))))
              (extension-execution-error (condition)
                (error condition))
              (condition (condition)
@@ -2062,6 +2490,26 @@
                          captured)
                         (extension-definition-origin captured)
                         condition))))))))))
+
+(defun extension-host-tool-metadata (host tool-name)
+  (let ((definition
+          (find tool-name
+                (extension-snapshot-tools
+                 (extension-host-current-snapshot host))
+                :key #'extension-tool-definition-name
+                :test #'string=)))
+    (and definition
+         (list :name (extension-tool-definition-name definition)
+               :label (extension-tool-definition-label definition)
+               :prompt-snippet
+               (extension-tool-definition-prompt-snippet definition)
+               :prompt-guidelines
+               (copy-list
+                (extension-tool-definition-prompt-guidelines definition))
+               :render-shell
+               (extension-tool-definition-render-shell definition)
+               :source
+               (extension-definition-origin definition)))))
 
 (defun extension-host-current-active-tools (host)
   (let ((agent (extension-host-agent host)))
@@ -2860,7 +3308,9 @@
              (:tool-call-after tool-result)))
          (appended nil)
          (blocked-p nil)
-         (reason nil))
+         (reason nil)
+         (terminate-p nil)
+         (terminate-supplied-p nil))
     (let ((held
             (acquire-extension-snapshot
              host snapshot)))
@@ -2905,6 +3355,12 @@
                                  result))
                               (result-reason
                                 (extension-hook-result-reason
+                                 result))
+                              (result-terminate-supplied-p
+                                (extension-hook-result-terminate-supplied-p
+                                 result))
+                              (result-terminate-p
+                                (extension-hook-result-terminate-p
                                  result)))
                          (when
                              (and
@@ -2937,12 +3393,19 @@
                                 (stringp result-reason))
                              (error
                               "Hook block reason must be a string or NIL")))
+                         (when result-terminate-supplied-p
+                           (unless (eq event-type :tool-call-after)
+                             (error
+                              "Only :tool-call-after hooks may override terminate")))
                          ;; Commit only after the entire hook result validates.
                          (setf primary replacement
-                               appended
-                               (nconc
                                 appended
-                                (copy-list messages)))
+                                (nconc
+                                 appended
+                                 (copy-list messages)))
+                         (when result-terminate-supplied-p
+                           (setf terminate-p result-terminate-p
+                                 terminate-supplied-p t))
                          (when result-block-p
                            (setf
                             blocked-p t
@@ -2956,7 +3419,8 @@
                     host definition "Hook" condition)))))
         (release-acquired-extension-snapshot
          host held)))
-    (values primary appended blocked-p reason)))
+    (values primary appended blocked-p reason
+            terminate-p terminate-supplied-p)))
 
 ;;; Wave 2 lifecycle dispatch. The original four hooks above deliberately keep
 ;;; their frozen EXTENSION-HOOK-RESULT contract.

@@ -1,0 +1,189 @@
+(in-package #:cadr-agent/tests)
+(in-suite cadr-agent-suite)
+
+(defun goal12-test-context (host bundle &optional (kind :command))
+  (cadr-agent::%make-extension-context
+   :host host :bundle bundle :kind kind
+   :source-path (cadr-agent::extension-bundle-path bundle)))
+
+(test goal12-extension-context-exposes-approved-host-state-without-changing-defaults
+  (let* ((bundle (make-test-extension-bundle "goal12-context" (lambda ())))
+         (calls nil)
+         (host
+           (cadr-agent::make-extension-host
+            :cwd #P"/tmp/" :mode :tui
+            :action-function
+            (lambda (action arguments)
+              (push (list action arguments) calls)
+              (case action
+                (:model :model)
+                (:scoped-models '(:scoped))
+                (:thinking-level :high)
+                (:context-usage '(:tokens 12 :context-window 100 :percent 12d0))
+                (:system-prompt "prompt")
+                (:system-prompt-options '(:selected-tools ("read")))
+                (:has-pending-messages-p t)
+                (otherwise :ok)))))
+         (context (goal12-test-context host bundle)))
+    (is (cadr-agent:extension-context-has-ui-p context))
+    (is (eq :model (cadr-agent:extension-context-model context)))
+    (is (equal '(:scoped) (cadr-agent:extension-context-scoped-models context)))
+    (is (eq :high (cadr-agent:extension-context-thinking-level context)))
+    (is (equal '(:tokens 12 :context-window 100 :percent 12d0)
+               (cadr-agent:extension-context-context-usage context)))
+    (is (string= "prompt" (cadr-agent:extension-context-system-prompt context)))
+    (is (equal '(:selected-tools ("read"))
+               (cadr-agent:extension-command-context-system-prompt-options context)))
+    (is (cadr-agent:extension-context-has-pending-messages-p context))
+    (is (eq :ok (cadr-agent:extension-context-abort context)))
+    (is (eq :ok (cadr-agent:extension-context-shutdown context)))
+    (is (eq :ok (cadr-agent:extension-command-context-new-session
+                 context :parent-session "parent")))
+    (let* ((print-host (cadr-agent::make-extension-host :mode :print))
+           (print-context (goal12-test-context print-host bundle :hook)))
+      (is (not (cadr-agent:extension-context-has-ui-p print-context))))
+    (is (find :abort calls :key #'first))
+    (is (find :shutdown calls :key #'first))
+    (is (find :new-session calls :key #'first))))
+
+(test goal12-ui-composition-contract-is-additive-and-forwards-exact-values
+  (let* ((bundle (make-test-extension-bundle "goal12-ui" (lambda ())))
+         (calls nil)
+         (factory (lambda (&rest values) (declare (ignore values)) :component))
+         (host
+           (cadr-agent::make-extension-host
+            :mode :tui
+            :ui-function
+            (lambda (method arguments)
+              (push (list method arguments) calls)
+              (case method
+                (:get-editor-component factory)
+                (:get-editor-text "draft")
+                (:theme '(:name "dark"))
+                (otherwise :ok)))))
+         (context (goal12-test-context host bundle)))
+    (is (eq :ok (cadr-agent:extension-context-set-header context factory)))
+    (is (eq :ok (cadr-agent:extension-context-set-footer context factory)))
+    (is (eq :ok (cadr-agent:extension-context-set-editor-component context factory)))
+    (is (eq factory (cadr-agent:extension-context-get-editor-component context)))
+    (is (eq :ok (cadr-agent:extension-context-set-working-visible context nil)))
+    (is (eq :ok (cadr-agent:extension-context-set-working-message context "Indexing")))
+    (is (eq :ok (cadr-agent:extension-context-set-working-indicator
+                 context :frames '("a" "b") :interval-ms 80)))
+    (is (eq :ok (cadr-agent:extension-context-set-hidden-thinking-label
+                 context "Reasoning")))
+    (is (eq :ok (cadr-agent:extension-context-paste-to-editor context "paste")))
+    (is (string= "draft" (cadr-agent:extension-context-get-editor-text context)))
+    (is (eq :ok
+            (cadr-agent:extension-context-custom-component
+             context factory :overlay-p t
+             :overlay-options '(:width 42)
+             :on-handle (lambda (handle) (declare (ignore handle))))))
+    (dolist (method '(:set-header :set-footer :set-editor-component
+                      :set-working-visible :set-working-message
+                      :set-working-indicator :set-hidden-thinking-label
+                      :paste-to-editor :custom-component))
+      (is (find method calls :key #'first)))))
+
+(test goal12-extension-event-bus-is-host-scoped-and-prunes-retired-bundles
+  (let ((seen nil))
+    (let* ((first (cadr-agent::make-extension-bundle
+                   :id "bus-a" :path "/tmp/bus-a.lisp"))
+           (second (cadr-agent::make-extension-bundle
+                    :id "bus-b" :path "/tmp/bus-b.lisp"))
+           (host (cadr-agent::make-extension-host))
+           (api
+             (cadr-agent::%make-extension-api
+              :host host :bundle second :attachment-generation 0)))
+      (cadr-agent::call-with-extension-load
+       host first
+       (lambda ()
+         (cadr-agent:extension-api-events-on
+          (cadr-agent:current-extension-api)
+          "topic"
+          (lambda (payload) (push payload seen)))))
+      (cadr-agent::replace-extension-bundles host (list first second))
+      (cadr-agent:extension-api-events-emit api "topic" '(:one))
+      (is (equal '((:one)) seen))
+      (cadr-agent::replace-extension-bundles host (list second))
+      (cadr-agent:extension-api-events-emit api "topic" '(:two))
+      (is (equal '((:one)) seen)))))
+
+(test goal12-rich-tool-metadata-is-additive-and-legacy-macro-lambda-list-is-frozen
+  (let* ((schema (object-schema))
+         (bundle
+           (make-test-extension-bundle
+            "rich-tool"
+            (lambda ()
+              (cadr-agent:define-rich-tool
+               "rich" :label "Rich"
+               :description "description"
+               :prompt-snippet "rich: use it"
+               :prompt-guidelines '("Do the rich thing")
+               :parameters schema
+               :constrained-sampling '(:grammar "json")
+               :render-shell :self
+               :prepare-arguments #'identity
+               :handler (lambda (&rest values)
+                          (declare (ignore values))
+                          (values nil nil t))))))
+         (definition (first (cadr-agent::extension-bundle-tools bundle))))
+    (is (string= "Rich" (cadr-agent::extension-tool-definition-label definition)))
+    (is (string= "rich: use it"
+                 (cadr-agent::extension-tool-definition-prompt-snippet definition)))
+    (is (equal '("Do the rich thing")
+               (cadr-agent::extension-tool-definition-prompt-guidelines definition)))
+    (is (eq :self (cadr-agent::extension-tool-definition-render-shell definition)))
+    (is (functionp (cadr-agent::extension-tool-definition-prepare-arguments definition)))
+    (labels ((shape (value)
+               (cond
+                 ((symbolp value) (symbol-name value))
+                 ((consp value) (mapcar #'shape value))
+                 (t value))))
+      (is (equal
+           '("NAME" "&KEY" "DESCRIPTION" "PARAMETERS"
+             ("EXECUTION-MODE" "PARALLEL") "HANDLER")
+           (shape
+            (sb-introspect:function-lambda-list
+             (macro-function 'cadr-agent:define-tool))))))))
+
+(test goal12-cancellation-signal-composes-local-and-host-aborts
+  (let ((host-aborted-p nil)
+        (abort-count 0))
+    (let ((signal
+            (cadr-agent:make-extension-cancellation-signal
+             :aborted-function (lambda () host-aborted-p)
+             :abort-function (lambda () (incf abort-count)))))
+      (is (not (cadr-agent:extension-cancellation-aborted-p signal)))
+      (setf host-aborted-p t)
+      (is (cadr-agent:extension-cancellation-aborted-p signal))
+      (setf host-aborted-p nil)
+      (cadr-agent:abort-extension-cancellation-signal signal)
+      (is (cadr-agent:extension-cancellation-aborted-p signal))
+      (is (= 1 abort-count)))))
+
+(test goal12-tool-after-hook-can-override-terminate-without-changing-replacement
+  (let* ((result
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "call" :tool-name "tool"
+            :content (list (cadr-ai:make-text-content :text "ok"))))
+         (bundle
+           (make-test-extension-bundle
+            "terminate-hook"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :tool-call-after
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 (cadr-agent:make-extension-hook-result
+                  :terminate-p t))))))
+         (host (make-test-extension-host (list bundle))))
+    (multiple-value-bind
+          (replacement appended blocked reason terminate supplied-p)
+        (cadr-agent::run-extension-hooks
+         host :tool-call-after :tool-result result)
+      (declare (ignore appended blocked reason))
+      (is (eq result replacement))
+      (is (not (null terminate)))
+      (is (not (null supplied-p))))))

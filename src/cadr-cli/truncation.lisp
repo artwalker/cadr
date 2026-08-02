@@ -28,13 +28,7 @@
       (uiop:split-string text :separator '(#\Newline))))
 
 (defun format-byte-size (bytes)
-  (cond
-    ((< bytes 1024)
-     (format nil "~DB" bytes))
-    ((< bytes (* 1024 1024))
-     (format nil "~,1FKB" (/ bytes 1024.0)))
-    (t
-     (format nil "~,1FMB" (/ bytes (* 1024.0 1024.0))))))
+  (cadr-agent::format-size bytes))
 
 (defun harness-truncation-details
     (result max-lines max-bytes)
@@ -63,7 +57,7 @@
             (max-lines +maximum-output-lines+)
             (max-bytes +maximum-output-bytes+))
   (let ((result
-          (cadr-agent:truncate-harness-head
+          (cadr-agent::truncate-head
            text :max-lines max-lines :max-bytes max-bytes)))
     (values
      (cadr-agent:harness-truncation-result-content result)
@@ -75,7 +69,7 @@
             (max-lines +maximum-output-lines+)
             (max-bytes +maximum-output-bytes+))
   (let ((result
-          (cadr-agent:truncate-harness-tail
+          (cadr-agent::truncate-tail
            text :max-lines max-lines :max-bytes max-bytes)))
     (values
      (cadr-agent:harness-truncation-result-content result)
@@ -83,17 +77,4 @@
       result max-lines max-bytes))))
 
 (defun truncate-tool-line (line &optional (max-units 500))
-  (if (<= (utf16-code-unit-length line) max-units)
-      (values line nil)
-      (let ((end 0)
-            (units 0))
-        (loop for character across line
-              for width =
-                (if (> (char-code character) #xffff) 2 1)
-              while (<= (+ units width) max-units)
-              do (incf units width)
-                 (incf end))
-        (values
-         (format nil "~A... [truncated]"
-                 (subseq line 0 end))
-         t))))
+  (cadr-agent::truncate-line line max-units))

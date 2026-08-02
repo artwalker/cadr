@@ -177,22 +177,39 @@
         (result (tool-outcome-result outcome)))
     (run-agent-lifecycle
      agent :tool-execution-end
-     (list
-      :tool-call-id (cadr-ai:tool-call-id call)
-      :tool-name (cadr-ai:tool-call-name call)
-      :result result
-      :error-p
-      (cadr-ai:tool-result-message-is-error result))))
+     (append
+      (list
+       :tool-call-id (cadr-ai:tool-call-id call)
+       :tool-name (cadr-ai:tool-call-name call)
+       :result result
+       :error-p
+       (cadr-ai:tool-result-message-is-error result))
+      (when (tool-outcome-terminate-p outcome)
+        (list :terminate-p t)))))
   (emit-agent-event
    agent :tool-execution-end
    :tool-call (tool-outcome-call outcome)
    :tool-result (tool-outcome-result outcome)))
 
+(defun emit-tool-update (agent call partial-result)
+  (run-agent-lifecycle
+   agent :tool-execution-update
+   (list
+    :tool-call-id (cadr-ai:tool-call-id call)
+    :tool-name (cadr-ai:tool-call-name call)
+    :arguments (cadr-ai:tool-call-arguments call)
+    :partial-result partial-result))
+  (emit-agent-event
+   agent :tool-execution-update
+   :tool-call call
+   :tool-result partial-result))
+
 (defun finalize-tool-outcome (agent outcome turn-index)
   (if (not (agent-extension-host agent))
       outcome
       (multiple-value-bind
-            (replacement appended blocked-p reason)
+            (replacement appended blocked-p reason
+             terminate-p terminate-supplied-p)
           (run-extension-hooks
            (agent-extension-host agent)
            :tool-call-after
@@ -206,6 +223,10 @@
          (nconc
           (tool-outcome-appended-messages outcome)
           appended))
+        (when terminate-supplied-p
+          (setf
+           (tool-outcome-terminate-p outcome)
+           (eq terminate-p t)))
         outcome)))
 
 (defun complete-tool-outcome (agent outcome turn-index)
@@ -238,6 +259,13 @@
        append
        (copy-list
         (tool-outcome-appended-messages outcome))))))
+
+(defun tool-outcomes-terminate-p (outcomes)
+  (and
+   (plusp (length outcomes))
+   (loop
+     for outcome across outcomes
+     always (tool-outcome-terminate-p outcome))))
 
 (defstruct tool-restart-state
   agent
@@ -440,12 +468,28 @@
         (call-tool-operation-with-restarts
          state turn-index
          (lambda ()
-           (let ((*tool-abort-p*
-                   (lambda ()
-                     (agent-aborted-p
-                      (tool-restart-state-agent
-                       state)))))
-             (execute-prepared-tool entry))))
+           (let* ((agent
+                    (tool-restart-state-agent state))
+                  (signal
+                    (make-extension-cancellation-signal
+                     :aborted-function
+                     (lambda ()
+                       (agent-aborted-p agent))
+                     :abort-function
+                     (lambda ()
+                       (agent-abort agent))))
+                  (*tool-abort-p*
+                    (lambda ()
+                      (agent-aborted-p agent))))
+             (execute-prepared-tool
+              entry
+              :cancellation-signal signal
+              :on-update
+              (lambda (partial-result)
+                (emit-tool-update
+                 agent
+                 (prepared-tool-call-call entry)
+                 partial-result))))))
       (if (eq decision :retry)
           (setf entry
                 (prepare-tool-restart-state
@@ -545,7 +589,8 @@
       (values
        results appended
        (some #'tool-restart-state-abort-p
-             states)))))
+             states)
+       (tool-outcomes-terminate-p outcomes)))))
 
 (defun execute-truncated-tool-batch
     (agent calls &key turn-index)
@@ -891,7 +936,7 @@
           (when (and calls (not terminal-p))
             (multiple-value-bind
                   (batch-results batch-hook-messages
-                   abort-from-tool-p)
+                   abort-from-tool-p terminate-from-tool-p)
                 (if
                     (eq
                      :length
@@ -904,7 +949,8 @@
               (setf
                results batch-results
                tool-hook-messages batch-hook-messages)
-              (when abort-from-tool-p
+              (when (or abort-from-tool-p
+                        terminate-from-tool-p)
                 (setf terminal-p t))))
           (multiple-value-bind
                 (message turn-hook-messages)
