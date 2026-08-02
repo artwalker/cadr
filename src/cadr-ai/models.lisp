@@ -31,6 +31,10 @@
 (defparameter *image-model-catalog*
   (make-hash-table :test #'equal))
 
+;; Replaced by the generated catalog at load time. Keeping the generation stamp
+;; in the image makes catalog provenance available without shipping fixtures.
+(defparameter *generated-model-data-generated-at* nil)
+
 (defun model-catalog-key (provider id)
   (cons provider id))
 

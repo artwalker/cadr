@@ -236,6 +236,16 @@
    #:register-model-metadata
    #:find-model-metadata
    #:list-model-metadata
+   #:+model-data-schema-version+
+   #:+model-data-manifest-file+
+   #:read-model-data-provider-ids
+   #:read-model-data-structure
+   #:model-data-structure-hash
+   #:create-model-data-manifest
+   #:validate-model-data-directory
+   #:models-dev-effort-thinking-level-map
+   #:get-builtin-model-data-generated-at
+   #:write-red-circle-test-png
    #:register-image-model
    #:find-image-model
    #:list-image-models

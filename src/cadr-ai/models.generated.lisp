@@ -2,6 +2,8 @@
 ;; Runtime use is offline and deterministic.
 (in-package #:cadr-ai)
 
+(setf *generated-model-data-generated-at* "2026-07-29T22:27:21.904Z")
+
 (defparameter *generated-model-metadata* '
 ((:PROVIDER :AMAZON-BEDROCK :ID "amazon.nova-2-lite-v1:0" :NAME "Nova 2 Lite" :API
   :BEDROCK-CONVERSE-STREAM :BASE-URL "https://bedrock-runtime.us-east-1.amazonaws.com"

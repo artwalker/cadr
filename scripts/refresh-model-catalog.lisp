@@ -16,13 +16,8 @@
    (uiop:pathname-directory-pathname
     (truename *load-truename*))))
 
-(dolist (relative
-         '("src/cadr-ai/package.lisp"
-           "src/cadr-ai/conditions.lisp"
-           "src/cadr-ai/types.lisp"
-           "src/cadr-ai/json.lisp"
-           "src/cadr-ai/models.lisp"))
-  (load (truename (merge-pathnames relative *root*))))
+(asdf:load-asd (truename (merge-pathnames "cadr-ai.asd" *root*)))
+(asdf:load-system "cadr-ai")
 
 (defparameter *catalog-directory*
   (merge-pathnames
@@ -31,6 +26,16 @@
 
 (defparameter *generated-path*
   (merge-pathnames "src/cadr-ai/models.generated.lisp" *root*))
+
+(defun catalog-generation-timestamp ()
+  (let* ((structure (cadr-ai:read-model-data-structure *catalog-directory*))
+         (manifest
+           (cadr-ai::parse-json
+            (uiop:read-file-string
+             (merge-pathnames ".manifest.json" *catalog-directory*)
+             :external-format :utf-8))))
+    (cadr-ai:validate-model-data-directory structure *catalog-directory*)
+    (cadr-ai::json-get manifest "generatedAt")))
 
 (defparameter *compat-key-map*
   '(("allowEmptySignature" . :allow-empty-signature)
@@ -196,6 +201,7 @@
                     (model-row provider (json-get models id))))))
 
 (let* ((rows (catalog-rows))
+       (generated-at (catalog-generation-timestamp))
        (*print-pretty* t)
        (*print-right-margin* 88))
   (with-open-file
@@ -212,6 +218,8 @@
      stream)
     (write-line "(in-package #:cadr-ai)" stream)
     (terpri stream)
+    (format stream "(setf *generated-model-data-generated-at* ~S)~%~%"
+            generated-at)
     (write-string "(defparameter *generated-model-metadata* '" stream)
     (pprint rows stream)
     (write-line ")" stream)
