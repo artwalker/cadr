@@ -6,6 +6,7 @@
    #:eval-result-events
    #:eval-result-usage
    #:eval-result-errors
+   #:eval-result-recorded-artifacts
    #:eval-result-artifacts
    #:eval-result-timings
    #:make-eval-prompt-step
@@ -13,6 +14,11 @@
    #:run-coding-agent-eval
    #:run-smoke-eval
    #:run-extension-eval
+   #:extension-authoring-input
+   #:make-extension-authoring-harness
+   #:extension-authoring-harness-table
+   #:judge-extension-authoring-result
+   #:run-extension-authoring-eval-suite
    #:+cadr-session-snapshot-artifact+
    #:eval-attachment
    #:make-eval-attachment
@@ -79,6 +85,13 @@
    #:harness-comparison-report-diagnostics
    #:summarize-harness-comparisons
    #:format-harness-comparison-report
+   #:eval-reporter-case
+   #:make-eval-reporter-case
+   #:eval-harness-reporter
+   #:make-eval-harness-reporter
+   #:eval-harness-reporter-observations
+   #:eval-reporter-record-case
+   #:eval-reporter-finish
    #:eval-main))
 
 (in-package #:cadr-evals)

@@ -1,20 +1,5 @@
 (in-package #:cadr-evals)
 
-(defun eval-result-json (result)
-  (cadr-ai::json-object
-   "output" (eval-result-output result)
-   "events"
-   (cadr-ai::list-json-array
-    (eval-result-events result))
-   "usage" (eval-result-usage result)
-   "errors"
-   (cadr-ai::list-json-array
-    (eval-result-errors result))
-   "artifacts"
-   (eval-result-artifacts result)
-   "timings"
-   (eval-result-timings result)))
-
 (defun parse-eval-arguments (arguments)
   (let ((provider nil)
         (model nil)
@@ -125,7 +110,7 @@
             (provider model suite)
           (parse-eval-arguments
            (uiop:command-line-arguments))
-        (let ((result
+        (let ((value
                 (cond
                   ((string= suite
                             "smoke")
@@ -139,14 +124,20 @@
                     (run-extension-eval
                      :provider provider
                      :model model)))
+                  ((string= suite
+                            "extension-authoring")
+                   (run-extension-authoring-eval-suite
+                    :provider provider
+                    :model model))
                   (t
                    (error
                     "Unknown eval suite: ~A"
                     suite)))))
           (write-line
            (cadr-ai::stringify-json
-            (eval-result-json
-             result)))
+            (if (typep value 'eval-result)
+                (eval-result-json value)
+                value)))
           (finish-output)))
     (error (cause)
       (format

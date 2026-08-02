@@ -5,6 +5,7 @@
   (events nil)
   usage
   (errors nil)
+  (recorded-artifacts nil :type list)
   (artifacts
     (make-hash-table :test #'equal)
     :type hash-table)
@@ -12,11 +13,28 @@
     (make-hash-table :test #'equal)
     :type hash-table))
 
+(defun eval-result-json (result)
+  (cadr-ai::json-object
+   "output" (eval-result-output result)
+   "events"
+   (cadr-ai::list-json-array
+    (eval-result-events result))
+   "usage" (eval-result-usage result)
+   "errors"
+   (cadr-ai::list-json-array
+    (eval-result-errors result))
+   "artifacts"
+   (eval-result-artifacts result)
+   "timings"
+   (eval-result-timings result)))
+
 (defparameter *eval-environment-function*
   #'uiop:getenv)
 
 (defparameter *eval-root-observer*
   (constantly nil))
+
+(defvar *eval-reload-reports* nil)
 
 (defun default-eval-model-resolver
     (provider model)
@@ -401,11 +419,14 @@
         output))))
 
 (defun reload-eval-extensions
-    (manager agent)
+    (manager agent
+     &key (errors-are-fatal-p t))
   (let ((report
           (cadr-cli::reload-cli-extensions
            manager)))
-    (when (getf report :errors)
+    (push report *eval-reload-reports*)
+    (when (and errors-are-fatal-p
+               (getf report :errors))
       (error
        "Eval extension reload failed: ~{~A~^; ~}"
        (getf report :errors)))
@@ -443,8 +464,10 @@
      &key provider model no-tools
        selector
        transform-system-prompt
-       abort-p)
-  (let ((started
+       abort-p
+       allow-extension-errors-p)
+  (let ((*eval-reload-reports* nil)
+        (started
           (get-internal-real-time)))
     (multiple-value-bind
         (provider-name model-id)
@@ -599,7 +622,10 @@
                                      agent content))))
                            (:reload
                             (reload-eval-extensions
-                             manager agent))
+                             manager agent
+                             :errors-are-fatal-p
+                             (not
+                              allow-extension-errors-p)))
                            (otherwise
                             (error
                              "Unknown eval step: ~S"
@@ -627,6 +653,14 @@
                            (eval-usage
                             messages
                             model-object)
+                           :errors
+                           (loop
+                             for report in
+                             (reverse
+                              *eval-reload-reports*)
+                             append
+                             (copy-list
+                              (getf report :errors)))
                            :artifacts
                            (cadr-ai::json-object
                             "runId"

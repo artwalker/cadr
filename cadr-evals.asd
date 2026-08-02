@@ -11,6 +11,7 @@
                              (:file "artifacts")
                              (:file "harness-table")
                              (:file "summary")
+                             (:file "reporter")
                              (:file "suites")
                              (:file "main"))))
   :in-order-to ((test-op (test-op "cadr-evals/tests"))))
@@ -28,7 +29,9 @@
                              (:file "pi-harness-test")
                              (:file "artifacts-test")
                              (:file "harness-table-test")
-                             (:file "summary-test"))))
+                             (:file "summary-test")
+                             (:file "reporter-test")
+                             (:file "extension-authoring-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call
