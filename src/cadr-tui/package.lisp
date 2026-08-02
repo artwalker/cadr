@@ -147,11 +147,20 @@
    #:make-autocomplete-command
    #:autocomplete-provider
    #:make-autocomplete-provider
+   #:autocomplete-provider-trigger-characters
    #:autocomplete-suggestions
+   #:make-autocomplete-suggestions
    #:autocomplete-suggestions-items
    #:autocomplete-suggestions-prefix
    #:autocomplete-get-suggestions
    #:autocomplete-apply
+   #:autocomplete-provider-get-suggestions
+   #:autocomplete-provider-apply-completion
+   #:autocomplete-provider-should-trigger-file-completion-p
+   #:autocomplete-request-signal
+   #:make-autocomplete-request-signal
+   #:autocomplete-request-abort
+   #:autocomplete-request-aborted-p
    #:multiline-editor
    #:make-multiline-editor
    #:editor-text

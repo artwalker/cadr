@@ -579,6 +579,184 @@
            'cadr-tui:autocomplete-get-suggestions)
           original))))))
 
+(test editor-custom-autocomplete-cancels-stale-requests-and-keeps-latest-result
+  (let* ((first-entered
+           (sb-thread:make-semaphore :count 0))
+         (release-first
+           (sb-thread:make-semaphore :count 0))
+         (second-entered
+           (sb-thread:make-semaphore :count 0))
+         (now 0)
+         (first-signal nil)
+         (provider
+           (cadr-tui:make-autocomplete-provider
+            :trigger-characters '(#\#)
+            :suggestions-function
+            (lambda (lines row column options)
+              (declare (ignore row column))
+              (let ((text (first lines)))
+                (if (string= text "#a")
+                    (progn
+                      (setf first-signal (getf options :signal))
+                      (sb-thread:signal-semaphore first-entered)
+                      (sb-thread:wait-on-semaphore release-first)
+                      (cadr-tui:make-autocomplete-suggestions
+                       :items
+                       (list
+                        (cadr-tui:make-autocomplete-item
+                         :value "stale" :label "stale"))
+                       :prefix "#a"))
+                    (progn
+                      (sb-thread:signal-semaphore second-entered)
+                      (cadr-tui:make-autocomplete-suggestions
+                       :items
+                       (list
+                        (cadr-tui:make-autocomplete-item
+                         :value "latest" :label "latest"))
+                       :prefix "#ab")))))))
+         (editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-autocomplete-provider editor provider)
+    (cadr-tui:editor-set-autocomplete-clock editor (lambda () now))
+    (editor-type editor "#a")
+    (incf now 1/50)
+    (is (cadr-tui:editor-poll-autocomplete editor))
+    (is (sb-thread:wait-on-semaphore first-entered :timeout 1))
+    (editor-event editor :text "b")
+    (is (cadr-tui:autocomplete-request-aborted-p first-signal))
+    (incf now 1/50)
+    (is (cadr-tui:editor-poll-autocomplete editor))
+    (sb-thread:signal-semaphore release-first)
+    (is (sb-thread:wait-on-semaphore second-entered :timeout 1))
+    (let ((request
+            (cadr-tui::multiline-editor-autocomplete-request
+             editor)))
+      (sb-thread:join-thread
+       (cadr-tui::editor-autocomplete-request-thread request)))
+    (is (cadr-tui:editor-poll-autocomplete editor))
+    (is (equal '("latest")
+               (mapcar
+                #'cadr-tui:autocomplete-item-value
+                (cadr-tui:editor-autocomplete-items editor))))
+    (is (not
+         (cadr-tui:editor-poll-autocomplete editor)))
+    (is (equal '("latest")
+               (mapcar
+                #'cadr-tui:autocomplete-item-value
+                (cadr-tui:editor-autocomplete-items editor))))))
+
+(test editor-custom-autocomplete-isolates-concurrent-editors
+  (let* ((entered-a (sb-thread:make-semaphore :count 0))
+         (release-a (sb-thread:make-semaphore :count 0))
+         (entered-b (sb-thread:make-semaphore :count 0))
+         (provider-a
+           (cadr-tui:make-autocomplete-provider
+            :trigger-characters '(#\#)
+            :suggestions-function
+            (lambda (lines row column options)
+              (declare (ignore lines row column options))
+              (sb-thread:signal-semaphore entered-a)
+              (sb-thread:wait-on-semaphore release-a)
+              (cadr-tui:make-autocomplete-suggestions
+               :items
+               (list
+                (cadr-tui:make-autocomplete-item
+                 :value "alpha" :label "alpha"))
+               :prefix "#"))))
+         (provider-b
+           (cadr-tui:make-autocomplete-provider
+            :trigger-characters '(#\#)
+            :suggestions-function
+            (lambda (lines row column options)
+              (declare (ignore lines row column options))
+              (sb-thread:signal-semaphore entered-b)
+              (cadr-tui:make-autocomplete-suggestions
+               :items
+               (list
+                (cadr-tui:make-autocomplete-item
+                 :value "beta" :label "beta"))
+               :prefix "#"))))
+         (editor-a (cadr-tui:make-multiline-editor))
+         (editor-b (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-autocomplete-provider editor-a provider-a)
+    (cadr-tui:editor-set-autocomplete-provider editor-b provider-b)
+    (cadr-tui:editor-set-text editor-a "#")
+    (editor-event editor-a :tab)
+    (is (sb-thread:wait-on-semaphore entered-a :timeout 1))
+    (cadr-tui:editor-set-text editor-b "#")
+    (editor-event editor-b :tab)
+    (is (sb-thread:wait-on-semaphore entered-b :timeout 1))
+    (let ((request-b
+            (cadr-tui::multiline-editor-autocomplete-request editor-b)))
+      (sb-thread:join-thread
+       (cadr-tui::editor-autocomplete-request-thread request-b)))
+    (is (cadr-tui:editor-poll-autocomplete editor-b))
+    (is (string= "beta" (cadr-tui:editor-text editor-b)))
+    (is (not (cadr-tui:editor-autocomplete-visible-p editor-b)))
+    (is (not (cadr-tui:editor-autocomplete-visible-p editor-a)))
+    (sb-thread:signal-semaphore release-a)
+    (let ((request-a
+            (cadr-tui::multiline-editor-autocomplete-request editor-a)))
+      (sb-thread:join-thread
+       (cadr-tui::editor-autocomplete-request-thread request-a)))
+    (is (cadr-tui:editor-poll-autocomplete editor-a))
+    (is (string= "alpha" (cadr-tui:editor-text editor-a)))
+    (is (not (cadr-tui:editor-autocomplete-visible-p editor-a)))))
+
+(test editor-custom-autocomplete-rejects-results-after-text-or-cursor-change
+  (let* ((entered (sb-thread:make-semaphore :count 0))
+         (release (sb-thread:make-semaphore :count 0))
+         (provider
+           (cadr-tui:make-autocomplete-provider
+            :trigger-characters '(#\#)
+            :suggestions-function
+            (lambda (lines row column options)
+              (declare (ignore lines row column options))
+              (sb-thread:signal-semaphore entered)
+              (sb-thread:wait-on-semaphore release)
+              (cadr-tui:make-autocomplete-suggestions
+               :items
+               (list
+                (cadr-tui:make-autocomplete-item
+                 :value "stale" :label "stale"))
+               :prefix "#"))))
+         (editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-autocomplete-provider editor provider)
+    (cadr-tui:editor-set-text editor "#")
+    (editor-event editor :tab)
+    (is (sb-thread:wait-on-semaphore entered :timeout 1))
+    (setf (cadr-tui::multiline-editor-cursor editor) 0)
+    (sb-thread:signal-semaphore release)
+    (let ((request
+            (cadr-tui::multiline-editor-autocomplete-request editor)))
+      (sb-thread:join-thread
+       (cadr-tui::editor-autocomplete-request-thread request)))
+    (is (cadr-tui:editor-poll-autocomplete editor))
+    (is (not (cadr-tui:editor-autocomplete-visible-p editor)))))
+
+(test editor-custom-autocomplete-tab-applies-a-single-async-result
+  (let* ((provider
+           (cadr-tui:make-autocomplete-provider
+            :suggestions-function
+            (lambda (lines row column options)
+              (declare (ignore lines row column options))
+              (cadr-tui:make-autocomplete-suggestions
+               :items
+               (list
+                (cadr-tui:make-autocomplete-item
+                 :value "README.md" :label "README.md"))
+               :prefix "REA"))))
+         (editor
+           (cadr-tui:make-multiline-editor :text "REA")))
+    (cadr-tui:editor-set-autocomplete-provider editor provider)
+    (editor-event editor :tab)
+    (let ((request
+            (cadr-tui::multiline-editor-autocomplete-request editor)))
+      (sb-thread:join-thread
+       (cadr-tui::editor-autocomplete-request-thread request)))
+    (is (cadr-tui:editor-poll-autocomplete editor))
+    (is (string= "README.md" (cadr-tui:editor-text editor)))
+    (is (not (cadr-tui:editor-autocomplete-visible-p editor)))))
+
 (test editor-enter-applies-and-submits-slash-completion
   (let* ((provider
            (cadr-tui:make-autocomplete-provider

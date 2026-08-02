@@ -15,16 +15,46 @@
   (items nil :type list)
   (prefix "" :type string))
 
+(defstruct (autocomplete-request-signal
+            (:constructor make-autocomplete-request-signal ()))
+  (lock
+    (sb-thread:make-mutex
+     :name "cadr autocomplete request signal"))
+  (aborted-p nil :type boolean))
+
+(defun autocomplete-request-abort (signal)
+  (when signal
+    (sb-thread:with-mutex
+        ((autocomplete-request-signal-lock signal))
+      (setf
+       (autocomplete-request-signal-aborted-p signal)
+       t)))
+  signal)
+
+(defun autocomplete-request-aborted-p (signal)
+  (and signal
+       (sb-thread:with-mutex
+           ((autocomplete-request-signal-lock signal))
+         (autocomplete-request-signal-aborted-p signal))))
+
 (defstruct (autocomplete-provider
             (:constructor make-autocomplete-provider
                 (&key
                    (commands nil)
                    (base-path
                      (uiop:getcwd))
-                   fd-path)))
+                   fd-path
+                   trigger-characters
+                   suggestions-function
+                   apply-completion-function
+                   should-trigger-file-completion-function)))
   (commands nil :type list)
   base-path
-  fd-path)
+  fd-path
+  (trigger-characters nil :type list)
+  suggestions-function
+  apply-completion-function
+  should-trigger-file-completion-function)
 
 (defun autocomplete-delimiter-p (character)
   (member character
@@ -524,3 +554,42 @@
      new-lines cursor-line
      (+ (length before) offset
         (length suffix)))))
+
+(defun autocomplete-provider-get-suggestions
+    (provider lines cursor-line cursor-column
+     &key signal force-p)
+  (let ((callback
+          (autocomplete-provider-suggestions-function
+           provider)))
+    (if callback
+        (funcall
+         callback lines cursor-line cursor-column
+         (list
+          :signal signal
+          :force-p (not (null force-p))
+          :cwd (autocomplete-provider-base-path provider)))
+        (autocomplete-get-suggestions
+         provider lines cursor-line cursor-column
+         :force-p force-p))))
+
+(defun autocomplete-provider-apply-completion
+    (provider lines cursor-line cursor-column item prefix)
+  (let ((callback
+          (autocomplete-provider-apply-completion-function
+           provider)))
+    (if callback
+        (funcall callback lines cursor-line cursor-column
+                 item prefix)
+        (autocomplete-apply
+         lines cursor-line cursor-column item prefix))))
+
+(defun autocomplete-provider-should-trigger-file-completion-p
+    (provider lines cursor-line cursor-column)
+  (let ((callback
+          (autocomplete-provider-should-trigger-file-completion-function
+           provider)))
+    (if callback
+        (not
+         (null
+          (funcall callback lines cursor-line cursor-column)))
+        t)))

@@ -1,5 +1,21 @@
 (in-package #:cadr-tui)
 
+(defstruct editor-autocomplete-request
+  (generation 0 :type (integer 0 *))
+  signal
+  (snapshot-text "" :type string)
+  (snapshot-line 0 :type (integer 0 *))
+  (snapshot-column 0 :type (integer 0 *))
+  (force-p nil :type boolean)
+  (explicit-tab-p nil :type boolean)
+  (lock
+    (sb-thread:make-mutex
+     :name "cadr editor autocomplete request"))
+  (completed-p nil :type boolean)
+  result
+  error
+  thread)
+
 (defstruct (multiline-editor
             (:constructor %make-multiline-editor))
   (text "" :type string)
@@ -27,6 +43,9 @@
                       :type function)
   autocomplete-pending-deadline
   autocomplete-pending-force-p
+  autocomplete-pending-explicit-tab-p
+  (autocomplete-generation 0 :type (integer 0 *))
+  autocomplete-request
   (border-color-key :border-muted :type keyword)
   (last-render-width 80 :type (integer 1 *))
   (scroll-offset 0 :type (integer 0 *))
@@ -139,13 +158,25 @@
    (multiline-editor-undo-stack editor)
    (editor-snapshot editor)))
 
+(defun editor-abort-autocomplete-request (editor)
+  (let ((request
+          (multiline-editor-autocomplete-request editor)))
+    (when request
+      (autocomplete-request-abort
+       (editor-autocomplete-request-signal request))))
+  (incf (multiline-editor-autocomplete-generation editor))
+  editor)
+
 (defun editor-cancel-autocomplete (editor)
+  (editor-abort-autocomplete-request editor)
   (setf
    (multiline-editor-autocomplete-suggestions editor) nil
    (multiline-editor-autocomplete-prefix editor) nil
    (multiline-editor-autocomplete-selected editor) 0
    (multiline-editor-autocomplete-pending-deadline editor) nil
-   (multiline-editor-autocomplete-pending-force-p editor) nil)
+   (multiline-editor-autocomplete-pending-force-p editor) nil
+   (multiline-editor-autocomplete-pending-explicit-tab-p editor) nil
+   (multiline-editor-autocomplete-request editor) nil)
   editor)
 
 (defun editor-exit-history (editor)
@@ -932,36 +963,144 @@
   (editor-reset-navigation-state editor)
   editor)
 
+(defun editor-apply-autocomplete-suggestions
+    (editor suggestions)
+  (if suggestions
+      (setf
+       (multiline-editor-autocomplete-suggestions editor)
+       (autocomplete-suggestions-items suggestions)
+       (multiline-editor-autocomplete-prefix editor)
+       (autocomplete-suggestions-prefix suggestions)
+       (multiline-editor-autocomplete-selected editor)
+       0)
+      (editor-cancel-autocomplete editor))
+  editor)
+
+(defun editor-start-custom-autocomplete-request
+    (editor provider force-p explicit-tab-p)
+  (let* ((previous
+           (multiline-editor-autocomplete-request editor))
+         (previous-thread
+           (and previous
+                (editor-autocomplete-request-thread previous)))
+         (signal (make-autocomplete-request-signal))
+         (generation
+           (1+
+            (multiline-editor-autocomplete-generation editor))))
+    (when previous
+      (autocomplete-request-abort
+       (editor-autocomplete-request-signal previous)))
+    (multiple-value-bind (line column)
+        (editor-cursor editor)
+      (let* ((lines (editor-lines editor))
+             (request
+               (make-editor-autocomplete-request
+                :generation generation
+                :signal signal
+                :snapshot-text
+                (multiline-editor-text editor)
+                :snapshot-line line
+                :snapshot-column column
+                :force-p (not (null force-p))
+                :explicit-tab-p
+                (not (null explicit-tab-p)))))
+        (setf
+         (multiline-editor-autocomplete-generation editor)
+         generation
+         (multiline-editor-autocomplete-request editor)
+         request)
+        (setf
+         (editor-autocomplete-request-thread request)
+         (sb-thread:make-thread
+          (lambda ()
+            (when previous-thread
+              (ignore-errors
+                (sb-thread:join-thread previous-thread)))
+            (unless (autocomplete-request-aborted-p signal)
+              (handler-case
+                  (let ((result
+                          (autocomplete-provider-get-suggestions
+                           provider lines line column
+                           :signal signal :force-p force-p)))
+                    (sb-thread:with-mutex
+                        ((editor-autocomplete-request-lock request))
+                      (setf
+                       (editor-autocomplete-request-result request)
+                       result
+                       (editor-autocomplete-request-completed-p request)
+                       t)))
+                (condition (condition)
+                  (sb-thread:with-mutex
+                      ((editor-autocomplete-request-lock request))
+                    (setf
+                     (editor-autocomplete-request-error request)
+                     condition
+                     (editor-autocomplete-request-completed-p request)
+                     t))))))
+          :name "cadr autocomplete provider"))))
+  editor))
+
 (defun editor-run-autocomplete
-    (editor force-p)
+    (editor force-p &optional explicit-tab-p)
   (let ((provider
           (multiline-editor-autocomplete-provider editor)))
     (unless provider
       (return-from editor-run-autocomplete
         (editor-cancel-autocomplete editor)))
+    (when (autocomplete-provider-suggestions-function provider)
+      (return-from editor-run-autocomplete
+        (editor-start-custom-autocomplete-request
+         editor provider force-p explicit-tab-p)))
     (multiple-value-bind (line column)
         (editor-cursor editor)
       (let ((suggestions
-              (autocomplete-get-suggestions
+              (autocomplete-provider-get-suggestions
                provider
                (editor-lines editor)
                line column
                :force-p force-p)))
-        (if suggestions
-            (setf
-             (multiline-editor-autocomplete-suggestions
-              editor)
-             (autocomplete-suggestions-items
-              suggestions)
-             (multiline-editor-autocomplete-prefix
-              editor)
-             (autocomplete-suggestions-prefix
-              suggestions)
-             (multiline-editor-autocomplete-selected
-              editor)
-             0)
-            (editor-cancel-autocomplete editor)))))
+        (editor-apply-autocomplete-suggestions
+         editor suggestions))))
   editor)
+
+(defun editor-provider-trigger-characters (editor)
+  (let ((provider
+          (multiline-editor-autocomplete-provider editor)))
+    (remove-duplicates
+     (loop for value in
+           (and provider
+                (autocomplete-provider-trigger-characters
+                 provider))
+           for character =
+           (cond
+             ((characterp value) value)
+             ((and (stringp value)
+                   (= 1 (length value)))
+              (char value 0)))
+           when (and character
+                     (not (char= character #\/))
+                     (not (member character
+                                  '(#\Space #\Tab #\Newline
+                                    #\Return))))
+             collect character)
+     :test #'char=)))
+
+(defun editor-symbol-autocomplete-context-p
+    (editor before)
+  (or
+   (not (null (autocomplete-at-prefix before)))
+   (loop for trigger in (editor-provider-trigger-characters editor)
+         for position = (position trigger before :from-end t)
+         thereis
+         (and position
+              (or (zerop position)
+                  (member (char before (1- position))
+                          '(#\Space #\Tab)))
+              (notany
+               (lambda (character)
+                 (member character
+                         '(#\Space #\Tab #\Newline #\Return)))
+               (subseq before (1+ position)))))))
 
 (defun editor-autocomplete-debounce-p (editor force-p)
   (and
@@ -969,26 +1108,52 @@
    (multiple-value-bind (line column)
        (editor-cursor editor)
      (let ((text (or (nth line (editor-lines editor)) "")))
-       (autocomplete-at-prefix
+       (editor-symbol-autocomplete-context-p
+        editor
         (subseq text 0 (min column (length text))))))))
 
 (defun editor-refresh-autocomplete
-    (editor &key force-p)
+    (editor &key force-p explicit-tab-p)
+  (let ((provider
+          (multiline-editor-autocomplete-provider editor)))
+    (when (and force-p provider
+               (not
+                (autocomplete-provider-should-trigger-file-completion-p
+                 provider
+                 (editor-lines editor)
+                 (multiple-value-bind (line column)
+                     (editor-cursor editor)
+                   (declare (ignore column))
+                   line)
+                 (multiple-value-bind (line column)
+                     (editor-cursor editor)
+                   (declare (ignore line))
+                   column))))
+      (return-from editor-refresh-autocomplete editor)))
   (if (editor-autocomplete-debounce-p editor force-p)
-      (setf
-       (multiline-editor-autocomplete-pending-deadline editor)
-       (+ (funcall
-          (multiline-editor-autocomplete-clock editor))
-          +editor-autocomplete-debounce-seconds+)
-       (multiline-editor-autocomplete-pending-force-p editor)
-       (not (null force-p)))
+      (progn
+        (editor-abort-autocomplete-request editor)
+        (setf
+         (multiline-editor-autocomplete-pending-deadline editor)
+         (+ (funcall
+            (multiline-editor-autocomplete-clock editor))
+            +editor-autocomplete-debounce-seconds+)
+         (multiline-editor-autocomplete-pending-force-p editor)
+         (not (null force-p))
+         (multiline-editor-autocomplete-pending-explicit-tab-p
+          editor)
+         (not (null explicit-tab-p))))
       (progn
         (setf
          (multiline-editor-autocomplete-pending-deadline editor)
          nil
          (multiline-editor-autocomplete-pending-force-p editor)
+         nil
+         (multiline-editor-autocomplete-pending-explicit-tab-p
+          editor)
          nil)
-        (editor-run-autocomplete editor force-p)))
+        (editor-run-autocomplete
+         editor force-p explicit-tab-p)))
   editor)
 
 (defun editor-set-autocomplete-clock (editor clock)
@@ -997,7 +1162,9 @@
   (setf
    (multiline-editor-autocomplete-clock editor) clock
    (multiline-editor-autocomplete-pending-deadline editor) nil
-   (multiline-editor-autocomplete-pending-force-p editor) nil)
+   (multiline-editor-autocomplete-pending-force-p editor) nil
+   (multiline-editor-autocomplete-pending-explicit-tab-p editor)
+   nil)
   editor)
 
 (defun editor-poll-autocomplete (editor)
@@ -1010,14 +1177,83 @@
                    deadline))
       (let ((force-p
               (multiline-editor-autocomplete-pending-force-p
+               editor))
+            (explicit-tab-p
+              (multiline-editor-autocomplete-pending-explicit-tab-p
                editor)))
         (setf
          (multiline-editor-autocomplete-pending-deadline editor)
          nil
          (multiline-editor-autocomplete-pending-force-p editor)
+         nil
+         (multiline-editor-autocomplete-pending-explicit-tab-p
+          editor)
          nil)
-        (editor-run-autocomplete editor force-p)
-        t))))
+        (editor-run-autocomplete
+         editor force-p explicit-tab-p)
+        (return-from editor-poll-autocomplete t))))
+  (let ((request
+          (multiline-editor-autocomplete-request editor)))
+    (when request
+      (multiple-value-bind (completed-p result error)
+          (sb-thread:with-mutex
+              ((editor-autocomplete-request-lock request))
+            (values
+             (editor-autocomplete-request-completed-p request)
+             (editor-autocomplete-request-result request)
+             (editor-autocomplete-request-error request)))
+        (when completed-p
+          (setf
+           (multiline-editor-autocomplete-request editor)
+           nil)
+          (multiple-value-bind (line column)
+              (editor-cursor editor)
+            (let ((current-p
+                    (and
+                     (null error)
+                     (not
+                      (autocomplete-request-aborted-p
+                       (editor-autocomplete-request-signal request)))
+                     (=
+                      (editor-autocomplete-request-generation request)
+                      (multiline-editor-autocomplete-generation editor))
+                     (string=
+                      (editor-autocomplete-request-snapshot-text request)
+                      (multiline-editor-text editor))
+                     (=
+                      (editor-autocomplete-request-snapshot-line request)
+                      line)
+                     (=
+                      (editor-autocomplete-request-snapshot-column request)
+                      column))))
+              (cond
+                ((not current-p)
+                 (setf
+                  (multiline-editor-autocomplete-suggestions editor)
+                  nil
+                  (multiline-editor-autocomplete-prefix editor)
+                  nil
+                  (multiline-editor-autocomplete-selected editor)
+                  0))
+                ((or (null result)
+                     (null
+                      (autocomplete-suggestions-items result)))
+                 (editor-cancel-autocomplete editor))
+                ((and
+                  (editor-autocomplete-request-force-p request)
+                  (editor-autocomplete-request-explicit-tab-p request)
+                  (= 1
+                     (length
+                      (autocomplete-suggestions-items result))))
+                 (editor-apply-autocomplete-result
+                  editor
+                  (first
+                   (autocomplete-suggestions-items result))
+                  (autocomplete-suggestions-prefix result)))
+                (t
+                 (editor-apply-autocomplete-suggestions
+                  editor result)))))
+          t)))))
 
 (defun editor-set-border-mode
     (editor mode &optional thinking-level)
@@ -1062,12 +1298,38 @@
             (plusp (length trimmed))
             (char= (char trimmed 0) #\/))
        (not (null
-             (autocomplete-at-prefix before)))))))
+             (editor-symbol-autocomplete-context-p
+              editor before)))))))
 
 (defun editor-autocomplete-items (editor)
   (copy-list
    (multiline-editor-autocomplete-suggestions
     editor)))
+
+(defun editor-apply-autocomplete-result
+    (editor item prefix)
+  (let ((provider
+          (multiline-editor-autocomplete-provider editor)))
+    (when (and provider item prefix)
+      (editor-push-undo editor)
+      (multiple-value-bind (line column)
+          (editor-cursor editor)
+        (multiple-value-bind (new-lines new-line new-column)
+            (autocomplete-provider-apply-completion
+             provider
+             (editor-lines editor)
+             line column item prefix)
+          (let ((new-text
+                  (format nil "~{~A~^~%~}" new-lines)))
+            (setf
+             (multiline-editor-text editor) new-text
+             (multiline-editor-cursor editor)
+             (editor-position-for-line-column
+              new-text new-line new-column)
+             (multiline-editor-last-action editor) nil))
+          (editor-cancel-autocomplete editor)
+          (editor-reset-navigation-state editor)
+          t)))))
 
 (defun editor-apply-autocomplete (editor)
   (let* ((items
@@ -1082,27 +1344,8 @@
          (prefix
            (multiline-editor-autocomplete-prefix editor)))
     (when (and item prefix)
-      (editor-push-undo editor)
-      (multiple-value-bind
-            (line column)
-          (editor-cursor editor)
-        (multiple-value-bind
-              (new-lines new-line new-column)
-            (autocomplete-apply
-             (editor-lines editor)
-             line column item prefix)
-          (setf
-           (multiline-editor-text editor)
-           (format nil "~{~A~^~%~}" new-lines)
-           (multiline-editor-cursor editor)
-           (editor-position-for-line-column
-            (format nil "~{~A~^~%~}" new-lines)
-            new-line new-column)
-           (multiline-editor-last-action editor)
-           nil)
-          (editor-cancel-autocomplete editor)
-          (editor-reset-navigation-state editor)
-          t)))))
+      (editor-apply-autocomplete-result
+       editor item prefix))))
 
 (defun editor-handle-event (editor event)
   (let ((kind (input-event-kind event))
@@ -1186,7 +1429,8 @@
        (editor-insert-raw editor (string #\Newline))
        (editor-reset-navigation-state editor))
       (:tab
-       (editor-refresh-autocomplete editor :force-p t)
+       (editor-refresh-autocomplete
+        editor :force-p t :explicit-tab-p t)
        (when
            (= 1
               (length

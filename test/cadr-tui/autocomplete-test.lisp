@@ -195,3 +195,95 @@
          (is (= 0 row))
          (is (= (length "\"my folder/test.txt\"")
                 column)))))))
+
+(test autocomplete-provider-callbacks-preserve-the-full-baseline-contract
+  (let* ((signal
+           (cadr-tui:make-autocomplete-request-signal))
+         (suggestion-calls nil)
+         (trigger-calls nil)
+         (apply-calls nil)
+         (item
+           (cadr-tui:make-autocomplete-item
+            :value "issue:42"
+            :label "#42"))
+         (provider
+           (cadr-tui:make-autocomplete-provider
+            :base-path #P"/tmp/cadr-autocomplete-contract/"
+            :trigger-characters '(#\#)
+            :suggestions-function
+            (lambda (lines row column options)
+              (push (list lines row column options)
+                    suggestion-calls)
+              (cadr-tui:make-autocomplete-suggestions
+               :items (list item)
+               :prefix "#4"))
+            :apply-completion-function
+            (lambda (lines row column actual-item prefix)
+              (push (list lines row column actual-item prefix)
+                    apply-calls)
+              (values '("issue:42 ") 0 9))
+            :should-trigger-file-completion-function
+            (lambda (lines row column)
+              (push (list lines row column) trigger-calls)
+              t))))
+    (let ((suggestions
+            (cadr-tui:autocomplete-provider-get-suggestions
+             provider '("#4") 0 2
+             :signal signal :force-p t)))
+      (is (eq item
+              (first
+               (cadr-tui:autocomplete-suggestions-items
+                suggestions))))
+      (destructuring-bind (lines row column options)
+          (first suggestion-calls)
+        (is (equal '("#4") lines))
+        (is (= 0 row))
+        (is (= 2 column))
+        (is (eq signal (getf options :signal)))
+        (is (getf options :force-p))
+        (is (equal #P"/tmp/cadr-autocomplete-contract/"
+                   (getf options :cwd)))))
+    (is
+     (cadr-tui:autocomplete-provider-should-trigger-file-completion-p
+      provider '("#4") 0 2))
+    (is (equal '(("#4") 0 2) (first trigger-calls)))
+    (multiple-value-bind (lines row column)
+        (cadr-tui:autocomplete-provider-apply-completion
+         provider '("#4") 0 2 item "#4")
+      (is (equal '("issue:42 ") lines))
+      (is (= 0 row))
+      (is (= 9 column)))
+    (is (equal '("#4") (first (first apply-calls))))
+    (is (equal '(#\#)
+               (cadr-tui:autocomplete-provider-trigger-characters
+                provider)))
+    (is (not
+         (cadr-tui:autocomplete-request-aborted-p signal)))
+    (cadr-tui:autocomplete-request-abort signal)
+    (is (cadr-tui:autocomplete-request-aborted-p signal))))
+
+(test autocomplete-provider-without-callbacks-delegates-byte-for-byte
+  (let* ((command
+           (cadr-tui:make-autocomplete-command
+            :name "model"
+            :description "Choose model"))
+         (provider
+           (cadr-tui:make-autocomplete-provider
+            :commands (list command)))
+         (legacy
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/mo") 0 3))
+         (dispatched
+           (cadr-tui:autocomplete-provider-get-suggestions
+            provider '("/mo") 0 3)))
+    (is (equal
+         (mapcar #'cadr-tui:autocomplete-item-value
+                 (cadr-tui:autocomplete-suggestions-items legacy))
+         (mapcar #'cadr-tui:autocomplete-item-value
+                 (cadr-tui:autocomplete-suggestions-items dispatched))))
+    (is (string=
+         (cadr-tui:autocomplete-suggestions-prefix legacy)
+         (cadr-tui:autocomplete-suggestions-prefix dispatched)))
+    (is
+     (cadr-tui:autocomplete-provider-should-trigger-file-completion-p
+      provider '("plain") 0 5))))
