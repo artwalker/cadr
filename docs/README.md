@@ -23,6 +23,8 @@ remain evidence and must not silently override a current contract.
   fixed-reference comparison, archived results, and release thresholds.
 - [delivery-checklist.md](delivery-checklist.md): mandatory root-image rebuild,
   freshness proof, full verification, and delivery-report evidence.
+- [source-parity-upgrade.md](source-parity-upgrade.md): baseline source drift
+  inventory and mandatory added/deleted/renamed disposition gate.
 
 ## Evidence directories
 

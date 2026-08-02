@@ -93,7 +93,9 @@
        (lambda (resources)
          (is (eq :snapshot resources))
          (push :prompt steps)
-         "reloaded")
+         (values "reloaded"
+                 '(:custom-prompt "reloaded"
+                   :selected-tools ("read"))))
        :model-refresh-function
        (lambda ()
          (push :models steps))
@@ -114,9 +116,47 @@
       (is (string=
            "reloaded"
            (cadr-agent::agent-system-prompt agent)))
+      (is (equal
+           '(:custom-prompt "reloaded"
+             :selected-tools ("read"))
+           (cadr-agent:agent-system-prompt-options agent)))
       (cadr-cli::resolve-config-value
        "!produce" :command-function #'runner)
       (is (= 2 runs)))))
+
+(test cli-system-prompt-builder-returns-all-structured-options-with-identical-text
+  (with-test-directory (root)
+    (let* ((context-path (merge-pathnames "AGENTS.md" root))
+           (append-path (merge-pathnames "APPEND.md" root))
+           (skill
+             (cadr-agent:make-skill
+              :name "demo" :description "Demo"
+              :content "skill body" :file-path "/tmp/SKILL.md"))
+           (tool
+             (cadr-ai:make-tool
+              :name "read" :description "Read"
+              :parameters (cadr-ai::json-object "type" "object")
+              :executor (lambda (&rest values)
+                          (declare (ignore values)))))
+           (command (cadr-cli::make-cli-arguments))
+           (snapshot
+             (cadr-cli::make-resource-snapshot
+              :append-system-prompt-path append-path
+              :context-files (list context-path)
+              :skills (list skill))))
+      (write-text context-path "context")
+      (write-text append-path "append")
+      (multiple-value-bind (prompt options)
+          (cadr-cli::resolve-cli-system-prompt
+           command snapshot (list tool) root)
+        (dolist (key '(:custom-prompt :selected-tools :tool-snippets
+                       :prompt-guidelines :append-system-prompt :cwd
+                       :context-files :skills))
+          (is (member key options)))
+        (is (equal '("read") (getf options :selected-tools)))
+        (is (string= "append" (getf options :append-system-prompt)))
+        (is (string= prompt
+                     (apply #'cadr-cli:build-system-prompt options)))))))
 
 (test settings-manager-merges-preserves-external-edits-and-enforces-trust
   (with-test-directory (root)
@@ -469,3 +509,41 @@
                 (getf entry :name))
               (cadr-cli::resource-snapshot-themes
                snapshot))))))))
+
+(test deterministic-test-entrypoint-accounts-for-all-eight-suites
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (script (merge-pathnames "scripts/test-cl.sh" root))
+         (source (uiop:read-file-string script)))
+    (dolist (system '("cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"
+                      "cadr-storage" "cadr-server" "cadr-evals"
+                      "cadr-protocol"))
+      (is (= 1
+             (count-substring
+              (format nil "(asdf:test-system \"~A\" :force t)" system)
+              source))))
+    (dolist (contract '("did != 8" "pass_lines != 8" "skip_lines != 8"
+                        "fail_lines != 8" "checks != pass + skip + fail"
+                        "cadr test summary: systems=%d checks=%d pass=%d skip=%d fail=%d"))
+      (is (search contract source)))
+    (with-test-directory (temporary)
+      (let ((fake-sbcl (merge-pathnames "fake-sbcl" temporary))
+            (quicklisp (merge-pathnames "setup.lisp" temporary)))
+        (write-text
+         fake-sbcl
+         (format nil
+                 "#!/bin/sh~%i=0~%while [ \"$i\" -lt 8 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
+        (write-text quicklisp "")
+        (uiop:run-program (list "chmod" "+x" (namestring fake-sbcl)))
+        (multiple-value-bind (output errors status)
+            (uiop:run-program
+             (list
+              "env"
+              (format nil "SBCL=~A" (namestring fake-sbcl))
+              (format nil "QUICKLISP_SETUP=~A" (namestring quicklisp))
+              (namestring script))
+             :output :string :error-output :string
+             :ignore-error-status t)
+          (is (zerop status) "~A" errors)
+          (is (search
+               "cadr test summary: systems=8 checks=24 pass=24 skip=0 fail=0"
+               output)))))))

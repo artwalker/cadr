@@ -131,6 +131,7 @@
                 (uiop:read-file-string path)))
          (script-paths
            '("scripts/check-root-binary.sh"
+             "scripts/test-source-parity-drift.sh"
              "scripts/test-cl.sh"
              "build.sh"
              "build-server.sh"
@@ -147,6 +148,7 @@
              "scripts/live-tui-smoke.sh"))
          (stage-labels
            '("root cadr binary freshness"
+             "source parity drift self-test"
              "deterministic FiveAM"
              "isolated cadr build"
              "isolated cadr-server build"

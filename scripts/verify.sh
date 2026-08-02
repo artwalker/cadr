@@ -165,10 +165,18 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "source parity drift self-test" \
+    "$PROJECT_DIRECTORY/scripts/test-source-parity-drift.sh" ||
+    DETERMINISTIC_READY=0
+else
+  skip_deterministic "source parity drift self-test" "root binary is stale"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "deterministic FiveAM" \
     "$PROJECT_DIRECTORY/scripts/test-cl.sh" || DETERMINISTIC_READY=0
 else
-  skip_deterministic "deterministic FiveAM" "root binary is stale"
+  skip_deterministic "deterministic FiveAM" "source drift prerequisite failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ] && copy_isolated_tree; then
