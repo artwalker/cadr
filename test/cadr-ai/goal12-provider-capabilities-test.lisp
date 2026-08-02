@@ -186,76 +186,174 @@
                    (aref (cadr-ai::json-get loader "tools") 0) "function")
                   "name")))))
 
-(test goal12-streamed-tool-arguments-remain-usable-at-every-boundary
-  (dolist (provider (list (make-openai-provider :api-key "key")
-                          (cadr-ai:make-openai-completions-provider :api-key "key")
-                          (cadr-ai:make-anthropic-provider :api-key "key")))
-    (let* ((state (cadr-ai::make-provider-stream-state
-                   :message (cadr-ai:make-assistant-message)))
-           (events nil)
-           (emit (lambda (event) (push event events))))
-      (etypecase provider
-        (cadr-ai:openai-provider
-         (cadr-ai::reduce-provider-sse-event
-          provider state
-          (cadr-ai::make-sse-event
-           :data "{\"type\":\"response.output_item.added\",\"output_index\":0,\"item\":{\"type\":\"function_call\",\"id\":\"fc_1\",\"call_id\":\"c1\",\"name\":\"read\",\"arguments\":\"\"}}")
-          emit)
-         (cadr-ai::reduce-provider-sse-event
-          provider state
-          (cadr-ai::make-sse-event
-           :data
-           (cadr-ai::stringify-json
-            (cadr-ai::json-object
-             "type" "response.function_call_arguments.delta"
-             "output_index" 0 "delta" "{\"path\":\"README")))
-          emit))
-        (cadr-ai:openai-completions-provider
-         (cadr-ai::reduce-provider-sse-event
-          provider state
-          (cadr-ai::make-sse-event
-           :data
-           (cadr-ai::stringify-json
-            (cadr-ai::json-object
-             "id" "r"
-             "choices"
-             (cadr-ai::json-array
-              (cadr-ai::json-object
-               "delta"
-               (cadr-ai::json-object
-                "tool_calls"
-                (cadr-ai::json-array
+(defun goal13-emit-json-event (provider state emit payload)
+  (cadr-ai::reduce-provider-sse-event
+   provider state
+   (cadr-ai::make-sse-event
+    :data (cadr-ai::stringify-json payload))
+   emit))
+
+(defun goal13-streamed-tool-call (state)
+  (find-if
+   (lambda (block) (typep block 'cadr-ai:tool-call))
+   (assistant-message-content
+    (cadr-ai::provider-stream-state-message state))))
+
+(defun goal13-stream-tool-arguments (provider fragments authoritative)
+  (let* ((state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai:make-assistant-message)))
+         (events nil)
+         (emit (lambda (event) (push event events))))
+    (etypecase provider
+      (cadr-ai:openai-provider
+       (goal13-emit-json-event
+        provider state emit
+        (cadr-ai::json-object
+         "type" "response.output_item.added" "output_index" 0
+         "item"
+         (cadr-ai::json-object
+          "type" "function_call" "id" "fc_1" "call_id" "c1"
+          "name" "read" "arguments" "")))
+       (dolist (fragment fragments)
+         (goal13-emit-json-event
+          provider state emit
+          (cadr-ai::json-object
+           "type" "response.function_call_arguments.delta"
+           "output_index" 0 "delta" fragment)))
+       (goal13-emit-json-event
+        provider state emit
+        (cadr-ai::json-object
+         "type" "response.function_call_arguments.done"
+         "output_index" 0 "arguments" authoritative))
+       (goal13-emit-json-event
+        provider state emit
+        (cadr-ai::json-object
+         "type" "response.output_item.done" "output_index" 0
+         "item"
+         (cadr-ai::json-object
+          "type" "function_call" "id" "fc_1" "call_id" "c1"
+          "name" "read" "arguments" authoritative))))
+      (cadr-ai:openai-completions-provider
+       (loop for fragment in fragments
+             for first-p = t then nil
+             do
+                (goal13-emit-json-event
+                 provider state emit
                  (cadr-ai::json-object
-                  "index" 0 "id" "c1"
-                  "function"
-                  (cadr-ai::json-object
-                   "name" "read"
-                   "arguments" "{\"path\":\"README"))))
-               "finish_reason" 'cadr-ai::null)))))
-          emit))
-        (cadr-ai:anthropic-provider
-         (cadr-ai::reduce-provider-sse-event
-          provider state
-          (cadr-ai::make-sse-event
-           :data "{\"type\":\"content_block_start\",\"index\":0,\"content_block\":{\"type\":\"tool_use\",\"id\":\"c1\",\"name\":\"read\",\"input\":{}}}")
-          emit)
-         (cadr-ai::reduce-provider-sse-event
-          provider state
-          (cadr-ai::make-sse-event
-           :data
-           (cadr-ai::stringify-json
-            (cadr-ai::json-object
-             "type" "content_block_delta" "index" 0
-             "delta"
-             (cadr-ai::json-object
-              "type" "input_json_delta"
-              "partial_json" "{\"path\":\"README"))))
-          emit)))
-      (let ((call (find-if (lambda (block) (typep block 'cadr-ai:tool-call))
-                           (assistant-message-content
-                            (cadr-ai::provider-stream-state-message state)))))
-        (is (string= "README"
-                     (cadr-ai::json-get (cadr-ai:tool-call-arguments call) "path")))))))
+                  "id" "r"
+                  "choices"
+                  (cadr-ai::json-array
+                   (cadr-ai::json-object
+                    "delta"
+                    (cadr-ai::json-object
+                     "tool_calls"
+                     (cadr-ai::json-array
+                      (cadr-ai::json-object
+                       "index" 0
+                       "id" (if first-p "c1" 'cadr-ai::null)
+                       "function"
+                       (cadr-ai::json-object
+                        "name" (if first-p "read" 'cadr-ai::null)
+                        "arguments" fragment))))
+                    "finish_reason" 'cadr-ai::null)))))
+       (goal13-emit-json-event
+        provider state emit
+        (cadr-ai::json-object
+         "id" "r"
+         "choices"
+         (cadr-ai::json-array
+          (cadr-ai::json-object
+           "delta" (cadr-ai::json-object)
+           "finish_reason" "tool_calls")))))
+      (cadr-ai:anthropic-provider
+       (goal13-emit-json-event
+        provider state emit
+        (cadr-ai::json-object
+         "type" "content_block_start" "index" 0
+         "content_block"
+         (cadr-ai::json-object
+          "type" "tool_use" "id" "c1" "name" "read"
+          "input" (cadr-ai::json-object))))
+       (dolist (fragment fragments)
+         (goal13-emit-json-event
+          provider state emit
+          (cadr-ai::json-object
+           "type" "content_block_delta" "index" 0
+           "delta"
+           (cadr-ai::json-object
+            "type" "input_json_delta" "partial_json" fragment))))
+       (goal13-emit-json-event
+        provider state emit
+        (cadr-ai::json-object
+         "type" "content_block_stop" "index" 0))))
+    (values state (nreverse events))))
+
+(test goal13-streamed-tool-arguments-are-exact-at-every-delta-boundary
+  (let ((arguments
+          "{\"path\":\"/root/projects/sonechka/src/product/work.rs\",\"offset\":0,\"limit\":349}"))
+    (loop for split from 0 to (length arguments)
+          do
+             (dolist
+                 (provider
+                  (list
+                   (make-openai-provider :api-key "key")
+                   (cadr-ai:make-openai-completions-provider :api-key "key")
+                   (cadr-ai:make-anthropic-provider :api-key "key")))
+               (multiple-value-bind (state events)
+                   (goal13-stream-tool-arguments
+                    provider
+                    (list (subseq arguments 0 split)
+                          (subseq arguments split))
+                    arguments)
+                 (declare (ignore events))
+                 (is
+                  (string=
+                   arguments
+                   (gethash
+                    (if
+                        (typep provider
+                               'cadr-ai:openai-completions-provider)
+                        100000
+                        0)
+                    (cadr-ai::provider-stream-state-partial-json state))))
+                 (let ((call (goal13-streamed-tool-call state)))
+                   (is
+                    (string=
+                     "/root/projects/sonechka/src/product/work.rs"
+                     (cadr-ai::json-get
+                      (cadr-ai:tool-call-arguments call) "path")))
+                   (is (= 0 (cadr-ai::json-get
+                             (cadr-ai:tool-call-arguments call) "offset")))
+                   (is (= 349 (cadr-ai::json-get
+                               (cadr-ai:tool-call-arguments call) "limit")))))))))
+
+(test goal13-openai-authoritative-tool-arguments-replace-corrupt-deltas
+  (let* ((correct
+           "{\"path\":\"/root/projects/sonechka/src/product/work.rs\",\"offset\":0,\"limit\":349}")
+         (corrupt
+           "{\"path\":\"/root/projects/sonechka/src/product/work.rs}},{\",\"offset\":0,\"limit\":349}"))
+    (multiple-value-bind (state events)
+        (goal13-stream-tool-arguments
+         (make-openai-provider :api-key "key")
+         (list corrupt)
+         correct)
+      (is
+       (string=
+        correct
+        (gethash
+         0 (cadr-ai::provider-stream-state-partial-json state))))
+      (is
+       (string=
+        "/root/projects/sonechka/src/product/work.rs"
+        (cadr-ai::json-get
+         (cadr-ai:tool-call-arguments
+          (goal13-streamed-tool-call state))
+         "path")))
+      (is
+       (= 1
+          (count :tool-call-end events
+                 :key #'cadr-ai:stream-event-type))))))
 
 (test goal12-mistral-tool-call-ids-are-exactly-nine-alphanumerics
   (let* ((context

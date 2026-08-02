@@ -633,6 +633,32 @@
                (emit-event emit :tool-call-delta message
                            :content-index content-index
                            :delta delta)))))
+        ((string= type "response.function_call_arguments.done")
+         (multiple-value-bind (block content-index)
+             (openai-stream-block state output-index)
+           (when (typep block 'tool-call)
+             (let* ((arguments
+                      (or (json-get payload "arguments") ""))
+                    (previous
+                      (gethash
+                       output-index
+                       (provider-stream-state-partial-json state)
+                       "")))
+               (setf
+                (gethash
+                 output-index
+                 (provider-stream-state-partial-json state))
+                arguments
+                (tool-call-arguments block)
+                (parse-streaming-json arguments))
+               (when
+                   (and
+                    (uiop:string-prefix-p previous arguments)
+                    (< (length previous) (length arguments)))
+                 (emit-event
+                  emit :tool-call-delta message
+                  :content-index content-index
+                  :delta (subseq arguments (length previous))))))))
         ((string= type "response.output_item.done")
          (let ((item (json-get payload "item")))
            (multiple-value-bind (block content-index)
