@@ -33,6 +33,47 @@
   (setf (goal12-extension-component-disposed-p component) t)
   component)
 
+(defclass goal12-key-release-component (cadr-tui:component)
+  ((events :initform nil :accessor goal12-key-release-events)
+   (wants-key-release-p
+    :initarg :wants-key-release-p
+    :initform nil
+    :reader goal12-wants-key-release-p)))
+
+(defmethod cadr-tui:component-wants-key-release-p
+    ((component goal12-key-release-component))
+  (goal12-wants-key-release-p component))
+
+(defmethod cadr-tui:component-handle-event
+    ((component goal12-key-release-component) event)
+  (push event (goal12-key-release-events component))
+  (values nil nil))
+
+(test goal12-key-release-delivery-is-explicit-and-component-local
+  (let* ((release (format nil "~C[99;5:3u" #\Escape))
+         (plain (make-instance 'goal12-key-release-component))
+         (game
+           (make-instance
+            'goal12-key-release-component
+            :wants-key-release-p t))
+         (plain-tui (cadr-tui:make-tui-root))
+         (game-tui (cadr-tui:make-tui-root)))
+    (cadr-tui:tui-set-focus plain-tui plain)
+    (cadr-tui:tui-set-focus game-tui game)
+    (cadr-tui:tui-handle-input plain-tui release)
+    (cadr-tui:tui-handle-input game-tui release)
+    (is (null (goal12-key-release-events plain)))
+    (is (= 1 (length (goal12-key-release-events game))))
+    (let ((event (first (goal12-key-release-events game))))
+      (is (eq :key-release (cadr-tui:input-event-kind event)))
+      (is (string= release (cadr-tui:input-event-text event))))
+    (cadr-tui:tui-handle-input
+     plain-tui (cadr-tui:make-input-event :kind :text :text "a"))
+    (is (= 1 (length (goal12-key-release-events plain))))
+    (is (eq :text
+            (cadr-tui:input-event-kind
+             (first (goal12-key-release-events plain)))))))
+
 (test goal12-custom-message-and-entry-renderers-own-real-component-lifecycles
   (let ((message-components nil)
         (entry-components nil))

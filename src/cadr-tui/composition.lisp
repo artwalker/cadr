@@ -1574,7 +1574,14 @@
        (etypecase input
          (input-event (list input))
          (string
-          (feed-input (tui-input-decoder tui) input))))
+          (let ((target (tui-focused-component tui)))
+            (if (and target
+                     (component-wants-key-release-p target)
+                     (key-release-p input))
+                (list
+                 (make-input-event
+                  :kind :key-release :text input))
+                (feed-input (tui-input-decoder tui) input))))))
     (tui-dispatch-event tui event))
   tui)
 
