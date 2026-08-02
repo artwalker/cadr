@@ -473,7 +473,169 @@ binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 root binary freshness: PASS
 ```
 
-All mechanical Goal 13 criteria are satisfied and committed. The remaining
-acceptance item is Goal 13 section 5.6: only the user can close the real-terminal
-A/B comparison against the baseline. The four-ledger automation deliberately
-does not claim to replace that check.
+This was the Part D checkpoint. The real-terminal A/B remained the final
+authority and subsequently found the corrective work below; the four-ledger
+automation deliberately does not claim to replace that check.
+
+## Third real-terminal A/B corrective — 2026-08-03
+
+The third A/B closed five observable gaps and extended C3 for the reported
+long-run interaction pause. Each product change has a regression that
+reproduces the old failure rather than checking only an adjacent helper.
+
+| Finding | Fixed-baseline evidence | Cadr implementation | Regression |
+|---|---|---|---|
+| relative read exposed `#P"..." is not a string designator` | path resolution expands `~`, resolves against cwd and returns a normalized string (`core/tools/path-utils.ts:40-53,83-89`); read then accesses and reads that string (`core/tools/read.ts:236-267`) | lexical `.`/`..` normalization and `~` expansion are shared by every file tool; presentation fallback converts pathnames to namestrings and contains classification failures (`src/cadr-cli/tools/path.lisp:44-79,247-260`; `src/cadr-cli/tui.lisp:1637-1691`) | `GOAL13-RELATIVE-READ-EXPANDS-A-SHORTENED-HOME-CWD-BEFORE-RESOLVING`; `GOAL13-FILE-TOOL-ERRORS-NEVER-LEAK-COMMON-LISP-REPRESENTATIONS`; `GOAL13-FILE-IO-FAILURES-USE-STABLE-TOOL-LEVEL-COPY` |
+| built-in `/login` had no manual callback fallback | dialog title and URL/instruction/input composition (`login-dialog.ts:41-48,93-148`); OpenAI races loopback callback against `manual_code` input (`openai-codex.ts:444-480`) | code, query, `code#state`, and full redirect URL parse through one function; callback and manual worker race under a cancellation signal; the TUI renders the exact title, warning, message, input and cancel hint (`src/cadr-ai/oauth.lisp:327-356,814-905,914-955`; `src/cadr-cli/tui.lisp:115-213,4923-4932`) | `GOAL13-MANUAL-OAUTH-INPUT-MATCHES-BASELINE-URL-CODE-AND-STATE-FORMS`; `GOAL13-CALLBACK-AND-MANUAL-OAUTH-INPUT-RACE-CANCELS-THE-LOSER`; `GOAL13-BUILT-IN-OAUTH-DIALOG-MATCHES-THE-BASELINE-MANUAL-FALLBACK`; `GOAL13-LOGIN-COMMAND-FORWARDS-THE-MANUAL-AUTHORIZATION-PROMPT` |
+| `/export` used weak copy and `<session-id>.html` | exporter defaults to `${APP_NAME}-session-${session-file-basename}.html` (`core/export-html/index.ts:274-280`); interactive status is `Session exported to: ${filePath}` (`interactive-mode.ts:5471-5481`) | default name is `cadr-session-<ISO timestamp with :/. replaced by ->_<session UUID>.html`; explicit and default targets resolve to an absolute path and status copy is exact (`src/cadr-cli/main.lisp:1331-1345,1546-1560`) | `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE`; the older workflow assertion now requires `Session exported to:` rather than the ambiguous word `Exported` |
+| OAuth result page reused pi's mark | fixed page uses one 800×800 monochrome grid SVG (`auth/oauth/oauth-page.ts:1-17`) | one white even-odd path draws a block C on the same `165.29/282.65/517.36/634.72` grid, with no stroke, gradient, second path, or pi geometry (`src/cadr-ai/oauth.lisp:579-581`) | `GOAL13-OAUTH-PAGE-USES-CADR-OWNED-GRID-MARK` plus the existing complete HTML/framing/escaping gate |
+| clean TUI exit omitted the resume command | only TTY, persisted, existing-file sessions qualify; custom session directories are quoted and added before `--session <id>` (`interactive-mode.ts:236-249`); clean `/quit`, Ctrl+D and Ctrl+C paths write after terminal teardown (`interactive-mode.ts:3622-3634`) | normal, Ctrl+C, and suspend/resume exits print exactly one dim `To resume this session: cadr ...` after terminal restoration; SIGTERM/SIGHUP non-local exits bypass the write; `--session` accepts the emitted full/partial ID as well as a path (`src/cadr-cli/main.lisp:124-147,1563-1582,4320-4331`; `src/cadr-cli/utilities.lisp:445-477`) | `GOAL13-SESSION-IDS-AND-POST-TUI-RESUME-COPY-MATCH-THE-BASELINE`; `goal9-a2-pty.sh` covers normal, Ctrl+C, and suspend/resume ordering and command shape |
+
+### File-tool error-channel audit
+
+The root defect crossed two layers: a cwd abbreviated with `~` was merged with
+`..` without lexical normalization, then the read-title resource classifier
+passed a pathname object to a string operation. The classifier now cannot tear
+down the TUI, but that containment is not used to hide a broken executor. The
+executor resolves the same canonical path and maps filesystem/stream/type
+conditions to stable tool-level copy.
+
+| Tool | Product boundary | Missing-path/result contract |
+|---|---|---|
+| read | `src/cadr-cli/tools/read.lisp:18-48,132-142` | `File not found: <input>`; other file/decoding failures become `Could not read file: <input>` |
+| write | `src/cadr-cli/tools/write.lisp:27-56` | parent creation and atomic write remain unchanged; I/O failure becomes `Could not write file: <input>` |
+| edit | `src/cadr-cli/tools/edit.lisp:550-684` | baseline ENOENT copy is preserved; read/write failures become `Could not edit file: <input>` |
+| find | `src/cadr-cli/tools/find.lisp:86-94` | existing `Path not found: <absolute path>` remains exact; implementation conditions are contained |
+| grep | `src/cadr-cli/tools/grep.lisp:155-163` | same search-path boundary and copy |
+| glob | `src/cadr-cli/tools/glob.lisp:163-181,206-214` | missing bases now fail explicitly instead of being mistaken for an empty match set |
+| ls | `src/cadr-cli/tools/ls.lisp:87-95` | existing `Path not found: <absolute path>` remains exact; directory I/O is contained |
+
+The two negative regressions reject `#P"`, `not a string designator`,
+`SIMPLE-ARRAY`, and `SB-` in every tool error. This closes the same
+implementation-diagnostic family as the earlier setsid, ASDF, and TLS leaks.
+
+### Sustained C3 interaction gate
+
+The former C3 benchmark measured isolated events and 1024-event bursts. It
+could not reproduce a pause that appears only after repeated drag, wheel and
+editing activity. The new release gate drives the production input/render path
+for 180 real-time seconds at 60Hz: 10,800 events, exactly 2,700 each of drag,
+wheel-up, wheel-down and alternating editor insert/backspace. It records every
+event latency, p99.9, maximum, GC-affected event latency, runtime GC duration
+and frequency, ten-second heap/RSS samples, and retained state after a final
+full collection (`scripts/goal11-bench.lisp:729-976`). The checker recomputes
+all summaries from raw vectors and rejects a short or internally inconsistent
+trace (`scripts/goal11-performance-gate.py:531-713`).
+
+The checked three-minute run is
+`docs/benchmarks/goal-v13-c3-final.json`, SHA-256
+`55bf06e4688d94ec32329be478bfbc73c90093e8dcc17f916440aaf38be62456`:
+
+```text
+duration/events:       180.001004s / 10,800
+p99.9 / max:           8.000ms / 20.001ms
+GC-affected events:    91 (max wall latency 20.001ms)
+GC runtime p99.9/max:  15.491ms / 15.491ms
+GC total/frequency:    167.196ms / 30.333 per minute
+raw final-30s growth:  heap +19,924,288 B; RSS +2,097,152 B
+post-full-GC growth:   retained heap +241,520 B; RSS +581,632 B
+convergence:           PASS (both retained values <= 8 MiB)
+```
+
+The raw final-window heap number is reported rather than hidden; it is the
+normal nursery phase. Convergence is decided independently from post-full-GC
+retained heap and RSS. `sb-ext:*gc-run-time*` is labelled as a runtime counter,
+not falsely presented as a separately sampled stop-the-world wall clock.
+
+### Output-channel completeness
+
+The earlier presentation audit enumerated TUI elements. That was structurally
+unable to find post-alternate-screen stdout. `docs/presentation-parity.md` now
+enumerates the finite external-channel set instead: active TUI, pre-TUI and
+post-TUI streams, print/JSON/RPC, session/export/auth/settings/package/SQLite
+files, provider requests, OAuth callback pages, Unix-socket and server streams,
+eval artifacts, and exit status. Its machine identity is
+`GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0`; every row names the
+fixed-baseline source, Cadr source, and a gate that drives the real channel.
+`GOAL13-FOUR-LEDGERS-AND-PRESENTATION-DENOMINATORS-STAY-IN-SYNC` rejects a
+missing row or channel class.
+
+This closes the four-axis escape for a concrete reason: source parity saw the
+functions but not the missing lifecycle call; TUI snapshots end before the
+resume bytes; tool tests used pathname-free cwd strings; and C3 measured only
+short traces. The new gates exercise the actual path object, callback/manual
+race, post-teardown PTY bytes, and three-minute mixed event stream. The two
+OAuth page rows are now correctly classified as user-approved Cadr branding,
+so the current presentation identity is
+`123 = 119 aligned/closed + 0 open + 4 intentional`.
+
+Implementation commits: `82d0b41bb`, `07463db44`, `829ec7f5c`.
+
+### Corrective mechanical acceptance
+
+The direct deterministic run and the identical run inside `verify.sh` both
+accounted for all eight systems:
+
+```text
+cadr test summary: systems=8 checks=11949 pass=11949 skip=0 fail=0
+```
+
+The complete release gate passed every stage; no failed stage was retried:
+
+```text
+Deterministic stages
+Stage                                            Result
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+Stage                                            Result
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The credential-gated report was complete rather than collapsed to a pass/fail
+label:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+The seven run items were the DeepSeek provider stream, DeepSeek print mode,
+OpenAI Codex explicit-model OAuth, DeepSeek eval, OpenAI Codex eval, DeepSeek
+self-extension, and DeepSeek repository fail/fix/pass loop. The only skipped
+item was Anthropic streaming because `ANTHROPIC_API_KEY` is not set. The live
+TUI harness also passed autocomplete, undo, kill-ring, a real DeepSeek two-turn
+edit, resize, CJK, and terminal restoration.
+
+The delivery binary was rebuilt after the last source change and checked before
+the release gate:
+
+```text
+binary build time: 2026-08-03 01:47:44.738192956 +0800
+latest src commit: 82d0b41bbb3538c361cbad279d9982bc659b84b5 2026-08-03T01:40:28+08:00
+latest source mtime: 2026-08-03 01:38:02.342514692 +0800 src/cadr-cli/tools/path.lisp
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+root binary freshness: PASS
+```
+
+The installed SBCL has no `sb-core-compression`; both root and isolated builds
+therefore exercised the approved uncompressed-image fallback and succeeded.
+`git diff --check` passed. A production-source grep found no leaked `not a
+string designator` copy; pathname literals remain only for intentional system
+paths such as `/dev/urandom` and `/proc/version`, never as user-facing
+conditions.
+
+Corrective commits: `82d0b41bb`, `07463db44`, `829ec7f5c`, `484e5c5a7`.
