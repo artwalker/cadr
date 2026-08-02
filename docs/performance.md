@@ -2,14 +2,17 @@
 
 <!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0 -->
 
-非功能属性是与行为 parity 并列的第二根验收轴：行为门禁回答“产出了什么”，
-本文回答“产出它花了多少时间、分配和常驻资源”。所有优化仍须通过既有
-payload、会话、完整文案和虚拟终端逐字门禁。
+本文是四根独立验收轴中的**非功能账**：行为门禁回答“产出了什么”，源码账
+回答固定基线的能力落在何处，呈现账回答用户看到了什么，本文回答“产出它花了
+多少时间、分配和常驻资源”。所有优化仍须通过既有 payload、会话、完整文案和
+虚拟终端逐字门禁。
 
-本账只维护非功能门禁；行为覆盖见 `docs/parity-map.md`，逐源文件处置见
-`docs/source-parity.md`，可运行扩展示例的 99 项一对一清单见
-`examples/manifest.sexp`。四者共享上方 `GOAL12_LEDGER` 身份行，确定性测试会
-从 manifest 实际计数并逐字核对三本文档，任一账本漂移即失败。
+行为覆盖见 `docs/parity-map.md`，逐源文件处置见 `docs/source-parity.md`，非功能
+预算由本文 `docs/performance.md` 维护，呈现语义见
+`docs/presentation-parity.md`。`examples/manifest.sexp` 是 99 个可运行
+扩展示例的辅助 inventory，不是第五本账。上方 `GOAL12_LEDGER` 身份继续锁定
+source/example 分母；呈现账另以 `GOAL13_PRESENTATION_LEDGER` 锁定自己的
+B1-B4 分母与处置总数。
 
 ## Measurement contract
 
@@ -39,6 +42,9 @@ median 与 MAD，并保留全部原始样本。`--quick` 只供开发期冒烟�
 - `continuous_alt_input`：在 5000-entry transcript 上混合 1024 个拖拽与滚轮
   事件，逐事件保留 wall latency、分配量、p95/p99/max 与 GC-affected event
   latency；
+- `common_continuous_input`：以匿名真实会话 profile 的 p95 entry 数为 common
+  tier，将 mouse drag、wheel 与 editor key 拆成三条互不稀释的 1024-event
+  trace，各自保留原始 latency/allocation samples 并执行 p99 ≤16ms 绝对门禁；
 - `append_entry`：在固定长度历史尾部追加一个条目并 O(1) 恢复 fixture。
 
 分配量来自 `sb-ext:get-bytes-consed`；堆占用来自
@@ -312,3 +318,85 @@ write，而且此 synthetic N=5000 trace 比 cadr 慢 6.3–9.9×。cadr 的 32�
 保留既有 absolute stress gate，并新增上述同机 baseline-derived gate。候选完整数据为
 [`benchmarks/goal-v12-a0-cadr.json`](benchmarks/goal-v12-a0-cadr.json)，SHA-256
 `8f85b41714f142f721218009bf40524e0ff842c4c6c3d76dda486595ca05d414`。
+
+## Goal 13 C3 — absolute interaction latency
+
+### Real-session tiers
+
+`scripts/goal13-session-scale-profile.py` reads the active branch of every local
+JSONL session and emits aggregate counts only. It deliberately excludes file
+names, session/entry IDs, cwd, timestamps, provider/model, and message content;
+its fixture includes a secret marker and rejects any leak. Historical
+`parentId:false` is handled as the production null/root representation instead
+of silently discarding old sessions.
+
+The 2026-08-02 profile contains 45/45 valid sessions and zero rejected files:
+
+| percentile | min | p50 | p90 | p95 | p99 | max |
+|---|---:|---:|---:|---:|---:|---:|
+| projected TUI entries | 0 | 5 | 48 | 58 | 96 | 96 |
+
+The tiers are therefore `typical=5`, `common=58`, `heavy=96`, and the retained
+synthetic stress tier `5000`. The checked aggregate is
+[`benchmarks/goal-v13-session-scale.json`](benchmarks/goal-v13-session-scale.json),
+SHA-256 `95ce7f4a215e5d5e30f9cc8231958d522e912154fd8ffcbfba74f5316867a7b1`.
+The release gate uses the checked aggregate, not the build machine's mutable
+home directory.
+
+### Bottleneck and optimization
+
+Before C3, `render-tui-state` already reused stable entry render results, but
+alternate-screen `prepare-alt-document` still stripped OSC-133 prefixes,
+measured ANSI/grapheme width, and clipped every line on every mouse or wheel
+event. The fresh pre-change run at `cd94d0b01` measured N=5000 continuous
+median/p95/p99 `36.000/48.001/52.001ms` and 2,847,360 bytes/event. Its complete
+samples are archived in
+[`benchmarks/goal-v13-c3-before.json`](benchmarks/goal-v13-c3-before.json),
+SHA-256 `b67ccad5f99d6a0269c02f64df6f97e549e32cf038c9d9becf4b27f44f403125`.
+
+The renderer now retains the immediately preceding raw line list, prepared
+document, and width. A new frame reuses prepared strings for the maximal
+identity-stable prefix and only performs OSC stripping, width measurement, and
+clipping from the first dirty line onward
+(`src/cadr-tui/renderer.lisp:251-254,1424-1478,1544-1545`). Width changes force
+a full rebuild. The cache is one generation only, so it is bounded; the full
+logical document remains available to viewport cropping, selection/copy, and
+alternate-screen exit. This is memoized layout, not a presentation change.
+
+The regression `GOAL13-ALT-SCREEN-REUSES-ONLY-THE-UNCHANGED-PREPARED-PREFIX`
+proves exact equality with a forced full preparation, suffix invalidation, and
+width invalidation. `GOAL13-ALT-SCREEN-PREPARED-CACHE-KEEPS-THE-FULL-DOCUMENT-CONTRACT`
+proves exit restoration contains the updated complete document. Every existing
+base-screen, overlay, payload, wire, and event gate remains byte-identical.
+
+### Final measurements and gates
+
+The committed implementation is `7da79c376`; renderer object
+`6b56fa43686cd04e44fb84b5d1a2ccfb0f8495b8`. Each common trace contains 1024
+separately timed production input→requested frame operations under the forced
+8MiB nursery:
+
+| tier / input | median | p95 | p99 | max | median allocation |
+|---|---:|---:|---:|---:|---:|
+| common N=58 mouse drag | <4ms timer quantum | 4.000ms | 4.001ms | 4.001ms | 180,552 B |
+| common N=58 wheel | <4ms timer quantum | 4.000ms | 4.000ms | 4.001ms | 69,888 B |
+| common N=58 editor key | <4ms timer quantum | 4.000ms | 4.001ms | 8.000ms | 1,124,488 B |
+| stress N=5000 mixed | <4ms timer quantum | 4.000ms | 8.000ms | 12.000ms | 887,248 B |
+
+The synthetic N=5000 p99 improved `52.001ms → 8.000ms` (6.5×) and median
+allocation improved `2,847,360 → 887,248` bytes (3.2×). It now clears the 16ms
+target even at 86× the real common tier; further virtual scrolling is not
+needed to close this bottleneck. Cold start remains 156.52ms and the existing
+1200-turn/10MiB stability budgets remain unchanged.
+
+`scripts/goal11-performance-gate.py` now emits distinct failures:
+
+- `absolute interaction target: common <kind> p99 exceeds 16ms` for any of the
+  three common traces;
+- `fixed baseline regression: ...` for the same-machine pi comparison.
+
+It also requires `renderer_object_id`, exact 1024-sample traces, recomputed
+quantiles/allocation/GC summaries, final selection/viewport/editor state, and
+the privacy-safe scale profile contract. The final full artifact is
+[`benchmarks/goal-v13-c3-final.json`](benchmarks/goal-v13-c3-final.json),
+SHA-256 `1838334a8a05d49e38d85bc690aa01887d188b2bbb12d50ea831c1561797f712`.
