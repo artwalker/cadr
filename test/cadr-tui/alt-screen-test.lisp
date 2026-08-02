@@ -143,6 +143,90 @@
     (is (not (alt-write-containing-p
               terminal clear-screen)))))
 
+(test goal13-alt-screen-reuses-only-the-unchanged-prepared-prefix
+  (let* ((terminal
+           (make-alt-recording-terminal
+            :columns 12 :rows 3))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (prefix
+           (list
+            "stable one"
+            (format nil "~C]133;B~Cstable two"
+                    #\Escape (code-char 7))
+            "stable three"))
+         (first-lines
+           (append prefix
+                   (list "old suffix that clips")))
+         (second-lines
+           (append prefix
+                   (list "new suffix that clips"))))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer first-lines)
+    (let ((first-document
+            (copy-list
+             (cadr-tui::terminal-renderer-last-document
+              renderer))))
+      (alt-render renderer second-lines)
+      (let ((second-document
+              (cadr-tui::terminal-renderer-last-document
+               renderer)))
+        (is (= 3
+               (cadr-tui::terminal-renderer-prepared-prefix-reused
+                renderer)))
+        (is (every #'eq
+                   (subseq first-document 0 3)
+                   (subseq second-document 0 3)))
+        (is (not (eq (fourth first-document)
+                     (fourth second-document))))
+        (is (equal
+             (cadr-tui::prepare-alt-document
+              second-lines 12)
+             second-document)))
+      (setf (cadr-tui:terminal-columns terminal) 10)
+      (alt-render renderer second-lines)
+      (is (= 0
+             (cadr-tui::terminal-renderer-prepared-prefix-reused
+              renderer)))
+      (is (equal
+           (cadr-tui::prepare-alt-document
+            second-lines 10)
+           (cadr-tui::terminal-renderer-last-document
+            renderer))))))
+
+(test goal13-alt-screen-prepared-cache-keeps-the-full-document-contract
+  (let* ((terminal
+           (make-alt-recording-terminal :rows 2))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (prefix (list "first" "second" "third"))
+         (initial (append prefix (list "old tail")))
+         (updated (append prefix (list "new tail"))))
+    (cadr-tui:renderer-start renderer)
+    (cadr-tui:terminal-start terminal)
+    (alt-render renderer initial)
+    (alt-render renderer updated)
+    (is (equal
+         updated
+         (cadr-tui::terminal-renderer-last-document
+          renderer)))
+    (cadr-tui:renderer-before-stop renderer)
+    (cadr-tui:terminal-stop terminal)
+    (cadr-tui:renderer-after-stop renderer)
+    (let* ((exit
+             (alt-event-index
+              terminal :write
+              (format nil "~C[?1049l" #\Escape)))
+           (restore
+             (getf
+              (nth exit (alt-recording-events terminal))
+              :data)))
+      (is (search "first" restore))
+      (is (search "new tail" restore))
+      (is (null (search "old tail" restore))))))
+
 (test alt-screen-supports-configurable-keyboard-navigation
   (let* ((terminal
            (make-alt-recording-terminal :rows 4))

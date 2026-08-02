@@ -248,6 +248,10 @@
   (show-hardware-cursor-p nil :type boolean)
   open-url-function
   (last-document nil :type list)
+  (prepared-source-lines nil :type list)
+  (prepared-document nil :type list)
+  (prepared-width 0 :type (integer 0 *))
+  (prepared-prefix-reused 0 :type (integer 0 *))
   (scroll-top 0 :type (integer 0 *))
   (content-line-count 0 :type (integer 0 *))
   (stick-to-bottom-p t :type boolean)
@@ -331,6 +335,14 @@
       capabilities)
      (terminal-renderer-last-document renderer)
      nil
+     (terminal-renderer-prepared-source-lines renderer)
+     nil
+     (terminal-renderer-prepared-document renderer)
+     nil
+     (terminal-renderer-prepared-width renderer)
+     0
+     (terminal-renderer-prepared-prefix-reused renderer)
+     0
      (terminal-renderer-selection-anchor
       renderer)
      nil
@@ -1409,17 +1421,59 @@
             (concatenate
              'string output cursor-output)))))))
 
+(defun prepare-alt-line (source width)
+  (let ((line (strip-osc133-zone-prefix source)))
+    (if
+        (or (image-line-p line)
+            (<= (visible-width line) width))
+        line
+        (slice-by-column line 0 width t))))
+
 (defun prepare-alt-document (lines width)
   (loop for source in lines
-        for line =
-        (strip-osc133-zone-prefix source)
-        collect
-        (if
-            (or (image-line-p line)
-                (<= (visible-width line) width))
-            line
-            (slice-by-column
-             line 0 width t))))
+        collect (prepare-alt-line source width)))
+
+(defun prepare-alt-document-incrementally
+    (renderer lines width)
+  (let ((old-sources
+          (and
+           (= width
+              (terminal-renderer-prepared-width
+               renderer))
+           (terminal-renderer-prepared-source-lines
+            renderer)))
+        (old-document
+          (terminal-renderer-prepared-document
+           renderer))
+        (remaining lines)
+        (reused nil)
+        (reused-count 0))
+    (loop while
+          (and remaining old-sources old-document
+               (eq (car remaining)
+                   (car old-sources)))
+          do
+          (push (car old-document) reused)
+          (incf reused-count)
+          (setf remaining (cdr remaining)
+                old-sources (cdr old-sources)
+                old-document (cdr old-document)))
+    (let ((document
+            (nconc
+             (nreverse reused)
+             (prepare-alt-document remaining width))))
+      (setf
+       (terminal-renderer-prepared-source-lines
+        renderer)
+       lines
+       (terminal-renderer-prepared-document renderer)
+       document
+       (terminal-renderer-prepared-width renderer)
+       width
+       (terminal-renderer-prepared-prefix-reused
+        renderer)
+       reused-count)
+      document)))
 
 (defun cropped-image-at-viewport-top
     (document top height)
@@ -1487,8 +1541,8 @@
          (height
            (max 1 (terminal-rows terminal)))
          (document
-           (prepare-alt-document
-            lines width))
+           (prepare-alt-document-incrementally
+            renderer lines width))
          (maximum-top
            (max 0 (- (length document) height))))
     (setf

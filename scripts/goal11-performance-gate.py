@@ -3,6 +3,7 @@ import argparse
 import hashlib
 import json
 import math
+import re
 import sys
 from pathlib import Path
 from statistics import median
@@ -12,6 +13,17 @@ FIXED_BASELINE_REVISION = "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
 FIXED_CONTINUOUS_TRACE_SHA256 = (
     "2dfea100e8e8825a96ea55795c39e6cea2f265c6aa1a4b98f4edba8b4e5edb61"
 )
+COMMON_TRACE_SHA256 = {
+    "mouse_drag": "13483601f4696d53de318057f9f355bed854c69d548601e45ba0011fb93ad3cc",
+    "wheel": "fd18193bb055059e342815a6768f6dca4e6ce0fc59ab6e41d8aa7b42591653c1",
+    "editor_key": "24c4d742dbd461a4f7e8fdead4e9d0215eb6575eeba6e2352cc662e975ca60ec",
+}
+COMMON_TRACE_COUNTS = {
+    "mouse_drag": {"drag": 1024},
+    "wheel": {"wheel_up": 512, "wheel_down": 512},
+    "editor_key": {"insert": 512, "backspace": 512},
+}
+COMMON_ABSOLUTE_P99_US = 16_000
 FIXED_BASELINE_DIST_SHA256 = {
     "tui": "4d26ed735aabf37990f7da512a24d8e192ff930aa8a5444f7e36b3699c53aca1",
     "ai": "d7c76723382d106984ab8a143f9acd7b69b3987c1a0f5e148849a992d53fa501",
@@ -126,6 +138,15 @@ def check_paired_contract(
         and baseline["kind"] == "pi-goal11-structural-baseline"
         and baseline["schema_version"] == 2,
         "paired benchmark report kind or schema differs",
+        failures,
+    )
+    check(
+        isinstance(data["provenance"].get("renderer_object_id"), str)
+        and re.fullmatch(
+            r"[0-9a-f]{40}", data["provenance"]["renderer_object_id"]
+        )
+        is not None,
+        "candidate renderer object id is missing or invalid",
         failures,
     )
     expected_entry_counts = [0, 50, 200, 1000, 5000]
@@ -394,10 +415,124 @@ def check_paired_contract(
     )
 
 
+def check_common_continuous_contract(data: dict, failures: list[str]) -> list[str]:
+    profile = data["session_scale_profile"]
+    privacy = profile["privacy"]
+    percentiles = profile["entry_percentiles"]
+    tiers = profile["tiers"]
+    profile_contract = (
+        profile["schema_version"] == 1
+        and profile["kind"] == "cadr-anonymous-session-scale"
+        and profile["valid_session_count"] > 0
+        and profile["source_file_count"]
+        == profile["valid_session_count"] + profile["invalid_session_count"]
+        and all(value is False for value in privacy.values())
+        and set(privacy)
+        == {
+            "contains_message_content",
+            "contains_session_identifiers",
+            "contains_paths",
+            "contains_timestamps",
+            "contains_provider_or_model",
+        }
+        and 0
+        <= percentiles["min"]
+        <= percentiles["p50"]
+        <= percentiles["p90"]
+        <= percentiles["p95"]
+        <= percentiles["p99"]
+        <= percentiles["max"]
+        and tiers["typical"] == percentiles["p50"]
+        and tiers["common"] == max(50, percentiles["p95"])
+        and tiers["heavy"] == percentiles["p99"]
+        and tiers["stress"] == 5000
+    )
+    check(
+        profile_contract,
+        "anonymous session scale profile contract differs",
+        failures,
+    )
+
+    common = data["common_continuous_input"]
+    check(
+        common["entry_count"] == tiers["common"]
+        and common["event_count_per_kind"] == 1024,
+        "common tier does not match the anonymous p95 session scale",
+        failures,
+    )
+    summary: list[str] = []
+    for kind in ("mouse_drag", "wheel", "editor_key"):
+        run = common[kind]
+        samples = run["samples_us"]
+        allocations = run["samples_bytes"]
+        gc_samples = run["gc_affected_samples_us"]
+        final_state_ok = (
+            (kind == "mouse_drag" and run["final_selection_active"] is True)
+            or (
+                kind == "wheel"
+                and run["initial_viewport_top"] == run["final_viewport_top"]
+            )
+            or (kind == "editor_key" and run["final_editor_text_length"] == 0)
+        )
+        execution_contract = (
+            run["input_kind"] == kind
+            and run["event_count"] == 1024
+            and run["rendered_frame_count"] == 1024
+            and len(samples) == 1024
+            and len(allocations) == 1024
+            and run["event_trace_sha256"] == COMMON_TRACE_SHA256[kind]
+            and run["event_trace_counts"] == COMMON_TRACE_COUNTS[kind]
+            and run["terminal_sink"] == "count-only"
+            and run["gc_mode"] == "forced-8mib-nursery"
+            and run["renderer_mode"] == "synchronous-requested-frame"
+            and run["scheduler_mode"] == "production-request-immediate-flush"
+            and run["nursery_bytes"] == 8 * 1024 * 1024
+            and final_state_ok
+        )
+        check(
+            execution_contract,
+            f"common {kind} trace execution contract differs",
+            failures,
+        )
+        if len(samples) == 1024 and len(allocations) == 1024:
+            check(
+                math.isclose(run["median_us"], median(samples))
+                and math.isclose(run["p95_us"], percentile(samples, 0.95))
+                and math.isclose(run["p99_us"], percentile(samples, 0.99))
+                and math.isclose(run["max_us"], max(samples))
+                and math.isclose(run["median_bytes"], median(allocations))
+                and math.isclose(run["total_bytes"], sum(allocations)),
+                f"common {kind} latency summary was not recomputed from samples",
+                failures,
+            )
+        check(
+            run["gc_affected_event_count"] == len(gc_samples)
+            and math.isclose(
+                run["gc_affected_max_us"], max(gc_samples, default=0)
+            ),
+            f"common {kind} GC summary was not recomputed from samples",
+            failures,
+        )
+        check(
+            run["gc_affected_event_count"] > 0
+            or run["total_bytes"] < run["nursery_bytes"],
+            f"common {kind} allocated a nursery without observing GC",
+            failures,
+        )
+        check(
+            run["p99_us"] <= COMMON_ABSOLUTE_P99_US,
+            f"absolute interaction target: common {kind} p99 exceeds 16ms",
+            failures,
+        )
+        summary.append(f"common_{kind}_p99={run['p99_us'] / 1000:.2f}ms")
+    return summary
+
+
 def check_bench(
     data: dict, failures: list[str], baseline: dict
 ) -> list[str]:
     check_paired_contract(data, baseline, failures)
+    common_summary = check_common_continuous_contract(data, failures)
     metrics = data["metrics"]
     frame = point_at(metrics["frame_render"], 5000)
     key = point_at(metrics["key_to_frame"], 5000)
@@ -541,7 +676,7 @@ def check_bench(
             <= baseline_limit_us(
                 baseline_mouse["median_us"], baseline_mouse["mad_us"]
             ),
-            "mouse drag exceeds fixed-baseline-derived limit",
+            "fixed baseline regression: mouse drag exceeds derived limit",
             failures,
         )
         check(
@@ -549,7 +684,7 @@ def check_bench(
             <= baseline_limit_us(
                 baseline_wheel["median_us"], baseline_wheel["mad_us"]
             ),
-            "wheel event exceeds fixed-baseline-derived limit",
+            "fixed baseline regression: wheel event exceeds derived limit",
             failures,
         )
         for field in ("median", "p95", "p99"):
@@ -559,7 +694,7 @@ def check_bench(
                     baseline_continuous[f"{field}_us"],
                     baseline_continuous[f"{field}_run_mad_us"],
                 ),
-                f"continuous alt-input {field} exceeds fixed-baseline-derived limit",
+                f"fixed baseline regression: continuous alt-input {field} exceeds derived limit",
                 failures,
             )
 
@@ -568,7 +703,8 @@ def check_bench(
     )
     check(memory_point["heap_delta_bytes"] <= 32 * 1024 * 1024,
           "N=5000 retained heap exceeds 32MiB", failures)
-    return [
+    return common_summary + [
+        "absolute_interaction_gate=enforced",
         f"frame={frame['median_us'] / 1000:.2f}ms",
         f"key={key['median_us'] / 1000:.2f}ms",
         f"stream={stream['median_us'] / 1000:.2f}ms",

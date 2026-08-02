@@ -37,6 +37,11 @@
 (defparameter *continuous-event-count* 1024)
 (defparameter *continuous-nursery-bytes* (* 8 1024 1024))
 (defparameter *paired-continuous-runs* 5)
+(defparameter *session-scale-profile-path*
+  (namestring
+   (merge-pathnames
+    "docs/benchmarks/goal-v13-session-scale.json"
+    cl-user::*cadr-bench-project-directory*)))
 
 (defclass counting-terminal (cadr-tui:terminal)
   ((written-units
@@ -105,6 +110,11 @@
              (unless arguments
                (error "--label requires a value"))
              (setf *label* (pop arguments)))
+            ((string= argument "--session-scale-profile")
+             (unless arguments
+               (error "--session-scale-profile requires a value"))
+             (setf *session-scale-profile-path*
+                   (pop arguments)))
             (t
              (error "Unknown benchmark option: ~A"
                     argument))))))
@@ -360,6 +370,27 @@
       (error "Alt-screen benchmark request did not render"))
     rendered))
 
+(defun handle-editor-input-and-render (fixture input)
+  (dolist (event
+           (cadr-tui:feed-input
+            (frame-fixture-decoder fixture)
+            input))
+    (cadr-cli::handle-tui-editor-event
+     (frame-fixture-state fixture)
+     (frame-fixture-editor fixture)
+     event))
+  (cadr-cli::request-tui-render
+   (frame-fixture-render-coordinator fixture))
+  (let ((rendered nil))
+    (unless
+        (cadr-cli::flush-tui-render
+         (frame-fixture-render-coordinator fixture)
+         (lambda ()
+           (setf rendered (render-fixture fixture)))
+         :force-p t)
+      (error "Alt-screen editor benchmark request did not render"))
+    rendered))
+
 (defun frame-repetitions (count)
   (cond
     ((<= count 200) 10)
@@ -518,6 +549,172 @@
      "drag" drag
      "wheel_down" wheel-down
      "wheel_up" wheel-up)))
+
+(defun common-input-kind-name (kind)
+  (ecase kind
+    (:mouse-drag "mouse_drag")
+    (:wheel "wheel")
+    (:editor-key "editor_key")))
+
+(defun common-event-input (kind index)
+  (ecase kind
+    (:mouse-drag
+     (sgr-mouse-input
+      32
+      (if (evenp index) 20 70)
+      (if (evenp index) 8 30)))
+    (:wheel
+     (sgr-mouse-input
+      (if (evenp index) 64 65)
+      50 20))
+    (:editor-key
+     (if (evenp index)
+         "x"
+         (string #\Rubout)))))
+
+(defun common-event-trace-sha256 (kind)
+  (cadr-ai::octets-hex
+   (cadr-ai::sha256-bytes
+    (cadr-ai::utf8-octets
+     (format
+      nil "~{~A~^~%~}"
+      (loop for index below *continuous-event-count*
+            collect (common-event-input kind index)))))))
+
+(defun common-event-trace-counts-json (kind)
+  (ecase kind
+    (:mouse-drag
+     (json-object "drag" *continuous-event-count*))
+    (:wheel
+     (json-object
+      "wheel_down" (floor *continuous-event-count* 2)
+      "wheel_up" (ceiling *continuous-event-count* 2)))
+    (:editor-key
+     (json-object
+      "backspace" (floor *continuous-event-count* 2)
+      "insert" (ceiling *continuous-event-count* 2)))))
+
+(defun dispatch-common-input-and-render
+    (fixture kind index)
+  (let ((input (common-event-input kind index)))
+    (if (eq kind :editor-key)
+        (handle-editor-input-and-render fixture input)
+        (handle-alt-input-and-render fixture input))))
+
+(defun common-continuous-input-run
+    (count kind &key nursery-bytes)
+  (let* ((fixture (prepare-alt-input-fixture count))
+         (renderer (frame-fixture-renderer fixture))
+         (editor (frame-fixture-editor fixture))
+         (initial-viewport-top
+           (cadr-tui:renderer-viewport-top renderer))
+         (latencies nil)
+         (allocations nil)
+         (gc-affected-latencies nil)
+         (gc-runtime-before nil)
+         (nursery-before
+           (sb-ext:bytes-consed-between-gcs)))
+    (unwind-protect
+         (progn
+           (sb-ext:gc :full t)
+           (when nursery-bytes
+             (setf
+              (sb-ext:bytes-consed-between-gcs)
+              nursery-bytes))
+           (setf gc-runtime-before sb-ext:*gc-run-time*)
+           (dotimes (index *continuous-event-count*)
+             (let* ((gc-before sb-ext:*gc-run-time*)
+                    (bytes-before (sb-ext:get-bytes-consed))
+                    (started-at (get-internal-real-time)))
+               (setf
+                *sink*
+                (dispatch-common-input-and-render
+                 fixture kind index))
+               (let ((latency
+                       (elapsed-microseconds
+                        started-at
+                        (get-internal-real-time))))
+                 (push latency latencies)
+                 (push
+                  (- (sb-ext:get-bytes-consed)
+                     bytes-before)
+                  allocations)
+                 (when (> sb-ext:*gc-run-time* gc-before)
+                   (push latency gc-affected-latencies)))))
+           (setf latencies (nreverse latencies)
+                 allocations (nreverse allocations)
+                 gc-affected-latencies
+                 (nreverse gc-affected-latencies))
+           (let ((center (median latencies)))
+             (list
+              :event-count (length latencies)
+              :gc-affected-event-count
+              (length gc-affected-latencies)
+              :gc-affected-max-us
+              (if gc-affected-latencies
+                  (reduce #'max gc-affected-latencies)
+                  0d0)
+              :gc-affected-samples-us gc-affected-latencies
+              :gc-cpu-us
+              (elapsed-microseconds
+               gc-runtime-before sb-ext:*gc-run-time*)
+              :mad-us
+              (median-absolute-deviation latencies center)
+              :max-us (reduce #'max latencies)
+              :median-bytes (median allocations)
+              :median-us center
+              :p95-us (percentile latencies 0.95d0)
+              :p99-us (percentile latencies 0.99d0)
+              :samples-bytes allocations
+              :samples-us latencies
+              :total-bytes (reduce #'+ allocations)
+              :rendered-frame-count (length latencies)
+              :initial-viewport-top initial-viewport-top
+              :final-viewport-top
+              (cadr-tui:renderer-viewport-top renderer)
+              :final-selection-active
+              (not
+               (null
+                (cadr-tui::terminal-renderer-selection-anchor
+                 renderer)))
+              :final-editor-text-length
+              (length (cadr-tui:editor-text editor)))))
+      (setf
+       (sb-ext:bytes-consed-between-gcs)
+       nursery-before))))
+
+(defun common-continuous-run-json (count kind)
+  (let* ((run
+           (common-continuous-input-run
+            count kind
+            :nursery-bytes *continuous-nursery-bytes*))
+         (result
+           (continuous-run-json run "forced-8mib-nursery")))
+    (setf
+     (gethash "input_kind" result)
+     (common-input-kind-name kind)
+     (gethash "event_trace_counts" result)
+     (common-event-trace-counts-json kind)
+     (gethash "event_trace_sha256" result)
+     (common-event-trace-sha256 kind)
+     (gethash "nursery_bytes" result)
+     *continuous-nursery-bytes*)
+    (ecase kind
+      (:mouse-drag
+       (setf
+        (gethash "final_selection_active" result)
+        (getf run :final-selection-active)))
+      (:wheel
+       (setf
+        (gethash "initial_viewport_top" result)
+        (getf run :initial-viewport-top)
+        (gethash "final_viewport_top" result)
+        (getf run :final-viewport-top)))
+      (:editor-key
+       (setf
+        (gethash "final_editor_text_length" result)
+        (getf run :final-editor-text-length))))
+    result))
 
 (defun continuous-alt-input-run (&key nursery-bytes)
   (let* ((fixture (prepare-alt-input-fixture 5000))
@@ -933,6 +1130,27 @@
         (if (plusp (length value)) value fallback))
     (error () fallback)))
 
+(defun load-session-scale-profile ()
+  (unless (probe-file *session-scale-profile-path*)
+    (error "Session scale profile not found at ~A"
+           *session-scale-profile-path*))
+  (let ((profile
+          (cadr-ai::parse-json
+           (uiop:read-file-string
+            *session-scale-profile-path*))))
+    (unless (hash-table-p profile)
+      (error "Session scale profile must be a JSON object"))
+    profile))
+
+(defun session-scale-common-entry-count (profile)
+  (let* ((tiers (cadr-ai::json-get profile "tiers"))
+         (count
+           (and (hash-table-p tiers)
+                (cadr-ai::json-get tiers "common"))))
+    (unless (and (integerp count) (not (minusp count)))
+      (error "Session scale profile has no common entry count"))
+    count))
+
 (defun provenance-json ()
   (let ((project
           (namestring
@@ -950,15 +1168,27 @@
             "hash-object"
             (concatenate
              'string project
-             "src/cadr-cli/tui.lisp"))))))
+             "src/cadr-cli/tui.lisp")))
+     "renderer_object_id"
+     (trimmed-command-output
+      (list "git" "-C" project
+            "hash-object"
+            (concatenate
+             'string project
+             "src/cadr-tui/renderer.lisp"))))))
 
 (defun run-benchmarks ()
-  (let ((frame-results nil)
+  (let* ((session-scale-profile
+           (load-session-scale-profile))
+         (common-entry-count
+           (session-scale-common-entry-count
+            session-scale-profile))
+         (frame-results nil)
         (key-results nil)
         (stream-results nil)
         (mouse-results nil)
         (wheel-results nil)
-        (append-results nil))
+         (append-results nil))
     (dolist (count *entry-counts*)
       (format *error-output*
               "goal11 bench: N=~D frame/key/stream/mouse/wheel/append~%"
@@ -1004,6 +1234,21 @@
      (continuous-alt-input-json)
      "paired_continuous_alt_input"
      (paired-continuous-alt-input-json)
+     "session_scale_profile"
+     session-scale-profile
+     "common_continuous_input"
+     (json-object
+      "editor_key"
+      (common-continuous-run-json
+       common-entry-count :editor-key)
+      "entry_count" common-entry-count
+      "event_count_per_kind" *continuous-event-count*
+      "mouse_drag"
+      (common-continuous-run-json
+       common-entry-count :mouse-drag)
+      "wheel"
+      (common-continuous-run-json
+       common-entry-count :wheel))
      "memory" (memory-json)
      "parameters"
      (json-object

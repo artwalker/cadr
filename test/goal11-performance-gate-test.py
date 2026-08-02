@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 import importlib.util
+import json
+import tempfile
 import unittest
 from pathlib import Path
 
@@ -12,6 +14,14 @@ SPEC = importlib.util.spec_from_file_location(
 assert SPEC is not None and SPEC.loader is not None
 GATE = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(GATE)
+
+PROFILE_SPEC = importlib.util.spec_from_file_location(
+    "goal13_session_scale_profile",
+    ROOT / "scripts" / "goal13-session-scale-profile.py",
+)
+assert PROFILE_SPEC is not None and PROFILE_SPEC.loader is not None
+PROFILE = importlib.util.module_from_spec(PROFILE_SPEC)
+PROFILE_SPEC.loader.exec_module(PROFILE)
 
 
 def point(*, latency=4_000, allocation=1_000_000, throughput=None):
@@ -65,12 +75,86 @@ def paired_run(*, baseline=False, median_us=4_000, p95_us=5_000, p99_us=6_000):
     return run
 
 
+def common_run(kind, *, p99_us=6_000):
+    samples = [4_000] * 972 + [5_000] * 41 + [p99_us] * 11
+    counts = {
+        "mouse_drag": {"drag": 1024},
+        "wheel": {"wheel_up": 512, "wheel_down": 512},
+        "editor_key": {"insert": 512, "backspace": 512},
+    }[kind]
+    run = {
+        "input_kind": kind,
+        "event_count": 1024,
+        "median_us": 4_000,
+        "p95_us": 5_000,
+        "p99_us": p99_us,
+        "max_us": p99_us,
+        "median_bytes": 1_000,
+        "total_bytes": 1_024_000,
+        "gc_affected_event_count": 0,
+        "gc_affected_max_us": 0,
+        "gc_affected_samples_us": [],
+        "nursery_bytes": 8 * 1024 * 1024,
+        "rendered_frame_count": 1024,
+        "event_trace_sha256": GATE.COMMON_TRACE_SHA256[kind],
+        "event_trace_counts": counts,
+        "terminal_sink": "count-only",
+        "gc_mode": "forced-8mib-nursery",
+        "renderer_mode": "synchronous-requested-frame",
+        "scheduler_mode": "production-request-immediate-flush",
+        "samples_us": samples,
+        "samples_bytes": [1_000] * 1024,
+    }
+    if kind == "mouse_drag":
+        run["final_selection_active"] = True
+    elif kind == "wheel":
+        run["initial_viewport_top"] = 100
+        run["final_viewport_top"] = 100
+    else:
+        run["final_editor_text_length"] = 0
+    return run
+
+
+def session_scale_profile():
+    return {
+        "schema_version": 1,
+        "kind": "cadr-anonymous-session-scale",
+        "source_file_count": 10,
+        "valid_session_count": 9,
+        "invalid_session_count": 1,
+        "entry_percentiles": {
+            "min": 1,
+            "p50": 42,
+            "p90": 100,
+            "p95": 120,
+            "p99": 300,
+            "max": 420,
+        },
+        "tiers": {
+            "typical": 42,
+            "common": 120,
+            "heavy": 300,
+            "stress": 5000,
+        },
+        "privacy": {
+            "contains_message_content": False,
+            "contains_session_identifiers": False,
+            "contains_paths": False,
+            "contains_timestamps": False,
+            "contains_provider_or_model": False,
+        },
+    }
+
+
 def valid_report():
     return {
         "schema_version": 1,
         "kind": "cadr-goal11-performance",
         "entry_counts": [0, 50, 200, 1000, 5000],
-        "provenance": {"source_revision": "candidate"},
+        "provenance": {
+            "source_revision": "candidate",
+            "renderer_object_id": "1" * 40,
+        },
         "machine": {"machine_instance": "same-machine"},
         "parameters": {
             "width": 100,
@@ -140,6 +224,14 @@ def valid_report():
             "median_bytes": 1_000,
             "max_us": 6_000,
             "runs": [paired_run() for _ in range(5)],
+        },
+        "session_scale_profile": session_scale_profile(),
+        "common_continuous_input": {
+            "entry_count": 120,
+            "event_count_per_kind": 1024,
+            "mouse_drag": common_run("mouse_drag"),
+            "wheel": common_run("wheel"),
+            "editor_key": common_run("editor_key"),
         },
         "cold_start": {"median_us": 150_000},
         "memory": {
@@ -312,34 +404,88 @@ class ContinuousInputGateTest(unittest.TestCase):
                     any(expected in failure for failure in failures), failures
                 )
 
+    def test_common_tier_absolute_contract_is_separate_and_exact(self):
+        for kind in ("mouse_drag", "wheel", "editor_key"):
+            with self.subTest(kind=kind):
+                failures = self.failures(
+                    lambda report, current=kind: report[
+                        "common_continuous_input"
+                    ][current].update(p99_us=16_001)
+                )
+                expected = (
+                    "absolute interaction target: common "
+                    f"{kind} p99 exceeds 16ms"
+                )
+                self.assertTrue(
+                    any(expected in failure for failure in failures), failures
+                )
+                self.assertFalse(
+                    any("fixed baseline regression" in failure
+                        for failure in failures),
+                    failures,
+                )
+
+        contract_cases = [
+            (
+                "anonymous session scale profile contract differs",
+                lambda report: report["session_scale_profile"]["privacy"].update(
+                    contains_paths=True
+                ),
+            ),
+            (
+                "common tier does not match the anonymous p95 session scale",
+                lambda report: report["common_continuous_input"].update(
+                    entry_count=119
+                ),
+            ),
+            (
+                "common editor_key trace execution contract differs",
+                lambda report: report["common_continuous_input"][
+                    "editor_key"
+                ].update(event_trace_sha256="wrong"),
+            ),
+            (
+                "common wheel latency summary was not recomputed from samples",
+                lambda report: report["common_continuous_input"][
+                    "wheel"
+                ]["samples_us"].__setitem__(0, 999_999),
+            ),
+        ]
+        for expected, mutate in contract_cases:
+            with self.subTest(expected=expected):
+                failures = self.failures(mutate)
+                self.assertTrue(
+                    any(expected in failure for failure in failures), failures
+                )
+
     def test_baseline_relative_budgets_reject_order_of_magnitude_drift(self):
         cases = [
             (
-                "mouse drag exceeds fixed-baseline-derived limit",
+                "fixed baseline regression: mouse drag exceeds derived limit",
                 lambda report: report["metrics"]["mouse_drag_to_frame"][
                     "points"
                 ][0].update(median_us=24_001),
             ),
             (
-                "wheel event exceeds fixed-baseline-derived limit",
+                "fixed baseline regression: wheel event exceeds derived limit",
                 lambda report: report["metrics"]["wheel_to_frame"][
                     "points"
                 ][0].update(median_us=20_001),
             ),
             (
-                "continuous alt-input median exceeds fixed-baseline-derived limit",
+                "fixed baseline regression: continuous alt-input median exceeds derived limit",
                 lambda report: report["paired_continuous_alt_input"].update(
                     median_us=20_001
                 ),
             ),
             (
-                "continuous alt-input p95 exceeds fixed-baseline-derived limit",
+                "fixed baseline regression: continuous alt-input p95 exceeds derived limit",
                 lambda report: report["paired_continuous_alt_input"].update(
                     p95_us=24_001
                 ),
             ),
             (
-                "continuous alt-input p99 exceeds fixed-baseline-derived limit",
+                "fixed baseline regression: continuous alt-input p99 exceeds derived limit",
                 lambda report: report["paired_continuous_alt_input"].update(
                     p99_us=30_001
                 ),
@@ -363,7 +509,7 @@ class ContinuousInputGateTest(unittest.TestCase):
         failures = []
         GATE.check_bench(report, failures, baseline)
         self.assertFalse(
-            any("mouse drag exceeds fixed-baseline" in item for item in failures),
+            any("fixed baseline regression: mouse drag" in item for item in failures),
             failures,
         )
         cross_machine = valid_report()
@@ -372,13 +518,19 @@ class ContinuousInputGateTest(unittest.TestCase):
         failures = []
         GATE.check_bench(cross_machine, failures, baseline)
         self.assertFalse(
-            any("fixed-baseline-derived limit" in item for item in failures),
+            any("fixed baseline regression" in item for item in failures),
             failures,
         )
         cases = [
             (
                 "paired benchmark report kind or schema differs",
                 lambda candidate, _base: candidate.update(schema_version=0),
+            ),
+            (
+                "candidate renderer object id is missing or invalid",
+                lambda candidate, _base: candidate["provenance"].update(
+                    renderer_object_id="old-object"
+                ),
             ),
             (
                 "paired benchmark is not a full five-run report",
@@ -552,6 +704,71 @@ class ContinuousInputGateTest(unittest.TestCase):
                 self.assertTrue(
                     any(expected in failure for failure in failures), failures
                 )
+
+    def test_session_scale_profile_is_aggregate_only_and_follows_active_path(self):
+        secret = "DO-NOT-LEAK-THIS-MESSAGE"
+        with tempfile.TemporaryDirectory() as temporary:
+            sessions = Path(temporary)
+            records = [
+                {
+                    "type": "session",
+                    "version": 3,
+                    "id": "private-session",
+                    "cwd": "/secret",
+                },
+                {
+                    "type": "message",
+                    "id": "a",
+                    "parentId": False,
+                    "message": {"role": "user", "content": secret},
+                },
+                {
+                    "type": "message",
+                    "id": "b",
+                    "parentId": "a",
+                    "message": {
+                        "role": "assistant",
+                        "provider": "secret-provider",
+                        "model": "secret-model",
+                        "content": [
+                            {
+                                "type": "toolCall",
+                                "id": "private-tool-call",
+                                "name": "read",
+                                "arguments": {"path": "/secret/file"},
+                            }
+                        ],
+                    },
+                },
+                {
+                    "type": "leaf",
+                    "id": "c",
+                    "parentId": "b",
+                    "targetId": "b",
+                },
+            ]
+            (sessions / "private.jsonl").write_text(
+                "".join(json.dumps(record) + "\n" for record in records),
+                encoding="utf-8",
+            )
+            (sessions / "invalid.jsonl").write_text("not-json\n", encoding="utf-8")
+            profile = PROFILE.build_profile(sessions)
+            serialized = json.dumps(profile, sort_keys=True)
+            self.assertEqual(2, profile["source_file_count"])
+            self.assertEqual(1, profile["valid_session_count"])
+            self.assertEqual(1, profile["invalid_session_count"])
+            self.assertEqual(3, profile["entry_percentiles"]["p95"])
+            self.assertEqual(50, profile["tiers"]["common"])
+            for forbidden in (
+                secret,
+                "private-session",
+                "/secret",
+                "secret-provider",
+                "secret-model",
+                "private-tool-call",
+                "private.jsonl",
+            ):
+                self.assertNotIn(forbidden, serialized)
 
 
 if __name__ == "__main__":

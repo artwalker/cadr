@@ -196,11 +196,23 @@
          (gate
            (uiop:read-file-string
             (merge-pathnames
-             "scripts/goal11-performance-gate.py" root))))
+             "scripts/goal11-performance-gate.py" root)))
+         (profile-builder
+           (uiop:read-file-string
+            (merge-pathnames
+             "scripts/goal13-session-scale-profile.py" root)))
+         (profile
+           (uiop:read-file-string
+            (merge-pathnames
+             "docs/benchmarks/goal-v13-session-scale.json" root))))
     (dolist (required
               '("mouse_drag_to_frame"
                 "wheel_to_frame"
                 "continuous_alt_input"
+                "common_continuous_input"
+                "editor_key"
+                "goal-v13-session-scale.json"
+                "renderer_object_id"
                 "1024"
                 "renderer-handle-input"
                 ":force-p t"))
@@ -211,6 +223,12 @@
               '("mouse_drag_to_frame"
                 "wheel_to_frame"
                 "continuous_alt_input"
+                "common_continuous_input"
+                "editor_key"
+                "absolute interaction target"
+                "COMMON_ABSOLUTE_P99_US = 16_000"
+                "fixed baseline regression"
+                "renderer_object_id"
                 "event_count"
                 "p99_us"
                 "gc_affected_max_us"))
@@ -251,6 +269,25 @@
       (is (search required gate)
           "Missing baseline-derived continuous-input release gate: ~A"
           required))
+    (dolist (required
+              '("parentId"
+                "parent is False"
+                "contains_message_content"
+                "valid_session_count"
+                "entry_percentiles"
+                "tiers"))
+      (is (search required profile-builder)
+          "Missing anonymous session-scale profile contract: ~A"
+          required))
+    (dolist (required
+              '("\"source_file_count\":45"
+                "\"valid_session_count\":45"
+                "\"invalid_session_count\":0"
+                "\"common\":58"
+                "\"stress\":5000"))
+      (is (search required profile)
+          "Missing checked-in anonymous session-scale fact: ~A"
+          required))
     (multiple-value-bind (output error-output status)
         (uiop:run-program
          (list
@@ -265,7 +302,7 @@
       (is (zerop status)
           "Synthetic gate regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 5 tests" error-output))
+      (is (search "Ran 7 tests" error-output))
       (is (search "OK" error-output)))))
 
 (test delivery-binary-freshness-check-rejects-missing-stale-and-dirty-images
