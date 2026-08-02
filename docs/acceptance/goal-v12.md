@@ -233,3 +233,64 @@ WSL/Windows Terminal；该终端通过可观察的 CSI/modifyOtherKeys/Kitty 字
 仅在证据栏明确标记“暂缓：目标平台不适用”。账本保持
 `422 已实现 / 72 有意差异 / 101 缺失`；后续若 Apple Terminal 成为支持目标，应另立
 平台 goal 补齐原生查询与 `ProcessTerminal` 接线。
+
+## Part C6 — Runnable examples（99，阶段性 blocked）
+
+状态：17 个现有冻结 API 内可完成的示例已移植；其余 82 个已逐文件、逐能力入
+blocked 提案，等待用户逐项裁决。实现/测试提交 `10d5fb29f`；文档收尾见本节
+所在提交。
+
+本批先用 `examples/manifest.sexp` 对固定基线的 99 个 example source 建立一对一
+inventory。每行只能是 `:ported` 或 `:gap`：ported 必须指向真实 Lisp source；gap
+必须列出非空 gap ids。机械结果为 99 total / 99 unique / 17 ported / 82 gap；42 个
+唯一 gap id 全部恰好映射到
+[`docs/proposals/goal-v12-example-api-gaps.md`](../proposals/goal-v12-example-api-gaps.md)
+的 19 个可独立裁决项。
+
+17 个功能等价移植为：bookmark、claude-rules、doom keys、WAD finder、dynamic
+resources、两种 input transform、model status、terminal notify、pirate mode、plan-mode
+utilities、provider payload logging、send-user-message、session-name 与 subagent agent
+discovery，以及 mac-system-theme 与 titlebar-spinner。构造继续使用 Lisp 的长处：扩展入口直接用冻结 macros/hooks，纯算法 helper
+保持普通函数/structure，session/model domain object 直接复用；没有为示例复制 TypeScript
+class，也没有增加第三方依赖。WAD 下载严格使用基线的未压缩 shareware WAD URL 与
+原始 octet 写入口径；macOS theme 与 titlebar timer 用 SBCL 原生线程表达，不虚构 API 缺口。
+
+本批拒绝了一批“能 load 但不等价”的假阳性。典型例子是当前 `custom` 只把 factory
+当 `(done)` 调用、忽略 overlay options，并把返回值退化为 line rendering；它不能替代
+基线 `(tui, theme, keybindings, done) -> Component` 的焦点、动画、dispose 与 overlay
+handle 合同。同理，`mode` 推导不替代公开 `hasUI`，内部 agent slot 不替代 model/runtime
+context，已有简化 renderer 不替代完整 Theme/ToolRenderContext。所有这些行保持 `缺失`，
+没有用内部符号、弱断言或降级示例冲高数字。
+
+提案的 19 项逐项包含确切需求、固定 baseline file:line、受影响示例、非示例影响、
+最小解冻面、替代方案及否决理由、冻结影响与回滚。第 11–14 项涉及扩展本地依赖、
+Gondolin、sandbox runtime 与 WASM；提案明确不把能力批准偷换为依赖批准，具体依赖
+闭包、版本/hash 与构建隔离仍须另行预审。
+
+测试先红后绿：manifest 尚不存在时
+`GOAL12-EXAMPLE-MANIFEST-COVERS-EVERY-BASELINE-SOURCE-EXACTLY-ONCE` 以
+`FILE-DOES-NOT-EXIST .../examples/manifest.sexp` 失败。完成后门禁包括：
+
+- `GOAL12-EXAMPLE-MANIFEST-COVERS-EVERY-BASELINE-SOURCE-EXACTLY-ONCE`；
+- `GOAL12-EVERY-EXAMPLE-GAP-IS-DEFINED-BY-THE-BLOCKED-PROPOSAL`；
+- `GOAL12-PORTED-EXTENSION-ENTRYPOINTS-LOAD-WITHOUT-DIAGNOSTICS`；
+- `GOAL12-PORTED-EXTENSION-REGISTRATIONS-COVER-THE-BASELINE-SURFACE`；
+- `GOAL12-PURE-EXAMPLE-PORTS-PRESERVE-EDGE-CASE-BEHAVIOR`。
+
+五条定向门禁合计 `503 checks / 503 pass / 0 skip / 0 fail`。完整
+`./scripts/test-cl.sh` 为 `8590 checks / 8590 pass / 0 skip / 0 fail`。
+`./scripts/verify.sh` 的 11 个确定性阶段全部 PASS，包括隔离 `cadr`/`cadr-server`
+无压缩降级构建、Goal 11 性能稳定性门禁、进程/PTY/socket/TUI harness；两个 live
+阶段亦 PASS。凭据门控项中 7 项实际运行并通过，Anthropic 一项因
+`ANTHROPIC_API_KEY is not set` 跳过，DeepSeek live TUI 通过。
+
+交付前根目录二进制已重建。`scripts/check-root-binary.sh` 记录 binary build time
+`2026-08-02 10:18:34.175969809 +0800`，晚于最后一个 `src/` 提交
+`797a9cbbe7055be59fc1f1ac1f5e6361b8f9f2e0` 的
+`2026-08-02T08:46:22+08:00`；`./cadr --version` 为
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。
+
+账本由 `422 已实现 / 72 有意差异 / 101 缺失` 更新为
+`439 已实现 / 72 有意差异 / 84 缺失`。余项精确为 82 个提案 blocked examples 与
+2 个用户明确暂缓的 Apple Terminal rows。此时暂停是新增能力裁决边界，不是把 82
+个示例宣告完成；获批项实施后才可继续逐行改判。

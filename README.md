@@ -290,6 +290,16 @@ one start/after/end sequence, and the default path remains byte-identical.
 The exact frozen surface and reference locations are recorded in
 [`docs/proposals/goal-v7-extension-api.md`](docs/proposals/goal-v7-extension-api.md).
 
+The fixed baseline's 99 runnable extension/SDK example source files are tracked
+one-for-one in [`examples/manifest.sexp`](examples/manifest.sexp). Seventeen have
+functionally equivalent Lisp ports under [`examples/extensions/`](examples/extensions/);
+the remaining 82 are still honestly classified as missing because they require
+extension or embedding contracts outside the current frozen API. The 19
+itemized thaw proposals and their exact baseline evidence are in
+[`docs/proposals/goal-v12-example-api-gaps.md`](docs/proposals/goal-v12-example-api-gaps.md).
+No proposed API or dependency is implemented until its item receives explicit
+user approval.
+
 Example:
 
 ```lisp
