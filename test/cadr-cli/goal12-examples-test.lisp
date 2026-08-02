@@ -71,6 +71,9 @@
   (let* ((proposal
            (goal12-read-project-file
             "docs/proposals/goal-v12-example-api-gaps.md"))
+         (amendment
+           (goal12-read-project-file
+            "docs/proposals/goal-v12-api-scope-amendment-2.md"))
          (mapping-start (search (format nil "~%## 4.") proposal))
          (mapping-end (and mapping-start
                            (search (format nil "~%## 5.")
@@ -94,10 +97,9 @@
       (let ((token (format nil "`:~(~A~)`" gap)))
         (is (search token proposal))
         (is (= 1 (goal12-count-substring token mapping)))))
-    (is
-     (search
-      "blocked，等待用户逐项裁决"
-      proposal))))
+    (is (search "当前按硬约束再次 blocked" proposal))
+    (is (search "状态：**blocked，等待用户逐项裁决。**"
+                amendment))))
 
 (test goal12-ported-extension-entrypoints-load-without-diagnostics
   (let ((root (asdf:system-source-directory "cadr-cli")))
