@@ -242,6 +242,24 @@ source 文件固定 `0600`；metadata 排除 run ID 与内嵌 session snapshot�
 目标回归为 `595 = 523 已实现 + 72 有意差异 + 0 暂缓/缺失`，
 首次达成零暂缓状态。
 
+机械验收：
+
+- 四条 Apple Terminal 回归共 `30 checks / 30 pass / 0 skip / 0 fail`；
+  `cadr-tui` 为 `1580/1580/0/0`。
+- `./scripts/test-cl.sh` 为
+  `systems=8 / 10269 checks / 10269 pass / 0 skip / 0 fail`。
+- `./scripts/verify.sh` 全部 12 个确定性阶段 PASS，包括 source drift、
+  两个隔离构建、Goal 11 gate、六类进程/PTY/TUI harness；凭据门控
+  live 为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，Anthropic 因缺 key
+  跳过，DeepSeek live TUI PASS。
+- 根目录二进制构建时间为
+  `2026-08-02 17:49:38.252818046 +0800`，新于最后一次 `src/` 提交
+  `0c52709ab09c5d27431301307b11b4342bdf19a5`
+  (`2026-08-02T17:47:20+08:00`)；`./cadr --version` 输出
+  `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。
+- 本批 `src/cadr-ai` 零 diff；原有整屏、overlay、payload、wire 与非
+  Apple Terminal 键位门禁全绿。
+
 ## Part C6 — Runnable examples（99，阶段性 blocked）
 
 状态：17 个现有冻结 API 内可完成的示例已移植；其余 82 个已逐文件、逐能力入
