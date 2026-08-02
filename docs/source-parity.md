@@ -4,6 +4,12 @@
 
 ## 1. Scope and counting rules
 
+This is the **source ledger**. It disposes every source file in the fixed
+baseline but does not prove runtime behavior, non-functional properties, or
+presentation equivalence; those independent axes live in `docs/parity-map.md`,
+`docs/performance.md`, and `docs/presentation-parity.md`. The runnable-example
+`examples/manifest.sexp` is an auxiliary inventory, not another ledger.
+
 Source baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
 (`v0.83.0-38-g74caa2649`), read from `/tmp/cadr-parity-74caa2649`.
 The denominator is every tracked `*.ts` file below `packages/` except paths
@@ -32,8 +38,8 @@ Verdicts use no fourth escape hatch:
 A partially mapped file is `缺失` when any material capability in its listed surface is
 absent. Barrel files are charged only for the public namespace; missing child capabilities
 are charged to their defining files. Source correspondence does not prove internal behavior
-equivalence, so this ledger complements rather than replaces parity-map tests, performance
-gates, and user A/B verification.
+equivalence, so this ledger complements rather than replaces behavior tests,
+non-functional gates, presentation evidence, and user A/B verification.
 Shipped runnable examples count as source capabilities; a lower-level extension API does not
 make the example itself implemented. The deterministic image fixture generator follows the
 same strict rule: embedded fixtures do not replace the baseline regeneration command.
@@ -714,5 +720,6 @@ while porting examples still require a separate proposal and itemized approval.
 
 This axis detects missing source capabilities but cannot detect a function whose symbol
 exists while its internal behavior diverges. The streaming-space corruption found earlier
-is the canonical counterexample. The behavior, source, and non-functional ledgers therefore
-remain independent, and real terminal/provider acceptance remains mandatory.
+is the canonical counterexample. The behavior, source, non-functional, and presentation
+ledgers therefore remain independent, and real terminal/provider acceptance remains
+mandatory.

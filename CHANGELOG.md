@@ -7,6 +7,18 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Added
+
+- Added the fourth parity ledger for visible presentation semantics, including
+  production probes for all 55 theme tokens and machine-checked ledger totals.
+- Added a self-contained baseline-compatible session HTML exporter with the
+  approved vendored Marked and Highlight.js browser assets.
+
+### Changed
+
+- Reduced alternate-screen continuous-input p99 from 52ms to 8ms at the
+  5,000-entry stress tier while preserving the complete logical document.
+
 ## [0.2.0] - 2026-08-01
 
 **cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**

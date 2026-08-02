@@ -9,22 +9,32 @@ remain evidence and must not silently override a current contract.
 
 - [architecture.md](architecture.md): system boundaries, data/control flow,
   stable interfaces, frozen surfaces, and accepted implementation decisions.
-- [parity-map.md](parity-map.md): fixed upstream baseline and the exhaustive
-  feature/test classification ledger.
+- [parity-map.md](parity-map.md): behavior ledger for the fixed upstream
+  baseline, observable contracts, and exhaustive test classification.
+- [source-parity.md](source-parity.md): source ledger giving every
+  fixed-baseline source file an explicit capability disposition.
+- [performance.md](performance.md): non-functional ledger for deterministic
+  performance, allocation, memory, stability, fixed-reference comparisons,
+  archived results, and release thresholds.
+- [presentation-parity.md](presentation-parity.md): presentation ledger for
+  visible copy, semantic styling, geometry, formatting, and truncation.
 - [visual-parity.md](visual-parity.md): TUI visual, content, runtime-state, and
-  full-overlay comparison contract.
+  full-overlay comparison contract supporting the presentation ledger.
 - [test-matrix.md](test-matrix.md): deterministic, fixture, process/PTY, live,
   and human verification levels and their entry points.
 - [dependency-audit.md](dependency-audit.md): production dependencies,
   transitive closure, authorization class, and replacement boundary.
 - [open-questions.md](open-questions.md): proposed mechanisms awaiting human
   decision; entries here are not authorization to implement.
-- [performance.md](performance.md): deterministic non-functional methodology,
-  fixed-reference comparison, archived results, and release thresholds.
 - [delivery-checklist.md](delivery-checklist.md): mandatory root-image rebuild,
   freshness proof, full verification, and delivery-report evidence.
 - [source-parity-upgrade.md](source-parity-upgrade.md): baseline source drift
   inventory and mandatory added/deleted/renamed disposition gate.
+
+These four ledgers are independent: behavior, source, non-functional, and
+presentation evidence cannot substitute for one another. The runnable-example
+`examples/manifest.sexp` is an auxiliary inventory consumed by ledger checks,
+not an additional ledger.
 
 ## Evidence directories
 

@@ -20,12 +20,22 @@ That implementation and its tests are the behavioral reference for provider
 payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
 and terminal interaction.
 
-Parity is tracked by three independent ledgers: [`docs/parity-map.md`](docs/parity-map.md)
-maps observable behavior and tests, [`docs/source-parity.md`](docs/source-parity.md)
-disposes every fixed-baseline source file, and [`docs/performance.md`](docs/performance.md)
-locks performance and long-run stability budgets. Passing one axis never excuses
-failure on another. [`docs/source-parity-upgrade.md`](docs/source-parity-upgrade.md)
-defines the fail-closed source drift gate for a future baseline upgrade.
+Alignment is tracked on four independent axes:
+
+- the **behavior** ledger, [`docs/parity-map.md`](docs/parity-map.md), maps
+  externally observable behavior to deterministic and live test evidence;
+- the **source** ledger, [`docs/source-parity.md`](docs/source-parity.md), gives
+  every fixed-baseline source file an explicit disposition;
+- the **non-functional** ledger, [`docs/performance.md`](docs/performance.md),
+  locks performance, allocation, memory, and long-run stability budgets;
+- the **presentation** ledger,
+  [`docs/presentation-parity.md`](docs/presentation-parity.md), audits visible
+  copy, semantic styling, geometry, formatting, and truncation.
+
+Passing one axis never excuses failure on another. `examples/manifest.sexp` is
+an auxiliary inventory for the fixed-baseline runnable examples, not a fifth
+ledger. [`docs/source-parity-upgrade.md`](docs/source-parity-upgrade.md) defines
+the fail-closed source drift gate for a future baseline upgrade.
 
 The former
 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is retained only as a

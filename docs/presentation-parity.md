@@ -1,10 +1,19 @@
 # Presentation parity ledger
 
+<!-- GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=121 pending=0 intentional=2 -->
+
 Fixed baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 Audit point: Cadr `e04d9230f` (Goal 13 Part A complete).  This ledger audits
-presentation only.  Tool results sent to the model, provider payloads, event
-sequences, and session data are outside this axis and remain governed by
-`docs/parity-map.md` and `docs/source-parity.md`.
+the independent **presentation axis** only. Tool results sent to the model,
+provider payloads, event sequences, and session data belong to the behavior
+ledger in `docs/parity-map.md`; per-file capability disposition belongs to
+`docs/source-parity.md`; performance, allocation, memory, and stability belong
+to `docs/performance.md`. `examples/manifest.sexp` is only an auxiliary
+runnable-example inventory.
+
+The `GOAL13_PRESENTATION_LEDGER` comment is the machine-readable completeness
+identity. Its B1-B4 denominators must equal `55 + 52 + 10 + 6 = 123`, and its
+dispositions must equal `121 aligned + 0 pending + 2 intentional = 123`.
 
 Status meanings:
 

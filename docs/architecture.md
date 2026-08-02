@@ -1666,10 +1666,13 @@ Obsidian/test-home 状态与 Python bytecode 由 `.gitignore` 隔离。文档职
 `docs/README.md` 导航，里程碑由根 `CHANGELOG.md` 维护；历史报告仍是证据，不能
 覆盖当前 architecture/parity/test contracts。
 
-三本当前账职责互不替代：`docs/parity-map.md` 记录可观察行为与测试证据，
-`docs/source-parity.md` 对固定基线的每个源文件给出处置结论，
-`docs/performance.md` 记录非功能预算与同机基线。`examples/manifest.sexp` 是 99 个
-可运行示例的机器清单；四者共享 `GOAL12_LEDGER` 身份并由确定性门禁交叉核对。
+四本当前账职责互不替代：行为账 `docs/parity-map.md` 记录可观察行为与测试
+证据；源码账 `docs/source-parity.md` 对固定基线的每个源文件给出处置结论；
+非功能账 `docs/performance.md` 记录性能、分配、内存、稳定性预算与同机基线；
+呈现账 `docs/presentation-parity.md` 逐项记录用户可见文案、语义样式、几何、格式
+与截断。`examples/manifest.sexp` 只是 99 个可运行示例的辅助机器清单，不是第五
+本账。Goal 12 的 source/example 完整性仍由既有 `GOAL12_LEDGER` 身份交叉核对；
+呈现账另以 `GOAL13_PRESENTATION_LEDGER` 身份锁定 B1-B4 分母与处置总数。
 未来升级先运行 `scripts/check-source-parity-drift.sh`，新增、删除、重命名任何源文件
 均须在 TSV 中写明人工处置，漏项或陈旧项均 fail closed；完整流程见
 `docs/source-parity-upgrade.md`。
@@ -1783,7 +1786,9 @@ UTF-8 path 加单个 LF，并强制 `LC_ALL=C` 字节序，禁止继承宿主 lo
 `--ledger-only` 是给
 不含 detached baseline object 的浅克隆使用的显式模式；普通 revision 模式继续把
 账本路径逐个与 `--from` tree 比较。`scripts/verify.sh` 在构建前先执行真实账本门禁，
-再执行 synthetic drift self-test，后者不得阻止真实输入被驱动。升级后必须同步 `docs/parity-map.md`、
-`docs/source-parity.md`、`docs/performance.md` 与 `examples/manifest.sexp` 的唯一
-`GOAL12_LEDGER` 身份。确定性测试从 manifest 重算 example 数量并交叉核对四本账，
-任一漂移即失败。
+再执行 synthetic drift self-test，后者不得阻止真实输入被驱动。升级后必须分别
+复核行为账 `docs/parity-map.md`、源码账 `docs/source-parity.md`、非功能账
+`docs/performance.md` 与呈现账 `docs/presentation-parity.md`；作为辅助 inventory 的
+`examples/manifest.sexp` 也必须同步。确定性门禁从 manifest 重算 example 数量，
+核对既有 `GOAL12_LEDGER` source/example 身份，并独立核对呈现账的
+`GOAL13_PRESENTATION_LEDGER` 分母与处置总数；任一漂移即失败。

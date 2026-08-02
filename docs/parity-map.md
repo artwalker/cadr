@@ -4,6 +4,13 @@
 
 ## 1. Scope and counting rules
 
+This is the **behavior ledger**. It tracks externally observable contracts and
+their test evidence. It does not substitute for the per-file source
+dispositions in `docs/source-parity.md`, the non-functional budgets in
+`docs/performance.md`, or the visible-copy/style/geometry audit in
+`docs/presentation-parity.md`. `examples/manifest.sexp` is an auxiliary
+runnable-example inventory, not another ledger.
+
 Behavioral baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
 (`v0.83.0-38-g74caa2649`). No release tag leads this commit, so Goal 10 Part B
 is a user-adjudicated no-op; the fixed baseline remains unchanged.
