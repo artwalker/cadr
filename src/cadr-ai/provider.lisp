@@ -126,6 +126,27 @@
 (defgeneric finalize-provider-stream
     (provider model state emit))
 
+(defgeneric try-provider-websocket-stream
+    (provider model context request state emit
+     &key transport session-id abort-p on-response)
+  (:documentation
+   "Handle REQUEST over a provider-specific WebSocket transport.
+Return two values: whether the request was handled and, when handled, the
+completed assistant message."))
+
+(defmethod try-provider-websocket-stream
+    ((provider provider) model context request state emit
+     &key transport session-id abort-p on-response)
+  (declare (ignore provider model context request state emit
+                   transport session-id abort-p on-response))
+  (values nil nil))
+
+(defgeneric prepare-provider-sse-request (provider request))
+
+(defmethod prepare-provider-sse-request ((provider provider) request)
+  (declare (ignore provider))
+  request)
+
 (defmethod finalize-provider-stream
     ((provider provider) model state emit)
   (declare (ignore provider model state emit))
@@ -533,6 +554,8 @@
                     (request-json
                      request
                      :abort-p abort-p
+                     :environment
+                     (getf (provider-options provider) :environment)
                      :on-response
                      (lambda (status headers)
                        (notify-provider-response
@@ -548,7 +571,7 @@
 (defun stream-chat (provider model context on-event
                     &key max-tokens temperature reasoning cache-retention
                       session-id tool-choice metadata abort-p
-                      on-payload transform-headers on-response)
+                      on-payload transform-headers on-response transport)
   (let* ((message (empty-assistant-message model))
          (state (make-provider-stream-state :message message))
          (saw-provider-event-p nil)
@@ -568,12 +591,21 @@
             (apply-provider-request-callbacks
              request model
              on-payload transform-headers)
+            (multiple-value-bind (handled-p websocket-message)
+                (try-provider-websocket-stream
+                 provider model context request state on-event
+                 :transport transport
+                 :session-id session-id
+                 :abort-p abort-p
+                 :on-response on-response)
+              (when handled-p
+                (return-from stream-chat websocket-message)))
             (emit-event on-event :start message)
             (call-with-provider-retries
              (lambda ()
                (check-abort abort-p)
                (request-provider-events
-                request
+                (prepare-provider-sse-request provider request)
                 (lambda (event)
                   (setf saw-provider-event-p t)
                   (check-abort abort-p)
@@ -581,6 +613,8 @@
                    provider state event on-event)
                   (check-abort abort-p))
                 :abort-p abort-p
+                :environment
+                (getf (provider-options provider) :environment)
                 :on-response
                 (lambda (status headers)
                   (when (typep provider 'bedrock-provider)

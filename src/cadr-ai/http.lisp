@@ -8,7 +8,8 @@
   (method :post :type symbol)
   (headers nil :type list)
   (payload (make-hash-table :test #'equal) :type hash-table)
-  (raw-body nil :type (or null string))
+  (raw-body nil :type (or null string
+                          (simple-array (unsigned-byte 8) (*))))
   (stream-p nil :type boolean)
   (stream-format :sse :type symbol)
   (provider nil :type symbol))
@@ -487,6 +488,72 @@
         (signal-native-http-network-error
          condition)))))
 
+(defun parsed-url-authority (parsed)
+  (if (or (and (string= "http" (parsed-url-scheme parsed))
+               (= 80 (parsed-url-port parsed)))
+          (and (string= "https" (parsed-url-scheme parsed))
+               (= 443 (parsed-url-port parsed))))
+      (parsed-url-host parsed)
+      (format nil "~A:~D"
+              (parsed-url-host parsed)
+              (parsed-url-port parsed))))
+
+(defun write-proxy-connect-request (stream target)
+  (let ((authority (parsed-url-authority target)))
+    (write-sequence
+     (utf8-octets
+      (format nil
+              "CONNECT ~A HTTP/1.1~C~CHost: ~A~C~CProxy-Connection: keep-alive~C~C~C~C"
+              authority #\Return #\Linefeed
+              authority #\Return #\Linefeed
+              #\Return #\Linefeed
+              #\Return #\Linefeed))
+     stream)
+    (finish-output stream)))
+
+(defun connect-native-http-stream
+    (target url proxy-url connect-timeout read-timeout abort-p)
+  (if (null proxy-url)
+      (multiple-value-bind (stream socket)
+          (connect-http-stream
+           target connect-timeout read-timeout abort-p)
+        (values stream socket (parsed-url-path target)))
+      (let ((proxy (parse-http-url proxy-url)))
+        (multiple-value-bind (stream socket)
+            (connect-http-stream
+             proxy connect-timeout read-timeout abort-p)
+          (if (string= "https" (parsed-url-scheme target))
+              (handler-case
+                  (progn
+                    (call-with-abortable-stream-operation
+                     stream abort-p
+                     (lambda ()
+                       (write-proxy-connect-request stream target)
+                       (multiple-value-bind (status headers)
+                           (parse-response-headers stream)
+                         (declare (ignore headers))
+                         (unless (<= 200 status 299)
+                           (error "HTTP proxy CONNECT failed with status ~D"
+                                  status)))))
+                    (values
+                     (call-with-abortable-stream-operation
+                      stream abort-p
+                      (lambda ()
+                        (cl+ssl:make-ssl-client-stream
+                         stream
+                         :hostname (parsed-url-host target)
+                         :verify :required)))
+                     socket
+                     (parsed-url-path target)))
+                (error (condition)
+                  (ignore-errors (close stream :abort t))
+                  (ignore-errors
+                    (sb-bsd-sockets:socket-close socket))
+                  (if (typep condition 'transport-error)
+                      (error condition)
+                      (signal-native-http-network-error condition))))
+              (values stream socket url))))))
+
 (defun request-headers
     (parsed headers content-length)
   (let ((result (copy-list headers)))
@@ -526,8 +593,10 @@
     result))
 
 (defun write-http-request
-    (stream parsed method headers content)
-  (let* ((body (utf8-octets (or content "")))
+    (stream parsed method headers content &optional request-target)
+  (let* ((body (if (typep content '(array (unsigned-byte 8) (*)))
+                   (coerce content '(simple-array (unsigned-byte 8) (*)))
+                   (utf8-octets (or content ""))))
          (resolved
            (request-headers
             parsed headers (length body)))
@@ -537,7 +606,7 @@
                      "~A ~A HTTP/1.1~C~C"
                      (string-upcase
                       (symbol-name method))
-                     (parsed-url-path parsed)
+                     (or request-target (parsed-url-path parsed))
                      #\Return #\Linefeed)
              (dolist (header resolved)
                (format output
@@ -573,14 +642,16 @@
            (read-timeout 60)
            want-stream
            force-string
-           force-binary)
+           force-binary
+           environment)
   (declare (ignore force-binary))
-  (let ((parsed (parse-http-url url)))
-    (multiple-value-bind (stream socket)
-        (connect-http-stream
-         parsed connect-timeout
-         read-timeout
-         *native-http-abort-p*)
+  (let* ((parsed (parse-http-url url))
+         (proxy-url
+           (resolve-http-proxy-url-for-target url environment)))
+    (multiple-value-bind (stream socket request-target)
+        (connect-native-http-stream
+         parsed url proxy-url connect-timeout
+         read-timeout *native-http-abort-p*)
       (flet ((abort-connection ()
                (sb-bsd-sockets:socket-shutdown
                 socket :direction :io)))
@@ -589,7 +660,8 @@
              stream *native-http-abort-p*
              (lambda ()
                (write-http-request
-                stream parsed method headers content)
+                stream parsed method headers content
+                request-target)
                (multiple-value-bind (status response-headers)
                    (parse-response-headers stream)
                  (let ((body
@@ -716,15 +788,17 @@
                (connect-timeout 10)
                (read-timeout 60)
                abort-p
+               environment
                on-response)
   (multiple-value-bind (body status headers)
       (let ((*native-http-abort-p* abort-p))
-        (invoke-http-request
-         request
-         :connect-timeout connect-timeout
-         :read-timeout read-timeout
-         :want-stream nil
-         :force-string t))
+        (apply #'invoke-http-request
+               request
+               (append
+                (list :connect-timeout connect-timeout
+                      :read-timeout read-timeout)
+                (when environment (list :environment environment))
+                (list :want-stream nil :force-string t))))
     (let ((text (normalize-response-body body)))
       (when on-response
         (funcall on-response status headers))
@@ -748,16 +822,18 @@
     (request consumer
      &key (connect-timeout 10)
        abort-p
+       environment
        on-response)
   (multiple-value-bind (body status headers)
       (let ((*native-http-abort-p* abort-p))
-        (invoke-http-request
-         request
-         :connect-timeout connect-timeout
-         ;; SSE may remain silent during model thinking.
-         :read-timeout nil
-         :want-stream t
-         :force-binary t))
+        (apply #'invoke-http-request
+               request
+               (append
+                (list :connect-timeout connect-timeout
+                      ;; SSE may remain silent during model thinking.
+                      :read-timeout nil)
+                (when environment (list :environment environment))
+                (list :want-stream t :force-binary t))))
     (unwind-protect
          (progn
            (when on-response
@@ -948,15 +1024,16 @@
     (request consumer
      &key (connect-timeout 10)
        abort-p
+       environment
        on-response)
   (multiple-value-bind (body status headers)
       (let ((*native-http-abort-p* abort-p))
-        (invoke-http-request
-         request
-         :connect-timeout connect-timeout
-         :read-timeout nil
-         :want-stream t
-         :force-binary t))
+        (apply #'invoke-http-request
+               request
+               (append
+                (list :connect-timeout connect-timeout :read-timeout nil)
+                (when environment (list :environment environment))
+                (list :want-stream t :force-binary t))))
     (unwind-protect
          (progn
            (when on-response
@@ -979,16 +1056,19 @@
     (request consumer
      &key (connect-timeout 10)
        abort-p
+       environment
        on-response)
   (ecase (request-spec-stream-format request)
     (:sse
      (request-sse request consumer
                   :connect-timeout connect-timeout
                   :abort-p abort-p
+                  :environment environment
                   :on-response on-response))
     (:aws-event-stream
      (request-aws-event-stream
       request consumer
       :connect-timeout connect-timeout
       :abort-p abort-p
+      :environment environment
       :on-response on-response))))

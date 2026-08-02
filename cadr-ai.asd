@@ -32,7 +32,8 @@
                                            (:file "openai")
                                            (:file "openai-completions")
                                            (:file "google")
-                                           (:file "independent"))))))
+                                           (:file "independent")))
+                             (:file "websocket"))))
   :in-order-to ((test-op (test-op "cadr-ai/tests"))))
 
 (asdf:defsystem "cadr-ai/tests"
@@ -72,7 +73,8 @@
                              (:file "auth-test")
                              (:file "goal12-capabilities-test")
                              (:file "goal12-provider-capabilities-test")
-                             (:file "goal12-auth-test"))))
+                             (:file "goal12-auth-test")
+                             (:file "goal12-codex-websocket-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))
              (unless (uiop:symbol-call :cadr-ai/tests :run-tests)

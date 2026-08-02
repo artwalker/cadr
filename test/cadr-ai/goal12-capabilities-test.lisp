@@ -167,6 +167,80 @@
      "https://api.example.com"
      '(("HTTPS_PROXY" . "socks5://proxy.example:1080")))))
 
+(test goal12-native-http-routes-through-proxy-and-uses-connect-for-tls
+  (let* ((listener
+           (usocket:socket-listen
+            "127.0.0.1" 0 :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (request-line nil)
+         (host-header nil)
+         (server-error nil)
+         (server
+           (bt:make-thread
+            (lambda ()
+              (handler-case
+                  (let ((client
+                          (usocket:socket-accept
+                           listener
+                           :element-type '(unsigned-byte 8))))
+                    (unwind-protect
+                         (let ((stream (usocket:socket-stream client)))
+                           (setf request-line
+                                 (cadr-ai::read-http-line stream))
+                           (loop for line = (cadr-ai::read-http-line stream)
+                                 until (zerop (length line))
+                                 when (uiop:string-prefix-p "Host:" line)
+                                   do (setf host-header line))
+                           (write-http-string
+                            stream
+                            (format nil
+                                    "HTTP/1.1 200 OK~C~CContent-Length: 11~C~CContent-Type: application/json~C~CConnection: close~C~C~C~C{\"ok\":true}"
+                                    #\Return #\Linefeed #\Return #\Linefeed
+                                    #\Return #\Linefeed #\Return #\Linefeed
+                                    #\Return #\Linefeed)))
+                      (usocket:socket-close client)))
+                (error (condition)
+                  (setf server-error condition))))
+            :name "cadr-test-http-proxy")))
+    (unwind-protect
+         (let* ((cadr-ai::*http-request-function*
+                  #'cadr-ai::native-http-request)
+                (request
+                  (cadr-ai::make-request-spec
+                   :url "http://origin.invalid/path?q=1"
+                   :method :get
+                   :provider :fixture))
+                (result
+                  (cadr-ai::request-json
+                   request
+                   :environment
+                   `(("HTTP_PROXY" . ,(format nil "http://127.0.0.1:~D" port))
+                     ("NO_PROXY" . "")))))
+           (bt:join-thread server)
+           (when server-error (error server-error))
+           (is-true (cadr-ai::json-get result "ok"))
+           (is (string=
+                "GET http://origin.invalid/path?q=1 HTTP/1.1"
+                request-line))
+           (is (string= "Host: origin.invalid" host-header)))
+      (ignore-errors (usocket:socket-close listener))
+      (when (bt:thread-alive-p server)
+        (bt:join-thread server))))
+  (let* ((output (flexi-streams:make-in-memory-output-stream))
+         (target
+           (cadr-ai::parse-http-url
+            "https://api.example.com:8443/v1")))
+    (cadr-ai::write-proxy-connect-request output target)
+    (let ((wire
+            (babel:octets-to-string
+             (flexi-streams:get-output-stream-sequence output)
+             :encoding :utf-8)))
+      (is (uiop:string-prefix-p
+           "CONNECT api.example.com:8443 HTTP/1.1"
+           wire))
+      (is (search "Host: api.example.com:8443" wire)))))
+
 (test goal12-images-api-registry-and-runtime-are-provider-extensible
   (cadr-ai:clear-images-api-providers)
   (let* ((calls nil)

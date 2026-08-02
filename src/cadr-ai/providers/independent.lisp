@@ -252,10 +252,9 @@
             (build-request
              (make-openai-provider
               :oauth-access-token token
-              :oauth-account-id
+             :oauth-account-id
               (provider-oauth-account-id provider))
-             (copy-model-with
-              model :api :openai-responses)
+             (copy-model-with model)
              context
              :stream-p stream-p
              :max-tokens max-tokens

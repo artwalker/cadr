@@ -164,6 +164,9 @@
    #:*http-request-function*
    #:request-json
    #:request-sse
+   #:close-openai-codex-websocket-sessions
+   #:reset-openai-codex-websocket-debug-stats
+   #:get-openai-codex-websocket-debug-stats
    #:provider
    #:anthropic-provider
    #:openai-provider
