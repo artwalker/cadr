@@ -102,6 +102,7 @@
                              (:file "llama-extension-test")
                              (:file "goal12-tui-composition-test")
                              (:file "goal12-core-capabilities-test")
+                             (:file "goal12-examples-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")
