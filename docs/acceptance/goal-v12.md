@@ -390,3 +390,32 @@ self-test。升级操作手册见 [`docs/source-parity-upgrade.md`](../source-pa
 README 与 architecture 明确三本账分工：parity-map 管可观察行为，source-parity
 管逐源文件处置，performance 管非功能预算；manifest 是 99 个 runnable example
 的机器清单。共享身份门禁使任何一本账落后都直接变红。
+
+## Final mechanical verification
+
+实现、漂移门禁与账本分别落账为 `07c00a1d1`、`9bd12e6f1`、
+`c1d7f5d5c`。提交后执行 `./scripts/test-cl.sh`，脚本从完整输出解析到恰好八个
+suite：`cadr-ai 2117`、`cadr-agent 911`、`cadr-tui 1550`、
+`cadr-cli 4940`、`cadr-storage 23`、`cadr-server 45`、`cadr-evals 150`、
+`cadr-protocol 497`；汇总为
+`systems=8 / 10233 checks / 10233 pass / 0 skip / 0 fail`。
+
+根目录 `./build.sh` exit 0；SBCL 不含 `sb-core-compression` 时按架构合同降级为
+无压缩 image。`./scripts/verify.sh` exit 0，十二个确定性阶段全部 PASS：二进制
+新鲜度、source drift self-test、FiveAM、隔离 `cadr`/`cadr-server` 构建、Goal 11
+性能稳定性、native acceptance/process modes、migration PTY、Unix socket、terminal
+lifecycle 与 deterministic TUI harness。隔离构建中的两次全量测试也各自精确为
+`8 / 10233 / 10233 / 0 / 0`。Goal 11 为 PASS（1200-turn long run、至少
+10 MiB JSONL session，continuous p99 48ms、continuous GC max 68ms）。
+
+live 报告为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，检查级为
+`32 / 31 pass / 1 skip / 0 fail`；唯一跳过项是
+`LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT`，原因为
+`ANTHROPIC_API_KEY is not set`。DeepSeek 与 OpenAI Codex OAuth 的七项 live、
+以及 DeepSeek live TUI 均实际运行并通过。
+
+最终根目录二进制构建时间为
+`2026-08-02 16:54:21.474721263 +0800`，晚于最后一次 `src/` 提交
+`07c00a1d1a0c070b9e237a2dd40c126334a2fcd4` 的
+`2026-08-02T16:49:59+08:00`；`./cadr --version` 为
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，新鲜度门禁 PASS。
