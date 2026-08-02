@@ -1338,6 +1338,7 @@
          #'default-share-command-runner)
        changelog-path
        keybindings
+       export-options-function
        (confirm-function
          (lambda (title message)
            (declare (ignore title message))
@@ -1532,8 +1533,14 @@
                             (cadr-agent:session-id
                              (cadr-agent:agent-session
                               agent)))))))
-         (cadr-agent:export-session-html
-          (cadr-agent:agent-session agent) path)
+         (apply
+          #'cadr-agent:export-session-html
+          (cadr-agent:agent-session agent)
+          path
+          (if export-options-function
+              (or (funcall export-options-function)
+                  nil)
+              nil))
          (format output "Exported ~A~%"
                  (namestring path))
          (finish-output output)
@@ -3286,6 +3293,31 @@
              resource-loader)
             (getf package-resources :project-themes))
            package-resources)
+         (current-theme-summary ()
+           (let* ((configured
+                    (settings-value
+                     settings-manager
+                     "theme" nil))
+                  (background
+                    (theme-detection-theme
+                     (detect-background-from-environment)))
+                  (name
+                    (or
+                     (and
+                      configured
+                      (resolve-theme-setting
+                       configured background))
+                     (string-downcase
+                      (symbol-name background)))))
+             (or
+              (find
+               name
+               (resource-snapshot-themes resources)
+               :key
+               (lambda (theme)
+                 (getf theme :name))
+               :test #'string=)
+              (list :name name :path nil))))
          (handle-command (line)
            (or
             (handle-native-auth-command
@@ -3306,7 +3338,14 @@
              :output frontend-output
              :keybindings
              (settings-keybindings
-              settings-manager))
+              settings-manager)
+             :export-options-function
+             (lambda ()
+               (let ((theme
+                       (current-theme-summary)))
+                 (list
+                  :theme-name (getf theme :name)
+                  :theme-object (getf theme :object)))))
             (if
                 (string=
                  (string-trim
@@ -3976,33 +4015,7 @@
              (settings-show-terminal-progress-p
               settings-manager))
            :theme-function
-           (lambda ()
-             (let* ((configured
-                      (settings-value
-                       settings-manager
-                       "theme" nil))
-                    (background
-                      (theme-detection-theme
-                       (detect-background-from-environment)))
-                    (name
-                      (or
-                       (and
-                        configured
-                        (resolve-theme-setting
-                         configured background))
-                       (string-downcase
-                        (symbol-name
-                         background)))))
-               (or
-                (find
-                 name
-                 (resource-snapshot-themes
-                  resources)
-                 :key
-                 (lambda (theme)
-                   (getf theme :name))
-                 :test #'string=)
-                (list :name name :path nil))))
+           #'current-theme-summary
            :preview-theme-function
            (lambda (theme-setting)
              (let* ((background

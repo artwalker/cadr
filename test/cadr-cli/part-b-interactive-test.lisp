@@ -2925,3 +2925,53 @@
            "result done bar shared")
          (cadr-cli:render-tool-session
           session)))))
+
+(test interactive-export-forwards-the-active-theme-without-changing-the-command-surface
+  (with-test-directory (root)
+    (let* ((sessions
+             (merge-pathnames "sessions/" root))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd root
+              :id "interactive-theme-export"))
+           (agent
+             (cadr-agent:make-agent
+              :provider :faux
+              :model
+              (cadr-ai:make-model
+               :id "mock"
+               :provider :faux
+               :api :openai-responses
+               :base-url "https://example.invalid"
+               :max-tokens 128)
+              :session session))
+           (path
+             (merge-pathnames "interactive.html" root))
+           (theme
+             (args
+              "vars" (args "page" "#102030")
+              "colors"
+              (args "accent" "#123456"
+                    "userMessageBg" "#405060")
+              "export"
+              (args "pageBg" "page"))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content "export me"))
+      (is
+       (cadr-cli::handle-session-command
+        (format nil "/export ~A" (namestring path))
+        agent
+        :directory sessions
+        :cwd root
+        :output (make-broadcast-stream)
+        :export-options-function
+        (lambda ()
+          (list :theme-name "project-theme"
+                :theme-object theme))))
+      (let ((html
+              (uiop:read-file-string
+               path :external-format :utf-8)))
+        (is (search "--accent: #123456;" html))
+        (is (search "--body-bg: #102030;" html))))))

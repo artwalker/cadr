@@ -15,6 +15,15 @@
                              (:file "file-mutation-queue")
                              (:file "execution-env")
                              (:file "session")
+                             (:module "export-html"
+                              :components
+                              ((:static-file "template.html")
+                               (:static-file "template.css")
+                               (:static-file "template.js")
+                               (:module "vendor"
+                                :components
+                                ((:static-file "marked.min.js")
+                                 (:static-file "highlight.min.js")))))
                              (:file "messages")
                              (:file "storage")
                              (:file "sqlite-storage")

@@ -125,9 +125,113 @@
           (format nil "/export ~A" (namestring export-path))
           agent :directory sessions :cwd cwd :output output))
         (is (probe-file export-path))
-        (let ((html (read-text export-path)))
-          (is (search "branch-a-user" html))
-          (is (search "branch-b-user" html)))
+        (let* ((html (read-text export-path))
+               (marker
+                 "<script id=\"session-data\" type=\"application/json\">")
+               (start (search marker html))
+               (content-start
+                 (and start (+ start (length marker))))
+               (end
+                 (and content-start
+                      (search "</script>" html
+                              :start2 content-start)))
+               (data
+                 (and end
+                      (cadr-ai::parse-json
+                       (cadr-ai::utf8-string
+                        (cadr-tui::decode-base64
+                         (subseq html content-start end))))))
+               (actual-entries
+                 (and data
+                      (cadr-ai::json-get data "entries")))
+               (expected-entries
+                 (map 'vector
+                      #'cadr-agent::session-entry-to-json
+                      (cadr-agent:session-entries source))))
+          (is (not (null start)))
+          (is (not (null end)))
+          (is (not (null data)))
+          (is (= (length expected-entries)
+                 (length actual-entries)))
+          (labels ((same-json-p (expected actual)
+                     (cond
+                       ((and (hash-table-p expected)
+                             (hash-table-p actual))
+                        (and
+                         (= (hash-table-count expected)
+                            (hash-table-count actual))
+                         (loop for key being
+                               the hash-keys of expected
+                               always
+                               (multiple-value-bind
+                                     (value present-p)
+                                   (gethash key actual)
+                                 (and present-p
+                                      (same-json-p
+                                       (gethash key expected)
+                                       value))))))
+                       ((and (vectorp expected)
+                             (vectorp actual))
+                        (and
+                         (= (length expected) (length actual))
+                         (loop for expected-value across expected
+                               for actual-value across actual
+                               always
+                               (same-json-p
+                                expected-value actual-value))))
+                       ((and (numberp expected)
+                             (numberp actual))
+                        (= expected actual))
+                       (t (equal expected actual)))))
+            (loop for expected across expected-entries
+                  for actual across actual-entries
+                  do
+                  (is (string=
+                       (cadr-ai::json-get expected "id")
+                       (cadr-ai::json-get actual "id")))
+                  (is (equal
+                       (cadr-ai::json-get expected "parentId")
+                       (cadr-ai::json-get actual "parentId")))
+                  (is (string=
+                       (cadr-ai::json-get expected "type")
+                       (cadr-ai::json-get actual "type")))
+                  (when (string=
+                         "message"
+                         (cadr-ai::json-get expected "type"))
+                    (let ((expected-message
+                            (cadr-ai::json-get expected "message"))
+                          (actual-message
+                            (cadr-ai::json-get actual "message")))
+                      (is (string=
+                           (cadr-ai::json-get expected-message "role")
+                           (cadr-ai::json-get actual-message "role")))
+                      (is (same-json-p
+                           (cadr-ai::json-get expected-message "content")
+                           (cadr-ai::json-get actual-message "content")))))
+                  (is (same-json-p expected actual))))
+          (let ((message-texts
+                  (loop for entry across actual-entries
+                        when (string=
+                              "message"
+                              (cadr-ai::json-get entry "type"))
+                          nconc
+                          (let ((content
+                                  (cadr-ai::json-get
+                                   (cadr-ai::json-get entry "message")
+                                   "content")))
+                            (cond
+                              ((stringp content) (list content))
+                              ((vectorp content)
+                               (loop for block across content
+                                     for text =
+                                       (and (hash-table-p block)
+                                            (cadr-ai::json-get
+                                             block "text"))
+                                     when (stringp text)
+                                       collect text))
+                              (t nil))))))
+            (is (find "branch-a-user" message-texts :test #'string=))
+            (is (find "branch-b-user" message-texts :test #'string=))))
 
         (cadr-cli::switch-agent-session agent other)
         (is (string= "other"

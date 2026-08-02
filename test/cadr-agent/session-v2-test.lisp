@@ -19,6 +19,68 @@
             (first (cadr-ai:assistant-message-content message))))
           (t :tool-result))))
 
+(defun export-test-base64-value (character)
+  (position
+   character
+   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"))
+
+(defun decode-export-test-base64 (text)
+  (let ((octets
+          (make-array
+           0 :element-type '(unsigned-byte 8)
+           :adjustable t :fill-pointer 0))
+        (accumulator 0)
+        (bits 0))
+    (loop for character across text
+          unless (member character
+                         '(#\Space #\Tab #\Newline #\Return #\=))
+            do
+            (let ((value
+                    (export-test-base64-value character)))
+              (unless value
+                (error "Invalid export base64"))
+              (setf accumulator
+                    (logior (ash accumulator 6) value)
+                    bits (+ bits 6))
+              (when (>= bits 8)
+                (decf bits 8)
+                (vector-push-extend
+                 (ldb (byte 8 bits) accumulator)
+                 octets)
+                (setf accumulator
+                      (ldb (byte bits 0) accumulator)))))
+    octets))
+
+(defun exported-session-json (html)
+  (let* ((marker
+           "<script id=\"session-data\" type=\"application/json\">")
+         (start
+           (search marker html))
+         (content-start
+           (and start (+ start (length marker))))
+         (end
+           (and content-start
+                (search "</script>" html
+                        :start2 content-start))))
+    (unless end
+      (error "Exported session data element is missing"))
+    (cadr-ai::utf8-string
+     (decode-export-test-base64
+      (subseq html content-start end)))))
+
+(defun exported-session-data (html)
+  (cadr-ai::parse-json
+   (exported-session-json html)))
+
+(defun export-test-sha256 (text)
+  (string-downcase
+   (format
+    nil "~{~2,'0X~}"
+    (coerce
+     (cadr-ai::sha256-bytes
+      (cadr-ai::utf8-octets text))
+     'list))))
+
 (test session-v2-branches-from-any-node-and-persists-both-paths
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
@@ -255,15 +317,39 @@
                      resumed old-leaf)))))
       (let ((html-path (merge-pathnames "tree.html" sessions)))
         (cadr-agent:export-session-html newer html-path)
-        (let ((html
-                (uiop:read-file-string
-                 html-path :external-format :utf-8)))
-          (is (search "&lt;script&gt;alert(1)&lt;/script&gt;"
-                      html))
+        (let* ((html
+                 (uiop:read-file-string
+                  html-path :external-format :utf-8))
+               (data
+                 (exported-session-data html))
+               (serialized
+                 (cadr-ai::stringify-json data)))
+          (is (search "<!DOCTYPE html>" html))
           (is (not (search "<script>alert(1)</script>" html)))
-          (is (search "left" html))
-          (is (search "right" html))
-          (is (search root-id html)))))))
+          (is (search "<script>alert(1)</script>" serialized))
+          (is (search "left" serialized))
+          (is (search "right" serialized))
+          (is (search root-id serialized))
+          (is (string=
+               (cadr-agent:session-leaf-id newer)
+               (cadr-ai::json-get data "leafId")))
+          (is (string=
+               (cadr-ai::stringify-json
+                (cadr-agent::session-header-to-json newer))
+               (cadr-ai::stringify-json
+                (cadr-ai::json-get data "header"))))
+          (is (string=
+               (cadr-ai::stringify-json
+                (cadr-ai::json-object
+                 "header"
+                 (cadr-agent::session-header-to-json newer)
+                 "entries"
+                 (map 'vector
+                      #'cadr-agent::session-entry-to-json
+                      (cadr-agent:session-entries newer))
+                 "leafId"
+                 (cadr-agent:session-leaf-id newer)))
+               (exported-session-json html))))))))
 
 (test session-html-export-renders-skill-wrapper-as-visible-sibling-blocks
   (with-session-directories (sessions cwd other-cwd)
@@ -293,29 +379,133 @@
        session message)
       (cadr-agent:export-session-html
        session path)
-      (let ((html
-              (uiop:read-file-string
-               path :external-format :utf-8)))
-        (is (not
-             (search "&lt;skill" html)))
+      (let* ((html
+               (uiop:read-file-string
+                path :external-format :utf-8))
+             (data
+               (exported-session-data html))
+             (entry
+               (aref
+                (cadr-ai::json-get data "entries")
+                0))
+             (content
+               (cadr-ai::json-get
+                (cadr-ai::json-get entry "message")
+                "content")))
         (is (search
              "class=\"skill-invocation\"" html))
-        (is (search
-             "<h1>Review</h1>" html))
-        (is (search
-             "&lt;script&gt;bad()&lt;/script&gt;"
-             html))
         (is (not
              (search "<script>bad()</script>"
                      html)))
         (is (search
              "class=\"user-message\"" html))
-        (is (search "check this diff" html))
-        (is (search
-             "data:image/png;base64,AA=="
-             html))
+        (is (string=
+             skill-text
+             (cadr-ai::json-get
+              (aref content 0) "text")))
+        (is (string=
+             "AA=="
+             (cadr-ai::json-get
+              (aref content 1) "data")))
         (is (search
              "tree-role-skill" html))
-        (is (<
-             (search "skill-invocation" html)
-             (search "user-message" html)))))))
+        (is (search "parseSkillBlock" html))))))
+
+(test session-html-export-vendors-licensed-offline-assets-and-preserves-two-argument-call
+  (is (string=
+       "d5487edc7258b404bfa74c393d74a6393155f02517bd5e7e77cd64f8187f39a0"
+       (export-test-sha256
+        cadr-agent::+export-html-marked-js+)))
+  (is (string=
+       "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846"
+       (export-test-sha256
+        cadr-agent::+export-html-highlight-js+)))
+  (is (search
+       "marked v18.0.5 - a markdown parser"
+       cadr-agent::+export-html-marked-js+))
+  (is (search
+       "Copyright (c) 2018-2026, MarkedJS. (MIT License)"
+       cadr-agent::+export-html-marked-js+))
+  (is (search
+       "Highlight.js v11.9.0 (git: f47103d4f1)"
+       cadr-agent::+export-html-highlight-js+))
+  (is (search
+       "License: BSD-3-Clause"
+       cadr-agent::+export-html-highlight-js+))
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "offline-export"))
+           (path
+             (merge-pathnames "offline.html" sessions)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content "offline"))
+      (cadr-agent:export-session-html session path)
+      (let ((html
+              (uiop:read-file-string
+               path :external-format :utf-8)))
+        (is (search
+             "marked v18.0.5 - a markdown parser"
+             html))
+        (is (search
+             "Highlight.js v11.9.0 (git: f47103d4f1)"
+             html))
+        (is (null
+             (cl-ppcre:scan
+              "(?i)<script[^>]+src[[:space:]]*=|<link[^>]+href[[:space:]]*=|url[[:space:]]*\\([[:space:]]*['\"]?https?://|(?:fetch|XMLHttpRequest|WebSocket|EventSource|importScripts)[[:space:]]*\\("
+              html)))
+        (is (search
+             "--body-bg: #18181e;"
+             html))))))
+
+(test session-html-export-resolves-custom-theme-and-never-rereads-assets
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "custom-theme-export"))
+           (path
+             (merge-pathnames "custom.html" sessions))
+           (theme
+             (let ((object
+                     (cadr-ai::json-object)))
+               (cadr-ai::json-put
+                object "vars"
+                (cadr-ai::json-object
+                 "message" "#204060"
+                 "page" "#112233"))
+               (cadr-ai::json-put
+                object "colors"
+                (cadr-ai::json-object
+                 "accent" 24
+                 "userMessageBg" "message"))
+               (cadr-ai::json-put
+                object "export"
+                (cadr-ai::json-object
+                 "pageBg" "page"))
+               object)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content "themed"))
+      (let ((cadr-agent::*export-html-asset-reader*
+              (lambda (relative-path)
+                (declare (ignore relative-path))
+                (error "runtime asset read"))))
+        (cadr-agent:export-session-html
+         session path
+         :theme-name "custom"
+         :theme-object theme))
+      (let ((html
+              (uiop:read-file-string
+               path :external-format :utf-8)))
+        (is (search "--accent: #005f87;" html))
+        (is (search "--userMessageBg: #204060;" html))
+        (is (search "--body-bg: #112233;" html))
+        (is (search "--container-bg: rgb(27, 54, 82);" html))
+        (is (search "--info-bg: rgb(52, 79, 96);" html))))))

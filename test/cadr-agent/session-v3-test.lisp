@@ -280,12 +280,75 @@
                  "v3-all.html" sessions)))
           (cadr-agent:export-session-html
            loaded html)
-          (let ((text
-                  (uiop:read-file-string
-                   html :external-format :utf-8)))
-            (is (search "thinking_level_change"
-                        text))
-            (is (search "session_info" text))))))))
+          (let* ((text
+                   (uiop:read-file-string
+                    html :external-format :utf-8))
+                 (data
+                   (exported-session-data text))
+                 (actual-entries
+                   (cadr-ai::json-get data "entries"))
+                 (expected-entries
+                   (map 'vector
+                        #'cadr-agent::session-entry-to-json
+                        (cadr-agent:session-entries loaded))))
+            (is (= (length expected-entries)
+                   (length actual-entries)))
+            (labels ((same-json-p (expected actual)
+                       (cond
+                         ((and (hash-table-p expected)
+                               (hash-table-p actual))
+                          (and
+                           (= (hash-table-count expected)
+                              (hash-table-count actual))
+                           (loop for key being
+                                 the hash-keys of expected
+                                 always
+                                 (multiple-value-bind
+                                       (value present-p)
+                                     (gethash key actual)
+                                   (and present-p
+                                        (same-json-p
+                                         (gethash key expected)
+                                         value))))))
+                         ((and (vectorp expected)
+                               (vectorp actual))
+                          (and
+                           (= (length expected) (length actual))
+                           (loop for expected-value across expected
+                                 for actual-value across actual
+                                 always
+                                 (same-json-p
+                                  expected-value actual-value))))
+                         ((and (numberp expected)
+                               (numberp actual))
+                          (= expected actual))
+                         (t (equal expected actual)))))
+              (loop for expected across expected-entries
+                    for actual across actual-entries
+                    do
+                    (is (string=
+                         (cadr-ai::json-get expected "id")
+                         (cadr-ai::json-get actual "id")))
+                    (is (equal
+                         (cadr-ai::json-get expected "parentId")
+                         (cadr-ai::json-get actual "parentId")))
+                    (is (string=
+                         (cadr-ai::json-get expected "type")
+                         (cadr-ai::json-get actual "type")))
+                    (when (string=
+                           "message"
+                           (cadr-ai::json-get expected "type"))
+                      (let ((expected-message
+                              (cadr-ai::json-get expected "message"))
+                            (actual-message
+                              (cadr-ai::json-get actual "message")))
+                        (is (string=
+                             (cadr-ai::json-get expected-message "role")
+                             (cadr-ai::json-get actual-message "role")))
+                        (is (same-json-p
+                             (cadr-ai::json-get expected-message "content")
+                             (cadr-ai::json-get actual-message "content")))))
+                    (is (same-json-p expected actual))))))))))
 
 (test session-v1-and-v2-migrate-to-v3-with-unknown-fields-preserved
   (with-session-directories (sessions cwd other-cwd)
