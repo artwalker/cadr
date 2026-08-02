@@ -340,3 +340,140 @@ Corrective commit: `370677dd7`.
 ```text
 cadr test summary: systems=8 checks=11723 pass=11723 skip=0 fail=0
 ```
+
+## Part C3 — interaction latency target
+
+The pre-change `cd94d0b01` benchmark reproduced the reported long-session
+stall: the 5000-entry mixed mouse/wheel trace had median/p95/p99
+`36.000/48.001/52.001ms` and allocated 2,847,360 bytes per event. Existing
+11,723 deterministic checks did not catch it because functional and full-screen
+snapshot tests assert output, not cost; the performance gate allowed a 150ms
+stress p99, mixed mouse and wheel into one trace, had no continuous editor-key
+trace, and had no real-session scale tier.
+
+The implementation keeps one generation of alternate-screen preparation and
+reuses the maximal identity-stable prefix at the same width
+(`src/cadr-tui/renderer.lisp:251-254,1424-1478,1544-1545`). Only the dirty
+suffix repeats OSC-133 stripping, visible-width measurement, and clipping. It
+does not prune the logical document: selection, OSC-52 copy, viewport image
+cropping, and alternate-screen exit still see the updated complete document.
+
+| Requirement | Source | Regression |
+|---|---|---|
+| prefix reuse plus suffix/width invalidation | `src/cadr-tui/renderer.lisp:1436-1478` | `GOAL13-ALT-SCREEN-REUSES-ONLY-THE-UNCHANGED-PREPARED-PREFIX` (`test/cadr-tui/alt-screen-test.lisp:146`) |
+| complete-document selection/exit contract | `src/cadr-tui/renderer.lisp:1544-1555` | `GOAL13-ALT-SCREEN-PREPARED-CACHE-KEEPS-THE-FULL-DOCUMENT-CONTRACT` (`test/cadr-tui/alt-screen-test.lisp:198`) |
+| anonymous real-session tiers | `scripts/goal13-session-scale-profile.py` | `ContinuousInputGateTest.test_session_scale_profile_is_aggregate_only_and_follows_active_path` |
+| split mouse/wheel/editor traces | `scripts/goal11-bench.lisp:604-704` | `ContinuousInputGateTest.test_common_tier_absolute_contract_is_separate_and_exact` |
+| p99 ≤16ms and distinct failure classes | `scripts/goal11-performance-gate.py:26,415-529` | same Python contract test plus `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
+
+The privacy-safe profile consumed all 45 local sessions, including ten older
+files whose root link is stored as `parentId:false`: p50=5, p95=58, p99/max=96.
+It emits no file name, ID, path, timestamp, provider/model, or content. The
+checked tiers are typical=5, common=58, heavy=96, stress=5000.
+
+Final common-tier p99 is 4.001ms mouse, 4.000ms wheel, and 4.001ms editor key.
+The N=5000 stress p99 is 8.000ms, a 6.5× improvement, and median allocation is
+887,248 bytes/event, a 3.2× improvement. The goal is met rather than closed by
+an “acceptable limit” exception. Full before/after evidence and raw samples are
+recorded in `docs/performance.md` and `docs/benchmarks/goal-v13-c3-*.json`.
+
+Implementation commit: `7da79c376`. Evidence commit: `d84e0ea75`.
+
+## Part D — presentation and ledger gates
+
+The semantic-color gate uses 55 unique truecolor sentinels. Every sentinel must
+appear inside the intended production-rendered marker from real selector,
+transcript, tool, Markdown, syntax, editor, or HTML-export paths; equal built-in
+theme values cannot hide a wrong token assignment. The test-owned key list must
+also equal the production theme key set exactly.
+
+Its first run found three red assertions. All three were test-model defects,
+not product gaps: `selectedBg` had been probed through the generic select-list
+instead of the real session selector, while added/removed diff markers crossed
+word-level inverse ANSI spans. The probes were corrected to the baseline
+surfaces; no production file changed. The final named gate is 62/62:
+`GOAL13-ALL-SEMANTIC-THEME-KEYS-DRIVE-PRODUCTION-RENDERERS`
+(`test/cadr-cli/goal13-presentation-test.lisp:544`).
+
+The four independent axes are now stated consistently in `README.md`,
+`docs/README.md`, `docs/architecture.md`, `docs/parity-map.md`,
+`docs/source-parity.md`, `docs/performance.md`, and
+`docs/presentation-parity.md`. The examples manifest is explicitly an auxiliary
+inventory, not a fifth ledger. `GOAL13_PRESENTATION_LEDGER` records
+`B1/B2/B3/B4=55/52/10/6` and `123=121 aligned+0 pending+2 intentional`.
+`GOAL13-FOUR-LEDGERS-AND-PRESENTATION-DENOMINATORS-STAY-IN-SYNC`
+(`test/cadr-cli/goal13-presentation-test.lisp:966`) recounts the real table rows
+and rejects missing cross-links or obsolete three-ledger wording; it is 33/33.
+
+No Goal 13 change regenerated a base-screen or overlay SHA. The pre-existing
+13 base-screen and 15 overlay snapshot sets retain their separate
+baseline-derived semantic oracles, so this work proves unchanged bytes without
+using a snapshot generated from the new implementation as its own correctness
+oracle.
+
+Part D commit: `b677557b9`.
+
+## Mechanical acceptance and live verification
+
+The final deterministic suite is exact and complete:
+
+```text
+cadr test summary: systems=8 checks=11849 pass=11849 skip=0 fail=0
+```
+
+`./scripts/verify.sh` completed with every release gate passing:
+
+```text
+Deterministic stages
+Stage                                            Result
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+Stage                                            Result
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+After the user replenished the OpenAI allowance, the requested live route was
+locked to `openai-codex/gpt-5.6-luna` with `thinking=max`. A direct root-binary
+diagnostic returned `OAUTH_LUNA_MAX_OK`, and the complete credential-gated run
+reported:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+The sole skip is the baseline-equivalent Anthropic credential gate because
+`ANTHROPIC_API_KEY` is absent. DeepSeek and both OpenAI OAuth paths ran; this is
+not a skip-based OpenAI result. The earlier OpenAI failure was a real HTTP 429
+`usage_limit_reached`, not a product or assertion defect. No production source
+was changed to accommodate it. The live-gate update is commit `1b407bf81`.
+
+The delivered root binary is newer than both the last source commit and source
+mtime:
+
+```text
+binary build time: 2026-08-02 23:10:33.873096648 +0800
+latest src commit: 7da79c376c345e2b896821de2a25a621befb79a6 2026-08-02T23:03:11+08:00
+latest source mtime: 2026-08-02 22:48:28.922337273 +0800 src/cadr-tui/renderer.lisp
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+root binary freshness: PASS
+```
+
+All mechanical Goal 13 criteria are satisfied and committed. The remaining
+acceptance item is Goal 13 section 5.6: only the user can close the real-terminal
+A/B comparison against the baseline. The four-ledger automation deliberately
+does not claim to replace that check.
