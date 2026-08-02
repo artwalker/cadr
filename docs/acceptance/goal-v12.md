@@ -152,3 +152,35 @@ lifecycle 及四个 built-in tools 的 backend replacement。最终确定性套�
 账本由 `coding-agent 147/27/115` 更新为 `163/27/99`，`agent 25/11/6`
 更新为 `31/11/0`，全仓更新为 `384 已实现 / 72 有意差异 / 139 缺失`。剩余项精确为
 99 examples、36 AI、2 eval 与 2 个用户明确暂缓的 Apple Terminal rows。
+
+## Part C3 — AI catalog/OAuth/transport/stream（36）
+
+状态：实现与回归已落账。实现提交 `c215dda40`、`dee7cee7c`、`cc1b37374`、
+`40950bd06`、`3cbf0528f`、`fe1c58c1e`；本章与账本证据提交见本节所在提交。
+
+本批补齐全部 36 个 AI source capabilities。Common Lisp 构造按职责分层：纯值能力
+（JavaScript UTF-16 `shortHash`、JSON repair、deferred/grammar tool placement、model-data
+hash/manifest）用普通函数；有独立生产者/消费者生命周期的 event stream 与 image-model
+runtime 用 structure/CLOS + condition variable；provider 登录/刷新通过 runtime-provider
+函数槽派发；Codex transport 用原生 HTTP proxy/CONNECT、RFC 6455 socket 与按 session 的
+continuation cache。没有新第三方依赖。
+
+关键合同包括：全部 provider-owned OAuth 流与 store/filter wiring；Anthropic/OpenAI/
+Mistral 的 deferred/grammar/hash wire semantics；HTTP(S)_PROXY/NO_PROXY；image API registry；
+schema v3 catalog manifest 与 37 个 shard 的 structure/per-file SHA-256；生成时间嵌入发布
+image；纯 Lisp PNG fixture generator；Codex SSE/WebSocket/websocket-cached/auto、连接复用、
+delta continuation、完整 debug stats、session cleanup、可选 zstd（不可用时无压缩降级），
+以及独立 cached transport probe。
+
+可观察行为变化均向基线收敛：`auto` 与 `websocket-cached` 现在共享 continuation cache；
+WebSocket 首事件前失败才可 sticky fallback 到 SSE，首事件后禁止 replay；provider tool/history
+IDs、deferred tools、reasoning/options 与 payload 以 fixture/精确事件断言锁定。固定 catalog
+的 native generator 在 hydrated canonical shard 边界拆分：先验证审计过的 37-shard manifest，
+再确定性 materialize 1153-model Lisp catalog；该边界不改变固定基线输出。
+
+门禁：`GOAL12-*` 五个 AI 测试文件覆盖 capability/provider/auth/model-data/WebSocket
+各层；`scripts/check-model-data.lisp` 与 `scripts/generate-models.lisp` 实跑通过；
+`cadr-ai` 为 `2117 checks / 2117 pass / 0 skip / 0 fail`。账本由
+`ai 117/30/36` 更新为 `153/30/0`，全仓更新为
+`420 已实现 / 72 有意差异 / 103 缺失`；余项精确为 99 examples、2 eval 与
+2 个用户明确暂缓的 Apple Terminal rows。
