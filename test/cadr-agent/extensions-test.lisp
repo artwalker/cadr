@@ -292,7 +292,7 @@
     (attempt
      (lambda ()
        (cadr-agent:define-tool
-        "Uppercase"
+        "bad.name"
         :description "bad"
         :parameters (object-schema)
         :handler (lambda (id args context)

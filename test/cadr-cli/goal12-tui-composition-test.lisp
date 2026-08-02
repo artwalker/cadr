@@ -33,6 +33,89 @@
   (setf (goal12-extension-component-disposed-p component) t)
   component)
 
+(test goal12-custom-message-and-entry-renderers-own-real-component-lifecycles
+  (let ((message-components nil)
+        (entry-components nil))
+    (let* ((host (cadr-agent::make-extension-host :mode :tui))
+           (bundle
+             (cadr-agent::make-extension-bundle
+              :id "transcript-components"
+              :path "/tmp/transcript-components.lisp"
+              :scope :project :rank 1 :order 0))
+           (register
+             (lambda ()
+                (cadr-agent:define-component-message-renderer
+                 "status"
+                 :renderer
+                 (lambda (message options theme)
+                   (is (functionp (getf theme :fg)))
+                   (let ((component
+                           (make-instance
+                            'goal12-extension-component
+                            :text
+                            (format nil "message:~A/~A"
+                                    (getf message :content)
+                                    (getf options :output-pad)))))
+                     (push component message-components)
+                     component)))
+                (cadr-agent:define-component-entry-renderer
+                 "card"
+                 :renderer
+                 (lambda (entry options theme)
+                   (declare (ignore theme))
+                   (let ((component
+                           (make-instance
+                            'goal12-extension-component
+                            :text
+                            (format nil "entry:~A/~A"
+                                    (getf (getf entry :data) :value)
+                                    (getf options :expanded-p)))))
+                     (push component entry-components)
+                     component)))))
+           (message
+             (cadr-cli::make-tui-entry
+              :type :custom-message
+              :custom-type "status"
+              :custom-payload '(:content "ready")
+              :custom-options '(:expanded-p nil :output-pad 1)))
+           (entry
+             (cadr-cli::make-tui-entry
+              :type :custom-entry
+              :custom-type "card"
+              :custom-payload '(:data (:value 7))
+              :custom-options '(:expanded-p nil))))
+      (cadr-agent::call-with-extension-load
+       host bundle
+       (lambda ()
+         (funcall register)))
+      (cadr-agent::replace-extension-bundles host (list bundle))
+      (is (equal '("message:ready/1")
+                 (cadr-cli::render-tui-entry
+                  message 80 :extension-host host)))
+      (is (equal '("entry:7/NIL")
+                 (cadr-cli::render-tui-entry
+                  entry 80 :extension-host host)))
+      (is (= 1 (length message-components)))
+      (is (= 1 (length entry-components)))
+      (setf (getf (cadr-cli::tui-entry-custom-options entry)
+                  :expanded-p)
+            t)
+      (cadr-cli::invalidate-tui-entry-render-cache entry)
+      (is (equal '("entry:7/T")
+                 (cadr-cli::render-tui-entry
+                  entry 80 :extension-host host)))
+      (is (= 2 (length entry-components)))
+      (is (goal12-extension-component-disposed-p
+           (second entry-components)))
+      (let ((state (cadr-cli::%make-tui-state)))
+        (cadr-cli::append-tui-entry state message)
+        (cadr-cli::append-tui-entry state entry)
+        (cadr-cli::replace-tui-entries state nil)
+        (is (goal12-extension-component-disposed-p
+             (first message-components)))
+        (is (goal12-extension-component-disposed-p
+             (first entry-components)))))))
+
 (test goal12-coding-agent-keybinding-hints-and-dynamic-border-match-baseline
   (let ((manager
           (cadr-tui:make-keybindings-manager

@@ -132,8 +132,10 @@
    #:define-shortcut
    #:define-flag
    #:define-message-renderer
+   #:define-component-message-renderer
    #:define-markdown-transformer
    #:define-entry-renderer
+   #:define-component-entry-renderer
    #:define-tool-renderer
    #:extension-api
    #:current-extension-api

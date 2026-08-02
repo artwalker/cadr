@@ -276,7 +276,8 @@
    context :new-session
    :parent-session parent-session
    :setup-function setup-function
-   :with-session-function with-session-function))
+   :with-session-function with-session-function
+   :source-context context))
 
 (defun extension-context-model-registry-find
     (context provider model-id)
@@ -1095,6 +1096,7 @@
 (defstruct extension-renderer-definition
   custom-type
   renderer
+  (component-p nil :type boolean)
   bundle)
 
 (defstruct extension-markdown-transformer-definition
@@ -1154,6 +1156,8 @@
       (or
        (and (char>= character #\a)
             (char<= character #\z))
+       (and (char>= character #\A)
+            (char<= character #\Z))
        (digit-char-p character)
        (member character '(#\- #\_ #\:))))
     name)))
@@ -1164,7 +1168,7 @@
      'extension-registration-error
      :message
      (format nil
-             "Invalid ~A name ~S; use lowercase ASCII letters, digits, -, _, or :"
+             "Invalid ~A name ~S; use ASCII letters, digits, -, _, or :"
              kind name)))
   name)
 
@@ -1633,7 +1637,7 @@
   name)
 
 (defun register-extension-renderer
-    (kind custom-type renderer)
+    (kind custom-type renderer &key component-p)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-renderer-type kind custom-type)
     (unless (functionp renderer)
@@ -1653,6 +1657,7 @@
              (make-extension-renderer-definition
               :custom-type custom-type
               :renderer renderer
+              :component-p (not (null component-p))
               :bundle bundle))
            (updated
              (nconc
@@ -1791,6 +1796,11 @@
   `(register-extension-renderer
     :message ,custom-type ,renderer))
 
+(defmacro define-component-message-renderer
+    (custom-type &key renderer)
+  `(register-extension-renderer
+    :message ,custom-type ,renderer :component-p t))
+
 (defmacro define-markdown-transformer (transformer)
   `(register-extension-markdown-transformer
     ,transformer))
@@ -1799,6 +1809,11 @@
     (custom-type &key renderer)
   `(register-extension-renderer
     :entry ,custom-type ,renderer))
+
+(defmacro define-component-entry-renderer
+    (custom-type &key renderer)
+  `(register-extension-renderer
+    :entry ,custom-type ,renderer :component-p t))
 
 (defmacro define-tool-renderer
     (tool-name &key call result)
@@ -2318,7 +2333,7 @@
        host snapshot))))
 
 (defun render-extension-message
-    (host custom-type message options)
+    (host custom-type message options &optional theme)
   (let ((definition
           (find-extension-message-renderer
            host custom-type)))
@@ -2327,11 +2342,13 @@
          host definition "Message renderer"
          (extension-renderer-definition-renderer
           definition)
-         (list message options))
+         (if (extension-renderer-definition-component-p definition)
+             (list message options theme)
+             (list message options)))
         (values nil nil))))
 
 (defun render-extension-entry
-    (host custom-type entry options)
+    (host custom-type entry options &optional theme)
   (let ((definition
           (find-extension-entry-renderer
            host custom-type)))
@@ -2340,7 +2357,9 @@
          host definition "Entry renderer"
          (extension-renderer-definition-renderer
           definition)
-         (list entry options))
+         (if (extension-renderer-definition-component-p definition)
+             (list entry options theme)
+             (list entry options)))
         (values nil nil))))
 
 (defun render-extension-tool-call
@@ -2669,6 +2688,14 @@
               ((extension-custom-message-p message)
                (persist-extension-custom-message
                 agent message)
+               (when
+                   (and
+                    (extension-custom-message-value message :display-p)
+                    (extension-host-ui-function host))
+                 (funcall
+                  (extension-host-ui-function host)
+                  :append-custom-message
+                  (copy-tree message)))
                (extension-custom-message-as-user-message
                 message))
               ((typep message 'cadr-ai:user-message)
@@ -2850,7 +2877,11 @@
           (agent-provider agent))))))
   host)
 
-(defun extension-context-register-tool (context tool)
+(defun extension-context-register-tool
+    (context tool
+     &key label prompt-snippet prompt-guidelines
+       constrained-sampling render-shell prepare-arguments
+       render-call render-result)
   (assert-active-extension-context context)
   (unless (typep tool 'cadr-ai:tool)
     (error
@@ -2862,8 +2893,14 @@
          (definition
            (make-extension-tool-definition
             :name name
+            :label (or label name)
             :description (cadr-ai:tool-description tool)
+            :prompt-snippet prompt-snippet
+            :prompt-guidelines (copy-list prompt-guidelines)
             :parameters (cadr-ai:tool-parameters tool)
+            :constrained-sampling constrained-sampling
+            :render-shell render-shell
+            :prepare-arguments prepare-arguments
             :execution-mode
             (cadr-ai:tool-execution-mode tool)
             :handler
@@ -2872,10 +2909,22 @@
               (funcall
                (cadr-ai:tool-executor tool)
                call-id arguments))
+            :render-call render-call
+            :render-result render-result
             :bundle bundle)))
     (validate-extension-resource-name "tool" name)
     (validate-extension-schema
      name (cadr-ai:tool-parameters tool))
+    (unless (and (stringp (or label name))
+                 (or (null prompt-snippet) (stringp prompt-snippet))
+                 (listp prompt-guidelines)
+                 (every #'stringp prompt-guidelines)
+                 (or (null prepare-arguments)
+                     (functionp prepare-arguments))
+                 (or (null render-call) (functionp render-call))
+                 (or (null render-result) (functionp render-result)))
+      (error 'extension-execution-error
+             :message "register-tool metadata is invalid"))
     (setf
      (extension-bundle-tools bundle)
      (nconc

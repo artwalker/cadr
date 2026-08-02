@@ -1,6 +1,6 @@
 # Goal 12 扩展 API 实现面第二次补充解冻提案
 
-状态：**blocked，等待用户逐项裁决。**
+状态：**D/E 已于 2026-08-02 获得用户批准，按原文实施。**
 
 固定基线：
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
@@ -130,10 +130,10 @@ Cadr 当前调用链为：
 
 ## 4. 裁决与恢复顺序
 
-请逐项裁决：
+裁决结果：
 
-1. **D（第 6 项补充 `autocomplete.lisp`/`editor.lisp` 文件面）：批准 / 拒绝 / 暂缓。**
-2. **E（第 10 项允许 `tui.lisp` provider-source 注入）：批准 / 拒绝 / 暂缓。**
+1. **D（第 6 项补充 `autocomplete.lisp`/`editor.lisp` 文件面）：批准。**
+2. **E（第 10 项允许 `tui.lisp` provider-source 注入）：批准。**
 
 D/E 均获批后，恢复既定顺序：完成 1→10、15→19、11、13→12→14、Part D。
 若任一不获批，对应示例继续诚实记为缺失；其余已获批增量不得冒充该合同完成。

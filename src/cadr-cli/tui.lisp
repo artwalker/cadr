@@ -17,6 +17,13 @@
   (custom-call-rendered-p nil :type boolean)
   custom-result-render
   (custom-result-rendered-p nil :type boolean)
+  custom-type
+  custom-payload
+  (custom-options nil :type list)
+  custom-component
+  custom-component-theme
+  custom-component-snapshot
+  custom-component-options
   (render-cache-valid-p nil :type boolean)
   render-cache-width
   render-cache-theme
@@ -603,6 +610,11 @@
                    (cadr-tui:wrap-text line width))))))
 
 (defun replace-tui-entries (state entries)
+  (dolist (entry (tui-state-entries state))
+    (when (tui-entry-custom-component entry)
+      (ignore-errors
+        (cadr-tui:component-dispose
+         (tui-entry-custom-component entry)))))
   (let ((tail (last entries)))
     (setf
      (tui-state-entries state) entries
@@ -1268,7 +1280,26 @@
        :has-tool-calls-p
        (assistant-message-has-tool-calls-p
         message)))
-     (accumulate-message-usage state message)))
+     (accumulate-message-usage state message))
+    (cadr-agent:custom-agent-message
+     (when (cadr-agent::custom-agent-message-display-p message)
+       (append-tui-entry
+        state
+        (make-tui-entry
+         :type :custom-message
+         :custom-type
+         (cadr-agent::custom-agent-message-custom-type message)
+         :custom-payload
+         (list
+          :custom-type
+          (cadr-agent::custom-agent-message-custom-type message)
+          :content
+          (cadr-agent::custom-agent-message-content message)
+          :details
+          (cadr-agent::custom-agent-message-details message)
+          :display-p t)
+         :custom-options
+         '(:expanded-p nil :output-pad 1))))))
   state)
 
 (defun reset-tui-messages
@@ -1802,12 +1833,79 @@
      (loop for line in value
            append
            (cadr-tui:wrap-text line width)))
+    ((typep value 'cadr-tui:component)
+     (cadr-tui:component-render
+      value width :focused-p nil))
     ((cadr-tui::select-list-p value)
      (cadr-tui:render-select-list value width))
     (t
      (cadr-tui:wrap-text
       (princ-to-string value)
-      width))))
+     width))))
+
+(defun tui-extension-theme-runtime ()
+  (list
+   :fg (lambda (token text)
+         (cadr-tui:theme-foreground token text :enabled-p t))
+   :bg (lambda (token text)
+         (cadr-tui:theme-background token text :enabled-p t))
+   :bold (lambda (text)
+           (cadr-tui:theme-bold text :enabled-p t))
+   :italic (lambda (text)
+             (cadr-tui:theme-italic text :enabled-p t))))
+
+(defun render-extension-custom-entry
+    (entry width extension-host)
+  (unless extension-host
+    (return-from render-extension-custom-entry nil))
+  (let* ((theme (cadr-tui:current-theme))
+         (snapshot
+           (cadr-agent::extension-host-current-snapshot extension-host))
+         (options (copy-list (tui-entry-custom-options entry)))
+         (component (tui-entry-custom-component entry)))
+    (unless
+        (and component
+             (eq theme (tui-entry-custom-component-theme entry))
+             (eq snapshot
+                 (tui-entry-custom-component-snapshot entry))
+             (equal options
+                    (tui-entry-custom-component-options entry)))
+      (when component
+        (ignore-errors
+          (cadr-tui:component-dispose component)))
+      (multiple-value-bind (rendered handled-p)
+          (ecase (tui-entry-type entry)
+            (:custom-message
+             (cadr-agent::render-extension-message
+              extension-host
+              (tui-entry-custom-type entry)
+              (tui-entry-custom-payload entry)
+              options
+              (tui-extension-theme-runtime)))
+            (:custom-entry
+             (cadr-agent::render-extension-entry
+              extension-host
+              (tui-entry-custom-type entry)
+              (tui-entry-custom-payload entry)
+              options
+              (tui-extension-theme-runtime))))
+        (unless handled-p
+          (setf rendered
+                (case (tui-entry-type entry)
+                  (:custom-message
+                   (or (getf (tui-entry-custom-payload entry) :content) ""))
+                  (:custom-entry
+                   (princ-to-string
+                    (getf (tui-entry-custom-payload entry) :data))))))
+        (setf
+         (tui-entry-custom-component entry) rendered
+         (tui-entry-custom-component-theme entry) theme
+         (tui-entry-custom-component-snapshot entry) snapshot
+         (tui-entry-custom-component-options entry) options
+         component rendered)))
+    (when (typep component 'cadr-tui:component)
+      (cadr-tui:component-invalidate component))
+    (extension-render-value-lines component width)))
 
 (defun transform-tui-markdown
     (entry source message-type width extension-host
@@ -2087,6 +2185,9 @@
             width
             :ansi-theme-p t
             :now now))))
+    ((:custom-message :custom-entry)
+     (render-extension-custom-entry
+      entry width extension-host))
     (:compaction-summary
      (cadr-tui:wrap-text
       (format nil "Compaction summary: ~A"
@@ -2758,12 +2859,17 @@
    (tui-state-tools-expanded-p state)
    (not (null expanded-p)))
   (dolist (entry (tui-state-entries state))
-    (when (eq (tui-entry-type entry) :tool)
-      (invalidate-tui-entry-render-cache entry)
-      (setf
-       (cadr-tui:tool-block-collapsed-p
-        (tui-entry-tool-block entry))
-       (not expanded-p))))
+    (case (tui-entry-type entry)
+      (:tool
+       (invalidate-tui-entry-render-cache entry)
+       (setf
+        (cadr-tui:tool-block-collapsed-p
+         (tui-entry-tool-block entry))
+        (not expanded-p)))
+      ((:custom-message :custom-entry)
+       (setf (getf (tui-entry-custom-options entry) :expanded-p)
+             (not (null expanded-p)))
+       (invalidate-tui-entry-render-cache entry))))
   (tui-state-tools-expanded-p state))
 
 (defun toggle-last-tool-block (state)
@@ -3721,17 +3827,7 @@
                    (declare (ignore lines))
                    (request-render))))))
          (extension-theme-runtime ()
-           (list
-            :fg (lambda (token text)
-                  (cadr-tui:theme-foreground token text
-                                             :enabled-p t))
-            :bg (lambda (token text)
-                  (cadr-tui:theme-background token text
-                                             :enabled-p t))
-            :bold (lambda (text)
-                    (cadr-tui:theme-bold text :enabled-p t))
-            :italic (lambda (text)
-                      (cadr-tui:theme-italic text :enabled-p t))))
+           (tui-extension-theme-runtime))
          (dispose-component (component)
            (when (tui-component-protocol-p component)
              (ignore-errors
@@ -4316,6 +4412,33 @@
              (:add-autocomplete-provider
               (add-extension-autocomplete-provider
                (getf arguments :factory)))
+             (:append-custom-message
+              (sb-thread:with-mutex (lock)
+                (append-tui-entry
+                 state
+                 (make-tui-entry
+                  :type :custom-message
+                  :custom-type (getf arguments :custom-type)
+                  :custom-payload (copy-tree arguments)
+                  :custom-options
+                  (list :expanded-p
+                        (tui-state-tools-expanded-p state)
+                        :output-pad 1))))
+              (request-render)
+              nil)
+             (:append-custom-entry
+              (sb-thread:with-mutex (lock)
+                (append-tui-entry
+                 state
+                 (make-tui-entry
+                  :type :custom-entry
+                  :custom-type (getf arguments :custom-type)
+                  :custom-payload (copy-tree arguments)
+                  :custom-options
+                  (list :expanded-p
+                        (tui-state-tools-expanded-p state)))))
+              (request-render)
+              nil)
              (:notify
               (case (getf arguments :level)
                 (:error

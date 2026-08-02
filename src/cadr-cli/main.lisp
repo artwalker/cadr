@@ -961,7 +961,7 @@
             :text text)))
 
 (defun new-agent-session
-    (agent directory cwd)
+    (agent directory cwd &key parent-session)
   (let* ((old
            (cadr-agent:agent-session agent))
          (previous
@@ -986,7 +986,8 @@
              (or
               (and old
                    (cadr-agent:session-cwd old))
-              cwd))))
+              cwd)
+             :parent-session parent-session)))
       (switch-agent-session agent new)
       (run-session-lifecycle
        agent :session-start
@@ -3679,7 +3680,201 @@
                 :message
                 "The agent has no persistent session"))
              (cadr-agent:session-set-label
-              session entry-id label))))
+              session entry-id label)))
+         (extension-command-records ()
+           (let* ((host
+                    (cli-extension-manager-host extension-manager))
+                  (snapshot
+                    (cadr-agent::extension-host-current-snapshot host)))
+             (append
+              (loop for (name description argument-hint)
+                    in +tui-autocomplete-command-specifications+
+                    collect
+                    (list :name name :description description
+                          :argument-hint argument-hint
+                          :source :builtin))
+              (loop for definition in
+                    (cadr-agent::extension-snapshot-commands snapshot)
+                    collect
+                    (list
+                     :name
+                     (cadr-agent::extension-command-definition-name definition)
+                     :description
+                     (cadr-agent::extension-command-definition-description definition)
+                     :argument-hint
+                     (cadr-agent::extension-command-definition-argument-hint definition)
+                     :source :extension
+                     :source-info
+                     (list
+                      :path
+                      (cadr-agent::extension-definition-origin definition))))
+              (loop for definition in
+                    (cadr-agent::extension-snapshot-templates snapshot)
+                    collect
+                    (list
+                     :name
+                     (cadr-agent::extension-template-definition-name definition)
+                     :description
+                     (cadr-agent::extension-template-definition-description definition)
+                     :argument-hint
+                     (cadr-agent::extension-template-definition-argument-hint definition)
+                     :source :prompt-template
+                     :source-info
+                     (list
+                      :path
+                      (cadr-agent::extension-definition-origin definition)))))))
+         (extension-tool-records ()
+           (let ((host
+                   (cli-extension-manager-host extension-manager)))
+             (loop for tool in (cadr-agent::merged-agent-tools agent)
+                   for name = (cadr-ai:tool-name tool)
+                   for metadata =
+                     (cadr-agent::extension-host-tool-metadata host name)
+                   collect
+                   (list
+                    :name name
+                    :description (cadr-ai:tool-description tool)
+                    :parameters (cadr-ai:tool-parameters tool)
+                    :label (or (getf metadata :label) name)
+                    :prompt-snippet (getf metadata :prompt-snippet)
+                    :prompt-guidelines
+                    (copy-list (getf metadata :prompt-guidelines))
+                    :source (or (getf metadata :source) :builtin)))))
+         (extension-context-usage ()
+           (let* ((model (cadr-agent:agent-model agent))
+                  (window (cadr-ai:model-context-window model))
+                  (estimate
+                    (cadr-ai:estimate-context-tokens
+                     (cadr-agent:agent-messages agent)))
+                  (tokens
+                    (cadr-ai:context-usage-estimate-tokens estimate)))
+             (and
+              (plusp window)
+              (list :tokens tokens
+                    :context-window window
+                    :percent (* 100d0 (/ tokens window))))))
+         (extension-new-session (arguments)
+           (let* ((parent-session (getf arguments :parent-session))
+                  (setup-function (getf arguments :setup-function))
+                  (with-session-function
+                    (getf arguments :with-session-function))
+                  (source-context (getf arguments :source-context)))
+             (when setup-function
+               (funcall
+                setup-function
+                (session-manager-create cwd session-directory)))
+             (let ((new
+                     (new-agent-session
+                      agent session-directory cwd
+                      :parent-session parent-session)))
+               (if (eq new :cancelled)
+                   '(:cancelled t)
+                   (progn
+                     (when source-context
+                       (setf
+                        (cadr-agent::%extension-context-active-p
+                         source-context)
+                        nil))
+                     (when with-session-function
+                       (let ((replacement
+                               (cadr-agent::%make-extension-context
+                                :host
+                                (cadr-agent::%extension-context-host
+                                 source-context)
+                                :source-path
+                                (cadr-agent::%extension-context-source-path
+                                 source-context)
+                                :bundle
+                                (cadr-agent::%extension-context-bundle
+                                 source-context)
+                                :kind :command)))
+                         (unwind-protect
+                              (funcall with-session-function replacement)
+                           (setf
+                            (cadr-agent::%extension-context-active-p replacement)
+                            nil))))
+                     '(:cancelled nil))))))
+         (extension-action (action arguments)
+           (case action
+             (:model (cadr-agent:agent-model agent))
+             (:scoped-models
+              (mapcar (lambda (entry) (getf entry :model))
+                      scoped-model-entries))
+             (:thinking-level
+              (cadr-agent::agent-thinking-level agent))
+             (:signal
+              (cadr-agent:make-extension-cancellation-signal
+               :aborted-function
+               (lambda () (cadr-agent::agent-aborted-p agent))
+               :abort-function
+               (lambda () (cadr-agent:agent-abort agent))))
+             (:abort (cadr-agent:agent-abort agent))
+             (:shutdown (cadr-agent:agent-shutdown agent))
+             (:has-pending-messages-p
+              (or (cadr-agent::agent-steering-queue agent)
+                  (cadr-agent::agent-follow-up-queue agent)
+                  (cadr-agent::agent-next-turn-queue agent)))
+             (:context-usage (extension-context-usage))
+             (:system-prompt (cadr-agent::agent-system-prompt agent))
+             (:system-prompt-options
+              (list :cwd (namestring cwd)
+                    :selected-tools
+                    (cadr-agent::extension-host-current-active-tools
+                     (cli-extension-manager-host extension-manager))))
+             (:new-session (extension-new-session arguments))
+             (:model-registry-find
+              (model-registry-find
+               model-registry (first arguments) (second arguments)))
+             (:model-registry-resolve-auth
+              (provider-config-for-model
+               model-registry (first arguments)
+               :allow-missing-auth-p nil))
+             (:commands (extension-command-records))
+             (:all-tools (extension-tool-records))
+             (:set-thinking-level
+              (cadr-agent:agent-set-thinking-level
+               agent
+               (cadr-ai:clamp-thinking-level
+                (cadr-agent:agent-model agent)
+                (first arguments))))
+             (:set-model
+              (handler-case
+                  (progn
+                    (provider-config-for-model
+                     model-registry (first arguments)
+                     :allow-missing-auth-p nil)
+                    (select-model (first arguments))
+                    t)
+                (condition () nil)))
+             (:get-session-name
+              (let ((current (cadr-agent:agent-session agent)))
+                (and current (cadr-agent:session-name current))))
+             (:append-entry
+              (let ((current (cadr-agent:agent-session agent)))
+                (when current
+                  (let ((entry
+                          (cadr-agent:session-append-custom
+                           current (first arguments) (second arguments)))
+                        (ui-function
+                          (cadr-agent::extension-host-ui-function
+                           (cli-extension-manager-host extension-manager))))
+                    (when ui-function
+                      (funcall
+                       ui-function :append-custom-entry
+                       (list :custom-type (first arguments)
+                             :data (second arguments))))
+                    entry))))
+             (:set-label
+              (set-tree-label (first arguments) (second arguments)))
+             (otherwise
+              (error 'cadr-agent:extension-execution-error
+                     :message
+                     (format nil "Unsupported extension action: ~(~A~)"
+                             action))))))
+      (setf
+       (cadr-agent::extension-host-action-function
+        (cli-extension-manager-host extension-manager))
+       #'extension-action)
       (call-with-remote-repl
        agent
        (cli-arguments-slynk-port command)

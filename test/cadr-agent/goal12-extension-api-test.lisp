@@ -109,6 +109,26 @@
       (cadr-agent:extension-api-events-emit api "topic" '(:two))
       (is (equal '((:one)) seen)))))
 
+(test goal12-extension-tool-names-accept-baseline-case-sensitive-identifiers
+  (let ((bundle
+          (make-test-extension-bundle
+           "case-sensitive-tool"
+           (lambda ()
+             (cadr-agent:define-rich-tool
+              "Calculator"
+              :label "Calculator"
+              :description "Evaluate a simple expression"
+              :parameters (object-schema)
+              :handler
+              (lambda (call-id arguments signal on-update context)
+                (declare (ignore call-id arguments signal on-update context))
+                (values "42" nil)))))))
+    (is (string=
+         "Calculator"
+         (cadr-agent::extension-tool-definition-name
+          (first
+           (cadr-agent::extension-bundle-tools bundle)))))))
+
 (test goal12-rich-tool-metadata-is-additive-and-legacy-macro-lambda-list-is-frozen
   (let* ((schema (object-schema))
          (bundle
@@ -146,6 +166,65 @@
            (shape
             (sb-introspect:function-lambda-list
              (macro-function 'cadr-agent:define-tool))))))))
+
+(test goal12-component-renderers-add-theme-without-changing-legacy-callbacks
+  (let ((legacy-arguments nil)
+        (message-arguments nil)
+        (entry-arguments nil))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "component-renderers"
+              (lambda ()
+                (cadr-agent:define-message-renderer
+                 "legacy"
+                 :renderer
+                 (lambda (&rest arguments)
+                   (setf legacy-arguments arguments)
+                   '("legacy")))
+                (cadr-agent:define-component-message-renderer
+                 "status"
+                 :renderer
+                 (lambda (&rest arguments)
+                   (setf message-arguments arguments)
+                   :message-component))
+                (cadr-agent:define-component-entry-renderer
+                 "card"
+                 :renderer
+                 (lambda (&rest arguments)
+                   (setf entry-arguments arguments)
+                   :entry-component)))))
+           (host (make-test-extension-host (list bundle)))
+           (theme '(:fg :function)))
+      (multiple-value-bind (value handled-p)
+          (cadr-agent::render-extension-message
+           host "legacy" '(:content "old") '(:expanded-p nil) theme)
+        (is (not (null handled-p)))
+        (is (equal '("legacy") value)))
+      (multiple-value-bind (value handled-p)
+          (cadr-agent::render-extension-message
+           host "status" '(:content "new") '(:output-pad 1) theme)
+        (is (not (null handled-p)))
+        (is (eq :message-component value)))
+      (multiple-value-bind (value handled-p)
+          (cadr-agent::render-extension-entry
+           host "card" '(:data (:ok t)) '(:expanded-p t) theme)
+        (is (not (null handled-p)))
+        (is (eq :entry-component value)))
+      (is (= 2 (length legacy-arguments)))
+      (is (= 3 (length message-arguments)))
+      (is (= 3 (length entry-arguments)))
+      (is (eq theme (third message-arguments)))
+      (is (eq theme (third entry-arguments)))
+      (labels ((shape (value)
+                 (cond
+                   ((symbolp value) (symbol-name value))
+                   ((consp value) (mapcar #'shape value))
+                   (t value))))
+        (is (equal
+             '("CUSTOM-TYPE" "&KEY" "RENDERER")
+             (shape
+              (sb-introspect:function-lambda-list
+               (macro-function 'cadr-agent:define-message-renderer)))))))))
 
 (test goal12-cancellation-signal-composes-local-and-host-aborts
   (let ((host-aborted-p nil)
