@@ -139,6 +139,144 @@
               (cadr-tui:make-select-item :label "Beta" :value 2)))
             :done-function (constantly nil))))))
 
+(defparameter +goal9-b3-overlay-baseline-semantic-oracles+
+  ;; Each row is copied from the fixed pi@74caa2649 component contract named
+  ;; in its second field.  The ordered strings are intentionally independent
+  ;; of Cadr's SHA fixtures and rendering implementation.
+  '(("model"
+     "components/model-selector.ts:91-130,162-185,248-307"
+     ("Only showing models from configured providers. Use /login to add providers."
+      ">" "→ one [faux] ✓" "two [other]" "Model Name: One Model"))
+    ("model-scoped"
+     "components/model-selector.ts:91-130,162-185,248-307"
+     ("Scope: all | scoped" ">" "two [other]" "→ one [faux] ✓"
+      "Model Name: One Model" "Model catalogs refreshed."))
+    ("settings"
+     "components/settings-selector.ts:472-738; packages/tui/src/components/settings-list.ts:80-165,237-249"
+     (">" "→ Auto-compact" "Auto-resize images" "Block images"
+      "Skill commands" "Show hardware cursor" "Editor padding"
+      "Output padding" "Autocomplete max items" "Clear on shrink"
+      "Terminal progress" "(1/25)"
+      "Automatically compact context when it gets too large"
+      "Type to search · Enter/Space to change · Esc to cancel"))
+    ("resume"
+     "components/session-selector.ts:119-175,414-519,685-746"
+     ("Resume Session (Current Fold" "tab scope · re:<pattern> regex"
+      "ctrl+s sort · ctrl+n named · ctrl+d delete · ctrl+p path (off)"
+      ">" "No sessions in current folder. Press Tab to view all."))
+    ("fork"
+     "components/user-message-selector.ts:14-78,110-148"
+     ("Fork from Message"
+      "Select a user message to copy the active path up to that point into a new"
+      "session" "first" "Message 1 of 2" "second" "Message 2 of 2"))
+    ("tree"
+     "components/tree-selector.ts:664-851,1156-1252,1328-1385"
+     ("Session Tree" "↑/↓ move · ←/→ page · ctrl+←/→ branch"
+      "filters ctrl+d/t/u/l/a" "Type to search:"
+      "user: hello" "assistant: answer" "(2/2)"))
+    ("scoped-models"
+     "components/scoped-models-selector.ts:91-180,202-252"
+     ("Model Configuration" "Session-only. ctrl+s to save to settings."
+      ">" "→ one [faux] ✓" "two [other] ✗" "Model Name: One Model"
+      "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider"))
+    ("trust"
+     "components/trust-selector.ts:32-115"
+     ("Project trust" "/tmp/project/" "Saved decision: none"
+      "Current session: untrusted" "→ Trust" "Trust parent folder (/tmp/)"
+      "Do not trust" "↑↓ navigate  enter save  escape cancel"))
+    ("login-method"
+     "interactive-mode.ts:5014-5039; components/extension-selector.ts:18-78"
+     ("Select authentication method:" "→ Sign in with an account"
+      "Sign in with an API key"
+      "↑↓ navigate  enter select  escape/ctrl+c cancel"))
+    ("login-provider"
+     "components/oauth-selector.ts:51-160"
+     ("Select provider to configure:" ">"
+      "→ OpenAI Codex [subscription] ✓ configured"
+      "Anthropic [API key] • unconfigured"))
+    ("logout-provider"
+     "components/oauth-selector.ts:51-160"
+     ("Select provider to logout:" ">"
+      "→ OpenAI Codex [subscription] ✓ configured"
+      "Anthropic [API key] • unconfigured"))
+    ("api-key"
+     "components/login-dialog.ts:30-71,154-167"
+     ("Login to Anthropic" "Enter Anthropic API key" ">"
+      "escape/ctrl+c to cancel, enter to submit"))
+    ("import"
+     "interactive-mode.ts:2244-2281,2299-2305,5523; components/extension-selector.ts:18-78"
+     ("Import session" "Replace current session with /tmp/session.jsonl?"
+      "→ Yes" "No" "↑↓ navigate  enter select  escape/ctrl+c cancel"))
+    ("extension-select"
+     "interactive-mode.ts:2244-2281,2299-2305; components/extension-selector.ts:18-78"
+     ("Choose one" "→ Alpha" "Beta"
+      "↑↓ navigate  enter select  escape/ctrl+c cancel"))
+    ("extension-custom"
+     "interactive-mode.ts:2494-2563; packages/tui/src/components/select-list.ts:74-137"
+     ("→ Alpha" "Beta"))))
+
+(defun goal9-b3-overlay-screen-text-lines (overlay)
+  (mapcar
+   (lambda (line)
+     (string-right-trim
+      " "
+      (cadr-tui:strip-terminal-sequences line)))
+   (goal9-b3-overlay-screen-snapshot overlay :rows 60)))
+
+(defun goal9-b3-overlay-assert-lines-in-order
+    (lines needles &key (start 0))
+  (let ((positions nil))
+    (dolist (needle needles)
+      (let ((position
+              (position-if
+               (lambda (line) (search needle line))
+               lines :start start)))
+        (is (not (null position)))
+        (when position
+          (push position positions)
+          (setf start (1+ position)))))
+    (nreverse positions)))
+
+(test goal9-b3-every-overlay-sha-has-a-baseline-derived-semantic-oracle
+  (let* ((cases (goal9-b3-overlay-screen-cases))
+         (case-names (mapcar #'car cases))
+         (oracle-names
+           (mapcar #'car
+                   +goal9-b3-overlay-baseline-semantic-oracles+)))
+    ;; This equality is the policy gate: adding or renaming an overlay SHA
+    ;; without a direct baseline oracle fails even if a new hash is supplied.
+    (is (equal case-names oracle-names))
+    (dolist (case cases)
+      (let* ((name (car case))
+             (oracle
+               (assoc
+                name
+                +goal9-b3-overlay-baseline-semantic-oracles+
+                :test #'string=))
+             (lines
+               (goal9-b3-overlay-screen-text-lines (cdr case)))
+             (common
+               (goal9-b3-overlay-assert-lines-in-order
+                lines
+                '("overlay transcript user"
+                  "overlay transcript assistant")))
+             (surface
+               (goal9-b3-overlay-assert-lines-in-order
+                lines (third oracle)
+                :start (1+ (second common))))
+             (footer
+               (position-if
+                (lambda (line) (search "mock" line))
+                lines :start (1+ (car (last surface))))))
+        (is (= 60 (length lines)))
+        (is (not (null oracle)))
+        (is (not (null footer)))
+        (is (null
+             (find-if
+              (lambda (line)
+                (search "OVERLAY-EDITOR-MUST-BE-HIDDEN" line))
+              lines)))))))
+
 (test goal9-b3-every-overlay-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
           '(("model" . "F00B20118A954C3CCFA6780ACECC9AAD5887EDD168913EEDC121D9250354AD3F")

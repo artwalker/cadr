@@ -196,6 +196,219 @@
          "The assistant response wraps too.")))
       :width 32 :rows 14))))
 
+(defun goal9-b3-screen-text-lines (lines)
+  (mapcar
+   (lambda (line)
+     (string-right-trim
+      " "
+      (cadr-tui:strip-terminal-sequences line)))
+   lines))
+
+(defun goal9-b3-screen-line-position
+    (needle lines &key (start 0))
+  (position-if
+   (lambda (line) (search needle line))
+   lines :start start))
+
+(defun goal9-b3-assert-screen-lines-in-order
+    (lines needles)
+  (let ((start 0)
+        (positions nil))
+    (dolist (needle needles)
+      (let ((position
+              (goal9-b3-screen-line-position
+               needle lines :start start)))
+        (is (not (null position)))
+        (when position
+          (push position positions)
+          (setf start (1+ position)))))
+    (nreverse positions)))
+
+(defun goal9-b3-base-screen-case-text-lines (case)
+  (goal9-b3-screen-text-lines
+   (apply #'goal9-b3-base-screen-snapshot (cdr case))))
+
+(defun goal9-b3-base-screen-case-natural-lines (case)
+  (let ((state (second case))
+        (arguments (copy-list (cddr case))))
+    (remf arguments :scroll-to-top-p)
+    (apply #'goal9-b3-base-screen-plain-lines
+           state arguments)))
+
+(test goal9-b3-every-base-screen-sha-has-a-baseline-derived-semantic-oracle
+  ;; These invariants are transcribed from pi@74caa2649, not inferred from
+  ;; Cadr's hashes: root child order and natural height come from
+  ;; interactive-mode.ts:734-746 and tui.ts:235-244; assistant spacing from
+  ;; assistant-message.ts:89-169; tool framing/preview from
+  ;; tool-execution.ts:63-75 and bash.ts:199,234-310;
+  ;; viewport behavior from TuiMainScreen.ts:162-212,354-370 and
+  ;; TuiAltScreen.ts:350-389.
+  (let* ((cases (goal9-b3-base-screen-cases))
+         (names (mapcar #'car cases)))
+    ;; A future SHA case cannot land without adding an independent oracle.
+    (is
+     (equal
+      '("cold-start" "single-turn" "multi-turn"
+        "viewport-exact-fill" "viewport-overflow" "thinking"
+        "tool-collapsed" "tool-expanded" "active-status"
+        "above-widget" "below-widget" "overflow-scrolled-to-top"
+        "narrow-width")
+      names))
+    (dolist (case cases)
+      (let* ((name (car case))
+             (screen
+               (goal9-b3-base-screen-case-text-lines case))
+             (natural
+               (unless (string= name "overflow-scrolled-to-top")
+                 (goal9-b3-base-screen-case-natural-lines case))))
+        (cond
+          ((string= name "cold-start")
+           (is (= 1 (goal9-b3-screen-line-position
+                     "cadr v0.2.0" screen)))
+           (goal9-b3-assert-screen-lines-in-order
+            screen
+            '("cadr v0.2.0"
+              "Cadr can explain its own features"
+              "────────────────"
+              "/tmp/project"
+              "mock-model")))
+          ((string= name "single-turn")
+           (is (= 1 (goal9-b3-screen-line-position
+                     "Give one concise answer." natural)))
+           (is (< (length natural) 24))
+           (goal9-b3-assert-screen-lines-in-order
+            natural
+            '("Give one concise answer." "One concise answer."
+              "────────────────" "/tmp/project" "mock-model")))
+          ((string= name "multi-turn")
+           (is (= 1 (goal9-b3-screen-line-position
+                     "Give one concise answer." natural)))
+           (is (< (length natural) 28))
+           (goal9-b3-assert-screen-lines-in-order
+            natural
+            '("Give one concise answer." "One concise answer."
+              "Now give a second concise answer."
+              "Second concise answer."
+              "Finish with a third concise answer."
+              "Third concise answer."
+              "────────────────" "/tmp/project" "mock-model")))
+          ((string= name "viewport-exact-fill")
+           (is (= 13 (length natural)))
+           (is (= 1 (goal9-b3-screen-line-position
+                     "Give one concise answer." natural)))
+           (goal9-b3-assert-screen-lines-in-order
+            natural
+            '("Give one concise answer." "One concise answer."
+              "────────────────" "/tmp/project" "mock-model")))
+          ((string= name "viewport-overflow")
+           (is (= 14 (length natural)))
+           (is (null (goal9-b3-screen-line-position
+                      "Give one concise answer." natural)))
+           (goal9-b3-assert-screen-lines-in-order
+            natural
+            '("Finish with a third concise answer."
+              "Third concise answer."
+              "────────────────" "/tmp/project" "mock-model")))
+          ((string= name "thinking")
+           (let ((positions
+                   (goal9-b3-assert-screen-lines-in-order
+                    natural
+                    '("Think, then answer."
+                      "Checking the exact contract."
+                      "The answer is stable."
+                      "────────────────"))))
+             (is (= 2 (- (third positions)
+                         (second positions))))))
+          ((string= name "tool-collapsed")
+           (goal9-b3-assert-screen-lines-in-order
+            natural
+            '("Run the command." "$ printf lines"
+              "... (2 earlier lines, to expand)"
+              "three" "seven" "Took 0.3s"
+              "────────────────"))
+           (is
+            (null
+             (find
+              "one" natural :test #'string=
+              :key (lambda (line) (string-trim " " line)))))
+           (is
+            (null
+             (find
+              "two" natural :test #'string=
+              :key (lambda (line) (string-trim " " line))))))
+          ((string= name "tool-expanded")
+           (goal9-b3-assert-screen-lines-in-order
+            natural
+            '("Run the command." "$ printf lines"
+              "one" "two" "three" "seven" "Took 0.3s"
+              "────────────────"))
+           (is (null
+                (goal9-b3-screen-line-position
+                 "earlier lines" natural))))
+          ((string= name "active-status")
+           (let ((positions
+                   (goal9-b3-assert-screen-lines-in-order
+                    natural
+                    '("One concise answer." "Working..."
+                      "────────────────" "/tmp/project"))))
+             (is (= 2 (- (second positions)
+                         (first positions))))))
+          ((string= name "above-widget")
+           (let ((positions
+                   (goal9-b3-assert-screen-lines-in-order
+                    natural
+                    '("One concise answer." "above editor widget"
+                      "────────────────" "/tmp/project"))))
+             (is (= 1 (- (third positions)
+                         (second positions))))))
+          ((string= name "below-widget")
+           (let* ((borders
+                    (loop for line in natural
+                          for index from 0
+                          when (and (plusp (length line))
+                                    (every
+                                     (lambda (character)
+                                       (char= character #\─))
+                                     line))
+                            collect index))
+                  (widget
+                    (goal9-b3-screen-line-position
+                     "below editor widget" natural))
+                  (footer
+                    (goal9-b3-screen-line-position
+                     "/tmp/project" natural)))
+             (is (= 2 (length borders)))
+             (is (= widget (1+ (second borders))))
+             (is (= footer (1+ widget)))))
+          ((string= name "overflow-scrolled-to-top")
+           (is (= 14 (length screen)))
+           (is (= 1 (goal9-b3-screen-line-position
+                     "transcript line 01" screen)))
+           (is (= 13 (goal9-b3-screen-line-position
+                      "transcript line 07" screen)))
+           (is (null (goal9-b3-screen-line-position
+                      "transcript line 08" screen)))
+           (is (null (goal9-b3-screen-line-position
+                      "/tmp/project" screen))))
+          ((string= name "narrow-width")
+           (is (= 14 (length screen)))
+           (is
+            (every
+             (lambda (line)
+               (<= (cadr-tui:visible-width line) 32))
+             screen))
+           (goal9-b3-assert-screen-lines-in-order
+            screen
+            '("A narrow terminal wraps this"
+              "user message."
+              "The assistant response wraps"
+              "too."
+              "────────────────"
+              "/tmp/project"
+              "mock-model")))
+          (t
+           (fail "Missing semantic oracle for base screen ~A" name)))))))
+
 (test goal9-b3-base-screen-above-editor-spacer-matches-baseline-composition
   (is
    (equal

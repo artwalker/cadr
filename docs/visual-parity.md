@@ -36,6 +36,10 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 - 无 overlay 的基础屏幕与 overlay 同级：冷启动、单轮、三轮、恰好填满、溢出、
   thinking、tool 折叠/展开、active status、widget、滚动 viewport 和窄屏都必须锁定完整 virtual
   terminal 字节；组件级顺序、行数或关键词断言不能代替整屏门禁。
+- 整屏 SHA 只证明 fixture 未漂移，不证明 fixture 正确。每个 SHA case 必须同时有一条
+  从固定基线 `file:line` 直接推导的独立语义 oracle（首行、自然高度、顺序、间距或
+  可见窗口合同），并由 case-name 双向一致性门禁保证不能只新增 hash。oracle 的期望
+  禁止从 Cadr 当前 render 结果生成；修改 hash 时必须先说明基线合同并更新独立断言。
 
 确定性门禁优先使用 faux provider + virtual terminal；只有真实进程、终端模式或
 信号生命周期无法在进程内等价覆盖时才使用 PTY。每个现场缺陷先保留能复现原故障
@@ -417,6 +421,53 @@ Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown�
 | import | `CBB6A2FFE4C7F41DB4E4F73739D8D78BC4DBB04844016E6429E85B9E78D883F1` |
 | extension-select | `D43F8F701FE98E73037B44854626149F5427B4D5A29CC48A5755425DD918ACE6` |
 | extension-custom | `13C40C8025174E52DB871376BA85033BE5EEDD9F349163D36911A4C7DE01E0C5` |
+
+### B2 SHA snapshot 独立语义 oracle 审计
+
+仓库内视觉 SHA 只存在于上述 13 个 base-screen 与 15 个 overlay；provider 固定向量和
+性能 artifact hash 不属于整屏快照。审计发现 base-screen 的 thinking、tool 两态、
+scroll-to-top、narrow-width 五项没有与 SHA fixture 一一绑定的基线语义 oracle；
+extension-custom 只有通用 transcript 保留和 selector 行为测试，没有该 fixture 的
+直接视觉 oracle。其余项已有独立断言，但此前没有“SHA case 集合必须与 oracle 集合
+完全相同”的机制。现由两个总门禁建立双向配对，完整结果如下。
+
+| SHA case | 固定基线直接依据与独立断言 | 审计结果 |
+|---|---|---|
+| base `cold-start` | `interactive-mode.ts:734-746` 根顺序；首个 startup 内容固定在 row 1，随后 editor、footer | 已有，纳入总门禁 |
+| base `single-turn` | `tui.ts:235-244` 只串接自然行；首条消息 row 1，document 高度小于 24 | 已有，纳入总门禁 |
+| base `multi-turn` | 同上；三轮消息顺序不变，首条 row 1，document 高度小于 28 | 已有，纳入总门禁 |
+| base `viewport-exact-fill` | `TuiMainScreen.ts:162-212`；自然高度恰为 13 时首条消息仍可见 | 已有，纳入总门禁 |
+| base `viewport-overflow` | `TuiMainScreen.ts:354-370`；高度 14，旧首轮被裁、最新轮与 editor/footer 保留 | 已有，纳入总门禁 |
+| base `thinking` | `assistant-message.ts:89-169`；user→thinking→answer，thinking 与 answer 间恰一空行 | **本轮补齐** |
+| base `tool-collapsed` | `tool-execution.ts:63-75`、`bash.ts:199,234-310`；显示 earlier-lines、末五行和 timing，不显示前两行 | **本轮补齐** |
+| base `tool-expanded` | 同上；完整 `one`…`seven`，不得显示 earlier-lines | **本轮补齐** |
+| base `active-status` | `interactive-mode.ts:739-746`；answer→一空行→status→editor→footer | 已有，纳入总门禁 |
+| base `above-widget` | `interactive-mode.ts:2044-2072,739-746`；host spacer 后 widget 紧邻 editor top | 已有，纳入总门禁 |
+| base `below-widget` | 同上；editor bottom→widget→footer 无额外垂直行 | 已有，纳入总门禁 |
+| base `overflow-scrolled-to-top` | `TuiAltScreen.ts:350-389`；14 行 viewport 顶部显示 transcript 01…07，不混入 editor/footer | **本轮补齐** |
+| base `narrow-width` | `tui.ts:235-244` 与组件 wrap；32 列下 user/assistant 各两行且每行宽度不超 32 | **本轮补齐** |
+| overlay `model` | `components/model-selector.ts:91-130,162-185,248-307`；hint→query→models→description | 已有，纳入总门禁 |
+| overlay `model-scoped` | 同上；scope→query→scoped order→description→refresh notice | 已有，纳入总门禁 |
+| overlay `settings` | `components/settings-selector.ts:472-738`、`settings-list.ts:80-165,237-249`；25 项顺序、count、description、help | 已有，纳入总门禁 |
+| overlay `resume` | `components/session-selector.ts:119-175,414-519,685-746`；title/help/query/empty-state 顺序 | 已有，纳入总门禁 |
+| overlay `fork` | `components/user-message-selector.ts:14-78,110-148`；title/help、两条 user message 与 `i of N` 顺序 | 已有，纳入总门禁 |
+| overlay `tree` | `components/tree-selector.ts:664-851,1156-1252,1328-1385`；title、箭头 hint、filter hint、entries、count | 已有，纳入总门禁 |
+| overlay `scoped-models` | `components/scoped-models-selector.ts:91-180,202-252`；title/help/query、enabled 状态、description、keys | 已有，纳入总门禁 |
+| overlay `trust` | `components/trust-selector.ts:32-115`；cwd/state/options/help 顺序 | 已有，纳入总门禁 |
+| overlay `login-method` | `interactive-mode.ts:5014-5039`、`extension-selector.ts:18-78`；两种 method 与 cancel help | 已有，纳入总门禁 |
+| overlay `login-provider` | `components/oauth-selector.ts:51-160`；login title/query/providers 与 credential state | 已有，纳入总门禁 |
+| overlay `logout-provider` | 同上；logout title/query/providers 与 credential state | 已有，纳入总门禁 |
+| overlay `api-key` | `components/login-dialog.ts:30-71,154-167`；title/prompt/input/cancel-submit help | 已有，纳入总门禁 |
+| overlay `import` | `interactive-mode.ts:2244-2281,2299-2305,5523`、`extension-selector.ts:18-78`；title/question/Yes-No/help | 已有，纳入总门禁 |
+| overlay `extension-select` | `interactive-mode.ts:2244-2281,2299-2305`、`extension-selector.ts:18-78`；title/Alpha-Beta/help | 已有，纳入总门禁 |
+| overlay `extension-custom` | `interactive-mode.ts:2494-2563`、`select-list.ts:74-137`；transcript 后选中 Alpha 再 Beta，footer 在其后 | **本轮补齐** |
+
+`GOAL9-B3-EVERY-BASE-SCREEN-SHA-HAS-A-BASELINE-DERIVED-SEMANTIC-ORACLE`
+直接执行 13 组不变量；
+`GOAL9-B3-EVERY-OVERLAY-SHA-HAS-A-BASELINE-DERIVED-SEMANTIC-ORACLE`
+把 15 个 case 与基线来源、逐行顺序做一一映射，并共同断言非空 transcript 在 surface
+之前、editor sentinel 被替换、footer 在 surface 之后。任一侧新增、删除或改名都会在
+hash 比较之前失败。
 
 `@path` 整屏与循环由
 `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` 锁定。
