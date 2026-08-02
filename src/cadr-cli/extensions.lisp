@@ -431,6 +431,118 @@
            (funcall function))
       (close diagnostics))))
 
+(defun extension-local-system-name-p (name)
+  (and
+   (stringp name)
+   (plusp (length name))
+   (not (member name '("." "..") :test #'string=))
+   (loop for character across name
+         always
+         (or (alphanumericp character)
+             (member character '(#\- #\_ #\.))))))
+
+(defun read-extension-local-systems (source)
+  (let* ((entry
+           (pathname (extension-source-record-path source)))
+         (manifest
+           (merge-pathnames
+            "extension-dependencies.sexp"
+            (uiop:pathname-directory-pathname entry))))
+    (unless (probe-file manifest)
+      (return-from read-extension-local-systems nil))
+    (let ((value
+            (with-open-file (stream manifest :direction :input)
+              (let ((*read-eval* nil))
+                (read stream nil :missing)))))
+      (unless
+          (and
+           (listp value)
+           (evenp (length value))
+           (loop for tail on value by #'cddr
+                 always (eq (first tail) :systems))
+           (let ((systems (getf value :systems :missing)))
+             (and
+              (listp systems)
+              (every #'extension-local-system-name-p systems)
+              (= (length systems)
+                 (length (remove-duplicates systems :test #'string-equal))))))
+        (error
+         'cadr-agent:extension-registration-error
+         :message
+         (format nil
+                 "Invalid extension dependency manifest ~A"
+                 (namestring manifest))))
+      (copy-list (getf value :systems)))))
+
+(defvar *extension-local-asdf-lock*
+  (sb-thread:make-mutex
+   :name "cadr extension-local ASDF loader"))
+
+(defun load-extension-local-system
+    (directory system asd-path)
+  (sb-thread:with-mutex (*extension-local-asdf-lock*)
+    (call-with-infrastructure-output-isolated
+     (lambda ()
+       (let ((asdf/source-registry:*source-registry* nil)
+             (asdf/source-registry:*source-registry-parameter*
+               `(:source-registry
+                 (:directory ,(truename directory))
+                 :inherit-configuration)))
+         (asdf/source-registry:initialize-source-registry
+          asdf/source-registry:*source-registry-parameter*)
+         (asdf/session:with-asdf-session
+             (:override t
+              :override-cache t
+              :override-forcing t)
+           (handler-bind
+               ((warning
+                  (lambda (condition)
+                    (let ((restart
+                            (find-restart 'muffle-warning condition)))
+                      (when restart
+                        (invoke-restart restart)))))
+                (asdf/plan:system-out-of-date
+                  (lambda (condition)
+                    ;; FIND-SYSTEM deliberately signals this condition before
+                    ;; reloading a changed definition.  Its CONTINUE restart
+                    ;; is the local, documented path; do not let a surrounding
+                    ;; ASDF operation consume the extension's signal.
+                    (let ((restart
+                            (find-restart 'continue condition)))
+                      (when restart
+                        (invoke-restart restart))))))
+             (asdf:load-asd (truename asd-path))
+             (asdf:load-system system))))))))
+
+(defun load-extension-local-systems (source)
+  (let* ((entry
+           (pathname (extension-source-record-path source)))
+         (directory
+           (uiop:pathname-directory-pathname entry)))
+    (dolist (system (read-extension-local-systems source))
+      (let ((asd-path
+              (merge-pathnames
+               (make-pathname :name system :type "asd")
+               directory)))
+        (handler-case
+            (progn
+              (unless (probe-file asd-path)
+                (error "Local ASDF definition does not exist: ~A"
+                       (namestring asd-path)))
+              (load-extension-local-system
+               directory system asd-path))
+          (condition (condition)
+            (error
+             'cadr-agent:extension-registration-error
+             :cause condition
+             :message
+             (format nil
+                     "Failed to load local system ~A for extension ~A from ~A: ~A"
+                     system
+                     (extension-source-record-id source)
+                     (extension-source-record-path source)
+                     condition))))))))
+
 (defun load-extension-source (manager source)
   (let* ((generation
            (next-extension-generation))
@@ -458,6 +570,7 @@
             :package package)))
     (handler-case
         (progn
+          (load-extension-local-systems source)
           (let ((*package* package))
             (call-with-extension-output-boundary
              manager

@@ -753,3 +753,92 @@
           (uiop:wait-process daemon)
           (ignore-errors
             (close (uiop:process-info-output daemon))))))))
+
+(test goal12-extension-local-asdf-dependencies-are-explicit-repeatable-and-outside-the-main-closure
+  (with-test-directory (temporary)
+    (let* ((extension-directory
+             (merge-pathnames "with-deps/" temporary))
+           (system-name
+             (format nil "goal12-duration-~36R" (random most-positive-fixnum)))
+           (helper-system-name
+             (format nil "goal12-duration-helper-~36R"
+                     (random most-positive-fixnum)))
+           (package-name (string-upcase system-name))
+           (helper-package-name (string-upcase helper-system-name))
+           (output (make-string-output-stream)))
+      (ensure-directories-exist
+       (merge-pathnames "anchor" extension-directory))
+      (write-text
+       (merge-pathnames "extension-dependencies.sexp" extension-directory)
+       (format nil "(:systems (~S))~%" system-name))
+      (write-text
+       (merge-pathnames (format nil "~A.asd" system-name) extension-directory)
+       (format nil
+               "(asdf:defsystem ~S :depends-on (~S) :serial t :components ((:file \"duration\")))~%"
+               system-name helper-system-name))
+      (write-text
+       (merge-pathnames
+        (format nil "~A.asd" helper-system-name)
+        extension-directory)
+       (format nil
+               "(asdf:defsystem ~S :serial t :components ((:file \"duration-helper\")))~%"
+               helper-system-name))
+      (write-text
+       (merge-pathnames "duration-helper.lisp" extension-directory)
+       (format nil
+               "(defpackage ~S (:use :cl) (:export #:seconds-to-ms))~%(in-package ~S)~%(defun seconds-to-ms (value) (* 1000 value))~%"
+               helper-package-name helper-package-name))
+      (write-text
+       (merge-pathnames "duration.lisp" extension-directory)
+       (format nil
+               "(defpackage ~S (:use :cl) (:export #:parse-ms))~%(in-package ~S)~%(defun parse-ms (value) (~A:seconds-to-ms (parse-integer value)))~%"
+               package-name package-name helper-package-name))
+      (write-text
+       (merge-pathnames "extension.lisp" extension-directory)
+       (format nil
+               "(define-tool \"parse_duration\" :description \"parse\" :parameters (cadr-ai::json-object \"type\" \"object\" \"properties\" (cadr-ai::json-object \"duration\" (cadr-ai::json-object \"type\" \"string\")) \"required\" (vector \"duration\") \"additionalProperties\" nil) :handler (lambda (id args context) (declare (ignore id context)) (values (format nil \"~~D\" (~A:parse-ms (gethash \"duration\" args))) nil)))~%"
+               package-name))
+      (let* ((manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list extension-directory)))
+             (first (cadr-cli::reload-cli-extensions manager))
+             (second (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf first :errors)))
+        (is (null (getf second :errors)))
+        (is (= 2 (getf first :active)))
+        (is (= 2 (getf second :active)))
+        (is (asdf:find-system system-name nil))
+        (is (asdf:find-system helper-system-name nil))
+        (is (not (member system-name
+                         (asdf:system-depends-on
+                          (asdf:find-system "cadr-cli"))
+                         :test #'string-equal)))
+        (is (not (member helper-system-name
+                         (asdf:system-depends-on
+                          (asdf:find-system "cadr-cli"))
+                         :test #'string-equal)))
+        (is (string= "" (get-output-stream-string output)))))))
+
+(test goal12-extension-local-dependency-errors-name-the-system-and-extension-path
+  (with-test-directory (temporary)
+    (let* ((extension-directory
+             (merge-pathnames "broken-deps/" temporary))
+           (output (make-string-output-stream)))
+      (ensure-directories-exist
+       (merge-pathnames "anchor" extension-directory))
+      (write-text
+       (merge-pathnames "extension-dependencies.sexp" extension-directory)
+       "(:systems (\"missing-goal12-system\"))\n")
+      (write-text
+       (merge-pathnames "extension.lisp" extension-directory)
+       "(define-command \"never\" :handler (lambda (arguments context) (declare (ignore arguments context))))\n")
+      (let* ((manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list extension-directory)))
+             (report (cadr-cli::reload-cli-extensions manager))
+             (message (first (getf report :errors))))
+        (is (= 1 (length (getf report :errors))))
+        (is (search "missing-goal12-system" message))
+        (is (search "broken-deps" message))))))
