@@ -296,7 +296,23 @@
       test-script))
     (is
      (search
+      "XDG_CACHE_HOME=\"$TEST_HOME/.cache\""
+      test-script))
+    (is
+     (search
+      "ASDF_OUTPUT_TRANSLATIONS=\"/:$TEST_HOME/asdf-cache/\""
+      test-script))
+    (is
+     (search
       "HOME=\"$BUILD_HOME\" \"$SBCL_COMMAND\""
+      build-script))
+    (is
+     (search
+      "XDG_CACHE_HOME=\"$BUILD_HOME/.cache\""
+      build-script))
+    (is
+     (search
+      "ASDF_OUTPUT_TRANSLATIONS=\"/:$BUILD_HOME/asdf-cache/\""
       build-script))
     (dolist (script (list test-script build-script))
       (is
@@ -338,6 +354,12 @@
                     "env"
                     (format nil "HOME=~A"
                             (namestring isolated-home))
+                    (format nil "XDG_CACHE_HOME=~A"
+                            (namestring
+                             (merge-pathnames ".cache/" isolated-home)))
+                    (format nil "ASDF_OUTPUT_TRANSLATIONS=/:~A"
+                            (namestring
+                             (merge-pathnames "asdf-cache/" isolated-home)))
                     "sbcl" "--noinform" "--non-interactive"
                     "--load" quicklisp
                     "--eval"

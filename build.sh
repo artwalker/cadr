@@ -33,6 +33,9 @@ SCRIPT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
 
 BUILD_HOME="$(mktemp -d /tmp/cadr-build-home.XXXXXX)"
 trap 'rm -rf -- "$BUILD_HOME"' EXIT
+mkdir -p "$BUILD_HOME/.cache" "$BUILD_HOME/asdf-cache"
 
+XDG_CACHE_HOME="$BUILD_HOME/.cache" \
+ASDF_OUTPUT_TRANSLATIONS="/:$BUILD_HOME/asdf-cache/" \
 HOME="$BUILD_HOME" "$SBCL_COMMAND" --noinform --disable-debugger \
   --script "$SCRIPT_DIRECTORY/build.lisp"

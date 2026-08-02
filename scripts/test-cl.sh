@@ -16,8 +16,11 @@ export QUICKLISP_SETUP
 TEST_HOME="$(mktemp -d /tmp/cadr-test-home.XXXXXX)"
 trap 'rm -rf -- "$TEST_HOME"' EXIT
 TEST_OUTPUT="$TEST_HOME/fiveam-output.log"
+mkdir -p "$TEST_HOME/.cache" "$TEST_HOME/asdf-cache"
 
 set +e
+XDG_CACHE_HOME="$TEST_HOME/.cache" \
+ASDF_OUTPUT_TRANSLATIONS="/:$TEST_HOME/asdf-cache/" \
 HOME="$TEST_HOME" "$SBCL_COMMAND" --noinform --non-interactive \
   --load "$QUICKLISP_SETUP" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-ai.asd\"))" \
