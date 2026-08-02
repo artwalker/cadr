@@ -113,6 +113,25 @@
               (subseq text 0 2000)
               (- (length text) 2000))))
 
+(defun content-block-display-text (block)
+  (cond
+    ((typep block 'cadr-ai:text-content)
+     (cadr-ai:text-content-text block))
+    ((typep block 'cadr-ai:thinking-content)
+     (format nil "[thinking] ~A"
+             (cadr-ai:thinking-content-thinking block)))
+    ((typep block 'cadr-ai:image-content)
+     (format nil "[image ~A, ~D base64 characters]"
+             (cadr-ai:image-content-mime-type block)
+             (length (cadr-ai:image-content-data block))))
+    ((typep block 'cadr-ai:tool-call)
+     (format nil "[tool ~A ~A]"
+             (cadr-ai:tool-call-name block)
+             (cadr-ai::stringify-json
+              (json-safe-value
+               (cadr-ai:tool-call-arguments block)))))
+    (t (princ-to-string block))))
+
 (defun message-summary-text (message)
   (cond
     ((typep message 'cadr-ai:user-message)
