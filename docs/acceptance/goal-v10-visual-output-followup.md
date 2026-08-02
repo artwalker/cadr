@@ -370,3 +370,96 @@ latest src commit time: 2026-08-01T23:44:52+08:00
 freshness gate: PASS
 version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
+
+## Short-transcript vertical alignment follow-up
+
+The earlier P2-13 change was incomplete.  It special-cased only
+`startup-lines && entry-content is empty`, so the first conversation turn put
+the viewport filler back before the transcript and bottom-anchored the whole
+composition.  Commit `ceb30956c` removes that non-baseline filler from the
+ordinary root composition; editor-slot overlays retain their separately
+approved fixed viewport geometry.
+
+Fixed-baseline evidence:
+
+- `packages/coding-agent/src/modes/interactive/interactive-mode.ts:734-746`
+  installs chat, pending messages, status, widgets, editor, and footer as
+  ordinary consecutive root children.
+- `packages/tui/src/tui.ts:235-244` concatenates only the rows rendered by
+  those children.
+- `packages/tui/src/TuiMainScreen.ts:162-212,354-370` writes the natural
+  document at the top and scrolls only when a changed target crosses the
+  viewport; `bufferLength=max(height,newLines.length)` is viewport accounting,
+  not a layout spacer.
+- `packages/tui/src/TuiAltScreen.ts:350-389` slices the natural document and
+  appends empty viewport rows only after composition.
+
+Cadr now applies the same policy at `src/cadr-cli/tui.lisp:2811-2847`: a short
+document is returned at natural height, exact fill is not clipped, and only
+overflowing transcript rows are tail-selected before pending/status/widgets/
+editor/footer are appended.
+
+Regression evidence:
+
+- `GOAL9-B3-SHORT-CONVERSATION-COMPOSITION-STACKS-FROM-THE-TOP` covers one and
+  three rounds.  Before the implementation change it failed 4/8 checks: the
+  first message appeared at rows 20 and 8 instead of row 1 and the document was
+  padded to all 32 rows; after the change it passes 8/8.
+- `GOAL9-B3-VIEWPORT-EXACT-FILL-AND-OVERFLOW-FOLLOW-BASELINE-SCROLL-POLICY`
+  covers exact fill and first overflow, including oldest/newest message
+  retention.
+- `GOAL9-B3-EVERY-BASE-SCREEN-STATE-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT`
+  now locks 13 states, including one round, three rounds, exact fill, and
+  overflow.
+
+The 10,236 checks cited by the report (10,269 at this task's actual start after
+the Apple Terminal additions) missed the bug because the existing single- and
+multi-turn SHA values had been generated from the faulty implementation.  They
+froze the defect and had no independent assertion for natural document height,
+first-message row, exact fill, or the first overflow boundary.
+
+Snapshot impact audit:
+
+- Intended changes: cold start, one round, three rounds, thinking, active
+  status, above-widget, below-widget, plus the new exact-fill and overflow
+  states.
+- Byte-identical to the pre-fix hashes: tool collapsed
+  `469F3BAE...EF7343`, tool expanded `DF40154B...5D0CC`, scroll-to-top overflow
+  `D15615BB...5BEFD`, and narrow width `A417E912...48596`.
+- All 15 overlay full-screen hashes remain byte-identical.  An intermediate
+  implementation moved them; the existing gate rejected it, and the final
+  implementation retains overlay-only padding.
+
+The first post-fix `verify.sh` run also exposed a pre-existing benchmark race:
+the Goal 11 Alt-screen benchmark describes a synchronous requested frame but
+could still let the render coordinator defer it.  The run failed rather than
+being retried away.  Commit `aee5c053b` makes that benchmark flush explicitly
+forced, adds the mechanism to its release-contract test, and passed five
+consecutive quick benchmark runs before the complete verification below.
+
+Mechanical verification:
+
+```text
+$ ./scripts/test-cl.sh
+cadr test summary: systems=8 checks=10286 pass=10286 skip=0 fail=0
+
+$ ./scripts/verify.sh
+exit: 0
+deterministic stages: 12/12 PASS
+terminal lifecycle PTY: 6/6 PASS
+live stages: 2/2 PASS
+live FiveAM items: 7 PASS, 1 SKIP (ANTHROPIC_API_KEY is not set), 0 FAIL
+live FiveAM checks: 31 PASS, 1 SKIP, 0 FAIL
+Goal 11 performance and stability gate: PASS
+```
+
+Root delivery binary freshness:
+
+```text
+binary build time: 2026-08-02 18:17:47.784335203 +0800
+latest src commit: ceb30956ca526aa9ce505da3bb6282d37f231c1d
+latest src commit time: 2026-08-02T18:13:41+08:00
+latest source mtime: 2026-08-02 18:13:31.263194587 +0800 src/cadr-cli/tui.lisp
+freshness gate: PASS
+version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```

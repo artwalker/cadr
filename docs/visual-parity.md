@@ -33,8 +33,8 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 - 工具成功/失败/参数回显和每个 overlay 的每一行提示文案必须以完整字符串或
   完整 virtual-screen snapshot 逐字断言；只搜索关键词、只检查样式 token 或仅
   断言事件类型不构成视觉合约证据。
-- 无 overlay 的基础屏幕与 overlay 同级：冷启动、单轮、多轮、thinking、tool
-  折叠/展开、active status、widget、滚动 viewport 和窄屏都必须锁定完整 virtual
+- 无 overlay 的基础屏幕与 overlay 同级：冷启动、单轮、三轮、恰好填满、溢出、
+  thinking、tool 折叠/展开、active status、widget、滚动 viewport 和窄屏都必须锁定完整 virtual
   terminal 字节；组件级顺序、行数或关键词断言不能代替整屏门禁。
 
 确定性门禁优先使用 faux provider + virtual terminal；只有真实进程、终端模式或
@@ -257,7 +257,7 @@ A/B 已由用户确认，Part B 已关闭。
 | provider thinking | 每个 provider × 每个 thinking level × catalog 命中/未知 model→payload 与 start/delta/end |
 | tool | start/running/partial→success 或 error→collapsed/expanded |
 | tool model result | 每个注册内置工具的 success/error/continuation/truncation result→逐字文案、原始 path、UTF-16/行数/byte/limit 数值口径；与 TUI preview 分层断言 |
-| exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 必须带非空 transcript，另有 11 个 base-screen 状态，分别锁定整屏 SHA-256 |
+| exact copy | tool success/error/args、全部 overlay 每一行与基础屏幕状态矩阵→完整 snapshot 逐字相等；15 个 overlay 必须带非空 transcript，另有 13 个 base-screen 状态，分别锁定整屏 SHA-256 |
 | command UI | command→refresh→overlay→navigation→cancel/select |
 | application keys | raw legacy/Kitty/xterm/Windows Terminal bytes→configured action→busy/idle behavior；未知完整 sequence→atomic ignore |
 | busy interaction | long-running child→Escape→process-group termination→error tool result→idle；TLS handshake/connected-before-headers/silent SSE→active socket shutdown + blocked Lisp operation interrupt→aborted assistant→idle；parallel tools→shared cancellation；busy Enter/Alt+Enter→steering/follow-up queue→exact pending rows→configured dequeue key→both queues restored to editor→mode-controlled drain；repeated Escape→single silent abort |
@@ -288,20 +288,22 @@ row, then one horizontal padding cell followed by `Operation aborted`, with no
 
 ### B2 基础屏幕整屏合约
 
-用户 A/B 发现的最后一行 transcript 与 editor 上边框过近，并非 `Output padding`
-或 `Editor padding` 的数值问题。基线构成如下：
+用户 A/B 先后发现最后一行 transcript 与 editor 上边框过近，以及短会话整体被锚在
+viewport 底部。两者都不是 `Output padding` 或 `Editor padding` 的数值问题。基线构成如下：
 
 | 区域 | 基线 `74caa2649` 证据 | Cadr 结论 |
 |---|---|---|
-| transcript 顶部 | `interactive-mode.ts:758-817`：header 自带前后各一个 `Spacer(1)`；无 header/chat 时没有额外固定顶部 margin，剩余 viewport 空间由根布局吸收。 | `render-tui-state` 的 startup 前后各一空行；冷启动、单轮、多轮整屏快照锁定。已核实一致。 |
+| transcript 顶部 | `interactive-mode.ts:758-817`：header 自带前后各一个 `Spacer(1)`；无 header/chat 时没有额外固定顶部 margin。 | `render-tui-state` 的 startup 前后各一空行；冷启动、单轮、三轮整屏快照锁定。已核实一致。 |
 | transcript 条目间 | `interactive-mode.ts:3318-3369`：已有 chat 后的新 user 前加一个 spacer，assistant 直接追加；`assistant-message.ts:100-114` 仅在可见 assistant 内容前加一个 spacer。 | `src/cadr-cli/tui.lisp:1983-1999` 同构；单轮、多轮、thinking 快照锁定。已核实一致。 |
 | status 前后 | `packages/tui/src/components/loader.ts:43-45`：active loader 自带一个前置空行；`status-indicator.ts:105-113`：idle status 占两个全宽空行；status container 不另加尾部 margin。 | `src/cadr-cli/tui.lisp:925-967` 同构；active/idle 与复合顺序测试锁定。已核实一致。 |
 | above-editor widget | `interactive-mode.ts:2044-2072`：空容器也放一个 `Spacer(1)`；非空容器先放一个 leading `Spacer(1)`，widget 后不加 spacer。该容器位于 status 与 editor 之间（`:734-746`）。 | 原实现空态返回零行，正是截图差异根因；`src/cadr-cli/tui.lisp:461-474,2181-2186` 已按同一规则修正 base-screen 路径。 |
 | below-editor widget | `interactive-mode.ts:2044-2072`：空态零行，非空态无 leading/trailing spacer；根顺序在 editor 与 footer 之间（`:743-746`）。 | `src/cadr-cli/tui.lisp:2187-2192,2311-2324` 同构；below-widget 整屏与复合顺序测试锁定。已核实一致。 |
 | editor 与 footer | `interactive-mode.ts:497-505` 的 editor padding 只作为 `paddingX`；`packages/tui/src/components/editor.ts:482-530` 只改变横向内容宽度。`settings-manager.ts:120,1201-1202` 明定 output padding 是 chat message 的 horizontal padding，并由 `user-message.ts:38-57`、`assistant-message.ts:100-114` 使用。editor、below widgets、footer 在根容器中直接相邻（`interactive-mode.ts:743-746`）。 | 未发现垂直间距偏差；editor→below widget→footer 无固定空行，复合顺序与整屏矩阵锁定。 |
+| 短内容与溢出 | `packages/tui/src/tui.ts:235-244` 只按 child 顺序串接实际行；`TuiMainScreen.ts:162-212` 首帧只写这些行，`bufferLength=max(height,newLines.length)` 仅用于 viewport 记账，不向根布局插入 filler；`:354-370` 仅在内容越过 viewport 时让终端滚动。`TuiAltScreen.ts:350-389` 同样先切 document，空行只追加在完整 composition 之后。 | `src/cadr-cli/tui.lisp:2811-2834` 只裁剪溢出的 transcript，并直接串接 pending/status/widget/editor/footer；短内容不补 viewport 高度，空白自然留在 footer 下方。恰好填满与溢出门禁分别证明无提前裁剪和 tail scroll。 |
 
-因此基础屏幕修复是恢复 host-owned above-editor spacer，不是把用户的 padding 配置从
-`1` 调成别的数。第四轮又纠正 overlay 架构：基线 root 始终保留 chat container
+因此两次基础屏幕修复分别是恢复 host-owned above-editor spacer，以及移除根布局中
+不存在于基线的 flexible viewport filler；不是把用户的 padding 配置从 `1` 调成别的
+数。第四轮又纠正 overlay 架构：基线 root 始终保留 chat container
 （`interactive-mode.ts:734-746`），`showSelector` 只把 editor container 的 editor
 替换为 selector（`:4161-4175`）。Cadr 现在同样保留并按剩余 viewport 裁剪
 transcript，只在 editor slot 渲染 overlay；旧的 15 个空 transcript 快照无法证明这条
@@ -312,24 +314,31 @@ provider/model/cwd，并对 virtual terminal 全屏逐字节计算 SHA-256：
 
 | 状态 | 尺寸 | SHA-256 |
 |---|---:|---|
-| cold-start | 80×24 | `5102494F404ADB0CC36AEB3940AAE85830DD0CC5FE66127ECCDE0FE09202D23E` |
-| single-turn | 80×24 | `77F4369AD0FD44A501A96F821867B62BAD01D5245E50BE4044E43B6343F465B5` |
-| multi-turn | 80×28 | `92B70B0A5AEC03E479070C28FF7EAC3115525E1F1D02E3B7D47F1674747E7CF2` |
-| thinking | 80×24 | `EF82D0A6E08641DB6F5FE3CDD386C7779C0046CB3E4C5BFFE52322EF5C1B97A6` |
-| tool-collapsed | 80×24 | `6AAFA85128D905438B48EB093DF6D7ECC11413303900D4DC4BFDF457CC98B0D4` |
-| tool-expanded | 80×24 | `B97F11DB0C3021FED3023805CA2905EA94C859B9C6CC856B7918E7EC36DD3D6C` |
-| active-status | 80×24 | `22FB2A4E820335552735EA74D439FE697102732E4AD6EF2684D1115868828DD3` |
-| above-widget | 80×24 | `723E9B4B442AC85D881479D6642FF7D90019AABE92593D604F5447A96885690A` |
-| below-widget | 80×24 | `27DFC8E6EE6549CB326C15258E4E870CE16A6855A4D7100F04AF04CB34189BCB` |
-| overflow-scrolled-to-top | 52×14 | `BA8D976E24E62AFFBA1EAF91EBA40934EF1C0602B13995ACC3D3B56F2C46034A` |
+| cold-start | 80×24 | `7D6B66412D3734322CB29B8E24C95C5978B4FACC77FB89A811A6D58AB3F27D7B` |
+| single-turn | 80×24 | `0732A443161016877BD9A9FC46AE593AAE2110B0ACE7F903635EA3CBB3B2A48C` |
+| multi-turn (3 rounds) | 80×28 | `DC4A5F74E3FCB6EFDAAA1A55E3555F34FEF8D686A358F00ADECA00BD00180104` |
+| viewport-exact-fill | 80×13 | `E0493BAA8CFBBC1DF15E3254EF007840E1571AE163AF3010A04552FC71B59A7F` |
+| viewport-overflow | 80×14 | `53E1B55B933BEBCE43EDE639DB093965B148044B34191193152C067D1647CBE8` |
+| thinking | 80×24 | `AB0F8F4025EE9D5E026FF2FDC8AB8ABBF452926F61223944F965CFA8E567E310` |
+| tool-collapsed | 80×24 | `469F3BAE304DAC110474BFF5CB01483B72E4992C22E4B5EF7777B06018EF7343` |
+| tool-expanded | 80×24 | `DF40154B2A6E7B7F5E4E986B8498278881EF24CC7E98554509B2D84E23A5D0CC` |
+| active-status | 80×24 | `5B07189D441990503213180DB156B1106C0FDD95A83109BD6E93C13E84576BA1` |
+| above-widget | 80×24 | `3AF104FBC8FF61878FF37623FFB539799A28BEE22BE538726F08D2DF277A53D0` |
+| below-widget | 80×24 | `DC70F236342B1A935721471779EBCFA86DD0EFBE5CD4B9695148D5D33FE794D4` |
+| overflow-scrolled-to-top | 52×14 | `D15615BBF1F0A2F18155DAF639EAD4A2F49DAF29DA38ABF2D95A170242A5BEFD` |
 | narrow-width | 32×14 | `A417E912682A61AEB48FD0653D9E2CF1BBECF46D34ED09F44F64896619948596` |
 
-此前 7192 条检查没有捕获该缺陷，因为基础屏幕只有组件级 fragment、root 顺序、
-status 行数和局部 virtual-terminal 断言；完整整屏 SHA 只覆盖 15 个 overlay 与
-autocomplete。那些断言能证明“部件存在且顺序大致正确”，却不能证明空 widget
-container 必须贡献一行。新增门禁把无 overlay 的运行时状态提升到与 overlay 同等
-强度，并以 `GOAL9-B3-BASE-SCREEN-STATUS-WIDGET-EDITOR-FOOTER-ORDER-IS-EXACT`
-单独锁定 status→widget→editor→footer 的完整间距序列。
+此前 7192 条检查没有捕获 above-editor spacer；当时基础屏幕只有组件 fragment 和
+局部 virtual-terminal 断言。后来建立整屏 SHA 后，用户指出的 10236 条（本轮开工
+前因 Apple Terminal 门禁已为 10269 条）仍没捕获短会话底锚：`single-turn` 与旧
+`multi-turn` 的 expected hash 正是从错误实现生成的，快照只防漂移却把缺陷固化，且
+没有“短 document 行数必须小于 viewport、首个消息不得被 flexible filler 推下去”的
+独立语义断言，也没有恰好填满/刚溢出的边界状态。新增
+`GOAL9-B3-SHORT-CONVERSATION-COMPOSITION-STACKS-FROM-THE-TOP` 与
+`GOAL9-B3-VIEWPORT-EXACT-FILL-AND-OVERFLOW-FOLLOW-BASELINE-SCROLL-POLICY`
+先锁布局不变量，再由 13 个整屏 SHA 锁具体字节。未触及此次布局路径的四个既有
+基础屏幕快照（tool collapsed/expanded、scroll-to-top overflow、narrow width）以及
+全部 15 个 overlay 整屏快照保持逐字节不变。
 
 ### B2 autocomplete 触发与用户输出通道
 
