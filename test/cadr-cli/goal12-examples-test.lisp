@@ -125,6 +125,11 @@
     (is (search "all 99" readme :test #'char-equal))
     (is (search "99 functionally equivalent Lisp ports and 0 gaps"
                 parity-map))
+    (is (search
+         "| Goal 12 runnable examples | complete | fixed-baseline 99-file extension/SDK example surface |"
+         parity-map))
+    (is (not (search "94 complete; 5 blocked" parity-map)))
+    (is (not (search "94 implemented, 5 missing" parity-map)))
     (dolist (source (list ledger parity-map performance manifest-source))
       (is (= 1 (goal12-count-substring identity source))))
     (is (search "docs/parity-map.md" performance))
