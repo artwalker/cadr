@@ -430,3 +430,40 @@
      (string= "Do it."
               (cadr-cli::tui-entry-text
                (second (cadr-cli::tui-state-entries state)))))))
+
+(test goal13-session-path-and-tree-timestamps-match-baseline-display-rules
+  (let* ((home
+           (string-right-trim
+            "/" (namestring (user-homedir-pathname))))
+         (prefix-only
+           (concatenate 'string home "land/session.jsonl")))
+    ;; Baseline deliberately uses a raw startsWith(home), including this
+    ;; prefix-only edge case; presentation parity preserves that exact rule.
+    (is (string= "~"
+                 (cadr-cli::session-selector-shorten-path home)))
+    (is (string= "~land/session.jsonl"
+                 (cadr-cli::session-selector-shorten-path prefix-only)))
+    (is (string= "/tmp/session.jsonl"
+                 (cadr-cli::session-selector-shorten-path
+                  "/tmp/session.jsonl"))))
+  (let ((now
+          (encode-universal-time
+           0 0 15 2 8 2026 0)))
+    (is (string= "09:07"
+                 (cadr-cli::tree-selector-format-label-timestamp
+                  "2026-08-02T09:07:11.000Z" now 0)))
+    (is (string= "3/28 14:32"
+                 (cadr-cli::tree-selector-format-label-timestamp
+                  "2026-03-28T14:32:00.000Z" now 0)))
+    (is (string= "25/12/31 23:59"
+                 (cadr-cli::tree-selector-format-label-timestamp
+                  "2025-12-31T23:59:00.000Z" now 0)))
+    (is (string= "17:07"
+                 (cadr-cli::tree-selector-format-label-timestamp
+                  "2026-08-02T09:07:11.000Z" now -8)))
+    (is (string= "07:30"
+                 (cadr-cli::tree-selector-format-label-timestamp
+                  "2026-08-02T10:00:00+02:30" now 0)))
+    (is (string= "not-a-date"
+                 (cadr-cli::tree-selector-format-label-timestamp
+                  "not-a-date" now 0)))))

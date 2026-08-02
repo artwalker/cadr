@@ -153,3 +153,25 @@ Deterministic gate after this batch:
 ```text
 cadr test summary: systems=8 checks=11562 pass=11562 skip=0 fail=0
 ```
+
+## Part C batch 3 — selector path and timestamp formats
+
+The session selector now applies the baseline's deliberately naive raw home
+prefix replacement instead of a path-component boundary check.  The tree
+selector now parses ISO timestamps, observes their UTC/offset suffix, projects
+them into the display timezone, and selects `HH:MM`, `M/D HH:MM`, or
+`YY/M/D HH:MM` from the same calendar rules as the baseline.
+
+| Contract | Baseline | Cadr implementation | Regression |
+|---|---|---|---|
+| session path shortening | `session-selector.ts:26-33` | `src/cadr-cli/interactive-services.lisp:1288-1301` | `GOAL13-SESSION-PATH-AND-TREE-TIMESTAMPS-MATCH-BASELINE-DISPLAY-RULES` |
+| tree label timestamp | `tree-selector.ts:854-877` | `src/cadr-cli/interactive-services.lisp:5311-5388` | same regression: today/current-year/older-year, UTC-to-local conversion, explicit offset, malformed fallback |
+
+The red phase proved both old defects: a home-prefix sibling remained absolute,
+and the timestamp formatter rejected the new calendar/zone contract.  The
+focused regression is now `9/9`; the presentation ledger stands at `123 = 113
+closed/aligned + 8 open + 2 intentional`.
+
+```text
+cadr test summary: systems=8 checks=11571 pass=11571 skip=0 fail=0
+```

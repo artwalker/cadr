@@ -1703,6 +1703,36 @@
                    (make-list 30
                               :initial-element
                               "long message ")))
+         (timestamp-parts
+           (multiple-value-list
+            (decode-universal-time
+             (encode-universal-time
+              0 32 14 28 3 2026 0))))
+         (now-parts
+           (multiple-value-list
+            (decode-universal-time
+             (get-universal-time))))
+         (timestamp-time
+           (format nil "~2,'0D:~2,'0D"
+                   (nth 2 timestamp-parts)
+                   (nth 1 timestamp-parts)))
+         (expected-label-timestamp
+           (cond
+             ((and (= (nth 5 timestamp-parts) (nth 5 now-parts))
+                   (= (nth 4 timestamp-parts) (nth 4 now-parts))
+                   (= (nth 3 timestamp-parts) (nth 3 now-parts)))
+              timestamp-time)
+             ((= (nth 5 timestamp-parts) (nth 5 now-parts))
+              (format nil "~D/~D ~A"
+                      (nth 4 timestamp-parts)
+                      (nth 3 timestamp-parts)
+                      timestamp-time))
+             (t
+              (format nil "~2,'0D/~D/~D ~A"
+                      (mod (nth 5 timestamp-parts) 100)
+                      (nth 4 timestamp-parts)
+                      (nth 3 timestamp-parts)
+                      timestamp-time))))
          (entries
            `((:id "user-1" :parent-id nil
               :type :message :role :user
@@ -1801,7 +1831,7 @@
                         (cadr-cli::tree-selector-render-lines
                          state 200))))
     (is (not
-         (search "3/28 14:32"
+         (search expected-label-timestamp
                  (format nil "~{~A~^~%~}"
                          (cadr-cli::tree-selector-render-lines
                           state 200)))))
@@ -1812,7 +1842,7 @@
              nil "~{~A~^~%~}"
              (cadr-cli::tree-selector-render-lines
               state 200))))
-      (is (search "3/28 14:32" rendered))
+      (is (search expected-label-timestamp rendered))
       (is (search "[+label time]" rendered)))))
 
 (test tree-selector-folds-and-jumps-across-branch-segments

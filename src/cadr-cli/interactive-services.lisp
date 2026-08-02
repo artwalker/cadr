@@ -1295,10 +1295,7 @@
             "/" (namestring
                  (user-homedir-pathname)))))
     (if
-        (or (string= value home)
-            (uiop:string-prefix-p
-             (concatenate 'string home "/")
-             value))
+        (uiop:string-prefix-p home value)
         (concatenate 'string "~"
                      (subseq value (length home)))
         value)))
@@ -5312,20 +5309,82 @@
      (values nil nil))))
 
 (defun tree-selector-format-label-timestamp
-    (value)
+    (value &optional (now (get-universal-time))
+                     display-timezone)
   (multiple-value-bind
         (match registers)
       (cl-ppcre:scan-to-strings
-       "\\d{4}-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})"
+       "^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2})(?::(\\d{2})(?:\\.\\d+)?)?(Z|[+-]\\d{2}:?\\d{2})?$"
        (or value ""))
     (declare (ignore match))
     (if registers
-        (format
-         nil "~D/~D ~A:~A"
-         (parse-integer (aref registers 0))
-         (parse-integer (aref registers 1))
-         (aref registers 2)
-         (aref registers 3))
+        (handler-case
+            (let* ((year (parse-integer (aref registers 0)))
+                   (month (parse-integer (aref registers 1)))
+                   (day (parse-integer (aref registers 2)))
+                   (hour (parse-integer (aref registers 3)))
+                   (minute (parse-integer (aref registers 4)))
+                   (second
+                     (if (aref registers 5)
+                         (parse-integer (aref registers 5))
+                         0))
+                   (zone (aref registers 6))
+                   (source-timezone
+                     (cond
+                       ((null zone) display-timezone)
+                       ((string= zone "Z") 0)
+                       (t
+                        (let* ((east-p (char= (char zone 0) #\+))
+                               (offset-hours
+                                 (parse-integer zone :start 1 :end 3))
+                               (offset-minutes
+                                 (parse-integer
+                                  zone :start
+                                  (if (char= (char zone 3) #\:)
+                                      4 3)))
+                               (offset
+                                 (+ offset-hours
+                                    (/ offset-minutes 60))))
+                          (if east-p (- offset) offset)))))
+                   (timestamp
+                     (if source-timezone
+                         (encode-universal-time
+                          second minute hour day month year
+                          source-timezone)
+                         (encode-universal-time
+                          second minute hour day month year))))
+              (multiple-value-bind
+                    (shown-second shown-minute shown-hour shown-day
+                     shown-month shown-year)
+                  (if display-timezone
+                      (decode-universal-time
+                       timestamp display-timezone)
+                      (decode-universal-time timestamp))
+                (declare (ignore shown-second))
+                (multiple-value-bind
+                      (now-second now-minute now-hour now-day
+                       now-month now-year)
+                    (if display-timezone
+                        (decode-universal-time now display-timezone)
+                        (decode-universal-time now))
+                  (declare
+                   (ignore now-second now-minute now-hour))
+                  (let ((time
+                          (format nil "~2,'0D:~2,'0D"
+                                  shown-hour shown-minute)))
+                    (cond
+                      ((and (= shown-year now-year)
+                            (= shown-month now-month)
+                            (= shown-day now-day))
+                       time)
+                      ((= shown-year now-year)
+                       (format nil "~D/~D ~A"
+                               shown-month shown-day time))
+                      (t
+                       (format nil "~2,'0D/~D/~D ~A"
+                               (mod shown-year 100)
+                               shown-month shown-day time)))))))
+          (error () (or value "")))
         (or value ""))))
 
 (defun tree-selector-status-labels (state)

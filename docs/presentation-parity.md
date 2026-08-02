@@ -177,16 +177,16 @@ B2 count after Part C transcript batch: `39 一致 + 11 不一致（已改齐）
 |---|---|---|---|---|
 | P-01 | tool `~` shortening | raw prefix test: any string starting with `homedir` is shortened (`render-utils.ts:10-17`) | tool-only `shortened-home-prefix-path` uses the same raw prefix rule; footer/image paths retain their boundary-safe contract (`src/cadr-tui/terminal-image.lisp:647-655`; `src/cadr-cli/tui.lisp:1385-1401`) | 不一致（已改齐） |
 | P-02 | footer `~` shortening | only cwd equal to or inside home is shortened (`footer.ts:32-44`) | same boundary rule (`src/cadr-cli/interactive-services.lisp:1877-1899`) | 一致 |
-| P-03 | session-selector `~` shortening | raw prefix test (`session-selector.ts:26-33`) | path-component boundary is required (`src/cadr-cli/interactive-services.lisp:1288-1304`) | 不一致 |
+| P-03 | session-selector `~` shortening | raw prefix test (`session-selector.ts:26-33`) | session display uses the same raw home-prefix substitution, including the prefix-only edge case (`src/cadr-cli/interactive-services.lisp:1288-1301`) | 不一致（已改齐） |
 | P-04 | tool path URI | eligible file paths receive OSC-8 `file:` links (`render-utils.ts:19-23,75-84`) | typed path segments carry escaped absolute `file:` URLs and the component emits OSC-8 conditionally (`src/cadr-cli/tui.lisp:1372-1401`; `src/cadr-tui/components.lisp:1561-1572`) | 不一致（已改齐） |
 | P-05 | read range | `:start`, or `:start-end` where default start is 1 (`read.ts:67-76`) | same (`src/cadr-cli/tui.lisp:1398-1415`) | 一致 |
 | P-06 | tokens/cost/context | `<1k`, one-decimal k/M, rounded k/M, `$0.000`, `0.0%` (`footer.ts:24-29,111-164`) | same positive-number thresholds and units (`src/cadr-tui/components.lisp:1706-1749,1777-1822`) | 一致 |
 | P-07 | tool elapsed time | seconds with exactly one decimal (`bash.ts:222-224,309-313`) | seconds with exactly one decimal (`src/cadr-tui/components.lisp:1646-1669`) | 一致 |
 | P-08 | session age | `now`, `m`, `h`, `d`, `w`, `mo`, `y` with floor boundaries (`session-selector.ts:35-49`) | same thresholds and units (`src/cadr-cli/interactive-services.lisp:1306-1326`) | 一致 |
-| P-09 | tree label timestamp | today `HH:MM`; current year `M/D HH:MM`; older `YY/M/D HH:MM` (`tree-selector.ts:854-877`) | always `M/D HH:MM`, and the parser ignores year/day-relative context (`src/cadr-cli/interactive-services.lisp:5310-5325`) | 不一致 |
+| P-09 | tree label timestamp | today `HH:MM`; current year `M/D HH:MM`; older `YY/M/D HH:MM` (`tree-selector.ts:854-877`) | parses ISO zones, projects into local time, and selects the same today/current-year/older-year shape (`src/cadr-cli/interactive-services.lisp:5311-5388`) | 不一致（已改齐） |
 | P-10 | truncation sizes/counts | binary size units, line/result/match/entry counts and exact brackets (`bash.ts:292-306`; `read.ts:190-198`; `find.ts:98-105`; `grep.ts:110-119`; `ls.ts:84-91`) | same displayed units/counts; model-facing result copy remains independently locked (`src/cadr-tui/components.lisp:1514-1565`; `src/cadr-cli/truncation.lisp:1-120`) | 一致 |
 
-B3 count after Part C tool batch: `6 一致 + 2 不一致（已改齐） / 2 不一致 / 0 有意差异 = 10`.
+B3 count after Part C selector-format batch: `6 一致 + 4 不一致（已改齐） / 0 不一致 / 0 有意差异 = 10`.
 
 ## B4. Non-terminal content returned by Cadr services
 
@@ -207,9 +207,9 @@ B4 count: `1 一致 / 5 不一致 / 0 有意差异 = 6`.
 |---|---:|---:|---:|---:|
 | B1 semantic colors | 52 | 3 | 0 | 55 |
 | B2 visible elements | 50 | 0 | 2 | 52 |
-| B3 paths/numbers | 8 | 2 | 0 | 10 |
+| B3 paths/numbers | 10 | 0 | 0 | 10 |
 | B4 non-terminal content | 1 | 5 | 0 | 6 |
-| **Total** | **111** | **10** | **2** | **123** |
+| **Total** | **113** | **8** | **2** | **123** |
 
 The 39 row-level mismatches collapse to these implementation clusters; one fix
 may close multiple B1/B2/B3 rows, but no row may be silently dropped:
@@ -222,7 +222,7 @@ may close multiple B1/B2/B3 rows, but no row may be silently dropped:
 6. pre-execution edit preview;
 7. compact read docs/resource/skill titles;
 8. skill, branch and compaction transcript components;
-9. tree label timestamp formatting;
+9. session-selector home shortening and tree label timestamp formatting;
 10. OAuth success/failure HTML and callback-specific escaped copy;
 11. session-export theme/template presentation.
 
