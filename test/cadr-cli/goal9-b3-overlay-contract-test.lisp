@@ -767,6 +767,280 @@
       (sb-thread:join-thread worker))
     (is (eq t result))))
 
+(test goal12-extension-oauth-prompt-bridge-blocks-worker-and-returns-input
+  (let ((prompt-function nil)
+        (worker nil)
+        (result :pending)
+        (worker-complete
+          (sb-thread:make-semaphore :count 0))
+        (overlay-opened
+          (sb-thread:make-semaphore :count 0)))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 80 :rows 14
+      :inputs
+      (list
+       (footer-sync-submit-input "/oauth-prompt")
+       (footer-sync-wait-for-screen-text
+        "Authorization code")
+       (footer-sync-submit-input "callback-code")
+       (footer-sync-submit-input "/quit"))
+      :before-second-read
+      (lambda ()
+        (sb-thread:wait-on-semaphore overlay-opened)))
+     :set-auth-prompt-consumer
+     (lambda (function)
+       (setf prompt-function function))
+     :extension-overlay-opened-function
+     (lambda ()
+       (sb-thread:signal-semaphore overlay-opened))
+     :command-function
+     (lambda (line)
+       (when (string= line "/oauth-prompt")
+         (setf
+          worker
+          (sb-thread:make-thread
+           (lambda ()
+             (setf
+              result
+              (funcall
+               prompt-function
+               '(:type :manual-code
+                 :message "Authorization code"
+                 :placeholder "paste code")))))))
+       t))
+    (when worker
+      (sb-thread:join-thread worker))
+    (is (string= "callback-code" result))))
+
+(test goal12-extension-oauth-prompt-bridge-cancel-returns-nil
+  (let ((prompt-function nil)
+        (worker nil)
+        (result :pending)
+        (worker-complete
+          (sb-thread:make-semaphore :count 0))
+        (overlay-opened
+          (sb-thread:make-semaphore :count 0)))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 80 :rows 14
+      :inputs
+      (list
+       (footer-sync-submit-input "/oauth-prompt")
+       (footer-sync-wait-for-screen-text "Secret")
+       (string #\Escape)
+       (lambda (terminal)
+         (declare (ignore terminal))
+         (sb-thread:wait-on-semaphore
+          worker-complete :timeout 2))
+       (footer-sync-submit-input "/quit"))
+      :before-second-read
+      (lambda ()
+        (sb-thread:wait-on-semaphore overlay-opened)))
+     :set-auth-prompt-consumer
+     (lambda (function)
+       (setf prompt-function function))
+     :extension-overlay-opened-function
+     (lambda ()
+       (sb-thread:signal-semaphore overlay-opened))
+     :command-function
+     (lambda (line)
+       (when (string= line "/oauth-prompt")
+         (setf
+          worker
+          (sb-thread:make-thread
+           (lambda ()
+             (unwind-protect
+                  (setf
+                   result
+                   (funcall
+                    prompt-function
+                    '(:type :secret :message "Secret")))
+               (sb-thread:signal-semaphore
+                worker-complete))))))
+       t))
+    (when worker
+      (sb-thread:join-thread worker))
+    (is (null result))))
+
+(test goal12-extension-login-options-feed-selector-and-autocomplete-locally
+  (let ((commands nil)
+        (options
+          (list
+           (cadr-cli::make-oauth-selector-option
+            :id :extension-oauth
+            :name "Extension OAuth"
+            :auth-type :oauth
+            :method-name "Extension OAuth account"))))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 80 :rows 16
+      :inputs
+      (list
+       (footer-sync-submit-input "/login")
+       (footer-sync-wait-for-screen-text
+        "Sign in with an account")
+       (string #\Return)
+       (footer-sync-wait-for-screen-text "Extension OAuth")
+       (string #\Return)
+       (footer-sync-submit-input "/quit"))
+      :before-second-read (constantly nil))
+     :login-options-function (lambda () options)
+     :command-function
+     (lambda (line)
+       (push line commands)
+       t))
+    (is (equal '("/login extension-oauth")
+               (remove "/quit" commands :test #'string=)))))
+
+(test goal12-live-tui-custom-component-receives-runtime-theme-keybindings-handle-and-dispose
+  (let ((extension-ui nil)
+        (worker nil)
+        (result :pending)
+        (factory-values nil)
+        (handle nil)
+        (component nil)
+        (overlay-opened
+          (sb-thread:make-semaphore :count 0)))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 80 :rows 16
+      :inputs
+      (list
+       (footer-sync-submit-input "/custom-component")
+       (footer-sync-wait-for-screen-text "Goal 12 overlay")
+       (string #\Return)
+       (footer-sync-submit-input "/quit"))
+      :before-second-read
+      (lambda ()
+        (sb-thread:wait-on-semaphore overlay-opened)))
+     :set-extension-ui-function
+     (lambda (function)
+       (setf extension-ui function))
+     :extension-overlay-opened-function
+     (lambda ()
+       (sb-thread:signal-semaphore overlay-opened))
+     :command-function
+     (lambda (line)
+       (when (string= line "/custom-component")
+         (setf
+          worker
+          (sb-thread:make-thread
+           (lambda ()
+             (setf
+              result
+              (funcall
+               extension-ui :custom-component
+               (list
+                :factory
+                (lambda (tui theme keybindings done)
+                  (setf
+                   factory-values
+                   (list tui theme keybindings done)
+                   component
+                   (make-instance
+                    'goal12-extension-component
+                    :text "Goal 12 overlay"
+                    :done-function done))
+                  component)
+                :overlay-p t
+                :overlay-options
+                (lambda ()
+                  '(:width 32 :anchor :top-right
+                    :margin 1 :non-capturing-p nil))
+                :on-handle
+                (lambda (value)
+                  (setf handle value)))))))))
+       t))
+    (when worker
+      (sb-thread:join-thread worker))
+    (is (eq :closed result))
+    (is (typep (first factory-values) 'cadr-tui:tui-root))
+    (is (functionp (getf (second factory-values) :fg)))
+    (is (typep (third factory-values)
+               'cadr-tui:keybindings-manager))
+    (is (functionp (fourth factory-values)))
+    (is (typep handle 'cadr-tui:overlay-handle))
+    (is (cadr-tui:overlay-handle-hidden-p handle))
+    (is (goal12-extension-component-disposed-p component))))
+
+(test goal12-live-tui-composition-controls-preserve-editor-text-and-replace-components
+  (let ((extension-ui nil)
+        (observed-editor-factory nil)
+        (observed-editor-text nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 80 :rows 16
+      :inputs
+      (list
+       (footer-sync-submit-input "/compose")
+       (footer-sync-wait-for-screen-text "extension-header")
+       (footer-sync-wait-for-screen-text "extension-footer")
+       (footer-sync-wait-for-screen-text "draft")
+       (lambda (terminal)
+         (declare (ignore terminal))
+         (funcall extension-ui :set-editor-text '(:text ""))
+         t)
+       (footer-sync-submit-input "/quit"))
+      :before-second-read (constantly nil))
+     :set-extension-ui-function
+     (lambda (function)
+       (setf extension-ui function))
+     :command-function
+     (lambda (line)
+       (when (string= line "/compose")
+         (funcall
+          extension-ui :set-editor-text '(:text "draft"))
+         (funcall
+          extension-ui :set-header
+          (list
+           :factory
+           (lambda (tui theme)
+             (declare (ignore tui theme))
+             (cadr-tui:make-text-component
+              "extension-header" :padding-x 0 :padding-y 0))))
+         (funcall
+          extension-ui :set-footer
+          (list
+           :factory
+           (lambda (tui theme provider)
+             (declare (ignore tui theme provider))
+             (cadr-tui:make-text-component
+              "extension-footer" :padding-x 0 :padding-y 0))))
+         (let ((factory
+                 (lambda (tui theme keybindings)
+                   (declare (ignore tui theme keybindings))
+                   (cadr-tui:make-single-line-input :prompt "> "))))
+           (funcall extension-ui :set-editor-component
+                    (list :factory factory))
+           (setf observed-editor-factory
+                 (funcall extension-ui :get-editor-component nil)))
+         (setf observed-editor-text
+               (funcall extension-ui :get-editor-text nil)))
+       t))
+    (is (functionp observed-editor-factory))
+    (is (string= "draft" observed-editor-text))))
+
 (test goal9-b3-settings-theme-preview-cancel-and-commit-use-the-live-tui-bridge
   (let ((current-theme "dark")
         (previews nil)

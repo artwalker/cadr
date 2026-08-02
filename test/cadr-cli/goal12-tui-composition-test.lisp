@@ -2,6 +2,37 @@
 
 (in-suite cadr-cli-suite)
 
+(defclass goal12-extension-component (cadr-tui:component)
+  ((text
+    :initarg :text
+    :reader goal12-extension-component-text)
+   (done-function
+    :initarg :done-function
+    :initform nil
+    :reader goal12-extension-component-done-function)
+   (disposed-p
+    :initform nil
+    :accessor goal12-extension-component-disposed-p)))
+
+(defmethod cadr-tui:component-render
+    ((component goal12-extension-component) width &key focused-p)
+  (declare (ignore width focused-p))
+  (list (goal12-extension-component-text component)))
+
+(defmethod cadr-tui:component-handle-event
+    ((component goal12-extension-component) event)
+  (when (and (member (cadr-tui:input-event-kind event)
+                     '(:escape :enter))
+             (goal12-extension-component-done-function component))
+    (funcall (goal12-extension-component-done-function component)
+             :closed))
+  (values nil nil))
+
+(defmethod cadr-tui:component-dispose
+    ((component goal12-extension-component))
+  (setf (goal12-extension-component-disposed-p component) t)
+  component)
+
 (test goal12-coding-agent-keybinding-hints-and-dynamic-border-match-baseline
   (let ((manager
           (cadr-tui:make-keybindings-manager
@@ -120,3 +151,76 @@
         (find-symbol name :cadr-cli)
       (is (not (null symbol)))
       (is (eq :external status)))))
+
+(test goal12-custom-overlay-options-and-handle-visibility-are-instance-local
+  (let* ((state (cadr-cli::make-tui-state :model "mock"))
+         (editor (cadr-tui:make-multiline-editor))
+         (component
+           (make-instance 'goal12-extension-component
+                          :text "overlay-body"))
+         (handle
+           (cadr-tui:overlay-stack-show
+            (cadr-tui:make-overlay-stack
+             :focused-component editor)
+            component nil))
+         (overlay
+           (cadr-cli::make-extension-custom-ui-state
+            :component component
+            :overlay-p t
+            :overlay-options
+            '(:width 20 :anchor :top-right :margin 1)
+            :handle handle)))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 50 12 :overlay overlay)
+      (declare (ignore row column))
+      (is (find "overlay-body" lines :test #'search)))
+    (cadr-tui:overlay-handle-set-hidden handle t)
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 50 12 :overlay overlay)
+      (declare (ignore row column))
+      (is (not (find "overlay-body" lines :test #'search))))
+    (cadr-tui:overlay-handle-set-hidden handle nil)
+    (setf
+     (cadr-cli::extension-custom-ui-state-overlay-options overlay)
+     '(:width 20 :visible nil))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 50 12 :overlay overlay)
+      (declare (ignore row column))
+      (is (not (find "overlay-body" lines :test #'search))))))
+
+(test goal12-header-footer-working-and-hidden-thinking-components-compose-with-default-state
+  (let* ((state
+           (cadr-cli::make-tui-state
+            :model "mock" :hide-thinking-block-p t))
+         (editor (cadr-tui:make-multiline-editor)))
+    (setf
+     (cadr-cli::tui-state-header-component state)
+     (cadr-tui:make-text-component
+      "extension-header" :padding-x 0 :padding-y 0)
+     (cadr-cli::tui-state-footer-component state)
+     (cadr-tui:make-text-component
+      "extension-footer" :padding-x 0 :padding-y 0)
+     (cadr-cli::tui-state-working-message state) "Indexing"
+     (cadr-cli::tui-state-working-indicator-frames state) '("A" "B")
+     (cadr-cli::tui-state-working-indicator-interval-ms state) 100
+     (cadr-cli::tui-state-hidden-thinking-label state) "Reasoning hidden")
+    (cadr-cli::replace-tui-entries
+     state
+     (list
+      (cadr-cli::make-tui-entry
+       :type :assistant
+       :content-blocks
+       (list (cons :assistant-thinking "private chain")))))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state editor 60 16 :busy-p t :now 0d0)
+      (declare (ignore row column))
+      (let ((plain (mapcar #'cadr-tui:strip-terminal-sequences lines)))
+        (is (find "extension-header" plain :test #'search))
+        (is (find "extension-footer" plain :test #'search))
+        (is (find "Indexing" plain :test #'search))
+        (is (find "Reasoning hidden" plain :test #'search))
+        (is (not (find "private chain" plain :test #'search)))))))

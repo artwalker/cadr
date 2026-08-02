@@ -639,13 +639,40 @@
       (merge-native-runtime-models registry)
       result)))
 
+(defun model-registry-native-login-records (registry)
+  (let ((runtime
+          (model-registry-native-runtime registry)))
+    (sort
+     (loop for provider in
+           (and runtime
+                (cadr-ai:models-runtime-providers runtime))
+           for auth-types =
+           (append
+            (when
+                (cadr-ai:runtime-provider-oauth-login-function
+                 provider)
+              (list :oauth))
+            (when
+                (cadr-ai:runtime-provider-api-key-login-function
+                 provider)
+              (list :api-key)))
+           when auth-types
+             collect
+             (list
+              :id (cadr-ai:runtime-provider-id provider)
+              :name (cadr-ai:runtime-provider-name provider)
+              :auth-types auth-types))
+     #'string-lessp
+     :key (lambda (record) (getf record :name)))))
+
 (defun model-registry-login-native-provider
-    (registry provider-id interaction)
+    (registry provider-id interaction
+     &key (auth-type :api-key))
   (let* ((runtime
            (model-registry-native-runtime registry))
          (credential
-           (cadr-ai:models-runtime-login-api-key
-            runtime provider-id interaction)))
+           (cadr-ai:models-runtime-login
+            runtime provider-id auth-type interaction)))
     (when (model-registry-credentials registry)
       (auth-storage-modify
        (model-registry-credentials registry)
@@ -653,8 +680,13 @@
        (lambda (current)
          (declare (ignore current))
          credential)))
-    (sync-model-registry-native-providers
-     registry :allow-network t :force t)
+    ;; Login operates on this registry's session-local provider projection.
+    ;; Rebuilding from *NATIVE-EXTENSION-HOST* here would drop the provider in
+    ;; SDK/test registries and needlessly couple a session-local operation to a
+    ;; process-global host.
+    (cadr-ai:models-runtime-refresh
+     runtime :allow-network t :force t)
+    (merge-native-runtime-models registry)
     credential))
 
 (defun model-registry-login-api-key

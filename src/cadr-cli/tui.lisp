@@ -57,11 +57,99 @@
   (widgets-above nil :type list)
   (widgets-below nil :type list)
   (tools-expanded-p nil :type boolean)
+  header-component
+  footer-component
+  (working-visible-p t :type boolean)
+  working-message
+  working-indicator-frames
+  working-indicator-interval-ms
+  hidden-thinking-label
+  (hide-thinking-block-p nil :type boolean)
   status-message)
 
 (defstruct extension-custom-ui-state
   component
-  done-function)
+  done-function
+  (overlay-p nil :type boolean)
+  overlay-options
+  handle
+  (legacy-p nil :type boolean)
+  (disposed-p nil :type boolean))
+
+(defstruct (runtime-auth-input-state
+            (:constructor %make-runtime-auth-input-state))
+  prompt
+  input)
+
+(defun make-runtime-auth-input-state (prompt)
+  (%make-runtime-auth-input-state
+   :prompt (copy-list prompt)
+   :input
+   (cadr-tui:make-single-line-input :prompt "> ")))
+
+(defun runtime-auth-input-state-handle-event
+    (state event)
+  (if
+      (member
+       (cadr-tui:input-event-kind event)
+       '(:escape :cancel :clear :interrupt :eof))
+      (values :cancel nil)
+      (multiple-value-bind (action value)
+          (cadr-tui:single-line-input-handle-event
+           (runtime-auth-input-state-input state)
+           event)
+        (values
+         (if (eq action :submit) :select action)
+         value))))
+
+(defun render-runtime-auth-input-state (state width)
+  (let* ((prompt (runtime-auth-input-state-prompt state))
+         (input (runtime-auth-input-state-input state))
+         (secret-p (eq :secret (getf prompt :type)))
+         (display-input
+           (if secret-p
+               (let ((masked
+                       (cadr-tui:make-single-line-input
+                        :value
+                        (make-string
+                         (length
+                          (cadr-tui:single-line-input-value input))
+                         :initial-element #\*)
+                        :prompt "> ")))
+                 (setf
+                  (cadr-tui::single-line-input-cursor masked)
+                  (cadr-tui::single-line-input-cursor input))
+                 masked)
+               input)))
+    (multiple-value-bind (input-lines row column)
+        (cadr-tui:render-single-line-input display-input width)
+      (declare (ignore row column))
+      (append
+       (list
+        (selector-border-line width)
+        ""
+        (selector-fit-line
+         (concatenate
+          'string " "
+          (cadr-tui:theme-foreground
+           :accent
+           (cadr-tui:theme-bold
+            (getf prompt :message)
+            :enabled-p t)
+           :enabled-p t))
+         width))
+       (when (getf prompt :placeholder)
+         (list
+          (selector-fit-line
+           (format nil " ~A" (getf prompt :placeholder))
+           width)))
+       input-lines
+       (list
+        (selector-fit-line
+         " (escape/ctrl+c to cancel, enter to submit)"
+         width)
+        ""
+        (selector-border-line width))))))
 
 (defstruct (framed-select-state
             (:constructor %make-framed-select-state))
@@ -221,12 +309,20 @@
          (values action value t)))
       (t (values nil nil nil)))))
 
+(defun tui-component-protocol-p (value)
+  (or (typep value 'cadr-tui:component)
+      (typep value 'cadr-tui:multiline-editor)
+      (typep value 'cadr-tui:single-line-input)))
+
 (defun render-extension-custom-ui
     (state width)
   (let ((component
           (extension-custom-ui-state-component
            state)))
     (cond
+      ((tui-component-protocol-p component)
+       (cadr-tui:component-render component width
+                                  :focused-p t))
       ((cadr-tui::select-list-p component)
        (cadr-tui:render-select-list
         component width))
@@ -240,6 +336,15 @@
           (extension-custom-ui-state-component
            state)))
     (cond
+      ((tui-component-protocol-p component)
+       (multiple-value-bind (action value)
+           (cadr-tui:component-handle-event component event)
+         (if (or action
+                 (not (extension-custom-ui-state-legacy-p state))
+                 (not (eq :escape
+                          (cadr-tui:input-event-kind event))))
+             (values action value)
+             (values :cancel nil))))
       ((cadr-tui::select-list-p component)
        (cadr-tui:select-list-handle-event
         component event))
@@ -261,6 +366,7 @@
        startup-compact-lines
        startup-expanded-lines
        session messages
+       hide-thinking-block-p
        (auto-compact-p t)
        (context-window 0))
   (let ((state
@@ -284,6 +390,8 @@
            (max 0 context-window)
            :auto-compact-p
            (not (null auto-compact-p))
+           :hide-thinking-block-p
+           (not (null hide-thinking-block-p))
            :session session)))
     (dolist (message messages)
       (seed-tui-message state message))
@@ -391,39 +499,58 @@
   state)
 
 (defun synchronize-tui-editor-border (state editor)
-  (unless
-      (eq
-       :bash-mode
-       (cadr-tui::multiline-editor-border-color-key
-        editor))
-    (cadr-tui:editor-set-border-mode
-     editor :thinking
-     (or (tui-state-thinking state) :off)))
+  (when (typep editor 'cadr-tui:multiline-editor)
+    (unless
+        (eq
+         :bash-mode
+         (cadr-tui::multiline-editor-border-color-key
+          editor))
+      (cadr-tui:editor-set-border-mode
+       editor :thinking
+       (or (tui-state-thinking state) :off))))
   editor)
+
+(defun tui-editor-component-text (editor)
+  (if (typep editor 'cadr-tui:multiline-editor)
+      (cadr-tui:editor-text editor)
+      (cadr-tui:editor-component-text editor)))
+
+(defun tui-editor-component-set-text (editor text)
+  (if (typep editor 'cadr-tui:multiline-editor)
+      (cadr-tui:editor-set-text editor text)
+      (cadr-tui:editor-component-set-text editor text)))
+
+(defun tui-editor-component-clear (editor)
+  (if (typep editor 'cadr-tui:multiline-editor)
+      (cadr-tui::editor-clear editor)
+      (cadr-tui:editor-component-set-text editor "")))
 
 (defun tui-editor-bash-input-p (editor)
   (let ((text
           (string-left-trim
            '(#\Space #\Tab #\Newline #\Return)
-           (cadr-tui:editor-text editor))))
+           (tui-editor-component-text editor))))
     (and
      (plusp (length text))
      (char= (char text 0) #\!))))
 
 (defun synchronize-tui-editor-input-border
     (state editor)
-  (if (tui-editor-bash-input-p editor)
-      (cadr-tui:editor-set-border-mode
-       editor :bash)
-      (cadr-tui:editor-set-border-mode
-       editor :thinking
-       (or (tui-state-thinking state) :off)))
+  (when (typep editor 'cadr-tui:multiline-editor)
+    (if (tui-editor-bash-input-p editor)
+        (cadr-tui:editor-set-border-mode
+         editor :bash)
+        (cadr-tui:editor-set-border-mode
+         editor :thinking
+         (or (tui-state-thinking state) :off))))
   editor)
 
 (defun handle-tui-editor-event
     (state editor event)
   (multiple-value-bind (action value)
-      (cadr-tui:editor-handle-event editor event)
+      (if (typep editor 'cadr-tui:multiline-editor)
+          (cadr-tui:editor-handle-event editor event)
+          (cadr-tui:component-handle-event editor event))
     ;; Submission owns its border until dispatched work settles.
     ;; Every non-submit edit follows the current input immediately.
     (unless (eq action :submit)
@@ -1784,7 +1911,8 @@
         :enabled-p t))))))
 
 (defun render-assistant-blocks
-    (entry width extension-host)
+    (entry width extension-host
+     &key hide-thinking-block-p hidden-thinking-label)
   (let ((available-width
           (max 1 (- width 2))))
     (let ((blocks
@@ -1808,9 +1936,14 @@
       (loop for (message-type . source)
               in blocks
             for block-index from 0
+            for display-source =
+              (if (and hide-thinking-block-p
+                       (eq message-type :assistant-thinking))
+                  (or hidden-thinking-label "Thinking...")
+                  source)
             for transformed =
               (transform-tui-markdown
-               entry source message-type
+               entry display-source message-type
                available-width extension-host
                (list message-type block-index))
             for lines =
@@ -1853,7 +1986,9 @@
          :enabled-p t)))
 
 (defun render-tui-entry-uncached
-    (entry width &key extension-host now)
+    (entry width &key extension-host now
+                      hide-thinking-block-p
+                      hidden-thinking-label)
   (case (tui-entry-type entry)
     (:user
      (let ((lines
@@ -1891,7 +2026,9 @@
     (:assistant
      (let ((lines
              (render-assistant-blocks
-              entry width extension-host)))
+              entry width extension-host
+              :hide-thinking-block-p hide-thinking-block-p
+              :hidden-thinking-label hidden-thinking-label)))
        (when
            (and
             lines
@@ -2041,7 +2178,9 @@
         (tui-entry-custom-result-rendered-p entry)))))))
 
 (defun render-tui-entry
-    (entry width &key extension-host now)
+    (entry width &key extension-host now
+                      hide-thinking-block-p
+                      hidden-thinking-label)
   (let* ((cacheable-p
            (tui-entry-render-cacheable-p entry))
          (theme
@@ -2070,7 +2209,9 @@
                 (render-tui-entry-uncached
                  entry width
                  :extension-host extension-host
-                 :now now)))
+                 :now now
+                 :hide-thinking-block-p hide-thinking-block-p
+                 :hidden-thinking-label hidden-thinking-label)))
           (when cacheable-p
             (setf
              (tui-entry-render-cache-valid-p entry) t
@@ -2083,7 +2224,9 @@
           lines))))
 
 (defun render-tui-entries
-    (entries width &key extension-host now)
+    (entries width &key extension-host now
+                        hide-thinking-block-p
+                        hidden-thinking-label)
   (loop
     for entry in entries
     for index from 0
@@ -2091,7 +2234,9 @@
       (render-tui-entry
        entry width
        :extension-host extension-host
-       :now now)
+       :now now
+       :hide-thinking-block-p hide-thinking-block-p
+       :hidden-thinking-label hidden-thinking-label)
     append
       (if
           (and
@@ -2232,7 +2377,7 @@
                    queued-text
                    (format nil "~A~%~%~A"
                            queued-text current))))
-        (cadr-tui:editor-set-text editor combined)))
+        (tui-editor-component-set-text editor combined)))
     count))
 
 (defun render-tui-pending-message-lines (state width)
@@ -2293,6 +2438,8 @@
      (render-login-method-selector overlay width))
     ((api-key-input-state-p overlay)
      (render-api-key-input-state overlay width))
+    ((runtime-auth-input-state-p overlay)
+     (render-runtime-auth-input-state overlay width))
     ((oauth-selector-state-p overlay)
      (render-oauth-selector overlay width))
     ((extension-custom-ui-state-p overlay)
@@ -2303,6 +2450,83 @@
     (t
      (cadr-tui:render-select-list overlay width))))
 
+(defun extension-overlay-options (state)
+  (let ((options
+          (extension-custom-ui-state-overlay-options state)))
+    (if (functionp options)
+        (funcall options)
+        options)))
+
+(defun extension-custom-ui-visible-p (state)
+  (let* ((handle (extension-custom-ui-state-handle state))
+         (options (or (extension-overlay-options state) nil))
+         (missing (gensym "MISSING"))
+         (visible (getf options :visible missing))
+         (visible-p (getf options :visible-p missing)))
+    (and
+     (or (null handle)
+         (not (cadr-tui:overlay-handle-hidden-p handle)))
+     (not (or (and (not (eq visible missing))
+                   (null visible))
+              (and (not (eq visible-p missing))
+                   (null visible-p)))))))
+
+(defun render-editor-component (editor width rows focused-p)
+  (if (typep editor 'cadr-tui:multiline-editor)
+      (cadr-tui:render-editor
+       editor width :terminal-rows rows :focused-p focused-p)
+      (values
+       (cadr-tui:component-render editor width
+                                  :focused-p focused-p)
+       0 0)))
+
+(defun render-tui-extension-overlay
+    (state editor width rows overlay
+     &key busy-p extension-host full-document-p now spinner-frame)
+  (multiple-value-bind (base cursor-row cursor-column)
+      (render-tui-state
+       state editor width rows
+       :busy-p busy-p :extension-host extension-host
+       :full-document-p full-document-p :now now
+       :spinner-frame spinner-frame)
+    (unless (extension-custom-ui-visible-p overlay)
+      (return-from render-tui-extension-overlay
+        (values base cursor-row cursor-column)))
+    (let ((options (or (extension-overlay-options overlay) nil)))
+      (multiple-value-bind (overlay-width ignored-row ignored-column
+                            ignored-max-height)
+          (cadr-tui:resolve-overlay-layout
+           width rows 0
+           :width (getf options :width)
+           :min-width (getf options :min-width)
+           :max-height (getf options :max-height)
+           :anchor (or (getf options :anchor) :center)
+           :offset-x (or (getf options :offset-x) 0)
+           :offset-y (or (getf options :offset-y) 0)
+           :row (getf options :row)
+           :col (getf options :col)
+           :margin (getf options :margin))
+        (declare (ignore ignored-row ignored-column ignored-max-height))
+        (values
+         (cadr-tui:composite-overlay-frame
+          base
+          (list
+           (cadr-tui:make-overlay-placement
+            :lines
+            (render-extension-custom-ui overlay overlay-width)
+            :width (getf options :width)
+            :min-width (getf options :min-width)
+            :max-height (getf options :max-height)
+            :anchor (or (getf options :anchor) :center)
+            :offset-x (or (getf options :offset-x) 0)
+            :offset-y (or (getf options :offset-y) 0)
+            :row (getf options :row)
+            :col (getf options :col)
+            :margin (getf options :margin)
+            :visible-p t))
+          width rows)
+         cursor-row cursor-column)))))
+
 (defun render-tui-state
     (state editor width rows
      &key overlay busy-p extension-host
@@ -2310,12 +2534,17 @@
        (now (tui-monotonic-seconds))
        (spinner-frame
          (aref +tui-spinner-frames+ 0)))
+  (when (and (extension-custom-ui-state-p overlay)
+             (extension-custom-ui-state-overlay-p overlay))
+    (return-from render-tui-state
+      (render-tui-extension-overlay
+       state editor width rows overlay
+       :busy-p busy-p :extension-host extension-host
+       :full-document-p full-document-p :now now
+       :spinner-frame spinner-frame)))
   (multiple-value-bind
         (editor-lines editor-row editor-column)
-      (cadr-tui:render-editor
-       editor width
-       :terminal-rows rows
-       :focused-p (null overlay))
+      (render-editor-component editor width rows (null overlay))
     (let* ((pending-message-lines
              (render-tui-pending-message-lines
               state width))
@@ -2323,19 +2552,43 @@
              (or
               (render-tui-status-indicator
                (tui-state-status-message state)
-               width
-               :reserve-idle-p
-               (not full-document-p)
+               width :reserve-idle-p nil
                :spinner-frame spinner-frame)
               (and
                busy-p
+               (tui-state-working-visible-p state)
                (render-tui-status-indicator
-                "Working..." width
-                :reserve-idle-p
-                (not full-document-p)
+                (or (tui-state-working-message state)
+                    "Working...") width
+                :reserve-idle-p nil
+                :spinner-frame
+                (let ((frames
+                        (tui-state-working-indicator-frames state)))
+                  (if (consp frames)
+                      (nth
+                       (mod
+                        (floor
+                         (* now 1000)
+                         (or
+                          (tui-state-working-indicator-interval-ms state)
+                          80))
+                        (length frames))
+                       frames)
+                      spinner-frame))))
+              (and
+               (not full-document-p)
+               (render-tui-status-indicator
+                nil width :reserve-idle-p t
                 :spinner-frame spinner-frame))))
+           (header-lines
+             (and (tui-state-header-component state)
+                  (cadr-tui:component-render
+                   (tui-state-header-component state) width)))
            (footer-lines
-             (cadr-tui:render-footer
+             (if (tui-state-footer-component state)
+                 (cadr-tui:component-render
+                  (tui-state-footer-component state) width)
+                 (cadr-tui:render-footer
               width
               :cwd (tui-state-cwd state)
               :branch
@@ -2378,7 +2631,7 @@
                state)
               :statuses
               (tui-state-statuses state)
-              :ansi-theme-p t))
+              :ansi-theme-p t)))
            (widget-above-lines
              (render-tui-widgets
               (tui-state-widgets-above state)
@@ -2425,7 +2678,11 @@
               (tui-state-entries state)
               width
               :extension-host extension-host
-              :now now))
+              :now now
+              :hide-thinking-block-p
+              (tui-state-hide-thinking-block-p state)
+              :hidden-thinking-label
+              (tui-state-hidden-thinking-label state)))
            (startup-lines
              (if
                  (tui-state-tools-expanded-p state)
@@ -2441,13 +2698,15 @@
                   (render-tui-startup-lines
                    startup-lines width)))
            (all-content
-             (if startup-lines
-                 (nconc
-                  (list "")
-                  (copy-list startup-lines)
-                  (list "")
-                  entry-content)
-                 entry-content))
+             (append
+              header-lines
+              (if startup-lines
+                  (nconc
+                   (list "")
+                   (copy-list startup-lines)
+                   (list "")
+                   entry-content)
+                  entry-content)))
            (top-align-content-p
              (and startup-lines
                   (null entry-content)))
@@ -3265,6 +3524,7 @@
        set-status-consumer
        set-warning-consumer
        set-auth-url-consumer
+       set-auth-prompt-consumer
        set-model-consumer
        set-extension-ui-function
        extension-overlay-opened-function
@@ -3287,6 +3547,7 @@
        follow-up-input-function
        dequeue-function
        model-items-function
+       login-options-function
        model-selector-function
        scoped-models-selector-function
        trust-selector-function
@@ -3326,6 +3587,7 @@
        session-name
        startup-compact-lines
        startup-expanded-lines
+       hide-thinking-block-p
        (context-window 0)
        session
        messages
@@ -3379,6 +3641,7 @@
             :startup-expanded-lines
             startup-expanded-lines
             :context-window context-window
+            :hide-thinking-block-p hide-thinking-block-p
             :session session
             :messages messages))
          (editor
@@ -3390,7 +3653,13 @@
               editor
               (make-tui-autocomplete-provider
                :model-items-function
-               model-items-function))
+               model-items-function
+               :login-options-function
+               (or
+                login-options-function
+                (lambda ()
+                  (login-provider-options
+                   (cadr-ai:list-provider-definitions))))))
              (cadr-tui:editor-set-autocomplete-clock
               editor clock-function)
              (cadr-tui:editor-set-border-mode
@@ -3428,6 +3697,10 @@
             :name "cadr-extension-custom-ui"))
          (custom-ui-done-p nil)
          (custom-ui-result nil)
+         (active-custom-ui-state nil)
+         (custom-editor-component nil)
+         (custom-editor-factory nil)
+         (extension-ui-root nil)
          (active-session-path current-session-path)
          (active-theme-mode nil)
          (terminal-progress-active-p nil))
@@ -3435,12 +3708,52 @@
     (dolist (text initial-notices)
       (add-tui-warning state text))
     (labels
-        ((render-now ()
+        ((current-editor ()
+           (or custom-editor-component editor))
+         (extension-runtime ()
+           (or extension-ui-root
+               (setf
+                extension-ui-root
+                (cadr-tui:make-tui-root
+                 :terminal terminal
+                 :render-function
+                 (lambda (lines)
+                   (declare (ignore lines))
+                   (request-render))))))
+         (extension-theme-runtime ()
+           (list
+            :fg (lambda (token text)
+                  (cadr-tui:theme-foreground token text
+                                             :enabled-p t))
+            :bg (lambda (token text)
+                  (cadr-tui:theme-background token text
+                                             :enabled-p t))
+            :bold (lambda (text)
+                    (cadr-tui:theme-bold text :enabled-p t))
+            :italic (lambda (text)
+                      (cadr-tui:theme-italic text :enabled-p t))))
+         (dispose-component (component)
+           (when (tui-component-protocol-p component)
+             (ignore-errors
+               (cadr-tui:component-dispose component))))
+         (overlay-captures-input-p ()
+           (and
+            overlay
+            (or
+             (not (extension-custom-ui-state-p overlay))
+             (not (extension-custom-ui-state-overlay-p overlay))
+             (let ((options (or (extension-overlay-options overlay) nil)))
+               (and
+                (extension-custom-ui-visible-p overlay)
+                (not
+                 (or (getf options :non-capturing)
+                     (getf options :non-capturing-p))))))))
+         (render-now ()
            (sb-thread:with-mutex (lock)
              (multiple-value-bind
                    (lines cursor-row cursor-column)
                  (render-tui-state
-                  state editor
+                  state (current-editor)
                   (cadr-tui:terminal-columns terminal)
                   (cadr-tui:terminal-rows terminal)
                   :overlay overlay
@@ -3468,7 +3781,7 @@
                    (apply-tui-footer-state
                     state values)
                    (synchronize-tui-editor-border
-                    state editor)))))
+                    state (current-editor))))))
            (when footer-provider
              (sb-thread:with-mutex (lock)
                (setf
@@ -3652,7 +3965,7 @@
                   (tui-state-thinking state)
                   updated-thinking))
                (synchronize-tui-editor-border
-                state editor)
+                state (current-editor))
                (when
                    (not
                     (null updated-subscription-p))
@@ -3666,6 +3979,23 @@
          (finish-custom-ui (result)
            (sb-thread:with-mutex (custom-ui-lock)
              (unless custom-ui-done-p
+               (when active-custom-ui-state
+                 (let ((handle
+                         (extension-custom-ui-state-handle
+                          active-custom-ui-state)))
+                   (when handle
+                     (cadr-tui:overlay-handle-hide handle)))
+                 (unless
+                     (extension-custom-ui-state-disposed-p
+                      active-custom-ui-state)
+                   (dispose-component
+                    (extension-custom-ui-state-component
+                     active-custom-ui-state))
+                   (setf
+                    (extension-custom-ui-state-disposed-p
+                     active-custom-ui-state)
+                    t))
+                 (setf active-custom-ui-state nil))
                (setf
                 custom-ui-result result
                 custom-ui-done-p t)
@@ -3745,7 +4075,6 @@
              result))
          (show-custom-ui
              (factory overlay-p overlay-options)
-           (declare (ignore overlay-p overlay-options))
            (sb-thread:with-mutex (custom-ui-lock)
              (setf custom-ui-done-p nil
                    custom-ui-result nil))
@@ -3754,10 +4083,124 @@
                             #'finish-custom-ui)))
              (if custom-ui-done-p
                  custom-ui-result
-                 (show-extension-overlay
-                  (make-extension-custom-ui-state
-                   :component component
-                   :done-function #'finish-custom-ui)))))
+                 (let ((state
+                         (make-extension-custom-ui-state
+                          :component component
+                          :done-function #'finish-custom-ui
+                          :overlay-p (not (null overlay-p))
+                          :overlay-options overlay-options
+                          :legacy-p t)))
+                   (when overlay-p
+                     (setf
+                      (extension-custom-ui-state-handle state)
+                      (cadr-tui:overlay-stack-show
+                       (cadr-tui:make-overlay-stack
+                        :focused-component (current-editor))
+                       component nil)))
+                   (setf active-custom-ui-state state)
+                   (show-extension-overlay state)))))
+         (show-custom-component-ui
+             (factory overlay-p overlay-options on-handle)
+           (sb-thread:with-mutex (custom-ui-lock)
+             (setf custom-ui-done-p nil
+                   custom-ui-result nil))
+           (let ((component
+                   (funcall
+                    factory
+                    (extension-runtime)
+                    (extension-theme-runtime)
+                    (cadr-tui:get-keybindings)
+                    #'finish-custom-ui)))
+             (unless (tui-component-protocol-p component)
+               (error
+                'cadr-agent:extension-execution-error
+                :message
+                "Custom component factory must return a CADR-TUI:COMPONENT"))
+             (if custom-ui-done-p
+                 custom-ui-result
+                 (let ((state
+                         (make-extension-custom-ui-state
+                          :component component
+                          :done-function #'finish-custom-ui
+                          :overlay-p (not (null overlay-p))
+                          :overlay-options overlay-options)))
+                   (when overlay-p
+                     (let* ((options
+                              (if (functionp overlay-options)
+                                  (funcall overlay-options)
+                                  overlay-options))
+                            (non-capturing-p
+                              (or (getf options :non-capturing)
+                                  (getf options :non-capturing-p)))
+                            (handle
+                              (cadr-tui:overlay-stack-show
+                               (cadr-tui:make-overlay-stack
+                                :focused-component (current-editor))
+                               component nil
+                               :non-capturing-p non-capturing-p)))
+                       (setf
+                        (extension-custom-ui-state-handle state)
+                        handle)
+                       (when on-handle
+                         (funcall on-handle handle))))
+                   (setf active-custom-ui-state state)
+                   (show-extension-overlay state)))))
+         (set-extension-header (factory)
+           (let ((previous (tui-state-header-component state))
+                 (replacement
+                   (and factory
+                        (funcall factory
+                                 (extension-runtime)
+                                 (extension-theme-runtime)))))
+             (when (and replacement
+                        (not (tui-component-protocol-p replacement)))
+               (error 'cadr-agent:extension-execution-error
+                      :message "Header factory must return a CADR-TUI:COMPONENT"))
+             (unless (eq previous replacement)
+               (dispose-component previous))
+             (setf (tui-state-header-component state) replacement)
+             (request-render)
+             nil))
+         (set-extension-footer (factory)
+           (let ((previous (tui-state-footer-component state))
+                 (replacement
+                   (and factory
+                        (funcall factory
+                                 (extension-runtime)
+                                 (extension-theme-runtime)
+                                 footer-provider))))
+             (when (and replacement
+                        (not (tui-component-protocol-p replacement)))
+               (error 'cadr-agent:extension-execution-error
+                      :message "Footer factory must return a CADR-TUI:COMPONENT"))
+             (unless (eq previous replacement)
+               (dispose-component previous))
+             (setf (tui-state-footer-component state) replacement)
+             (request-render)
+             nil))
+         (set-extension-editor (factory)
+           (let* ((current (current-editor))
+                  (text (tui-editor-component-text current))
+                  (replacement
+                    (and factory
+                         (funcall factory
+                                  (extension-runtime)
+                                  (extension-theme-runtime)
+                                  (cadr-tui:get-keybindings)))))
+             (when (and replacement
+                        (not (tui-component-protocol-p replacement)))
+               (error 'cadr-agent:extension-execution-error
+                      :message "Editor factory must return a CADR-TUI:COMPONENT"))
+             (when replacement
+               (tui-editor-component-set-text replacement text))
+             (when custom-editor-component
+               (dispose-component custom-editor-component))
+             (setf custom-editor-component replacement
+                   custom-editor-factory factory)
+             (unless replacement
+               (tui-editor-component-set-text editor text))
+             (request-render)
+             nil))
          (show-extension-selection
              (title options &key message signal timeout-ms)
            (show-extension-overlay
@@ -3767,13 +4210,46 @@
              :timeout-ms timeout-ms
              :toggle-tools-function
              (lambda ()
-               (toggle-last-tool-block state)))
+             (toggle-last-tool-block state)))
             :signal signal :timeout-ms timeout-ms))
+         (show-runtime-auth-prompt (prompt)
+           (case (getf prompt :type)
+             (:select
+              (let ((options (getf prompt :options)))
+                (show-extension-overlay
+                 (make-framed-select-state
+                  (getf prompt :message)
+                  (mapcar
+                   (lambda (option)
+                     (let ((description
+                             (getf option :description)))
+                       (if description
+                           (format nil "~A · ~A"
+                                   (getf option :label)
+                                   description)
+                           (getf option :label))))
+                   options)
+                  (mapcar
+                   (lambda (option) (getf option :id))
+                   options)
+                  :message (getf prompt :placeholder)
+                  :toggle-tools-function
+                  (lambda ()
+                    (toggle-last-tool-block state))))))
+             ((:text :secret :manual-code)
+              (show-extension-overlay
+               (make-runtime-auth-input-state prompt)))
+             (otherwise nil)))
          (add-extension-autocomplete-provider
              (factory)
-           (let* ((current
+           (let* ((target
+                    (if (typep (current-editor)
+                               'cadr-tui:multiline-editor)
+                        (current-editor)
+                        editor))
+                  (current
                     (cadr-tui::multiline-editor-autocomplete-provider
-                     editor))
+                     target))
                   (replacement
                     (funcall factory current)))
              (when replacement
@@ -3785,7 +4261,7 @@
                   :message
                   "Autocomplete factory must return an AUTOCOMPLETE-PROVIDER or NIL"))
                (cadr-tui:editor-set-autocomplete-provider
-                editor replacement)))
+                target replacement)))
            nil)
          (extension-ui-call (method arguments)
            (case method
@@ -3812,6 +4288,31 @@
                (getf arguments :factory)
                (getf arguments :overlay-p)
                (getf arguments :overlay-options)))
+             (:custom-component
+              (show-custom-component-ui
+               (getf arguments :factory)
+               (getf arguments :overlay-p)
+               (getf arguments :overlay-options)
+               (getf arguments :on-handle)))
+             (:input
+              (show-extension-overlay
+               (make-runtime-auth-input-state
+                (list :type :text
+                      :message (getf arguments :title)
+                      :placeholder (getf arguments :placeholder)))
+               :signal (getf arguments :signal)
+               :timeout-ms (getf arguments :timeout-ms)))
+             (:editor
+              (let ((component (cadr-tui:make-multiline-editor)))
+                (cadr-tui:editor-set-text
+                 component (or (getf arguments :prefill) ""))
+                (let ((custom-state
+                        (make-extension-custom-ui-state
+                         :component component
+                         :done-function #'finish-custom-ui
+                         :legacy-p t)))
+                  (setf active-custom-ui-state custom-state)
+                  (show-extension-overlay custom-state))))
              (:add-autocomplete-provider
               (add-extension-autocomplete-provider
                (getf arguments :factory)))
@@ -3862,11 +4363,65 @@
               nil)
              (:set-editor-text
               (sb-thread:with-mutex (lock)
-                (cadr-tui:editor-set-text
-                 editor
+                (tui-editor-component-set-text
+                 (current-editor)
                  (getf arguments :text))
                 (synchronize-tui-editor-input-border
-                 state editor))
+                 state (current-editor)))
+              (request-render)
+              nil)
+             (:get-editor-text
+              (tui-editor-component-text (current-editor)))
+             (:paste-to-editor
+              (handle-tui-editor-event
+               state (current-editor)
+               (cadr-tui:make-input-event
+                :kind :paste :text (getf arguments :text)))
+              (request-render)
+              nil)
+             (:set-title
+              (let ((title
+                      (remove-if
+                       (lambda (character)
+                         (member character
+                                 (list #\Escape (code-char 7))))
+                       (getf arguments :title))))
+                (cadr-tui:terminal-write
+                 terminal
+                 (format nil "~C]0;~A~C"
+                         #\Escape title (code-char 7))))
+              nil)
+             (:set-header
+              (set-extension-header (getf arguments :factory)))
+             (:set-footer
+              (set-extension-footer (getf arguments :factory)))
+             (:set-editor-component
+              (set-extension-editor (getf arguments :factory)))
+             (:get-editor-component custom-editor-factory)
+             (:set-working-visible
+              (setf (tui-state-working-visible-p state)
+                    (not (null (getf arguments :visible-p))))
+              (request-render)
+              nil)
+             (:set-working-message
+              (setf (tui-state-working-message state)
+                    (getf arguments :message))
+              (request-render)
+              nil)
+             (:set-working-indicator
+              (setf
+               (tui-state-working-indicator-frames state)
+               (and (getf arguments :frames-supplied-p)
+                    (copy-list (getf arguments :frames)))
+               (tui-state-working-indicator-interval-ms state)
+               (getf arguments :interval-ms))
+              (request-render)
+              nil)
+             (:set-hidden-thinking-label
+              (setf (tui-state-hidden-thinking-label state)
+                    (getf arguments :label))
+              (dolist (entry (tui-state-entries state))
+                (invalidate-tui-entry-render-cache entry))
               (request-render)
               nil)
              (:theme
@@ -3964,13 +4519,17 @@
                       (plusp (length trimmed))
                       (char= (char trimmed 0)
                              #\!)))
-                   (cadr-tui:editor-set-border-mode
-                    editor :bash)
-                   (cadr-tui:editor-set-border-mode
-                    editor :thinking
-                    (or
-                     (tui-state-thinking state)
-                     :off))))
+                   (when (typep (current-editor)
+                                'cadr-tui:multiline-editor)
+                     (cadr-tui:editor-set-border-mode
+                      (current-editor) :bash))
+                   (when (typep (current-editor)
+                                'cadr-tui:multiline-editor)
+                     (cadr-tui:editor-set-border-mode
+                      (current-editor) :thinking
+                      (or
+                       (tui-state-thinking state)
+                       :off)))))
              (request-render)
              (setf
               worker
@@ -4005,11 +4564,13 @@
                    (sb-thread:with-mutex (lock)
                      (setf busy-p nil
                            abort-requested-p nil)
-                     (cadr-tui:editor-set-border-mode
-                      editor :thinking
-                      (or
-                       (tui-state-thinking state)
-                       :off)))
+                     (when (typep (current-editor)
+                                  'cadr-tui:multiline-editor)
+                       (cadr-tui:editor-set-border-mode
+                        (current-editor) :thinking
+                        (or
+                         (tui-state-thinking state)
+                         :off))))
                    (refresh-footer-state)))
                :name "cadr-tui-dispatch"))))
          (open-selector (kind items)
@@ -4133,11 +4694,18 @@
            (request-render))
          (open-login-provider-selector (auth-type)
            (let ((options
-                   (login-provider-options
-                    (cadr-ai:list-provider-definitions)
-                    :auth-type auth-type
-                    :status-function
-                    auth-status-function)))
+                   (if login-options-function
+                       (remove-if-not
+                        (lambda (option)
+                          (eq auth-type
+                              (oauth-selector-option-auth-type
+                               option)))
+                        (funcall login-options-function))
+                       (login-provider-options
+                        (cadr-ai:list-provider-definitions)
+                        :auth-type auth-type
+                        :status-function
+                        auth-status-function))))
              (if options
                  (setf
                   overlay-kind :login-provider
@@ -4318,11 +4886,19 @@
            (let ((text
                    (string-trim
                     '(#\Space #\Tab #\Newline #\Return)
-                    (cadr-tui::editor-expanded-text
-                     editor))))
+                    (if (typep (current-editor)
+                               'cadr-tui:multiline-editor)
+                        (cadr-tui::editor-expanded-text
+                         (current-editor))
+                        (tui-editor-component-text
+                         (current-editor))))))
              (when (plusp (length text))
-               (cadr-tui:editor-add-history editor text)
-               (cadr-tui::editor-clear editor)
+               (when (typep (current-editor)
+                            'cadr-tui:multiline-editor)
+                 (cadr-tui:editor-add-history
+                  (current-editor) text))
+               (tui-editor-component-clear
+                (current-editor))
                (if (and busy-p follow-up-input-function)
                    (funcall follow-up-input-function text)
                    (submit text))
@@ -4333,7 +4909,7 @@
                          (funcall dequeue-function)))
                   (count
                     (restore-queued-messages-to-editor
-                     editor queued)))
+                     (current-editor) queued)))
              (if (zerop count)
                  (when notify-p
                    (status "No queued messages to restore"))
@@ -4447,11 +5023,11 @@
                            selected-session
                            selected-messages
                            selected-path)
-                          (cadr-tui:editor-set-text
-                           editor
+                          (tui-editor-component-set-text
+                           (current-editor)
                            (or editor-text ""))
                           (synchronize-tui-editor-input-border
-                           state editor)
+                           state (current-editor))
                           (add-tui-status
                            state
                            "Forked to new session")))))
@@ -4556,7 +5132,7 @@
              (otherwise
               (request-render))))
          (handle-event (event)
-           (if overlay
+           (if (overlay-captures-input-p)
                (multiple-value-bind
                      (action value)
                    (if
@@ -4595,6 +5171,9 @@
                              ((api-key-input-state-p overlay)
                               (api-key-input-state-handle-event
                                overlay event))
+                             ((runtime-auth-input-state-p overlay)
+                              (runtime-auth-input-state-handle-event
+                               overlay event))
                              ((oauth-selector-state-p overlay)
                               (oauth-selector-handle-event
                                overlay event))
@@ -4621,7 +5200,7 @@
                           (funcall abort-function)))
                       (progn
                         (handle-tui-editor-event
-                         state editor event)
+                         state (current-editor) event)
                         (request-render))))
                  (:clear
                   (let ((now
@@ -4633,19 +5212,20 @@
                         (setf done-p t)
                         (progn
                           (handle-tui-editor-event
-                           state editor event)
+                           state (current-editor) event)
                           (setf last-clear-at now)
                           (request-render)))))
                  (:eof
                   (if
                       (zerop
                        (length
-                        (cadr-tui:editor-text editor)))
+                        (tui-editor-component-text
+                         (current-editor))))
                       (unless busy-p
                         (setf done-p t))
                       (progn
                         (handle-tui-editor-event
-                         state editor
+                         state (current-editor)
                          (cadr-tui:make-input-event
                           :kind :delete))
                         (request-render))))
@@ -4661,7 +5241,7 @@
                   (multiple-value-bind
                         (action value)
                       (handle-tui-editor-event
-                       state editor event)
+                       state (current-editor) event)
                     (if (eq action :submit)
                         (submit value)
                         (request-render))))))))
@@ -4687,6 +5267,9 @@
       (when set-auth-url-consumer
         (funcall set-auth-url-consumer
                  #'show-auth-url))
+      (when set-auth-prompt-consumer
+        (funcall set-auth-prompt-consumer
+                 #'show-runtime-auth-prompt))
       (when set-model-consumer
         (funcall set-model-consumer
                  #'show-model))
@@ -4840,9 +5423,12 @@
                       )
                     (tick-status-animation)
                     (when
-                        (sb-thread:with-mutex (lock)
-                          (cadr-tui:editor-poll-autocomplete
-                           editor))
+                        (and
+                         (typep (current-editor)
+                                'cadr-tui:multiline-editor)
+                         (sb-thread:with-mutex (lock)
+                           (cadr-tui:editor-poll-autocomplete
+                            (current-editor))))
                       (request-render))
                     (cadr-tui:terminal-poll-progress
                      terminal)
@@ -4889,12 +5475,19 @@
           (funcall set-status-consumer nil))
         (when set-auth-url-consumer
           (funcall set-auth-url-consumer nil))
+        (when set-auth-prompt-consumer
+          (funcall set-auth-prompt-consumer nil))
         (when set-model-consumer
           (funcall set-model-consumer nil))
         (when set-extension-ui-function
           (funcall set-extension-ui-function nil))
         (when footer-unsubscribe
           (funcall footer-unsubscribe))
+        (dispose-component (tui-state-header-component state))
+        (dispose-component (tui-state-footer-component state))
+        (dispose-component custom-editor-component)
+        (when extension-ui-root
+          (cadr-tui:component-dispose extension-ui-root))
         (when footer-provider
           (footer-data-provider-dispose
            footer-provider))))

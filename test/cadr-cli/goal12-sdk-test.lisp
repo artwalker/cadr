@@ -341,6 +341,109 @@
                      (cadr-ai:oauth-credential-refresh
                       credential)))))))
 
+(test goal12-extension-oauth-projects-session-local-login-methods-and-persists-atomically
+  (with-test-directory (temporary)
+    (let* ((cadr-cli::*native-extension-host* nil)
+           (auth-path
+             (merge-pathnames "agent/auth.json" temporary))
+           (storage
+             (cadr-cli:make-file-auth-storage auth-path))
+           (registry
+             (cadr-cli:make-model-registry
+              :path nil :credentials storage))
+           (runtime
+             (cadr-cli::model-registry-native-runtime registry))
+           (prompts nil)
+           (notifications nil)
+           (provider
+             (cadr-ai:make-runtime-provider
+              :id :extension-oauth
+              :name "Extension OAuth"
+              :models nil
+              :api-key-auth-p t
+              :oauth-auth-p t
+              :api-key-login-function
+              (lambda (interaction)
+                (cadr-ai:make-api-key-credential
+                 :provider :extension-oauth
+                 :key
+                 (cadr-ai:runtime-auth-interaction-prompt
+                  interaction
+                  '(:type :secret :message "API key"))))
+              :oauth-login-function
+              (lambda (interaction)
+                (cadr-ai:runtime-auth-interaction-notify
+                 interaction
+                 '(:type :auth-url
+                   :url "https://auth.invalid/start"
+                   :instructions "Open the URL"))
+                (let ((code
+                        (cadr-ai:runtime-auth-interaction-prompt
+                         interaction
+                         '(:type :manual-code
+                           :message "Authorization code"
+                           :placeholder "paste code"))))
+                  (is (string= "callback-code" code))
+                  (cadr-ai:make-oauth-credential
+                   :provider :extension-oauth
+                   :access "oauth-access-secret"
+                   :refresh "oauth-refresh-secret"
+                   :expires 4102444800000))))))
+      (cadr-ai:models-runtime-set-provider runtime provider)
+      (let ((records
+              (cadr-cli::model-registry-native-login-records
+               registry)))
+        (is (= 1 (length records)))
+        (is (eq :extension-oauth
+                (getf (first records) :id)))
+        (is (string= "Extension OAuth"
+                     (getf (first records) :name)))
+        (is (equal '(:oauth :api-key)
+                   (getf (first records) :auth-types))))
+      (let ((credential
+              (cadr-cli::model-registry-login-native-provider
+               registry :extension-oauth
+               (cadr-ai:make-runtime-auth-interaction
+                :prompt-function
+                (lambda (prompt)
+                  (push prompt prompts)
+                  "callback-code")
+                :notify-function
+                (lambda (event)
+                  (push event notifications)))
+               :auth-type :oauth)))
+        (is (typep credential 'cadr-ai:oauth-credential))
+        (is (= 1 (length prompts)))
+        (is (= 1 (length notifications))))
+      (let ((stored
+              (cadr-cli:auth-storage-read
+               storage :extension-oauth)))
+        (is (typep stored 'cadr-ai:oauth-credential))
+        (is (string= "oauth-refresh-secret"
+                     (cadr-ai:oauth-credential-refresh stored))))
+      (let ((output (make-string-output-stream)))
+        (is
+         (cadr-cli::handle-native-auth-command
+          registry "/login extension-oauth"
+          (cadr-ai:make-runtime-auth-interaction
+           :prompt-function (constantly "callback-code")
+           :notify-function (constantly nil))
+          :output output))
+        (let ((visible (get-output-stream-string output)))
+          (is (search "extension-oauth login stored in" visible))
+          (dolist (secret '("callback-code"
+                            "oauth-access-secret"
+                            "oauth-refresh-secret"))
+            (is (not (search secret visible))))))
+      ;; Reload removes the session-local provider projection, never the
+      ;; credential already stored for a later reload of that extension.
+      (cadr-ai:models-runtime-clear-providers runtime)
+      (is (null
+           (cadr-cli::model-registry-native-login-records registry)))
+      (is (typep
+           (cadr-cli:auth-storage-read storage :extension-oauth)
+           'cadr-ai:oauth-credential)))))
+
 (test goal12-sdk-settings-manager-preserves-disk-memory-and-override-precedence
   (with-test-directory (temporary)
     (let* ((global

@@ -1646,6 +1646,13 @@
 (defun tui-has-overlay-p (tui)
   (overlay-stack-visible-p (tui-overlay-stack tui)))
 
+(defun overlay-handle-hidden-p (handle)
+  (or
+   (overlay-stack-entry-removed-p
+    (overlay-handle-entry handle))
+   (overlay-stack-entry-hidden-p
+    (overlay-handle-entry handle))))
+
 (defmethod component-invalidate ((tui tui-root))
   (call-next-method)
   (dolist (record (tui-overlays tui))

@@ -2318,8 +2318,94 @@
      :skills
      (resource-snapshot-skills snapshot)
      :cwd
-     (namestring
-      (uiop:ensure-directory-pathname cwd)))))
+      (namestring
+       (uiop:ensure-directory-pathname cwd)))))
+
+(defun model-registry-login-options
+    (registry status-function)
+  (let* ((built-in
+           (login-provider-options
+            (cadr-ai:list-provider-definitions)
+            :status-function status-function))
+         (native-records
+           (model-registry-native-login-records registry)))
+    (if (null native-records)
+        built-in
+        (sort
+         (append
+          built-in
+          (loop for record in native-records
+                for id = (getf record :id)
+                for name = (getf record :name)
+                unless
+                  (find id built-in
+                        :key #'oauth-selector-option-id
+                        :test #'eq)
+                  append
+                  (loop for auth-type in
+                        (getf record :auth-types)
+                        collect
+                        (make-oauth-selector-option
+                         :id id
+                         :name name
+                         :auth-type auth-type
+                         :method-name
+                         (format nil "~A ~A" name
+                                 (if (eq auth-type :oauth)
+                                     "account"
+                                     "API key"))
+                         :status
+                         (and status-function
+                              (funcall status-function id))))))
+         #'string-lessp
+         :key #'oauth-selector-option-name))))
+
+(defun handle-native-auth-command
+    (registry line interaction
+     &key (output *standard-output*) on-change)
+  (let* ((parts (split-command-line line))
+         (command (first parts))
+         (provider
+           (and (second parts)
+                (provider-symbol-from-key (second parts))))
+         (runtime
+           (and registry
+                (model-registry-native-runtime registry)))
+         (definition
+           (and runtime provider
+                (cadr-ai:models-runtime-provider
+                 runtime provider))))
+    (cond
+      ((and definition
+            (string= command "/login")
+            (cadr-ai:runtime-provider-oauth-login-function
+             definition))
+       (model-registry-login-native-provider
+        registry provider interaction :auth-type :oauth)
+       (format output "~(~A~) login stored in ~A~%"
+               provider
+               (namestring
+                (if
+                    (typep
+                     (model-registry-credentials registry)
+                     'file-auth-storage)
+                    (file-auth-storage-path
+                     (model-registry-credentials registry))
+                    (default-auth-path))))
+       (when on-change
+         (funcall on-change provider :login))
+       (finish-output output)
+       t)
+      ((and definition
+            (string= command "/logout"))
+       (auth-storage-delete
+        (model-registry-credentials registry) provider)
+       (format output "~(~A~) logged out~%" provider)
+       (when on-change
+         (funcall on-change provider :logout))
+       (finish-output output)
+       t)
+      (t nil))))
 
 (defun cli-handler (command)
   (let* ((input-terminal-p
@@ -2340,6 +2426,7 @@
          (status-consumer nil)
          (warning-consumer nil)
          (auth-url-consumer nil)
+         (auth-prompt-consumer nil)
          (model-consumer nil)
          (abort-requested-p nil)
          (frontend-output
@@ -2997,6 +3084,47 @@
                     :oauth
                     :api-key)
                 :source "stored credential"))))
+         (current-login-options ()
+           (model-registry-login-options
+            model-registry #'authentication-status))
+         (runtime-auth-notify (event)
+           (case (getf event :type)
+             (:auth-url
+              (when auth-url-consumer
+                (funcall auth-url-consumer
+                         (getf event :url)))
+              (when (and status-consumer
+                         (getf event :instructions))
+                (funcall status-consumer
+                         (getf event :instructions))))
+             (:device-code
+              (when auth-url-consumer
+                (funcall auth-url-consumer
+                         (getf event :verification-uri)))
+              (when status-consumer
+                (funcall
+                 status-consumer
+                 (format nil "Device code: ~A"
+                         (getf event :user-code)))))
+             ((:info :progress)
+              (when status-consumer
+                (funcall status-consumer
+                         (getf event :message)))))
+           nil)
+         (runtime-auth-interaction (&key supplied-value)
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (if supplied-value
+                  supplied-value
+                  (if auth-prompt-consumer
+                      (funcall auth-prompt-consumer prompt)
+                      (error
+                       'cadr-ai:configuration-error
+                       :message
+                       "Interactive authentication prompt is unavailable"))))
+            :notify-function #'runtime-auth-notify
+            :abort-p (lambda () abort-requested-p)))
          (stored-logout-options ()
            (logout-provider-options
             (cadr-ai:list-provider-definitions)
@@ -3018,15 +3146,25 @@
                      (cadr-ai:model-provider
                       (provider-config-model
                        config))))))
-                 (let* ((definition
-                          (cadr-ai:find-provider-definition
-                           provider))
+                 (let* ((native-p
+                          (model-registry-native-provider-p
+                           model-registry provider))
+                        (definition
+                          (and
+                           (not native-p)
+                           (cadr-ai:find-provider-definition
+                            provider)))
                         (model
-                          (model-registry-find
-                           model-registry
-                           provider
-                           (cadr-ai:provider-definition-default-model
-                            definition))))
+                          (if native-p
+                              (find
+                               provider available-models
+                               :key #'cadr-ai:model-provider
+                               :test #'eq)
+                              (model-registry-find
+                               model-registry
+                               provider
+                               (cadr-ai:provider-definition-default-model
+                                definition)))))
                    (unless
                        (and model
                             (find
@@ -3140,6 +3278,11 @@
            package-resources)
          (handle-command (line)
            (or
+            (handle-native-auth-command
+             model-registry line
+             (runtime-auth-interaction)
+             :output frontend-output
+             :on-change #'refresh-auth)
             (handle-auth-command
              line
              :output frontend-output
@@ -3594,6 +3737,9 @@
            :set-auth-url-consumer
            (lambda (consumer)
              (setf auth-url-consumer consumer))
+           :set-auth-prompt-consumer
+           (lambda (consumer)
+             (setf auth-prompt-consumer consumer))
            :set-model-consumer
            (lambda (consumer)
              (setf model-consumer consumer))
@@ -3806,6 +3952,7 @@
                     message)))
                 (append steering follow-up))))
            :model-items-function #'model-items
+           :login-options-function #'current-login-options
            :model-selector-function
            #'model-selector
            :scoped-models-selector-function
@@ -3825,8 +3972,16 @@
            #'current-session-tree
            :api-key-login-function
            (lambda (provider key)
-             (model-registry-login-api-key
-              model-registry provider key)
+             (if
+                 (model-registry-native-provider-p
+                  model-registry provider)
+                 (model-registry-login-native-provider
+                  model-registry provider
+                  (runtime-auth-interaction
+                   :supplied-value key)
+                  :auth-type :api-key)
+                 (model-registry-login-api-key
+                  model-registry provider key))
              (refresh-auth provider :login))
            :auth-status-function #'authentication-status
            :logout-options-function #'stored-logout-options

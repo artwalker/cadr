@@ -135,6 +135,7 @@
    #:overlay-handle
    #:overlay-handle-hide
    #:overlay-handle-set-hidden
+   #:overlay-handle-hidden-p
    #:overlay-handle-focus
    #:overlay-handle-unfocus
    #:overlay-handle-focused-p
