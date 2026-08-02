@@ -1666,6 +1666,14 @@ Obsidian/test-home 状态与 Python bytecode 由 `.gitignore` 隔离。文档职
 `docs/README.md` 导航，里程碑由根 `CHANGELOG.md` 维护；历史报告仍是证据，不能
 覆盖当前 architecture/parity/test contracts。
 
+三本当前账职责互不替代：`docs/parity-map.md` 记录可观察行为与测试证据，
+`docs/source-parity.md` 对固定基线的每个源文件给出处置结论，
+`docs/performance.md` 记录非功能预算与同机基线。`examples/manifest.sexp` 是 99 个
+可运行示例的机器清单；四者共享 `GOAL12_LEDGER` 身份并由确定性门禁交叉核对。
+未来升级先运行 `scripts/check-source-parity-drift.sh`，新增、删除、重命名任何源文件
+均须在 TSV 中写明人工处置，漏项或陈旧项均 fail closed；完整流程见
+`docs/source-parity-upgrade.md`。
+
 ## 27. Goal 11 非功能属性验收轴
 
 行为 parity 与非功能属性是两条独立门禁。前者要求 payload、session、事件、
@@ -1712,7 +1720,7 @@ extension lifecycle 内出现，不进入 agent event、session、JSON 或 RPC w
 `condition/tool-call/arguments/attempt/restart-names`；arguments 深复制，合法
 返回仅为 retry/skip/abort 三种动作。Goal 12 已批准的 additive runtime/OAuth
 bridges 落账后，当前 extension export SHA-256 为
-`9dbffa647134e3d54645beb957ca048aeed89586e124bc717c01b0ff8c38da20`；34-event
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`；34-event
 源码块 SHA-256 为
 `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
 今后新增事件或改变 restart 语义仍须书面提案和用户逐项批准。
@@ -1725,3 +1733,41 @@ bridges 落账后，当前 extension export SHA-256 为
 
 重冻实现 object ID 与测试证据完整列于
 [`docs/acceptance/goal-v10-part-d.md`](acceptance/goal-v10-part-d.md)。
+
+## 29. Goal 12 extension baseline completion
+
+Goal 12 F/G/H 补齐基线已有能力，不新增 Cadr 特有机制。Compaction 的生产路径
+在选出 source/kept entries 后构造 preparation，并按 manual、threshold、overflow
+原因发出 `:session-before-compact`；合法扩展结果与 metadata 原样进入 session，
+cancel/abort 不写 compaction，非法或失败 handler 回退原 summarizer。成功持久化后
+恰好发出一次 `:session-compact`。34 个 extension event 的真实发射点与 called
+回归由 [`docs/acceptance/goal-v12-extension-event-dispatch.md`](acceptance/goal-v12-extension-event-dispatch.md)
+逐项冻结；只找到并修复了这一处既有声明未接通。
+
+Agent 保存真实 system prompt 及其八字段构造 options。CLI 与 SDK 共用相同
+options 形状，`:before-agent-start` 每个 handler 都收到独立深复制；reload 原子替换
+prompt 与 options。Extension HTTP 是 host 上的 session-local callback，不写入
+`cadr-ai` 全局 registry：公开层验证并复制 request/response，CLI adapter 复用既有
+native HTTP transport 并将 timeout、abort、transport failure 收敛成无秘密的扩展错误。
+没有 callback 时 API 明确不可用；默认 provider、OAuth、session、event、JSON/RPC
+wire 与 TUI 合同不变。
+
+99 个固定基线 runnable example 现全部有功能等价 Lisp port。Source ledger 最终为
+`595/521/72/2`，仅余用户暂缓的 Apple Terminal 两项。当前 extension export
+SHA-256 重新冻结为
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`；34-event
+block SHA-256 仍为
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
+
+## 30. Goal 12 source drift gate
+
+基线升级先运行 `scripts/check-source-parity-drift.sh`。它用 Part A 同一 source
+predicate 比较两个 commit，枚举新增、删除和 rename，并要求四列 TSV 对每项给出
+非空人工处置；missing、stale、malformed disposition 或未知 revision 一律失败。
+Modified file 仍须走行为与源码复审，不能借路径门禁自动通过。
+
+`scripts/test-source-parity-drift.sh` 以临时 Git repository 锁定 A/D/R、test-file
+排除、未处置失败和完整处置通过；`scripts/verify.sh` 在构建前执行它。升级后必须
+同步 `docs/parity-map.md`、`docs/source-parity.md`、`docs/performance.md` 与
+`examples/manifest.sexp` 的唯一 `GOAL12_LEDGER` 身份。确定性测试从 manifest
+重算 example 数量并交叉核对四本账，任一漂移即失败。

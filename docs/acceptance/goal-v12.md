@@ -295,7 +295,7 @@ Gondolin、sandbox runtime 与 WASM；提案明确不把能力批准偷换为依
 2 个用户明确暂缓的 Apple Terminal rows。此时暂停是新增能力裁决边界，不是把 82
 个示例宣告完成；获批项实施后才可继续逐行改判。
 
-### Part C6 continuation — approved API implementation and 94 ports
+### Part C6 intermediate checkpoint — approved API implementation and 94 ports
 
 The user subsequently approved all 19 itemized capabilities plus the necessary
 A–E core seams. Commits `5688d1c8a`, `595ba3b67`, and `5c0cc220b` close the
@@ -316,10 +316,77 @@ mutation, or shell-to-curl workaround is counted.
 
 The manifest now drives the source ledger directly, and
 `GOAL12-SOURCE-PARITY-VERDICTS-FOLLOW-THE-CURRENT-EXAMPLE-MANIFEST` prevents a
-future implementation/ledger split. The current totals are **516 implemented /
+future implementation/ledger split. The intermediate totals at proposal commit
+`639035ce9` were **516 implemented /
 72 intentional differences / 7 missing**: five proposal-blocked examples and
 the two user-deferred Apple Terminal rows. `src/cadr-ai` remains unchanged.
 The approved additive exports change the re-frozen extension export SHA-256 to
-`9dbffa647134e3d54645beb957ca048aeed89586e124bc717c01b0ff8c38da20`;
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`;
 the 34-event set remains
 `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
+
+### Part C6 final — F/G/H and all 99 runnable examples
+
+状态：实现与回归完成，提交见本节所在提交。
+
+用户批准的 F/G/H 是基线能力补齐，不是 Cadr 新机制：
+
+- F 把已声明但未接通的 `:session-before-compact` 与
+  `:session-compact` 接到 manual、threshold、overflow 三条真实 compaction
+  路径。before payload 含 preparation、branch entries、instructions、reason、
+  retry 标记和 cancellation signal；合法 extension compaction 原样持久化，
+  cancel/abort 停止，非法结果或 handler error 回退原 summarizer。
+- G 将 CLI 与 SDK 真实组装出的八字段 system-prompt options 保存为 agent
+  状态并以 defensive copy 交给每个 `:before-agent-start` handler；reload 后
+  prompt 文本和 options 同步替换，CLI/SDK 生成结果逐值一致。
+- H 在 extension host 上增加 session-local buffered HTTP callback；公开 API
+  只接受 HTTP(S)、受限 method、string headers、string/octet body、非负 timeout
+  与 cancellation signal，并复制输入输出。CLI adapter 复用现有 native HTTP
+  transport，保留 status/headers/octet body，归一化 timeout/abort/transport
+  condition，且从不暴露 token、refresh secret 或底层错误。
+
+由此完成 `custom-compaction.lisp`、`prompt-customizer.lisp`、custom Anthropic
+provider 以及 GitLab Duo provider/test 的功能等价移植。manifest 机械结果为
+**99 total / 99 unique / 99 ported / 0 gap**；source ledger 为
+**595 total / 521 implemented / 72 intentional differences / 2 missing**，仅剩
+用户明确暂缓的 Apple Terminal 两行。四本账共享同一 `GOAL12_LEDGER` 身份，
+确定性门禁从 manifest 实际解析并逐字核对 counts、baseline 与交叉链接。
+
+34 个 extension event 的 production dispatch 审计见
+[`goal-v12-extension-event-dispatch.md`](goal-v12-extension-event-dispatch.md)。
+每一行都给出 event、真实 dispatch `file:line` 与安装 handler、驱动 production
+路径并显式断言 called 的测试。唯一发现的断路是
+`:session-before-compact`：Goal 7 只测试了返回值校验/合并，没有驱动 compaction
+入口，因此“接收端存在”被误当成“事件已实现”。本批连接发射端后，manual、
+threshold、overflow、cancel、abort、invalid/error fallback 和 after payload
+均由生产路径回归覆盖。
+
+extension export text 重新冻结为
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`；
+34-event source block 仍为
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
+`src/cadr-ai` 在 F/G/H 全批保持零 diff；无 extension compaction、prompt options
+consumer 或 HTTP consumer 时，原 result/event/session/JSON/RPC/overlay/payload
+合同保持逐字不变。
+
+`scripts/test-cl.sh` 不再依赖人工相加：它保存完整 FiveAM 输出，要求恰好八组
+`Did/Pass/Skip/Fail`，验证 `checks = pass + skip + fail`，缺一套、重复 summary
+或任一 failure 均 fail closed。本批完整确定性结果为
+`systems=8 / 10233 checks / 10233 pass / 0 skip / 0 fail`。
+
+## Part D — fixed-baseline source drift gate
+
+状态：完成，提交见本节所在提交。
+
+`scripts/check-source-parity-drift.sh` 比较两个 baseline commit，在与 Part A
+相同的 `packages/**/*.ts`、排除 `*.test.ts` 口径下列出新增、删除和 rename。
+每一项必须在四列 TSV 中有非空人工 decision；missing、stale、malformed row、
+未知 revision 或缺失 disposition file 均失败。它不把 modified file 偷换为已审计：
+内容变化仍走既有 source/behavior 复审。
+
+`scripts/test-source-parity-drift.sh` 用临时 Git repository 确定性证明 A/D/R、
+test exclusion、未处置失败与完整处置通过；`scripts/verify.sh` 在构建前运行该
+self-test。升级操作手册见 [`docs/source-parity-upgrade.md`](../source-parity-upgrade.md)。
+README 与 architecture 明确三本账分工：parity-map 管可观察行为，source-parity
+管逐源文件处置，performance 管非功能预算；manifest 是 99 个 runnable example
+的机器清单。共享身份门禁使任何一本账落后都直接变红。

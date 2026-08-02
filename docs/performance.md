@@ -1,8 +1,15 @@
 # Performance and stability
 
+<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0 -->
+
 非功能属性是与行为 parity 并列的第二根验收轴：行为门禁回答“产出了什么”，
 本文回答“产出它花了多少时间、分配和常驻资源”。所有优化仍须通过既有
 payload、会话、完整文案和虚拟终端逐字门禁。
+
+本账只维护非功能门禁；行为覆盖见 `docs/parity-map.md`，逐源文件处置见
+`docs/source-parity.md`，可运行扩展示例的 99 项一对一清单见
+`examples/manifest.sexp`。四者共享上方 `GOAL12_LEDGER` 身份行，确定性测试会
+从 manifest 实际计数并逐字核对三本文档，任一账本漂移即失败。
 
 ## Measurement contract
 

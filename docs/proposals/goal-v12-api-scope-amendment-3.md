@@ -1,6 +1,6 @@
 # Goal 12 扩展 API 实现面第三次补充解冻提案
 
-状态：**blocked，等待用户逐项裁决 F/G/H。**
+状态：**approved and implemented**（用户于 2026-08-02 逐项裁决：F：批准，G：批准，H：批准）。
 
 固定基线：
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
@@ -21,7 +21,7 @@ example 中 94 个已可用现有 API 移植。逐个做真实入口审计时确
 这不是新增产品功能，而是此前提案把“API 已声明”误判成“真实调用链已闭合”。但三项
 都超出已批准文件面，且用户已明确要求越界即 blocked。因此没有伪造示例、调用
 `cadr-ai::native-http-request`、全局替换函数或把 provider 写入全局 registry。当前账本
-如实记为 **94 ported / 5 gap**。
+在批准前如实记为 **94 ported / 5 gap**；实施后为 **99 ported / 0 gap**。
 
 ## 2. 补充项 F：把 `session_before_compact` 接入真实 compaction 生命周期
 
@@ -177,7 +177,7 @@ Cadr 的 `src/cadr-agent/extensions.lisp:26-45,781-815,1823-1860` 只有 host `e
 
 ## 5. 受阻示例、裁决项与恢复顺序
 
-当前 5 个 gap：
+批准时的 5 个 gap（现均关闭）：
 
 | Baseline 文件 | gap | 对应裁决 |
 |---|---|---|
@@ -187,12 +187,12 @@ Cadr 的 `src/cadr-agent/extensions.lisp:26-45,781-815,1823-1860` 只有 host `e
 | `custom-provider-gitlab-duo/index.ts` | `:extension-http-runtime` | H |
 | `custom-provider-gitlab-duo/test.ts` | `:extension-http-runtime` | H |
 
-请逐项裁决：
+用户裁决：
 
-1. **F（解冻 `src/cadr-agent/compaction.lisp` 的 lifecycle dispatch）：批准 / 不批准。**
-2. **G（解冻 agent prompt-options 保存与 CLI/SDK 双值传递）：批准 / 不批准。**
-3. **H（增加 session-local extension HTTP control-plane seam）：批准 / 不批准。**
+1. **F（解冻 `src/cadr-agent/compaction.lisp` 的 lifecycle dispatch）：批准。**
+2. **G（解冻 agent prompt-options 保存与 CLI/SDK 双值传递）：批准。**
+3. **H（增加 session-local extension HTTP control-plane seam）：批准。**
 
-三项均批准后，按 F→G→H 完成 5 个示例，重算 extension export SHA，同步
-architecture/README/source-parity/parity-map，然后进入 Goal 12 Part D。任一不批准，
-对应示例继续诚实记为 gap；不得以降级实现冒充移植完成。
+三项已按 F→G→H 完成 5 个示例；extension export SHA、architecture、README、
+source-parity 与 parity-map 随实施提交同步，随后进入 Goal 12 Part D。F/G/H
+补齐的是固定基线已有能力，不列为相对基线的有意新增。

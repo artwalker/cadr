@@ -20,10 +20,12 @@ That implementation and its tests are the behavioral reference for provider
 payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
 and terminal interaction.
 
-Parity has two independent gates: observable behavior must match the fixed
-reference byte-for-byte, while performance and long-run stability must stay
-inside the measured budgets in [`docs/performance.md`](docs/performance.md).
-Passing one axis never excuses failure on the other.
+Parity is tracked by three independent ledgers: [`docs/parity-map.md`](docs/parity-map.md)
+maps observable behavior and tests, [`docs/source-parity.md`](docs/source-parity.md)
+disposes every fixed-baseline source file, and [`docs/performance.md`](docs/performance.md)
+locks performance and long-run stability budgets. Passing one axis never excuses
+failure on another. [`docs/source-parity-upgrade.md`](docs/source-parity-upgrade.md)
+defines the fail-closed source drift gate for a future baseline upgrade.
 
 The former
 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is retained only as a
@@ -291,15 +293,15 @@ The exact frozen surface and reference locations are recorded in
 [`docs/proposals/goal-v7-extension-api.md`](docs/proposals/goal-v7-extension-api.md).
 
 The fixed baseline's 99 runnable extension/SDK example source files are tracked
-one-for-one in [`examples/manifest.sexp`](examples/manifest.sexp). Ninety-four
-have functionally equivalent Lisp ports under [`examples/extensions/`](examples/extensions/)
-and [`examples/sdk/`](examples/sdk/). Five remain honestly classified as missing:
-their compaction lifecycle, structured system-prompt options, and session-local
-HTTP call-chain requirements are documented in
+one-for-one in [`examples/manifest.sexp`](examples/manifest.sexp), and all 99 have
+functionally equivalent Lisp ports under [`examples/extensions/`](examples/extensions/)
+and [`examples/sdk/`](examples/sdk/). The final five use the approved production
+compaction lifecycle, structured system-prompt options, and session-local buffered
+HTTP seam recorded in
 [`docs/proposals/goal-v12-api-scope-amendment-3.md`](docs/proposals/goal-v12-api-scope-amendment-3.md).
-Those three scopes remain unimplemented until they receive explicit user approval.
+These are baseline capability completions, not additional Cadr mechanisms.
 The currently re-frozen extension export text SHA-256 is
-`9dbffa647134e3d54645beb957ca048aeed89586e124bc717c01b0ff8c38da20`;
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`;
 the 34-event set remains unchanged.
 
 Example:

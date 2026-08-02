@@ -1,5 +1,7 @@
 # Parity map
 
+<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0 -->
+
 ## 1. Scope and counting rules
 
 Behavioral baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
@@ -367,7 +369,7 @@ contract in pure Lisp without adding a dependency.
 | <a id="cl-goal9-protocol"></a>`CL-GOAL9-PROTOCOL` | [CBOR](../test/cadr-protocol/cbor-test.lisp), [framing](../test/cadr-protocol/framing-test.lisp), and [v2 schemas/codecs](../test/cadr-protocol/protocol-test.lisp); 41 tests / 497 checks |
 | <a id="cl-goal10-d"></a>`CL-GOAL10-D` | [tool condition/restart and default-path tests](../test/cadr-agent/tool-loop-test.lisp), [event 34 lifecycle/parallel tests](../test/cadr-agent/extensions-wave2-test.lisp), [event-set freeze](../test/cadr-agent/extensions-wave3-test.lisp), and [real Slynk protocol/build-isolation tests](../test/cadr-cli/remote-repl-test.lisp) |
 | <a id="cl-goal12-core"></a>`CL-GOAL12-CORE` | [branch collection/generation, message projection, proxy streaming and replaceable execution context](../test/cadr-agent/goal12-core-capabilities-test.lisp), plus [auth guidance, event bus, timings, JSON/path/shell/watch/tool-manager, bounded output and built-in tool context](../test/cadr-cli/goal12-core-capabilities-test.lisp) |
-| <a id="cl-goal12-examples"></a>`CL-GOAL12-EXAMPLES` | [99-file example manifest, entrypoint loading, registration-surface and edge-case tests](../test/cadr-cli/goal12-examples-test.lisp): 94 functionally equivalent Lisp ports and 5 explicitly blocked rows; the remaining three call-chain gaps are linked to [scope amendment 3](proposals/goal-v12-api-scope-amendment-3.md) |
+| <a id="cl-goal12-examples"></a>`CL-GOAL12-EXAMPLES` | [99-file example manifest, entrypoint loading, registration-surface and edge-case tests](../test/cadr-cli/goal12-examples-test.lisp): 99 functionally equivalent Lisp ports and 0 gaps; the final compaction/prompt-options/session-HTTP call chains were approved in [scope amendment 3](proposals/goal-v12-api-scope-amendment-3.md) |
 | <a id="cl-agent-loop"></a>`CL-AGENT-LOOP` | [`SIMPLE-TURN-EMITS-REFERENCE-LIFECYCLE-ORDER`, `ERROR-AND-ABORT-STOP-THE-RUN-CLEANLY`](../test/cadr-agent/loop-test.lisp), [`TOOL-CALL-RESULT-AND-NEXT-MODEL-TURN-COMPLETE`](../test/cadr-agent/tool-loop-test.lisp) |
 | <a id="cl-agent-schema"></a>`CL-AGENT-SCHEMA` | [`NATIVE-SCHEMA-VALIDATES-NESTED-TOOL-ARGUMENTS`, `NATIVE-SCHEMA-SUPPORTS-COMPOSITION-AND-SCALAR-CONSTRAINTS`, `NATIVE-SCHEMA-DEFINITION-REJECTS-MALFORMED-KEYWORDS`](../test/cadr-agent/schema-test.lisp) |
 | <a id="cl-compaction"></a>`CL-COMPACTION` | [`AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT`, `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH`](../test/cadr-agent/compaction-test.lisp) |
