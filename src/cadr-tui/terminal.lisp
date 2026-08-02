@@ -164,6 +164,19 @@
       (format nil "~C[13;2u" #\Escape)
       data))
 
+(defun apple-terminal-session-with-environment-p
+    (macos-p environment-function)
+  (and macos-p
+       (string=
+        "Apple_Terminal"
+        (or (funcall environment-function "TERM_PROGRAM")
+            ""))))
+
+(defun apple-terminal-session-p ()
+  (apple-terminal-session-with-environment-p
+   (uiop:os-macosx-p)
+   #'uiop:getenv))
+
 (defun positive-environment-integer
     (name environment-function)
   (let ((value (funcall environment-function name)))
@@ -259,6 +272,14 @@
     :initarg :progress-clock-function
     :initform #'terminal-monotonic-seconds
     :accessor process-terminal-progress-clock-function)
+   (apple-terminal-function
+    :initarg :apple-terminal-function
+    :initform #'apple-terminal-session-p
+    :reader process-terminal-apple-terminal-function)
+   (native-modifier-function
+    :initarg :native-modifier-function
+    :initform #'is-native-modifier-pressed
+    :reader process-terminal-native-modifier-function)
    (resize-p
     :initform nil
     :accessor process-terminal-resize-p)))
@@ -268,7 +289,11 @@
        (input *standard-input*)
        (output *standard-output*)
        (progress-clock-function
-         #'terminal-monotonic-seconds))
+         #'terminal-monotonic-seconds)
+       (apple-terminal-function
+         #'apple-terminal-session-p)
+       (native-modifier-function
+         #'is-native-modifier-pressed))
   (multiple-value-bind (columns rows)
       (terminal-dimensions nil nil)
     (make-instance
@@ -276,6 +301,8 @@
      :input input
      :output output
      :progress-clock-function progress-clock-function
+     :apple-terminal-function apple-terminal-function
+     :native-modifier-function native-modifier-function
      :columns columns
      :rows rows)))
 
@@ -488,6 +515,24 @@
    (process-terminal-output terminal))
   text)
 
+(defun process-terminal-normalize-input
+    (terminal sequence)
+  (let ((apple-terminal-p
+          (and
+           (string= sequence (string #\Return))
+           (funcall
+            (process-terminal-apple-terminal-function
+             terminal)))))
+    (normalize-apple-terminal-input
+     sequence
+     apple-terminal-p
+     (and
+      apple-terminal-p
+      (funcall
+       (process-terminal-native-modifier-function
+        terminal)
+       :shift)))))
+
 (defun process-terminal-consume-sequence
     (terminal sequence forward)
   (multiple-value-bind (sequences writes)
@@ -515,7 +560,9 @@
                 value)))
             (setf forward
                   (nconc forward
-                         (list candidate)))))))
+                         (list
+                          (process-terminal-normalize-input
+                           terminal candidate))))))))
   forward)
 
 (defun elapsed-seconds (start)

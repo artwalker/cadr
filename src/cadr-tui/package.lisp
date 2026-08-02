@@ -325,6 +325,8 @@
    #:virtual-terminal-snapshot
    #:process-terminal
    #:make-process-terminal
+   #:is-native-modifier-pressed
+   #:apple-terminal-session-p
    #:normalize-apple-terminal-input
    #:keyboard-protocol-negotiator
    #:make-keyboard-protocol-negotiator

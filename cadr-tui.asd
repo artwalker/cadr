@@ -17,6 +17,7 @@
                              (:file "undo-stack")
                              (:file "input")
                              (:file "stdin-buffer")
+                             (:file "native-modifiers")
                              (:file "terminal-colors")
                              (:file "terminal-image")
                              (:file "theme")

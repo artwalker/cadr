@@ -19,6 +19,111 @@
        (cadr-tui:normalize-apple-terminal-input
         "x" t t))))
 
+(test apple-terminal-native-modifier-fixtures-match-coregraphics-masks
+  (dolist (spec '((:shift #x00020000)
+                  (:control #x00040000)
+                  (:option #x00080000)
+                  (:command #x00100000)))
+    (destructuring-bind (key mask) spec
+      (is
+       (cadr-tui::native-modifier-pressed-p
+        key t "arm64" (lambda () mask)))
+      (is
+       (cadr-tui::native-modifier-pressed-p
+        (string-downcase (symbol-name key))
+        t "x86-64" (lambda () mask)))
+      (is
+       (not
+        (cadr-tui::native-modifier-pressed-p
+         key t "arm64" (constantly 0))))))
+  (is
+   (not
+    (cadr-tui::native-modifier-pressed-p
+     :unknown t "arm64" (constantly #xffffffffffffffff)))))
+
+(test apple-terminal-native-modifier-query-is-fail-closed
+  (let ((queries 0))
+    (flet ((flags ()
+             (incf queries)
+             #x00020000))
+      (is
+       (not
+        (cadr-tui::native-modifier-pressed-p
+         :shift nil "arm64" #'flags)))
+      (is (= 0 queries))
+      (is
+       (not
+        (cadr-tui::native-modifier-pressed-p
+         :shift t "powerpc" #'flags)))
+      (is (= 0 queries))))
+  (is
+   (not
+    (cadr-tui::native-modifier-pressed-p
+     :shift t "arm64"
+     (lambda () (error "fixture failure")))))
+  #-darwin
+  (is (not (cadr-tui::is-native-modifier-pressed :shift))))
+
+(test apple-terminal-session-detection-matches-baseline
+  (flet ((apple-environment (name)
+           (and (string= name "TERM_PROGRAM")
+                "Apple_Terminal"))
+         (iterm-environment (name)
+           (and (string= name "TERM_PROGRAM")
+                "iTerm.app")))
+    (is
+     (cadr-tui::apple-terminal-session-with-environment-p
+      t #'apple-environment))
+    (is
+     (not
+      (cadr-tui::apple-terminal-session-with-environment-p
+       nil #'apple-environment)))
+    (is
+     (not
+      (cadr-tui::apple-terminal-session-with-environment-p
+       t #'iterm-environment)))))
+
+(test process-terminal-queries-shift-only-for-apple-terminal-return
+  (let* ((queries nil)
+        (terminal
+          (cadr-tui:make-process-terminal
+           :input (make-string-input-stream (string #\Return))
+           :output (make-string-output-stream)
+           :apple-terminal-function (constantly t)
+           :native-modifier-function
+           (lambda (key)
+             (push key queries)
+             t))))
+    (is (string= (csi "13;2u")
+                 (cadr-tui:terminal-read-input terminal)))
+    (is (equal '(:shift) queries)))
+  (dolist (spec
+           (list
+            (list (string #\Return) nil t (string #\Return))
+            (list (string #\Return) t nil (string #\Return))
+            (list "x" t t "x")))
+    (destructuring-bind
+        (input apple-terminal-p shift-pressed-p expected) spec
+      (let* ((queries 0)
+            (terminal
+              (cadr-tui:make-process-terminal
+               :input (make-string-input-stream input)
+               :output (make-string-output-stream)
+               :apple-terminal-function
+               (constantly apple-terminal-p)
+               :native-modifier-function
+               (lambda (key)
+                 (declare (ignore key))
+                 (incf queries)
+                 shift-pressed-p))))
+        (is (string= expected
+                     (cadr-tui:terminal-read-input terminal)))
+        (is (= (if (and apple-terminal-p
+                        (string= input (string #\Return)))
+                   1
+                   0)
+               queries))))))
+
 (test keyboard-protocol-negotiation-matches-kitty-fallback-order
   (let ((negotiator
           (cadr-tui:make-keyboard-protocol-negotiator)))
