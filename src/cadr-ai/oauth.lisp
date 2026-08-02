@@ -325,7 +325,8 @@
     result))
 
 (defun parse-oauth-callback-request
-    (request-line expected-path expected-state)
+    (request-line expected-path expected-state
+     &key provider-name)
   (handler-case
       (let* ((parts (uiop:split-string request-line :separator '(#\Space)))
              (target (second parts))
@@ -336,16 +337,35 @@
                         (make-hash-table :test #'equal))))
         (cond
           ((not (string= path expected-path))
-           (values nil 404))
+           (values nil 404 :route-not-found nil))
+          ((and provider-name
+                (string-equal provider-name "Anthropic")
+                (non-empty-string-p (gethash "error" query)))
+           (values
+            nil 400 :provider-error
+            (format nil "Error: ~A" (gethash "error" query))))
+          ((and provider-name
+                (string-equal provider-name "Anthropic")
+                (or
+                 (not (non-empty-string-p (gethash "code" query)))
+                 (not (non-empty-string-p (gethash "state" query)))))
+           (values nil 400 :missing-code-or-state nil))
           ((not (string= (or (gethash "state" query) "")
                          expected-state))
-           (values nil 400))
+           (values nil 400 :state-mismatch nil))
+          ((and provider-name
+                (string-equal provider-name "Radius")
+                (non-empty-string-p (gethash "error" query)))
+           (values
+            nil 400 :provider-error
+            (or (gethash "error_description" query)
+                (gethash "error" query))))
           ((not (non-empty-string-p (gethash "code" query)))
-           (values nil 400))
+           (values nil 400 :missing-authorization-code nil))
           (t
-           (values (gethash "code" query) 200))))
+           (values (gethash "code" query) 200 :success nil))))
     (error ()
-      (values nil 400))))
+      (values nil 500 :internal-error nil))))
 
 (defun oauth-token-request (url pairs secrets)
   (handler-case
@@ -527,24 +547,176 @@
           (oauth-credential-refresh credential)))
    (oauth-credential-refresh credential)))
 
-(defun write-oauth-http-response (stream status message)
-  (let ((body
-          (format nil
-                  "<!doctype html><meta charset=\"utf-8\"><title>cadr</title><p>~A</p>"
-                  message)))
-    (format stream
-            "HTTP/1.1 ~D ~A~C~CContent-Type: text/html; charset=utf-8~C~CContent-Length: ~D~C~CConnection: close~C~C~C~C~A"
-            status
-            (if (= status 200) "OK" "Error")
-            #\Return #\Linefeed
-            #\Return #\Linefeed
-            (length
-             (utf8-octets body))
-            #\Return #\Linefeed
-            #\Return #\Linefeed
-            #\Return #\Linefeed
-            body)
-    (finish-output stream)))
+(defparameter +oauth-logo-svg+
+  "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 800\" aria-hidden=\"true\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M165.29 165.29 H517.36 V400 H400 V517.36 H282.65 V634.72 H165.29 Z M282.65 282.65 V400 H400 V282.65 Z\"/><path fill=\"#fff\" d=\"M517.36 400 H634.72 V634.72 H517.36 Z\"/></svg>")
+
+(defun escape-oauth-html (value)
+  (with-output-to-string (output)
+    (loop for character across (or value "")
+          do
+          (case character
+            (#\& (write-string "&amp;" output))
+            (#\< (write-string "&lt;" output))
+            (#\> (write-string "&gt;" output))
+            (#\" (write-string "&quot;" output))
+            (#\' (write-string "&#39;" output))
+            (otherwise (write-char character output))))))
+
+(defun render-oauth-page
+    (title heading message &optional details)
+  (let ((title (escape-oauth-html title))
+        (heading (escape-oauth-html heading))
+        (message (escape-oauth-html message))
+        (details
+          (and details
+               (plusp (length details))
+               (escape-oauth-html details))))
+    (format
+     nil
+     "<!doctype html>
+<html lang=\"en\">
+<head>
+  <meta charset=\"utf-8\" />
+  <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />
+  <title>~A</title>
+  <style>
+    :root {
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --page-bg: #09090b;
+      --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, \"Helvetica Neue\", Arial, \"Noto Sans\", sans-serif, \"Apple Color Emoji\", \"Segoe UI Emoji\", \"Segoe UI Symbol\", \"Noto Color Emoji\";
+      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, \"Liberation Mono\", \"Courier New\", monospace;
+    }
+    * { box-sizing: border-box; }
+    html { color-scheme: dark; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+      background: var(--page-bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      text-align: center;
+    }
+    main {
+      width: 100%;
+      max-width: 560px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo {
+      width: 72px;
+      height: 72px;
+      display: block;
+      margin-bottom: 24px;
+    }
+    h1 {
+      margin: 0 0 10px;
+      font-size: 28px;
+      line-height: 1.15;
+      font-weight: 650;
+      color: var(--text);
+    }
+    p {
+      margin: 0;
+      line-height: 1.7;
+      color: var(--text-dim);
+      font-size: 15px;
+    }
+    .details {
+      margin-top: 16px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      color: var(--text-dim);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <div class=\"logo\">~A</div>
+    <h1>~A</h1>
+    <p>~A</p>
+    ~A
+  </main>
+</body>
+</html>"
+     title +oauth-logo-svg+ heading message
+     (if details
+         (format nil "<div class=\"details\">~A</div>" details)
+         ""))))
+
+(defun oauth-success-html (message)
+  (render-oauth-page
+   "Authentication successful"
+   "Authentication successful"
+   message))
+
+(defun oauth-error-html (message &optional details)
+  (render-oauth-page
+   "Authentication failed"
+   "Authentication failed"
+   message details))
+
+(defun oauth-callback-response-copy
+    (provider-name status reason details)
+  (declare (ignore status))
+  (values
+   (case reason
+     (:success
+      (cond
+        ((string-equal provider-name "Radius")
+         "Signed in to Radius. You may now close this page.")
+        (t
+         (format nil
+                 "~A authentication completed. You can close this window."
+                 provider-name))))
+     (:route-not-found "Callback route not found.")
+     (:state-mismatch
+      (if (string-equal provider-name "Radius")
+          "OAuth state mismatch."
+          "State mismatch."))
+     (:provider-error
+      (if (string-equal provider-name "Anthropic")
+          "Anthropic authentication did not complete."
+          (or details "OAuth authentication did not complete.")))
+     (:missing-code-or-state "Missing code or state parameter.")
+     (:missing-authorization-code "Missing authorization code.")
+     (:internal-error
+      "Internal error while processing OAuth callback.")
+     (otherwise "OAuth authentication did not complete."))
+   (and (eq reason :provider-error)
+        (string-equal provider-name "Anthropic")
+        details)))
+
+(defun oauth-http-status-text (status)
+  (case status
+    (200 "OK")
+    (400 "Bad Request")
+    (404 "Not Found")
+    (500 "Internal Server Error")
+    (otherwise "Error")))
+
+(defun write-oauth-http-response (stream status body)
+  (format stream
+          "HTTP/1.1 ~D ~A~C~CContent-Type: text/html; charset=utf-8~C~CContent-Length: ~D~C~CConnection: close~C~C~C~C~A"
+          status
+          (oauth-http-status-text status)
+          #\Return #\Linefeed
+          #\Return #\Linefeed
+          (length
+           (utf8-octets body))
+          #\Return #\Linefeed
+          #\Return #\Linefeed
+          #\Return #\Linefeed
+          body)
+  (finish-output stream))
 
 (defun wait-for-oauth-code (state port path provider-name)
   (let ((socket
@@ -570,18 +742,21 @@
                            :buffering :none)))
                     (unwind-protect
                          (let ((request-line (read-line stream nil "")))
-                           (multiple-value-bind (code status)
+                           (multiple-value-bind
+                                 (code status reason details)
                                (parse-oauth-callback-request
-                                request-line path state)
-                             (write-oauth-http-response
-                              stream status
-                              (if (= status 200)
-                                  (format nil
-                                          "~A authentication completed. You can close this window."
-                                          provider-name)
-                                  (format nil
-                                          "~A authentication failed. Return to cadr."
-                                          provider-name)))
+                                request-line path state
+                                :provider-name provider-name)
+                             (multiple-value-bind
+                                   (message response-details)
+                                 (oauth-callback-response-copy
+                                  provider-name status reason details)
+                               (write-oauth-http-response
+                                stream status
+                                (if (= status 200)
+                                    (oauth-success-html message)
+                                    (oauth-error-html
+                                     message response-details))))
                              (unless (= status 200)
                                (error 'authentication-error
                                       :message

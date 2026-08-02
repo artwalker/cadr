@@ -132,6 +132,119 @@
            "GET /wrong?code=abc&state=expected HTTP/1.1"
            "/auth/callback" "expected")))))
 
+(test goal13-oauth-pages-match-baseline-shell-copy-and-escaping
+  (let ((success
+          (cadr-ai::oauth-success-html
+           "OpenAI <done> & close \"this\" window."))
+        (failure
+          (cadr-ai::oauth-error-html
+           "Anthropic <failed> & retry."
+           "Error: bad \"state\" & 'token'")))
+    (dolist (fragment
+             '("<!doctype html>"
+               "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
+               "<title>Authentication successful</title>"
+               "<h1>Authentication successful</h1>"
+               "color-scheme: dark"
+               "<svg xmlns=\"http://www.w3.org/2000/svg\""))
+      (is (search fragment success)))
+    (is (search
+         "OpenAI &lt;done&gt; &amp; close &quot;this&quot; window."
+         success))
+    (is (null (search "OpenAI <done>" success)))
+    (is (search "<title>Authentication failed</title>" failure))
+    (is (search "<h1>Authentication failed</h1>" failure))
+    (is (search "Anthropic &lt;failed&gt; &amp; retry." failure))
+    (is (search
+         "Error: bad &quot;state&quot; &amp; &#39;token&#39;"
+         failure))
+    (is (null (search "bad \"state\"" failure))))
+  (let ((rendered
+          (cadr-ai::render-oauth-page
+           "<&\"'" ">&\"'<" "&<>'\"" "'<&>\"")))
+    (is (search "<title>&lt;&amp;&quot;&#39;</title>" rendered))
+    (is (search "<h1>&gt;&amp;&quot;&#39;&lt;</h1>" rendered))
+    (is (search "&amp;&lt;&gt;&#39;&quot;" rendered))
+    (is (search "&#39;&lt;&amp;&gt;&quot;" rendered))))
+
+(test goal13-oauth-callback-copy-distinguishes-every-baseline-failure
+  (flet ((parse (request provider)
+           (multiple-value-list
+            (cadr-ai:parse-oauth-callback-request
+             request "/auth/callback" "expected"
+             :provider-name provider))))
+    (is (equal '(nil 404 :route-not-found nil)
+               (parse
+                "GET /wrong?code=abc&state=expected HTTP/1.1"
+                "OpenAI")))
+    (is (equal '(nil 400 :state-mismatch nil)
+               (parse
+                "GET /auth/callback?code=abc&state=wrong HTTP/1.1"
+                "OpenAI")))
+    (is (equal '(nil 400 :missing-authorization-code nil)
+               (parse
+                "GET /auth/callback?state=expected HTTP/1.1"
+                "OpenAI")))
+    (is (equal
+         '(nil 400 :provider-error "Error: access_denied")
+         (parse
+          "GET /auth/callback?error=access_denied&state=expected HTTP/1.1"
+          "Anthropic")))
+    (is (equal '(nil 400 :missing-code-or-state nil)
+               (parse
+                "GET /auth/callback?code=abc HTTP/1.1"
+                "Anthropic")))
+    (is (equal '(nil 500 :internal-error nil)
+               (parse
+                "GET /auth/callback?code=%ZZ&state=expected HTTP/1.1"
+                "OpenAI"))))
+  (dolist
+      (case
+       '(("OpenAI" 200 :success
+          "OpenAI authentication completed. You can close this window.")
+         ("OpenAI" 404 :route-not-found
+          "Callback route not found.")
+         ("OpenAI" 400 :state-mismatch
+          "State mismatch.")
+         ("OpenAI" 400 :missing-authorization-code
+          "Missing authorization code.")
+         ("OpenAI" 500 :internal-error
+          "Internal error while processing OAuth callback.")
+         ("Anthropic" 400 :provider-error
+          "Anthropic authentication did not complete.")
+         ("Anthropic" 400 :missing-code-or-state
+          "Missing code or state parameter.")
+         ("Radius" 200 :success
+          "Signed in to Radius. You may now close this page.")
+         ("Radius" 400 :state-mismatch
+          "OAuth state mismatch.")))
+    (destructuring-bind (provider status reason expected) case
+      (is (string=
+           expected
+           (nth-value
+            0
+            (cadr-ai::oauth-callback-response-copy
+             provider status reason nil)))))))
+
+(test goal13-oauth-http-response-keeps-byte-accurate-html-framing
+  (let* ((stream (make-string-output-stream))
+         (body (cadr-ai::oauth-success-html "认证完成")))
+    (cadr-ai::write-oauth-http-response stream 200 body)
+    (let* ((response (get-output-stream-string stream))
+           (separator (format nil "~C~C~C~C"
+                              #\Return #\Linefeed
+                              #\Return #\Linefeed))
+           (body-start (+ (search separator response)
+                          (length separator))))
+      (is (search "HTTP/1.1 200 OK" response))
+      (is (search "Content-Type: text/html; charset=utf-8" response))
+      (is (search
+           (format nil "Content-Length: ~D"
+                   (length (babel:string-to-octets
+                            body :encoding :utf-8)))
+           response))
+      (is (string= body (subseq response body-start))))))
+
 (test auth-file-is-0600-and-round-trips-without-secret-output
   (uiop:with-temporary-file (:pathname path)
     (delete-file path)

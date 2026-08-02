@@ -175,3 +175,26 @@ closed/aligned + 8 open + 2 intentional`.
 ```text
 cadr test summary: systems=8 checks=11571 pass=11571 skip=0 fail=0
 ```
+
+## Part C batch 4 — OAuth callback pages
+
+The loopback callback now returns the baseline's complete responsive dark HTML
+shell for both success and failure. Title, heading, message, and optional
+details share one character-level escaper for `&<>"'`; UTF-8 content length and
+connection-close framing remain byte-accurate.
+
+| Contract | Baseline | Cadr implementation | Regression |
+|---|---|---|---|
+| page shell and semantic copy | `oauth-page.ts:1-109` | `src/cadr-ai/oauth.lisp:550-719` | `GOAL13-OAUTH-PAGES-MATCH-BASELINE-SHELL-COPY-AND-ESCAPING`; `GOAL13-OAUTH-HTTP-RESPONSE-KEEPS-BYTE-ACCURATE-HTML-FRAMING` |
+| provider callback outcomes | `openai-codex.ts:340-363`; `anthropic.ts:118-145`; `radius.ts:176-202` | `src/cadr-ai/oauth.lisp:327-368,667-696,721-769` | `GOAL13-OAUTH-CALLBACK-COPY-DISTINGUISHES-EVERY-BASELINE-FAILURE` |
+
+The parser's first two return values remain backward compatible; additional
+reason/details values let the callback distinguish route, state, missing
+parameters, provider denial, and internal failure without ever interpolating
+the authorization code or state. Focused red/green proof is `36/36`. The
+presentation ledger now stands at `123 = 117 closed/aligned + 4 open + 2
+intentional`.
+
+```text
+cadr test summary: systems=8 checks=11607 pass=11607 skip=0 fail=0
+```
