@@ -448,3 +448,64 @@ live 报告为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，检查级为
 `07c00a1d1a0c070b9e237a2dd40c126334a2fcd4` 的
 `2026-08-02T16:49:59+08:00`；`./cadr --version` 为
 `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，新鲜度门禁 PASS。
+
+## Part D revalidation correction and screen-oracle audit
+
+状态：补正完成。真实账本门禁提交 `bd2276ad5`；整屏独立 oracle 提交
+`f91cc2178`；本章证据见本节所在提交。
+
+此前 `check-source-parity-drift.sh` 把所有 disposition 输入都按四列 TSV 扫描，既不
+认识 `docs/source-parity.md` 的六列 package tables，也不知道表格边界。因此用户按
+usage 以真实账本执行时，合法的 `packages/protocol/vitest.config.ts` 行和表外散文都
+被报成 invalid disposition row。旧 `verify.sh` 只运行临时 Git repository 加合成 TSV
+的 A/D/R self-test，确实是“测替身不测产品”。
+
+补正后的 Markdown parser 只在精确的六列表头和 separator 后进入 package table，
+只接受反引号包裹的 `packages/**/*.ts` 非测试路径与三种合法 verdict，离开表格即停止；
+正文、说明段落和 Summary table 均不参与 row parsing。真实账本门禁同时要求：
+
+- Summary 恰有一个 Total，且解析行数等于该值，当前为 **595**；
+- 595 个路径唯一；
+- 排序后的路径 SHA-256 等于账本记录的
+  `242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`；
+- 普通 `--repo/--from/--to` 模式再把账本路径集合与 `--from` tree 逐项比较；
+  浅克隆的 `verify.sh` 使用显式 `--ledger-only`，不伪装具备 detached baseline object。
+
+用户给出的真实命令现 exit 0，输出为 `Source parity ledger entries: 595`、上述 path
+SHA、`No added, deleted, or renamed baseline source files.` 与
+`Source parity dispositions complete: 0`。合成回归另锁定表外散文忽略、坏 separator、
+坏 verdict、重复 path、路径 SHA 漂移和 Summary total 漂移；后五种均以 exit 2
+fail closed。`verify.sh` 新增独立的 `real source parity ledger` 阶段，确定性阶段由
+12 增至 13。
+
+为何旧 10286 条检查与 12 个阶段没有捕获：FiveAM 没有执行 shell parser，更没有把
+真实 Markdown 账本交给它；唯一相关的 shell stage 使用临时 repository 和四列 TSV，
+完全绕开了出错的输入类型。数量再大也没用，入口错了就是零覆盖。
+
+整屏 SHA 审计覆盖仓库内全部视觉 hash：13 个 base-screen 与 15 个 overlay。完整
+逐项清单、固定基线 `file:line`、独立断言和补齐状态见
+[`docs/visual-parity.md`](../visual-parity.md) 的
+“B2 SHA snapshot 独立语义 oracle 审计”表。审计结果为：
+
+- base-screen 既有 8/13 具备直接语义断言；thinking、tool collapsed、tool expanded、
+  overflow scrolled-to-top、narrow width 五项本轮补齐；
+- overlay 既有 14/15 有 case-specific line contract；extension-custom 本轮补齐；
+- 两个总门禁把 SHA case name 与 oracle case name 做双向集合相等检查，随后逐 case
+  执行首行、自然高度、顺序、间距、viewport、preview 和完整文案合同。今后只更新
+  hash 或只新增 case 都会失败，oracle 的期望不得从当前 Cadr render 反推。
+
+既有 13+15 个 SHA 值均未修改；补的是证明它们“对”，不是重新生成一批仍可能保护
+错误实现的 hash。新增两条总门禁贡献 266 个独立 checks；完整确定性结果为
+`systems=8 / 10552 checks / 10552 pass / 0 skip / 0 fail`。
+
+`./scripts/verify.sh` exit 0，13 个确定性阶段与 2 个 live 阶段全部 PASS；两个隔离
+构建各自再次得到 `8 / 10552 / 10552 / 0 / 0`。Goal 11 gate PASS；live 为
+`8 items / 7 run / 7 pass / 1 skip / 0 fail`、检查级
+`32 / 31 pass / 1 skip / 0 fail`，唯一跳过仍是缺少 `ANTHROPIC_API_KEY`，DeepSeek
+live TUI PASS。
+
+交付前根目录二进制已重建。`scripts/check-root-binary.sh` 记录 binary build time
+`2026-08-02 19:14:02.763812157 +0800`，晚于最后一次 `src/` 提交
+`ceb30956ca526aa9ce505da3bb6282d37f231c1d`
+(`2026-08-02T18:13:41+08:00`)；`./cadr --version` 为
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，新鲜度门禁 PASS。
