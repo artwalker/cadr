@@ -198,3 +198,78 @@ intentional`.
 ```text
 cadr test summary: systems=8 checks=11607 pass=11607 skip=0 fail=0
 ```
+
+## Part C batch 5 — self-contained session export
+
+Session export now uses the fixed baseline's complete responsive HTML
+application.  The five template assets are loaded into `cadr-agent` before the
+native image is saved; session JSON is UTF-8/Base64 encoded and inserted into
+the template; interactive `/export` passes the active theme while the existing
+two-argument exporter retains deterministic dark defaults.
+
+| Contract | Baseline | Cadr implementation | Regression |
+|---|---|---|---|
+| Base64 session payload and exact tree | `core/export-html/index.ts:130-174` | `src/cadr-agent/session.lisp:2501-2546` | `SESSION-LIST-RESUME-AND-HTML-EXPORT-COVER-THE-ENTIRE-TREE`; `SESSION-V3-WRITES-REFERENCE-HEADER-AND-ALL-ENTRY-ENVELOPES`; `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED` |
+| complete responsive renderer | `export-html/template.html:1-56`; `template.css:1-819`; `template.js:1-1830` | exact assets under `src/cadr-agent/export-html/` | `SESSION-HTML-EXPORT-RENDERS-SKILL-WRAPPER-AS-VISIBLE-SIBLING-BLOCKS` |
+| theme variables and export backgrounds | `core/export-html/index.ts:42-127,151-167` | `src/cadr-agent/session.lisp:2148-2499`; `src/cadr-cli/main.lisp:3293-3348` | `SESSION-HTML-EXPORT-RESOLVES-CUSTOM-THEME-AND-NEVER-REREADS-ASSETS`; `INTERACTIVE-EXPORT-FORWARDS-THE-ACTIVE-THEME-WITHOUT-CHANGING-THE-COMMAND-SURFACE` |
+| licensed offline browser scripts | `core/export-html/index.ts:143-174` | `src/cadr-agent/session.lisp:2124-2143`; vendored asset bytes | `SESSION-HTML-EXPORT-VENDORS-LICENSED-OFFLINE-ASSETS-AND-PRESERVES-TWO-ARGUMENT-CALL` |
+
+The licensed artifacts are byte-identical to the approved repository blobs:
+
+| Artifact | Git blob | SHA-256 | Bytes | Header retained |
+|---|---|---|---:|---|
+| Marked 18.0.5 | `9d79575e45d0f6b88158097f5f4622ab938d76d9` | `d5487edc7258b404bfa74c393d74a6393155f02517bd5e7e77cd64f8187f39a0` | 42,882 | MIT copyright/license/source comment, exact bytes |
+| Highlight.js 11.9.0 | `5d699ae6a4cfc9544a22a9ac394b01db2e5abd4f` | `837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846` | 121,727 | BSD-3-Clause copyright/license comment, exact bytes |
+
+The offline assertion rejects every active external script, stylesheet, font,
+image, fetch, XHR, WebSocket, EventSource, and worker import.  Preserved source
+URLs inside license comments are inert and do not weaken the no-network
+contract.
+
+### Authorized assertion migration
+
+The baseline encodes `JSON.stringify(sessionData)` as Base64
+(`core/export-html/index.ts:159-160`), so plaintext searches encoded Cadr's old
+server-rendered assumption rather than the baseline contract.  Only the two
+authorized HTML assertion blocks changed:
+
+| Test | Old assertion, verbatim | Migrated assertion | Why stronger |
+|---|---|---|---|
+| `SESSION-V3-WRITES-REFERENCE-HEADER-AND-ALL-ENTRY-ENVELOPES` | `(is (search "thinking_level_change" text))`; `(is (search "session_info" text))` | decode `session-data`; assert entry count; for every entry compare `id`, `parentId`, `type`, every message `role` and `content`, then recursively compare every JSON field | The old search neither decoded the payload nor tied a hit to an entry.  The new assertion rejects missing, reordered, reparented, changed, or extra entries and changed message data. |
+| `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED` | `(is (search "branch-a-user" html))`; `(is (search "branch-b-user" html))` | decode `session-data`; compare every exported entry field against `session-entry-to-json`, including IDs, parent links, message roles/content; then require both branch texts inside decoded message content | The old global substring could match renderer code or unrelated markup.  The new assertion proves both branches are present in the exported session graph with their exact envelopes. |
+
+The first migrated run caught one assertion defect immediately: exact textual
+JSON comparison treated numerically equal `0` and `0.0e0` as different.  The
+final recursive comparison preserves numeric semantics while remaining exact
+for object keys, array order, strings, booleans, nulls, IDs, and parents.
+
+The presentation ledger is now `123 = 121 aligned/closed + 0 open + 2
+intentional`.  No payload, wire event, session entry, ID, parent link, message,
+or tool result changed.
+
+### Mechanical verification
+
+An isolated copy was built from the uncommitted Part C tree.  Its `build.sh`
+ran all eight deterministic systems before saving the image:
+
+```text
+cadr test summary: systems=8 checks=11711 pass=11711 skip=0 fail=0
+cadr build: SBCL lacks sb-core-compression; building an uncompressed image.
+```
+
+After the image was saved, the source asset directory was moved out of that
+copy.  The built binary still exported a real persisted session without access
+to the source assets:
+
+```text
+Exported to: /tmp/cadr-export-proof.FdwNkk/offline.html
+binary_mtime=2026-08-02 22:28:00.273504039 +0800 binary_bytes=72460408
+e8488100c23fc9656cd868a69ea46d2da11acc4ec7b8be2f9157b6f1d2c655eb  offline.html
+```
+
+The proof also asserted that the result contains the session-data marker and
+both embedded browser libraries.  This demonstrates image self-containment;
+it does not merely exercise the exporter while its source directory remains
+available.
+
+Implementation and regression commit: `07a9ff46f`.

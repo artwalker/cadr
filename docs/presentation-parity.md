@@ -78,11 +78,11 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `thinkingXhigh` | editor border at `xhigh` (same baseline range) | same editor border (same Cadr range) | 一致 |
 | `thinkingMax` | editor border at `max` (same baseline range) | same editor border (same Cadr range) | 一致 |
 | `bashMode` | user-bash editor/execution emphasis (`bash-execution.ts:130-151`) | same user-bash emphasis (`src/cadr-tui/theme.lisp:526-534`; `src/cadr-cli/tui.lisp:790-835`) | 一致 |
-| `pageBg` | exported session page background (`core/export-html/index.ts:108-167`) | parsed and tested but never passed to the actual exporter; exporter hard-codes light CSS (`src/cadr-cli/interactive-services.lisp:2576-2597`; `src/cadr-agent/session.lisp:2124-2149`) | 不一致 |
-| `cardBg` | exported session card background (same baseline range) | parsed but unused by exporter (same Cadr ranges) | 不一致 |
-| `infoBg` | exported session information-card background (same baseline range) | parsed but unused by exporter (same Cadr ranges) | 不一致 |
+| `pageBg` | exported session page background (`core/export-html/index.ts:108-167`) | active interactive theme and explicit `pageBg` flow into the template body background (`src/cadr-cli/main.lisp:3293-3348`; `src/cadr-agent/session.lisp:2440-2534`) | 不一致（已改齐） |
+| `cardBg` | exported session card background (same baseline range) | active `cardBg`, or the baseline-derived fallback, becomes the template container background (same Cadr ranges) | 不一致（已改齐） |
+| `infoBg` | exported session information-card background (same baseline range) | active `infoBg`, or the baseline-derived fallback, becomes the template information background (same Cadr ranges) | 不一致（已改齐） |
 
-B1 count after Part C transcript batch: `36 一致 + 16 不一致（已改齐） / 3 不一致 / 0 有意差异 = 55`.
+B1 final count: `36 一致 + 19 不一致（已改齐） / 0 不一致 / 0 有意差异 = 55`.
 
 ## B2. Visible element contracts
 
@@ -196,20 +196,20 @@ B3 count after Part C selector-format batch: `6 一致 + 4 不一致（已改齐
 | H-02 | OAuth failure HTML | same shell with `Authentication failed`, escaped message and optional monospace details (`oauth-page.ts:3-17,102-108`) | same failure title/heading and optional `.details` region (`src/cadr-ai/oauth.lisp:565-665`) | 不一致（已改齐） |
 | H-03 | callback-specific copy | route/state/missing-code/internal failures have distinct escaped messages (`openai-codex.ts:340-363`; `anthropic.ts:118-145`; `radius.ts:176-202`) | parser returns a typed outcome and provider-specific response copy for OpenAI, Anthropic and Radius (`src/cadr-ai/oauth.lisp:327-368,667-696,721-769`) | 不一致（已改齐） |
 | H-04 | HTML escaping | title, heading, message and details escape `&<>"'` (`oauth-page.ts:3-17`) | all four fields pass through one character-level HTML escaper before interpolation (`src/cadr-ai/oauth.lisp:553-573`) | 不一致（已改齐） |
-| H-05 | session export HTML | theme variables including `pageBg/cardBg/infoBg`, complete template/CSS/JS, marked and syntax highlighter (`core/export-html/index.ts:108-174`) | fixed light CSS and a static nested list; parsed export colors are unused (`src/cadr-agent/session.lisp:2124-2235`; `src/cadr-cli/interactive-services.lisp:2576-2597`) | 不一致 |
+| H-05 | session export HTML | theme variables including `pageBg/cardBg/infoBg`, complete template/CSS/JS, Base64 session data, Marked and syntax highlighter (`core/export-html/index.ts:108-174`) | exact baseline template assets, Base64 session data, licensed vendored browser scripts, and active/default theme projection (`src/cadr-agent/session.lisp:2124-2555`; `src/cadr-cli/main.lisp:1533-1544,3293-3348`) | 不一致（已改齐） |
 | H-06 | HTTP response framing | UTF-8 HTML content type, byte-accurate content length and close (`openai-codex.ts:336-365`) | same wire-level framing and UTF-8 byte length (`src/cadr-ai/oauth.lisp:530-547`) | 一致 |
 
-B4 count after Part C OAuth batch: `1 一致 + 4 不一致（已改齐） / 1 不一致 / 0 有意差异 = 6`.
+B4 final count: `1 一致 + 5 不一致（已改齐） / 0 不一致 / 0 有意差异 = 6`.
 
 ## Audit summary and Part C worklist
 
 | Category | 一致 | 不一致 | 有意差异 | Total |
 |---|---:|---:|---:|---:|
-| B1 semantic colors | 52 | 3 | 0 | 55 |
+| B1 semantic colors | 55 | 0 | 0 | 55 |
 | B2 visible elements | 50 | 0 | 2 | 52 |
 | B3 paths/numbers | 10 | 0 | 0 | 10 |
-| B4 non-terminal content | 5 | 1 | 0 | 6 |
-| **Total** | **117** | **4** | **2** | **123** |
+| B4 non-terminal content | 6 | 0 | 0 | 6 |
+| **Total** | **121** | **0** | **2** | **123** |
 
 The 39 row-level mismatches collapse to these implementation clusters; one fix
 may close multiple B1/B2/B3 rows, but no row may be silently dropped:
@@ -230,3 +230,6 @@ Part B changed no presentation source.  Part C must update each affected row to
 `不一致（已改齐）` with implementation and regression evidence.  The two
 intentional differences remain frozen: product branding and user-approved
 universal selector wrapping.
+
+All eleven implementation clusters are closed.  The final presentation ledger
+is `123 = 121 aligned/closed + 0 open + 2 intentional`.

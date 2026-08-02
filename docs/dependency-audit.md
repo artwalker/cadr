@@ -82,6 +82,28 @@ entry points use a fresh empty temporary `HOME` while preserving the resolved
 absolute `QUICKLISP_SETUP`, preventing build-user `.slynkrc` or `.slynk.lisp`
 side effects from entering the image or tests.
 
+## Browser-executed session-export assets
+
+Goal 13 Part C separately authorized two browser scripts copied byte-for-byte
+from immutable blobs already present in the repository object database.  They
+are embedded only in the standalone HTML produced by `/export`; they are not
+ASDF systems, add no Lisp/FFI/subprocess runtime closure, and execute only in
+the user's browser when the exported file is opened.
+
+| Artifact | Version | License | Git blob | SHA-256 | Bytes |
+|---|---|---|---|---|---:|
+| `marked.min.js` | 18.0.5 | MIT | `9d79575e45d0f6b88158097f5f4622ab938d76d9` | `d5487edc7258b404bfa74c393d74a6393155f02517bd5e7e77cd64f8187f39a0` | 42,882 |
+| `highlight.min.js` | 11.9.0 (`f47103d4f1`) | BSD-3-Clause | `5d699ae6a4cfc9544a22a9ac394b01db2e5abd4f` | `837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846` | 121,727 |
+
+Both minified files retain their complete upstream header comments, including
+copyright statements, license identifiers, and the Marked source URL.  No
+compression or build-time transform strips those notices.  The five export
+template/assets are read while `cadr-agent` loads and retained as strings in
+the saved SBCL image, so the release binary does not read the source asset
+directory at runtime.  The generated HTML has no external script, stylesheet,
+font, image, fetch, XHR, WebSocket, EventSource, or worker import; source URLs
+inside preserved license comments are inert and cause no network request.
+
 ## Test and exception-transitive systems
 
 - `fiveam`: assertions and ASDF `test-op`.

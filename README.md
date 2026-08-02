@@ -89,6 +89,14 @@ contains `slynk/mrepl` at Quicklisp snapshot `sly-20260101-git` (upstream
 commit `e01c7b4b`, archive MD5 `129945ec9a674a1efe353e2d3742fb00`). Its full
 closure is `slynk/mrepl → slynk → ASDF`; no other Slynk contrib is included.
 
+The separately authorized **browser-executed export assets** are Marked
+18.0.5 (MIT) and Highlight.js 11.9.0 (BSD-3-Clause). `/export` embeds their
+exact vendored bytes, complete license headers, renderer, styles, and Base64
+session data in one offline, self-contained HTML file. The export contains no
+external resource load and initiates no network request; the scripts execute
+only in the browser that opens the file and never enter Cadr's ASDF runtime
+closure.
+
 The exact production and transitive audit is in
 [`docs/dependency-audit.md`](docs/dependency-audit.md).
 
