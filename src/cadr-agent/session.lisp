@@ -2331,12 +2331,14 @@
          (info (or (getf explicit :info)
                    (getf derived :info))))
     (values
-     (format nil "~{~A~^~%      ~}"
+     (format nil
+             "~{~A~^~%      ~}~%      --exportPageBg: ~A;~%      --exportCardBg: ~A;~%      --exportInfoBg: ~A;"
              (mapcar
               (lambda (entry)
                 (format nil "--~A: ~A;"
                         (car entry) (cdr entry)))
-              colors))
+              colors)
+             page card info)
      page card info)))
 
 (defun export-html-session-data (session)

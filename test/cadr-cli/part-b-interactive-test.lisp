@@ -2949,12 +2949,16 @@
              (merge-pathnames "interactive.html" root))
            (theme
              (args
-              "vars" (args "page" "#102030")
+              "vars" (args "page" "#102030"
+                           "card" "#203040"
+                           "info" "#304050")
               "colors"
               (args "accent" "#123456"
                     "userMessageBg" "#405060")
               "export"
-              (args "pageBg" "page"))))
+              (args "pageBg" "page"
+                    "cardBg" "card"
+                    "infoBg" "info"))))
       (cadr-agent:session-append-message
        session
        (cadr-ai:make-user-message
@@ -2974,4 +2978,9 @@
               (uiop:read-file-string
                path :external-format :utf-8)))
         (is (search "--accent: #123456;" html))
-        (is (search "--body-bg: #102030;" html))))))
+        (is (search "--exportPageBg: #102030;" html))
+        (is (search "--exportCardBg: #203040;" html))
+        (is (search "--exportInfoBg: #304050;" html))
+        (is (search "--body-bg: #102030;" html))
+        (is (search "--container-bg: #203040;" html))
+        (is (search "--info-bg: #304050;" html))))))

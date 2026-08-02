@@ -420,6 +420,18 @@
        "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846"
        (export-test-sha256
         cadr-agent::+export-html-highlight-js+)))
+  (is (string=
+       "916782b1184a9597527605ad751e2b3af30fcea23ba2194002969cd217a06881"
+       (export-test-sha256
+        cadr-agent::+export-html-template+)))
+  (is (string=
+       "28c16e3827c23a62eef8283cac316b478f946e023093adad25ff9c9b891d41af"
+       (export-test-sha256
+        cadr-agent::+export-html-template-css+)))
+  (is (string=
+       "1893cdb77587f592eef5717905391269886d6d7a4dc6a488417a73da374d9226"
+       (export-test-sha256
+        cadr-agent::+export-html-template-js+)))
   (is (search
        "marked v18.0.5 - a markdown parser"
        cadr-agent::+export-html-marked-js+))
@@ -478,7 +490,9 @@
                 object "vars"
                 (cadr-ai::json-object
                  "message" "#204060"
-                 "page" "#112233"))
+                 "page" "#112233"
+                 "card" "#223344"
+                 "info" "#334455"))
                (cadr-ai::json-put
                 object "colors"
                 (cadr-ai::json-object
@@ -487,7 +501,9 @@
                (cadr-ai::json-put
                 object "export"
                 (cadr-ai::json-object
-                 "pageBg" "page"))
+                 "pageBg" "page"
+                 "cardBg" "card"
+                 "infoBg" "info"))
                object)))
       (cadr-agent:session-append-message
        session
@@ -506,6 +522,12 @@
                path :external-format :utf-8)))
         (is (search "--accent: #005f87;" html))
         (is (search "--userMessageBg: #204060;" html))
+        (is (search "--exportPageBg: #112233;" html))
+        (is (search "--exportCardBg: #223344;" html))
+        (is (search "--exportInfoBg: #334455;" html))
         (is (search "--body-bg: #112233;" html))
-        (is (search "--container-bg: rgb(27, 54, 82);" html))
-        (is (search "--info-bg: rgb(52, 79, 96);" html))))))
+        (is (search "--container-bg: #223344;" html))
+        (is (search "--info-bg: #334455;" html))
+        (is (null
+             (search "var(--info-bg)"
+                     cadr-agent::+export-html-template-css+)))))))
