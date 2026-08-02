@@ -122,6 +122,7 @@
    #:render-terminal-image
    #:terminal-hyperlink
    #:shortened-home-path
+   #:shortened-home-prefix-path
    #:image-fallback
    #:resolve-overlay-layout
    #:composite-overlay-line

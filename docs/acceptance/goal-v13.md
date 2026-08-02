@@ -81,3 +81,43 @@ docs/acceptance/goal-v13.md
 ```
 
 No `src/`, `test/`, build, script, or fixture file changed during Part B.
+
+## Part C batch 1 — built-in tool presentation
+
+The first Part C batch closes presentation clusters 1–7 without changing tool
+execution, model-facing result text, payloads, session data, or event counts.
+Headers are now typed segments instead of one uniformly colored summary; this
+enforces the baseline token split and also carries optional OSC-8 metadata.
+
+| Contract | Baseline | Cadr implementation | Regression |
+|---|---|---|---|
+| find/grep/ls header tokens, exact invalid copy, tool-only home prefix, path links | `render-utils.ts:10-29,71-84`; `find.ts:59-73`; `grep.ts:70-85`; `ls.ts:52-59` | `src/cadr-cli/tui.lisp:1358-1516`; `src/cadr-tui/components.lisp:1561-1594`; `src/cadr-tui/terminal-image.lisp:647-655` | `GOAL13-TOOL-HEADER-SEGMENTS-MATCH-BASELINE-COLORS-LINKS-AND-INVALID-COPY` |
+| read/write source highlighting | `read.ts:177-185`; `write.ts:146-155`; `theme.ts:1096-1157` | `src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514` | `GOAL13-READ-AND-WRITE-SOURCE-PREVIEWS-USE-BASELINE-SYNTAX-COLORS` |
+| tool-specific output colors and renderer warnings | `bash.ts:258-312`; `read.ts:164-200`; `write.ts:164-179`; `edit.ts:200-226`; `find.ts:85-105`; `grep.ts:97-119`; `ls.ts:71-91` | `src/cadr-tui/components.lisp:1226-1236`; `src/cadr-cli/tui.lisp:1719-1849` | `GOAL13-TOOL-RESULTS-USE-TOOL-SPECIFIC-COLORS-AND-DETAIL-WARNINGS`; `GOAL13-TOOL-OUTPUT-COLORS-ARE-TOOL-SPECIFIC-WHILE-STATUS-BACKGROUNDS-REMAIN` |
+| edit pending preview | `edit.ts:195-264` validates and builds a diff before execution | `src/cadr-cli/tools/edit.lisp:543-580`; `src/cadr-cli/tui.lisp:1698-1717,2016-2075` uses the same read-only validation/diff path | `GOAL13-EDIT-CALL-RENDERS-PREEXECUTION-PREVIEW-AND-VALIDATION-STATE` |
+| compact read title | `read.ts:91-162` classifies docs, resources, and skills | `src/cadr-cli/tui.lisp:1537-1616` performs the same classification before ordinary path rendering | `GOAL13-COMPACT-READ-TITLES-MATCH-BASELINE-CLASSIFICATION-AND-COPY` |
+
+Old → new observable values are exact: uniformly accent search summaries became
+accent pattern/path plus `toolOutput` suffixes; tool-specific invalid labels
+became `[invalid arg]`; eligible absolute file paths gained OSC-8 links; source
+previews gained language token colors; bash/read/find/grep/ls raw failures no
+longer become red merely because their status or text looks diagnostic; edit
+calls now show their validated diff while pending; classified reads use
+`read docs`, `read resource`, or `[skill] name`.
+
+The pre-existing Goal 9 test encoded the wrong generic rule that every failed
+tool result is red and every raw `Truncated` line is yellow.  It was replaced
+with a baseline-derived independent assertion: the background still reflects
+execution state, while raw foreground color remains tool-specific.  Structured
+truncation rows are generated from result details and use `warning`; model-facing
+tool result strings are untouched.
+
+Deterministic verification after this batch:
+
+```text
+cadr test summary: systems=8 checks=11544 pass=11544 skip=0 fail=0
+```
+
+The presentation ledger now stands at `123 = 106 closed/aligned + 15 open + 2
+intentional`.  No snapshot hash was changed in this batch; all existing full
+screen and overlay snapshots passed byte-for-byte.

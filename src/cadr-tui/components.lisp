@@ -1156,22 +1156,39 @@
             (:constructor %make-tool-block))
   (name "" :type string)
   (summary "" :type string)
+  (header-segments nil :type list)
   (output "" :type string)
+  output-token
+  source-language
+  syntax-highlight-function
+  (supplemental-lines nil :type list)
   (status :running :type symbol)
+  preview-status
   (collapsed-p nil :type boolean)
   started-at
   ended-at)
 
 (defun make-tool-block (&key (name "") (summary "")
-                             (output "") (status :running)
+                             header-segments
+                             (output "") output-token
+                             source-language
+                             syntax-highlight-function
+                             supplemental-lines
+                             (status :running) preview-status
                              started-at ended-at
                              (collapsed-p nil
                               collapsed-p-supplied-p))
   (%make-tool-block
    :name name
    :summary summary
+   :header-segments (copy-tree header-segments)
    :output output
+   :output-token output-token
+   :source-language source-language
+   :syntax-highlight-function syntax-highlight-function
+   :supplemental-lines (copy-list supplemental-lines)
    :status status
+   :preview-status preview-status
    :started-at started-at
    :ended-at ended-at
    :collapsed-p
@@ -1184,8 +1201,9 @@
         (not (tool-block-collapsed-p block)))
   block)
 
-(defun tool-status-theme-tokens (status)
-  (case status
+(defun tool-status-theme-tokens (block)
+  (case (or (tool-block-preview-status block)
+            (tool-block-status block))
     (:running
      (values :accent
              :tool-pending-bg nil))
@@ -1221,18 +1239,15 @@
      20)
     (t nil)))
 
-(defun tool-output-line-token (line status)
-  (cond
-    ((eq status :error) :error)
-    ((cl-ppcre:scan
-      "(?i)^(?:\\[)?(?:error|failed|failure)\\b"
-      (string-left-trim '(#\Space #\Tab) line))
-     :error)
-    ((cl-ppcre:scan
-      "(?i)^(?:\\[)?(?:warning|warn|truncated|timed out)\\b"
-      (string-left-trim '(#\Space #\Tab) line))
-     :warning)
-    (t :tool-output)))
+(defun tool-output-line-token (block)
+  (or
+   (tool-block-output-token block)
+   (and
+    (eq (tool-block-status block) :error)
+    (member (string-downcase (tool-block-name block))
+            '("write" "edit") :test #'string=)
+    :error)
+   :tool-output))
 
 (defun diff-line-data (line)
   (when (plusp (length line))
@@ -1486,11 +1501,22 @@
 
 (defun style-tool-output-lines
     (block ansi-theme-p)
-  (let* ((lines
+  (let* ((normalized
+           (normalize-tool-output
+            (tool-block-output block)))
+         (highlighted
+           (if (and
+                (tool-block-source-language block)
+                (tool-block-syntax-highlight-function block)
+                (not (eq (tool-block-status block) :error)))
+               (funcall
+                (tool-block-syntax-highlight-function block)
+                (tool-block-source-language block)
+                normalized)
+               normalized))
+         (lines
            (trim-trailing-empty-lines
-            (split-lines-preserving-empty
-             (normalize-tool-output
-              (tool-block-output block)))))
+            (split-lines-preserving-empty highlighted)))
          (diff-p
            (and
             (string-equal
@@ -1504,12 +1530,35 @@
              lines))))
     (if diff-p
         (style-diff-lines lines ansi-theme-p)
-        (loop for line in lines
-              collect
-              (theme-foreground
-               (tool-output-line-token
-                line (tool-block-status block))
-               line :enabled-p ansi-theme-p)))))
+        (if (and
+             (tool-block-source-language block)
+             (tool-block-syntax-highlight-function block)
+             (not (eq (tool-block-status block) :error)))
+            lines
+            (loop for line in lines
+                  collect
+                  (theme-foreground
+                   (tool-output-line-token block)
+                   line :enabled-p ansi-theme-p))))))
+
+(defun render-tool-header-segment (segment ansi-theme-p)
+  (let* ((text (or (getf segment :text) ""))
+         (bold
+           (if (getf segment :bold-p)
+               (theme-bold text :enabled-p ansi-theme-p)
+               text))
+         (styled
+           (if (getf segment :token)
+               (theme-foreground
+                (getf segment :token) bold
+                :enabled-p ansi-theme-p)
+               bold))
+         (url (getf segment :url)))
+    (if (and url
+             (terminal-capabilities-hyperlinks-p
+              (get-terminal-capabilities)))
+        (terminal-hyperlink styled url)
+        styled)))
 
 (defun tool-output-preview-lines
     (block content-width ansi-theme-p)
@@ -1569,11 +1618,19 @@
   (multiple-value-bind
         (status-token background-token indicator)
       (tool-status-theme-tokens
-       (tool-block-status block))
+       block)
     (let* ((content-width (max 1 (- width 2)))
            (header
-             (format
-              nil "~@[~A ~]~A~@[ ~A~]"
+             (if (tool-block-header-segments block)
+                 (format
+                  nil "~{~A~}"
+                  (mapcar
+                   (lambda (segment)
+                     (render-tool-header-segment
+                      segment ansi-theme-p))
+                   (tool-block-header-segments block)))
+                 (format
+                  nil "~@[~A ~]~A~@[ ~A~]"
               (and
                indicator
                (theme-foreground
@@ -1631,7 +1688,7 @@
                       (t
                        (theme-foreground
                         :accent summary
-                        :enabled-p ansi-theme-p))))))))
+                        :enabled-p ansi-theme-p)))))))))
            (header-lines
              (wrap-logical-line
               header content-width))
@@ -1673,6 +1730,15 @@
               header-lines
               (and output-lines
                    (cons "" output-lines))
+              (and (tool-block-supplemental-lines block)
+                   (cons
+                    ""
+                    (mapcar
+                     (lambda (line)
+                       (theme-foreground
+                        :warning line
+                        :enabled-p ansi-theme-p))
+                     (tool-block-supplemental-lines block))))
               (and timing-line
                    (list "" timing-line))
               (list ""))))

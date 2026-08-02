@@ -644,6 +644,15 @@
          'string "~" (subseq path (length home)))
         path)))
 
+(defun shortened-home-prefix-path (path)
+  (let* ((home-path
+           (namestring (user-homedir-pathname)))
+         (home (string-right-trim "/" home-path)))
+    (if (string-prefix-p home path)
+        (concatenate
+         'string "~" (subseq path (length home)))
+        path)))
+
 (defun image-fallback
     (mime-type &key width height filename
        (capabilities (get-terminal-capabilities)))

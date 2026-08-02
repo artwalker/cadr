@@ -643,7 +643,7 @@
                         rendered))))
       (cadr-tui:reset-current-theme))))
 
-(test goal9-tool-output-classifies-error-warning-and-status-backgrounds
+(test goal13-tool-output-colors-are-tool-specific-while-status-backgrounds-remain
   (let* ((caps
            (cadr-tui:make-terminal-capabilities
             :images nil :true-color-p t
@@ -673,17 +673,27 @@
                         #\Escape)
                 error-rendered))
            (is (search
-                (format nil "~C[38;2;204;102;102m"
+                (format nil "~C[38;2;128;128;128m"
                         #\Escape)
                 error-rendered))
+           (is (null
+                (search
+                 (format nil "~C[38;2;204;102;102m"
+                         #\Escape)
+                 error-rendered)))
            (is (search
                 (format nil "~C[48;2;40;50;40m"
                         #\Escape)
                 warning-rendered))
            (is (search
-                (format nil "~C[38;2;255;255;0m"
+                (format nil "~C[38;2;128;128;128m"
                         #\Escape)
-                warning-rendered)))
+                warning-rendered))
+           (is (null
+                (search
+                 (format nil "~C[38;2;255;255;0m"
+                         #\Escape)
+                 warning-rendered))))
       (cadr-tui:reset-current-theme))))
 
 (test goal9-tool-output-strips-terminal-control-sequences

@@ -105,6 +105,7 @@
                              (:file "goal12-core-capabilities-test")
                              (:file "goal12-sdk-test")
                              (:file "goal12-examples-test")
+                             (:file "goal13-presentation-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

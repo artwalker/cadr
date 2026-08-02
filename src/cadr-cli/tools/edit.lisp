@@ -540,6 +540,44 @@
                 do (format stream "~% ~A"
                            (aref old-lines index))))))))
 
+(defun preview-edit-call (cwd arguments)
+  (handler-case
+      (let* ((arguments (prepare-edit-arguments arguments))
+             (display-path
+               (required-string arguments "path"))
+             (path (resolve-readable-tool-path cwd display-path)))
+        (unless (probe-file path)
+          (error "Could not edit file: ~A. Error code: ENOENT."
+                 display-path))
+        (let* ((raw
+                 (uiop:read-file-string
+                  path :external-format :utf-8))
+               (ending (detect-line-ending raw)))
+          (declare (ignore ending))
+          (multiple-value-bind (bom body)
+              (strip-utf8-bom raw)
+            (declare (ignore bom))
+            (let* ((original (normalize-line-endings body))
+                   (replacements
+                     (parse-replacements
+                      arguments original display-path))
+                   (updated
+                     (apply-replacements original replacements)))
+              (when (string= original updated)
+                (if (= 1 (length replacements))
+                    (error
+                     "No changes made to ~A. The replacement produced identical content. This might indicate an issue with special characters or the text not existing as expected."
+                     display-path)
+                    (error
+                     "No changes made to ~A. The replacements produced identical content."
+                     display-path)))
+              (values
+               (generate-edit-display-diff
+                original updated replacements)
+               :complete)))))
+    (condition (condition)
+      (values (princ-to-string condition) :error))))
+
 (defun make-edit-tool (cwd &key context)
   (cadr-ai:make-tool
    :name "edit"

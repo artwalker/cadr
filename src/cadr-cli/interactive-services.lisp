@@ -3298,10 +3298,14 @@
   (process-image-data (read-binary-file path)))
 
 (defparameter +syntax-highlight-languages+
-  '("bash" "c" "cpp" "css" "diff" "go"
-    "html" "java" "javascript" "json" "lisp"
-    "markdown" "python" "ruby" "rust" "sql"
-    "typescript" "xml" "yaml"))
+  '("bash" "c" "clojure" "cmake" "cpp" "csharp"
+    "css" "diff" "dockerfile" "elixir" "erlang"
+    "fish" "go" "graphql" "haskell" "hcl" "html"
+    "java" "javascript" "json" "kotlin" "less"
+    "lisp" "lua" "makefile" "markdown" "ocaml"
+    "perl" "php" "powershell" "protobuf" "python"
+    "r" "ruby" "rust" "sass" "scala" "scss" "sql"
+    "swift" "toml" "typescript" "vim" "xml" "yaml"))
 
 (defun supports-syntax-language-p (language)
   (not
