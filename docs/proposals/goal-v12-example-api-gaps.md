@@ -1,8 +1,8 @@
 # Goal 12 示例驱动的扩展 API 缺口提案
 
-状态：**19 项能力已于 2026-08-02 获得用户逐项批准；开工预审发现第 7、8、10 项
-需要越出第 3 节原定最小文件面，当前按硬约束 blocked。补充解冻提案见
-`docs/proposals/goal-v12-api-scope-amendment.md`；获批前不实现任何生产 API。**
+状态：**19 项能力与补充项 A/B/C 已于 2026-08-02 获得用户逐项批准；继续施工前
+发现第 6、10 项仍有两处必经实现面漏列，当前按硬约束再次 blocked。第二次补充
+解冻提案见 `docs/proposals/goal-v12-api-scope-amendment-2.md`；获批前不再修改生产 API。**
 
 固定基线：
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`

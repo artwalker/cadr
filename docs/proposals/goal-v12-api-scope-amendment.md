@@ -1,6 +1,7 @@
 # Goal 12 扩展 API 实现面补充解冻提案
 
-状态：**blocked，等待用户逐项裁决。**
+状态：**A/B/C 已于 2026-08-02 获用户逐项批准；后续调用链审计产生的 D/E 见
+`goal-v12-api-scope-amendment-2.md`。**
 
 固定基线：
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
