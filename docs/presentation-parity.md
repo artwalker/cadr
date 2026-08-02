@@ -40,9 +40,9 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `selectedBg` | selected session/tree row (`session-selector.ts:500-516`; `tree-selector.ts:1156-1252`) | selected session/tree row (`src/cadr-cli/interactive-services.lisp:1640-1705,5800-5865`) | 一致 |
 | `userMessageBg` | full-width user-message box (`user-message.ts:38-57`) | full-width user-message box (`src/cadr-cli/tui.lisp:2086-2123`) | 一致 |
 | `userMessageText` | user Markdown foreground (`user-message.ts:40-55`) | user Markdown foreground (`src/cadr-cli/tui.lisp:2086-2123`) | 一致 |
-| `customMessageBg` | custom, skill, branch and compaction transcript boxes (`custom-message.ts:33-38`; `skill-invocation-message.ts:11-52`; `branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57`) | extension custom messages use it, but skill invocations are ordinary user rows and branch/compaction summaries have no equivalent box (`src/cadr-cli/tui.lisp:1256-1302,2196-2203`) | 不一致 |
-| `customMessageText` | custom/skill/branch/compaction body (`custom-message.ts:91-110`; `skill-invocation-message.ts:36-52`; `branch-summary-message.ts:39-54`; `compaction-summary-message.ts:40-55`) | extension custom body only; the other three transcript surfaces are absent or plain text (`src/cadr-cli/tui.lisp:2196-2203`) | 不一致 |
-| `customMessageLabel` | `[custom]`, `[skill]`, `[branch]`, `[compaction]` labels (same files as preceding row) | extension custom label only; the other three transcript surfaces are absent or plain text (`src/cadr-cli/tui.lisp:2196-2203`) | 不一致 |
+| `customMessageBg` | custom, skill, branch and compaction transcript boxes (`custom-message.ts:33-38`; `skill-invocation-message.ts:11-52`; `branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57`) | native skill/branch/compaction entries now compose the same full-width custom background box as extension messages (`src/cadr-cli/tui.lisp:2529-2615`) | 不一致（已改齐） |
+| `customMessageText` | custom/skill/branch/compaction body (`custom-message.ts:91-110`; `skill-invocation-message.ts:36-52`; `branch-summary-message.ts:39-54`; `compaction-summary-message.ts:40-55`) | collapsed copy and expanded Markdown bodies use `customMessageText` (`src/cadr-cli/tui.lisp:2525-2606`) | 不一致（已改齐） |
+| `customMessageLabel` | `[custom]`, `[skill]`, `[branch]`, `[compaction]` labels (same files as preceding row) | all three native transcript components use bold bracketed `customMessageLabel` labels (`src/cadr-cli/tui.lisp:2517-2523,2544-2590`) | 不一致（已改齐） |
 | `toolPendingBg` | running/default tool shell (`tool-execution.ts:63-75,248-268`) | running tool shell (`src/cadr-tui/components.lisp:1187-1197,1567-1695`) | 一致 |
 | `toolSuccessBg` | settled successful tool shell and valid edit preview (`tool-execution.ts:248-268`; `edit.ts:229-264`) | settled successful tool shell; edit-preview timing is separately missing, but settled assignment is correct (`src/cadr-tui/components.lisp:1187-1197,1567-1695`) | 一致 |
 | `toolErrorBg` | settled failed tool shell and invalid edit preview (`tool-execution.ts:248-268`; `edit.ts:229-264`) | settled failed tool shell (`src/cadr-tui/components.lisp:1187-1197,1567-1695`) | 一致 |
@@ -82,7 +82,7 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `cardBg` | exported session card background (same baseline range) | parsed but unused by exporter (same Cadr ranges) | 不一致 |
 | `infoBg` | exported session information-card background (same baseline range) | parsed but unused by exporter (same Cadr ranges) | 不一致 |
 
-B1 count after Part C tool batch: `36 一致 + 13 不一致（已改齐） / 6 不一致 / 0 有意差异 = 55`.
+B1 count after Part C transcript batch: `36 一致 + 16 不一致（已改齐） / 3 不一致 / 0 有意差异 = 55`.
 
 ## B2. Visible element contracts
 
@@ -113,8 +113,8 @@ B1 count after Part C tool batch: `36 一致 + 13 不一致（已改齐） / 6 �
 | M-03 | thinking | consecutive blocks merge with blank lines; muted/italic; one spacer before following answer (`assistant-message.ts:115-168`) | same (`src/cadr-cli/tui.lisp:2003-2075`) | 一致 |
 | M-04 | length/error/abort | exact length message, `Operation aborted`, or `Error: ...`, with one spacer and output padding (`assistant-message.ts:172-201`) | same exact copy, color and spacing (`src/cadr-cli/tui.lisp:1954-2001`) | 一致 |
 | M-05 | extension custom message/entry | custom background/label/body or extension-owned component (`custom-message.ts:33-112`; `custom-entry.ts:40-60`) | same bridge/default surface (`src/cadr-cli/tui.lisp:2124-2198`) | 一致 |
-| M-06 | skill invocation | separate collapsible custom-background `[skill] name` row plus user text (`skill-invocation-message.ts:11-52`; `interactive-mode.ts:3290-3369`) | stored skill block is rendered as an ordinary user message; no transcript skill component (`src/cadr-cli/tui.lisp:1256-1302`) | 不一致 |
-| M-07 | branch/compaction summary | collapsible custom-background component, label, localized token count and full Markdown (`branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57`) | compaction is a flat `Compaction summary: ...` line; branch summary has no transcript component (`src/cadr-cli/tui.lisp:1793-1820,2199-2203`) | 不一致 |
+| M-06 | skill invocation | separate collapsible custom-background `[skill] name` row plus user text (`skill-invocation-message.ts:11-52`; `interactive-mode.ts:3290-3369`) | both history seeding and streaming message-start parse the skill envelope into a collapsible skill entry plus a separate user entry (`src/cadr-cli/tui.lisp:1259-1351,1953-1985,2529-2563`) | 不一致（已改齐） |
+| M-07 | branch/compaction summary | collapsible custom-background component, label, localized token count and full Markdown (`branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57`) | native messages and compaction events retain summary/tokens as typed entry fields and render exact collapsed/expanded components (`src/cadr-cli/tui.lisp:1303-1320,2221-2243,2564-2615`) | 不一致（已改齐） |
 
 ### Footer and active status
 
@@ -169,7 +169,7 @@ oracle.
 | N-09 | model catalog refresh | exact `Model catalogs refreshed.` and configured-provider guidance (`model-selector.ts:91-103,174-185`) | same (`src/cadr-cli/main.lisp:3455-3480`; `src/cadr-cli/interactive-services.lisp:8060-8090`) | 一致 |
 | N-10 | package/install foreground output | deliberate foreground progress; wrapper diagnostics excluded (`package-manager-cli.ts:503-510`; `core/package-manager.ts:2530-2536`) | same product/diagnostic boundary (`src/cadr-cli/package-manager.lisp:937-1105`) | 一致 |
 
-B2 count after Part C tool batch: `39 一致 + 9 不一致（已改齐） / 2 不一致 / 2 有意差异 = 52`.
+B2 count after Part C transcript batch: `39 一致 + 11 不一致（已改齐） / 0 不一致 / 2 有意差异 = 52`.
 
 ## B3. Paths and numeric formats
 
@@ -205,11 +205,11 @@ B4 count: `1 一致 / 5 不一致 / 0 有意差异 = 6`.
 
 | Category | 一致 | 不一致 | 有意差异 | Total |
 |---|---:|---:|---:|---:|
-| B1 semantic colors | 49 | 6 | 0 | 55 |
-| B2 visible elements | 48 | 2 | 2 | 52 |
+| B1 semantic colors | 52 | 3 | 0 | 55 |
+| B2 visible elements | 50 | 0 | 2 | 52 |
 | B3 paths/numbers | 8 | 2 | 0 | 10 |
 | B4 non-terminal content | 1 | 5 | 0 | 6 |
-| **Total** | **106** | **15** | **2** | **123** |
+| **Total** | **111** | **10** | **2** | **123** |
 
 The 39 row-level mismatches collapse to these implementation clusters; one fix
 may close multiple B1/B2/B3 rows, but no row may be silently dropped:

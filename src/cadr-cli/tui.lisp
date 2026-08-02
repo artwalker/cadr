@@ -3,6 +3,9 @@
 (defstruct tui-entry
   type
   (text "" :type string)
+  label
+  tokens-before
+  (expanded-p nil :type boolean)
   (content-blocks nil :type list)
   (streaming-p nil :type boolean)
   (markdown-cache nil :type list)
@@ -1256,13 +1259,10 @@
 (defun seed-tui-message (state message)
   (typecase message
     (cadr-ai:user-message
-     (append-tui-entry
+     (append-tui-user-message
       state
-      (make-tui-entry
-       :type :user
-       :text
-       (cadr-ai::content-text
-        (cadr-ai:user-message-content message)))))
+      (cadr-ai::content-text
+       (cadr-ai:user-message-content message))))
     (cadr-ai:assistant-message
      (append-tui-entry
       state
@@ -1299,7 +1299,55 @@
           (cadr-agent::custom-agent-message-details message)
           :display-p t)
          :custom-options
-         '(:expanded-p nil :output-pad 1))))))
+         '(:expanded-p nil :output-pad 1)))))
+    (cadr-agent:branch-summary-message
+     (append-tui-entry
+      state
+      (make-tui-entry
+       :type :branch-summary
+       :text
+       (cadr-agent::branch-summary-message-summary message)
+       :expanded-p (tui-state-tools-expanded-p state))))
+    (cadr-agent:compaction-summary-agent-message
+     (append-tui-entry
+      state
+      (make-tui-entry
+       :type :compaction-summary
+       :text
+       (cadr-agent::compaction-summary-agent-message-summary message)
+       :tokens-before
+       (cadr-agent::compaction-summary-agent-message-tokens-before message)
+       :expanded-p (tui-state-tools-expanded-p state)))))
+  state)
+
+(defun append-tui-user-message (state text)
+  (multiple-value-bind
+        (name location content user-message skill-p)
+      (cadr-agent::parse-session-skill-block text)
+    (declare (ignore location))
+    (if skill-p
+        (progn
+          (append-tui-entry
+           state
+           (make-tui-entry
+            :type :skill-invocation
+            :label name
+            :text content
+            :expanded-p
+            (tui-state-tools-expanded-p state)))
+          (when user-message
+            (let ((trimmed
+                    (string-trim
+                     '(#\Space #\Tab #\Newline #\Return)
+                     user-message)))
+              (when (plusp (length trimmed))
+                (append-tui-entry
+                 state
+                 (make-tui-entry
+                  :type :user :text trimmed))))))
+        (append-tui-entry
+         state
+         (make-tui-entry :type :user :text text))))
   state)
 
 (defun reset-tui-messages
@@ -1905,19 +1953,16 @@
       (:message-start
        (typecase message
          (cadr-ai:user-message
-          (append-tui-entry
+          (append-tui-user-message
            state
-           (make-tui-entry
-            :type :user
-            :text
-            (cadr-ai::content-text
-             (cadr-ai:user-message-content message)))))
+           (cadr-ai::content-text
+            (cadr-ai:user-message-content message))))
          (cadr-ai:assistant-message
           (let ((entry
                   (append-tui-entry
                    state
                    (make-tui-entry
-                   :type :assistant
+                    :type :assistant
                     :streaming-p t
                     :stop-reason
                     (cadr-ai:assistant-message-stop-reason
@@ -1933,7 +1978,11 @@
                      message)))))
             (setf
              (tui-state-current-assistant state)
-             entry)))))
+             entry)))
+         (cadr-agent:branch-summary-message
+          (seed-tui-message state message))
+         (cadr-agent:compaction-summary-agent-message
+          (seed-tui-message state message))))
       (:message-update
        (when
            (and
@@ -2185,12 +2234,11 @@
             state
             (make-tui-entry
              :type :compaction-summary
-             :text
-             (format
-              nil
-              "~@[~:D tokens compacted~]~@[~%~A~]"
-              compaction-tokens-before
-              compaction-summary)))
+             :text compaction-summary
+             :tokens-before
+             (or compaction-tokens-before 0)
+             :expanded-p
+             (tui-state-tools-expanded-p state)))
            (add-tui-status state
                            "Context compacted")))
       (:compaction-error
@@ -2466,6 +2514,106 @@
          background-token line
          :enabled-p t)))
 
+(defun transcript-summary-label (name)
+  (cadr-tui:theme-foreground
+   :custom-message-label
+   (cadr-tui:theme-bold
+    (format nil "[~A]" name)
+    :enabled-p t)
+   :enabled-p t))
+
+(defun transcript-summary-text (text)
+  (cadr-tui:theme-foreground
+   :custom-message-text text :enabled-p t))
+
+(defun render-transcript-summary-entry (entry width)
+  (labels
+      ((text-component (text)
+         (cadr-tui:make-text-component
+          text :padding-x 0 :padding-y 0))
+       (markdown-component (text)
+         (cadr-tui:make-markdown-component
+          text
+          :ansi-theme-p t
+          :syntax-highlight-function #'tui-syntax-highlight
+          :default-style-function #'transcript-summary-text)))
+    (let* ((expanded-p (tui-entry-expanded-p entry))
+           (type (tui-entry-type entry))
+           (children
+             (case type
+               (:skill-invocation
+                (if expanded-p
+                    (list
+                     (text-component
+                      (transcript-summary-label "skill"))
+                     (markdown-component
+                      (format nil "**~A**~%~%~A"
+                              (tui-entry-label entry)
+                              (tui-entry-text entry))))
+                    (list
+                     (text-component
+                      (concatenate
+                       'string
+                       (transcript-summary-label "skill")
+                       " "
+                       (transcript-summary-text
+                        (tui-entry-label entry))
+                       (cadr-tui:theme-foreground
+                        :dim " (ctrl+o to expand)"
+                        :enabled-p t))))))
+               (:branch-summary
+                (list
+                 (text-component
+                  (transcript-summary-label "branch"))
+                 (cadr-tui:make-spacer-component :lines 1)
+                 (if expanded-p
+                     (markdown-component
+                      (format nil "**Branch Summary**~%~%~A"
+                              (tui-entry-text entry)))
+                     (text-component
+                      (concatenate
+                       'string
+                       (transcript-summary-text
+                        "Branch summary (")
+                       (cadr-tui:theme-foreground
+                        :dim "ctrl+o" :enabled-p t)
+                       (transcript-summary-text
+                        " to expand)"))))))
+               (:compaction-summary
+                (let ((tokens
+                        (format nil "~:D"
+                                (or (tui-entry-tokens-before entry)
+                                    0))))
+                  (list
+                   (text-component
+                    (transcript-summary-label "compaction"))
+                   (cadr-tui:make-spacer-component :lines 1)
+                   (if expanded-p
+                       (markdown-component
+                        (format nil
+                                "**Compacted from ~A tokens**~%~%~A"
+                                tokens (tui-entry-text entry)))
+                       (text-component
+                        (concatenate
+                         'string
+                         (transcript-summary-text
+                          (format nil
+                                  "Compacted from ~A tokens ("
+                                  tokens))
+                         (cadr-tui:theme-foreground
+                          :dim "ctrl+o" :enabled-p t)
+                         (transcript-summary-text
+                          " to expand)")))))))))
+           (component
+             (cadr-tui:make-box-component
+              :padding-x 1 :padding-y 1
+              :background-function
+              (lambda (text)
+                (cadr-tui:theme-background
+                 :custom-message-bg text :enabled-p t))
+              :children children)))
+      (cadr-tui:component-render component width))))
+
 (defun render-tui-entry-uncached
     (entry width &key extension-host now
                       hide-thinking-block-p
@@ -2571,11 +2719,8 @@
     ((:custom-message :custom-entry)
      (render-extension-custom-entry
       entry width extension-host))
-    (:compaction-summary
-     (cadr-tui:wrap-text
-      (format nil "Compaction summary: ~A"
-              (tui-entry-text entry))
-      width))
+    ((:skill-invocation :branch-summary :compaction-summary)
+     (render-transcript-summary-entry entry width))
     (:notice
      (cons
       ""
@@ -3244,6 +3389,10 @@
         (not expanded-p)))
       ((:custom-message :custom-entry)
        (setf (getf (tui-entry-custom-options entry) :expanded-p)
+             (not (null expanded-p)))
+       (invalidate-tui-entry-render-cache entry))
+      ((:skill-invocation :branch-summary :compaction-summary)
+       (setf (tui-entry-expanded-p entry)
              (not (null expanded-p)))
        (invalidate-tui-entry-render-cache entry))))
   (tui-state-tools-expanded-p state))

@@ -339,3 +339,94 @@
                    (cadr-tui:strip-terminal-sequences
                     (goal13-rendered-tool block))))
             (is (search expected plain))))))))
+
+(test goal13-skill-branch-and-compaction-transcripts-match-baseline-components
+  (let* ((state (cadr-cli::make-tui-state))
+         (skill-message
+           (cadr-ai:make-user-message
+            :content
+            (format nil
+                    "<skill name=\"audit\" location=\"/tmp/SKILL.md\">~%Skill body.~%</skill>~%~%Please review.")))
+         (branch
+           (cadr-agent:make-branch-summary-message
+            :summary "Branch **summary** body."))
+         (compaction
+           (cadr-agent:make-compaction-summary-agent-message
+            :summary "Compaction **summary** body."
+            :tokens-before 12345)))
+    (cadr-cli::seed-tui-message state skill-message)
+    (cadr-cli::seed-tui-message state branch)
+    (cadr-cli::seed-tui-message state compaction)
+    (is
+     (equal
+      '(:skill-invocation :user :branch-summary :compaction-summary)
+      (mapcar #'cadr-cli::tui-entry-type
+              (cadr-cli::tui-state-entries state))))
+    (is
+     (string= "Please review."
+              (cadr-cli::tui-entry-text
+               (second (cadr-cli::tui-state-entries state)))))
+    (let ((collapsed
+            (mapcar
+             (lambda (entry)
+               (mapcar
+                #'cadr-tui:strip-terminal-sequences
+                (cadr-cli::render-tui-entry entry 72)))
+             (cadr-cli::tui-state-entries state))))
+      ;; Baseline custom messages are full-width boxes with exactly one line
+      ;; of vertical padding; branch/compaction add one internal spacer line.
+      (is (= 3 (length (first collapsed))))
+      (is (= 5 (length (third collapsed))))
+      (is (= 5 (length (fourth collapsed))))
+      (is (every
+           (lambda (lines)
+             (every (lambda (line) (= 72 (length line))) lines))
+           (list (first collapsed) (third collapsed)
+                 (fourth collapsed))))
+      (is (find-if
+           (lambda (line)
+             (search "[skill] audit (ctrl+o to expand)" line))
+           (first collapsed)))
+      (is (find-if
+           (lambda (line)
+             (search "Branch summary (ctrl+o to expand)" line))
+           (third collapsed)))
+      (is (find-if
+           (lambda (line)
+             (search "Compacted from 12,345 tokens (ctrl+o to expand)" line))
+           (fourth collapsed))))
+    (cadr-cli::set-tui-tools-expanded state t)
+    (let ((expanded
+            (mapcar
+             (lambda (entry)
+               (format
+                nil "~{~A~^~%~}"
+                (mapcar
+                 #'cadr-tui:strip-terminal-sequences
+                 (cadr-cli::render-tui-entry entry 72))))
+             (cadr-cli::tui-state-entries state))))
+      (is (search "Skill body." (first expanded)))
+      (is (search "Branch Summary" (third expanded)))
+      (is (search "Branch summary body." (third expanded)))
+      (is (search "Compacted from 12,345 tokens" (fourth expanded)))
+      (is (search "Compaction summary body." (fourth expanded))))))
+
+(test goal13-streaming-skill-message-uses-the-same-split-transcript-path
+  (let* ((state (cadr-cli::make-tui-state))
+         (message
+           (cadr-ai:make-user-message
+            :content
+            (format nil
+                    "<skill name=\"live\" location=\"/tmp/live/SKILL.md\">~%Live body.~%</skill>~%~%Do it."))))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :message-start :message message))
+    (is
+     (equal '(:skill-invocation :user)
+            (mapcar #'cadr-cli::tui-entry-type
+                    (cadr-cli::tui-state-entries state))))
+    (is
+     (string= "Do it."
+              (cadr-cli::tui-entry-text
+               (second (cadr-cli::tui-state-entries state)))))))

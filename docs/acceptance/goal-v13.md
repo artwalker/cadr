@@ -121,3 +121,35 @@ cadr test summary: systems=8 checks=11544 pass=11544 skip=0 fail=0
 The presentation ledger now stands at `123 = 106 closed/aligned + 15 open + 2
 intentional`.  No snapshot hash was changed in this batch; all existing full
 screen and overlay snapshots passed byte-for-byte.
+
+## Part C batch 2 — native transcript components
+
+Skill invocations, branch summaries, and compaction summaries now use the same
+collapsible custom-background composition as the baseline.  A shared entry
+projection handles both restored history and live message-start events, so the
+same skill envelope cannot render differently depending on when it appears.
+
+| Contract | Baseline | Cadr implementation | Regression |
+|---|---|---|---|
+| skill envelope split | `agent-session.ts:115-139`; `interactive-mode.ts:3320-3346` | `src/cadr-cli/tui.lisp:1259-1351,1953-1985` emits a skill entry and optional trimmed user entry | `GOAL13-SKILL-BRANCH-AND-COMPACTION-TRANSCRIPTS-MATCH-BASELINE-COMPONENTS`; `GOAL13-STREAMING-SKILL-MESSAGE-USES-THE-SAME-SPLIT-TRANSCRIPT-PATH` |
+| skill component | `skill-invocation-message.ts:11-52` | `src/cadr-cli/tui.lisp:2529-2563` | same component regression |
+| branch/compaction components | `branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57` | `src/cadr-cli/tui.lisp:1303-1320,2221-2243,2564-2615` | same component regression |
+| global expand action | `interactive-mode.ts:3849-3868` expands every expandable transcript child | `src/cadr-cli/tui.lisp:3377-3397` updates tools, custom entries, skill entries, and summary entries together | same component regression |
+
+The old flat values—an ordinary user block for a skill and `Compaction
+summary: ...` for compaction—became exact `[skill]`, `[branch]`, and
+`[compaction]` components with localized token grouping, `ctrl+o` hints,
+Markdown-expanded bodies, and full-width `customMessageBg`.  Agent messages,
+session serialization, and model context remain unchanged; only their TUI
+projection changed.
+
+The component regression also derives geometry independently from the baseline:
+every custom transcript box is exactly full width with one top and bottom padding
+row, while branch and compaction add exactly one internal spacer.  No SHA was
+regenerated to bless the implementation.
+
+Deterministic gate after this batch:
+
+```text
+cadr test summary: systems=8 checks=11562 pass=11562 skip=0 fail=0
+```

@@ -2288,18 +2288,27 @@
            (last
             (cadr-cli::tui-state-entries
              state))))))
+    (let ((entries
+            (cadr-cli::tui-state-entries
+             state)))
+      (is (string= "old"
+                   (cadr-cli::tui-entry-text
+                    (first entries))))
+      (is (string= "summary"
+                   (cadr-cli::tui-entry-text
+                    (third entries)))))
     (let ((editor
             (cadr-tui:make-multiline-editor)))
       (multiple-value-bind (lines row column)
           (cadr-cli::render-tui-state
-           state editor 80 16)
+           state editor 80 24)
         (declare (ignore row column))
         (let ((screen
                 (format nil "~{~A~^~%~}"
                         lines)))
           (is (search "old" screen))
           (is (search "answer" screen))
-          (is (search "summary" screen))
+          (is (null (search "summary" screen)))
           (is (search "123 tokens" screen))))))
   (let ((queued nil)
         (started nil))
