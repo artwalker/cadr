@@ -355,7 +355,8 @@
         (cadr-cli::flush-tui-render
          (frame-fixture-render-coordinator fixture)
          (lambda ()
-           (setf rendered (render-fixture fixture))))
+           (setf rendered (render-fixture fixture)))
+         :force-p t)
       (error "Alt-screen benchmark request did not render"))
     rendered))
 

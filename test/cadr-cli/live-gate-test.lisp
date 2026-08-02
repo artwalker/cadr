@@ -200,7 +200,8 @@
                 "wheel_to_frame"
                 "continuous_alt_input"
                 "1024"
-                "renderer-handle-input"))
+                "renderer-handle-input"
+                ":force-p t"))
       (is (search required bench)
           "Missing continuous-input benchmark contract: ~A"
           required))
