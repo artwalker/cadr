@@ -420,7 +420,8 @@
                       (symbol-name exit-reason)))
              (finish-output))
         (stop-terminal)))
-    (when (member exit-reason '(:normal :suspend-resume))
+    (when (member exit-reason
+                  '(:normal :ctrl-c :suspend-resume))
       (cadr-agent:session-append-message
        session
        (cadr-ai:make-user-message :content "resume hint fixture"))

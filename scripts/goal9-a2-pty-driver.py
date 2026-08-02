@@ -427,22 +427,17 @@ def run_scenario(name, input_bytes, project, sbcl, quicklisp):
                 rb"[89ab][0-9a-f]{3}-[0-9a-f]{12}",
                 plain,
             )
-            if name == "ctrl-c":
-                if resume_matches:
-                    raise GateFailure(
-                        "signal exit printed a resume hint"
-                    )
-            else:
-                if len(resume_matches) != 1:
-                    raise GateFailure(
-                        "clean exit did not print exactly one resume hint"
-                    )
-                if plain.find(resume_matches[0]) < plain.rfind(
-                    BRACKETED_PASTE_OFF
-                ):
-                    raise GateFailure(
-                        "resume hint was printed before terminal teardown"
-                    )
+            if len(resume_matches) != 1:
+                raise GateFailure(
+                    "clean interactive exit did not print exactly one "
+                    "resume hint"
+                )
+            if plain.find(resume_matches[0]) < plain.rfind(
+                BRACKETED_PASTE_OFF
+            ):
+                raise GateFailure(
+                    "resume hint was printed before terminal teardown"
+                )
 
             print(
                 f"{name}: PASS stty-restored echo-restored "
