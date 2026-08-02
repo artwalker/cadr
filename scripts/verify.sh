@@ -171,18 +171,18 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "real source parity ledger" \
+    run_source_parity_ledger_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic "real source parity ledger" "root binary is stale"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "source parity drift self-test" \
     "$PROJECT_DIRECTORY/scripts/test-source-parity-drift.sh" ||
     DETERMINISTIC_READY=0
 else
-  skip_deterministic "source parity drift self-test" "root binary is stale"
-fi
-
-if [ "$DETERMINISTIC_READY" -eq 1 ]; then
-  run_deterministic "real source parity ledger" \
-    run_source_parity_ledger_gate || DETERMINISTIC_READY=0
-else
-  skip_deterministic "real source parity ledger" "source drift self-test failed"
+  skip_deterministic "source parity drift self-test" "real source parity ledger failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

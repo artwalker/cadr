@@ -1778,10 +1778,12 @@ Modified file 仍须走行为与源码复审，不能借路径门禁自动通过
 `scripts/test-source-parity-drift.sh` 以临时 Git repository 锁定 A/D/R、test-file
 排除、未处置失败和完整处置通过；它还把真实 `docs/source-parity.md` 送入同一解析器，
 要求恰好接受 Summary 声明的 595 行、路径集合 SHA-256 与账本 manifest 一致，并对
-散文忽略、坏 separator/row、重复 path 和错误总数 fail closed。`--ledger-only` 是给
+散文忽略、坏 separator/row、重复 path 和错误总数 fail closed。路径 digest 只包含
+UTF-8 path 加单个 LF，并强制 `LC_ALL=C` 字节序，禁止继承宿主 locale collation。
+`--ledger-only` 是给
 不含 detached baseline object 的浅克隆使用的显式模式；普通 revision 模式继续把
-账本路径逐个与 `--from` tree 比较。`scripts/verify.sh` 在构建前分别执行 synthetic
-drift self-test 与真实账本门禁。升级后必须同步 `docs/parity-map.md`、
+账本路径逐个与 `--from` tree 比较。`scripts/verify.sh` 在构建前先执行真实账本门禁，
+再执行 synthetic drift self-test，后者不得阻止真实输入被驱动。升级后必须同步 `docs/parity-map.md`、
 `docs/source-parity.md`、`docs/performance.md` 与 `examples/manifest.sexp` 的唯一
 `GOAL12_LEDGER` 身份。确定性测试从 manifest 重算 example 数量并交叉核对四本账，
 任一漂移即失败。

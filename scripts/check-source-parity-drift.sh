@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Path manifests are content-addressed in byte order.  Never inherit the
+# caller's locale: en_US.UTF-8 collation produces a different digest from C.
+LC_ALL=C
+export LC_ALL
+
 usage() {
   echo "usage: $0 --repo PATH --from REV --to REV --dispositions FILE" >&2
   echo "       $0 --ledger-only --dispositions docs/source-parity.md" >&2

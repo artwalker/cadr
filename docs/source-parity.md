@@ -11,13 +11,16 @@ ending in `*.test.ts`. This includes TypeScript configs, executable examples,
 and non-`.test.ts` helpers under `test/`; it excludes generated/untracked files.
 The sorted 595-path manifest has SHA-256
 `242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+Its input is UTF-8 path text with exactly one LF after each path and bytewise
+`LC_ALL=C` ordering; it contains no repository prefix, table prose, verdict,
+or evidence columns.
 The initial Cadr-side audit was made at
 `fa6b09eda09a191ede16b7b15729da10a76e7f42`; Part C verdicts below are updated
 only after their implementation and regression commits land.
 
 ```sh
 git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only 74caa2649 -- packages \
-  | awk '$0 !~ /\.test\.ts$/ && $0 ~ /\.ts$/' | sort
+  | awk '$0 !~ /\.test\.ts$/ && $0 ~ /\.ts$/' | LC_ALL=C sort
 ```
 
 Verdicts use no fourth escape hatch:

@@ -42,10 +42,14 @@ This mode enters only the six-column package tables headed by `Baseline file`,
 ignores prose and summary tables, accepts exactly the three ledger verdicts,
 and fails on malformed separators/rows, duplicates, a row count different from
 the Summary total, or a sorted-path SHA-256 different from the recorded manifest.
+The digest input is the extracted path only, UTF-8 with one LF per path, sorted
+bytewise under `LC_ALL=C`; the checker overrides the caller locale so a clean
+checkout produces the same digest under C, C.UTF-8, or en_US.UTF-8.
 It is explicit because CI's shallow checkout does not contain the detached
 TypeScript baseline object. A normal `--repo/--from/--to` invocation retains the
-stronger tree-versus-ledger path-set comparison. `scripts/verify.sh` runs both the
-synthetic A/D/R self-test and this real `docs/source-parity.md` gate before build.
+stronger tree-versus-ledger path-set comparison. `scripts/verify.sh` runs the real
+`docs/source-parity.md` gate before the synthetic A/D/R self-test so a synthetic
+failure cannot prevent the requested production input from being exercised.
 
 After every row has a human-authored disposition, update the fixed baseline and
 counts together in `docs/source-parity.md`, `docs/parity-map.md`,

@@ -2,6 +2,7 @@
 set -euo pipefail
 
 PROJECT_DIRECTORY=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+EXPECTED_SOURCE_LEDGER_ENTRIES=595
 FIXTURE=$(mktemp -d /tmp/cadr-source-drift-test.XXXXXX)
 cleanup() {
   rm -rf -- "$FIXTURE"
@@ -37,11 +38,11 @@ if "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
   echo "source parity drift self-test: unresolved drift unexpectedly passed" >&2
   exit 1
 fi
-grep -F "A packages/demo/src/added.ts" "$FIXTURE/unresolved.out"
-grep -F "D packages/demo/src/deleted.ts" "$FIXTURE/unresolved.out"
-grep -F "R packages/demo/src/renamed.ts -> packages/demo/src/moved.ts" \
+grep -Fq "A packages/demo/src/added.ts" "$FIXTURE/unresolved.out"
+grep -Fq "D packages/demo/src/deleted.ts" "$FIXTURE/unresolved.out"
+grep -Fq "R packages/demo/src/renamed.ts -> packages/demo/src/moved.ts" \
   "$FIXTURE/unresolved.out"
-if grep -F ".test.ts" "$FIXTURE/unresolved.out"; then
+if grep -Fq ".test.ts" "$FIXTURE/unresolved.out"; then
   echo "source parity drift self-test: test source was not excluded" >&2
   exit 1
 fi
@@ -56,7 +57,7 @@ printf 'R\tpackages/demo/src/renamed.ts\tpackages/demo/src/moved.ts\trename ledg
 "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
   --repo "$FIXTURE" --from "$OLD_REVISION" --to "$NEW_REVISION" \
   --dispositions "$DISPOSITIONS" >"$FIXTURE/resolved.out"
-grep -F "Source parity dispositions complete: 3" "$FIXTURE/resolved.out"
+grep -Fq "Source parity dispositions complete: 3" "$FIXTURE/resolved.out"
 
 SOURCE_LEDGER="$PROJECT_DIRECTORY/docs/source-parity.md"
 expect_ledger_failure() {
@@ -76,7 +77,7 @@ expect_ledger_failure() {
     echo "source parity drift self-test: malformed $name ledger returned $status, expected 2" >&2
     exit 1
   fi
-  grep -F "$expected" "$output"
+  grep -Fq "$expected" "$output"
 }
 
 SUMMARY_TOTAL=$(
@@ -89,14 +90,34 @@ SUMMARY_TOTAL=$(
     }
   ' "$SOURCE_LEDGER"
 )
-[ -n "$SUMMARY_TOTAL" ]
+if [ "$SUMMARY_TOTAL" != "$EXPECTED_SOURCE_LEDGER_ENTRIES" ]; then
+  echo "source parity drift self-test: ledger summary is $SUMMARY_TOTAL, expected $EXPECTED_SOURCE_LEDGER_ENTRIES" >&2
+  exit 1
+fi
 
 "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
   --ledger-only --dispositions "$SOURCE_LEDGER" >"$FIXTURE/real-ledger.out"
-grep -F "Source parity ledger entries: $SUMMARY_TOTAL" \
+grep -Fq "Source parity ledger entries: $EXPECTED_SOURCE_LEDGER_ENTRIES" \
   "$FIXTURE/real-ledger.out"
-grep -F "Source parity ledger validation complete." \
+grep -Fq "Source parity ledger validation complete." \
   "$FIXTURE/real-ledger.out"
+
+NON_C_UTF8_LOCALE=$(
+  locale -a 2>/dev/null |
+    awk 'tolower($0) ~ /^en_us\.utf-?8$/ { print; exit }'
+)
+if [ -n "$NON_C_UTF8_LOCALE" ]; then
+  LC_ALL="$NON_C_UTF8_LOCALE" \
+    "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
+    --ledger-only --dispositions "$SOURCE_LEDGER" \
+    >"$FIXTURE/non-c-locale-ledger.out"
+  grep -Fq \
+    "Source parity ledger entries: $EXPECTED_SOURCE_LEDGER_ENTRIES" \
+    "$FIXTURE/non-c-locale-ledger.out"
+  grep -Fq \
+    "Source parity ledger path SHA-256: 242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d" \
+    "$FIXTURE/non-c-locale-ledger.out"
+fi
 
 PROSE_LEDGER="$FIXTURE/prose-ledger.md"
 cp "$SOURCE_LEDGER" "$PROSE_LEDGER"
@@ -104,7 +125,7 @@ printf '\nThis prose is outside the package tables and must be ignored.\n' \
   >>"$PROSE_LEDGER"
 "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
   --ledger-only --dispositions "$PROSE_LEDGER" >"$FIXTURE/prose-ledger.out"
-grep -F "Source parity ledger entries: $SUMMARY_TOTAL" \
+grep -Fq "Source parity ledger entries: $EXPECTED_SOURCE_LEDGER_ENTRIES" \
   "$FIXTURE/prose-ledger.out"
 
 BAD_SEPARATOR_LEDGER="$FIXTURE/bad-separator-ledger.md"
@@ -170,4 +191,5 @@ expect_ledger_failure \
   bad-total "$BAD_TOTAL_LEDGER" \
   "source parity drift: ledger entries $SUMMARY_TOTAL do not match summary total 594"
 
-echo "source parity drift self-test: PASS"
+printf 'source parity drift self-test: synthetic dispositions=3, real ledger entries=%s, locale-independent SHA; PASS\n' \
+  "$EXPECTED_SOURCE_LEDGER_ENTRIES"
