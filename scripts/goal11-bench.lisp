@@ -37,6 +37,9 @@
 (defparameter *continuous-event-count* 1024)
 (defparameter *continuous-nursery-bytes* (* 8 1024 1024))
 (defparameter *paired-continuous-runs* 5)
+(defparameter *sustained-duration-seconds* 180)
+(defparameter *sustained-target-event-hz* 60)
+(defparameter *sustained-memory-sample-seconds* 10)
 (defparameter *session-scale-profile-path*
   (namestring
    (merge-pathnames
@@ -81,7 +84,8 @@
                    *samples* 3
                    *warmups* 1
                    *continuous-event-count* 12
-                   *paired-continuous-runs* 1))
+                   *paired-continuous-runs* 1
+                   *sustained-duration-seconds* 2))
             ((string= argument "--no-cold-start")
              (setf *include-cold-start-p* nil))
             ((string= argument "--samples")
@@ -100,6 +104,12 @@
              (unless arguments
                (error "--continuous-events requires a value"))
              (setf *continuous-event-count*
+                   (parse-positive-integer
+                    (pop arguments) argument)))
+            ((string= argument "--sustained-seconds")
+             (unless arguments
+               (error "--sustained-seconds requires a value"))
+             (setf *sustained-duration-seconds*
                    (parse-positive-integer
                     (pop arguments) argument)))
             ((string= argument "--output")
@@ -716,6 +726,250 @@
         (getf run :final-editor-text-length))))
     result))
 
+(defun sustained-event-kind (index)
+  (case (mod index 4)
+    (0 :drag)
+    (1 :wheel-up)
+    (2 :wheel-down)
+    (otherwise :editor-key)))
+
+(defun sustained-event-input (index)
+  (let ((cycle (floor index 4)))
+    (ecase (sustained-event-kind index)
+      (:drag
+       (sgr-mouse-input
+        32
+        (if (evenp cycle) 20 70)
+        (if (evenp cycle) 8 30)))
+      (:wheel-up (sgr-mouse-input 64 50 20))
+      (:wheel-down (sgr-mouse-input 65 50 20))
+      (:editor-key
+       (if (evenp cycle)
+           "x"
+           (string #\Rubout))))))
+
+(defun dispatch-sustained-input-and-render
+    (fixture index)
+  (let ((input (sustained-event-input index)))
+    (if (eq (sustained-event-kind index) :editor-key)
+        (handle-editor-input-and-render fixture input)
+        (handle-alt-input-and-render fixture input))))
+
+(defun sustained-event-trace-counts-json (event-count)
+  (let ((drag 0)
+        (wheel-up 0)
+        (wheel-down 0)
+        (editor-key 0))
+    (dotimes (index event-count)
+      (ecase (sustained-event-kind index)
+        (:drag (incf drag))
+        (:wheel-up (incf wheel-up))
+        (:wheel-down (incf wheel-down))
+        (:editor-key (incf editor-key))))
+    (json-object
+     "drag" drag
+     "editor_key" editor-key
+     "wheel_down" wheel-down
+     "wheel_up" wheel-up)))
+
+(defun sustained-memory-sample-json (elapsed-seconds)
+  (json-object
+   "elapsed_seconds" elapsed-seconds
+   "heap_bytes" (sb-kernel:dynamic-usage)
+   "rss_bytes" (resident-bytes)))
+
+(defun paced-wait-until (target-time)
+  (let ((remaining
+          (- target-time
+             (get-internal-real-time))))
+    (when (plusp remaining)
+      (sleep
+       (/ remaining
+          (coerce internal-time-units-per-second
+                  'double-float))))))
+
+(defun sustained-mixed-interaction-json (count)
+  (let* ((fixture (prepare-alt-input-fixture count))
+         (event-count
+           (* *sustained-duration-seconds*
+              *sustained-target-event-hz*))
+         (sample-events
+           (* *sustained-memory-sample-seconds*
+              *sustained-target-event-hz*))
+         (latencies nil)
+         (gc-affected-latencies nil)
+         (gc-pause-samples nil)
+         (memory-samples
+           (list (sustained-memory-sample-json 0)))
+         (gc-runtime-before nil)
+         (retained-heap-before nil)
+         (rss-before nil)
+         (started-at nil))
+    (sb-ext:gc :full t)
+    (setf retained-heap-before (sb-kernel:dynamic-usage)
+          rss-before (resident-bytes)
+          memory-samples
+          (list
+           (json-object
+            "elapsed_seconds" 0
+            "heap_bytes" retained-heap-before
+            "rss_bytes" rss-before))
+          gc-runtime-before sb-ext:*gc-run-time*
+          started-at (get-internal-real-time))
+    (dotimes (index event-count)
+      (paced-wait-until
+       (+ started-at
+          (round
+           (* index internal-time-units-per-second)
+           *sustained-target-event-hz*)))
+      (let ((gc-before sb-ext:*gc-run-time*)
+            (event-started-at (get-internal-real-time)))
+        (setf *sink*
+              (dispatch-sustained-input-and-render
+               fixture index))
+        (let* ((latency
+                 (elapsed-microseconds
+                  event-started-at
+                  (get-internal-real-time)))
+               (gc-pause
+                 (elapsed-microseconds
+                  gc-before sb-ext:*gc-run-time*)))
+          (push latency latencies)
+          (when (plusp gc-pause)
+            (push latency gc-affected-latencies)
+            (push gc-pause gc-pause-samples))))
+      (when (and (plusp sample-events)
+                 (zerop (mod (1+ index) sample-events))
+                 (< (1+ index) event-count))
+        (push
+         (sustained-memory-sample-json
+          (/ (1+ index)
+             *sustained-target-event-hz*))
+         memory-samples)))
+    (paced-wait-until
+     (+ started-at
+        (* *sustained-duration-seconds*
+           internal-time-units-per-second)))
+    (push
+     (sustained-memory-sample-json
+      *sustained-duration-seconds*)
+     memory-samples)
+    (setf latencies (nreverse latencies)
+          gc-affected-latencies
+          (nreverse gc-affected-latencies)
+          gc-pause-samples (nreverse gc-pause-samples)
+          memory-samples (nreverse memory-samples))
+    (let* ((window-start
+             (max 0
+                  (- *sustained-duration-seconds*
+                     (min 30
+                          (max 1
+                               (floor
+                                *sustained-duration-seconds*
+                                2))))))
+           (window-sample
+             (or
+              (find-if
+               (lambda (sample)
+                 (>= (gethash "elapsed_seconds" sample)
+                     window-start))
+               memory-samples)
+              (first memory-samples)))
+           (final-sample (car (last memory-samples)))
+           (heap-window-growth
+             (max
+              0
+              (- (gethash "heap_bytes" final-sample)
+                 (gethash "heap_bytes" window-sample))))
+           (rss-window-growth
+             (max
+              0
+              (- (gethash "rss_bytes" final-sample)
+                 (gethash "rss_bytes" window-sample))))
+           (memory-growth
+             (max heap-window-growth rss-window-growth))
+           (gc-cpu-us
+             (elapsed-microseconds
+              gc-runtime-before sb-ext:*gc-run-time*))
+           (actual-elapsed
+             (/ (- (get-internal-real-time) started-at)
+                (coerce internal-time-units-per-second
+                        'double-float))))
+      ;; The live curve is intentionally sampled under the runtime-default GC
+      ;; policy. A final full collection measures retained state independently
+      ;; of the nursery phase at exactly 180 seconds.
+      (sb-ext:gc :full t)
+      (let* ((retained-heap-after (sb-kernel:dynamic-usage))
+             (post-gc-rss (resident-bytes))
+             (retained-growth
+               (max 0
+                    (- retained-heap-after
+                       retained-heap-before)))
+             (post-gc-rss-growth
+               (max 0 (- post-gc-rss rss-before)))
+             (memory-converged-p
+               (and
+                (<= retained-growth (* 8 1024 1024))
+                (<= post-gc-rss-growth (* 8 1024 1024)))))
+      (json-object
+       "actual_elapsed_seconds" actual-elapsed
+       "duration_seconds" *sustained-duration-seconds*
+       "event_count" event-count
+       "event_trace_counts"
+       (sustained-event-trace-counts-json event-count)
+       "gc_affected_event_count"
+       (length gc-affected-latencies)
+       "gc_affected_max_us"
+       (if gc-affected-latencies
+           (reduce #'max gc-affected-latencies)
+           0d0)
+       "gc_affected_samples_us"
+       (json-array gc-affected-latencies)
+       "gc_cpu_us"
+       gc-cpu-us
+       "gc_frequency_per_minute"
+       (* 60d0
+          (/ (length gc-pause-samples)
+             *sustained-duration-seconds*))
+       "gc_mode" "runtime-default"
+       "gc_pause_max_us"
+       (if gc-pause-samples
+           (reduce #'max gc-pause-samples)
+           0d0)
+       "gc_pause_measurement"
+       "sb-ext:*gc-run-time* delta; event wall latency is gc_affected_samples_us"
+       "gc_pause_p999_us"
+       (if gc-pause-samples
+           (percentile gc-pause-samples 0.999d0)
+           0d0)
+       "gc_pause_samples_us"
+       (json-array gc-pause-samples)
+       "max_us" (reduce #'max latencies)
+       "memory_converged"
+       memory-converged-p
+       "memory_final_window_growth_bytes" memory-growth
+       "memory_final_window_heap_growth_bytes"
+       heap-window-growth
+       "memory_final_window_rss_growth_bytes"
+       rss-window-growth
+       "memory_post_gc_rss_bytes" post-gc-rss
+       "memory_post_gc_rss_growth_bytes"
+       post-gc-rss-growth
+       "memory_retained_heap_after_bytes"
+       retained-heap-after
+       "memory_retained_heap_before_bytes"
+       retained-heap-before
+       "memory_retained_heap_growth_bytes"
+       retained-growth
+       "memory_samples" (json-array memory-samples)
+       "p999_us" (percentile latencies 0.999d0)
+       "rendered_frame_count" event-count
+       "renderer_mode" "synchronous-requested-frame"
+       "samples_us" (json-array latencies)
+       "scheduler_mode" "paced-60hz-mixed-input"
+       "target_event_hz" *sustained-target-event-hz*
+       "terminal_sink" "count-only")))))
+
 (defun continuous-alt-input-run (&key nursery-bytes)
   (let* ((fixture (prepare-alt-input-fixture 5000))
          (renderer (frame-fixture-renderer fixture))
@@ -1249,6 +1503,9 @@
       "wheel"
       (common-continuous-run-json
        common-entry-count :wheel))
+     "sustained_mixed_interaction"
+     (sustained-mixed-interaction-json
+      common-entry-count)
      "memory" (memory-json)
      "parameters"
      (json-object
@@ -1258,6 +1515,10 @@
       "paired_fresh_fixture_per_run" t
       "continuous_nursery_bytes"
       *continuous-nursery-bytes*
+      "sustained_duration_seconds"
+      *sustained-duration-seconds*
+      "sustained_target_event_hz"
+      *sustained-target-event-hz*
       "warmups" *warmups*
       "width" 100)
      "provenance" (provenance-json)

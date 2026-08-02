@@ -115,6 +115,61 @@ def common_run(kind, *, p99_us=6_000):
     return run
 
 
+def sustained_run(*, p999_us=8_000, maximum_us=12_000):
+    event_count = 10_800
+    samples = [4_000] * (event_count - 12) + [p999_us] * 11 + [maximum_us]
+    memory_samples = [
+        {
+            "elapsed_seconds": index * 10,
+            "heap_bytes": 20_000_000 + min(index, 6) * 100_000,
+            "rss_bytes": 70_000_000 + min(index, 6) * 100_000,
+        }
+        for index in range(19)
+    ]
+    return {
+        "duration_seconds": 180,
+        "target_event_hz": 60,
+        "event_count": event_count,
+        "rendered_frame_count": event_count,
+        "event_trace_counts": {
+            "drag": 2_700,
+            "wheel_up": 2_700,
+            "wheel_down": 2_700,
+            "editor_key": 2_700,
+        },
+        "samples_us": samples,
+        "p999_us": p999_us,
+        "max_us": maximum_us,
+        "gc_affected_event_count": 2,
+        "gc_affected_samples_us": [7_000, 8_000],
+        "gc_affected_max_us": 8_000,
+        "gc_cpu_us": 2_000,
+        "gc_frequency_per_minute": 2 * 60 / 180,
+        "gc_pause_samples_us": [1_000, 2_000],
+        "gc_pause_p999_us": 2_000,
+        "gc_pause_max_us": 2_000,
+        "gc_pause_measurement": (
+            "sb-ext:*gc-run-time* delta; event wall latency is "
+            "gc_affected_samples_us"
+        ),
+        "memory_samples": memory_samples,
+        "memory_final_window_growth_bytes": 0,
+        "memory_final_window_heap_growth_bytes": 0,
+        "memory_final_window_rss_growth_bytes": 0,
+        "memory_retained_heap_before_bytes": 20_000_000,
+        "memory_retained_heap_after_bytes": 20_500_000,
+        "memory_retained_heap_growth_bytes": 500_000,
+        "memory_post_gc_rss_bytes": 70_600_000,
+        "memory_post_gc_rss_growth_bytes": 600_000,
+        "memory_converged": True,
+        "terminal_sink": "count-only",
+        "renderer_mode": "synchronous-requested-frame",
+        "scheduler_mode": "paced-60hz-mixed-input",
+        "gc_mode": "runtime-default",
+        "actual_elapsed_seconds": 180.1,
+    }
+
+
 def session_scale_profile():
     return {
         "schema_version": 1,
@@ -233,6 +288,7 @@ def valid_report():
             "wheel": common_run("wheel"),
             "editor_key": common_run("editor_key"),
         },
+        "sustained_mixed_interaction": sustained_run(),
         "cold_start": {"median_us": 150_000},
         "memory": {
             "points": [{"n": 5000, "heap_delta_bytes": 1_000_000}]
@@ -335,6 +391,55 @@ class ContinuousInputGateTest(unittest.TestCase):
 
     def test_valid_report_passes(self):
         self.assertEqual([], self.failures())
+
+    def test_sustained_mixed_interaction_is_required_and_gated(self):
+        self.assertTrue(
+            any(
+                "sustained mixed interaction" in failure
+                for failure in self.failures(
+                    lambda report: report.pop(
+                        "sustained_mixed_interaction"
+                    )
+                )
+            )
+        )
+        self.assertTrue(
+            any(
+                "sustained mixed interaction p99.9" in failure
+                for failure in self.failures(
+                    lambda report: report[
+                        "sustained_mixed_interaction"
+                    ].update(p999_us=100_001)
+                )
+            )
+        )
+        self.assertTrue(
+            any(
+                "sustained mixed interaction memory" in failure
+                for failure in self.failures(
+                    lambda report: report[
+                        "sustained_mixed_interaction"
+                    ].update(
+                        memory_converged=False,
+                        memory_final_window_growth_bytes=32 * 1024 * 1024,
+                    )
+                )
+            )
+        )
+        self.assertTrue(
+            any(
+                "sustained mixed interaction memory" in failure
+                for failure in self.failures(
+                    lambda report: report[
+                        "sustained_mixed_interaction"
+                    ].update(
+                        memory_retained_heap_after_bytes=64_000_000,
+                        memory_retained_heap_growth_bytes=44_000_000,
+                        memory_converged=True,
+                    )
+                )
+            )
+        )
 
     def test_committed_fixed_baseline_artifact_passes_full_contract(self):
         path = ROOT / "docs" / "benchmarks" / "goal-v11-pi-baseline.json"

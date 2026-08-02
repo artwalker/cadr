@@ -399,4 +399,44 @@ It also requires `renderer_object_id`, exact 1024-sample traces, recomputed
 quantiles/allocation/GC summaries, final selection/viewport/editor state, and
 the privacy-safe scale profile contract. The final full artifact is
 [`benchmarks/goal-v13-c3-final.json`](benchmarks/goal-v13-c3-final.json),
-SHA-256 `1838334a8a05d49e38d85bc690aa01887d188b2bbb12d50ea831c1561797f712`.
+SHA-256 `55bf06e4688d94ec32329be478bfbc73c90093e8dcc17f916440aaf38be62456`.
+
+### Sustained mixed interaction tail
+
+The original C3 gate timed isolated events and 1024-event bursts. That proves
+ordinary event-to-frame latency, but it cannot detect a pause that appears only
+after repeated drag selection, wheel input, and editing. The release benchmark
+now adds a real-time 180-second trace at 60 events/second over the checked
+`common=58` session tier: exactly 10,800 production input-to-requested-frame
+operations, split evenly among drag, wheel-up, wheel-down, and editor
+insert/backspace. The gate recomputes every tail statistic from the complete
+sample vector and rejects a trace shorter than three minutes.
+
+The 2026-08-03 run measured:
+
+| measurement | result | gate |
+|---|---:|---:|
+| event-to-frame p99.9 | 8.000ms | ≤100ms |
+| maximum event-to-frame pause | 20.001ms | ≤500ms |
+| GC-affected events | 91 / 10,800 | reported |
+| maximum GC-affected event latency | 20.001ms | reported |
+| GC runtime-counter p99.9 / max | 15.491 / 15.491ms | recomputed |
+| GC frequency | 30.33/min | recomputed |
+| total GC runtime | 167.196ms | reported |
+| retained heap after final full GC | +241,520 B | ≤8MiB |
+| post-GC RSS | +581,632 B | ≤8MiB |
+
+`sb-ext:*gc-run-time*` supplies the GC runtime-counter deltas; it is not
+misrepresented as an independently sampled stop-the-world wall clock. The
+corresponding user-observed wall latency is the complete
+`gc_affected_samples_us` event-to-frame vector. Raw heap samples show the
+normal nursery sawtooth: the last 30 seconds ended 19,924,288 bytes above their
+first heap sample while RSS grew 2,097,152 bytes. A final full collection then
+left only 241,520 retained heap bytes and 581,632 RSS bytes over the pre-trace
+baseline, so the curve converges rather than accumulating per event.
+
+`ContinuousInputGateTest.test_sustained_mixed_interaction_is_required_and_gated`
+rejects a missing trace, a forged tail summary, short duration, threshold
+breach, inconsistent GC accounting, or a claimed convergence that disagrees
+with post-GC retained state. `verify.sh` runs this three-minute trace inside
+its isolated Goal 11 performance stage on every release verification.

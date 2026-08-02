@@ -210,6 +210,8 @@
                 "wheel_to_frame"
                 "continuous_alt_input"
                 "common_continuous_input"
+                "sustained_mixed_interaction"
+                "sustained-duration-seconds"
                 "editor_key"
                 "goal-v13-session-scale.json"
                 "renderer_object_id"
@@ -224,6 +226,10 @@
                 "wheel_to_frame"
                 "continuous_alt_input"
                 "common_continuous_input"
+                "sustained_mixed_interaction"
+                "sustained mixed interaction p99.9"
+                "sustained mixed interaction memory"
+                "gc_pause_samples_us"
                 "editor_key"
                 "absolute interaction target"
                 "COMMON_ABSOLUTE_P99_US = 16_000"
@@ -302,7 +308,7 @@
       (is (zerop status)
           "Synthetic gate regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 7 tests" error-output))
+      (is (search "Ran 8 tests" error-output))
       (is (search "OK" error-output)))))
 
 (test delivery-binary-freshness-check-rejects-missing-stale-and-dirty-images

@@ -528,11 +528,197 @@ def check_common_continuous_contract(data: dict, failures: list[str]) -> list[st
     return summary
 
 
+def check_sustained_mixed_contract(
+    data: dict, failures: list[str]
+) -> list[str]:
+    run = data.get("sustained_mixed_interaction")
+    if not isinstance(run, dict):
+        failures.append("sustained mixed interaction report is missing")
+        return []
+
+    duration = run.get("duration_seconds")
+    target_hz = run.get("target_event_hz")
+    event_count = run.get("event_count")
+    samples = run.get("samples_us")
+    counts = run.get("event_trace_counts")
+    execution_contract = (
+        isinstance(duration, int)
+        and duration >= 180
+        and target_hz == 60
+        and event_count == duration * target_hz
+        and run.get("rendered_frame_count") == event_count
+        and isinstance(samples, list)
+        and len(samples) == event_count
+        and counts
+        == {
+            "drag": event_count // 4,
+            "wheel_up": event_count // 4,
+            "wheel_down": event_count // 4,
+            "editor_key": event_count // 4,
+        }
+        and run.get("terminal_sink") == "count-only"
+        and run.get("renderer_mode") == "synchronous-requested-frame"
+        and run.get("scheduler_mode") == "paced-60hz-mixed-input"
+        and run.get("gc_mode") == "runtime-default"
+    )
+    check(
+        execution_contract,
+        "sustained mixed interaction execution contract differs",
+        failures,
+    )
+    if isinstance(samples, list) and samples:
+        check(
+            math.isclose(run.get("p999_us", -1), percentile(samples, 0.999))
+            and math.isclose(run.get("max_us", -1), max(samples)),
+            "sustained mixed interaction tail summary was not recomputed from samples",
+            failures,
+        )
+    check(
+        isinstance(run.get("actual_elapsed_seconds"), (int, float))
+        and isinstance(duration, int)
+        and run["actual_elapsed_seconds"] >= duration,
+        "sustained mixed interaction was not paced for the declared duration",
+        failures,
+    )
+    check(
+        isinstance(run.get("p999_us"), (int, float))
+        and run["p999_us"] <= 100_000,
+        "sustained mixed interaction p99.9 exceeds 100ms",
+        failures,
+    )
+    check(
+        isinstance(run.get("max_us"), (int, float))
+        and run["max_us"] <= 500_000,
+        "sustained mixed interaction maximum pause exceeds 500ms",
+        failures,
+    )
+
+    affected_samples = run.get("gc_affected_samples_us")
+    pause_samples = run.get("gc_pause_samples_us")
+    if not isinstance(affected_samples, list):
+        affected_samples = []
+    if not isinstance(pause_samples, list):
+        pause_samples = []
+    gc_contract = (
+        run.get("gc_affected_event_count") == len(affected_samples)
+        and math.isclose(
+            run.get("gc_affected_max_us", -1),
+            max(affected_samples, default=0),
+        )
+        and math.isclose(
+            run.get("gc_pause_p999_us", -1),
+            percentile(pause_samples, 0.999) if pause_samples else 0,
+        )
+        and math.isclose(
+            run.get("gc_pause_max_us", -1), max(pause_samples, default=0)
+        )
+        and isinstance(duration, int)
+        and math.isclose(
+            run.get("gc_frequency_per_minute", -1),
+            len(pause_samples) * 60 / duration,
+        )
+        and run.get("gc_cpu_us", -1) >= 0
+        and run.get("gc_pause_measurement")
+        == "sb-ext:*gc-run-time* delta; event wall latency is gc_affected_samples_us"
+    )
+    check(
+        gc_contract,
+        "sustained mixed interaction GC summary was not recomputed from samples",
+        failures,
+    )
+
+    memory_samples = run.get("memory_samples")
+    memory_contract = False
+    if (
+        isinstance(memory_samples, list)
+        and len(memory_samples) >= 19
+        and isinstance(duration, int)
+    ):
+        elapsed = [sample.get("elapsed_seconds") for sample in memory_samples]
+        if (
+            all(isinstance(value, (int, float)) for value in elapsed)
+            and elapsed == sorted(elapsed)
+            and elapsed[0] == 0
+            and elapsed[-1] == duration
+            and all(
+                isinstance(sample.get("heap_bytes"), int)
+                and isinstance(sample.get("rss_bytes"), int)
+                for sample in memory_samples
+            )
+        ):
+            window_start = duration - 30
+            window_sample = next(
+                sample
+                for sample in memory_samples
+                if sample["elapsed_seconds"] >= window_start
+            )
+            final_sample = memory_samples[-1]
+            growth = max(
+                0,
+                final_sample["heap_bytes"] - window_sample["heap_bytes"],
+                final_sample["rss_bytes"] - window_sample["rss_bytes"],
+            )
+            heap_growth = max(
+                0,
+                final_sample["heap_bytes"] - window_sample["heap_bytes"],
+            )
+            rss_growth = max(
+                0,
+                final_sample["rss_bytes"] - window_sample["rss_bytes"],
+            )
+            retained_before = run.get("memory_retained_heap_before_bytes")
+            retained_after = run.get("memory_retained_heap_after_bytes")
+            retained_growth = (
+                max(0, retained_after - retained_before)
+                if isinstance(retained_before, int)
+                and isinstance(retained_after, int)
+                else None
+            )
+            post_gc_rss = run.get("memory_post_gc_rss_bytes")
+            post_gc_rss_growth = (
+                max(0, post_gc_rss - memory_samples[0]["rss_bytes"])
+                if isinstance(post_gc_rss, int)
+                else None
+            )
+            converged = (
+                isinstance(retained_growth, int)
+                and retained_growth <= 8 * 1024 * 1024
+                and isinstance(post_gc_rss_growth, int)
+                and post_gc_rss_growth <= 8 * 1024 * 1024
+            )
+            memory_contract = (
+                run.get("memory_final_window_growth_bytes") == growth
+                and run.get("memory_final_window_heap_growth_bytes")
+                == heap_growth
+                and run.get("memory_final_window_rss_growth_bytes")
+                == rss_growth
+                and run.get("memory_retained_heap_growth_bytes")
+                == retained_growth
+                and run.get("memory_post_gc_rss_growth_bytes")
+                == post_gc_rss_growth
+                and run.get("memory_converged") is converged
+            )
+    check(
+        memory_contract and run.get("memory_converged") is True,
+        "sustained mixed interaction memory did not converge in the final 30s",
+        failures,
+    )
+    return [
+        f"sustained_p999={run.get('p999_us', 0) / 1000:.2f}ms",
+        f"sustained_max={run.get('max_us', 0) / 1000:.2f}ms",
+        f"sustained_gc_max={run.get('gc_pause_max_us', 0) / 1000:.2f}ms",
+        "sustained_memory=converged"
+        if run.get("memory_converged") is True
+        else "sustained_memory=not-converged",
+    ]
+
+
 def check_bench(
     data: dict, failures: list[str], baseline: dict
 ) -> list[str]:
     check_paired_contract(data, baseline, failures)
     common_summary = check_common_continuous_contract(data, failures)
+    sustained_summary = check_sustained_mixed_contract(data, failures)
     metrics = data["metrics"]
     frame = point_at(metrics["frame_render"], 5000)
     key = point_at(metrics["key_to_frame"], 5000)
@@ -703,7 +889,7 @@ def check_bench(
     )
     check(memory_point["heap_delta_bytes"] <= 32 * 1024 * 1024,
           "N=5000 retained heap exceeds 32MiB", failures)
-    return common_summary + [
+    return common_summary + sustained_summary + [
         "absolute_interaction_gate=enforced",
         f"frame={frame['median_us'] / 1000:.2f}ms",
         f"key={key['median_us'] / 1000:.2f}ms",
