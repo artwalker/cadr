@@ -175,7 +175,14 @@
                           (cadr-ai::json-get second "previous_response_id")))
              (is (= 1 (length (cadr-ai::json-get second "input"))))
              (is (= 1 (getf stats :connections-reused)))
-             (is (= 1 (getf stats :delta-requests)))))
+             (is (= 2 (getf stats :cached-context-requests)))
+             (is (zerop (getf stats :store-true-requests)))
+             (is (= 1 (getf stats :full-context-requests)))
+             (is (= 1 (getf stats :delta-requests)))
+             (is (= 1 (getf stats :last-input-items)))
+             (is (= 1 (getf stats :last-delta-input-items)))
+             (is (string= "response-1"
+                          (getf stats :last-previous-response-id)))))
       (cadr-ai:close-openai-codex-websocket-sessions)
       (ignore-errors (usocket:socket-close listener))
       (when (bt:thread-alive-p server)
@@ -184,6 +191,19 @@
 (test goal12-codex-request-compression-falls-back-without-zstd-support
   (let ((cadr-ai::*zstd-compress-function* nil))
     (is (null (cadr-ai::compress-request-body-zstd "{\"ok\":true}")))))
+
+(test goal12-codex-debug-stats-reset-is-session-scoped-and-non-creating
+  (cadr-ai:reset-openai-codex-websocket-debug-stats)
+  (is (null
+       (cadr-ai:get-openai-codex-websocket-debug-stats "not-created")))
+  (cadr-ai::increment-codex-stat "one" :requests)
+  (cadr-ai::increment-codex-stat "two" :requests)
+  (cadr-ai:reset-openai-codex-websocket-debug-stats "one")
+  (is (null (cadr-ai:get-openai-codex-websocket-debug-stats "one")))
+  (is (= 1
+         (getf (cadr-ai:get-openai-codex-websocket-debug-stats "two")
+               :requests)))
+  (cadr-ai:reset-openai-codex-websocket-debug-stats))
 
 (test goal12-codex-sse-request-uses-optional-zstd-with-exact-wire-headers
   (multiple-value-bind (provider model)
@@ -326,4 +346,18 @@
   (is (string=
        "s3pPLMBiTxaQ9kYGzzhZRbK+xOo="
        (cadr-ai::websocket-accept-value
-        "dGhlIHNhbXBsZSBub25jZQ=="))))
+       "dGhlIHNhbXBsZSBub25jZQ=="))))
+
+(test goal12-codex-websocket-cached-probe-cli-matches-baseline-options
+  (multiple-value-bind (output error-output status)
+      (uiop:run-program
+       (list "sbcl" "--script"
+             (namestring
+              (fixture-path "scripts/codex-websocket-cached-probe.lisp"))
+             "--help")
+       :output :string :error-output :string :ignore-error-status t)
+    (is (zerop status) "~A" error-output)
+    (dolist (fragment
+             '("--turns <n>" "--transport <mode>" "websocket-cached"
+               "--reasoning <level>" "--max-tokens <n>" "--session-id <id>"))
+      (is-true (search fragment output)))))

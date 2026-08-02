@@ -210,7 +210,9 @@ NIL means that the caller must send the original, uncompressed body."
   (or (gethash session-id *codex-websocket-debug-stats*)
       (setf (gethash session-id *codex-websocket-debug-stats*)
             (list :requests 0 :connections-created 0
-                  :connections-reused 0 :delta-requests 0
+                  :connections-reused 0 :cached-context-requests 0
+                  :store-true-requests 0 :full-context-requests 0
+                  :delta-requests 0 :last-input-items 0
                   :websocket-failures 0 :sse-fallbacks 0))))
 
 (defun increment-codex-stat (session-id key)
@@ -218,13 +220,29 @@ NIL means that the caller must send the original, uncompressed body."
     (incf (getf stats key 0))
     (setf (gethash session-id *codex-websocket-debug-stats*) stats)))
 
+(defun set-codex-stat (session-id key value)
+  (let ((stats (codex-stats session-id)))
+    (setf (getf stats key) value
+          (gethash session-id *codex-websocket-debug-stats*) stats)))
+
 (defun get-openai-codex-websocket-debug-stats (session-id)
   (sb-thread:with-mutex (*codex-websocket-cache-lock*)
-    (copy-list (codex-stats session-id))))
+    (let ((stats (gethash session-id *codex-websocket-debug-stats*)))
+      (when stats
+        (let ((copy (copy-list stats)))
+          (when (gethash session-id *codex-websocket-fallback-sessions*)
+            (setf (getf copy :websocket-fallback-active) t))
+          copy)))))
 
-(defun reset-openai-codex-websocket-debug-stats ()
+(defun reset-openai-codex-websocket-debug-stats (&optional session-id)
   (sb-thread:with-mutex (*codex-websocket-cache-lock*)
-    (clrhash *codex-websocket-debug-stats*))
+    (if session-id
+        (progn
+          (remhash session-id *codex-websocket-debug-stats*)
+          (remhash session-id *codex-websocket-fallback-sessions*))
+        (progn
+          (clrhash *codex-websocket-debug-stats*)
+          (clrhash *codex-websocket-fallback-sessions*))))
   nil)
 
 (defun close-codex-websocket (connection)
@@ -355,7 +373,7 @@ NIL means that the caller must send the original, uncompressed body."
              always (json-value-equal-p (aref prefix index)
                                         (aref value index)))))
 
-(defun codex-continuation-payload (entry payload session-id)
+(defun codex-continuation-payload (entry payload)
   (let ((previous-body (codex-websocket-cache-entry-request-body entry))
         (previous-response (codex-websocket-cache-entry-response-items entry))
         (previous-id (codex-websocket-cache-entry-response-id entry)))
@@ -370,9 +388,35 @@ NIL means that the caller must send the original, uncompressed body."
              (current (json-get payload "input" #())))
         (when (vector-prefix-p expected current)
           (json-put payload "input" (subseq current (length expected)))
-          (json-put payload "previous_response_id" previous-id)
-          (increment-codex-stat session-id :delta-requests))))
+          (json-put payload "previous_response_id" previous-id))))
     payload))
+
+(defun record-codex-request-stats
+    (session-id payload cached-p reused-p)
+  (increment-codex-stat session-id :requests)
+  (increment-codex-stat
+   session-id
+   (if reused-p :connections-reused :connections-created))
+  (when cached-p
+    (increment-codex-stat session-id :cached-context-requests))
+  (when (eq t (json-get payload "store"))
+    (increment-codex-stat session-id :store-true-requests))
+  (let ((input (json-get payload "input" #()))
+        (previous-id (json-get payload "previous_response_id")))
+    (set-codex-stat session-id :last-input-items
+                    (if (vectorp input) (length input) 0))
+    (if (non-empty-string-p previous-id)
+        (progn
+          (increment-codex-stat session-id :delta-requests)
+          (set-codex-stat session-id :last-delta-input-items
+                          (if (vectorp input) (length input) 0))
+          (set-codex-stat session-id :last-previous-response-id previous-id))
+        (progn
+          (increment-codex-stat session-id :full-context-requests)
+          (let ((stats (codex-stats session-id)))
+            (remf stats :last-delta-input-items)
+            (remf stats :last-previous-response-id)
+            (setf (gethash session-id *codex-websocket-debug-stats*) stats))))))
 
 (defun codex-response-items (model message)
   (let* ((context (make-context :messages (list message)))
@@ -453,7 +497,7 @@ NIL means that the caller must send the original, uncompressed body."
      &key transport session-id abort-p on-response)
   (declare (ignore context))
   (let* ((mode (or transport :auto))
-         (cached-p (eq mode :websocket-cached))
+         (cached-p (member mode '(:auto :websocket-cached)))
          (session-key (or session-id "default"))
          (entry nil)
          (websocket-started-p nil))
@@ -464,7 +508,6 @@ NIL means that the caller must send the original, uncompressed body."
     (unless (member mode '(:auto :websocket :websocket-cached))
       (error 'configuration-error
              :message (format nil "Invalid Codex transport: ~A" mode)))
-    (increment-codex-stat session-key :requests)
     (handler-case
         (multiple-value-bind (acquired-entry reused-p)
             (acquire-codex-websocket
@@ -472,16 +515,15 @@ NIL means that the caller must send the original, uncompressed body."
              (getf (provider-options provider) :environment)
              cached-p)
           (setf entry acquired-entry)
-          (if reused-p
-              (increment-codex-stat session-key :connections-reused)
-              (increment-codex-stat session-key :connections-created))
           (let* ((original (copy-json-value (request-spec-payload request)))
                  (payload
                    (if cached-p
                        (codex-continuation-payload
-                        entry (copy-json-value original) session-key)
+                        entry (copy-json-value original))
                        original))
                  (wire (copy-json-value payload)))
+            (record-codex-request-stats
+             session-key payload cached-p reused-p)
             (json-put wire "type" "response.create")
             (when on-response (notify-provider-response on-response 101 nil model))
             (write-websocket-frame
@@ -508,6 +550,8 @@ NIL means that the caller must send the original, uncompressed body."
               (values t message))))
       (error (condition)
         (increment-codex-stat session-key :websocket-failures)
+        (set-codex-stat session-key :last-websocket-error
+                        (condition-text condition provider))
         (if cached-p
             (close-openai-codex-websocket-sessions session-key)
             (when entry
