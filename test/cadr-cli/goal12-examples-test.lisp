@@ -41,6 +41,21 @@
         count 1
         do (setf start (+ position (length needle)))))
 
+(defun goal12-extension-bundle-registration-count (bundle)
+  (+
+   (length (cadr-agent::extension-bundle-tools bundle))
+   (length (cadr-agent::extension-bundle-commands bundle))
+   (length (cadr-agent::extension-bundle-hooks bundle))
+   (length (cadr-agent::extension-bundle-templates bundle))
+   (length (cadr-agent::extension-bundle-providers bundle))
+   (length (cadr-agent::extension-bundle-native-providers bundle))
+   (length (cadr-agent::extension-bundle-shortcuts bundle))
+   (length (cadr-agent::extension-bundle-flags bundle))
+   (length (cadr-agent::extension-bundle-message-renderers bundle))
+   (if (cadr-agent::extension-bundle-markdown-transformer bundle) 1 0)
+   (length (cadr-agent::extension-bundle-entry-renderers bundle))
+   (length (cadr-agent::extension-bundle-tool-renderers bundle))))
+
 (test goal12-example-manifest-covers-every-baseline-source-exactly-once
   (let* ((manifest (goal12-example-manifest))
          (baseline-paths
@@ -48,9 +63,9 @@
                  #'string<))
          (ledger-paths (goal12-source-parity-example-paths)))
     (is (= 99 (length manifest)))
-    (is (= 17 (count :ported manifest :key
+    (is (= 94 (count :ported manifest :key
                      (lambda (row) (getf row :status)))))
-    (is (= 82 (count :gap manifest :key
+    (is (= 5 (count :gap manifest :key
                      (lambda (row) (getf row :status)))))
     (is (= 99 (length (remove-duplicates baseline-paths :test #'string=))))
     (is (equal ledger-paths baseline-paths))
@@ -67,7 +82,7 @@
         (:gap
          (is (consp (getf row :gaps))))))))
 
-(test goal12-every-example-gap-is-defined-by-the-blocked-proposal
+(test goal12-every-remaining-example-gap-is-covered-by-the-blocked-amendment
   (let* ((proposal
            (goal12-read-project-file
             "docs/proposals/goal-v12-example-api-gaps.md"))
@@ -86,20 +101,21 @@
          (mapping-table
            (and mapping-table-end
                 (subseq mapping 0 mapping-table-end)))
+         (blocked
+           (goal12-read-project-file
+            "docs/proposals/goal-v12-api-scope-amendment-3.md"))
          (gap-ids nil))
     (dolist (row (goal12-example-manifest))
       (dolist (gap (getf row :gaps))
         (pushnew gap gap-ids)))
-    (is (= 42 (length gap-ids)))
+    (is (= 3 (length gap-ids)))
     (is (stringp mapping))
     (is (= 42 (goal12-count-substring "`:" mapping-table)))
+    (is (search "19 项能力" proposal))
+    (is (search "D/E 已于 2026-08-02 获得用户批准" amendment))
     (dolist (gap gap-ids)
-      (let ((token (format nil "`:~(~A~)`" gap)))
-        (is (search token proposal))
-        (is (= 1 (goal12-count-substring token mapping)))))
-    (is (search "当前按硬约束再次 blocked" proposal))
-    (is (search "状态：**blocked，等待用户逐项裁决。**"
-                amendment))))
+      (is (search (format nil "`:~(~A~)`" gap) blocked)))
+    (is (search "状态：**blocked" blocked))))
 
 (test goal12-ported-extension-entrypoints-load-without-diagnostics
   (let ((root (asdf:system-source-directory "cadr-cli")))
@@ -117,38 +133,198 @@
                     output
                     (list target)))
                  (report
-                   (cadr-cli::reload-cli-extensions manager)))
+                   (cadr-cli::reload-cli-extensions manager))
+                 (bundles
+                   (cadr-agent::extension-snapshot-bundles
+                    (cadr-agent::extension-host-current-snapshot
+                     (cadr-cli::cli-extension-manager-host manager))))
+                 (target-name (namestring (truename target)))
+                 (bundle
+                   (find target-name bundles
+                         :key (lambda (candidate)
+                                (let ((path
+                                        (cadr-agent::extension-bundle-path
+                                         candidate)))
+                                  (namestring (or (probe-file path) path))))
+                         :test #'string=)))
             (is (null (getf report :errors)))
             (is (plusp (getf report :loaded)))
+            (is (not (null bundle)))
+            (is (plusp
+                 (goal12-extension-bundle-registration-count bundle)))
             (is (string= "" (get-output-stream-string output)))))))))
 
 (defparameter *goal12-example-registrations*
-  '(("packages/coding-agent/examples/extensions/bookmark.ts"
+  '(("packages/coding-agent/examples/extensions/auto-commit-on-exit.ts"
+     :hooks (:session-shutdown))
+    ("packages/coding-agent/examples/extensions/bash-spawn-hook.ts"
+     :tools ("bash"))
+    ("packages/coding-agent/examples/extensions/bookmark.ts"
      :commands ("bookmark" "unbookmark"))
+    ("packages/coding-agent/examples/extensions/border-status-editor.ts"
+     :hooks (:agent-start :agent-end :session-shutdown :session-start))
+    ("packages/coding-agent/examples/extensions/built-in-tool-renderer.ts"
+     :tools ("read" "bash" "edit" "write"))
     ("packages/coding-agent/examples/extensions/claude-rules.ts"
      :hooks (:session-start :before-agent-start))
+    ("packages/coding-agent/examples/extensions/commands.ts"
+     :commands ("commands"))
+    ("packages/coding-agent/examples/extensions/confirm-destructive.ts"
+     :hooks (:session-before-switch :session-before-fork))
+    ("packages/coding-agent/examples/extensions/custom-footer.ts"
+     :commands ("footer"))
+    ("packages/coding-agent/examples/extensions/custom-header.ts"
+     :commands ("builtin-header") :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/dirty-repo-guard.ts"
+     :hooks (:session-before-switch :session-before-fork))
     ("packages/coding-agent/examples/extensions/dynamic-resources/index.ts"
      :hooks (:resources-discover))
+    ("packages/coding-agent/examples/extensions/dynamic-tools.ts"
+     :commands ("add-echo-tool") :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/doom-overlay/index.ts"
+     :commands ("doom-overlay"))
+    ("packages/coding-agent/examples/extensions/entry-renderer.ts"
+     :commands ("status-card") :entry-renderers ("status-card"))
+    ("packages/coding-agent/examples/extensions/event-bus.ts"
+     :commands ("emit") :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/file-trigger.ts"
+     :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/git-checkpoint.ts"
+     :hooks (:tool-call-after :turn-start :session-before-fork :agent-end))
+    ("packages/coding-agent/examples/extensions/git-merge-and-resolve.ts"
+     :hooks (:agent-end))
+    ("packages/coding-agent/examples/extensions/github-issue-autocomplete.ts"
+     :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/gondolin/index.ts"
+     :commands ("gondolin")
+     :tools ("read" "write" "edit" "bash" "ls" "find" "grep")
+     :hooks (:session-start :session-shutdown :user-bash
+             :before-agent-start))
+    ("packages/coding-agent/examples/extensions/handoff.ts"
+     :commands ("handoff"))
+    ("packages/coding-agent/examples/extensions/hello.ts"
+     :tools ("hello"))
+    ("packages/coding-agent/examples/extensions/hidden-thinking-label.ts"
+     :commands ("thinking-label") :hooks (:session-start))
     ("packages/coding-agent/examples/extensions/input-transform-streaming.ts"
      :hooks (:input))
     ("packages/coding-agent/examples/extensions/input-transform.ts"
      :hooks (:input))
+    ("packages/coding-agent/examples/extensions/inline-bash.ts"
+     :hooks (:input))
+    ("packages/coding-agent/examples/extensions/interactive-shell.ts"
+     :hooks (:user-bash))
+    ("packages/coding-agent/examples/extensions/kimi-deferred-tools.ts"
+     :tools ("Calculator" "tool_search") :hooks (:session-start))
     ("packages/coding-agent/examples/extensions/mac-system-theme.ts"
      :hooks (:session-start :session-shutdown))
+    ("packages/coding-agent/examples/extensions/message-renderer.ts"
+     :commands ("status") :message-renderers ("status-update"))
+    ("packages/coding-agent/examples/extensions/minimal-mode.ts"
+     :tools ("read" "bash" "write" "edit" "find" "grep" "ls"))
     ("packages/coding-agent/examples/extensions/model-status.ts"
      :hooks (:model-select))
+    ("packages/coding-agent/examples/extensions/modal-editor.ts"
+     :hooks (:session-start))
     ("packages/coding-agent/examples/extensions/notify.ts"
      :hooks (:agent-end))
+    ("packages/coding-agent/examples/extensions/overlay-qa-tests.ts"
+     :commands
+     ("overlay-animation" "overlay-anchors" "overlay-margins"
+      "overlay-stack" "overlay-overflow" "overlay-edge"
+      "overlay-percent" "overlay-maxheight" "overlay-sidepanel"
+      "overlay-toggle" "overlay-passive" "overlay-focus"
+      "overlay-streaming"))
+    ("packages/coding-agent/examples/extensions/overlay-test.ts"
+     :commands ("overlay-test"))
+    ("packages/coding-agent/examples/extensions/permission-gate.ts"
+     :hooks (:tool-call-before))
     ("packages/coding-agent/examples/extensions/pirate.ts"
      :commands ("pirate") :hooks (:before-agent-start))
+    ("packages/coding-agent/examples/extensions/plan-mode/index.ts"
+     :commands ("plan" "todos")
+     :hooks (:tool-call-before :context :before-agent-start
+             :turn-end :agent-end :session-start)
+     :flags ("plan") :shortcuts ("ctrl+alt+p"))
+    ("packages/coding-agent/examples/extensions/preset.ts"
+     :commands ("preset")
+     :hooks (:before-agent-start :session-start :turn-start)
+     :flags ("preset") :shortcuts ("ctrl+shift+u"))
+    ("packages/coding-agent/examples/extensions/project-trust.ts"
+     :hooks (:project-trust :session-start))
+    ("packages/coding-agent/examples/extensions/protected-paths.ts"
+     :hooks (:tool-call-before))
     ("packages/coding-agent/examples/extensions/provider-payload.ts"
      :hooks (:before-provider-request :after-provider-response))
+    ("packages/coding-agent/examples/extensions/question.ts"
+     :tools ("question"))
+    ("packages/coding-agent/examples/extensions/questionnaire.ts"
+     :tools ("questionnaire"))
+    ("packages/coding-agent/examples/extensions/qna.ts"
+     :commands ("qna"))
+    ("packages/coding-agent/examples/extensions/rainbow-editor.ts"
+     :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/reload-runtime.ts"
+     :commands ("reload-runtime") :tools ("reload_runtime"))
+    ("packages/coding-agent/examples/extensions/rpc-demo.ts"
+     :commands ("rpc-input" "rpc-editor" "rpc-prefill")
+     :hooks (:session-start :turn-start :turn-end
+             :tool-call-before :session-before-switch))
+    ("packages/coding-agent/examples/extensions/sandbox/index.ts"
+     :commands ("sandbox") :tools ("bash") :flags ("no-sandbox")
+     :hooks (:user-bash :session-start :session-shutdown))
     ("packages/coding-agent/examples/extensions/send-user-message.ts"
      :commands ("ask" "steer" "followup" "askwith"))
     ("packages/coding-agent/examples/extensions/session-name.ts"
      :commands ("session-name"))
+    ("packages/coding-agent/examples/extensions/shutdown-command.ts"
+     :commands ("quit") :tools ("finish_and_exit" "deploy_and_exit"))
+    ("packages/coding-agent/examples/extensions/snake.ts"
+     :commands ("snake"))
+    ("packages/coding-agent/examples/extensions/space-invaders.ts"
+     :commands ("invaders"))
+    ("packages/coding-agent/examples/extensions/ssh.ts"
+     :tools ("read" "write" "edit" "bash") :flags ("ssh")
+     :hooks (:session-start :user-bash :before-agent-start))
+    ("packages/coding-agent/examples/extensions/subagent/index.ts"
+     :tools ("subagent"))
+    ("packages/coding-agent/examples/extensions/summarize.ts"
+     :commands ("summarize"))
+    ("packages/coding-agent/examples/extensions/system-prompt-header.ts"
+     :hooks (:agent-start :session-shutdown))
+    ("packages/coding-agent/examples/extensions/tic-tac-toe.ts"
+     :commands ("tic-tac-toe")
+     :tools ("tic_tac_toe" "tic_tac_toe_see_board")
+     :hooks (:session-start :session-tree :before-agent-start)
+     :message-renderers
+     ("tic-tac-toe-move" "tic-tac-toe-game-over"))
+    ("packages/coding-agent/examples/extensions/timed-confirm.ts"
+     :commands ("timed" "timed-select" "timed-signal"))
     ("packages/coding-agent/examples/extensions/titlebar-spinner.ts"
-     :hooks (:agent-start :agent-end :session-shutdown))))
+     :hooks (:agent-start :agent-end :session-shutdown))
+    ("packages/coding-agent/examples/extensions/todo.ts"
+     :commands ("todos") :tools ("todo")
+     :hooks (:session-start :session-tree))
+    ("packages/coding-agent/examples/extensions/tool-override.ts"
+     :commands ("read-log") :tools ("read"))
+    ("packages/coding-agent/examples/extensions/tools.ts"
+     :commands ("tools") :hooks (:session-start :session-tree))
+    ("packages/coding-agent/examples/extensions/trigger-compact.ts"
+     :commands ("trigger-compact") :hooks (:turn-end))
+    ("packages/coding-agent/examples/extensions/truncated-tool.ts"
+     :tools ("rg"))
+    ("packages/coding-agent/examples/extensions/status-line.ts"
+     :hooks (:session-start :turn-start :turn-end))
+    ("packages/coding-agent/examples/extensions/structured-output.ts"
+     :tools ("structured_output"))
+    ("packages/coding-agent/examples/extensions/with-deps/index.ts"
+     :tools ("parse_duration"))
+    ("packages/coding-agent/examples/extensions/widget-placement.ts"
+     :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/working-indicator.ts"
+     :commands ("working-indicator") :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/working-message-test.ts"
+     :hooks (:session-start))))
 
 (test goal12-ported-extension-registrations-cover-the-baseline-surface
   (let ((root (asdf:system-source-directory "cadr-cli")))
@@ -174,10 +350,61 @@
                (find command
                      (cadr-agent::extension-snapshot-commands snapshot)
                      :key #'cadr-agent::extension-command-definition-name
-                     :test #'string=)))
+                     :test #'string=)
+               "~A must register command ~A" (first expected) command))
             (dolist (hook (getf (rest expected) :hooks))
               (is (gethash hook
-                           (cadr-agent::extension-snapshot-hooks snapshot))))))))))
+                           (cadr-agent::extension-snapshot-hooks snapshot))
+                  "~A must register hook ~A" (first expected) hook))
+            (dolist (tool (getf (rest expected) :tools))
+              (is
+               (find tool
+                     (cadr-agent::extension-snapshot-tools snapshot)
+                     :key #'cadr-agent::extension-tool-definition-name
+                     :test #'string=)
+               "~A must register tool ~A" (first expected) tool))
+            (dolist (flag (getf (rest expected) :flags))
+              (is
+               (find flag
+                     (cadr-agent::extension-snapshot-flags snapshot)
+                     :key #'cadr-agent::extension-flag-definition-name
+                     :test #'string=)
+               "~A must register flag ~A" (first expected) flag))
+            (dolist (shortcut (getf (rest expected) :shortcuts))
+              (is
+               (find shortcut
+                     (cadr-agent::extension-snapshot-shortcuts snapshot)
+                     :key #'cadr-agent::extension-shortcut-definition-key
+                     :test #'string=)
+               "~A must register shortcut ~A" (first expected) shortcut))
+            (dolist (provider (getf (rest expected) :native-providers))
+              (is
+               (find provider
+                     (cadr-agent::extension-snapshot-native-providers snapshot)
+                     :key
+                     (lambda (definition)
+                       (cadr-ai:runtime-provider-id
+                        (cadr-agent::extension-native-provider-definition-provider
+                         definition)))
+                     :test #'eq)
+               "~A must register native provider ~A"
+               (first expected) provider))
+            (dolist (custom-type (getf (rest expected) :message-renderers))
+              (is
+               (find custom-type
+                     (cadr-agent::extension-snapshot-message-renderers snapshot)
+                     :key #'cadr-agent::extension-renderer-definition-custom-type
+                     :test #'string=)
+               "~A must register message renderer ~A"
+               (first expected) custom-type))
+            (dolist (custom-type (getf (rest expected) :entry-renderers))
+              (is
+               (find custom-type
+                     (cadr-agent::extension-snapshot-entry-renderers snapshot)
+                     :key #'cadr-agent::extension-renderer-definition-custom-type
+                     :test #'string=)
+               "~A must register entry renderer ~A"
+               (first expected) custom-type))))))))
 
 (defun goal12-load-pure-example (relative)
   (load

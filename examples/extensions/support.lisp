@@ -79,7 +79,195 @@
             (write-string (cadr-ai:text-content-text block) output))))
       ""))
 
+(defun example-assistant-text (message)
+  (if (typep message 'cadr-ai:assistant-message)
+      (format nil "~{~A~^~%~}"
+              (loop for block in (cadr-ai:assistant-message-content message)
+                    when (typep block 'cadr-ai:text-content)
+                      collect (cadr-ai:text-content-text block)))
+      ""))
+
 (defun example-trim (text)
   (string-trim '(#\Space #\Tab #\Newline #\Return) text))
 
 (defun example-load-support () nil)
+
+(defun example-empty-schema ()
+  (cadr-ai::json-object
+   "type" "object"
+   "properties" (cadr-ai::json-object)
+   "additionalProperties" nil))
+
+(defun example-argument (arguments name &optional default)
+  (or (and (hash-table-p arguments)
+           (gethash name arguments))
+      default))
+
+(defun example-boolean (value)
+  (not (member value '(nil :false :null) :test #'eq)))
+
+(defun example-lines (&rest lines)
+  (remove nil lines))
+
+(defclass example-dialog-component (cadr-tui:component)
+  ((title :initarg :title :reader example-dialog-title)
+   (lines :initarg :lines :initform nil :accessor example-dialog-lines)
+   (options :initarg :options :initform '("Close")
+            :reader example-dialog-options)
+   (selected :initform 0 :accessor example-dialog-selected)
+   (done :initarg :done :reader example-dialog-done)
+   (disposed-p :initform nil :accessor example-dialog-disposed-p)))
+
+(defmethod cadr-tui:component-render
+    ((component example-dialog-component) width &key focused-p)
+  (declare (ignore width focused-p))
+  (append
+   (list (example-dialog-title component) "")
+   (copy-list (example-dialog-lines component))
+   (list "")
+   (loop for option in (example-dialog-options component)
+         for index from 0
+         collect
+         (format nil "~:[  ~;> ~]~A"
+                 (= index (example-dialog-selected component))
+                 option))))
+
+(defmethod cadr-tui:component-handle-event
+    ((component example-dialog-component) event)
+  (let* ((kind (cadr-tui:input-event-kind event))
+         (count (length (example-dialog-options component))))
+    (case kind
+      (:up
+       (setf (example-dialog-selected component)
+             (mod (1- (example-dialog-selected component)) count)))
+      (:down
+       (setf (example-dialog-selected component)
+             (mod (1+ (example-dialog-selected component)) count)))
+      (:enter
+       (funcall (example-dialog-done component)
+                (nth (example-dialog-selected component)
+                     (example-dialog-options component))))
+      ((:escape :cancel :interrupt)
+       (funcall (example-dialog-done component) nil)))
+    (values nil nil)))
+
+(defmethod cadr-tui:component-dispose
+    ((component example-dialog-component))
+  (setf (example-dialog-disposed-p component) t)
+  component)
+
+(defun example-show-dialog
+    (context title lines &key (options '("Close")) overlay-options)
+  (cadr-agent:extension-context-custom-component
+   context
+   (lambda (tui theme keybindings done)
+     (declare (ignore tui theme keybindings))
+     (make-instance
+      'example-dialog-component
+      :title title :lines lines :options options :done done))
+   :overlay-p t
+   :overlay-options
+   (or overlay-options '(:width 60 :anchor :center :margin 1))))
+
+(defun example-with-loader (context message operation)
+  (cadr-agent:extension-context-custom-component
+   context
+   (lambda (tui theme keybindings done)
+     (declare (ignore theme keybindings))
+     (let* ((loader
+              (cadr-cli:make-bordered-loader-component
+               tui message :cancellable-p t))
+            (token (cadr-cli:bordered-loader-signal loader))
+            (lock (sb-thread:make-mutex :name "cadr example loader"))
+            (settled-p nil))
+       (labels ((settle (value)
+                  (sb-thread:with-mutex (lock)
+                    (unless settled-p
+                      (setf settled-p t)
+                      (funcall done value)))))
+         (cadr-cli:bordered-loader-set-on-abort
+          loader (lambda () (settle nil)))
+         (sb-thread:make-thread
+          (lambda ()
+            (handler-case
+                (let ((value
+                        (funcall
+                         operation
+                         (lambda ()
+                           (cadr-tui:cancellation-token-aborted-p token)))))
+                  (unless
+                      (cadr-tui:cancellation-token-aborted-p token)
+                    (settle value)))
+              (condition () (settle nil))))
+          :name "cadr example loader worker")
+         loader)))))
+
+(defun example-program-path (name)
+  (let* ((command
+           (if (uiop:os-windows-p)
+               (list "where" name)
+               (list "sh" "-c" "command -v -- \"$1\"" "sh" name)))
+         (path
+           (ignore-errors
+             (example-trim
+              (uiop:run-program
+               command :output :string :error-output nil
+               :ignore-error-status t)))))
+    (or (and path (plusp (length path)) path)
+        (error "Required host executable ~A is not installed" name))))
+
+(defun example-call-program
+    (name arguments &key cwd timeout-ms environment)
+  (example-program-path name)
+  (example-exec name arguments
+                :cwd cwd :timeout-ms timeout-ms
+                :environment environment))
+
+(defun example-result (text &key details terminate-p)
+  (values text details terminate-p))
+
+(defun example-execute-tool (tool call-id arguments)
+  (funcall (cadr-ai:tool-executor tool) call-id arguments))
+
+
+(defclass example-editor-component (cadr-tui:component)
+  ((editor
+    :initform (cadr-tui:make-multiline-editor)
+    :reader example-editor-inner)
+   (label
+    :initarg :label :initform "Extension editor"
+    :accessor example-editor-label)
+   (style-function
+    :initarg :style-function :initform #'identity
+    :reader example-editor-style-function)
+   (disposed-p
+    :initform nil :accessor example-editor-disposed-p)))
+
+(defmethod cadr-tui:editor-component-text
+    ((component example-editor-component))
+  (cadr-tui:editor-text (example-editor-inner component)))
+
+(defmethod cadr-tui:editor-component-set-text
+    ((component example-editor-component) text)
+  (cadr-tui:editor-set-text (example-editor-inner component) text)
+  component)
+
+(defmethod cadr-tui:component-render
+    ((component example-editor-component) width &key focused-p)
+  (multiple-value-bind (lines row column)
+      (cadr-tui:render-editor
+       (example-editor-inner component) width :focused-p focused-p)
+    (declare (ignore row column))
+    (cons
+     (funcall (example-editor-style-function component)
+              (example-editor-label component))
+     lines)))
+
+(defmethod cadr-tui:component-handle-event
+    ((component example-editor-component) event)
+  (cadr-tui:editor-handle-event (example-editor-inner component) event))
+
+(defmethod cadr-tui:component-dispose
+    ((component example-editor-component))
+  (setf (example-editor-disposed-p component) t)
+  component)
