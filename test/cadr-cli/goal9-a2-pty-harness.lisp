@@ -366,7 +366,18 @@
        (cadr-tui:terminal-stream-p *standard-input* :input)
        (cadr-tui:terminal-stream-p *standard-output* :output))
     (error "Goal 9 A2 PTY harness requires terminal stdin and stdout"))
-  (let ((terminal (cadr-tui:make-process-terminal))
+  (let* ((session-root
+           (or (uiop:getenv "GOAL9_A2_PTY_SESSION_ROOT")
+               (error "GOAL9_A2_PTY_SESSION_ROOT is required")))
+         (session-directory
+           (merge-pathnames
+            "sessions/"
+            (uiop:ensure-directory-pathname session-root)))
+         (session
+           (cadr-agent:create-session
+            :directory session-directory
+            :cwd session-root))
+         (terminal (cadr-tui:make-process-terminal))
         (done-p nil)
         (exit-reason :unknown)
         (suspended-p nil))
@@ -408,7 +419,25 @@
                      (string-upcase
                       (symbol-name exit-reason)))
              (finish-output))
-        (stop-terminal)))))
+        (stop-terminal)))
+    (when (member exit-reason '(:normal :suspend-resume))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "resume hint fixture"))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "persisted"))
+        :api :openai-responses
+        :provider :openai
+        :model "faux"
+        :stop-reason :stop))
+      (cadr-cli::write-session-resume-hint
+       session session-directory
+       :terminal-p t
+       :default-session-directory-p t))))
 
 (defun main ()
   (let ((scenario (uiop:getenv "GOAL9_A2_PTY_SCENARIO")))

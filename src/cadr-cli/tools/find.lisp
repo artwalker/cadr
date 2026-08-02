@@ -11,7 +11,7 @@
   (let* ((pattern (required-string arguments "pattern"))
          (base
            (resolve-tool-path
-            cwd (or (cadr-ai::json-get arguments "path") ".")))
+            cwd (optional-string arguments "path" ".")))
          (canonical-base
            (and (uiop:directory-exists-p base)
                 (truename (uiop:ensure-directory-pathname base))))
@@ -86,4 +86,8 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (find-files cwd arguments))))
+     (let ((display-path
+             (optional-string arguments "path" ".")))
+       (call-with-normalized-file-operation
+        :find display-path
+        (lambda () (find-files cwd arguments)))))))

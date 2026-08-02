@@ -3,6 +3,7 @@ import argparse
 import errno
 import fcntl
 import os
+import re
 import select
 import signal
 import subprocess
@@ -314,6 +315,7 @@ def run_scenario(name, input_bytes, project, sbcl, quicklisp):
                     "LINES": "24",
                     "TERM": "xterm-256color",
                     "LC_ALL": env.get("LC_ALL", "C.UTF-8"),
+                    "GOAL9_A2_PTY_SESSION_ROOT": temporary,
                 }
             )
             for variable in (
@@ -417,6 +419,30 @@ def run_scenario(name, input_bytes, project, sbcl, quicklisp):
                     slave_fd, before_stty, "suspend-resume exit"
                 )
                 assert_sequence_contract(transcript, 2)
+
+            plain = re.sub(rb"\x1b\[[0-9;]*m", b"", bytes(transcript))
+            resume_matches = re.findall(
+                rb"To resume this session: cadr --session "
+                rb"[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-"
+                rb"[89ab][0-9a-f]{3}-[0-9a-f]{12}",
+                plain,
+            )
+            if name == "ctrl-c":
+                if resume_matches:
+                    raise GateFailure(
+                        "signal exit printed a resume hint"
+                    )
+            else:
+                if len(resume_matches) != 1:
+                    raise GateFailure(
+                        "clean exit did not print exactly one resume hint"
+                    )
+                if plain.find(resume_matches[0]) < plain.rfind(
+                    BRACKETED_PASTE_OFF
+                ):
+                    raise GateFailure(
+                        "resume hint was printed before terminal teardown"
+                    )
 
             print(
                 f"{name}: PASS stty-restored echo-restored "

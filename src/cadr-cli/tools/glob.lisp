@@ -163,16 +163,20 @@
   (let* ((pattern (required-string arguments "pattern"))
          (base
            (resolve-tool-path
-            cwd (or (cadr-ai::json-get arguments "path") ".")))
+            cwd (optional-string arguments "path" ".")))
          (limit (or (optional-integer arguments "limit" 1000)
                     1000))
          (scanner (glob-scanner pattern))
+         (_
+           (unless (uiop:directory-exists-p base)
+             (error "Path not found: ~A" (namestring base))))
          (matches
            (loop for file in (collect-tree-files base)
                  for relative-base =
                    (relative-posix-path file base)
                  when (cl-ppcre:scan scanner relative-base)
                    collect (relative-posix-path file cwd))))
+    (declare (ignore _))
     (when (< limit 1)
       (error "limit must be at least 1"))
     (let* ((truncated (> (length matches) limit))
@@ -202,4 +206,8 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (glob-files cwd arguments))))
+     (let ((display-path
+             (optional-string arguments "path" ".")))
+       (call-with-normalized-file-operation
+        :glob display-path
+        (lambda () (glob-files cwd arguments)))))))

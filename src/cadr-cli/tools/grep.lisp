@@ -11,7 +11,7 @@
   (let* ((pattern (required-string arguments "pattern"))
          (base
            (resolve-tool-path
-            cwd (or (cadr-ai::json-get arguments "path") ".")))
+            cwd (optional-string arguments "path" ".")))
          (filter (cadr-ai::json-get arguments "glob"))
          (filter-scanner (and filter (glob-scanner filter)))
          (literal-p (eq t (cadr-ai::json-get arguments "literal")))
@@ -155,4 +155,8 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (grep-lines cwd arguments))))
+     (let ((display-path
+             (optional-string arguments "path" ".")))
+       (call-with-normalized-file-operation
+        :grep display-path
+        (lambda () (grep-lines cwd arguments)))))))

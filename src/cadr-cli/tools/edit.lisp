@@ -550,8 +550,11 @@
           (error "Could not edit file: ~A. Error code: ENOENT."
                  display-path))
         (let* ((raw
-                 (uiop:read-file-string
-                  path :external-format :utf-8))
+                 (call-with-normalized-file-operation
+                  :edit display-path
+                  (lambda ()
+                    (uiop:read-file-string
+                     path :external-format :utf-8))))
                (ending (detect-line-ending raw)))
           (declare (ignore ending))
           (multiple-value-bind (bom body)
@@ -604,15 +607,19 @@
      (declare (ignore call-id))
      (let* ((arguments (prepare-edit-arguments arguments))
             (display-path
-              (required-string arguments "path"))
-            (path
-              (if context
-                  (resolve-execution-context-path context cwd display-path)
-                  (resolve-tool-path cwd display-path)))
-            (replacement-count 0)
-            (display-diff nil)
-            (patch nil)
-            (first-changed-line nil))
+              (required-string arguments "path")))
+       (call-with-normalized-file-operation
+        :edit display-path
+        (lambda ()
+          (let* ((path
+                   (if context
+                       (resolve-execution-context-path
+                        context cwd display-path)
+                       (resolve-tool-path cwd display-path)))
+                 (replacement-count 0)
+                 (display-diff nil)
+                 (patch nil)
+                 (first-changed-line nil))
        (unless (or context (probe-file path))
          (error "Could not edit file: ~A. Error code: ENOENT."
                 display-path))
@@ -624,7 +631,11 @@
                        (multiple-value-bind (value operation-error)
                            (cadr-agent:execution-tool-read-text context path)
                          (execution-context-value value operation-error))
-                       (uiop:read-file-string path :external-format :utf-8)))
+                       (call-with-normalized-file-operation
+                        :edit display-path
+                        (lambda ()
+                          (uiop:read-file-string
+                           path :external-format :utf-8)))))
                  (ending (detect-line-ending raw)))
             (multiple-value-bind (bom body)
                 (strip-utf8-bom raw)
@@ -664,15 +675,19 @@
                           (cadr-agent:execution-tool-write
                            context path final-content)
                         (execution-context-value value operation-error))
-                      (atomic-write-utf8 path final-content))))))))
-       (values
-        (list
-         (cadr-ai:make-text-content
-          :text
-          (format nil "Successfully replaced ~D block(s) in ~A."
-                  replacement-count
-                  display-path)))
-        (list :diff display-diff
-              :patch patch
-              :first-changed-line
-              first-changed-line))))))
+                      (call-with-normalized-file-operation
+                       :edit display-path
+                       (lambda ()
+                         (atomic-write-utf8
+                          path final-content))))))))))
+            (values
+             (list
+              (cadr-ai:make-text-content
+               :text
+               (format nil "Successfully replaced ~D block(s) in ~A."
+                       replacement-count
+                       display-path)))
+             (list :diff display-diff
+                   :patch patch
+                   :first-changed-line
+                   first-changed-line)))))))))

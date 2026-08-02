@@ -59,13 +59,7 @@
    (user-homedir-pathname)))
 
 (defun make-session-id ()
-  (let ((state (make-random-state t)))
-    (string-downcase
-     (format nil "~36R-~36R"
-             (cadr-ai::unix-milliseconds)
-             (random
-              most-positive-fixnum
-              state)))))
+  (cadr-ai:uuid-v7))
 
 (defun milliseconds-to-iso8601 (milliseconds)
   (multiple-value-bind

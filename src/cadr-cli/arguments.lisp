@@ -499,7 +499,7 @@
          "  -n, --name <name>                  Session name"
          "      --slynk <port>                 Enable loopback Slynk REPL"
          "      --no-session                   Disable persistence"
-         "      --session <path>               Session JSONL path"
+         "      --session <path|id>            Session JSONL path or ID"
          "      --session-id <id>              Explicit session id"
          "      --fork <id|path>               Fork from session ID prefix/path"
          "      --session-dir <path>           Session directory"

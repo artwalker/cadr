@@ -116,6 +116,8 @@
   (let* ((prompt (runtime-auth-input-state-prompt state))
          (input (runtime-auth-input-state-input state))
          (secret-p (eq :secret (getf prompt :type)))
+         (manual-code-p
+           (eq :manual-code (getf prompt :type)))
          (display-input
            (if secret-p
                (let ((masked
@@ -134,32 +136,76 @@
     (multiple-value-bind (input-lines row column)
         (cadr-tui:render-single-line-input display-input width)
       (declare (ignore row column))
-      (append
-       (list
-        (selector-border-line width)
-        ""
-        (selector-fit-line
-         (concatenate
-          'string " "
-          (cadr-tui:theme-foreground
-           :accent
-           (cadr-tui:theme-bold
-            (getf prompt :message)
-            :enabled-p t)
-           :enabled-p t))
-         width))
-       (when (getf prompt :placeholder)
-         (list
-          (selector-fit-line
-           (format nil " ~A" (getf prompt :placeholder))
-           width)))
-       input-lines
-       (list
-        (selector-fit-line
-         " (escape/ctrl+c to cancel, enter to submit)"
-         width)
-        ""
-        (selector-border-line width))))))
+      (if manual-code-p
+          (append
+           (list
+            (selector-border-line width)
+            ""
+            (selector-fit-line
+             (format
+              nil " ~A"
+              (cadr-tui:theme-foreground
+               :accent
+               (cadr-tui:theme-bold
+                (getf prompt :title)
+                :enabled-p t)
+               :enabled-p t))
+             width)
+            "")
+           (mapcar
+            (lambda (line)
+              (selector-fit-line
+               (concatenate 'string " " line)
+               width))
+            (render-auth-url-lines
+             (getf prompt :url)
+             (max 1 (1- width))))
+           (list
+            ""
+            (selector-fit-line
+             (format
+              nil " ~A"
+              (cadr-tui:theme-foreground
+               :warning (getf prompt :instructions)
+               :enabled-p t))
+             width)
+            ""
+            (selector-fit-line
+             (format nil " ~A" (getf prompt :message))
+             width))
+           input-lines
+           (list
+            (selector-fit-line
+             " (escape/ctrl+c to cancel)"
+             width)
+            ""
+            (selector-border-line width)))
+          (append
+           (list
+            (selector-border-line width)
+            ""
+            (selector-fit-line
+             (concatenate
+              'string " "
+              (cadr-tui:theme-foreground
+               :accent
+               (cadr-tui:theme-bold
+                (getf prompt :message)
+                :enabled-p t)
+               :enabled-p t))
+             width))
+           (when (getf prompt :placeholder)
+             (list
+              (selector-fit-line
+               (format nil " ~A" (getf prompt :placeholder))
+               width)))
+           input-lines
+           (list
+            (selector-fit-line
+             " (escape/ctrl+c to cancel, enter to submit)"
+             width)
+            ""
+            (selector-border-line width)))))))
 
 (defstruct (framed-select-state
             (:constructor %make-framed-select-state))
@@ -718,10 +764,16 @@
 
 (defun render-auth-url-lines (url width)
   (let* ((linked
-           (terminal-hyperlink url url))
+           (cadr-tui:theme-foreground
+            :accent
+            (terminal-hyperlink url url)
+            :enabled-p t))
          (hint
-           (terminal-hyperlink
-            url "Ctrl+click to open")))
+           (cadr-tui:theme-foreground
+            :dim
+            (terminal-hyperlink
+             url "Ctrl+click to open")
+            :enabled-p t)))
     (append
      (cadr-tui:wrap-text linked width)
      (list hint))))
@@ -1583,47 +1635,58 @@
            (tool-summary-segments call cwd))))
 
 (defun tool-read-classification (call cwd)
-  (when (string-equal
-         (cadr-ai:tool-call-name call) "read")
-    (let ((raw
-            (cadr-ai::json-get
-             (cadr-ai:tool-call-arguments call) "path")))
-      (when (and (stringp raw)
-                 (plusp (length raw)))
-        (let* ((absolute
-                 (resolve-tool-path cwd raw))
-               (filename (file-namestring absolute)))
-          (cond
-            ((string= filename "SKILL.md")
-             (list
-              :kind :skill
-              :label
-              (or
-               (car
-                (last
-                 (pathname-directory
-                  (uiop:pathname-directory-pathname absolute))))
-               filename)))
-            ((let* ((root
-                      (ignore-errors
-                        (asdf:system-source-directory "cadr-cli")))
-                    (relative
-                      (and root
-                           (cwd-relative-path absolute root))))
-               (and relative
-                    (or (string= relative "README.md")
-                        (uiop:string-prefix-p "docs/" relative)
-                        (uiop:string-prefix-p "examples/" relative))
-                    (list :kind :docs :label relative))))
-            ((member filename
-                     '("AGENTS.md" "AGENTS.MD"
-                       "CLAUDE.md" "CLAUDE.MD")
-                     :test #'string=)
-             (list
-              :kind :resource
-              :label
-              (format-path-relative-to-cwd-or-absolute
-               absolute cwd)))))))))
+  (handler-case
+      (when (string-equal
+             (cadr-ai:tool-call-name call) "read")
+        (let ((raw
+                (cadr-ai::json-get
+                 (cadr-ai:tool-call-arguments call) "path")))
+          (when (and (stringp raw)
+                     (plusp (length raw)))
+            (let* ((absolute
+                     (resolve-tool-path cwd raw))
+                   (filename (file-namestring absolute)))
+              (cond
+                ((string= filename "SKILL.md")
+                 (list
+                  :kind :skill
+                  :label
+                  (or
+                   (car
+                    (last
+                     (pathname-directory
+                      (uiop:pathname-directory-pathname
+                       absolute))))
+                   filename)))
+                ((let* ((root
+                          (ignore-errors
+                            (asdf:system-source-directory
+                             "cadr-cli")))
+                        (relative
+                          (and root
+                               (cwd-relative-path
+                                absolute root))))
+                   (and
+                    relative
+                    (or
+                     (string= relative "README.md")
+                     (uiop:string-prefix-p
+                      "docs/" relative)
+                     (uiop:string-prefix-p
+                      "examples/" relative))
+                    (list
+                     :kind :docs :label relative))))
+                ((member
+                  filename
+                  '("AGENTS.md" "AGENTS.MD"
+                    "CLAUDE.md" "CLAUDE.MD")
+                  :test #'string=)
+                 (list
+                  :kind :resource
+                  :label
+                  (format-path-relative-to-cwd-or-absolute
+                   absolute cwd))))))))
+    (condition () nil)))
 
 (defun tool-header-segments (call cwd)
   (let* ((name (cadr-ai:tool-call-name call))
@@ -4858,8 +4921,14 @@
                   (lambda ()
                     (toggle-last-tool-block state))))))
              ((:text :secret :manual-code)
-              (show-extension-overlay
-               (make-runtime-auth-input-state prompt)))
+              (let ((cancel-function
+                      (getf prompt :cancel-function)))
+                (show-extension-overlay
+                 (make-runtime-auth-input-state prompt)
+                 :signal
+                 (and cancel-function
+                      (cadr-agent:make-extension-cancellation-signal
+                       :aborted-function cancel-function)))))
              (otherwise nil)))
          (add-extension-autocomplete-provider
              (factory)

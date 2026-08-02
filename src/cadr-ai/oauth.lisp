@@ -324,6 +324,35 @@
           (if separator (subseq part (1+ separator)) "")))))
     result))
 
+(defun parse-oauth-authorization-input (value)
+  (let* ((text
+           (string-trim '(#\Space #\Tab #\Newline #\Return)
+                        value))
+         (query-start (position #\? text))
+         (query-text
+           (cond
+             (query-start (subseq text (1+ query-start)))
+             ((or (uiop:string-prefix-p "code=" text)
+                  (search "&code=" text))
+              text)
+             (t nil))))
+    (cond
+      (query-text
+       (let* ((fragment-start (position #\# query-text))
+              (query
+                (parse-query
+                 (if fragment-start
+                     (subseq query-text 0 fragment-start)
+                     query-text))))
+         (values (gethash "code" query)
+                 (gethash "state" query))))
+      ((position #\# text)
+       (let ((separator (position #\# text)))
+         (values (subseq text 0 separator)
+                 (subseq text (1+ separator)))))
+      (t
+       (values text nil)))))
+
 (defun parse-oauth-callback-request
     (request-line expected-path expected-state
      &key provider-name)
@@ -548,7 +577,7 @@
    (oauth-credential-refresh credential)))
 
 (defparameter +oauth-logo-svg+
-  "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 800\" aria-hidden=\"true\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M165.29 165.29 H517.36 V400 H400 V517.36 H282.65 V634.72 H165.29 Z M282.65 282.65 V400 H400 V282.65 Z\"/><path fill=\"#fff\" d=\"M517.36 400 H634.72 V634.72 H517.36 Z\"/></svg>")
+  "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 800\" aria-hidden=\"true\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M165.29 165.29 H634.72 V282.65 H282.65 V517.36 H634.72 V634.72 H165.29 Z\"/></svg>")
 
 (defun escape-oauth-html (value)
   (with-output-to-string (output)
@@ -718,7 +747,8 @@
           body)
   (finish-output stream))
 
-(defun wait-for-oauth-code (state port path provider-name)
+(defun wait-for-oauth-code
+    (state port path provider-name &optional cancelled-p)
   (let ((socket
           (make-instance 'sb-bsd-sockets:inet-socket
                          :type :stream
@@ -729,6 +759,15 @@
            (sb-bsd-sockets:socket-bind socket
                                        #(127 0 0 1) port)
            (sb-bsd-sockets:socket-listen socket 1)
+           (when cancelled-p
+             (loop
+               (when (funcall cancelled-p)
+                 (return-from wait-for-oauth-code nil))
+               (when
+                   (sb-sys:wait-until-fd-usable
+                    (sb-bsd-sockets:socket-file-descriptor socket)
+                    :input 0.05)
+                 (return))))
            (multiple-value-bind (client address port)
                (sb-bsd-sockets:socket-accept socket)
              (declare (ignore address port))
@@ -768,8 +807,99 @@
       (ignore-errors
         (sb-bsd-sockets:socket-close socket)))))
 
-(defun wait-for-openai-oauth-code (state)
-  (wait-for-oauth-code state 1455 "/auth/callback" "OpenAI"))
+(defun wait-for-openai-oauth-code (state &optional cancelled-p)
+  (wait-for-oauth-code
+   state 1455 "/auth/callback" "OpenAI" cancelled-p))
+
+(defun wait-for-oauth-authorization
+    (expected-state callback-function prompt-function prompt)
+  (unless prompt-function
+    (return-from wait-for-oauth-authorization
+      (funcall callback-function (constantly nil))))
+  (let ((lock
+          (sb-thread:make-mutex
+           :name "cadr-oauth-authorization"))
+        (condition
+          (sb-thread:make-waitqueue
+           :name "cadr-oauth-authorization"))
+        (cancelled-p nil)
+        (done-p nil)
+        (result nil)
+        (failure nil)
+        (callback-thread nil)
+        (prompt-thread nil))
+    (labels
+        ((cancelled-p ()
+           (sb-thread:with-mutex (lock)
+             cancelled-p))
+         (complete (value error)
+           (sb-thread:with-mutex (lock)
+             (unless done-p
+               (setf result value
+                     failure error
+                     done-p t
+                     cancelled-p t)
+               (sb-thread:condition-broadcast condition))))
+         (callback-worker ()
+           (handler-case
+               (let ((code
+                       (funcall callback-function
+                                #'cancelled-p)))
+                 (when code
+                   (complete code nil)))
+             (error ()
+               ;; A failed loopback listener does not invalidate the manual
+               ;; authorization-code path.
+               nil)))
+         (prompt-worker ()
+           (handler-case
+               (let* ((prompt-value (copy-list prompt))
+                      (_
+                        (setf
+                         (getf prompt-value :cancel-function)
+                         #'cancelled-p))
+                      (input
+                        (funcall prompt-function prompt-value)))
+                 (declare (ignore _))
+                 (unless input
+                   (error 'authentication-error
+                          :message "Login cancelled"))
+                 (multiple-value-bind (code state)
+                     (parse-oauth-authorization-input input)
+                   (when (and state
+                              (not (string= state expected-state)))
+                     (error 'authentication-error
+                            :message "State mismatch"))
+                   (unless (non-empty-string-p code)
+                     (error 'authentication-error
+                            :message "Missing authorization code"))
+                   (complete code nil)))
+             (error (cause)
+               (complete
+                nil
+                (if (typep cause 'authentication-error)
+                    cause
+                    (make-condition
+                     'authentication-error
+                     :message "Login cancelled"
+                     :cause cause)))))))
+      (setf
+       callback-thread
+       (sb-thread:make-thread
+        #'callback-worker
+        :name "cadr-oauth-loopback-callback")
+       prompt-thread
+       (sb-thread:make-thread
+        #'prompt-worker
+        :name "cadr-oauth-manual-code"))
+      (sb-thread:with-mutex (lock)
+        (loop until done-p
+              do (sb-thread:condition-wait condition lock)))
+      (sb-thread:join-thread callback-thread)
+      (sb-thread:join-thread prompt-thread)
+      (when failure
+        (error failure))
+      result)))
 
 (defun present-oauth-auth-url
     (url output auth-url-function)
@@ -785,13 +915,15 @@
                            &key
                              (output *standard-output*)
                              (open-browser *oauth-browser-open-function*)
-                             auth-url-function)
+                             auth-url-function
+                             auth-prompt-function)
   (multiple-value-bind (verifier challenge)
       (generate-pkce)
     (let* ((state (oauth-state))
            (url (openai-authorization-url challenge state)))
-      (present-oauth-auth-url
-       url output auth-url-function)
+      (unless auth-prompt-function
+        (present-oauth-auth-url
+         url output auth-url-function))
       (handler-case
           (funcall open-browser url)
         (error ()
@@ -800,7 +932,23 @@
           (finish-output output)))
       (let ((credential
               (exchange-openai-authorization-code
-               (wait-for-openai-oauth-code state)
+               (if auth-prompt-function
+                   (wait-for-oauth-authorization
+                    state
+                    (lambda (cancelled-p)
+                      (wait-for-openai-oauth-code
+                       state cancelled-p))
+                    auth-prompt-function
+                    (list
+                     :type :manual-code
+                     :title "Login to OpenAI (ChatGPT Plus/Pro)"
+                     :url url
+                     :instructions
+                     "A browser window should open. Complete login to finish."
+                     :message
+                     "Complete login in your browser, or paste the authorization code / redirect URL here:"
+                     :placeholder +openai-oauth-redirect-uri+))
+                   (wait-for-openai-oauth-code state))
                verifier)))
         (unless (non-empty-string-p
                  (oauth-credential-account-id credential))
@@ -816,7 +964,8 @@
      &key
        (output *standard-output*)
        (open-browser *oauth-browser-open-function*)
-       auth-url-function)
+       auth-url-function
+       auth-prompt-function)
   ;; This mirrors the fixed reference implementation but remains live-unverified.
   (multiple-value-bind (verifier challenge)
       (generate-pkce)
@@ -824,8 +973,9 @@
            (url (anthropic-authorization-url challenge state)))
       (format output
               "Anthropic subscription OAuth is unverified and may violate provider terms.~%")
-      (present-oauth-auth-url
-       url output auth-url-function)
+      (unless auth-prompt-function
+        (present-oauth-auth-url
+         url output auth-url-function))
       (handler-case
           (funcall open-browser url)
         (error ()
@@ -833,8 +983,25 @@
                   "Could not open a browser automatically; use the URL above.~%")
           (finish-output output)))
       (let* ((code
-               (wait-for-oauth-code
-                state 53692 "/callback" "Anthropic"))
+               (if auth-prompt-function
+                   (wait-for-oauth-authorization
+                    state
+                    (lambda (cancelled-p)
+                      (wait-for-oauth-code
+                       state 53692 "/callback" "Anthropic"
+                       cancelled-p))
+                    auth-prompt-function
+                    (list
+                     :type :manual-code
+                     :title "Login to Anthropic (Claude Pro/Max)"
+                     :url url
+                     :instructions
+                     "A browser window should open. Complete login to finish."
+                     :message
+                     "Complete login in your browser, or paste the authorization code / redirect URL here:"
+                     :placeholder +anthropic-oauth-redirect-uri+))
+                   (wait-for-oauth-code
+                    state 53692 "/callback" "Anthropic")))
              (credential
                (exchange-anthropic-authorization-code
                 code state verifier)))

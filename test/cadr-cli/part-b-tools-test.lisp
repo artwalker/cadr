@@ -206,8 +206,118 @@
       (is (string=
            "/tmp/a b"
            (namestring
-            (cadr-cli::resolve-general-path
+           (cadr-cli::resolve-general-path
              "file:///tmp/a%20b" directory)))))))
+
+(test goal13-relative-read-expands-a-shortened-home-cwd-before-resolving
+  (let* ((home
+           (uiop:ensure-directory-pathname
+            (user-homedir-pathname)))
+         (expected
+           (merge-pathnames
+            "projects/sonechka/AGENTS.md" home))
+         (resolved
+           (cadr-cli::resolve-tool-path
+            "~/projects/cadr/"
+            "../sonechka/AGENTS.md"))
+         (call
+           (cadr-ai:make-tool-call
+            :id "relative-resource"
+            :name "read"
+            :arguments
+            (args "path" "../sonechka/AGENTS.md"))))
+    (is (string=
+         (namestring expected)
+         (namestring resolved)))
+    (handler-case
+        (let ((classification
+                (cadr-cli::tool-read-classification
+                 call "~/projects/cadr/")))
+          (is (eq :resource
+                  (getf classification :kind)))
+          (is (string=
+               (namestring expected)
+               (getf classification :label))))
+      (condition (condition)
+        (fail
+         "read presentation leaked an implementation condition: ~A"
+         condition)))))
+
+(test goal13-file-tool-errors-never-leak-common-lisp-representations
+  (with-test-directory (directory)
+    (dolist
+        (case
+         (list
+          (list (cadr-cli::make-read-tool directory)
+                (args "path" "missing.txt")
+                "File not found: missing.txt")
+          (list (cadr-cli::make-edit-tool directory)
+                (args
+                 "path" "missing.txt"
+                 "edits"
+                 (vector
+                  (args "oldText" "a" "newText" "b")))
+                "Could not edit file: missing.txt. Error code: ENOENT.")
+          (list (cadr-cli::make-ls-tool directory)
+                (args "path" "missing")
+                (format nil "Path not found: ~A"
+                        (namestring
+                         (merge-pathnames "missing" directory))))
+          (list (cadr-cli::make-find-tool directory)
+                (args "pattern" "*" "path" "missing")
+                (format nil "Path not found: ~A"
+                        (namestring
+                         (merge-pathnames "missing" directory))))
+          (list (cadr-cli::make-grep-tool directory)
+                (args "pattern" "x" "path" "missing")
+                (format nil "Path not found: ~A"
+                        (namestring
+                         (merge-pathnames "missing" directory))))
+          (list (cadr-cli::make-glob-tool directory)
+                (args "pattern" "*" "path" "missing")
+                (format nil "Path not found: ~A"
+                        (namestring
+                         (merge-pathnames "missing" directory))))))
+      (handler-case
+          (progn
+            (invoke-tool (first case) (second case))
+            (fail "missing file/path should fail"))
+        (condition (condition)
+          (let ((message (princ-to-string condition)))
+            (is (string= (third case) message))
+            (is (not (search "#P\"" message)))
+            (is (not (search "not a string designator" message)))
+            (is (not (search "SIMPLE-ARRAY" message)))
+            (is (not (search "SB-" message)))))))))
+
+(test goal13-file-io-failures-use-stable-tool-level-copy
+  (with-test-directory (directory)
+    (dolist
+        (case
+         (list
+          (list
+           (cadr-cli::make-read-tool directory)
+           (args "path" ".")
+           "Could not read file: .")
+          (list
+           (cadr-cli::make-write-tool directory)
+           (args "path" "." "content" "x")
+           "Could not write file: .")
+          (list
+           (cadr-cli::make-edit-tool directory)
+           (args
+            "path" "."
+            "edits"
+            (vector
+             (args "oldText" "a" "newText" "b")))
+           "Could not edit file: .")))
+      (handler-case
+          (progn
+            (invoke-tool (first case) (second case))
+            (fail "directory-as-file should fail"))
+        (condition (condition)
+          (is (string= (third case)
+                       (princ-to-string condition))))))))
 
 (test edit-fuzzy-matching-preserves-line-endings-and-bom
   (with-test-directory (directory)

@@ -13,11 +13,15 @@
                 (multiple-value-bind (value operation-error)
                     (cadr-agent:execution-tool-read-binary context path)
                   (execution-context-value value operation-error)))))
+    (unless (or context (probe-file path))
+      (error "File not found: ~A" display-path))
     (multiple-value-bind
           (image-bytes mime-type hints omitted-message)
         (if context
             (process-image-data bytes)
-            (process-image-file path))
+            (call-with-normalized-file-operation
+             :read display-path
+             (lambda () (process-image-file path))))
       (when mime-type
         (let ((note
                 (format
@@ -37,7 +41,11 @@
              nil)))))
     (let* ((text (if context
                      (cadr-ai::utf8-string bytes)
-                     (uiop:read-file-string path :external-format :utf-8)))
+                     (call-with-normalized-file-operation
+                      :read display-path
+                      (lambda ()
+                        (uiop:read-file-string
+                         path :external-format :utf-8)))))
            (lines (split-all-lines text))
            (start (if (zerop offset)
                       0
@@ -124,4 +132,10 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (read-tool-file cwd arguments :context context))))
+     (let ((display-path
+             (required-string arguments "path")))
+       (call-with-normalized-file-operation
+        :read display-path
+        (lambda ()
+          (read-tool-file
+           cwd arguments :context context)))))))

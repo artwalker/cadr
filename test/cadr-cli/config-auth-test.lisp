@@ -296,9 +296,11 @@
            (cadr-cli::*openai-login-function*
             (lambda
                 (auth-path
-                 &key output auth-url-function)
+                 &key output auth-url-function
+                   auth-prompt-function)
               (declare
-               (ignore output auth-url-function))
+               (ignore output auth-url-function
+                       auth-prompt-function))
               (push :login calls)
               (cadr-ai:write-auth-credential
                auth-path
@@ -344,8 +346,13 @@
            (request-url nil)
            (request-headers nil)
            (cadr-cli::*openai-login-function*
-             (lambda (auth-path &key output auth-url-function)
-               (declare (ignore output auth-url-function))
+             (lambda
+                 (auth-path
+                  &key output auth-url-function
+                    auth-prompt-function)
+               (declare
+                (ignore output auth-url-function
+                        auth-prompt-function))
                (cadr-ai:write-auth-credential
                 auth-path
                 (cadr-ai:make-oauth-credential
@@ -446,3 +453,32 @@
               (assoc "originator"
                      request-headers
                      :test #'string-equal))))))))
+
+(test goal13-login-command-forwards-the-manual-authorization-prompt
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (prompt-function (lambda (prompt) prompt))
+           (received-prompt-function nil)
+           (cadr-cli::*openai-login-function*
+             (lambda
+                 (auth-path
+                  &key output auth-url-function
+                    auth-prompt-function)
+               (declare (ignore output auth-url-function))
+               (setf received-prompt-function
+                     auth-prompt-function)
+               (cadr-ai:write-auth-credential
+                auth-path
+                (cadr-ai:make-oauth-credential
+                 :provider :openai-codex
+                 :access "access" :refresh "refresh"
+                 :expires
+                 (+ (cadr-ai::unix-milliseconds) 1000000)
+                 :account-id "acct")))))
+      (is
+       (cadr-cli:handle-auth-command
+        "/login openai"
+        :auth-path path
+        :output (make-string-output-stream)
+        :auth-prompt-function prompt-function))
+      (is (eq prompt-function received-prompt-function)))))

@@ -442,6 +442,38 @@
                 (shell-quote session-directory)
                 (shell-quote session-id)))))
 
+(defun write-session-resume-hint
+    (session session-directory
+     &key
+       (output *standard-output*)
+       terminal-p
+       default-session-directory-p)
+  (let* ((path (cadr-agent:session-path session))
+         (command
+           (format-resume-command
+            (cadr-agent:session-id session)
+            :persisted-p
+            (cadr-agent::session-persisted-p session)
+            :session-file path
+            :session-file-exists-p
+            (not (null (and path (probe-file path))))
+            :terminal-p terminal-p
+            :default-session-directory-p
+            default-session-directory-p
+            :session-directory
+            (namestring
+             (uiop:ensure-directory-pathname
+              session-directory)))))
+    (when command
+      (format
+       output "~A ~A~%"
+       (cadr-tui:theme-foreground
+        :dim "To resume this session:"
+        :enabled-p terminal-p)
+       command)
+      (finish-output output))
+    command))
+
 (defun numeric-version-token-p (text)
   (and (plusp (length text))
        (every #'digit-char-p text)))

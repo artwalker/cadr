@@ -282,7 +282,7 @@
         (let ((text (get-output-stream-string output)))
           (is (search "Session name set: workflow" text))
           (is (search "New session started" text))
-          (is (search "Exported" text)))))))
+          (is (search "Session exported to:" text)))))))
 
 (defun goal9-a2-json-lines (text)
   (loop for line in

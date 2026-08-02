@@ -245,6 +245,97 @@
            response))
       (is (string= body (subseq response body-start))))))
 
+(test goal13-manual-oauth-input-matches-baseline-url-code-and-state-forms
+  (is (equal
+       '("code-a" "state-a")
+       (multiple-value-list
+        (cadr-ai::parse-oauth-authorization-input
+         "http://localhost:1455/auth/callback?code=code-a&state=state-a"))))
+  (is (equal
+       '("code-b" "state-b")
+       (multiple-value-list
+        (cadr-ai::parse-oauth-authorization-input
+         "code-b#state-b"))))
+  (is (equal
+       '("code-c" "state-c")
+       (multiple-value-list
+        (cadr-ai::parse-oauth-authorization-input
+         "code=code-c&state=state-c"))))
+  (is (equal
+       '("code-d" nil)
+       (multiple-value-list
+        (cadr-ai::parse-oauth-authorization-input
+         " code-d ")))))
+
+(test goal13-callback-and-manual-oauth-input-race-cancels-the-loser
+  (let ((callback-cancelled-p nil)
+        (prompt nil))
+    (is
+     (string=
+      "manual-code"
+      (cadr-ai::wait-for-oauth-authorization
+       "expected-state"
+       (lambda (cancelled-p)
+         (loop until (funcall cancelled-p)
+               do (sb-thread:thread-yield))
+         (setf callback-cancelled-p t)
+         nil)
+       (lambda (value)
+         (setf prompt value)
+         "http://localhost:1455/auth/callback?code=manual-code&state=expected-state")
+       '(:type :manual-code
+         :message "Complete login in your browser, or paste the authorization code / redirect URL here:"
+         :placeholder "http://localhost:1455/auth/callback"))))
+    (is (not (null callback-cancelled-p)))
+    (is (functionp (getf prompt :cancel-function))))
+  (let ((manual-cancelled-p nil))
+    (is
+     (string=
+      "callback-code"
+      (cadr-ai::wait-for-oauth-authorization
+       "expected-state"
+       (lambda (cancelled-p)
+         (declare (ignore cancelled-p))
+         "callback-code")
+       (lambda (prompt)
+         (loop until (funcall (getf prompt :cancel-function))
+               do (sb-thread:thread-yield))
+         (setf manual-cancelled-p t)
+         nil)
+       '(:type :manual-code
+         :message "manual"
+         :placeholder "callback"))))
+    (is (not (null manual-cancelled-p))))
+  (signals cadr-ai:authentication-error
+    (cadr-ai::wait-for-oauth-authorization
+     "expected-state"
+     (lambda (cancelled-p)
+       (loop until (funcall cancelled-p)
+             do (sb-thread:thread-yield)))
+     (lambda (prompt)
+       (declare (ignore prompt))
+       "code#wrong-state")
+     '(:type :manual-code :message "manual"))))
+
+(test goal13-oauth-page-uses-cadr-owned-grid-mark
+  (let ((logo cadr-ai::+oauth-logo-svg+))
+    (is (search "viewBox=\"0 0 800 800\"" logo))
+    (is (search "fill=\"#fff\"" logo))
+    (is (search "fill-rule=\"evenodd\"" logo))
+    (is (search "aria-hidden=\"true\"" logo))
+    (is (search
+         "M165.29 165.29 H634.72 V282.65 H282.65 V517.36 H634.72 V634.72 H165.29 Z"
+         logo))
+    (let ((first-path (search "<path" logo)))
+      (is (not (null first-path)))
+      (is (null (search "<path" logo
+                        :start2 (+ first-path 5)))))
+    (is (null (search "stroke=" logo)))
+    (is (null (search "gradient" logo)))
+    (is (null (search
+               "165.29 165.29 H517.36 V400"
+               logo)))))
+
 (test auth-file-is-0600-and-round-trips-without-secret-output
   (uiop:with-temporary-file (:pathname path)
     (delete-file path)

@@ -19,11 +19,15 @@
        text))
 
 (defun normalize-tool-path-text (path)
-  (let* ((without-at
-           (if (and (> (length path) 1)
-                    (char= #\@ (char path 0)))
-               (subseq path 1)
-               path))
+  (let* ((path-text
+           (etypecase path
+             (string path)
+             (pathname (namestring path))))
+         (without-at
+           (if (and (> (length path-text) 1)
+                    (char= #\@ (char path-text 0)))
+               (subseq path-text 1)
+               path-text))
          (spaces (normalize-unicode-spaces without-at)))
     (if (and (plusp (length spaces))
              (char= #\~ (char spaces 0))
@@ -37,15 +41,44 @@
           (user-homedir-pathname)))
         spaces)))
 
-(defun resolve-tool-path (cwd path)
-  (unless (and (stringp path) (plusp (length path)))
-    (error "Path must be a non-empty string"))
-  (let ((pathname (pathname (normalize-tool-path-text path))))
+(defun lexically-normalized-absolute-pathname (path)
+  (let ((directory nil))
+    (dolist (component (pathname-directory path))
+      (cond
+        ((eq component :up)
+         (when (and directory
+                    (stringp (first directory)))
+           (pop directory)))
+        ((eq component :back)
+         (when (and directory
+                    (stringp (first directory)))
+           (pop directory)))
+        (t
+         (push component directory))))
+    (make-pathname
+     :directory (nreverse directory)
+     :defaults path)))
+
+(defun normalized-tool-directory (path)
+  (uiop:ensure-directory-pathname
+   (lexically-normalized-absolute-pathname
     (uiop:ensure-absolute-pathname
-     (if (uiop:absolute-pathname-p pathname)
-         pathname
-         (merge-pathnames pathname
-                          (uiop:ensure-directory-pathname cwd))))))
+     (pathname (normalize-tool-path-text path))))))
+
+(defun resolve-tool-path (cwd path)
+  (let* ((path-text (normalize-tool-path-text path)))
+    (unless (plusp (length path-text))
+      (error "Path must be a non-empty string"))
+    (let* ((pathname
+             (pathname path-text))
+         (absolute
+           (uiop:ensure-absolute-pathname
+            (if (uiop:absolute-pathname-p pathname)
+                 pathname
+                 (merge-pathnames
+                  pathname
+                  (normalized-tool-directory cwd))))))
+      (lexically-normalized-absolute-pathname absolute))))
 
 (defun execution-context-value (value operation-error)
   (when operation-error
@@ -54,8 +87,8 @@
 
 (defun resolve-execution-context-path (context cwd path)
   (multiple-value-bind (resolved operation-error)
-      (cadr-agent:execution-tool-resolve-path
-       context path (namestring (uiop:ensure-directory-pathname cwd)))
+    (cadr-agent:execution-tool-resolve-path
+       context path (namestring (normalized-tool-directory cwd)))
     (execution-context-value resolved operation-error)))
 
 (defun path-variant-candidates (path)
@@ -111,7 +144,7 @@
 (defun relative-posix-path (path cwd)
   (substitute #\/ #\\
               (enough-namestring
-               path (uiop:ensure-directory-pathname cwd))))
+               path (normalized-tool-directory cwd))))
 
 (defun canonicalize-path (path)
   (or (ignore-errors (truename path))
@@ -119,8 +152,7 @@
 
 (defun cwd-relative-path (path cwd)
   (let* ((base
-           (uiop:ensure-directory-pathname
-            (uiop:ensure-absolute-pathname cwd)))
+           (normalized-tool-directory cwd))
          (absolute
            (uiop:ensure-absolute-pathname path base)))
     (let ((relative
@@ -135,7 +167,10 @@
 (defun format-path-relative-to-cwd-or-absolute (file-path cwd)
   (substitute #\/ #\\
               (or (cwd-relative-path file-path cwd)
-                  (resolve-path-input file-path cwd))))
+                  (namestring
+                   (uiop:ensure-absolute-pathname
+                    file-path
+                    (normalized-tool-directory cwd))))))
 
 (defun local-path-p (value)
   (let ((text
@@ -192,15 +227,48 @@
                         (length "file://")))
                normalized))
          (pathname (pathname decoded)))
-    (uiop:ensure-absolute-pathname
-     pathname
-     (uiop:ensure-directory-pathname base))))
+    (lexically-normalized-absolute-pathname
+     (uiop:ensure-absolute-pathname
+      pathname
+      (normalized-tool-directory base)))))
+
+(defun signal-normalized-file-operation-error
+    (operation display-path)
+  (error
+   (case operation
+     (:read "Could not read file: ~A")
+     (:write "Could not write file: ~A")
+     (:edit "Could not edit file: ~A")
+     ((:find :grep :glob) "Could not search path: ~A")
+     (:ls "Could not list directory: ~A")
+     (otherwise "Could not access path: ~A"))
+   display-path))
+
+(defun call-with-normalized-file-operation
+    (operation display-path function)
+  (handler-case
+      (funcall function)
+    (file-error ()
+      (signal-normalized-file-operation-error
+       operation display-path))
+    (stream-error ()
+      (signal-normalized-file-operation-error
+       operation display-path))
+    (type-error ()
+      (signal-normalized-file-operation-error
+       operation display-path))))
 
 (defun required-string (arguments key)
   (let ((value (cadr-ai::json-get arguments key)))
     (unless (stringp value)
       (error "~A must be a string" key))
     value))
+
+(defun optional-string (arguments key &optional default)
+  (let ((value (cadr-ai::json-get arguments key default)))
+    (unless (or (null value) (stringp value))
+      (error "~A must be a string" key))
+    (or value default)))
 
 (defun optional-integer (arguments key &optional default)
   (let ((value (cadr-ai::json-get arguments key default)))

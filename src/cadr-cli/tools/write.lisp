@@ -25,26 +25,32 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (let* ((display-path
-              (required-string arguments "path"))
-            (path
-              (if context
-                  (resolve-execution-context-path context cwd display-path)
-                  (resolve-tool-path cwd display-path)))
-            (content (required-string arguments "content")))
-       (with-file-mutation-queue
-        path
+     (let ((display-path
+             (required-string arguments "path")))
+       (call-with-normalized-file-operation
+        :write display-path
         (lambda ()
-          (if context
-              (multiple-value-bind (value operation-error)
-                  (cadr-agent:execution-tool-write context path content)
-                (execution-context-value value operation-error))
-              (write-utf8-file path content))))
-       (values
-        (list
-         (cadr-ai:make-text-content
-          :text
-          (format nil "Successfully wrote ~D bytes to ~A"
-                  (utf16-code-unit-length content)
-                  display-path)))
-        nil)))))
+          (let* ((path
+                   (if context
+                       (resolve-execution-context-path
+                        context cwd display-path)
+                       (resolve-tool-path cwd display-path)))
+                 (content
+                   (required-string arguments "content")))
+            (with-file-mutation-queue
+             path
+             (lambda ()
+               (if context
+                   (multiple-value-bind (value operation-error)
+                       (cadr-agent:execution-tool-write
+                        context path content)
+                     (execution-context-value value operation-error))
+                   (write-utf8-file path content))))
+            (values
+             (list
+              (cadr-ai:make-text-content
+               :text
+               (format nil "Successfully wrote ~D bytes to ~A"
+                       (utf16-code-unit-length content)
+                       display-path)))
+             nil))))))))

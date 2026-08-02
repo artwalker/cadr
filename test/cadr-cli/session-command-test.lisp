@@ -136,7 +136,111 @@
       (let ((text (get-output-stream-string output)))
         (is (null (search "Switched to session" text)))
         (is (null (search "Branch point" text)))
-        (is (search "Exported" text))))))
+        (is (search "Session exported to:" text))))))
+
+(test goal13-default-html-export-name-and-status-match-the-baseline-rule
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (id "018f22b2-5aa0-7ab1-8a44-0123456789ab")
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id id :timestamp 0))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (expected-name
+             (format
+              nil
+              "cadr-session-1970-01-01T00-00-00-000Z_~A.html"
+              id))
+           (expected-path
+             (merge-pathnames expected-name cwd))
+           (output (make-string-output-stream)))
+      (declare (ignore _))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "export me"))
+      (is
+       (cadr-cli::handle-session-command
+        "/export" agent
+        :directory sessions :cwd cwd :output output))
+      (is (probe-file expected-path))
+      (is (string=
+           (format nil "Session exported to: ~A~%"
+                   (namestring expected-path))
+           (get-output-stream-string output))))))
+
+(test goal13-session-ids-and-post-tui-resume-copy-match-the-baseline
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd))
+           (output (make-string-output-stream)))
+      (declare (ignore _))
+      (is
+       (cl-ppcre:scan
+        "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+        (cadr-agent:session-id session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "persist"))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-text-content :text "persisted"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop))
+      (is
+       (cadr-cli::write-session-resume-hint
+        session sessions
+        :output output
+        :terminal-p t
+        :default-session-directory-p nil))
+      (is
+       (string=
+        (format
+         nil "To resume this session: cadr --session-dir ~A --session ~A~%"
+         (cadr-cli::shell-quote (namestring sessions))
+         (cadr-agent:session-id session))
+        (cadr-tui:strip-terminal-sequences
+         (get-output-stream-string output))))
+      (let* ((arguments
+               (cadr-cli::parse-cli-arguments
+                (list
+                 "--session-dir" (namestring sessions)
+                 "--session" (cadr-agent:session-id session))))
+             (resumed
+               (cadr-cli::resolve-cli-session
+                :session-path
+                (cadr-cli::cli-arguments-session arguments)
+                :directory
+                (pathname
+                 (cadr-cli::cli-arguments-session-directory arguments))
+                :cwd cwd)))
+        (is
+         (string=
+          (cadr-agent:session-id session)
+          (cadr-agent:session-id resumed)))
+        (is
+         (string=
+          (namestring (cadr-agent:session-path session))
+          (namestring (cadr-agent:session-path resumed))))))))
 
 (test copy-clone-and-import-commands-match-interactive-session-semantics
   (with-test-directory (root)

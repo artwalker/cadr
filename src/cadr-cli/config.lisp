@@ -240,6 +240,7 @@
             (auth-path (default-auth-path))
             (output *standard-output*)
             auth-url-function
+            auth-prompt-function
             on-change)
   (let* ((parts (split-command-line line))
          (command (first parts)))
@@ -252,13 +253,17 @@
                      auth-path
                      :output output
                      :auth-url-function
-                     auth-url-function))
+                     auth-url-function
+                     :auth-prompt-function
+                     auth-prompt-function))
            (:anthropic
             (funcall *anthropic-login-function*
                      auth-path
                      :output output
                      :auth-url-function
-                     auth-url-function)))
+                     auth-url-function
+                     :auth-prompt-function
+                     auth-prompt-function)))
          (format output "~(~A~) login stored in ~A~%"
                  provider (namestring auth-path))
          (when on-change

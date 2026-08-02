@@ -121,7 +121,7 @@
        (cadr-agent:session-id session)))
     sessions)))
 
-(defun resolve-fork-source-session
+(defun resolve-session-reference
     (argument directory cwd)
   (if (session-argument-path-p argument)
       (cadr-agent:load-session
@@ -139,6 +139,10 @@
          :directory directory))
        (cadr-agent:resume-session
         argument :directory directory))))
+
+(defun resolve-fork-source-session
+    (argument directory cwd)
+  (resolve-session-reference argument directory cwd))
 
 (defun resolve-cli-session
     (&key
@@ -219,11 +223,8 @@
           target message))
        target))
     (session-path
-     (cadr-agent:load-session
-      (merge-pathnames
-       (pathname session-path)
-       (uiop:ensure-directory-pathname
-        cwd))))
+     (resolve-session-reference
+      session-path directory cwd))
     (resume-id
      (let ((session
              (cadr-agent:resume-session
@@ -1327,6 +1328,21 @@
         (cadr-agent:session-messages session))
   session)
 
+(defun session-export-basename (session)
+  (format
+   nil "cadr-session-~A_~A.html"
+   (cl-ppcre:regex-replace-all
+    "[:.]"
+    (cadr-agent::milliseconds-to-iso8601
+     (cadr-agent:session-timestamp session))
+    "-")
+   (cadr-agent:session-id session)))
+
+(defun session-export-path (session argument cwd)
+  (resolve-general-path
+   (or argument (session-export-basename session))
+   cwd))
+
 (defun handle-session-command
     (line agent
      &key
@@ -1527,12 +1543,9 @@
           'cadr-ai:configuration-error
           :message "The agent has no persistent session"))
        (let ((path
-               (pathname
-                (or argument
-                    (format nil "~A.html"
-                            (cadr-agent:session-id
-                             (cadr-agent:agent-session
-                              agent)))))))
+               (session-export-path
+                (cadr-agent:agent-session agent)
+                argument cwd)))
          (apply
           #'cadr-agent:export-session-html
           (cadr-agent:agent-session agent)
@@ -1541,7 +1554,7 @@
               (or (funcall export-options-function)
                   nil)
               nil))
-         (format output "Exported ~A~%"
+         (format output "Session exported to: ~A~%"
                  (namestring path))
          (finish-output output)
          t))
@@ -3330,6 +3343,8 @@
              :output frontend-output
              :auth-url-function
              auth-url-consumer
+             :auth-prompt-function
+             auth-prompt-consumer
              :on-change #'refresh-auth)
             (handle-session-command
              line agent
@@ -4299,6 +4314,17 @@
                    (anthropic-warning)))
              (and warning
                   (list warning)))))
+            (let ((active-session
+                    (cadr-agent:agent-session agent)))
+              (when active-session
+                (write-session-resume-hint
+                 active-session session-directory
+                 :output *standard-output*
+                 :terminal-p output-terminal-p
+                 :default-session-directory-p
+                 (same-session-file-p
+                  session-directory
+                  (cadr-agent:default-session-directory)))))
             0)
            (:repl
             (setf event-consumer renderer)

@@ -288,8 +288,11 @@
               :before-read-number 3))
            (mock-login-function
              (lambda
-                 (path &key output auth-url-function)
-               (declare (ignore output auth-url-function))
+                 (path &key output auth-url-function
+                            auth-prompt-function)
+               (declare
+                (ignore output auth-url-function
+                        auth-prompt-function))
                (cadr-ai:write-auth-credential
                 path
                 (cadr-ai:make-oauth-credential
@@ -3748,3 +3751,53 @@
     (is (equal first second))
     (is (every #'string=
                first second))))
+
+(test goal13-built-in-oauth-dialog-matches-the-baseline-manual-fallback
+  (let* ((state
+           (cadr-cli::make-runtime-auth-input-state
+            '(:type :manual-code
+              :title "Login to OpenAI (ChatGPT Plus/Pro)"
+              :url "https://auth.openai.com/oauth/authorize?state=test"
+              :instructions
+              "A browser window should open. Complete login to finish."
+              :message
+              "Complete login in your browser, or paste the authorization code / redirect URL here:"
+              :placeholder
+              "http://localhost:1455/auth/callback")))
+         (rendered
+           (format
+            nil "~{~A~^~%~}"
+            (mapcar
+             #'cadr-tui:strip-terminal-sequences
+             (cadr-cli::render-runtime-auth-input-state
+              state 100)))))
+    (is (search "Login to OpenAI (ChatGPT Plus/Pro)" rendered))
+    (is (search
+         "https://auth.openai.com/oauth/authorize?state=test"
+         rendered))
+    (is (search
+         "A browser window should open. Complete login to finish."
+         rendered))
+    (is (search
+         "Complete login in your browser, or paste the authorization code / redirect URL here:"
+         rendered))
+    (is (null (search "http://localhost:1455/auth/callback" rendered)))
+    (is (search "(escape/ctrl+c to cancel)" rendered))
+    (is (null (search "enter to submit" rendered)))
+    (let* ((narrow
+             (cadr-cli::render-runtime-auth-input-state
+              state 48))
+           (compact
+             (remove-if
+              (lambda (character)
+                (member character
+                        '(#\Space #\Tab #\Newline #\Return)))
+              (format
+               nil "~{~A~}"
+               (mapcar
+                #'cadr-tui:strip-terminal-sequences
+                narrow)))))
+      (is
+       (search
+        "https://auth.openai.com/oauth/authorize?state=test"
+        compact)))))

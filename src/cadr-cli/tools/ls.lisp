@@ -11,7 +11,7 @@
 (defun list-directory (cwd arguments)
   (let* ((path
            (resolve-tool-path
-            cwd (or (cadr-ai::json-get arguments "path") ".")))
+            cwd (optional-string arguments "path" ".")))
          (limit (or (optional-integer arguments "limit" 500) 500)))
     (unless (probe-file path)
       (error "Path not found: ~A" (namestring path)))
@@ -87,4 +87,8 @@
    :executor
    (lambda (call-id arguments)
      (declare (ignore call-id))
-     (list-directory cwd arguments))))
+     (let ((display-path
+             (optional-string arguments "path" ".")))
+       (call-with-normalized-file-operation
+        :ls display-path
+        (lambda () (list-directory cwd arguments)))))))
