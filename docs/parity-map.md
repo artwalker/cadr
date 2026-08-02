@@ -1,6 +1,6 @@
 # Parity map
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0 -->
 
 ## 1. Scope and counting rules
 
@@ -847,7 +847,7 @@ The user approved the historical order Wave 0 → pulled-forward TUI → Wave 1 
 | Wave 5 | complete | standalone storage packaging, server and eval harness | 23 storage + 43 server + 16 eval checks; native Unix-socket smoke; DeepSeek and Codex OAuth eval smokes |
 | Goal 8 Part F | complete; user acceptance passed | historical final ledger, dependency audit, freeze anchors, README and acceptance package | Historical `351 C / 0 U / 0 M / 1 N/A`; 2987 CL checks |
 | Goal 9 Part A/A2 | ledger complete; final clean-tree gate tracked in the Part A report | baseline upgrade, protocol, evals, shutdown, metadata/pricing, Markdown, manifest, alternate screen, grapheme widths and permanent faux/PTY gates | `362 C / 0 U / 0 M / 1 N/A = 363`; all 11 new files and 26 changed prior-`C` files revalidated |
-| Goal 12 Part C1–C5 | C1–C4 complete; C5 explicitly deferred | 19 TUI composition, 22 core, 36 AI and 2 eval source capabilities; Apple Terminal modifier remains missing outside the target platform | [source-parity ledger](source-parity.md) and Goal 12 package-specific tests |
+| Goal 12 Part C1–C5 | complete | 19 TUI composition, 22 core, 36 AI, 2 eval, and 2 Apple Terminal modifier source capabilities; Apple Terminal is fixture-verified because the platform is unavailable locally | [source-parity ledger](source-parity.md) and Goal 12 package-specific tests |
 | Goal 12 runnable examples | complete | fixed-baseline 99-file extension/SDK example surface | [CL-GOAL12-EXAMPLES](#cl-goal12-examples): 99 functionally equivalent Lisp ports and 0 gaps |
 
 Compatible providers reuse Wave 1 adapters; RPC depends on Wave 2 session

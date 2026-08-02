@@ -1,6 +1,6 @@
 # Performance and stability
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0 -->
 
 非功能属性是与行为 parity 并列的第二根验收轴：行为门禁回答“产出了什么”，
 本文回答“产出它花了多少时间、分配和常驻资源”。所有优化仍须通过既有

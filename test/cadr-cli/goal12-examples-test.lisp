@@ -119,9 +119,11 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0"))
+          "GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0"))
     (is (search "| `coding-agent` | 289 | 262 | 27 | 0 |" ledger))
-    (is (search "| **Total** | **595** | **521** | **72** | **2** |" ledger))
+    (is (search "| `tui` | 37 | 36 | 1 | 0 |" ledger))
+    (is (search "| **Total** | **595** | **523** | **72** | **0** |" ledger))
+    (is (search "实现完成，平台不可实测" ledger))
     (is (search "all 99" readme :test #'char-equal))
     (is (search "99 functionally equivalent Lisp ports and 0 gaps"
                 parity-map))
@@ -130,6 +132,7 @@
          parity-map))
     (is (not (search "94 complete; 5 blocked" parity-map)))
     (is (not (search "94 implemented, 5 missing" parity-map)))
+    (is (not (search "C5 explicitly deferred" parity-map)))
     (dolist (source (list ledger parity-map performance manifest-source))
       (is (= 1 (goal12-count-substring identity source))))
     (is (search "docs/parity-map.md" performance))

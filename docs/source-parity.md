@@ -1,6 +1,6 @@
 # Source parity ledger
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0 -->
 
 ## 1. Scope and counting rules
 
@@ -42,25 +42,27 @@ same strict rule: embedded fixtures do not replace the baseline regeneration com
 | `ai` | 183 | 153 | 30 | 0 |
 | `coding-agent` | 289 | 262 | 27 | 0 |
 | `agent` | 42 | 31 | 11 | 0 |
-| `tui` | 37 | 34 | 1 | 2 |
+| `tui` | 37 | 36 | 1 | 0 |
 | `server` | 13 | 13 | 0 | 0 |
 | `storage` | 12 | 12 | 0 | 0 |
 | `evals` | 10 | 8 | 2 | 0 |
 | `protocol` | 9 | 8 | 1 | 0 |
-| **Total** | **595** | **521** | **72** | **2** |
+| **Total** | **595** | **523** | **72** | **0** |
 
-The two missing rows are the user-deferred Apple Terminal modifier paths. All 99
-fixed-baseline examples now have functionally equivalent Lisp sources and behavior
-tests. Parts C1–C4 closed all 19
-reusable TUI composition rows, all 22 agent/session/coding-core rows, all 36
-provider OAuth/transport/catalog rows, and both eval lifecycle rows.
+All 595 baseline source files now have a disposition with zero missing or deferred
+rows. All 99 fixed-baseline examples have functionally equivalent Lisp sources and
+behavior tests. Parts C1–C5 closed all 19 reusable TUI composition rows, both Apple
+Terminal modifier rows, all 22 agent/session/coding-core rows, all 36 provider
+OAuth/transport/catalog rows, and both eval lifecycle rows. The Apple Terminal
+path is 实现完成，平台不可实测: fixture parity is green, while this host has
+neither macOS nor Apple Terminal and therefore provides no live claim.
 
 ## 3. Part C execution queue
 
 | Suggested batch | Missing rows | User-visible | Refactor/dependency shape | Risk |
 |---|---:|---|---|---|
 | TUI composition foundation plus dependent interactive components | 0 (19 completed) | Direct layout, loader, Markdown, settings and hint surfaces | Native CLOS component protocol plus dependent interactive components | Complete |
-| Apple Terminal live modifier path | 2 | Shift/Enter identity on Apple Terminal | Deferred by user: target is WSL/Windows Terminal | Deferred |
+| Apple Terminal live modifier path | 0 (2 completed) | Shift/Enter identity on Apple Terminal | Direct CoreGraphics FFI plus ProcessTerminal integration; no new ASDF dependency, third-party library, or external binary | Complete (fixture parity; platform unavailable for live verification) |
 | Agent/session/coding core utilities | 0 (22 completed) | Branch summaries, event flow, tool context and auth guidance can affect sessions/model context | Agent primitives before coding-agent wrappers | Complete |
 | AI catalog, OAuth, transport and stream primitives | 0 (36 completed) | Provider availability, login and streaming | Native stream/catalog/transport primitives and provider adapters | Complete |
 | Eval lifecycle integration | 0 (2 completed) | Developer/release evidence rather than normal chat | Native reporter lifecycle over the existing eval primitives | Complete |
@@ -624,11 +626,11 @@ while porting examples still require a separate proposal and itemized approval.
 | `packages/tui/src/keybindings.ts` | Keybindings; Keybinding; KeybindingDefinition(s); KeybindingsConfig; TUI_KEYBINDINGS; KeybindingsManager; setKeybindings; getKeybindings | Configurable default action bindings, overrides, reverse lookup and conflict detection | src/cadr-tui/keybindings.lisp:3 definitions; :49 manager; :64 rebuild; :107 constructor; :118 lookup; :132 conflicts; :138 global setter/getter | `已实现` | Baseline `packages/tui/src/keybindings.ts:1-253`. baseline:7-248; cadr:3,49,64,107,118,132,138 |
 | `packages/tui/src/keys.ts` | setKittyProtocolActive; isKittyProtocolActive; KeyId; Key; KeyEventType; isKeyRelease; isKeyRepeat; matchesKey; parseKey; decodeKittyPrintable; decodePrintableKey | Terminal key identity/parser across legacy, CSI modifiers, modifyOtherKeys and Kitty protocols | src/cadr-tui/keys.lisp:5 protocol state; :34 sequence tables; :138 Kitty parse; :174 modifyOtherKeys; :189 modified functional keys; :360 parse-key; :507 matches-key; :530/:554 printable decode | `已实现` | Baseline `packages/tui/src/keys.ts:1-1401`. baseline:31-1400; cadr:5,34,138,174,189,360,507,530,554 |
 | `packages/tui/src/kill-ring.ts` | KillRing(push,peek,rotate,getLength) | Bounded editor kill ring with coalescing and yank rotation | src/cadr-tui/kill-ring.lisp:3 kill-ring; :7 push; :25 peek; :28 rotate; :37 length | `已实现` | Baseline `packages/tui/src/kill-ring.ts:1-46`. baseline:8; cadr:3,7,25,28,37 |
-| `packages/tui/src/native-modifiers.ts` | ModifierKey; isNativeModifierPressed | Optional native OS modifier-state query used to recover Apple Terminal Shift+Enter identity | 无；src/cadr-tui/terminal.lisp:159 accepts an externally supplied shift flag but process-terminal never queries native modifier state | `缺失` | Baseline `packages/tui/src/native-modifiers.ts:1-59`. baseline:7,51 and terminal.ts:312; cadr:src/cadr-tui/terminal.lisp:159 only. Part C5 disposition: deferred by user because the target platform is WSL/Windows Terminal; it remains honestly counted as missing rather than being relabeled an intentional implementation difference. |
+| `packages/tui/src/native-modifiers.ts` | ModifierKey; isNativeModifierPressed | Optional native OS modifier-state query used to recover Apple Terminal Shift+Enter identity | src/cadr-tui/native-modifiers.lisp:3 masks; :20 architecture gate; :29 CoreGraphics FFI; :36 fail-closed loader; :59 query seam; :73 public query | `已实现` | Baseline `packages/tui/src/native-modifiers.ts:1-59`: Darwin arm64/x64 only, four CoreGraphics masks, and fail-closed load/query behavior. `APPLE-TERMINAL-NATIVE-MODIFIER-FIXTURES-MATCH-COREGRAPHICS-MASKS` and `APPLE-TERMINAL-NATIVE-MODIFIER-QUERY-IS-FAIL-CLOSED` lock the same contract. 验证等级：实现完成，平台不可实测；本机无 macOS/Apple Terminal，未宣称 live 验证。 |
 | `packages/tui/src/stdin-buffer.ts` | StdinBufferOptions; StdinBufferEventMap; StdinBuffer(process,flush,clear,destroy) | Stateful terminal byte/sequence splitter with bracketed paste, ESC timeout and event emission | src/cadr-tui/stdin-buffer.lisp:3 stdin-buffer; :57 extraction; :104 process; :207 flush; :217 clear; :225 destroy | `已实现` | Baseline `packages/tui/src/stdin-buffer.ts:1-434`. baseline:257-274; cadr:3,57,104,207,217,225 |
 | `packages/tui/src/terminal-colors.ts` | RgbColor; TerminalColorScheme; isOsc11BackgroundColorResponse; parseOsc11BackgroundColor; parseTerminalColorSchemeReport | Strict OSC 11 background-color and color-scheme response recognition/parsing | src/cadr-tui/terminal-colors.lisp:3 rgb-color; :35/:66 OSC11 recognize; :69 parse; :125 color scheme | `已实现` | Baseline `packages/tui/src/terminal-colors.ts:1-73`. baseline:1-67; cadr:3,35,66,69,125 |
 | `packages/tui/src/terminal-image.ts` | ImageProtocol; TerminalCapabilities; CellDimensions; ImageDimensions; ImageRenderOptions; get/set cell dimensions; detect/get/set/resetCapabilities; isImageLine; Kitty/iTerm encoders/deleters/metadata/cropping; dimension parsers; renderImage; hyperlink; imageFallback | Terminal capability detection and Kitty/iTerm2 image protocol, sizing/header parsing, crop metadata and text fallback | src/cadr-tui/terminal-colors.lisp:11-18 cell dimensions; src/cadr-tui/terminal-image.lisp:3 capabilities; :22 metadata; :95 crop; :162 detect; :258 image-line; :289 Kitty; :378 iTerm2; :400 sizing; :508 dimensions; :569 render; :625 hyperlink; :647 fallback | `已实现` | Baseline `packages/tui/src/terminal-image.ts:1-557`. baseline:6-544; cadr:src/cadr-tui/terminal-image.lisp:3,22,95,162,258,289,378,400,508,569,625,647 |
-| `packages/tui/src/terminal.ts` | KeyboardProtocolNegotiationSequence; parseKeyboardProtocolNegotiationSequence; isAppleTerminalSession; normalizeAppleTerminalInput; Terminal; ProcessTerminal | Raw terminal lifecycle, dimensions, Kitty keyboard negotiation, progress/color queries and input delivery, including live Apple Terminal Shift+Enter normalization | src/cadr-tui/terminal.lisp:26-148 negotiation and :205 process-terminal cover most behavior; :159 has only a pure normalization helper, with no Apple Terminal detection, native-modifier query, or ProcessTerminal integration | `缺失` | Baseline `packages/tui/src/terminal.ts:1-531`. baseline:19-99 and ProcessTerminal integration at terminal.ts:312; cadr:26,159,205. Part C5 disposition: deferred by user because Apple Terminal is outside the WSL/Windows Terminal target; the remaining partial capability stays charged as missing. |
+| `packages/tui/src/terminal.ts` | KeyboardProtocolNegotiationSequence; parseKeyboardProtocolNegotiationSequence; isAppleTerminalSession; normalizeAppleTerminalInput; Terminal; ProcessTerminal | Raw terminal lifecycle, dimensions, Kitty keyboard negotiation, progress/color queries and input delivery, including live Apple Terminal Shift+Enter normalization | src/cadr-tui/terminal.lisp:26-148 negotiation; :159 normalization; :167 Apple Terminal detection; :218 ProcessTerminal; :275 query callbacks; :518 live input normalization; :540 input delivery integration | `已实现` | Baseline `packages/tui/src/terminal.ts:1-531`, especially Apple Terminal detection and ProcessTerminal input integration at :19-99 and :312. `APPLE-TERMINAL-SESSION-DETECTION-MATCHES-BASELINE` and `PROCESS-TERMINAL-QUERIES-SHIFT-ONLY-FOR-APPLE-TERMINAL-RETURN` prove detection, query timing, normalized Shift+Enter, and byte-identical non-Apple/non-Return behavior. 验证等级：实现完成，平台不可实测；本机无 macOS/Apple Terminal，未宣称 live 验证。 |
 | `packages/tui/src/tui.ts` | Component; Focusable; isFocusable; CURSOR_MARKER; Overlay types/handle; Container; compositeTuiLine; TUI; TuiBase | Core reusable component tree/focus protocol, invalidation/render scheduling, overlay composition/stack, input listeners and terminal queries | src/cadr-tui/composition.lisp:3 +cursor-marker+; :6 component; :8 focusable-component; :58 component-container; :1371 tui-root; :1402 make-tui-root; :1515 tui-request-render; :1563 tui-show-overlay | `已实现` | Baseline `packages/tui/src/tui.ts:1-1208`. The native composition root unifies CLOS component/focus lifecycle, child trees, decoded input/listeners, render scheduling, and the existing cell-safe overlay stack. |
 | `packages/tui/src/undo-stack.ts` | UndoStack(push,pop,clear,getLength) | Bounded generic undo stack | src/cadr-tui/undo-stack.lisp:3 undo-stack; :7 push; :12 pop; :15 clear; :19 length | `已实现` | Baseline `packages/tui/src/undo-stack.ts:1-28`. baseline:7; cadr:3,7,12,15,19 |
 | `packages/tui/src/utils.ts` | getGraphemeSegmenter; getWordSegmenter; cjkBreakRegex; visibleWidth; stripTerminalSequences; getGraphemeCellRange; getOsc8LinkAtColumn; normalizeTerminalOutput; extractAnsiCode; wrapTextWithAnsi; PUNCTUATION_REGEX; isWhitespaceChar; isPunctuationChar; applyBackgroundToLine; truncateToWidth; sliceByColumn; sliceWithWidth; extractSegments | Unicode/grapheme/ANSI-aware width, slicing, wrapping, truncation, OSC8, background and segmentation utilities | src/cadr-tui/unicode.lisp:121 ANSI scanner; :154 grapheme-cell-range; :215 OSC8; :256 clusters; :492 visible-width; :544 normalize; :569 slice; :830 segments; :919 truncate; :1199 wrap-text; components.lisp applies background/style during rendering | `已实现` | Baseline `packages/tui/src/utils.ts:1-1303`. baseline:10-1232; cadr:121,154,215,256,492,544,569,830,919,1199 |

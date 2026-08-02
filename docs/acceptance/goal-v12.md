@@ -220,19 +220,27 @@ source 文件固定 `0600`；metadata 排除 run ID 与内嵌 session snapshot�
 `422 已实现 / 72 有意差异 / 101 缺失`。剩余项精确为 99 examples 与两个用户明确
 暂缓的 Apple Terminal rows；本批没有新依赖，也没有改变既有可观察行为。
 
-## Part C5 — Apple Terminal modifier（2，暂缓）
+## Part C5 — Apple Terminal modifier（2，完成）
 
-状态：按用户裁决登记暂缓，无生产代码或测试改动。
+状态：用户撤销原“目标平台不适用”暂缓裁决后完成实施。该调整是
+产品优先级的纠正，不是把平台能力改判为有意差异。
 
-两项分别是 `native-modifiers.ts` 的原生修饰键查询，以及 `terminal.ts` 中 Apple Terminal
-识别、Shift+Enter 原生状态查询与 live input normalization 的接线。当前目标环境为
-WSL/Windows Terminal；该终端通过可观察的 CSI/modifyOtherKeys/Kitty 字节序列传递修饰键，
-不依赖 macOS Apple Terminal 丢失 Shift 身份后的原生补查。因此本 goal 不投入平台专用实现。
+- `src/cadr-tui/native-modifiers.lisp:3-78` 实现基线四个 CoreGraphics mask、
+  Darwin/arm64/x64 门控、`CGEventSourceFlagsState` FFI 与 fail-closed 查询。
+- `src/cadr-tui/terminal.lisp:159-178,275-307,518-565` 实现 Apple Terminal
+  session 判定，并仅在 Apple Terminal Return 路径查询 Shift，命中时输出
+  `ESC[13;2u`。非 Apple Terminal、非 Return 和未按 Shift 时原字节不变。
+- 没有新增 ASDF 闭包依赖、第三方库、外部二进制或发行产物内容；
+  仅调用 macOS 自带 CoreGraphics，因此不触发新依赖授权流程。
+- 验证等级为“实现完成，平台不可实测”。本机无 macOS/Apple Terminal，
+  `APPLE-TERMINAL-NATIVE-MODIFIER-FIXTURES-MATCH-COREGRAPHICS-MASKS`、
+  `APPLE-TERMINAL-NATIVE-MODIFIER-QUERY-IS-FAIL-CLOSED`、
+  `APPLE-TERMINAL-SESSION-DETECTION-MATCHES-BASELINE` 与
+  `PROCESS-TERMINAL-QUERIES-SHIFT-ONLY-FOR-APPLE-TERMINAL-RETURN` 只能证明
+  fixture 对拍与集成分支，未宣称 live 验证。
 
-这不是“有意差异”豁免：能力仍未实现，`source-parity` 两行继续判为 `缺失` 并计入总数，
-仅在证据栏明确标记“暂缓：目标平台不适用”。账本保持
-`422 已实现 / 72 有意差异 / 101 缺失`；后续若 Apple Terminal 成为支持目标，应另立
-平台 goal 补齐原生查询与 `ProcessTerminal` 接线。
+目标回归为 `595 = 523 已实现 + 72 有意差异 + 0 暂缓/缺失`，
+首次达成零暂缓状态。
 
 ## Part C6 — Runnable examples（99，阶段性 blocked）
 
@@ -348,8 +356,8 @@ the 34-event set remains
 由此完成 `custom-compaction.lisp`、`prompt-customizer.lisp`、custom Anthropic
 provider 以及 GitLab Duo provider/test 的功能等价移植。manifest 机械结果为
 **99 total / 99 unique / 99 ported / 0 gap**；source ledger 为
-**595 total / 521 implemented / 72 intentional differences / 2 missing**，仅剩
-用户明确暂缓的 Apple Terminal 两行。四本账共享同一 `GOAL12_LEDGER` 身份，
+**595 total / 523 implemented / 72 intentional differences / 0 missing**，已达成
+零暂缓、零缺失。四本账共享同一 `GOAL12_LEDGER` 身份，
 确定性门禁从 manifest 实际解析并逐字核对 counts、baseline 与交叉链接。
 
 34 个 extension event 的 production dispatch 审计见

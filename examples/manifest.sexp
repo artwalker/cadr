@@ -1,4 +1,4 @@
-;; GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0
+;; GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0
 (
  (:baseline "packages/coding-agent/examples/extensions/auto-commit-on-exit.ts" :lisp "examples/extensions/auto-commit-on-exit.lisp" :status :ported :entry-p t)
  (:baseline "packages/coding-agent/examples/extensions/bash-spawn-hook.ts" :lisp "examples/extensions/bash-spawn-hook.lisp" :status :ported :entry-p t)

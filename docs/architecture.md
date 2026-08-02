@@ -1753,11 +1753,20 @@ native HTTP transport 并将 timeout、abort、transport failure 收敛成无秘
 wire 与 TUI 合同不变。
 
 99 个固定基线 runnable example 现全部有功能等价 Lisp port。Source ledger 最终为
-`595/521/72/2`，仅余用户暂缓的 Apple Terminal 两项。当前 extension export
+`595/523/72/0`：595 个基线源文件均已处置，无暂缓或缺失项。当前 extension export
 SHA-256 重新冻结为
 `61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`；34-event
 block SHA-256 仍为
 `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
+
+Apple Terminal 路径直接对齐基线的系统 API：仅在 macOS、
+`TERM_PROGRAM=Apple_Terminal` 且收到 Return 时，通过 SBCL FFI 读取
+CoreGraphics `CGEventSourceFlagsState` 的 Shift mask，再将 Shift+Enter 规范为
+CSI-u `ESC[13;2u`。框架加载、查询或不支持架构上的失败均 fail
+closed；非 Apple Terminal 和非 Return 路径不查询原生状态，输入字节不变。
+该实现仅使用 macOS 自带 CoreGraphics，不新增 ASDF 依赖、第三方库或
+外部二进制。本机无 macOS/Apple Terminal，因此验证等级为 fixture
+对拍，不宣称 live 验证。
 
 ## 30. Goal 12 source drift gate
 
