@@ -273,3 +273,37 @@ it does not merely exercise the exporter while its source directory remains
 available.
 
 Implementation and regression commit: `07a9ff46f`.
+
+## Part C2 — Common Lisp expression audit and rewrite
+
+The audit covers all 135 production Lisp files and records the disposition of
+each system across manual invariants, dispatch, boilerplate, condition handling,
+representation, and repeated bug families in `docs/lisp-idiom-audit.md`.  It
+rejects broad `case`→CLOS, `handler-case`→restart, struct→class, and selector
+macro rewrites because those changes do not meet a C2-B reason.  Closed wire
+tags and finite state machines remain explicit; open behavior already uses
+generic protocols for components, terminals, storage, execution environments,
+SDK objects, Radius presence, and RPC processes.
+
+The one qualifying rewrite removes the obsolete server-rendered session HTML
+implementation left behind by Part C.  Five unreachable helpers disappeared;
+the live content formatter moved from the session-export area to its only
+callers in compaction (`src/cadr-agent/compaction.lisp:116-163`).  The net delta
+is 140 fewer physical lines (`159` removed, `19` relocated), with no replacement
+abstraction.
+
+The first full run exposed a mistaken audit assumption: the content formatter
+was not dead; compaction referenced it from a later-loaded file.  That run
+failed 12 compaction checks and was not accepted or rerun blindly.  Relocating
+the unchanged function beside those callers fixed the root cause.  The next
+complete deterministic run was:
+
+```text
+cadr test summary: systems=8 checks=11711 pass=11711 skip=0 fail=0
+```
+
+All session-export, compaction, payload/wire, base-screen, and overlay gates are
+part of that run.  No snapshot hash, fixture, event, result text, or session
+content changed.
+
+Audit commit: `b5eead3ed`.  Rewrite commit: `44003ed90`.
