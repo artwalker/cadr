@@ -509,3 +509,73 @@ live TUI PASS。
 `ceb30956ca526aa9ce505da3bb6282d37f231c1d`
 (`2026-08-02T18:13:41+08:00`)；`./cadr --version` 为
 `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，新鲜度门禁 PASS。
+
+## Part D locale reproducibility correction
+
+状态：顾问退回的 SHA 失败已在本机精确复现并修正。实现提交
+`86fff5b66`；本节证据见所在提交。此前 `04078ad79` 中“真实账本门禁
+在干净检出下可复现”的结论不成立，本节显式更正，不删除历史记录。
+
+SHA 记录位于 `docs/source-parity.md` 开头的 `Baseline source path SHA-256`。
+输入不是整份 Markdown，而是从 package tables 解析出的 595 个 UTF-8 path，
+每个 path 后一个 LF，然后排序并计算 SHA-256。根因是排序未固定 locale：
+
+- `LC_ALL=C.UTF-8` 下计算为账本记录值
+  `242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`；
+- `LC_ALL=en_US.utf8` 下同样 595 个 path 的 locale-aware 顺序计算为顾问看到的
+  `e0d986af6b596079daa0e28e3922d5b28391974554ea05337e857e27bd43436b`。
+
+因此两次运行的差异是调用者 locale，不是 dirty worktree；我的上次运行继承
+`C.UTF-8` 所以误报 PASS，顾问在 `en_US.utf8` 下稳定失败。修正后 checker 在
+入口固定并导出 `LC_ALL=C`，账本文档也固定同一字节口径；回归又从
+实际可用的非 C `en_US` UTF-8 locale 调用 checker，必须得到同一 SHA。
+
+`Source parity dispositions complete: 3` 来自 A/D/R 三项合成 TSV fixture，
+不是真实账本的解析数。但上一轮确实没有落实用户要求的独立、固定 595
+回归：旧测试只动态读 Summary total 再与 parser count 互比，两侧同时漂移仍可
+自洽，这是把相互一致误当成了独立 oracle。新回归同时要求 Summary total
+等于固定 595、checker 输出精确为 `Source parity ledger entries: 595`，任一不符
+均 fail closed。合成 self-test 的最终文案改为
+`synthetic dispositions=3, real ledger entries=595`，不再混淆两个数。
+
+`verify.sh` 现在先运行 `real source parity ledger`，再运行合成
+`source parity drift self-test`。因此后者失败不可能再让前者 `NOT RUN`。
+完整验收在本地干净 clone `/tmp/cadr-clean-verify.Zfrh4y/repo` 执行，revision
+为 `86fff5b6612fd1e99b240a8821b10cb2ed1fbbe7`，构建前 `git status --short`
+无输出，并刻意以 `LC_ALL=en_US.utf8` 运行。完整阶段表为：
+
+| Deterministic stage | Result |
+|---|---|
+| root cadr binary freshness | PASS |
+| real source parity ledger | PASS |
+| source parity drift self-test | PASS |
+| deterministic FiveAM | PASS |
+| isolated cadr build | PASS |
+| isolated cadr-server build | PASS |
+| Goal 11 performance and stability gate | PASS |
+| native acceptance smoke | PASS |
+| native process modes | PASS |
+| migration PTY smoke | PASS |
+| Unix socket server smoke | PASS |
+| terminal lifecycle PTY | PASS |
+| deterministic TUI harness | PASS |
+
+| Live stage | Result |
+|---|---|
+| credential-gated FiveAM | PASS |
+| DeepSeek live TUI | PASS |
+
+`./scripts/test-cl.sh` 完整数字为：`cadr-ai 2117`、`cadr-agent 911`、
+`cadr-tui 1580`、`cadr-cli 5231`、`cadr-storage 23`、`cadr-server 45`、
+`cadr-evals 150`、`cadr-protocol 497`；汇总
+`systems=8 / checks=10554 / pass=10554 / skip=0 / fail=0`。干净 clone 的两次
+隔离构建得到同样汇总。live 为
+`8 items / 7 run / 7 pass / 1 skip / 0 fail`、检查级
+`32 / 31 pass / 1 skip / 0 fail`；唯一跳过项仍是缺少
+`ANTHROPIC_API_KEY`，DeepSeek 与 OpenAI Codex OAuth 项均实际运行并通过。
+
+交付前根目录二进制已重建。构建时间为
+`2026-08-02 20:09:12.597914344 +0800`，晚于最后一次 `src/` 提交
+`ceb30956ca526aa9ce505da3bb6282d37f231c1d`
+(`2026-08-02T18:13:41+08:00`)；`./cadr --version` 为
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，新鲜度门禁 PASS。
