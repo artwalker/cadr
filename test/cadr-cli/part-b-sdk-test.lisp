@@ -397,7 +397,8 @@
 (test provider-lifecycle-extension-hooks-run-on-the-real-stream-surface
   (let ((request-payload nil)
         (request-headers nil)
-        (response-payload nil))
+        (response-payload nil)
+        (seen nil))
     (let* ((bundle
              (let ((bundle
                      (cadr-agent::make-extension-bundle
@@ -412,6 +413,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
+                   (push :before-provider-request seen)
                    (let ((payload
                            (getf
                             (cadr-agent:extension-event-payload
@@ -425,6 +427,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
+                   (push :before-provider-headers seen)
                    (setf
                     (gethash
                      "X-Extension"
@@ -439,6 +442,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
+                   (push :after-provider-response seen)
                    (setf response-payload
                          (cadr-agent:extension-event-payload
                           event))
@@ -483,6 +487,10 @@
                (cadr-ai:make-context)
                (lambda (event)
                  (declare (ignore event))))))
+      (dolist (event '(:before-provider-request
+                       :before-provider-headers
+                       :after-provider-response))
+        (is (member event seen)))
       (is (string=
            "request"
            (getf request-payload :trace)))

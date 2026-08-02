@@ -24,6 +24,7 @@
   provider
   model
   (system-prompt nil :type (or null string))
+  (system-prompt-options nil :type list)
   (messages nil :type list)
   messages-tail
   messages-tail-head
@@ -118,6 +119,21 @@
           ((agent-event-lock agent))
         (funcall (agent-on-event agent) event)))
     event))
+
+(defun replace-agent-system-prompt
+    (agent system-prompt system-prompt-options)
+  (unless (or (null system-prompt) (stringp system-prompt))
+    (error 'cadr-ai:configuration-error
+           :message "Agent system prompt must be a string or NIL"))
+  (unless (listp system-prompt-options)
+    (error 'cadr-ai:configuration-error
+           :message "Agent system prompt options must be a list"))
+  (sb-thread:with-mutex ((agent-state-lock agent))
+    (setf
+     (agent-system-prompt agent) system-prompt
+     (agent-system-prompt-options agent)
+     (copy-tree system-prompt-options)))
+  agent)
 
 (defun normalize-agent-queue-message (message)
   (etypecase message

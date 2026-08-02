@@ -226,8 +226,104 @@
   (min configured
        (max 1 (floor context-window divisor))))
 
+(defun compaction-entry-message (entry)
+  (and (eq :message (session-entry-type entry))
+       (session-entry-message entry)))
+
+(defun compaction-user-entry-p (entry)
+  (let ((message (compaction-entry-message entry)))
+    (and message (typep message 'cadr-ai:user-message))))
+
+(defun compaction-file-operations (entries)
+  (let ((operations (make-file-operations)))
+    (dolist (entry entries)
+      (let ((message (compaction-entry-message entry)))
+        (when message
+          (extract-file-operations-from-message message operations)))
+      (when (and (eq :compaction (session-entry-type entry))
+                 (session-entry-details entry))
+        (dolist (path (branch-details-files
+                       (session-entry-details entry) :read-files))
+          (setf (gethash path (file-operations-read operations)) t))
+        (dolist (path (branch-details-files
+                       (session-entry-details entry) :modified-files))
+          (setf (gethash path (file-operations-edited operations)) t))))
+    (multiple-value-bind (read-files modified-files)
+        (compute-file-operation-lists operations)
+      (list :read-files read-files
+            :modified-files modified-files))))
+
+(defun make-compaction-preparation
+    (source-entries kept-entry tokens-before
+     keep-recent reserve)
+  (let* ((previous
+           (find :compaction source-entries
+                 :key #'session-entry-type
+                 :from-end t))
+         (split-turn-p
+           (let ((message (compaction-entry-message kept-entry)))
+             (and message
+                  (not (typep message 'cadr-ai:user-message)))))
+         (turn-start
+           (and split-turn-p
+                (position-if #'compaction-user-entry-p
+                             source-entries :from-end t)))
+         (split-turn-p (not (null turn-start)))
+         (history-entries
+           (if split-turn-p
+               (subseq source-entries 0 turn-start)
+               source-entries))
+         (turn-prefix-entries
+           (if split-turn-p
+               (subseq source-entries turn-start)
+               nil))
+         (file-entries
+           (append history-entries turn-prefix-entries)))
+    (list
+     :first-kept-entry-id (session-entry-id kept-entry)
+     :messages-to-summarize
+     (remove nil (mapcar #'compaction-entry-message
+                         history-entries))
+     :turn-prefix-messages
+     (remove nil (mapcar #'compaction-entry-message
+                         turn-prefix-entries))
+     :is-split-turn-p split-turn-p
+     :tokens-before tokens-before
+     :previous-summary (and previous
+                            (session-entry-summary previous))
+     :file-ops (compaction-file-operations file-entries)
+     :settings
+     (list :enabled-p t
+           :reserve-tokens reserve
+           :keep-recent-tokens keep-recent))))
+
+(defun usable-extension-compaction-p (value)
+  (and
+   (strict-keyword-plist-p value)
+   (let ((summary (getf value :summary))
+         (first-kept-entry-id
+           (getf value :first-kept-entry-id))
+         (tokens-before (getf value :tokens-before)))
+     (and
+      (stringp summary)
+      (plusp
+       (length
+        (string-trim '(#\Space #\Tab #\Newline #\Return)
+                     summary)))
+      (stringp first-kept-entry-id)
+      (integerp tokens-before)
+      (not (minusp tokens-before))))))
+
+(defun run-compaction-lifecycle
+    (agent event payload)
+  (let ((host (agent-extension-host agent)))
+    (and host
+         (run-extension-lifecycle-hooks
+          host event :payload payload))))
+
 (defun %compact-agent
-    (agent &key force-p custom-instructions)
+    (agent &key force-p custom-instructions
+                (reason :manual) will-retry-p)
   (let* ((session (agent-session agent))
          (model (agent-model agent))
          (context-window
@@ -266,7 +362,15 @@
                  (nth cut-point entries))
                (source-ids
                  (mapcar #'session-entry-id
-                         source-entries)))
+                         source-entries))
+               (preparation
+                 (make-compaction-preparation
+                  source-entries kept-entry tokens-before
+                  keep-recent reserve))
+               (signal
+                 (make-extension-cancellation-signal
+                  :aborted-function
+                  (lambda () (agent-aborted-p agent)))))
           (when
               (eq :compaction
                   (session-entry-type
@@ -275,20 +379,73 @@
           (emit-agent-event
            agent :compaction-start)
           (handler-case
-              (let ((summary
-                      (generate-compaction-summary
-                       agent source-entries reserve
-                       custom-instructions)))
+              (let* ((before
+                       (run-compaction-lifecycle
+                        agent :session-before-compact
+                        (list
+                         :preparation preparation
+                         :branch-entries (copy-list entries)
+                         :custom-instructions custom-instructions
+                         :reason reason
+                         :will-retry-p (not (null will-retry-p))
+                         :signal signal)))
+                     (extension-compaction
+                       (and before
+                            (getf before :compaction))))
+                (when (or (getf before :cancel-p)
+                          (extension-cancellation-aborted-p signal))
+                  (emit-agent-event agent :compaction-end)
+                  (return-from %compact-agent nil))
+                (unless (usable-extension-compaction-p
+                         extension-compaction)
+                  (setf extension-compaction nil))
+                (let* ((from-extension-p
+                         (not (null extension-compaction)))
+                       (summary
+                         (if from-extension-p
+                             (getf extension-compaction :summary)
+                             (generate-compaction-summary
+                              agent source-entries reserve
+                              custom-instructions)))
+                       (first-kept-entry-id
+                         (if from-extension-p
+                             (getf extension-compaction
+                                   :first-kept-entry-id)
+                             (session-entry-id kept-entry)))
+                       (effective-tokens-before
+                         (if from-extension-p
+                             (getf extension-compaction
+                                   :tokens-before)
+                             tokens-before)))
                 (assert-agent-not-shutdown agent)
-                (session-append-compaction
-                 session summary source-ids
-                 (session-entry-id kept-entry)
-                 tokens-before)
+                (let* ((entry-id
+                         (session-append-compaction
+                          session summary source-ids
+                          first-kept-entry-id
+                          effective-tokens-before
+                          :details
+                          (and from-extension-p
+                               (getf extension-compaction :details))
+                          :usage
+                          (and from-extension-p
+                               (getf extension-compaction :usage))
+                          :from-hook-p from-extension-p))
+                       (entry
+                         (gethash entry-id
+                                  (session-by-id session))))
+                  (run-compaction-lifecycle
+                   agent :session-compact
+                   (list
+                    :compaction-entry entry
+                    :from-extension-p from-extension-p
+                    :reason reason
+                    :will-retry-p
+                    (not (null will-retry-p)))))
                 (setf (agent-messages agent)
                       (session-messages session))
                 (emit-agent-event
                  agent :compaction-end)
-                t)
+                t))
             (error (condition)
               (emit-agent-event
                agent :compaction-error
@@ -297,18 +454,21 @@
               nil)))))))
 
 (defun compact-agent
-    (agent &key force-p custom-instructions)
+    (agent &key force-p custom-instructions
+                (reason :manual) will-retry-p)
   (call-with-agent-operation
    agent
    (lambda ()
      (%compact-agent
       agent
       :force-p force-p
-      :custom-instructions custom-instructions))))
+      :custom-instructions custom-instructions
+      :reason reason
+      :will-retry-p will-retry-p))))
 
 (defun maybe-compact-agent (agent)
   (when (agent-auto-compact-p agent)
-    (compact-agent agent)))
+    (compact-agent agent :reason :threshold)))
 
 (defun context-overflow-message-p (message)
   (when

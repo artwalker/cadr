@@ -1,6 +1,8 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(defparameter *goal12-production-lifecycle-events* nil)
+
 (defun extension-source (body)
   (format nil "~A~%" body))
 
@@ -14,6 +16,59 @@
    :extension-factories extension-factories
    :output output
    :secret-function secret-function))
+
+(defun goal12-read-http-request (stream)
+  (let ((octets (make-array 0 :element-type '(unsigned-byte 8)
+                              :adjustable t :fill-pointer 0))
+        (state 0))
+    (loop
+      for octet = (read-byte stream nil nil)
+      while octet
+      do
+      (vector-push-extend octet octets)
+      (setf state
+            (case state
+              (0 (if (= octet 13) 1 0))
+              (1 (if (= octet 10) 2 0))
+              (2 (if (= octet 13) 3 0))
+              (3 (if (= octet 10) 4 0))))
+      (when (= state 4) (return)))
+    (let* ((headers
+             (sb-ext:octets-to-string octets :external-format :utf-8))
+           (marker "Content-Length:")
+           (start (search marker headers :test #'char-equal))
+           (length
+             (if start
+                 (parse-integer
+                  headers :start (+ start (length marker))
+                  :junk-allowed t)
+                 0))
+           (body (make-array length :element-type '(unsigned-byte 8))))
+      (read-sequence body stream)
+      (concatenate
+       'string headers
+       (sb-ext:octets-to-string body :external-format :utf-8)))))
+
+(defun goal12-write-http-response (stream status headers body)
+  (let* ((body-octets
+           (if (stringp body)
+               (sb-ext:string-to-octets body :external-format :utf-8)
+               body))
+         (head
+           (format nil
+                   "HTTP/1.1 ~D Goal12~C~C~{~A: ~A~C~C~}Content-Length: ~D~C~CConnection: close~C~C~C~C"
+                   status #\Return #\Linefeed
+                   (loop for (name . value) in headers
+                         append (list name value #\Return #\Linefeed))
+                   (length body-octets)
+                   #\Return #\Linefeed
+                   #\Return #\Linefeed
+                   #\Return #\Linefeed)))
+    (write-sequence
+     (sb-ext:string-to-octets head :external-format :utf-8)
+     stream)
+    (write-sequence body-octets stream)
+    (finish-output stream)))
 
 (test inline-extension-factories-rerun-and-preserve-baseline-naming
   (with-test-directory (root)
@@ -79,6 +134,151 @@
           (signals cadr-agent:stale-extension-context
             (cadr-agent::extension-api-get-flag
              api "bare")))))))
+
+(test extension-http-adapter-preserves-bytes-timeouts-and-hides-transport-secrets
+  (let ((seen nil)
+        (adapter (cadr-cli::make-extension-http-request-adapter)))
+    (let ((cadr-ai:*http-request-function*
+            (lambda (url &rest options)
+              (setf seen (cons url options))
+              (values
+               (make-array 2 :element-type '(unsigned-byte 8)
+                             :initial-contents '(111 107))
+               202
+                      '(("content-type" . "application/json"))))))
+      (let ((result
+              (funcall
+               adapter "https://example.invalid/token"
+               :method :post
+               :headers '(("authorization" . "Bearer secret"))
+               :body #(1 2 3)
+               :timeout-ms 250)))
+        (is (= 202 (getf result :status)))
+        (is (equalp #(111 107) (getf result :body)))
+        (is (= 0.25d0 (getf (cdr seen) :connect-timeout)))
+        (is (= 0.25d0 (getf (cdr seen) :read-timeout)))))
+    (let ((cadr-ai:*http-request-function*
+            (lambda (&rest arguments)
+              (declare (ignore arguments))
+              (error "Bearer secret refresh-secret"))))
+      (handler-case
+          (progn
+            (funcall
+             adapter "https://example.invalid/token"
+             :headers '(("authorization" . "Bearer secret")))
+            (fail "Expected sanitized HTTP adapter failure"))
+        (cadr-agent:extension-execution-error (condition)
+          (let ((message
+                  (cadr-ai:cadr-error-message condition)))
+            (is (string= "Extension HTTP request failed" message))
+            (is (not (search "secret" message)))))))))
+
+(test extension-http-adapter-real-loopback-covers-body-timeout-abort-and-isolation
+  (let ((adapter (cadr-cli::make-extension-http-request-adapter)))
+    (let* ((listener
+             (usocket:socket-listen
+              "127.0.0.1" 0 :reuse-address t
+              :element-type '(unsigned-byte 8)))
+           (port (usocket:get-local-port listener))
+           (request nil)
+           (server
+             (sb-thread:make-thread
+              (lambda ()
+                (let ((client
+                        (usocket:socket-accept
+                         listener :element-type '(unsigned-byte 8))))
+                  (unwind-protect
+                       (let ((stream (usocket:socket-stream client)))
+                         (setf request (goal12-read-http-request stream))
+                         (goal12-write-http-response
+                          stream 207 '(("X-Goal12" . "yes"))
+                          (make-array 3 :element-type '(unsigned-byte 8)
+                                        :initial-contents '(0 1 255))))
+                    (usocket:socket-close client))))
+              :name "goal12-extension-http-response")))
+      (unwind-protect
+           (let ((cadr-ai:*http-request-function*
+                   #'cadr-ai::native-http-request))
+             (let ((result
+                     (funcall
+                      adapter
+                      (format nil "http://127.0.0.1:~D/token" port)
+                      :method :post
+                      :headers
+                      '(("Content-Type" . "application/x-www-form-urlencoded")
+                        ("Authorization" . "Bearer loopback-secret"))
+                      :body "code=a%20b&grant_type=authorization_code"
+                      :timeout-ms 2000)))
+               (is (= 207 (getf result :status)))
+               (is (equalp #(0 1 255) (getf result :body)))
+               (is (string= "yes"
+                            (cdr (assoc "x-goal12"
+                                        (getf result :headers)
+                                        :test #'string-equal))))))
+             (sb-thread:join-thread server)
+             (is (search "POST /token HTTP/1.1" request))
+             (is (search "code=a%20b&grant_type=authorization_code"
+                         request)))
+        (ignore-errors (usocket:socket-close listener))
+        (when (sb-thread:thread-alive-p server)
+          (sb-thread:join-thread server)))
+    (dolist (mode '(:timeout :abort))
+      (let* ((listener
+               (usocket:socket-listen
+                "127.0.0.1" 0 :reuse-address t
+                :element-type '(unsigned-byte 8)))
+             (port (usocket:get-local-port listener))
+             (entered (sb-thread:make-semaphore :count 0))
+             (release (sb-thread:make-semaphore :count 0))
+             (signal (cadr-agent:make-extension-cancellation-signal))
+             (message nil)
+             (server
+               (sb-thread:make-thread
+                (lambda ()
+                  (let ((client
+                          (usocket:socket-accept
+                           listener :element-type '(unsigned-byte 8))))
+                    (unwind-protect
+                         (let ((stream (usocket:socket-stream client)))
+                           (goal12-read-http-request stream)
+                           (sb-thread:signal-semaphore entered)
+                           (sb-thread:wait-on-semaphore release))
+                      (usocket:socket-close client))))
+                :name "goal12-extension-http-stall"))
+             (client
+               (sb-thread:make-thread
+                (lambda ()
+                  (let ((cadr-ai:*http-request-function*
+                          #'cadr-ai::native-http-request))
+                    (handler-case
+                        (funcall
+                         adapter
+                         (format nil "http://127.0.0.1:~D/stall" port)
+                         :method :post
+                         :headers '(("Authorization" . "Bearer hidden"))
+                         :body "refresh_secret=hidden"
+                         :timeout-ms (if (eq mode :timeout) 1000 10000)
+                         :signal signal)
+                      (cadr-agent:extension-execution-error (condition)
+                        (setf message
+                              (cadr-ai:cadr-error-message condition))))))
+                :name "goal12-extension-http-client")))
+        (unwind-protect
+             (progn
+               (sb-thread:wait-on-semaphore entered)
+               (when (eq mode :abort)
+                 (cadr-agent:abort-extension-cancellation-signal signal))
+               (sb-thread:join-thread client)
+               (is (string=
+                    (if (eq mode :timeout)
+                        "Extension HTTP request timed out"
+                        "Extension HTTP request was aborted")
+                    message))
+               (dolist (secret '("hidden" "refresh_secret" "SB-SYS" "SSL_"))
+                 (is (not (search secret message :test #'char-equal)))))
+          (sb-thread:signal-semaphore release)
+          (sb-thread:join-thread server)
+          (ignore-errors (usocket:socket-close listener)))))))
 
 (test cli-extension-ui-bridge-delegates-theme-custom-autocomplete-and-expansion
   (with-test-directory (root)
@@ -391,7 +591,8 @@
 
 (test wave3-startup-resource-trust-and-user-bash-hooks-are-wired
   (with-test-directory (root)
-    (let* ((cwd (merge-pathnames "project/" root))
+    (let* ((*goal12-production-lifecycle-events* nil)
+           (cwd (merge-pathnames "project/" root))
            (global (merge-pathnames "global/" root))
            (extra-skills
              (merge-pathnames "extra-skills/" root))
@@ -408,7 +609,7 @@
        (extension-source
         (format
          nil
-         "(define-event-hook :resources-discover :handler (lambda (event context) (declare (ignore event context)) (list :skill-paths (list ~S))))~%(define-event-hook :project-trust :handler (lambda (event context) (declare (ignore event context)) '(:trusted :yes :remember-p t)))~%(define-event-hook :user-bash :handler (lambda (event context) (declare (ignore event context)) '(:result (:output \"intercepted\" :exit-code 7))))"
+         "(define-event-hook :resources-discover :handler (lambda (event context) (declare (ignore event context)) (push :resources-discover cadr-cli/tests::*goal12-production-lifecycle-events*) (list :skill-paths (list ~S))))~%(define-event-hook :project-trust :handler (lambda (event context) (declare (ignore event context)) (push :project-trust cadr-cli/tests::*goal12-production-lifecycle-events*) '(:trusted :yes :remember-p t)))~%(define-event-hook :user-bash :handler (lambda (event context) (declare (ignore event context)) (push :user-bash cadr-cli/tests::*goal12-production-lifecycle-events*) '(:result (:output \"intercepted\" :exit-code 7))))"
          (namestring extra-skills))))
       (let* ((manager
                (make-test-extension-manager
@@ -450,7 +651,9 @@
           (is (= 7 (getf details :exit-code)))
           (is (search
                "intercepted"
-               (result-text content))))))))
+               (result-text content))))
+        (dolist (event '(:resources-discover :project-trust :user-bash))
+          (is (member event *goal12-production-lifecycle-events*)))))))
 
 (test user-bash-dispatch-preserves-single-and-double-bang-semantics
   (let ((calls nil))

@@ -5,6 +5,7 @@
    #:make-agent
    #:agent-provider
    #:agent-model
+   #:agent-system-prompt-options
    #:agent-messages
    #:agent-busy-p
    #:agent-session
@@ -212,6 +213,7 @@
    #:extension-context-send-message
    #:extension-context-send-user-message
    #:extension-context-set-session-name
+   #:extension-api-http-request
    #:extension-event
    #:extension-event-type
    #:extension-event-turn-index

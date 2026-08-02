@@ -354,25 +354,29 @@
 
 (defun sdk-build-agent-system-prompt
     (loader tools cwd)
-  (build-system-prompt
-   :custom-prompt
-   (sdk-resource-loader-system-prompt loader)
-   :append-system-prompt
-   (let ((append
-           (sdk-resource-loader-append-system-prompt
-            loader)))
-     (and append
-          (format nil "~{~A~^~%~%~}" append)))
-   :selected-tools
-   (mapcar #'cadr-ai:tool-name tools)
-   :tool-snippets (tool-prompt-snippets tools)
-   :prompt-guidelines
-   (tool-prompt-guidelines tools)
-   :context-files
-   (sdk-resource-loader-context-files loader)
-   :skills
-   (sdk-resource-loader-skills loader)
-   :cwd (namestring cwd)))
+  (let ((options
+          (list
+           :custom-prompt
+           (sdk-resource-loader-system-prompt loader)
+           :selected-tools
+           (mapcar #'cadr-ai:tool-name tools)
+           :tool-snippets (tool-prompt-snippets tools)
+           :prompt-guidelines
+           (tool-prompt-guidelines tools)
+           :append-system-prompt
+           (let ((append
+                   (sdk-resource-loader-append-system-prompt
+                    loader)))
+             (and append
+                  (format nil "~{~A~^~%~%~}" append)))
+           :cwd (namestring cwd)
+           :context-files
+           (sdk-resource-loader-context-files loader)
+           :skills
+           (sdk-resource-loader-skills loader))))
+    (values
+     (apply #'build-system-prompt options)
+     (copy-tree options))))
 
 (defun sdk-apply-agent-settings
     (agent settings)
@@ -491,6 +495,10 @@
         :allow-missing-auth-p t)))
     (let* ((extension-host
              (sdk-resource-loader-extension-host loader))
+           (system-prompt-values
+             (multiple-value-list
+              (sdk-build-agent-system-prompt
+               loader selected-tools resolved-cwd)))
            (agent
              (cadr-agent:make-agent
               :provider
@@ -500,8 +508,9 @@
                         provider-config)))
               :model selected-model
               :system-prompt
-              (sdk-build-agent-system-prompt
-               loader selected-tools resolved-cwd)
+              (first system-prompt-values)
+              :system-prompt-options
+              (second system-prompt-values)
               :tools base-tools
               :tool-filter-function tool-filter
               :extension-host extension-host
@@ -520,6 +529,20 @@
                           (copy-list listeners))))
                   (dolist (entry snapshot)
                     (funcall (car entry) event)))))))
+      (when extension-host
+        (setf
+         (cadr-agent::extension-host-reload-function extension-host)
+         (lambda ()
+           (sdk-resource-loader-reload loader)
+           (multiple-value-bind (prompt options)
+               (sdk-build-agent-system-prompt
+                loader
+                (cadr-agent::registry-tools
+                 (cadr-agent::agent-tool-registry agent))
+                resolved-cwd)
+             (cadr-agent::replace-agent-system-prompt
+              agent prompt options))
+           (sdk-resource-loader-extensions loader))))
       (setf wrapper
             (make-instance
              'agent-session

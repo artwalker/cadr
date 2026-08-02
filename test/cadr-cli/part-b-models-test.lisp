@@ -596,14 +596,18 @@
         (let* ((settings
                  (cadr-cli::make-settings-manager
                   :global-path settings-path))
+               (lifecycle-events nil)
                (session
                  (cadr-agent:create-session
                   :directory
                   (merge-pathnames "sessions/" root)
                   :cwd root))
+               (bundle
+                 (cadr-agent::make-extension-bundle
+                  :id "model-production-events"
+                  :path "/tmp/model-production-events.lisp"))
                (host
-                 (cadr-agent::make-extension-host
-                  :cwd root))
+                 (cadr-agent::make-extension-host :cwd root))
                (agent
                  (cadr-agent:make-agent
                   :provider
@@ -615,12 +619,26 @@
                (openai
                  (cadr-cli:model-registry-find
                   registry :openai "gpt-5.5"))
-               (selected
-                 (cadr-cli::apply-cli-model-selection
-                  agent registry openai settings
-                  :config-path config-path
-                  :auth-path auth-path
-                  :source :interactive)))
+               (selected nil))
+          (cadr-agent::call-with-extension-registration
+           bundle
+           (lambda ()
+             (dolist (event '(:model-select :thinking-level-select))
+               (cadr-agent:define-event-hook
+                event
+                :handler
+                (lambda (value context)
+                  (declare (ignore context))
+                  (push (cadr-agent:extension-event-type value)
+                        lifecycle-events)
+                  nil)))))
+          (cadr-agent::replace-extension-bundles host (list bundle))
+          (setf selected
+                (cadr-cli::apply-cli-model-selection
+                 agent registry openai settings
+                 :config-path config-path
+                 :auth-path auth-path
+                 :source :interactive))
           (is (cadr-ai:models-equal-p
                openai
                (cadr-agent:agent-model agent)))
@@ -650,7 +668,10 @@
           (is (cadr-ai:models-equal-p
                openai
                (cadr-cli:provider-config-model
-                selected))))))))
+                selected)))
+          (is (member :model-select lifecycle-events))
+          (cadr-cli::set-cli-thinking-level agent settings :high)
+          (is (member :thinking-level-select lifecycle-events)))))))
 
 (test model-spec-and-credential-print-cover-colons-types-and-refresh
   (let ((parsed

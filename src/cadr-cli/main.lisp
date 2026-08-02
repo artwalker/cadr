@@ -1774,10 +1774,10 @@
                (funcall
                 resource-reload-function))))
     (when system-prompt-function
-      (setf
-       (cadr-agent::agent-system-prompt agent)
-       (funcall
-        system-prompt-function resources)))
+      (multiple-value-bind (prompt options)
+          (funcall system-prompt-function resources)
+        (cadr-agent::replace-agent-system-prompt
+         agent prompt options)))
     (when model-refresh-function
       (funcall model-refresh-function))
     (when keybindings-reload-function
@@ -2302,25 +2302,29 @@
               nil "~{~A~^~%~%~}"
               (mapcar
                #'resolve-system-prompt
-               append-sources)))))
-    (build-system-prompt
-     :custom-prompt
-     (and custom-source
-          (resolve-system-prompt custom-source))
-     :append-system-prompt append-text
-     :selected-tools
-     (mapcar #'cadr-ai:tool-name tools)
-     :tool-snippets
-     (tool-prompt-snippets tools)
-     :prompt-guidelines
-     (tool-prompt-guidelines tools)
-     :context-files
-     (resource-snapshot-context-files snapshot)
-     :skills
-     (resource-snapshot-skills snapshot)
-     :cwd
-      (namestring
-       (uiop:ensure-directory-pathname cwd)))))
+               append-sources))))
+         (options
+           (list
+            :custom-prompt
+            (and custom-source
+                 (resolve-system-prompt custom-source))
+            :selected-tools
+            (mapcar #'cadr-ai:tool-name tools)
+            :tool-snippets
+            (tool-prompt-snippets tools)
+            :prompt-guidelines
+            (tool-prompt-guidelines tools)
+            :append-system-prompt append-text
+            :cwd
+            (namestring
+             (uiop:ensure-directory-pathname cwd))
+            :context-files
+            (resource-snapshot-context-files snapshot)
+            :skills
+            (resource-snapshot-skills snapshot))))
+    (values
+     (apply #'build-system-prompt options)
+     (copy-tree options))))
 
 (defun model-registry-login-options
     (registry status-function)
@@ -2795,14 +2799,19 @@
                   :builtin-names builtin-names))))
          (selected-baseline-tools
            (funcall tool-filter baseline-tools))
+         (system-prompt-values
+           (multiple-value-list
+            (resolve-cli-system-prompt
+             command resources
+             selected-baseline-tools cwd)))
          (agent
            (cadr-agent:make-agent
             :provider (provider-config-provider config)
             :model (provider-config-model config)
             :system-prompt
-            (resolve-cli-system-prompt
-             command resources
-             selected-baseline-tools cwd)
+            (first system-prompt-values)
+            :system-prompt-options
+            (second system-prompt-values)
             :tools baseline-tools
             :tool-filter-function tool-filter
             :extension-host

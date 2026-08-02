@@ -266,3 +266,112 @@
       (is (eq result replacement))
       (is (not (null terminate)))
       (is (not (null supplied-p))))))
+
+(test goal12-extension-http-request-is-session-local-copied-and-stale-safe
+  (let* ((bundle
+           (cadr-agent::make-extension-bundle
+            :id "http" :path "/tmp/http.lisp"))
+         (seen nil)
+         (host
+           (cadr-agent::make-extension-host
+            :http-request-function
+            (lambda (url &key method headers body timeout-ms signal)
+              (setf seen
+                    (list url method headers body timeout-ms signal))
+              (list
+               :status 201
+               :headers '(("content-type" . "application/json"))
+               :body
+               (make-array 2 :element-type '(unsigned-byte 8)
+                           :initial-contents '(111 107))))))
+         (api
+           (cadr-agent::%make-extension-api
+            :host host :bundle bundle :attachment-generation 0))
+         (headers (list (cons "authorization" "Bearer secret")))
+         (body
+           (make-array 3 :element-type '(unsigned-byte 8)
+                       :initial-contents '(1 2 3)))
+         (signal
+           (cadr-agent:make-extension-cancellation-signal))
+         (result
+           (progn
+             (cadr-agent::replace-extension-bundles host (list bundle))
+             (cadr-agent:extension-api-http-request
+              api "https://example.invalid/token"
+              :method :post :headers headers :body body
+              :timeout-ms 250 :signal signal))))
+    (setf (cdr (first headers)) "mutated"
+          (aref body 0) 9)
+    (is (= 201 (getf result :status)))
+    (is (equal '(("content-type" . "application/json"))
+               (getf result :headers)))
+    (is (equalp #(111 107) (getf result :body)))
+    (is (string= "Bearer secret"
+                 (cdr (first (third seen)))))
+    (is (= 1 (aref (fourth seen) 0)))
+    (is (eq signal (sixth seen)))
+    (setf (cadr-agent::extension-host-attachment-generation host) 1)
+    (signals cadr-agent:stale-extension-context
+      (cadr-agent:extension-api-http-request
+       api "https://example.invalid"))))
+
+(test goal12-extension-http-request-isolated-across-concurrent-sessions
+  (let ((entered (sb-thread:make-semaphore :count 0))
+        (release (sb-thread:make-semaphore :count 0))
+        (results (make-array 2 :initial-element nil)))
+    (labels
+        ((make-session-api (id status byte)
+           (let* ((bundle
+                    (cadr-agent::make-extension-bundle
+                     :id id :path (format nil "/tmp/~A.lisp" id)))
+                  (host
+                    (cadr-agent::make-extension-host
+                     :http-request-function
+                     (lambda (url &key method headers body timeout-ms signal)
+                       (declare
+                        (ignore method headers body timeout-ms signal))
+                       (sb-thread:signal-semaphore entered)
+                       (sb-thread:wait-on-semaphore release)
+                       (list
+                        :status status
+                        :headers (list (cons "x-session" id))
+                        :body
+                        (make-array
+                         1 :element-type '(unsigned-byte 8)
+                         :initial-element
+                         (if (search id url) byte 0))))))
+                  (api
+                    (cadr-agent::%make-extension-api
+                     :host host :bundle bundle
+                     :attachment-generation 0)))
+             (cadr-agent::replace-extension-bundles host (list bundle))
+             api)))
+      (let* ((first (make-session-api "first" 201 1))
+             (second (make-session-api "second" 202 2))
+             (threads
+               (list
+                (sb-thread:make-thread
+                 (lambda ()
+                   (setf (aref results 0)
+                         (cadr-agent:extension-api-http-request
+                          first "https://first.invalid/token")))
+                 :name "goal12-http-session-first")
+                (sb-thread:make-thread
+                 (lambda ()
+                   (setf (aref results 1)
+                         (cadr-agent:extension-api-http-request
+                          second "https://second.invalid/token")))
+                 :name "goal12-http-session-second"))))
+        (loop repeat 2 do
+          (sb-thread:wait-on-semaphore entered))
+        (sb-thread:signal-semaphore release 2)
+        (dolist (thread threads)
+          (sb-thread:join-thread thread))
+        (is (= 201 (getf (aref results 0) :status)))
+        (is (= 202 (getf (aref results 1) :status)))
+        (is (equalp #(1) (getf (aref results 0) :body)))
+        (is (equalp #(2) (getf (aref results 1) :body)))
+        (is (string= "first"
+                     (cdr (first (getf (aref results 0) :headers)))))
+        (is (string= "second"
+                     (cdr (first (getf (aref results 1) :headers)))))))))

@@ -63,9 +63,9 @@
                  #'string<))
          (ledger-paths (goal12-source-parity-example-paths)))
     (is (= 99 (length manifest)))
-    (is (= 94 (count :ported manifest :key
+    (is (= 99 (count :ported manifest :key
                      (lambda (row) (getf row :status)))))
-    (is (= 5 (count :gap manifest :key
+    (is (= 0 (count :gap manifest :key
                      (lambda (row) (getf row :status)))))
     (is (= 99 (length (remove-duplicates baseline-paths :test #'string=))))
     (is (equal ledger-paths baseline-paths))
@@ -82,15 +82,54 @@
         (:gap
          (is (consp (getf row :gaps))))))))
 
+(test goal12-all-34-extension-events-have-production-dispatch-evidence
+  (let* ((audit
+           (goal12-read-project-file
+            "docs/acceptance/goal-v12-extension-event-dispatch.md"))
+         (events cadr-agent::+extension-hook-events+))
+    (is (= 34 (length events)))
+    (dolist (event events)
+      (let* ((prefix (format nil "| `:~(~A~)` |" (symbol-name event)))
+             (start (search prefix audit))
+             (end (and start (position #\Newline audit :start start)))
+             (row (and start (subseq audit start end)))
+             (test-start (and row (search "test/" row)))
+             (test-end
+               (and test-start
+                    (position #\: row :start test-start)))
+             (test-path
+               (and test-end (subseq row test-start test-end))))
+        (is (stringp row) "Missing dispatch audit row for ~A" event)
+        (when row
+          (is (= 1 (goal12-count-substring prefix audit)))
+          (is (search "src/cadr-" row))
+          (is (search "test/cadr-" row))
+          (is (and test-path
+                   (probe-file
+                    (merge-pathnames
+                     test-path
+                     (asdf:system-source-directory "cadr-cli"))))))))
+    (is (search "declared-but-disconnected" audit))
+    (is (search ":session-before-compact" audit))))
+
 (test goal12-source-parity-verdicts-follow-the-current-example-manifest
   (let ((ledger (goal12-read-project-file "docs/source-parity.md"))
         (readme (goal12-read-project-file "README.md"))
-        (parity-map (goal12-read-project-file "docs/parity-map.md")))
-    (is (search "| `coding-agent` | 289 | 257 | 27 | 5 |" ledger))
-    (is (search "| **Total** | **595** | **516** | **72** | **7** |" ledger))
-    (is (search "Ninety-four" readme))
-    (is (search "94 functionally equivalent Lisp ports and 5 explicitly blocked rows"
+        (parity-map (goal12-read-project-file "docs/parity-map.md"))
+        (performance (goal12-read-project-file "docs/performance.md"))
+        (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
+        (identity
+          "GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/521/72/2 examples=99/99/0"))
+    (is (search "| `coding-agent` | 289 | 262 | 27 | 0 |" ledger))
+    (is (search "| **Total** | **595** | **521** | **72** | **2** |" ledger))
+    (is (search "all 99" readme :test #'char-equal))
+    (is (search "99 functionally equivalent Lisp ports and 0 gaps"
                 parity-map))
+    (dolist (source (list ledger parity-map performance manifest-source))
+      (is (= 1 (goal12-count-substring identity source))))
+    (is (search "docs/parity-map.md" performance))
+    (is (search "docs/source-parity.md" performance))
+    (is (search "examples/manifest.sexp" performance))
     (dolist (row (goal12-example-manifest))
       (let* ((baseline (getf row :baseline))
              (prefix (format nil "| `~A` |" baseline))
@@ -106,7 +145,7 @@
            (is (search "| `缺失` |" line))
            (is (search "goal-v12-api-scope-amendment-3.md" line))))))))
 
-(test goal12-every-remaining-example-gap-is-covered-by-the-blocked-amendment
+(test goal12-approved-amendments-close-every-example-gap
   (let* ((proposal
            (goal12-read-project-file
             "docs/proposals/goal-v12-example-api-gaps.md"))
@@ -132,14 +171,14 @@
     (dolist (row (goal12-example-manifest))
       (dolist (gap (getf row :gaps))
         (pushnew gap gap-ids)))
-    (is (= 3 (length gap-ids)))
+    (is (= 0 (length gap-ids)))
     (is (stringp mapping))
     (is (= 42 (goal12-count-substring "`:" mapping-table)))
     (is (search "19 项能力" proposal))
     (is (search "D/E 已于 2026-08-02 获得用户批准" amendment))
-    (dolist (gap gap-ids)
-      (is (search (format nil "`:~(~A~)`" gap) blocked)))
-    (is (search "状态：**blocked" blocked))))
+    (is (search "状态：**approved and implemented**" blocked))
+    (dolist (item '("F" "G" "H"))
+      (is (search (format nil "~A：批准" item) blocked)))))
 
 (test goal12-ported-extension-entrypoints-load-without-diagnostics
   (let ((root (asdf:system-source-directory "cadr-cli")))
@@ -195,10 +234,16 @@
      :commands ("commands"))
     ("packages/coding-agent/examples/extensions/confirm-destructive.ts"
      :hooks (:session-before-switch :session-before-fork))
+    ("packages/coding-agent/examples/extensions/custom-compaction.ts"
+     :hooks (:session-before-compact))
     ("packages/coding-agent/examples/extensions/custom-footer.ts"
      :commands ("footer"))
     ("packages/coding-agent/examples/extensions/custom-header.ts"
      :commands ("builtin-header") :hooks (:session-start))
+    ("packages/coding-agent/examples/extensions/custom-provider-anthropic/index.ts"
+     :native-providers (:custom-anthropic))
+    ("packages/coding-agent/examples/extensions/custom-provider-gitlab-duo/index.ts"
+     :native-providers (:gitlab-duo))
     ("packages/coding-agent/examples/extensions/dirty-repo-guard.ts"
      :hooks (:session-before-switch :session-before-fork))
     ("packages/coding-agent/examples/extensions/dynamic-resources/index.ts"
@@ -276,6 +321,8 @@
      :flags ("preset") :shortcuts ("ctrl+shift+u"))
     ("packages/coding-agent/examples/extensions/project-trust.ts"
      :hooks (:project-trust :session-start))
+    ("packages/coding-agent/examples/extensions/prompt-customizer.ts"
+     :hooks (:before-agent-start))
     ("packages/coding-agent/examples/extensions/protected-paths.ts"
      :hooks (:tool-call-before))
     ("packages/coding-agent/examples/extensions/provider-payload.ts"
@@ -434,6 +481,156 @@
   (load
    (merge-pathnames relative
                     (asdf:system-source-directory "cadr-cli"))))
+
+(defun goal12-load-example-native-provider
+    (relative provider-id temporary http-function)
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (manager
+           (make-test-extension-manager
+            temporary
+            (merge-pathnames "global/" temporary)
+            (make-string-output-stream)
+            (list (merge-pathnames relative root))))
+         (report (cadr-cli::reload-cli-extensions manager))
+         (host (cadr-cli::cli-extension-manager-host manager))
+         (definition
+           (find
+            provider-id
+            (cadr-agent::extension-snapshot-native-providers
+             (cadr-agent::extension-host-current-snapshot host))
+            :key
+            (lambda (entry)
+              (cadr-ai:runtime-provider-id
+               (cadr-agent::extension-native-provider-definition-provider
+                entry)))
+            :test #'eq)))
+    (is (null (getf report :errors)))
+    (is (not (null definition)))
+    (setf (cadr-agent::extension-host-http-request-function host)
+          http-function)
+    (values
+     (cadr-agent::extension-native-provider-definition-provider definition)
+     host
+     (cadr-agent::extension-bundle-package
+      (cadr-agent::extension-native-provider-definition-bundle definition)))))
+
+(test goal12-custom-provider-oauth-examples-use-session-http-and-temporary-auth-store
+  (dolist
+      (spec
+       '(("examples/extensions/custom-provider-anthropic/index.lisp"
+          :custom-anthropic "auth-code#state-value")
+         ("examples/extensions/custom-provider-gitlab-duo/index.lisp"
+          :gitlab-duo
+          "http://127.0.0.1/callback?code=%E4%B8%AD+code")))
+    (destructuring-bind (relative provider-id prompt-value) spec
+      (with-test-directory (temporary)
+        (let ((requests nil)
+              (notifications nil)
+              (auth-path (merge-pathnames "auth.json" temporary)))
+          (multiple-value-bind (provider host extension-package)
+              (goal12-load-example-native-provider
+               relative provider-id temporary
+               (lambda (url &key method headers body timeout-ms signal)
+                 (declare (ignore timeout-ms signal))
+                 (push (list url method (copy-tree headers) body) requests)
+                 (let ((object
+                         (if (search "direct_access" url)
+                             (cadr-ai::json-object
+                              "token" "short-lived-secret"
+                              "headers"
+                              (cadr-ai::json-object
+                               "X-GitLab-Realm" "saas"))
+                             (if (eq provider-id :custom-anthropic)
+                                 (cadr-ai::json-object
+                                  "access_token" "anthropic-access-secret"
+                                  "refresh_token" "anthropic-refresh-secret"
+                                  "expires_in" 3600)
+                                 (cadr-ai::json-object
+                                  "access_token" "gitlab-access-secret"
+                                  "refresh_token" "gitlab-refresh-secret"
+                                  "expires_in" 3600
+                                  "created_at" 2000000000)))))
+                   (list
+                    :status 200
+                    :headers '(("content-type" . "application/json"))
+                    :body
+                    (sb-ext:string-to-octets
+                     (cadr-ai::stringify-json object)
+                     :external-format :utf-8)))))
+            (declare (ignore host))
+            (let* ((storage (cadr-cli:make-file-auth-storage auth-path))
+                   (registry
+                     (cadr-cli:make-model-registry
+                      :path nil :credentials storage))
+                   (runtime
+                     (cadr-cli::model-registry-native-runtime registry)))
+              (cadr-ai:models-runtime-set-provider runtime provider)
+              (let ((credential
+                      (cadr-cli::model-registry-login-native-provider
+                       registry provider-id
+                       (cadr-ai:make-runtime-auth-interaction
+                        :prompt-function (constantly prompt-value)
+                        :notify-function
+                        (lambda (event) (push event notifications)))
+                       :auth-type :oauth)))
+                (is (typep credential 'cadr-ai:oauth-credential))
+                (is (eq provider-id
+                        (cadr-ai:oauth-credential-provider credential)))
+                (is (typep
+                     (cadr-cli:auth-storage-read storage provider-id)
+                     'cadr-ai:oauth-credential))
+                (is (= 1 (length notifications))))
+              (let ((login-request (first requests)))
+                (is (eq :post (second login-request)))
+                (is (find "Content-Type" (third login-request)
+                          :key #'car :test #'string-equal))
+                (if (eq provider-id :custom-anthropic)
+                    (is (search "\"code\":\"auth-code\""
+                                (fourth login-request)))
+                    (is (search "code=%E4%B8%AD+code"
+                                (fourth login-request)))))
+              (let* ((stored
+                       (cadr-cli:auth-storage-read storage provider-id))
+                     (refresh
+                       (cadr-ai::runtime-provider-oauth-refresh-function
+                        provider))
+                     (refreshed (funcall refresh stored))
+                     (refresh-request (first requests)))
+                (is (typep refreshed 'cadr-ai:oauth-credential))
+                (is (eq provider-id
+                        (cadr-ai:oauth-credential-provider refreshed)))
+                (is (eq :post (second refresh-request)))
+                (is (search "refresh_token" (fourth refresh-request))))
+              (when (eq provider-id :gitlab-duo)
+                (let ((direct-access
+                        (symbol-function
+                         (or (find-symbol "GITLAB-DUO-DIRECT-ACCESS"
+                                          extension-package)
+                             (error "Missing GitLab direct access function")))))
+                  (let ((result (funcall direct-access "gitlab-access-secret")))
+                    (is (string= "short-lived-secret"
+                                 (getf result :token)))
+                    (is (string= "saas"
+                                 (cdr (assoc "X-GitLab-Realm"
+                                             (getf result :headers)
+                                             :test #'string-equal)))))))
+              (let ((login
+                      (cadr-ai:runtime-provider-oauth-login-function provider)))
+                (handler-case
+                    (progn
+                      (funcall
+                       login
+                       (cadr-ai:make-runtime-auth-interaction
+                        :prompt-function (constantly nil)
+                        :notify-function (constantly nil)))
+                      (fail "Expected cancelled extension OAuth login"))
+                  (condition (condition)
+                    (let ((visible (princ-to-string condition)))
+                      (is (search "cancelled" visible
+                                  :test #'char-equal))
+                      (dolist (secret '("access-secret" "refresh-secret"
+                                        "short-lived-secret"))
+                        (is (not (search secret visible)))))))))))))))
 
 (test goal12-pure-example-ports-preserve-edge-case-behavior
   (goal12-load-pure-example "examples/extensions/doom-overlay/doom-keys.lisp")

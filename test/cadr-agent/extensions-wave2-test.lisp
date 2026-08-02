@@ -38,7 +38,364 @@
    (lambda ()
      (cadr-agent:define-event-hook
       :session-start
-      :handler handler))))
+     :handler handler))))
+
+(defun make-goal12-compaction-agent
+    (sessions cwd host stream-function)
+  (let ((session
+          (cadr-agent:create-session
+           :directory sessions :cwd cwd
+           :id (format nil "goal12-compact-~36R"
+                       (random most-positive-fixnum)))))
+    (cadr-agent:session-append-message
+     session
+     (cadr-ai:make-user-message
+      :content (make-string 80 :initial-element #\a)))
+    (cadr-agent:session-append-message
+     session
+     (assistant
+      (list
+       (make-text-content
+        :text (make-string 80 :initial-element #\b)))))
+    (cadr-agent:session-append-message
+     session (cadr-ai:make-user-message :content "keep"))
+    (values
+     (cadr-agent:make-agent
+      :provider :mock
+      :model
+      (cadr-ai:make-model
+       :id "tiny" :provider :mock :api :openai-responses
+       :base-url "https://example.invalid"
+       :max-tokens 32 :context-window 100)
+      :session session
+      :extension-host host
+      :compaction-keep-recent-tokens 1
+      :stream-function stream-function)
+     session)))
+
+(test session-compaction-lifecycle-dispatches-through-production-path
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "extension-compaction"))
+           (first-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content (make-string 80 :initial-element #\a))))
+           (second-id
+             (cadr-agent:session-append-message
+              session
+              (assistant
+               (list
+                (make-text-content
+                 :text (make-string 80 :initial-element #\b))))))
+           (third-id
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "keep me")))
+           (before-payload nil)
+           (after-payload nil)
+           (bundle
+             (make-test-extension-bundle
+              "production-compaction-lifecycle"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf before-payload
+                         (wave2-call "EXTENSION-EVENT-PAYLOAD" event))
+                   (list
+                    :compaction
+                    (list
+                     :summary "extension checkpoint"
+                     :first-kept-entry-id
+                     (getf (getf before-payload :preparation)
+                           :first-kept-entry-id)
+                     :tokens-before
+                     (getf (getf before-payload :preparation)
+                           :tokens-before)
+                     :usage
+                     (cadr-ai:make-usage
+                      :input 11 :output 7 :total 18)
+                     :details '(:source :extension)))))
+                (cadr-agent:define-event-hook
+                 :session-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf after-payload
+                         (wave2-call "EXTENSION-EVENT-PAYLOAD" event))
+                   nil)))))
+           (host (make-test-extension-host (list bundle)))
+           (model
+             (cadr-ai:make-model
+              :id "tiny" :provider :mock :api :openai-responses
+              :base-url "https://example.invalid"
+              :max-tokens 32 :context-window 100))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model model
+              :session session
+              :extension-host host
+              :compaction-keep-recent-tokens 1
+              :stream-function
+              (lambda (&rest arguments)
+                (declare (ignore arguments))
+                (error "default compaction summarizer must not run")))))
+      (declare (ignore first-id second-id third-id))
+      (is-true
+       (cadr-agent:compact-agent
+        agent :force-p t :custom-instructions "preserve decisions"))
+      (is (equal :manual (getf before-payload :reason)))
+      (is-false (getf before-payload :will-retry-p))
+      (is (string= "preserve decisions"
+                   (getf before-payload :custom-instructions)))
+      (is (= 3 (length (getf before-payload :branch-entries))))
+      (let ((preparation (getf before-payload :preparation)))
+        (dolist (key '(:first-kept-entry-id
+                       :messages-to-summarize
+                       :turn-prefix-messages
+                       :is-split-turn-p
+                       :tokens-before
+                       :previous-summary
+                       :file-ops
+                       :settings))
+          (is (member key preparation)))
+        (is (stringp (getf preparation :first-kept-entry-id)))
+        (is (integerp (getf preparation :tokens-before))))
+      (is-true
+       (typep (getf before-payload :signal)
+              'cadr-agent:extension-cancellation-signal))
+      (is (equal :manual (getf after-payload :reason)))
+      (is-true (getf after-payload :from-extension-p))
+      (let ((entry (getf after-payload :compaction-entry)))
+        (is (eq :compaction (cadr-agent:session-entry-type entry)))
+        (is (string= "extension checkpoint"
+                     (cadr-agent:session-entry-summary entry)))
+        (is (equal '(:source :extension)
+                   (cadr-agent:session-entry-details entry)))
+        (is (= 18
+               (cadr-ai:usage-total
+                (cadr-agent:session-entry-usage entry))))
+        (is-true (cadr-agent:session-entry-from-hook-p entry))))))
+
+(test session-before-compaction-cancel-skips-summary-and-after-event
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "cancel-compaction"))
+           (after-called-p nil)
+           (bundle
+             (make-test-extension-bundle
+              "cancel-production-compaction"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   '(:cancel-p t)))
+                (cadr-agent:define-event-hook
+                 :session-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore event context))
+                   (setf after-called-p t))))))
+           (host (make-test-extension-host (list bundle))))
+      (cadr-agent:session-append-message
+       session (cadr-ai:make-user-message
+                :content (make-string 80 :initial-element #\a)))
+      (cadr-agent:session-append-message
+       session (assistant
+                (list (make-text-content
+                       :text (make-string 80 :initial-element #\b)))))
+      (cadr-agent:session-append-message
+       session (cadr-ai:make-user-message :content "keep"))
+      (let ((agent
+              (cadr-agent:make-agent
+               :provider :mock
+               :model
+               (cadr-ai:make-model
+                :id "tiny" :provider :mock :api :openai-responses
+                :base-url "https://example.invalid"
+                :max-tokens 32 :context-window 100)
+               :session session
+               :extension-host host
+               :compaction-keep-recent-tokens 1
+               :stream-function
+               (lambda (&rest arguments)
+                 (declare (ignore arguments))
+                 (error "cancelled compaction must not summarize")))))
+        (is-false (cadr-agent:compact-agent agent :force-p t))
+        (is-false after-called-p)
+        (is (= 0 (count :compaction
+                        (cadr-agent:session-entries session)
+                        :key #'cadr-agent:session-entry-type)))))))
+
+(test session-compaction-invalid-or-failing-hook-falls-back-and-abort-stops
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (dolist (mode '(:blank :error))
+      (let ((default-calls 0)
+            (after-payload nil))
+        (let* ((bundle
+                 (make-test-extension-bundle
+                  (format nil "compaction-~(~A~)" mode)
+                  (lambda ()
+                    (cadr-agent:define-event-hook
+                     :session-before-compact
+                     :handler
+                     (lambda (event context)
+                       (declare (ignore context))
+                       (ecase mode
+                         (:blank
+                          (let ((preparation
+                                  (getf
+                                   (cadr-agent:extension-event-payload event)
+                                   :preparation)))
+                            (list
+                             :compaction
+                             (list
+                              :summary "  "
+                              :first-kept-entry-id
+                              (getf preparation :first-kept-entry-id)
+                              :tokens-before
+                              (getf preparation :tokens-before)))))
+                         (:error
+                          (error "hook implementation failed")))))
+                    (cadr-agent:define-event-hook
+                     :session-compact
+                     :handler
+                     (lambda (event context)
+                       (declare (ignore context))
+                       (setf after-payload
+                             (cadr-agent:extension-event-payload event))
+                       nil)))))
+               (host (make-test-extension-host (list bundle))))
+          (multiple-value-bind (agent session)
+              (make-goal12-compaction-agent
+               sessions cwd host
+               (lambda (&rest arguments)
+                 (declare (ignore arguments))
+                 (incf default-calls)
+                 (assistant
+                  (list
+                   (make-text-content :text "default checkpoint")))))
+            (is-true (cadr-agent:compact-agent agent :force-p t))
+            (is (= 1 default-calls))
+            (is-false (getf after-payload :from-extension-p))
+            (let ((entry
+                    (find :compaction
+                          (cadr-agent:session-entries session)
+                          :key #'cadr-agent:session-entry-type)))
+              (is (string= "default checkpoint"
+                           (cadr-agent:session-entry-summary entry)))
+              (is-false (cadr-agent:session-entry-from-hook-p entry)))))))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "abort-compaction"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (cadr-agent:abort-extension-cancellation-signal
+                    (getf (cadr-agent:extension-event-payload event)
+                          :signal))
+                   nil)))))
+           (host (make-test-extension-host (list bundle))))
+      (multiple-value-bind (agent session)
+          (make-goal12-compaction-agent
+           sessions cwd host
+           (lambda (&rest arguments)
+             (declare (ignore arguments))
+             (error "aborted compaction must not summarize")))
+        (is-false (cadr-agent:compact-agent agent :force-p t))
+        (is (= 0
+               (count :compaction
+                      (cadr-agent:session-entries session)
+                      :key #'cadr-agent:session-entry-type)))))))
+
+(test before-agent-start-receives-defensive-system-prompt-options
+  (let ((seen nil)
+        (second-seen nil)
+        (options
+          '(:custom-prompt "custom"
+            :selected-tools ("read")
+            :tool-snippets ("snippet")
+            :prompt-guidelines ("guideline")
+            :append-system-prompt "append"
+            :cwd "/tmp/project/"
+            :context-files ((:path "AGENTS.md" :content "rules"))
+            :skills ((:name "skill")))))
+    (let* ((bundle
+             (make-test-extension-bundle
+              "system-prompt-options-production"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :before-agent-start
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (let ((payload
+                           (wave2-call
+                            "EXTENSION-EVENT-PAYLOAD" event)))
+                     (setf seen
+                           (getf payload :system-prompt-options))
+                     (setf (first (getf seen :selected-tools))
+                           "mutated"))
+                   nil))
+                (cadr-agent:define-event-hook
+                 :before-agent-start
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf second-seen
+                         (getf
+                          (wave2-call
+                           "EXTENSION-EVENT-PAYLOAD" event)
+                          :system-prompt-options))
+                   nil)))))
+           (host (make-test-extension-host (list bundle)))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (mock-model)
+              :system-prompt "assembled"
+              :system-prompt-options options
+              :extension-host host
+              :auto-compact-p nil
+              :stream-function
+              (faux-stream
+               '*system-prompt-options-responses*
+               '*system-prompt-options-contexts*))))
+      (let ((*system-prompt-options-responses*
+              (list
+               (assistant
+                (list (make-text-content :text "done")))))
+            (*system-prompt-options-contexts* nil))
+        (declare
+         (special *system-prompt-options-responses*
+                  *system-prompt-options-contexts*))
+        (cadr-agent:agent-prompt agent "go"))
+      (is (string= "mutated"
+                   (first (getf seen :selected-tools))))
+      (is (string= "read"
+                   (first (getf second-seen :selected-tools))))
+      (is (equal options
+                 (cadr-agent:agent-system-prompt-options agent)))
+      (is (string= "read"
+                   (first
+                    (getf
+                     (cadr-agent:agent-system-prompt-options agent)
+                     :selected-tools)))))))
 
 (test wave2-extension-events-register-and-expose-copied-plist-payloads
   (let ((seen nil))
@@ -625,11 +982,10 @@
                  nil))
               (dolist
                   (event
-                   '(:context
+                   '(:session-start
+                     :context
                      :message-start
                      :message-update
-                     :tool-execution-start
-                     :tool-execution-end
                      :agent-end
                      :agent-settled))
                 (cadr-agent:define-event-hook
@@ -707,7 +1063,8 @@
                    message))))))
       (dolist
           (event
-           '(:input
+           '(:session-start
+             :input
              :before-agent-start
              :agent-start
              :context
@@ -721,7 +1078,8 @@
 (test wave2-send-message-and-session-name-actions-persist
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
-    (let* ((session
+    (let* ((info-change-calls 0)
+           (session
              (cadr-agent:create-session
               :directory sessions
               :cwd cwd
@@ -741,7 +1099,22 @@
                  context
                  (format nil "wave~%two"))
                 nil)))
-           (host (make-test-extension-host (list bundle)))
+           (observer
+             (make-test-extension-bundle
+              "wave2-session-info-observer"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-info-changed
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (incf info-change-calls)
+                   (is (string=
+                        "wave two"
+                        (getf
+                         (cadr-agent:extension-event-payload event)
+                         :name))))))))
+           (host (make-test-extension-host (list bundle observer)))
            (agent
              (make-agent
               :provider :mock
@@ -756,6 +1129,7 @@
        :payload '(:reason :startup))
       (is (string= "wave two"
                    (cadr-agent:session-name session)))
+      (is (= 1 info-change-calls))
       (let ((custom
               (find
                :custom-message
@@ -769,7 +1143,7 @@
              "persisted"
              (cadr-agent:session-entry-content custom)))))))
 
-(test tree-navigation-cancellation-and-busy-guard-preserve-the-active-leaf
+(test tree-navigation-lifecycle-and-busy-guard-use-the-production-path
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
     (let* ((session
@@ -794,6 +1168,9 @@
               session
               (cadr-ai:make-user-message
                :content "second")))
+           (cancel-p t)
+           (before-calls 0)
+           (after-calls 0)
            (bundle
              (make-test-extension-bundle
               "cancel-tree"
@@ -803,7 +1180,19 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore event context))
-                   '(:cancel-p t))))))
+                   (incf before-calls)
+                   (list :cancel-p cancel-p)))
+                (cadr-agent:define-event-hook
+                 :session-tree
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (incf after-calls)
+                   (is (string=
+                        reply-id
+                        (getf
+                         (cadr-agent:extension-event-payload event)
+                         :target-id))))))))
            (host
              (make-test-extension-host
               (list bundle)))
@@ -814,7 +1203,6 @@
               :session session
               :extension-host host
               :auto-compact-p nil)))
-      (declare (ignore reply-id))
       (multiple-value-bind (messages cancelled-p)
           (cadr-agent:agent-navigate-tree
            agent target-id)
@@ -824,6 +1212,17 @@
        (string=
         current-id
         (cadr-agent:session-leaf-id session)))
+      (is (= 1 before-calls))
+      (is (= 0 after-calls))
+      (setf cancel-p nil)
+      (multiple-value-bind (messages cancelled-p)
+          (cadr-agent:agent-navigate-tree agent reply-id)
+        (is (consp messages))
+        (is (null cancelled-p)))
+      (is (= 2 before-calls))
+      (is (= 1 after-calls))
+      (is (string= reply-id
+                   (cadr-agent:session-leaf-id session)))
       (setf
        (cadr-agent::agent-busy-p agent)
        t)
@@ -832,7 +1231,7 @@
          agent target-id))
       (is
        (string=
-        current-id
+        reply-id
         (cadr-agent:session-leaf-id session))))))
 
 (test message-end-replacement-persists-finalized-usage-cost

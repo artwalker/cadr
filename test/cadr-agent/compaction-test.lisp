@@ -74,6 +74,29 @@
                        :input 30 :output 2 :total 32)
                :stop-reason :stop)))
            (*contexts* nil)
+           (before-payload nil)
+           (after-payload nil)
+           (bundle
+             (make-test-extension-bundle
+              "threshold-compaction-events"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf before-payload
+                         (cadr-agent:extension-event-payload event))
+                   nil))
+                (cadr-agent:define-event-hook
+                 :session-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf after-payload
+                         (cadr-agent:extension-event-payload event))
+                   nil)))))
+           (host (make-test-extension-host (list bundle)))
            (model
              (cadr-ai:make-model
               :id "tiny"
@@ -87,6 +110,7 @@
               :provider :current-provider
               :model model
               :session session
+              :extension-host host
               :compaction-reserve-tokens 20
               :compaction-keep-recent-tokens 4
               :stream-function
@@ -100,6 +124,11 @@
              (cadr-ai:text-content-text
               (first
                (cadr-ai:assistant-message-content result)))))
+        (is (eq :threshold (getf before-payload :reason)))
+        (is-false (getf before-payload :will-retry-p))
+        (is (eq :threshold (getf after-payload :reason)))
+        (is-false (getf after-payload :will-retry-p))
+        (is-false (getf after-payload :from-extension-p))
         (is (null *responses*))
         (let* ((contexts (nreverse *contexts*))
                (summary-context (first contexts))
@@ -223,6 +252,29 @@
                :model "tiny"
                :stop-reason :stop)))
            (*contexts* nil)
+           (before-payload nil)
+           (after-payload nil)
+           (bundle
+             (make-test-extension-bundle
+              "overflow-compaction-events"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-before-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf before-payload
+                         (cadr-agent:extension-event-payload event))
+                   nil))
+                (cadr-agent:define-event-hook
+                 :session-compact
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf after-payload
+                         (cadr-agent:extension-event-payload event))
+                   nil)))))
+           (host (make-test-extension-host (list bundle)))
            (model
              (cadr-ai:make-model
               :id "tiny"
@@ -236,6 +288,7 @@
               :provider :current-provider
               :model model
               :session session
+              :extension-host host
               :auto-compact-p nil
               :compaction-keep-recent-tokens 4
               :stream-function
@@ -251,6 +304,11 @@
              (cadr-ai:text-content-text
               (first
                (cadr-ai:assistant-message-content result)))))
+        (is (eq :overflow (getf before-payload :reason)))
+        (is-true (getf before-payload :will-retry-p))
+        (is (eq :overflow (getf after-payload :reason)))
+        (is-true (getf after-payload :will-retry-p))
+        (is-false (getf after-payload :from-extension-p))
         (is (null *responses*))
         (is (= 3 (length *contexts*)))
         (is (not

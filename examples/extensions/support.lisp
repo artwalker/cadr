@@ -36,6 +36,147 @@
 (defun example-exec-error (result)
   (or (getf result :stderr) ""))
 
+(defun example-http-request
+    (url &key (method :get) headers body timeout-ms signal)
+  (cadr-agent:extension-api-http-request
+   *example-api* url
+   :method method :headers headers :body body
+   :timeout-ms timeout-ms :signal signal))
+
+(defun example-unix-milliseconds ()
+  (* 1000 (- (get-universal-time) 2208988800)))
+
+(defun example-percent-encode (value)
+  (with-output-to-string (output)
+    (loop for octet across
+          (sb-ext:string-to-octets value :external-format :utf-8)
+          do
+          (cond
+            ((or (<= (char-code #\a) octet (char-code #\z))
+                 (<= (char-code #\A) octet (char-code #\Z))
+                 (<= (char-code #\0) octet (char-code #\9))
+                 (member octet
+                         (mapcar #'char-code '(#\* #\- #\. #\_))))
+             (write-char (code-char octet) output))
+            ((= octet (char-code #\Space))
+             (write-char #\+ output))
+            (t
+             (format output "%~2,'0X" octet))))))
+
+(defun example-percent-decode (value)
+  (let ((octets
+          (make-array 0 :element-type '(unsigned-byte 8)
+                        :adjustable t :fill-pointer 0)))
+    (loop with index = 0
+          while (< index (length value))
+          for character = (char value index)
+          do
+          (cond
+            ((char= character #\+)
+             (vector-push-extend (char-code #\Space) octets)
+             (incf index))
+            ((char= character #\%)
+             (unless (< (+ index 2) (length value))
+               (error "Invalid percent-encoded query value"))
+             (let ((high (digit-char-p (char value (1+ index)) 16))
+                   (low (digit-char-p (char value (+ index 2)) 16)))
+               (unless (and high low)
+                 (error "Invalid percent-encoded query value"))
+               (vector-push-extend (+ (* high 16) low) octets)
+               (incf index 3)))
+            (t
+             (loop for octet across
+                   (sb-ext:string-to-octets
+                    (string character) :external-format :utf-8)
+                   do (vector-push-extend octet octets))
+             (incf index))))
+    (sb-ext:octets-to-string octets :external-format :utf-8)))
+
+(defun example-form-encode (pairs)
+  (format nil "~{~A~^&~}"
+          (mapcar
+           (lambda (entry)
+             (format nil "~A=~A"
+                     (example-percent-encode (car entry))
+                     (example-percent-encode (cdr entry))))
+           pairs)))
+
+(defun example-http-json
+    (url &key (method :post) headers object form timeout-ms signal)
+  (let* ((body
+           (cond
+             (object (cadr-ai::stringify-json object))
+             (form (example-form-encode form))
+             (t nil)))
+         (content-type
+           (cond (object "application/json")
+                 (form "application/x-www-form-urlencoded")
+                 (t nil)))
+         (result
+           (example-http-request
+            url :method method
+            :headers
+            (append
+             (and content-type
+                  (list (cons "Content-Type" content-type)))
+             headers)
+            :body body :timeout-ms timeout-ms :signal signal))
+         (status (getf result :status)))
+    (unless (<= 200 status 299)
+      (error "Extension HTTP request returned status ~D" status))
+    (cadr-ai::parse-json
+     (sb-ext:octets-to-string
+      (getf result :body) :external-format :utf-8))))
+
+(defun example-query-value (url name)
+  (let* ((query-start (position #\? url))
+         (query (and query-start (subseq url (1+ query-start)))))
+    (when query
+      (dolist (entry (uiop:split-string query :separator "&"))
+        (let ((equals (position #\= entry)))
+          (when (and equals
+                     (string=
+                      name
+                      (example-percent-decode
+                       (subseq entry 0 equals))))
+            (return
+              (example-percent-decode
+               (subseq entry (1+ equals))))))))))
+
+(defun example-environment-value (environment name)
+  (cdr (assoc name environment :test #'string=)))
+
+(defun example-merge-headers (base override)
+  (append
+   (mapcar
+    (lambda (entry)
+      (or (find (car entry) override :key #'car :test #'string-equal)
+          entry))
+    base)
+   (remove-if
+    (lambda (entry)
+      (find (car entry) base :key #'car :test #'string-equal))
+    override)))
+
+(defun example-runtime-stream-options (options required-headers)
+  (let* ((original-transform (getf options :transform-headers))
+         (filtered
+           (loop for (key value) on options by #'cddr
+                 unless (member key
+                                '(:api-key :headers :environment :auth-type
+                                  :transform-headers))
+                   append (list key value))))
+    (append
+     filtered
+     (list
+      :transform-headers
+      (lambda (headers)
+        (example-merge-headers
+         (if original-transform
+             (funcall original-transform headers)
+             headers)
+         required-headers))))))
+
 (defun example-session-entries (context)
   (let ((session (cadr-agent:extension-context-session context)))
     (and session (cadr-agent:session-entries session))))

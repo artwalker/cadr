@@ -52,6 +52,82 @@
   (finish-output
    (cli-extension-manager-output manager)))
 
+(defun extension-http-timeout-condition-p (condition)
+  (or (typep condition 'cadr-ai:timeout-error)
+      (typep condition 'cadr-ai::native-http-timeout)
+      (typep condition 'sb-sys:io-timeout)
+      (typep condition 'sb-bsd-sockets:operation-timeout-error)
+      (and (typep condition 'cadr-ai:cadr-error)
+           (let ((cause (cadr-ai:cadr-error-cause condition)))
+             (and cause
+                  (not (eq cause condition))
+                  (extension-http-timeout-condition-p cause))))))
+
+(defun make-extension-http-request-adapter ()
+  (lambda (url &key (method :get) headers body timeout-ms signal)
+    (let* ((abort-p
+             (and signal
+                  (lambda ()
+                    (cadr-agent:extension-cancellation-aborted-p
+                     signal))))
+           (timeout
+             (and timeout-ms (/ timeout-ms 1000d0)))
+           (options
+             (append
+              (list
+               :method method
+               :headers headers
+               :content body
+               :want-stream nil
+               :force-binary t)
+              (when timeout
+                (list :connect-timeout timeout
+                      :read-timeout timeout)))))
+      (handler-case
+          (let ((cadr-ai::*native-http-abort-p* abort-p))
+            (multiple-value-bind (response status response-headers)
+                (apply cadr-ai:*http-request-function* url options)
+              (list
+               :status status
+               :headers
+               (cond
+                 ((null response-headers) nil)
+                 ((hash-table-p response-headers)
+                  (loop for name being the hash-keys of response-headers
+                        using (hash-value value)
+                        collect (cons name value)))
+                 ((listp response-headers)
+                  (copy-tree response-headers))
+                 (t (error "invalid HTTP response headers")))
+               :body
+               (cond
+                 ((typep response
+                         '(array (unsigned-byte 8) (*)))
+                  (coerce response
+                          '(simple-array (unsigned-byte 8) (*))))
+                 ((stringp response)
+                  (sb-ext:string-to-octets
+                   response :external-format :utf-8))
+                 (t
+                  (error "invalid HTTP response body"))))))
+        (condition (condition)
+          (cond
+            ((or (typep condition 'cadr-ai:request-aborted)
+                 (and signal
+                      (cadr-agent:extension-cancellation-aborted-p
+                       signal)))
+             (error
+              'cadr-agent:extension-execution-error
+              :message "Extension HTTP request was aborted"))
+            ((extension-http-timeout-condition-p condition)
+             (error
+              'cadr-agent:extension-execution-error
+              :message "Extension HTTP request timed out"))
+            (t
+             (error
+              'cadr-agent:extension-execution-error
+              :message "Extension HTTP request failed"))))))))
+
 (defun make-cli-extension-manager
     (&key
        (cwd (uiop:getcwd))
@@ -99,6 +175,8 @@
              :reload-function
              (lambda ()
                (reload-cli-extensions manager))
+             :http-request-function
+             (make-extension-http-request-adapter)
              :exec-function
              (lambda (command arguments
                       &key cwd environment timeout-ms)

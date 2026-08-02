@@ -75,6 +75,7 @@
                          provider
                          model
                          system-prompt
+                         system-prompt-options
                          messages
                          tools
                          (tool-filter-function #'identity)
@@ -97,6 +98,8 @@
            :provider provider
            :model model
            :system-prompt system-prompt
+           :system-prompt-options
+           (copy-tree system-prompt-options)
            :messages initial-messages
            :messages-tail (last initial-messages)
            :messages-tail-head initial-messages

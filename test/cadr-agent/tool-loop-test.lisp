@@ -652,6 +652,7 @@
 (test goal12-tool-partial-updates-are-scoped-ordered-and-not-persisted
   (let ((late-update nil)
         (lifecycle-updates nil)
+        (lifecycle-boundaries nil)
         (events nil)
         (*responses*
           (list
@@ -689,6 +690,16 @@
              (make-test-extension-bundle
               "observe-updates"
               (lambda ()
+                (dolist (event '(:tool-execution-start
+                                 :tool-execution-end))
+                  (cadr-agent:define-event-hook
+                   event
+                   :handler
+                   (lambda (value context)
+                     (declare (ignore context))
+                     (push
+                      (cadr-agent:extension-event-type value)
+                      lifecycle-boundaries))))
                 (cadr-agent:define-event-hook
                  :tool-execution-update
                  :handler
@@ -746,6 +757,8 @@
                 (cadr-agent::tool-execution-result-content
                  (agent-event-tool-result event))))))))
       (is (= 2 (length lifecycle-updates)))
+      (is (equal '(:tool-execution-start :tool-execution-end)
+                 (nreverse lifecycle-boundaries)))
       (is
        (every
         (lambda (payload)

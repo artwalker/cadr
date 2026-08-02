@@ -605,6 +605,7 @@
 
 (test tool-hooks-affect-real-execution-and-revalidate-rewritten-arguments
   (let ((executed nil)
+        (seen nil)
         (*responses*
           (list
            (assistant
@@ -642,6 +643,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
+                   (push :tool-call-before seen)
                    (let ((call
                            (cadr-agent:extension-event-tool-call
                             event)))
@@ -662,6 +664,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
+                   (push :tool-call-after seen)
                    (let ((result
                            (cadr-agent:extension-event-tool-result
                             event)))
@@ -693,6 +696,8 @@
               :stream-function
               (faux-stream '*responses* '*contexts*))))
       (agent-prompt agent "run")
+      (dolist (event '(:tool-call-before :tool-call-after))
+        (is (member event seen)))
       (is (equal '("rewritten") executed))
       (let ((result
               (find-if
@@ -879,7 +884,8 @@
            (assistant
             (list
              (make-text-content :text "original-assistant")))))
-        (*contexts* nil))
+        (*contexts* nil)
+        (seen nil))
     (declare (special *responses* *contexts*))
     (let* ((bundle
              (make-test-extension-bundle
@@ -890,6 +896,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore context))
+                   (push :turn-start seen)
                    (when
                        (cadr-agent:extension-event-message event)
                      (cadr-agent:make-extension-hook-result
@@ -905,6 +912,7 @@
                  :handler
                  (lambda (event context)
                    (declare (ignore event context))
+                   (push :turn-end seen)
                    (cadr-agent:make-extension-hook-result
                     :replacement
                     (assistant
@@ -924,6 +932,8 @@
               :stream-function
               (faux-stream '*responses* '*contexts*))))
       (agent-prompt agent "original-user")
+      (dolist (event '(:turn-start :turn-end))
+        (is (member event seen)))
       (is
        (equal
         '("rewritten-user" "start-extra"

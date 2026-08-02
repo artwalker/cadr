@@ -293,14 +293,38 @@
               :directory sessions
               :cwd cwd
               :id "source"))
+           (lifecycle-events nil)
+           (bundle
+             (cadr-agent::make-extension-bundle
+              :id "session-production-events"
+              :path "/tmp/session-production-events.lisp"))
+           (host (cadr-agent::make-extension-host :cwd cwd))
            (agent
              (cadr-agent:make-agent
               :provider :mock
               :model (cli-mock-model)
-              :session source))
+              :session source
+              :extension-host host))
            (output
              (make-string-output-stream)))
       (declare (ignore _))
+      (cadr-agent::call-with-extension-registration
+       bundle
+       (lambda ()
+         (dolist (event '(:session-info-changed
+                          :session-before-switch
+                          :session-before-fork
+                          :session-shutdown
+                          :session-start))
+           (cadr-agent:define-event-hook
+            event
+            :handler
+            (lambda (value context)
+              (declare (ignore context))
+              (push (cadr-agent:extension-event-type value)
+                    lifecycle-events)
+              nil)))))
+      (cadr-agent::replace-extension-bundles host (list bundle))
       (let ((first-user
               (cadr-agent:session-append-message
                source
@@ -398,6 +422,12 @@
           (is (eq new
                   (cadr-agent:agent-session
                    agent)))))
+      (dolist (event '(:session-info-changed
+                       :session-before-switch
+                       :session-before-fork
+                       :session-shutdown
+                       :session-start))
+        (is (member event lifecycle-events)))
       (let ((text
               (get-output-stream-string
                output)))

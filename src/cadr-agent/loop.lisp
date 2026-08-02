@@ -979,7 +979,10 @@
                  (agent-messages agent)
                  (session-messages session))
                 (if
-                    (compact-agent agent :force-p t)
+                    (compact-agent
+                     agent :force-p t
+                     :reason :overflow
+                     :will-retry-p t)
                     (progn
                       (setf retry-overflow-p t)
                       (begin-agent-turn
@@ -1274,7 +1277,9 @@
                  :images final-images
                  :system-prompt
                  (agent-system-prompt agent)
-                 :system-prompt-options nil))))
+                 :system-prompt-options
+                 (copy-tree
+                  (agent-system-prompt-options agent))))))
         (values
          (nconc
           (drain-agent-queue agent :next-turn)

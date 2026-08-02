@@ -39,6 +39,7 @@
   send-user-message-function
   set-session-name-function
   exec-function
+  http-request-function
   action-function
   get-flag-function
   get-active-tools-function
@@ -813,6 +814,83 @@
    :cwd cwd
    :environment (copy-tree environment)
    :timeout-ms timeout-ms))
+
+(defun extension-http-octets-p (value)
+  (typep value '(array (unsigned-byte 8) (*))))
+
+(defun extension-http-headers-p (value)
+  (and
+   (listp value)
+   (every
+    (lambda (entry)
+      (and (consp entry)
+           (stringp (car entry))
+           (stringp (cdr entry))))
+    value)))
+
+(defun extension-api-http-request
+    (api url
+     &key (method :get) headers body timeout-ms signal)
+  (assert-active-extension-api api)
+  (unless
+      (and
+       (stringp url)
+       (or (uiop:string-prefix-p "http://" url)
+           (uiop:string-prefix-p "https://" url))
+       (member method '(:get :post :put :patch :delete :head))
+       (or (null headers) (extension-http-headers-p headers))
+       (or (null body) (stringp body)
+           (extension-http-octets-p body))
+       (or (null timeout-ms)
+           (and (integerp timeout-ms)
+                (not (minusp timeout-ms))))
+       (or (null signal)
+           (typep signal 'extension-cancellation-signal)))
+    (error
+     'extension-execution-error
+     :message
+     "http-request requires an HTTP(S) URL, supported method, string headers, string/octet body, non-negative timeout-ms, and cancellation signal"))
+  (let ((function
+          (extension-host-http-request-function
+           (%extension-api-host api))))
+    (unless function
+      (error
+       'extension-execution-error
+       :message "Extension HTTP request is unavailable in this host"))
+    (handler-case
+        (let ((result
+                (funcall
+                 function url
+                 :method method
+                 :headers (copy-tree headers)
+                 :body (if (extension-http-octets-p body)
+                           (copy-seq body)
+                           body)
+                 :timeout-ms timeout-ms
+                 :signal signal)))
+          (unless
+              (and
+               (strict-keyword-plist-p result)
+               (integerp (getf result :status))
+               (extension-http-headers-p
+                (getf result :headers))
+               (extension-http-octets-p
+                (getf result :body)))
+            (error "invalid extension HTTP adapter result"))
+          (list
+           :status (getf result :status)
+           :headers (copy-tree (getf result :headers))
+           :body (copy-seq (getf result :body))))
+      (extension-execution-error (condition)
+        (error condition))
+      (condition ()
+        (error
+         'extension-execution-error
+         :message
+         (if (and signal
+                  (extension-cancellation-aborted-p signal))
+             "Extension HTTP request was aborted"
+             "Extension HTTP request failed"))))))
 
 (defun extension-api-get-flag (api name)
   (assert-active-extension-api api)
@@ -1831,6 +1909,7 @@
        send-user-message-function
        set-session-name-function
        exec-function
+       http-request-function
        action-function
        get-flag-function
        get-active-tools-function
@@ -1854,6 +1933,7 @@
    :send-user-message-function send-user-message-function
    :set-session-name-function set-session-name-function
    :exec-function exec-function
+   :http-request-function http-request-function
    :action-function action-function
    :get-flag-function get-flag-function
    :get-active-tools-function get-active-tools-function
