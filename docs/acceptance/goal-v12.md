@@ -394,19 +394,22 @@ README 与 architecture 明确三本账分工：parity-map 管可观察行为，
 ## Final mechanical verification
 
 实现、漂移门禁与账本分别落账为 `07c00a1d1`、`9bd12e6f1`、
-`c1d7f5d5c`。提交后执行 `./scripts/test-cl.sh`，脚本从完整输出解析到恰好八个
+`c1d7f5d5c`。完成审计又发现 `parity-map` 的实施顺序表仍保留阶段性的
+`94 complete / 5 blocked`，证明只校验共享 marker 仍不足；提交 `07996b6aa`
+修正正文并新增 current-summary/obsolete-summary 双向断言。该断言先以 3 项失败复现
+漂移，修正后定向结果为 `311/311`。提交后执行 `./scripts/test-cl.sh`，脚本从完整输出解析到恰好八个
 suite：`cadr-ai 2117`、`cadr-agent 911`、`cadr-tui 1550`、
-`cadr-cli 4940`、`cadr-storage 23`、`cadr-server 45`、`cadr-evals 150`、
+`cadr-cli 4943`、`cadr-storage 23`、`cadr-server 45`、`cadr-evals 150`、
 `cadr-protocol 497`；汇总为
-`systems=8 / 10233 checks / 10233 pass / 0 skip / 0 fail`。
+`systems=8 / 10236 checks / 10236 pass / 0 skip / 0 fail`。
 
 根目录 `./build.sh` exit 0；SBCL 不含 `sb-core-compression` 时按架构合同降级为
 无压缩 image。`./scripts/verify.sh` exit 0，十二个确定性阶段全部 PASS：二进制
 新鲜度、source drift self-test、FiveAM、隔离 `cadr`/`cadr-server` 构建、Goal 11
 性能稳定性、native acceptance/process modes、migration PTY、Unix socket、terminal
 lifecycle 与 deterministic TUI harness。隔离构建中的两次全量测试也各自精确为
-`8 / 10233 / 10233 / 0 / 0`。Goal 11 为 PASS（1200-turn long run、至少
-10 MiB JSONL session，continuous p99 48ms、continuous GC max 68ms）。
+`8 / 10236 / 10236 / 0 / 0`。Goal 11 为 PASS（1200-turn long run、至少
+10 MiB JSONL session，continuous p99 52ms、continuous GC max 92ms）。
 
 live 报告为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，检查级为
 `32 / 31 pass / 1 skip / 0 fail`；唯一跳过项是
@@ -415,7 +418,7 @@ live 报告为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，检查级为
 以及 DeepSeek live TUI 均实际运行并通过。
 
 最终根目录二进制构建时间为
-`2026-08-02 16:54:21.474721263 +0800`，晚于最后一次 `src/` 提交
+`2026-08-02 17:13:08.606765195 +0800`，晚于最后一次 `src/` 提交
 `07c00a1d1a0c070b9e237a2dd40c126334a2fcd4` 的
 `2026-08-02T16:49:59+08:00`；`./cadr --version` 为
 `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`，新鲜度门禁 PASS。
