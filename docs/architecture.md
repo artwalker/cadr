@@ -1710,8 +1710,9 @@ extension lifecycle 内出现，不进入 agent event、session、JSON 或 RPC w
 
 `:tool-call-error` 是扩展事件全集第 34 个。其 payload 固定为
 `condition/tool-call/arguments/attempt/restart-names`；arguments 深复制，合法
-返回仅为 retry/skip/abort 三种动作。当前 extension export SHA-256 为
-`bb4665245ef9df19b274535071fcc5f6e56c79ab29db2152cd41afaa4df3b1e0`，34-event
+返回仅为 retry/skip/abort 三种动作。Goal 12 已批准的 additive runtime/OAuth
+bridges 落账后，当前 extension export SHA-256 为
+`9dbffa647134e3d54645beb957ca048aeed89586e124bc717c01b0ff8c38da20`；34-event
 源码块 SHA-256 为
 `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
 今后新增事件或改变 restart 语义仍须书面提案和用户逐项批准。

@@ -82,6 +82,30 @@
         (:gap
          (is (consp (getf row :gaps))))))))
 
+(test goal12-source-parity-verdicts-follow-the-current-example-manifest
+  (let ((ledger (goal12-read-project-file "docs/source-parity.md"))
+        (readme (goal12-read-project-file "README.md"))
+        (parity-map (goal12-read-project-file "docs/parity-map.md")))
+    (is (search "| `coding-agent` | 289 | 257 | 27 | 5 |" ledger))
+    (is (search "| **Total** | **595** | **516** | **72** | **7** |" ledger))
+    (is (search "Ninety-four" readme))
+    (is (search "94 functionally equivalent Lisp ports and 5 explicitly blocked rows"
+                parity-map))
+    (dolist (row (goal12-example-manifest))
+      (let* ((baseline (getf row :baseline))
+             (prefix (format nil "| `~A` |" baseline))
+             (start (search prefix ledger))
+             (end (and start (position #\Newline ledger :start start)))
+             (line (and start (subseq ledger start end))))
+        (is (stringp line))
+        (ecase (getf row :status)
+          (:ported
+           (is (search "| `已实现` |" line))
+           (is (search (format nil "`~A:" (getf row :lisp)) line)))
+          (:gap
+           (is (search "| `缺失` |" line))
+           (is (search "goal-v12-api-scope-amendment-3.md" line))))))))
+
 (test goal12-every-remaining-example-gap-is-covered-by-the-blocked-amendment
   (let* ((proposal
            (goal12-read-project-file

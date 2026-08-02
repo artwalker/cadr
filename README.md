@@ -291,14 +291,16 @@ The exact frozen surface and reference locations are recorded in
 [`docs/proposals/goal-v7-extension-api.md`](docs/proposals/goal-v7-extension-api.md).
 
 The fixed baseline's 99 runnable extension/SDK example source files are tracked
-one-for-one in [`examples/manifest.sexp`](examples/manifest.sexp). Seventeen have
-functionally equivalent Lisp ports under [`examples/extensions/`](examples/extensions/);
-the remaining 82 are still honestly classified as missing because they require
-extension or embedding contracts outside the current frozen API. The 19
-itemized thaw proposals and their exact baseline evidence are in
-[`docs/proposals/goal-v12-example-api-gaps.md`](docs/proposals/goal-v12-example-api-gaps.md).
-No proposed API or dependency is implemented until its item receives explicit
-user approval.
+one-for-one in [`examples/manifest.sexp`](examples/manifest.sexp). Ninety-four
+have functionally equivalent Lisp ports under [`examples/extensions/`](examples/extensions/)
+and [`examples/sdk/`](examples/sdk/). Five remain honestly classified as missing:
+their compaction lifecycle, structured system-prompt options, and session-local
+HTTP call-chain requirements are documented in
+[`docs/proposals/goal-v12-api-scope-amendment-3.md`](docs/proposals/goal-v12-api-scope-amendment-3.md).
+Those three scopes remain unimplemented until they receive explicit user approval.
+The currently re-frozen extension export text SHA-256 is
+`9dbffa647134e3d54645beb957ca048aeed89586e124bc717c01b0ff8c38da20`;
+the 34-event set remains unchanged.
 
 Example:
 

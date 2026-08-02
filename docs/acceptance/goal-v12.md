@@ -294,3 +294,32 @@ Gondolin、sandbox runtime 与 WASM；提案明确不把能力批准偷换为依
 `439 已实现 / 72 有意差异 / 84 缺失`。余项精确为 82 个提案 blocked examples 与
 2 个用户明确暂缓的 Apple Terminal rows。此时暂停是新增能力裁决边界，不是把 82
 个示例宣告完成；获批项实施后才可继续逐行改判。
+
+### Part C6 continuation — approved API implementation and 94 ports
+
+The user subsequently approved all 19 itemized capabilities plus the necessary
+A–E core seams. Commits `5688d1c8a`, `595ba3b67`, and `5c0cc220b` close the
+approved runtime/TUI/OAuth/key-release surfaces and raise the mechanical example
+ledger to **99 total / 94 ported / 5 gap**. The remaining rows are exactly
+`custom-compaction.ts`, `prompt-customizer.ts`, custom Anthropic `index.ts`, and
+GitLab Duo `index.ts` plus its `test.ts`.
+
+Real entrypoint auditing found that those five files still require three
+production call-chain seams outside the approved file surface: compaction must
+actually dispatch the already-declared lifecycle event, the real structured
+system-prompt options must reach `before-agent-start`, and provider extensions
+need a session-local buffered HTTP control-plane callback. These are recorded
+with fixed-baseline file:line evidence and minimal thaw surfaces in
+[`goal-v12-api-scope-amendment-3.md`](../proposals/goal-v12-api-scope-amendment-3.md),
+commit `639035ce9`. No approximation, private `cadr-ai` call, global registry
+mutation, or shell-to-curl workaround is counted.
+
+The manifest now drives the source ledger directly, and
+`GOAL12-SOURCE-PARITY-VERDICTS-FOLLOW-THE-CURRENT-EXAMPLE-MANIFEST` prevents a
+future implementation/ledger split. The current totals are **516 implemented /
+72 intentional differences / 7 missing**: five proposal-blocked examples and
+the two user-deferred Apple Terminal rows. `src/cadr-ai` remains unchanged.
+The approved additive exports change the re-frozen extension export SHA-256 to
+`9dbffa647134e3d54645beb957ca048aeed89586e124bc717c01b0ff8c38da20`;
+the 34-event set remains
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
