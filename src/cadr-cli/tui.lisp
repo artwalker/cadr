@@ -2808,9 +2808,6 @@
                    (list "")
                    entry-content)
                   entry-content)))
-           (top-align-content-p
-             (and startup-lines
-                  (null entry-content)))
            (visible
              (cond
                ((and full-document-p
@@ -2819,37 +2816,33 @@
                (t
                 (trailing-lines
                  all-content content-height))))
-           (rendered-content-height
-             (max content-height
-                  (length visible)))
-           (padding
-             (make-list
-              (max 0
-                   (- rendered-content-height
-                      (length visible)))
-              :initial-element ""))
+           (overlay-padding
+             ;; Editor-slot overlays keep their fixed viewport geometry;
+             ;; ordinary transcript composition keeps its natural height.
+             (and overlay
+                  (make-list
+                   (max 0
+                        (- content-height
+                           (length visible)))
+                   :initial-element "")))
            (cursor-row
-             (+ rendered-content-height
+             (+ (if overlay
+                    (max content-height
+                         (length visible))
+                    (length visible))
                 (length pending-message-lines)
                 (length status-indicator)
                 (length widget-above-lines)
                 (if overlay 0 editor-row))))
       (values
-       (if top-align-content-p
-           (nconc visible padding
-                  pending-message-lines
-                  status-indicator
-                  widget-above-lines
-                  active-editor-lines
-                  widget-below-lines
-                  footer-lines)
-           (nconc padding visible
-                  pending-message-lines
-                  status-indicator
-                  widget-above-lines
-                  active-editor-lines
-                  widget-below-lines
-                  footer-lines))
+       (nconc overlay-padding
+              visible
+              pending-message-lines
+              status-indicator
+              widget-above-lines
+              active-editor-lines
+              widget-below-lines
+              footer-lines)
        cursor-row
        (if overlay 0 editor-column)))))
 

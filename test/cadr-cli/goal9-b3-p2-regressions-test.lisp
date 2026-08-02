@@ -146,7 +146,7 @@
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
          state editor width rows)
-      (is (= 12 row))
+      (is (= 8 row))
       (is (zerop column))
       (is
        (equal
@@ -154,10 +154,6 @@
          ""
          version-line
          "escape interrupt · ctrl+c/ctrl+d clear/exit"
-         ""
-         ""
-         ""
-         ""
          ""
          blank-row
          blank-row
