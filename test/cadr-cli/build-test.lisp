@@ -195,7 +195,12 @@
                   "cadr-evals.asd" "cadr-protocol.asd"
                   "src/cadr-ai/http.lisp"
                   "src/cadr-ai/utilities.lisp"
-                  "src/cadr-cli/main.lisp"
+                  "src/cadr-cli/bootstrap/tools.lisp"
+                  "src/cadr-cli/bootstrap/sessions.lisp"
+                  "src/cadr-cli/bootstrap/settings.lisp"
+                  "src/cadr-cli/bootstrap/auth.lisp"
+                  "src/cadr-cli/bootstrap/commands.lisp"
+                  "src/cadr-cli/bootstrap/main.lisp"
                   "src/cadr-cli/tui.lisp"
                   "src/cadr-server/main.lisp"
                   "src/cadr-server/radius.lisp"))

@@ -239,7 +239,7 @@ and `get_commands`.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Interactive TUI and line fallback | 已实现 | [main](../src/cadr-cli/main.lisp), [tui adapter](../src/cadr-cli/tui.lisp), [CL-TUI](#cl-tui) |
+| Interactive TUI and line fallback | 已实现 | [bootstrap](../src/cadr-cli/bootstrap/main.lisp), [command controller](../src/cadr-cli/bootstrap/commands.lisp), [tui adapter](../src/cadr-cli/tui.lisp), [CL-TUI](#cl-tui) |
 | Text/JSON print and RPC modes | 已实现 | [CL-WAVE2-MODES](#cl-wave2-modes), [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | Full CLI option/command contract | 已实现 | [arguments](../src/cadr-cli/arguments.lisp), [CL-PART-B](#cl-part-b) |
 | Built-in commands | 已实现 | Package/config/auth/session/model/theme/tree/import/clone and interactive commands are covered by [CL-PART-B](#cl-part-b) |

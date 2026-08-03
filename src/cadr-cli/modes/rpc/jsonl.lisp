@@ -68,7 +68,7 @@
   (sb-thread:with-mutex
       ((rpc-state-pending-lock state))
     (format nil "cadr-ui-~D-~D"
-            (cadr-ai::unix-milliseconds)
+            (cadr-core:unix-milliseconds)
             (incf (rpc-state-id-counter state)))))
 
 (defun trim-jsonl-carriage-return (line)

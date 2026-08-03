@@ -242,3 +242,128 @@
         "CLI still owns a second JavaScript length implementation")
     (is (search "loop for character across text" agent-truncation)
         "cadr-agent no longer owns the JavaScript length metric")))
+
+(test goal14-b5-command-and-rpc-domains-have-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (owners
+           '(("bootstrap/tools.lisp"
+              "(defun make-baseline-coding-tools"
+              "(defun tool-prompt-snippets")
+             ("bootstrap/sessions.lisp"
+              "(defun resolve-cli-session"
+              "(defun handle-session-command")
+             ("bootstrap/settings.lisp"
+              "(defun make-cli-settings-selector-state"
+              "(defun resolve-cli-system-prompt")
+             ("bootstrap/auth.lisp"
+              "(defun model-registry-login-options"
+              "(defun handle-native-auth-command")
+             ("bootstrap/commands.lisp"
+              "(defun cli-handler")
+             ("bootstrap/main.lisp"
+              "(defun main")
+             ("modes/rpc/models.lisp"
+              "(defun rpc-available-models"
+              "(defun rpc-set-thinking-level")
+             ("modes/rpc/prompt-bash.lisp"
+              "(defun rpc-start-prompt"
+              "(defun rpc-start-bash")
+             ("modes/rpc/sessions.lisp"
+              "(defun rpc-new-session"
+              "(defun rpc-session-tree")
+             ("modes/rpc/commands.lisp"
+              "(defun rpc-command-list"
+              "(defun rpc-handle-command")
+             ("modes/rpc/mode.lisp"
+              "(defun rpc-handle-line"
+              "(defun run-rpc-mode")))
+         (legacy
+           '("src/cadr-cli/main.lisp"))
+         (definition-count 0))
+    (dolist (owner owners)
+      (let* ((relative
+               (format nil "src/cadr-cli/~A" (first owner)))
+             (source (goal14-b1-source root relative)))
+        (is (not (null source)) "missing B5 owner ~A" relative)
+        (when source
+          (incf definition-count
+                (count-if
+                 (lambda (line)
+                   (uiop:string-prefix-p "(def" line))
+                 (uiop:split-string source :separator '(#\Newline))))
+          (dolist (marker (rest owner))
+            (is (search marker source)
+                "~A does not own ~A" relative marker)))))
+    (is (= 100 definition-count)
+        "B5 moved a different top-level definition set: ~D"
+        definition-count)
+    (dolist (relative legacy)
+      (is (not (probe-file (merge-pathnames relative root)))
+          "B5 legacy mixed owner remains: ~A" relative))))
+
+(test goal14-b5-converges-mode-output-and-time-before-split
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (sessions
+           (goal14-b1-source root "src/cadr-cli/bootstrap/sessions.lisp"))
+         (commands
+           (goal14-b1-source root "src/cadr-cli/bootstrap/commands.lisp"))
+         (rpc-jsonl
+           (goal14-b1-source root "src/cadr-cli/modes/rpc/jsonl.lisp"))
+         (rpc-files
+           (loop for name in '("models" "prompt-bash" "sessions"
+                               "commands" "mode")
+                 collect
+                 (goal14-b1-source
+                  root
+                  (format nil "src/cadr-cli/modes/rpc/~A.lisp" name)))))
+    (is (and sessions
+             (search "(cadr-core:milliseconds-to-utc-iso8601" sessions))
+        "session export timestamp does not use the B3 time owner")
+    (is (and rpc-jsonl
+             (search "(cadr-core:unix-milliseconds)" rpc-jsonl))
+        "RPC ids do not use the B3 time owner")
+    (is (and commands
+             (search "(frontend-output" commands)
+             (search ":output frontend-output" commands))
+        "CLI command controller does not own and inject its mode output")
+    (dolist (source rpc-files)
+      (is (not (null source)) "missing B5 RPC source")
+      (when source
+        (is (not (search "write-json-line" source))
+            "RPC domain bypasses rpc-write-object")))))
+
+(test goal14-b5-asdf-loads-command-domains-before-entrypoints
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (source
+           (uiop:read-file-string
+            (merge-pathnames "cadr-cli.asd" root)))
+         (ordered
+           '("(:file \"jsonl\")"
+             "(:file \"ui\")"
+             "(:file \"models\")"
+             "(:file \"prompt-bash\")"
+             "(:file \"sessions\")"
+             "(:file \"commands\")"
+             "(:file \"mode\")"
+             "(:module \"bootstrap\""
+             "(:file \"tools\")"
+             "(:file \"sessions\")"
+             "(:file \"settings\")"
+             "(:file \"auth\")"
+             "(:file \"commands\")"
+             "(:file \"main\")"
+             "(:file \"crash\")"))
+         (positions
+           (let ((cursor 0))
+             (loop for marker in ordered
+                   for position = (search marker source :start2 cursor)
+                   collect position
+                   when position do (setf cursor (1+ position))))))
+    (is (every #'identity positions)
+        "cadr-cli.asd omits a B5 load boundary: ~S"
+        (loop for marker in ordered
+              for position in positions
+              unless position collect marker))
+    (when (every #'identity positions)
+      (is (every #'< positions (rest positions))
+          "B5 owner load order is not dependency-safe: ~S" positions))))

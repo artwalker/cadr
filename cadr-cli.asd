@@ -119,12 +119,23 @@
                                 :components
                                 ((:file "jsonl")
                                  (:file "ui")
+                                 (:file "models")
+                                 (:file "prompt-bash")
+                                 (:file "sessions")
+                                 (:file "commands")
                                  (:file "mode")))))
                              (:file "repl")
                              (:file "interactive-components")
                              (:file "tui")
                              (:file "remote-repl")
-                             (:file "main")
+                             (:module "bootstrap"
+                              :serial t
+                              :components ((:file "tools")
+                                           (:file "sessions")
+                                           (:file "settings")
+                                           (:file "auth")
+                                           (:file "commands")
+                                           (:file "main")))
                              (:file "crash")
                              (:module "sdk-facade"
                               :pathname "sdk"
