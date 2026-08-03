@@ -1137,3 +1137,174 @@ screen/overlay snapshots and independent semantic assertions, payload and wire
 fixtures, package exports, session bytes, tool results, exit codes, and other
 observable output remained unchanged. Implementation commit:
 `90313a565b3f65bfc8ce35f866abf3b90d1e325a`.
+
+## Part D — permanent organization gates and Goal 14 closeout
+
+### Symptom gate and red-first evidence
+
+`scripts/check-code-organization.py` now scans the real `src/` tree and checks
+it against `docs/code-organization-exemptions.json`. The threshold is the
+audited Part A histogram boundary: the final 277-file inventory has a distinct
+15-file `>=1000` band after the 24-file `700--999` band. It is a manual-review
+boundary derived from that distribution, not a target file size. Passing the
+gate proves only that every current large-file symptom was reviewed; it does
+not prove that ownership is coherent or that decisions are not duplicated.
+
+The checker was added test-first. Before it existed,
+`python3 test/code-organization-gate-test.py` failed all six cases. After the
+implementation, the same command passes and locks the real repository plus
+five fail-closed cases: exactly 1,000 lines without an exemption, 999 lines
+without an exemption, an empty reason, a stale exemption, and a duplicate
+path. The real invocation reports:
+
+```text
+Code organization gate: 277 production files, threshold >= 1000 lines, 15 reviewed exemptions; symptom detector only.
+```
+
+The reviewed set is exact and reason-bearing:
+
+| Files | Review conclusion |
+|---|---|
+| `cadr-agent/export-html/{template.css,template.js}` | Each is one fixed-baseline offline browser asset with no useful Lisp ownership boundary. |
+| `cadr-agent/export-html/vendor/highlight.min.js` | Authorized, byte-audited vendored artifact rather than hand-maintained product logic. |
+| `cadr-ai/models.generated.lisp` | Generated catalog with an audited generator and generated-file header. |
+| `cadr-cli/bootstrap/{commands,sessions}.lisp` | Cohesive slash-dispatch and coding-session workflow owners after shared policy extraction. |
+| `cadr-cli/interactive/controller.lisp` | Remaining TUI lifecycle/input controller after all nameable services and renderers were extracted. |
+| `cadr-cli/interactive/selectors/{models,sessions,tree}.lisp` | Three independent state machines whose internal behavior shares one domain data set and delegates common chrome/navigation to `selector-frame`. |
+| `cadr-cli/interactive/syntax.lisp` | One deterministic highlighting engine and precedence table. |
+| `cadr-cli/media.lisp` | One image/media pipeline with shared MIME, sizing, conversion, and encoding invariants. |
+| `cadr-tui/components/markdown.lisp` | One streaming Markdown parser/renderer state machine. |
+| `cadr-tui/editor.lisp` | One grapheme-aware editor mutation state machine. |
+| `cadr-tui/unicode.lisp` | One Unicode/grapheme/ANSI terminal-semantics engine. |
+
+Any missing reason, missing file, below-threshold stale entry, duplicate path,
+source symlink, unreadable source, or unreviewed `>=1000` file fails closed.
+`verify.sh` runs both the six synthetic cases and this real-tree invocation as
+the second of fourteen deterministic stages.
+
+### Decision-owner anti-bypass gates
+
+The line-count gate cannot detect the actual failure class, so each of the nine
+Part A repeated decisions has a stronger behavior/source-owner gate:
+
+| Decision owner | Permanent gate |
+|---|---|
+| bounded thread cleanup | `BOUNDED-CLEANUP-HAS-ONE-OWNER-AND-ACTIVE-JOINS-REQUIRE-A-REASON`; `PRODUCTION-CLEANUP-JOINS-CANNOT-BYPASS-CADR-CORE` |
+| cancellation state and propagation | `CANCELLATION-STATE-IS-LOCAL-EXTERNAL-WAITABLE-AND-THREAD-SAFE`; `PRODUCTION-CANCELLATION-ADAPTERS-CANNOT-BYPASS-CADR-CORE` |
+| infrastructure output ownership | `GOAL14-B4-CONVERGES-SINKS-AND-JAVASCRIPT-LENGTH-BEFORE-SPLIT`; `GOAL14-B5-CONVERGES-MODE-OUTPUT-AND-TIME-BEFORE-SPLIT` plus the existing process/TUI/server/fatal channel tests |
+| selector frame semantics | `GOAL14-B2-SELECTOR-FRAME-OWNS-SHARED-SELECTOR-DECISIONS`; `GOAL14-B2-SELECTOR-FRAME-WRAPS-AND-CENTERS-INDEPENDENTLY` |
+| provider identity/auth metadata | `GOAL14-PROVIDER-MATRIX-IS-FIXED-BASELINE-DERIVED-AND-COMPLETE`; `GOAL14-EVERY-PROVIDER-DEFINITION-FIELD-MATCHES-FIXED-BASELINE-MATRIX`; declaration-owner source gates |
+| secret-safe object printing | `REDACTED-OBJECT-DECLARATION-REGISTERS-TYPE-AND-NEVER-PRINTS-SECRET`; `ATOMIC-REPLACEMENT-AND-SECRET-PRINTERS-HAVE-ONE-POLICY-OWNER` |
+| atomic persistence and modes | `ATOMIC-REPLACEMENT-PRESERVES-OLD-CONTENT-ON-ERROR-AND-PRIVATE-MODE`; the same policy-owner source gate |
+| JavaScript UTF-16 length | `GOAL14-B4-CONVERGES-SINKS-AND-JAVASCRIPT-LENGTH-BEFORE-SPLIT`; the existing Chinese/emoji tool-result fixtures |
+| ISO time and ID formatting | `UTC-TIME-PRIMITIVES-MATCH-FIXED-BASELINE-VECTORS`; `GOAL14-B5-CONVERGES-MODE-OUTPUT-AND-TIME-BEFORE-SPLIT` |
+
+The new cancellation source gate checks every current cross-system adapter:
+AI HTTP/model runtime, agent extension context, TUI autocomplete, and TUI
+loaders. The standing rule is now documented in README, architecture, and
+`docs/code-organization.md`: before adding code, every future goal must name
+its directory owner and state which existing primitive it reuses. A new manual
+copy of one of these decisions is a failure even when the file remains small.
+
+### Permanent ownership documentation and parity boundary
+
+`docs/code-organization.md` is now the permanent placement guide. It records
+the semantic directory hierarchy, ASDF ordering rule, cross-system limits of
+`cadr-core`, all nine decision owners, and the no-quota treatment of cohesive
+large files. README and architecture explicitly keep organization separate
+from the four correctness-parity axes: behavior, source-capability,
+non-functional, and presentation ledgers answer whether Cadr is correct;
+organization answers whether it remains maintainable. It is not a fifth
+parity axis.
+
+Part D changed no production source. The diff from B11 closeout
+`7c01a00c18224a32da7c3918c2132056f884979e` through Part D implementation
+`26e5dde96104f0e1fb0386373a1cbb44ee809898` is empty under `src/`. It is also
+empty for `docs/parity-map.md`, `docs/source-parity.md`,
+`docs/performance.md`, and `docs/presentation-parity.md`. The public
+`cadr-ai` package, extension export, and 34-event hashes therefore remain the
+B11 values.
+
+### Final distribution
+
+The final physical inventory, verified from the real `src/` tree, is:
+
+| Measure | Goal 14 draft baseline | Final | Change |
+|---|---:|---:|---:|
+| production files | 135 | 277 | +142 named owners/assets |
+| physical lines | 98,796 | 105,288 | +6,492 |
+| average lines/file | 732 | 380.10 | -48.1% |
+| files below 300 lines | 57 / 135 (42%) | 162 / 277 (58.48%) | +16.48 percentage points |
+| files at least 3,000 lines | 5 | 1 | -4 |
+
+The complete final bands are 162 below 300, 76 at 300--699, 24 at 700--999,
+and 15 at or above 1,000. Only generated
+`src/cadr-ai/models.generated.lisp` remains at or above 3,000. The 58.48%
+share deliberately does not imitate pi's 80% distribution by splitting
+cohesive editors, parsers, protocol engines, or vendored assets.
+
+### Final verification
+
+The post-implementation-commit deterministic suite and both isolated builds
+used the same denominator:
+
+```text
+cadr test summary: systems=9 checks=14365 pass=14365 skip=0 fail=0
+```
+
+The complete final `./scripts/verify.sh` table was:
+
+```text
+Deterministic stages
+Stage                                            Result
+root cadr binary freshness                       PASS
+code organization gate                           PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+Stage                                            Result
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The real source ledger remained 595 entries with SHA-256
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+All seven available live items passed; Anthropic alone was skipped because
+`ANTHROPIC_API_KEY` is unset. There were no failed items or failure output:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+`LIVE-DEEPSEEK-EVAL-SMOKE` passed all four checks. The Goal 11 sustained gate
+reported p99.9 12 ms, maximum pause 44 ms, maximum measured sustained GC pause
+13.05 ms, and converged memory. Both isolated images and the root image took
+the approved uncompressed fallback because this SBCL lacks
+`sb-core-compression`.
+
+Root delivery evidence:
+
+```text
+binary build time: 2026-08-04 00:42:35.273135741 +0800
+latest source commit: 90313a565b3f65bfc8ce35f866abf3b90d1e325a 2026-08-04T00:11:06+08:00
+latest source mtime: 2026-08-03 23:48:53.122125429 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+root binary freshness: PASS
+```
+
+Part D implementation commit:
+`26e5dde96104f0e1fb0386373a1cbb44ee809898`. The pre-existing user changes in
+`docs/acceptance/goal-v8-final.md` and `ms9te620-dgwif1j3gv42.html` were not
+staged or modified by Goal 14.
