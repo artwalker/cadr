@@ -180,17 +180,17 @@ interactive leaf extraction through the frozen extension/provider surfaces.
 Each batch records its source/target files, export and freeze exposure, ASDF
 load-order risk, and required byte-stability gates.
 
-### User decisions required
+### User ruling
 
-Part C is blocked pending three explicit decisions:
+The user approved all eleven batches, the new internal `cadr-core` leaf, and
+the validated B11 provider declaration schema.  The ruling moved B3 to the
+front: repeated decisions must converge before, or in the same batch as, the
+files that currently contain their copies.  The approved sequence is B3, B1,
+B2, B4, B5, B6, B7, B8, B9, B10, B11.
 
-1. approve or reject the ranked B1--B11 sequence;
-2. approve or reject B3's new internal leaf ASDF system, `cadr-core`, for the
-   cross-package failure-safety primitives that cannot live in `cadr-ai`
-   without reversing the protected TUI boundary;
-3. approve or reject B11's validated provider declaration schema, which moves
-   only the existing 38 providers and their existing metadata/callbacks and
-   adds no provider, auth method, endpoint, scope, environment source, model,
-   or fallback.
-
-No Part C implementation starts before those rulings.
+B2 has an additional hard gate: one composable `selector-frame` must own the
+border, title, input, viewport/count, help row, and wrap navigation before the
+eight selector families are extracted.  B11 must re-audit the historical
+`src/cadr-ai` freeze and build its 38-provider matrix from baseline semantics,
+never from the current Cadr table.  The proposal now records the required
+convergence-before-split order for every batch.
