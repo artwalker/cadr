@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
+  "environment": {
+    "locale": "C.UTF-8",
+    "term": "xterm-256color",
+    "colorTerm": "truecolor",
+    "theme": "dark"
+  },
+  "dimensions": [
+    { "id": "wide", "columns": 100, "rows": 32 },
+    { "id": "narrow", "columns": 48, "rows": 20 }
+  ],
+  "scenarios": [
+    {
+      "id": "startup-first",
+      "group": "startup",
+      "description": "Fresh in-memory session startup and clean empty-editor exit.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "pauseMs": 750 },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "plain-text",
+      "group": "conversation",
+      "description": "One deterministic user/assistant turn with one unsplit faux text delta.",
+      "responses": [
+        {
+          "content": [
+            { "type": "text", "text": "Fixed plain response." }
+          ],
+          "stopReason": "stop"
+        }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "pauseMs": 750 },
+        { "sendText": "plain prompt" },
+        { "send": "enter" },
+        { "waitFor": "Fixed plain response." },
+        { "pauseMs": 40 },
+        { "send": "ctrl+d" }
+      ]
+    }
+  ]
+}
