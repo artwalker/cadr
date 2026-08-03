@@ -243,8 +243,10 @@ JSON comparison treated numerically equal `0` and `0.0e0` as different.  The
 final recursive comparison preserves numeric semantics while remaining exact
 for object keys, array order, strings, booleans, nulls, IDs, and parents.
 
-The presentation ledger is now `123 = 121 aligned/closed + 0 open + 2
-intentional`.  No payload, wire event, session entry, ID, parent link, message,
+The current presentation ledger is `123 = 119 aligned/closed + 0 open + 4
+intentional`; the two later intentional rows are the approved Cadr brand mark
+and global selector boundary wrap.  No payload, wire event, session entry, ID,
+parent link, message,
 or tool result changed.
 
 ### Mechanical verification
@@ -400,7 +402,7 @@ The four independent axes are now stated consistently in `README.md`,
 `docs/source-parity.md`, `docs/performance.md`, and
 `docs/presentation-parity.md`. The examples manifest is explicitly an auxiliary
 inventory, not a fifth ledger. `GOAL13_PRESENTATION_LEDGER` records
-`B1/B2/B3/B4=55/52/10/6` and `123=121 aligned+0 pending+2 intentional`.
+`B1/B2/B3/B4=55/52/10/6` and `123=119 aligned+0 pending+4 intentional`.
 `GOAL13-FOUR-LEDGERS-AND-PRESENTATION-DENOMINATORS-STAY-IN-SYNC`
 (`test/cadr-cli/goal13-presentation-test.lisp:966`) recounts the real table rows
 and rejects missing cross-links or obsolete three-ledger wording; it is 33/33.
@@ -529,7 +531,7 @@ trace (`scripts/goal11-performance-gate.py:531-713`).
 
 The checked three-minute run is
 `docs/benchmarks/goal-v13-c3-final.json`, SHA-256
-`55bf06e4688d94ec32329be478bfbc73c90093e8dcc17f916440aaf38be62456`:
+`96350ee3588e0143d745b1af2f0c295f542b5c6c0c31693b65710dcea0ed11f6`:
 
 ```text
 duration/events:       180.001004s / 10,800
@@ -898,7 +900,8 @@ so the exact duration gate could fail by a sub-tick margin. The replacement
 clock and waits only for the remaining interval. The red-first regression
 `test_pacing_rechecks_clock_after_early_sleep_return` simulates a sleeper which
 returns after 30% of the requested time and proves the helper waits again until
-the target clock value is reached. Focused Python gate: 9 tests, all pass.
+the target clock value is reached. Focused Python gate: 10 tests, all pass; the
+tenth test replays the checked Goal 13 artifact rather than a synthetic report.
 
 The complete deterministic suite after this correction was:
 
@@ -935,3 +938,97 @@ report: 8 total, 7 run/pass, 1 skipped because `ANTHROPIC_API_KEY` is absent,
 0 failed; 32 checks, 31 pass, 1 skip, 0 fail.
 
 Pacing correction commit: `df23c919f`.
+
+## Completion-audit corrections
+
+A final requirement-by-requirement audit found three cases where a green
+mechanism was weaker than its claim. All three were reproduced red before the
+gate was strengthened:
+
+1. The presentation gate counted 123 rows but did not parse their dispositions
+   or require independent file:line evidence. It now parses every B1-B4 row,
+   rejects unknown status text, recomputes `119 aligned + 0 pending + 4
+   intentional`, and requires explicit baseline and Cadr source locations in
+   both evidence cells. Seventeen inherited “same range/component” cells were
+   expanded to standalone evidence.
+2. The C2 audit described the 135-file source tree that existed when it was
+   written, but did not fail when later corrections added production files.
+   The executable gate now recounts all 138 files across eight systems, checks
+   all six audit axes, and requires explicit dispositions for
+   `src/cadr-ai/crash.lisp`, `src/cadr-cli/crash.lisp`, and
+   `src/cadr-tui/threads.lisp`.
+3. Both checked C3 artifacts contained `"cold_start": null`. A fresh verify
+   regenerated a current report, so the release gate passed without proving
+   the committed artifact was replayable. The before value was measured from
+   an isolated image built at exact revision `cd94d0b01`; the final value was
+   measured from the current release image. Both now contain five real-PTY
+   samples, and the Python regression runs the complete gate on the checked
+   final artifact.
+
+The replay command now passes directly:
+
+```text
+python3 scripts/goal11-performance-gate.py \
+  --bench docs/benchmarks/goal-v13-c3-final.json \
+  --stability docs/benchmarks/goal-v11-stability.json
+goal11 gate: PASS
+... sustained_p999=8.00ms, sustained_max=20.00ms, \
+    sustained_gc_max=15.49ms, sustained_memory=converged, cold=154.57ms
+```
+
+Artifact hashes after adding the measured cold-start blocks:
+
+```text
+06d7faeb91ad7164b1d4258d6c18d3b6f1469b9bcfc09d22989a413d88583066  docs/benchmarks/goal-v13-c3-before.json
+96350ee3588e0143d745b1af2f0c295f542b5c6c0c31693b65710dcea0ed11f6  docs/benchmarks/goal-v13-c3-final.json
+```
+
+Goal 13 remains open for the explicit auth-option partition ruling above and
+the user's final real-terminal A/B; neither is represented as complete by
+these mechanical corrections.
+
+### Final completion-audit gates
+
+The current deterministic suite and the full release-equivalent verifier were
+run after both gate corrections were committed:
+
+```text
+./scripts/test-cl.sh
+cadr test summary: systems=8 checks=12432 pass=12432 skip=0 fail=0
+
+./scripts/verify.sh
+Deterministic stages
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The live report ran seven items successfully and skipped only Anthropic for
+the explicit reason `ANTHROPIC_API_KEY is not set`: 8 items total, 7 pass, 1
+skip, 0 fail; 32 checks, 31 pass, 1 skip, 0 fail. The performance gate also
+passed its checked sustained trace (`p99.9=4ms`, `max=16ms`, GC max
+`15.77ms`, converged memory) and its 1,200-turn stability run.
+
+The root binary was rebuilt after the latest source change and independently
+accepted by the verifier:
+
+```text
+root binary build time: 2026-08-03 13:34:17.856602177 +0800
+latest src commit:      c5f1c632b394973bdb37ac9f65f2692559cfb3f1
+latest src commit time: 2026-08-03T12:17:34+08:00
+./cadr --version:       cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
