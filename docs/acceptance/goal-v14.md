@@ -721,3 +721,97 @@ screen/overlay snapshots and their independent semantic assertions, payload
 and wire fixtures, extension exports, session bytes, tool results, exit codes,
 and other observable output remained unchanged. Implementation commit:
 `7b94e5c440485624d9cd8346eda3dd31d026c392`.
+
+## Part C B8 — agent session, storage, and loop ownership
+
+### Result
+
+B8 replaced the three mixed agent files with thirteen dependency-ordered
+owners while preserving all 251 top-level definitions:
+
+- `session/{codec,journal,migration,discovery,export-html}.lisp`;
+- `storage/{protocol,memory,harness,jsonl}.lisp`;
+- `loop/{events,tool-execution,turns,agent-loop}.lisp`.
+
+Session codecs load before journal, migration, discovery, and export;
+storage protocols load before all three backends; loop events and tool
+execution load before turns and the public agent-loop entrypoints. B3 remains
+the sole owner of UTC/ID and atomic replacement policy. The old and new sorted
+top-level definition sets are identical: 99 session, 96 storage, and 56 loop
+definitions. `src/cadr-agent/package.lisp` remained byte-identical with
+SHA-256
+`41374c3caf9a306242b483d870383f3fdae641ee649ed461cf2b67164847c4a5`.
+
+Tests were written before extraction. The ownership gate initially produced
+34 expected failures because the thirteen owners did not exist and the three
+legacy files still did. The completed gates are
+`GOAL14-B8-AGENT-SESSION-STORAGE-AND-LOOP-HAVE-EXACT-OWNERS`,
+`GOAL14-B8-REUSES-CORE-TIME-ID-AND-ATOMIC-MIGRATION-BEFORE-SPLIT`, and
+`GOAL14-B8-ASDF-LOADS-PROTOCOLS-BEFORE-BACKENDS-AND-LOOP`.
+`GOAL14-B8-STABILITY-PROVENANCE-FOLLOWS-SESSION-OWNER` additionally prevents
+the Goal 11 harness from silently hashing a removed monolith. The complete
+deterministic suite passed:
+
+```text
+cadr test summary: systems=9 checks=13069 pass=13069 skip=0 fail=0
+```
+
+### Full verification
+
+`./scripts/verify.sh` passed all thirteen deterministic stages and both live
+stages:
+
+```text
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The real source-parity ledger contains 595 accepted entries with SHA-256
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+Credential-gated live verification ran seven items successfully, skipped
+Anthropic because `ANTHROPIC_API_KEY` is unset, and failed none:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+`LIVE-DEEPSEEK-EVAL-SMOKE` passed all four checks. Its exact `Paris`
+assertion remains unchanged pending the separately required baseline audit.
+The actual failure path runs through `cadr-evals` into
+`cadr-cli::resolve-provider-config`; B8 changed neither that path nor its
+model/max-token decisions. The Goal 11 gate passed with sustained-interaction
+p99.9 of 4 ms, maximum pause of 16 ms, maximum measured GC pause of 13.85 ms,
+and converged sustained memory.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 21:58:54.619806404 +0800
+latest source commit: 1632bcdfa4d4681a203eeac85a46cd59b924f097 2026-08-03T21:56:40+08:00
+latest source mtime: 2026-08-03 21:46:10.299708323 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The build explicitly took the approved compatibility path:
+`SBCL lacks sb-core-compression; building an uncompressed image.` The
+production inventory is now 232 Lisp files / 100,400 lines and five embedded
+assets / 4,275 lines, for 237 files / 104,675 lines total. All screen/overlay
+snapshots and their independent semantic assertions, payload and wire
+fixtures, extension export/event hashes, session bytes, tool results, exit
+codes, and other observable output remained unchanged. Implementation commit:
+`1632bcdfa4d4681a203eeac85a46cd59b924f097`; verification-provenance fix:
+`d750b01a0`.
