@@ -564,11 +564,6 @@
                       (cadr-cli::make-framed-select-state
                        "Semantic frame" '("Semantic choice") '(:choice))
                       48)))
-                  (login
-                    (goal13-rendered-lines
-                     (cadr-cli::render-login-method-selector
-                      (cadr-cli::make-login-method-selector-state)
-                      48)))
                   (session-selector
                     (goal13-rendered-lines
                      (cadr-cli::render-session-selector
@@ -586,6 +581,16 @@
                          "Semantic selected session"))
                        :all-loaded-p t)
                       72)))
+                  (fork-selector
+                    (goal13-rendered-lines
+                     (cadr-cli::render-user-message-selector
+                      (cadr-cli::make-user-message-selector-state
+                       :items
+                       (list
+                        (cadr-tui:make-select-item
+                         :label "Semantic fork message"
+                         :value "semantic-fork")))
+                      48)))
                   (oauth
                     (goal13-rendered-lines
                      (cadr-cli::render-oauth-selector
@@ -606,7 +611,7 @@
              (goal13-note-semantic-probe
               seen :accent frame "Semantic frame")
              (goal13-note-semantic-probe
-              seen :border-muted login
+              seen :border-muted fork-selector
               (make-string 48 :initial-element #\─))
              (goal13-note-semantic-probe
               seen :selected-bg session-selector

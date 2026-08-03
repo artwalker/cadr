@@ -1418,12 +1418,34 @@
    (make-string (max 0 width)
                 :initial-element #\─)))
 
+(defun auth-overlay-border-line (width)
+  (selector-border-line width :border))
+
 (defun selector-title-line (title width)
   (selector-fit-line
    (cadr-tui:theme-foreground
     :accent
     (cadr-tui:theme-bold title))
    width))
+
+(defun selector-overlay-title-line (title width)
+  (selector-fit-line
+   (concatenate
+    'string " "
+    (cadr-tui:theme-foreground
+     :accent
+     (cadr-tui:theme-bold title :enabled-p t)
+     :enabled-p t))
+   width))
+
+(defun selector-input-line (value width)
+  (first
+   (nth-value
+    0
+    (cadr-tui:render-single-line-input
+     (cadr-tui:make-single-line-input
+      :value value :prompt "> ")
+     width))))
 
 (defun selector-selected-line (line width)
   (cadr-tui:theme-background
@@ -7329,12 +7351,10 @@
 (defun render-login-method-selector (state width)
   (append
    (list
-    (selector-border-line width)
+    (auth-overlay-border-line width)
     ""
-    (selector-fit-line
-     (concatenate
-      'string " "
-      (login-method-selector-state-title state))
+    (selector-overlay-title-line
+     (login-method-selector-state-title state)
      width)
     "")
    (mapcar
@@ -7352,7 +7372,7 @@
      " ↑↓ navigate  enter select  escape/ctrl+c cancel"
      width)
     ""
-    (selector-border-line width))))
+    (auth-overlay-border-line width))))
 
 (defstruct (api-key-input-state
             (:constructor
@@ -7418,18 +7438,10 @@
       (declare (ignore row column))
       (append
        (list
-        (selector-border-line width)
-        (selector-fit-line
-         (concatenate
-          'string
-          " "
-          (cadr-tui:theme-foreground
-           :accent
-           (cadr-tui:theme-bold
-            (format nil "Login to ~A"
-                    (oauth-selector-option-name option))
-            :enabled-p t)
-           :enabled-p t))
+        (auth-overlay-border-line width)
+        (selector-overlay-title-line
+         (format nil "Login to ~A"
+                 (oauth-selector-option-name option))
          width)
         ""
         (selector-fit-line
@@ -7441,7 +7453,7 @@
         (selector-fit-line
          " (escape/ctrl+c to cancel, enter to submit)"
          width)
-        (selector-border-line width))))))
+        (auth-overlay-border-line width))))))
 
 (defstruct (oauth-selector-state
             (:constructor
@@ -7607,14 +7619,11 @@
 (defun oauth-environment-source-p (source)
   (and
    (stringp source)
-   (find #\_ source)
-   (every
-    (lambda (character)
-      (or
-       (upper-case-p character)
-       (digit-char-p character)
-       (char= character #\_)))
-    source)))
+   (not
+    (null
+     (cl-ppcre:scan
+      "^[A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*$"
+      source)))))
 
 (defun oauth-option-status-label (option)
   (let* ((status
@@ -7759,25 +7768,16 @@
         (settings-selector-visible-slice options selected 8)
       (append
        (list
-        (selector-border-line width)
+        (auth-overlay-border-line width)
         ""
-        (selector-fit-line
-         (concatenate
-          'string
-          " "
-          (cadr-tui:theme-foreground
-           :accent
-           (cadr-tui:theme-bold
-            (if (eq (oauth-selector-state-mode state) :logout)
-                "Select provider to logout:"
-                "Select provider to configure:")
-            :enabled-p t)
-           :enabled-p t))
+        (selector-overlay-title-line
+         (if (eq (oauth-selector-state-mode state) :logout)
+             "Select provider to logout:"
+             "Select provider to configure:")
          width)
         ""
-        (selector-fit-line
-         (concatenate 'string "> "
-                      (oauth-selector-state-query state))
+        (selector-input-line
+         (oauth-selector-state-query state)
          width)
         "")
        (if visible
@@ -7829,7 +7829,7 @@
           (selector-muted-line
            (format nil "  (~D/~D)" (1+ selected) total)
            width)))
-       (list "" (selector-border-line width))))))
+       (list "" (auth-overlay-border-line width))))))
 
 (defparameter +models-selector-keybinding-definitions+
   (append

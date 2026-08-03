@@ -288,8 +288,8 @@
             ("scoped-models" . "C70BE56733530B2E2839E3EDF65B0FE93A09EEC09C2C3B67A6BF70DE22136038")
             ("trust" . "ADCAA3E3FBE6FCC0075819C16FB67B5DC1EA6F5B7A4C8B3B5C6B6810E8A9F18C")
             ("login-method" . "ED15EB102E30928C4F4D5B3470FE1FE9D5F6B15C1294188FAE8327393FF57F85")
-            ("login-provider" . "B3A4E71D71A37664D521F5F123D81B0E3B92E4DAB5E638FD14A311FF274F905E")
-            ("logout-provider" . "CC22C0F6983E1975602A5AF28FCC22715A4152374C39577154D33365014B8B5D")
+            ("login-provider" . "6CDFBADF863ACBD0F12AF1D1EAD894682663CAF1EE1B463CED1B0FAE6C1A6DC8")
+            ("logout-provider" . "2F301B699D62213A8021BA2C1B77FA5A477B1D9F46FABEB5F9CD36F484B5A68A")
             ("api-key" . "E9A09DFE359B3AD1519A108F04A0405FA5F6F607B5A7F76F3EC90A9F56151179")
             ("import" . "CBB6A2FFE4C7F41DB4E4F73739D8D78BC4DBB04844016E6429E85B9E78D883F1")
             ("extension-select" . "D43F8F701FE98E73037B44854626149F5427B4D5A29CC48A5755425DD918ACE6")
@@ -538,11 +538,15 @@
     (dolist
         (case
          `((:login
-            (,border "" " Select provider to configure:" "" "> " ""
+            (,border "" " Select provider to configure:" ""
+             ,(concatenate 'string "> "
+                           (make-string 78 :initial-element #\Space)) ""
              " → OpenAI Codex [subscription] ✓ configured"
              "   Anthropic [API key] • unconfigured" "" ,border))
            (:logout
-            (,border "" " Select provider to logout:" "" "> " ""
+            (,border "" " Select provider to logout:" ""
+             ,(concatenate 'string "> "
+                           (make-string 78 :initial-element #\Space)) ""
              " → OpenAI Codex [subscription] ✓ configured"
              "   Anthropic [API key] • unconfigured" "" ,border))))
       (destructuring-bind (mode expected) case
@@ -642,7 +646,9 @@
     (is
      (equal
       (append
-       (list border "" " Select provider to configure:" "" "> " "")
+       (list border "" " Select provider to configure:" ""
+             (concatenate 'string "> "
+                          (make-string 78 :initial-element #\Space)) "")
        (loop for index from 1 to 8
              collect
              (format nil " ~AProvider ~2,'0D [~A] • unconfigured"
@@ -658,7 +664,9 @@
     (is (string= "zzyzx" (cadr-cli::oauth-selector-state-query state)))
     (is
      (equal
-      (list border "" " Select provider to configure:" "" "> zzyzx" ""
+      (list border "" " Select provider to configure:" ""
+            (concatenate 'string "> zzyzx"
+                         (make-string 73 :initial-element #\Space)) ""
             " → Zzyzx Provider [API key] • unconfigured" "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-oauth-selector state width))))
@@ -667,7 +675,9 @@
      (cadr-tui:make-input-event :kind :text :text "missing"))
     (is
      (equal
-      (list border "" " Select provider to configure:" "" "> zzyzxmissing" ""
+      (list border "" " Select provider to configure:" ""
+            (concatenate 'string "> zzyzxmissing"
+                         (make-string 66 :initial-element #\Space)) ""
             "  No matching providers" "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-oauth-selector state width))))

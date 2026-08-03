@@ -19,6 +19,66 @@
       (is (< column 20))
       (is (<= (cadr-tui:visible-width (first lines)) 20)))))
 
+(test single-line-input-renders-baseline-software-cursor-at-end-and-over-text
+  (let ((input
+          (cadr-tui:make-single-line-input
+           :value "ab")))
+    (multiple-value-bind (lines row column)
+        (cadr-tui:render-single-line-input input 12)
+      (is (= 0 row))
+      (is (= 4 column))
+      (is
+       (search
+        (format nil "ab~C[7m ~C[27m"
+                #\Escape #\Escape)
+        (first lines))))
+    (single-input-event input :left)
+    (multiple-value-bind (lines row column)
+        (cadr-tui:render-single-line-input input 12)
+      (declare (ignore row))
+      (is (= 3 column))
+      (is
+       (search
+        (format nil "a~C[7mb~C[27m"
+                #\Escape #\Escape)
+        (first lines))))))
+
+(test single-line-input-cursor-preserves-graphemes-and-narrow-widths
+  (let ((input
+          (cadr-tui:make-single-line-input
+           :value "你🙂a")))
+    (single-input-event input :line-start)
+    (multiple-value-bind (lines row column)
+        (cadr-tui:render-single-line-input input 10)
+      (declare (ignore row))
+      (is (= 2 column))
+      (is
+       (search
+        (format nil "~C[7m你~C[27m"
+                #\Escape #\Escape)
+        (first lines))))
+    (single-input-event input :right)
+    (multiple-value-bind (lines row column)
+        (cadr-tui:render-single-line-input input 10)
+      (declare (ignore row))
+      (is (= 4 column))
+      (is
+       (search
+        (format nil "~C[7m🙂~C[27m"
+                #\Escape #\Escape)
+        (first lines))))
+    (single-input-event input :line-start)
+    (multiple-value-bind (lines row column)
+        (cadr-tui:render-single-line-input input 3)
+      (declare (ignore row column))
+      (is (= 3 (cadr-tui:visible-width (first lines))))
+      (is (null (search "你" (first lines))))
+      (is
+       (search
+        (format nil "~C[7m ~C[27m"
+                #\Escape #\Escape)
+        (first lines))))))
+
 (test single-line-input-kill-yank-pop-and-word-boundaries
   (let ((input
           (cadr-tui:make-single-line-input

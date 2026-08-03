@@ -344,45 +344,76 @@
            (single-line-input-prompt input))
          (prompt-width (visible-width prompt))
          (available-width
-           (max 0 (- width prompt-width)))
+           (- width prompt-width))
          (value (single-line-input-value input))
-         (cursor
-           (single-line-input-cursor input))
-         (cursor-column
-           (visible-width (subseq value 0 cursor)))
-         (total-width (visible-width value))
-         (window-width
-           (if (= cursor (length value))
-               (max 0 (1- available-width))
-               available-width))
-         (start-column
-           (cond
-             ((<= total-width window-width) 0)
-             ((< cursor-column
-                 (floor window-width 2))
-              0)
-             ((> cursor-column
-                 (- total-width
-                    (floor window-width 2)))
-              (max 0 (- total-width window-width)))
-             (t
-              (max
-               0
-               (- cursor-column
-                  (floor window-width 2))))))
-         (visible
-           (slice-by-column
-            value start-column window-width t))
-         (visible-cursor
-           (max 0
-                (- cursor-column start-column)))
-         (line
-           (truncate-to-width
-            (concatenate 'string prompt visible)
-            width "" t)))
-    (values
-     (list line)
-     0
-     (min
-      (max 0 (1- width))
-      (+ prompt-width visible-cursor)))))
+         (cursor (single-line-input-cursor input)))
+    (when (<= available-width 0)
+      (return-from render-single-line-input
+        (values (list prompt) 0 0)))
+    (let* ((total-width (visible-width value))
+           (visible-text value)
+           (cursor-display cursor))
+      (when (>= total-width available-width)
+        (let* ((scroll-width
+                 (if (= cursor (length value))
+                     (1- available-width)
+                     available-width))
+               (cursor-column
+                 (visible-width (subseq value 0 cursor))))
+          (if (plusp scroll-width)
+              (let* ((half-width (floor scroll-width 2))
+                     (start-column
+                       (cond
+                         ((< cursor-column half-width) 0)
+                         ((> cursor-column
+                             (- total-width half-width))
+                          (max 0 (- total-width scroll-width)))
+                         (t
+                          (max 0 (- cursor-column half-width)))))
+                     (before-cursor
+                       (slice-by-column
+                        value start-column
+                        (max 0 (- cursor-column start-column))
+                        t)))
+                (setf
+                 visible-text
+                 (slice-by-column
+                  value start-column scroll-width t)
+                 cursor-display (length before-cursor)))
+              (setf visible-text "" cursor-display 0))))
+      (let* ((remaining
+               (subseq visible-text cursor-display))
+             (cursor-end
+               (if (plusp (length remaining))
+                   (next-cluster-boundary remaining 0)
+                   0))
+             (before-cursor
+               (subseq visible-text 0 cursor-display))
+             (at-cursor
+               (if (plusp cursor-end)
+                   (subseq remaining 0 cursor-end)
+                   " "))
+             (after-cursor
+               (if (plusp cursor-end)
+                   (subseq remaining cursor-end)
+                   ""))
+             (content
+               (concatenate
+                'string
+                before-cursor
+                (theme-inverse at-cursor :enabled-p t)
+                after-cursor))
+             (line
+               (concatenate
+                'string prompt content
+                (make-string
+                 (max 0 (- available-width
+                           (visible-width content)))
+                 :initial-element #\Space))))
+        (values
+         (list line)
+         0
+         (min
+          (max 0 (1- width))
+          (+ prompt-width
+             (visible-width before-cursor))))))))

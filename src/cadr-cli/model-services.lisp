@@ -912,6 +912,156 @@
    (provider-symbol-from-key provider)
    (model-registry-provider-settings registry)))
 
+(defun credential-kind-auth-type (kind)
+  (cond
+    ((member kind '("oauth" :oauth) :test #'equal)
+     :oauth)
+    ((member kind '("api_key" "api-key" :api-key)
+             :test #'equal)
+     :api-key)
+    (t nil)))
+
+(defun runtime-credentials-override-status
+    (credentials provider)
+  (when (typep credentials 'runtime-credentials)
+    (sb-thread:with-mutex
+        ((runtime-credentials-lock credentials))
+      (let ((credential
+              (gethash
+               (provider-key provider)
+               (runtime-credentials-overrides credentials))))
+        (when credential
+          (list
+           :type
+           (etypecase credential
+             (cadr-ai:oauth-credential :oauth)
+             (cadr-ai:api-key-credential :api-key))
+           :source "runtime"))))))
+
+(defun persistent-auth-storage (storage)
+  (if (typep storage 'runtime-credentials)
+      (runtime-credentials-storage storage)
+      storage))
+
+(defun stored-credential-status (storage provider)
+  (let* ((persistent
+           (and storage (persistent-auth-storage storage)))
+         (entry
+           (and persistent
+                (assoc
+                 (provider-key provider)
+                 (auth-storage-list persistent)
+                 :test #'string=))))
+    (when entry
+      (list
+       :type (credential-kind-auth-type (cdr entry))
+       :source "stored"))))
+
+(defun config-value-environment-names (value)
+  (let ((names nil)
+        (index 0))
+    (loop while (< index (length value))
+          do
+          (if (char/= (char value index) #\$)
+              (incf index)
+              (let ((next (1+ index)))
+                (cond
+                  ((>= next (length value))
+                   (incf index))
+                  ((member (char value next) '(#\$ #\!))
+                   (incf index 2))
+                  ((char= (char value next) #\{)
+                   (let ((end
+                           (position #\} value
+                                     :start (+ index 2))))
+                     (if (null end)
+                         (incf index)
+                         (let ((name
+                                 (subseq value (+ index 2) end)))
+                           (when
+                               (and
+                                (plusp (length name))
+                                (config-name-start-p (char name 0))
+                                (every #'config-name-character-p name))
+                             (pushnew name names :test #'string=))
+                           (setf index (1+ end))))))
+                  ((config-name-start-p (char value next))
+                   (let ((end next))
+                     (loop while
+                           (and
+                            (< end (length value))
+                            (config-name-character-p
+                             (char value end)))
+                           do (incf end))
+                     (pushnew
+                      (subseq value next end)
+                      names :test #'string=)
+                     (setf index end)))
+                  (t (incf index))))))
+    (nreverse names)))
+
+(defun models-json-authentication-status
+    (registry provider)
+  (let* ((config
+           (model-registry-provider-config registry provider))
+         (value
+           (and config
+                (cadr-ai::json-get config "apiKey"))))
+    (when (and (stringp value) (plusp (length value)))
+      (cond
+        ((uiop:string-prefix-p "!" value)
+         (list :type :api-key
+               :source "models_json_command"))
+        ((config-value-environment-names value)
+         (let ((names
+                 (config-value-environment-names value)))
+           (when (resolve-config-value value :uncached-p t)
+             (list
+              :type :api-key
+              :source (format nil "~{~A~^, ~}" names)))))
+        (t
+         (list :type :api-key
+               :source "models_json_key"))))))
+
+(defun native-runtime-authentication-status
+    (registry provider)
+  (let ((runtime (model-registry-native-runtime registry)))
+    (when (and runtime
+               (cadr-ai:models-runtime-provider runtime provider))
+      (let ((check
+              (cadr-ai:models-runtime-check-auth
+               runtime provider)))
+        (when check
+          (list
+           :type (cadr-ai::runtime-auth-check-type check)
+           :source (cadr-ai::runtime-auth-check-source check)))))))
+
+(defun ambient-authentication-status (provider)
+  (let* ((definition
+           (ignore-errors
+             (cadr-ai:find-provider-definition
+              (provider-symbol-from-key provider))))
+         (name
+           (and definition
+                (cadr-ai:provider-definition-key-environment
+                 definition))))
+    (when
+        (and name
+             (cadr-ai::non-empty-string-p
+              (environment-value name)))
+      (list :type :api-key :source name))))
+
+(defun model-registry-authentication-status
+    (registry provider)
+  (or
+   (runtime-credentials-override-status
+    (model-registry-credentials registry) provider)
+   (stored-credential-status
+    (model-registry-credentials registry) provider)
+   (models-json-authentication-status registry provider)
+   (native-runtime-authentication-status registry provider)
+   (ambient-authentication-status provider)))
+
 (defun configured-model-api-key
     (registry provider)
   (let* ((config

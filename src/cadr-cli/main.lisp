@@ -3143,20 +3143,8 @@
                       message)))))
                messages))))
          (authentication-status (provider)
-           (let ((credential
-                   (and
-                    (model-registry-credentials model-registry)
-                    (auth-storage-read
-                     (model-registry-credentials model-registry)
-                     provider))))
-             (when credential
-               (list
-                :type
-                (if (typep credential
-                           'cadr-ai:oauth-credential)
-                    :oauth
-                    :api-key)
-                :source "stored credential"))))
+           (model-registry-authentication-status
+            model-registry provider))
          (current-login-options ()
            (model-registry-login-options
             model-registry #'authentication-status))
