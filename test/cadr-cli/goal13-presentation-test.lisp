@@ -1192,7 +1192,7 @@
            '(("cadr-core" 6)
              ("cadr-ai" 28)
              ("cadr-agent" 18)
-             ("cadr-cli" 43)
+             ("cadr-cli" 51)
              ("cadr-tui" 23)
              ("cadr-storage" 2)
              ("cadr-server" 11)
@@ -1201,7 +1201,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=144 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=152 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1219,7 +1219,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 144 total))
+    (is (= 152 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1234,6 +1234,7 @@
         (path
          '("src/cadr-ai/crash.lisp"
            "src/cadr-cli/crash.lisp"
+           "src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp"
            "src/cadr-tui/threads.lisp"
            "src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time}.lisp"))
       (is (search path audit)

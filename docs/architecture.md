@@ -175,6 +175,16 @@ src/
     config.lisp
     truncation.lisp
     extensions.lisp
+    interactive/
+      transcript.lisp
+      status.lisp
+      footer.lisp
+      theme.lisp
+      images.lisp
+      clipboard.lisp
+      syntax.lisp
+      tool-render-session.lisp
+    interactive-services.lisp
     tools/
       path.lisp
       read.lisp

@@ -6,16 +6,15 @@ and whether one user-visible decision has one owner.
 
 ## 1. Audit boundary and method
 
-The Goal 14 draft recorded 135 production files.  The clean tree at audit commit
-`47f71898e` contains 143: Goal 13 added five approved export assets and later
-added `cadr-ai/crash.lisp`, `cadr-cli/crash.lisp`, and `cadr-tui/threads.lisp`.
-Silently auditing the stale denominator would omit exactly the new crash/cleanup
-path this goal is supposed to police, so this ledger covers all 143 current
-files.
+The Goal 14 draft recorded 135 production files.  Goal 13 added five approved
+export assets and three crash/cleanup files; Goal 14 B3 then added the six-file
+`cadr-core` leaf and B1 extracted eight interactive leaf owners.  Silently
+retaining any earlier denominator would omit exactly the source boundaries this
+goal is supposed to police, so this ledger covers all 157 current files.
 
-- 138 Lisp files, 100,073 lines, 4,246 top-level definitions.
+- 152 Lisp files, 100,188 lines, 4,255 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 143 production files and 104,348 physical lines in total.
+- 157 production files and 104,463 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -105,7 +104,15 @@ files with unrelated facilities fail.
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 279 | 14 | Search and inspect Hugging Face GGUF artifacts. | 合格 |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 322 | 11 | Project llama-server as a session-local native provider. | 合格·大体量 |
 | `src/cadr-cli/interactive-components.lisp` | 714 | 53 | Combine border/loader/countdown primitives with three unrelated novelty/announcement components. | 应拆分 |
-| `src/cadr-cli/interactive-services.lisp` | 9,131 | 365 | Mix transcript lines, status/startup state, session/tree/settings/auth/model selectors, footer/git/theme, clipboard/images, syntax highlighting, and tool render sessions. | 应拆分 |
+| `src/cadr-cli/interactive/clipboard.lisp` | 450 | 22 | Own platform clipboard text/image discovery, reading, and writes. | 合格·大体量 |
+| `src/cadr-cli/interactive/footer.lisp` | 537 | 23 | Own footer path/usage/status projection and asynchronous Git branch data. | 合格·大体量 |
+| `src/cadr-cli/interactive/images.lisp` | 229 | 8 | Inspect and process interactive image bytes under model limits. | 合格 |
+| `src/cadr-cli/interactive/status.lisp` | 149 | 12 | Own startup input, status-log projection, and the Anthropic account warning. | 合格 |
+| `src/cadr-cli/interactive/syntax.lisp` | 1,076 | 33 | Implement baseline-compatible deterministic syntax highlighting. | 合格·大体量 |
+| `src/cadr-cli/interactive/theme.lisp` | 215 | 11 | Detect, resolve, export, and discover interactive themes. | 合格 |
+| `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | 3 | Own incremental tool-render session state and projection. | 合格 |
+| `src/cadr-cli/interactive/transcript.lisp` | 100 | 6 | Own user and assistant transcript-line projection. | 合格 |
+| `src/cadr-cli/interactive-services.lisp` | 6,330 | 246 | Temporarily retain the session/tree/settings/auth/model/trust/fork selector families until B2's shared frame exists. | 应拆分 |
 | `src/cadr-cli/main.lisp` | 4,518 | 64 | Mix tool selection, session commands, settings/auth/reload glue, the entire slash-command dispatcher, and process entry. | 应拆分 |
 | `src/cadr-cli/media.lisp` | 1,236 | 55 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | 合格·大体量 |
 | `src/cadr-cli/migration.lisp` | 127 | 10 | Safely migrate the legacy user-data directory with explicit consent. | 合格 |
@@ -218,17 +225,19 @@ files with unrelated facilities fail.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
 | `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
-| `cadr-cli` | 20 | 10 | 13 | 0 | 43 |
+| `cadr-cli` | 25 | 13 | 13 | 0 | 51 |
+| `cadr-core` | 6 | 0 | 0 | 0 | 6 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 10 | 10 | 3 | 0 | 23 |
-| **Total** | **62** | **52** | **29** | **0** | **143** |
+| **Total** | **73** | **55** | **29** | **0** | **157** |
 
-The 29 failing files contain 54,456 lines, over half of production.  The
-cohesion map below replaces them with 159 named modules, yielding a planning
-denominator of 273 files.  This is not a quota: each target below names a real
+The 29 failing files are being reduced batch by batch.  After B3 and B1, the
+cohesion map below replaces them with 151 still-pending named modules, yielding
+a planning denominator of 279 files and a remaining net increase of 122.  This
+is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
 
@@ -236,9 +245,9 @@ boundary is false.
 |---|---:|---:|---:|
 | `cadr-agent` | 4 | 21 | +17 |
 | `cadr-ai` | 9 | 42 | +33 |
-| `cadr-cli` | 13 | 80 | +67 |
+| `cadr-cli` | 13 | 72 | +59 |
 | `cadr-tui` | 3 | 16 | +13 |
-| **Total** | **29** | **159** | **+130** |
+| **Total** | **29** | **151** | **+122** |
 
 At current boundaries the expected physical distribution is approximately 156
 files below 300 lines, 86 at 300–699, 23 at 700–999, and 8 at or above 1,000;
@@ -268,7 +277,7 @@ not chopped up to make the chart prettier.
 | `cli/core-support.lisp` | `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6) |
 | `cli/extensions.lisp` | `extensions/{discovery,loader,commands,installer}.lisp` (4) |
 | `cli/interactive-components.lisp` | `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5) |
-| `cli/interactive-services.lisp` | `interactive/{transcript,status,footer,theme,clipboard,images,syntax,tool-render-session}.lisp` and `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (16) |
+| `cli/interactive-services.lisp` | `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (8); the eight leaf-service owners were completed in B1 |
 | `cli/main.lisp` | `bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` (6) |
 | `cli/model-services.lisp` | `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5) |
 | `cli/modes/rpc/mode.lisp` | `modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` (5) |
@@ -439,6 +448,24 @@ ownership before extracting presentation leaves; B2 establishes
 and the duplicate JavaScript metric before service extraction; B5--B10 consume
 those owners before their splits; B11 creates the fixed-baseline provider
 matrix before the declaration owner or provider file split.
+
+### Part C B1 implementation status
+
+B1 extracted only the eight cohesive interactive leaves.  Transcript projection,
+status/startup projection, footer/Git data, theme resolution, image processing,
+clipboard access, syntax highlighting, and tool-render session state now each
+have one exact file owner under `src/cadr-cli/interactive/`.  The move preserved
+the existing package-private symbols and introduced no alternate sink, export,
+callback, or visible byte.
+
+This batch deliberately left every selector in `interactive-services.lisp`.
+Splitting those state machines before their common frame existed would have
+copied the same border/title/input/count/help/navigation decisions into eight
+files.  B2 therefore begins by making `selector-frame` the sole owner of those
+decisions and only then extracts the selector families.  `images.lisp` loads
+before `clipboard.lisp` because clipboard image acquisition consumes the shared
+image result and processing functions; all other leaf owners load before the
+remaining selector consumer file.
 
 ### Already-converged examples to preserve
 

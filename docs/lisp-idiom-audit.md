@@ -8,22 +8,22 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=144 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=152 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 144 Lisp files and 100,173 physical lines.  The form
+The audited tree contains 152 Lisp files and 100,188 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 28 | 23,747 | 45 | 13 | 6 | 45 | 1 | 66 | 2 | 0 |
-| `cadr-agent` | 18 | 15,328 | 49 | 6 | 23 | 35 | 15 | 54 | 3 | 1 |
-| `cadr-cli` | 43 | 38,316 | 62 | 16 | 6 | 32 | 0 | 78 | 2 | 0 |
-| `cadr-tui` | 23 | 14,770 | 32 | 17 | 22 | 74 | 0 | 11 | 0 | 0 |
+| `cadr-ai` | 28 | 23,920 | 45 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
+| `cadr-agent` | 18 | 15,257 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
+| `cadr-cli` | 51 | 38,599 | 62 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
+| `cadr-tui` | 23 | 14,777 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `cadr-server` | 11 | 2,799 | 7 | 5 | 10 | 15 | 0 | 21 | 0 | 0 |
+| `cadr-server` | 11 | 2,779 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
 | `cadr-protocol` | 5 | 1,427 | 4 | 0 | 0 | 0 | 0 | 5 | 0 | 0 |
-| `cadr-evals` | 8 | 3,052 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
+| `cadr-evals` | 8 | 3,039 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
 
 The audit distinguishes three kinds of dispatch that are easy to conflate:
 
@@ -119,14 +119,15 @@ not as another rewrite target.
 ## Post-audit source-set review
 
 Part C2 originally audited 135 files.  Three production files were added by
-later Goal 13 corrections, and six more by Goal 14's approved `cadr-core`
-convergence batch, so the audit follows the current 144 files rather than
-treating the old file set as permanent:
+later Goal 13 corrections, six more by Goal 14's approved `cadr-core`
+convergence batch, and eight leaf owners by Goal 14 B1, so the audit follows
+the current 152 files rather than treating the old file set as permanent:
 
 | added file | required capability | Lisp-idiom disposition |
 |---|---|---|
 | `src/cadr-ai/crash.lisp` | shared pre-unwind fatal boundary, exact redaction and private crash log | keep the `handler-bind` boundary and redacted `print-object` methods; both directly encode the failure-site and secrecy invariants |
 | `src/cadr-cli/crash.lisp` | apply the shared boundary to CLI entrypoints | keep as a thin boundary adapter; no owned polymorphic protocol exists |
+| `src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp` | give each interactive leaf service one exact output or data owner before selector convergence | keep the plain closed state/value functions; the extraction adds no polymorphic protocol and leaves selectors together until `selector-frame` owns their shared behavior |
 | `src/cadr-tui/threads.lisp` | bounded join/forced-stop cleanup for terminal workers | keep as one function over SBCL's closed thread primitive; wrapping threads in a new class would not remove another invariant |
 | `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time}.lisp` | one bottom-layer owner for five repeated failure-safety decisions | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |
 

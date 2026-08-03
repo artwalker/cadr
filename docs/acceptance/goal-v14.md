@@ -274,3 +274,60 @@ binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 The implementation adds six production Lisp files / 359 lines and removes the
 duplicated policy bodies from existing systems.  B1 begins from this committed
 shared owner rather than reproducing those decisions during extraction.
+
+## Part C B1 — interactive leaf ownership
+
+### Result
+
+The former 9,131-line `interactive-services.lisp` now retains only selector
+state machines and their domain behavior.  Eight cohesive leaves moved without
+renaming package-private symbols or changing a function body:
+
+| New owner | Responsibility |
+|---|---|
+| `interactive/transcript.lisp` | user/assistant transcript projection |
+| `interactive/status.lisp` | status log, startup input, Anthropic warning |
+| `interactive/footer.lisp` | footer projection and Git branch refresh |
+| `interactive/theme.lisp` | terminal/theme detection and discovery |
+| `interactive/images.lisp` | image inspection and model-limit processing |
+| `interactive/clipboard.lisp` | platform clipboard text/image I/O |
+| `interactive/syntax.lisp` | deterministic syntax highlighting |
+| `interactive/tool-render-session.lisp` | incremental tool-render state |
+
+`cadr-cli.asd` loads value/data owners before consumers, specifically images
+before clipboard and all eight leaves before the remaining selector source.
+`GOAL14-B1-INTERACTIVE-LEAF-SERVICES-HAVE-EXACT-OWNERS` rejects duplicated or
+missing sentinel definitions and proves selectors were not prematurely split;
+`GOAL14-B1-ASDF-LOADS-LEAF-OWNERS-BEFORE-SELECTOR-CONSUMERS` locks the dependency
+order.
+
+### Convergence-before-split result
+
+B1 names the existing output owners rather than creating a generic presentation
+abstraction: transcript, status, footer, and tool-render bytes still pass through
+their one pre-existing function family.  The selector frame repetition remains
+co-located on purpose.  B2 must first give border, title, input, viewport/count,
+help, and wrap navigation to one composable `selector-frame`; only then may the
+eight selector families leave `interactive-services.lisp`.
+
+### Mechanical verification
+
+```text
+cadr test summary: systems=9 checks=12600 pass=12600 skip=0 fail=0
+```
+
+All existing full-screen, overlay, payload, wire, session, tool-result, and exit
+contract checks stayed byte-identical.  The Lisp source ledger now accounts for
+152 production Lisp files and the organization ledger accounts for all 157
+production files.  No public package export or frozen extension/event surface
+changed.  `./scripts/verify.sh` passed all 13 deterministic stages and both live
+stages; live results were 7 pass, 1 Anthropic skip because
+`ANTHROPIC_API_KEY` is unset, and 0 fail, followed by a passing DeepSeek TUI.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 18:08:44.700365611 +0800
+latest source mtime: 2026-08-03 18:04:15.586755658 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
