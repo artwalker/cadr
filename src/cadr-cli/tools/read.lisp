@@ -14,7 +14,8 @@
                     (cadr-agent:execution-tool-read-binary context path)
                   (execution-context-value value operation-error)))))
     (unless (or context (probe-file path))
-      (error "File not found: ~A" display-path))
+      (error "ENOENT: no such file or directory, access '~A'"
+             (namestring path)))
     (multiple-value-bind
           (image-bytes mime-type hints omitted-message)
         (if context

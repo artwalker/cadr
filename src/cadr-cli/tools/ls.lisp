@@ -15,15 +15,16 @@
          (limit (or (optional-integer arguments "limit" 500) 500)))
     (unless (probe-file path)
       (error "Path not found: ~A" (namestring path)))
-    (unless (uiop:directory-exists-p path)
-      (error "Not a directory: ~A" (namestring path)))
+    (let ((directory (uiop:directory-exists-p path)))
+      (unless directory
+        (error "Not a directory: ~A" (namestring path)))
     (when (< limit 1)
       (error "limit must be at least 1"))
     (let* ((entries
              (sort
               (append
-               (uiop:directory-files path)
-               (uiop:subdirectories path))
+               (uiop:directory-files directory)
+               (uiop:subdirectories directory))
               #'string-lessp
               :key #'directory-entry-name))
            (limit-reached-p (> (length entries) limit))
@@ -70,7 +71,7 @@
               (values
                (list
                 (cadr-ai:make-text-content :text output))
-               details)))))))
+               details))))))))
 
 (defun make-ls-tool (cwd)
   (cadr-ai:make-tool

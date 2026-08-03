@@ -63,6 +63,10 @@
 
 (test glob-and-grep-follow-parseable-gitignore-rules
   (with-test-directory (directory)
+    ;; Ripgrep follows .gitignore only inside a repository. The fixed baseline
+    ;; delegates this policy to ripgrep instead of interpreting ignore files.
+    (ensure-directories-exist
+     (merge-pathnames ".git/placeholder" directory))
     (write-text
      (merge-pathnames ".gitignore" directory)
      (format nil "*.log~%build/~%!important.log~%"))

@@ -26,18 +26,6 @@
       "kind": "cadr-defect",
       "summary": "The untrusted-project warning emitted by the baseline is absent."
     },
-    "D05": {
-      "kind": "cadr-defect",
-      "summary": "grep result ordering differs from the baseline's deterministic order."
-    },
-    "D06": {
-      "kind": "cadr-defect",
-      "summary": "ls ignores the requested notes path in the captured user path and lists the workspace root."
-    },
-    "D07": {
-      "kind": "cadr-defect",
-      "summary": "A missing read uses Cadr's File not found text instead of the baseline ENOENT path-bearing result."
-    },
     "D08": {
       "kind": "cadr-defect",
       "summary": "Selector composition differs in frame padding, input column, viewport height, clipping, and cursor position."
@@ -90,14 +78,14 @@
     { "scenario": "tools-success", "checkpoint": "read-range", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
     { "scenario": "tools-success", "checkpoint": "write", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
     { "scenario": "tools-success", "checkpoint": "edit", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "grep", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03", "D05"] },
-    { "scenario": "tools-success", "checkpoint": "find", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03", "D05"] },
-    { "scenario": "tools-success", "checkpoint": "ls", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03", "D05", "D06"] },
+    { "scenario": "tools-success", "checkpoint": "grep", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
+    { "scenario": "tools-success", "checkpoint": "find", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
+    { "scenario": "tools-success", "checkpoint": "ls", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
     { "scenario": "tools-success", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "tools-failure", "checkpoint": "tool-failure", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D07"] },
-    { "scenario": "tools-failure", "checkpoint": "bash-nonzero", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03", "D07"] },
-    { "scenario": "tools-failure", "checkpoint": "bash-timeout", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03", "D07"] },
+    { "scenario": "tools-failure", "checkpoint": "tool-failure", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
+    { "scenario": "tools-failure", "checkpoint": "bash-nonzero", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
+    { "scenario": "tools-failure", "checkpoint": "bash-timeout", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
     { "scenario": "tools-failure", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
     { "scenario": "overlays-core", "checkpoint": "overlay-model", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09", "D10"] },

@@ -250,7 +250,10 @@
          (list
           (list (cadr-cli::make-read-tool directory)
                 (args "path" "missing.txt")
-                "File not found: missing.txt")
+                (format nil
+                        "ENOENT: no such file or directory, access '~A'"
+                        (namestring
+                         (merge-pathnames "missing.txt" directory))))
           (list (cadr-cli::make-edit-tool directory)
                 (args
                  "path" "missing.txt"

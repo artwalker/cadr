@@ -234,18 +234,22 @@
         (format nil
                 "a.txt~%~%[1 results limit reached. Use limit=2 for more, or refine pattern]")
         (result-text result))))
+    (write-text
+     (merge-pathnames "context.txt" directory)
+     (format nil
+             "before~%match one~%after~%middle~%match two~%after two"))
     (multiple-value-bind (result details)
         (invoke-tool
          (make-grep-tool directory)
-         (args "pattern" "needle"
-               "path" "."
+         (args "pattern" "match"
+               "path" "context.txt"
                "context" 1
                "limit" 1))
       (declare (ignore details))
       (is
        (string=
         (format nil
-                "a.txt-1- before~%a.txt:2: needle one~%a.txt-3- after~%~%[1 matches limit reached. Use limit=2 for more, or refine pattern]")
+                "context.txt-1- before~%context.txt:2: match one~%context.txt-3- after~%~%[1 matches limit reached. Use limit=2 for more, or refine pattern]")
         (result-text result))))
     (write-text
      (merge-pathnames "long.txt" directory)
