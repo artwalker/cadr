@@ -1120,7 +1120,7 @@
           (is (not (search forbidden source))
               "B10 source reintroduced policy ~A" forbidden))))))
 
-(test goal14-b10-asdf-loads-ai-owners-in-dependency-order
+(test goal14-b10-b11-asdf-loads-ai-owners-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-ai"))
          (source (uiop:read-file-string (merge-pathnames "cadr-ai.asd" root)))
          (ordered
@@ -1136,9 +1136,32 @@
              "(:file \"sse\")"
              "(:module \"transport\""
              "(:file \"http\")" "(:file \"aws-event-stream\")"
-             "(:file \"provider\")" "(:file \"auth\")" "(:file \"oauth\")"
+             "(:file \"provider\")" "(:file \"auth\")"
+             "(:module \"oauth-core\""
+             "(:file \"pkce\")" "(:file \"callback\")"
+             "(:file \"page\")" "(:file \"openai-anthropic\")"
              "(:module \"runtime\""
-             "(:file \"models\")" "(:file \"faux-provider\")"))
+             "(:file \"models\")" "(:file \"faux-provider\")"
+             "(:file \"crypto\")" "(:file \"model-data\")"
+             "(:module \"auth-implementations\""
+             "(:file \"bedrock\")" "(:file \"vertex\")"
+             "(:file \"device-code\")" "(:file \"github-copilot\")"
+             "(:file \"radius-cloudflare\")"
+             "(:module \"oauth-providers\""
+             "(:file \"xai\")" "(:file \"kimi\")"
+             "(:file \"github-copilot\")" "(:file \"openrouter\")"
+             "(:file \"radius\")" "(:file \"openai-device\")"
+             "(:file \"anthropic\")"
+             "(:file \"images\")"
+             "(:module \"providers\""
+             "(:file \"anthropic\")" "(:file \"openai\")"
+             "(:file \"openai-completions\")" "(:file \"google\")"
+             "(:file \"azure-openai\")" "(:file \"codex\")"
+             "(:file \"mistral\")" "(:file \"vertex\")"
+             "(:file \"bedrock\")" "(:file \"pi-messages\")"
+             "(:file \"definitions\")" "(:file \"registry\")"
+             "(:file \"runtime-projection\")"
+             "(:file \"websocket\")" "(:file \"crash\")"))
          (positions
            (let ((cursor 0))
              (loop for marker in ordered
@@ -1146,10 +1169,10 @@
                    collect position
                    when position do (setf cursor (1+ position))))))
     (is (every #'identity positions)
-        "cadr-ai.asd omits a B10 load boundary: ~S"
+        "cadr-ai.asd omits a B10/B11 load boundary: ~S"
         (loop for marker in ordered
               for position in positions
               unless position collect marker))
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
-          "B10 owner load order is not dependency-safe: ~S" positions))))
+          "B10/B11 owner load order is not dependency-safe: ~S" positions))))

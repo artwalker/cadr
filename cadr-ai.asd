@@ -38,16 +38,37 @@
                                            (:file "aws-event-stream")))
                              (:file "provider")
                              (:file "auth")
-                             (:file "oauth")
+                             (:module "oauth-core"
+                              :pathname "oauth"
+                              :serial t
+                              :components ((:file "pkce")
+                                           (:file "callback")
+                                           (:file "page")
+                                           (:file "openai-anthropic")))
                              (:module "runtime"
                               :serial t
                               :components ((:file "models")
                                            (:file "faux-provider")))
                              (:file "crypto")
                              (:file "model-data")
-                             (:file "provider-auth")
-                             (:file "oauth-flows")
-                             (:file "registry")
+                             (:module "auth-implementations"
+                              :pathname "auth"
+                              :serial t
+                              :components ((:file "bedrock")
+                                           (:file "vertex")
+                                           (:file "device-code")
+                                           (:file "github-copilot")
+                                           (:file "radius-cloudflare")))
+                             (:module "oauth-providers"
+                              :pathname "oauth/providers"
+                              :serial t
+                              :components ((:file "xai")
+                                           (:file "kimi")
+                                           (:file "github-copilot")
+                                           (:file "openrouter")
+                                           (:file "radius")
+                                           (:file "openai-device")
+                                           (:file "anthropic")))
                              (:file "images")
                              (:module "providers"
                               :serial t
@@ -55,7 +76,15 @@
                                            (:file "openai")
                                            (:file "openai-completions")
                                            (:file "google")
-                                           (:file "independent")))
+                                           (:file "azure-openai")
+                                           (:file "codex")
+                                           (:file "mistral")
+                                           (:file "vertex")
+                                           (:file "bedrock")
+                                           (:file "pi-messages")
+                                           (:file "definitions")
+                                           (:file "registry")
+                                           (:file "runtime-projection")))
                              (:file "websocket")
                              (:file "crash"))))
   :in-order-to ((test-op (test-op "cadr-ai/tests"))))
@@ -97,6 +126,7 @@
                              (:file "auth-test")
                              (:file "goal12-capabilities-test")
                              (:file "goal12-provider-capabilities-test")
+                             (:file "goal14-provider-organization-test")
                              (:file "goal12-auth-test")
                              (:file "goal12-model-data-test")
                              (:file "goal12-codex-websocket-test"))))

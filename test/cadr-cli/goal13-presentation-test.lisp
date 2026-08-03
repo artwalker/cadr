@@ -1190,7 +1190,7 @@
             (merge-pathnames "docs/lisp-idiom-audit.md" root)))
          (systems
            '(("cadr-core" 6)
-             ("cadr-ai" 41)
+             ("cadr-ai" 61)
              ("cadr-agent" 35)
              ("cadr-cli" 108)
              ("cadr-tui" 36)
@@ -1201,7 +1201,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=252 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=272 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1219,7 +1219,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 252 total))
+    (is (= 272 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1234,6 +1234,7 @@
         (path
          '("src/cadr-ai/crash.lisp"
            "src/cadr-ai/{capabilities,transport,runtime,support}/*.lisp"
+           "src/cadr-ai/{auth,oauth,providers}/*.lisp"
            "src/cadr-cli/crash.lisp"
            "src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp"
            "src/cadr-cli/interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp"

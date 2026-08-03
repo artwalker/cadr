@@ -15,14 +15,15 @@ and RPC command handling into eleven cohesive owners, B6 replaced the two
 interactive controller/component monoliths with sixteen responsibility owners,
 and B7 replaced three reusable TUI monoliths with sixteen protocol-ordered
 owners. B8 replaced three agent session/storage/loop monoliths with thirteen
-owners, B9 replaced the extension-host monolith with eight owners, and B10
-replaced four mixed AI files with seventeen exact owners. Silently
+owners, B9 replaced the extension-host monolith with eight owners, B10
+replaced four mixed AI files with seventeen exact owners, and B11 replaced
+five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 257 current files.
+goal is supposed to police, so this ledger covers all 277 current files.
 
-- 252 Lisp files, 100,420 lines, 4,261 top-level definitions.
+- 272 Lisp files, 101,013 lines, 4,266 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 257 production files and 104,695 physical lines in total.
+- 277 production files and 105,288 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -101,17 +102,37 @@ files with unrelated facilities fail.
 | `src/cadr-ai/model-data.lisp` | 398 | 26 | Validate model-data artifacts/manifests and generate deterministic catalog fixtures. | 合格·大体量 |
 | `src/cadr-ai/models.generated.lisp` | 8,114 | 1 | Hold the generated model metadata catalog; the generator is its owner. | 合格·大体量 |
 | `src/cadr-ai/models.lisp` | 287 | 23 | Define model metadata/catalog operations, thinking-level resolution, and cost calculation. | 合格 |
-| `src/cadr-ai/oauth-flows.lisp` | 789 | 60 | Combine seven independent provider OAuth/device-code implementations in one file. | 应拆分 |
-| `src/cadr-ai/oauth.lisp` | 1,067 | 65 | Mix PKCE/SHA helpers, callback parsing/server pages, token exchange, and OpenAI/Anthropic login orchestration. | 应拆分 |
+| `src/cadr-ai/oauth/callback.lisp` | 316 | 11 | Parse manual/callback authorization input and own the loopback callback lifecycle. | 合格 |
+| `src/cadr-ai/oauth/openai-anthropic.lisp` | 288 | 12 | Exchange, refresh, and orchestrate the browser OAuth flows shared by OpenAI Codex and Anthropic. | 合格 |
+| `src/cadr-ai/oauth/page.lisp` | 149 | 6 | Render the branded OAuth callback success and error pages. | 合格 |
+| `src/cadr-ai/oauth/pkce.lisp` | 317 | 36 | Own OAuth metadata plus the SHA-256, Base64URL, PKCE, state, and authorization-URL primitives. | 合格 |
+| `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | 1 | Project the Anthropic browser OAuth flow into the runtime callback contract. | 合格 |
+| `src/cadr-ai/oauth/providers/github-copilot.lisp` | 136 | 13 | Implement GitHub Copilot device login, token exchange, refresh, and model filtering. | 合格 |
+| `src/cadr-ai/oauth/providers/kimi.lisp` | 56 | 6 | Implement Kimi Coding device login and credential refresh. | 合格 |
+| `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | 7 | Implement OpenAI Codex device authorization, polling, and runtime login selection. | 合格 |
+| `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | 7 | Implement OpenRouter PKCE login, key exchange, and refresh. | 合格 |
+| `src/cadr-ai/oauth/providers/radius.lisp` | 118 | 9 | Implement Radius browser/device login and gateway-scoped credential refresh. | 合格 |
+| `src/cadr-ai/oauth/providers/xai.lisp` | 170 | 17 | Implement xAI device authorization, polling, and refresh over the shared OAuth request boundary. | 合格 |
 | `src/cadr-ai/package.lisp` | 473 | 2 | Declare the public `cadr-ai` package surface and HTTP injection seam. | 合格 |
-| `src/cadr-ai/provider-auth.lisp` | 698 | 35 | Combine AWS, Vertex/Google, generic device polling, GitHub, Radius, and Cloudflare authentication helpers. | 应拆分 |
+| `src/cadr-ai/auth/bedrock.lisp` | 163 | 11 | Resolve Bedrock credentials, profiles, regions, and ARN-derived configuration. | 合格 |
+| `src/cadr-ai/auth/device-code.lisp` | 211 | 10 | Own generic cancellable device-code polling, validation, and credential parsing. | 合格 |
+| `src/cadr-ai/auth/github-copilot.lisp` | 66 | 3 | Parse GitHub device authorization and resolve Copilot endpoint/model metadata. | 合格 |
+| `src/cadr-ai/auth/radius-cloudflare.lisp` | 115 | 4 | Validate Radius configuration and materialize Radius/Cloudflare endpoints. | 合格 |
+| `src/cadr-ai/auth/vertex.lisp` | 147 | 7 | Resolve Google Vertex credentials and exchange service-account access tokens. | 合格 |
 | `src/cadr-ai/provider.lisp` | 760 | 75 | Define provider protocol classes plus common request, retry, history, stream, and error machinery. | 合格·大体量 |
 | `src/cadr-ai/providers/anthropic.lisp` | 618 | 16 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/providers/google.lisp` | 408 | 17 | Implement Google Generative AI request, thinking, response, and stream semantics. | 合格·大体量 |
-| `src/cadr-ai/providers/independent.lisp` | 1,675 | 57 | Combine Azure, Codex, Mistral, Vertex, Bedrock, and pi-messages protocol implementations. | 应拆分 |
+| `src/cadr-ai/providers/azure-openai.lisp` | 241 | 12 | Adapt Azure, Copilot, and Cloudflare OpenAI-compatible endpoints and headers. | 合格 |
+| `src/cadr-ai/providers/bedrock.lisp` | 929 | 32 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | 合格·大体量 |
+| `src/cadr-ai/providers/codex.lisp` | 31 | 1 | Adapt the OpenAI Codex Responses request contract. | 合格 |
+| `src/cadr-ai/providers/mistral.lisp` | 98 | 4 | Adapt Mistral Conversations reasoning and tool-call identifiers. | 合格 |
+| `src/cadr-ai/providers/pi-messages.lisp` | 251 | 6 | Implement pi Messages request rewriting and event/response reduction. | 合格 |
+| `src/cadr-ai/providers/vertex.lisp` | 130 | 2 | Adapt Google Vertex endpoints and signed request construction. | 合格 |
 | `src/cadr-ai/providers/openai-completions.lisp` | 775 | 30 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/providers/openai.lisp` | 772 | 17 | Implement OpenAI Responses request, response, tool, reasoning, and stream semantics. | 合格·大体量 |
-| `src/cadr-ai/registry.lisp` | 804 | 20 | Mix the 38-provider declaration table, registry operations, protocol construction, environment/auth resolution, and runtime projection. | 应拆分 |
+| `src/cadr-ai/providers/definitions.lisp` | 963 | 10 | Validate and own the complete 38-provider declaration matrix and environment inputs. | 合格·大体量 |
+| `src/cadr-ai/providers/registry.lisp` | 157 | 2 | Instantiate declared providers through the appropriate native protocol class. | 合格 |
+| `src/cadr-ai/providers/runtime-projection.lisp` | 270 | 13 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | 合格 |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 426 | 25 | Implement the deterministic faux provider, queued responses, and transcript serializer. | 合格 |
 | `src/cadr-ai/runtime/models.lisp` | 834 | 50 | Own mutable provider/model/auth state, refresh, lookup, and request dispatch. | 合格·大体量 |
 | `src/cadr-ai/sse.lisp` | 101 | 5 | Parse Server-Sent Events from text or binary streams. | 合格 |
@@ -332,7 +353,7 @@ files with unrelated facilities fail.
 | System | 合格 | 合格·大体量 | 应拆分 | 应合并 | Total |
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 27 | 13 | 0 | 0 | 40 |
-| `cadr-ai` | 23 | 13 | 5 | 0 | 41 |
+| `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
 | `cadr-cli` | 83 | 25 | 0 | 0 | 108 |
 | `cadr-core` | 6 | 0 | 0 | 0 | 6 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
@@ -340,28 +361,26 @@ files with unrelated facilities fail.
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 26 | 10 | 0 | 0 | 36 |
-| **Total** | **180** | **72** | **5** | **0** | **257** |
+| **Total** | **203** | **74** | **0** | **0** | **277** |
 
-The five remaining failing files are the approved B11 provider/auth batch. B10
-completed seventeen of the forty-two named AI owners, leaving twenty-five and
-a remaining net increase of twenty to the planning denominator of 277. This
-is not a quota: each target below names a real
-responsibility, and a batch must be abandoned if moving code proves that the
-boundary is false.
+No production file remains in `应拆分` or `应合并`. B11 completed the remaining
+25 named AI owners after establishing the fixed-baseline provider matrix. This
+is not a quota result: every target below names a verified responsibility, and
+the tests reject a missing owner or a surviving mixed file.
 
 | System | Failing files | Expected target files | Net files |
 |---|---:|---:|---:|
 | `cadr-agent` | 0 | 0 | +0 |
-| `cadr-ai` | 5 | 25 | +20 |
+| `cadr-ai` | 0 | 0 | +0 |
 | `cadr-cli` | 0 | 0 | +0 |
 | `cadr-tui` | 0 | 0 | +0 |
-| **Total** | **5** | **25** | **+20** |
+| **Total** | **0** | **0** | **+0** |
 
-At current boundaries the physical distribution is 141 files below 300 lines,
-75 at 300–699, 24 at 700–999, and 17 at or above 1,000;
+At current boundaries the physical distribution is 162 files below 300 lines,
+76 at 300–699, 24 at 700–999, and 15 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000. Average file
-size is now 407 lines and the under-300 share is about 55%; the remaining AI
-map projects about 378 lines after B11. The modest percentage is honest:
+size is now 380 lines and the under-300 share is about 58%. The modest
+percentage is honest:
 cohesive files such as the multiline
 editor, Unicode engine, image codec, protocol codecs, and vendored assets are
 not chopped up to make the chart prettier.
@@ -377,11 +396,11 @@ not chopped up to make the chart prettier.
 | `ai/capabilities.lisp` | **Completed in B10:** `capabilities/{streaming-json,event-stream,grammar-tools,session-resources,proxy-config,image-runtime}.lisp` (6). |
 | `ai/http.lisp` | **Completed in B10:** `transport/{http,aws-event-stream}.lisp` (2). |
 | `ai/models-runtime.lisp` | **Completed in B10:** `runtime/{models,faux-provider}.lisp` (2). |
-| `ai/oauth-flows.lisp` | `oauth/providers/{xai,kimi,github-copilot,openrouter,radius,openai-device,anthropic}.lisp` (7) |
-| `ai/oauth.lisp` | `oauth/{pkce,callback,page,openai-anthropic}.lisp` (4) |
-| `ai/provider-auth.lisp` | `auth/{bedrock,vertex,device-code,github-copilot,radius-cloudflare}.lisp` (5) |
-| `ai/providers/independent.lisp` | `providers/{azure-openai,codex,mistral,vertex,bedrock,pi-messages}.lisp` (6) |
-| `ai/registry.lisp` | `providers/{definitions,registry,runtime-projection}.lisp` (3) |
+| `ai/oauth-flows.lisp` | **Completed in B11:** `oauth/providers/{xai,kimi,github-copilot,openrouter,radius,openai-device,anthropic}.lisp` (7). |
+| `ai/oauth.lisp` | **Completed in B11:** `oauth/{pkce,callback,page,openai-anthropic}.lisp` (4). |
+| `ai/provider-auth.lisp` | **Completed in B11:** `auth/{bedrock,vertex,device-code,github-copilot,radius-cloudflare}.lisp` (5). |
+| `ai/providers/independent.lisp` | **Completed in B11:** `providers/{azure-openai,codex,mistral,vertex,bedrock,pi-messages}.lisp` (6). |
+| `ai/registry.lisp` | **Completed in B11:** `providers/{definitions,registry,runtime-projection}.lisp` (3). |
 | `ai/utilities.lisp` | **Completed in B10:** `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp` (7). |
 | `cli/core-support.lisp` | **Completed in B4:** `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6). |
 | `cli/extensions.lisp` | **Completed in B4:** `extensions/{discovery,loader,commands,installer}.lisp` (4). |
@@ -459,25 +478,20 @@ more importantly, excludes all 31 API implementation files.  At fixed baseline
 | pi `providers/` excluding `all.ts` | 82 | 2,111 | Brand/model declarations |
 | pi `api/` | 31 | 10,566 | Wire protocols, auth transforms, reducers |
 | pi combined | 113 | 12,677 | Fair declaration + protocol denominator |
-| Cadr `providers/` | 5 | 4,248 | Mostly wire protocols, not brand declarations |
-| Cadr `registry.lisp` declaration rows | 38 rows | 289 physical lines | Brand/provider data |
+| Cadr `providers/` | 13 | 5,643 | Wire protocols plus validated declaration/registry/runtime projection |
+| Cadr `providers/definitions.lisp` declaration rows | 38 rows | 963-file total | Brand/provider data plus field validation |
 
-Cadr has not written twice the provider boilerplate.  It already does the
-Lisp-native thing: 38 brands are rows in one `provider-definition` table, while
-four of the five provider files each implement one shared wire protocol.  The
-real defects are narrower and actionable:
+Cadr has not written twice the provider boilerplate. It does the Lisp-native
+thing: 38 brands are validated rows in one `provider-definition` table, while
+protocol files implement shared wire behavior. B11 closed the four defects the
+audit identified:
 
-1. `providers/independent.lisp` combines six unrelated protocols and must split.
-2. `registry.lisp` combines declarations, lookup, construction, auth source
-   policy, OAuth callback case trees, and runtime projection.
-3. Provider identity is still repeated between the row table, OAuth metadata
-   constants, OAuth login/refresh `case` forms, ambient-environment names, and
-   provider options.  That repetition caused the generic Anthropic instruction
-   bug even though the endpoint rows were data-driven.
-4. `make-protocol-provider` contains a stray second Google constructor clause
-   (`registry.lisp:356`) after the real Google clause.  It is unreachable under
-   the current protocol key and is recorded here, not repaired during the
-   docs-only audit.
+1. The six protocols formerly in `providers/independent.lisp` have exact files.
+2. Declarations, lookup/construction, and runtime projection have exact files.
+3. Provider identity/auth fields and callback strategy identities live in the
+   validated declaration; ambient environment names are derived from it.
+4. Protocol construction has one branch per declared protocol; the stray
+   duplicate Google clause is gone with the retired mixed registry.
 
 The convergence is a validated declarative provider schema that owns names,
 login labels/instructions, endpoints, auth methods, environment inputs, and
@@ -519,7 +533,7 @@ than the file table.
 | Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions/context.lisp:99-151`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition/loaders.lisp:183-238` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
 | Infrastructure output ownership | **CLI extension side converged in B4 and command/RPC consumers preserved in B5:** `cli/extensions/loader.lisp` owns extension output and infrastructure capture, `bootstrap/commands.lisp` owns frontend mode injection, and `modes/rpc/jsonl.lisp` owns wire emission; process/tool, TUI notice/browser, server Radius, and fatal sinks retain their domain owners. | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | Source gates keep each output category with its sink and reject direct JSONL writes from RPC command domains. |
 | Selector frame semantics | **Converged in B2:** `cli/interactive/selectors/common.lisp` owns frame sections, semantic borders/titles/input/help, centered viewport/count, and wrap navigation; seven domain owners supply entries and domain callbacks. | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | `selector-frame` is the sole shared owner; source gates require every selector family to render through it and delegate wrap navigation. |
-| Provider identity/auth metadata | 38 rows at `ai/registry.lisp:20-307`; OAuth metadata in `ai/oauth.lisp:3-62` and `oauth-flows.lisp:19-50`; auth/login/refresh case trees at `registry.lisp:581-785`; ambient names at `registry.lisp:491-548` | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | One validated provider declaration owns all static fields and callback identities; generated baseline fixture checks every provider × field. |
+| Provider identity/auth metadata | **Converged in B11:** `ai/providers/definitions.lisp` owns 38 validated rows, all static fields, callback strategy identities, and the derived ambient-environment set; `registry.lisp` constructs protocols and `runtime-projection.lisp` consumes the strategies. | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | The fixed-baseline 38-provider matrix checks every field; source gates reject duplicate/missing rows and mixed legacy owners. |
 | Secret-safe object printing | **Converged in B3 and preserved in B4:** `cadr-core/redacted-print.lisp` owns printer declarations; credential-bearing CLI values in `arguments.lisp`, `config.lisp`, `models/auth-storage.lisp`, `models/registry.lisp`, and `interactive/selectors/auth.lisp` use that owner. | A newly printable slot dumps tokens into a condition, crash log, or REPL | Fatal backtrace exposed session state; token non-leak depended on opaque printing | The registry test constructs and prints every declared secret-bearing type with sentinel secrets. |
 | Atomic persistence and file modes | **Converged in B3 and preserved in B4:** `cadr-core/atomic-file.lisp` owns replacement and modes; `cli/support/atomic-write.lisp` and `cli/settings/manager.lisp` only select the existing public durability policy. | Torn JSON, refresh-token loss, stale temp files, or world-readable secrets | OAuth refresh/order investigation established atomicity as a hard safety property | Source gates reject handwritten replacement outside the core owner; private auth remains on the shared `0600` path. |
 | JavaScript string/byte count semantics | **Converged in B4:** `agent/truncate.lisp` owns UTF-16 code-unit length; `cli/truncation.lisp` is now a direct delegate, while byte/line sizing retains domain adapters. | Tool result counts differ for CJK/emoji or truncation metadata disagrees | Write result counted UTF-8 bytes instead of JS UTF-16 units | B4 rejects a second CLI loop and keeps non-ASCII result fixtures. |
@@ -555,8 +569,8 @@ The remaining repeated decisions keep their approved order: B1 names output
 ownership before extracting presentation leaves; B2 establishes
 `selector-frame` before extracting selector families; B4 converges CLI sinks
 and the duplicate JavaScript metric before service extraction; B5--B10 consume
-those owners before their splits; B11 creates the fixed-baseline provider
-matrix before the declaration owner or provider file split.
+those owners before their splits; B11 created the fixed-baseline provider
+matrix before the declaration owner and provider file split.
 
 ### Part C B1 implementation status
 
@@ -684,6 +698,22 @@ The split is structural only. HTTP and model cancellation still consume the B3
 core owner, SSE retains an explicit unbounded read timeout, network failures
 retain the canonical `fetch failed` boundary, and the public `cadr-ai` package
 text remains byte-identical at SHA-256
+`e722e49fd70592edcd28da93acc97051d4a0b22bc016e4b7da314a65c4acfb4f`.
+
+### Part C B11 implementation status
+
+B11 retired the five mixed provider/authentication owners and replaced them
+with 25 exact owners. OAuth primitives, callback/page handling, each bundled
+OAuth provider, each authentication mechanism, six independent wire protocols,
+provider declarations, protocol construction, and runtime projection now have
+predictable files loaded in dependency order.
+
+Convergence preceded extraction. The committed fixture generated from pi
+baseline `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` records all 38 providers and
+every declaration field with `file:line` provenance. The validated declaration
+is now the only owner of static provider identity/auth fields and callback
+strategy identities; the ambient environment list is derived from those rows.
+The public package text remains byte-identical at SHA-256
 `e722e49fd70592edcd28da93acc97051d4a0b22bc016e4b7da314a65c4acfb4f`.
 
 ### Already-converged examples to preserve

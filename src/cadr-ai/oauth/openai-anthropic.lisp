@@ -1,0 +1,288 @@
+(in-package #:cadr-ai)
+
+(defun oauth-token-request (url pairs secrets)
+  (handler-case
+      (multiple-value-bind (body status)
+          (funcall *oauth-http-request-function*
+                   url
+                   :method :post
+                   :headers
+                   '(("content-type"
+                      . "application/x-www-form-urlencoded")
+                     ("accept" . "application/json"))
+                   :content (form-encode pairs)
+                   :connect-timeout 10
+                   :read-timeout 30
+                   :force-string t)
+        (unless (<= 200 status 299)
+          (error 'authentication-error
+                 :message
+                 (format nil "OAuth token endpoint returned HTTP ~D"
+                         status)))
+        (parse-json (normalize-response-body body)))
+    (error (cause)
+      (if (typep cause 'authentication-error)
+          (error cause)
+          (error 'authentication-error
+                 :message
+                 (format nil "OAuth token request failed: ~A"
+                         (redact-secrets
+                          (princ-to-string cause) secrets))
+                 :cause cause)))))
+
+(defun oauth-json-token-request (url object secrets)
+  (handler-case
+      (multiple-value-bind (body status)
+          (funcall *oauth-http-request-function*
+                   url
+                   :method :post
+                   :headers
+                   '(("content-type" . "application/json")
+                     ("accept" . "application/json"))
+                   :content (stringify-json object)
+                   :connect-timeout 10
+                   :read-timeout 30
+                   :force-string t)
+        (unless (<= 200 status 299)
+          (error 'authentication-error
+                 :message
+                 (format nil "OAuth token endpoint returned HTTP ~D"
+                         status)))
+        (parse-json (normalize-response-body body)))
+    (error (cause)
+      (if (typep cause 'authentication-error)
+          (error cause)
+          (error 'authentication-error
+                 :message
+                 (format nil "OAuth token request failed: ~A"
+                         (redact-secrets
+                          (princ-to-string cause) secrets))
+                 :cause cause)))))
+
+(defun base64url-value (character)
+  (position character +base64-url-alphabet+))
+
+(defun base64url-decode (string)
+  (let ((octets
+          (make-array (ceiling (* (length string) 3) 4)
+                      :element-type '(unsigned-byte 8)
+                      :adjustable t
+                      :fill-pointer 0)))
+    (loop for index from 0 below (length string) by 4
+          for remaining = (- (length string) index)
+          for a = (base64url-value (char string index))
+          for b = (and (> remaining 1)
+                       (base64url-value (char string (1+ index))))
+          for c = (and (> remaining 2)
+                       (base64url-value (char string (+ index 2))))
+          for d = (and (> remaining 3)
+                       (base64url-value (char string (+ index 3))))
+          do
+          (unless (and a b)
+            (error 'authentication-error
+                   :message "Invalid base64url token"))
+          (let ((bits
+                  (logior (ash a 18)
+                          (ash b 12)
+                          (ash (or c 0) 6)
+                          (or d 0))))
+            (vector-push-extend (ldb (byte 8 16) bits) octets)
+            (when c
+              (vector-push-extend (ldb (byte 8 8) bits) octets))
+            (when d
+              (vector-push-extend (ldb (byte 8 0) bits) octets))))
+    octets))
+
+(defun openai-account-id-from-token (token)
+  (handler-case
+      (let* ((parts (uiop:split-string token :separator '(#\.)))
+             (payload
+               (parse-json
+                (utf8-string
+                 (base64url-decode
+                  (second parts)))))
+             (auth
+               (json-get payload "https://api.openai.com/auth")))
+        (json-get auth "chatgpt_account_id"))
+    (error ()
+      nil)))
+
+(defun token-response-credential (provider response old-refresh)
+  (let ((access (json-get response "access_token"))
+        (refresh (or (json-get response "refresh_token") old-refresh))
+        (expires-in (json-get response "expires_in")))
+    (unless (and (non-empty-string-p access)
+                 (non-empty-string-p refresh)
+                 (numberp expires-in))
+      (error 'authentication-error
+             :message "OAuth token response is missing required fields"))
+    (make-oauth-credential
+     :provider provider
+     :access access
+     :refresh refresh
+     :expires (+ (unix-milliseconds)
+                 (round (* expires-in 1000)))
+     :account-id
+     (and (eq provider :openai-codex)
+          (openai-account-id-from-token access)))))
+
+(defun exchange-openai-authorization-code
+    (code verifier &optional (redirect-uri +openai-oauth-redirect-uri+))
+  (token-response-credential
+   :openai-codex
+   (oauth-token-request
+    +openai-oauth-token-url+
+    `(("grant_type" . "authorization_code")
+      ("client_id" . ,+openai-oauth-client-id+)
+      ("code" . ,code)
+      ("code_verifier" . ,verifier)
+      ("redirect_uri" . ,redirect-uri))
+    (list code verifier))
+   nil))
+
+(defun refresh-openai-oauth-credential (credential)
+  (token-response-credential
+   :openai-codex
+   (oauth-token-request
+    +openai-oauth-token-url+
+    `(("grant_type" . "refresh_token")
+      ("refresh_token" . ,(oauth-credential-refresh credential))
+      ("client_id" . ,+openai-oauth-client-id+))
+    (list (oauth-credential-access credential)
+          (oauth-credential-refresh credential)))
+   (oauth-credential-refresh credential)))
+
+(defun exchange-anthropic-authorization-code
+    (code state verifier)
+  (token-response-credential
+   :anthropic
+   (oauth-json-token-request
+    +anthropic-oauth-token-url+
+    (json-object
+     "grant_type" "authorization_code"
+     "client_id" +anthropic-oauth-client-id+
+     "code" code
+     "state" state
+     "redirect_uri" +anthropic-oauth-redirect-uri+
+     "code_verifier" verifier)
+    (list code verifier))
+   nil))
+
+(defun refresh-anthropic-oauth-credential (credential)
+  (token-response-credential
+   :anthropic
+   (oauth-json-token-request
+    +anthropic-oauth-token-url+
+    (json-object
+     "grant_type" "refresh_token"
+     "client_id" +anthropic-oauth-client-id+
+     "refresh_token" (oauth-credential-refresh credential))
+    (list (oauth-credential-access credential)
+          (oauth-credential-refresh credential)))
+   (oauth-credential-refresh credential)))
+
+(defun login-openai-oauth (auth-path
+                           &key
+                             (output *standard-output*)
+                             (open-browser *oauth-browser-open-function*)
+                             auth-url-function
+                             auth-prompt-function)
+  (multiple-value-bind (verifier challenge)
+      (generate-pkce)
+    (let* ((state (oauth-state))
+           (url (openai-authorization-url challenge state)))
+      (unless auth-prompt-function
+        (present-oauth-auth-url
+         url output auth-url-function))
+      (handler-case
+          (funcall open-browser url)
+        (error ()
+          (format output
+                  "Could not open a browser automatically; use the URL above.~%")
+          (finish-output output)))
+      (let ((credential
+              (exchange-openai-authorization-code
+               (if auth-prompt-function
+                   (wait-for-oauth-authorization
+                    state
+                    (lambda (cancelled-p)
+                      (wait-for-openai-oauth-code
+                       state cancelled-p))
+                    auth-prompt-function
+                    (list
+                     :type :manual-code
+                     :title
+                     (oauth-login-title
+                      +openai-codex-oauth-metadata+)
+                     :url url
+                     :instructions
+                     (oauth-provider-metadata-auth-url-instructions
+                      +openai-codex-oauth-metadata+)
+                     :message
+                     (oauth-provider-metadata-manual-input-message
+                      +openai-codex-oauth-metadata+)
+                     :placeholder +openai-oauth-redirect-uri+))
+                   (wait-for-openai-oauth-code state))
+               verifier)))
+        (unless (non-empty-string-p
+                 (oauth-credential-account-id credential))
+          (error 'authentication-error
+                 :message
+                 "OpenAI OAuth token does not contain chatgpt_account_id"))
+        (when auth-path
+          (write-auth-credential auth-path credential))
+        credential))))
+
+(defun login-anthropic-oauth
+    (auth-path
+     &key
+       (output *standard-output*)
+       (open-browser *oauth-browser-open-function*)
+       auth-url-function
+       auth-prompt-function)
+  ;; This mirrors the fixed reference implementation but remains live-unverified.
+  (multiple-value-bind (verifier challenge)
+      (generate-pkce)
+    (let* ((state verifier)
+           (url (anthropic-authorization-url challenge state)))
+      (format output
+              "Anthropic subscription OAuth is unverified and may violate provider terms.~%")
+      (unless auth-prompt-function
+        (present-oauth-auth-url
+         url output auth-url-function))
+      (handler-case
+          (funcall open-browser url)
+        (error ()
+          (format output
+                  "Could not open a browser automatically; use the URL above.~%")
+          (finish-output output)))
+      (let* ((code
+               (if auth-prompt-function
+                   (wait-for-oauth-authorization
+                    state
+                    (lambda (cancelled-p)
+                      (wait-for-oauth-code
+                       state 53692 "/callback" "Anthropic"
+                       cancelled-p))
+                    auth-prompt-function
+                    (list
+                     :type :manual-code
+                     :title
+                     (oauth-login-title
+                      +anthropic-oauth-metadata+)
+                     :url url
+                     :instructions
+                     (oauth-provider-metadata-auth-url-instructions
+                      +anthropic-oauth-metadata+)
+                     :message
+                     (oauth-provider-metadata-manual-input-message
+                      +anthropic-oauth-metadata+)
+                     :placeholder +anthropic-oauth-redirect-uri+))
+                   (wait-for-oauth-code
+                    state 53692 "/callback" "Anthropic")))
+             (credential
+               (exchange-anthropic-authorization-code
+                code state verifier)))
+        (when auth-path
+          (write-auth-credential auth-path credential))
+        credential))))

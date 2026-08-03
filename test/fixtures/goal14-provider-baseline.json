@@ -1,0 +1,1241 @@
+{
+  "schema": "cadr-goal14-provider-baseline-v1",
+  "baselineCommit": "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
+  "generatedFrom": [
+    "packages/ai/src/providers/*.ts",
+    "packages/ai/src/auth/oauth/*.ts",
+    "packages/coding-agent/src/core/model-resolver.ts",
+    "test/fixtures/catalogs/provider-data/*.json"
+  ],
+  "providerCount": 38,
+  "providers": [
+    {
+      "id": "amazon-bedrock",
+      "source": "packages/ai/src/providers/amazon-bedrock.ts:75",
+      "name": "Amazon Bedrock",
+      "protocol": "bedrock-converse-stream",
+      "protocols": [
+        "bedrock-converse-stream"
+      ],
+      "baseUrl": "https://bedrock-runtime.us-east-1.amazonaws.com",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "us.anthropic.claude-opus-4-6-v1",
+      "keyEnvironment": null,
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "AWS credentials or bearer token",
+      "environmentNames": [
+        "AWS_PROFILE",
+        "AWS_REGION",
+        "AWS_DEFAULT_REGION",
+        "AWS_ACCESS_KEY_ID",
+        "AWS_SECRET_ACCESS_KEY",
+        "AWS_SESSION_TOKEN",
+        "AWS_BEARER_TOKEN_BEDROCK",
+        "AWS_CONTAINER_CREDENTIALS_RELATIVE_URI",
+        "AWS_CONTAINER_CREDENTIALS_FULL_URI",
+        "AWS_WEB_IDENTITY_TOKEN_FILE"
+      ],
+      "apiKeyAuthStrategy": "bedrock",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "ant-ling",
+      "source": "packages/ai/src/providers/ant-ling.ts:7",
+      "name": "Ant Ling",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.ant-ling.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "Ring-2.6-1T",
+      "keyEnvironment": "ANT_LING_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Ant Ling API key",
+      "environmentNames": [
+        "ANT_LING_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "anthropic",
+      "source": "packages/ai/src/providers/anthropic.ts:39",
+      "name": "Anthropic",
+      "protocol": "anthropic-messages",
+      "protocols": [
+        "anthropic-messages"
+      ],
+      "baseUrl": "https://api.anthropic.com",
+      "authTypes": [
+        "api-key",
+        "oauth"
+      ],
+      "defaultModel": "claude-opus-4-8",
+      "keyEnvironment": "ANTHROPIC_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Anthropic API key",
+      "environmentNames": [
+        "ANTHROPIC_API_KEY",
+        "ANTHROPIC_AUTH_TOKEN",
+        "ANTHROPIC_OAUTH_TOKEN"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": "anthropic",
+      "oauthRefreshStrategy": "anthropic",
+      "oauthToAuthStrategy": "access-token",
+      "modelFilterStrategy": null,
+      "oauthMetadata": {
+        "providerName": "Anthropic",
+        "methodName": "Anthropic (Claude Pro/Max)",
+        "loginLabel": null,
+        "authUrlInstructions": "Complete login in your browser. If the browser is on another machine, paste the final redirect URL here.",
+        "manualInputMessage": "Complete login in your browser, or paste the authorization code / redirect URL here:"
+      }
+    },
+    {
+      "id": "azure-openai-responses",
+      "source": "packages/ai/src/providers/azure-openai-responses.ts:7",
+      "name": "Azure OpenAI",
+      "protocol": "azure-openai-responses",
+      "protocols": [
+        "azure-openai-responses"
+      ],
+      "baseUrl": "",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "gpt-5.4",
+      "keyEnvironment": "AZURE_OPENAI_API_KEY",
+      "requiredEnvironment": [
+        "AZURE_OPENAI_BASE_URL or AZURE_OPENAI_RESOURCE_NAME"
+      ],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Azure OpenAI API key",
+      "environmentNames": [
+        "AZURE_OPENAI_API_KEY",
+        "AZURE_OPENAI_BASE_URL",
+        "AZURE_OPENAI_RESOURCE_NAME",
+        "AZURE_OPENAI_DEPLOYMENT_NAME"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "cerebras",
+      "source": "packages/ai/src/providers/cerebras.ts:7",
+      "name": "Cerebras",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.cerebras.ai/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "zai-glm-4.7",
+      "keyEnvironment": "CEREBRAS_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Cerebras API key",
+      "environmentNames": [
+        "CEREBRAS_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "cloudflare-ai-gateway",
+      "source": "packages/ai/src/providers/cloudflare-ai-gateway.ts:12",
+      "name": "Cloudflare AI Gateway",
+      "protocol": "openai-completions",
+      "protocols": [
+        "anthropic-messages",
+        "openai-completions",
+        "openai-responses"
+      ],
+      "baseUrl": "https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/compat",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "workers-ai/@cf/moonshotai/kimi-k2.6",
+      "keyEnvironment": "CLOUDFLARE_API_KEY",
+      "requiredEnvironment": [
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_GATEWAY_ID"
+      ],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Cloudflare API key",
+      "environmentNames": [
+        "CLOUDFLARE_API_KEY",
+        "CLOUDFLARE_ACCOUNT_ID",
+        "CLOUDFLARE_GATEWAY_ID"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "cloudflare-workers-ai",
+      "source": "packages/ai/src/providers/cloudflare-workers-ai.ts:8",
+      "name": "Cloudflare Workers AI",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.cloudflare.com/client/v4/accounts/{CLOUDFLARE_ACCOUNT_ID}/ai/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "@cf/moonshotai/kimi-k2.6",
+      "keyEnvironment": "CLOUDFLARE_API_KEY",
+      "requiredEnvironment": [
+        "CLOUDFLARE_ACCOUNT_ID"
+      ],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Cloudflare API key",
+      "environmentNames": [
+        "CLOUDFLARE_API_KEY",
+        "CLOUDFLARE_ACCOUNT_ID"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "deepseek",
+      "source": "packages/ai/src/providers/deepseek.ts:7",
+      "name": "DeepSeek",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.deepseek.com",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "deepseek-v4-pro",
+      "keyEnvironment": "DEEPSEEK_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "DeepSeek API key",
+      "environmentNames": [
+        "DEEPSEEK_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "fireworks",
+      "source": "packages/ai/src/providers/fireworks.ts:8",
+      "name": "Fireworks",
+      "protocol": "anthropic-messages",
+      "protocols": [
+        "anthropic-messages",
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.fireworks.ai/inference",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "accounts/fireworks/models/kimi-k2p6",
+      "keyEnvironment": "FIREWORKS_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Fireworks API key",
+      "environmentNames": [
+        "FIREWORKS_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "github-copilot",
+      "source": "packages/ai/src/providers/github-copilot.ts:10",
+      "name": "GitHub Copilot",
+      "protocol": "openai-responses",
+      "protocols": [
+        "anthropic-messages",
+        "openai-completions",
+        "openai-responses"
+      ],
+      "baseUrl": "https://api.individual.githubcopilot.com",
+      "authTypes": [
+        "api-key",
+        "oauth"
+      ],
+      "defaultModel": "gpt-5.4",
+      "keyEnvironment": "COPILOT_GITHUB_TOKEN",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "GitHub Copilot token",
+      "environmentNames": [
+        "COPILOT_GITHUB_TOKEN"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": "github-copilot",
+      "oauthRefreshStrategy": "github-copilot",
+      "oauthToAuthStrategy": "github-copilot",
+      "modelFilterStrategy": "github-available-models",
+      "oauthMetadata": {
+        "providerName": "GitHub Copilot",
+        "methodName": "GitHub Copilot",
+        "loginLabel": null,
+        "authUrlInstructions": null,
+        "manualInputMessage": null
+      }
+    },
+    {
+      "id": "google",
+      "source": "packages/ai/src/providers/google.ts:7",
+      "name": "Google",
+      "protocol": "google-generative-ai",
+      "protocols": [
+        "google-generative-ai"
+      ],
+      "baseUrl": "https://generativelanguage.googleapis.com/v1beta",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "gemini-3.1-pro-preview",
+      "keyEnvironment": "GEMINI_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Gemini API key",
+      "environmentNames": [
+        "GEMINI_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "google-vertex",
+      "source": "packages/ai/src/providers/google-vertex.ts:86",
+      "name": "Google Vertex AI",
+      "protocol": "google-vertex",
+      "protocols": [
+        "google-vertex"
+      ],
+      "baseUrl": "https://{location}-aiplatform.googleapis.com",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "gemini-3.1-pro-preview",
+      "keyEnvironment": null,
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Google Cloud credentials",
+      "environmentNames": [
+        "GOOGLE_CLOUD_API_KEY",
+        "GOOGLE_APPLICATION_CREDENTIALS",
+        "GOOGLE_CLOUD_PROJECT",
+        "GOOGLE_CLOUD_LOCATION",
+        "GCLOUD_PROJECT"
+      ],
+      "apiKeyAuthStrategy": "vertex",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "groq",
+      "source": "packages/ai/src/providers/groq.ts:7",
+      "name": "Groq",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.groq.com/openai/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "openai/gpt-oss-120b",
+      "keyEnvironment": "GROQ_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Groq API key",
+      "environmentNames": [
+        "GROQ_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "huggingface",
+      "source": "packages/ai/src/providers/huggingface.ts:7",
+      "name": "Hugging Face",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://router.huggingface.co/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "moonshotai/Kimi-K2.6",
+      "keyEnvironment": "HF_TOKEN",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Hugging Face token",
+      "environmentNames": [
+        "HF_TOKEN"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "kimi-coding",
+      "source": "packages/ai/src/providers/kimi-coding.ts:8",
+      "name": "Kimi For Coding",
+      "protocol": "anthropic-messages",
+      "protocols": [
+        "anthropic-messages"
+      ],
+      "baseUrl": "https://api.kimi.com/coding",
+      "authTypes": [
+        "api-key",
+        "oauth"
+      ],
+      "defaultModel": "kimi-for-coding",
+      "keyEnvironment": "KIMI_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Kimi API key",
+      "environmentNames": [
+        "KIMI_API_KEY",
+        "KIMI_CODE_OAUTH_HOST",
+        "KIMI_OAUTH_HOST"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": "kimi",
+      "oauthRefreshStrategy": "kimi",
+      "oauthToAuthStrategy": "kimi-bearer",
+      "modelFilterStrategy": null,
+      "oauthMetadata": {
+        "providerName": "Kimi For Coding",
+        "methodName": "Kimi Code (subscription)",
+        "loginLabel": "Sign in with Kimi Code",
+        "authUrlInstructions": null,
+        "manualInputMessage": null
+      }
+    },
+    {
+      "id": "minimax",
+      "source": "packages/ai/src/providers/minimax.ts:7",
+      "name": "MiniMax",
+      "protocol": "anthropic-messages",
+      "protocols": [
+        "anthropic-messages"
+      ],
+      "baseUrl": "https://api.minimax.io/anthropic",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "MiniMax-M2.7",
+      "keyEnvironment": "MINIMAX_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "MiniMax API key",
+      "environmentNames": [
+        "MINIMAX_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "minimax-cn",
+      "source": "packages/ai/src/providers/minimax-cn.ts:7",
+      "name": "MiniMax CN",
+      "protocol": "anthropic-messages",
+      "protocols": [
+        "anthropic-messages"
+      ],
+      "baseUrl": "https://api.minimaxi.com/anthropic",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "MiniMax-M2.7",
+      "keyEnvironment": "MINIMAX_CN_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "MiniMax CN API key",
+      "environmentNames": [
+        "MINIMAX_CN_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "mistral",
+      "source": "packages/ai/src/providers/mistral.ts:7",
+      "name": "Mistral",
+      "protocol": "mistral-conversations",
+      "protocols": [
+        "mistral-conversations"
+      ],
+      "baseUrl": "https://api.mistral.ai",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "devstral-medium-latest",
+      "keyEnvironment": "MISTRAL_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Mistral API key",
+      "environmentNames": [
+        "MISTRAL_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "moonshotai",
+      "source": "packages/ai/src/providers/moonshotai.ts:7",
+      "name": "Moonshot AI",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.moonshot.ai/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "kimi-k2.6",
+      "keyEnvironment": "MOONSHOT_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Moonshot AI API key",
+      "environmentNames": [
+        "MOONSHOT_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "moonshotai-cn",
+      "source": "packages/ai/src/providers/moonshotai-cn.ts:7",
+      "name": "Moonshot AI CN",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.moonshot.cn/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "kimi-k2.6",
+      "keyEnvironment": "MOONSHOT_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Moonshot AI API key",
+      "environmentNames": [
+        "MOONSHOT_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "nvidia",
+      "source": "packages/ai/src/providers/nvidia.ts:7",
+      "name": "NVIDIA",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://integrate.api.nvidia.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "nvidia/nemotron-3-super-120b-a12b",
+      "keyEnvironment": "NVIDIA_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "NVIDIA API key",
+      "environmentNames": [
+        "NVIDIA_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "openai",
+      "source": "packages/ai/src/providers/openai.ts:7",
+      "name": "OpenAI",
+      "protocol": "openai-responses",
+      "protocols": [
+        "openai-responses"
+      ],
+      "baseUrl": "https://api.openai.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "gpt-5.5",
+      "keyEnvironment": "OPENAI_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "OpenAI API key",
+      "environmentNames": [
+        "OPENAI_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "openai-codex",
+      "source": "packages/ai/src/providers/openai-codex.ts:8",
+      "name": "OpenAI Codex",
+      "protocol": "openai-codex-responses",
+      "protocols": [
+        "openai-codex-responses"
+      ],
+      "baseUrl": "https://chatgpt.com/backend-api",
+      "authTypes": [
+        "oauth"
+      ],
+      "defaultModel": "gpt-5.5",
+      "keyEnvironment": null,
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": null,
+      "environmentNames": [],
+      "apiKeyAuthStrategy": null,
+      "oauthLoginStrategy": "openai-device",
+      "oauthRefreshStrategy": "openai-device",
+      "oauthToAuthStrategy": "access-token",
+      "modelFilterStrategy": null,
+      "oauthMetadata": {
+        "providerName": "OpenAI Codex",
+        "methodName": "OpenAI (ChatGPT Plus/Pro)",
+        "loginLabel": null,
+        "authUrlInstructions": "A browser window should open. Complete login to finish.",
+        "manualInputMessage": "Complete login in your browser, or paste the authorization code / redirect URL here:"
+      }
+    },
+    {
+      "id": "opencode",
+      "source": "packages/ai/src/providers/opencode.ts:12",
+      "name": "OpenCode Zen",
+      "protocol": "openai-completions",
+      "protocols": [
+        "anthropic-messages",
+        "google-generative-ai",
+        "openai-completions",
+        "openai-responses"
+      ],
+      "baseUrl": "https://opencode.ai/zen/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "kimi-k2.6",
+      "keyEnvironment": "OPENCODE_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "OpenCode API key",
+      "environmentNames": [
+        "OPENCODE_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "opencode-go",
+      "source": "packages/ai/src/providers/opencode-go.ts:9",
+      "name": "OpenCode Go",
+      "protocol": "openai-completions",
+      "protocols": [
+        "anthropic-messages",
+        "openai-completions",
+        "openai-responses"
+      ],
+      "baseUrl": "https://opencode.ai/zen/go/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "kimi-k2.6",
+      "keyEnvironment": "OPENCODE_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "OpenCode API key",
+      "environmentNames": [
+        "OPENCODE_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "openrouter",
+      "source": "packages/ai/src/providers/openrouter.ts:8",
+      "name": "OpenRouter",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://openrouter.ai/api/v1",
+      "authTypes": [
+        "api-key",
+        "oauth"
+      ],
+      "defaultModel": "moonshotai/kimi-k2.6",
+      "keyEnvironment": "OPENROUTER_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "OpenRouter API key",
+      "environmentNames": [
+        "OPENROUTER_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": "openrouter",
+      "oauthRefreshStrategy": "openrouter",
+      "oauthToAuthStrategy": "access-token",
+      "modelFilterStrategy": null,
+      "oauthMetadata": {
+        "providerName": "OpenRouter",
+        "methodName": "OpenRouter OAuth",
+        "loginLabel": "Sign in with OpenRouter",
+        "authUrlInstructions": "Complete sign-in in your browser. If the browser is on another machine, paste the final redirect URL here.",
+        "manualInputMessage": "Complete sign-in in your browser, or paste the authorization code / redirect URL here:"
+      }
+    },
+    {
+      "id": "qwen-token-plan",
+      "source": "packages/ai/src/providers/qwen-token-plan.ts:7",
+      "name": "Qwen Token Plan",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "qwen3.7-max",
+      "keyEnvironment": "QWEN_TOKEN_PLAN_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Qwen Token Plan API key",
+      "environmentNames": [
+        "QWEN_TOKEN_PLAN_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "qwen-token-plan-cn",
+      "source": "packages/ai/src/providers/qwen-token-plan-cn.ts:7",
+      "name": "Qwen Token Plan CN",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "qwen3.7-max",
+      "keyEnvironment": "QWEN_TOKEN_PLAN_CN_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Qwen Token Plan CN API key",
+      "environmentNames": [
+        "QWEN_TOKEN_PLAN_CN_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "radius",
+      "source": "packages/ai/src/providers/radius.ts:28",
+      "name": "Radius",
+      "protocol": "pi-messages",
+      "protocols": [
+        "pi-messages"
+      ],
+      "baseUrl": "https://radius.pi.dev",
+      "authTypes": [
+        "api-key",
+        "oauth"
+      ],
+      "defaultModel": "auto",
+      "keyEnvironment": "RADIUS_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": true,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Radius API key",
+      "environmentNames": [
+        "RADIUS_API_KEY",
+        "RADIUS_GATEWAY_URL"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": "radius",
+      "oauthRefreshStrategy": "radius",
+      "oauthToAuthStrategy": "access-token",
+      "modelFilterStrategy": null,
+      "oauthMetadata": {
+        "providerName": "Radius",
+        "methodName": "Radius",
+        "loginLabel": null,
+        "authUrlInstructions": "Continue in your browser.",
+        "manualInputMessage": null
+      }
+    },
+    {
+      "id": "together",
+      "source": "packages/ai/src/providers/together.ts:7",
+      "name": "Together",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.together.ai/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "moonshotai/Kimi-K2.6",
+      "keyEnvironment": "TOGETHER_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Together API key",
+      "environmentNames": [
+        "TOGETHER_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "vercel-ai-gateway",
+      "source": "packages/ai/src/providers/vercel-ai-gateway.ts:7",
+      "name": "Vercel AI Gateway",
+      "protocol": "anthropic-messages",
+      "protocols": [
+        "anthropic-messages"
+      ],
+      "baseUrl": "https://ai-gateway.vercel.sh",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "zai/glm-5.1",
+      "keyEnvironment": "AI_GATEWAY_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Vercel AI Gateway API key",
+      "environmentNames": [
+        "AI_GATEWAY_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "xai",
+      "source": "packages/ai/src/providers/xai.ts:9",
+      "name": "xAI",
+      "protocol": "openai-responses",
+      "protocols": [
+        "openai-completions",
+        "openai-responses"
+      ],
+      "baseUrl": "https://api.x.ai/v1",
+      "authTypes": [
+        "api-key",
+        "oauth"
+      ],
+      "defaultModel": "grok-4.5",
+      "keyEnvironment": "XAI_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "xAI API key",
+      "environmentNames": [
+        "XAI_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": "xai",
+      "oauthRefreshStrategy": "xai",
+      "oauthToAuthStrategy": "access-token",
+      "modelFilterStrategy": null,
+      "oauthMetadata": {
+        "providerName": "xAI",
+        "methodName": "xAI (Grok/X subscription)",
+        "loginLabel": "Sign in with SuperGrok or X Premium",
+        "authUrlInstructions": null,
+        "manualInputMessage": null
+      }
+    },
+    {
+      "id": "xiaomi",
+      "source": "packages/ai/src/providers/xiaomi.ts:7",
+      "name": "Xiaomi",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.xiaomimimo.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "mimo-v2.5-pro",
+      "keyEnvironment": "XIAOMI_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Xiaomi API key",
+      "environmentNames": [
+        "XIAOMI_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "xiaomi-token-plan-ams",
+      "source": "packages/ai/src/providers/xiaomi-token-plan-ams.ts:7",
+      "name": "Xiaomi Token Plan AMS",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://token-plan-ams.xiaomimimo.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "mimo-v2.5-pro",
+      "keyEnvironment": "XIAOMI_TOKEN_PLAN_AMS_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Xiaomi Token Plan AMS API key",
+      "environmentNames": [
+        "XIAOMI_TOKEN_PLAN_AMS_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "xiaomi-token-plan-cn",
+      "source": "packages/ai/src/providers/xiaomi-token-plan-cn.ts:7",
+      "name": "Xiaomi Token Plan CN",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://token-plan-cn.xiaomimimo.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "mimo-v2.5-pro",
+      "keyEnvironment": "XIAOMI_TOKEN_PLAN_CN_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Xiaomi Token Plan CN API key",
+      "environmentNames": [
+        "XIAOMI_TOKEN_PLAN_CN_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "xiaomi-token-plan-sgp",
+      "source": "packages/ai/src/providers/xiaomi-token-plan-sgp.ts:7",
+      "name": "Xiaomi Token Plan SGP",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://token-plan-sgp.xiaomimimo.com/v1",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "mimo-v2.5-pro",
+      "keyEnvironment": "XIAOMI_TOKEN_PLAN_SGP_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Xiaomi Token Plan SGP API key",
+      "environmentNames": [
+        "XIAOMI_TOKEN_PLAN_SGP_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "zai",
+      "source": "packages/ai/src/providers/zai.ts:7",
+      "name": "Z.AI",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://api.z.ai/api/coding/paas/v4",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "glm-5.1",
+      "keyEnvironment": "ZAI_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Z.AI API key",
+      "environmentNames": [
+        "ZAI_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    },
+    {
+      "id": "zai-coding-cn",
+      "source": "packages/ai/src/providers/zai-coding-cn.ts:7",
+      "name": "Z.AI Coding CN",
+      "protocol": "openai-completions",
+      "protocols": [
+        "openai-completions"
+      ],
+      "baseUrl": "https://open.bigmodel.cn/api/coding/paas/v4",
+      "authTypes": [
+        "api-key"
+      ],
+      "defaultModel": "glm-5.1",
+      "keyEnvironment": "ZAI_CODING_CN_API_KEY",
+      "requiredEnvironment": [],
+      "dynamicModels": false,
+      "supportsImages": false,
+      "supportsTools": true,
+      "reasoning": false,
+      "apiKeyName": "Z.AI Coding CN API key",
+      "environmentNames": [
+        "ZAI_CODING_CN_API_KEY"
+      ],
+      "apiKeyAuthStrategy": "environment",
+      "oauthLoginStrategy": null,
+      "oauthRefreshStrategy": null,
+      "oauthToAuthStrategy": null,
+      "modelFilterStrategy": null,
+      "oauthMetadata": null
+    }
+  ]
+}
