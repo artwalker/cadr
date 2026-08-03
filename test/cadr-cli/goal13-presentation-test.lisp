@@ -1005,19 +1005,22 @@
       presentation))
     (is
      (search
-      "GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0"
+      "GOAL13_OUTPUT_CHANNELS total=18 covered=18 pending=0"
       presentation))
     (let ((channels
             (goal13-ledger-section
              presentation
              "## Output-channel completeness gate"
              "## B1.")))
-      (is (= 17
+      (is (= 18
              (goal13-count-ledger-rows
               channels "^\\| C-[0-9]+ \\|")))
-      (is (= 17
+      (is (= 18
              (goal13-count-ledger-rows
               channels "^\\| C-[0-9]+ .*\\| 已覆盖 \\|$")))
+      (is (= 18
+             (goal13-count-ledger-rows
+              channels "^\\| A-[0-9]+ \\|")))
       (dolist
           (required
            '("TUI screen"
@@ -1036,10 +1039,21 @@
              "Unix-socket"
              "process exit status"
              "server control-process"
-             "eval runner"))
+             "eval runner"
+             "runtime output during abnormal termination"))
         (is (search required channels)
             "Missing observable output channel: ~A"
-            required)))
+            required))
+      (dolist (channel
+                '("C-01" "C-02" "C-03" "C-04" "C-05" "C-06"
+                  "C-07" "C-08" "C-09" "C-10" "C-11" "C-12"
+                  "C-13" "C-14" "C-15" "C-16" "C-17" "C-18"))
+        (is (search channel
+                    (goal13-ledger-section
+                     channels
+                     "### Exceptional-path closure"
+                     nil))
+            "Exceptional-path audit is missing ~A" channel)))
     (let ((b1 (goal13-ledger-section
                presentation "## B1." "## B2."))
           (b2 (goal13-ledger-section

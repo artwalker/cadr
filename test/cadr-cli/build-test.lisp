@@ -1,6 +1,12 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(declaim (notinline goal13-crash-origin))
+
+(defun goal13-crash-origin (system-prompt session-content secret)
+  (error "~A ~A ~A"
+         system-prompt session-content secret))
+
 (test native-image-options-omit-unsupported-compression-keyword
   (let ((without
           (cadr-cli::native-image-save-arguments
@@ -14,6 +20,112 @@
     (is (eq t (getf without :save-runtime-options)))
     (is (not (member :compression without)))
     (is (eq t (getf with :compression)))))
+
+(test goal13-fatal-condition-boundary-redacts-user-output-and-crash-log
+  (with-test-directory (directory)
+    (let* ((visible (make-string-output-stream))
+             (secret "oauth-secret-must-not-leak")
+             (system-prompt "SYSTEM-PROMPT-MUST-NOT-REACH-TERMINAL")
+             (session-content "SESSION-CONTENT-MUST-NOT-REACH-TERMINAL")
+             (status
+               (let ((*error-output* visible))
+                 (cadr-cli::call-with-fatal-condition-boundary
+                  (lambda ()
+                    (goal13-crash-origin
+                     system-prompt session-content secret))
+                  :crash-directory directory
+                  :secrets (list secret)
+                  :exit-function #'identity)))
+             (output (get-output-stream-string visible))
+             (logs
+               (directory
+                (merge-pathnames "cadr-crash-*.log" directory))))
+        (is (= 1 status))
+        (is (search "SIMPLE-ERROR" output))
+        (is (search "Crash log:" output))
+        (is (null (search system-prompt output)))
+        (is (null (search session-content output)))
+        (is (null (search secret output)))
+        (is (= 1 (length logs)))
+        (when logs
+          (is (= #o600
+                 (logand #o777
+                         (sb-posix:stat-mode
+                          (sb-posix:stat (first logs))))))
+          (let ((diagnostic (read-text (first logs))))
+            (is (search "CRASH-ORIGIN" diagnostic))
+            (is (search system-prompt diagnostic))
+            (is (search session-content diagnostic))
+            (is (null (search secret diagnostic)))
+            (is (search "[REDACTED]" diagnostic)))))))
+
+(test goal13-cli-configuration-objects-never-print-secret-material
+  (with-test-directory (directory)
+    (let* ((secret "cli-secret-must-never-print")
+           (storage
+             (cadr-cli:make-file-auth-storage
+              (merge-pathnames "auth.json" directory)))
+           (objects
+             (list
+              (cadr-cli::make-cli-arguments :api-key secret)
+              (cadr-cli::make-provider-config
+               :name "faux"
+               :provider
+               (cadr-ai:make-openai-provider
+                :api-key secret))
+              (cadr-cli::make-runtime-credentials storage)
+              (cadr-cli::make-runtime-auth-input-state
+               (list :type :secret :message "API key"))
+              (cadr-cli::make-api-key-input-state
+               (cadr-cli::make-oauth-selector-option
+                :id :faux :name "Faux" :auth-type :api-key))
+              (cadr-cli:make-model-registry
+               :path (merge-pathnames "models.json" directory)
+               :credentials storage)
+              (cadr-cli::%make-hugging-face-client
+               :token secret)
+              (cadr-cli::%make-llama-client
+               :api-key secret))))
+      (dolist (object objects)
+        (let ((printed
+                (write-to-string object :readably nil)))
+          (is (null (search secret printed)))
+          (is (search "REDACTED" printed)))))))
+
+(test goal13-interactive-interrupt-uses-the-sanitized-fatal-path
+  (with-test-directory (directory)
+    (let* ((visible (make-string-output-stream))
+           (status
+             (let ((*error-output* visible))
+               (cadr-cli::call-with-fatal-condition-boundary
+                (lambda ()
+                  (signal 'sb-sys:interactive-interrupt))
+                :crash-directory directory
+                :exit-function #'identity)))
+           (output (get-output-stream-string visible)))
+      (is (= 1 status))
+      (is (search "INTERACTIVE-INTERRUPT" output))
+      (is (search "Interactive interrupt" output))
+      (is (null (search "Backtrace for:" output)))
+      (is (= 1
+             (length
+              (directory
+               (merge-pathnames
+                "cadr-crash-*.log" directory))))))))
+
+(test goal13-cleanup-never-blocks-on-an-unresponsive-thread
+  (let* ((started (sb-thread:make-semaphore :count 0))
+         (thread
+           (sb-thread:make-thread
+            (lambda ()
+              (sb-thread:signal-semaphore started)
+              (loop (sleep 60)))
+            :name "cadr-test-unresponsive-cleanup")))
+    (sb-thread:wait-on-semaphore started)
+    (is (eq :terminated
+            (cadr-cli::stop-thread-for-cleanup
+             thread :timeout 0.01d0)))
+    (is (not (sb-thread:thread-alive-p thread)))))
 
 (test goal10-part-e-release-identity-has-one-version-source
   (let* ((root (asdf:system-source-directory "cadr-cli"))

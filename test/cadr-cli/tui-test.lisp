@@ -88,6 +88,37 @@
 (defun footer-sync-submit-input (text)
   (format nil "~A~C" text #\Return))
 
+(test goal13-tui-exit-completes-when-the-active-worker-ignores-abort
+  (let ((worker-started
+          (sb-thread:make-semaphore :count 0))
+        (worker-thread nil))
+    (signals simple-error
+      (cadr-cli::run-tui
+       (constantly nil)
+       :model "mock"
+       :terminal
+       (make-instance
+        'footer-sync-test-terminal
+        :columns 80 :rows 12
+        :inputs
+        (list
+         (footer-sync-submit-input "/hang")
+         (footer-sync-submit-input "")
+         (lambda (terminal)
+           (declare (ignore terminal))
+           (sb-thread:wait-on-semaphore
+            worker-started :timeout 1d0)
+           (error "force TUI cleanup"))))
+       :abort-function (constantly nil)
+       :command-function
+       (lambda (line)
+         (declare (ignore line))
+         (setf worker-thread sb-thread:*current-thread*)
+         (sb-thread:signal-semaphore worker-started)
+         (loop (sleep 60)))))
+    (is (not (null worker-thread)))
+    (is (not (sb-thread:thread-alive-p worker-thread)))))
+
 (test tui-command-boundary-ignores-benign-infrastructure-signals
   (let ((notices nil))
     (is
@@ -3801,3 +3832,97 @@
        (search
         "https://auth.openai.com/oauth/authorize?state=test"
         compact)))))
+
+(test goal13-runtime-oauth-input-cancel-invokes-the-provider-cancellation
+  (let* ((cancel-count 0)
+        (state
+          (cadr-cli::make-runtime-auth-input-state
+           (list :type :manual-code
+                 :message "Authorization code"
+                 :cancel-function
+                 (lambda () (incf cancel-count))))))
+    (multiple-value-bind (action value)
+        (cadr-cli::runtime-auth-input-state-handle-event
+         state
+         (cadr-tui:make-input-event :kind :escape))
+      (is (eq :cancel action))
+      (is (null value))
+      (is (= 1 cancel-count)))))
+
+(defun goal13-run-cancelled-oauth-dialog (command title)
+  (let ((prompt-function nil)
+        (cancel-count 0)
+        (login-finished-p nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 90 :rows 16
+      :inputs
+      (list
+       (footer-sync-submit-input command)
+       (footer-sync-submit-input "")
+       (footer-sync-wait-for-screen-text
+        title)
+       (string #\Escape)
+       (lambda (terminal)
+         (and
+          login-finished-p
+          (let ((screen
+                  (format
+                   nil "~{~A~^~%~}"
+                   (mapcar
+                    #'cadr-tui:strip-terminal-sequences
+                    (cadr-tui:virtual-terminal-snapshot terminal)))))
+            (and (null (search "Working..." screen))
+                 (search "Login cancelled" screen)))))
+       (footer-sync-submit-input "/quit")))
+     :set-auth-prompt-consumer
+     (lambda (function)
+       (setf prompt-function function))
+     :command-function
+     (lambda (line)
+       (let* ((login-function
+                (lambda
+                    (path &key output open-browser
+                               auth-url-function
+                               auth-prompt-function)
+                  (declare
+                   (ignore path output open-browser
+                           auth-url-function))
+                  (unwind-protect
+                       (let ((input
+                               (funcall
+                                auth-prompt-function
+                                (list
+                                 :type :manual-code
+                                 :title title
+                                 :instructions
+                                 "A browser window should open. Complete login to finish."
+                                 :message
+                                 "Complete login in your browser, or paste the authorization code / redirect URL here:"
+                                 :cancel-function
+                                 (lambda () (incf cancel-count))))))
+                         (unless input
+                           (error
+                            'cadr-ai:authentication-error
+                            :message "Login cancelled")))
+                    (setf login-finished-p t))))
+              (cadr-cli::*openai-login-function* login-function)
+              (cadr-cli::*anthropic-login-function* login-function))
+         (cadr-cli:handle-auth-command
+          line
+          :output (make-string-output-stream)
+          :auth-prompt-function prompt-function))))
+    cancel-count))
+
+(test goal13-every-built-in-oauth-dialog-cancel-clears-working-and-restores-editor
+  (dolist
+      (spec
+       '(("/login openai" "Login to OpenAI (ChatGPT Plus/Pro)")
+         ("/login anthropic" "Login to Anthropic (Claude Pro/Max)")))
+    (is (= 1
+           (goal13-run-cancelled-oauth-dialog
+            (first spec) (second spec))))))

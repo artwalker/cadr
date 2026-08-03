@@ -37,6 +37,11 @@
 (defclass openai-codex-provider (openai-provider) ())
 (defclass pi-messages-provider (provider) ())
 
+(defmethod print-object ((value provider) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":provider-id ~A :credentials [REDACTED]"
+            (provider-id value))))
+
 (defparameter *max-provider-retries* 2)
 (defparameter *retry-base-delay* 0.25)
 (defparameter *retry-sleep-function* #'sleep)

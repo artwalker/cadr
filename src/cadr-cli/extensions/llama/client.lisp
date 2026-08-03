@@ -20,6 +20,11 @@
               :type string)
   api-key)
 
+(defmethod print-object ((value llama-client) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":server-url ~A :api-key [REDACTED]"
+            (llama-client-server-url value))))
+
 (defun trim-trailing-slashes (value)
   (string-right-trim '(#\/) value))
 

@@ -8,6 +8,7 @@
   :components ((:module "src/cadr-tui"
                 :serial t
                 :components ((:file "package")
+                             (:file "threads")
                              (:file "unicode")
                              (:file "fuzzy")
                              (:file "word-navigation")

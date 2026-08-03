@@ -14,6 +14,13 @@
   (stream-format :sse :type symbol)
   (provider nil :type symbol))
 
+(defmethod print-object ((value request-spec) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream "~A ~A :provider ~A :credentials [REDACTED]"
+            (request-spec-method value)
+            (request-spec-url value)
+            (request-spec-provider value))))
+
 (define-condition native-http-timeout (error) ())
 
 (defparameter *native-http-abort-p* nil)
@@ -81,7 +88,7 @@
                      (signal-http-request-aborted)
                      (error condition))))
           (sb-thread:signal-semaphore finished)
-          (sb-thread:join-thread watcher)))))
+          (stop-thread-for-cleanup watcher)))))
 
 (defstruct parsed-url
   scheme

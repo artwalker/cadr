@@ -65,6 +65,7 @@
                              (:file "tui")
                              (:file "remote-repl")
                              (:file "main")
+                             (:file "crash")
                              (:file "sdk")
                              (:file "build-support"))))
   :in-order-to ((test-op (test-op "cadr-cli/tests"))))

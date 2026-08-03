@@ -288,9 +288,16 @@
         (and thread
              (sb-thread:thread-alive-p
               thread))
-      (ignore-errors
-        (sb-thread:join-thread
-         thread))))
+      (let* ((timed-out (list :timed-out))
+             (result
+               (handler-case
+                   (sb-thread:join-thread
+                    thread :timeout 0.5d0
+                    :default timed-out)
+                 (condition () timed-out))))
+        (when (eq result timed-out)
+          (ignore-errors
+            (sb-thread:terminate-thread thread))))))
   (when
       (probe-file
        (ipc-server-path server))

@@ -27,6 +27,12 @@
   (cache-write-price 0d0 :type double-float)
   (cost-tiers nil :type list))
 
+(defmethod print-object ((value model-metadata) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":provider ~A :id ~S :headers [REDACTED]"
+            (model-metadata-provider value)
+            (model-metadata-id value))))
+
 (defparameter *model-catalog* (make-hash-table :test #'equal))
 (defparameter *image-model-catalog*
   (make-hash-table :test #'equal))

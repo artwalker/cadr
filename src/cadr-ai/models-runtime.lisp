@@ -11,6 +11,10 @@
   (lock (sb-thread:make-mutex
          :name "cadr-ai memory credential store")))
 
+(defmethod print-object ((value memory-credential-store) stream)
+  (print-unreadable-object (value stream :type t)
+    (write-string ":entries [REDACTED]" stream)))
+
 (defun make-memory-credential-store ()
   (%make-memory-credential-store))
 
@@ -58,6 +62,12 @@
   (environment nil :type list)
   source
   type)
+
+(defmethod print-object ((value runtime-auth-result) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":source ~A :type ~A :credentials [REDACTED]"
+            (runtime-auth-result-source value)
+            (runtime-auth-result-type value))))
 
 (defstruct runtime-auth-check
   source
@@ -152,6 +162,10 @@
   (force-p nil :type boolean)
   abort-p)
 
+(defmethod print-object ((value runtime-refresh-context) stream)
+  (print-unreadable-object (value stream :type t)
+    (write-string ":credential [REDACTED]" stream)))
+
 (defun runtime-refresh-context-aborted-p (context)
   (let ((abort-p
           (runtime-refresh-context-abort-p context)))
@@ -188,6 +202,12 @@
   (credential-store (make-memory-credential-store))
   (model-store (make-hash-table) :type hash-table)
   (environment nil :type list))
+
+(defmethod print-object ((value models-runtime) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":providers ~D :credentials [REDACTED]"
+            (hash-table-count
+             (models-runtime-provider-table value)))))
 
 (defun make-models-runtime (&key credential-store model-store environment)
   (%make-models-runtime

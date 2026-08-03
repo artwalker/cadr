@@ -154,6 +154,19 @@
              (cadr-server:instance-record-session-id
               loaded-instance)))))))
 
+(test goal13-radius-presence-never-prints-its-bearer-token
+  (with-server-directory (directory)
+    (let* ((secret "radius-secret-must-never-print")
+           (presence
+             (make-instance
+              'cadr-server::http-radius-presence
+              :directory directory
+              :token secret
+              :base-url "https://radius.invalid/v1/"))
+           (printed (write-to-string presence :readably nil)))
+      (is (null (search secret printed)))
+      (is (search "REDACTED" printed)))))
+
 (test supervisor-covers-spawn-rpc-stream-ui-stop-and-recovery
   (with-server-directory (directory)
     (let* ((processes

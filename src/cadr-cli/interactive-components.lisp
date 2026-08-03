@@ -234,7 +234,7 @@
     (when (and thread
                (not (eq thread sb-thread:*current-thread*))
                (sb-thread:thread-alive-p thread))
-      (sb-thread:join-thread thread))
+      (stop-thread-for-cleanup thread))
     (setf (countdown-timer-thread timer) nil))
   timer)
 
@@ -502,7 +502,7 @@
     (when (and thread
                (not (eq thread sb-thread:*current-thread*))
                (sb-thread:thread-alive-p thread))
-      (sb-thread:join-thread thread))
+      (stop-thread-for-cleanup thread))
     (setf (armin-component-thread component) nil))
   component)
 
@@ -669,7 +669,7 @@
     (when (and thread
                (not (eq thread sb-thread:*current-thread*))
                (sb-thread:thread-alive-p thread))
-      (sb-thread:join-thread thread))
+      (stop-thread-for-cleanup thread))
     (setf (daxnuts-component-thread component) nil))
   component)
 

@@ -18,6 +18,16 @@
   ;; Keys are JSON field names; values must be JSON-serializable.
   (metadata nil :type list))
 
+(defmethod print-object ((value api-key-credential) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":provider ~A :key [REDACTED]"
+            (api-key-credential-provider value))))
+
+(defmethod print-object ((value oauth-credential) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":provider ~A :access [REDACTED] :refresh [REDACTED]"
+            (oauth-credential-provider value))))
+
 (defparameter *provider-auth-locks* (make-hash-table))
 (defparameter *provider-auth-locks-lock*
   (sb-thread:make-mutex :name "cadr-ai provider auth lock table"))

@@ -1555,7 +1555,7 @@
                   nil)
               nil))
          (format output "Session exported to: ~A~%"
-                 (namestring path))
+                 (file-namestring path))
          (finish-output output)
          t))
       (t nil))))

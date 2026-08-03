@@ -577,7 +577,7 @@
    (oauth-credential-refresh credential)))
 
 (defparameter +oauth-logo-svg+
-  "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 800\" aria-hidden=\"true\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M165.29 165.29 H634.72 V282.65 H282.65 V517.36 H634.72 V634.72 H165.29 Z\"/></svg>")
+  "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 800 800\" aria-hidden=\"true\"><path fill=\"#fff\" fill-rule=\"evenodd\" d=\"M47.93 165.29 H400.01 V517.37 H47.93 Z M400.01 165.29 H752.09 V517.37 H400.01 Z M165.29 282.65 H282.65 V400.01 H165.29 Z M517.37 282.65 H634.73 V165.29 H752.09 V517.37 H634.73 V400.01 H517.37 Z\"/></svg>")
 
 (defun escape-oauth-html (value)
   (with-output-to-string (output)
@@ -840,6 +840,12 @@
                      done-p t
                      cancelled-p t)
                (sb-thread:condition-broadcast condition))))
+         (cancel ()
+           (complete
+            nil
+            (make-condition
+             'authentication-error
+             :message "Login cancelled")))
          (callback-worker ()
            (handler-case
                (let ((code
@@ -857,13 +863,15 @@
                       (_
                         (setf
                          (getf prompt-value :cancel-function)
+                         #'cancel
+                         (getf prompt-value :cancelled-p-function)
                          #'cancelled-p))
                       (input
                         (funcall prompt-function prompt-value)))
                  (declare (ignore _))
                  (unless input
-                   (error 'authentication-error
-                          :message "Login cancelled"))
+                   (cancel)
+                   (return-from prompt-worker nil))
                  (multiple-value-bind (code state)
                      (parse-oauth-authorization-input input)
                    (when (and state
@@ -895,8 +903,8 @@
       (sb-thread:with-mutex (lock)
         (loop until done-p
               do (sb-thread:condition-wait condition lock)))
-      (sb-thread:join-thread callback-thread)
-      (sb-thread:join-thread prompt-thread)
+      (stop-thread-for-cleanup callback-thread :timeout 1d0)
+      (stop-thread-for-cleanup prompt-thread :timeout 1d0)
       (when failure
         (error failure))
       result)))

@@ -287,7 +287,8 @@
          :message "Complete login in your browser, or paste the authorization code / redirect URL here:"
          :placeholder "http://localhost:1455/auth/callback"))))
     (is (not (null callback-cancelled-p)))
-    (is (functionp (getf prompt :cancel-function))))
+    (is (functionp (getf prompt :cancel-function)))
+    (is (functionp (getf prompt :cancelled-p-function))))
   (let ((manual-cancelled-p nil))
     (is
      (string=
@@ -298,7 +299,7 @@
          (declare (ignore cancelled-p))
          "callback-code")
        (lambda (prompt)
-         (loop until (funcall (getf prompt :cancel-function))
+         (loop until (funcall (getf prompt :cancelled-p-function))
                do (sb-thread:thread-yield))
          (setf manual-cancelled-p t)
          nil)
@@ -317,14 +318,118 @@
        "code#wrong-state")
      '(:type :manual-code :message "manual"))))
 
-(test goal13-oauth-page-uses-cadr-owned-grid-mark
+(test goal13-oauth-cancel-aborts-the-loopback-worker-and-releases-it
+  (let ((callback-stopped-p nil)
+        (prompt nil))
+    (signals cadr-ai:authentication-error
+      (cadr-ai::wait-for-oauth-authorization
+       "expected-state"
+       (lambda (cancelled-p)
+         (loop until (funcall cancelled-p)
+               do (sb-thread:thread-yield))
+         (setf callback-stopped-p t)
+         nil)
+       (lambda (value)
+         (setf prompt value)
+         (funcall (getf value :cancel-function))
+         nil)
+       '(:type :manual-code :message "manual")))
+    (is (not (null callback-stopped-p)))
+    (is (functionp (getf prompt :cancel-function)))
+    (is (funcall (getf prompt :cancelled-p-function)))))
+
+(test goal13-every-built-in-oauth-cancel-closes-its-loopback-listener
+  (labels
+      ((port-bindable-p (port)
+         (let ((socket
+                 (make-instance
+                  'sb-bsd-sockets:inet-socket
+                  :type :stream :protocol :tcp)))
+           (unwind-protect
+                (handler-case
+                    (progn
+                      (sb-bsd-sockets:socket-bind
+                       socket #(127 0 0 1) port)
+                      t)
+                  (error () nil))
+             (ignore-errors
+               (sb-bsd-sockets:socket-close socket)))))
+       (cancel-at-prompt (prompt)
+         (funcall (getf prompt :cancel-function))
+         nil)
+       (run-cancelled-login (function port)
+         (let ((bindable-before-p
+                 (port-bindable-p port)))
+           (signals cadr-ai:authentication-error
+             (funcall
+              function nil
+              :output (make-string-output-stream)
+              :open-browser (constantly nil)
+              :auth-prompt-function #'cancel-at-prompt))
+           ;; A separately running cadr login can legitimately own the fixed
+           ;; baseline port.  In a clean test process this assertion proves
+           ;; release; in a shared developer environment it proves that the
+           ;; cancelled login did not change listener ownership.
+           (is (eql bindable-before-p
+                    (port-bindable-p port))))))
+    (run-cancelled-login #'cadr-ai:login-openai-oauth 1455)
+    (run-cancelled-login #'cadr-ai:login-anthropic-oauth 53692)))
+
+(test goal13-credential-bearing-objects-never-print-secret-material
+  (let* ((api-key "api-key-must-never-print")
+         (access "oauth-access-must-never-print")
+         (refresh "oauth-refresh-must-never-print")
+         (objects
+           (list
+            (cadr-ai:make-api-key-credential
+             :provider :faux :key api-key)
+            (cadr-ai:make-oauth-credential
+             :provider :openai-codex
+             :access access :refresh refresh
+             :expires 1 :account-id "acct")
+            (cadr-ai:make-openai-codex-provider
+             :api-key api-key
+             :oauth-access-token access
+             :oauth-account-id "acct")
+            (cadr-ai::make-runtime-auth-result
+             :api-key api-key
+             :headers
+             `(("authorization" . ,(format nil "Bearer ~A" access))))
+            (cadr-ai::make-request-spec
+             :url "https://example.invalid"
+             :headers
+             `(("authorization" . ,(format nil "Bearer ~A" access)))
+             :payload
+             (cadr-ai::json-object "refresh_token" refresh))
+            (cadr-ai:make-model-metadata
+             :provider :faux :id "secret-model"
+             :headers `(("authorization" . ,access)))
+            (cadr-ai:make-image-model
+             :provider :faux :id "secret-image-model"
+             :headers `(("authorization" . ,access))))))
+    (dolist (object objects)
+      (let ((printed (write-to-string object :readably nil)))
+        (dolist (secret (list api-key access refresh))
+          (is (null (search secret printed))))
+        (is (search "REDACTED" printed))))))
+
+(test goal13-oauth-page-uses-cadr-owned-grid-cons-cell-mark
   (let ((logo cadr-ai::+oauth-logo-svg+))
     (is (search "viewBox=\"0 0 800 800\"" logo))
     (is (search "fill=\"#fff\"" logo))
     (is (search "fill-rule=\"evenodd\"" logo))
     (is (search "aria-hidden=\"true\"" logo))
     (is (search
-         "M165.29 165.29 H634.72 V282.65 H282.65 V517.36 H634.72 V634.72 H165.29 Z"
+         "M47.93 165.29 H400.01 V517.37 H47.93 Z"
+         logo))
+    (is (search
+         "M400.01 165.29 H752.09 V517.37 H400.01 Z"
+         logo))
+    (is (search
+         "M165.29 282.65 H282.65 V400.01 H165.29 Z"
+         logo))
+    (is (search
+         "M517.37 282.65 H634.73 V165.29 H752.09 V517.37 H634.73 V400.01 H517.37 Z"
          logo))
     (let ((first-path (search "<path" logo)))
       (is (not (null first-path)))
@@ -333,7 +438,10 @@
     (is (null (search "stroke=" logo)))
     (is (null (search "gradient" logo)))
     (is (null (search
-               "165.29 165.29 H517.36 V400"
+               "M165.29 165.29 H634.72 V282.65"
+               logo)))
+    (is (null (search
+               "M517.37 282.65 H634.73 V400.01 H517.37 Z"
                logo)))))
 
 (test auth-file-is-0600-and-round-trips-without-secret-output

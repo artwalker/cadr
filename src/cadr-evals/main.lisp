@@ -104,7 +104,7 @@
        "Extension eval did not load exactly one extension")))
   result)
 
-(defun eval-main ()
+(defun %eval-main ()
   (handler-case
       (multiple-value-bind
             (provider model suite)
@@ -147,3 +147,8 @@
       (finish-output
        *error-output*)
       (uiop:quit 1))))
+
+(defun eval-main ()
+  (cadr-cli::call-with-fatal-condition-boundary
+   #'%eval-main
+   :program-name "cadr-evals"))

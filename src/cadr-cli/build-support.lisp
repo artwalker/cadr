@@ -9,4 +9,6 @@
      (list :compression t))))
 
 (defun executable-main ()
-  (uiop:quit (or (main) 0)))
+  (call-with-fatal-condition-boundary
+   (lambda ()
+     (uiop:quit (or (main) 0)))))

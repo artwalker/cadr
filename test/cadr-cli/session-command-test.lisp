@@ -174,7 +174,7 @@
       (is (probe-file expected-path))
       (is (string=
            (format nil "Session exported to: ~A~%"
-                   (namestring expected-path))
+                   expected-name)
            (get-output-stream-string output))))))
 
 (test goal13-session-ids-and-post-tui-resume-copy-match-the-baseline

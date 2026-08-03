@@ -34,7 +34,8 @@
                                            (:file "openai-completions")
                                            (:file "google")
                                            (:file "independent")))
-                             (:file "websocket"))))
+                             (:file "websocket")
+                             (:file "crash"))))
   :in-order-to ((test-op (test-op "cadr-ai/tests"))))
 
 (asdf:defsystem "cadr-ai/tests"

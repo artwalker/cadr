@@ -50,6 +50,12 @@
   (headers nil :type list)
   (compat nil :type list))
 
+(defmethod print-object ((value model) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream "~A/~A :headers [REDACTED]"
+            (model-provider value)
+            (model-id value))))
+
 (defstruct text-content
   (text "" :type string)
   (signature nil :type (or null string)))
@@ -202,6 +208,12 @@
   (cache-read-price 0d0 :type double-float)
   (cache-write-price 0d0 :type double-float)
   (headers nil :type list))
+
+(defmethod print-object ((value image-model) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":provider ~A :id ~S :headers [REDACTED]"
+            (image-model-provider value)
+            (image-model-id value))))
 
 (defstruct images-context
   (input nil :type list))

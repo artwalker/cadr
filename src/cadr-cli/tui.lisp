@@ -91,6 +91,11 @@
   prompt
   input)
 
+(defmethod print-object ((value runtime-auth-input-state) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":type ~A :input [REDACTED]"
+            (getf (runtime-auth-input-state-prompt value) :type))))
+
 (defun make-runtime-auth-input-state (prompt)
   (%make-runtime-auth-input-state
    :prompt (copy-list prompt)
@@ -103,7 +108,14 @@
       (member
        (cadr-tui:input-event-kind event)
        '(:escape :cancel :clear :interrupt :eof))
-      (values :cancel nil)
+      (progn
+        (let ((cancel-function
+                (getf
+                 (runtime-auth-input-state-prompt state)
+                 :cancel-function)))
+          (when cancel-function
+            (ignore-errors (funcall cancel-function))))
+        (values :cancel nil))
       (multiple-value-bind (action value)
           (cadr-tui:single-line-input-handle-event
            (runtime-auth-input-state-input state)
@@ -4750,7 +4762,7 @@
                              custom-ui-lock))
                       custom-ui-result)))
              (when monitor
-               (sb-thread:join-thread monitor))
+               (stop-thread-for-cleanup monitor))
              (sb-thread:with-mutex (lock)
                (when (eq overlay component)
                  (setf overlay nil
@@ -4921,14 +4933,14 @@
                   (lambda ()
                     (toggle-last-tool-block state))))))
              ((:text :secret :manual-code)
-              (let ((cancel-function
-                      (getf prompt :cancel-function)))
+              (let ((cancelled-p-function
+                      (getf prompt :cancelled-p-function)))
                 (show-extension-overlay
                  (make-runtime-auth-input-state prompt)
                  :signal
-                 (and cancel-function
+                 (and cancelled-p-function
                       (cadr-agent:make-extension-cancellation-signal
-                       :aborted-function cancel-function)))))
+                       :aborted-function cancelled-p-function)))))
              (otherwise nil)))
          (add-extension-autocomplete-provider
              (factory)
@@ -6177,12 +6189,12 @@
                     worker))
           (when abort-function
             (funcall abort-function))
-          (sb-thread:join-thread worker))
+          (stop-thread-for-cleanup worker))
         (when
             (and session-loader-worker
                  (sb-thread:thread-alive-p
                   session-loader-worker))
-          (sb-thread:join-thread
+          (stop-thread-for-cleanup
            session-loader-worker))
         (when set-event-consumer
           (funcall set-event-consumer nil))

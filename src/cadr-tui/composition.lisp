@@ -1274,7 +1274,7 @@
     (when (and thread
                (not (eq thread sb-thread:*current-thread*)))
       (when (sb-thread:thread-alive-p thread)
-        (sb-thread:join-thread thread)))
+        (stop-thread-for-cleanup thread)))
     (setf (loader-component-thread loader) nil))
   loader)
 

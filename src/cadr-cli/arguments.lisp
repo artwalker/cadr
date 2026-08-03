@@ -54,6 +54,13 @@
   (help-p nil :type boolean)
   (version-p nil :type boolean))
 
+(defmethod print-object ((value cli-arguments) stream)
+  (print-unreadable-object (value stream :type t)
+    (format stream ":mode ~A :provider ~A :model ~A :credentials [REDACTED]"
+            (cli-arguments-mode value)
+            (cli-arguments-provider value)
+            (cli-arguments-model value))))
+
 (defparameter +cli-value-options+
   '(("--provider" . :provider)
     ("--model" . :model)

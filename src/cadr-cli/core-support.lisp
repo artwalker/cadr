@@ -132,7 +132,7 @@
     (let ((thread (file-watcher-thread watcher)))
       (when (and thread
                  (not (eq thread sb-thread:*current-thread*)))
-        (sb-thread:join-thread thread))))
+        (stop-thread-for-cleanup thread))))
   nil)
 
 (defun poll-file-watcher-once (watcher)

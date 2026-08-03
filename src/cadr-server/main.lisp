@@ -204,4 +204,8 @@
         (uiop:quit 1)))))
 
 (defun server-executable-main ()
-  (uiop:quit (or (main) 0)))
+  (cadr-ai::call-with-fatal-condition-boundary
+   (lambda ()
+     (uiop:quit (or (main) 0)))
+   :program-name "cadr-server"
+   :secrets (list (radius-access-token))))

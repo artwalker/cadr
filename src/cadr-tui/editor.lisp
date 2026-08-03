@@ -1015,7 +1015,7 @@
           (lambda ()
             (when previous-thread
               (ignore-errors
-                (sb-thread:join-thread previous-thread)))
+                (stop-thread-for-cleanup previous-thread)))
             (unless (autocomplete-request-aborted-p signal)
               (handler-case
                   (let ((result
