@@ -14,14 +14,35 @@
                              (:file "models")
                              (:file "models.generated")
                              (:file "image-models.generated")
-                             (:file "utilities")
-                             (:file "capabilities")
+                             (:module "support"
+                              :serial t
+                              :components ((:file "threads")
+                                           (:file "release")
+                                           (:file "retry")
+                                           (:file "token-estimation")
+                                           (:file "overflow")
+                                           (:file "grammar-coercion")
+                                           (:file "uuid")))
+                             (:module "capabilities"
+                              :serial t
+                              :components ((:file "streaming-json")
+                                           (:file "event-stream")
+                                           (:file "grammar-tools")
+                                           (:file "session-resources")
+                                           (:file "proxy-config")
+                                           (:file "image-runtime")))
                              (:file "sse")
-                             (:file "http")
+                             (:module "transport"
+                              :serial t
+                              :components ((:file "http")
+                                           (:file "aws-event-stream")))
                              (:file "provider")
                              (:file "auth")
                              (:file "oauth")
-                             (:file "models-runtime")
+                             (:module "runtime"
+                              :serial t
+                              :components ((:file "models")
+                                           (:file "faux-provider")))
                              (:file "crypto")
                              (:file "model-data")
                              (:file "provider-auth")

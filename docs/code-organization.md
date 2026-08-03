@@ -15,13 +15,14 @@ and RPC command handling into eleven cohesive owners, B6 replaced the two
 interactive controller/component monoliths with sixteen responsibility owners,
 and B7 replaced three reusable TUI monoliths with sixteen protocol-ordered
 owners. B8 replaced three agent session/storage/loop monoliths with thirteen
-owners, and B9 replaced the extension-host monolith with eight owners. Silently
+owners, B9 replaced the extension-host monolith with eight owners, and B10
+replaced four mixed AI files with seventeen exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 244 current files.
+goal is supposed to police, so this ledger covers all 257 current files.
 
-- 239 Lisp files, 100,407 lines, 4,261 top-level definitions.
+- 252 Lisp files, 100,420 lines, 4,261 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 244 production files and 104,682 physical lines in total.
+- 257 production files and 104,695 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -85,16 +86,19 @@ files with unrelated facilities fail.
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
 | `src/cadr-ai/auth.lisp` | 225 | 19 | Serialize, atomically persist, redact, and refresh provider credentials. | 合格 |
-| `src/cadr-ai/capabilities.lisp` | 579 | 55 | Mix streaming-JSON repair, event streams, deferred/grammar tools, proxy matching, resource cleanup, and image-model runtime state. | 应拆分 |
+| `src/cadr-ai/capabilities/event-stream.lisp` | 61 | 6 | Implement the producer/consumer event stream and terminal-result protocol. | 合格 |
+| `src/cadr-ai/capabilities/grammar-tools.lisp` | 133 | 10 | Resolve deferred tools and strict/grammar constrained-sampling metadata. | 合格 |
+| `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | 18 | Register image APIs and own the mutable image provider/model runtime. | 合格 |
+| `src/cadr-ai/capabilities/proxy-config.lisp` | 77 | 5 | Resolve HTTP proxy and NO_PROXY policy for target URLs. | 合格 |
+| `src/cadr-ai/capabilities/session-resources.lisp` | 34 | 5 | Register and clean session-owned provider transport resources. | 合格 |
+| `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | 11 | Provide stable JavaScript-compatible hashes and repair partial streaming JSON. | 合格 |
 | `src/cadr-ai/conditions.lisp` | 44 | 12 | Define provider-layer condition types. | 合格 |
 | `src/cadr-ai/crash.lisp` | 218 | 13 | Redact secrets and report fatal conditions through a private crash-log boundary. | 合格 |
 | `src/cadr-ai/crypto.lisp` | 367 | 14 | Implement SigV4 canonicalization/signing and service-account JWT signing. | 合格·大体量 |
-| `src/cadr-ai/http.lisp` | 1,081 | 52 | Mix native HTTP/TLS transport and body framing with AWS event-stream framing/CRC decoding. | 应拆分 |
 | `src/cadr-ai/image-models.generated.lisp` | 173 | 1 | Hold generated image-model catalog data. | 合格·大体量 |
 | `src/cadr-ai/images.lisp` | 222 | 8 | Build OpenRouter image requests and normalize generated-image results. | 合格 |
 | `src/cadr-ai/json.lisp` | 551 | 27 | Parse and serialize bounded JSON plus common content/data-URL helpers. | 合格·大体量 |
 | `src/cadr-ai/model-data.lisp` | 398 | 26 | Validate model-data artifacts/manifests and generate deterministic catalog fixtures. | 合格·大体量 |
-| `src/cadr-ai/models-runtime.lisp` | 1,264 | 79 | Mix the provider/model/auth runtime with a complete faux provider and transcript serializer. | 应拆分 |
 | `src/cadr-ai/models.generated.lisp` | 8,114 | 1 | Hold the generated model metadata catalog; the generator is its owner. | 合格·大体量 |
 | `src/cadr-ai/models.lisp` | 287 | 23 | Define model metadata/catalog operations, thinking-level resolution, and cost calculation. | 合格 |
 | `src/cadr-ai/oauth-flows.lisp` | 789 | 60 | Combine seven independent provider OAuth/device-code implementations in one file. | 应拆分 |
@@ -108,9 +112,19 @@ files with unrelated facilities fail.
 | `src/cadr-ai/providers/openai-completions.lisp` | 775 | 30 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/providers/openai.lisp` | 772 | 17 | Implement OpenAI Responses request, response, tool, reasoning, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/registry.lisp` | 804 | 20 | Mix the 38-provider declaration table, registry operations, protocol construction, environment/auth resolution, and runtime projection. | 应拆分 |
+| `src/cadr-ai/runtime/faux-provider.lisp` | 426 | 25 | Implement the deterministic faux provider, queued responses, and transcript serializer. | 合格 |
+| `src/cadr-ai/runtime/models.lisp` | 834 | 50 | Own mutable provider/model/auth state, refresh, lookup, and request dispatch. | 合格·大体量 |
 | `src/cadr-ai/sse.lisp` | 101 | 5 | Parse Server-Sent Events from text or binary streams. | 合格 |
+| `src/cadr-ai/support/grammar-coercion.lisp` | 227 | 13 | Coerce and validate grammar-tool JSON values against schemas. | 合格 |
+| `src/cadr-ai/support/overflow.lisp` | 78 | 5 | Classify context-overflow errors from status and usage evidence. | 合格 |
+| `src/cadr-ai/support/release.lisp` | 21 | 6 | Read the single version source and format the aligned release identity. | 合格 |
+| `src/cadr-ai/support/retry.lisp` | 129 | 6 | Classify retryable assistant failures and execute the bounded retry policy. | 合格 |
+| `src/cadr-ai/support/threads.lisp` | 6 | 1 | Delegate bounded thread cleanup to the B3 core policy owner. | 合格 |
+| `src/cadr-ai/support/token-estimation.lisp` | 154 | 13 | Estimate message, tool, image, and context token usage. | 合格 |
+| `src/cadr-ai/support/uuid.lisp` | 65 | 4 | Generate monotonic UUIDv7 identifiers from random octets. | 合格 |
+| `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | 10 | Decode AWS event-stream frames and issue Bedrock event requests. | 合格 |
+| `src/cadr-ai/transport/http.lisp` | 858 | 41 | Implement abortable native HTTP/TLS transport, framing, and normalized errors. | 合格·大体量 |
 | `src/cadr-ai/types.lisp` | 239 | 24 | Define provider/model/message/content/tool/event value types and safe printers. | 合格 |
-| `src/cadr-ai/utilities.lisp` | 703 | 48 | Mix thread cleanup, release identity, retry, token estimation, overflow detection, grammar coercion, and UUID generation. | 应拆分 |
 | `src/cadr-ai/websocket.lisp` | 582 | 41 | Implement OpenAI Codex WebSocket framing, pooling, continuation, and provider dispatch. | 合格·大体量 |
 
 ### 2.3 `cadr-cli`
@@ -318,7 +332,7 @@ files with unrelated facilities fail.
 | System | 合格 | 合格·大体量 | 应拆分 | 应合并 | Total |
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 27 | 13 | 0 | 0 | 40 |
-| `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
+| `cadr-ai` | 23 | 13 | 5 | 0 | 41 |
 | `cadr-cli` | 83 | 25 | 0 | 0 | 108 |
 | `cadr-core` | 6 | 0 | 0 | 0 | 6 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
@@ -326,12 +340,11 @@ files with unrelated facilities fail.
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 26 | 10 | 0 | 0 | 36 |
-| **Total** | **165** | **70** | **9** | **0** | **244** |
+| **Total** | **180** | **72** | **5** | **0** | **257** |
 
-The nine remaining failing files are being reduced batch by batch. After B3,
-B1, B2, and B4 through B9, the cohesion map below leaves 42 named AI owners,
-yielding a planning denominator of 277 files and a remaining net increase of
-33. This
+The five remaining failing files are the approved B11 provider/auth batch. B10
+completed seventeen of the forty-two named AI owners, leaving twenty-five and
+a remaining net increase of twenty to the planning denominator of 277. This
 is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
@@ -339,16 +352,16 @@ boundary is false.
 | System | Failing files | Expected target files | Net files |
 |---|---:|---:|---:|
 | `cadr-agent` | 0 | 0 | +0 |
-| `cadr-ai` | 9 | 42 | +33 |
+| `cadr-ai` | 5 | 25 | +20 |
 | `cadr-cli` | 0 | 0 | +0 |
 | `cadr-tui` | 0 | 0 | +0 |
-| **Total** | **9** | **42** | **+33** |
+| **Total** | **5** | **25** | **+20** |
 
-At current boundaries the physical distribution is 126 files below 300 lines,
-76 at 300–699, 22 at 700–999, and 20 at or above 1,000;
+At current boundaries the physical distribution is 141 files below 300 lines,
+75 at 300–699, 24 at 700–999, and 17 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000. Average file
-size is now 429 lines and the under-300 share is about 52%; the remaining AI
-map projects about 382 lines and 57%. The modest percentage is honest:
+size is now 407 lines and the under-300 share is about 55%; the remaining AI
+map projects about 378 lines after B11. The modest percentage is honest:
 cohesive files such as the multiline
 editor, Unicode engine, image codec, protocol codecs, and vendored assets are
 not chopped up to make the chart prettier.
@@ -361,15 +374,15 @@ not chopped up to make the chart prettier.
 | `agent/loop.lisp` | **Completed in B8:** `loop/{events,tool-execution,turns,agent-loop}.lisp` (4). |
 | `agent/session.lisp` | **Completed in B8:** `session/{codec,journal,discovery,migration,export-html}.lisp` (5). |
 | `agent/storage.lisp` | **Completed in B8:** `storage/{protocol,memory,harness,jsonl}.lisp` (4). |
-| `ai/capabilities.lisp` | `{streaming-json,event-stream,grammar-tools,session-resources,proxy-config,image-runtime}.lisp` (6) |
-| `ai/http.lisp` | `transport/{http,aws-event-stream}.lisp` (2) |
-| `ai/models-runtime.lisp` | `runtime/{models,faux-provider}.lisp` (2) |
+| `ai/capabilities.lisp` | **Completed in B10:** `capabilities/{streaming-json,event-stream,grammar-tools,session-resources,proxy-config,image-runtime}.lisp` (6). |
+| `ai/http.lisp` | **Completed in B10:** `transport/{http,aws-event-stream}.lisp` (2). |
+| `ai/models-runtime.lisp` | **Completed in B10:** `runtime/{models,faux-provider}.lisp` (2). |
 | `ai/oauth-flows.lisp` | `oauth/providers/{xai,kimi,github-copilot,openrouter,radius,openai-device,anthropic}.lisp` (7) |
 | `ai/oauth.lisp` | `oauth/{pkce,callback,page,openai-anthropic}.lisp` (4) |
 | `ai/provider-auth.lisp` | `auth/{bedrock,vertex,device-code,github-copilot,radius-cloudflare}.lisp` (5) |
 | `ai/providers/independent.lisp` | `providers/{azure-openai,codex,mistral,vertex,bedrock,pi-messages}.lisp` (6) |
 | `ai/registry.lisp` | `providers/{definitions,registry,runtime-projection}.lisp` (3) |
-| `ai/utilities.lisp` | `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp` (7) |
+| `ai/utilities.lisp` | **Completed in B10:** `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp` (7). |
 | `cli/core-support.lisp` | **Completed in B4:** `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6). |
 | `cli/extensions.lisp` | **Completed in B4:** `extensions/{discovery,loader,commands,installer}.lisp` (4). |
 | `cli/interactive-components.lisp` | **Completed in B6:** `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5). |
@@ -657,6 +670,21 @@ emits through the injected extension notification sink. The public extension
 export block and the 34-event source block remain byte-identical at SHA-256
 `61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`
 and `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
+
+### Part C B10 implementation status
+
+B10 moved all 229 definitions from four mixed AI files into seventeen exact
+owners. Streaming JSON, event streams, grammar tools, session resources, proxy
+configuration, and image runtime are separate capabilities; native HTTP and
+AWS framing are separate transports; model/auth runtime and faux behavior are
+separate runtime owners; release, retry, estimation, overflow, coercion, UUID,
+and the B3 thread delegate are separate support owners.
+
+The split is structural only. HTTP and model cancellation still consume the B3
+core owner, SSE retains an explicit unbounded read timeout, network failures
+retain the canonical `fetch failed` boundary, and the public `cadr-ai` package
+text remains byte-identical at SHA-256
+`e722e49fd70592edcd28da93acc97051d4a0b22bc016e4b7da314a65c4acfb4f`.
 
 ### Already-converged examples to preserve
 

@@ -8,15 +8,15 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=239 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=252 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 239 Lisp files and 100,407 physical lines.  The form
+The audited tree contains 252 Lisp files and 100,420 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 28 | 23,920 | 45 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
+| `cadr-ai` | 41 | 23,933 | 45 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
 | `cadr-agent` | 35 | 15,284 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
 | `cadr-cli` | 108 | 38,777 | 63 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
 | `cadr-tui` | 36 | 14,791 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
@@ -126,12 +126,15 @@ interactive owners, and a net thirteen B7 reusable-TUI owners. B8 replaced
 three mixed agent files with thirteen session, storage, and loop owners, for a
 net ten files. B9 replaced the extension-host monolith with eight context, API,
 registration, snapshot, rendering, provider, command, and lifecycle owners, for
-a net seven files. The audit therefore follows the current 239 files rather than treating the old file set
+a net seven files. B10 replaced four mixed AI files with seventeen capability,
+transport, runtime, and support owners, for a net thirteen files. The audit
+therefore follows the current 252 files rather than treating the old file set
 as permanent:
 
 | added file | required capability | Lisp-idiom disposition |
 |---|---|---|
 | `src/cadr-ai/crash.lisp` | shared pre-unwind fatal boundary, exact redaction and private crash log | keep the `handler-bind` boundary and redacted `print-object` methods; both directly encode the failure-site and secrecy invariants |
+| `src/cadr-ai/{capabilities,transport,runtime,support}/*.lisp` | separate streaming/grammar/image capabilities, native transports, model/faux runtime, and closed support policies into exact owners | keep the existing value functions, stream protocol, and B3 compatibility delegates; B10 changed ownership only and introduced no new dispatch surface |
 | `src/cadr-cli/crash.lisp` | apply the shared boundary to CLI entrypoints | keep as a thin boundary adapter; no owned polymorphic protocol exists |
 | `src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp` | give each interactive leaf service one exact output or data owner before selector convergence | keep the plain closed state/value functions; the extraction adds no polymorphic protocol and leaves selectors together until `selector-frame` owns their shared behavior |
 | `src/cadr-cli/interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` | give selector framing and each selector family one exact owner | keep `selector-frame` as composition plus plain closed domain state; do not introduce an open hierarchy for fixed overlays |

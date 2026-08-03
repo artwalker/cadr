@@ -102,7 +102,7 @@ Reference public surface:
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
 | Unified types, errors, usage, events | 已实现 | [types](../src/cadr-ai/types.lisp), [conditions](../src/cadr-ai/conditions.lisp), [CL-AI-TYPES](#cl-ai-types) |
-| Native JSON, SSE, HTTP, retry | 已实现 | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [http](../src/cadr-ai/http.lisp), including proxy CONNECT, repairable streaming JSON and asynchronous event queues in [CL-GOAL12-AI](#cl-goal12-ai) |
+| Native JSON, SSE, HTTP, retry | 已实现 | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [HTTP transport](../src/cadr-ai/transport/http.lisp), [streaming JSON](../src/cadr-ai/capabilities/streaming-json.lisp), [event streams](../src/cadr-ai/capabilities/event-stream.lisp), and [retry](../src/cadr-ai/support/retry.lisp), including proxy CONNECT in [CL-GOAL12-AI](#cl-goal12-ai) |
 | Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | 已实现 | Complete deterministic compatibility, transport, history, retry, image and provider-matrix behavior is covered by [CL-AI-WAVE3](#cl-ai-wave3) and the retained Wave 1 evidence |
 | Remaining independent APIs | 已实现 | Azure Responses, Bedrock Converse Stream, Vertex, Mistral Conversations, OpenAI Codex Responses and `pi-messages` have independent request/response/auth coverage in [CL-AI-WAVE3](#cl-ai-wave3) |
 | 38 built-in text providers | 已实现 | The registry is baseline-exact at 38 IDs; the non-baseline `ollama` registration was removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
@@ -110,7 +110,7 @@ Reference public surface:
 | API-key and OAuth/device authentication | 已实现 | [auth](../src/cadr-ai/auth.lisp), [OAuth flows](../src/cadr-ai/oauth-flows.lisp), and [CL-GOAL12-AI](#cl-goal12-ai) cover all provider-owned login/refresh/store/filter contracts, including GitHub Copilot, Kimi, OpenRouter, Radius and xAI |
 | Image input | 已实现 | [CL-AI-IMAGE](#cl-ai-image) |
 | Image generation / OpenRouter Images | 已实现 | Exact 40-model snapshot and request/result/error behavior in [CL-AI-WAVE3](#cl-ai-wave3) |
-| Dynamic provider/faux-provider public runtime | 已实现 | [models runtime](../src/cadr-ai/models-runtime.lisp) covers provider mutation, credentials, refresh/filter/dispatch and the faux provider contract |
+| Dynamic provider/faux-provider public runtime | 已实现 | [models runtime](../src/cadr-ai/runtime/models.lisp) covers provider mutation, credentials, refresh/filter/dispatch; [faux provider](../src/cadr-ai/runtime/faux-provider.lisp) owns the deterministic provider contract |
 | `pi-ai` CLI | 已实现 | The equivalent provider login/logout surface is integrated into cadr's `auth`/`/login` commands; separate npm-bin packaging is an approved Lisp build-ecosystem difference |
 
 #### Provider ledger

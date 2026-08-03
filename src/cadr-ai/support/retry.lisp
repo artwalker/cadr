@@ -1,0 +1,129 @@
+(in-package #:cadr-ai)
+
+(defparameter +non-retryable-assistant-error-fragments+
+  '("gousagelimiterror"
+    "freeusagelimiterror"
+    "monthly usage limit reached"
+    "available balance"
+    "insufficient_quota"
+    "out of budget"
+    "quota exceeded"
+    "billing"))
+
+(defparameter +retryable-assistant-error-fragments+
+  '("overloaded" "rate limit" "rate-limit" "ratelimit"
+    "too many requests" "429" "500" "502" "503" "504" "524"
+    "service unavailable" "server error" "internal error"
+    "provider returned error" "network error" "connection error"
+    "connection refused" "connection lost" "other side closed"
+    "fetch failed" "getaddrinfo" "enotfound" "eai_again"
+    "upstream connect" "reset before headers" "socket hang up"
+    "socket connection was closed" "timed out" "timeout"
+    "terminated" "websocket closed" "websocket error"
+    "ended without" "stream ended before message_stop"
+    "stream ended before a terminal response event"
+    "http2 request did not get a response" "retry delay"
+    "you can retry your request" "try your request again"
+    "please retry your request" "resourceexhausted"))
+
+(defun text-contains-any-p (text fragments)
+  (some
+   (lambda (fragment)
+     (search fragment text :test #'char-equal))
+   fragments))
+
+(defun retryable-assistant-error-p (message)
+  (let ((text (assistant-message-error-message message)))
+    (and (eq :error
+             (assistant-message-stop-reason message))
+         (non-empty-string-p text)
+         (not
+          (text-contains-any-p
+           text +non-retryable-assistant-error-fragments+))
+         (text-contains-any-p
+          text +retryable-assistant-error-fragments+))))
+
+(defstruct retry-policy
+  (enabled-p t :type boolean)
+  (max-retries 3 :type (integer 0 *))
+  (base-delay-milliseconds 1000
+                           :type (integer 0 *)))
+
+(defun retry-assistant-call
+    (produce policy
+     &key abort-p
+       on-retry-scheduled
+       on-retry-attempt-start
+       on-retry-finished
+       (sleep-function #'sleep))
+  (let ((attempt 0)
+        (last-error nil)
+        (maximum
+          (if (and policy (retry-policy-enabled-p policy))
+              (retry-policy-max-retries policy)
+              0)))
+    (loop
+      (let ((message (funcall produce)))
+        (cond
+          ((eq :aborted
+               (assistant-message-stop-reason message))
+           (when (and (plusp attempt)
+                      on-retry-finished)
+             (funcall on-retry-finished nil attempt nil))
+           (return message))
+          ((not (eq :error
+                    (assistant-message-stop-reason message)))
+           (when (and (plusp attempt)
+                      on-retry-finished)
+             (funcall on-retry-finished t attempt nil))
+           (return message))
+          ((or (>= attempt maximum)
+               (not (retryable-assistant-error-p message)))
+           (when (and (plusp attempt)
+                      on-retry-finished)
+             (funcall
+              on-retry-finished nil attempt
+              (assistant-message-error-message message)))
+           (return message))
+          (t
+           (incf attempt)
+           (setf last-error
+                 (or (assistant-message-error-message message)
+                     "Unknown error"))
+           (let ((delay
+                   (* (retry-policy-base-delay-milliseconds policy)
+                      (expt 2 (1- attempt)))))
+             (when on-retry-scheduled
+               (funcall on-retry-scheduled
+                        attempt maximum delay last-error))
+             (when (and abort-p (funcall abort-p))
+               (when on-retry-finished
+                 (funcall on-retry-finished
+                          nil attempt last-error))
+               (return
+                 (make-assistant-message
+                  :api (assistant-message-api message)
+                  :provider (assistant-message-provider message)
+                  :model (assistant-message-model message)
+                  :content
+                  (assistant-message-content message)
+                  :usage (assistant-message-usage message)
+                  :stop-reason :aborted)))
+             (when (plusp delay)
+               (funcall sleep-function
+                        (/ delay 1000d0)))
+             (when (and abort-p (funcall abort-p))
+               (when on-retry-finished
+                 (funcall on-retry-finished
+                          nil attempt last-error))
+               (return
+                 (make-assistant-message
+                  :api (assistant-message-api message)
+                  :provider (assistant-message-provider message)
+                  :model (assistant-message-model message)
+                  :content
+                  (assistant-message-content message)
+                  :usage (assistant-message-usage message)
+                  :stop-reason :aborted)))
+             (when on-retry-attempt-start
+               (funcall on-retry-attempt-start)))))))))

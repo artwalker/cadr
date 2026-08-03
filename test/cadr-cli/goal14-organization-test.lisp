@@ -999,3 +999,157 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B9 extension load order is not dependency-safe: ~S" positions))))
+
+(test goal14-b10-ai-capability-transport-runtime-and-support-have-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-ai"))
+         (owners
+           '(("capabilities/streaming-json.lisp"
+              "(defun short-hash"
+              "(defun parse-streaming-json")
+             ("capabilities/event-stream.lisp"
+              "(defclass event-stream"
+              "(defun event-stream-result")
+             ("capabilities/grammar-tools.lisp"
+              "(defun split-deferred-tools"
+              "(defun create-grammar-tool-input-properties")
+             ("capabilities/session-resources.lisp"
+              "(defun register-session-resource-cleanup"
+              "(defun cleanup-session-resources")
+             ("capabilities/proxy-config.lisp"
+              "(defun resolve-http-proxy-url-for-target")
+             ("capabilities/image-runtime.lisp"
+              "(defstruct images-api-provider"
+              "(defun images-models-generate")
+             ("transport/http.lisp"
+              "(defstruct request-spec"
+              "(defun request-sse")
+             ("transport/aws-event-stream.lisp"
+              "(defun read-aws-event-stream"
+              "(defun request-provider-events")
+             ("runtime/models.lisp"
+              "(define-condition models-runtime-error"
+              "(defun models-runtime-stream")
+             ("runtime/faux-provider.lisp"
+              "(defstruct faux-state"
+              "(defun faux-stream")
+             ("support/threads.lisp"
+              "(defun stop-thread-for-cleanup")
+             ("support/release.lisp"
+              "(defun cadr-release-identity")
+             ("support/retry.lisp"
+              "(defun retryable-assistant-error-p"
+              "(defun retry-assistant-call")
+             ("support/token-estimation.lisp"
+              "(defstruct context-usage-estimate"
+              "(defun estimate-context-tokens")
+             ("support/overflow.lisp"
+              "(defun context-overflow-p")
+             ("support/grammar-coercion.lisp"
+              "(defstruct grammar-json-buffer"
+              "(defun validate-tool-call")
+             ("support/uuid.lisp"
+              "(defun uuid-v7")))
+         (definition-count 0))
+    (dolist (owner owners)
+      (let ((source
+              (goal14-b1-source
+               root (format nil "src/cadr-ai/~A" (first owner)))))
+        (is (not (null source)) "missing B10 owner ~A" (first owner))
+        (when source
+          (incf definition-count
+                (count-if
+                 (lambda (line) (uiop:string-prefix-p "(def" line))
+                 (uiop:split-string source :separator '(#\Newline))))
+          (dolist (marker (rest owner))
+            (is (search marker source)
+                "~A does not own ~A" (first owner) marker)))))
+    (is (= 229 definition-count)
+        "B10 moved a different top-level definition set: ~D"
+        definition-count)
+    (dolist (relative '("src/cadr-ai/capabilities.lisp"
+                        "src/cadr-ai/http.lisp"
+                        "src/cadr-ai/models-runtime.lisp"
+                        "src/cadr-ai/utilities.lisp"))
+      (is (not (probe-file (merge-pathnames relative root)))
+          "B10 legacy mixed owner remains: ~A" relative))))
+
+(test goal14-b10-preserves-core-owners-and-frozen-ai-surface
+  (let* ((root (asdf:system-source-directory "cadr-ai"))
+         (threads (goal14-b1-source root "src/cadr-ai/support/threads.lisp"))
+         (http (goal14-b1-source root "src/cadr-ai/transport/http.lisp"))
+         (models (goal14-b1-source root "src/cadr-ai/runtime/models.lisp"))
+         (package-source (goal14-b1-source root "src/cadr-ai/package.lisp"))
+         (sources
+           (loop for relative in
+                 '("capabilities/streaming-json.lisp"
+                   "capabilities/event-stream.lisp"
+                   "capabilities/grammar-tools.lisp"
+                   "capabilities/session-resources.lisp"
+                   "capabilities/proxy-config.lisp"
+                   "capabilities/image-runtime.lisp"
+                   "transport/http.lisp" "transport/aws-event-stream.lisp"
+                   "runtime/models.lisp" "runtime/faux-provider.lisp"
+                   "support/threads.lisp" "support/release.lisp"
+                   "support/retry.lisp" "support/token-estimation.lisp"
+                   "support/overflow.lisp" "support/grammar-coercion.lisp"
+                   "support/uuid.lisp")
+                 collect
+                 (goal14-b1-source root (format nil "src/cadr-ai/~A" relative)))))
+    (is (and threads
+             (search "(cadr-core:stop-thread-for-cleanup" threads))
+        "B10 thread compatibility entry point bypasses the B3 owner")
+    (is (and http
+             (search "(cadr-core:cancellation-predicate-aborted-p" http)
+             (search ":read-timeout nil" http)
+             (search ":message \"fetch failed\"" http))
+        "B10 transport changed cancellation, SSE timeout, or diagnostic policy")
+    (is (and models
+             (search "(cadr-core:cancellation-predicate-aborted-p" models))
+        "B10 runtime model cancellation bypasses the B3 owner")
+    (is (and package-source
+             (string=
+              "e722e49fd70592edcd28da93acc97051d4a0b22bc016e4b7da314a65c4acfb4f"
+              (goal14-sha256 package-source)))
+        "B10 changed the frozen cadr-ai public package text")
+    (dolist (source sources)
+      (is (not (null source)) "missing B10 source")
+      (when source
+        (dolist (forbidden '("sb-thread:join-thread"
+                             "rename-file-overwriting-target"
+                             "(defmethod print-object"))
+          (is (not (search forbidden source))
+              "B10 source reintroduced policy ~A" forbidden))))))
+
+(test goal14-b10-asdf-loads-ai-owners-in-dependency-order
+  (let* ((root (asdf:system-source-directory "cadr-ai"))
+         (source (uiop:read-file-string (merge-pathnames "cadr-ai.asd" root)))
+         (ordered
+           '("(:module \"support\""
+             "(:file \"threads\")" "(:file \"release\")"
+             "(:file \"retry\")" "(:file \"token-estimation\")"
+             "(:file \"overflow\")" "(:file \"grammar-coercion\")"
+             "(:file \"uuid\")"
+             "(:module \"capabilities\""
+             "(:file \"streaming-json\")" "(:file \"event-stream\")"
+             "(:file \"grammar-tools\")" "(:file \"session-resources\")"
+             "(:file \"proxy-config\")" "(:file \"image-runtime\")"
+             "(:file \"sse\")"
+             "(:module \"transport\""
+             "(:file \"http\")" "(:file \"aws-event-stream\")"
+             "(:file \"provider\")" "(:file \"auth\")" "(:file \"oauth\")"
+             "(:module \"runtime\""
+             "(:file \"models\")" "(:file \"faux-provider\")"))
+         (positions
+           (let ((cursor 0))
+             (loop for marker in ordered
+                   for position = (search marker source :start2 cursor)
+                   collect position
+                   when position do (setf cursor (1+ position))))))
+    (is (every #'identity positions)
+        "cadr-ai.asd omits a B10 load boundary: ~S"
+        (loop for marker in ordered
+              for position in positions
+              unless position collect marker))
+    (when (every #'identity positions)
+      (is (every #'< positions (rest positions))
+          "B10 owner load order is not dependency-safe: ~S" positions))))
