@@ -815,3 +815,100 @@ fixtures, extension export/event hashes, session bytes, tool results, exit
 codes, and other observable output remained unchanged. Implementation commit:
 `1632bcdfa4d4681a203eeac85a46cd59b924f097`; verification-provenance fix:
 `d750b01a0`.
+
+## Part C B9 — extension host ownership
+
+### Result
+
+B9 replaced the mixed extension host with eight dependency-ordered owners
+while preserving all 239 top-level definitions:
+
+- `extensions/{context,api,registration,snapshot}.lisp`;
+- `extensions/{rendering,providers,commands,lifecycle}.lisp`.
+
+The ASDF graph loads context and API contracts before registration and
+snapshots, then loads rendering, provider, command, and lifecycle adapters.
+B3 remains the sole owner of cancellation and output-diagnostic policy. The
+extension host still consumes the same cancellation primitive and injected
+output sink; it does not recreate either policy locally.
+
+Tests were written before extraction. The red-first ownership gate produced
+ten expected failures while the eight owners were absent and the legacy
+monolith remained. The completed gates are
+`GOAL14-B9-EXTENSION-HOST-HAS-EXACT-OWNERS`,
+`GOAL14-B9-PRESERVES-CORE-OWNERS-AND-FROZEN-EXTENSION-SURFACES`, and
+`GOAL14-B9-ASDF-LOADS-EXTENSION-HOST-IN-DEPENDENCY-ORDER`. The public agent
+package remained byte-identical with SHA-256
+`41374c3caf9a306242b483d870383f3fdae641ee649ed461cf2b67164847c4a5`.
+The frozen extension export SHA remains
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`,
+and the event SHA remains
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
+The complete deterministic suite passed:
+
+```text
+cadr test summary: systems=9 checks=13150 pass=13150 skip=0 fail=0
+```
+
+### Full verification
+
+`./scripts/verify.sh` passed all thirteen deterministic stages and both live
+stages:
+
+```text
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The real source-parity ledger contains 595 accepted entries with SHA-256
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+Credential-gated live verification ran seven items successfully, skipped
+Anthropic because `ANTHROPIC_API_KEY` is unset, and failed none:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+`LIVE-DEEPSEEK-EVAL-SMOKE` passed all four checks. Its exact `Paris`
+assertion remains unchanged pending the separately required baseline audit.
+The actual live-eval path enters `cadr-evals` and calls
+`cadr-cli::resolve-provider-config`; B9 changed no definition or caller on
+that path, and the moved extension-host definitions do not participate in its
+model or max-token resolution. This is call-path evidence, not an ASDF-system
+boundary argument.
+
+The Goal 11 gate passed with sustained-interaction p99.9 of 4 ms, maximum
+pause of 16 ms, maximum measured sustained GC pause of 15.31 ms, and
+converged sustained memory.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 22:37:22.636144306 +0800
+latest source commit: 0107210c863b84ca20595a614c206893f6507621 2026-08-03T22:34:59+08:00
+latest source mtime: 2026-08-03 22:33:08.086823017 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The build explicitly took the approved compatibility path:
+`SBCL lacks sb-core-compression; building an uncompressed image.` The
+production inventory is now 239 Lisp files / 100,407 lines and five embedded
+assets / 4,275 lines, for 244 files / 104,682 lines total. All screen/overlay
+snapshots and their independent semantic assertions, payload and wire
+fixtures, extension export/event hashes, session bytes, tool results, exit
+codes, and other observable output remained unchanged. Implementation commit:
+`0107210c863b84ca20595a614c206893f6507621`.
