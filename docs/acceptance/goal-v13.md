@@ -1104,4 +1104,9 @@ latest src commit time: 2026-08-03T15:11:45+08:00
 ./cadr --version:       cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
 
-Goal 13 remains open for the user's final real-terminal A/B.
+## Final user acceptance — 2026-08-03
+
+The user confirmed that the final real-terminal A/B meets the Goal 13 bar.
+This closes the only remaining acceptance item after the authentication
+partition correction. Parts A, B, C, C2, C3, and D are complete, committed,
+mechanically verified, and now user-accepted.
