@@ -469,3 +469,95 @@ be either that pi enforces the same strict response (a baseline-inherent live
 variance) or that pi uses a different matching/retry contract that Cadr must
 adopt.  B4 does not weaken or otherwise change that assertion without the
 baseline evidence.
+
+## Part C B5 — CLI bootstrap and RPC ownership
+
+### Result
+
+B5 replaced the two remaining mixed command entrypoints with eleven cohesive
+owners while preserving all 100 top-level definitions and the package-private
+symbol names used by existing callers.
+
+| Previous owner | New owners | Responsibility boundary |
+|---|---|---|
+| `main.lisp` | `bootstrap/tools.lisp` | built-in tool construction and prompt metadata |
+| `main.lisp` | `bootstrap/sessions.lisp` | session resolution, lifecycle, tree, and export |
+| `main.lisp` | `bootstrap/settings.lisp` | directories, trust, settings, resources, runtime, and system prompt |
+| `main.lisp` | `bootstrap/auth.lisp` | native authentication options and command dispatch |
+| `main.lisp` | `bootstrap/commands.lisp` | event rendering, file input, controller construction, and mode-output injection |
+| `main.lisp` | `bootstrap/main.lisp` | model listing and process entrypoint |
+| `modes/rpc/mode.lisp` | `modes/rpc/models.lisp` | RPC model enumeration and selection commands |
+| `modes/rpc/mode.lisp` | `modes/rpc/prompt-bash.lisp` | RPC prompt, steering/follow-up, and bash execution commands |
+| `modes/rpc/mode.lisp` | `modes/rpc/sessions.lisp` | RPC session-state and compaction commands |
+| `modes/rpc/mode.lisp` | `modes/rpc/commands.lisp` | RPC command parsing, validation, and dispatch |
+| `modes/rpc/mode.lisp` | `modes/rpc/mode.lisp` | RPC loop and lifecycle only |
+
+`cadr-cli.asd` loads value owners before their consumers and leaves the RPC
+loop last.  A clean isolated build proved the order without relying on stale
+FASLs.  `src/cadr-cli/package.lisp` remained byte-identical with SHA-256
+`8bab04da761b5035172ece9c7d15dd93be00bfe5269f2ca80510d24a1c01b1db`.
+
+### Convergence-before-split proof
+
+B5 completed the approved convergence at the new boundaries:
+
+- session export timestamps call `cadr-core:milliseconds-to-utc-iso8601`
+  directly;
+- RPC IDs call `cadr-core:unix-milliseconds` directly;
+- `bootstrap/commands.lisp` owns the single frontend-output injection;
+- `modes/rpc/jsonl.lisp` remains the sole RPC wire sink, and the extracted RPC
+  domains cannot call `write-json-line` directly.
+
+`GOAL14-B5-COMMAND-AND-RPC-DOMAINS-HAVE-EXACT-OWNERS`,
+`GOAL14-B5-CONVERGES-MODE-OUTPUT-AND-TIME-BEFORE-SPLIT`, and
+`GOAL14-B5-ASDF-LOADS-COMMAND-DOMAINS-BEFORE-ENTRYPOINTS` lock those decisions.
+The red gate was 6,184 checks / 6,165 pass / 19 expected failures before the
+owners existed.  After implementation, the complete deterministic suite was:
+
+```text
+cadr test summary: systems=9 checks=12781 pass=12781 skip=0 fail=0
+```
+
+### Full verification
+
+`./scripts/verify.sh` passed all 13 deterministic stages and both live stages:
+
+```text
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The credential-gated report ran seven items successfully, skipped Anthropic
+because `ANTHROPIC_API_KEY` is unset, and failed none: 32 checks / 31 pass / 1
+skip / 0 fail.  `LIVE-DEEPSEEK-EVAL-SMOKE` passed its four checks in this run;
+the separately recorded baseline audit of its exact `Paris` assertion remains
+unchanged.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 20:12:22.504791370 +0800
+latest source commit: d0935fadbfa8d34de0fe6d30e5b54733f51c4ea6 2026-08-03T20:09:52+08:00
+latest source mtime: 2026-08-03 20:09:19.298069498 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The production Lisp inventory is now 197 files / 100,354 lines; the complete
+production inventory including five embedded assets is 202 files / 104,629
+lines.  All screen and overlay snapshots, payload and wire fixtures, extension
+export/event SHA values, session files, tool results, exit codes, and other
+observable bytes remain unchanged.  Implementation commit:
+`d0935fadbfa8d34de0fe6d30e5b54733f51c4ea6`.
