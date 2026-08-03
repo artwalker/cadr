@@ -59,8 +59,7 @@
     :reader memory-storage-lock)))
 
 (defun current-iso8601 ()
-  (milliseconds-to-iso8601
-   (cadr-ai::unix-milliseconds)))
+  (cadr-core:current-utc-iso8601))
 
 (defun ensure-session-metadata
     (metadata &key id cwd path

@@ -7380,11 +7380,11 @@
   option
   input)
 
-(defmethod print-object ((value api-key-input-state) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":provider ~A :input [REDACTED]"
-            (oauth-selector-option-id
-             (api-key-input-state-option value)))))
+(cadr-core:define-redacted-print-object
+    (api-key-input-state value stream)
+  (format stream ":provider ~A :input [REDACTED]"
+          (oauth-selector-option-id
+           (api-key-input-state-option value))))
 
 (defun make-api-key-input-state (option)
   (%make-api-key-input-state

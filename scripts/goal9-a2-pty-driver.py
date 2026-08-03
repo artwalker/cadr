@@ -217,7 +217,13 @@ def child_command(project, sbcl, quicklisp):
         "--load",
         quicklisp,
     ]
-    for system in ("cadr-ai", "cadr-agent", "cadr-tui", "cadr-cli"):
+    for system in (
+        "cadr-core",
+        "cadr-ai",
+        "cadr-agent",
+        "cadr-tui",
+        "cadr-cli",
+    ):
         command.extend(
             [
                 "--eval",

@@ -2,7 +2,8 @@
   :description "Behavioral evaluation harness for cadr"
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("cadr-cli")
+  :depends-on ("cadr-core"
+               "cadr-cli")
   :serial t
   :components ((:module "src/cadr-evals"
                 :serial t

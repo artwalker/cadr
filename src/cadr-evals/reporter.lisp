@@ -157,17 +157,12 @@
     (let ((path
             (merge-pathnames
              "runs.jsonl" root)))
-      (with-open-file
-          (stream path
-           :direction :output
-           :if-exists :append
-           :if-does-not-exist :create
-           :external-format :utf-8)
-        (write-line
-         (cadr-ai::stringify-json record)
-         stream))
-      (sb-posix:chmod
-       (namestring path) #o600))
+      (cadr-core:append-string-to-file
+       path
+       (format nil "~A~%"
+               (cadr-ai::stringify-json record))
+       :mode #o600
+       :durability :flush))
     record))
 
 (defun reporter-case-observation (case)

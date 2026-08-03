@@ -2,7 +2,8 @@
   :description "Pure Common Lisp terminal UI primitives for cadr"
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("cl-ppcre"
+  :depends-on ("cadr-core"
+               "cl-ppcre"
                "sb-posix")
   :serial t
   :components ((:module "src/cadr-tui"

@@ -23,6 +23,7 @@ XDG_CACHE_HOME="$TEST_HOME/.cache" \
 ASDF_OUTPUT_TRANSLATIONS="/:$TEST_HOME/asdf-cache/" \
 HOME="$TEST_HOME" "$SBCL_COMMAND" --noinform --non-interactive \
   --load "$QUICKLISP_SETUP" \
+  --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-core.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-ai.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-agent.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-tui.asd\"))" \
@@ -32,6 +33,7 @@ HOME="$TEST_HOME" "$SBCL_COMMAND" --noinform --non-interactive \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-server.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-evals.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-protocol.asd\"))" \
+  --eval '(asdf:test-system "cadr-core" :force t)' \
   --eval '(asdf:test-system "cadr-ai" :force t)' \
   --eval '(asdf:test-system "cadr-agent" :force t)' \
   --eval '(asdf:test-system "cadr-tui" :force t)' \
@@ -62,7 +64,7 @@ if ! SUMMARY="$(awk '
       fail += $2
     }
     END {
-      if (did != 8 || pass_lines != 8 || skip_lines != 8 || fail_lines != 8)
+      if (did != 9 || pass_lines != 9 || skip_lines != 9 || fail_lines != 9)
         exit 2
       if (checks != pass + skip + fail)
         exit 3
@@ -70,7 +72,7 @@ if ! SUMMARY="$(awk '
              did, checks, pass, skip, fail
     }
   ' "$TEST_OUTPUT")"; then
-  echo "cadr test: incomplete FiveAM accounting; expected exactly 8 suite summaries." >&2
+  echo "cadr test: incomplete FiveAM accounting; expected exactly 9 suite summaries." >&2
   exit 1
 fi
 

@@ -803,9 +803,9 @@
                           (uiop:wait-process
                            process)
                           128)))
-                   (cadr-ai::stop-thread-for-cleanup
+                   (cadr-core:stop-thread-for-cleanup
                     stdout-thread)
-                   (cadr-ai::stop-thread-for-cleanup
+                   (cadr-core:stop-thread-for-cleanup
                     stderr-thread)
                    (cond
                      (aborted-p

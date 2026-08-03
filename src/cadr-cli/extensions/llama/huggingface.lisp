@@ -12,10 +12,10 @@
   (base-url +default-hugging-face-url+
             :type string))
 
-(defmethod print-object ((value hugging-face-client) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":base-url ~A :token [REDACTED]"
-            (hugging-face-client-base-url value))))
+(cadr-core:define-redacted-print-object
+    (hugging-face-client value stream)
+  (format stream ":base-url ~A :token [REDACTED]"
+          (hugging-face-client-base-url value)))
 
 (defun make-hugging-face-client
     (&key token

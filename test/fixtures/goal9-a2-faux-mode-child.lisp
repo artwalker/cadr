@@ -23,7 +23,8 @@
         (*error-output* sink)
         (*trace-output* sink))
     (load quicklisp)
-    (dolist (name '("cadr-ai.asd"
+    (dolist (name '("cadr-core.asd"
+                    "cadr-ai.asd"
                     "cadr-agent.asd"
                     "cadr-tui.asd"
                     "cadr-cli.asd"))

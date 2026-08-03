@@ -19,7 +19,7 @@
   (load quicklisp-setup))
 
 (dolist (system
-         '("cadr-ai" "cadr-server"))
+         '("cadr-core" "cadr-ai" "cadr-server"))
   (asdf:load-asd
    (truename
     (server-build-path

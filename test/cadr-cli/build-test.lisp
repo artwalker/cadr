@@ -190,7 +190,7 @@
              (uiop:read-file-string
               (merge-pathnames relative root)))))
       (dolist (relative
-                '("cadr-ai.asd" "cadr-agent.asd" "cadr-tui.asd"
+                '("cadr-core.asd" "cadr-ai.asd" "cadr-agent.asd" "cadr-tui.asd"
                   "cadr-cli.asd" "cadr-storage.asd" "cadr-server.asd"
                   "cadr-evals.asd" "cadr-protocol.asd"
                   "src/cadr-ai/http.lisp"

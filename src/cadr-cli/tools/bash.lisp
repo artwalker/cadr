@@ -127,15 +127,12 @@
         (setf forced-p t)
         (terminate-process-group group-id)
         (ignore-errors (close stream))
-        (sb-thread:join-thread
-         reader :timeout 1.0 :default nil)
-        (when (sb-thread:thread-alive-p reader)
-          (ignore-errors
-            (sb-thread:terminate-thread reader)))
+        (cadr-core:stop-thread-for-cleanup
+         reader :timeout 1.0d0)
         (return))
       (sleep 0.01))
     (unless (sb-thread:thread-alive-p reader)
-      (sb-thread:join-thread reader))
+      (cadr-core:stop-thread-for-cleanup reader))
     forced-p))
 
 (defun run-bash-command
@@ -287,11 +284,8 @@
       (when (sb-thread:thread-alive-p reader)
         (setf forced-output-close-p t)
         (ignore-errors (close process-output))
-        (sb-thread:join-thread
-         reader :timeout 1.0 :default nil)
-        (when (sb-thread:thread-alive-p reader)
-          (ignore-errors
-            (sb-thread:terminate-thread reader))))
+        (cadr-core:stop-thread-for-cleanup
+         reader :timeout 1.0d0))
       (when (and reader-error
                  (not preserve-output-p)
                  (probe-file output-path))

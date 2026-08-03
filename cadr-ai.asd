@@ -2,7 +2,8 @@
   :description "Common Lisp provider layer for cadr"
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("cl+ssl")
+  :depends-on ("cl+ssl"
+               "cadr-core")
   :serial t
   :components ((:module "src/cadr-ai"
                 :serial t

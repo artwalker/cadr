@@ -18,15 +18,15 @@
   ;; Keys are JSON field names; values must be JSON-serializable.
   (metadata nil :type list))
 
-(defmethod print-object ((value api-key-credential) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":provider ~A :key [REDACTED]"
-            (api-key-credential-provider value))))
+(cadr-core:define-redacted-print-object
+    (api-key-credential value stream)
+  (format stream ":provider ~A :key [REDACTED]"
+          (api-key-credential-provider value)))
 
-(defmethod print-object ((value oauth-credential) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":provider ~A :access [REDACTED] :refresh [REDACTED]"
-            (oauth-credential-provider value))))
+(cadr-core:define-redacted-print-object
+    (oauth-credential value stream)
+  (format stream ":provider ~A :access [REDACTED] :refresh [REDACTED]"
+          (oauth-credential-provider value)))
 
 (defparameter *provider-auth-locks* (make-hash-table))
 (defparameter *provider-auth-locks-lock*
@@ -133,35 +133,14 @@
                  :cause cause)))
       (json-object)))
 
-(defun auth-temp-path (path)
-  (make-pathname
-   :name
-   (format nil ".~A.~D.~D"
-           (or (pathname-name path) "auth")
-           (sb-posix:getpid)
-           (random 1000000000))
-   :type "tmp"
-   :defaults path))
-
 (defun write-auth-object (path object)
-  (ensure-directories-exist path)
-  (let ((temporary (auth-temp-path path)))
-    (unwind-protect
-         (progn
-           (with-open-file
-               (stream temporary
-                       :direction :output
-                       :if-exists :error
-                       :if-does-not-exist :create
-                       :external-format :utf-8)
-             (write-string (stringify-json object) stream)
-             (terpri stream)
-             (finish-output stream))
-           (sb-posix:chmod temporary #o600)
-           (uiop:rename-file-overwriting-target temporary path)
-           (sb-posix:chmod path #o600))
-      (when (probe-file temporary)
-        (delete-file temporary))))
+  (cadr-core:call-with-atomic-output-file
+   path
+   (lambda (stream)
+     (write-string (stringify-json object) stream)
+     (terpri stream))
+   :mode #o600
+   :durability :flush)
   path)
 
 (defun read-auth-credential (path provider)

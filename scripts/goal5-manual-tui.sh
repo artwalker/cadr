@@ -34,6 +34,7 @@ fi
 
 exec "$SBCL_COMMAND" --noinform --disable-debugger \
   --load "$QUICKLISP_SETUP" \
+  --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-core.asd\"))" \
   --eval "(asdf:load-asd (truename \"$PROJECT_DIRECTORY/cadr-tui.asd\"))" \
   --eval '(asdf:load-system "cadr-tui/tests")' \
   --eval '(cadr-tui/tests:run-goal5-manual-acceptance)' \

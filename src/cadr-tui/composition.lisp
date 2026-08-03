@@ -1305,9 +1305,17 @@
   (loader-component-stop loader))
 
 (defclass cancellation-token ()
-  ((aborted-p
-    :initform nil
-    :accessor cancellation-token-aborted-p)))
+  ((state
+    :initform (cadr-core:make-cancellation-state)
+    :reader cancellation-token-state)))
+
+(defun cancellation-token-aborted-p (token)
+  (cadr-core:cancellation-aborted-p
+   (cancellation-token-state token)))
+
+(defun (setf cancellation-token-aborted-p) (value token)
+  (cadr-core:set-cancellation-aborted-p
+   (cancellation-token-state token) value))
 
 (defclass cancellable-loader-component (loader-component)
   ((token

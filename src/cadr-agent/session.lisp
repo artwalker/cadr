@@ -62,57 +62,13 @@
   (cadr-ai:uuid-v7))
 
 (defun milliseconds-to-iso8601 (milliseconds)
-  (multiple-value-bind
-        (second minute hour day month year)
-      (decode-universal-time
-       (+ 2208988800
-          (floor milliseconds 1000))
-       0)
-    (format nil
-            "~4,'0D-~2,'0D-~2,'0DT~2,'0D:~2,'0D:~2,'0D.~3,'0DZ"
-            year month day hour minute second
-            (mod milliseconds 1000))))
+  (cadr-core:milliseconds-to-utc-iso8601 milliseconds))
 
 (defun iso8601-to-milliseconds (value)
   (cond
     ((integerp value) value)
-    ((and
-      (stringp value)
-      (>= (length value) 19))
-     (handler-case
-         (let* ((year (parse-integer value :start 0 :end 4))
-                (month (parse-integer value :start 5 :end 7))
-                (day (parse-integer value :start 8 :end 10))
-                (hour (parse-integer value :start 11 :end 13))
-                (minute (parse-integer value :start 14 :end 16))
-                (second (parse-integer value :start 17 :end 19))
-                (dot (position #\. value :start 19))
-                (zone
-                  (or
-                   (position #\Z value :start 19)
-                   (length value)))
-                (fraction
-                  (if dot
-                      (subseq
-                       value
-                       (1+ dot)
-                       (min zone (+ dot 4)))
-                      "0"))
-                (millisecond
-                  (parse-integer
-                   (concatenate
-                    'string
-                    fraction
-                    (make-string
-                     (max 0 (- 3 (length fraction)))
-                     :initial-element #\0)))))
-           (+ (* 1000
-                 (- (encode-universal-time
-                     second minute hour day month year 0)
-                    2208988800))
-              millisecond))
-       (error ()
-         (error "Invalid ISO-8601 timestamp: ~S" value))))
+    ((and (stringp value) (>= (length value) 19))
+     (cadr-core:iso8601-to-milliseconds value))
     (t
      (error "Invalid session timestamp: ~S" value))))
 
@@ -1412,31 +1368,13 @@
            message "role" "custom")))))
   objects)
 
-(defun migration-temporary-path (path)
-  (make-pathname
-   :name
-   (format nil ".~A-migrate-~A"
-           (or (pathname-name path) "session")
-           (make-session-id))
-   :type "tmp"
-   :defaults path))
-
 (defun persist-migrated-session (objects path)
-  (let ((temporary (migration-temporary-path path)))
-    (unwind-protect
-         (progn
-           (with-open-file
-               (stream temporary
-                       :direction :output
-                       :if-exists :error
-                       :if-does-not-exist :create
-                       :external-format :utf-8)
-             (dolist (object objects)
-               (write-jsonl-object stream object)))
-           (uiop:rename-file-overwriting-target
-            temporary path))
-      (when (probe-file temporary)
-        (delete-file temporary)))))
+  (cadr-core:call-with-atomic-output-file
+   path
+   (lambda (stream)
+     (dolist (object objects)
+       (write-jsonl-object stream object)))
+   :durability :flush))
 
 (defun require-json-field (object name path line-number)
   (multiple-value-bind (value present-p)

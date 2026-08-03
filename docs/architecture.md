@@ -98,15 +98,23 @@ Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF 
 
 ## 2. 系统分层
 
-依赖方向固定为：
+依赖方向固定为；Goal 14 B3 增加的 `cadr-core` 是所有现有 system 只向下
+依赖的内部叶子，不承载产品或 provider 语义：
 
 ```text
-cadr-cli -> cadr-agent -> cadr-ai
+cadr-cli -> cadr-agent -> cadr-ai -> cadr-core
+    |             |            |
+    +-> cadr-tui -+------------+
+    +--------------------------+
+
+cadr-server -> cadr-ai -> cadr-core
+cadr-evals  -> cadr-cli -> ... -> cadr-core
 ```
 
 | TypeScript 责任 | Common Lisp system / package / module | 第一版责任 |
 |---|---|---|
 | `packages/ai/src/types.ts`、model/provider registry | `cadr-ai` / `cadr-ai` / `types.lisp`、`provider.lisp` | 统一模型、消息、内容块、工具、用量、事件 |
+| 跨 system 的失败安全基础设施 | `cadr-core` / `cadr-core` / `threads.lisp`、`cancellation.lisp`、`atomic-file.lisp`、`redacted-print.lisp`、`time.lisp` | 有界清理、取消状态、原子替换、脱敏打印与 UTC 时间；不含产品策略 |
 | `packages/ai/src/api/*` 三家实现 | `cadr-ai` / `cadr-ai` / `providers/*.lisp` | 请求构造、消息转换、非流式响应和 SSE reducer |
 | `packages/ai/src/utils/event-stream.ts` | `cadr-ai` / `cadr-ai` / `types.lisp`、`provider.lisp` | 同步事件回调协议和最终消息收集 |
 | provider SDK / fetch 边界 | `cadr-ai` / `cadr-ai` / `http.lisp`、`sse.lisp` | 自研 HTTP/1.1、OpenSSL TLS、UTF-8 流读取、通用 SSE framing |
@@ -126,12 +134,20 @@ cadr-cli -> cadr-agent -> cadr-ai
 
 ```text
 cadr-ai.asd
+cadr-core.asd
 cadr-agent.asd
 cadr-cli.asd
 cadr-live-tests.asd
 build.lisp
 build.sh
 src/
+  cadr-core/
+    package.lisp
+    threads.lisp
+    cancellation.lisp
+    atomic-file.lisp
+    redacted-print.lisp
+    time.lisp
   cadr-ai/
     package.lisp
     conditions.lisp
@@ -219,12 +235,18 @@ docs/
 
 ASDF systems：
 
+- `cadr-core`、`cadr-core/tests`
 - `cadr-ai`、`cadr-ai/tests`
 - `cadr-agent`、`cadr-agent/tests`
 - `cadr-cli`、`cadr-cli/tests`
 - `cadr-tui`、`cadr-tui/tests`
 - `cadr-ai/live-tests`、`cadr-cli/live-tests`、`cadr-evals/live-tests`
 - `cadr-live-tests`（只编排并汇总上述 live systems）
+
+`cadr-core` 的 export 仅供仓库内 system 使用，不是 Cadr 的发布扩展 API。
+既有 package-local 名称只保留无策略兼容委托；原子替换、凭据安全打印、
+取消和线程清理的政策只能在该叶子定义。`cadr-tui` 仍不依赖 `cadr-ai`，因此
+Goal 14 没有反转任何既有系统边。
 
 Phase 9 后的生产依赖：
 

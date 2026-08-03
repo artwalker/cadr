@@ -21,10 +21,4 @@
   (copy-instance-record record))
 
 (defun current-iso8601 ()
-  (multiple-value-bind
-        (second minute hour day month year)
-      (decode-universal-time
-       (get-universal-time) 0)
-    (format nil
-            "~4,'0D-~2,'0D-~2,'0DT~2,'0D:~2,'0D:~2,'0DZ"
-            year month day hour minute second)))
+  (cadr-core:current-utc-iso8601 :fraction-digits 0))

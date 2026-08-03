@@ -67,10 +67,10 @@
     :initform (constantly nil)
     :accessor radius-update-instance-function)))
 
-(defmethod print-object ((value http-radius-presence) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":base-url ~A :token [REDACTED]"
-            (radius-base-url value))))
+(cadr-core:define-redacted-print-object
+    (http-radius-presence value stream)
+  (format stream ":base-url ~A :token [REDACTED]"
+          (radius-base-url value)))
 
 (defgeneric radius-start
     (presence &key label))

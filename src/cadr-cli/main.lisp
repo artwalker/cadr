@@ -1265,22 +1265,8 @@
             (values :cancelled nil))))
       (unless
           (same-session-file-p source destination)
-        (let ((temporary
-                (merge-pathnames
-                 (format nil ".~A-import-~A.tmp"
-                         (or
-                          (pathname-name destination)
-                          "session")
-                         (cadr-ai:uuid-v7))
-                 session-directory)))
-          (unwind-protect
-               (progn
-                 (uiop:copy-file
-                  source temporary)
-                 (uiop:rename-file-overwriting-target
-                  temporary destination))
-            (when (probe-file temporary)
-              (delete-file temporary)))))
+        (cadr-core:atomic-copy-file
+         source destination :durability :flush))
       (handler-case
           (let* ((previous
                    (and

@@ -13,7 +13,7 @@
     (error "QUICKLISP_SETUP does not name a readable file"))
   (load quicklisp-setup))
 
-(dolist (system '("cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"))
+(dolist (system '("cadr-core" "cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"))
   (asdf:load-asd
    (truename
     (build-path (format nil "~A.asd" system)))))

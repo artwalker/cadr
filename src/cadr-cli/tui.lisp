@@ -92,10 +92,10 @@
   prompt
   input)
 
-(defmethod print-object ((value runtime-auth-input-state) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":type ~A :input [REDACTED]"
-            (getf (runtime-auth-input-state-prompt value) :type))))
+(cadr-core:define-redacted-print-object
+    (runtime-auth-input-state value stream)
+  (format stream ":type ~A :input [REDACTED]"
+          (getf (runtime-auth-input-state-prompt value) :type)))
 
 (defun make-runtime-auth-input-state (prompt)
   (%make-runtime-auth-input-state

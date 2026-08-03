@@ -11,9 +11,9 @@
   (lock (sb-thread:make-mutex
          :name "cadr-ai memory credential store")))
 
-(defmethod print-object ((value memory-credential-store) stream)
-  (print-unreadable-object (value stream :type t)
-    (write-string ":entries [REDACTED]" stream)))
+(cadr-core:define-redacted-print-object
+    (memory-credential-store value stream)
+  (write-string ":entries [REDACTED]" stream))
 
 (defun make-memory-credential-store ()
   (%make-memory-credential-store))
@@ -63,11 +63,11 @@
   source
   type)
 
-(defmethod print-object ((value runtime-auth-result) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":source ~A :type ~A :credentials [REDACTED]"
-            (runtime-auth-result-source value)
-            (runtime-auth-result-type value))))
+(cadr-core:define-redacted-print-object
+    (runtime-auth-result value stream)
+  (format stream ":source ~A :type ~A :credentials [REDACTED]"
+          (runtime-auth-result-source value)
+          (runtime-auth-result-type value)))
 
 (defstruct runtime-auth-check
   source
@@ -120,10 +120,8 @@
      (otherwise nil))))
 
 (defun runtime-auth-interaction-aborted-p (interaction)
-  (let ((abort-p
-          (runtime-auth-interaction-abort-p interaction)))
-    (and abort-p
-         (not (null (funcall abort-p))))))
+  (cadr-core:cancellation-predicate-aborted-p
+   (runtime-auth-interaction-abort-p interaction)))
 
 (defun runtime-auth-interaction-prompt (interaction prompt)
   (unless (valid-runtime-auth-prompt-p prompt)
@@ -167,15 +165,13 @@
   (force-p nil :type boolean)
   abort-p)
 
-(defmethod print-object ((value runtime-refresh-context) stream)
-  (print-unreadable-object (value stream :type t)
-    (write-string ":credential [REDACTED]" stream)))
+(cadr-core:define-redacted-print-object
+    (runtime-refresh-context value stream)
+  (write-string ":credential [REDACTED]" stream))
 
 (defun runtime-refresh-context-aborted-p (context)
-  (let ((abort-p
-          (runtime-refresh-context-abort-p context)))
-    (and abort-p
-         (not (null (funcall abort-p))))))
+  (cadr-core:cancellation-predicate-aborted-p
+   (runtime-refresh-context-abort-p context)))
 
 (defstruct runtime-provider
   (id nil :type symbol)
@@ -209,11 +205,10 @@
   (model-store (make-hash-table) :type hash-table)
   (environment nil :type list))
 
-(defmethod print-object ((value models-runtime) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":providers ~D :credentials [REDACTED]"
-            (hash-table-count
-             (models-runtime-provider-table value)))))
+(cadr-core:define-redacted-print-object (models-runtime value stream)
+  (format stream ":providers ~D :credentials [REDACTED]"
+          (hash-table-count
+           (models-runtime-provider-table value))))
 
 (defun make-models-runtime (&key credential-store model-store environment)
   (%make-models-runtime
@@ -661,7 +656,7 @@
   (let ((errors nil)
         (aborted-p nil))
     (dolist (provider (models-runtime-providers runtime))
-      (when (and abort-p (funcall abort-p))
+      (when (cadr-core:cancellation-predicate-aborted-p abort-p)
         (setf aborted-p t)
         (return))
       (let ((refresh
@@ -1179,7 +1174,7 @@
 (defun faux-complete
     (handle model context &rest options
      &key abort-p &allow-other-keys)
-  (when (and abort-p (funcall abort-p))
+  (when (cadr-core:cancellation-predicate-aborted-p abort-p)
     (return-from faux-complete
       (faux-error-message
        handle model "Request was aborted" t)))
@@ -1203,7 +1198,7 @@
     (handle model context on-event
      &rest options &key abort-p &allow-other-keys)
   (let ((message
-          (if (and abort-p (funcall abort-p))
+          (if (cadr-core:cancellation-predicate-aborted-p abort-p)
               (faux-error-message
                handle model "Request was aborted" t)
               (faux-resolve handle model context options))))

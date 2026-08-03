@@ -194,3 +194,83 @@ eight selector families are extracted.  B11 must re-audit the historical
 `src/cadr-ai` freeze and build its 38-provider matrix from baseline semantics,
 never from the current Cadr table.  The proposal now records the required
 convergence-before-split order for every batch.
+
+## Part C B3 — shared failure-safety core
+
+### Result
+
+B3 is complete.  The new internal `cadr-core` leaf contains no product policy,
+provider behavior, TUI behavior, third-party system, or new public mechanism.
+All existing systems depend downward on it; `cadr-tui` still does not depend on
+`cadr-ai`.
+
+| Previous owners | New owner | One responsibility |
+|---|---|---|
+| `cadr-ai/utilities.lisp`, `cadr-tui/threads.lisp`, `cadr-cli/utilities.lisp`, plus raw joins in agent/tool/server cleanup | `src/cadr-core/threads.lisp` | Bound cleanup waits and require a non-empty reason for deliberately unbounded active synchronization. |
+| AI HTTP/runtime, agent extension/runtime, TUI autocomplete/composition local flags | `src/cadr-core/cancellation.lisp` | Own component-local abort state, predicates, notification, and waiting without adding lifecycle policy. |
+| AI auth, CLI settings/import, agent migration, server storage, eval artifacts/reporting | `src/cadr-core/atomic-file.lisp` | Own sibling-temp atomic replacement, explicit file modes/durability, copy, and explicitly non-atomic append. |
+| AI provider/request/auth/model values and CLI config/credential values | `src/cadr-core/redacted-print.lisp` | Declare and enumerate secret-safe object printers and provide exact sentinel redaction. |
+| AI event timestamps, agent session/storage timestamps, CLI export names, server status timestamps | `src/cadr-core/time.lisp` | Own Unix milliseconds and fixed UTC ISO-8601 conversions. |
+
+`src/cadr-core/package.lisp` is the internal contract and `cadr-core.asd` is the
+serial load boundary.  The former package-local helper names remain only where
+existing internal callers already use them; every such wrapper delegates to
+`cadr-core` and owns no branch, timeout, file-mode, redaction, or timestamp
+policy.
+
+### Convergence and safety gates
+
+Tests were written before the implementation.  `cadr-core/tests` covers the
+absent/current/completed/unresponsive thread cases, mandatory active-join
+reason, local and external cancellation, atomic rollback, `0600` preservation,
+append semantics, secret-bearing object printing, and fixed UTC vectors.
+Repository source gates additionally reject:
+
+- raw production `sb-thread:join-thread` outside `cadr-core/threads.lisp`;
+- handwritten `rename-file-overwriting-target` outside
+  `cadr-core/atomic-file.lisp`;
+- direct production `defmethod print-object` outside the redacted declaration
+  owner.
+
+The deterministic entrypoint now accounts for nine suites instead of eight,
+and every build/live/benchmark helper explicitly loads the new leaf before its
+consumers.  A clean temporary HOME and ASDF cache proved that no stale FASL was
+required.
+
+### Frozen behavior
+
+No package other than the new internal `cadr-core` package gained an export.
+The public extension export SHA remains
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18` and
+the 34-event SHA remains
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
+All screen/overlay snapshots, payload and wire fixtures, session files, tool
+results, exit codes, and user-visible bytes remain unchanged.
+
+### Mechanical verification
+
+```text
+cadr-core/tests: 36 checks / 36 pass / 0 skip / 0 fail
+cadr test summary: systems=9 checks=12552 pass=12552 skip=0 fail=0
+```
+
+The first full verifier run exposed that the standalone Goal 9 A2 PTY driver,
+like the already-corrected Goal 5 harness, loaded a consumer ASDF file without
+first registering `cadr-core.asd`.  The shared regression now enumerates both
+harnesses and requires the core registration to precede `cadr-tui`; the real
+PTY gate then passed all six lifecycle and interaction scenarios.  The final
+`./scripts/verify.sh` run passed all 13 deterministic stages and both live
+stages.  Credential-gated live results were 7 pass, 1 Anthropic skip because
+`ANTHROPIC_API_KEY` is unset, and 0 fail; the DeepSeek live TUI passed.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 17:25:55.930730933 +0800
+latest source mtime: 2026-08-03 17:20:33.215966287 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The implementation adds six production Lisp files / 359 lines and removes the
+duplicated policy bodies from existing systems.  B1 begins from this committed
+shared owner rather than reproducing those decisions during extraction.

@@ -2,7 +2,8 @@
   :description "Unix socket supervisor for cadr RPC instances"
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("cadr-ai"
+  :depends-on ("cadr-core"
+               "cadr-ai"
                "sb-bsd-sockets"
                "sb-posix")
   :serial t

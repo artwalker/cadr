@@ -97,12 +97,8 @@
 (defstruct (extension-cancellation-signal
             (:constructor %make-extension-cancellation-signal)
             (:conc-name %extension-cancellation-signal-))
-  (aborted-p nil :type boolean)
-  aborted-function
-  abort-function
-  (lock
-    (sb-thread:make-mutex
-     :name "cadr-extension-cancellation")))
+  state
+  abort-function)
 
 (defun make-extension-cancellation-signal
     (&key aborted-function abort-function)
@@ -115,7 +111,9 @@
     (error 'extension-execution-error
            :message "ABORT-FUNCTION must be a function or NIL"))
   (%make-extension-cancellation-signal
-   :aborted-function aborted-function
+   :state
+   (cadr-core:make-cancellation-state
+    :aborted-function aborted-function)
    :abort-function abort-function))
 
 (defun extension-cancellation-aborted-p (signal)
@@ -123,25 +121,16 @@
     (error
      'extension-execution-error
      :message "Expected an extension cancellation signal"))
-  (let ((local-p
-          (sb-thread:with-mutex
-              ((%extension-cancellation-signal-lock signal))
-            (%extension-cancellation-signal-aborted-p signal)))
-        (external
-          (%extension-cancellation-signal-aborted-function signal)))
-    (or local-p
-        (and external (not (null (funcall external)))))))
+  (cadr-core:cancellation-aborted-p
+   (%extension-cancellation-signal-state signal)))
 
 (defun abort-extension-cancellation-signal (signal)
   (unless (typep signal 'extension-cancellation-signal)
     (error
      'extension-execution-error
      :message "Expected an extension cancellation signal"))
-  (sb-thread:with-mutex
-      ((%extension-cancellation-signal-lock signal))
-    (setf
-     (%extension-cancellation-signal-aborted-p signal)
-     t))
+  (cadr-core:abort-cancellation
+   (%extension-cancellation-signal-state signal))
   (let ((function
           (%extension-cancellation-signal-abort-function signal)))
     (when function

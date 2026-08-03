@@ -510,19 +510,19 @@
               (cadr-cli::resource-snapshot-themes
                snapshot))))))))
 
-(test deterministic-test-entrypoint-accounts-for-all-eight-suites
+(test deterministic-test-entrypoint-accounts-for-all-nine-suites
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (script (merge-pathnames "scripts/test-cl.sh" root))
          (source (uiop:read-file-string script)))
-    (dolist (system '("cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"
+    (dolist (system '("cadr-core" "cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"
                       "cadr-storage" "cadr-server" "cadr-evals"
                       "cadr-protocol"))
       (is (= 1
              (count-substring
               (format nil "(asdf:test-system \"~A\" :force t)" system)
               source))))
-    (dolist (contract '("did != 8" "pass_lines != 8" "skip_lines != 8"
-                        "fail_lines != 8" "checks != pass + skip + fail"
+    (dolist (contract '("did != 9" "pass_lines != 9" "skip_lines != 9"
+                        "fail_lines != 9" "checks != pass + skip + fail"
                         "cadr test summary: systems=%d checks=%d pass=%d skip=%d fail=%d"))
       (is (search contract source)))
     (with-test-directory (temporary)
@@ -531,7 +531,7 @@
         (write-text
          fake-sbcl
          (format nil
-                 "#!/bin/sh~%i=0~%while [ \"$i\" -lt 8 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
+                 "#!/bin/sh~%i=0~%while [ \"$i\" -lt 9 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
         (write-text quicklisp "")
         (uiop:run-program (list "chmod" "+x" (namestring fake-sbcl)))
         (multiple-value-bind (output errors status)
@@ -545,5 +545,5 @@
              :ignore-error-status t)
           (is (zerop status) "~A" errors)
           (is (search
-               "cadr test summary: systems=8 checks=24 pass=24 skip=0 fail=0"
+               "cadr test summary: systems=9 checks=27 pass=27 skip=0 fail=0"
                output)))))))

@@ -421,6 +421,25 @@ boundary.  It adds a shared leaf but no dependency reversal between existing
 systems.  Because Goal 14 forbids casual system-graph changes, creating that
 leaf is explicitly a Part B decision, not an audit-side implementation.
 
+### Part C B3 implementation status
+
+B3 implemented the approved leaf before any file extraction.  Its modules own
+exactly one policy each: `threads` bounds cleanup waits and requires a written
+reason for an active unbounded join; `cancellation` owns component-local abort
+state and waiting; `atomic-file` owns sibling-temp replacement and explicit
+file modes; `redacted-print` owns secret-safe object declarations; `time` owns
+UTC millisecond and ISO formatting.  Existing package-local entry points are
+compatibility delegates with no policy.  Source gates reject raw production
+`join-thread`, handwritten replacement rename, and direct secret-bearing
+`print-object` definitions outside these owners.
+
+The remaining repeated decisions keep their approved order: B1 names output
+ownership before extracting presentation leaves; B2 establishes
+`selector-frame` before extracting selector families; B4 converges CLI sinks
+and the duplicate JavaScript metric before service extraction; B5--B10 consume
+those owners before their splits; B11 creates the fixed-baseline provider
+matrix before the declaration owner or provider file split.
+
 ### Already-converged examples to preserve
 
 - A0 now gives authentication overlays and Input components ownership of their

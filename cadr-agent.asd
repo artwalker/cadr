@@ -2,7 +2,8 @@
   :description "Common Lisp agent runtime for cadr"
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("cl-ppcre"
+  :depends-on ("cadr-core"
+               "cl-ppcre"
                "sqlite"
                "cadr-ai")
   :serial t

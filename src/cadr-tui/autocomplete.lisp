@@ -16,26 +16,23 @@
   (prefix "" :type string))
 
 (defstruct (autocomplete-request-signal
-            (:constructor make-autocomplete-request-signal ()))
-  (lock
-    (sb-thread:make-mutex
-     :name "cadr autocomplete request signal"))
-  (aborted-p nil :type boolean))
+            (:constructor make-autocomplete-request-signal
+                (&aux
+                 (state
+                   (cadr-core:make-cancellation-state)))))
+  (state (cadr-core:make-cancellation-state)
+         :type cadr-core:cancellation-state))
 
 (defun autocomplete-request-abort (signal)
   (when signal
-    (sb-thread:with-mutex
-        ((autocomplete-request-signal-lock signal))
-      (setf
-       (autocomplete-request-signal-aborted-p signal)
-       t)))
+    (cadr-core:abort-cancellation
+     (autocomplete-request-signal-state signal)))
   signal)
 
 (defun autocomplete-request-aborted-p (signal)
   (and signal
-       (sb-thread:with-mutex
-           ((autocomplete-request-signal-lock signal))
-         (autocomplete-request-signal-aborted-p signal))))
+       (cadr-core:cancellation-aborted-p
+        (autocomplete-request-signal-state signal))))
 
 (defstruct (autocomplete-provider
             (:constructor make-autocomplete-provider

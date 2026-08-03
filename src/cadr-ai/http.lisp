@@ -14,12 +14,11 @@
   (stream-format :sse :type symbol)
   (provider nil :type symbol))
 
-(defmethod print-object ((value request-spec) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream "~A ~A :provider ~A :credentials [REDACTED]"
-            (request-spec-method value)
-            (request-spec-url value)
-            (request-spec-provider value))))
+(cadr-core:define-redacted-print-object (request-spec value stream)
+  (format stream "~A ~A :provider ~A :credentials [REDACTED]"
+          (request-spec-method value)
+          (request-spec-url value)
+          (request-spec-provider value)))
 
 (define-condition native-http-timeout (error) ())
 
@@ -29,8 +28,7 @@
   (error 'request-aborted :message "Request was aborted"))
 
 (defun http-abort-requested-p (abort-p)
-  (and abort-p
-       (not (null (ignore-errors (funcall abort-p))))))
+  (cadr-core:cancellation-predicate-aborted-p abort-p))
 
 (defun signal-native-http-network-error (cause)
   (error 'network-error
@@ -47,14 +45,14 @@
             (aborted-p nil)
             (watcher nil)
             (operation-thread sb-thread:*current-thread*))
-        (when (funcall abort-p)
+        (when (http-abort-requested-p abort-p)
           (signal-http-request-aborted))
         (setf
          watcher
          (sb-thread:make-thread
           (lambda ()
             (loop
-              (when (funcall abort-p)
+              (when (http-abort-requested-p abort-p)
                 (setf aborted-p t)
                 (ignore-errors
                   (if abort-function
@@ -78,13 +76,13 @@
                  (multiple-value-prog1
                      (funcall function)
                    (when (or aborted-p
-                             (funcall abort-p))
+                             (http-abort-requested-p abort-p))
                      (signal-http-request-aborted)))
                (request-aborted (condition)
                  (error condition))
                (error (condition)
                  (if (or aborted-p
-                         (funcall abort-p))
+                         (http-abort-requested-p abort-p))
                      (signal-http-request-aborted)
                      (error condition))))
           (sb-thread:signal-semaphore finished)

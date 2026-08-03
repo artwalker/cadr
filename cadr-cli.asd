@@ -2,7 +2,8 @@
   :description "Common Lisp coding-agent CLI for cadr"
   :version (:read-file-form "version.sexp")
   :license "MIT"
-  :depends-on ("cl-ppcre"
+  :depends-on ("cadr-core"
+               "cl-ppcre"
                "cl-jpeg"
                "png-read"
                "cadr-agent"

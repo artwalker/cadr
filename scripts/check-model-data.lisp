@@ -17,6 +17,7 @@
            (truename *load-truename*))))
        (directory
          (merge-pathnames "test/fixtures/catalogs/provider-data/" root)))
+  (asdf:load-asd (truename (merge-pathnames "cadr-core.asd" root)))
   (asdf:load-asd (truename (merge-pathnames "cadr-ai.asd" root)))
   (asdf:load-system "cadr-ai")
   (handler-case

@@ -17,16 +17,14 @@
   (ensure-server-directory
    (uiop:pathname-directory-pathname
     path))
-  (with-open-file
-      (stream path
-              :direction :output
-              :if-exists :supersede
-              :if-does-not-exist :create
-              :external-format :utf-8)
-    (write-string
-     (cadr-ai::stringify-json value)
-     stream)
-    (terpri stream))
+  (cadr-core:call-with-atomic-output-file
+   path
+   (lambda (stream)
+     (write-string
+      (cadr-ai::stringify-json value)
+      stream)
+     (terpri stream))
+   :durability :flush)
   value)
 
 (defun machine-record-json (record)

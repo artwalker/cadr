@@ -6,11 +6,10 @@
   model
   (auth-source :none :type symbol))
 
-(defmethod print-object ((value provider-config) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":name ~A :auth-source ~A :credentials [REDACTED]"
-            (provider-config-name value)
-            (provider-config-auth-source value))))
+(cadr-core:define-redacted-print-object (provider-config value stream)
+  (format stream ":name ~A :auth-source ~A :credentials [REDACTED]"
+          (provider-config-name value)
+          (provider-config-auth-source value)))
 
 (defparameter *environment-function* #'uiop:getenv)
 (defparameter *openai-login-function* #'cadr-ai:login-openai-oauth)

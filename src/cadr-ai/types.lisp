@@ -23,17 +23,10 @@
                     (return)))))))
 
 (defun redact-secrets (text secrets)
-  (reduce
-   (lambda (result secret)
-     (if (and (stringp secret)
-              (plusp (length secret)))
-         (replace-all result secret "[REDACTED]")
-         result))
-   secrets
-   :initial-value text))
+  (cadr-core:redact-secrets text secrets))
 
 (defun unix-milliseconds ()
-  (* 1000 (- (get-universal-time) 2208988800)))
+  (cadr-core:unix-milliseconds))
 
 (defstruct model
   (id "" :type string)
@@ -50,11 +43,10 @@
   (headers nil :type list)
   (compat nil :type list))
 
-(defmethod print-object ((value model) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream "~A/~A :headers [REDACTED]"
-            (model-provider value)
-            (model-id value))))
+(cadr-core:define-redacted-print-object (model value stream)
+  (format stream "~A/~A :headers [REDACTED]"
+          (model-provider value)
+          (model-id value)))
 
 (defstruct text-content
   (text "" :type string)
@@ -209,11 +201,10 @@
   (cache-write-price 0d0 :type double-float)
   (headers nil :type list))
 
-(defmethod print-object ((value image-model) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":provider ~A :id ~S :headers [REDACTED]"
-            (image-model-provider value)
-            (image-model-id value))))
+(cadr-core:define-redacted-print-object (image-model value stream)
+  (format stream ":provider ~A :id ~S :headers [REDACTED]"
+          (image-model-provider value)
+          (image-model-id value)))
 
 (defstruct images-context
   (input nil :type list))

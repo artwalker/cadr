@@ -570,7 +570,10 @@
                                   thread-entry))))
                        threads))))
           (dolist (thread threads)
-            (sb-thread:join-thread thread)))
+            (cadr-core:join-active-thread
+             thread
+             :reason
+             "collect every parallel tool result before committing the turn")))
         (loop for entry in prepared
               for state in states
               for index from 0

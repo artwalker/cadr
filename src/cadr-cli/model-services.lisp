@@ -94,9 +94,9 @@
     (sb-thread:make-mutex
      :name "cadr runtime credentials")))
 
-(defmethod print-object ((value runtime-credentials) stream)
-  (print-unreadable-object (value stream :type t)
-    (write-string ":credentials [REDACTED]" stream)))
+(cadr-core:define-redacted-print-object
+    (runtime-credentials value stream)
+  (write-string ":credentials [REDACTED]" stream))
 
 (defun provider-key (provider)
   (string-downcase
@@ -550,10 +550,9 @@
     :type hash-table)
   error)
 
-(defmethod print-object ((value model-registry) stream)
-  (print-unreadable-object (value stream :type t)
-    (format stream ":path ~A :credentials [REDACTED]"
-            (model-registry-path value))))
+(cadr-core:define-redacted-print-object (model-registry value stream)
+  (format stream ":path ~A :credentials [REDACTED]"
+          (model-registry-path value)))
 
 (defvar *native-extension-host* nil)
 (defvar *active-native-model-registry* nil)

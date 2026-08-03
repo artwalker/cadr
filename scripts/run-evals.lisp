@@ -24,7 +24,8 @@
     (load quicklisp-setup))
 
   (dolist (system
-           '("cadr-ai"
+           '("cadr-core"
+             "cadr-ai"
              "cadr-agent"
              "cadr-tui"
              "cadr-cli"

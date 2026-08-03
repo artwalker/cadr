@@ -101,16 +101,8 @@
 
 (defun write-eval-artifact-file
     (path body)
-  (ensure-directories-exist path)
-  (with-open-file
-      (stream path
-       :direction :output
-       :if-exists :supersede
-       :if-does-not-exist :create
-       :external-format :utf-8)
-    (write-string body stream))
-  (sb-posix:chmod
-   (namestring path) #o600))
+  (cadr-core:atomic-write-string
+   path body :mode #o600 :durability :flush))
 
 (defun persist-eval-artifact-references
     (artifacts run-id artifact-directory)

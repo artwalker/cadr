@@ -17,6 +17,8 @@
     (truename *load-truename*))))
 
 (asdf:load-asd
+ (truename (merge-pathnames "cadr-core.asd" *codex-probe-root*)))
+(asdf:load-asd
  (truename (merge-pathnames "cadr-ai.asd" *codex-probe-root*)))
 (asdf:load-system "cadr-ai")
 
