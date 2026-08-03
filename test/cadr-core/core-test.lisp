@@ -204,6 +204,35 @@
         "handwritten secret printers: ~S"
         (nreverse printer-violations))))
 
+(test production-cancellation-adapters-cannot-bypass-cadr-core
+  (let* ((root (asdf:system-source-directory "cadr-core"))
+         (adapters
+           '(("src/cadr-ai/transport/http.lisp"
+              "cadr-core:cancellation-predicate-aborted-p")
+             ("src/cadr-ai/runtime/models.lisp"
+              "cadr-core:cancellation-predicate-aborted-p")
+             ("src/cadr-agent/extensions/context.lisp"
+              "cadr-core:make-cancellation-state"
+              "cadr-core:cancellation-aborted-p"
+              "cadr-core:abort-cancellation")
+             ("src/cadr-tui/autocomplete.lisp"
+              "cadr-core:make-cancellation-state"
+              "cadr-core:cancellation-aborted-p"
+              "cadr-core:abort-cancellation")
+             ("src/cadr-tui/composition/loaders.lisp"
+              "cadr-core:make-cancellation-state"
+              "cadr-core:cancellation-aborted-p"
+              "cadr-core:set-cancellation-aborted-p"))))
+    (dolist (adapter adapters)
+      (let* ((relative (first adapter))
+             (source
+               (uiop:read-file-string
+                (merge-pathnames relative root))))
+        (dolist (marker (rest adapter))
+          (is (search marker source)
+              "~A bypasses the cancellation owner ~A"
+              relative marker))))))
+
 (test standalone-tui-harness-loads-cadr-core-before-its-consumer
   (let* ((root (asdf:system-source-directory "cadr-core"))
          (harnesses

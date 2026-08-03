@@ -1176,3 +1176,25 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B10/B11 owner load order is not dependency-safe: ~S" positions))))
+
+(test goal14-part-d-organization-gate-is-permanent-and-real-input-driven
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (checker
+           (goal14-b1-source root "scripts/check-code-organization.py"))
+         (verify (goal14-b1-source root "scripts/verify.sh"))
+         (ledger (goal14-b1-source root "docs/code-organization.md"))
+         (manifest
+           (goal14-b1-source
+            root "docs/code-organization-exemptions.json")))
+    (is (not (null checker)) "missing organization checker")
+    (is (not (null manifest)) "missing organization exemption manifest")
+    (is (and verify
+             (search "code organization gate" verify)
+             (search "scripts/check-code-organization.py" verify)
+             (search "test/code-organization-gate-test.py" verify))
+        "verify.sh does not drive both real and synthetic organization input")
+    (is (and ledger
+             (search "## 7. Permanent organization gate" ledger)
+             (search "symptom detector" ledger)
+             (search "Future goal preflight" ledger))
+        "organization ownership did not become a standing contract")))

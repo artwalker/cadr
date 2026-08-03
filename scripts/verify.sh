@@ -127,6 +127,13 @@ run_source_parity_ledger_gate() {
     --ledger-only --dispositions "$ledger"
 }
 
+run_code_organization_gate() {
+  python3 "$PROJECT_DIRECTORY/test/code-organization-gate-test.py" &&
+    python3 "$PROJECT_DIRECTORY/scripts/check-code-organization.py" \
+      --root "$PROJECT_DIRECTORY" \
+      --manifest "$PROJECT_DIRECTORY/docs/code-organization-exemptions.json"
+}
+
 print_summary() {
   local index
   printf '\nDeterministic stages\n'
@@ -171,10 +178,17 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "code organization gate" \
+    run_code_organization_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic "code organization gate" "root binary is stale"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "real source parity ledger" \
     run_source_parity_ledger_gate || DETERMINISTIC_READY=0
 else
-  skip_deterministic "real source parity ledger" "root binary is stale"
+  skip_deterministic "real source parity ledger" "code organization gate failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

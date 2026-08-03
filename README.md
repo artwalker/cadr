@@ -38,6 +38,13 @@ an auxiliary inventory for the fixed-baseline runnable examples, not a fifth
 ledger. [`docs/source-parity-upgrade.md`](docs/source-parity-upgrade.md) defines
 the fail-closed source drift gate for a future baseline upgrade.
 
+Those four axes answer whether Cadr is correct. The permanent
+[`docs/code-organization.md`](docs/code-organization.md) contract answers
+whether the implementation remains navigable and safe to extend: it records
+directory ownership, converged policy primitives, their anti-bypass tests, and
+the reviewed large-file symptom gate. Passing that gate is not a fifth parity
+claim and does not prove good design.
+
 The former
 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is retained only as a
 historical audit anchor.
@@ -466,6 +473,8 @@ introduced. Proposed mechanisms beyond original pi belong in
 ```bash
 ./build.sh
 ./scripts/check-root-binary.sh
+python3 ./scripts/check-code-organization.py \
+  --root . --manifest docs/code-organization-exemptions.json
 ./scripts/verify.sh
 ```
 

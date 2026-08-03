@@ -30,11 +30,16 @@ remain evidence and must not silently override a current contract.
   freshness proof, full verification, and delivery-report evidence.
 - [source-parity-upgrade.md](source-parity-upgrade.md): baseline source drift
   inventory and mandatory added/deleted/renamed disposition gate.
+- [code-organization.md](code-organization.md): permanent directory ownership,
+  converged policy primitives, anti-bypass tests, and reviewed large-file
+  symptom gate for maintainable future development.
 
 These four ledgers are independent: behavior, source, non-functional, and
 presentation evidence cannot substitute for one another. The runnable-example
 `examples/manifest.sexp` is an auxiliary inventory consumed by ledger checks,
-not an additional ledger.
+not an additional ledger. Code organization is likewise not a parity ledger:
+the ledgers answer whether Cadr is correct, while the organization contract
+answers whether it can continue to be developed without duplicating policy.
 
 ## Evidence directories
 

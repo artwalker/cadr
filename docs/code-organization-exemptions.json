@@ -1,0 +1,70 @@
+{
+  "schema": 1,
+  "threshold": {
+    "lines": 1000,
+    "comparison": "at-or-above",
+    "basis": "Part A's complete 277-file histogram isolated 15 files in the >=1000-line outlier band after the 700-999 band; that audited band, not a round-number size target, is the permanent manual-review boundary."
+  },
+  "exemptions": [
+    {
+      "path": "src/cadr-agent/export-html/template.css",
+      "reason": "Fixed-baseline offline export stylesheet retained as one browser asset; splitting would create no Lisp ownership boundary."
+    },
+    {
+      "path": "src/cadr-agent/export-html/template.js",
+      "reason": "Fixed-baseline offline export application retained as one browser asset with its DOM state and rendering pipeline together."
+    },
+    {
+      "path": "src/cadr-agent/export-html/vendor/highlight.min.js",
+      "reason": "Authorized vendored Highlight.js artifact whose exact upstream bytes and license are audited; it is not hand-maintained production logic."
+    },
+    {
+      "path": "src/cadr-ai/models.generated.lisp",
+      "reason": "Generated model catalog with an audited generator and generated-file header; manual splitting would corrupt regeneration ownership."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "reason": "Single slash-command dispatch owner after shared selectors, outputs, sessions, auth, and RPC policy were extracted; remaining cases share one dispatch contract."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/sessions.lisp",
+      "reason": "Single coding-session command and workflow owner whose import, fork, resume, export, and storage transitions share session invariants."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "reason": "Thin but broad TUI lifecycle and input-routing controller after all independently nameable state, rendering, selector, and service owners were extracted."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/models.lisp",
+      "reason": "One model-selector state machine combining filtering, scoped catalogs, authentication projection, and selection callbacks behind selector-frame."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
+      "reason": "One session-selector state machine whose grouping, search, preview, deletion, and resume behavior share the same indexed entry set."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/tree.lisp",
+      "reason": "One tree-selector state machine whose branch projection, filters, paging, labels, and copy behavior share parent-linked tree invariants."
+    },
+    {
+      "path": "src/cadr-cli/interactive/syntax.lisp",
+      "reason": "Single deterministic syntax-highlighting engine and language table; its scanners share token precedence and style semantics."
+    },
+    {
+      "path": "src/cadr-cli/media.lisp",
+      "reason": "Single image/media ingestion and transformation owner with shared MIME, dimension, resize, and encoding invariants."
+    },
+    {
+      "path": "src/cadr-tui/components/markdown.lisp",
+      "reason": "Single streaming Markdown renderer whose block parser, inline parser, tables, ANSI widths, and truncation share one render state."
+    },
+    {
+      "path": "src/cadr-tui/editor.lisp",
+      "reason": "Single grapheme-aware editor state machine; cursor, history, undo, wrapping, autocomplete, and rendering must preserve shared mutation invariants."
+    },
+    {
+      "path": "src/cadr-tui/unicode.lisp",
+      "reason": "Single Unicode terminal-semantics engine whose grapheme segmentation, ANSI parsing, width, slicing, wrapping, and truncation share tables and invariants."
+    }
+  ]
+}

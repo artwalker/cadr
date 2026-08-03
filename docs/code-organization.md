@@ -438,6 +438,10 @@ The new hierarchy is semantic, not a mirror of TypeScript:
   `oauth/providers/` and `auth/` hold genuinely provider-specific behavior.
 - `cadr-tui/components/`, `composition/`, and `renderer/` own reusable terminal
   primitives only; coding-agent copy and command behavior stay in `cadr-cli`.
+- `cadr-core/` owns only cross-system, product-neutral policy primitives:
+  bounded thread cleanup, component-local cancellation, atomic file replacement,
+  redacted object printing, and UTC time conversion. Product, provider, session,
+  and UI policy must stay in their domain system and consume these primitives.
 
 ASDF files list modules in dependency order: value types/protocols first,
 shared helpers next, implementations next, controllers last.  Moving a form
@@ -530,7 +534,7 @@ than the file table.
 | Decision repeated by hand | Current locations | Failure if one copy drifts | Prior bug | Convergence |
 |---|---|---|---|---|
 | Bounded thread cleanup | **Converged in B3:** `cadr-core/threads.lisp` owns bounded cleanup; `cli/support/threads.lisp` is a branch-free compatibility delegate and raw active waits require an explicit reason. | Exit hangs, orphaned worker, or forced termination at the wrong time | Goal 13 exit deadlock | Source gates reject unannotated cleanup joins outside the core owner. |
-| Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions/context.lisp:99-151`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition/loaders.lisp:183-238` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
+| Cancellation state and propagation | **Converged in B3:** `cadr-core/cancellation.lisp` owns component-local state, abort, predicate adaptation, and bounded waiting; `ai/transport/http.lisp`, `ai/runtime/models.lisp`, `agent/extensions/context.lisp`, `tui/autocomplete.lisp`, and `tui/composition/loaders.lisp` are explicit adapters. Agent lifecycle abort remains a separate product policy. | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | Functional tests lock state/wait semantics; a source gate requires every package-boundary adapter to call the core owner. |
 | Infrastructure output ownership | **CLI extension side converged in B4 and command/RPC consumers preserved in B5:** `cli/extensions/loader.lisp` owns extension output and infrastructure capture, `bootstrap/commands.lisp` owns frontend mode injection, and `modes/rpc/jsonl.lisp` owns wire emission; process/tool, TUI notice/browser, server Radius, and fatal sinks retain their domain owners. | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | Source gates keep each output category with its sink and reject direct JSONL writes from RPC command domains. |
 | Selector frame semantics | **Converged in B2:** `cli/interactive/selectors/common.lisp` owns frame sections, semantic borders/titles/input/help, centered viewport/count, and wrap navigation; seven domain owners supply entries and domain callbacks. | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | `selector-frame` is the sole shared owner; source gates require every selector family to render through it and delegate wrap navigation. |
 | Provider identity/auth metadata | **Converged in B11:** `ai/providers/definitions.lisp` owns 38 validated rows, all static fields, callback strategy identities, and the derived ambient-environment set; `registry.lisp` constructs protocols and `runtime-projection.lisp` consumes the strategies. | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | The fixed-baseline 38-provider matrix checks every field; source gates reject duplicate/missing rows and mixed legacy owners. |
@@ -728,3 +732,49 @@ The public package text remains byte-identical at SHA-256
 
 These are design assets.  Splitting files must not duplicate their decisions
 back into the new modules.
+
+## 7. Permanent organization gate
+
+`scripts/check-code-organization.py` scans every regular production file below
+`src/`.  Part A's complete histogram placed 15 of 277 files in a distinct
+`>=1000`-line band above the 700--999 band, so that audited band is the review
+boundary.  The number is not a target: a cohesive 999-line file is not thereby
+good, and a justified 1000-line file is not thereby bad.
+
+Every file at or above that boundary must have a non-empty, path-specific
+reason in `docs/code-organization-exemptions.json`.  The gate rejects an
+unreviewed large file, a missing or duplicate reason, and a stale exemption for
+a file that moved, disappeared, or fell below the boundary.  The checked-in
+manifest currently contains the exact 15 Part A outliers, including generated
+and vendored assets.  `scripts/verify.sh` drives both synthetic regressions and
+the real repository/manifest pair before the parity and build stages.
+
+This is a **symptom detector only**.  Passing it does not prove good ownership,
+and failing it means "review and explain the boundary", not "split until the
+number is green".  Repeated policy is the deeper failure mode, so the following
+behavior and anti-bypass tests are the stronger permanent controls:
+
+| Converged decision | Policy owner | Permanent behavior / anti-bypass gate |
+|---|---|---|
+| Bounded thread cleanup | `cadr-core/threads.lisp` | `bounded-thread-cleanup-times-out-and-makes-active-unbounded-waits-explicit`; `production-cleanup-joins-cannot-bypass-cadr-core` |
+| Cancellation state and propagation | `cadr-core/cancellation.lisp` | `cancellation-state-is-local-external-waitable-and-thread-safe`; `production-cancellation-adapters-cannot-bypass-cadr-core` |
+| Infrastructure output ownership | domain sinks, with CLI extension capture in `extensions/loader.lisp` and RPC wire output in `modes/rpc/jsonl.lisp` | `goal14-b4-converges-sinks-and-javascript-length-before-split`; `goal14-b5-converges-mode-output-and-time-before-split` plus existing user-channel diagnostic regressions |
+| Selector frame semantics | `interactive/selectors/common.lisp` | `goal14-b2-selector-frame-owns-shared-selector-decisions`; `goal14-b2-selector-frame-wraps-and-centers-independently` |
+| Provider identity/auth metadata | `cadr-ai/providers/definitions.lisp` | `goal14-provider-matrix-is-fixed-baseline-derived-and-complete`; `goal14-every-provider-definition-field-matches-fixed-baseline-matrix`; one-owner source gates |
+| Secret-safe object printing | `cadr-core/redacted-print.lisp` | `redacted-object-declaration-registers-type-and-never-prints-secret`; `atomic-replacement-and-secret-printers-have-one-policy-owner` plus the credential-type registry test |
+| Atomic persistence and file modes | `cadr-core/atomic-file.lisp` | `atomic-replacement-preserves-old-content-on-error-and-private-mode`; `atomic-replacement-and-secret-printers-have-one-policy-owner` |
+| JavaScript UTF-16 count semantics | `cadr-agent/truncate.lisp` | `goal14-b4-converges-sinks-and-javascript-length-before-split` plus non-ASCII write/truncation fixtures |
+| ISO time and ID formatting | `cadr-core/time.lisp` | `utc-time-primitives-match-fixed-baseline-vectors`; `goal14-b5-converges-mode-output-and-time-before-split` |
+
+### Future goal preflight
+
+Every future goal that adds production code must state before implementation:
+
+1. the directory and named owner for the new code, using section 4;
+2. which existing primitive or domain policy it reuses;
+3. if none applies, why the new decision is genuinely distinct rather than a
+   convenient second implementation.
+
+The review must consider repeated decisions even when every touched file is
+below the line threshold.  New files belong where responsibility is owned, not
+where the current caller happens to be easiest to edit.

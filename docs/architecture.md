@@ -6,7 +6,8 @@ harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 
 命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
 Goal 9 已将行为基线重锁到 `74caa2649`，完成 Part A–E；Goal 11 已建立非功能
 属性第二验收轴并完成性能、内存与长时稳定性门禁；Goal 10 Part D 的获批
-condition/restart 与 opt-in Slynk 已实施并重新冻结**
+condition/restart 与 opt-in Slynk 已实施并重新冻结；Goal 14 已完成全仓职责
+拆分与重复政策收敛，并建立常设组织度门禁**
 
 Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF test systems
 只含可重复测试，独立 live systems 由 `scripts/test-live.sh` 完整汇总。
@@ -1851,3 +1852,27 @@ UTF-8 path 加单个 LF，并强制 `LC_ALL=C` 字节序，禁止继承宿主 lo
 `examples/manifest.sexp` 也必须同步。确定性门禁从 manifest 重算 example 数量，
 核对既有 `GOAL12_LEDGER` source/example 身份，并独立核对呈现账的
 `GOAL13_PRESENTATION_LEDGER` 分母与处置总数；任一漂移即失败。
+
+## 31. Goal 14 code organization contract
+
+四根 parity 轴回答“实现是否正确”：行为、源码处置、非功能属性与呈现任一轴
+都不能由另一轴替代。`docs/code-organization.md` 回答不同的问题——当前职责边界
+是否足够清楚，开发者能否继续增加功能而不把同一政策手写第二遍。它不是第五本
+parity 账，也不能改变任何固定基线结论。
+
+Goal 14 将跨 system 且不含产品语义的政策收敛到叶子 system `cadr-core`：有界线程
+清理、component-local cancellation、原子文件替换、脱敏对象打印与 UTC 时间。
+selector frame、基础设施输出、provider identity/auth metadata 与 JavaScript
+UTF-16 count 等领域政策仍由各自 domain owner 持有。生产 package export、extension
+export/event SHA、session/payload/wire 与全部用户可观察行为均未因组织重构改变。
+
+`scripts/check-code-organization.py` 在 `verify.sh` 构建前扫描真实 `src/`。
+Part A 的 277-file histogram 把 15 个文件归入 `>=1000` 行的已审计 outlier band，
+因此该 band 是人工复核边界；每个命中项必须在
+`docs/code-organization-exemptions.json` 有逐路径理由。门禁同时拒绝未登记的大文件、
+重复/空理由与陈旧豁免，并以 synthetic fixture 验证 fail-closed 行为。
+
+这个行数检查只检测表层症状：通过不等于组织良好，失败只表示必须解释职责，不能
+为了过门禁机械切文件。更强的门禁是每个已收敛原语的行为和 source anti-bypass
+测试。今后每个新增生产代码的 goal 在开工前必须写明新代码归属、复用的既有原语，
+或说明为何确实需要一个新的独立决策；文件不足 1000 行不能豁免这项判断。
