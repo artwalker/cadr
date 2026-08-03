@@ -239,7 +239,7 @@ and `get_commands`.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Interactive TUI and line fallback | 已实现 | [bootstrap](../src/cadr-cli/bootstrap/main.lisp), [command controller](../src/cadr-cli/bootstrap/commands.lisp), [tui adapter](../src/cadr-cli/tui.lisp), [CL-TUI](#cl-tui) |
+| Interactive TUI and line fallback | 已实现 | [bootstrap](../src/cadr-cli/bootstrap/main.lisp), [command controller](../src/cadr-cli/bootstrap/commands.lisp), [interactive controller](../src/cadr-cli/interactive/controller.lisp), [frame](../src/cadr-cli/interactive/frame.lisp), [CL-TUI](#cl-tui) |
 | Text/JSON print and RPC modes | 已实现 | [CL-WAVE2-MODES](#cl-wave2-modes), [CL-WAVE2-RPC](#cl-wave2-rpc) |
 | Full CLI option/command contract | 已实现 | [arguments](../src/cadr-cli/arguments.lisp), [CL-PART-B](#cl-part-b) |
 | Built-in commands | 已实现 | Package/config/auth/session/model/theme/tree/import/clone and interactive commands are covered by [CL-PART-B](#cl-part-b) |
@@ -263,7 +263,7 @@ navigation.
 |---|---|---|
 | Grapheme/cell width, wrapping, ANSI-aware layout | 已实现 | [unicode](../src/cadr-tui/unicode.lisp), [CL-TUI](#cl-tui) |
 | Input decoding, bracketed paste, multiline editor, kill ring and undo | 已实现 | [input](../src/cadr-tui/input.lisp), [stdin buffer](../src/cadr-tui/stdin-buffer.lisp), [editor](../src/cadr-tui/editor.lisp), [CL-TUI](#cl-tui) |
-| Reusable component tree, focus lifecycle, box/text/spacer/Markdown/image/settings/loader composition and coding-agent interactive components | 已实现 | [composition](../src/cadr-tui/composition.lisp), [interactive components](../src/cadr-cli/interactive-components.lisp), [CL-TUI](#cl-tui) |
+| Reusable component tree, focus lifecycle, box/text/spacer/Markdown/image/settings/loader composition and coding-agent interactive components | 已实现 | [composition](../src/cadr-tui/composition.lisp), [interactive components](../src/cadr-cli/interactive/components/), [CL-TUI](#cl-tui) |
 | Markdown, tool block, status bar, select list, truncated text and image component | 已实现 | [components](../src/cadr-tui/components.lisp), [CL-TUI](#cl-tui) |
 | Differential renderer and terminal cleanup | 已实现 | [renderer](../src/cadr-tui/renderer.lisp), [terminal](../src/cadr-tui/terminal.lisp), [CL-TUI](#cl-tui) |
 | Autocomplete, fuzzy matching, configurable keybindings, word navigation | 已实现 | [autocomplete](../src/cadr-tui/autocomplete.lisp), [fuzzy](../src/cadr-tui/fuzzy.lisp), [keybindings](../src/cadr-tui/keybindings.lisp), [word navigation](../src/cadr-tui/word-navigation.lisp), [CL-TUI](#cl-tui) |

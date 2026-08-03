@@ -1418,7 +1418,7 @@
             "hash-object"
             (concatenate
              'string project
-             "src/cadr-cli/tui.lisp")))
+             "src/cadr-cli/interactive/controller.lisp")))
      "renderer_object_id"
      (trimmed-command-output
       (list "git" "-C" project

@@ -201,7 +201,7 @@
                   "src/cadr-cli/bootstrap/auth.lisp"
                   "src/cadr-cli/bootstrap/commands.lisp"
                   "src/cadr-cli/bootstrap/main.lisp"
-                  "src/cadr-cli/tui.lisp"
+                  "src/cadr-cli/interactive/controller.lisp"
                   "src/cadr-server/main.lisp"
                   "src/cadr-server/radius.lisp"))
         (is (not

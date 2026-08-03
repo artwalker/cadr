@@ -166,12 +166,13 @@ virtual-terminal state，而 pi 写入无 I/O mock terminal；因此绝对倍率
 - `tui-entry` 缓存稳定条目的完整 rendered lines，key 为 width、theme object
   与 extension snapshot；streaming、running tool 和 custom tool renderer 不缓存。
   tool 完成、折叠切换、theme 变更与 extension reload 都会失效。实现位于
-  `src/cadr-cli/tui.lisp:3-24, 506-514, 1806-1975`。
+  Goal 14 B6 后分别位于 `src/cadr-cli/interactive/state.lisp:3-34`、
+  `entries.lisp:88-95` 与 `transcript.lisp:812-874`。
 - `tui-state` 保存 list tail 与其所属 head；正常追加直接接到 tail。集中替换
   入口同步重建 tail，历史测试/fixture 若直接 `setf entries`，下一次追加只做
   一次自修复且不会污染旧链。实现位于
-  `src/cadr-cli/tui.lisp:21-39, 470-504`，两个 production reset 已改走集中入口
-  （`:1119, :3980`）。
+  Goal 14 B6 后字段位于 `src/cadr-cli/interactive/state.lisp:36-47`，
+  集中追加/替换入口位于 `entries.lisp:47-86`；production reset 仍只走该入口。
 
 基准的 `frame_render` 在 Part C 起显式预热一次 fixture，测量稳定帧；这是缓存
 存在后才有意义的方法校正。优化前没有 rendered-line cache，预热后仍会完整
@@ -293,8 +294,12 @@ median allocation 降约 54×；默认规模现在能完整跑完并保留全部
 `2dfea100e8e8825a96ea55795c39e6cea2f265c6aa1a4b98f4edba8b4e5edb61`。
 基线路径证据为 `packages/tui/src/TuiAltScreen.ts:73-84,147-180,234-277,350-425`
 与 `packages/tui/src/tui.ts:730-770`；cadr 路径为
-`src/cadr-cli/tui.lisp:721-790,4734-4736` 和
+`src/cadr-cli/interactive/controller.lisp:2050-2160` 和
 `src/cadr-tui/renderer.lisp:857-880`。
+
+Goal 14 B6 只移动 interactive forms；性能 harness 的兼容字段
+`tui_object_id` 现在记录 `interactive/controller.lisp` 的 Git object，完整
+呈现行为仍由 controller、frame、transcript 与 renderer 的确定性门禁共同锁定。
 
 | paired N=5000 metric | pi `74caa2649` | cadr `82db71b8c` | cadr / pi |
 |---|---:|---:|---:|

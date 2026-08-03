@@ -80,8 +80,6 @@
          (ordered
            '("(:file \"media\")"
              "(:module \"interactive\""
-             "(:file \"transcript\")"
-             "(:file \"status\")"
              "(:file \"footer\")"
              "(:file \"theme\")"
              "(:file \"images\")"
@@ -367,3 +365,152 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B5 owner load order is not dependency-safe: ~S" positions))))
+
+(test goal14-b6-interactive-controller-and-components-have-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (owners
+           '(("interactive/state.lisp"
+              "(defstruct tui-entry"
+              "(defstruct (tui-state")
+             ("interactive/status.lisp"
+              "(defstruct (tui-render-coordinator"
+              "(defun render-tui-status-indicator")
+             ("interactive/transcript.lisp"
+              "(defun seed-tui-message"
+              "(defun render-tui-entries")
+             ("interactive/tool-rendering.lisp"
+              "(defun tool-summary-segments"
+              "(defun tui-handle-agent-event")
+             ("interactive/entries.lisp"
+              "(defun append-tui-entry"
+              "(defun add-tui-status")
+             ("interactive/pending-messages.lisp"
+              "(defun restore-queued-messages-to-editor"
+              "(defun render-tui-pending-message-lines")
+             ("interactive/frame.lisp"
+              "(defun fit-overlay-lines"
+              "(defun render-tui-state")
+             ("interactive/extension-ui.lisp"
+              "(defstruct extension-custom-ui-state"
+              "(defun render-tui-extension-overlay")
+             ("interactive/autocomplete.lisp"
+              "(defparameter +tui-autocomplete-command-specifications+"
+              "(defun make-tui-autocomplete-provider")
+             ("interactive/themes.lisp"
+              "(defparameter +tui-theme-json-color-map+"
+              "(defun poll-tui-theme-watcher")
+             ("interactive/controller.lisp"
+              "(defun route-tui-submission"
+              "(defun run-tui")
+             ("interactive/components/loaders.lisp"
+              "(defclass dynamic-border-component"
+              "(defclass bordered-loader-component")
+             ("interactive/components/countdown.lisp"
+              "(defclass countdown-timer"
+              "(defun countdown-timer-tick")
+             ("interactive/components/armin.lisp"
+              "(defclass armin-component"
+              "(defun armin-component-tick")
+             ("interactive/components/daxnuts.lisp"
+              "(defclass daxnuts-component"
+              "(defun daxnuts-component-tick")
+             ("interactive/components/announcement.lisp"
+              "(defun make-earendil-announcement-component")))
+         (definition-count 0))
+    (dolist (owner owners)
+      (let* ((relative (format nil "src/cadr-cli/~A" (first owner)))
+             (source (goal14-b1-source root relative)))
+        (is (not (null source)) "missing B6 owner ~A" relative)
+        (when source
+          (incf definition-count
+                (count-if
+                 (lambda (line)
+                   (uiop:string-prefix-p "(def" line))
+                 (uiop:split-string source :separator '(#\Newline))))
+          (dolist (marker (rest owner))
+            (is (search marker source)
+                "~A does not own ~A" relative marker)))))
+    (is (= 224 definition-count)
+        "B6 moved a different top-level definition set: ~D"
+        definition-count)
+    (dolist (relative '("src/cadr-cli/tui.lisp"
+                        "src/cadr-cli/interactive-components.lisp"))
+      (is (not (probe-file (merge-pathnames relative root)))
+          "B6 legacy mixed owner remains: ~A" relative))))
+
+(test goal14-b6-reuses-output-selector-and-cleanup-owners-before-split
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (entries
+           (goal14-b1-source root "src/cadr-cli/interactive/entries.lisp"))
+         (controller
+           (goal14-b1-source root "src/cadr-cli/interactive/controller.lisp"))
+         (b6-sources
+           (loop for name in
+                 '("state" "status" "transcript" "tool-rendering"
+                   "entries" "pending-messages" "frame" "extension-ui"
+                   "autocomplete" "themes" "controller")
+                 collect
+                 (goal14-b1-source
+                  root
+                  (format nil "src/cadr-cli/interactive/~A.lisp" name)))))
+    (is (and entries
+             (search "(defun add-tui-notice" entries)
+             (search "(defun add-tui-warning" entries)
+             (search "(defun add-tui-error" entries))
+        "B6 entries owner does not retain the interactive output sinks")
+    (is (and controller
+             (search "(defun open-tui-url" controller)
+             (search "(defun make-notification-output-stream" controller)
+             (search "(stop-thread-for-cleanup" controller))
+        "B6 controller bypasses the URL/output/cleanup owners")
+    (dolist (source b6-sources)
+      (is (not (null source)) "missing B6 source")
+      (when source
+        (is (not (search "(defun selector-border-line" source))
+            "B6 rebuilt selector border policy outside selector-frame")
+        (is (not (search "(defun selector-frame-move-index" source))
+            "B6 rebuilt selector navigation outside selector-frame")))))
+
+(test goal14-b6-asdf-loads-state-renderers-and-components-before-controller
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (source
+           (uiop:read-file-string
+            (merge-pathnames "cadr-cli.asd" root)))
+         (ordered
+           '(("(:module \"interactive-components\"" 1)
+             ("(:file \"loaders\")" 1)
+             ("(:file \"countdown\")" 1)
+             ("(:file \"armin\")" 1)
+             ("(:file \"daxnuts\")" 1)
+             ("(:file \"announcement\")" 1)
+             ("(:module \"interactive-controller\"" 1)
+             ("(:file \"state\")" 1)
+             ("(:file \"entries\")" 1)
+             ("(:file \"status\")" 1)
+             ("(:file \"extension-ui\")" 1)
+             ("(:file \"transcript\")" 1)
+             ("(:file \"tool-rendering\")" 1)
+             ("(:file \"pending-messages\")" 1)
+             ("(:file \"frame\")" 1)
+             ("(:file \"autocomplete\")" 1)
+             ("(:file \"themes\")" 1)
+             ("(:file \"controller\")" 1)))
+         (cursor 0)
+         (positions nil))
+    (dolist (spec ordered)
+      (let ((position
+              (loop repeat (second spec)
+                    for found = (search (first spec) source :start2 cursor)
+                    do (unless found (return nil))
+                       (setf cursor (1+ found))
+                    finally (return found))))
+        (push position positions)))
+    (setf positions (nreverse positions))
+    (is (every #'identity positions)
+        "cadr-cli.asd omits a B6 load boundary: ~S"
+        (loop for spec in ordered
+              for position in positions
+              unless position collect (first spec)))
+    (when (every #'identity positions)
+      (is (every #'< positions (rest positions))
+          "B6 owner load order is not dependency-safe: ~S" positions))))

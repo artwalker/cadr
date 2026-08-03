@@ -9,15 +9,16 @@ and whether one user-visible decision has one owner.
 The Goal 14 draft recorded 135 production files.  Goal 13 added five approved
 export assets and three crash/cleanup files; Goal 14 B3 then added the six-file
 `cadr-core` leaf, B1 extracted eight interactive leaf owners, B2 replaced
-the remaining selector monolith with eight selector owners, and B4 replaced
-eight mixed CLI service files with 37 domain owners, and B5 split CLI bootstrap
-and RPC command handling into eleven cohesive owners.  Silently
+the remaining selector monolith with eight selector owners, B4 replaced
+eight mixed CLI service files with 37 domain owners, B5 split CLI bootstrap
+and RPC command handling into eleven cohesive owners, and B6 replaced the two
+interactive controller/component monoliths with sixteen responsibility owners.  Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 202 current files.
+goal is supposed to police, so this ledger covers all 214 current files.
 
-- 197 Lisp files, 100,354 lines, 4,261 top-level definitions.
+- 209 Lisp files, 100,378 lines, 4,261 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 202 production files and 104,629 physical lines in total.
+- 214 production files and 104,653 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -127,15 +128,28 @@ files with unrelated facilities fail.
 | `src/cadr-cli/extensions/llama/extension.lisp` | 316 | 11 | Bind llama commands and catalog refresh into the extension API. | 合格·大体量 |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 279 | 14 | Search and inspect Hugging Face GGUF artifacts. | 合格 |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 322 | 11 | Project llama-server as a session-local native provider. | 合格·大体量 |
-| `src/cadr-cli/interactive-components.lisp` | 714 | 53 | Combine border/loader/countdown primitives with three unrelated novelty/announcement components. | 应拆分 |
+| `src/cadr-cli/interactive/components/loaders.lisp` | 151 | 14 | Own dynamic-border and bordered-loader component primitives. | 合格 |
+| `src/cadr-cli/interactive/components/countdown.lisp` | 91 | 7 | Own deterministic countdown timer state, rendering, and ticking. | 合格 |
+| `src/cadr-cli/interactive/components/armin.lisp` | 270 | 16 | Own the Armin animated component and its frame lifecycle. | 合格 |
+| `src/cadr-cli/interactive/components/daxnuts.lisp` | 169 | 14 | Own the Daxnuts animated component and its frame lifecycle. | 合格 |
+| `src/cadr-cli/interactive/components/announcement.lisp` | 41 | 2 | Compose the Earendil announcement component. | 合格 |
 | `src/cadr-cli/interactive/clipboard.lisp` | 450 | 22 | Own platform clipboard text/image discovery, reading, and writes. | 合格·大体量 |
 | `src/cadr-cli/interactive/footer.lisp` | 537 | 23 | Own footer path/usage/status projection and asynchronous Git branch data. | 合格·大体量 |
 | `src/cadr-cli/interactive/images.lisp` | 229 | 8 | Inspect and process interactive image bytes under model limits. | 合格 |
-| `src/cadr-cli/interactive/status.lisp` | 149 | 12 | Own startup input, status-log projection, and the Anthropic account warning. | 合格 |
+| `src/cadr-cli/interactive/state.lisp` | 281 | 11 | Own mutable TUI entry, overlay, status, theme, and root-state records. | 合格 |
+| `src/cadr-cli/interactive/status.lisp` | 464 | 26 | Own startup input, status projection, render coordination, spinners, and account warnings. | 合格 |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,076 | 33 | Implement baseline-compatible deterministic syntax highlighting. | 合格·大体量 |
 | `src/cadr-cli/interactive/theme.lisp` | 215 | 11 | Detect, resolve, export, and discover interactive themes. | 合格 |
+| `src/cadr-cli/interactive/themes.lisp` | 374 | 12 | Watch, validate, and apply live TUI theme files and terminal theme changes. | 合格 |
 | `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | 3 | Own incremental tool-render session state and projection. | 合格 |
-| `src/cadr-cli/interactive/transcript.lisp` | 100 | 6 | Own user and assistant transcript-line projection. | 合格 |
+| `src/cadr-cli/interactive/transcript.lisp` | 894 | 25 | Project every session entry and assistant/user/custom transcript component. | 合格·大体量 |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 895 | 23 | Project tool calls/results and reduce agent events into TUI state. | 合格·大体量 |
+| `src/cadr-cli/interactive/entries.lisp` | 270 | 18 | Own append, replacement, invalidation, and status-entry mutation. | 合格 |
+| `src/cadr-cli/interactive/pending-messages.lisp` | 68 | 3 | Render and restore queued steering and follow-up input. | 合格 |
+| `src/cadr-cli/interactive/frame.lisp` | 368 | 7 | Compose transcript, status, widgets, overlays, editor, and footer into one frame. | 合格 |
+| `src/cadr-cli/interactive/extension-ui.lisp` | 503 | 21 | Bridge extension UI requests and custom components into the live TUI. | 合格 |
+| `src/cadr-cli/interactive/autocomplete.lisp` | 217 | 11 | Construct command/path autocomplete and extension shortcut routing. | 合格 |
+| `src/cadr-cli/interactive/controller.lisp` | 2,239 | 14 | Own the interactive lifecycle, slash-command routing, input loop, and cleanup. | 合格·大体量 |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 346 | 21 | Own composable selector chrome, viewport/count, input, fuzzy matching, and wrap navigation. | 合格 |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,342 | 47 | Search, mutate, navigate, and render resumable session trees. | 合格·大体量 |
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,747 | 57 | Filter, navigate, edit, and render the branching session tree overlay. | 合格·大体量 |
@@ -191,7 +205,6 @@ files with unrelated facilities fail.
 | `src/cadr-cli/tools/read.lisp` | 141 | 2 | Implement the bounded line-oriented read tool. | 合格 |
 | `src/cadr-cli/tools/write.lisp` | 56 | 2 | Implement the UTF-8 write tool and baseline result count. | 合格 |
 | `src/cadr-cli/truncation.lisp` | 80 | 12 | Adapt agent truncation results to the CLI tool-result detail contract. | 合格 |
-| `src/cadr-cli/tui.lisp` | 6,308 | 154 | Mix TUI state/controller, transcript/tool rendering, frame composition, pending input, extension UI, autocomplete, themes, and the interactive lifecycle. | 应拆分 |
 
 ### 2.4 `cadr-evals`
 
@@ -273,18 +286,18 @@ files with unrelated facilities fail.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
 | `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
-| `cadr-cli` | 72 | 22 | 2 | 0 | 96 |
+| `cadr-cli` | 83 | 25 | 0 | 0 | 108 |
 | `cadr-core` | 6 | 0 | 0 | 0 | 6 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 10 | 10 | 3 | 0 | 23 |
-| **Total** | **120** | **64** | **18** | **0** | **202** |
+| **Total** | **131** | **67** | **16** | **0** | **214** |
 
-The 18 failing files are being reduced batch by batch.  After B3, B1, B2, B4,
-and B5, the cohesion map below replaces them with 95 still-pending named modules,
-yielding a planning denominator of 279 files and a remaining net increase of 77.  This
+The 16 failing files are being reduced batch by batch.  After B3, B1, B2, B4,
+B5, and B6, the cohesion map below replaces them with 79 still-pending named modules,
+yielding a planning denominator of 279 files and a remaining net increase of 65.  This
 is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
@@ -293,12 +306,12 @@ boundary is false.
 |---|---:|---:|---:|
 | `cadr-agent` | 4 | 21 | +17 |
 | `cadr-ai` | 9 | 42 | +33 |
-| `cadr-cli` | 2 | 16 | +14 |
+| `cadr-cli` | 0 | 0 | +0 |
 | `cadr-tui` | 3 | 16 | +13 |
-| **Total** | **18** | **95** | **+77** |
+| **Total** | **16** | **79** | **+65** |
 
-At current boundaries the expected physical distribution is approximately 156
-files below 300 lines, 86 at 300–699, 23 at 700–999, and 8 at or above 1,000;
+At current boundaries the physical distribution is 112 files below 300 lines,
+59 at 300–699, 18 at 700–999, and 25 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000.  Average file
 size falls from 730 to about 382 lines and the under-300 share from 42% to about
 57%.  The modest percentage is honest: cohesive files such as the multiline
@@ -324,7 +337,7 @@ not chopped up to make the chart prettier.
 | `ai/utilities.lisp` | `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp` (7) |
 | `cli/core-support.lisp` | **Completed in B4:** `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6). |
 | `cli/extensions.lisp` | **Completed in B4:** `extensions/{discovery,loader,commands,installer}.lisp` (4). |
-| `cli/interactive-components.lisp` | `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5) |
+| `cli/interactive-components.lisp` | **Completed in B6:** `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5). |
 | `cli/interactive-services.lisp` | **Completed in B2:** `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (8); `common` was implemented before the domain extraction. |
 | `cli/main.lisp` | **Completed in B5:** `bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` (6). |
 | `cli/model-services.lisp` | **Completed in B4:** `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5). |
@@ -333,7 +346,7 @@ not chopped up to make the chart prettier.
 | `cli/sdk-services.lisp` | **Completed in B4:** `sdk/{cache-version,system-prompt,settings-service,resource-service,model-service}.lisp` (5). |
 | `cli/sdk.lisp` | **Completed in B4:** `sdk/{session-manager,agent-session,session-runtime}.lisp` (3). |
 | `cli/settings.lisp` | **Completed in B4:** `settings/{config-values,manager,trust}.lisp` (3). |
-| `cli/tui.lisp` | `interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` (11) |
+| `cli/tui.lisp` | **Completed in B6:** `interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` (11); the existing B1 `status` and `transcript` owners absorbed their controller-side responsibilities. |
 | `cli/utilities.lisp` | **Completed in B4:** `support/{threads,atomic-write,changelog-share,html,resume-version-git,headers,external-editor}.lisp` (7). |
 | `tui/components.lisp` | `components/{markdown,image,tool-block,status,select-list}.lisp` (5) |
 | `tui/composition.lisp` | `composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` (6) |
@@ -552,6 +565,21 @@ one `frontend-output` sink, every RPC domain emits only through
 `rpc-write-object`, session-export timestamps call the B3 UTC formatter
 directly, and RPC IDs call the B3 millisecond clock directly.  The split kept
 all 100 top-level definitions and the public package text unchanged.
+
+### Part C B6 implementation status
+
+B6 removed both interactive monoliths only after the B2 selector frame, B4
+output sinks, and B3 cleanup policy were available.  State records load first;
+entry/status/transcript/tool reducers and extension bridges load next; frame,
+autocomplete, theme watching, and the controller load in dependency order.
+The two existing B1 owners, `status.lisp` and `transcript.lisp`, absorbed their
+matching controller-side forms instead of creating duplicate owners.
+
+The five independent component families now have exact files, while the live
+controller keeps only lifecycle and input/command routing.  All 224 top-level
+definitions moved without renaming, public package text stayed byte-identical,
+and source gates reject either legacy monolith or a second selector/output/
+cleanup policy.
 
 ### Already-converged examples to preserve
 

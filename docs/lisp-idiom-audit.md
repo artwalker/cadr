@@ -8,9 +8,9 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=197 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=209 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 197 Lisp files and 100,354 physical lines.  The form
+The audited tree contains 209 Lisp files and 100,378 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
@@ -18,7 +18,7 @@ inventory below is syntactic evidence, not a quality score:
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
 | `cadr-ai` | 28 | 23,920 | 45 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
 | `cadr-agent` | 18 | 15,257 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 96 | 38,765 | 63 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
+| `cadr-cli` | 108 | 38,789 | 63 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
 | `cadr-tui` | 23 | 14,777 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `cadr-server` | 11 | 2,779 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
@@ -122,7 +122,7 @@ Part C2 originally audited 135 files.  Three production files were added by
 later Goal 13 corrections.  Goal 14 then added six `cadr-core` convergence
 owners, eight B1 interactive leaves, a net seven B2 selector owners, a net 29
 B4 service owners, and a net nine B5 bootstrap/RPC owners.  The audit therefore
-follows the current 197 files rather than treating the old file set as permanent:
+follows the current 209 files rather than treating the old file set as permanent:
 
 | added file | required capability | Lisp-idiom disposition |
 |---|---|---|
@@ -133,6 +133,8 @@ follows the current 197 files rather than treating the old file set as permanent
 | `src/cadr-cli/{support,settings,models,packages,extensions,sdk}/*.lisp` | replace eight mixed service files with 37 named domain owners | keep the cohesive plain functions/classes in their existing package; the split changes ownership, not dispatch semantics |
 | `src/cadr-cli/bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` | separate tool construction, session lifecycle, settings/runtime, authentication, command dispatch, and the process entrypoint | keep command-domain functions explicit; `bootstrap/commands.lisp` is the sole mode-output injection owner and `bootstrap/main.lisp` stays a thin entrypoint |
 | `src/cadr-cli/modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` | separate RPC command domains from the JSONL loop | keep the closed RPC command handlers explicit; every domain emits only through the shared `rpc-write-object` wire sink |
+| `src/cadr-cli/interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` | separate interactive state, reducers, rendering, composition, extension bridges, and lifecycle control | keep the closed state records and explicit controller functions; composition and mutation now have named owners without inventing an open hierarchy |
+| `src/cadr-cli/interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` | separate reusable loader primitives from independent animated and announcement components | keep each component's existing CLOS lifecycle while making its source owner exact |
 | `src/cadr-tui/threads.lisp` | bounded join/forced-stop cleanup for terminal workers | keep as one function over SBCL's closed thread primitive; wrapping threads in a new class would not remove another invariant |
 | `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time}.lisp` | one bottom-layer owner for five repeated failure-safety decisions | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |
 

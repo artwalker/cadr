@@ -53,9 +53,7 @@
                              (:file "media")
                              (:module "interactive"
                               :serial t
-                              :components ((:file "transcript")
-                                           (:file "status")
-                                           (:file "footer")
+                              :components ((:file "footer")
                                            (:file "theme")
                                            (:file "images")
                                            (:file "clipboard")
@@ -125,8 +123,28 @@
                                  (:file "commands")
                                  (:file "mode")))))
                              (:file "repl")
-                             (:file "interactive-components")
-                             (:file "tui")
+                             (:module "interactive-components"
+                              :pathname "interactive/components"
+                              :serial t
+                              :components ((:file "loaders")
+                                           (:file "countdown")
+                                           (:file "armin")
+                                           (:file "daxnuts")
+                                           (:file "announcement")))
+                             (:module "interactive-controller"
+                              :pathname "interactive"
+                              :serial t
+                              :components ((:file "state")
+                                           (:file "entries")
+                                           (:file "status")
+                                           (:file "extension-ui")
+                                           (:file "transcript")
+                                           (:file "tool-rendering")
+                                           (:file "pending-messages")
+                                           (:file "frame")
+                                           (:file "autocomplete")
+                                           (:file "themes")
+                                           (:file "controller")))
                              (:file "remote-repl")
                              (:module "bootstrap"
                               :serial t

@@ -597,7 +597,7 @@
      (trimmed-command-output
       (list "git" "-C" project "hash-object"
             (concatenate
-             'string project "src/cadr-cli/tui.lisp"))))))
+             'string project "src/cadr-cli/interactive/controller.lisp"))))))
 
 (defun run-stability ()
   (uiop:with-temporary-file
