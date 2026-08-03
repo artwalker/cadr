@@ -912,3 +912,97 @@ snapshots and their independent semantic assertions, payload and wire
 fixtures, extension export/event hashes, session bytes, tool results, exit
 codes, and other observable output remained unchanged. Implementation commit:
 `0107210c863b84ca20595a614c206893f6507621`.
+
+## Part C B10 — AI support, runtime, and transport ownership
+
+### Result
+
+B10 replaced four mixed AI files with seventeen dependency-ordered owners
+while preserving all 229 top-level definitions:
+
+- `capabilities/{streaming-json,event-stream,grammar-tools,session-resources,proxy-config,image-runtime}.lisp`;
+- `transport/{http,aws-event-stream}.lisp`;
+- `runtime/{models,faux-provider}.lisp`;
+- `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp`.
+
+The ASDF graph loads value and framing helpers before transports, runtime
+models before the faux provider, and low-level support before every consumer.
+B3 remains the owner of cancellation, redacted printing, and time policy; the
+new AI files consume those primitives and do not recreate them.
+
+Tests were written before extraction. The red-first ownership gate failed on
+all seventeen absent owners and the four surviving monoliths. The completed
+gates are
+`GOAL14-B10-AI-CAPABILITY-TRANSPORT-RUNTIME-AND-SUPPORT-HAVE-EXACT-OWNERS`,
+`GOAL14-B10-PRESERVES-CORE-OWNERS-AND-FROZEN-AI-SURFACE`, and
+`GOAL14-B10-ASDF-LOADS-AI-OWNERS-IN-DEPENDENCY-ORDER`. The public AI package
+remained byte-identical with SHA-256
+`e722e49fd70592edcd28da93acc97051d4a0b22bc016e4b7da314a65c4acfb4f`.
+The complete deterministic suite passed:
+
+```text
+cadr test summary: systems=9 checks=13276 pass=13276 skip=0 fail=0
+```
+
+### Full verification
+
+`./scripts/verify.sh` passed all thirteen deterministic stages and both live
+stages:
+
+```text
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The real source-parity ledger contains 595 accepted entries with SHA-256
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+Credential-gated live verification ran seven items successfully, skipped
+Anthropic because `ANTHROPIC_API_KEY` is unset, and failed none:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+`LIVE-DEEPSEEK-EVAL-SMOKE` passed all four checks. Its exact `Paris`
+assertion remains unchanged pending the separately required baseline audit.
+The actual live-eval path enters `cadr-evals`, calls
+`cadr-cli::resolve-provider-config`, then constructs the Cadr AI provider.
+B10 moved the eventual runtime and transport definitions without changing
+their bodies, call sites, model resolution, or max-token decisions. This is
+call-path evidence, not an ASDF-system boundary argument.
+
+The Goal 11 gate passed with sustained-interaction p99.9 of 4 ms, maximum
+pause of 16 ms, maximum measured sustained GC pause of 12.86 ms, and
+converged sustained memory.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 23:14:59.067295301 +0800
+latest source commit: 4339d98b1 2026-08-03T23:12:36+08:00
+latest source mtime: 2026-08-03 23:11:57.143498021 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The build explicitly took the approved compatibility path:
+`SBCL lacks sb-core-compression; building an uncompressed image.` The
+production inventory is now 252 Lisp files / 100,420 lines and five embedded
+assets / 4,275 lines, for 257 files / 104,695 lines total. All screen/overlay
+snapshots and their independent semantic assertions, payload and wire
+fixtures, public package exports, session bytes, tool results, exit codes, and
+other observable output remained unchanged. Implementation commit:
+`4339d98b1`.
