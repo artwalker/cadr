@@ -7,6 +7,11 @@
 
 已裁决并实施：
 
+- `OQ-G15-I02-FATAL-REDACTION`：2026-08-04 已确认维持 Goal 13 实施的
+  崩溃脱敏机制。固定基线在终端直接 dump 栈
+  （`packages/coding-agent/src/modes/interactive/interactive-mode.ts:3671-3721`），
+  会泄漏系统提示词与会话内容；Cadr 改为用户可见的脱敏摘要与仅所有者可读的
+  `0600` 私有崩溃日志。该项是相对基线的有意新增，而非语言迁移的必然差异；
 - `OQ-G10-D1-TOOL-RESTARTS`：2026-08-01 已批准工具失败现场的
   condition/restart 与第 34 个扩展事件 `:tool-call-error`；实现后以
   34 个事件重新冻结，今后新增仍须重新提案并逐项裁决；

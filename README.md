@@ -444,8 +444,11 @@ and inspect them before sharing.
   original byte streams; visible text, styling, geometry, and cursor state are
   not exempted.
 - By the approved Goal 13 security hardening, fatal conditions show a bounded,
-  redacted summary and private crash-log path instead of pi's terminal
-  backtrace. Terminal teardown and layout remain subject to baseline parity.
+  redacted summary and private `0600` crash-log path instead of pi's terminal
+  stack dump (`interactive-mode.ts:3671-3721`). The baseline behavior can leak
+  the system prompt and session contents; Cadr deliberately keeps those out of
+  both the terminal summary and the redacted log. Terminal teardown and layout
+  remain subject to baseline parity.
 - Deterministic and live FiveAM tests have separate entry points. This is an
   explicit organizational difference with the same CI effect as the reference:
   its credential-gated live blocks remain in Vitest but all skip in official CI

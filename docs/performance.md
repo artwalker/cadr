@@ -107,6 +107,18 @@ MAD 4,518µs（五个样本 156–175ms）。
 历史前缀帧；它的优势来自组件级缓存、O(1) 追加、render request 合并，以及
 只向终端写变化行。
 
+### Process-start lower bound
+
+2026-08-04 同机 `--version` 实测补齐如下。稳定态是在文件缓存与运行时产物均已
+就绪后重复启动；“首次”是该轮首次进程启动。该命令在打印版本后立即退出，**不含
+TUI 初始化、首帧渲染、配置发现或交互组件构造**，只能作为进程启动成本的下限
+对照，不能替代本文其余真实 PTY 冷启动数字。
+
+| `--version` process time | cadr | pi `74caa2649` |
+|---|---:|---:|
+| stable | 0.01s | 0.83s |
+| first | 0.05s | 1.72s |
+
 | dimension | baseline behavior and evidence |
 |---|---|
 | history append | `Container.children` 是数组，`addChild()` 直接 `push`，即 O(1)；`packages/tui/src/tui.ts:211-216`。interactive mode 只把新 message/tool component 加到 `chatContainer`；`packages/coding-agent/src/modes/interactive/interactive-mode.ts:2942-2962, 3318-3369`。 |
