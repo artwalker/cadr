@@ -635,3 +635,89 @@ screen/overlay snapshots and their independent semantic assertions, payload
 and wire fixtures, extension exports, session bytes, tool results, exit codes,
 and other observable output remained unchanged. Implementation commit:
 `357130858839409ed93f442ce85953e180786016`.
+
+## Part C B7 — reusable TUI internals
+
+### Result
+
+B7 replaced the three remaining `cadr-tui` monoliths with sixteen
+dependency-ordered owners while preserving all 288 top-level definitions and
+the package-private names used by existing consumers:
+
+- `components/{markdown,image,tool-block,status,select-list}.lisp`;
+- `composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp`;
+- `renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,
+  alt-screen}.lisp`.
+
+The ASDF graph loads composition and terminal protocols before their
+implementations. B3 remains the single owner of failure-safety decisions:
+renderer cleanup delegates to `stop-thread-for-cleanup`, composition
+cancellation delegates to `cadr-core:make-cancellation-state`, and no new raw
+`join-thread` call was introduced. The sorted old and new definition sets are
+identical at 288 entries. `src/cadr-tui/package.lisp` remained byte-identical
+with SHA-256
+`5eacdc9c3ecad7e578623a141a1b4b948a31ae014497a0e319a66f14693d8713`.
+
+Tests were added before the split. The completed gates are
+`GOAL14-B7-REUSABLE-TUI-INTERNALS-HAVE-EXACT-OWNERS`,
+`GOAL14-B7-REUSES-CORE-CANCELLATION-AND-CLEANUP-BEFORE-SPLIT`, and
+`GOAL14-B7-ASDF-LOADS-PROTOCOLS-BEFORE-IMPLEMENTATIONS`. The complete
+deterministic suite passed:
+
+```text
+cadr test summary: systems=9 checks=12978 pass=12978 skip=0 fail=0
+```
+
+### Full verification
+
+`./scripts/verify.sh` passed all thirteen deterministic stages and both live
+stages:
+
+```text
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The real source-parity ledger contains 595 accepted entries with SHA-256
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+Credential-gated live verification ran seven items successfully, skipped
+Anthropic because `ANTHROPIC_API_KEY` is unset, and failed none:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+`LIVE-DEEPSEEK-EVAL-SMOKE` passed all four checks; its separately recorded
+baseline audit remains deferred and unchanged. The Goal 11 gate also passed,
+including sustained-interaction p99.9 of 4 ms, maximum pause of 16 ms, maximum
+measured GC pause of 15.09 ms, and converged sustained memory.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 21:25:00.577094410 +0800
+latest source commit: 7b94e5c440485624d9cd8346eda3dd31d026c392 2026-08-03T21:22:35+08:00
+latest source mtime: 2026-08-03 21:22:29.105932154 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The production inventory is now 222 Lisp files / 100,383 lines and five
+embedded assets / 4,275 lines, for 227 files / 104,658 lines total. All
+screen/overlay snapshots and their independent semantic assertions, payload
+and wire fixtures, extension exports, session bytes, tool results, exit codes,
+and other observable output remained unchanged. Implementation commit:
+`7b94e5c440485624d9cd8346eda3dd31d026c392`.
