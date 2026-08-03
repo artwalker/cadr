@@ -262,9 +262,10 @@ values are redacted from transport, API, assistant, and condition output.
 While the callback listener is active, the login dialog also accepts either an
 authorization code or the complete redirect URL. Browser callback and manual
 input race; the first valid result cancels the other path. The callback page
-uses Cadr's own single-path block-C grid mark rather than pi's brand asset; its
-800×800 monochrome square-grid construction deliberately keeps the baseline's
-visual language without reusing the baseline identity.
+uses Cadr's own single-path cons-cell grid mark rather than pi's brand asset.
+Its two adjacent cells and rightward notch express the Lisp operation behind
+the project name while the 800×800 monochrome square-grid construction keeps
+the baseline's visual language without reusing its identity.
 `/login anthropic` implements the same abstraction but has not been live
 verified because no Claude subscription account was available. Subscription
 OAuth channels may be restricted by provider terms to official clients; use
@@ -390,6 +391,16 @@ Users who want approval can implement it without changing the core through a
 Extensions are arbitrary in-process Common Lisp. Package isolation prevents
 accidental name collisions; it is not a security boundary.
 
+An otherwise unhandled runtime condition is caught before stack unwinding.
+The terminal receives only the condition type, a bounded message, and the path
+to a diagnostic under `~/.cadr/crash/`; it never receives a Lisp backtrace or
+an object dump. Crash logs are created with mode `0600` and redact API keys,
+OAuth access/refresh tokens, authorization headers, and other recognized
+credential fields. Credential-bearing runtime objects also have redacted
+printers as a second line of defense. Crash logs can still contain non-secret
+conversation and tool context needed for diagnosis, so treat them as private
+and inspect them before sharing.
+
 ## Differences from TypeScript pi
 
 - The implementation language and runtime are Common Lisp and SBCL.
@@ -410,7 +421,7 @@ accidental name collisions; it is not a security boundary.
 - By explicit user decision, OpenAI OAuth authorization requests and Codex
   Responses requests identify this client with `originator=cadr`, rather than
   attributing Cadr traffic to the reference client's `originator=pi`.
-- OAuth success and failure pages use Cadr's own block-C grid mark instead of
+- OAuth success and failure pages use Cadr's own cons-cell grid mark instead of
   pi's logo. This is a branding difference only; the page shell, copy, styling,
   escaping, and HTTP framing remain aligned.
 - Deterministic and live FiveAM tests have separate entry points. This is an

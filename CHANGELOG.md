@@ -18,6 +18,22 @@ tag/Release step.
 
 - Reduced alternate-screen continuous-input p99 from 52ms to 8ms at the
   5,000-entry stress tier while preserving the complete logical document.
+- Replaced the OAuth callback page's interim block-C mark with Cadr's
+  single-path square-grid cons-cell identity.
+
+### Fixed
+
+- Cancelling OpenAI or Anthropic login now stops the loopback/manual workers,
+  releases the listener, clears the working state, and returns to the editor.
+- Interactive cleanup now bounds every background-thread join and forcibly
+  stops an unresponsive worker instead of deadlocking exit.
+- `/export` now reports the baseline-aligned bare output filename.
+
+### Security
+
+- Unhandled conditions now use a sanitized fatal boundary: terminal output
+  contains no backtrace or object dump, diagnostics are exact/pattern redacted
+  into mode-0600 crash logs, and credential-bearing objects print redacted.
 
 ## [0.2.0] - 2026-08-01
 

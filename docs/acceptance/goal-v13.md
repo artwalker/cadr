@@ -487,8 +487,8 @@ reproduces the old failure rather than checking only an adjacent helper.
 |---|---|---|---|
 | relative read exposed `#P"..." is not a string designator` | path resolution expands `~`, resolves against cwd and returns a normalized string (`core/tools/path-utils.ts:40-53,83-89`); read then accesses and reads that string (`core/tools/read.ts:236-267`) | lexical `.`/`..` normalization and `~` expansion are shared by every file tool; presentation fallback converts pathnames to namestrings and contains classification failures (`src/cadr-cli/tools/path.lisp:44-79,247-260`; `src/cadr-cli/tui.lisp:1637-1691`) | `GOAL13-RELATIVE-READ-EXPANDS-A-SHORTENED-HOME-CWD-BEFORE-RESOLVING`; `GOAL13-FILE-TOOL-ERRORS-NEVER-LEAK-COMMON-LISP-REPRESENTATIONS`; `GOAL13-FILE-IO-FAILURES-USE-STABLE-TOOL-LEVEL-COPY` |
 | built-in `/login` had no manual callback fallback | dialog title and URL/instruction/input composition (`login-dialog.ts:41-48,93-148`); OpenAI races loopback callback against `manual_code` input (`openai-codex.ts:444-480`) | code, query, `code#state`, and full redirect URL parse through one function; callback and manual worker race under a cancellation signal; the TUI renders the exact title, warning, message, input and cancel hint (`src/cadr-ai/oauth.lisp:327-356,814-905,914-955`; `src/cadr-cli/tui.lisp:115-213,4923-4932`) | `GOAL13-MANUAL-OAUTH-INPUT-MATCHES-BASELINE-URL-CODE-AND-STATE-FORMS`; `GOAL13-CALLBACK-AND-MANUAL-OAUTH-INPUT-RACE-CANCELS-THE-LOSER`; `GOAL13-BUILT-IN-OAUTH-DIALOG-MATCHES-THE-BASELINE-MANUAL-FALLBACK`; `GOAL13-LOGIN-COMMAND-FORWARDS-THE-MANUAL-AUTHORIZATION-PROMPT` |
-| `/export` used weak copy and `<session-id>.html` | exporter defaults to `${APP_NAME}-session-${session-file-basename}.html` (`core/export-html/index.ts:274-280`); interactive status is `Session exported to: ${filePath}` (`interactive-mode.ts:5471-5481`) | default name is `cadr-session-<ISO timestamp with :/. replaced by ->_<session UUID>.html`; explicit and default targets resolve to an absolute path and status copy is exact (`src/cadr-cli/main.lisp:1331-1345,1546-1560`) | `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE`; the older workflow assertion now requires `Session exported to:` rather than the ambiguous word `Exported` |
-| OAuth result page reused pi's mark | fixed page uses one 800×800 monochrome grid SVG (`auth/oauth/oauth-page.ts:1-17`) | one white even-odd path draws a block C on the same `165.29/282.65/517.36/634.72` grid, with no stroke, gradient, second path, or pi geometry (`src/cadr-ai/oauth.lisp:579-581`) | `GOAL13-OAUTH-PAGE-USES-CADR-OWNED-GRID-MARK` plus the existing complete HTML/framing/escaping gate |
+| `/export` used weak copy and `<session-id>.html` | exporter defaults to `${APP_NAME}-session-${session-file-basename}.html` (`core/export-html/index.ts:274-280`); interactive status is `Session exported to: ${filePath}` (`interactive-mode.ts:5471-5481`) | default name is `cadr-session-<ISO timestamp with :/. replaced by ->_<session UUID>.html`; the notice uses the returned bare filename, as confirmed by real baseline A/B (`src/cadr-cli/main.lisp:1331-1345,1546-1560`) | `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE`; the older workflow assertion now requires the exact basename rather than the ambiguous word `Exported` |
+| OAuth result page reused pi's mark | fixed page uses one 800×800 monochrome grid SVG (`auth/oauth/oauth-page.ts:1-17`) | one white even-odd path now draws two adjacent cons cells and a rightward notch on the same 117.36-step grid, with no stroke, gradient, second path, or pi geometry (`src/cadr-ai/oauth.lisp:579-581`) | `GOAL13-OAUTH-PAGE-USES-CADR-OWNED-GRID-CONS-CELL-MARK` plus the existing complete HTML/framing/escaping gate |
 | clean TUI exit omitted the resume command | only TTY, persisted, existing-file sessions qualify; custom session directories are quoted and added before `--session <id>` (`interactive-mode.ts:236-249`); clean `/quit`, Ctrl+D and Ctrl+C paths write after terminal teardown (`interactive-mode.ts:3622-3634`) | normal, Ctrl+C, and suspend/resume exits print exactly one dim `To resume this session: cadr ...` after terminal restoration; SIGTERM/SIGHUP non-local exits bypass the write; `--session` accepts the emitted full/partial ID as well as a path (`src/cadr-cli/main.lisp:124-147,1563-1582,4320-4331`; `src/cadr-cli/utilities.lisp:445-477`) | `GOAL13-SESSION-IDS-AND-POST-TUI-RESUME-COPY-MATCH-THE-BASELINE`; `goal9-a2-pty.sh` covers normal, Ctrl+C, and suspend/resume ordering and command shape |
 
 ### File-tool error-channel audit
@@ -555,10 +555,13 @@ enumerates the finite external-channel set instead: active TUI, pre-TUI and
 post-TUI streams, print/JSON/RPC, session/export/auth/settings/package/SQLite
 files, provider requests, OAuth callback pages, Unix-socket and server streams,
 eval artifacts, and exit status. Its machine identity is
-`GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0`; every row names the
+The third-round checkpoint was
+`GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0`; every row named the
 fixed-baseline source, Cadr source, and a gate that drives the real channel.
 `GOAL13-FOUR-LEDGERS-AND-PRESENTATION-DENOMINATORS-STAY-IN-SYNC` rejects a
-missing row or channel class.
+missing row or channel class. The fourth round below adds abnormal termination
+as C-18 and audits the exceptional path of every channel rather than silently
+assuming the normal-path gate covers it.
 
 This closes the four-axis escape for a concrete reason: source parity saw the
 functions but not the missing lifecycle call; TUI snapshots end before the
@@ -639,3 +642,121 @@ paths such as `/dev/urandom` and `/proc/version`, never as user-facing
 conditions.
 
 Corrective commits: `82d0b41bb`, `07463db44`, `829ec7f5c`, `484e5c5a7`.
+
+## Fourth real-terminal A/B corrective — 2026-08-03
+
+This round closed the only runtime channel that could dump arbitrary in-memory
+state, made shutdown finite even when a worker does not cooperate, and wired
+OAuth dialog cancellation through to the listener rather than stopping at the
+overlay boundary.
+
+| Finding | Fixed-baseline evidence | Cadr implementation | Regression |
+|---|---|---|---|
+| an unhandled SBCL condition dumped the complete stack and session graph | pi restores the terminal and handles `uncaughtException` at the process boundary (`interactive-mode.ts:3646-3673,3716-3721`) | the shared native entrypoint boundary captures before stack unwind, emits only type/bounded copy, exact- and pattern-redacts a private mode-0600 log, and is installed by `cadr`, `cadr-server`, and `cadr-evals` (`src/cadr-ai/crash.lisp`; `src/cadr-cli/crash.lisp`; all three entrypoints) | `GOAL13-FATAL-CONDITION-BOUNDARY-REDACTS-USER-OUTPUT-AND-CRASH-LOG`; `GOAL13-INTERACTIVE-INTERRUPT-USES-THE-SANITIZED-FATAL-PATH` |
+| credential objects had default recursive printers | a JavaScript `Error` does not recursively print unrelated object fields; Cadr needs an explicit Lisp defense | model/provider/request/auth/config/runtime/client and Radius credential holders now print identity metadata plus `[REDACTED]`, never secret slots | `GOAL13-CREDENTIAL-BEARING-OBJECTS-NEVER-PRINT-SECRET-MATERIAL`; `GOAL13-CLI-CONFIGURATION-OBJECTS-NEVER-PRINT-SECRET-MATERIAL`; `GOAL13-RADIUS-PRESENCE-NEVER-PRINTS-ITS-BEARER-TOKEN` |
+| cleanup used unbounded joins | baseline async cleanup can cancel work without blocking the event loop indefinitely | one bounded cleanup primitive covers AI abort watchers, TUI workers/loaders/monitors, autocomplete, file/footer watchers and animated components; the server listener uses the same 500ms bound and forced-stop policy | `GOAL13-CLEANUP-NEVER-BLOCKS-ON-AN-UNRESPONSIVE-THREAD`; `GOAL13-TUI-EXIT-COMPLETES-WHEN-THE-ACTIVE-WORKER-IGNORES-ABORT` |
+| Esc closed OAuth UI but left callback/manual work alive | `LoginDialogComponent.cancel()` aborts the shared signal, rejects pending input and completes with `Login cancelled` (`login-dialog.ts:83-90`) | the prompt now carries distinct cancel and cancelled-p callbacks; Esc invokes cancel, both workers observe it, bounded cleanup joins them, the loopback socket unwinds closed, and Working disappears | `GOAL13-RUNTIME-OAUTH-INPUT-CANCEL-INVOKES-THE-PROVIDER-CANCELLATION`; `GOAL13-EVERY-BUILT-IN-OAUTH-DIALOG-CANCEL-CLEARS-WORKING-AND-RESTORES-EDITOR`; both OAuth listener tests |
+| abnormal termination was absent from the channel ledger | baseline has a distinct last-resort output path outside normal TUI/stdout elements | C-18 records runtime-fatal output and an 18-row exceptional-path matrix makes every normal channel state its failure behavior and gate | `GOAL13-FOUR-LEDGERS-AND-PRESENTATION-DENOMINATORS-STAY-IN-SYNC` requires 18 normal and 18 exceptional rows |
+| `/export` notice was too long | real baseline A/B shows the returned relative filename | `Session exported to:` now receives `file-namestring`, while the file target itself remains unchanged | `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE` |
+| interim Cadr mark was a block C | the baseline visual method is one white even-odd path on the 800-square grid (`auth/oauth/oauth-page.ts:1-17`) | the same method now depicts two adjacent cons cells with a rightward notch; it uses one path, no stroke/rounding/gradient and the 117.36 grid | `GOAL13-OAUTH-PAGE-USES-CADR-OWNED-GRID-CONS-CELL-MARK` |
+
+### Credential and cleanup coverage
+
+The printer audit covers `model`, `model-metadata`, `image-model`, every
+provider instance, `request-spec`, API-key/OAuth credentials, memory/file
+credential stores, auth results/refresh contexts/model runtimes, CLI arguments,
+provider config, API-key/manual-auth input state, model registry, llama.cpp and
+Hugging Face clients, and Radius presence. The fatal redactor additionally
+collects command-line keys, all stored auth key/access/refresh values, every
+registered provider environment variable, cloud credential variables and
+Radius auth before writing the log.
+
+The cleanup audit found no remaining unbounded join in a teardown path. The
+execution-environment stdout/stderr collectors now use the same bounded stop;
+bash reader joins either carry an explicit one-second timeout or occur only
+after `thread-alive-p` is false. The sole production raw join left in
+`cadr-agent/loop.lisp` is the deliberate synchronization point of an active
+parallel tool batch, not a shutdown wait. Tests use joins only to observe their
+own deterministic workers.
+
+The cons mark remains crisp at the callback page's 72px size. At favicon scale
+the shared middle border and directional notch read more like a compact cell
+pair than a detailed textbook pointer; preserving the single grid path and
+recognizable two-cell silhouette was chosen over adding off-grid micro-detail.
+
+### Why 11,949 checks missed it
+
+The suite tested handled conditions, modeled transport failures, TUI frames,
+and successful cooperative teardown. It never drove an uncaught
+`serious-condition` through the saved-image toplevel, never placed a secret in
+a printed runtime structure, and never supplied a worker that ignored abort.
+The OAuth dialog test stopped at overlay cancellation while the callback/manual
+race tests cancelled only the losing internal worker; neither connected Esc to
+the provider cancellation signal. Finally, the output-channel ledger had only
+normal-path rows, so a runtime's own post-crash printing was outside its
+enumeration by construction. The new tests drive those exact boundaries rather
+than infer them from nearby helpers.
+
+### Mechanical acceptance
+
+The implementation is recorded in `df92b32d320ae28f61079f8f289735617d079cea`.
+The direct deterministic run and the isolated deterministic run inside the
+release gate both reported:
+
+```text
+cadr test summary: systems=8 checks=12056 pass=12056 skip=0 fail=0
+```
+
+The complete release gate passed without retrying a failed stage:
+
+```text
+Deterministic stages
+Stage                                            Result
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+Stage                                            Result
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The credential-gated report preserved item-level outcomes:
+
+```text
+PASS LIVE-DEEPSEEK-CHAT-COMPLETIONS-STREAMS (5 checks)
+SKIP LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT: ANTHROPIC_API_KEY is not set
+PASS LIVE-DEEPSEEK-PRINT-MODE-EMITS-ONLY-FINAL-TEXT (3 checks)
+PASS LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL (4 checks)
+PASS LIVE-DEEPSEEK-EVAL-SMOKE (4 checks)
+PASS LIVE-OPENAI-CODEX-EVAL-SMOKE-USES-EXPLICIT-MODEL-AND-REAL-OAUTH (4 checks)
+PASS LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE (6 checks)
+PASS LIVE-DEEPSEEK-REPOSITORY-FAIL-FIX-PASS-LOOP (5 checks)
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+The root image was rebuilt after the implementation commit and passed the
+freshness gate:
+
+```text
+binary build time: 2026-08-03 10:41:15.994322992 +0800
+latest src commit: df92b32d320ae28f61079f8f289735617d079cea 2026-08-03T10:38:29+08:00
+latest source mtime: 2026-08-03 10:34:35.370665755 +0800 src/cadr-agent/execution-env.lisp
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+root binary freshness: PASS
+```
+
+The installed SBCL lacks `sb-core-compression`; root and isolated builds both
+used the approved uncompressed-image fallback and succeeded.

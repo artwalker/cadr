@@ -885,6 +885,16 @@ provider/model 参数即可对话。TUI 按基线显示 OSC 8 可点击的原始
 原子删除 `openai-codex` 凭据。Anthropic OAuth 复用相同 credential 接口，
 但在实现、测试报告和 README 中明确标记为未验证。
 
+所有发行入口（`cadr`、`cadr-server`、`cadr-evals`）外层还有一个不参与
+业务恢复的 fatal condition boundary。它在栈展开前捕获未处理的
+`serious-condition`，用户通道只得到 condition 类型、受限文案和本地日志路径；
+完整 backtrace 经已知秘密精确替换后写入 `~/.cadr/crash/` 的 `0600` 文件，
+CLI 再对 Authorization、Bearer、token/key/secret 形态做二次模式脱敏。
+provider、credential、request、config、auth input 与外部服务 client 等持密
+对象都定义了不递归显示秘密槽位的 `print-object`，作为绕过 fatal boundary 时的
+纵深防御。该边界只处理本应终止进程的不变量/运行时故障；可恢复的 provider、
+tool、extension 和输入错误仍必须在各自产品边界归一化，不能靠崩溃处理器兜底。
+
 ### 16.5 Phase 5 测试门禁
 
 实现顺序为测试先行：

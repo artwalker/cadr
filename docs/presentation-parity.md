@@ -1,7 +1,7 @@
 # Presentation parity ledger
 
 <!-- GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4 -->
-<!-- GOAL13_OUTPUT_CHANNELS total=17 covered=17 pending=0 -->
+<!-- GOAL13_OUTPUT_CHANNELS total=18 covered=18 pending=0 -->
 
 Fixed baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 Audit point: Cadr `e04d9230f` (Goal 13 Part A complete).  This ledger audits
@@ -41,23 +41,53 @@ cannot stand in for a process exit status.
 | C-05 | `--mode json` JSONL stdout | header plus complete agent events as one JSON object per line (`print-mode.ts:101-119`) | header/events use the frozen JSON projection and one-record-per-line framing (`src/cadr-cli/main.lisp:3185-3244,4338-4376`) | Wave 2 JSON fixtures; `GOAL9-A2-PROCESS-FAUX-JSON-*` | 已覆盖 |
 | C-06 | `--mode rpc` stdin/stdout JSONL | RPC request/response/event loop (`modes/rpc/rpc-mode.ts:53-184`; `modes/rpc/jsonl.ts:1-14`) | `run-rpc-mode` owns framed commands, responses and events (`src/cadr-cli/modes/rpc/mode.lisp:1-496`; `src/cadr-cli/modes/rpc/jsonl.lisp:1-60`) | RPC wire fixtures and `test-wave2-process-modes.sh` | 已覆盖 |
 | C-07 | session JSONL on disk | header and every appended/re-written entry (`session-manager.ts:979-1040,1620-1625`) | v3 header/entry envelopes and atomic migration writes (`src/cadr-agent/session.lisp:566-852,1427-1442`) | session v1/v2/v3 whole-tree round trips and migration smoke | 已覆盖 |
-| C-08 | exported session files | self-contained HTML with Base64 session data; default name derives from app/session-file basename (`core/export-html/index.ts:130-174,274-314`) | offline HTML preserves the exact session tree; default `cadr-session-<ISO>_<uuid>.html`; status reports the absolute path (`src/cadr-agent/session.lisp:2347-2555`; `src/cadr-cli/main.lisp:1331-1345,1546-1560`) | export asset/tree/theme tests and `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE` | 已覆盖 |
+| C-08 | exported session files | self-contained HTML with Base64 session data; default name derives from app/session-file basename and the interactive notice reports the returned relative filename (`core/export-html/index.ts:130-174,274-314`; `interactive-mode.ts:5471-5481`) | offline HTML preserves the exact session tree; default `cadr-session-<ISO>_<uuid>.html`; the notice reports only that filename (`src/cadr-agent/session.lisp:2347-2555`; `src/cadr-cli/main.lisp:1331-1345,1546-1560`) | export asset/tree/theme tests and `GOAL13-DEFAULT-HTML-EXPORT-NAME-AND-STATUS-MATCH-THE-BASELINE-RULE` | 已覆盖 |
 | C-09 | `auth.json` | locked JSON credential store, mode 0600 and atomic replacement (`core/auth-storage.ts:46-149,188-334`) | provider-identity-preserving atomic 0600 store with refresh lock and redaction (`src/cadr-ai/auth.lisp:84-205`) | auth round-trip/permissions/refresh-race tests; deterministic login route; live credential integrity checks | 已覆盖 |
 | C-10 | settings, trust and installed-package state on disk | global/project settings plus trust/package metadata (`settings-manager.ts:200-252,610-630`; `trust-manager.ts:112-137`; `package-manager.ts:1920-1945`) | atomic global/project settings carry model, keybindings, trust and package entries (`src/cadr-cli/settings.lisp:180-469`; `src/cadr-cli/package-manager.lisp:586-665`) | settings reload/concurrency/keybinding/package-manager suites | 已覆盖 |
 | C-11 | SQLite session/server persistence | SQLite session store opens, creates, appends and forks repository records (`packages/storage/sqlite-node/src/sqlite/session-store.ts:66-271`) | standalone storage adapter and server repository persist schema-versioned rows (`src/cadr-agent/sqlite-storage.lisp:1-901`; `src/cadr-server/storage.lisp:1-120`) | `CADR-STORAGE-SUITE`; server protocol-and-storage round trip | 已覆盖 |
 | C-12 | outbound provider HTTP/WebSocket requests | provider-specific URL, headers, body and streaming transport (`packages/ai/src/api/openai-responses.ts:1-184`; `packages/ai/src/api/openai-responses-shared.ts:419-733`) | request specs feed the HTTP/SSE/WebSocket implementations without presentation rewriting (`src/cadr-ai/providers/openai.lisp:1-1130`; `src/cadr-ai/http.lisp:1-806`; `src/cadr-ai/websocket.lisp:1-586`) | complete payload fixtures, delta-boundary properties and credential-gated provider matrix | 已覆盖 |
-| C-13 | OAuth loopback HTTP response | byte-framed success/failure HTML callback page (`auth/oauth/openai-codex.ts:336-365`; `auth/oauth/oauth-page.ts:1-108`) | byte-accurate HTML with Cadr-owned grid mark and provider-specific escaped copy (`src/cadr-ai/oauth.lisp:579-813`) | OAuth HTML/framing/parser tests plus real `/login openai` | 已覆盖 |
+| C-13 | OAuth loopback HTTP response | byte-framed success/failure HTML callback page (`auth/oauth/openai-codex.ts:336-365`; `auth/oauth/oauth-page.ts:1-108`) | byte-accurate HTML with a Cadr-owned grid cons-cell mark and provider-specific escaped copy (`src/cadr-ai/oauth.lisp:579-813`) | OAuth HTML/framing/parser tests plus real `/login openai` | 已覆盖 |
 | C-14 | Cadr server Unix-socket responses | validated framed messages and Unix listener writes (`packages/protocol/src/codec.ts:50-158`; `packages/server/src/transports/unix/listener.ts:71-235`) | local socket supervisor returns frozen JSON protocol envelopes (`src/cadr-server/protocol.lisp:1-65`; `src/cadr-server/ipc.lisp:139-225`) | protocol suite and real multiprocess `server-smoke.sh` | 已覆盖 |
 | C-15 | process exit status | print errors, signals, package commands and fatal paths set explicit status (`print-mode.ts:34-150`; `main.ts:541-648,901-913`) | `main` returns deterministic mode status; signals map to 129/143 and build support passes it to `uiop:quit` (`src/cadr-cli/main.lisp:1562-1581,3944-4383`; `src/cadr-cli/build-support.lisp:1-13`) | process faux tests, signal PTY lifecycle and `test-wave2-process-modes.sh` | 已覆盖 |
 | C-16 | server control-process stdout/stderr | server CLI prints help/version, JSON responses, stream frames and listener state (`packages/server/src/cli.ts:13-94`; `packages/server/src/serve.ts:16-38`) | `cadr-server` prints the corresponding control responses and listener lifecycle outside its socket channel (`src/cadr-server/main.lisp:1-155`) | server suite plus real multiprocess `server-smoke.sh` | 已覆盖 |
 | C-17 | eval runner stdout/stderr and report artifacts | vitest-evals writes schema-versioned `runs.jsonl` and summaries (`packages/evals/src/vitest-evals/reporter.ts:24-61`; `summary.ts:95-177`) | `cadr-evals` emits the result envelope or normalized failure and writes matching run/artifact records (`src/cadr-evals/main.lisp:1-145`; `src/cadr-evals/reporter.lisp:125-180`; `src/cadr-evals/artifacts.lisp:78-116`) | deterministic eval suite, eval reporter/artifact round trips and credential-gated live eval entry | 已覆盖 |
+| C-18 | runtime output during abnormal termination | pi first restores the terminal, prints `pi exiting due to uncaughtException:` and the JavaScript `Error`, then exits 1 (`interactive-mode.ts:3646-3673,3716-3721`) | every shipped entrypoint catches an otherwise unhandled serious condition before stack unwind, prints only its type and a bounded message, writes a redacted mode-0600 diagnostic under `~/.cadr/crash/`, and exits 1 (`src/cadr-ai/crash.lisp:1-220`; `src/cadr-cli/crash.lisp:1-65`; `src/cadr-cli/build-support.lisp:10-14`; `src/cadr-server/main.lisp:206-212`; `src/cadr-evals/main.lisp:107-155`) | `GOAL13-FATAL-CONDITION-BOUNDARY-REDACTS-USER-OUTPUT-AND-CRASH-LOG`; `GOAL13-INTERACTIVE-INTERRUPT-USES-THE-SANITIZED-FATAL-PATH`; credential-object print regressions | 已覆盖 |
 
-Completeness is machine-checked as `17 = 17 covered + 0 pending`. Direct
+Completeness is machine-checked as `18 = 18 covered + 0 pending`. Direct
 extension output and package/tool subprocess output do not form extra channels:
 their user-observable bytes are deliberately projected into C-01/C-04/C-05/C-06,
 while raw implementation diagnostics are excluded by those channel gates.
 Build and test diagnostics are development-only channels and do not exist in
 the shipped `cadr`, `cadr-server`, or `cadr-evals` runtime surface.
+
+### Exceptional-path closure
+
+Each normal channel row also owns an exceptional path; C-18 is the final
+runtime boundary, not an excuse to leave product errors unnormalized.
+
+| ID | Channel | Exceptional-path contract | Gate |
+|---|---|---|---|
+| A-01 | C-01 active TUI | renderer cleanup restores the terminal; a stuck worker receives abort and then a bounded join/forced stop before C-18 writes outside the alternate screen | `GOAL13-TUI-EXIT-COMPLETES-WHEN-THE-ACTIVE-WORKER-IGNORES-ABORT`; fatal-boundary tests |
+| A-02 | C-02 pre-TUI streams | parse/configuration errors keep their stable product copy; an unexpected condition uses C-18 without printing in-memory objects | process faux errors; fatal-boundary tests |
+| A-03 | C-03 post-TUI stdout | only a clean resumable exit prints the resume command; abnormal exit prints the C-18 stderr summary and never the resume line | resume PTY lifecycle; fatal-boundary tests |
+| A-04 | C-04 print mode | provider/tool failures are normalized on stderr and return nonzero; unexpected failures fall through to C-18 | print process faux errors; exit-status harness |
+| A-05 | C-05 JSON mode | modeled failures remain schema-valid events; runtime failure is isolated to C-18 stderr rather than corrupting JSONL with a backtrace | JSON wire fixtures; fatal-boundary tests |
+| A-06 | C-06 RPC mode | command errors remain framed RPC responses; runtime failure uses C-18 stderr and nonzero exit | RPC error fixtures; fatal-boundary tests |
+| A-07 | C-07 session JSONL | failed writes preserve the prior atomic file; a runtime failure cannot serialize an arbitrary stack/object dump into the session | session atomic-write/migration tests; fatal-boundary tests |
+| A-08 | C-08 export files | export errors use the product error surface and never leave an advertised partial success; runtime failure uses C-18 | exporter failure/atomic asset tests; fatal-boundary tests |
+| A-09 | C-09 auth store | parse/write/refresh failures are normalized; secrets are exact-redacted and credential structures have redacted printers even inside C-18 | auth permissions/race tests; credential print tests; fatal-boundary tests |
+| A-10 | C-10 settings/package files | invalid state is rejected before atomic replacement; implementation diagnostics remain outside notices and flow to C-18 only if unhandled | settings/package error suites; infrastructure-output audit |
+| A-11 | C-11 SQLite | database failures retain typed storage/server errors and transaction rollback; unhandled runtime faults use C-18 | storage failure/rollback suite; fatal-boundary tests |
+| A-12 | C-12 provider transport | TLS/socket/SSE/WebSocket failures are normalized and abort is silent except `Operation aborted`; a surviving unexpected fault uses C-18 | transport normalization and three-phase abort tests; fatal-boundary tests |
+| A-13 | C-13 OAuth HTTP | failure pages are escaped and byte-framed; cancel stops the listener/manual worker, releases the port and clears Working before any outer C-18 handling | OAuth failure-page tests; `GOAL13-OAUTH-CANCEL-ABORTS-THE-LOOPBACK-WORKER-AND-RELEASES-IT`; `GOAL13-EVERY-BUILT-IN-OAUTH-DIALOG-CANCEL-CLEARS-WORKING-AND-RESTORES-EDITOR` |
+| A-14 | C-14 Unix socket | malformed requests produce protocol errors and listener teardown uses a bounded join; an unhandled server condition uses the shared C-18 boundary | protocol malformed-frame suite; server lifecycle tests; fatal-boundary tests |
+| A-15 | C-15 exit status | all modeled failures and signals retain their assigned code; C-18 is fixed at 1 | process/status harness; fatal-boundary tests |
+| A-16 | C-16 server streams | command errors retain `cadr-server:` copy; credential-bearing Radius state prints redacted and an unhandled serious condition uses the shared C-18 boundary | server error suite; `GOAL13-RADIUS-PRESENCE-NEVER-PRINTS-ITS-BEARER-TOKEN`; fatal-boundary tests |
+| A-17 | C-17 eval streams/artifacts | eval failures retain `cadr-evals:` copy and do not forge a completed artifact; an unhandled serious condition uses the shared C-18 boundary | deterministic eval failure/reporter tests; fatal-boundary tests |
+| A-18 | C-18 abnormal termination | terminal output excludes prompts, session content, encrypted reasoning and secrets; the private log preserves the pre-unwind failure site after exact and pattern redaction | fatal-boundary user/log/permission regression and all credential-object print regressions |
+
+The machine gate requires all 18 `A-*` rows as well as all 18 normal channel
+rows, preventing another audit that silently covers only successful execution.
 
 ## B1. Semantic theme-color assignment
 
@@ -238,8 +268,8 @@ B3 count after Part C selector-format batch: `6 一致 + 4 不一致（已改齐
 
 | ID | Surface | Baseline | Cadr | Status |
 |---|---|---|---|---|
-| H-01 | OAuth success HTML | complete responsive dark page, pi mark, `<title>`/`<h1>` = `Authentication successful`, dim close message (`packages/ai/src/auth/oauth/oauth-page.ts:1-99`) | the shell/copy/geometry remain aligned; the single-path white 800×800 grid mark is Cadr's block-C rather than pi's brand asset (`src/cadr-ai/oauth.lisp:579-688`) | 有意差异（Cadr 品牌标识） |
-| H-02 | OAuth failure HTML | same shell and pi mark with `Authentication failed`, escaped message and optional monospace details (`oauth-page.ts:3-17,102-108`) | same failure shell and Cadr-owned mark (`src/cadr-ai/oauth.lisp:594-694`) | 有意差异（Cadr 品牌标识） |
+| H-01 | OAuth success HTML | complete responsive dark page, pi mark, `<title>`/`<h1>` = `Authentication successful`, dim close message (`packages/ai/src/auth/oauth/oauth-page.ts:1-99`) | the shell/copy/geometry remain aligned; Cadr's single-path white 800×800 grid mark is a two-cell cons diagram with a directional notch rather than pi's brand asset (`src/cadr-ai/oauth.lisp:579-688`) | 有意差异（Cadr 品牌标识） |
+| H-02 | OAuth failure HTML | same shell and pi mark with `Authentication failed`, escaped message and optional monospace details (`oauth-page.ts:3-17,102-108`) | same failure shell and Cadr-owned cons-cell mark (`src/cadr-ai/oauth.lisp:594-694`) | 有意差异（Cadr 品牌标识） |
 | H-03 | callback-specific copy | route/state/missing-code/internal failures have distinct escaped messages (`openai-codex.ts:340-363`; `anthropic.ts:118-145`; `radius.ts:176-202`) | parser returns a typed outcome and provider-specific response copy for OpenAI, Anthropic and Radius (`src/cadr-ai/oauth.lisp:327-368,667-696,721-769`) | 不一致（已改齐） |
 | H-04 | HTML escaping | title, heading, message and details escape `&<>"'` (`oauth-page.ts:3-17`) | all four fields pass through one character-level HTML escaper before interpolation (`src/cadr-ai/oauth.lisp:553-573`) | 不一致（已改齐） |
 | H-05 | session export HTML | theme variables including `pageBg/cardBg/infoBg`, complete template/CSS/JS, Base64 session data, Marked and syntax highlighter (`core/export-html/index.ts:108-174`) | exact baseline template assets, Base64 session data, licensed vendored browser scripts, and active/default theme projection (`src/cadr-agent/session.lisp:2124-2555`; `src/cadr-cli/main.lisp:1533-1544,3293-3348`) | 不一致（已改齐） |
