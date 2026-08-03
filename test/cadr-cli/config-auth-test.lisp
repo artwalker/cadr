@@ -482,3 +482,51 @@
         :output (make-string-output-stream)
         :auth-prompt-function prompt-function))
       (is (eq prompt-function received-prompt-function)))))
+
+(test goal13-built-in-runtime-login-routes-aliases-and-persists-canonical-credentials
+  (with-test-directory (directory)
+    (let* ((path (merge-pathnames "auth.json" directory))
+           (storage (cadr-cli:make-file-auth-storage path))
+           (registry
+             (cadr-cli:make-model-registry
+              :path (merge-pathnames "models.json" directory)
+              :credentials storage))
+           (credential
+             (cadr-ai:make-oauth-credential
+              :provider :openai-codex
+              :access "access" :refresh "refresh"
+              :expires 1000 :account-id "account")))
+      (is
+       (eq
+        credential
+        (cadr-cli::model-registry-login-built-in-provider
+         registry :openai-codex
+         (cadr-ai:make-runtime-auth-interaction
+          :prompt-function (constantly "unused"))
+         :login-function (lambda (interaction)
+                           (declare (ignore interaction))
+                           credential))))
+      (is
+       (eq :openai-codex
+           (cadr-ai:oauth-credential-provider
+            (cadr-cli:auth-storage-read storage :openai-codex))))
+      (is (null (cadr-cli:auth-storage-read storage :openai)))
+      (let ((prompts nil))
+        (signals cadr-ai:authentication-error
+          (cadr-cli::handle-native-auth-command
+           registry "/login openai"
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (push (copy-tree prompt) prompts)
+              "unsupported"))
+           :output (make-string-output-stream)))
+        (is
+         (equal
+          '((:type :select
+             :message "Select OpenAI Codex login method:"
+             :options
+             ((:id "browser" :label "Browser login (default)")
+              (:id "device_code"
+               :label "Device code login (headless)"))))
+          (nreverse prompts)))))))

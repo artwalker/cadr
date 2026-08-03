@@ -4395,6 +4395,7 @@
            (make-tui-status-animation))
          (overlay nil)
          (overlay-kind nil)
+         (login-provider-auth-type nil)
          (busy-p nil)
          (abort-requested-p nil)
          (done-p nil)
@@ -5423,36 +5424,107 @@
             (make-import-confirmation-list
              line path))
            (request-render))
-         (open-login-method-selector ()
-           (setf
-            overlay-kind :login-method
-            overlay
-            (make-login-method-selector-state))
-           (request-render))
-         (open-login-provider-selector (auth-type)
+         (current-login-options ()
+           (if login-options-function
+               (funcall login-options-function)
+               (login-provider-options
+                (cadr-ai:list-provider-definitions)
+                :status-function auth-status-function)))
+         (start-login-option (option)
+           (setf login-provider-auth-type nil)
+           (if (eq :oauth
+                   (oauth-selector-option-auth-type option))
+               (start-work
+                (format nil "/login ~(~A~)"
+                        (oauth-selector-option-id option)))
+               (open-api-key-input option)))
+         (open-login-method-selector
+             (&optional (provider-options nil provider-options-p))
+           (multiple-value-bind (action value)
+               (login-auth-type-route
+                provider-options
+                :generic-p (not provider-options-p))
+             (case action
+               (:none
+                (status value))
+               (:direct
+                (start-login-option value))
+               (:select
+                (setf
+                 login-provider-auth-type nil
+                 overlay-kind :login-method
+                 overlay value)
+                (request-render)))))
+         (open-login-provider-selector
+             (auth-type &optional (query ""))
            (let ((options
-                   (if login-options-function
-                       (remove-if-not
-                        (lambda (option)
-                          (eq auth-type
-                              (oauth-selector-option-auth-type
-                               option)))
-                        (funcall login-options-function))
-                       (login-provider-options
-                        (cadr-ai:list-provider-definitions)
-                        :auth-type auth-type
-                        :status-function
-                        auth-status-function))))
+                   (remove-if-not
+                    (lambda (option)
+                      (or
+                       (null auth-type)
+                       (eq auth-type
+                           (oauth-selector-option-auth-type
+                            option))))
+                    (current-login-options))))
              (if options
                  (setf
+                  login-provider-auth-type auth-type
                   overlay-kind :login-provider
                   overlay
                   (make-oauth-selector-state
                    :mode :login
-                   :options options))
+                   :options options
+                   :query query))
                  (status
-                  "No login methods available")))
+                  (case auth-type
+                    (:oauth
+                     "No subscription providers available.")
+                    (:api-key
+                     "No API key providers available.")
+                    (otherwise
+                     "No login providers available.")))))
            (request-render))
+         (open-login-for-reference (provider-ref)
+           (let* ((normalized
+                    (string-downcase
+                     (string-trim
+                      '(#\Space #\Tab #\Newline #\Return)
+                      provider-ref)))
+                  (alias-id
+                    (ignore-errors
+                      (parse-auth-provider normalized)))
+                  (matches
+                    (remove-if-not
+                     (lambda (option)
+                       (or
+                        (and
+                         alias-id
+                         (eq alias-id
+                             (oauth-selector-option-id option)))
+                        (string=
+                         normalized
+                         (string-downcase
+                          (provider-key
+                           (oauth-selector-option-id option))))
+                        (string=
+                         normalized
+                         (string-downcase
+                          (oauth-selector-option-name option)))))
+                     (current-login-options))))
+             (cond
+               ((= 1 (length matches))
+                (start-login-option (first matches)))
+               ((and
+                 (> (length matches) 1)
+                 (= 1
+                    (length
+                     (remove-duplicates
+                      matches
+                      :key #'oauth-selector-option-id
+                      :test #'equal))))
+                (open-login-method-selector matches))
+               (t
+                (open-login-provider-selector nil provider-ref)))))
          (open-logout-provider-selector ()
            (let ((options
                    (and logout-options-function
@@ -5592,6 +5664,11 @@
                 (open-settings-selector))
                ((string= trimmed "/login")
                 (open-login-method-selector))
+               ((uiop:string-prefix-p "/login " trimmed)
+                (open-login-for-reference
+                 (string-trim
+                  '(#\Space #\Tab)
+                  (subseq trimmed (length "/login ")))))
                ((string= trimmed "/logout")
                 (open-logout-provider-selector))
                ((and
@@ -5674,18 +5751,11 @@
                          (tui-state-model
                          state)))))
                    (:login-method
-                    (open-login-provider-selector value))
+                    (if (typep value 'oauth-selector-option)
+                        (start-login-option value)
+                        (open-login-provider-selector value)))
                    (:login-provider
-                    (if
-                        (eq
-                         (oauth-selector-option-auth-type
-                          value)
-                         :oauth)
-                        (start-work
-                         (format
-                          nil "/login ~(~A~)"
-                          (oauth-selector-option-id value)))
-                        (open-api-key-input value)))
+                    (start-login-option value))
                    (:logout-provider
                     (when on-logout-selected
                       (funcall
@@ -5812,13 +5882,20 @@
              (:select
               (accept-selection value))
              (:cancel
-              (when
-                  (eq overlay-kind
-                      :extension-custom)
-                (finish-custom-ui nil))
-              (setf overlay nil
-                    overlay-kind nil)
-              (request-render))
+              (let ((cancelled-kind overlay-kind)
+                    (return-to-login-method-p
+                      (and
+                       (eq overlay-kind :login-provider)
+                       login-provider-auth-type)))
+                (when
+                    (eq cancelled-kind
+                        :extension-custom)
+                  (finish-custom-ui nil))
+                (setf overlay nil
+                      overlay-kind nil)
+                (if return-to-login-method-p
+                    (open-login-method-selector)
+                    (request-render))))
              (:load-all
               (start-all-session-load
                overlay value)

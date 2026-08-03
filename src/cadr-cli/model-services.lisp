@@ -700,6 +700,32 @@
     (merge-native-runtime-models registry)
     credential))
 
+(defun model-registry-login-built-in-provider
+    (registry provider-id interaction &key login-function)
+  (let* ((definition
+           (cadr-ai:find-provider-definition provider-id))
+         (provider
+           (and definition
+                (cadr-ai::make-built-in-runtime-provider definition)))
+         (login-function
+           (or login-function
+               (and provider
+                    (cadr-ai:runtime-provider-oauth-login-function
+                     provider)))))
+    (unless login-function
+      (error 'cadr-ai:configuration-error
+             :message
+             (format nil "OAuth login is unavailable for ~A"
+                     (provider-key provider-id))))
+    (let ((credential (funcall login-function interaction)))
+      (auth-storage-modify
+       (model-registry-credentials registry)
+       provider-id
+       (lambda (current)
+         (declare (ignore current))
+         credential))
+      credential)))
+
 (defun model-registry-login-api-key
     (registry provider-id key)
   (unless (cadr-ai::non-empty-string-p key)

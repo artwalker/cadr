@@ -235,7 +235,7 @@
     (dolist (pattern
               '("/.codex" "/.tmp-home/" "/.obsidian/"
                 "/docs/.obsidian/" "/goal*.md" "__pycache__/"
-                "*.py[cod]"))
+                "*.py[cod]" "cadr-*.html" "out.html"))
       (is (search pattern ignore)))
     (is (not (probe-file (merge-pathnames "packages/" root))))
     (is (not (probe-file (merge-pathnames "goal9.md" root))))

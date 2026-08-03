@@ -2356,7 +2356,7 @@
            (model-registry-native-login-records registry)))
     (if (null native-records)
         built-in
-        (sort
+        (stable-sort
          (append
           built-in
           (loop for record in native-records
@@ -2386,6 +2386,14 @@
                                        (if (eq auth-type :oauth)
                                            "account"
                                            "API key"))))
+                         :login-label
+                         (let ((metadata
+                                 (and
+                                  (eq auth-type :oauth)
+                                  (getf record :oauth-metadata))))
+                           (and metadata
+                                (cadr-ai:oauth-provider-metadata-login-label
+                                 metadata)))
                          :status
                          (and status-function
                               (funcall status-function id))))))
@@ -2399,14 +2407,21 @@
          (command (first parts))
          (provider
            (and (second parts)
-                (provider-symbol-from-key (second parts))))
+                (or
+                 (ignore-errors
+                   (parse-auth-provider (second parts)))
+                 (provider-symbol-from-key (second parts)))))
          (runtime
            (and registry
                 (model-registry-native-runtime registry)))
          (definition
            (and runtime provider
                 (cadr-ai:models-runtime-provider
-                 runtime provider))))
+                 runtime provider)))
+         (built-in-definition
+           (and provider
+                (ignore-errors
+                  (cadr-ai:find-provider-definition provider)))))
     (cond
       ((and definition
             (string= command "/login")
@@ -2414,6 +2429,27 @@
              definition))
        (model-registry-login-native-provider
         registry provider interaction :auth-type :oauth)
+       (format output "~(~A~) login stored in ~A~%"
+               provider
+               (namestring
+                (if
+                    (typep
+                     (model-registry-credentials registry)
+                     'file-auth-storage)
+                    (file-auth-storage-path
+                     (model-registry-credentials registry))
+                    (default-auth-path))))
+       (when on-change
+         (funcall on-change provider :login))
+       (finish-output output)
+       t)
+      ((and built-in-definition
+            (string= command "/login")
+            (member :oauth
+                    (cadr-ai:provider-definition-auth-types
+                     built-in-definition)))
+       (model-registry-login-built-in-provider
+        registry provider interaction)
        (format output "~(~A~) login stored in ~A~%"
                provider
                (namestring

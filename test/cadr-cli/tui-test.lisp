@@ -3891,7 +3891,8 @@
       (is (null value))
       (is (= 1 cancel-count)))))
 
-(defun goal13-run-cancelled-oauth-dialog (command title)
+(defun goal13-run-cancelled-oauth-dialog
+    (command title &key provider-selector-title)
   (let ((prompt-function nil)
         (cancel-count 0)
         (login-finished-p nil))
@@ -3903,34 +3904,40 @@
       'footer-sync-test-terminal
       :columns 90 :rows 16
       :inputs
-      (list
-       (footer-sync-submit-input command)
-       (footer-sync-submit-input "")
-       (footer-sync-wait-for-screen-text
-        title)
-       (lambda (terminal)
-         (let ((screen
-                 (format
-                  nil "~{~A~^~%~}"
-                  (mapcar
-                   #'cadr-tui:strip-terminal-sequences
-                   (cadr-tui:virtual-terminal-snapshot terminal)))))
-           (is (null (search "Working..." screen)))
-           t))
-       (string #\Escape)
-       (lambda (terminal)
-         (and
-          login-finished-p
+      (append
+       (list
+        (footer-sync-submit-input command)
+        (footer-sync-submit-input ""))
+       (when provider-selector-title
+         (list
+          (footer-sync-wait-for-screen-text provider-selector-title)
+          (string #\Return)))
+       (list
+        (footer-sync-wait-for-screen-text
+         title)
+        (lambda (terminal)
           (let ((screen
                   (format
                    nil "~{~A~^~%~}"
                    (mapcar
                     #'cadr-tui:strip-terminal-sequences
                     (cadr-tui:virtual-terminal-snapshot terminal)))))
-            (and (null (search "Working..." screen))
-                 (null (search "Login cancelled" screen))
-                 (null (search "Error:" screen))))))
-       (footer-sync-submit-input "/quit")))
+            (is (null (search "Working..." screen)))
+            t))
+        (string #\Escape)
+        (lambda (terminal)
+          (and
+           login-finished-p
+           (let ((screen
+                   (format
+                    nil "~{~A~^~%~}"
+                    (mapcar
+                     #'cadr-tui:strip-terminal-sequences
+                     (cadr-tui:virtual-terminal-snapshot terminal)))))
+             (and (null (search "Working..." screen))
+                  (null (search "Login cancelled" screen))
+                  (null (search "Error:" screen))))))
+        (footer-sync-submit-input "/quit"))))
      :set-auth-prompt-consumer
      (lambda (function)
        (setf prompt-function function))
@@ -3973,11 +3980,13 @@
 (test goal13-every-built-in-oauth-dialog-cancel-clears-working-and-restores-editor
   (dolist
       (spec
-       '(("/login openai" "Login to OpenAI Codex")
-         ("/login anthropic" "Login to Anthropic")))
+       '(("/login openai" "Login to OpenAI Codex" nil)
+         ("/login anthropic" "Login to Anthropic"
+          "Select authentication method for Anthropic:")))
     (is (= 1
            (goal13-run-cancelled-oauth-dialog
-            (first spec) (second spec))))))
+            (first spec) (second spec)
+            :provider-selector-title (third spec))))))
 
 (defparameter +goal13-baseline-built-in-slash-working-contract+
   '(("settings" nil) ("model" nil) ("scoped-models" nil)
@@ -4049,3 +4058,120 @@
      state
      (cadr-agent::make-agent-event :type :agent-settled))
     (is (null (cadr-cli::tui-state-agent-working-p state)))))
+
+(test goal13-provider-specific-login-method-selector-uses-baseline-cardinality-and-labels
+  (let* ((openrouter
+           (cadr-cli::login-provider-options
+            (list (cadr-ai:find-provider-definition :openrouter))))
+         (anthropic
+           (cadr-cli::login-provider-options
+            (list (cadr-ai:find-provider-definition :anthropic))))
+         (single (list (first openrouter))))
+    (multiple-value-bind (action value)
+        (cadr-cli::login-auth-type-route nil)
+      (is (eq :none action))
+      (is (string= "No login methods available." value)))
+    (multiple-value-bind (action value)
+        (cadr-cli::login-auth-type-route single)
+      (is (eq :direct action))
+      (is (eq (first single) value)))
+    (multiple-value-bind (action state)
+        (cadr-cli::login-auth-type-route openrouter)
+      (is (eq :select action))
+      (is (string= "Select authentication method for OpenRouter:"
+                   (cadr-cli::login-method-selector-state-title state)))
+      (is
+       (equal
+        '("Sign in with OpenRouter" "Sign in with an API key")
+        (mapcar
+         #'cadr-tui::select-item-label
+         (cadr-tui::select-list-items
+          (cadr-cli::login-method-selector-state-select-list state))))))
+    (multiple-value-bind (action state)
+        (cadr-cli::login-auth-type-route anthropic)
+      (is (eq :select action))
+      (is
+       (equal
+        '("Sign in with an account" "Sign in with an API key")
+        (mapcar
+         #'cadr-tui::select-item-label
+         (cadr-tui::select-list-items
+          (cadr-cli::login-method-selector-state-select-list state))))))
+    (multiple-value-bind (action state)
+        (cadr-cli::login-auth-type-route nil :generic-p t)
+      (is (eq :select action))
+      (is (string= "Select authentication method:"
+                   (cadr-cli::login-method-selector-state-title state))))))
+
+(test goal13-direct-login-with-multiple-methods-opens-provider-specific-selector
+  (let ((command-lines nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :login-options-function
+     (lambda ()
+       (cadr-cli::login-provider-options
+        (list (cadr-ai:find-provider-definition :openrouter))))
+     :command-function
+     (lambda (line)
+       (push line command-lines)
+       t)
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 90 :rows 18
+      :inputs
+      (list
+       (footer-sync-submit-input "/login openrouter")
+       (footer-sync-submit-input "")
+       (footer-sync-wait-for-screen-text
+        "Select authentication method for OpenRouter:")
+       (lambda (terminal)
+         (let ((screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot terminal)))))
+           (is (search "Sign in with OpenRouter" screen))
+           (is (search "Sign in with an API key" screen))
+           (is (null (search "Select provider to configure:" screen)))
+           t))
+       (string #\Escape)
+       ""
+       (footer-sync-submit-input "/quit"))))
+    (is (null command-lines))))
+
+(test goal13-login-provider-selector-cancel-returns-to-auth-type-selector
+  (let ((command-lines nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :login-options-function
+     (lambda ()
+       (cadr-cli::login-provider-options
+        (list (cadr-ai:find-provider-definition :anthropic))))
+     :command-function
+     (lambda (line)
+       (push line command-lines)
+       t)
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 90 :rows 18
+      :inputs
+      (list
+       (footer-sync-submit-input "/login")
+       (footer-sync-wait-for-screen-text
+        "Select authentication method:")
+       (format nil "~C[B" #\Escape)
+       (string #\Return)
+       (footer-sync-wait-for-screen-text
+        "Select provider to configure:")
+       (string #\Escape)
+       (footer-sync-wait-for-screen-text
+        "Select authentication method:")
+       (string #\Escape)
+       ""
+       (footer-sync-submit-input "/quit"))))
+    (is (null command-lines))))

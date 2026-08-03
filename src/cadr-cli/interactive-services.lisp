@@ -7250,27 +7250,69 @@
   name
   auth-type
   method-name
+  login-label
   status)
 
 (defstruct (login-method-selector-state
             (:constructor
                 %make-login-method-selector-state))
+  (title "Select authentication method:" :type string)
   select-list)
 
-(defun make-login-method-selector-state ()
+(defun make-login-method-selector-state
+    (&key
+       (title "Select authentication method:")
+       (items
+         (list
+          (cadr-tui:make-select-item
+           :label "Sign in with an account"
+           :value :oauth)
+          (cadr-tui:make-select-item
+           :label "Sign in with an API key"
+           :value :api-key))))
   (%make-login-method-selector-state
+   :title title
    :select-list
    (cadr-tui:make-select-list
-    :items
-    (list
-     (cadr-tui:make-select-item
-      :label "Sign in with an account"
-      :value :oauth)
-     (cadr-tui:make-select-item
-      :label "Sign in with an API key"
-      :value :api-key))
-    :height 2
+    :items items
+    :height (length items)
     :show-filter-p nil)))
+
+(defun login-auth-type-route
+    (provider-options &key generic-p)
+  (when generic-p
+    (return-from login-auth-type-route
+      (values :select (make-login-method-selector-state))))
+  (let* ((oauth
+           (find :oauth provider-options
+                 :key #'oauth-selector-option-auth-type))
+         (api-key
+           (find :api-key provider-options
+                 :key #'oauth-selector-option-auth-type))
+         (options (remove nil (list oauth api-key))))
+    (case (length options)
+      (0
+       (values :none "No login methods available."))
+      (1
+       (values :direct (first options)))
+      (otherwise
+       (values
+        :select
+        (make-login-method-selector-state
+         :title
+         (format nil "Select authentication method for ~A:"
+                 (oauth-selector-option-name (first options)))
+         :items
+         (loop for option in options
+               collect
+               (cadr-tui:make-select-item
+                :label
+                (if (eq :oauth
+                        (oauth-selector-option-auth-type option))
+                    (or (oauth-selector-option-login-label option)
+                        "Sign in with an account")
+                    "Sign in with an API key")
+                :value option))))))))
 
 (defun login-method-selector-handle-event
     (state event)
@@ -7289,7 +7331,11 @@
    (list
     (selector-border-line width)
     ""
-    (selector-fit-line " Select authentication method:" width)
+    (selector-fit-line
+     (concatenate
+      'string " "
+      (login-method-selector-state-title state))
+     width)
     "")
    (mapcar
     (lambda (line)
@@ -7409,7 +7455,7 @@
 
 (defun login-provider-options
     (definitions &key auth-type status-function)
-  (sort
+  (stable-sort
    (loop
      for definition in definitions
      append
@@ -7444,6 +7490,15 @@
                  (if (eq candidate :oauth)
                      "account"
                      "API key"))))
+          :login-label
+          (let ((metadata
+                  (and
+                   (eq candidate :oauth)
+                   (cadr-ai:provider-definition-oauth-metadata
+                    definition))))
+            (and metadata
+                 (cadr-ai:oauth-provider-metadata-login-label
+                  metadata)))
           :status
           (and status-function
                (funcall

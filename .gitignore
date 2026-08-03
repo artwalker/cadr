@@ -8,6 +8,8 @@
 .cadr/
 .env
 *.log
+cadr-*.html
+out.html
 
 # Local agent, test-home, and editor state
 /.codex
