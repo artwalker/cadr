@@ -203,6 +203,7 @@
                              (:file "goal13-presentation-test")
                              (:file "goal14-a0-test")
                              (:file "goal14-organization-test")
+                             (:file "goal15-a0-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

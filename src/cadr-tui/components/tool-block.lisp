@@ -538,8 +538,10 @@
                         :accent summary
                         :enabled-p ansi-theme-p)))))))))
            (header-lines
-             (wrap-logical-line
-              header content-width))
+             (wrap-text
+              (cl-ppcre:regex-replace-all
+               (string #\Tab) header "   ")
+              content-width))
            (output-lines
              (unless
                  (zerop
