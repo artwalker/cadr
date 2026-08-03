@@ -201,7 +201,7 @@ B1 final count: `36 一致 + 19 不一致（已改齐） / 0 不一致 / 0 有�
 | F-03 | context | one decimal `%/window`, `(auto)`, warning `>70`, error `>90` (`footer.ts:147-164`) | same thresholds and copy (`src/cadr-tui/components.lisp:1724-1749`) | 一致 |
 | F-04 | provider/model/thinking | right-aligned; provider only with multiple providers and space; `thinking off` special copy (`footer.ts:168-220`) | same (`src/cadr-tui/components.lisp:1833-1906`) | 一致 |
 | F-05 | extension statuses | alphabetic, control characters collapsed, optional third line (`footer.ts:232-243`) | same (`src/cadr-tui/components.lisp:1751-1755,1907-1927`) | 一致 |
-| F-06 | working/retry/compaction | braille spinner, accent/muted/error/warning semantics and exact action hints (`status-indicator.ts:9-113`) | same state and copy (`src/cadr-cli/tui.lisp:1528-1545,2625-2691`) | 一致 |
+| F-06 | working/retry/compaction | `Working...` is installed only by `agent_start`; all built-in slash commands remain local, while compaction has its distinct `Compacting context...` state (`interactive-mode.ts:2691-2823,2880-2917`; `status-indicator.ts:9-113`) | `agent-working-p` changes only on `:agent-start`/`:agent-settled`; generic command-worker `busy-p` still locks the editor but never renders the agent spinner, and compaction keeps its separate state (`src/cadr-cli/tui.lisp:73,1995-2022,4453-4470,4602-4621`) | 不一致（已改齐） |
 
 ### Overlays and selectors
 
@@ -219,8 +219,8 @@ oracle.
 | O-04 | resume | `session-selector.ts:119-175,414-519,685-746` | `src/cadr-cli/interactive-services.lisp:1288-1705` | 一致 |
 | O-05 | fork | `user-message-selector.ts:14-148` | `src/cadr-cli/interactive-services.lisp:1719-1875` | 一致 |
 | O-06 | tree | `tree-selector.ts:664-851,1156-1385` | `src/cadr-cli/interactive-services.lisp:5340-6055` | 一致 |
-| O-07 | login method | `interactive-mode.ts:5014-5039`; `extension-selector.ts:18-90` | `src/cadr-cli/interactive-services.lisp:7197-7275` | 一致 |
-| O-08 | login provider | `oauth-selector.ts:51-180` | `src/cadr-cli/interactive-services.lisp:7420-7710` | 一致 |
+| O-07 | login method | method names and optional `loginLabel` come from each provider's auth method (`interactive-mode.ts:4984-5039`; `auth/types.ts:188-197`) | the selector consumes provider-owned OAuth presentation metadata, including exact method names and optional login labels (`src/cadr-ai/oauth.lisp:3-30`; `src/cadr-ai/oauth-flows.lisp:19-50`; `src/cadr-cli/interactive-services.lisp:7197-7275`) | 不一致（已改齐） |
+| O-08 | login provider | provider rows use provider display names, distinct from auth-method names (`interactive-mode.ts:4875-4934`; `oauth-selector.ts:51-180`) | registry/runtime projections carry the same provider display names without hard-coded selector aliases (`src/cadr-ai/registry.lisp:3-15,28-266,715-760`; `src/cadr-cli/interactive-services.lisp:7420-7710`) | 不一致（已改齐） |
 | O-09 | logout provider | same baseline component | same Cadr component | 一致 |
 | O-10 | API-key input | `login-dialog.ts:30-71,154-218` | `src/cadr-cli/interactive-services.lisp:7310-7415` | 一致 |
 | O-11 | scoped models | `scoped-models-selector.ts:91-252` | `src/cadr-cli/interactive-services.lisp:8778-8945` | 一致 |
@@ -241,11 +241,11 @@ oracle.
 | N-05 | trust warning/selector | project path/state, three choices and exact help (`trust-selector.ts:32-115`) | same (`src/cadr-cli/interactive-services.lisp:6057-6310`) | 一致 |
 | N-06 | startup banner/resources | compact/expanded resource list, loaded-count details and expansion hint (`interactive-mode.ts:758-817`) | same composition and copy, with the product name changed to Cadr (`src/cadr-cli/interactive-components.lisp:430-720`; `src/cadr-cli/main.lisp:3920-3924`) | 有意差异 |
 | N-07 | compaction transient state | `Compacting context...`, escape hint, cancellation/error status (`status-indicator.ts:74-91`; `interactive-mode.ts:3112-3155`) | same transient state; final summary mismatch is M-07 (`src/cadr-cli/tui.lisp:1793-1830,2625-2691`) | 一致 |
-| N-08 | OAuth URL in terminal | one unwrapped URL row and explicit browser fallback (`interactive-mode.ts:5250-5345`) | same TUI auth-url entry (`src/cadr-cli/tui.lisp:2268-2271,4390-4485`) | 一致 |
+| N-08 | OAuth login dialog and URL | title uses the provider display name; provider-authored `auth_url` instructions and prompt copy remain distinct; user cancellation restores the editor silently (`login-dialog.ts:41-48,83-90`; `interactive-mode.ts:5240-5250,5310-5360`; provider OAuth modules) | provider metadata supplies the exact title/instructions/prompt; typed `authentication-cancelled` is swallowed only at the interactive command boundary, while real auth failures remain errors (`src/cadr-ai/oauth.lisp:3-30,843-924,960-1057`; `src/cadr-ai/oauth-flows.lisp:417-458,578-606`; `src/cadr-cli/tui.lisp:3774-3785,4390-4485`) | 不一致（已改齐） |
 | N-09 | model catalog refresh | exact `Model catalogs refreshed.` and configured-provider guidance (`model-selector.ts:91-103,174-185`) | same (`src/cadr-cli/main.lisp:3455-3480`; `src/cadr-cli/interactive-services.lisp:8060-8090`) | 一致 |
 | N-10 | package/install foreground output | deliberate foreground progress; wrapper diagnostics excluded (`package-manager-cli.ts:503-510`; `core/package-manager.ts:2530-2536`) | same product/diagnostic boundary (`src/cadr-cli/package-manager.lisp:937-1105`) | 一致 |
 
-B2 count after Part C transcript batch: `39 一致 + 11 不一致（已改齐） / 0 不一致 / 2 有意差异 = 52`.
+B2 count after the fifth real-terminal corrective: `35 一致 + 15 不一致（已改齐） / 0 不一致 / 2 有意差异 = 52`.
 
 ## B3. Paths and numeric formats
 

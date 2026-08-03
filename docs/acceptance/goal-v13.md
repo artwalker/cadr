@@ -760,3 +760,118 @@ root binary freshness: PASS
 
 The installed SBCL lacks `sb-core-compression`; root and isolated builds both
 used the approved uncompressed-image fallback and succeeded.
+
+## Fifth real-terminal A/B corrective — 2026-08-03
+
+This round separates the agent lifecycle from generic local-command work,
+makes OAuth cancellation an explicit non-error outcome, and moves OAuth
+presentation constants from shared UI code into each provider definition.
+
+| Finding | Fixed-baseline evidence | Cadr implementation | Regression |
+|---|---|---|---|
+| `/login` and `/export` displayed `Working...` | every built-in command dispatches locally (`interactive-mode.ts:2691-2823`); the working indicator is installed only on `agent_start` (`interactive-mode.ts:2880-2917`) | generic command-worker `busy-p` still prevents concurrent editor submission, but the new `agent-working-p` changes only on `:agent-start`/`:agent-settled` and alone controls the spinner (`src/cadr-cli/tui.lisp:73,1995-2022,4453-4470,4602-4621`) | `GOAL13-BASELINE-BUILT-IN-SLASH-WORKING-MATRIX-IS-COMPLETE`; `GOAL13-LOCAL-SLASH-WORKER-NEVER-RENDERS-AGENT-WORKING-INDICATOR`; `GOAL13-AGENT-LIFECYCLE-ALONE-CONTROLS-WORKING-INDICATOR` |
+| Esc from OAuth rendered `Error: Login cancelled` | login-dialog cancellation aborts the flow, while both API-key and OAuth consumers deliberately suppress the exact cancellation outcome (`login-dialog.ts:83-90`; `interactive-mode.ts:5240-5250,5350-5360`) | every runtime prompt maps NIL to typed `authentication-cancelled`; the TUI command boundary suppresses only that type, while prompt/transport/auth failures remain `authentication-error` (`src/cadr-ai/oauth.lisp:843-924`; `src/cadr-cli/tui.lisp:3774-3785`) | `GOAL13-EVERY-RUNTIME-AUTH-PROMPT-CANCELLATION-IS-TYPED`; `GOAL13-EVERY-BUILT-IN-OAUTH-DIALOG-CANCEL-CLEARS-WORKING-AND-RESTORES-EDITOR`; `GOAL13-OAUTH-PROMPT-FAILURES-ARE-NOT-MISCLASSIFIED-AS-CANCELLATION` |
+| OAuth instructions were shared and titles used method marketing names | provider modules own provider name, auth-method name, optional `loginLabel`, `auth_url` instructions, and prompt copy (`providers/*.ts`; `auth/oauth/*.ts`) | `oauth-provider-metadata` travels through provider definitions and session-local runtime projection; dialogs use provider names, selectors use method names/login labels, and each flow emits its own instructions (`src/cadr-ai/oauth.lisp:3-30,960-1057`; `src/cadr-ai/oauth-flows.lisp:19-50,417-458,578-606`; `src/cadr-ai/registry.lisp:3-15,28-266,715-760`) | `GOAL13-OAUTH-PRESENTATION-METADATA-IS-OWNED-BY-EACH-PROVIDER`; `GOAL13-BUILT-IN-OAUTH-PROMPTS-USE-PROVIDER-OWNED-BASELINE-COPY`; `GOAL13-BUILT-IN-OAUTH-DIALOG-MATCHES-THE-BASELINE-MANUAL-FALLBACK` |
+
+### Complete built-in slash-command working audit
+
+The fixed baseline has exactly 22 public built-ins
+(`core/slash-commands.ts:19-42`). All route through the local submit dispatcher
+before any ordinary prompt can reach the agent (`interactive-mode.ts:2691-2823`).
+Therefore none of them creates the agent `Working...` state.
+
+| Command | Baseline action | Agent `Working...` |
+|---|---|---|
+| `/settings` | local selector | No |
+| `/model` | local selector/model reload | No |
+| `/scoped-models` | local selector | No |
+| `/export` | local file export | No |
+| `/import` | local file/confirmation flow | No |
+| `/share` | local GitHub operation | No |
+| `/copy` | local clipboard operation | No |
+| `/name` | local session metadata update | No |
+| `/session` | local session-information notice | No |
+| `/changelog` | local overlay | No |
+| `/hotkeys` | local overlay | No |
+| `/fork` | local session selector/fork | No |
+| `/clone` | local session clone | No |
+| `/tree` | local tree selector | No |
+| `/trust` | local trust selector/write | No |
+| `/login` | local auth selector/dialog and provider auth flow | No |
+| `/logout` | local auth selector/store update | No |
+| `/new` | local session creation | No |
+| `/compact` | compaction flow with its distinct `Compacting context...` state | No |
+| `/resume` | local session selector/load | No |
+| `/reload` | local configuration/extension reload | No |
+| `/quit` | local shutdown | No |
+
+Prompt commands and skill commands acquire `Working...` only after they submit
+a prompt and the session emits `agent_start`. An extension command likewise has
+no working state merely because it is a command; it gains one only if it calls
+the prompt API. `!`/`!!` shell commands use their own local execution state and
+never impersonate agent reasoning. The regression recounts the production
+autocomplete command specification, so adding a twenty-third built-in without
+an explicit disposition fails the gate.
+
+### Cancellation audit
+
+| User action | Baseline outcome | Cadr outcome after this corrective |
+|---|---|---|
+| cancel OAuth dialog, API-key entry, auth select/text/secret/manual-code prompt | restore the editor silently; `Login cancelled` is control flow, not a rendered error | typed `authentication-cancelled`, silently consumed at the interactive boundary |
+| cancel an ordinary overlay/selector | return to the editor without an error notice | NIL/`:cancel`, no error notice |
+| cancel session import confirmation | deliberate informational `Import cancelled`, never an error | same informational status (`src/cadr-cli/tui.lisp:5735`) |
+| abort an active agent/tool operation | render `Operation aborted` | same; this is operational abort, not dialog cancellation |
+| cancel extension UI input/select/confirm | resolve NIL/cancel to the extension | same, without synthesizing a product error |
+
+The typed boundary matters: matching the string `Login cancelled` would also
+hide a genuine provider or bridge failure which happened to reuse that text.
+`GOAL13-OAUTH-PROMPT-FAILURES-ARE-NOT-MISCLASSIFIED-AS-CANCELLATION` forces a
+real bridge failure through the visible authentication-error path.
+
+### Provider-owned OAuth presentation matrix
+
+| Provider | Provider/dialog name | Auth-method name | Login label | Provider-authored browser copy |
+|---|---|---|---|---|
+| Anthropic | `Anthropic` | `Anthropic (Claude Pro/Max)` | default account label | `Complete login in your browser. If the browser is on another machine, paste the final redirect URL here.` |
+| GitHub Copilot | `GitHub Copilot` | `GitHub Copilot` | default account label | device flow; no `auth_url` override |
+| Kimi For Coding | `Kimi For Coding` | `Kimi Code (subscription)` | `Sign in with Kimi Code` | device flow; no `auth_url` override |
+| OpenAI Codex | `OpenAI Codex` | `OpenAI (ChatGPT Plus/Pro)` | default account label | `A browser window should open. Complete login to finish.` |
+| OpenRouter | `OpenRouter` | `OpenRouter OAuth` | `Sign in with OpenRouter` | `Complete sign-in in your browser. If the browser is on another machine, paste the final redirect URL here.` |
+| Radius | `Radius` | `Radius` | default account label | `Continue in your browser.` |
+| xAI | `xAI` | `xAI (Grok/X subscription)` | `Sign in with SuperGrok or X Premium` | device flow; no `auth_url` override |
+
+This is a data-ownership correction, not a provider-specific conditional pile.
+The provider definition owns immutable presentation metadata and the runtime
+projects it session-locally. Goal 14 can split provider implementations into
+one file per provider without changing selector or dialog consumers: each
+provider moves together with its protocol, auth flow, and presentation data.
+
+### Auth-option partition requiring user ruling
+
+The title/copy defects are fixed, but the audit found a separate pre-existing
+behavioral partition difference. It was not changed because the instruction
+requires an explicit ruling rather than an inferred expansion.
+
+| Provider/path | Fixed baseline | Current Cadr |
+|---|---|---|
+| Anthropic, GitHub Copilot, Kimi For Coding, OpenRouter, Radius, xAI via `/login <provider>` | provider has OAuth and API-key methods, so show `Select authentication method for <provider>:` with the provider login label plus `Sign in with an API key` (`interactive-mode.ts:4937-5039`) | directly starts the provider OAuth flow |
+| OpenAI Codex via `/login openai-codex` | provider is OAuth-only, then the OAuth method itself asks `Browser login (default)` vs `Device code login (headless)` (`auth/oauth/openai-codex.ts:510-528`) | directly starts browser/manual-callback login; no device-code branch |
+| `/login` without a provider | first asks `Select authentication method:` and then selects a provider | same top-level method/provider selector shape |
+
+The recommended ruling is to align both missing partitions exactly. They are
+baseline capability, not a Cadr-specific mechanism, but implementing them would
+change the current interactive command route and therefore is deliberately not
+smuggled into this copy correction.
+
+### Why 12,056 checks missed it
+
+The TUI used one `busy-p` for two meanings: editor serialization and agent
+reasoning. Existing worker tests proved that local work completed and cleared
+the flag, but never asserted that a frame rendered during that work lacked
+`Working...`. OAuth cancellation tests verified listener teardown and editor
+restoration, but accepted or ignored the generic error notice. Finally, the
+OpenAI manual-dialog snapshot accidentally passed because the single shared
+copy happened to be OpenAI's copy; no provider matrix compared provider name,
+method name, login label, instructions, and prompt text as separate fields.
+
+Implementation commits: `8ce316f99`, `c5f1c632b`.
