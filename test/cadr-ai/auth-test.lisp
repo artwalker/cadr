@@ -750,3 +750,191 @@
               "expired-access"
               (cadr-ai::stringify-json
                (cadr-ai:request-spec-payload request)))))))))
+
+(test goal13-openai-codex-runtime-login-offers-baseline-methods-and-runs-device-code
+  (let* ((payload
+           (cadr-ai::json-object
+            "https://api.openai.com/auth"
+            (cadr-ai::json-object
+             "chatgpt_account_id" "device-account")))
+         (access
+           (format
+            nil "e30.~A.signature"
+            (cadr-ai::base64url-encode
+             (babel:string-to-octets
+              (cadr-ai::stringify-json payload)
+              :encoding :utf-8))))
+         (prompts nil)
+         (events nil)
+         (requests nil)
+         (poll-count 0)
+         (sleeps nil)
+         (interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function
+            (lambda (prompt)
+              (push (copy-tree prompt) prompts)
+              "device_code")
+            :notify-function
+            (lambda (event)
+              (push (copy-tree event) events))))
+         (cadr-ai::*oauth-flow-sleep-function*
+           (lambda (seconds) (push seconds sleeps)))
+         (cadr-ai::*oauth-browser-open-function* (constantly nil))
+         (cadr-ai::*oauth-http-request-function*
+           (lambda (url &rest options)
+             (push (list url (copy-tree options)) requests)
+             (cond
+               ((string= url
+                         "https://auth.openai.com/api/accounts/deviceauth/usercode")
+                (values
+                 (cadr-ai::stringify-json
+                  (cadr-ai::json-object
+                   "device_auth_id" "device-auth-id"
+                   "user_code" "ABCD-1234"
+                   "interval" "5"))
+                 200 nil))
+               ((string= url
+                         "https://auth.openai.com/api/accounts/deviceauth/token")
+                (incf poll-count)
+                (if (= poll-count 1)
+                    (values
+                     (cadr-ai::stringify-json
+                      (cadr-ai::json-object
+                       "error"
+                       (cadr-ai::json-object
+                        "code"
+                        "deviceauth_authorization_pending")))
+                     403 nil)
+                    (values
+                     (cadr-ai::stringify-json
+                      (cadr-ai::json-object
+                       "authorization_code" "authorization-code"
+                       "code_verifier" "device-verifier"))
+                     200 nil)))
+               ((string= url "https://auth.openai.com/oauth/token")
+                (values
+                 (cadr-ai::stringify-json
+                  (cadr-ai::json-object
+                   "access_token" access
+                   "refresh_token" "refresh-token"
+                   "expires_in" 3600))
+                 200 nil))
+               (t
+                (error "Unexpected OAuth URL: ~A" url))))))
+    (let ((credential
+            (cadr-ai::login-openai-runtime-oauth interaction)))
+      (is (eq :openai-codex
+              (cadr-ai:oauth-credential-provider credential)))
+      (is (string= "device-account"
+                   (cadr-ai:oauth-credential-account-id credential))))
+    (is
+     (equal
+      '((:type :select
+         :message "Select OpenAI Codex login method:"
+         :options
+         ((:id "browser" :label "Browser login (default)")
+          (:id "device_code"
+           :label "Device code login (headless)"))))
+      (nreverse prompts)))
+    (is
+     (equal
+      '((:type :device-code
+         :user-code "ABCD-1234"
+         :verification-uri "https://auth.openai.com/codex/device"
+         :interval-seconds 5
+         :expires-in-seconds 900))
+      (nreverse events)))
+    (is (= 2 poll-count))
+    (is (equal '(5) sleeps))
+    (let* ((ordered (nreverse requests))
+           (start (first ordered))
+           (poll (second ordered))
+           (exchange (fourth ordered)))
+      (is (string=
+           cadr-ai::+openai-device-user-code-url+
+           (first start)))
+      (is (string=
+           cadr-ai::+openai-device-token-url+
+           (first poll)))
+      (is (string=
+           cadr-ai::+openai-oauth-token-url+
+           (first exchange)))
+      (is (string=
+           cadr-ai::+openai-oauth-client-id+
+           (cadr-ai::json-get
+            (cadr-ai::parse-json
+             (getf (second start) :content))
+            "client_id")))
+      (let ((poll-body
+              (cadr-ai::parse-json
+               (getf (second poll) :content))))
+        (is (string= "device-auth-id"
+                     (cadr-ai::json-get poll-body "device_auth_id")))
+        (is (string= "ABCD-1234"
+                     (cadr-ai::json-get poll-body "user_code"))))
+      (let ((exchange-body (getf (second exchange) :content)))
+        (is (search "code=authorization-code" exchange-body))
+        (is (search "code_verifier=device-verifier" exchange-body))
+        (is (search
+             "redirect_uri=https%3A%2F%2Fauth.openai.com%2Fdeviceauth%2Fcallback"
+             exchange-body))))))
+
+(test goal13-openai-codex-device-login-errors-match-the-baseline-contract
+  (let* ((interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function (constantly "device_code")))
+         (cadr-ai::*oauth-flow-request-function*
+           (lambda (url &rest options)
+             (declare (ignore url options))
+             (values (cadr-ai::json-object) 404 nil)))
+         (condition
+           (handler-case
+               (cadr-ai::login-openai-runtime-oauth interaction)
+             (cadr-ai:authentication-error (cause) cause))))
+    (is (typep condition 'cadr-ai:authentication-error))
+    (is
+     (string=
+      "OpenAI Codex device code login is not enabled for this server. Use browser login or verify the server URL."
+      (cadr-ai:cadr-error-message condition))))
+  (let* ((interaction
+           (cadr-ai:make-runtime-auth-interaction
+            :prompt-function (constantly "unsupported")))
+         (condition
+           (handler-case
+               (cadr-ai::login-openai-runtime-oauth interaction)
+             (cadr-ai:authentication-error (cause) cause))))
+    (is (typep condition 'cadr-ai:authentication-error))
+    (is
+     (string=
+      "Unknown OpenAI Codex login method: unsupported"
+      (cadr-ai:cadr-error-message condition)))))
+
+(test goal13-device-code-polling-is-cancellable-and-uses-baseline-timeout-copy
+  (let ((cancelled-p nil)
+        (sleep-count 0))
+    (signals cadr-ai:authentication-cancelled
+      (cadr-ai:poll-device-authorization
+       (lambda () '(:status :pending))
+       :interval 1 :expires-in 30
+       :cancelled-p (lambda () cancelled-p)
+       :sleep-function
+       (lambda (seconds)
+         (declare (ignore seconds))
+         (incf sleep-count)
+         (setf cancelled-p t))))
+    (is (= 1 sleep-count)))
+  (let ((condition
+          (handler-case
+              (cadr-ai:poll-device-authorization
+               (lambda () '(:status :pending))
+               :interval 1 :expires-in 900
+               :timeout-message "Device flow timed out"
+               :time-function
+               (let ((now 0))
+                 (lambda ()
+                   (prog1 now (setf now 901)))))
+            (cadr-ai:authentication-error (cause) cause))))
+    (is (typep condition 'cadr-ai:authentication-error))
+    (is (string= "Device flow timed out"
+                 (cadr-ai:cadr-error-message condition)))))

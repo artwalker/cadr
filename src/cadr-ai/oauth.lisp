@@ -40,6 +40,15 @@
   "https://auth.openai.com/oauth/token")
 (defparameter +openai-oauth-redirect-uri+
   "http://localhost:1455/auth/callback")
+(defparameter +openai-device-user-code-url+
+  "https://auth.openai.com/api/accounts/deviceauth/usercode")
+(defparameter +openai-device-token-url+
+  "https://auth.openai.com/api/accounts/deviceauth/token")
+(defparameter +openai-device-verification-uri+
+  "https://auth.openai.com/codex/device")
+(defparameter +openai-device-redirect-uri+
+  "https://auth.openai.com/deviceauth/callback")
+(defparameter +openai-device-code-timeout-seconds+ 900)
 (defparameter +openai-originator+ "cadr")
 
 (defparameter +anthropic-oauth-client-id+
@@ -551,7 +560,8 @@
      (and (eq provider :openai-codex)
           (openai-account-id-from-token access)))))
 
-(defun exchange-openai-authorization-code (code verifier)
+(defun exchange-openai-authorization-code
+    (code verifier &optional (redirect-uri +openai-oauth-redirect-uri+))
   (token-response-credential
    :openai-codex
    (oauth-token-request
@@ -560,7 +570,7 @@
       ("client_id" . ,+openai-oauth-client-id+)
       ("code" . ,code)
       ("code_verifier" . ,verifier)
-      ("redirect_uri" . ,+openai-oauth-redirect-uri+))
+      ("redirect_uri" . ,redirect-uri))
     (list code verifier))
    nil))
 

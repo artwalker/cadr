@@ -308,24 +308,62 @@
             (- (get-universal-time) 2208988800))))
     (google-required-string response "access_token")))
 
+(defun device-authorization-cancelled-p (cancelled-p)
+  (and cancelled-p
+       (not (null (ignore-errors (funcall cancelled-p))))))
+
+(defun signal-device-authorization-cancelled ()
+  (error 'authentication-cancelled :message "Login cancelled"))
+
+(defun sleep-for-device-authorization
+    (seconds sleep-function cancelled-p)
+  (if (and cancelled-p
+           (eq sleep-function (symbol-function 'sleep)))
+      (loop with remaining = seconds
+            while (plusp remaining)
+            do
+            (when (device-authorization-cancelled-p cancelled-p)
+              (signal-device-authorization-cancelled))
+            (let ((slice (min remaining 0.05d0)))
+              (sleep slice)
+              (decf remaining slice)))
+      (funcall sleep-function seconds))
+  (when (device-authorization-cancelled-p cancelled-p)
+    (signal-device-authorization-cancelled)))
+
 (defun poll-device-authorization
     (poll &key (interval 5) (expires-in 900)
                  wait-before-first-poll-p
+                 cancelled-p
+                 (timeout-message "Device authorization expired")
+                 slow-down-timeout-message
                  (sleep-function #'sleep)
                  (time-function #'get-universal-time))
-  (unless (and (plusp interval) (plusp expires-in))
+  (unless (and (numberp interval)
+               (not (minusp interval))
+               (numberp expires-in)
+               (plusp expires-in))
     (error 'configuration-error
-           :message "Device authorization interval and expiry must be positive"))
+           :message
+           "Device authorization interval must be non-negative and expiry must be positive"))
   (let ((started-at (funcall time-function))
-        (next-interval interval)
-        (first-p t))
+        (next-interval (max 1 interval))
+        (first-p t)
+        (slow-down-count 0))
     (loop
+      (when (device-authorization-cancelled-p cancelled-p)
+        (signal-device-authorization-cancelled))
       (when (>= (- (funcall time-function) started-at)
                 expires-in)
         (error 'authentication-error
-               :message "Device authorization expired"))
+               :message
+               (if (and slow-down-timeout-message
+                        (plusp slow-down-count))
+                   slow-down-timeout-message
+                   timeout-message)))
       (when (or (not first-p) wait-before-first-poll-p)
-        (funcall sleep-function next-interval))
+        (sleep-for-device-authorization
+         next-interval sleep-function cancelled-p))
       (setf first-p nil)
       (let* ((result (funcall poll))
              (status (getf result :status)))
@@ -333,11 +371,21 @@
           (:complete
            (return (getf result :value)))
           (:pending
-           (setf next-interval interval))
+           (setf next-interval (max 1 interval)))
           (:slow-down
+           (incf slow-down-count)
            (setf next-interval
-                 (or (getf result :interval)
-                     (+ next-interval 5))))
+                 (let ((server-interval
+                         (getf result :interval)))
+                   (if (and (numberp server-interval)
+                            (plusp server-interval))
+                       (max 1 server-interval)
+                       (+ next-interval 5)))))
+          (:failed
+           (error 'authentication-error
+                  :message
+                  (or (getf result :message)
+                      "Device authorization failed")))
           (:expired
            (error 'authentication-error
                   :message "Device authorization expired"))
@@ -345,8 +393,7 @@
            (error 'authentication-error
                   :message "Device authorization denied"))
           (:cancelled
-           (error 'authentication-error
-                  :message "Device authorization cancelled"))
+           (signal-device-authorization-cancelled))
           (otherwise
            (error 'authentication-error
                   :message
