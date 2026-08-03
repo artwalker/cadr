@@ -665,3 +665,160 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B7 owner load order is not dependency-safe: ~S" positions))))
+
+(test goal14-b8-agent-session-storage-and-loop-have-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (owners
+           '(("session/codec.lisp"
+              "(defstruct session-entry"
+              "(defun message-to-json"
+              "(defun message-from-json")
+             ("session/journal.lisp"
+              "(defun create-session"
+              "(defun append-session-entry"
+              "(defun session-messages")
+             ("session/migration.lisp"
+              "(defun parse-session-line"
+              "(defun migrate-v1-session-objects"
+              "(defun load-session")
+             ("session/discovery.lisp"
+              "(defun read-session-header-for-discovery"
+              "(defun list-sessions"
+              "(defun resume-session")
+             ("session/export-html.lisp"
+              "(defun parse-session-skill-block"
+              "(defun export-html-session-data"
+              "(defun export-session-html")
+             ("storage/protocol.lisp"
+              "(defstruct session-metadata"
+              "(defgeneric session-storage-append-entry"
+              "(defgeneric session-repository-create")
+             ("storage/memory.lisp"
+              "(defclass memory-session-storage"
+              "(defun make-memory-session-storage"
+              "(defmethod session-storage-cleanup")
+             ("storage/harness.lisp"
+              "(defstruct harness-session"
+              "(defstruct (memory-session-repository"
+              "(defmethod session-repository-fork")
+             ("storage/jsonl.lisp"
+              "(defclass jsonl-session-storage"
+              "(defun create-jsonl-session-storage"
+              "(defclass jsonl-session-repository")
+             ("loop/events.lisp"
+              "(defun run-agent-lifecycle"
+              "(defun emit-message-start"
+              "(defun assistant-tool-calls")
+             ("loop/tool-execution.lisp"
+              "(defun make-truncated-tool-result"
+              "(defun execute-tool-batch"
+              "(defun execute-truncated-tool-batch")
+             ("loop/turns.lisp"
+              "(defun stream-assistant"
+              "(defun commit-agent-turn"
+              "(defun run-agent-with-retries")
+             ("loop/agent-loop.lisp"
+              "(defun run-agent-loop"
+              "(defun agent-prompt"
+              "(defun agent-continue")))
+         (definition-count 0))
+    (dolist (owner owners)
+      (let ((source
+              (goal14-b1-source
+               root (format nil "src/cadr-agent/~A" (first owner)))))
+        (is (not (null source)) "missing B8 owner ~A" (first owner))
+        (when source
+          (incf definition-count
+                (count-if
+                 (lambda (line)
+                   (uiop:string-prefix-p "(def" line))
+                 (uiop:split-string source :separator '(#\Newline))))
+          (dolist (marker (rest owner))
+            (is (search marker source)
+                "~A does not own ~A" (first owner) marker)))))
+    (is (= 251 definition-count)
+        "B8 moved a different top-level definition set: ~D"
+        definition-count)
+    (dolist (relative '("src/cadr-agent/session.lisp"
+                        "src/cadr-agent/storage.lisp"
+                        "src/cadr-agent/loop.lisp"))
+      (is (not (probe-file (merge-pathnames relative root)))
+          "B8 legacy mixed owner remains: ~A" relative))))
+
+(test goal14-b8-reuses-core-time-id-and-atomic-migration-before-split
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (codec (goal14-b1-source root "src/cadr-agent/session/codec.lisp"))
+         (migration
+           (goal14-b1-source root "src/cadr-agent/session/migration.lisp"))
+         (protocol
+           (goal14-b1-source root "src/cadr-agent/storage/protocol.lisp"))
+         (sources
+           (loop for relative in
+                 '("session/codec.lisp" "session/journal.lisp"
+                   "session/migration.lisp" "session/discovery.lisp"
+                   "session/export-html.lisp" "storage/protocol.lisp"
+                   "storage/memory.lisp" "storage/harness.lisp"
+                   "storage/jsonl.lisp" "loop/events.lisp"
+                   "loop/tool-execution.lisp" "loop/turns.lisp"
+                   "loop/agent-loop.lisp")
+                 collect
+                 (goal14-b1-source
+                  root (format nil "src/cadr-agent/~A" relative)))))
+    (is (and codec
+             (search "(cadr-ai:uuid-v7)" codec)
+             (search "(cadr-core:milliseconds-to-utc-iso8601 milliseconds)"
+                     codec))
+        "B8 session codec bypasses the existing UUID-v7/B3 time owners")
+    (is (and protocol
+             (search "(cadr-core:current-utc-iso8601)" protocol))
+        "B8 storage protocol bypasses B3 time primitives")
+    (is (and migration
+             (search "(cadr-core:call-with-atomic-output-file" migration))
+        "B8 migration bypasses B3 atomic output")
+    (dolist (source sources)
+      (is (not (null source)) "missing B8 source")
+      (when source
+        (is (not (search "rename-file-overwriting-target" source))
+            "B8 source reintroduced local atomic replacement policy")))))
+
+(test goal14-b8-asdf-loads-protocols-before-backends-and-loop
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (source
+           (uiop:read-file-string (merge-pathnames "cadr-agent.asd" root)))
+         (ordered
+           '(("(:module \"session\"" 1)
+             ("(:file \"codec\")" 1)
+             ("(:file \"journal\")" 1)
+             ("(:file \"migration\")" 1)
+             ("(:file \"discovery\")" 1)
+             ("(:file \"export-html\")" 1)
+             ("(:module \"storage\"" 1)
+             ("(:file \"protocol\")" 1)
+             ("(:file \"memory\")" 1)
+             ("(:file \"harness\")" 1)
+             ("(:file \"jsonl\")" 1)
+             ("(:file \"sqlite-storage\")" 1)
+             ("(:module \"loop\"" 1)
+             ("(:file \"events\")" 1)
+             ("(:file \"tool-execution\")" 1)
+             ("(:file \"turns\")" 1)
+             ("(:file \"agent-loop\")" 1)))
+         (cursor 0)
+         (positions nil))
+    (dolist (spec ordered)
+      (let ((position
+              (loop repeat (second spec)
+                    for found = (search (first spec) source :start2 cursor)
+                    do (unless found (return nil))
+                       (setf cursor (1+ found))
+                    finally (return found))))
+        (push position positions)))
+    (setf positions (nreverse positions))
+    (is (every #'identity positions)
+        "cadr-agent.asd omits a B8 load boundary: ~S"
+        (loop for spec in ordered
+              for position in positions
+              unless position collect (first spec)))
+    (when (every #'identity positions)
+      (is (every #'< positions (rest positions))
+          "B8 owner load order is not dependency-safe: ~S" positions))))

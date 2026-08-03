@@ -181,7 +181,7 @@ proxy/default-stream helpers.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Agent lifecycle and tool loop | 已实现 | [loop](../src/cadr-agent/loop.lisp), [CL-AGENT-LOOP](#cl-agent-loop) |
+| Agent lifecycle and tool loop | 已实现 | [agent loop](../src/cadr-agent/loop/agent-loop.lisp), [CL-AGENT-LOOP](#cl-agent-loop) |
 | Sequential/parallel tools, validation, hook rewrite/block | 已实现 | [tool](../src/cadr-agent/tool.lisp), [schema](../src/cadr-agent/schema.lisp), [CL-AGENT-SCHEMA](#cl-agent-schema), [CL-EXT](#cl-ext) |
 | Busy guard | 已实现 | [runtime](../src/cadr-agent/runtime.lisp), [CL-WAVE2-AGENT](#cl-wave2-agent) |
 | Steering/follow-up queues and queue modes | 已实现 | [CL-WAVE2-AGENT](#cl-wave2-agent) |
@@ -286,7 +286,7 @@ session-storage contract.
 | Migration/schema | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
 | SQLite repo create/open/list/delete/fork | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
 | Materialized tree/branch storage | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
-| JSONL filesystem sessions | 已实现 but not a storage-package substitute | [session](../src/cadr-agent/session.lisp) |
+| JSONL filesystem sessions | 已实现 but not a storage-package substitute | [session journal](../src/cadr-agent/session/journal.lisp), [JSONL storage](../src/cadr-agent/storage/jsonl.lisp) |
 
 ### 2.6 `server`
 

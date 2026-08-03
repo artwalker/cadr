@@ -15,7 +15,14 @@
                              (:file "truncate")
                              (:file "file-mutation-queue")
                              (:file "execution-env")
-                             (:file "session")
+                             (:module "session"
+                              :serial t
+                              :components
+                              ((:file "codec")
+                               (:file "journal")
+                               (:file "migration")
+                               (:file "discovery")
+                               (:file "export-html")))
                              (:module "export-html"
                               :components
                               ((:static-file "template.html")
@@ -26,7 +33,13 @@
                                 ((:static-file "marked.min.js")
                                  (:static-file "highlight.min.js")))))
                              (:file "messages")
-                             (:file "storage")
+                             (:module "storage"
+                              :serial t
+                              :components
+                              ((:file "protocol")
+                               (:file "memory")
+                               (:file "harness")
+                               (:file "jsonl")))
                              (:file "sqlite-storage")
                              (:file "runtime")
                              (:file "schema")
@@ -35,7 +48,13 @@
                              (:file "compaction")
                              (:file "branch-summarization")
                              (:file "proxy")
-                             (:file "loop"))))
+                             (:module "loop"
+                              :serial t
+                              :components
+                              ((:file "events")
+                               (:file "tool-execution")
+                               (:file "turns")
+                               (:file "agent-loop"))))))
   :in-order-to ((test-op (test-op "cadr-agent/tests"))))
 
 (asdf:defsystem "cadr-agent/tests"
