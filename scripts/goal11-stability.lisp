@@ -592,7 +592,7 @@
      (trimmed-command-output
       (list "git" "-C" project "hash-object"
             (concatenate
-             'string project "src/cadr-agent/session.lisp")))
+             'string project "src/cadr-agent/session/codec.lisp")))
      "tui_object_id"
      (trimmed-command-output
       (list "git" "-C" project "hash-object"

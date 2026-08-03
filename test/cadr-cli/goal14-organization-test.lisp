@@ -822,3 +822,14 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B8 owner load order is not dependency-safe: ~S" positions))))
+
+(test goal14-b8-stability-provenance-follows-session-owner
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (source
+           (goal14-b1-source root "scripts/goal11-stability.lisp")))
+    (is (not (null source)) "missing Goal 11 stability harness")
+    (when source
+      (is (search "src/cadr-agent/session/codec.lisp" source)
+          "Goal 11 provenance does not follow the B8 session codec owner")
+      (is (not (search "src/cadr-agent/session.lisp" source))
+          "Goal 11 provenance still hashes the removed B8 aggregate"))))
