@@ -389,3 +389,83 @@ binary build time: 2026-08-03 18:43:50.772166957 +0800
 latest source mtime: 2026-08-03 18:33:34.275339974 +0800
 binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
+
+## Part C B4 — CLI domain services
+
+### Result
+
+B4 converged the duplicated policy decisions before replacing eight mixed CLI
+files with 37 named owners.  The approved proposal prose said 36 files, but its
+explicit map sums to 37 (`6 + 7 + 3 + 5 + 4 + 4 + 5 + 3`); the implementation
+follows that authoritative map rather than hiding the arithmetic error.
+
+| Previous owner | New owners | Responsibility boundary |
+|---|---|---|
+| `core-support.lisp`, `utilities.lisp` | `support/{model-help,event-bus,timings,file-watcher,paths,shell-process,threads,atomic-write,changelog-share,html,resume-version-git,headers,external-editor}.lisp` | process-neutral CLI support, with each file naming one service |
+| `settings.lisp` | `settings/{config-values,manager,trust}.lisp` | settings values/persistence and project trust |
+| `model-services.lisp` | `models/{auth-storage,store,registry,matching,credential-print}.lisp` | credential storage, model registry/projection, matching, and secret-safe rendering |
+| `package-manager.lisp` | `packages/{source,settings,manifest,commands}.lisp` | package source parsing, persisted settings, manifest state, and commands |
+| `extensions.lisp` | `extensions/{discovery,loader,commands,installer}.lisp` | extension discovery, diagnostic-safe loading, commands, and installation |
+| `sdk-services.lisp`, `sdk.lisp` | `sdk/{cache-version,system-prompt,settings-service,resource-service,model-service,session-manager,agent-session,session-runtime}.lisp` | SDK services and session-local runtime ownership |
+
+### Convergence-before-split proof
+
+Tests were added first and failed 48 checks before the new owners existed.  B4
+then established the policy owners before extraction:
+
+- `extensions/loader.lisp` co-locates `extension-manager-notify`,
+  `call-with-extension-output-boundary`, and
+  `call-with-infrastructure-output-isolated`; extracted extension commands do
+  not write around that boundary;
+- settings and auth persistence delegate to the B3 atomic-file owner, while
+  credential/config printers remain under the B3 redaction discipline;
+- the CLI JavaScript-length compatibility function delegates to the single
+  `cadr-agent::utf16-code-unit-length` implementation instead of retaining a
+  second metric policy.
+
+`GOAL14-B4-DOMAIN-SERVICES-HAVE-EXACT-OWNERS` and
+`GOAL14-B4-CONVERGES-SINKS-AND-JAVASCRIPT-LENGTH-BEFORE-SPLIT` lock those
+boundaries.  Top-level definitions are 409 before and after the split, and
+`src/cadr-cli/package.lisp` is unchanged.
+
+### Verification and live-gate ruling
+
+```text
+cadr test summary: systems=9 checks=12724 pass=12724 skip=0 fail=0
+```
+
+All 13 deterministic `verify.sh` stages passed, including isolated `cadr` and
+`cadr-server` builds, Goal 11 performance/stability, process/PTY/socket
+harnesses, and the real source-parity ledger.  The captured live run had six
+passes, one Anthropic credential skip, and one failure:
+`LIVE-DEEPSEEK-REPOSITORY-FAIL-FIX-PASS-LOOP` stopped with provider reason
+`LENGTH`; the independent DeepSeek TUI stage passed.
+
+The initial explanation that B4 did not edit `cadr-ai`, `cadr-agent`, or
+`cadr-evals` was insufficient: `cadr-evals/harness.lisp` calls
+`cadr-cli::resolve-provider-config`, so B4 lies on the transitive execution
+path.  The accepted causal evidence is narrower: the B4 changes on model
+resolution and max-token handling are definition-preserving moves, with no
+branch or value change, and the user independently reran the complete
+`./scripts/test-live.sh` on the same code and binary with seven passes, one
+Anthropic credential skip, and zero failures.  The user therefore classified
+the captured `LENGTH` stop as model-output variation and explicitly accepted
+B4.
+
+Root binary freshness at the captured verification run:
+
+```text
+binary build time: 2026-08-03 19:20:31.586946115 +0800
+latest source commit: 7939b2b0ddd22ca4dbd12228519a1b4dc2038652 2026-08-03T19:17:51+08:00
+latest source mtime: 2026-08-03 19:15:45.304226081 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+### Deferred live-smoke audit
+
+`assert-live-smoke-eval` currently requires the model output to equal `Paris`
+exactly.  This is recorded for a separate baseline audit: the conclusion must
+be either that pi enforces the same strict response (a baseline-inherent live
+variance) or that pi uses a different matching/retry contract that Cadr must
+adopt.  B4 does not weaken or otherwise change that assertion without the
+baseline evidence.
