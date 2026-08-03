@@ -1,5 +1,34 @@
 (in-package #:cadr-ai)
 
+(defstruct oauth-provider-metadata
+  (provider-name "" :type string)
+  (method-name "" :type string)
+  login-label
+  auth-url-instructions
+  manual-input-message)
+
+(defparameter +openai-codex-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "OpenAI Codex"
+   :method-name "OpenAI (ChatGPT Plus/Pro)"
+   :auth-url-instructions
+   "A browser window should open. Complete login to finish."
+   :manual-input-message
+   "Complete login in your browser, or paste the authorization code / redirect URL here:"))
+
+(defparameter +anthropic-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "Anthropic"
+   :method-name "Anthropic (Claude Pro/Max)"
+   :auth-url-instructions
+   "Complete login in your browser. If the browser is on another machine, paste the final redirect URL here."
+   :manual-input-message
+   "Complete login in your browser, or paste the authorization code / redirect URL here:"))
+
+(defun oauth-login-title (metadata)
+  (format nil "Login to ~A"
+          (oauth-provider-metadata-provider-name metadata)))
+
 (eval-when (:compile-toplevel :load-toplevel :execute)
   (require :sb-bsd-sockets))
 
@@ -844,7 +873,7 @@
            (complete
             nil
             (make-condition
-             'authentication-error
+             'authentication-cancelled
              :message "Login cancelled")))
          (callback-worker ()
            (handler-case
@@ -882,15 +911,17 @@
                      (error 'authentication-error
                             :message "Missing authorization code"))
                    (complete code nil)))
+             (authentication-cancelled (cause)
+               (complete nil cause))
+             (authentication-error (cause)
+               (complete nil cause))
              (error (cause)
                (complete
                 nil
-                (if (typep cause 'authentication-error)
-                    cause
-                    (make-condition
-                     'authentication-error
-                     :message "Login cancelled"
-                     :cause cause)))))))
+                (make-condition
+                 'authentication-error
+                 :message "OAuth authorization prompt failed"
+                 :cause cause))))))
       (setf
        callback-thread
        (sb-thread:make-thread
@@ -949,12 +980,16 @@
                     auth-prompt-function
                     (list
                      :type :manual-code
-                     :title "Login to OpenAI (ChatGPT Plus/Pro)"
+                     :title
+                     (oauth-login-title
+                      +openai-codex-oauth-metadata+)
                      :url url
                      :instructions
-                     "A browser window should open. Complete login to finish."
+                     (oauth-provider-metadata-auth-url-instructions
+                      +openai-codex-oauth-metadata+)
                      :message
-                     "Complete login in your browser, or paste the authorization code / redirect URL here:"
+                     (oauth-provider-metadata-manual-input-message
+                      +openai-codex-oauth-metadata+)
                      :placeholder +openai-oauth-redirect-uri+))
                    (wait-for-openai-oauth-code state))
                verifier)))
@@ -1001,12 +1036,16 @@
                     auth-prompt-function
                     (list
                      :type :manual-code
-                     :title "Login to Anthropic (Claude Pro/Max)"
+                     :title
+                     (oauth-login-title
+                      +anthropic-oauth-metadata+)
                      :url url
                      :instructions
-                     "A browser window should open. Complete login to finish."
+                     (oauth-provider-metadata-auth-url-instructions
+                      +anthropic-oauth-metadata+)
                      :message
-                     "Complete login in your browser, or paste the authorization code / redirect URL here:"
+                     (oauth-provider-metadata-manual-input-message
+                      +anthropic-oauth-metadata+)
                      :placeholder +anthropic-oauth-redirect-uri+))
                    (wait-for-oauth-code
                     state 53692 "/callback" "Anthropic")))

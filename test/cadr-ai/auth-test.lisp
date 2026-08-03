@@ -375,6 +375,76 @@
     (run-cancelled-login #'cadr-ai:login-openai-oauth 1455)
     (run-cancelled-login #'cadr-ai:login-anthropic-oauth 53692)))
 
+(test goal13-built-in-oauth-prompts-use-provider-owned-baseline-copy
+  (labels
+      ((capture-cancelled-prompt (function)
+         (let ((prompt nil))
+           (signals cadr-ai::authentication-cancelled
+             (funcall
+              function nil
+              :output (make-string-output-stream)
+              :open-browser (constantly nil)
+              :auth-prompt-function
+              (lambda (value)
+                (setf prompt value)
+                (funcall (getf value :cancel-function))
+                nil)))
+           prompt)))
+    (let ((openai
+            (capture-cancelled-prompt
+             #'cadr-ai:login-openai-oauth))
+          (anthropic
+            (capture-cancelled-prompt
+             #'cadr-ai:login-anthropic-oauth)))
+      (is (string= "Login to OpenAI Codex"
+                   (getf openai :title)))
+      (is (string=
+           "A browser window should open. Complete login to finish."
+           (getf openai :instructions)))
+      (is (string=
+           "Complete login in your browser, or paste the authorization code / redirect URL here:"
+           (getf openai :message)))
+      (is (string= "Login to Anthropic"
+                   (getf anthropic :title)))
+      (is (string=
+           "Complete login in your browser. If the browser is on another machine, paste the final redirect URL here."
+           (getf anthropic :instructions)))
+      (is (string=
+           "Complete login in your browser, or paste the authorization code / redirect URL here:"
+           (getf anthropic :message))))))
+
+(test goal13-every-runtime-auth-prompt-cancellation-is-typed
+  (dolist
+      (prompt
+       '((:type :select :message "Choose"
+          :options ((:id "one" :label "One")))
+         (:type :text :message "Text")
+         (:type :secret :message "Secret")
+         (:type :manual-code :message "Code")))
+    (signals cadr-ai:authentication-cancelled
+      (cadr-ai:runtime-auth-interaction-prompt
+       (cadr-ai:make-runtime-auth-interaction
+        :prompt-function (constantly nil))
+       prompt))))
+
+(test goal13-oauth-prompt-failures-are-not-misclassified-as-cancellation
+  (let ((condition
+          (handler-case
+              (cadr-ai:login-openai-oauth
+               nil
+               :output (make-string-output-stream)
+               :open-browser (constantly nil)
+               :auth-prompt-function
+               (lambda (prompt)
+                 (funcall (getf prompt :cancelled-p-function))
+                 (error "prompt bridge failed")))
+            (cadr-ai:authentication-error (cause)
+              cause))))
+    (is (typep condition 'cadr-ai:authentication-error))
+    (is (not (typep condition 'cadr-ai:authentication-cancelled)))
+    (is (string= "OAuth authorization prompt failed"
+                 (cadr-ai:cadr-error-message condition)))))
+
 (test goal13-credential-bearing-objects-never-print-secret-material
   (let* ((api-key "api-key-must-never-print")
          (access "oauth-access-must-never-print")

@@ -670,6 +670,8 @@
              (list
               :id (cadr-ai:runtime-provider-id provider)
               :name (cadr-ai:runtime-provider-name provider)
+              :oauth-metadata
+              (cadr-ai:runtime-provider-oauth-metadata provider)
               :auth-types auth-types))
      #'string-lessp
      :key (lambda (record) (getf record :name)))))

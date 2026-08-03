@@ -8,6 +8,7 @@
    #:configuration-error
    #:unsupported-content-error
    #:authentication-error
+   #:authentication-cancelled
    #:transport-error
    #:network-error
    #:timeout-error
@@ -202,6 +203,13 @@
    #:provider-definition-supports-images-p
    #:provider-definition-supports-tools-p
    #:provider-definition-reasoning-p
+   #:provider-definition-oauth-metadata
+   #:oauth-provider-metadata
+   #:oauth-provider-metadata-provider-name
+   #:oauth-provider-metadata-method-name
+   #:oauth-provider-metadata-login-label
+   #:oauth-provider-metadata-auth-url-instructions
+   #:oauth-provider-metadata-manual-input-message
    #:register-provider-definition
    #:find-provider-definition
    #:list-provider-definitions
@@ -383,6 +391,7 @@
    #:make-runtime-provider
    #:runtime-provider-id
    #:runtime-provider-name
+   #:runtime-provider-oauth-metadata
    #:runtime-provider-models
    #:runtime-provider-api-key-login-function
    #:runtime-provider-oauth-login-function

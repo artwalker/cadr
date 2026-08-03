@@ -7430,13 +7430,20 @@
            definition)
           :auth-type candidate
           :method-name
-          (format
-           nil "~A ~A"
-           (cadr-ai:provider-definition-name
-            definition)
-           (if (eq candidate :oauth)
-               "account"
-               "API key"))
+          (let ((metadata
+                  (and
+                   (eq candidate :oauth)
+                   (cadr-ai:provider-definition-oauth-metadata
+                    definition))))
+            (if metadata
+                (cadr-ai:oauth-provider-metadata-method-name
+                 metadata)
+                (format
+                 nil "~A ~A"
+                 (cadr-ai:provider-definition-name definition)
+                 (if (eq candidate :oauth)
+                     "account"
+                     "API key"))))
           :status
           (and status-function
                (funcall

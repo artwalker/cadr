@@ -17,6 +17,60 @@
     (is (string= "DEEPSEEK_API_KEY"
                  (cadr-ai:provider-definition-key-environment deepseek)))))
 
+(test goal13-oauth-presentation-metadata-is-owned-by-each-provider
+  (dolist
+      (expected
+       '((:anthropic
+          "Anthropic"
+          "Anthropic (Claude Pro/Max)"
+          nil
+          "Complete login in your browser. If the browser is on another machine, paste the final redirect URL here."
+          "Complete login in your browser, or paste the authorization code / redirect URL here:")
+         (:github-copilot
+          "GitHub Copilot" "GitHub Copilot" nil nil nil)
+         (:kimi-coding
+          "Kimi For Coding" "Kimi Code (subscription)"
+          "Sign in with Kimi Code" nil nil)
+         (:openai-codex
+          "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)" nil
+          "A browser window should open. Complete login to finish."
+          "Complete login in your browser, or paste the authorization code / redirect URL here:")
+         (:openrouter
+          "OpenRouter" "OpenRouter OAuth" "Sign in with OpenRouter"
+          "Complete sign-in in your browser. If the browser is on another machine, paste the final redirect URL here."
+          "Complete sign-in in your browser, or paste the authorization code / redirect URL here:")
+         (:radius
+          "Radius" "Radius" nil "Continue in your browser." nil)
+         (:xai
+          "xAI" "xAI (Grok/X subscription)"
+          "Sign in with SuperGrok or X Premium" nil nil)))
+    (destructuring-bind
+        (provider-id provider-name method-name login-label
+         auth-url-instructions manual-input-message)
+        expected
+      (let* ((definition
+               (cadr-ai:find-provider-definition provider-id))
+             (metadata
+               (cadr-ai::provider-definition-oauth-metadata
+                definition)))
+        (is (string= provider-name
+                     (cadr-ai:provider-definition-name definition)))
+        (is (string= provider-name
+                     (cadr-ai::oauth-provider-metadata-provider-name
+                      metadata)))
+        (is (string= method-name
+                     (cadr-ai::oauth-provider-metadata-method-name
+                      metadata)))
+        (is (equal login-label
+                   (cadr-ai::oauth-provider-metadata-login-label
+                    metadata)))
+        (is (equal auth-url-instructions
+                   (cadr-ai::oauth-provider-metadata-auth-url-instructions
+                    metadata)))
+        (is (equal manual-input-message
+                   (cadr-ai::oauth-provider-metadata-manual-input-message
+                    metadata)))))))
+
 (test provider-registry-constructs-protocol-adapter-and-model
   (multiple-value-bind (provider model)
       (cadr-ai:instantiate-provider :deepseek :api-key "secret"

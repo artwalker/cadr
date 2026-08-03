@@ -141,7 +141,12 @@
       (error 'models-runtime-error
              :code :auth
              :message "Runtime authentication has no prompt function"))
-    (funcall function (copy-list prompt))))
+    (let ((response
+            (funcall function (copy-list prompt))))
+      (unless response
+        (error 'authentication-cancelled
+               :message "Login cancelled"))
+      response)))
 
 (defun runtime-auth-interaction-notify (interaction event)
   (unless (valid-runtime-auth-event-p event)
@@ -175,6 +180,7 @@
 (defstruct runtime-provider
   (id nil :type symbol)
   (name "" :type string)
+  oauth-metadata
   (models nil :type list)
   models-function
   (api-key-auth-p nil :type boolean)
@@ -470,6 +476,8 @@
                   (funcall login interaction)
                 (models-runtime-error (condition)
                   (error condition))
+                (authentication-cancelled (condition)
+                  (error condition))
                 (error (cause)
                   (error 'models-runtime-error
                          :code :auth
@@ -556,6 +564,8 @@
      (handler-case
          (funcall login interaction)
        (models-runtime-error (condition)
+         (error condition))
+       (authentication-cancelled (condition)
          (error condition))
        (error (cause)
          (error 'models-runtime-error

@@ -2375,10 +2375,17 @@
                          :name name
                          :auth-type auth-type
                          :method-name
-                         (format nil "~A ~A" name
-                                 (if (eq auth-type :oauth)
-                                     "account"
-                                     "API key"))
+                         (let ((metadata
+                                 (and
+                                  (eq auth-type :oauth)
+                                  (getf record :oauth-metadata))))
+                           (if metadata
+                               (cadr-ai:oauth-provider-metadata-method-name
+                                metadata)
+                               (format nil "~A ~A" name
+                                       (if (eq auth-type :oauth)
+                                           "account"
+                                           "API key"))))
                          :status
                          (and status-function
                               (funcall status-function id))))))

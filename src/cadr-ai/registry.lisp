@@ -12,12 +12,13 @@
   (dynamic-models-p nil :type boolean)
   (supports-images-p nil :type boolean)
   (supports-tools-p t :type boolean)
-  (reasoning-p nil :type boolean))
+  (reasoning-p nil :type boolean)
+  oauth-metadata)
 
 (defparameter *provider-definitions* (make-hash-table))
 
 (defparameter *built-in-provider-definition-rows*
-  '((:id :amazon-bedrock
+  `((:id :amazon-bedrock
      :name "Amazon Bedrock"
      :protocol :bedrock-converse-stream
      :base-url "https://bedrock-runtime.us-east-1.amazonaws.com"
@@ -31,10 +32,12 @@
      :default-model "Ring-2.6-1T"
      :key-environment "ANT_LING_API_KEY")
     (:id :anthropic
-     :name "Anthropic"
+     :name ,(oauth-provider-metadata-provider-name
+             +anthropic-oauth-metadata+)
      :protocol :anthropic-messages
      :base-url "https://api.anthropic.com"
      :auth-types (:api-key :oauth)
+     :oauth-metadata ,+anthropic-oauth-metadata+
      :default-model "claude-opus-4-8"
      :key-environment "ANTHROPIC_API_KEY")
     (:id :azure-openai-responses
@@ -87,10 +90,12 @@
      :default-model "accounts/fireworks/models/kimi-k2p6"
      :key-environment "FIREWORKS_API_KEY")
     (:id :github-copilot
-     :name "GitHub Copilot"
+     :name ,(oauth-provider-metadata-provider-name
+             +github-copilot-oauth-metadata+)
      :protocol :openai-responses
      :base-url "https://api.individual.githubcopilot.com"
      :auth-types (:api-key :oauth)
+     :oauth-metadata ,+github-copilot-oauth-metadata+
      :default-model "gpt-5.4"
      :key-environment "COPILOT_GITHUB_TOKEN")
     (:id :google
@@ -121,10 +126,12 @@
      :default-model "moonshotai/Kimi-K2.6"
      :key-environment "HF_TOKEN")
     (:id :kimi-coding
-     :name "Kimi For Coding"
+     :name ,(oauth-provider-metadata-provider-name
+             +kimi-coding-oauth-metadata+)
      :protocol :anthropic-messages
      :base-url "https://api.kimi.com/coding"
      :auth-types (:api-key :oauth)
+     :oauth-metadata ,+kimi-coding-oauth-metadata+
      :default-model "kimi-for-coding"
      :key-environment "KIMI_API_KEY")
     (:id :minimax
@@ -177,10 +184,12 @@
      :default-model "gpt-5.5"
      :key-environment "OPENAI_API_KEY")
     (:id :openai-codex
-     :name "OpenAI Codex"
+     :name ,(oauth-provider-metadata-provider-name
+             +openai-codex-oauth-metadata+)
      :protocol :openai-codex-responses
      :base-url "https://chatgpt.com/backend-api"
      :auth-types (:oauth)
+     :oauth-metadata ,+openai-codex-oauth-metadata+
      :default-model "gpt-5.5")
     (:id :opencode
      :name "OpenCode Zen"
@@ -197,10 +206,12 @@
      :default-model "kimi-k2.6"
      :key-environment "OPENCODE_API_KEY")
     (:id :openrouter
-     :name "OpenRouter"
+     :name ,(oauth-provider-metadata-provider-name
+             +openrouter-oauth-metadata+)
      :protocol :openai-completions
      :base-url "https://openrouter.ai/api/v1"
      :auth-types (:api-key :oauth)
+     :oauth-metadata ,+openrouter-oauth-metadata+
      :default-model "moonshotai/kimi-k2.6"
      :key-environment "OPENROUTER_API_KEY")
     (:id :qwen-token-plan
@@ -220,10 +231,12 @@
      :default-model "qwen3.7-max"
      :key-environment "QWEN_TOKEN_PLAN_CN_API_KEY")
     (:id :radius
-     :name "Radius"
+     :name ,(oauth-provider-metadata-provider-name
+             +radius-oauth-metadata+)
      :protocol :pi-messages
      :base-url "https://radius.pi.dev"
      :auth-types (:api-key :oauth)
+     :oauth-metadata ,+radius-oauth-metadata+
      :default-model "auto"
      :key-environment "RADIUS_API_KEY"
      :dynamic-models-p t)
@@ -242,10 +255,12 @@
      :default-model "zai/glm-5.1"
      :key-environment "AI_GATEWAY_API_KEY")
     (:id :xai
-     :name "xAI"
+     :name ,(oauth-provider-metadata-provider-name
+             +xai-oauth-metadata+)
      :protocol :openai-responses
      :base-url "https://api.x.ai/v1"
      :auth-types (:api-key :oauth)
+     :oauth-metadata ,+xai-oauth-metadata+
      :default-model "grok-4.5"
      :key-environment "XAI_API_KEY")
     (:id :xiaomi
@@ -700,6 +715,8 @@
     (make-runtime-provider
      :id provider-id
      :name (provider-definition-name definition)
+     :oauth-metadata
+     (provider-definition-oauth-metadata definition)
      :models (provider-runtime-models provider-id)
      :api-key-auth-p
      (not

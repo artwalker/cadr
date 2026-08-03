@@ -18,6 +18,7 @@
 (define-condition configuration-error (cadr-error) ())
 (define-condition unsupported-content-error (cadr-error) ())
 (define-condition authentication-error (cadr-error) ())
+(define-condition authentication-cancelled (authentication-error) ())
 
 (define-condition transport-error (cadr-error) ())
 (define-condition network-error (transport-error) ())

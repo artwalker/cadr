@@ -16,6 +16,39 @@
   #'default-oauth-flow-request)
 (defparameter *oauth-flow-sleep-function* #'sleep)
 
+(defparameter +github-copilot-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "GitHub Copilot"
+   :method-name "GitHub Copilot"))
+
+(defparameter +kimi-coding-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "Kimi For Coding"
+   :method-name "Kimi Code (subscription)"
+   :login-label "Sign in with Kimi Code"))
+
+(defparameter +openrouter-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "OpenRouter"
+   :method-name "OpenRouter OAuth"
+   :login-label "Sign in with OpenRouter"
+   :auth-url-instructions
+   "Complete sign-in in your browser. If the browser is on another machine, paste the final redirect URL here."
+   :manual-input-message
+   "Complete sign-in in your browser, or paste the authorization code / redirect URL here:"))
+
+(defparameter +radius-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "Radius"
+   :method-name "Radius"
+   :auth-url-instructions "Continue in your browser."))
+
+(defparameter +xai-oauth-metadata+
+  (make-oauth-provider-metadata
+   :provider-name "xAI"
+   :method-name "xAI (Grok/X subscription)"
+   :login-label "Sign in with SuperGrok or X Premium"))
+
 (defun oauth-flow-request
     (url &key (method :get) headers content)
   (multiple-value-bind (object status response-headers)
@@ -397,15 +430,23 @@
        interaction
        (list :type :auth-url :url url
              :instructions
-             "Complete sign-in in your browser. If the browser is on another machine, paste the final redirect URL here."))
+             (oauth-provider-metadata-auth-url-instructions
+              +openrouter-oauth-metadata+)))
       (let ((code
               (parse-openrouter-authorization-input
                (runtime-auth-interaction-prompt
                 interaction
                 (list
                  :type :manual-code
+                 :title
+                 (oauth-login-title +openrouter-oauth-metadata+)
+                 :url url
+                 :instructions
+                 (oauth-provider-metadata-auth-url-instructions
+                  +openrouter-oauth-metadata+)
                  :message
-                 "Complete sign-in in your browser, or paste the authorization code / redirect URL here:"
+                 (oauth-provider-metadata-manual-input-message
+                  +openrouter-oauth-metadata+)
                  :placeholder callback)))))
         (unless code
           (error 'authentication-error
@@ -495,7 +536,9 @@
         (runtime-auth-interaction-notify
          interaction
          (list :type :auth-url :url url
-               :instructions "Continue in your browser."))
+               :instructions
+               (oauth-provider-metadata-auth-url-instructions
+                +radius-oauth-metadata+)))
         (radius-token-credential
          gateway
          `(("grant_type" . "authorization_code")
@@ -540,7 +583,12 @@
      (runtime-auth-interaction-notify
       interaction
       (list :type :auth-url :url url
-            :instructions "Continue in your browser.")))))
+            :instructions
+            (oauth-provider-metadata-auth-url-instructions
+             +openai-codex-oauth-metadata+))))
+   :auth-prompt-function
+   (lambda (prompt)
+     (runtime-auth-interaction-prompt interaction prompt))))
 
 (defun login-anthropic-runtime-oauth (interaction)
   (login-anthropic-oauth
@@ -550,4 +598,9 @@
      (runtime-auth-interaction-notify
       interaction
       (list :type :auth-url :url url
-            :instructions "Continue in your browser.")))))
+            :instructions
+            (oauth-provider-metadata-auth-url-instructions
+             +anthropic-oauth-metadata+))))
+   :auth-prompt-function
+   (lambda (prompt)
+     (runtime-auth-interaction-prompt interaction prompt))))
