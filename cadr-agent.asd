@@ -43,7 +43,17 @@
                              (:file "sqlite-storage")
                              (:file "runtime")
                              (:file "schema")
-                             (:file "extensions")
+                             (:module "extensions"
+                              :serial t
+                              :components
+                              ((:file "context")
+                               (:file "api")
+                               (:file "registration")
+                               (:file "snapshot")
+                               (:file "rendering")
+                               (:file "providers")
+                               (:file "commands")
+                               (:file "lifecycle")))
                              (:file "tool")
                              (:file "compaction")
                              (:file "branch-summarization")

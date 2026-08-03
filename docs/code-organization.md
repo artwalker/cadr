@@ -14,13 +14,14 @@ eight mixed CLI service files with 37 domain owners, B5 split CLI bootstrap
 and RPC command handling into eleven cohesive owners, B6 replaced the two
 interactive controller/component monoliths with sixteen responsibility owners,
 and B7 replaced three reusable TUI monoliths with sixteen protocol-ordered
-owners.  Silently
+owners. B8 replaced three agent session/storage/loop monoliths with thirteen
+owners, and B9 replaced the extension-host monolith with eight owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 227 current files.
+goal is supposed to police, so this ledger covers all 244 current files.
 
-- 222 Lisp files, 100,383 lines, 4,261 top-level definitions.
+- 239 Lisp files, 100,407 lines, 4,261 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 227 production files and 104,658 physical lines in total.
+- 244 production files and 104,682 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -47,18 +48,35 @@ files with unrelated facilities fail.
 | `src/cadr-agent/export-html/template.js` | 1,864 | 0 | Provide the exact vendored baseline browser renderer embedded in session exports. | 合格·大体量 |
 | `src/cadr-agent/export-html/vendor/highlight.min.js` | 1,212 | 0 | Vendor the approved Highlight.js browser asset byte-for-byte. | 合格·大体量 |
 | `src/cadr-agent/export-html/vendor/marked.min.js` | 78 | 0 | Vendor the approved Marked browser asset byte-for-byte. | 合格 |
-| `src/cadr-agent/extensions.lisp` | 4,119 | 239 | Mix extension context/API definitions, registration, snapshot ownership, rendering, provider projection, command/template expansion, and lifecycle dispatch. | 应拆分 |
+| `src/cadr-agent/extensions/api.lisp` | 373 | 31 | Validate active APIs, copy extension values, and project event payloads/results. | 合格 |
+| `src/cadr-agent/extensions/commands.lisp` | 296 | 11 | Invoke extension commands and expand registered prompt templates. | 合格 |
+| `src/cadr-agent/extensions/context.lisp` | 705 | 76 | Define extension host/context state, cancellation, and all context/UI actions. | 合格·大体量 |
+| `src/cadr-agent/extensions/lifecycle.lisp` | 772 | 18 | Validate, merge, and dispatch the complete frozen extension lifecycle. | 合格·大体量 |
+| `src/cadr-agent/extensions/providers.lisp` | 521 | 21 | Project extension tools, messages, and session-local provider overlays into an agent. | 合格 |
+| `src/cadr-agent/extensions/registration.lisp` | 812 | 53 | Define bundles, registries, frozen events, and extension authoring macros. | 合格·大体量 |
+| `src/cadr-agent/extensions/rendering.lisp` | 257 | 17 | Own extension failure notices, Markdown/message/tool rendering, and shortcuts. | 合格 |
+| `src/cadr-agent/extensions/snapshot.lisp` | 379 | 12 | Build immutable extension snapshots and replace active bundles safely. | 合格 |
 | `src/cadr-agent/file-mutation-queue.lisp` | 84 | 10 | Serialize mutations to the same resolved file. | 合格 |
-| `src/cadr-agent/loop.lisp` | 1,358 | 56 | Mix event emission, tool restart/batch execution, retries, turns, tree navigation, and prompting. | 应拆分 |
+| `src/cadr-agent/loop/agent-loop.lisp` | 464 | 8 | Own the public prompt/steer/follow-up entrypoints and outer agent lifecycle. | 合格 |
+| `src/cadr-agent/loop/events.lisp` | 166 | 16 | Emit and normalize agent lifecycle, stream, queue, and tool events. | 合格 |
+| `src/cadr-agent/loop/tool-execution.lisp` | 459 | 18 | Execute tool batches with hooks, restarts, termination, updates, and abort state. | 合格 |
+| `src/cadr-agent/loop/turns.lisp` | 278 | 14 | Prepare, stream, retry, compact, and finalize one agent turn. | 合格 |
 | `src/cadr-agent/messages.lisp` | 243 | 24 | Convert agent-specific message envelopes and file-operation summaries to model-facing messages. | 合格 |
 | `src/cadr-agent/package.lisp` | 442 | 1 | Declare the public `cadr-agent` package surface. | 合格 |
 | `src/cadr-agent/proxy.lisp` | 229 | 9 | Translate proxy-provider events into native agent stream events. | 合格 |
 | `src/cadr-agent/resources.lisp` | 739 | 30 | Load, validate, substitute, and format prompts and skills as agent resources. | 合格·大体量 |
 | `src/cadr-agent/runtime.lisp` | 423 | 28 | Own agent event emission, queued steering/follow-up input, mutation state, abort, and shutdown. | 合格·大体量 |
 | `src/cadr-agent/schema.lisp` | 702 | 14 | Validate JSON Schema definitions and tool arguments with local reference support. | 合格·大体量 |
-| `src/cadr-agent/session.lisp` | 2,392 | 100 | Mix session envelopes/JSON, append/navigation, discovery, three-version migration, and HTML export. | 应拆分 |
+| `src/cadr-agent/session/codec.lisp` | 526 | 30 | Encode, decode, validate, and identify session entries and metadata. | 合格 |
+| `src/cadr-agent/session/discovery.lisp` | 146 | 5 | Discover, list, continue, and resolve session files. | 合格 |
+| `src/cadr-agent/session/export-html.lisp` | 455 | 24 | Embed assets and export a session as baseline-compatible offline HTML. | 合格 |
+| `src/cadr-agent/session/journal.lisp` | 646 | 29 | Create, append, branch, label, and inspect the live JSONL session journal. | 合格 |
+| `src/cadr-agent/session/migration.lisp` | 565 | 11 | Validate and migrate v1/v2/v3 session logs with atomic replacement. | 合格 |
 | `src/cadr-agent/sqlite-storage.lisp` | 860 | 33 | Implement the SQLite session-storage and repository backend. | 合格·大体量 |
-| `src/cadr-agent/storage.lisp` | 1,520 | 96 | Mix storage protocols with memory, harness, and JSONL backend/repository implementations. | 应拆分 |
+| `src/cadr-agent/storage/harness.lisp` | 495 | 31 | Adapt session-storage backends to harness session lifecycle operations. | 合格 |
+| `src/cadr-agent/storage/jsonl.lisp` | 536 | 19 | Implement JSONL session storage and repository backends. | 合格 |
+| `src/cadr-agent/storage/memory.lisp` | 372 | 19 | Implement in-memory session storage and repository backends. | 合格 |
+| `src/cadr-agent/storage/protocol.lisp` | 122 | 24 | Define storage/repository metadata, generic protocols, and shared errors. | 合格 |
 | `src/cadr-agent/tool.lisp` | 309 | 23 | Define tool registry, execution bindings, validation, and prepared outcomes. | 合格·大体量 |
 | `src/cadr-agent/truncate.lisp` | 283 | 31 | Implement baseline-compatible bounded head/tail/line truncation and its result contract. | 合格 |
 
@@ -299,7 +317,7 @@ files with unrelated facilities fail.
 
 | System | 合格 | 合格·大体量 | 应拆分 | 应合并 | Total |
 |---|---:|---:|---:|---:|---:|
-| `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
+| `cadr-agent` | 27 | 13 | 0 | 0 | 40 |
 | `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
 | `cadr-cli` | 83 | 25 | 0 | 0 | 108 |
 | `cadr-core` | 6 | 0 | 0 | 0 | 6 |
@@ -308,29 +326,30 @@ files with unrelated facilities fail.
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 26 | 10 | 0 | 0 | 36 |
-| **Total** | **147** | **67** | **13** | **0** | **227** |
+| **Total** | **165** | **70** | **9** | **0** | **244** |
 
-The 13 failing files are being reduced batch by batch.  After B3, B1, B2, B4,
-B5, B6, and B7, the cohesion map below replaces them with 63 still-pending named
-modules, yielding a planning denominator of 277 files and a remaining net
-increase of 50.  This
+The nine remaining failing files are being reduced batch by batch. After B3,
+B1, B2, and B4 through B9, the cohesion map below leaves 42 named AI owners,
+yielding a planning denominator of 277 files and a remaining net increase of
+33. This
 is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
 
 | System | Failing files | Expected target files | Net files |
 |---|---:|---:|---:|
-| `cadr-agent` | 4 | 21 | +17 |
+| `cadr-agent` | 0 | 0 | +0 |
 | `cadr-ai` | 9 | 42 | +33 |
 | `cadr-cli` | 0 | 0 | +0 |
 | `cadr-tui` | 0 | 0 | +0 |
-| **Total** | **13** | **63** | **+50** |
+| **Total** | **9** | **42** | **+33** |
 
-At current boundaries the physical distribution is 119 files below 300 lines,
-64 at 300–699, 19 at 700–999, and 20 at or above 1,000;
-only generated `models.generated.lisp` remains at or above 3,000.  Average file
-size falls from 730 to about 382 lines and the under-300 share from 42% to about
-57%.  The modest percentage is honest: cohesive files such as the multiline
+At current boundaries the physical distribution is 126 files below 300 lines,
+76 at 300–699, 22 at 700–999, and 20 at or above 1,000;
+only generated `models.generated.lisp` remains at or above 3,000. Average file
+size is now 429 lines and the under-300 share is about 52%; the remaining AI
+map projects about 382 lines and 57%. The modest percentage is honest:
+cohesive files such as the multiline
 editor, Unicode engine, image codec, protocol codecs, and vendored assets are
 not chopped up to make the chart prettier.
 
@@ -338,10 +357,10 @@ not chopped up to make the chart prettier.
 
 | Current file | Expected named responsibilities (count) |
 |---|---|
-| `agent/extensions.lisp` | `extensions/{context,api,registration,snapshot,rendering,providers,commands,lifecycle}.lisp` (8) |
-| `agent/loop.lisp` | `loop/{events,tool-execution,turns,agent-loop}.lisp` (4) |
-| `agent/session.lisp` | `session/{codec,journal,discovery,migration,export-html}.lisp` (5) |
-| `agent/storage.lisp` | `storage/{protocol,memory,harness,jsonl}.lisp` (4) |
+| `agent/extensions.lisp` | **Completed in B9:** `extensions/{context,api,registration,snapshot,rendering,providers,commands,lifecycle}.lisp` (8). |
+| `agent/loop.lisp` | **Completed in B8:** `loop/{events,tool-execution,turns,agent-loop}.lisp` (4). |
+| `agent/session.lisp` | **Completed in B8:** `session/{codec,journal,discovery,migration,export-html}.lisp` (5). |
+| `agent/storage.lisp` | **Completed in B8:** `storage/{protocol,memory,harness,jsonl}.lisp` (4). |
 | `ai/capabilities.lisp` | `{streaming-json,event-stream,grammar-tools,session-resources,proxy-config,image-runtime}.lisp` (6) |
 | `ai/http.lisp` | `transport/{http,aws-event-stream}.lisp` (2) |
 | `ai/models-runtime.lisp` | `runtime/{models,faux-provider}.lisp` (2) |
@@ -484,7 +503,7 @@ than the file table.
 | Decision repeated by hand | Current locations | Failure if one copy drifts | Prior bug | Convergence |
 |---|---|---|---|---|
 | Bounded thread cleanup | **Converged in B3:** `cadr-core/threads.lisp` owns bounded cleanup; `cli/support/threads.lisp` is a branch-free compatibility delegate and raw active waits require an explicit reason. | Exit hangs, orphaned worker, or forced termination at the wrong time | Goal 13 exit deadlock | Source gates reject unannotated cleanup joins outside the core owner. |
-| Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions.lisp:97-149`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition/loaders.lisp:183-238` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
+| Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions/context.lisp:99-151`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition/loaders.lisp:183-238` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
 | Infrastructure output ownership | **CLI extension side converged in B4 and command/RPC consumers preserved in B5:** `cli/extensions/loader.lisp` owns extension output and infrastructure capture, `bootstrap/commands.lisp` owns frontend mode injection, and `modes/rpc/jsonl.lisp` owns wire emission; process/tool, TUI notice/browser, server Radius, and fatal sinks retain their domain owners. | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | Source gates keep each output category with its sink and reject direct JSONL writes from RPC command domains. |
 | Selector frame semantics | **Converged in B2:** `cli/interactive/selectors/common.lisp` owns frame sections, semantic borders/titles/input/help, centered viewport/count, and wrap navigation; seven domain owners supply entries and domain callbacks. | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | `selector-frame` is the sole shared owner; source gates require every selector family to render through it and delegate wrap navigation. |
 | Provider identity/auth metadata | 38 rows at `ai/registry.lisp:20-307`; OAuth metadata in `ai/oauth.lisp:3-62` and `oauth-flows.lisp:19-50`; auth/login/refresh case trees at `registry.lisp:581-785`; ambient names at `registry.lisp:491-548` | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | One validated provider declaration owns all static fields and callback identities; generated baseline fixture checks every provider × field. |
@@ -610,6 +629,34 @@ byte-identical, so the public export set is frozen.  Full-screen, overlay,
 mouse, scroll, performance, and fresh-compile gates protect the unchanged
 observable behavior while organization tests reject all three legacy
 monoliths and any dependency-unsafe ASDF order.
+
+### Part C B8 implementation status
+
+B8 moved all 251 session, storage, and loop definitions into thirteen exact
+owners. Session codecs precede journals, migration, discovery, and export;
+storage protocols precede memory, harness, JSONL, and SQLite backends; loop
+events and tool execution precede turns and public agent-loop entrypoints.
+The split preserves the B3 UUID/time and atomic-replacement owners and adds no
+alternate persistence or retry policy.
+
+All three legacy monoliths are gone. The sorted definition set, public package
+text, session bytes, tool results, event/wire output, and screen snapshots are
+unchanged. The Goal 11 stability provenance now hashes the exact session codec
+owner so the verification gate cannot silently follow a deleted aggregate.
+
+### Part C B9 implementation status
+
+B9 moved all 239 extension-host definitions into eight exact owners: context,
+API value/event handling, registration, immutable snapshots, rendering,
+provider/tool projection, commands/templates, and lifecycle dispatch. The ASDF
+order follows those dependencies; no symbol was renamed and the legacy
+monolith is gone.
+
+The B3 cancellation owner still drives context abort state, and rendering still
+emits through the injected extension notification sink. The public extension
+export block and the 34-event source block remain byte-identical at SHA-256
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`
+and `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
 
 ### Already-converged examples to preserve
 

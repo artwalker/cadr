@@ -7,6 +7,25 @@
     (and (probe-file path)
          (uiop:read-file-string path))))
 
+(defun goal14-source-block (source start-marker end-marker)
+  (let* ((marker-start (and source (search start-marker source)))
+         (start
+           (and marker-start
+                (let ((previous-newline
+                        (position #\Newline source :end marker-start :from-end t)))
+                  (if previous-newline (1+ previous-newline) 0))))
+         (end-start (and start (search end-marker source :start2 start)))
+         (line-end (and end-start (position #\Newline source :start end-start))))
+    (and start end-start
+         (subseq source start (if line-end (1+ line-end) (length source))))))
+
+(defun goal14-sha256 (text)
+  (string-downcase
+   (format nil "~{~2,'0X~}"
+           (coerce
+            (cadr-ai::sha256-bytes (cadr-ai::utf8-octets text))
+            'list))))
+
 (test goal14-b1-interactive-leaf-services-have-exact-owners
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (owners
@@ -833,3 +852,150 @@
           "Goal 11 provenance does not follow the B8 session codec owner")
       (is (not (search "src/cadr-agent/session.lisp" source))
           "Goal 11 provenance still hashes the removed B8 aggregate"))))
+
+(test goal14-b9-extension-host-has-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (owners
+           '(("context.lisp"
+              "(defstruct extension-snapshot"
+              "(defstruct (extension-host"
+              "(defstruct (extension-context"
+              "(defun extension-context-set-session-name")
+             ("api.lisp"
+              "(defun active-extension-api-p"
+              "(defun extension-api-http-request"
+              "(defun copy-extension-value"
+              "(defun extension-event-payload")
+             ("registration.lisp"
+              "(defstruct extension-bundle"
+              "(defun register-extension-tool"
+              "(defparameter +extension-hook-events+"
+              "(defmacro define-tool"
+              "(defmacro define-tool-renderer")
+             ("snapshot.lisp"
+              "(defun make-extension-host"
+              "(defun make-extension-snapshot-from-bundles"
+              "(defun replace-extension-bundles"
+              "(defun call-with-extension-definition")
+             ("rendering.lisp"
+              "(defun notify-extension-failure"
+              "(defun transform-extension-markdown"
+              "(defun render-extension-tool-result"
+              "(defun invoke-extension-shortcut")
+             ("providers.lisp"
+              "(defun extension-host-tools"
+              "(defun attach-extension-host"
+              "(defun extension-host-send-message"
+              "(defun apply-extension-provider-overlays"
+              "(defun extension-context-register-provider")
+             ("commands.lisp"
+              "(defun invoke-extension-command"
+              "(defun substitute-extension-template"
+              "(defun expand-extension-prompt")
+             ("lifecycle.lisp"
+              "(defun run-extension-hooks"
+              "(defparameter +extension-lifecycle-no-result-events+"
+              "(defun run-extension-lifecycle-hooks")))
+         (definition-count 0))
+    (dolist (owner owners)
+      (let ((source
+              (goal14-b1-source
+               root (format nil "src/cadr-agent/extensions/~A" (first owner)))))
+        (is (not (null source)) "missing B9 owner ~A" (first owner))
+        (when source
+          (incf definition-count
+                (count-if
+                 (lambda (line) (uiop:string-prefix-p "(def" line))
+                 (uiop:split-string source :separator '(#\Newline))))
+          (dolist (marker (rest owner))
+            (is (search marker source)
+                "~A does not own ~A" (first owner) marker)))))
+    (is (= 239 definition-count)
+        "B9 moved a different top-level definition set: ~D" definition-count)
+    (is (not (probe-file (merge-pathnames
+                          "src/cadr-agent/extensions.lisp" root)))
+        "B9 legacy mixed owner remains")))
+
+(test goal14-b9-preserves-core-owners-and-frozen-extension-surfaces
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (context
+           (goal14-b1-source root "src/cadr-agent/extensions/context.lisp"))
+         (rendering
+           (goal14-b1-source root "src/cadr-agent/extensions/rendering.lisp"))
+         (registration
+           (goal14-b1-source root "src/cadr-agent/extensions/registration.lisp"))
+         (package-source (goal14-b1-source root "src/cadr-agent/package.lisp"))
+         (sources
+           (loop for name in
+                 '("context" "api" "registration" "snapshot"
+                   "rendering" "providers" "commands" "lifecycle")
+                 collect
+                 (goal14-b1-source
+                  root (format nil "src/cadr-agent/extensions/~A.lisp" name)))))
+    (is (and context
+             (search "(cadr-core:make-cancellation-state" context)
+             (search "(cadr-core:cancellation-aborted-p" context)
+             (search "(cadr-core:abort-cancellation" context))
+        "B9 context bypasses the B3 cancellation owner")
+    (is (and rendering
+             (search "(defun notify-extension-failure" rendering)
+             (search "(extension-host-notify-function host)" rendering))
+        "B9 rendering bypasses the injected extension output sink")
+    (dolist (source sources)
+      (is (not (null source)) "missing B9 source")
+      (when source
+        (dolist (forbidden '("sb-thread:join-thread"
+                             "rename-file-overwriting-target"
+                             "(defmethod print-object"))
+          (is (not (search forbidden source))
+              "B9 source reintroduced policy ~A" forbidden))))
+    (let ((exports
+            (goal14-source-block
+             package-source "#:define-tool" "#:make-extension-hook-result"))
+          (events
+            (goal14-source-block
+             registration "(defparameter +extension-hook-events+"
+             "    :user-bash))")))
+      (is (and exports
+               (string=
+                "61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18"
+                (goal14-sha256 exports)))
+          "B9 changed the frozen extension export text")
+      (is (and events
+               (string=
+                "12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a"
+                (goal14-sha256 events)))
+          "B9 changed the frozen 34-event source block"))))
+
+(test goal14-b9-asdf-loads-extension-host-in-dependency-order
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (source (uiop:read-file-string (merge-pathnames "cadr-agent.asd" root)))
+         (ordered
+           '(("(:module \"extensions\"" 1)
+             ("(:file \"context\")" 1)
+             ("(:file \"api\")" 1)
+             ("(:file \"registration\")" 1)
+             ("(:file \"snapshot\")" 1)
+             ("(:file \"rendering\")" 1)
+             ("(:file \"providers\")" 1)
+             ("(:file \"commands\")" 1)
+             ("(:file \"lifecycle\")" 1)))
+         (cursor 0)
+         (positions nil))
+    (dolist (spec ordered)
+      (let ((position
+              (loop repeat (second spec)
+                    for found = (search (first spec) source :start2 cursor)
+                    do (unless found (return nil))
+                       (setf cursor (1+ found))
+                    finally (return found))))
+        (push position positions)))
+    (setf positions (nreverse positions))
+    (is (every #'identity positions)
+        "cadr-agent.asd omits a B9 load boundary: ~S"
+        (loop for spec in ordered
+              for position in positions
+              unless position collect (first spec)))
+    (when (every #'identity positions)
+      (is (every #'< positions (rest positions))
+          "B9 extension load order is not dependency-safe: ~S" positions))))
