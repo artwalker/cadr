@@ -1,5 +1,5 @@
-import { readFileSync, writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { join, resolve } from "node:path";
 import {
 	fauxAssistantMessage,
 	fauxThinking,
@@ -35,9 +35,27 @@ interface ResponseSpec {
 	errorMessage?: string;
 }
 
+interface SeedMessage {
+	role: "user" | "assistant";
+	text: string;
+}
+
+interface ScenarioSetup {
+	persistentSession?: boolean;
+	projectTrusted?: boolean;
+	seedMessages?: SeedMessage[];
+	crashAfterMs?: number;
+}
+
 interface Scenario {
 	id: string;
+	group: string;
 	responses: ResponseSpec[];
+	setup?: ScenarioSetup;
+	stream?: {
+		tokensPerSecond?: number;
+		chunkCharacters?: number;
+	};
 }
 
 function loadScenario(path: string, id: string): Scenario {
@@ -61,6 +79,128 @@ function responseFromSpec(spec: ResponseSpec) {
 	});
 }
 
+function createFixedSessionFile(sessionDir: string, cwd: string, id: string, suffix: string): string {
+	mkdirSync(sessionDir, { recursive: true });
+	const path = join(sessionDir, `2023-11-14T22-13-20-000Z_${suffix}.jsonl`);
+	writeFileSync(
+		path,
+		`${JSON.stringify({
+			type: "session",
+			version: 3,
+			id,
+			timestamp: "2023-11-14T22:13:20.000Z",
+			cwd,
+		})}\n`,
+		"utf8",
+	);
+	return path;
+}
+
+function appendSeedMessages(session: SessionManager, messages: readonly SeedMessage[]): void {
+	for (const [index, message] of messages.entries()) {
+		if (message.role === "user") {
+			session.appendMessage({
+				role: "user",
+				content: message.text,
+				timestamp: 1_700_000_000_000 + index,
+			});
+		} else {
+			session.appendMessage(
+				fauxAssistantMessage(message.text, {
+					timestamp: 1_700_000_000_000 + index,
+					responseId: `render-seed-${index}`,
+				}),
+			);
+		}
+	}
+}
+
+function createSessionManager(cwd: string, agentDir: string, scenario: Scenario): SessionManager {
+	const setup = scenario.setup ?? {};
+	if (!setup.persistentSession) {
+		const session = SessionManager.inMemory(cwd, { id: "render-session" });
+		appendSeedMessages(session, setup.seedMessages ?? []);
+		return session;
+	}
+
+	const sessionDir = resolve(agentDir, "render-sessions");
+	const currentPath = createFixedSessionFile(sessionDir, cwd, "render-session", "render-session");
+	const session = SessionManager.open(currentPath, sessionDir, cwd);
+	appendSeedMessages(session, setup.seedMessages ?? []);
+
+	const otherPath = createFixedSessionFile(sessionDir, cwd, "other-session", "other-session");
+	const other = SessionManager.open(otherPath, sessionDir, cwd);
+	appendSeedMessages(other, [
+		{ role: "user", text: "other session question" },
+		{ role: "assistant", text: "other session answer" },
+	]);
+	return session;
+}
+
+async function registerComparisonProviders(modelRuntime: ModelRuntime, scenario: Scenario): Promise<void> {
+	if (scenario.id === "overlays-core") {
+		modelRuntime.registerProvider("other", {
+			name: "Other Provider",
+			baseUrl: "https://render.invalid/v1",
+			apiKey: "render-other-key",
+			api: "openai-completions",
+			models: [
+				{
+					id: "other-1",
+					name: "Other Model",
+					reasoning: false,
+					input: ["text"],
+					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+					contextWindow: 64_000,
+					maxTokens: 8_192,
+				},
+			],
+		});
+	}
+
+	if (scenario.id === "overlays-auth") {
+		modelRuntime.registerProvider("render-auth", {
+			name: "Render Auth",
+			baseUrl: "https://render.invalid/v1",
+			apiKey: "render-api-key",
+			api: "openai-completions",
+			oauth: {
+				name: "Render Auth account",
+				login: async (callbacks) => {
+					callbacks.onAuth({
+						url: "https://auth.invalid/authorize?state=render-fixed",
+						instructions: "A browser window should open. Complete login to finish.",
+					});
+					if (!callbacks.onManualCodeInput) {
+						throw new Error("render auth manual-code callback is unavailable");
+					}
+					await callbacks.onManualCodeInput();
+					return {
+						access: "render-access",
+						refresh: "render-refresh",
+						expires: 1_800_000_000_000,
+					};
+				},
+				refreshToken: async (credential) => credential,
+				getApiKey: (credential) => credential.access,
+			},
+			models: [
+				{
+					id: "render-auth-1",
+					name: "Render Auth Model",
+					reasoning: false,
+					input: ["text"],
+					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+					contextWindow: 64_000,
+					maxTokens: 8_192,
+				},
+			],
+		});
+	}
+
+	await modelRuntime.refresh({ allowNetwork: false });
+}
+
 async function main(): Promise<void> {
 	const [manifestPath, scenarioId, cwd, agentDir] = process.argv.slice(2);
 	if (!manifestPath || !scenarioId || !cwd || !agentDir) {
@@ -69,11 +209,15 @@ async function main(): Promise<void> {
 
 	process.env.PI_OFFLINE = "1";
 	const scenario = loadScenario(manifestPath, scenarioId);
+	const chunkCharacters = scenario.stream?.chunkCharacters ?? 4096;
 	const faux = registerFauxProvider({
 		api: "faux",
 		provider: "faux",
-		tokensPerSecond: 0,
-		tokenSize: { min: 4096, max: 4096 },
+		tokensPerSecond: scenario.stream?.tokensPerSecond ?? 0,
+		tokenSize: {
+			min: Math.max(1, Math.ceil(chunkCharacters / 4)),
+			max: Math.max(1, Math.ceil(chunkCharacters / 4)),
+		},
 	});
 	faux.setResponses(scenario.responses.map(responseFromSpec));
 
@@ -86,27 +230,35 @@ async function main(): Promise<void> {
 	const model = faux.getModel();
 	modelRuntime.registerProvider(model.provider, {
 		baseUrl: model.baseUrl,
+		apiKey: "render-diff-key",
 		api: model.api,
-		models: [{
-			id: model.id,
-			name: model.name,
-			api: model.api,
-			reasoning: true,
-			input: model.input,
-			cost: model.cost,
-			contextWindow: model.contextWindow,
-			maxTokens: model.maxTokens,
-			baseUrl: model.baseUrl,
-		}],
+		models: [
+			{
+				id: model.id,
+				name: model.name,
+				api: model.api,
+				reasoning: true,
+				input: model.input,
+				cost: model.cost,
+				contextWindow: model.contextWindow,
+				maxTokens: model.maxTokens,
+				baseUrl: model.baseUrl,
+			},
+		],
 	});
+	await registerComparisonProviders(modelRuntime, scenario);
+	const otherModel = modelRuntime.getModel("other", "other-1");
 
-	const settingsManager = SettingsManager.inMemory({
-		theme: "dark",
-		quietStartup: false,
-		showHardwareCursor: false,
-		terminal: { showTerminalProgress: false },
-		collapseChangelog: true,
-	});
+	const settingsManager = SettingsManager.inMemory(
+		{
+			theme: "dark",
+			quietStartup: false,
+			showHardwareCursor: false,
+			terminal: { showTerminalProgress: false },
+			collapseChangelog: true,
+		},
+		{ projectTrusted: scenario.setup?.projectTrusted ?? true },
+	);
 	const runtimeOptions = {
 		agentDir,
 		modelRuntime,
@@ -129,6 +281,11 @@ async function main(): Promise<void> {
 				sessionStartEvent,
 				model,
 				thinkingLevel: "high",
+				tools: ["read", "bash", "edit", "write", "grep", "find", "ls"],
+				scopedModels:
+					scenario.id === "overlays-core" && otherModel
+						? [{ model }, { model: otherModel }]
+						: [],
 			})),
 			services,
 			diagnostics: services.diagnostics,
@@ -137,15 +294,20 @@ async function main(): Promise<void> {
 	const runtime = await createAgentSessionRuntime(createRuntime, {
 		cwd,
 		agentDir,
-		sessionManager: SessionManager.inMemory(cwd),
+		sessionManager: createSessionManager(cwd, agentDir, scenario),
 	});
 
 	initTheme("dark", false);
-	const mode = new InteractiveMode(runtime, { verbose: true, alt: false });
+	const mode = new InteractiveMode(runtime, { verbose: false, alt: false });
 	try {
 		await mode.init();
 		const readyPath = process.env.RENDER_DIFF_READY_PATH;
 		if (readyPath) writeFileSync(readyPath, "ready\n", { encoding: "utf8" });
+		if (scenario.setup?.crashAfterMs !== undefined) {
+			setTimeout(() => {
+				throw new Error("render-diff crash sentinel");
+			}, scenario.setup.crashAfterMs);
+		}
 		await mode.run();
 	} finally {
 		mode.stop();

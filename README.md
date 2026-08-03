@@ -438,6 +438,14 @@ and inspect them before sharing.
 - OAuth success and failure pages use Cadr's own cons-cell grid mark instead of
   pi's logo. This is a branding difference only; the page shell, copy, styling,
   escaping, and HTTP framing remain aligned.
+- SBCL and the TypeScript terminal renderer emit different raw ANSI update
+  segmentation and teardown sequences. The Goal 15 differential therefore
+  requires equal terminal-state semantics while retaining and classifying the
+  original byte streams; visible text, styling, geometry, and cursor state are
+  not exempted.
+- By the approved Goal 13 security hardening, fatal conditions show a bounded,
+  redacted summary and private crash-log path instead of pi's terminal
+  backtrace. Terminal teardown and layout remain subject to baseline parity.
 - Deterministic and live FiveAM tests have separate entry points. This is an
   explicit organizational difference with the same CI effect as the reference:
   its credential-gated live blocks remain in Vitest but all skip in official CI

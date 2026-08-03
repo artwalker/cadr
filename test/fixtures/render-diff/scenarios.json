@@ -15,34 +15,257 @@
     {
       "id": "startup-first",
       "group": "startup",
-      "description": "Fresh in-memory session startup and clean empty-editor exit.",
+      "coverage": ["startup-first"],
+      "description": "Fresh session startup and clean empty-editor exit.",
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "pauseMs": 750 },
+        { "checkpoint": "startup" },
         { "send": "ctrl+d" }
       ]
     },
     {
-      "id": "plain-text",
+      "id": "startup-existing",
+      "group": "startup",
+      "coverage": ["startup-existing"],
+      "description": "Persistent session with one fixed existing turn.",
+      "setup": {
+        "persistentSession": true,
+        "seedMessages": [
+          { "role": "user", "text": "existing question" },
+          { "role": "assistant", "text": "existing answer" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "existing answer" },
+        { "pauseMs": 80 },
+        { "checkpoint": "existing-session" },
+        { "send": "ctrl+d" },
+        { "waitFor": "To resume this session:" },
+        { "checkpoint": "post-exit-resume" }
+      ]
+    },
+    {
+      "id": "startup-untrusted",
+      "group": "startup",
+      "coverage": ["startup-untrusted"],
+      "description": "Project resources exist while the current project is untrusted.",
+      "setup": { "projectTrusted": false },
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "pauseMs": 750 },
+        { "checkpoint": "untrusted-startup" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "conversation-content",
       "group": "conversation",
-      "description": "One deterministic user/assistant turn with one unsplit faux text delta.",
+      "coverage": ["plain-text", "markdown", "code-block", "cjk-emoji"],
+      "description": "Plain, Markdown, fenced code, CJK, emoji, and thinking content.",
       "responses": [
         {
+          "content": [{ "type": "text", "text": "Fixed plain response." }],
+          "stopReason": "stop"
+        },
+        {
           "content": [
-            { "type": "text", "text": "Fixed plain response." }
+            { "type": "thinking", "text": "Checking Markdown structure." },
+            { "type": "text", "text": "# Heading\n\n- alpha\n- beta\n\n```lisp\n(+ 1 2)\n```" }
           ],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "中文宽度：你好，世界。 Emoji: 🙂🚀👩‍💻." }],
           "stopReason": "stop"
         }
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "pauseMs": 750 },
         { "sendText": "plain prompt" },
         { "send": "enter" },
         { "waitFor": "Fixed plain response." },
+        { "checkpoint": "plain" },
+        { "sendText": "markdown prompt" },
+        { "send": "enter" },
+        { "waitFor": "Heading" },
+        { "pauseMs": 80 },
+        { "checkpoint": "markdown-code-thinking" },
+        { "sendText": "cjk emoji prompt" },
+        { "send": "enter" },
+        { "waitFor": "中文宽度" },
         { "pauseMs": 40 },
+        { "checkpoint": "cjk-emoji" },
         { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "tools-success",
+      "group": "tools",
+      "coverage": ["bash-multiline", "read-range", "write", "edit", "grep", "find", "ls"],
+      "description": "Every built-in coding tool succeeds, including a multiline bash header.",
+      "responses": [
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash", "arguments": { "command": "printf 'line-one\\n\\nline-three\\n'" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "bash done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read", "arguments": { "path": "sample.txt", "offset": 2, "limit": 1 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "read done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "write", "id": "tool-write", "arguments": { "path": "created.txt", "content": "alpha 中文🙂\nomega\n" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "write done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "edit", "id": "tool-edit", "arguments": { "path": "created.txt", "edits": [{ "oldText": "alpha 中文🙂", "newText": "beta 中文🙂" }] } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "edit done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "grep", "id": "tool-grep", "arguments": { "pattern": "needle", "path": "notes" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "grep done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find", "arguments": { "pattern": "*.txt", "path": "notes" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "find done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "ls", "id": "tool-ls", "arguments": { "path": "notes" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "ls done." }], "stopReason": "stop" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "run bash" }, { "send": "enter" }, { "waitFor": "bash done." }, { "checkpoint": "bash-multiline" },
+        { "sendText": "run read" }, { "send": "enter" }, { "waitFor": "read done." }, { "checkpoint": "read-range" },
+        { "sendText": "run write" }, { "send": "enter" }, { "waitFor": "write done." }, { "checkpoint": "write" },
+        { "sendText": "run edit" }, { "send": "enter" }, { "waitFor": "edit done." }, { "checkpoint": "edit" },
+        { "sendText": "run grep" }, { "send": "enter" }, { "waitFor": "grep done." }, { "checkpoint": "grep" },
+        { "sendText": "run find" }, { "send": "enter" }, { "waitFor": "find done." }, { "checkpoint": "find" },
+        { "sendText": "run ls" }, { "send": "enter" }, { "waitFor": "ls done." }, { "pauseMs": 40 }, { "checkpoint": "ls" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "tools-failure",
+      "group": "tools",
+      "coverage": ["tool-failure", "bash-nonzero", "bash-timeout"],
+      "description": "Missing file, nonzero command, and command timeout error states.",
+      "responses": [
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-fail", "arguments": { "path": "missing.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "read failure observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-exit", "arguments": { "command": "printf 'before exit\\n'; exit 7" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "exit failure observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-timeout", "arguments": { "command": "sleep 2", "timeout": 1 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "timeout observed." }], "stopReason": "stop" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "missing read" }, { "send": "enter" }, { "waitFor": "read failure observed." }, { "checkpoint": "tool-failure" },
+        { "sendText": "exit seven" }, { "send": "enter" }, { "waitFor": "exit failure observed." }, { "checkpoint": "bash-nonzero" },
+        { "sendText": "timeout command" }, { "send": "enter" }, { "waitFor": "timeout observed." }, { "pauseMs": 40 }, { "checkpoint": "bash-timeout" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-core",
+      "group": "overlays",
+      "coverage": ["overlay-model", "overlay-session", "overlay-fork", "overlay-tree", "overlay-settings", "overlay-trust"],
+      "description": "Every non-auth built-in overlay opened over a nonempty transcript.",
+      "setup": {
+        "persistentSession": true,
+        "seedMessages": [
+          { "role": "user", "text": "overlay question" },
+          { "role": "assistant", "text": "overlay answer" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "overlay answer" },
+        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" }, { "checkpoint": "overlay-model" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" }, { "checkpoint": "overlay-session" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/fork" }, { "send": "enter" }, { "waitFor": "Fork from Message" }, { "checkpoint": "overlay-fork" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" }, { "checkpoint": "overlay-tree" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" }, { "checkpoint": "overlay-settings" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "Project trust" }, { "checkpoint": "overlay-trust" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-auth",
+      "group": "overlays",
+      "coverage": ["overlay-auth-method", "overlay-login-provider", "overlay-login-dialog", "slash-login"],
+      "description": "Generic auth method, provider selector, provider-specific method, and login dialog.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/login" }, { "send": "enter" }, { "waitFor": "Select authentication method:" }, { "checkpoint": "auth-method-generic" },
+        { "send": "enter" }, { "waitFor": "Select provider to configure:" }, { "checkpoint": "login-provider" },
+        { "send": "escape" }, { "waitForNext": "Select authentication method:" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
+        { "sendSide": { "pi": "enter" } },
+        { "waitFor": "Select authentication method for Render Auth:" }, { "checkpoint": "auth-method-provider" },
+        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
+        { "pauseMs": 100 }, { "checkpoint": "login-cancelled" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "stream-interrupt-queue",
+      "group": "streaming",
+      "coverage": ["stream-interrupt", "busy-queue"],
+      "description": "Slow deterministic stream with steering, follow-up, and Escape abort.",
+      "stream": { "tokensPerSecond": 1, "chunkCharacters": 4 },
+      "responses": [
+        { "content": [{ "type": "text", "text": "streaming alpha beta gamma delta epsilon zeta eta theta" }], "stopReason": "stop" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "start slow stream" }, { "send": "enter" },
+        { "waitFor": "streaming alpha" },
+        { "sendText": "steer now" }, { "send": "enter" }, { "waitFor": "Steering: steer now" },
+        { "sendText": "follow later" }, { "send": "alt+enter" }, { "waitFor": "Follow-up: follow later" },
+        { "checkpoint": "busy-queue" },
+        { "send": "escape" }, { "waitFor": "Operation aborted" }, { "checkpoint": "stream-aborted" },
+        { "send": "ctrl+c" }, { "pauseMs": 80 }, { "send": "ctrl+c" }
+      ]
+    },
+    {
+      "id": "provider-error",
+      "group": "errors",
+      "coverage": ["provider-error"],
+      "description": "Provider error rendered through the interactive error path.",
+      "responses": [
+        { "content": [], "stopReason": "error", "errorMessage": "render transport failed" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "cause provider error" }, { "send": "enter" },
+        { "waitFor": "render transport failed" }, { "checkpoint": "provider-error" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "commands-and-exit",
+      "group": "commands",
+      "coverage": ["slash-export", "slash-reload", "post-exit-resume"],
+      "description": "Local slash-command feedback and stdout after terminal teardown.",
+      "setup": {
+        "persistentSession": true,
+        "seedMessages": [
+          { "role": "user", "text": "command question" },
+          { "role": "assistant", "text": "command answer" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "command answer" },
+        { "sendText": "/export" }, { "send": "enter" }, { "waitFor": "Session exported to:" }, { "checkpoint": "slash-export" },
+        { "sendText": "/reload" }, { "send": "enter" }, { "waitFor": "Reloaded keybindings" }, { "checkpoint": "slash-reload" },
+        { "send": "ctrl+d" }, { "waitFor": "To resume this session:" }, { "checkpoint": "post-exit-resume" }
+      ]
+    },
+    {
+      "id": "fatal-crash",
+      "group": "errors",
+      "coverage": ["fatal-crash"],
+      "description": "Product fatal boundary after the terminal has entered interactive mode.",
+      "setup": { "crashAfterMs": 900 },
+      "expectedExit": 1,
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "waitForSide": { "pi": "render-diff crash sentinel", "cadr": "cadr exiting due to uncaught SIMPLE-ERROR" } },
+        { "checkpoint": "fatal-crash" }
       ]
     }
   ]
