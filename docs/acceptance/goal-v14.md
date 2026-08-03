@@ -561,3 +561,77 @@ lines.  All screen and overlay snapshots, payload and wire fixtures, extension
 export/event SHA values, session files, tool results, exit codes, and other
 observable bytes remain unchanged.  Implementation commit:
 `d0935fadbfa8d34de0fe6d30e5b54733f51c4ea6`.
+
+## Part C B6 — interactive controller ownership
+
+### Result
+
+B6 removed the remaining interactive monoliths and assigned their 224
+top-level definitions to sixteen dependency-ordered owners:
+
+- `interactive/{state,entries,status,extension-ui,transcript,tool-rendering,
+  pending-messages,frame,autocomplete,themes,controller}.lisp`;
+- `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp`.
+
+The existing B1 status/transcript owners absorbed the corresponding controller
+responsibilities. B2's `selector-frame`, B4's output sinks, and B3's bounded
+cleanup/cancellation primitives remain the single policy owners; the split did
+not recreate those decisions locally. The old and new sorted top-level
+definition sets contain 224 byte-identical first lines, with no missing or
+added definition. `src/cadr-cli/package.lisp` remained byte-identical with
+SHA-256 `8bab04da761b5035172ece9c7d15dd93be00bfe5269f2ca80510d24a1c01b1db`.
+
+The red-first organization gate failed until every named owner existed and the
+ASDF graph loaded state before renderers and the controller. The completed
+gate and full deterministic suite passed:
+
+```text
+cadr test summary: systems=9 checks=12868 pass=12868 skip=0 fail=0
+```
+
+### Full verification
+
+`./scripts/verify.sh` passed all thirteen deterministic stages and both live
+stages. The credential-gated report ran seven items successfully, skipped
+Anthropic because `ANTHROPIC_API_KEY` is unset, and failed none:
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+`LIVE-DEEPSEEK-EVAL-SMOKE` passed all four checks; its separately recorded
+baseline audit remains deferred and unchanged. The deterministic stage table
+was:
+
+```text
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+```
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 20:46:30.765671794 +0800
+latest source commit: 357130858839409ed93f442ce85953e180786016 2026-08-03T20:44:13+08:00
+latest source mtime: 2026-08-03 20:44:10.274474102 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The production inventory is now 209 Lisp files / 100,378 lines and five
+embedded assets / 4,275 lines, for 214 files / 104,653 lines total. All
+screen/overlay snapshots and their independent semantic assertions, payload
+and wire fixtures, extension exports, session bytes, tool results, exit codes,
+and other observable output remained unchanged. Implementation commit:
+`357130858839409ed93f442ce85953e180786016`.
