@@ -263,13 +263,13 @@ navigation.
 |---|---|---|
 | Grapheme/cell width, wrapping, ANSI-aware layout | 已实现 | [unicode](../src/cadr-tui/unicode.lisp), [CL-TUI](#cl-tui) |
 | Input decoding, bracketed paste, multiline editor, kill ring and undo | 已实现 | [input](../src/cadr-tui/input.lisp), [stdin buffer](../src/cadr-tui/stdin-buffer.lisp), [editor](../src/cadr-tui/editor.lisp), [CL-TUI](#cl-tui) |
-| Reusable component tree, focus lifecycle, box/text/spacer/Markdown/image/settings/loader composition and coding-agent interactive components | 已实现 | [composition](../src/cadr-tui/composition.lisp), [interactive components](../src/cadr-cli/interactive/components/), [CL-TUI](#cl-tui) |
-| Markdown, tool block, status bar, select list, truncated text and image component | 已实现 | [components](../src/cadr-tui/components.lisp), [CL-TUI](#cl-tui) |
-| Differential renderer and terminal cleanup | 已实现 | [renderer](../src/cadr-tui/renderer.lisp), [terminal](../src/cadr-tui/terminal.lisp), [CL-TUI](#cl-tui) |
+| Reusable component tree, focus lifecycle, box/text/spacer/Markdown/image/settings/loader composition and coding-agent interactive components | 已实现 | [composition](../src/cadr-tui/composition/), [interactive components](../src/cadr-cli/interactive/components/), [CL-TUI](#cl-tui) |
+| Markdown, tool block, status bar, select list, truncated text and image component | 已实现 | [components](../src/cadr-tui/components/), [CL-TUI](#cl-tui) |
+| Differential renderer and terminal cleanup | 已实现 | [renderer](../src/cadr-tui/renderer/), [terminal](../src/cadr-tui/terminal.lisp), [CL-TUI](#cl-tui) |
 | Autocomplete, fuzzy matching, configurable keybindings, word navigation | 已实现 | [autocomplete](../src/cadr-tui/autocomplete.lisp), [fuzzy](../src/cadr-tui/fuzzy.lisp), [keybindings](../src/cadr-tui/keybindings.lisp), [word navigation](../src/cadr-tui/word-navigation.lisp), [CL-TUI](#cl-tui) |
-| Overlay stack/compositing | 已实现 | [overlay](../src/cadr-tui/overlay.lisp), [renderer](../src/cadr-tui/renderer.lisp), [CL-TUI](#cl-tui) |
+| Overlay stack/compositing | 已实现 | [overlay](../src/cadr-tui/overlay.lisp), [renderer](../src/cadr-tui/renderer/), [CL-TUI](#cl-tui) |
 | Terminal image protocols, cell-size replies, color probing | 已实现 | [terminal image](../src/cadr-tui/terminal-image.lisp), [terminal colors](../src/cadr-tui/terminal-colors.lisp), [CL-TUI](#cl-tui) |
-| Goal 5 reference component/test surface | 已实现 | [components](../src/cadr-tui/components.lisp), [component parity tests](../test/cadr-tui/component-parity-test.lisp), [CL-TUI](#cl-tui) |
+| Goal 5 reference component/test surface | 已实现 | [components](../src/cadr-tui/components/), [component parity tests](../test/cadr-tui/component-parity-test.lisp), [CL-TUI](#cl-tui) |
 
 ### 2.5 `storage`
 

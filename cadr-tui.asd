@@ -27,9 +27,28 @@
                              (:file "autocomplete")
                              (:file "editor")
                              (:file "input-component")
-                             (:file "components")
-                             (:file "renderer")
-                             (:file "composition")
+                             (:module "components"
+                              :serial t
+                              :components ((:file "markdown")
+                                           (:file "image")
+                                           (:file "tool-block")
+                                           (:file "status")
+                                           (:file "select-list")))
+                             (:module "renderer"
+                              :serial t
+                              :components ((:file "terminal-protocol")
+                                           (:file "virtual-terminal")
+                                           (:file "lifecycle-input")
+                                           (:file "main-screen")
+                                           (:file "alt-screen")))
+                             (:module "composition"
+                              :serial t
+                              :components ((:file "protocol")
+                                           (:file "text-box")
+                                           (:file "rich-content")
+                                           (:file "settings-list")
+                                           (:file "loaders")
+                                           (:file "root")))
                              (:file "terminal"))))
   :in-order-to ((test-op (test-op "cadr-tui/tests"))))
 

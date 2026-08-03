@@ -514,3 +514,154 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B6 owner load order is not dependency-safe: ~S" positions))))
+
+(test goal14-b7-reusable-tui-internals-have-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-tui"))
+         (owners
+           '(("components/markdown.lisp"
+              "(defun render-inline-markdown"
+              "(defun render-markdown"
+              "(defun render-truncated-text")
+             ("components/image.lisp"
+              "(defun render-image-component")
+             ("components/tool-block.lisp"
+              "(defstruct (tool-block"
+              "(defun render-tool-block")
+             ("components/status.lisp"
+              "(defun render-footer"
+              "(defun render-status-bar")
+             ("components/select-list.lisp"
+              "(defstruct (select-list"
+              "(defun render-select-list")
+             ("composition/protocol.lisp"
+              "(defclass component () ())"
+              "(defclass component-container")
+             ("composition/text-box.lisp"
+              "(defclass text-component"
+              "(defclass box-component"
+              "(defclass truncated-text-component")
+             ("composition/rich-content.lisp"
+              "(defclass markdown-component"
+              "(defclass image-component")
+             ("composition/settings-list.lisp"
+              "(defstruct setting-item"
+              "(defclass settings-list-component"
+              "(defgeneric editor-component-text")
+             ("composition/loaders.lisp"
+              "(defclass loader-component"
+              "(defclass cancellable-loader-component")
+             ("composition/root.lisp"
+              "(defclass tui-root"
+              "(defun tui-show-overlay")
+             ("renderer/terminal-protocol.lisp"
+              "(defclass terminal ()"
+              "(defgeneric terminal-start")
+             ("renderer/virtual-terminal.lisp"
+              "(defclass virtual-terminal"
+              "(defun virtual-terminal-snapshot")
+             ("renderer/lifecycle-input.lisp"
+              "(defstruct (terminal-renderer"
+              "(defun renderer-start"
+              "(defun renderer-handle-input")
+             ("renderer/main-screen.lisp"
+              "(defun clipped-frame-lines"
+              "(defun render-main-frame")
+             ("renderer/alt-screen.lisp"
+              "(defun prepare-alt-line"
+              "(defun render-alt-frame"
+              "(defun render-frame")))
+         (definition-count 0))
+    (dolist (owner owners)
+      (let ((source
+              (goal14-b1-source
+               root (format nil "src/cadr-tui/~A" (first owner)))))
+        (is (not (null source)) "missing B7 owner ~A" (first owner))
+        (when source
+          (incf definition-count
+                (count-if
+                 (lambda (line)
+                   (uiop:string-prefix-p "(def" line))
+                 (uiop:split-string source :separator '(#\Newline))))
+          (dolist (marker (rest owner))
+            (is (search marker source)
+                "~A does not own ~A" (first owner) marker)))))
+    (is (= 288 definition-count)
+        "B7 moved a different top-level definition set: ~D"
+        definition-count)
+    (dolist (relative '("src/cadr-tui/components.lisp"
+                        "src/cadr-tui/composition.lisp"
+                        "src/cadr-tui/renderer.lisp"))
+      (is (not (probe-file (merge-pathnames relative root)))
+          "B7 legacy mixed owner remains: ~A" relative))))
+
+(test goal14-b7-reuses-core-cancellation-and-cleanup-before-split
+  (let* ((root (asdf:system-source-directory "cadr-tui"))
+         (loaders
+           (goal14-b1-source root "src/cadr-tui/composition/loaders.lisp"))
+         (sources
+           (loop for relative in
+                 '("components/markdown.lisp" "components/image.lisp"
+                   "components/tool-block.lisp" "components/status.lisp"
+                   "components/select-list.lisp" "composition/protocol.lisp"
+                   "composition/text-box.lisp" "composition/rich-content.lisp"
+                   "composition/settings-list.lisp" "composition/loaders.lisp"
+                   "composition/root.lisp" "renderer/terminal-protocol.lisp"
+                   "renderer/virtual-terminal.lisp" "renderer/lifecycle-input.lisp"
+                   "renderer/main-screen.lisp" "renderer/alt-screen.lisp")
+                 collect (goal14-b1-source
+                          root (format nil "src/cadr-tui/~A" relative)))))
+    (is (and loaders
+             (search "(stop-thread-for-cleanup thread)" loaders)
+             (search "(cadr-core:make-cancellation-state)" loaders))
+        "B7 loader owner bypasses the B3 cleanup/cancellation primitives")
+    (dolist (source sources)
+      (is (not (null source)) "missing B7 source")
+      (when source
+        (is (not (search "sb-thread:join-thread" source))
+            "B7 source reintroduced an unbounded cleanup join")
+        (is (not (search "(defun stop-thread-for-cleanup" source))
+            "B7 source redefined the B3 cleanup policy")))))
+
+(test goal14-b7-asdf-loads-protocols-before-implementations
+  (let* ((root (asdf:system-source-directory "cadr-tui"))
+         (source
+           (uiop:read-file-string (merge-pathnames "cadr-tui.asd" root)))
+         (ordered
+           '(("(:module \"components\"" 1)
+             ("(:file \"markdown\")" 1)
+             ("(:file \"image\")" 1)
+             ("(:file \"tool-block\")" 1)
+             ("(:file \"status\")" 1)
+             ("(:file \"select-list\")" 1)
+             ("(:module \"renderer\"" 1)
+             ("(:file \"terminal-protocol\")" 1)
+             ("(:file \"virtual-terminal\")" 1)
+             ("(:file \"lifecycle-input\")" 1)
+             ("(:file \"main-screen\")" 1)
+             ("(:file \"alt-screen\")" 1)
+             ("(:module \"composition\"" 1)
+             ("(:file \"protocol\")" 1)
+             ("(:file \"text-box\")" 1)
+             ("(:file \"rich-content\")" 1)
+             ("(:file \"settings-list\")" 1)
+             ("(:file \"loaders\")" 1)
+             ("(:file \"root\")" 1)))
+         (cursor 0)
+         (positions nil))
+    (dolist (spec ordered)
+      (let ((position
+              (loop repeat (second spec)
+                    for found = (search (first spec) source :start2 cursor)
+                    do (unless found (return nil))
+                       (setf cursor (1+ found))
+                    finally (return found))))
+        (push position positions)))
+    (setf positions (nreverse positions))
+    (is (every #'identity positions)
+        "cadr-tui.asd omits a B7 load boundary: ~S"
+        (loop for spec in ordered
+              for position in positions
+              unless position collect (first spec)))
+    (when (every #'identity positions)
+      (is (every #'< positions (rest positions))
+          "B7 owner load order is not dependency-safe: ~S" positions))))

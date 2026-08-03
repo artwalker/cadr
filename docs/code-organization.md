@@ -11,14 +11,16 @@ export assets and three crash/cleanup files; Goal 14 B3 then added the six-file
 `cadr-core` leaf, B1 extracted eight interactive leaf owners, B2 replaced
 the remaining selector monolith with eight selector owners, B4 replaced
 eight mixed CLI service files with 37 domain owners, B5 split CLI bootstrap
-and RPC command handling into eleven cohesive owners, and B6 replaced the two
-interactive controller/component monoliths with sixteen responsibility owners.  Silently
+and RPC command handling into eleven cohesive owners, B6 replaced the two
+interactive controller/component monoliths with sixteen responsibility owners,
+and B7 replaced three reusable TUI monoliths with sixteen protocol-ordered
+owners.  Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 214 current files.
+goal is supposed to police, so this ledger covers all 227 current files.
 
-- 209 Lisp files, 100,378 lines, 4,261 top-level definitions.
+- 222 Lisp files, 100,383 lines, 4,261 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 214 production files and 104,653 physical lines in total.
+- 227 production files and 104,658 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -257,8 +259,17 @@ files with unrelated facilities fail.
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
 | `src/cadr-tui/autocomplete.lisp` | 595 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | 合格·大体量 |
-| `src/cadr-tui/components.lisp` | 2,313 | 68 | Mix Markdown/table/list rendering, images, tool blocks/diffs, footer/status bars, and select lists. | 应拆分 |
-| `src/cadr-tui/composition.lisp` | 1,678 | 134 | Mix the component protocol with text/box/Markdown/image/settings/loader components and TUI root/overlay orchestration. | 应拆分 |
+| `src/cadr-tui/components/image.lisp` | 45 | 1 | Render image bytes or the baseline text fallback. | 合格 |
+| `src/cadr-tui/components/markdown.lisp` | 1,110 | 32 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | 合格·大体量 |
+| `src/cadr-tui/components/select-list.lisp` | 308 | 8 | Own filterable two-column selection state, navigation, and rendering. | 合格 |
+| `src/cadr-tui/components/status.lisp` | 246 | 6 | Render footer and status-bar projections. | 合格 |
+| `src/cadr-tui/components/tool-block.lisp` | 609 | 21 | Render tool titles, previews, diffs, elapsed time, and result states. | 合格·大体量 |
+| `src/cadr-tui/composition/loaders.lisp` | 238 | 20 | Own animated and cancellable loader components using the shared cleanup policy. | 合格 |
+| `src/cadr-tui/composition/protocol.lisp` | 128 | 30 | Define the component, focus, container, render, event, and disposal protocols. | 合格 |
+| `src/cadr-tui/composition/rich-content.lisp` | 276 | 10 | Compose cached Markdown and image components. | 合格 |
+| `src/cadr-tui/composition/root.lisp` | 317 | 23 | Own the TUI root, focus routing, render scheduling, and overlay stack. | 合格 |
+| `src/cadr-tui/composition/settings-list.lisp` | 459 | 30 | Implement settings-list behavior and the shared editor-component adapters. | 合格·大体量 |
+| `src/cadr-tui/composition/text-box.lisp` | 275 | 23 | Implement text, spacer, box, and truncated-text components. | 合格 |
 | `src/cadr-tui/editor.lisp` | 1,978 | 87 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | 合格·大体量 |
 | `src/cadr-tui/fuzzy.lisp` | 117 | 6 | Score and filter fuzzy text matches. | 合格 |
 | `src/cadr-tui/input-component.lisp` | 419 | 19 | Implement the grapheme-aware single-line Input component and software cursor. | 合格·大体量 |
@@ -269,7 +280,11 @@ files with unrelated facilities fail.
 | `src/cadr-tui/native-modifiers.lisp` | 78 | 11 | Query Apple Terminal modifier flags through CoreGraphics when supported. | 合格 |
 | `src/cadr-tui/overlay.lisp` | 481 | 30 | Resolve overlay geometry, composite frames, and manage overlay focus/stack state. | 合格·大体量 |
 | `src/cadr-tui/package.lisp` | 343 | 1 | Declare the public `cadr-tui` package surface. | 合格 |
-| `src/cadr-tui/renderer.lisp` | 1,714 | 84 | Mix terminal/virtual-terminal protocols, lifecycle, selection/mouse input, main-screen diffs, and alt-screen document rendering. | 应拆分 |
+| `src/cadr-tui/renderer/alt-screen.lisp` | 293 | 7 | Prepare, crop, render, and restore alternate-screen documents. | 合格 |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 737 | 27 | Own renderer state, lifecycle, viewport, selection, mouse, and input dispatch. | 合格·大体量 |
+| `src/cadr-tui/renderer/main-screen.lisp` | 448 | 15 | Render incremental main-screen frames and manage terminal images. | 合格·大体量 |
+| `src/cadr-tui/renderer/terminal-protocol.lisp` | 74 | 23 | Define the terminal output, cursor, lifecycle, query, and capability protocol. | 合格 |
+| `src/cadr-tui/renderer/virtual-terminal.lisp` | 167 | 12 | Implement the deterministic in-memory terminal and screen snapshot. | 合格 |
 | `src/cadr-tui/stdin-buffer.lisp` | 229 | 11 | Buffer terminal bytes until complete atomic control/key sequences can be emitted. | 合格 |
 | `src/cadr-tui/terminal-colors.lisp` | 191 | 15 | Parse terminal background/color-scheme/cell-size responses. | 合格 |
 | `src/cadr-tui/terminal-image.lisp` | 677 | 43 | Detect image capabilities, encode Kitty/iTerm images, inspect dimensions, crop, link, and fall back. | 合格·大体量 |
@@ -292,12 +307,13 @@ files with unrelated facilities fail.
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
-| `cadr-tui` | 10 | 10 | 3 | 0 | 23 |
-| **Total** | **131** | **67** | **16** | **0** | **214** |
+| `cadr-tui` | 26 | 10 | 0 | 0 | 36 |
+| **Total** | **147** | **67** | **13** | **0** | **227** |
 
-The 16 failing files are being reduced batch by batch.  After B3, B1, B2, B4,
-B5, and B6, the cohesion map below replaces them with 79 still-pending named modules,
-yielding a planning denominator of 279 files and a remaining net increase of 65.  This
+The 13 failing files are being reduced batch by batch.  After B3, B1, B2, B4,
+B5, B6, and B7, the cohesion map below replaces them with 63 still-pending named
+modules, yielding a planning denominator of 277 files and a remaining net
+increase of 50.  This
 is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
@@ -307,11 +323,11 @@ boundary is false.
 | `cadr-agent` | 4 | 21 | +17 |
 | `cadr-ai` | 9 | 42 | +33 |
 | `cadr-cli` | 0 | 0 | +0 |
-| `cadr-tui` | 3 | 16 | +13 |
-| **Total** | **16** | **79** | **+65** |
+| `cadr-tui` | 0 | 0 | +0 |
+| **Total** | **13** | **63** | **+50** |
 
-At current boundaries the physical distribution is 112 files below 300 lines,
-59 at 300–699, 18 at 700–999, and 25 at or above 1,000;
+At current boundaries the physical distribution is 119 files below 300 lines,
+64 at 300–699, 19 at 700–999, and 20 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000.  Average file
 size falls from 730 to about 382 lines and the under-300 share from 42% to about
 57%.  The modest percentage is honest: cohesive files such as the multiline
@@ -348,9 +364,9 @@ not chopped up to make the chart prettier.
 | `cli/settings.lisp` | **Completed in B4:** `settings/{config-values,manager,trust}.lisp` (3). |
 | `cli/tui.lisp` | **Completed in B6:** `interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` (11); the existing B1 `status` and `transcript` owners absorbed their controller-side responsibilities. |
 | `cli/utilities.lisp` | **Completed in B4:** `support/{threads,atomic-write,changelog-share,html,resume-version-git,headers,external-editor}.lisp` (7). |
-| `tui/components.lisp` | `components/{markdown,image,tool-block,status,select-list}.lisp` (5) |
-| `tui/composition.lisp` | `composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` (6) |
-| `tui/renderer.lisp` | `renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp` (5) |
+| `tui/components.lisp` | **Completed in B7:** `components/{markdown,image,tool-block,status,select-list}.lisp` (5). |
+| `tui/composition.lisp` | **Completed in B7:** `composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` (6). |
+| `tui/renderer.lisp` | **Completed in B7:** `renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp` (5). |
 
 ## 4. Directory ownership rules
 
@@ -468,7 +484,7 @@ than the file table.
 | Decision repeated by hand | Current locations | Failure if one copy drifts | Prior bug | Convergence |
 |---|---|---|---|---|
 | Bounded thread cleanup | **Converged in B3:** `cadr-core/threads.lisp` owns bounded cleanup; `cli/support/threads.lisp` is a branch-free compatibility delegate and raw active waits require an explicit reason. | Exit hangs, orphaned worker, or forced termination at the wrong time | Goal 13 exit deadlock | Source gates reject unannotated cleanup joins outside the core owner. |
-| Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions.lisp:97-149`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition.lisp:1307-1359` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
+| Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions.lisp:97-149`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition/loaders.lisp:183-238` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
 | Infrastructure output ownership | **CLI extension side converged in B4 and command/RPC consumers preserved in B5:** `cli/extensions/loader.lisp` owns extension output and infrastructure capture, `bootstrap/commands.lisp` owns frontend mode injection, and `modes/rpc/jsonl.lisp` owns wire emission; process/tool, TUI notice/browser, server Radius, and fatal sinks retain their domain owners. | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | Source gates keep each output category with its sink and reject direct JSONL writes from RPC command domains. |
 | Selector frame semantics | **Converged in B2:** `cli/interactive/selectors/common.lisp` owns frame sections, semantic borders/titles/input/help, centered viewport/count, and wrap navigation; seven domain owners supply entries and domain callbacks. | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | `selector-frame` is the sole shared owner; source gates require every selector family to render through it and delegate wrap navigation. |
 | Provider identity/auth metadata | 38 rows at `ai/registry.lisp:20-307`; OAuth metadata in `ai/oauth.lisp:3-62` and `oauth-flows.lisp:19-50`; auth/login/refresh case trees at `registry.lisp:581-785`; ambient names at `registry.lisp:491-548` | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | One validated provider declaration owns all static fields and callback identities; generated baseline fixture checks every provider × field. |
@@ -580,6 +596,20 @@ controller keeps only lifecycle and input/command routing.  All 224 top-level
 definitions moved without renaming, public package text stayed byte-identical,
 and source gates reject either legacy monolith or a second selector/output/
 cleanup policy.
+
+### Part C B7 implementation status
+
+B7 moved the 288 existing reusable-TUI definitions into sixteen exact owners.
+Component protocols load before concrete composition methods; terminal
+protocols and the virtual terminal load before lifecycle/input and the two
+screen renderers.  The loader owner delegates cancellation and bounded thread
+cleanup to the B3 primitives instead of reintroducing either policy.
+
+No definition was renamed and `src/cadr-tui/package.lisp` remained
+byte-identical, so the public export set is frozen.  Full-screen, overlay,
+mouse, scroll, performance, and fresh-compile gates protect the unchanged
+observable behavior while organization tests reject all three legacy
+monoliths and any dependency-unsafe ASDF order.
 
 ### Already-converged examples to preserve
 

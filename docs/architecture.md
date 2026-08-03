@@ -214,8 +214,25 @@ src/
     autocomplete.lisp
     editor.lisp
     input-component.lisp
-    components.lisp
-    renderer.lisp
+    components/
+      markdown.lisp
+      image.lisp
+      tool-block.lisp
+      status.lisp
+      select-list.lisp
+    renderer/
+      terminal-protocol.lisp
+      virtual-terminal.lisp
+      lifecycle-input.lisp
+      main-screen.lisp
+      alt-screen.lisp
+    composition/
+      protocol.lisp
+      text-box.lisp
+      rich-content.lisp
+      settings-list.lisp
+      loaders.lisp
+      root.lisp
     terminal.lisp
 test/
   fixtures/

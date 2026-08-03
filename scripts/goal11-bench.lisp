@@ -1425,7 +1425,7 @@
             "hash-object"
             (concatenate
              'string project
-             "src/cadr-tui/renderer.lisp"))))))
+             "src/cadr-tui/renderer/alt-screen.lisp"))))))
 
 (defun run-benchmarks ()
   (let* ((session-scale-profile

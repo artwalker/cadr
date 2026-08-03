@@ -194,9 +194,9 @@ background reset    = ESC[49m
 |---|---|---|
 | LY-01 | root 顺序为 startup/chat/pending/status/widgets/editor/footer；above-editor widget container 在空态保留一行、非空态保留一行 leading spacer，below-editor container 不自带 spacer；`src/cadr-cli/tui.lisp:461-474,2109-2329`，`GOAL9-B3-BASE-SCREEN-ABOVE-EDITOR-SPACER-MATCHES-BASELINE-COMPOSITION`。 | 不一致（已改齐） |
 | LY-02 | user 全宽背景 X=1/Y=1；assistant 无背景且可见内容前一空行；thinking muted+italic；`src/cadr-cli/tui.lisp:1689,1758,1872`。 | 不一致（已改齐） |
-| LY-03 | tool 前 spacer、X=1/Y=1、状态背景；`src/cadr-tui/components.lisp:1567` `render-tool-block`。 | 不一致（已改齐） |
+| LY-03 | tool 前 spacer、X=1/Y=1、状态背景；`src/cadr-tui/components/tool-block.lisp:464` `render-tool-block`。 | 不一致（已改齐） |
 | LY-04 | editor 只有上下 `─`，高度 `max(5,floor(rows*0.3))`，滚动信息在边框；`src/cadr-tui/editor.lisp:1551` `render-editor`。 | 不一致（已改齐） |
-| LY-05 | select primary=32、gap=2、description min=10、默认 5 行、宽度 `<=40` 关闭 description；`src/cadr-tui/components.lisp:1923,2024`。 | 不一致（已改齐） |
+| LY-05 | select primary=32、gap=2、description min=10、默认 5 行、宽度 `<=40` 关闭 description；`src/cadr-tui/components/select-list.lisp:19,120`。 | 不一致（已改齐） |
 | LY-06 | overlay 默认 `min(80,width)`，selector 自身边框、spacer 和窄屏裁剪；`src/cadr-tui/overlay.lisp:79` `resolve-overlay-layout`、`src/cadr-cli/tui.lisp:1997`。 | 一致 |
 | MD-01 | H1/H2/H3+ 样式、H3+ 前缀和 block spacing 对齐。 | 不一致（已改齐） |
 | MD-02 | code fence、两格缩进、在册语言语法着色、未知语言 code-block 色对齐；完整移植基线 `syntax-highlight.test.ts` 的 span/entity/继承、TS、diff、regexp、decorator、HTML 门禁，并覆盖 HTML/diff/JSON/Bash/SQL 可见 token 边界与 Python/Bash URL 反例。审计基线完成态本身保留开、闭 fence 行，因此看到字面 <code>```text</code> / <code>```</code> 是已核实非差异。 | 不一致（已改齐） |

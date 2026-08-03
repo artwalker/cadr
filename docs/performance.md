@@ -295,7 +295,7 @@ median allocation 降约 54×；默认规模现在能完整跑完并保留全部
 基线路径证据为 `packages/tui/src/TuiAltScreen.ts:73-84,147-180,234-277,350-425`
 与 `packages/tui/src/tui.ts:730-770`；cadr 路径为
 `src/cadr-cli/interactive/controller.lisp:2050-2160` 和
-`src/cadr-tui/renderer.lisp:857-880`。
+`src/cadr-tui/renderer/lifecycle-input.lisp:619-642`。
 
 Goal 14 B6 只移动 interactive forms；性能 harness 的兼容字段
 `tui_object_id` 现在记录 `interactive/controller.lisp` 的 Git object，完整
@@ -365,7 +365,8 @@ The renderer now retains the immediately preceding raw line list, prepared
 document, and width. A new frame reuses prepared strings for the maximal
 identity-stable prefix and only performs OSC stripping, width measurement, and
 clipping from the first dirty line onward
-(`src/cadr-tui/renderer.lisp:251-254,1424-1478,1544-1545`). Width changes force
+(`src/cadr-tui/renderer/lifecycle-input.lisp:13-16`;
+`src/cadr-tui/renderer/alt-screen.lisp:3-57,123-124`). Width changes force
 a full rebuild. The cache is one generation only, so it is bounded; the full
 logical document remains available to viewport cropping, selection/copy, and
 alternate-screen exit. This is memoized layout, not a presentation change.
