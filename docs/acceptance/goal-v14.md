@@ -87,3 +87,110 @@ cadr test summary: systems=8 checks=12511 pass=12511 skip=0 fail=0
 ```
 
 Part A starts only after this A0 implementation and ledger are committed.
+
+## Part A — code-organization audit
+
+### Result
+
+The complete audit is [`docs/code-organization.md`](../code-organization.md).
+The draft denominator of 135 files was stale: the clean tree at A0 commit
+`47f71898e` contains 143 production files because Goal 13 added five approved
+offline-export assets plus `cadr-ai/crash.lisp`, `cadr-cli/crash.lisp`, and
+`cadr-tui/threads.lisp`.  Omitting those eight files would have hidden the
+newest crash and cleanup boundaries from the audit.
+
+The ledger accounts for every current source file exactly once:
+
+| System | 合格 | 合格·大体量 | 应拆分 | 应合并 | Total |
+|---|---:|---:|---:|---:|---:|
+| `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
+| `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
+| `cadr-cli` | 20 | 10 | 13 | 0 | 43 |
+| `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
+| `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
+| `cadr-server` | 7 | 4 | 0 | 0 | 11 |
+| `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
+| `cadr-tui` | 10 | 10 | 3 | 0 | 23 |
+| **Total** | **62** | **52** | **29** | **0** | **143** |
+
+The 29 split candidates contain 54,456 of 104,348 production lines.  Their
+cohesion map names 159 replacement responsibilities and produces a planning
+denominator of 273 files; the expected distribution is approximately 156 below
+300 lines, 86 at 300--699, 23 at 700--999, and 8 at or above 1,000.  These are
+consequences of named boundaries, not line-count targets.
+
+### Required anomaly conclusions
+
+- `cadr-server` is intentionally a shallow process supervisor, not a duplicate
+  agent host.  It launches a child `cadr --mode rpc`; its extra code is Radius,
+  IPC, child isolation, and recovery.  Adding `cadr-agent`/`cadr-cli` would
+  collapse a useful process boundary without removing duplicated behavior.
+- The provider comparison in the draft was incomplete.  At baseline
+  `74caa2649`, pi has 82 provider declaration files / 2,111 lines plus 31 API
+  protocol files / 10,566 lines.  Cadr already stores 38 brands as data rows;
+  its actual defects are six protocols combined in `independent.lisp` and
+  provider/auth identity repeated across declarations, OAuth metadata, callback
+  cases, environment sources, and runtime projection.
+- The historical whole-tree `src/cadr-ai` object freeze ended through approved
+  Goal 13 work.  Public exports, wire/payload/session behavior, the extension
+  export SHA `61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`,
+  and the 34-event SHA
+  `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`
+  remain frozen.
+
+### Repeated-decision audit
+
+Nine current decisions meet the Goal 14 convergence threshold: bounded thread
+cleanup, cancellation propagation, infrastructure-output ownership, selector
+frame semantics, provider identity/auth metadata, secret-safe printing, atomic
+persistence/file modes, JavaScript string/byte metrics, and ISO time/ID
+formatting.  The ledger records every location, failure mode, prior incident,
+and proposed single owner.  Path display and provider payload construction are
+explicit non-candidates because their baseline semantics genuinely differ by
+caller/protocol.
+
+### Mechanical audit proof
+
+The audit used column-zero `def*`/`define-*` forms as the top-level-definition
+metric.  Direct comparison against the tree produced no missing/extra path and
+no line/definition-count mismatch:
+
+```text
+ledger rows: 143
+tree files: 143
+path set difference: empty
+line/count mismatches: empty
+ledger totals: lines=104348 definitions=4246
+verdict totals: 合格=62 合格·大体量=52 应拆分=29 应合并=0
+```
+
+Part A changed no production file.  Relative to A0 commit `47f71898e`, the
+owned Part A/B delta consists only of this report,
+`docs/code-organization.md`, and the Part B proposal; the pre-existing modified
+Goal 8 report and untracked exported HTML remain untouched and uncommitted.
+
+## Part B — ranked implementation proposal
+
+### Result
+
+The complete proposal is
+[`docs/proposals/goal-v14-code-organization.md`](../proposals/goal-v14-code-organization.md).
+It ranks eleven independently revertible Part C batches from low-risk
+interactive leaf extraction through the frozen extension/provider surfaces.
+Each batch records its source/target files, export and freeze exposure, ASDF
+load-order risk, and required byte-stability gates.
+
+### User decisions required
+
+Part C is blocked pending three explicit decisions:
+
+1. approve or reject the ranked B1--B11 sequence;
+2. approve or reject B3's new internal leaf ASDF system, `cadr-core`, for the
+   cross-package failure-safety primitives that cannot live in `cadr-ai`
+   without reversing the protected TUI boundary;
+3. approve or reject B11's validated provider declaration schema, which moves
+   only the existing 38 providers and their existing metadata/callbacks and
+   adds no provider, auth method, endpoint, scope, environment source, model,
+   or fallback.
+
+No Part C implementation starts before those rulings.
