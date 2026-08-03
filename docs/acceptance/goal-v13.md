@@ -848,22 +848,32 @@ projects it session-locally. Goal 14 can split provider implementations into
 one file per provider without changing selector or dialog consumers: each
 provider moves together with its protocol, auth flow, and presentation data.
 
-### Auth-option partition requiring user ruling
+### Auth-option partition alignment
 
-The title/copy defects are fixed, but the audit found a separate pre-existing
-behavioral partition difference. It was not changed because the instruction
-requires an explicit ruling rather than an inferred expansion.
+The user approved the missing baseline partition as capability parity, not a
+Cadr-specific mechanism. The implementation now uses one cardinality rule for
+built-in and session-local providers:
 
-| Provider/path | Fixed baseline | Current Cadr |
+| Provider/path | Baseline | Cadr after alignment |
 |---|---|---|
-| Anthropic, GitHub Copilot, Kimi For Coding, OpenRouter, Radius, xAI via `/login <provider>` | provider has OAuth and API-key methods, so show `Select authentication method for <provider>:` with the provider login label plus `Sign in with an API key` (`interactive-mode.ts:4937-5039`) | directly starts the provider OAuth flow |
-| OpenAI Codex via `/login openai-codex` | provider is OAuth-only, then the OAuth method itself asks `Browser login (default)` vs `Device code login (headless)` (`auth/oauth/openai-codex.ts:510-528`) | directly starts browser/manual-callback login; no device-code branch |
-| `/login` without a provider | first asks `Select authentication method:` and then selects a provider | same top-level method/provider selector shape |
+| provider has no login methods | `No login methods available.` (`interactive-mode.ts:5001-5004`) | exact status text; no empty selector |
+| provider has exactly one method | immediately starts that method (`interactive-mode.ts:5006-5011`) | same; no extra menu |
+| provider has OAuth and API-key methods | `Select authentication method for <provider>:`; OAuth uses provider `loginLabel` or the account fallback, API key uses the fixed label (`interactive-mode.ts:4984-5039`) | same provider-owned metadata and ordering; no provider-specific conditional pile |
+| OpenAI Codex OAuth | inner `Browser login (default)` / `Device code login (headless)` selector, then the chosen flow (`openai-codex.ts:510-530`) | same runtime prompt; device authorization, polling, cancellation, code exchange, and canonical `openai-codex` persistence are wired end to end |
+| provider selector cancel after generic auth-type selection | returns to `Select authentication method:` | same nested-selector return path |
 
-The recommended ruling is to align both missing partitions exactly. They are
-baseline capability, not a Cadr-specific mechanism, but implementing them would
-change the current interactive command route and therefore is deliberately not
-smuggled into this copy correction.
+Red-first regressions are
+`GOAL13-PROVIDER-SPECIFIC-LOGIN-METHOD-SELECTOR-USES-BASELINE-CARDINALITY-AND-LABELS`,
+`GOAL13-DIRECT-LOGIN-WITH-MULTIPLE-METHODS-OPENS-PROVIDER-SPECIFIC-SELECTOR`,
+`GOAL13-LOGIN-PROVIDER-SELECTOR-CANCEL-RETURNS-TO-AUTH-TYPE-SELECTOR`,
+`GOAL13-BUILT-IN-RUNTIME-LOGIN-ROUTES-ALIASES-AND-PERSISTS-CANONICAL-CREDENTIALS`,
+and the three OpenAI device-code tests in `test/cadr-ai/auth-test.lisp`.
+
+The repository ignore audit also follows the fixed baseline rather than hiding
+all HTML: baseline `pi-*.html` / `out.html` becomes `cadr-*.html` / `out.html`.
+Thus default `cadr-session-*.html` exports do not dirty the worktree, while the
+legacy arbitrary-name `ms9te620-dgwif1j3gv42.html` remains deliberately visible
+and untouched.
 
 ### Why 12,056 checks missed it
 
@@ -983,9 +993,9 @@ Artifact hashes after adding the measured cold-start blocks:
 96350ee3588e0143d745b1af2f0c295f542b5c6c0c31693b65710dcea0ed11f6  docs/benchmarks/goal-v13-c3-final.json
 ```
 
-Goal 13 remains open for the explicit auth-option partition ruling above and
-the user's final real-terminal A/B; neither is represented as complete by
-these mechanical corrections.
+Goal 13 remains open only for the user's final real-terminal A/B; the approved
+auth-option partition above is mechanically implemented but is not represented
+as user-accepted before that A/B.
 
 ### Final completion-audit gates
 
@@ -1032,3 +1042,66 @@ latest src commit:      c5f1c632b394973bdb37ac9f65f2692559cfb3f1
 latest src commit time: 2026-08-03T12:17:34+08:00
 ./cadr --version:       cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
+
+### Authentication-partition verification
+
+The approved baseline partition landed in two implementation commits:
+
+```text
+012b851cc6c88718e271495fd2fd6a68fffafe73  feat(ai): add OpenAI Codex device-code login
+8692b01e098c050b6fdae544ffa6dce2006c4405  fix(cli): align provider authentication routing
+```
+
+The final gates ran after both commits. Provider-specific login starts directly
+for one method, opens the provider method selector only for two methods, uses
+the provider-owned `loginLabel` with the baseline fallback, and returns the
+exact `No login methods available.` copy for an empty method set. OpenAI Codex
+browser and device-code login both persist under the canonical
+`openai-codex` identity through the existing atomic auth store.
+
+```text
+./scripts/test-cl.sh
+cadr test summary: systems=8 checks=12478 pass=12478 skip=0 fail=0
+
+./scripts/verify.sh
+Deterministic stages
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The live report ran seven items successfully and skipped only Anthropic because
+`ANTHROPIC_API_KEY is not set`: 8 items total, 7 pass, 1 skip, 0 fail; 32
+checks, 31 pass, 1 skip, 0 fail. The verifier's Goal 11 gate also passed with
+`sustained_p999=28ms`, `sustained_max=56ms`, `sustained_gc_max=16.59ms`, and
+converged sustained memory.
+
+The fixed baseline ignores `pi-*.html` and `out.html`; the product-name-only
+translation is therefore `cadr-*.html` and `out.html`. This ignores the default
+`cadr-session-*.html` export without hiding arbitrary HTML. The legacy
+`ms9te620-dgwif1j3gv42.html` artifact remains untracked and untouched.
+
+Binary freshness evidence from the same verifier run:
+
+```text
+root binary build time: 2026-08-03 15:14:13.539517095 +0800
+latest src commit:      8692b01e098c050b6fdae544ffa6dce2006c4405
+latest src commit time: 2026-08-03T15:11:45+08:00
+./cadr --version:       cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+Goal 13 remains open for the user's final real-terminal A/B.

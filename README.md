@@ -252,6 +252,13 @@ Start `./cadr`, then enter:
 /login openai
 ```
 
+`/login` first chooses account vs API-key authentication, then a provider.
+`/login <provider>` skips that outer selector when the provider exposes one
+method and shows `Select authentication method for <provider>:` only when it
+actually exposes two. OpenAI Codex then offers its baseline browser and
+headless device-code methods; the device flow displays the verification URL
+and code while polling.
+
 The PKCE callback listens once on `127.0.0.1:1455`. Credentials are stored in
 `~/.cadr/auth.json` under the baseline `openai-codex` provider identity with
 mode `0600`. A successful login selects and persists that provider's default
