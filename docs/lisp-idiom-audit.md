@@ -8,9 +8,9 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=159 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=188 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 159 Lisp files and 100,323 physical lines.  The form
+The audited tree contains 188 Lisp files and 100,345 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
@@ -18,7 +18,7 @@ inventory below is syntactic evidence, not a quality score:
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
 | `cadr-ai` | 28 | 23,920 | 45 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
 | `cadr-agent` | 18 | 15,257 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 58 | 38,734 | 63 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
+| `cadr-cli` | 87 | 38,756 | 63 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
 | `cadr-tui` | 23 | 14,777 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `cadr-server` | 11 | 2,779 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |

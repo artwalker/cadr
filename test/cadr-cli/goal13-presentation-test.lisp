@@ -1192,7 +1192,7 @@
            '(("cadr-core" 6)
              ("cadr-ai" 28)
              ("cadr-agent" 18)
-             ("cadr-cli" 58)
+             ("cadr-cli" 87)
              ("cadr-tui" 23)
              ("cadr-storage" 2)
              ("cadr-server" 11)
@@ -1201,7 +1201,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=159 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=188 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1219,7 +1219,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 159 total))
+    (is (= 188 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"

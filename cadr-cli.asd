@@ -14,14 +14,42 @@
                 :components ((:file "package")
                              (:file "arguments")
                              (:file "migration")
-                             (:file "utilities")
-                             (:file "core-support")
+                             (:module "support"
+                              :serial t
+                              :components ((:file "threads")
+                                           (:file "atomic-write")
+                                           (:file "changelog-share")
+                                           (:file "html")
+                                           (:file "resume-version-git")
+                                           (:file "headers")
+                                           (:file "external-editor")
+                                           (:file "model-help")
+                                           (:file "event-bus")
+                                           (:file "timings")
+                                           (:file "file-watcher")
+                                           (:file "paths")
+                                           (:file "shell-process")))
                              (:file "tool-manager")
                              (:file "config")
-                             (:file "settings")
-                             (:file "package-manager")
+                             (:module "settings"
+                              :serial t
+                              :components ((:file "config-values")
+                                           (:file "manager")
+                                           (:file "trust")))
+                             (:module "packages"
+                              :serial t
+                              :components ((:file "source")
+                                           (:file "settings")
+                                           (:file "manifest")
+                                           (:file "commands")))
                              (:file "resource-loader")
-                             (:file "model-services")
+                             (:module "models"
+                              :serial t
+                              :components ((:file "auth-storage")
+                                           (:file "store")
+                                           (:file "registry")
+                                           (:file "matching")
+                                           (:file "credential-print")))
                              (:file "media")
                              (:module "interactive"
                               :serial t
@@ -68,8 +96,20 @@
                                  (:file "huggingface")
                                  (:file "provider")
                                  (:file "extension")))))
-                             (:file "extensions")
-                             (:file "sdk-services")
+                             (:module "extensions"
+                              :serial t
+                              :components ((:file "discovery")
+                                           (:file "loader")
+                                           (:file "commands")
+                                           (:file "installer")))
+                             (:module "sdk-services"
+                              :pathname "sdk"
+                              :serial t
+                              :components ((:file "cache-version")
+                                           (:file "system-prompt")
+                                           (:file "settings-service")
+                                           (:file "resource-service")
+                                           (:file "model-service")))
                              (:module "modes"
                               :serial t
                               :components
@@ -86,7 +126,12 @@
                              (:file "remote-repl")
                              (:file "main")
                              (:file "crash")
-                             (:file "sdk")
+                             (:module "sdk-facade"
+                              :pathname "sdk"
+                              :serial t
+                              :components ((:file "session-manager")
+                                           (:file "agent-session")
+                                           (:file "session-runtime")))
                              (:file "build-support"))))
   :in-order-to ((test-op (test-op "cadr-cli/tests"))))
 

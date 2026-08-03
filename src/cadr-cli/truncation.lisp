@@ -19,8 +19,7 @@
   (length (cadr-ai::utf8-octets text)))
 
 (defun utf16-code-unit-length (text)
-  (loop for character across text
-        sum (if (> (char-code character) #xffff) 2 1)))
+  (cadr-agent::utf16-code-unit-length text))
 
 (defun split-all-lines (text)
   (if (zerop (length text))

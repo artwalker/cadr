@@ -8,14 +8,15 @@ and whether one user-visible decision has one owner.
 
 The Goal 14 draft recorded 135 production files.  Goal 13 added five approved
 export assets and three crash/cleanup files; Goal 14 B3 then added the six-file
-`cadr-core` leaf, B1 extracted eight interactive leaf owners, and B2 replaced
-the remaining selector monolith with eight selector owners.  Silently
+`cadr-core` leaf, B1 extracted eight interactive leaf owners, B2 replaced
+the remaining selector monolith with eight selector owners, and B4 replaced
+eight mixed CLI service files with 37 domain owners.  Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 164 current files.
+goal is supposed to police, so this ledger covers all 193 current files.
 
-- 159 Lisp files, 100,323 lines, 4,261 top-level definitions.
+- 188 Lisp files, 100,345 lines, 4,261 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 164 production files and 104,598 physical lines in total.
+- 193 production files and 104,620 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -97,9 +98,24 @@ files with unrelated facilities fail.
 | `src/cadr-cli/arguments.lisp` | 586 | 17 | Parse, validate, resolve, and document the CLI argument contract. | 合格·大体量 |
 | `src/cadr-cli/build-support.lisp` | 14 | 2 | Supply the native-image save arguments and executable entry point. | 合格 |
 | `src/cadr-cli/config.lisp` | 287 | 21 | Resolve legacy CLI provider configuration and auth commands. | 合格 |
-| `src/cadr-cli/core-support.lisp` | 425 | 41 | Mix model-help copy, event bus, timings, file watching, path normalization, shell discovery, and detached-process cleanup. | 应拆分 |
+| `src/cadr-cli/support/atomic-write.lisp` | 5 | 1 | Retain the CLI compatibility entry point while delegating atomic replacement to `cadr-core`. | 合格 |
+| `src/cadr-cli/support/changelog-share.lisp` | 347 | 10 | Strip terminal styling, parse changelogs, and publish the resulting session share. | 合格 |
+| `src/cadr-cli/support/event-bus.lisp` | 40 | 5 | Own the process-local event bus and its error sink. | 合格 |
+| `src/cadr-cli/support/external-editor.lisp` | 20 | 1 | Round-trip text through the configured external editor. | 合格 |
+| `src/cadr-cli/support/file-watcher.lisp` | 69 | 6 | Poll one file signature and close its worker through bounded cleanup. | 合格 |
+| `src/cadr-cli/support/headers.lisp` | 75 | 4 | Merge provider attribution and request header sources. | 合格 |
+| `src/cadr-cli/support/html.lisp` | 64 | 5 | Escape and validate HTML-facing strings and shell quoting. | 合格 |
+| `src/cadr-cli/support/model-help.lisp` | 24 | 6 | Construct provider/model login help and missing-model diagnostics. | 合格 |
+| `src/cadr-cli/support/paths.lisp` | 119 | 6 | Parse file URLs and normalize user path input without changing caller display policy. | 合格 |
+| `src/cadr-cli/support/resume-version-git.lisp` | 227 | 9 | Format resume commands and parse versioned Git sources. | 合格 |
+| `src/cadr-cli/support/shell-process.lisp` | 132 | 12 | Discover shell configuration and manage detached process trees. | 合格 |
+| `src/cadr-cli/support/threads.lisp` | 6 | 1 | Retain the CLI cleanup entry point while delegating policy to `cadr-core`. | 合格 |
+| `src/cadr-cli/support/timings.lisp` | 46 | 6 | Record and print opt-in startup timing namespaces. | 合格 |
 | `src/cadr-cli/crash.lisp` | 59 | 4 | Bind CLI-specific secret discovery and redaction into the fatal-condition boundary. | 合格 |
-| `src/cadr-cli/extensions.lisp` | 1,097 | 41 | Mix extension discovery/deduplication, local-ASDF loading, UI wiring, command dispatch, and package installation. | 应拆分 |
+| `src/cadr-cli/extensions/commands.lisp` | 56 | 3 | Dispatch extension commands and prompt-template expansion. | 合格 |
+| `src/cadr-cli/extensions/discovery.lisp` | 212 | 11 | Define extension source/manager records and discover precedence-ordered sources. | 合格 |
+| `src/cadr-cli/extensions/installer.lisp` | 211 | 9 | Validate, stage, clone, and install opt-in extension packages. | 合格 |
+| `src/cadr-cli/extensions/loader.lisp` | 621 | 18 | Own extension/infrastructure output sinks, local dependency loading, UI wiring, and reload lifecycle. | 合格 |
 | `src/cadr-cli/extensions/llama/client.lisp` | 473 | 26 | Implement llama-server HTTP operations and progress polling. | 合格·大体量 |
 | `src/cadr-cli/extensions/llama/extension.lisp` | 316 | 11 | Bind llama commands and catalog refresh into the extension API. | 合格·大体量 |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 279 | 14 | Search and inspect Hugging Face GGUF artifacts. | 合格 |
@@ -124,20 +140,35 @@ files with unrelated facilities fail.
 | `src/cadr-cli/main.lisp` | 4,518 | 64 | Mix tool selection, session commands, settings/auth/reload glue, the entire slash-command dispatcher, and process entry. | 应拆分 |
 | `src/cadr-cli/media.lisp` | 1,236 | 55 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | 合格·大体量 |
 | `src/cadr-cli/migration.lisp` | 127 | 10 | Safely migrate the legacy user-data directory with explicit consent. | 合格 |
-| `src/cadr-cli/model-services.lisp` | 1,930 | 91 | Mix auth-store locking, runtime credentials, models.json storage, model registry/auth projection, scope matching, and credential-print commands. | 应拆分 |
+| `src/cadr-cli/models/auth-storage.lisp` | 376 | 24 | Serialize locked auth-store updates and runtime credential overrides. | 合格 |
+| `src/cadr-cli/models/credential-print.lisp` | 208 | 6 | Parse and execute the one-shot credential-print command without exposing secrets. | 合格 |
+| `src/cadr-cli/models/matching.lisp` | 413 | 17 | Resolve exact, partial, scoped, and globbed model selections. | 合格 |
+| `src/cadr-cli/models/registry.lisp` | 771 | 34 | Build, refresh, authenticate, and project the cohesive runtime model registry. | 合格·大体量 |
+| `src/cadr-cli/models/store.lisp` | 165 | 8 | Read and mutate provider-scoped `models.json` entries. | 合格 |
 | `src/cadr-cli/modes/print.lisp` | 264 | 8 | Render agent events for print and JSON command-line modes. | 合格 |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | 16 | Read/write and validate the RPC JSONL envelope. | 合格 |
 | `src/cadr-cli/modes/rpc/mode.lisp` | 1,298 | 36 | Combine model, prompt, bash, session, tree, state, and command handlers with the RPC loop. | 应拆分 |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 301 | 11 | Bridge extension UI requests to RPC dialogs with cancellation and timeout. | 合格·大体量 |
 | `src/cadr-cli/output-accumulator.lisp` | 199 | 17 | Accumulate split UTF-8 process output into a bounded tail and spill file. | 合格 |
-| `src/cadr-cli/package-manager.lisp` | 1,323 | 37 | Mix package-source parsing, settings persistence, manifest resources, installation, listing, and command handling. | 应拆分 |
+| `src/cadr-cli/packages/commands.lisp` | 578 | 9 | Parse package commands and execute help/list/install/update/remove workflows. | 合格 |
+| `src/cadr-cli/packages/manifest.lisp` | 186 | 5 | Parse package manifests and project resource paths. | 合格 |
+| `src/cadr-cli/packages/settings.lisp` | 214 | 10 | Persist, remove, deduplicate, and materialize configured package records. | 合格 |
+| `src/cadr-cli/packages/source.lisp` | 348 | 13 | Parse and canonicalize npm, Git, SSH, and local package sources. | 合格 |
 | `src/cadr-cli/package.lisp` | 285 | 1 | Declare the public `cadr-cli` package surface. | 合格 |
 | `src/cadr-cli/remote-repl.lisp` | 67 | 8 | Manage the opt-in Slynk server and active-agent binding. | 合格 |
 | `src/cadr-cli/repl.lisp` | 102 | 3 | Run the basic line-oriented REPL mode. | 合格 |
 | `src/cadr-cli/resource-loader.lisp` | 322 | 13 | Discover and reload scoped prompts, skills, themes, context, and extensions. | 合格·大体量 |
-| `src/cadr-cli/sdk-services.lisp` | 1,545 | 82 | Mix cache analytics/version/system-prompt helpers with settings, resource, and model SDK facades. | 应拆分 |
-| `src/cadr-cli/sdk.lisp` | 859 | 39 | Mix session manager/facade construction with replaceable session-runtime ownership. | 应拆分 |
-| `src/cadr-cli/settings.lisp` | 775 | 49 | Mix config-value evaluation and settings persistence with project-trust policy. | 应拆分 |
+| `src/cadr-cli/sdk/agent-session.lisp` | 475 | 16 | Construct and expose the in-process agent-session facade. | 合格 |
+| `src/cadr-cli/sdk/cache-version.lisp` | 441 | 25 | Detect cache anomalies, restore proxy state, and perform release/version checks. | 合格 |
+| `src/cadr-cli/sdk/model-service.lisp` | 355 | 19 | Implement the SDK model runtime and shared atomic credential path. | 合格 |
+| `src/cadr-cli/sdk/resource-service.lisp` | 368 | 13 | Implement reloadable SDK resource discovery and overrides. | 合格 |
+| `src/cadr-cli/sdk/session-manager.lisp` | 107 | 8 | Resolve, create, continue, open, and list SDK sessions. | 合格 |
+| `src/cadr-cli/sdk/session-runtime.lisp` | 279 | 15 | Own replaceable SDK session services and runtime disposal. | 合格 |
+| `src/cadr-cli/sdk/settings-service.lisp` | 181 | 20 | Adapt persistent and in-memory settings to the SDK contract. | 合格 |
+| `src/cadr-cli/sdk/system-prompt.lisp` | 204 | 5 | Build the SDK system prompt and extension-aware provider stream. | 合格 |
+| `src/cadr-cli/settings/config-values.lisp` | 198 | 15 | Resolve environment and command-backed configuration values and JSON merges. | 合格 |
+| `src/cadr-cli/settings/manager.lisp` | 407 | 24 | Own layered settings reload, mutation, defaults, and keybindings. | 合格 |
+| `src/cadr-cli/settings/trust.lisp` | 172 | 10 | Persist and resolve inherited project-trust decisions. | 合格 |
 | `src/cadr-cli/system-prompt.lisp` | 23 | 3 | Resolve the default, replacement, and appended system prompt. | 合格 |
 | `src/cadr-cli/tool-manager.lisp` | 283 | 24 | Locate, download, extract, and quarantine optional host tools. | 合格 |
 | `src/cadr-cli/tools/bash.lisp` | 438 | 16 | Execute bash with live output, process-group abort/timeout, truncation, and tool wrapping. | 合格·大体量 |
@@ -151,7 +182,6 @@ files with unrelated facilities fail.
 | `src/cadr-cli/tools/write.lisp` | 56 | 2 | Implement the UTF-8 write tool and baseline result count. | 合格 |
 | `src/cadr-cli/truncation.lisp` | 80 | 12 | Adapt agent truncation results to the CLI tool-result detail contract. | 合格 |
 | `src/cadr-cli/tui.lisp` | 6,308 | 154 | Mix TUI state/controller, transcript/tool rendering, frame composition, pending input, extension UI, autocomplete, themes, and the interactive lifecycle. | 应拆分 |
-| `src/cadr-cli/utilities.lisp` | 779 | 31 | Mix thread cleanup, atomic writes, ANSI/changelog/share/HTML helpers, resume copy, version/git parsing, attribution headers, and external editing. | 应拆分 |
 
 ### 2.4 `cadr-evals`
 
@@ -233,18 +263,18 @@ files with unrelated facilities fail.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
 | `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
-| `cadr-cli` | 28 | 18 | 12 | 0 | 58 |
+| `cadr-cli` | 64 | 19 | 4 | 0 | 87 |
 | `cadr-core` | 6 | 0 | 0 | 0 | 6 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 10 | 10 | 3 | 0 | 23 |
-| **Total** | **76** | **60** | **28** | **0** | **164** |
+| **Total** | **112** | **61** | **20** | **0** | **193** |
 
-The 28 failing files are being reduced batch by batch.  After B3, B1, and B2,
-the cohesion map below replaces them with 143 still-pending named modules,
-yielding a planning denominator of 279 files and a remaining net increase of 115.  This
+The 20 failing files are being reduced batch by batch.  After B3, B1, B2, and
+B4, the cohesion map below replaces them with 106 still-pending named modules,
+yielding a planning denominator of 279 files and a remaining net increase of 86.  This
 is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
@@ -253,9 +283,9 @@ boundary is false.
 |---|---:|---:|---:|
 | `cadr-agent` | 4 | 21 | +17 |
 | `cadr-ai` | 9 | 42 | +33 |
-| `cadr-cli` | 12 | 64 | +52 |
+| `cadr-cli` | 4 | 27 | +23 |
 | `cadr-tui` | 3 | 16 | +13 |
-| **Total** | **28** | **143** | **+115** |
+| **Total** | **20** | **106** | **+86** |
 
 At current boundaries the expected physical distribution is approximately 156
 files below 300 lines, 86 at 300–699, 23 at 700–999, and 8 at or above 1,000;
@@ -282,19 +312,19 @@ not chopped up to make the chart prettier.
 | `ai/providers/independent.lisp` | `providers/{azure-openai,codex,mistral,vertex,bedrock,pi-messages}.lisp` (6) |
 | `ai/registry.lisp` | `providers/{definitions,registry,runtime-projection}.lisp` (3) |
 | `ai/utilities.lisp` | `support/{threads,release,retry,token-estimation,overflow,grammar-coercion,uuid}.lisp` (7) |
-| `cli/core-support.lisp` | `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6) |
-| `cli/extensions.lisp` | `extensions/{discovery,loader,commands,installer}.lisp` (4) |
+| `cli/core-support.lisp` | **Completed in B4:** `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6). |
+| `cli/extensions.lisp` | **Completed in B4:** `extensions/{discovery,loader,commands,installer}.lisp` (4). |
 | `cli/interactive-components.lisp` | `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5) |
 | `cli/interactive-services.lisp` | **Completed in B2:** `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (8); `common` was implemented before the domain extraction. |
 | `cli/main.lisp` | `bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` (6) |
-| `cli/model-services.lisp` | `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5) |
+| `cli/model-services.lisp` | **Completed in B4:** `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5). |
 | `cli/modes/rpc/mode.lisp` | `modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` (5) |
-| `cli/package-manager.lisp` | `packages/{source,settings,manifest,commands}.lisp` (4) |
-| `cli/sdk-services.lisp` | `sdk/{cache-version,system-prompt,settings-service,resource-service,model-service}.lisp` (5) |
-| `cli/sdk.lisp` | `sdk/{session-manager,agent-session,session-runtime}.lisp` (3) |
-| `cli/settings.lisp` | `settings/{config-values,manager,trust}.lisp` (3) |
+| `cli/package-manager.lisp` | **Completed in B4:** `packages/{source,settings,manifest,commands}.lisp` (4). |
+| `cli/sdk-services.lisp` | **Completed in B4:** `sdk/{cache-version,system-prompt,settings-service,resource-service,model-service}.lisp` (5). |
+| `cli/sdk.lisp` | **Completed in B4:** `sdk/{session-manager,agent-session,session-runtime}.lisp` (3). |
+| `cli/settings.lisp` | **Completed in B4:** `settings/{config-values,manager,trust}.lisp` (3). |
 | `cli/tui.lisp` | `interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` (11) |
-| `cli/utilities.lisp` | `support/{threads,atomic-write,changelog-share,html,resume-version-git,headers,external-editor}.lisp` (7) |
+| `cli/utilities.lisp` | **Completed in B4:** `support/{threads,atomic-write,changelog-share,html,resume-version-git,headers,external-editor}.lisp` (7). |
 | `tui/components.lisp` | `components/{markdown,image,tool-block,status,select-list}.lisp` (5) |
 | `tui/composition.lisp` | `composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` (6) |
 | `tui/renderer.lisp` | `renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp` (5) |
@@ -414,14 +444,14 @@ than the file table.
 
 | Decision repeated by hand | Current locations | Failure if one copy drifts | Prior bug | Convergence |
 |---|---|---|---|---|
-| Bounded thread cleanup | Identical implementations at `ai/utilities.lisp:3-34`, `tui/threads.lisp:3-34`, `cli/utilities.lisp:3-34`; raw joins remain at `agent/loop.lisp:573`, `cli/tools/bash.lisp:130,138,290`, `server/ipc.lisp:294` | Exit hangs, orphaned worker, or forced termination at the wrong time | Goal 13 exit deadlock | One small bottom-layer SBCL cleanup primitive; every cleanup join must call it, while active synchronization joins declare why they may wait. Add a source gate rejecting unannotated raw cleanup joins. |
+| Bounded thread cleanup | **Converged in B3:** `cadr-core/threads.lisp` owns bounded cleanup; `cli/support/threads.lisp` is a branch-free compatibility delegate and raw active waits require an explicit reason. | Exit hangs, orphaned worker, or forced termination at the wrong time | Goal 13 exit deadlock | Source gates reject unannotated cleanup joins outside the core owner. |
 | Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions.lisp:97-149`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition.lisp:1307-1359` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
-| Infrastructure output ownership | Extension loader boundaries at `cli/extensions.lisp:474-509`; notification stream at `cli/tui.lisp:3498-3549`; process/tool capture at `cli/tools/bash.lisp:141-301`; URL/browser launch at `cli/tui.lisp:3811-3843`; server Radius logs at `server/radius.lisp:397-471`; fatal output at `ai/crash.lisp:143-177` | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | Define named user/extension/infrastructure sinks and one infrastructure-capture boundary per subprocess/load path. Gate direct rebinding/writes that bypass the owning sink. |
+| Infrastructure output ownership | **CLI extension side converged in B4:** `cli/extensions/loader.lisp` owns `extension-manager-notify`, `call-with-extension-output-boundary`, and `call-with-infrastructure-output-isolated`; process/tool, TUI notice/browser, server Radius, and fatal sinks retain their existing domain owners. | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | B4 source gates keep extension output and infrastructure capture together; B5/B6 consume these sinks before command/controller extraction. |
 | Selector frame semantics | **Converged in B2:** `cli/interactive/selectors/common.lisp` owns frame sections, semantic borders/titles/input/help, centered viewport/count, and wrap navigation; seven domain owners supply entries and domain callbacks. | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | `selector-frame` is the sole shared owner; source gates require every selector family to render through it and delegate wrap navigation. |
 | Provider identity/auth metadata | 38 rows at `ai/registry.lisp:20-307`; OAuth metadata in `ai/oauth.lisp:3-62` and `oauth-flows.lisp:19-50`; auth/login/refresh case trees at `registry.lisp:581-785`; ambient names at `registry.lisp:491-548` | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | One validated provider declaration owns all static fields and callback identities; generated baseline fixture checks every provider × field. |
-| Secret-safe object printing | Credentials `ai/auth.lisp:21-29`; provider/request/runtime types `ai/provider.lisp:40-55`, `ai/http.lisp:17-22`, `ai/models-runtime.lisp:14-216`; CLI args/config/auth input `cli/arguments.lisp:57-62`, `cli/config.lisp:9-13`, `cli/tui.lisp:95-98`, `cli/interactive-services.lisp:7383-7387` | A newly printable slot dumps tokens into a condition, crash log, or REPL | Fatal backtrace exposed session state; token non-leak depended on opaque printing | A shared redacted-printer declaration plus a registry test that constructs and prints every secret-bearing type with sentinel secrets. |
-| Atomic persistence and file modes | Auth private temp/rename/chmod at `ai/auth.lisp:136-163`; settings at `cli/utilities.lisp:37-50` + `settings.lisp:194-198`; server JSON overwrite at `server/storage.lisp:16-29`; eval artifacts/report at `evals/artifacts.lisp:102-114`, `evals/reporter.lisp:98-171`; session migration at `agent/session.lisp:1415-1440` | Torn JSON, refresh-token loss, stale temp files, or world-readable secrets | OAuth refresh/order investigation established atomicity as a hard safety property | One atomic-replace primitive with explicit `:mode` and durability policy; private callers must pass `0600`, public artifacts must choose deliberately. |
-| JavaScript string/byte count semantics | UTF-16 length duplicated at `agent/truncate.lisp:264-267` and `cli/truncation.lisp:21-23`; byte/line sizing also has parallel wrappers in both files | Tool result counts differ for CJK/emoji or truncation metadata disagrees | Write result counted UTF-8 bytes instead of JS UTF-16 units | Keep the metric once in `cadr-agent`; CLI adapters call it. Lock non-ASCII fixtures and forbid a second implementation. |
+| Secret-safe object printing | **Converged in B3 and preserved in B4:** `cadr-core/redacted-print.lisp` owns printer declarations; credential-bearing CLI values in `arguments.lisp`, `config.lisp`, `models/auth-storage.lisp`, `models/registry.lisp`, and `interactive/selectors/auth.lisp` use that owner. | A newly printable slot dumps tokens into a condition, crash log, or REPL | Fatal backtrace exposed session state; token non-leak depended on opaque printing | The registry test constructs and prints every declared secret-bearing type with sentinel secrets. |
+| Atomic persistence and file modes | **Converged in B3 and preserved in B4:** `cadr-core/atomic-file.lisp` owns replacement and modes; `cli/support/atomic-write.lisp` and `cli/settings/manager.lisp` only select the existing public durability policy. | Torn JSON, refresh-token loss, stale temp files, or world-readable secrets | OAuth refresh/order investigation established atomicity as a hard safety property | Source gates reject handwritten replacement outside the core owner; private auth remains on the shared `0600` path. |
+| JavaScript string/byte count semantics | **Converged in B4:** `agent/truncate.lisp` owns UTF-16 code-unit length; `cli/truncation.lisp` is now a direct delegate, while byte/line sizing retains domain adapters. | Tool result counts differ for CJK/emoji or truncation metadata disagrees | Write result counted UTF-8 bytes instead of JS UTF-16 units | B4 rejects a second CLI loop and keeps non-ASCII result fixtures. |
 | ISO time and ID formatting | Session ISO conversion at `agent/session.lisp:64-118`; `current-iso8601` duplicated at `agent/storage.lisp:61-63` and `server/types.lisp:23-26`; export naming at `cli/main.lisp:1331-1345` | Session discovery, server status, tree labels, or export names drift by timezone/fraction rules | Tree timestamp and export filename parity defects | One pure time-format module in the bottom layer, with explicit UTC/local functions and fixed vectors. |
 
 Two apparent repetitions must **not** be collapsed.  Home/path display differs
@@ -474,6 +504,30 @@ decisions and only then extracts the selector families.  `images.lisp` loads
 before `clipboard.lisp` because clipboard image acquisition consumes the shared
 image result and processing functions; all other leaf owners load before the
 remaining selector consumer file.
+
+### Part C B2 implementation status
+
+B2 first established `interactive/selectors/common.lisp` as the sole owner of
+selector chrome, viewport/count placement, input, help rows, and bidirectional
+wrap navigation.  Only after the frame behavior gate was red did the seven
+domain selector owners move out of `interactive-services.lisp`.  Existing
+overlay and base-screen bytes stayed unchanged.
+
+### Part C B4 implementation status
+
+B4 completed all eight approved CLI service splits.  The proposal's prose said
+"36 files", but its explicit cohesion map names 37 responsibilities
+(`6 + 7 + 3 + 5 + 4 + 4 + 5 + 3`); the implementation follows the approved
+named boundaries rather than hiding one owner to satisfy the arithmetic typo.
+
+Convergence preceded extraction.  `cadr-agent/truncate.lisp` became the single
+implementation of JavaScript UTF-16 code-unit length before the CLI adapter
+moved.  The existing extension user-output sink and infrastructure-capture
+boundary moved together into `extensions/loader.lisp`; settings/auth writes
+continue through `cadr-core` atomic replacement, and all credential-bearing
+objects continue through the shared redacted-printer declarations.  The 37
+new files preserve the old top-level forms and package-private names; only ASDF
+ownership and the eliminated duplicate UTF-16 loop changed.
 
 ### Already-converged examples to preserve
 

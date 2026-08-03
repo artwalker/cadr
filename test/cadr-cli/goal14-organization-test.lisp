@@ -161,3 +161,84 @@
         (is (= 2 start))
         (is (= 5 end))
         (is (= 5 total))))))
+
+(test goal14-b4-domain-services-have-exact-owners
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (owners
+           '(("support/model-help.lisp" "(defun get-provider-login-help")
+             ("support/event-bus.lisp" "(defstruct (event-bus")
+             ("support/timings.lisp" "(defun record-timing")
+             ("support/file-watcher.lisp" "(defstruct (file-watcher")
+             ("support/paths.lisp" "(defun normalize-path-input")
+             ("support/shell-process.lisp" "(defstruct shell-config")
+             ("support/threads.lisp" "(defun stop-thread-for-cleanup")
+             ("support/atomic-write.lisp" "(defun atomic-write-utf8")
+             ("support/changelog-share.lisp" "(defun parse-changelog")
+             ("support/html.lisp" "(defun escape-html")
+             ("support/resume-version-git.lisp" "(defun format-resume-command")
+             ("support/headers.lisp" "(defun merge-header-sources")
+             ("support/external-editor.lisp" "(defun edit-in-external-editor")
+             ("settings/config-values.lisp" "(defun resolve-config-value")
+             ("settings/manager.lisp" "(defstruct (settings-manager")
+             ("settings/trust.lisp" "(defstruct (project-trust-store")
+             ("models/auth-storage.lisp" "(defstruct (file-auth-storage")
+             ("models/store.lisp" "(defstruct (file-models-store")
+             ("models/registry.lisp" "(defstruct (model-registry")
+             ("models/matching.lisp" "(defun resolve-scoped-models")
+             ("models/credential-print.lisp" "(define-condition credential-print-error")
+             ("packages/source.lisp" "(defstruct package-source")
+             ("packages/settings.lisp" "(defun settings-package-entries")
+             ("packages/manifest.lisp" "(defun read-package-pi-manifest")
+             ("packages/commands.lisp" "(defstruct package-command-options")
+             ("extensions/discovery.lisp" "(defstruct extension-source-record")
+             ("extensions/loader.lisp" "(defun call-with-extension-output-boundary")
+             ("extensions/commands.lisp" "(defun handle-extension-command")
+             ("extensions/installer.lisp" "(defun install-extension-package")
+             ("sdk/cache-version.lisp" "(defun detect-cache-miss")
+             ("sdk/system-prompt.lisp" "(defun build-system-prompt")
+             ("sdk/settings-service.lisp" "(defclass sdk-settings-manager")
+             ("sdk/resource-service.lisp" "(defclass sdk-resource-loader")
+             ("sdk/model-service.lisp" "(defclass sdk-model-runtime")
+             ("sdk/session-manager.lisp" "(defclass session-manager")
+             ("sdk/agent-session.lisp" "(defclass agent-session")
+             ("sdk/session-runtime.lisp" "(defclass agent-session-services")))
+         (legacy
+           '("core-support.lisp" "utilities.lisp" "settings.lisp"
+             "model-services.lisp" "package-manager.lisp" "extensions.lisp"
+             "sdk-services.lisp" "sdk.lisp")))
+    (dolist (owner owners)
+      (let* ((relative
+               (format nil "src/cadr-cli/~A" (first owner)))
+             (source (goal14-b1-source root relative)))
+        (is (not (null source)) "missing B4 owner ~A" relative)
+        (when source
+          (is (search (second owner) source)
+              "~A does not own ~A" relative (second owner)))))
+    (dolist (relative legacy)
+      (is (not (probe-file (merge-pathnames
+                            (format nil "src/cadr-cli/~A" relative)
+                            root)))
+          "B4 legacy mixed owner remains: ~A" relative))))
+
+(test goal14-b4-converges-sinks-and-javascript-length-before-split
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (loader
+           (goal14-b1-source root "src/cadr-cli/extensions/loader.lisp"))
+         (cli-truncation
+           (goal14-b1-source root "src/cadr-cli/truncation.lisp"))
+         (agent-truncation
+           (goal14-b1-source root "src/cadr-agent/truncate.lisp")))
+    (is (not (null loader)) "missing B4 extension output owner")
+    (when loader
+      (dolist (marker
+               '("(defun extension-manager-notify"
+                 "(defun call-with-extension-output-boundary"
+                 "(defun call-with-infrastructure-output-isolated"))
+        (is (search marker loader)
+            "extension loader omits output sink ~A" marker)))
+    (is (search "(cadr-agent::utf16-code-unit-length text)" cli-truncation)
+        "CLI UTF-16 compatibility entry point does not delegate")
+    (is (not (search "loop for character across text" cli-truncation))
+        "CLI still owns a second JavaScript length implementation")
+    (is (search "loop for character across text" agent-truncation)
+        "cadr-agent no longer owns the JavaScript length metric")))

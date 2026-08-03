@@ -1,0 +1,40 @@
+(in-package #:cadr-cli)
+
+(defstruct (event-bus (:constructor %make-event-bus))
+  (handlers (make-hash-table :test #'equal) :type hash-table)
+  (lock (sb-thread:make-mutex :name "cadr-event-bus"))
+  (error-output *error-output*))
+
+(defun make-event-bus (&key (error-output *error-output*))
+  (%make-event-bus :error-output error-output))
+
+(defun event-bus-on (bus channel handler)
+  (check-type channel string)
+  (check-type handler function)
+  (sb-thread:with-mutex ((event-bus-lock bus))
+    (setf (gethash channel (event-bus-handlers bus))
+          (append (gethash channel (event-bus-handlers bus)) (list handler))))
+  (let ((active-p t))
+    (lambda ()
+      (when active-p
+        (setf active-p nil)
+        (sb-thread:with-mutex ((event-bus-lock bus))
+          (setf (gethash channel (event-bus-handlers bus))
+                (delete handler (gethash channel (event-bus-handlers bus))
+                        :test #'eq :count 1)))))))
+
+(defun event-bus-emit (bus channel data)
+  (let ((handlers
+          (sb-thread:with-mutex ((event-bus-lock bus))
+            (copy-list (gethash channel (event-bus-handlers bus))))))
+    (dolist (handler handlers)
+      (handler-case (funcall handler data)
+        (error (condition)
+          (format (event-bus-error-output bus)
+                  "Event handler error (~A): ~A~%" channel condition)))))
+  nil)
+
+(defun event-bus-clear (bus)
+  (sb-thread:with-mutex ((event-bus-lock bus))
+    (clrhash (event-bus-handlers bus)))
+  nil)
