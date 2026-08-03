@@ -70,6 +70,7 @@
   header-component
   footer-component
   (working-visible-p t :type boolean)
+  (agent-working-p nil :type boolean)
   working-message
   working-indicator-frames
   working-indicator-interval-ms
@@ -1993,8 +1994,10 @@
     (case type
       (:agent-start
        (setf
+        (tui-state-agent-working-p state)
+        t
         (tui-state-status-message state)
-        "Working..."))
+        nil))
       (:auto-retry-start
        (setf
         (tui-state-status-message state)
@@ -2015,6 +2018,8 @@
           1000))))
       (:agent-settled
        (setf
+        (tui-state-agent-working-p state)
+        nil
         (tui-state-status-message state)
         nil))
       (:queue-update
@@ -3774,6 +3779,7 @@
     (function notice-function)
   (handler-case
       (funcall function)
+    (cadr-ai:authentication-cancelled () nil)
     (error (condition)
       (funcall
        notice-function
@@ -4453,7 +4459,8 @@
                   (cadr-tui:terminal-columns terminal)
                   (cadr-tui:terminal-rows terminal)
                   :overlay overlay
-                  :busy-p busy-p
+                  :busy-p
+                  (tui-state-agent-working-p state)
                   :extension-host extension-host
                   :full-document-p alt-p
                   :now (funcall clock-function)
@@ -4602,7 +4609,8 @@
            (let ((changed-p
                    (sb-thread:with-mutex (lock)
                      (advance-tui-status-animation
-                      status-animation state busy-p
+                      status-animation state
+                      (tui-state-agent-working-p state)
                       (funcall clock-function)))))
              (when changed-p
                (request-render))))

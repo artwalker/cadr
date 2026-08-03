@@ -140,6 +140,48 @@
        (push message notices)))
     (is (equal '("product failure") notices))))
 
+(test goal13-authentication-cancellation-is-silent-but-real-errors-remain-visible
+  (let ((notices nil))
+    (is
+     (null
+      (cadr-cli::call-with-tui-command-error-notice
+       (lambda ()
+         (error 'cadr-ai::authentication-cancelled
+                :message "Login cancelled"))
+       (lambda (message)
+         (push message notices)))))
+    (is (null notices))
+    (cadr-cli::call-with-tui-command-error-notice
+     (lambda ()
+       (error 'cadr-ai:authentication-error
+              :message "OAuth state mismatch"))
+     (lambda (message)
+       (push message notices)))
+    (is (equal '("OAuth state mismatch") notices))))
+
+(test goal13-login-provider-list-preserves-baseline-provider-and-method-names
+  (dolist
+      (expected
+       '((:anthropic "Anthropic" "Anthropic (Claude Pro/Max)")
+         (:github-copilot "GitHub Copilot" "GitHub Copilot")
+         (:kimi-coding "Kimi For Coding" "Kimi Code (subscription)")
+         (:openai-codex "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)")
+         (:openrouter "OpenRouter" "OpenRouter OAuth")
+         (:radius "Radius" "Radius")
+         (:xai "xAI" "xAI (Grok/X subscription)")))
+    (destructuring-bind (provider-id provider-name method-name) expected
+      (let ((option
+              (find
+               provider-id
+               (cadr-cli::login-provider-options
+                (cadr-ai:list-provider-definitions)
+                :auth-type :oauth)
+               :key #'cadr-cli::oauth-selector-option-id)))
+        (is (string= provider-name
+                     (cadr-cli::oauth-selector-option-name option)))
+        (is (string= method-name
+                     (cadr-cli::oauth-selector-option-method-name option)))))))
+
 (test tui-status-entries-match-baseline-copy-spacing-and-coalescing
   (let ((state (cadr-cli::make-tui-state)))
     (cadr-cli::add-tui-status
@@ -3787,7 +3829,7 @@
   (let* ((state
            (cadr-cli::make-runtime-auth-input-state
             '(:type :manual-code
-              :title "Login to OpenAI (ChatGPT Plus/Pro)"
+              :title "Login to OpenAI Codex"
               :url "https://auth.openai.com/oauth/authorize?state=test"
               :instructions
               "A browser window should open. Complete login to finish."
@@ -3802,7 +3844,7 @@
              #'cadr-tui:strip-terminal-sequences
              (cadr-cli::render-runtime-auth-input-state
               state 100)))))
-    (is (search "Login to OpenAI (ChatGPT Plus/Pro)" rendered))
+    (is (search "Login to OpenAI Codex" rendered))
     (is (search
          "https://auth.openai.com/oauth/authorize?state=test"
          rendered))
@@ -3866,6 +3908,15 @@
        (footer-sync-submit-input "")
        (footer-sync-wait-for-screen-text
         title)
+       (lambda (terminal)
+         (let ((screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot terminal)))))
+           (is (null (search "Working..." screen)))
+           t))
        (string #\Escape)
        (lambda (terminal)
          (and
@@ -3877,7 +3928,8 @@
                     #'cadr-tui:strip-terminal-sequences
                     (cadr-tui:virtual-terminal-snapshot terminal)))))
             (and (null (search "Working..." screen))
-                 (search "Login cancelled" screen)))))
+                 (null (search "Login cancelled" screen))
+                 (null (search "Error:" screen))))))
        (footer-sync-submit-input "/quit")))
      :set-auth-prompt-consumer
      (lambda (function)
@@ -3907,7 +3959,7 @@
                                  (lambda () (incf cancel-count))))))
                          (unless input
                            (error
-                            'cadr-ai:authentication-error
+                            'cadr-ai::authentication-cancelled
                             :message "Login cancelled")))
                     (setf login-finished-p t))))
               (cadr-cli::*openai-login-function* login-function)
@@ -3921,8 +3973,79 @@
 (test goal13-every-built-in-oauth-dialog-cancel-clears-working-and-restores-editor
   (dolist
       (spec
-       '(("/login openai" "Login to OpenAI (ChatGPT Plus/Pro)")
-         ("/login anthropic" "Login to Anthropic (Claude Pro/Max)")))
+       '(("/login openai" "Login to OpenAI Codex")
+         ("/login anthropic" "Login to Anthropic")))
     (is (= 1
            (goal13-run-cancelled-oauth-dialog
             (first spec) (second spec))))))
+
+(defparameter +goal13-baseline-built-in-slash-working-contract+
+  '(("settings" nil) ("model" nil) ("scoped-models" nil)
+    ("export" nil) ("import" nil) ("share" nil) ("copy" nil)
+    ("name" nil) ("session" nil) ("changelog" nil) ("hotkeys" nil)
+    ("fork" nil) ("clone" nil) ("tree" nil) ("trust" nil)
+    ("login" nil) ("logout" nil) ("new" nil) ("compact" nil)
+    ("resume" nil) ("reload" nil) ("quit" nil)))
+
+(test goal13-baseline-built-in-slash-working-matrix-is-complete
+  (is (equal
+       (mapcar #'first
+               +goal13-baseline-built-in-slash-working-contract+)
+       (mapcar #'first
+               cadr-cli::+tui-autocomplete-command-specifications+)))
+  (is (every (lambda (row) (null (second row)))
+             +goal13-baseline-built-in-slash-working-contract+)))
+
+(test goal13-local-slash-worker-never-renders-agent-working-indicator
+  (let ((worker-started
+          (sb-thread:make-semaphore :count 0))
+        (release-worker
+          (sb-thread:make-semaphore :count 0))
+        (screen-checked-p nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 90 :rows 16
+      :inputs
+      (list
+       (footer-sync-submit-input "/export")
+       (lambda (terminal)
+         (is (sb-thread:wait-on-semaphore
+              worker-started :timeout 2d0))
+         (let ((screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot terminal)))))
+           (is (null (search "Working..." screen)))
+           (setf screen-checked-p t)
+           (sb-thread:signal-semaphore release-worker)
+           t))
+       (footer-sync-submit-input "/quit")))
+     :command-function
+     (lambda (line)
+       (when (string= line "/export")
+         (sb-thread:signal-semaphore worker-started)
+         (sb-thread:wait-on-semaphore release-worker :timeout 2d0)
+         nil)))
+    (is (not (null screen-checked-p)))))
+
+(test goal13-agent-lifecycle-alone-controls-working-indicator
+  (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event :type :agent-start))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-state
+         state (cadr-tui:make-multiline-editor) 80 12
+         :busy-p (cadr-cli::tui-state-agent-working-p state))
+      (declare (ignore row column))
+      (is (search "Working..." (format nil "~{~A~^~%~}" lines))))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event :type :agent-settled))
+    (is (null (cadr-cli::tui-state-agent-working-p state)))))
