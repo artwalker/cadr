@@ -1006,3 +1006,134 @@ snapshots and their independent semantic assertions, payload and wire
 fixtures, public package exports, session bytes, tool results, exit codes, and
 other observable output remained unchanged. Implementation commit:
 `4339d98b1`.
+
+## Part C B11 — provider and authentication ownership
+
+### Freeze audit and result
+
+The historical whole-tree `src/cadr-ai` object freeze was already ended by the
+separately approved Goal 13 provider and OAuth changes. B11 therefore proceeded
+inside its approved file map while retaining the still-active public surface
+freezes. `src/cadr-ai/package.lisp` remained byte-identical with SHA-256
+`e722e49fd70592edcd28a93acc97051d4a0b22bc016e4b7da314a65c4acfb4f`.
+The extension export and 34-event hashes remain, respectively,
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`
+and `12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
+
+B11 retired the five mixed owners `oauth-flows.lisp`, `oauth.lisp`,
+`provider-auth.lisp`, `providers/independent.lisp`, and `registry.lisp`. Their
+responsibilities now have 25 dependency-ordered owners:
+
+- seven provider OAuth owners under `oauth/providers/`;
+- four shared OAuth protocol/page owners under `oauth/`;
+- five credential/auth owners under `auth/`;
+- six independent provider protocol owners under `providers/`;
+- `providers/definitions.lisp`, `providers/registry.lisp`, and
+  `providers/runtime-projection.lisp` for declarations, protocol construction,
+  and runtime consumption.
+
+`providers/definitions.lisp` is the single validated declaration schema for
+all 38 providers. It owns static identity, protocol and protocol alternatives,
+base URL, authentication types, default model, required environment, dynamic
+catalog/image/tool/reasoning capabilities, API-key presentation, OAuth
+presentation, and the API-key/OAuth/refresh/model-filter strategy identities.
+The runtime environment-name set is derived from those declarations instead
+of retaining another decision table. Protocol construction and session-local
+runtime projection consume the declaration rather than repeating its branches.
+
+### Fixed-baseline matrix and red-first gates
+
+The matrix in `test/fixtures/goal14-provider-baseline.json` was generated from
+fixed baseline `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, not from Cadr. It contains
+38 unique provider rows, every declared field, OAuth metadata, and the exact
+baseline `file:line` source for each row. The four B11 gates are:
+
+- `GOAL14-PROVIDER-MATRIX-IS-FIXED-BASELINE-DERIVED-AND-COMPLETE`;
+- `GOAL14-EVERY-PROVIDER-DEFINITION-FIELD-MATCHES-FIXED-BASELINE-MATRIX`;
+- `GOAL14-PROVIDER-DECLARATIONS-OWN-RUNTIME-DECISIONS-ONCE`;
+- `GOAL14-PROVIDER-AUTH-FILES-HAVE-ONE-REAL-OWNER-EACH`.
+
+They were installed before the split and failed while the 25 owners were
+absent and the five mixed files still existed. After implementation they lock
+the complete 38-provider field matrix, declaration-derived environment and
+auth strategy decisions, owner presence/retirement, and ASDF dependency order.
+The focused `cadr-ai` suite passed 4,300 checks with zero skip and zero fail.
+
+### Live-eval assertion audit
+
+The deferred `LIVE-DEEPSEEK-EVAL-SMOKE` audit is resolved. Fixed baseline
+`packages/evals/src/smoke.eval.ts:9-15` asks for only the city name and uses
+`expect(result.output.trim()).toBe("Paris")`. Cadr
+`test/cadr-evals/live-evals-test.lisp:82-103` performs the same trimmed exact
+comparison. The strictness is therefore baseline-inherent; Cadr did not weaken
+the assertion or add a retry.
+
+The real live path is `cadr-evals` through
+`cadr-cli::resolve-provider-config` into the Cadr AI declaration, provider,
+auth, runtime, and transport code. B11 is directly on that path, so the live
+result is assessed through the matrix/payload gates and real calls rather than
+an ASDF-system-boundary argument. In the final verifier run all seven available
+live items passed, including the four-check DeepSeek eval; Anthropic alone was
+skipped because `ANTHROPIC_API_KEY` is unset.
+
+```text
+Items: 8, run: 7, pass: 7, skip: 1, fail: 0
+Checks: 32, pass: 31, skip: 1, fail: 0
+```
+
+### Full verification
+
+The complete deterministic suite, the isolated build copy, and the final
+verifier all reported the same deterministic denominator:
+
+```text
+cadr test summary: systems=9 checks=14347 pass=14347 skip=0 fail=0
+```
+
+The final `./scripts/verify.sh` stage table was:
+
+```text
+Deterministic stages
+Stage                                            Result
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+Stage                                            Result
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The real source-parity ledger contains 595 accepted entries with SHA-256
+`242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d`.
+The Goal 11 gate passed with sustained-interaction p99.9 of 4 ms, maximum pause
+of 20 ms, maximum measured sustained GC pause of 15.26 ms, and converged
+sustained memory. Both isolated images used the approved uncompressed fallback
+because this SBCL lacks `sb-core-compression`.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-04 00:13:20.330289796 +0800
+latest source commit: 90313a565b3f65bfc8ce35f866abf3b90d1e325a 2026-08-04T00:11:06+08:00
+latest source mtime: 2026-08-03 23:48:53.122125429 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```
+
+The final production inventory is 272 Lisp files / 101,013 lines and five
+embedded assets / 4,275 lines, for 277 files / 105,288 lines total. All
+screen/overlay snapshots and independent semantic assertions, payload and wire
+fixtures, package exports, session bytes, tool results, exit codes, and other
+observable output remained unchanged. Implementation commit:
+`90313a565b3f65bfc8ce35f866abf3b90d1e325a`.
