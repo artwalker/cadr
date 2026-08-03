@@ -6,6 +6,11 @@
     (or (uiop:getenv "CADR_BENCH_PROJECT_DIRECTORY")
         (error "CADR_BENCH_PROJECT_DIRECTORY is not set")))))
 
+(load
+ (merge-pathnames
+  "scripts/goal11-pacing.lisp"
+  cl-user::*cadr-bench-project-directory*))
+
 (let ((*standard-output* *error-output*)
       (*load-verbose* nil)
       (*compile-verbose* nil))
@@ -778,16 +783,6 @@
    "heap_bytes" (sb-kernel:dynamic-usage)
    "rss_bytes" (resident-bytes)))
 
-(defun paced-wait-until (target-time)
-  (let ((remaining
-          (- target-time
-             (get-internal-real-time))))
-    (when (plusp remaining)
-      (sleep
-       (/ remaining
-          (coerce internal-time-units-per-second
-                  'double-float))))))
-
 (defun sustained-mixed-interaction-json (count)
   (let* ((fixture (prepare-alt-input-fixture count))
          (event-count
@@ -817,7 +812,7 @@
           gc-runtime-before sb-ext:*gc-run-time*
           started-at (get-internal-real-time))
     (dotimes (index event-count)
-      (paced-wait-until
+      (cadr-goal11-pacing:paced-wait-until
        (+ started-at
           (round
            (* index internal-time-units-per-second)
@@ -846,7 +841,7 @@
           (/ (1+ index)
              *sustained-target-event-hz*))
          memory-samples)))
-    (paced-wait-until
+    (cadr-goal11-pacing:paced-wait-until
      (+ started-at
         (* *sustained-duration-seconds*
            internal-time-units-per-second)))

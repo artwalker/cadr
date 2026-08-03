@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import importlib.util
 import json
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -426,6 +427,40 @@ class ContinuousInputGateTest(unittest.TestCase):
                 )
             )
         )
+
+    def test_pacing_rechecks_clock_after_early_sleep_return(self):
+        helper = ROOT / "scripts" / "goal11-pacing.lisp"
+        expression = """
+            (let ((now 0) (sleeps 0))
+              (cadr-goal11-pacing:paced-wait-until
+               100
+               :clock-function (lambda () now)
+               :sleep-function
+               (lambda (seconds)
+                 (declare (ignore seconds))
+                 (incf sleeps)
+                 (incf now (if (= sleeps 1) 30 70)))
+               :time-units-per-second 100)
+              (unless (and (= now 100) (= sleeps 2))
+                (error "pacing stopped early: now=~D sleeps=~D"
+                       now sleeps)))
+        """
+        result = subprocess.run(
+            [
+                "sbcl",
+                "--noinform",
+                "--disable-debugger",
+                "--eval",
+                f"(load {json.dumps(str(helper))})",
+                "--eval",
+                expression,
+                "--quit",
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
         self.assertTrue(
             any(
                 "sustained mixed interaction memory" in failure
