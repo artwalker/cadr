@@ -308,7 +308,7 @@
       (is (zerop status)
           "Synthetic gate regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 9 tests" error-output))
+      (is (search "Ran 10 tests" error-output))
       (is (search "OK" error-output)))))
 
 (test delivery-binary-freshness-check-rejects-missing-stale-and-dirty-images

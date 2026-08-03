@@ -352,7 +352,9 @@ event. The fresh pre-change run at `cd94d0b01` measured N=5000 continuous
 median/p95/p99 `36.000/48.001/52.001ms` and 2,847,360 bytes/event. Its complete
 samples are archived in
 [`benchmarks/goal-v13-c3-before.json`](benchmarks/goal-v13-c3-before.json),
-SHA-256 `b67ccad5f99d6a0269c02f64df6f97e549e32cf038c9d9becf4b27f44f403125`.
+SHA-256 `06d7faeb91ad7164b1d4258d6c18d3b6f1469b9bcfc09d22989a413d88583066`.
+Its five real-PTY cold-start samples were measured from an isolated image
+built at that exact source revision; median 158.00ms, MAD 0.39ms.
 
 The renderer now retains the immediately preceding raw line list, prepared
 document, and width. A new frame reuses prepared strings for the maximal
@@ -386,7 +388,8 @@ separately timed production input→requested frame operations under the forced
 The synthetic N=5000 p99 improved `52.001ms → 8.000ms` (6.5×) and median
 allocation improved `2,847,360 → 887,248` bytes (3.2×). It now clears the 16ms
 target even at 86× the real common tier; further virtual scrolling is not
-needed to close this bottleneck. Cold start remains 156.52ms and the existing
+needed to close this bottleneck. Cold start is 154.57ms (five real-PTY
+samples, MAD 2.16ms) and the existing
 1200-turn/10MiB stability budgets remain unchanged.
 
 `scripts/goal11-performance-gate.py` now emits distinct failures:
@@ -399,7 +402,9 @@ It also requires `renderer_object_id`, exact 1024-sample traces, recomputed
 quantiles/allocation/GC summaries, final selection/viewport/editor state, and
 the privacy-safe scale profile contract. The final full artifact is
 [`benchmarks/goal-v13-c3-final.json`](benchmarks/goal-v13-c3-final.json),
-SHA-256 `55bf06e4688d94ec32329be478bfbc73c90093e8dcc17f916440aaf38be62456`.
+SHA-256 `96350ee3588e0143d745b1af2f0c295f542b5c6c0c31693b65710dcea0ed11f6`.
+The checked artifact is replayed by the synthetic gate regression and by
+`verify.sh`; a missing or null cold-start block now fails before release.
 
 ### Sustained mixed interaction tail
 

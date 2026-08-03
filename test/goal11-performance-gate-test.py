@@ -486,6 +486,38 @@ class ContinuousInputGateTest(unittest.TestCase):
         GATE.check_bench(valid_report(), failures, GATE.load_json(path))
         self.assertEqual([], failures)
 
+    def test_goal13_checked_artifacts_are_complete_and_final_is_replayable(self):
+        before_path = (
+            ROOT / "docs" / "benchmarks" / "goal-v13-c3-before.json"
+        )
+        final_path = (
+            ROOT / "docs" / "benchmarks" / "goal-v13-c3-final.json"
+        )
+        stability_path = (
+            ROOT / "docs" / "benchmarks" / "goal-v11-stability.json"
+        )
+        for path in (before_path, final_path):
+            with self.subTest(path=path.name):
+                cold_start = GATE.load_json(path).get("cold_start")
+                self.assertIsInstance(cold_start, dict)
+                self.assertEqual(5, len(cold_start.get("samples_us", [])))
+                self.assertGreater(cold_start.get("median_us", 0), 0)
+        result = subprocess.run(
+            [
+                "python3",
+                str(ROOT / "scripts" / "goal11-performance-gate.py"),
+                "--bench",
+                str(final_path),
+                "--stability",
+                str(stability_path),
+            ],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("goal11 gate: PASS", result.stdout)
+
     def test_every_continuous_input_budget_is_enforced(self):
         cases = [
             (
