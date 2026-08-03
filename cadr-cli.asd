@@ -32,8 +32,17 @@
                                            (:file "images")
                                            (:file "clipboard")
                                            (:file "syntax")
-                                           (:file "tool-render-session")))
-                             (:file "interactive-services")
+                                           (:file "tool-render-session")
+                                           (:module "selectors"
+                                            :serial t
+                                            :components ((:file "common")
+                                                         (:file "sessions")
+                                                         (:file "tree")
+                                                         (:file "settings")
+                                                         (:file "auth")
+                                                         (:file "models")
+                                                         (:file "trust")
+                                                         (:file "fork")))))
                              (:file "truncation")
                              (:file "output-accumulator")
                              (:module "tools"

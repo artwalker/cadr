@@ -331,3 +331,61 @@ binary build time: 2026-08-03 18:08:44.700365611 +0800
 latest source mtime: 2026-08-03 18:04:15.586755658 +0800
 binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
+
+## Part C B2 — composable selector frame and domain ownership
+
+### Result
+
+B2 converged the repeated selector decisions before extracting the domains.
+`src/cadr-cli/interactive/selectors/common.lisp` now owns the composable
+`selector-frame`: border and title sections, optional input, viewport and
+count placement, help rows, visible slicing, and bidirectional wrap
+navigation.  Domain selectors provide their entries, state, and callbacks;
+they no longer own navigation or viewport policy.
+
+The former selector remainder in `interactive-services.lisp` was then split
+into eight load-ordered owners:
+
+| New owner | Responsibility |
+|---|---|
+| `interactive/selectors/common.lisp` | selector-frame composition, shared filtering/input helpers, viewport slicing, and wrap navigation |
+| `interactive/selectors/sessions.lisp` | resume, session, switch, branch, and compact selection |
+| `interactive/selectors/tree.lisp` | tree entries, filters, paging, branch navigation, and copy actions |
+| `interactive/selectors/settings.lisp` | settings rows, values, search, and mutation callbacks |
+| `interactive/selectors/auth.lisp` | login method/provider selectors and authentication input bridges |
+| `interactive/selectors/models.lisp` | model catalog search, scope, refresh, and selection |
+| `interactive/selectors/trust.lisp` | resource trust and extension/package authorization choices |
+| `interactive/selectors/fork.lisp` | fork-point selection and empty-history behavior |
+
+`cadr-cli.asd` loads `common` first, followed by the seven domain owners.
+`GOAL14-B2-SELECTOR-FRAME-OWNS-SHARED-SELECTOR-DECISIONS` rejects a missing
+frame owner, duplicated domain navigation policy, or a domain renderer that
+bypasses the frame.  `GOAL14-B2-SELECTOR-FRAME-WRAPS-AND-CENTERS-INDEPENDENT`
+locks empty/single/multi-entry boundaries, both wrap directions, centered
+viewport slicing, and count placement.  Before implementation these tests
+failed 8/8 because the owner and extracted domains did not exist; after the
+split the focused gates pass 26/26 and 9/9.
+
+### Observable boundary and verification
+
+The refactor preserves every existing selector byte.  All base-screen and
+overlay snapshots, payload and wire fixtures, session files, tool results,
+exit codes, public exports, and the frozen extension/event surfaces remained
+unchanged.  The source ledger now accounts for 159 production Lisp files and
+the organization ledger accounts for all 164 production files.
+
+```text
+cadr test summary: systems=9 checks=12635 pass=12635 skip=0 fail=0
+```
+
+`./scripts/verify.sh` passed all 13 deterministic stages and both live stages.
+Credential-gated live results were 7 pass, 1 Anthropic skip because
+`ANTHROPIC_API_KEY` is unset, and 0 fail; the DeepSeek live TUI passed.
+
+Root binary freshness at verification time:
+
+```text
+binary build time: 2026-08-03 18:43:50.772166957 +0800
+latest source mtime: 2026-08-03 18:33:34.275339974 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
+```

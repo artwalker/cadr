@@ -8,13 +8,14 @@ and whether one user-visible decision has one owner.
 
 The Goal 14 draft recorded 135 production files.  Goal 13 added five approved
 export assets and three crash/cleanup files; Goal 14 B3 then added the six-file
-`cadr-core` leaf and B1 extracted eight interactive leaf owners.  Silently
+`cadr-core` leaf, B1 extracted eight interactive leaf owners, and B2 replaced
+the remaining selector monolith with eight selector owners.  Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 157 current files.
+goal is supposed to police, so this ledger covers all 164 current files.
 
-- 152 Lisp files, 100,188 lines, 4,255 top-level definitions.
+- 159 Lisp files, 100,323 lines, 4,261 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 157 production files and 104,463 physical lines in total.
+- 164 production files and 104,598 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -112,7 +113,14 @@ files with unrelated facilities fail.
 | `src/cadr-cli/interactive/theme.lisp` | 215 | 11 | Detect, resolve, export, and discover interactive themes. | 合格 |
 | `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | 3 | Own incremental tool-render session state and projection. | 合格 |
 | `src/cadr-cli/interactive/transcript.lisp` | 100 | 6 | Own user and assistant transcript-line projection. | 合格 |
-| `src/cadr-cli/interactive-services.lisp` | 6,330 | 246 | Temporarily retain the session/tree/settings/auth/model/trust/fork selector families until B2's shared frame exists. | 应拆分 |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 346 | 21 | Own composable selector chrome, viewport/count, input, fuzzy matching, and wrap navigation. | 合格 |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,342 | 47 | Search, mutate, navigate, and render resumable session trees. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/tree.lisp` | 1,747 | 57 | Filter, navigate, edit, and render the branching session tree overlay. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 848 | 27 | Edit settings and theme submenus through the shared selector frame. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/auth.lisp` | 576 | 25 | Select authentication methods/providers and collect API keys. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/models.lisp` | 1,190 | 58 | Search, choose, scope, enable, and order models. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/trust.lisp` | 269 | 10 | Choose and persist project trust decisions. | 合格 |
+| `src/cadr-cli/interactive/selectors/fork.lisp` | 147 | 7 | Choose the user-message boundary for a forked session. | 合格 |
 | `src/cadr-cli/main.lisp` | 4,518 | 64 | Mix tool selection, session commands, settings/auth/reload glue, the entire slash-command dispatcher, and process entry. | 应拆分 |
 | `src/cadr-cli/media.lisp` | 1,236 | 55 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | 合格·大体量 |
 | `src/cadr-cli/migration.lisp` | 127 | 10 | Safely migrate the legacy user-data directory with explicit consent. | 合格 |
@@ -225,18 +233,18 @@ files with unrelated facilities fail.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
 | `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
-| `cadr-cli` | 25 | 13 | 13 | 0 | 51 |
+| `cadr-cli` | 28 | 18 | 12 | 0 | 58 |
 | `cadr-core` | 6 | 0 | 0 | 0 | 6 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 10 | 10 | 3 | 0 | 23 |
-| **Total** | **73** | **55** | **29** | **0** | **157** |
+| **Total** | **76** | **60** | **28** | **0** | **164** |
 
-The 29 failing files are being reduced batch by batch.  After B3 and B1, the
-cohesion map below replaces them with 151 still-pending named modules, yielding
-a planning denominator of 279 files and a remaining net increase of 122.  This
+The 28 failing files are being reduced batch by batch.  After B3, B1, and B2,
+the cohesion map below replaces them with 143 still-pending named modules,
+yielding a planning denominator of 279 files and a remaining net increase of 115.  This
 is not a quota: each target below names a real
 responsibility, and a batch must be abandoned if moving code proves that the
 boundary is false.
@@ -245,9 +253,9 @@ boundary is false.
 |---|---:|---:|---:|
 | `cadr-agent` | 4 | 21 | +17 |
 | `cadr-ai` | 9 | 42 | +33 |
-| `cadr-cli` | 13 | 72 | +59 |
+| `cadr-cli` | 12 | 64 | +52 |
 | `cadr-tui` | 3 | 16 | +13 |
-| **Total** | **29** | **151** | **+122** |
+| **Total** | **28** | **143** | **+115** |
 
 At current boundaries the expected physical distribution is approximately 156
 files below 300 lines, 86 at 300–699, 23 at 700–999, and 8 at or above 1,000;
@@ -277,7 +285,7 @@ not chopped up to make the chart prettier.
 | `cli/core-support.lisp` | `support/{model-help,event-bus,timings,file-watcher,paths,shell-process}.lisp` (6) |
 | `cli/extensions.lisp` | `extensions/{discovery,loader,commands,installer}.lisp` (4) |
 | `cli/interactive-components.lisp` | `interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` (5) |
-| `cli/interactive-services.lisp` | `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (8); the eight leaf-service owners were completed in B1 |
+| `cli/interactive-services.lisp` | **Completed in B2:** `interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` (8); `common` was implemented before the domain extraction. |
 | `cli/main.lisp` | `bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` (6) |
 | `cli/model-services.lisp` | `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5) |
 | `cli/modes/rpc/mode.lisp` | `modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` (5) |
@@ -409,7 +417,7 @@ than the file table.
 | Bounded thread cleanup | Identical implementations at `ai/utilities.lisp:3-34`, `tui/threads.lisp:3-34`, `cli/utilities.lisp:3-34`; raw joins remain at `agent/loop.lisp:573`, `cli/tools/bash.lisp:130,138,290`, `server/ipc.lisp:294` | Exit hangs, orphaned worker, or forced termination at the wrong time | Goal 13 exit deadlock | One small bottom-layer SBCL cleanup primitive; every cleanup join must call it, while active synchronization joins declare why they may wait. Add a source gate rejecting unannotated raw cleanup joins. |
 | Cancellation state and propagation | `ai/http.lisp:26-91`, `ai/models-runtime.lisp:72-151`, `agent/extensions.lisp:97-149`, `agent/runtime.lisp:356-394`, `tui/autocomplete.lisp:18-57`, `tui/composition.lisp:1307-1359` | UI closes while network/listener/tool work continues, or stale work updates a new request | OAuth cancel hang; slow SSE abort; stale autocomplete | A minimal component-local cancellation protocol (`aborted-p`, `abort`, optional wait), with adapters at package boundaries; do not merge unrelated lifecycle policy. |
 | Infrastructure output ownership | Extension loader boundaries at `cli/extensions.lisp:474-509`; notification stream at `cli/tui.lisp:3498-3549`; process/tool capture at `cli/tools/bash.lisp:141-301`; URL/browser launch at `cli/tui.lisp:3811-3843`; server Radius logs at `server/radius.lisp:397-471`; fatal output at `ai/crash.lisp:143-177` | ASDF, setsid, SSL/SBCL pointers, or internal `session>` labels reach the user channel | setsid, ASDF, SSL, and notice-prefix leaks | Define named user/extension/infrastructure sinks and one infrastructure-capture boundary per subprocess/load path. Gate direct rebinding/writes that bypass the owning sink. |
-| Selector frame semantics | Common fragments at `cli/interactive-services.lisp:1397-1465`, but session/tree/settings/trust/auth/model/fork renderers still assemble border/title/search/help rows independently through lines `1465-9068` | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | A composable selector-frame component owns border, title, input, viewport/count, help, and wrap navigation; selectors supply only items and domain callbacks. |
+| Selector frame semantics | **Converged in B2:** `cli/interactive/selectors/common.lisp` owns frame sections, semantic borders/titles/input/help, centered viewport/count, and wrap navigation; seven domain owners supply entries and domain callbacks. | One overlay loses cursor, wraps a help glyph, uses the wrong color, spacing, or navigation semantics | Repeated Goal 9 overlay rounds; Goal 14 A0 title/border/cursor | `selector-frame` is the sole shared owner; source gates require every selector family to render through it and delegate wrap navigation. |
 | Provider identity/auth metadata | 38 rows at `ai/registry.lisp:20-307`; OAuth metadata in `ai/oauth.lisp:3-62` and `oauth-flows.lisp:19-50`; auth/login/refresh case trees at `registry.lisp:581-785`; ambient names at `registry.lisp:491-548` | Endpoint, login title/instruction, auth source, environment, refresh, or model filtering differs for the same provider | Anthropic generic browser instructions; A0 stored/configured source | One validated provider declaration owns all static fields and callback identities; generated baseline fixture checks every provider × field. |
 | Secret-safe object printing | Credentials `ai/auth.lisp:21-29`; provider/request/runtime types `ai/provider.lisp:40-55`, `ai/http.lisp:17-22`, `ai/models-runtime.lisp:14-216`; CLI args/config/auth input `cli/arguments.lisp:57-62`, `cli/config.lisp:9-13`, `cli/tui.lisp:95-98`, `cli/interactive-services.lisp:7383-7387` | A newly printable slot dumps tokens into a condition, crash log, or REPL | Fatal backtrace exposed session state; token non-leak depended on opaque printing | A shared redacted-printer declaration plus a registry test that constructs and prints every secret-bearing type with sentinel secrets. |
 | Atomic persistence and file modes | Auth private temp/rename/chmod at `ai/auth.lisp:136-163`; settings at `cli/utilities.lisp:37-50` + `settings.lisp:194-198`; server JSON overwrite at `server/storage.lisp:16-29`; eval artifacts/report at `evals/artifacts.lisp:102-114`, `evals/reporter.lisp:98-171`; session migration at `agent/session.lisp:1415-1440` | Torn JSON, refresh-token loss, stale temp files, or world-readable secrets | OAuth refresh/order investigation established atomicity as a hard safety property | One atomic-replace primitive with explicit `:mode` and durability policy; private callers must pass `0600`, public artifacts must choose deliberately. |

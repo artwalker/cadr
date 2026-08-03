@@ -35,9 +35,22 @@
               "(defstruct (tool-render-session"
               "(defun render-tool-session")))
          (legacy
-           (uiop:read-file-string
-            (merge-pathnames
-             "src/cadr-cli/interactive-services.lisp" root))))
+           (or
+            (goal14-b1-source
+             root "src/cadr-cli/interactive-services.lisp")
+            (format
+             nil "~{~A~^~%~}"
+             (loop
+               for family in
+               '("sessions" "tree" "settings" "auth"
+                 "models" "trust" "fork")
+               collect
+               (goal14-b1-source
+                root
+                (format
+                 nil
+                 "src/cadr-cli/interactive/selectors/~A.lisp"
+                 family)))))))
     (dolist (owner owners)
       (let ((source (goal14-b1-source root (first owner))))
         (is (not (null source)) "missing B1 owner ~A" (first owner))
@@ -75,9 +88,22 @@
              "(:file \"clipboard\")"
              "(:file \"syntax\")"
              "(:file \"tool-render-session\")"
-             "(:file \"interactive-services\")"
+             "(:module \"selectors\""
+             "(:file \"common\")"
+             "(:file \"sessions\")"
+             "(:file \"tree\")"
+             "(:file \"settings\")"
+             "(:file \"auth\")"
+             "(:file \"models\")"
+             "(:file \"trust\")"
+             "(:file \"fork\")"
              "(:file \"truncation\")"))
-         (positions (mapcar (lambda (marker) (search marker source)) ordered)))
+         (positions
+           (let ((cursor 0))
+             (loop for marker in ordered
+                   for position = (search marker source :start2 cursor)
+                   collect position
+                   when position do (setf cursor (1+ position))))))
     (is (every #'identity positions)
         "cadr-cli.asd omits a B1 load boundary: ~S"
         (loop for marker in ordered
@@ -86,3 +112,52 @@
     (when (every #'identity positions)
       (is (every #'< positions (rest positions))
           "B1 owner load order is not dependency-safe: ~S" positions))))
+
+(test goal14-b2-selector-frame-owns-shared-selector-decisions
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (common
+           (goal14-b1-source
+            root "src/cadr-cli/interactive/selectors/common.lisp"))
+         (families
+           '("sessions" "tree" "settings" "auth"
+             "models" "trust" "fork")))
+    (is (not (null common)) "missing B2 selector-frame owner")
+    (when common
+      (dolist (marker
+               '("(defstruct (selector-frame"
+                 "(defun render-selector-frame"
+                 "(defun selector-frame-visible-slice"
+                 "(defun selector-frame-move-index"))
+        (is (search marker common)
+            "selector-frame owner omits ~A" marker)))
+    (dolist (family families)
+      (let* ((relative
+               (format nil
+                       "src/cadr-cli/interactive/selectors/~A.lisp"
+                       family))
+             (source (goal14-b1-source root relative)))
+        (is (not (null source)) "missing B2 selector family ~A" relative)
+        (when source
+          (is (search "render-selector-frame" source)
+              "~A bypasses selector-frame rendering" relative)
+          (is (search "selector-frame-move-index" source)
+              "~A retains local wrap-navigation policy" relative))))))
+
+(test goal14-b2-selector-frame-wraps-and-centers-independently
+  (let ((move (find-symbol "SELECTOR-FRAME-MOVE-INDEX" :cadr-cli))
+        (slice (find-symbol "SELECTOR-FRAME-VISIBLE-SLICE" :cadr-cli)))
+    (is (and move (fboundp move))
+        "selector-frame wrap primitive is unavailable")
+    (is (and slice (fboundp slice))
+        "selector-frame viewport primitive is unavailable")
+    (when (and move (fboundp move))
+      (is (= 2 (funcall move 0 3 -1)))
+      (is (= 0 (funcall move 2 3 1)))
+      (is (= 0 (funcall move 0 0 -1))))
+    (when (and slice (fboundp slice))
+      (multiple-value-bind (visible start end total)
+          (funcall slice '(a b c d e) 3 3)
+        (is (equal '(c d e) visible))
+        (is (= 2 start))
+        (is (= 5 end))
+        (is (= 5 total))))))
