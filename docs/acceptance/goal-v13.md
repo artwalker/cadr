@@ -875,3 +875,63 @@ copy happened to be OpenAI's copy; no provider matrix compared provider name,
 method name, login label, instructions, and prompt text as separate fields.
 
 Implementation commits: `8ce316f99`, `c5f1c632b`.
+
+### Verification-gate correction
+
+The first full `./scripts/verify.sh` run was not accepted as a pass and was not
+papered over by a retry. It passed binary freshness, both source-parity gates,
+the deterministic suite, and both isolated builds, then failed closed at Goal
+11 with:
+
+```text
+sustained mixed interaction was not paced for the declared duration
+```
+
+The six native/process/PTY/socket harnesses were consequently `NOT RUN`.
+Credential-gated live tests still reported 7 pass / 1 skip and the DeepSeek TUI
+smoke passed, but neither result was used as deterministic evidence.
+
+The root cause was a single call to Common Lisp `sleep` followed by an
+assumption that the requested interval had elapsed. `sleep` may return early,
+so the exact duration gate could fail by a sub-tick margin. The replacement
+`cadr-goal11-pacing:paced-wait-until` repeatedly checks an injected monotonic
+clock and waits only for the remaining interval. The red-first regression
+`test_pacing_rechecks_clock_after_early_sleep_return` simulates a sleeper which
+returns after 30% of the requested time and proves the helper waits again until
+the target clock value is reached. Focused Python gate: 9 tests, all pass.
+
+The complete deterministic suite after this correction was:
+
+```text
+cadr test summary: systems=8 checks=12139 pass=12139 skip=0 fail=0
+```
+
+The subsequent full `./scripts/verify.sh` run completed every stage:
+
+```text
+Deterministic stages
+root cadr binary freshness                       PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+
+Live stages
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The corrected sustained gate measured `p99.9=8ms`, maximum pause `16ms`, GC
+maximum `14.47ms`, and converged memory over the declared duration. Live item
+report: 8 total, 7 run/pass, 1 skipped because `ANTHROPIC_API_KEY` is absent,
+0 failed; 32 checks, 31 pass, 1 skip, 0 fail.
+
+Pacing correction commit: `df23c919f`.
