@@ -963,6 +963,31 @@
      (cl-ppcre:scan pattern line))
    (uiop:split-string text :separator '(#\Newline))))
 
+(defun goal13-ledger-row-lines (text pattern)
+  (remove-if-not
+   (lambda (line)
+     (cl-ppcre:scan pattern line))
+   (uiop:split-string text :separator '(#\Newline))))
+
+(defun goal13-ledger-row-cells (line)
+  (mapcar
+   (lambda (cell)
+     (string-trim '(#\Space #\Tab) cell))
+   (uiop:split-string line :separator '(#\|))))
+
+(defun goal13-ledger-evidence-cell-p (cell)
+  (cl-ppcre:scan
+   "[A-Za-z0-9_./*+-]+[.](ts|lisp|css|html):[0-9]+"
+   cell))
+
+(defun goal13-production-lisp-files (directory)
+  (labels ((collect-files (current)
+             (append
+              (uiop:directory-files current "*.lisp")
+              (mapcan #'collect-files
+                      (uiop:subdirectories current)))))
+    (collect-files (uiop:ensure-directory-pathname directory))))
+
 (test goal13-four-ledgers-and-presentation-denominators-stay-in-sync
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (readme
@@ -1074,3 +1099,136 @@
       (is (= 6
              (goal13-count-ledger-rows
               b4 "^\\| [A-Z]+-[0-9]+ \\|"))))))
+
+(test goal13-presentation-ledger-recomputes-every-disposition-and-row-evidence
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (presentation
+           (uiop:read-file-string
+            (merge-pathnames
+             "docs/presentation-parity.md" root)))
+         (sections
+           (list
+            (list
+             :b1
+             (goal13-ledger-section
+              presentation "## B1." "## B2.")
+             "^\\| `[^`]+` \\|" 55 55 0 0)
+            (list
+             :b2
+             (goal13-ledger-section
+              presentation "## B2." "## B3.")
+             "^\\| [A-Z]+-[0-9]+ \\|" 52 50 0 2)
+            (list
+             :b3
+             (goal13-ledger-section
+              presentation "## B3." "## B4.")
+             "^\\| [A-Z]+-[0-9]+ \\|" 10 10 0 0)
+            (list
+             :b4
+             (goal13-ledger-section
+              presentation "## B4." nil)
+             "^\\| [A-Z]+-[0-9]+ \\|" 6 4 0 2)))
+         (total 0)
+         (aligned 0)
+         (pending 0)
+         (intentional 0))
+    (dolist (section sections)
+      (destructuring-bind
+            (name text pattern expected-total expected-aligned
+                  expected-pending expected-intentional)
+          section
+        (let ((section-total 0)
+              (section-aligned 0)
+              (section-pending 0)
+              (section-intentional 0))
+          (dolist (line (goal13-ledger-row-lines text pattern))
+            (let* ((cells (goal13-ledger-row-cells line))
+                   (baseline-index (if (eq name :b1) 2 3))
+                   (baseline (nth baseline-index cells))
+                   (cadr (nth (1+ baseline-index) cells))
+                   (status (nth (+ 2 baseline-index) cells)))
+              (incf section-total)
+              (is (goal13-ledger-evidence-cell-p baseline)
+                  "~A baseline evidence lacks file:line: ~A"
+                  name line)
+              (is (goal13-ledger-evidence-cell-p cadr)
+                  "~A Cadr evidence lacks file:line: ~A"
+                  name line)
+              (cond
+                ((or (string= status "一致")
+                     (search "不一致（已改齐）" status))
+                 (incf section-aligned))
+                ((search "有意差异" status)
+                 (incf section-intentional))
+                ((search "不一致" status)
+                 (incf section-pending))
+                (t
+                 (fail "~A has an unknown disposition: ~A"
+                       name line)))))
+          (is (= expected-total section-total))
+          (is (= expected-aligned section-aligned))
+          (is (= expected-pending section-pending))
+          (is (= expected-intentional section-intentional))
+          (incf total section-total)
+          (incf aligned section-aligned)
+          (incf pending section-pending)
+          (incf intentional section-intentional))))
+    (is (= 123 total))
+    (is (= 119 aligned))
+    (is (= 0 pending))
+    (is (= 4 intentional))))
+
+(test goal13-lisp-idiom-audit-covers-the-current-production-file-set
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (audit
+           (uiop:read-file-string
+            (merge-pathnames "docs/lisp-idiom-audit.md" root)))
+         (systems
+           '(("cadr-ai" 28)
+             ("cadr-agent" 18)
+             ("cadr-cli" 43)
+             ("cadr-tui" 23)
+             ("cadr-storage" 2)
+             ("cadr-server" 11)
+             ("cadr-protocol" 5)
+             ("cadr-evals" 8)))
+         (total 0))
+    (is
+     (search
+      "GOAL13_LISP_IDIOM_AUDIT files=138 systems=8 axes=6 rewrite=1 keep=7"
+      audit))
+    (dolist (spec systems)
+      (destructuring-bind (system expected) spec
+        (let* ((directory
+                 (merge-pathnames
+                  (format nil "src/~A/" system) root))
+               (actual
+                 (length
+                  (goal13-production-lisp-files directory))))
+          (incf total actual)
+          (is (= expected actual)
+              "~A source-file count drifted" system)
+          (is
+           (search
+            (format nil "| `~A` | ~D |" system expected)
+            audit)
+           "~A has no current module-audit row" system))))
+    (is (= 138 total))
+    (dolist
+        (heading
+         '("### 1. Manually maintained invariants"
+           "### 2. Repeated dispatch logic"
+           "### 3. Repeated boilerplate"
+           "### 4. Error handling"
+           "### 5. `defstruct` versus `defclass`"
+           "### 6. Repeated bug classes"))
+      (is (search heading audit)
+          "Missing Lisp-idiom audit axis: ~A" heading))
+    (dolist
+        (path
+         '("src/cadr-ai/crash.lisp"
+           "src/cadr-cli/crash.lisp"
+           "src/cadr-tui/threads.lisp"))
+      (is (search path audit)
+          "Post-audit source addition has no disposition: ~A"
+          path))))

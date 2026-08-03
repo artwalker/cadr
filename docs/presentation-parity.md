@@ -118,7 +118,7 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `userMessageText` | user Markdown foreground (`user-message.ts:40-55`) | user Markdown foreground (`src/cadr-cli/tui.lisp:2086-2123`) | 一致 |
 | `customMessageBg` | custom, skill, branch and compaction transcript boxes (`custom-message.ts:33-38`; `skill-invocation-message.ts:11-52`; `branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57`) | native skill/branch/compaction entries now compose the same full-width custom background box as extension messages (`src/cadr-cli/tui.lisp:2529-2615`) | 不一致（已改齐） |
 | `customMessageText` | custom/skill/branch/compaction body (`custom-message.ts:91-110`; `skill-invocation-message.ts:36-52`; `branch-summary-message.ts:39-54`; `compaction-summary-message.ts:40-55`) | collapsed copy and expanded Markdown bodies use `customMessageText` (`src/cadr-cli/tui.lisp:2525-2606`) | 不一致（已改齐） |
-| `customMessageLabel` | `[custom]`, `[skill]`, `[branch]`, `[compaction]` labels (same files as preceding row) | all three native transcript components use bold bracketed `customMessageLabel` labels (`src/cadr-cli/tui.lisp:2517-2523,2544-2590`) | 不一致（已改齐） |
+| `customMessageLabel` | `[custom]`, `[skill]`, `[branch]`, `[compaction]` labels (`custom-message.ts:33-112`; `skill-invocation-message.ts:11-52`; `branch-summary-message.ts:10-56`; `compaction-summary-message.ts:10-57`) | all three native transcript components use bold bracketed `customMessageLabel` labels (`src/cadr-cli/tui.lisp:2517-2523,2544-2590`) | 不一致（已改齐） |
 | `toolPendingBg` | running/default tool shell (`tool-execution.ts:63-75,248-268`) | running tool shell (`src/cadr-tui/components.lisp:1187-1197,1567-1695`) | 一致 |
 | `toolSuccessBg` | settled successful tool shell and valid edit preview (`tool-execution.ts:248-268`; `edit.ts:229-264`) | settled successful tool shell; edit-preview timing is separately missing, but settled assignment is correct (`src/cadr-tui/components.lisp:1187-1197,1567-1695`) | 一致 |
 | `toolErrorBg` | settled failed tool shell and invalid edit preview (`tool-execution.ts:248-268`; `edit.ts:229-264`) | settled failed tool shell (`src/cadr-tui/components.lisp:1187-1197,1567-1695`) | 一致 |
@@ -138,24 +138,24 @@ applied.  Markdown mappings are at baseline `theme.ts:1230-1266` and Cadr
 | `toolDiffRemoved` | removed diff lines and word spans (`diff.ts:89-141`) | removed diff lines and word spans (`src/cadr-tui/components.lisp:1392-1485`) | 一致 |
 | `toolDiffContext` | hunk/context lines (`diff.ts:89-141`) | hunk/context lines (`src/cadr-tui/components.lisp:1392-1485`) | 一致 |
 | `syntaxComment` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
-| `syntaxKeyword` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxFunction` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxVariable` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxString` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxNumber` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxType` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxOperator` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
-| `syntaxPunctuation` | same syntax surfaces as preceding row | same read/write source surface and mapping as preceding row | 不一致（已改齐） |
+| `syntaxKeyword` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxFunction` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxVariable` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxString` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxNumber` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxType` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxOperator` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
+| `syntaxPunctuation` | Markdown plus read/write source highlighting (`theme.ts:1096-1157`; `read.ts:177-185`; `write.ts:146-155`) | Markdown and language-mapped read/write previews share the syntax highlighter (`src/cadr-cli/tui.lisp:1618-1655`; `src/cadr-tui/components.lisp:1480-1514`) | 不一致（已改齐） |
 | `thinkingOff` | editor border at thinking `off` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
-| `thinkingMinimal` | editor border at `minimal` (same baseline range) | same editor border (same Cadr range) | 一致 |
-| `thinkingLow` | editor border at `low` (same baseline range) | same editor border (same Cadr range) | 一致 |
-| `thinkingMedium` | editor border at `medium` (same baseline range) | same editor border (same Cadr range) | 一致 |
-| `thinkingHigh` | editor border at `high` (same baseline range) | same editor border (same Cadr range) | 一致 |
-| `thinkingXhigh` | editor border at `xhigh` (same baseline range) | same editor border (same Cadr range) | 一致 |
-| `thinkingMax` | editor border at `max` (same baseline range) | same editor border (same Cadr range) | 一致 |
+| `thinkingMinimal` | editor border at thinking `minimal` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
+| `thinkingLow` | editor border at thinking `low` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
+| `thinkingMedium` | editor border at thinking `medium` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
+| `thinkingHigh` | editor border at thinking `high` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
+| `thinkingXhigh` | editor border at thinking `xhigh` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
+| `thinkingMax` | editor border at thinking `max` (`theme.ts:407-425`; `interactive-mode.ts:3810-3815`) | same editor border (`src/cadr-tui/theme.lisp:505-524`; `src/cadr-tui/editor.lisp:1900-1932`) | 一致 |
 | `bashMode` | user-bash editor/execution emphasis (`bash-execution.ts:130-151`) | same user-bash emphasis (`src/cadr-tui/theme.lisp:526-534`; `src/cadr-cli/tui.lisp:790-835`) | 一致 |
 | `pageBg` | exported session page background (`core/export-html/index.ts:108-167`) | active interactive theme and explicit `pageBg` flow into the template body background (`src/cadr-cli/main.lisp:3293-3348`; `src/cadr-agent/session.lisp:2440-2534`) | 不一致（已改齐） |
-| `cardBg` | exported session card background (same baseline range) | active `cardBg`, or the baseline-derived fallback, becomes the template container background (same Cadr ranges) | 不一致（已改齐） |
+| `cardBg` | exported session card background (`core/export-html/index.ts:108-167`) | active `cardBg`, or the baseline-derived fallback, becomes the template container background (`src/cadr-cli/main.lisp:3293-3348`; `src/cadr-agent/session.lisp:2440-2534`) | 不一致（已改齐） |
 | `infoBg` | emitted as `--exportInfoBg` and injected as `--info-bg`; the fixed template currently has no `var(--info-bg)` consumer (`core/export-html/index.ts:108-167`; `export-html/template.css:1-5`) | same exported declarations and deliberate non-consumption in the byte-identical fixed template (`src/cadr-agent/session.lisp:2307-2405`; `src/cadr-agent/export-html/template.css:1-5`) | 不一致（已改齐） |
 
 B1 final count: `36 一致 + 19 不一致（已改齐） / 0 不一致 / 0 有意差异 = 55`.
@@ -214,21 +214,21 @@ oracle.
 | ID | Surface | Baseline | Cadr | Status |
 |---|---|---|---|---|
 | O-01 | model | `model-selector.ts:91-130,162-185,248-307` | `src/cadr-cli/interactive-services.lisp:7950-8155` | 一致 |
-| O-02 | model scoped state | same baseline range | same Cadr range | 一致 |
+| O-02 | model scoped state | `model-selector.ts:91-130,162-185,248-307` | `src/cadr-cli/interactive-services.lisp:7950-8155` | 一致 |
 | O-03 | settings | `settings-selector.ts:472-738`; `settings-list.ts:80-249` | `src/cadr-cli/interactive-services.lisp:7002-7195` | 一致 |
 | O-04 | resume | `session-selector.ts:119-175,414-519,685-746` | `src/cadr-cli/interactive-services.lisp:1288-1705` | 一致 |
 | O-05 | fork | `user-message-selector.ts:14-148` | `src/cadr-cli/interactive-services.lisp:1719-1875` | 一致 |
 | O-06 | tree | `tree-selector.ts:664-851,1156-1385` | `src/cadr-cli/interactive-services.lisp:5340-6055` | 一致 |
 | O-07 | login method | method names and optional `loginLabel` come from each provider's auth method (`interactive-mode.ts:4984-5039`; `auth/types.ts:188-197`) | the selector consumes provider-owned OAuth presentation metadata, including exact method names and optional login labels (`src/cadr-ai/oauth.lisp:3-30`; `src/cadr-ai/oauth-flows.lisp:19-50`; `src/cadr-cli/interactive-services.lisp:7197-7275`) | 不一致（已改齐） |
 | O-08 | login provider | provider rows use provider display names, distinct from auth-method names (`interactive-mode.ts:4875-4934`; `oauth-selector.ts:51-180`) | registry/runtime projections carry the same provider display names without hard-coded selector aliases (`src/cadr-ai/registry.lisp:3-15,28-266,715-760`; `src/cadr-cli/interactive-services.lisp:7420-7710`) | 不一致（已改齐） |
-| O-09 | logout provider | same baseline component | same Cadr component | 一致 |
+| O-09 | logout provider | `oauth-selector.ts:51-180` | `src/cadr-cli/interactive-services.lisp:7420-7710` | 一致 |
 | O-10 | API-key input | `login-dialog.ts:30-71,154-218` | `src/cadr-cli/interactive-services.lisp:7310-7415` | 一致 |
 | O-11 | scoped models | `scoped-models-selector.ts:91-252` | `src/cadr-cli/interactive-services.lisp:8778-8945` | 一致 |
 | O-12 | trust | `trust-selector.ts:32-115` | `src/cadr-cli/interactive-services.lisp:6057-6310` | 一致 |
 | O-13 | import confirmation | `interactive-mode.ts:5523`; `extension-selector.ts:18-90` | `src/cadr-cli/tui.lisp:4710-4785` | 一致 |
 | O-14 | extension select/confirm/custom | `interactive-mode.ts:2244-2563`; `extension-selector.ts:18-90` | `src/cadr-cli/tui.lisp:4650-4785`; `src/cadr-tui/composition.lisp:700-790` | 一致 |
 | O-15 | autocomplete | editor trigger/update paths, request cancellation/debounce, value/description list and popup placement (`packages/tui/src/components/editor.ts:590-598,1123-1153,1343-1357,1708-1722,2102-2350`) | same natural/forced trigger rules, isolated request state, 20 ms debounce and popup geometry (`src/cadr-tui/editor.lisp:966-1256,1284-1351,1427-1525,1663-1810`) | 一致 |
-| O-16 | selector boundary navigation | baseline selectors do not share one universal wrap policy | user-approved global first/last bidirectional wrap (`src/cadr-tui/components.lisp:2010-2055` and selector-specific move functions) | 有意差异 |
+| O-16 | selector boundary navigation | selectors implement component-specific non-universal boundary policies (`model-selector.ts:248-307`; `settings-list.ts:80-249`; `tree-selector.ts:1156-1252`) | user-approved global first/last bidirectional wrap (`src/cadr-tui/components.lisp:2010-2055` and selector-specific move functions) | 有意差异 |
 
 ### Notices and system surfaces
 
