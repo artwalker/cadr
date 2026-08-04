@@ -46,8 +46,7 @@
 
 (defun experimental-features-enabled-p
     (&optional
-       (value (or (uiop:getenv "CADR_EXPERIMENTAL")
-                  (uiop:getenv "PI_EXPERIMENTAL"))))
+       (value (uiop:getenv "CADR_EXPERIMENTAL")))
   (string= (or value "") "1"))
 
 (defun shell-quote (text)

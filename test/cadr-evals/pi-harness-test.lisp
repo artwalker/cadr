@@ -27,6 +27,16 @@
       (cadr-evals::resolve-eval-selection
        "" "gpt-5.6-sol"))))
 
+(test goal16-eval-selection-does-not-read-retired-pi-names
+  (let ((cadr-evals::*eval-environment-function*
+          (lambda (name)
+            (cond
+              ((string= name "PI_PROVIDER") "deepseek")
+              ((string= name "PI_MODEL") "deepseek-chat")
+              (t nil)))))
+    (signals cadr-ai:configuration-error
+      (cadr-evals::resolve-eval-selection nil nil))))
+
 (test eval-system-prompt-transform-is-applied-and-must-not-be-empty
   (with-faux-eval
       (handle

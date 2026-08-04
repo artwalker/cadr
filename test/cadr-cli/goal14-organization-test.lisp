@@ -26,6 +26,47 @@
             (cadr-ai::sha256-bytes (cadr-ai::utf8-octets text))
             'list))))
 
+(test goal16-c3-production-environment-names-are-cadr-only
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (contracts
+           '(("src/cadr-ai/providers/bedrock.lisp"
+              "CADR_CACHE_RETENTION" "PI_CACHE_RETENTION")
+             ("src/cadr-server/config.lisp"
+              "CADR_CONFIG_DIR" "PI_CONFIG_DIR")
+             ("src/cadr-evals/reporter.lisp"
+              "CADR_EVAL_ARTIFACT_DIR" "PI_EVAL_ARTIFACT_DIR")
+             ("src/cadr-cli/support/html.lisp"
+              "CADR_EXPERIMENTAL" "PI_EXPERIMENTAL")
+             ("src/cadr-evals/harness.lisp"
+              "CADR_EVAL_MODEL" "PI_MODEL")
+             ("src/cadr-cli/tool-manager.lisp"
+              "CADR_OFFLINE" "PI_OFFLINE")
+             ("src/cadr-evals/harness.lisp"
+              "CADR_EVAL_PROVIDER" "PI_PROVIDER")
+             ("src/cadr-server/radius.lisp"
+              "CADR_RADIUS_SERVER_URL" "PI_RADIUS_SERVER_URL")
+             ("src/cadr-server/radius.lisp"
+              "CADR_RADIUS_URL" "PI_RADIUS_URL")
+             ("src/cadr-server/rpc-process.lisp"
+              "CADR_SERVER_CADR_PATH" "PI_SERVER_CADR_PATH")
+             ("src/cadr-server/config.lisp"
+              "CADR_SERVER_DIR" "PI_SERVER_DIR")
+             ("src/cadr-cli/support/changelog-share.lisp"
+              "CADR_SHARE_VIEWER_URL" "PI_SHARE_VIEWER_URL")
+             ("src/cadr-cli/sdk/cache-version.lisp"
+              "CADR_SKIP_VERSION_CHECK" "PI_SKIP_VERSION_CHECK")
+             ("src/cadr-cli/support/timings.lisp"
+              "CADR_TIMING" "PI_TIMING"))))
+    (dolist (contract contracts)
+      (destructuring-bind (relative replacement retired) contract
+        (let ((source (goal14-b1-source root relative)))
+          (is (not (null source)) "missing identity owner ~A" relative)
+          (when source
+            (is (search replacement source)
+                "~A omits ~A" relative replacement)
+            (is (not (search retired source))
+                "~A still reads retired ~A" relative retired)))))))
+
 (test goal14-b1-interactive-leaf-services-have-exact-owners
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (owners

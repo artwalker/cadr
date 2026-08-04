@@ -1,6 +1,17 @@
 (in-package #:cadr-ai/tests)
 (in-suite cadr-ai-suite)
 
+(test goal16-bedrock-cache-retention-uses-only-cadr-environment
+  (is (eq :long
+          (cadr-ai::bedrock-cache-retention
+           nil
+           '(("CADR_CACHE_RETENTION" . "long")
+             ("PI_CACHE_RETENTION" . "ignored")))))
+  (is (eq :short
+          (cadr-ai::bedrock-cache-retention
+           nil
+           '(("PI_CACHE_RETENTION" . "long"))))))
+
 (defparameter *baseline-provider-counts*
   '((:amazon-bedrock . 114)
     (:ant-ling . 3)

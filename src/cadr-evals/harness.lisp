@@ -83,20 +83,14 @@
             (trim-selection
              (if provider
                  provider
-                 (or
-                  (eval-environment
-                   "CADR_EVAL_PROVIDER")
-                  (eval-environment
-                   "PI_PROVIDER")))))
+                 (eval-environment
+                  "CADR_EVAL_PROVIDER"))))
           (resolved-model
             (trim-selection
              (if model
                  model
-                 (or
-                  (eval-environment
-                   "CADR_EVAL_MODEL")
-                  (eval-environment
-                   "PI_MODEL"))))))
+                 (eval-environment
+                  "CADR_EVAL_MODEL")))))
     (unless
         (and resolved-provider
              (plusp

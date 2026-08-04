@@ -10,14 +10,10 @@
   (uiop:ensure-directory-pathname
    (or (environment-pathname
         "CADR_SERVER_DIR")
-       (environment-pathname
-        "PI_SERVER_DIR")
        (merge-pathnames
         "server/"
         (or (environment-pathname
              "CADR_CONFIG_DIR")
-            (environment-pathname
-             "PI_CONFIG_DIR")
             (merge-pathnames
              ".cadr/"
              (user-homedir-pathname)))))))

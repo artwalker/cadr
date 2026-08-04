@@ -20,6 +20,36 @@
           (format nil "~C~Cok" #\Escape character)))))
   (signals type-error (cadr-cli::strip-ansi 42)))
 
+(test goal16-cli-runtime-flags-use-only-cadr-environment
+  (let ((previous-cadr-experimental
+          (uiop:getenv "CADR_EXPERIMENTAL"))
+        (previous-pi-experimental
+          (uiop:getenv "PI_EXPERIMENTAL"))
+        (previous-cadr-offline
+          (uiop:getenv "CADR_OFFLINE"))
+        (previous-pi-offline
+          (uiop:getenv "PI_OFFLINE")))
+    (unwind-protect
+         (progn
+           (sb-posix:unsetenv "CADR_EXPERIMENTAL")
+           (sb-posix:setenv "PI_EXPERIMENTAL" "1" 1)
+           (is (not (cadr-cli::experimental-features-enabled-p)))
+           (sb-posix:setenv "CADR_EXPERIMENTAL" "1" 1)
+           (is (cadr-cli::experimental-features-enabled-p))
+           (sb-posix:unsetenv "CADR_OFFLINE")
+           (sb-posix:setenv "PI_OFFLINE" "1" 1)
+           (is (not (cadr-cli::offline-mode-p)))
+           (sb-posix:setenv "CADR_OFFLINE" "1" 1)
+           (is (cadr-cli::offline-mode-p)))
+      (dolist (entry
+               `(("CADR_EXPERIMENTAL" ,previous-cadr-experimental)
+                 ("PI_EXPERIMENTAL" ,previous-pi-experimental)
+                 ("CADR_OFFLINE" ,previous-cadr-offline)
+                 ("PI_OFFLINE" ,previous-pi-offline)))
+        (if (second entry)
+            (sb-posix:setenv (first entry) (second entry) 1)
+            (sb-posix:unsetenv (first entry)))))))
+
 (test changelog-links-are-tag-pinned-and-canonical
   (let* ((input
            (format nil

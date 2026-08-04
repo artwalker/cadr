@@ -25,9 +25,7 @@
    :artifact-directory
    (or artifact-directory
        (eval-environment
-        "CADR_EVAL_ARTIFACT_DIR")
-       (eval-environment
-        "PI_EVAL_ARTIFACT_DIR"))
+        "CADR_EVAL_ARTIFACT_DIR"))
    :output output))
 
 (defun reporter-finite-number (value)

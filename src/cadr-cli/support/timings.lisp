@@ -1,7 +1,7 @@
 (in-package #:cadr-cli)
 
 (defparameter *timing-enabled-p*
-  (string= (or (uiop:getenv "PI_TIMING") "") "1"))
+  (string= (or (uiop:getenv "CADR_TIMING") "") "1"))
 (defparameter *timing-namespaces* (make-hash-table :test #'eq))
 (defparameter *timing-clock*
   (lambda ()

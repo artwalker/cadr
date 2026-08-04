@@ -24,7 +24,7 @@
              when path return name)))))
 
 (defun offline-mode-p ()
-  (member (string-downcase (or (uiop:getenv "PI_OFFLINE") ""))
+  (member (string-downcase (or (uiop:getenv "CADR_OFFLINE") ""))
           '("1" "true" "yes") :test #'string=))
 
 (defun host-platform-name ()

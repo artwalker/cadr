@@ -341,7 +341,7 @@
          "long"
          (or
           (environment-value
-           environment "PI_CACHE_RETENTION")
+           environment "CADR_CACHE_RETENTION")
           ""))
         :long)
        :short)))

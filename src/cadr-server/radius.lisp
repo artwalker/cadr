@@ -153,15 +153,10 @@
 (defun radius-server-base-url ()
   (or (uiop:getenv
        "CADR_RADIUS_SERVER_URL")
-      (uiop:getenv
-       "PI_RADIUS_SERVER_URL")
       (let ((root
-              (or
-               (uiop:getenv
-                "CADR_RADIUS_URL")
-               (uiop:getenv
-                "PI_RADIUS_URL")
-               "https://radius.pi.dev/")))
+              (or (uiop:getenv
+                   "CADR_RADIUS_URL")
+                  "https://radius.pi.dev/")))
         (format nil "~A~A"
                 (string-right-trim "/" root)
                 "/v1/"))))

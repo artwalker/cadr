@@ -258,8 +258,6 @@
   (or
    (uiop:getenv
     "CADR_SERVER_CADR_PATH")
-   (uiop:getenv
-    "PI_SERVER_CADR_PATH")
    "cadr"))
 
 (defun make-rpc-process
