@@ -1701,10 +1701,10 @@ Goal 8 当时宣告的 extension export SHA
 
 `scripts/verify.sh` 是发布前本地单一入口，顺序固定为：确定性 FiveAM、临时
 工作树内的 `cadr`/`cadr-server` 公共构建入口、Goal 11 非功能门禁、保留的
-native/process/PTY harness、凭据可用性门控的 live FiveAM、可用时的 DeepSeek
-真实 TUI。隔离副本排除 Git metadata、现有二进制、凭据/测试 HOME、环境文件
-与编辑器缓存；真实 OAuth refresh 仍由 canonical `~/.cadr/auth.json` 的既有锁
-与原子写路径负责。
+native/process/PTY harness、完整固定基线 render differential、凭据可用性门控的
+live FiveAM、可用时的 DeepSeek 真实 TUI。隔离副本排除 Git metadata、现有
+二进制、凭据/测试 HOME、环境文件与编辑器缓存；真实 OAuth refresh 仍由
+canonical `~/.cadr/auth.json` 的既有锁与原子写路径负责。
 
 脚本分别汇总 deterministic 与 live，不把真实 LLM 结果冒充确定性证据。任何
 已运行项失败最终返回非零，但 live FiveAM 的逐项报告和后续可运行 live harness
@@ -1876,3 +1876,26 @@ Part A 的 277-file histogram 把 15 个文件归入 `>=1000` 行的已审计 ou
 为了过门禁机械切文件。更强的门禁是每个已收敛原语的行为和 source anti-bypass
 测试。今后每个新增生产代码的 goal 在开工前必须写明新代码归属、复用的既有原语，
 或说明为何确实需要一个新的独立决策；文件不足 1000 行不能豁免这项判断。
+
+## 32. Goal 15 fixed-baseline render differential
+
+`scripts/render-diff.py gate` 从本仓库保留的固定基线 commit object 归档 pi，使用
+immutable marker 对应的 hydrated cache，并对 manifest 的 12 个场景、wide/narrow
+两个尺寸逐项 fresh capture。每侧都通过真实 PTY 与原生 faux provider 驱动实际
+composition root；完整 raw bytes、SHA-256、checkpoint 与 normalized derivative
+分别保存。只有经用户批准、限定于精确分隔符的值替换进入 normalization；空白、
+ANSI、颜色、光标、顺序、整行与无界数字均不归一化，raw 与 SHA 始终是权威证据。
+
+Analyzer 以 tmux 重放未修改 raw stream，比较 checkpoint 的终端语义 screen，并
+fail closed 校验 `test/fixtures/render-diff/dispositions.json`：新差异无 disposition、
+旧 disposition 已陈旧、重复或 baseline commit 不匹配都会失败。I01 保留原始调度
+字节并以 self-replay 区分 scheduler segmentation；I02 是已正式裁决的 fatal-output
+安全差异。`scripts/verify.sh` 的 `fixed-baseline render differential` 阶段直接跑
+完整 capture + analyze，不读取历史 capture 冒充当前证据。
+
+这是唯一以固定 pi 的实际渲染输出为 oracle 的常设门禁。行为、源码、非功能、
+呈现四本账都从 Cadr 实现侧维护合同，不能单独发现“测试从错误实现反推”的问题；
+render differential 是跨实现 oracle，不是第五本账，也不能替代四轴对 payload、
+源码能力、长期性能与脚本未覆盖交互的审计。未来基线升级必须同时更新 manifest 与
+disposition 的 commit、重跑完整矩阵并逐条裁决全部新差异；流程见
+`docs/source-parity-upgrade.md`。

@@ -147,6 +147,10 @@
              "scripts/server-smoke.sh"
              "scripts/goal9-a2-pty.sh"
              "scripts/goal5-manual-tui-smoke.sh"
+             "scripts/render-diff.py"
+             "test/render-diff-gate-test.py"
+             "test/fixtures/render-diff/scenarios.json"
+             "test/fixtures/render-diff/dispositions.json"
              "scripts/test-live.sh"
              "scripts/live-tui-smoke.sh"))
          (stage-labels
@@ -164,6 +168,7 @@
              "Unix socket server smoke"
              "terminal lifecycle PTY"
              "deterministic TUI harness"
+             "fixed-baseline render differential"
              "credential-gated FiveAM"
              "DeepSeek live TUI")))
     (is-true source)
@@ -182,10 +187,28 @@
       (is (search "--exclude=.git" source))
       (is (search "goal11-performance.json" source))
       (is (search "goal11-stability.json" source))
+      (is (search "render-diff.py\" gate" source))
+      (is (search "render-diff-analysis" source))
       (is (search "DEEPSEEK_API_KEY" source))
       (is (search "Deterministic stages" source))
       (is (search "Live stages" source))
       (is (not (search ".github/workflows" source))))))
+
+(test goal15-part-d-render-diff-gate-covers-the-real-complete-manifest
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (test-path
+           (merge-pathnames "test/render-diff-gate-test.py" root)))
+    (multiple-value-bind (output error-output status)
+        (uiop:run-program
+         (list "python3" (namestring test-path))
+         :output :string
+         :error-output :string
+         :ignore-error-status t)
+      (is (zerop status)
+          "Render-diff gate orchestration regressions failed:~%~A~A"
+          output error-output)
+      (is (search "Ran 2 tests" error-output))
+      (is (search "OK" error-output)))))
 
 (test goal11-continuous-alt-input-benchmarks-are-release-gated
   (let* ((root (asdf:system-source-directory "cadr-cli"))

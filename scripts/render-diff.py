@@ -528,6 +528,7 @@ def capture_side(
     dimension: dict[str, int],
     sandbox: Path,
     timeout: float,
+    cadr_cache: Path | None = None,
 ) -> tuple[bytes, list[dict[str, Any]]]:
     home = sandbox / side / "home"
     cwd = sandbox / side / "workspace"
@@ -553,10 +554,17 @@ def capture_side(
     checkpoints: list[dict[str, Any]] = []
     process: subprocess.Popen[bytes] | None = None
     try:
+        environment = fixed_environment(
+            home, dimension["columns"], dimension["rows"], ready_path
+        )
+        if side == "cadr" and cadr_cache is not None:
+            cadr_cache.mkdir(parents=True, exist_ok=True)
+            environment["XDG_CACHE_HOME"] = str(cadr_cache)
+            environment["ASDF_OUTPUT_TRANSLATIONS"] = f"/:{cadr_cache}/"
         process = subprocess.Popen(
             command,
             cwd=process_cwd,
-            env=fixed_environment(home, dimension["columns"], dimension["rows"], ready_path),
+            env=environment,
             stdin=slave_fd,
             stdout=slave_fd,
             stderr=slave_fd,
@@ -724,7 +732,14 @@ def capture(args: argparse.Namespace) -> int:
         sides = ("pi", "cadr") if args.side == "both" else (args.side,)
         for side in sides:
             raw, checkpoints = capture_side(
-                side, baseline, manifest_path, scenario, dimension, sandbox, args.timeout
+                side,
+                baseline,
+                manifest_path,
+                scenario,
+                dimension,
+                sandbox,
+                args.timeout,
+                getattr(args, "cadr_cache", None),
             )
             captures[side] = raw
             annotate_normalized_offsets(checkpoints, raw, side, sandbox)
@@ -975,6 +990,34 @@ def analyze(args: argparse.Namespace) -> int:
     return 0
 
 
+def gate(args: argparse.Namespace) -> int:
+    """Capture the complete real manifest, then apply the fail-closed analyzer."""
+    manifest = load_manifest(args.manifest.resolve())
+    cadr_cache = args.output.resolve() / ".cadr-cache"
+    captures = 0
+    for dimension in manifest["dimensions"]:
+        for scenario in manifest["scenarios"]:
+            capture_arguments = argparse.Namespace(
+                manifest=args.manifest,
+                pi_repo=args.pi_repo,
+                output=args.output,
+                baseline_cache=args.baseline_cache,
+                timeout=args.timeout,
+                scenario=scenario["id"],
+                dimension=dimension["id"],
+                side="both",
+                cadr_cache=cadr_cache,
+            )
+            capture(capture_arguments)
+            captures += 1
+    print(
+        "render-diff gate: "
+        f"captured={captures}/{len(manifest['scenarios']) * len(manifest['dimensions'])} "
+        f"scenarios={len(manifest['scenarios'])} dimensions={len(manifest['dimensions'])}"
+    )
+    return analyze(args)
+
+
 def self_test(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest.resolve())
     if len(manifest["dimensions"]) < 2:
@@ -1145,17 +1188,17 @@ def replay_check(args: argparse.Namespace) -> int:
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     subparsers = result.add_subparsers(dest="command", required=True)
-    for name in ("capture", "self-test", "analyze", "replay-check"):
+    for name in ("capture", "self-test", "analyze", "replay-check", "gate"):
         command = subparsers.add_parser(name)
         command.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
-        command.add_argument("--pi-repo", type=Path, default=Path("/root/projects/pi-mono"))
+        command.add_argument("--pi-repo", type=Path, default=ROOT)
         command.add_argument("--output", type=Path, default=ROOT / ".tmp/render-diff")
         command.add_argument(
             "--baseline-cache",
             type=Path,
             default=Path("/tmp/cadr-render-diff-pi-74caa2649"),
         )
-        command.add_argument("--timeout", type=float, default=20.0)
+        command.add_argument("--timeout", type=float, default=60.0)
         if name == "capture":
             command.add_argument("--scenario", required=True)
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
@@ -1163,7 +1206,7 @@ def parser() -> argparse.ArgumentParser:
         if name == "replay-check":
             command.add_argument("--scenario", required=True)
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
-        if name == "analyze":
+        if name in {"analyze", "gate"}:
             command.add_argument(
                 "--dispositions",
                 type=Path,
@@ -1183,6 +1226,8 @@ def main() -> int:
         return capture(args)
     if args.command == "analyze":
         return analyze(args)
+    if args.command == "gate":
+        return gate(args)
     if args.command == "replay-check":
         return replay_check(args)
     return self_test(args)

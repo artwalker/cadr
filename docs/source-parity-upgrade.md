@@ -56,3 +56,27 @@ counts together in `docs/source-parity.md`, `docs/parity-map.md`,
 `docs/performance.md`, and `examples/manifest.sexp`. Their shared
 `GOAL12_LEDGER` identity is checked by FiveAM, so an upgrade cannot land with one
 ledger still describing the old source set.
+
+The source inventory is only the first upgrade gate. The same upgrade must also
+update `baselineCommit` in both
+`test/fixtures/render-diff/scenarios.json` and
+`test/fixtures/render-diff/dispositions.json`, update the fixed-version baseline
+artifact and digest in `scripts/render-diff.py` if upstream's generated model
+data changed, and run the complete real render matrix:
+
+```sh
+python3 ./scripts/render-diff.py gate \
+  --pi-repo . \
+  --output /tmp/cadr-render-upgrade \
+  --analysis-output /tmp/cadr-render-upgrade-analysis
+```
+
+This captures every manifest scenario in both dimensions before analysis. A
+new difference without a human disposition fails; a disposition whose
+difference disappeared also fails. Every new difference must be classified as
+a Cadr defect or an intentional difference with its baseline evidence and user
+ruling. Raw PTY bytes and their SHA-256 files remain authoritative; upgrade work
+must not broaden normalization to make a new difference disappear. The same
+command runs as the `fixed-baseline render differential` stage of
+`scripts/verify.sh`, so an upgrade cannot be accepted from the source ledger
+alone.

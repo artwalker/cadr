@@ -37,6 +37,23 @@ Run the Part A mechanical gate:
 ./scripts/test-render-diff.sh
 ```
 
+That command is the harness self-test. The permanent release gate captures the
+complete 12-scenario by 2-dimension matrix and then invokes the fail-closed
+analyzer on those fresh artifacts:
+
+```sh
+python3 ./scripts/render-diff.py gate \
+  --pi-repo . \
+  --output /tmp/cadr-render-gate \
+  --analysis-output /tmp/cadr-render-gate-analysis
+```
+
+`scripts/verify.sh` runs this exact real-input path as
+`fixed-baseline render differential`; it does not substitute a synthetic
+fixture or a previously captured matrix. The fixed baseline is archived from
+the Cadr repository's retained baseline commit object. The immutable hydrated
+cache is reused only when its marker matches that commit.
+
 Every capture produces immutable `.raw` bytes and a sibling SHA-256 file.  A
 `.normalized.raw` derivative is for adjudication only; raw evidence is always
 retained.
@@ -117,3 +134,14 @@ normalization.
 This gate intentionally does not replace real-user testing.  Faux replay cannot
 cover real-provider chunk timing, mouse interaction, resize transitions, host
 terminal bugs, or state accumulated during long-running sessions.
+
+## Relationship to the parity ledgers
+
+This is the only permanent gate whose oracle is actual rendered output from the
+fixed pi baseline. The four parity ledgers and their tests inspect Cadr-side
+behavior, source dispositions, non-functional measurements, and presentation
+contracts; none independently executes pi's renderer. The differential is not
+a fifth ledger: it is a cross-implementation oracle that catches a wrong or
+incomplete Cadr-side assertion. Conversely, it cannot replace the four ledgers
+because its scripted scenarios do not cover every payload, source capability,
+performance workload, or real-user interaction.

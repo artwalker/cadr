@@ -29,7 +29,10 @@ remain evidence and must not silently override a current contract.
 - [delivery-checklist.md](delivery-checklist.md): mandatory root-image rebuild,
   freshness proof, full verification, and delivery-report evidence.
 - [source-parity-upgrade.md](source-parity-upgrade.md): baseline source drift
-  inventory and mandatory added/deleted/renamed disposition gate.
+  inventory plus mandatory source and render-differential upgrade gates.
+- [render-diff.md](render-diff.md): fixed-baseline PTY capture, narrow
+  normalization, fail-closed dispositions, and the permanent cross-
+  implementation render oracle.
 - [code-organization.md](code-organization.md): permanent directory ownership,
   converged policy primitives, anti-bypass tests, and reviewed large-file
   symptom gate for maintainable future development.

@@ -38,6 +38,14 @@ an auxiliary inventory for the fixed-baseline runnable examples, not a fifth
 ledger. [`docs/source-parity-upgrade.md`](docs/source-parity-upgrade.md) defines
 the fail-closed source drift gate for a future baseline upgrade.
 
+The fixed-baseline render differential is the only gate that executes both
+implementations and compares pi's actual PTY output with Cadr's. It is a
+cross-implementation oracle, not a fifth ledger: the four ledgers remain the
+implementation-side records, while the differential catches an assertion or
+snapshot that encoded the wrong behavior. Its complete real matrix runs in
+`scripts/verify.sh`; every non-aligned result requires an explicit, non-stale
+disposition.
+
 Those four axes answer whether Cadr is correct. The permanent
 [`docs/code-organization.md`](docs/code-organization.md) contract answers
 whether the implementation remains navigable and safe to extend: it records
@@ -456,8 +464,8 @@ and inspect them before sharing.
   excludes those blocks and `test-live.sh` runs them explicitly.
 - By explicit user decision, `scripts/verify.sh` is a local-only release gate
   that composes deterministic tests, isolated builds, performance/stability,
-  process/PTY, and available live stages; Cadr does not add a remote CI
-  workflow for it.
+  process/PTY, the complete fixed-baseline render differential, and available
+  live stages; Cadr does not add a remote CI workflow for it.
 - External shell harnesses remain only where a unit test cannot faithfully
   observe the real boundary:
   `acceptance-smoke.sh` (native image and cross-process sessions),
@@ -486,6 +494,9 @@ introduced. Proposed mechanisms beyond original pi belong in
 ./scripts/check-root-binary.sh
 python3 ./scripts/check-code-organization.py \
   --root . --manifest docs/code-organization-exemptions.json
+python3 ./scripts/render-diff.py gate \
+  --pi-repo . --output /tmp/cadr-render-gate \
+  --analysis-output /tmp/cadr-render-gate-analysis
 ./scripts/verify.sh
 ```
 
@@ -499,7 +510,8 @@ CI artifact gate. See the [delivery checklist](docs/delivery-checklist.md).
 
 The release-local entry then runs deterministic FiveAM, isolated builds of both
 native images, the Goal 11 performance/stability gate, every retained
-process/PTY harness, credential-gated live FiveAM, and the DeepSeek live TUI
+process/PTY harness, the complete fresh 12-scenario by 2-dimension
+fixed-baseline render matrix, credential-gated live FiveAM, and the DeepSeek live TUI
 when its key is available. It prints separate deterministic and live tables and
 exits nonzero for any executed failure; absent credentials are reported as
 explicit skips. It does not create or invoke a remote CI workflow. Individual

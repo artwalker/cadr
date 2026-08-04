@@ -134,6 +134,17 @@ run_code_organization_gate() {
       --manifest "$PROJECT_DIRECTORY/docs/code-organization-exemptions.json"
 }
 
+run_render_diff_gate() {
+  python3 -u "$PROJECT_DIRECTORY/test/render-diff-gate-test.py" &&
+    python3 -u "$PROJECT_DIRECTORY/scripts/render-diff.py" gate \
+      --pi-repo "$PROJECT_DIRECTORY" \
+      --manifest "$PROJECT_DIRECTORY/test/fixtures/render-diff/scenarios.json" \
+      --dispositions "$PROJECT_DIRECTORY/test/fixtures/render-diff/dispositions.json" \
+      --timeout 60 \
+      --output "$VERIFY_ROOT/render-diff" \
+      --analysis-output "$VERIFY_ROOT/render-diff-analysis"
+}
+
 print_summary() {
   local index
   printf '\nDeterministic stages\n'
@@ -153,7 +164,7 @@ print_summary() {
   done
 }
 
-for command in "$SBCL_COMMAND" python3 tmux script stty jq tar sha256sum; do
+for command in "$SBCL_COMMAND" git node npm python3 tmux script stty jq tar sha256sum; do
   if ! command -v "$command" >/dev/null 2>&1; then
     echo "verify: required command not found: $command" >&2
     exit 2
@@ -253,6 +264,15 @@ else
   skip_deterministic "Unix socket server smoke" "isolated build unavailable"
   skip_deterministic "terminal lifecycle PTY" "isolated build unavailable"
   skip_deterministic "deterministic TUI harness" "isolated build unavailable"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "fixed-baseline render differential" \
+    run_render_diff_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "fixed-baseline render differential" \
+    "deterministic harness prerequisite failed"
 fi
 
 LIVE_PROJECT="$PROJECT_DIRECTORY"
