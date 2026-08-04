@@ -318,19 +318,19 @@ provider/model/cwd，并对 virtual terminal 全屏逐字节计算 SHA-256：
 
 | 状态 | 尺寸 | SHA-256 |
 |---|---:|---|
-| cold-start | 80×24 | `7D6B66412D3734322CB29B8E24C95C5978B4FACC77FB89A811A6D58AB3F27D7B` |
-| single-turn | 80×24 | `0732A443161016877BD9A9FC46AE593AAE2110B0ACE7F903635EA3CBB3B2A48C` |
-| multi-turn (3 rounds) | 80×28 | `DC4A5F74E3FCB6EFDAAA1A55E3555F34FEF8D686A358F00ADECA00BD00180104` |
-| viewport-exact-fill | 80×13 | `E0493BAA8CFBBC1DF15E3254EF007840E1571AE163AF3010A04552FC71B59A7F` |
-| viewport-overflow | 80×14 | `53E1B55B933BEBCE43EDE639DB093965B148044B34191193152C067D1647CBE8` |
-| thinking | 80×24 | `AB0F8F4025EE9D5E026FF2FDC8AB8ABBF452926F61223944F965CFA8E567E310` |
-| tool-collapsed | 80×24 | `469F3BAE304DAC110474BFF5CB01483B72E4992C22E4B5EF7777B06018EF7343` |
-| tool-expanded | 80×24 | `DF40154B2A6E7B7F5E4E986B8498278881EF24CC7E98554509B2D84E23A5D0CC` |
-| active-status | 80×24 | `5B07189D441990503213180DB156B1106C0FDD95A83109BD6E93C13E84576BA1` |
-| above-widget | 80×24 | `3AF104FBC8FF61878FF37623FFB539799A28BEE22BE538726F08D2DF277A53D0` |
-| below-widget | 80×24 | `DC70F236342B1A935721471779EBCFA86DD0EFBE5CD4B9695148D5D33FE794D4` |
+| cold-start | 80×24 | `9733E04F6DE7672AEEE75764D149C02DB371BBC574E60D8799993675E6A1330A` |
+| single-turn | 80×24 | `82D3A3D1162A88AEC7639414079F536E60D3E59B2A5FE04945EE6DC8557BF0B7` |
+| multi-turn (3 rounds) | 80×28 | `99FC5B3F2A8F5F8D854064D8C0EB5890174DAD09F0C346BA8D048BFF4CB2012F` |
+| viewport-exact-fill | 80×11 | `FE62F046A32FEAF0196939D9EDD4EE7B22F43205DD2307660C9951A7C9D74531` |
+| viewport-overflow | 80×14 | `6FD90AA56FB8F791B62D1A1ACE1560C443CC8A10CCFF01B603E21179019761AA` |
+| thinking | 80×24 | `029DB78936CC5F7F1A549ADBF4F6DA50F9968AD81F1398C6FD1672ED96BACD4F` |
+| tool-collapsed | 80×24 | `6DEE222A9E0C83464F53AD8653FCBDCE15FD63D294638EB3374D74094236DEFE` |
+| tool-expanded | 80×24 | `200859C6BA14DE80DD2C7F432BEDD659C66B7A9B58EE5A50410A6E6AC59E03AF` |
+| active-status | 80×24 | `F74BC8FFEBA3B20C90FA72E6FFA1AD1440FF8E0F10F6B91BDB996E62AD3A4538` |
+| above-widget | 80×24 | `1B2E5A37C04D1A3621244D7F2E094C5C7340772CB0C39A15F05D38A5B9A6C406` |
+| below-widget | 80×24 | `D6303174613AA56EACF5A0F79927B771449EDCB93CBCED5F5B66AC124C537A40` |
 | overflow-scrolled-to-top | 52×14 | `D15615BBF1F0A2F18155DAF639EAD4A2F49DAF29DA38ABF2D95A170242A5BEFD` |
-| narrow-width | 32×14 | `A417E912682A61AEB48FD0653D9E2CF1BBECF46D34ED09F44F64896619948596` |
+| narrow-width | 32×14 | `3879C2A71C2BF04C357276800FEC1C848F9FE13453A84C9E8579F25A569F6539` |
 
 此前 7192 条检查没有捕获 above-editor spacer；当时基础屏幕只有组件 fragment 和
 局部 virtual-terminal 断言。后来建立整屏 SHA 后，用户指出的 10236 条（本轮开工
@@ -381,7 +381,7 @@ Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown�
 
 | Surface | 标题 | 提示 | 搜索 | 条目、顺序和值 | 计数 | 选中、边框与间距 | 描述 | 循环 |
 |---|---|---|---|---|---|---|---|---|
-| `/model` | 无额外 `Select Model` 标题 | 未 scoped 时 `Only showing models from configured providers. Use /login to add providers.`；刷新后 `Model catalogs refreshed.`；scoped 状态只显示 `Scope: all | scoped`，不显示 `tab scope (all/scoped)` | `> ` | 当前过滤顺序；`id [provider]`，当前模型 `✓` | 超 viewport 时位置/总数 | `→` accent；上下 `─`，各区块空行固定 | 选中项下 `Model Name: ...` | 双向 |
+| `/model` | 无额外 `Select Model` 标题 | 未 scoped 时 `Only showing models from configured providers. Use /login to add providers.`；刷新后 `Model catalogs refreshed.`；scoped 状态显示 `Scope: all | scoped` 与按配置键生成的 `tab scope (all/scoped)` | `> ` | 当前过滤顺序；`id [provider]`，当前模型 `✓` | 超 viewport 时位置/总数 | `→` accent；上下 `─`，各区块空行固定 | 选中项下 `Model Name: ...` | 双向 |
 | `/settings` | 主层无伪造标题；子层为 `Thinking Level`、`Theme`、`Light Theme`、`Dark Theme`、`Automatic Theme` | 主层 `Enter/Space to change · Esc to cancel`；子层 `Enter to select · Esc to go back` | 主层 type-to-search | 与基线能力门控一致：supports-images=nil 为 25 项；true 时在 Auto-compact 后追加 Show images、Image width，合计 27 项；子层候选顺序固定 | 10 行 viewport，按实际总数显示 `(i/25)` 或 `(i/27)` | `→` accent；上下边框；说明与列表间固定空行 | 宽屏显示 option description，窄屏换行/裁剪；子层显示说明 | 双向 |
 | `/resume` | `Resume Session (Current Folder)`，右侧 scope/name/sort 状态 | scope、regex/exact、sort/named/delete/path/rename 两行 | `> query` | threaded/search 结果顺序；名称或首条消息、消息数与 age | viewport 时当前位置/总数 | 选中行全宽背景；上下边框与固定 spacer | cwd/path 按状态展示 | 双向 |
 | `/fork` | `Fork from Message` | `Select a user message ... into a new session` | 无 | active path 的 user messages，原顺序；每项 `Message i of N` | 每项自带 `i of N` | `›` 选中；标题区、边框、条目间空行逐行固定 | 用户消息摘要 | 双向 |
@@ -391,7 +391,7 @@ Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown�
 | `/logout` | `Select provider to logout:` | 空态 `No providers logged in. Use /login first.` | `> ` | 已存 credential 投影，稳定排序；不混入 env/config-only 项 | viewport `(i/N)` | `→`；上下边框及固定 spacer | auth type 与 configured/source | 双向 |
 | `/scoped-models` | `Model Configuration` | `Session-only. ctrl+s to save to settings.` 与完整操作提示 | `> ` | session order；unavailable id 保留；enabled `✓`/disabled `✗` | enabled/unavailable 状态及 viewport | `→` accent；上下边框及固定 spacer | `Model Name: ...` | 双向 |
 | `/import` | `Import session` | `Replace current session with <path>?`；`↑↓ navigate  enter select  escape cancel` | 无 | `Yes` 后 `No`；值含 confirmed flag、原命令与 path | 无 | `→`；上下边框及固定 spacer | 无 | 双向 |
-| `/trust` | `Project trust` 与 cwd | `↑↓ navigate  enter save  escape cancel` | 无 | Trust、Trust parent folder、Do not trust | 无 | `→`；上下边框及固定 spacer | saved decision、current session、parent path | 双向 |
+| `/trust` | `Project trust` 与 cwd | `↑↓ navigate  enter save  escape/ctrl+c cancel` | 无 | Trust、Trust parent folder、Do not trust | 无 | `→`；上下边框及固定 spacer | saved decision、current session、parent path | 双向 |
 | extension custom UI | extension 提供的单行/多行 title | 通用 `↑↓ navigate  enter select  escape cancel` | 由扩展 surface 决定 | 扩展提供的 label/value 原顺序 | generic viewport | `→`；framed select 上下边框与固定 spacer | 扩展提供 description | 双向；真实 extension worker→live TUI bridge→键盘选择→返回值已回归 |
 | autocomplete | 无标题 | 无额外提示 | editor 当前 `/command`、`/model ...`、`/login ...` 或 `@path` prefix | command 规范顺序/匹配排序；model/provider/path items 与真实 value | `autocompleteMaxVisible` 限制 | selected `→`，popup 位于 editor 下边框后，无 overlay 外框；`@path` 有完整 40×8 virtual-screen 门禁 | 宽度允许时显示 description | 双向 |
 | `/sessions`、`/switch`、`/branch`、`/install` | 基线无对应 slash/TUI surface | Cadr 已从内置 slash dispatch、overlay 与 autocomplete 全部删除；直接输入只按普通未知输入路径处理，不构成命令 alias 或隐藏 backend | 无 | 无 | 无 | 无 | 无 | 不适用 |
@@ -406,21 +406,21 @@ Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown�
 
 | Overlay | SHA-256 |
 |---|---|
-| model | `F00B20118A954C3CCFA6780ACECC9AAD5887EDD168913EEDC121D9250354AD3F` |
-| model-scoped | `E45CF44928EA432C79CC93DBD359FA92ECCA37B2D6D97FA8A3463559AFEDE4D8` |
-| settings | `BF8F74675A66393CE5F4A50785B71F78F7F54B3617358DF4D4A9C70E2C1C3AFA` |
-| resume | `97547661CA2C621716565AD8322C0A886B922114D4798EAD4AEFC9AEF0FF6B4B` |
-| fork | `3741D9EBD09665BE6701FD957B2071E07A621804192CD2E0E1E4E765A577FF60` |
-| tree | `3E181C19A4FF90C824918E713E3B738E00C4F456BC6AEBB3AB7F2BF9235B597F` |
-| scoped-models | `C70BE56733530B2E2839E3EDF65B0FE93A09EEC09C2C3B67A6BF70DE22136038` |
-| trust | `ADCAA3E3FBE6FCC0075819C16FB67B5DC1EA6F5B7A4C8B3B5C6B6810E8A9F18C` |
-| login-method | `ED15EB102E30928C4F4D5B3470FE1FE9D5F6B15C1294188FAE8327393FF57F85` |
-| login-provider | `B3A4E71D71A37664D521F5F123D81B0E3B92E4DAB5E638FD14A311FF274F905E` |
-| logout-provider | `CC22C0F6983E1975602A5AF28FCC22715A4152374C39577154D33365014B8B5D` |
-| api-key | `E9A09DFE359B3AD1519A108F04A0405FA5F6F607B5A7F76F3EC90A9F56151179` |
-| import | `CBB6A2FFE4C7F41DB4E4F73739D8D78BC4DBB04844016E6429E85B9E78D883F1` |
-| extension-select | `D43F8F701FE98E73037B44854626149F5427B4D5A29CC48A5755425DD918ACE6` |
-| extension-custom | `13C40C8025174E52DB871376BA85033BE5EEDD9F349163D36911A4C7DE01E0C5` |
+| model | `828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869` |
+| model-scoped | `9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1` |
+| settings | `DB40F8BBA31200DB8C5BE49E59B2AE01EDA11F935B002DF230F96BA6F4133CC4` |
+| resume | `DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8` |
+| fork | `AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E` |
+| tree | `B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117` |
+| scoped-models | `9827A029C2C8B9AB28C8EF754B887447C23FDE41EB5941145DDAC9A97FC68415` |
+| trust | `3D484AC3838FAE5ADA7A490D6274C6BD1C78FCC2F0BD196026F33EA1A4631A7E` |
+| login-method | `305B0BB2D1C67D71D7851B1EF450E992212C08F8A680CC6DF00AA23CE3B033C0` |
+| login-provider | `5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20` |
+| logout-provider | `5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212` |
+| api-key | `FD7DC83C63AC1AD2767D362FE27C960FB4CBF110227CC99DADE7E85360AA3EED` |
+| import | `4C31E4E9C20137D0D0B854ADC6672CCEE13560ABE6AFC2DD79C5B5C73699E6F9` |
+| extension-select | `187DC5C5436CAF04A4F3DE928772AEB77494E4059B07ADE78E133C5084E40D64` |
+| extension-custom | `A85DF2C8310E88D1BEA5B9AE84CBF6735FBC83CBC1116082E52A2CBB9A76A2EC` |
 
 ### B2 SHA snapshot 独立语义 oracle 审计
 

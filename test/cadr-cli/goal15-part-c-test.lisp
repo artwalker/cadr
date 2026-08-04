@@ -1,6 +1,21 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(defun goal15-fixed-text-row (text width)
+  (let* ((limited (if (> (length text) width)
+                      (subseq text 0 width)
+                      text))
+         (padding
+           (max 0 (- width (cadr-tui:visible-width limited)))))
+    (concatenate
+     'string limited
+     (make-string padding :initial-element #\Space))))
+
+(defun goal15-fixed-input-row (text width)
+  ;; pi@74caa2649 Input always reserves its software-cursor cell.
+  (goal15-fixed-text-row
+   (concatenate 'string "> " text " ") width))
+
 (defun make-goal15-fake-rg-program (directory)
   (let ((program (merge-pathnames "rg" directory)))
     (with-open-file
@@ -251,3 +266,255 @@
     (cadr-cli::tui-terminal-title-sequence
      "/tmp/project/"
      (format nil "branch~Cwork" #\Escape)))))
+
+(test goal15-selector-overlays-preserve-natural-height-and-input-cursor
+  ;; pi@74caa2649 model-selector.ts:91-129 composes the selector from normal
+  ;; components.  The root renderer owns viewport cropping; it does not delete
+  ;; spacers or rebuild a compact selector.  Input supplies the real cursor.
+  (let* ((models
+           (loop for index below 14
+                 collect
+                 (cadr-ai:make-model
+                  :id (format nil "model-~2,'0D" index)
+                  :name (format nil "Model ~D" index)
+                  :provider :faux :api :faux
+                  :base-url "http://localhost:0"
+                  :context-window 128000 :max-tokens 4096)))
+         (scoped-overlay
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :scoped-models models
+            :current-model (first models)))
+         (unscoped-overlay
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model (first models))))
+    (cadr-cli::model-selector-set-query scoped-overlay "model")
+    (dolist (width '(72 28))
+      (multiple-value-bind (lines row column)
+          (cadr-cli::render-tui-overlay-lines
+           scoped-overlay width 0d0)
+        (is (= 22 (length lines)))
+        (is (= 5 row))
+        (is (= 7 column))
+        (is
+         (string=
+          (goal15-fixed-text-row
+           "tab scope (all/scoped)" width)
+          (cadr-tui:strip-terminal-sequences (nth 3 lines))))
+        (is
+         (string=
+          (goal15-fixed-input-row "model" width)
+          (cadr-tui:strip-terminal-sequences (nth row lines)))))
+      (multiple-value-bind (lines row column)
+          (cadr-cli::render-tui-overlay-lines
+           unscoped-overlay width 0d0)
+        (is (= 21 (length lines)))
+        (is (= 4 row))
+        (is (= 2 column))
+        (is
+         (string=
+          (goal15-fixed-text-row
+           "Only showing models from configured providers. Use /login to add providers."
+           width)
+          (cadr-tui:strip-terminal-sequences (nth 2 lines))))))))
+
+(test goal15-model-scope-startup-copy-follows-baseline-gate-and-grammar
+  ;; pi@74caa2649 interactive-mode.ts:719-731 emits this only for a nonempty
+  ;; scope when verbose startup is enabled or quiet startup is disabled.
+  (let* ((manager
+           (cadr-tui:make-keybindings-manager
+            :definitions
+            '(("app.model.cycleForward" . ("ctrl+p")))))
+         (disabled-manager
+           (cadr-tui:make-keybindings-manager
+            :user-bindings
+            '(("app.model.cycleForward" . nil))))
+         (first
+           (cadr-ai:make-model
+            :id "faux-1" :provider :faux :api :faux))
+         (second
+           (cadr-ai:make-model
+            :id "other-1" :provider :other :api :faux))
+         (scope
+           (list (list :model first :thinking nil)
+                 (list :model second :thinking :high))))
+    (is
+     (string=
+      "Model scope: faux-1, other-1:high (Ctrl+P to cycle)"
+      (cadr-tui:strip-terminal-sequences
+       (cadr-cli::model-scope-startup-line
+        scope manager :verbose-p nil :quiet-startup-p nil))))
+    (is
+     (null
+      (cadr-cli::model-scope-startup-line
+       scope manager :verbose-p nil :quiet-startup-p t)))
+    (is
+     (stringp
+      (cadr-cli::model-scope-startup-line
+       scope manager :verbose-p t :quiet-startup-p t)))
+    (is
+     (null
+      (cadr-cli::model-scope-startup-line
+       nil manager :verbose-p t :quiet-startup-p nil)))
+    (is
+     (string=
+      "Model scope: faux-1, other-1:high"
+      (cadr-tui:strip-terminal-sequences
+       (cadr-cli::model-scope-startup-line
+        scope disabled-manager
+        :verbose-p t :quiet-startup-p nil))))))
+
+(test goal15-model-cycle-target-matches-baseline-wrap-and-missing-current
+  ;; agent-session.ts:1601-1665 resolves the current entry, defaults a missing
+  ;; current model to index zero, applies the direction, and wraps modulo the
+  ;; complete scoped batch.
+  (let* ((one
+           (cadr-ai:make-model
+            :id "one" :provider :faux :api :faux))
+         (two
+           (cadr-ai:make-model
+            :id "two" :provider :faux :api :faux))
+         (three
+           (cadr-ai:make-model
+            :id "three" :provider :faux :api :faux))
+         (missing
+           (cadr-ai:make-model
+            :id "missing" :provider :faux :api :faux))
+         (entries
+           (list
+            (list :model one :thinking nil)
+            (list :model two :thinking :high)
+            (list :model three :thinking :off))))
+    (flet ((target (current direction)
+             (getf
+              (cadr-cli::model-cycle-target-entry
+               entries current direction)
+              :model)))
+      (is (cadr-ai:models-equal-p two (target one :forward)))
+      (is (cadr-ai:models-equal-p three (target one :backward)))
+      (is (cadr-ai:models-equal-p one (target three :forward)))
+      (is (cadr-ai:models-equal-p two (target missing :forward)))
+      (is (cadr-ai:models-equal-p three (target missing :backward))))
+    (is
+     (null
+      (cadr-cli::model-cycle-target-entry
+       nil one :forward)))
+    (is
+     (null
+      (cadr-cli::model-cycle-target-entry
+       (list (first entries)) one :forward)))))
+
+(test goal15-model-scope-hint-uses-key-and-description-styles
+  ;; keybinding-hints.ts:17-31,42-47 styles the key independently from its
+  ;; description and model-selector.ts:219-220 keeps the scope suffix muted.
+  (let* ((one
+           (cadr-ai:make-model
+            :id "one" :name "One" :provider :faux :api :faux))
+         (two
+           (cadr-ai:make-model
+            :id "two" :name "Two" :provider :other :api :faux))
+         (keybindings
+           (cadr-cli::make-models-selector-keybindings
+            '(("tui.input.tab" . ("ctrl+t")))))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models (list one two)
+            :scoped-models (list one two)
+            :current-model one
+            :keybindings keybindings))
+         (line
+           (nth 3
+                (nth-value
+                 0
+                 (cadr-cli::render-model-selector state 80)))))
+    (is
+     (string=
+      (goal15-fixed-text-row
+       "ctrl+t scope (all/scoped)" 80)
+      (cadr-tui:strip-terminal-sequences line)))
+    (is
+     (search
+      (cadr-tui:theme-foreground :dim "ctrl+t") line))
+    (is
+     (search
+      (cadr-tui:theme-foreground :muted " scope") line))
+    (is
+     (search
+      (cadr-tui:theme-foreground :muted " (all/scoped)") line))))
+
+(test goal15-visible-directory-copy-strips-only-non-root-trailing-separators
+  ;; pi@74caa2649 utils/paths.ts:81-85 canonicalizes display paths without a
+  ;; trailing separator, while the filesystem trust key remains canonical.
+  (is (string= "/" (cadr-cli::display-directory-name "/")))
+  (is (string= "/tmp/project"
+               (cadr-cli::display-directory-name "/tmp/project/")))
+  (is (string= "/tmp/project"
+               (cadr-cli::display-directory-name #P"/tmp/project/")))
+  (is (string= "C:/"
+               (cadr-cli::display-directory-name "C:/")))
+  (is (string= (format nil "C:~C" #\\)
+               (cadr-cli::display-directory-name
+                (format nil "C:~C" #\\))))
+  (is (string= "/tmp/project"
+               (cadr-cli::format-cwd-for-footer
+                "/tmp/project/" "/root")))
+  (is (string= "~"
+               (cadr-cli::format-cwd-for-footer
+                "/root/" "/root"))))
+
+(test goal15-trust-selector-copy-and-paths-match-baseline
+  ;; pi@74caa2649 trust-selector.ts:52-87 renders normalized paths and the
+  ;; keybinding-derived cancel alternatives verbatim.
+  (let ((lines
+          (mapcar
+           #'cadr-tui:strip-terminal-sequences
+           (cadr-cli::render-trust-selector
+            (cadr-cli::make-trust-selector-state
+             :cwd "/tmp/project/" :project-trusted-p nil)
+            80))))
+    (is (find (goal15-fixed-text-row " /tmp/project" 80)
+              lines :test #'string=))
+    (is (find (goal15-fixed-text-row
+               "   Trust parent folder (/tmp)" 80)
+              lines :test #'string=))
+    (is
+     (find
+      (goal15-fixed-text-row
+       " ↑↓ navigate  enter save  escape/ctrl+c cancel" 80)
+      lines :test #'string=)))
+  (is
+   (string=
+    "trusted (/tmp/project)"
+    (cadr-cli::trust-decision-description
+     (cadr-cli::make-trust-selector-state
+      :cwd "/tmp/project/"
+      :saved-entry '(:path "/tmp/project/" :decision t)))))
+  (is
+   (string=
+    "trusted (inherited from /tmp)"
+    (cadr-cli::trust-decision-description
+     (cadr-cli::make-trust-selector-state
+      :cwd "/tmp/project/"
+      :saved-entry '(:path "/tmp/" :decision t))))))
+
+(test goal15-trust-help-styles-keys-and-descriptions-independently
+  ;; trust-selector.ts:75-84 composes three key hints rather than dimming the
+  ;; complete row as one string.
+  (let* ((state
+           (cadr-cli::make-trust-selector-state
+            :cwd "/tmp/project/" :project-trusted-p nil))
+         (lines
+           (nth-value
+            0 (cadr-cli::render-trust-selector state 80)))
+         (line (nth (- (length lines) 3) lines)))
+    (dolist (key '("↑↓" "enter" "escape/ctrl+c"))
+      (is
+       (search
+        (cadr-tui:theme-foreground :dim key)
+        line)))
+    (dolist (description '(" navigate" " save" " cancel"))
+      (is
+       (search
+        (cadr-tui:theme-foreground :muted description)
+        line)))))

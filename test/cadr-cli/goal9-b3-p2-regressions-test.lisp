@@ -4,6 +4,24 @@
 (defun goal9-b3-plain-lines (lines)
   (mapcar #'cadr-tui:strip-terminal-sequences lines))
 
+(defun goal9-b3-full-width-line (value width)
+  ;; Baseline Text/TruncatedText rows are exact-width; keep this oracle
+  ;; independent of Cadr's selector implementation.
+  (let* ((limited (if (> (length value) width)
+                      (subseq value 0 width)
+                      value))
+         (padding
+           (max 0 (- width (cadr-tui:visible-width limited)))))
+    (concatenate
+     'string limited
+     (make-string padding :initial-element #\Space))))
+
+(defun goal9-b3-full-width-input-line (value width)
+  ;; Baseline Input reserves one software-cursor cell even at end-of-input.
+  (goal9-b3-full-width-line
+   (concatenate 'string "> " value " ")
+   width))
+
 (test goal9-b3-model-overlay-copy-matches-unscoped-baseline
   (let* ((width 80)
          (border
@@ -25,13 +43,15 @@
       (list
        border
        ""
-       "Only showing models from configured providers. Use /login to add providers."
+       (goal9-b3-full-width-line
+        "Only showing models from configured providers. Use /login to add providers."
+        width)
        ""
-       "> "
+       (goal9-b3-full-width-input-line "" width)
        ""
-       "→ faux-model [faux] ✓"
+       (goal9-b3-full-width-line "→ faux-model [faux] ✓" width)
        ""
-       "  Model Name: Faux Model"
+       (goal9-b3-full-width-line "  Model Name: Faux Model" width)
        ""
        border)
       plain))))
@@ -55,7 +75,7 @@
       (list
        ""
        border
-       "  Session Tree"
+       (goal9-b3-full-width-line "   Session Tree" width)
        "  ↑/↓ move · ←/→ page · ctrl+←/→ branch · ctrl+x copy · shift+l label · shift+t label time · filters ctrl+d/t/u/l/a"
        "  cycle ctrl+o/shift+ctrl+o"
        "  Type to search:"
@@ -212,7 +232,7 @@
      (equal
       (list
        border
-       "> "
+       (goal9-b3-full-width-input-line "" width)
        ""
        "→ Auto-compact            true"
        "  Auto-resize images      true"
@@ -255,13 +275,15 @@
            (is
             (equal
              (list
-              (format nil "~C[38;2;80;80;80m~A~C[39m"
+              (format nil "~C[38;2;95;135;255m~A~C[39m"
                       #\Escape
                       (make-string width :initial-element #\─)
                       #\Escape)
-              (format nil
-                      "~C[38;2;128;128;128m> ~C[39m~C[38;2;138;190;183m~C[39m"
-                      #\Escape #\Escape #\Escape #\Escape)
+              (concatenate
+               'string
+               "> "
+               (format nil "~C[7m ~C[27m" #\Escape #\Escape)
+               (make-string 37 :initial-element #\Space))
               ""
               (format nil
                       "~C[38;2;138;190;183m→ ~C[39m~C[38;2;138;190;183mAuto-compact~C[39m  ~C[38;2;138;190;183mtrue~C[39m"
@@ -275,7 +297,7 @@
               (format nil
                       "~C[38;2;102;102;102m  Type to search · Enter/Space to change~C[0m"
                       #\Escape #\Escape)
-              (format nil "~C[38;2;80;80;80m~A~C[39m"
+              (format nil "~C[38;2;95;135;255m~A~C[39m"
                       #\Escape
                       (make-string width :initial-element #\─)
                       #\Escape))
@@ -334,7 +356,8 @@
        (cadr-cli::settings-selector-visible-options state))))
     (is
      (equal
-      '("────────────" "> term" "" "→ Terminal p" "" "  Descript"
+      (list "────────────" (goal9-b3-full-width-input-line "term" 12)
+        "" "→ Terminal p" "" "  Descript"
         "  ion 24" "" "  Type to se" "────────────")
       (goal9-b3-plain-lines
        (cadr-cli::render-settings-selector state 12))))
@@ -445,7 +468,7 @@
     (is
      (equal
       (list
-       border "Thinking Level" ""
+       border (goal9-b3-full-width-line " Thinking Level" width) ""
        "Select reasoning depth for thinking-capable models" ""
        "  off         No reasoning"
        "→ low         Light reasoning (~2k tokens)"
@@ -468,7 +491,7 @@
     (is
      (equal
       (list
-       border "Theme" ""
+       border (goal9-b3-full-width-line " Theme" width) ""
        "Select a theme, or choose Automatic to follow terminal appearance."
        ""
        "  Automatic   Use separate themes for light and dark terminal appearance"
@@ -484,7 +507,7 @@
     (is
      (equal
       (list
-       border "Automatic Theme" ""
+       border (goal9-b3-full-width-line " Automatic Theme" width) ""
        "Choose themes for terminal light and dark appearance."
        "Light/dark detection requires terminal support." ""
        "→ Light theme  dark"

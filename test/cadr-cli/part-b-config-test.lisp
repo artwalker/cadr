@@ -287,7 +287,50 @@
     (is (string=
          "ctrl+y"
          (cadr-ai::json-get
-          migrated "app.tools.expand")))))
+          migrated "app.tools.expand"))))
+  (let ((manager
+          (cadr-cli::make-memory-settings-manager)))
+    (cadr-cli::settings-set
+     manager "keybindings"
+     (args
+      "app.model.cycleForward" #()
+      "app.model.cycleBackward" #("ctrl+shift+g")))
+    (let ((bindings (cadr-cli::settings-keybindings manager)))
+      (is
+       (member
+        '("app.model.cycleForward")
+        bindings :test #'equal))
+      (is
+       (equal
+        '("ctrl+shift+g")
+        (cdr
+         (assoc
+          "app.model.cycleBackward"
+          bindings :test #'string=)))))))
+
+(test goal15-clear-on-shrink-setting-precedes-environment-and-defaults-off
+  ;; pi@74caa2649 settings-manager.ts:1093-1099: an explicit terminal setting
+  ;; wins, the environment is only a fallback, and the default is false.
+  #+sbcl
+  (let ((previous (uiop:getenv "CADR_CLEAR_ON_SHRINK")))
+    (unwind-protect
+         (let ((manager (cadr-cli::make-memory-settings-manager)))
+           (sb-posix:unsetenv "CADR_CLEAR_ON_SHRINK")
+           (is (null (cadr-cli::settings-clear-on-shrink-p manager)))
+           (sb-posix:setenv "CADR_CLEAR_ON_SHRINK" "1" 1)
+           (is (eq t (cadr-cli::settings-clear-on-shrink-p manager)))
+           (cadr-cli::settings-set
+            manager "terminal"
+            (args "clearOnShrink" nil))
+           (is (null (cadr-cli::settings-clear-on-shrink-p manager)))
+           (sb-posix:setenv "CADR_CLEAR_ON_SHRINK" "0" 1)
+           (cadr-cli::settings-set
+            manager "terminal"
+            (args "clearOnShrink" t))
+           (is (eq t (cadr-cli::settings-clear-on-shrink-p manager))))
+      (if previous
+          (sb-posix:setenv "CADR_CLEAR_ON_SHRINK" previous 1)
+          (sb-posix:unsetenv "CADR_CLEAR_ON_SHRINK")))))
 
 (test model-settings-preserve-order-unavailable-ids-and-remove-all-sentinel
   (with-test-directory (root)

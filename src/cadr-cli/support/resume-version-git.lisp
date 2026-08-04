@@ -36,9 +36,7 @@
             :default-session-directory-p
             default-session-directory-p
             :session-directory
-            (namestring
-             (uiop:ensure-directory-pathname
-              session-directory)))))
+            (display-directory-name session-directory))))
     (when command
       (format
        output "~A ~A~%"

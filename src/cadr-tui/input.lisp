@@ -148,6 +148,8 @@
     ("app.exit" . :eof)
     ("app.message.followUp" . :follow-up)
     ("app.message.dequeue" . :dequeue)
+    ("app.model.cycleForward" . :model-cycle-forward)
+    ("app.model.cycleBackward" . :model-cycle-backward)
     ("tui.editor.cursorUp" . :up)
     ("tui.editor.cursorDown" . :down)
     ("tui.editor.cursorLeft" . :left)

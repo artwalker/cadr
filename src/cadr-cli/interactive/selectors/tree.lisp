@@ -1712,35 +1712,44 @@
               width))))
     (mapcar
      (lambda (line)
-       (selector-dim-line line width))
+       (selector-muted-line line width))
      lines)))
 
 (defun render-tree-selector (state width)
-  (render-selector-frame
-   (make-selector-frame
-    :sections
-    (list
-     :blank :border
-     (list :title "  Session Tree" :plain)
-     (list :lines (tree-selector-help-lines state width))
-     (list :input (tree-selector-state-query state) :tree)
-     :border :blank
-     (list
-      :lines
-      (if (eq :label
-              (tree-selector-state-mode state))
-          (list
-           (selector-muted-line
-            "  Label (empty to remove):" width)
-           (selector-fit-line
-            (concatenate
-             'string "  "
-             (cadr-tui:theme-foreground
-              :accent
-              (tree-selector-state-label-input state)))
-            width)
-           (selector-dim-line
-            "  enter save  escape cancel" width))
-          (tree-selector-render-lines state width)))
-     :blank :border))
-   width))
+  (let ((label-mode-p
+          (eq :label
+              (tree-selector-state-mode state))))
+    (multiple-value-bind
+          (label-lines label-row label-column)
+        (if label-mode-p
+            (selector-input-rendering
+             (tree-selector-state-label-input state)
+             width)
+            (values nil nil nil))
+      (render-selector-frame
+       (make-selector-frame
+        :sections
+        (append
+         (list
+          :blank :border
+          (list :title "  Session Tree" :plain)
+          (list :lines (tree-selector-help-lines state width))
+          (list :input (tree-selector-state-query state) :tree)
+          :border :blank)
+         (if label-mode-p
+             (list
+              (list
+               :lines
+               (list
+                (selector-muted-line
+                 "  Label (empty to remove):" width)))
+              (list
+               :component label-lines label-row label-column)
+              (list
+               :help
+               (list "  enter save  escape cancel")))
+             (list
+              (list :lines
+                    (tree-selector-render-lines state width))))
+         (list :blank :border)))
+       width))))

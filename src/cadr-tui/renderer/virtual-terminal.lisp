@@ -90,6 +90,24 @@
        (virtual-cursor-column terminal)
        (visible-width (string character))))))
 
+(defun virtual-line-feed (terminal)
+  ;; A real terminal scrolls when a line feed is written on its bottom row.
+  ;; The old test double silently moved its cursor below the screen and then
+  ;; discarded the rest of the frame, so main-screen viewport tests were not
+  ;; exercising what users actually see.
+  (let* ((screen (virtual-terminal-screen terminal))
+         (last-row (1- (length screen))))
+    (if (>= (virtual-cursor-row terminal) last-row)
+        (progn
+          (loop for row below last-row
+                do (setf (aref screen row)
+                         (aref screen (1+ row))))
+          (when (>= last-row 0)
+            (setf (aref screen last-row) ""))
+          (setf (virtual-cursor-row terminal) (max 0 last-row)))
+        (incf (virtual-cursor-row terminal)))
+    (setf (virtual-cursor-column terminal) 0)))
+
 (defun apply-virtual-output (terminal text)
   (ensure-virtual-screen terminal)
   (loop with index = 0
@@ -145,8 +163,7 @@
                          1)))))))
              (setf index (1+ end))))
           ((char= character #\Newline)
-           (incf (virtual-cursor-row terminal))
-           (setf (virtual-cursor-column terminal) 0)
+           (virtual-line-feed terminal)
            (incf index))
           ((char= character #\Return)
            (setf (virtual-cursor-column terminal) 0)

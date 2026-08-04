@@ -530,7 +530,8 @@
      &key api-key base-url
        (config-path (default-config-path))
        (auth-path (default-auth-path))
-       (source :interactive))
+       (source :interactive)
+       (thinking-level nil thinking-level-p))
   (let* ((previous-model
            (cadr-agent:agent-model agent))
          (previous-thinking
@@ -550,7 +551,10 @@
            (provider-config-model config))
          (thinking
            (cadr-ai:clamp-thinking-level
-            selected previous-thinking))
+            selected
+            (if thinking-level-p
+                thinking-level
+                previous-thinking)))
          (host
            (cadr-agent::agent-extension-host
             agent))

@@ -1094,31 +1094,39 @@
             :text (format nil "notice-~D" index))))
     (multiple-value-bind
           (main-lines main-row main-column)
-        (cadr-cli::render-tui-state
-         state editor 40 8)
-      (declare (ignore main-row main-column))
-      (is (= 8 (length main-lines)))
-      (is (null
-           (find "session> notice-1"
-                 main-lines
-                 :test #'string=))))
-    (multiple-value-bind
-          (alt-lines alt-row alt-column)
-        (cadr-cli::render-tui-state
-         state editor 40 8
-         :full-document-p t)
-      (declare (ignore alt-column))
-      (is (> (length alt-lines) 8))
-      (is (find " notice-1"
-                (mapcar
-                 #'cadr-tui:strip-terminal-sequences
-                 alt-lines)
-                :test #'string=))
-      (is (notany
-           (lambda (line) (search "session>" line))
-           alt-lines))
-      (is (< alt-row
-             (length alt-lines))))))
+        (cadr-cli::render-tui-state state editor 40 8)
+      (multiple-value-bind
+            (alt-lines alt-row alt-column)
+          (cadr-cli::render-tui-state
+           state editor 40 8 :full-document-p t)
+        (declare (ignore main-column alt-column))
+        ;; pi@74caa2649 root composition is a natural document in both main
+        ;; and alt modes.  Only the renderer selects a viewport.
+        (is (equal main-lines alt-lines))
+        (is (> (length main-lines) 8))
+        (is (= main-row alt-row))
+        (is (find " notice-1"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   main-lines)
+                  :test #'string=))
+        (let* ((terminal
+                 (cadr-tui:make-virtual-terminal
+                  :columns 40 :rows 8))
+               (renderer
+                 (cadr-tui:make-terminal-renderer terminal)))
+          (cadr-tui:render-frame
+           renderer main-lines
+           :cursor-row main-row :cursor-column main-column)
+          (let ((screen
+                  (cadr-tui:virtual-terminal-snapshot terminal)))
+            (is (= 8 (length screen)))
+            (is (null
+                 (find " notice-1"
+                       (mapcar
+                        #'cadr-tui:strip-terminal-sequences
+                        screen)
+                       :test #'string=)))))))))
 
 (test idle-status-helper-reserves-space-only-when-requested
   (is (= 2
@@ -1618,12 +1626,12 @@
       (list
        (make-string 80 :initial-element #\─)
        ""
-       " Select authentication method:"
+       (format nil "~80A" " Select authentication method:")
        ""
-       " → Sign in with an account"
-       "   Sign in with an API key"
+       (format nil "~80A" " → Sign in with an account")
+       (format nil "~80A" "   Sign in with an API key")
        ""
-       " ↑↓ navigate  enter select  escape/ctrl+c cancel"
+       (format nil "~80A" " ↑↓ navigate  enter select  escape/ctrl+c cancel")
        ""
        (make-string 80 :initial-element #\─))
       plain)))
@@ -1652,6 +1660,34 @@
        (lambda (line)
          (push line commands)))
       (is (null commands)))))
+
+(test goal15-real-tui-routes-default-model-cycle-bindings
+  (let ((directions nil)
+        (previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager))
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "mock"
+            :terminal
+            (make-instance
+             'footer-sync-test-terminal
+             :columns 80 :rows 12
+             :inputs
+             (list
+              (string (code-char 16))
+              (format nil "~C[27;6;112~~" #\Escape)
+              (footer-sync-submit-input "/quit"))
+             :before-second-read (constantly nil))
+            :cycle-model-function
+            (lambda (direction)
+              (push direction directions)
+              nil))
+           (is (equal '(:forward :backward)
+                      (nreverse directions))))
+      (cadr-tui:set-keybindings previous))))
 
 (test goal9-b3-logout-opens-stored-provider-selector-and-removes-selection
   (let ((commands nil)
@@ -1760,7 +1796,7 @@
                (format nil "~C[B" #\Escape)
                (string #\Return)
                (footer-sync-wait-for-screen-text
-                "Select provider to configure:"))
+                "Amazon Bedrock"))
                (loop repeat provider-index
                      collect
                      (format nil "~C[B" #\Escape))
@@ -2155,7 +2191,8 @@
          :extension-host host)
       (declare (ignore row column))
       (let ((screen
-              (format nil "~{~A~^~%~}" lines)))
+              (cadr-tui:strip-terminal-sequences
+               (format nil "~{~A~^~%~}" lines))))
         (is (search "parsed-user" screen))
         (is (null (search "**parsed-user**"
                           screen)))))))
@@ -2556,7 +2593,8 @@
          :overlay selector)
       (declare (ignore row column))
       (let ((screen
-              (format nil "~{~A~^~%~}" lines)))
+              (cadr-tui:strip-terminal-sequences
+               (format nil "~{~A~^~%~}" lines))))
         (is (search "Resume Session" screen))
         (is (search "ctrl+x rename" screen))
         (is (not (search "ctrl+r rename" screen)))))
@@ -2934,44 +2972,42 @@
                  nil 40 :reserve-idle-p t))))
       (cadr-tui:reset-current-theme))))
 
-(test goal9-overlay-clipping-keeps-the-selected-row-visible
-  (let ((caps
-          (cadr-tui:make-terminal-capabilities
-           :true-color-p t)))
-    (cadr-tui:set-current-theme
-     :dark :capabilities caps)
-    (unwind-protect
-         (let* ((selected
-                  (cadr-tui:theme-background
-                   :selected-bg
-                   "→ selected item"
-                   :enabled-p t))
-                (lines
-                  (append
-                   '("top border" "title" "search")
-                   (loop for index below 20
-                         collect
-                         (if (= index 16)
-                             selected
-                             (format nil
-                                     "  item ~D"
-                                     index)))
-                   '("bottom border")))
-                (fitted
-                  (cadr-cli::fit-overlay-lines
-                   lines 8))
-                (plain
-                  (mapcar
-                   #'cadr-tui:strip-terminal-sequences
-                   fitted)))
-           (is (= 8 (length fitted)))
-           (is (find "→ selected item"
-                     plain :test #'string=))
-           (is (find "top border"
-                     plain :test #'string=))
-           (is (find "bottom border"
-                     plain :test #'string=)))
-      (cadr-tui:reset-current-theme))))
+(test goal9-overlay-root-preserves-component-lines-for-viewport-rendering
+  ;; The baseline root viewport performs cropping.  Selector composition must
+  ;; keep every component line, including spacers, in document order.
+  (let* ((labels
+           (loop for index below 7
+                 collect (format nil "item ~D" index)))
+         (state
+           (cadr-cli::make-tui-state
+            :model "faux" :cwd "/tmp/project"
+            :context-window 128000))
+         (overlay
+           (cadr-cli::make-framed-select-state
+            "Viewport contract" labels labels)))
+    (multiple-value-bind (rendered row column)
+        (cadr-cli::render-tui-state
+         state (cadr-tui:make-multiline-editor)
+         40 8 :overlay overlay :full-document-p t)
+      (declare (ignore row column))
+      (let ((plain
+              (mapcar #'cadr-tui:strip-terminal-sequences rendered)))
+        (is (> (length plain) 8))
+        (is (find " Viewport contract" plain :test #'string=))
+        (dolist (label labels)
+          (is
+           (find-if
+            (lambda (line) (search label line))
+            plain)))
+        (is
+         (= 2
+            (count-if
+             (lambda (line)
+               (and (= 40 (length line))
+                    (every (lambda (character)
+                             (char= character #\─))
+                           line)))
+             plain)))))))
 
 (test goal9-render-coordinator-coalesces-and-keeps-final-request
   (let* ((now 0d0)

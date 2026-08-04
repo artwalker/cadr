@@ -253,13 +253,16 @@
       trimmed)))
 
 (defparameter +session-selector-keybinding-definitions+
-  '(("app.session.toggleNamedFilter" . ("ctrl+n"))
-    ("app.session.togglePath" . ("ctrl+p"))
-    ("app.session.toggleSort" . ("ctrl+s"))
-    ("app.session.rename" . ("ctrl+r"))
-    ("app.session.delete" . ("ctrl+d"))
-    ("app.session.deleteNoninvasive"
-     . ("ctrl+backspace"))))
+  (append
+   (copy-tree
+    cadr-tui::+tui-keybinding-definitions+)
+   '(("app.session.toggleNamedFilter" . ("ctrl+n"))
+     ("app.session.togglePath" . ("ctrl+p"))
+     ("app.session.toggleSort" . ("ctrl+s"))
+     ("app.session.rename" . ("ctrl+r"))
+     ("app.session.delete" . ("ctrl+d"))
+     ("app.session.deleteNoninvasive"
+      . ("ctrl+backspace")))))
 
 (defun make-session-selector-keybindings
     (&optional user-bindings)
@@ -1067,31 +1070,27 @@
       (eq :rename
           (session-selector-state-mode selector))
     (return-from render-session-selector
-      (render-selector-frame
-       (make-selector-frame
-        :sections
-        (list
-         :blank
-         (list :border :accent)
-         :blank
-         (list :title "Rename Session" :plain)
-         :blank
-         (list
-          :lines
+      (multiple-value-bind (input-lines input-row input-column)
+          (selector-input-rendering
+           (session-selector-state-rename-input selector)
+           width)
+        (render-selector-frame
+         (make-selector-frame
+          :sections
           (list
-           (selector-fit-line
-            (cadr-tui:theme-foreground
-             :accent
-             (session-selector-state-rename-input
-              selector))
-            width)))
-         :blank
-         (list
-          :help
-          (list "enter to save · escape to cancel"))
-         :blank
-         (list :border :accent)))
-       width)))
+           :blank
+           (list :border :accent)
+           :blank
+           (list :title "Rename Session" :plain)
+           :blank
+           (list :component input-lines input-row input-column)
+           :blank
+           (list
+            :help
+            (list "enter to save · escape to cancel"))
+           :blank
+           (list :border :accent)))
+         width))))
   (let* ((scope
            (session-selector-state-scope selector))
          (sort
@@ -1166,42 +1165,51 @@
           selector))
         hint-2 ""))
       (t
-       (setf
-        hint-1
-        (format nil "tab scope · re:<pattern> regex · ~S exact"
-                "phrase")
-        hint-2
-        (format
-         nil "~{~A~^ · ~}"
-         (append
-          (list
-           (format nil "~A sort"
-                   (session-selector-binding-label
-                    selector "app.session.toggleSort"))
-           (format nil "~A named"
-                   (session-selector-binding-label
-                    selector
-                    "app.session.toggleNamedFilter"))
-           (format nil "~A delete"
-                   (session-selector-binding-label
-                    selector "app.session.delete"))
-           (format nil "~A path (~A)"
-                   (session-selector-binding-label
-                    selector "app.session.togglePath")
-                   (if
-                       (session-selector-state-show-path-p
-                        selector)
-                       "on" "off")))
-          (when
-              (session-selector-state-show-rename-hint-p
-               selector)
-            (list
-             (format nil "~A rename"
-                     (session-selector-binding-label
-                      selector
-                      "app.session.rename")))))))))
-    (render-selector-frame
-     (make-selector-frame
+       (let* ((keybindings
+                (session-selector-state-keybindings selector))
+              (separator
+                (cadr-tui:theme-foreground :muted " · "))
+              (hint-2-parts
+                (append
+                 (list
+                  (selector-keybinding-hint
+                   keybindings "app.session.toggleSort" "sort")
+                  (selector-keybinding-hint
+                   keybindings "app.session.toggleNamedFilter" "named")
+                  (selector-keybinding-hint
+                   keybindings "app.session.delete" "delete")
+                  (selector-keybinding-hint
+                   keybindings "app.session.togglePath"
+                   (format
+                    nil "path (~A)"
+                    (if
+                        (session-selector-state-show-path-p selector)
+                        "on" "off"))))
+                 (when
+                     (session-selector-state-show-rename-hint-p
+                      selector)
+                   (list
+                    (selector-keybinding-hint
+                     keybindings "app.session.rename" "rename"))))))
+         (setf
+          hint-1
+          (concatenate
+           'string
+           (selector-keybinding-hint
+            keybindings "tui.input.tab" "scope")
+           separator
+           (cadr-tui:theme-foreground
+            :muted "re:<pattern> regex · \"phrase\" exact"))
+          hint-2
+          (if hint-2-parts
+              (reduce
+               (lambda (left right)
+                 (concatenate 'string left separator right))
+               hint-2-parts)
+              "")))))
+    (let ((lines
+            (render-selector-frame
+             (make-selector-frame
       :sections
       (list
        (list
@@ -1219,17 +1227,15 @@
           (cadr-tui:theme-bold title)
           right width)
          width)
-        (selector-dim-line hint-1 width)
-        (selector-dim-line hint-2 width)
+        (selector-fit-line hint-1 width)
+        (selector-fit-line hint-2 width)
         ""
-        (selector-fit-line
-         (concatenate
-          'string
-          (cadr-tui:theme-foreground :muted "> ")
-          (cadr-tui:theme-foreground
-           :accent
-           (session-selector-state-query selector)))
-         width)
+        (first
+         (nth-value
+          0
+          (selector-input-rendering
+           (session-selector-state-query selector)
+           width)))
         "")
        (if (null visible)
            (list
@@ -1338,4 +1344,10 @@
            width)))
            (list ""
                  (selector-border-line width :accent)))))))
-     width)))
+             width)))
+      (values
+       lines 7
+       (min (max 0 (1- width))
+            (+ 2
+               (cadr-tui:visible-width
+                (session-selector-state-query selector))))))))

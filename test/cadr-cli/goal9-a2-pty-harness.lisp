@@ -216,31 +216,31 @@
 
 (defparameter +overlay-snapshots+
   (list
-   '("────────────────────────────────────────────────────────────"
-     "> " "" "  Alpha  true" "  Beta   false" "→ Gamma  true"
+   `("────────────────────────────────────────────────────────────"
+     ,(pad-contract-line "> " 60) "" "  Alpha  true" "  Beta   false" "→ Gamma  true"
      "" "  Gamma setting" ""
      "  Type to search · Enter/Space to change · Esc to cancel"
      "────────────────────────────────────────────────────────────"
      "" "" "")
-   '("────────────────────────────────────────────────────────────"
-     "> " "" "→ Alpha  true" "  Beta   false" "  Gamma  true"
+   `("────────────────────────────────────────────────────────────"
+     ,(pad-contract-line "> " 60) "" "→ Alpha  true" "  Beta   false" "  Gamma  true"
      "" "  Alpha setting" ""
      "  Type to search · Enter/Space to change · Esc to cancel"
      "────────────────────────────────────────────────────────────"
      "" "" "")
-   '("────────────────────────────────────────────────────────────"
-     "> ga" "" "→ Gamma  true" "" "  Gamma setting" ""
+   `("────────────────────────────────────────────────────────────"
+     ,(pad-contract-line "> ga" 60) "" "→ Gamma  true" "" "  Gamma setting" ""
      "  Type to search · Enter/Space to change · Esc to cancel"
      "────────────────────────────────────────────────────────────"
      "" "" "" "" "")
-   '("────────────────────────────────────────────────────────────"
-     "> " "" "→ Alpha  true" "  Beta   false" "  Gamma  true"
+   `("────────────────────────────────────────────────────────────"
+     ,(pad-contract-line "> " 60) "" "→ Alpha  true" "  Beta   false" "  Gamma  true"
      "" "  Alpha setting" ""
      "  Type to search · Enter/Space to change · Esc to cancel"
      "────────────────────────────────────────────────────────────"
      "" "" "")
-   '("────────────────────────────────────────────────────────────"
-     "> " "" "→ Alpha  true" "  Beta   false" "  Gamma  true"
+   `("────────────────────────────────────────────────────────────"
+     ,(pad-contract-line "> " 60) "" "→ Alpha  true" "  Beta   false" "  Gamma  true"
      "" "  Alpha setting" ""
      "  Type to search · Enter/Space to change · Esc to cancel"
      "────────────────────────────────────────────────────────────"

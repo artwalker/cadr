@@ -82,36 +82,58 @@
        event)))
 
 (defun render-login-method-selector (state width)
-  (render-selector-frame
-   (make-selector-frame
-    :sections
-    (list
-     (list :border :border)
-     :blank
-     (list :title
-           (login-method-selector-state-title state)
-           :overlay)
-     :blank
-     (list
-      :lines
-      (mapcar
-       (lambda (line)
-         (selector-fit-line
-          (concatenate 'string " " line)
-          width))
-       (cadr-tui:render-select-list
-        (login-method-selector-state-select-list state)
-        (max 0 (1- width))
-        :ansi-theme-p t)))
-     :blank
-     (list
-      :help
+  (let* ((select-list
+           (login-method-selector-state-select-list state))
+         (items
+           (cadr-tui::select-list-filtered-items select-list))
+         (selected
+           (if items
+               (min (cadr-tui::select-list-selected select-list)
+                    (1- (length items)))
+               0))
+         (keybindings (cadr-tui:get-keybindings)))
+    (render-selector-frame
+     (make-selector-frame
+      :sections
       (list
-       " ↑↓ navigate  enter select  escape/ctrl+c cancel")
-      :raw)
-     :blank
-     (list :border :border)))
-   width))
+       (list :border :border)
+       :blank
+       (list :title
+             (login-method-selector-state-title state)
+             :overlay)
+       :blank
+       (list
+        :lines
+        (loop for item in items
+              for index from 0
+              for selected-p = (= index selected)
+              collect
+              (selector-component-text-line
+               (concatenate
+                'string
+                (if selected-p
+                    (cadr-tui:theme-foreground :accent "→ ")
+                    "  ")
+                (cadr-tui:theme-foreground
+                 (if selected-p :accent :text)
+                 (cadr-tui:select-item-label item)))
+               width)))
+       :blank
+       (list
+        :lines
+        (list
+         (selector-component-text-line
+          (concatenate
+           'string
+           (raw-key-hint "↑↓" "navigate") "  "
+           (selector-keybinding-hint
+            keybindings "tui.select.confirm" "select") "  "
+           (selector-keybinding-hint
+            keybindings "tui.select.cancel" "cancel"))
+          width)))
+       :blank
+       (list :border :border)))
+     width)))
 
 (defstruct (api-key-input-state
             (:constructor
@@ -174,7 +196,6 @@
     (multiple-value-bind (input-lines row column)
         (cadr-tui:render-single-line-input
          masked width)
-      (declare (ignore row column))
       (render-selector-frame
        (make-selector-frame
         :sections
@@ -187,18 +208,28 @@
           :overlay)
          :blank
          (list
+         :lines
+          (list
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             :text
+             (format nil "Enter ~A API key"
+                     (oauth-selector-option-name option)))
+            width)))
+         (list :component input-lines row column)
+         (list
           :lines
           (list
-           (selector-fit-line
-            (format nil " Enter ~A API key"
-                    (oauth-selector-option-name option))
+           (selector-component-text-line
+            (format
+             nil "(~A ~A)"
+             (selector-keybinding-hint
+              (cadr-tui:get-keybindings)
+              "tui.select.cancel" "to cancel,")
+             (selector-keybinding-hint
+              (cadr-tui:get-keybindings)
+              "tui.select.confirm" "to submit"))
             width)))
-         (list :lines input-lines)
-         (list
-          :help
-          (list
-           " (escape/ctrl+c to cancel, enter to submit)")
-          :raw)
          (list :border :border)))
        width))))
 
@@ -554,22 +585,32 @@
                                   "API key"))
                       :enabled-p t)
                      "")))
-          (selector-fit-line
+          (selector-component-text-line
            (concatenate
-            'string " " prefix name auth-type " "
+            'string prefix name auth-type " "
             (oauth-option-status-rendered option))
            item-width)))
+      :count-renderer
+      (lambda (current total item-width)
+        (list
+         (selector-component-text-line
+          (cadr-tui:theme-foreground
+           :muted
+           (format nil "  (~D/~D)" (1+ current) total))
+          item-width)))
       :empty-renderer
       (lambda (item-width total)
         (declare (ignore total))
         (list
-         (selector-muted-line
-          (cond
-            ((plusp (length
-                     (oauth-selector-state-options state)))
-             "  No matching providers")
-            ((eq (oauth-selector-state-mode state) :logout)
-             "  No providers logged in. Use /login first.")
-            (t "  No providers available"))
+         (selector-component-text-line
+          (cadr-tui:theme-foreground
+           :muted
+           (cond
+             ((plusp (length
+                      (oauth-selector-state-options state)))
+              "  No matching providers")
+             ((eq (oauth-selector-state-mode state) :logout)
+              "  No providers logged in. Use /login first.")
+             (t "  No providers available")))
           item-width))))
      width)))

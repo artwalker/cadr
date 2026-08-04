@@ -311,7 +311,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 100 definition-count)
+    (is (= 103 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -407,7 +407,7 @@
               "(defun restore-queued-messages-to-editor"
               "(defun render-tui-pending-message-lines")
              ("interactive/frame.lisp"
-              "(defun fit-overlay-lines"
+              "(defun render-tui-overlay-lines"
               "(defun render-tui-state")
              ("interactive/extension-ui.lisp"
               "(defstruct extension-custom-ui-state"
@@ -450,7 +450,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 229 definition-count)
+    (is (= 226 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -605,7 +605,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 288 definition-count)
+    (is (= 291 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

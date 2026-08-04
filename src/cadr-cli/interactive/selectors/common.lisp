@@ -113,8 +113,18 @@
      (make-string padding
                   :initial-element #\Space))))
 
+(defun selector-component-text-line
+    (line width &key (padding-x 1))
+  "Render one already-styled line with Pi Text/TruncatedText margins."
+  (let ((margin
+          (make-string (max 0 padding-x)
+                       :initial-element #\Space)))
+    (selector-fit-line
+     (concatenate 'string margin line margin)
+     width :pad-p t)))
+
 (defun selector-border-line
-    (width &optional (color :border-muted))
+    (width &optional (color :border))
   (cadr-tui:theme-foreground
    color
    (make-string (max 0 width)
@@ -124,30 +134,30 @@
   (selector-border-line width :border))
 
 (defun selector-title-line (title width)
-  (selector-fit-line
+  (selector-component-text-line
    (cadr-tui:theme-foreground
     :accent
     (cadr-tui:theme-bold title))
    width))
 
 (defun selector-overlay-title-line (title width)
-  (selector-fit-line
-   (concatenate
-    'string " "
-    (cadr-tui:theme-foreground
-     :accent
-     (cadr-tui:theme-bold title :enabled-p t)
-     :enabled-p t))
+  (selector-component-text-line
+   (cadr-tui:theme-foreground
+    :accent
+    (cadr-tui:theme-bold title :enabled-p t)
+    :enabled-p t)
+   width))
+
+(defun selector-input-rendering (value width)
+  (cadr-tui:render-single-line-input
+   (cadr-tui:make-single-line-input
+    :value value :prompt "> ")
    width))
 
 (defun selector-input-line (value width)
   (first
-   (nth-value
-    0
-    (cadr-tui:render-single-line-input
-     (cadr-tui:make-single-line-input
-      :value value :prompt "> ")
-     width))))
+   (nth-value 0
+              (selector-input-rendering value width))))
 
 (defun selector-selected-line (line width)
   (cadr-tui:theme-background
@@ -163,6 +173,16 @@
   (selector-fit-line
    (cadr-tui:theme-foreground :dim line)
    width))
+
+(defun selector-keybinding-text (manager name)
+  (format nil "~{~A~^/~}"
+          (cadr-tui:keybinding-keys manager name)))
+
+(defun selector-keybinding-hint
+    (manager name description)
+  (raw-key-hint
+   (selector-keybinding-text manager name)
+   description))
 
 (defun selector-fuzzy-filter
     (items query text-function)
@@ -235,7 +255,7 @@
       (:border
        (list
         (selector-border-line
-         width (or (first arguments) :border-muted))))
+         width (or (first arguments) :border))))
       (:title
        (destructuring-bind (title &optional (style :standard)) arguments
          (list
@@ -243,7 +263,7 @@
             (:overlay
              (selector-overlay-title-line title width))
             (:plain
-             (selector-fit-line
+             (selector-component-text-line
               (cadr-tui:theme-bold title) width))
             (:raw
              (selector-fit-line title width))
@@ -251,30 +271,24 @@
              (selector-title-line title width))))))
       (:input
        (destructuring-bind (value &optional (style :component)) arguments
-         (list
-          (case style
-            (:accent
-             (selector-fit-line
-              (concatenate
-               'string
-               (cadr-tui:theme-foreground :muted "> ")
-               (cadr-tui:theme-foreground :accent (or value "")))
-              width))
-            (:tree
-             (selector-fit-line
-              (concatenate
-               'string "  "
-               (cadr-tui:theme-foreground
-                :muted "Type to search:")
-               (if (plusp (length (or value "")))
-                   (concatenate
-                    'string " "
-                    (cadr-tui:theme-foreground
-                     :accent value))
-                   ""))
-              width))
-            (otherwise
-             (selector-input-line (or value "") width))))))
+         (case style
+           (:tree
+           (let* ((value (or value ""))
+                   (prefix "Type to search:")
+                   (separator (if (plusp (length value)) " " "")))
+              (list
+               (selector-fit-line
+                (concatenate
+                 'string "  "
+                 (cadr-tui:theme-foreground :muted prefix)
+                 separator
+                 (cadr-tui:theme-foreground :accent value))
+                width))))
+           (otherwise
+            (selector-input-rendering (or value "") width)))))
+      (:component
+       (destructuring-bind (lines row column) arguments
+         (values (copy-list lines) row column)))
       (:lines (copy-list (first arguments)))
       (:help
        (destructuring-bind (lines &optional (style :dim)) arguments
@@ -339,8 +353,16 @@
        (selector-frame-items frame)
        (selector-frame-selected frame)
        (selector-frame-maximum frame))
-    (mapcan
-     (lambda (section)
-       (selector-frame-section-lines
-        frame section width visible start end total))
-     (selector-frame-sections frame))))
+    (let ((lines nil)
+          (cursor-row nil)
+          (cursor-column nil))
+      (dolist (section (selector-frame-sections frame))
+        (multiple-value-bind
+              (section-lines section-row section-column)
+            (selector-frame-section-lines
+             frame section width visible start end total)
+          (when section-row
+            (setf cursor-row (+ (length lines) section-row)
+                  cursor-column section-column))
+          (setf lines (nconc lines section-lines))))
+      (values lines cursor-row cursor-column))))

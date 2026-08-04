@@ -22,7 +22,7 @@
         'string "~"
         (subseq normalized-cwd
                 (length normalized-home))))
-      (t cwd))))
+      (t (display-directory-name cwd)))))
 
 (defun fit-footer-text (text width)
   (cadr-tui:truncate-to-width text width))
@@ -534,4 +534,3 @@
     (when thread
       (stop-thread-for-cleanup thread)))
   nil)
-

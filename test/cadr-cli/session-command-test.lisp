@@ -216,7 +216,8 @@
        (string=
         (format
          nil "To resume this session: cadr --session-dir ~A --session ~A~%"
-         (cadr-cli::shell-quote (namestring sessions))
+         (cadr-cli::shell-quote
+          (cadr-cli::display-directory-name sessions))
          (cadr-agent:session-id session))
         (cadr-tui:strip-terminal-sequences
          (get-output-stream-string output))))

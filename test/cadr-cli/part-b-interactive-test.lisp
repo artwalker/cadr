@@ -550,7 +550,12 @@
       (is (search "path (off)"
                   (sixth plain)))
       (is (string= "" (seventh plain)))
-      (is (string= "> child" (eighth plain)))
+      (is
+       (string=
+        (concatenate
+         'string "> child"
+         (make-string (- width 7) :initial-element #\Space))
+        (eighth plain)))
       (is (string= "" (ninth plain)))
       (is (some
            (lambda (line)
@@ -601,22 +606,28 @@
      (cadr-cli::session-selector-state-mode state) :rename
      (cadr-cli::session-selector-state-rename-input state)
      "Renamed")
-    (let ((plain
-            (mapcar
-             #'cadr-tui:strip-terminal-sequences
-             (cadr-cli::render-session-selector state 60))))
-      (is (equal
-           '("" "" "Rename Session" "" "Renamed" ""
-             "enter to save · escape to cancel" "")
-           (list
-            (first plain)
-            (third plain)
-            (fourth plain)
-            (fifth plain)
-            (sixth plain)
-            (seventh plain)
-            (eighth plain)
-            (ninth plain)))))))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-session-selector state 60)
+      (let ((plain
+              (mapcar
+               #'cadr-tui:strip-terminal-sequences
+               lines)))
+        (is (= 5 row))
+        (is (= 9 column))
+        (is (string= "> Renamed"
+                     (string-right-trim
+                      '(#\Space) (nth row plain))))
+        (is (equal
+             (list "" "" (format nil "~60A" " Rename Session") "" ""
+                   "enter to save · escape to cancel" "")
+             (list
+              (first plain)
+              (third plain)
+              (fourth plain)
+              (fifth plain)
+              (seventh plain)
+              (eighth plain)
+              (ninth plain))))))))
 
 (test footer-path-width-cost-cache-and-subscription-semantics
   (is (string=
@@ -2007,7 +2018,7 @@
     (is (= width
            (cadr-tui:visible-width
             (second panel))))
-    (is (string= "  Session Tree"
+    (is (string= (format nil "~VA" width "   Session Tree")
                  (third plain)))
     (is (< 1
            (count-if
@@ -2045,21 +2056,25 @@
     (setf
      (cadr-cli::tree-selector-state-label-input state)
      "renamed")
-    (let* ((label-panel
-             (cadr-cli::render-tree-selector state width))
+    (multiple-value-bind
+          (label-panel label-row label-column)
+        (cadr-cli::render-tree-selector state width)
+      (let* (
            (label-plain
              (mapcar
               #'cadr-tui:strip-terminal-sequences
               label-panel))
            (joined
              (format nil "~{~A~^~%~}" label-plain)))
-      (is (string= "  Session Tree"
+      (is (string= (format nil "~VA" width "   Session Tree")
                    (third label-plain)))
       (is (search "Type to search:" joined))
       (is (search "  Label (empty to remove):"
                   joined))
-      (is (search "  renamed" joined))
-      (is (not (search "Edit Label" joined))))))
+      (is (search "> renamed" joined))
+      (is (= 9 label-row))
+      (is (= 9 label-column))
+      (is (not (search "Edit Label" joined)))))))
 
 (test goal9-fork-history-overlay-matches-baseline-message-layout
   (let* ((items
@@ -2080,14 +2095,15 @@
             #'cadr-tui:strip-terminal-sequences
             lines)))
     (is (string= "" (first plain)))
-    (is (string= "Fork from Message"
+    (is (string= (format nil "~80A" " Fork from Message")
                  (second plain)))
     (is (search
          "Select a user message to copy the active path"
          (third plain)))
-    (is (search "new session"
-                (format nil "~{~A~^ ~}"
-                        (subseq plain 2 4))))
+    (is (search "new"
+                (third plain)))
+    (is (search "session"
+                (fourth plain)))
     (is (string= "" (fifth plain)))
     (is (= 80
            (cadr-tui:visible-width
@@ -2425,10 +2441,8 @@
                (format nil "~C[38;2;138;190;183m"
                        #\Escape)
                rendered))
-          (is (search
-               (format nil "~C[38;2;128;128;128m"
-                       #\Escape)
-               rendered))
+          ;; Input owns plain text/cursor styling in the baseline; muted text
+          ;; is optional per selector content and is not a shell invariant.
           (is (search
                (format nil "~C[38;2;102;102;102m"
                        #\Escape)

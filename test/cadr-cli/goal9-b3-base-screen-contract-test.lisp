@@ -301,11 +301,23 @@
             '("Give one concise answer." "One concise answer."
               "────────────────" "/tmp/project" "mock-model")))
           ((string= name "viewport-overflow")
-           (is (= 14 (length natural)))
-           (is (null (goal9-b3-screen-line-position
-                      "Give one concise answer." natural)))
+           ;; pi@74caa2649 root composition retains the complete natural
+           ;; document; TuiMainScreen owns the bottom viewport.  These two
+           ;; assertions deliberately prove both halves independently.
+           (is (= 23 (length natural)))
+           (is (= 1 (goal9-b3-screen-line-position
+                     "Give one concise answer." natural)))
            (goal9-b3-assert-screen-lines-in-order
             natural
+            '("Give one concise answer."
+              "Finish with a third concise answer."
+              "Third concise answer."
+              "────────────────" "/tmp/project" "mock-model"))
+           (is (= 14 (length screen)))
+           (is (null (goal9-b3-screen-line-position
+                      "Give one concise answer." screen)))
+           (goal9-b3-assert-screen-lines-in-order
+            screen
             '("Finish with a third concise answer."
               "Third concise answer."
               "────────────────" "/tmp/project" "mock-model")))
@@ -531,19 +543,31 @@
                   (cdr exact)))
          (overflow-lines
            (apply #'goal9-b3-base-screen-plain-lines
-                  (cdr overflow))))
+                  (cdr overflow)))
+         (overflow-screen
+           (apply #'goal9-b3-base-screen-snapshot
+                  (cdr overflow)))
+         (overflow-screen-plain
+           (goal9-b3-screen-text-lines overflow-screen)))
     (is (= 11 (length exact-lines)))
     (is (find-if (lambda (line) (search "Give one concise answer." line))
                  exact-lines))
     (is (find-if (lambda (line) (search "One concise answer." line))
                  exact-lines))
-    (is (= 14 (length overflow-lines)))
-    (is (null
-         (find-if (lambda (line) (search "Give one concise answer." line))
-                  overflow-lines)))
+    (is (= 23 (length overflow-lines)))
+    (is
+     (find-if (lambda (line) (search "Give one concise answer." line))
+              overflow-lines))
     (is
      (find-if (lambda (line) (search "Third concise answer." line))
-              overflow-lines))))
+              overflow-lines))
+    (is (= 14 (length overflow-screen-plain)))
+    (is (null
+         (find-if (lambda (line) (search "Give one concise answer." line))
+                  overflow-screen-plain)))
+    (is
+     (find-if (lambda (line) (search "Third concise answer." line))
+              overflow-screen-plain))))
 
 (test goal9-b3-every-base-screen-state-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected

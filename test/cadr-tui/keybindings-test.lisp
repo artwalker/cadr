@@ -6,6 +6,16 @@
           (cadr-tui:make-keybindings-manager)))
     (is
      (equal
+      '("ctrl+p")
+      (cadr-tui:keybinding-keys
+       manager "app.model.cycleForward")))
+    (is
+     (equal
+      '("shift+ctrl+p")
+      (cadr-tui:keybinding-keys
+       manager "app.model.cycleBackward")))
+    (is
+     (equal
       '("shift+enter" "ctrl+j")
       (cadr-tui:keybinding-keys
        manager "tui.input.newLine")))
@@ -51,3 +61,33 @@
       '("left" "ctrl+b")
       (cadr-tui:keybinding-keys
        manager "tui.editor.cursorLeft")))))
+
+(test model-cycle-keybindings-can-be-remapped-or-disabled
+  (let ((remapped
+          (cadr-tui:make-keybindings-manager
+           :user-bindings
+           '(("app.model.cycleForward" . ("ctrl+g"))
+             ("app.model.cycleBackward" . ("ctrl+shift+g")))))
+        (disabled
+          (cadr-tui:make-keybindings-manager
+           :user-bindings
+           '(("app.model.cycleForward" . nil)
+             ("app.model.cycleBackward" . nil)))))
+    (is
+     (equal
+      '("ctrl+g")
+      (cadr-tui:keybinding-keys
+       remapped "app.model.cycleForward")))
+    (is
+     (equal
+      '("ctrl+shift+g")
+      (cadr-tui:keybinding-keys
+       remapped "app.model.cycleBackward")))
+    (is
+     (null
+      (cadr-tui:keybinding-keys
+       disabled "app.model.cycleForward")))
+    (is
+     (null
+      (cadr-tui:keybinding-keys
+       disabled "app.model.cycleBackward")))))

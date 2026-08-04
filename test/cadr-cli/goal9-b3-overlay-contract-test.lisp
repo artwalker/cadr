@@ -7,6 +7,30 @@
 (defun goal9-b3-overlay-border (width)
   (make-string width :initial-element #\─))
 
+(defun goal9-b3-overlay-input-line (value width)
+  ;; pi's Input owns the complete terminal row.  Keep this exact contract
+  ;; separate from the SHA so trailing cells cannot silently disappear.
+  (let* ((prefix (concatenate 'string "> " value))
+         (padding
+           (max 0 (- width (cadr-tui:visible-width prefix)))))
+    (concatenate
+     'string prefix
+     (make-string padding :initial-element #\Space))))
+
+(defun goal9-b3-overlay-text-line (value width)
+  ;; pi@74caa2649 Text/TruncatedText owns the complete row.  This oracle is
+  ;; intentionally implemented from the baseline width contract instead of
+  ;; calling Cadr's selector helpers.
+  (let* ((limited
+           (if (> (length value) width)
+               (subseq value 0 width)
+               value))
+         (padding
+           (max 0 (- width (cadr-tui:visible-width limited)))))
+    (concatenate
+     'string limited
+     (make-string padding :initial-element #\Space))))
+
 (defun goal9-b3-overlay-screen-snapshot
     (overlay &key (width 80) (rows 60))
   (let* ((state
@@ -139,6 +163,82 @@
               (cadr-tui:make-select-item :label "Beta" :value 2)))
             :done-function (constantly nil))))))
 
+(test goal15-overlay-cursor-contract-follows-the-focused-input-component
+  ;; Fixed pi@74caa2649 input components own the cursor.  Selectors without an
+  ;; Input/Focusable component return no cursor metadata at all; they do not
+  ;; invent a (0, 0) cursor that the terminal renderer can accidentally show.
+  (let ((expected
+          '(("model" 4 2)
+            ("model-scoped" 5 2)
+            ("settings" 1 2)
+            ("resume" 7 2)
+            ("fork" nil nil)
+            ("tree" nil nil)
+            ("scoped-models" 5 2)
+            ("trust" nil nil)
+            ("login-method" nil nil)
+            ("login-provider" 4 2)
+            ("logout-provider" 4 2)
+            ("api-key" 4 2)
+            ("import" nil nil)
+            ("extension-select" nil nil)
+            ("extension-custom" nil nil))))
+    (dolist (case (goal9-b3-overlay-screen-cases))
+      (destructuring-bind (name expected-row expected-column)
+          (assoc (car case) expected :test #'string=)
+        (declare (ignore name))
+        (multiple-value-bind (lines row column)
+            (cadr-cli::render-tui-overlay-lines (cdr case) 80 0d0)
+          (declare (ignore lines))
+          (is (eql expected-row row))
+          (is (eql expected-column column)))))))
+
+(test goal15-overlay-viewport-crops-the-natural-document-and-hides-offscreen-cursor
+  ;; pi@74caa2649 Tui.ts:1076-1151 lays components out at natural height,
+  ;; then the terminal viewport selects the visible rows.  A focused Input
+  ;; above that viewport does not leak a synthetic cursor onto the screen.
+  (let* ((models
+           (loop for index below 14
+                 collect
+                 (goal9-b3-overlay-model
+                  :faux
+                  (format nil "model-~2,'0D" index)
+                  (format nil "Model ~D" index))))
+         (overlay
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model (first models)))
+         (terminal
+           (cadr-tui:make-virtual-terminal
+            :columns 80 :rows 10))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t
+            :show-hardware-cursor-p t)))
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-tui-overlay-lines overlay 80 0d0)
+      (is (= 21 (length lines)))
+      (is (= 4 row))
+      (let ((output
+              (cadr-tui:render-frame
+               renderer lines
+               :cursor-row row :cursor-column column)))
+        (is (= 11 (cadr-tui:renderer-viewport-top renderer)))
+        (is (search (format nil "~C[?25l" #\Escape) output))
+        (is (null (search (format nil "~C[?25h" #\Escape) output)))
+        (is
+         (equal
+          (mapcar
+           (lambda (line)
+             (string-right-trim
+              '(#\Space)
+              (cadr-tui:strip-terminal-sequences line)))
+           (last lines 10))
+          (mapcar
+           (lambda (line)
+             (string-right-trim '(#\Space) line))
+           (cadr-tui:virtual-terminal-snapshot terminal))))))))
+
 (defparameter +goal9-b3-overlay-baseline-semantic-oracles+
   ;; Each row is copied from the fixed pi@74caa2649 component contract named
   ;; in its second field.  The ordered strings are intentionally independent
@@ -149,7 +249,8 @@
       ">" "→ one [faux] ✓" "two [other]" "Model Name: One Model"))
     ("model-scoped"
      "components/model-selector.ts:91-130,162-185,248-307"
-     ("Scope: all | scoped" ">" "two [other]" "→ one [faux] ✓"
+     ("Scope: all | scoped" "tab scope (all/scoped)" ">"
+      "two [other]" "→ one [faux] ✓"
       "Model Name: One Model" "Model catalogs refreshed."))
     ("settings"
      "components/settings-selector.ts:472-738; packages/tui/src/components/settings-list.ts:80-165,237-249"
@@ -181,9 +282,9 @@
       "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider"))
     ("trust"
      "components/trust-selector.ts:32-115"
-     ("Project trust" "/tmp/project/" "Saved decision: none"
-      "Current session: untrusted" "→ Trust" "Trust parent folder (/tmp/)"
-      "Do not trust" "↑↓ navigate  enter save  escape cancel"))
+     ("Project trust" "/tmp/project" "Saved decision: none"
+      "Current session: untrusted" "→ Trust" "Trust parent folder (/tmp)"
+      "Do not trust" "↑↓ navigate  enter save  escape/ctrl+c cancel"))
     ("login-method"
      "interactive-mode.ts:5014-5039; components/extension-selector.ts:18-78"
      ("Select authentication method:" "→ Sign in with an account"
@@ -279,21 +380,21 @@
 
 (test goal9-b3-every-overlay-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
-          '(("model" . "6B865DB933290771FD805FEAFF7F16A1ACF3382A913C6747BDE5EBBF4ED6E34F")
-            ("model-scoped" . "0E518F1264C550EFA6F1658A423D25292B62BF3510658C0B4DD0D0352BB85547")
-            ("settings" . "C56C942CCBCAE683A1CFE89C40973C39270553C58ACC7BA65D7140E866A89138")
-            ("resume" . "9EB17BA4DBE20EE26BFD29DC21C1AB31AE1C600BD003E54B0E3968EDD1CB9E7F")
-            ("fork" . "3766B0D8D4E4F8A17B4E971F985068280EF4DDE1BB3C9BC48731712BF85A77F8")
-            ("tree" . "CF3F68234EE85B10529ADD2DB9F7EBEAEA9A454F4BDB9445F57AB3BF0C4A64A4")
-            ("scoped-models" . "BE83C3E95903E8E7BC7D4CA64BC4B4FDB288296F67077E08977DA8E20942D0A2")
-            ("trust" . "99672DC972010AB0F11CE83EF5681101240C0020884C208B7253F701B6D94ED4")
-            ("login-method" . "5AE7EC35C908484B7284C813F9E06BED4DD8DB6C7069BB104BA73BD00B46D50D")
-            ("login-provider" . "EA3A538F93489078BF4A49406CE2120D9C5FB44BB2C4D25F98265061E0349573")
-            ("logout-provider" . "A38A326EC18C504C5BFD7EE9F2BE1659F5253B28694540AEFFFC425563F88E3D")
-            ("api-key" . "3089449FE87806698C1F11CE536EC65ADBC50020B722A56E08E02816A1EF312C")
-            ("import" . "548CB9134EBF83AEDA6DD60629E5746B7F87035B6C1DDA691B999BBD9DB2CF14")
-            ("extension-select" . "232AE840862E73D58989788DECE8CCF2AE196BEF2EBE35C21670125D11AE9737")
-            ("extension-custom" . "764C60C6AF744F9C68DA02F1A1121D50D848D347A9A6A5E0349593CA214B23CD"))))
+          '(("model" . "828CFA77C89D3FA8E84E4ACC72FC9AFC797E8C82A26AEFA3FE0FC46438195869")
+            ("model-scoped" . "9031A4EA00CFEAA9E9A931B0A493414B76AAB46BEC10A0C81204003DAA466DB1")
+            ("settings" . "DB40F8BBA31200DB8C5BE49E59B2AE01EDA11F935B002DF230F96BA6F4133CC4")
+            ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
+            ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
+            ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")
+            ("scoped-models" . "9827A029C2C8B9AB28C8EF754B887447C23FDE41EB5941145DDAC9A97FC68415")
+            ("trust" . "3D484AC3838FAE5ADA7A490D6274C6BD1C78FCC2F0BD196026F33EA1A4631A7E")
+            ("login-method" . "305B0BB2D1C67D71D7851B1EF450E992212C08F8A680CC6DF00AA23CE3B033C0")
+            ("login-provider" . "5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20")
+            ("logout-provider" . "5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212")
+            ("api-key" . "FD7DC83C63AC1AD2767D362FE27C960FB4CBF110227CC99DADE7E85360AA3EED")
+            ("import" . "4C31E4E9C20137D0D0B854ADC6672CCEE13560ABE6AFC2DD79C5B5C73699E6F9")
+            ("extension-select" . "187DC5C5436CAF04A4F3DE928772AEB77494E4059B07ADE78E133C5084E40D64")
+            ("extension-custom" . "A85DF2C8310E88D1BEA5B9AE84CBF6735FBC83CBC1116082E52A2CBB9A76A2EC"))))
     (dolist (case (goal9-b3-overlay-screen-cases))
       (is
        (string=
@@ -320,9 +421,14 @@
     (is
      (equal
       (list border ""
-            "Only showing models from configured providers. Use /login to add providers."
-            "" "> " "" "→ one [faux] ✓" "  two [other]" ""
-            "  Model Name: One Model" "" border)
+            (goal9-b3-overlay-text-line
+             "Only showing models from configured providers. Use /login to add providers."
+             width)
+            "" (goal9-b3-overlay-input-line "" width) ""
+            (goal9-b3-overlay-text-line "→ one [faux] ✓" width)
+            (goal9-b3-overlay-text-line "  two [other]" width) ""
+            (goal9-b3-overlay-text-line "  Model Name: One Model" width)
+            "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-model-selector
         (cadr-cli::make-model-selector-state
@@ -330,10 +436,15 @@
         width))))
     (is
      (equal
-      (list border "" "Scope: all | scoped" "" "> " ""
-            "  two [other]" "→ one [faux] ✓" ""
-            "  Model Name: One Model" ""
-            "  Model catalogs refreshed." "" border)
+      (list border ""
+            (goal9-b3-overlay-text-line "Scope: all | scoped" width)
+            (goal9-b3-overlay-text-line "tab scope (all/scoped)" width) ""
+            (goal9-b3-overlay-input-line "" width) ""
+            (goal9-b3-overlay-text-line "  two [other]" width)
+            (goal9-b3-overlay-text-line "→ one [faux] ✓" width) ""
+            (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
+            (goal9-b3-overlay-text-line "  Model catalogs refreshed." width)
+            "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-model-selector
         (cadr-cli::make-model-selector-state
@@ -354,12 +465,19 @@
             :enabled-ids '("faux/one" "missing/ghost"))))
     (is
      (equal
-      (list border "" "Model Configuration"
-            "Session-only. ctrl+s to save to settings." "" "> " ""
-            "→ one [faux] ✓"
-            "  missing/ghost [unavailable] ✗"
-            "  two [other] ✗" "" "  Model Name: One Model" ""
-            "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider · alt+up/alt+down reo"
+      (list border ""
+            (goal9-b3-overlay-text-line "Model Configuration" width)
+            (goal9-b3-overlay-text-line
+             "Session-only. ctrl+s to save to settings." width) ""
+            (goal9-b3-overlay-input-line "" width) ""
+            (goal9-b3-overlay-text-line "→ one [faux] ✓" width)
+            (goal9-b3-overlay-text-line
+             "  missing/ghost [unavailable] ✗" width)
+            (goal9-b3-overlay-text-line "  two [other] ✗" width) ""
+            (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
+            (goal9-b3-overlay-text-line
+             "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider · alt+up/alt+down reorder · ctrl+s save · 1/2 enabled · 1 unavailable"
+             width)
             border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-scoped-models-selector state width))))))
@@ -389,7 +507,7 @@
             "Resume Session (Current Folder)                  ◉ Current Folder | ○ All  Name: All  Sort: Threaded"
             "tab scope · re:<pattern> regex · \"phrase\" exact"
             "ctrl+s sort · ctrl+n named · ctrl+d delete · ctrl+p path (off) · ctrl+r rename"
-            "" "> prompt" ""
+            "" (goal9-b3-overlay-input-line "prompt" width) ""
             "› Named One                                                                                    0 now"
             "  second prompt                                                                                0 now"
             "" border)
@@ -426,7 +544,7 @@
              "Resume Session (Current Folder)                  ◉ Current Folder | ○ All  Name: All  Sort: Threaded"
              "tab scope · re:<pattern> regex · \"phrase\" exact"
              "ctrl+s sort · ctrl+n named · ctrl+d delete · ctrl+p path (off)"
-             "" "> " "")
+             "" (goal9-b3-overlay-input-line "" width) "")
        (loop for index from 1 to 10
              for label = (format nil "Session ~2,'0D" index)
              collect
@@ -448,7 +566,7 @@
             "Resume Session (Current Folder)                  ◉ Current Folder | ○ All  Name: All  Sort: Threaded"
             "tab scope · re:<pattern> regex · \"phrase\" exact"
             "ctrl+s sort · ctrl+n named · ctrl+d delete · ctrl+p path (off)"
-            "" "> zzyzx" ""
+            "" (goal9-b3-overlay-input-line "zzyzx" width) ""
             (concatenate 'string "› Zzyzx Session"
                          (make-string 80 :initial-element #\Space)
                          "0 now")
@@ -465,7 +583,7 @@
               "Resume Session (Current Folder)                  ◉ Current Folder | ○ All  Name: All  Sort: Threaded"
               "tab scope · re:<pattern> regex · \"phrase\" exact"
               "ctrl+s sort · ctrl+n named · ctrl+d delete · ctrl+p path (off)"
-              "" "> " ""
+              "" (goal9-b3-overlay-input-line "" width) ""
               "  No sessions in current folder. Press Tab to view all."
               "" border)
         (goal9-b3-overlay-plain-lines
@@ -476,9 +594,11 @@
         (border-100 (goal9-b3-overlay-border 100)))
     (is
      (equal
-      (list "" "Fork from Message"
-            "Select a user message to copy the active path up to that point into a new"
-            "session" "" border-80 ""
+      (list "" (goal9-b3-overlay-text-line " Fork from Message" 80)
+            (goal9-b3-overlay-text-line
+             " Select a user message to copy the active path up to that point into a new"
+             80)
+            (goal9-b3-overlay-text-line " session" 80) "" border-80 ""
             "› first user message" "  Message 1 of 2" ""
             "  second user message" "  Message 2 of 2" "" "" border-80)
       (goal9-b3-overlay-plain-lines
@@ -492,7 +612,8 @@
         80))))
     (is
      (equal
-      (list "" border-100 "  Session Tree"
+      (list "" border-100
+            (goal9-b3-overlay-text-line "   Session Tree" 100)
             "  ↑/↓ move · ←/→ page · ctrl+←/→ branch · ctrl+x copy · shift+l label · shift+t label time"
             "  filters ctrl+d/t/u/l/a · cycle ctrl+o/shift+ctrl+o"
             "  Type to search:" border-100 ""
@@ -510,11 +631,17 @@
   (let ((border (goal9-b3-overlay-border 80)))
     (is
      (equal
-      (list border "" "Project trust" "/tmp/project/" ""
-            "Saved decision: none" "Current session: untrusted" ""
-            "→ Trust"
-            "  Trust parent folder (/tmp/)" "  Do not trust" ""
-            "↑↓ navigate  enter save  escape cancel" "" border)
+      (list border ""
+            (goal9-b3-overlay-text-line " Project trust" 80)
+            (goal9-b3-overlay-text-line " /tmp/project" 80) ""
+            (goal9-b3-overlay-text-line " Saved decision: none" 80)
+            (goal9-b3-overlay-text-line " Current session: untrusted" 80) ""
+            (goal9-b3-overlay-text-line " → Trust" 80)
+            (goal9-b3-overlay-text-line "   Trust parent folder (/tmp)" 80)
+            (goal9-b3-overlay-text-line "   Do not trust" 80) ""
+            (goal9-b3-overlay-text-line
+             " ↑↓ navigate  enter save  escape/ctrl+c cancel" 80)
+            "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-trust-selector
         (cadr-cli::make-trust-selector-state
@@ -527,10 +654,15 @@
          (options (goal9-b3-overlay-auth-options)))
     (is
      (equal
-      (list border "" " Select authentication method:" ""
-            " → Sign in with an account"
-            "   Sign in with an API key" ""
-            " ↑↓ navigate  enter select  escape/ctrl+c cancel" ""
+      (list border ""
+            (goal9-b3-overlay-text-line
+             " Select authentication method:" width) ""
+            (goal9-b3-overlay-text-line
+             " → Sign in with an account" width)
+            (goal9-b3-overlay-text-line
+             "   Sign in with an API key" width) ""
+            (goal9-b3-overlay-text-line
+             " ↑↓ navigate  enter select  escape/ctrl+c cancel" width) ""
             border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-login-method-selector
@@ -538,17 +670,25 @@
     (dolist
         (case
          `((:login
-            (,border "" " Select provider to configure:" ""
+            (,border ""
+             ,(goal9-b3-overlay-text-line
+               " Select provider to configure:" width) ""
              ,(concatenate 'string "> "
                            (make-string 78 :initial-element #\Space)) ""
-             " → OpenAI Codex [subscription] ✓ configured"
-             "   Anthropic [API key] • unconfigured" "" ,border))
+             ,(goal9-b3-overlay-text-line
+               " → OpenAI Codex [subscription] ✓ configured" width)
+             ,(goal9-b3-overlay-text-line
+               "   Anthropic [API key] • unconfigured" width) "" ,border))
            (:logout
-            (,border "" " Select provider to logout:" ""
+            (,border ""
+             ,(goal9-b3-overlay-text-line
+               " Select provider to logout:" width) ""
              ,(concatenate 'string "> "
                            (make-string 78 :initial-element #\Space)) ""
-             " → OpenAI Codex [subscription] ✓ configured"
-             "   Anthropic [API key] • unconfigured" "" ,border))))
+             ,(goal9-b3-overlay-text-line
+               " → OpenAI Codex [subscription] ✓ configured" width)
+             ,(goal9-b3-overlay-text-line
+               "   Anthropic [API key] • unconfigured" width) "" ,border))))
       (destructuring-bind (mode expected) case
         (is
          (equal
@@ -560,10 +700,15 @@
             width))))))
     (is
      (equal
-      (list border " Login to Anthropic" "" " Enter Anthropic API key"
+      (list border
+            (goal9-b3-overlay-text-line " Login to Anthropic" width)
+            ""
+            (goal9-b3-overlay-text-line " Enter Anthropic API key" width)
             (concatenate 'string "> "
                          (make-string 78 :initial-element #\Space))
-            " (escape/ctrl+c to cancel, enter to submit)" border)
+            (goal9-b3-overlay-text-line
+             " (escape/ctrl+c to cancel, enter to submit)" width)
+            border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-api-key-input-state
        (cadr-cli::make-api-key-input-state (second options)) width))))))
@@ -621,8 +766,15 @@
         "Login to Anthropic" :enabled-p t)
        :enabled-p t)
       (second rendered)))
-    (is (string= " Enter Anthropic API key"
-                 (fourth rendered)))))
+    (is (string=
+         (goal9-b3-overlay-text-line
+          " Enter Anthropic API key" 80)
+         (cadr-tui:strip-terminal-sequences
+          (fourth rendered))))
+    (is (search
+         (cadr-tui:theme-foreground
+          :text "Enter Anthropic API key" :enabled-p t)
+         (fourth rendered)))))
 
 (defun goal9-b3-overlay-auth-option (index &key status)
   (cadr-cli::make-oauth-selector-option
@@ -646,16 +798,21 @@
     (is
      (equal
       (append
-       (list border "" " Select provider to configure:" ""
+       (list border ""
+             (goal9-b3-overlay-text-line
+              " Select provider to configure:" width) ""
              (concatenate 'string "> "
                           (make-string 78 :initial-element #\Space)) "")
        (loop for index from 1 to 8
              collect
-             (format nil " ~AProvider ~2,'0D [~A] • unconfigured"
-                     (if (= index 1) "→ " "  ")
-                     index
-                     (if (oddp index) "subscription" "API key")))
-       (list "  (1/10)" "" border))
+             (goal9-b3-overlay-text-line
+              (format nil " ~AProvider ~2,'0D [~A] • unconfigured"
+                      (if (= index 1) "→ " "  ")
+                      index
+                      (if (oddp index) "subscription" "API key"))
+              width))
+       (list (goal9-b3-overlay-text-line "   (1/10)" width)
+             "" border))
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-oauth-selector state width))))
     (cadr-cli::oauth-selector-handle-event
@@ -664,10 +821,14 @@
     (is (string= "zzyzx" (cadr-cli::oauth-selector-state-query state)))
     (is
      (equal
-      (list border "" " Select provider to configure:" ""
+      (list border ""
+            (goal9-b3-overlay-text-line
+             " Select provider to configure:" width) ""
             (concatenate 'string "> zzyzx"
                          (make-string 73 :initial-element #\Space)) ""
-            " → Zzyzx Provider [API key] • unconfigured" "" border)
+            (goal9-b3-overlay-text-line
+             " → Zzyzx Provider [API key] • unconfigured" width)
+            "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-oauth-selector state width))))
     (cadr-cli::oauth-selector-handle-event
@@ -675,10 +836,13 @@
      (cadr-tui:make-input-event :kind :text :text "missing"))
     (is
      (equal
-      (list border "" " Select provider to configure:" ""
+      (list border ""
+            (goal9-b3-overlay-text-line
+             " Select provider to configure:" width) ""
             (concatenate 'string "> zzyzxmissing"
                          (make-string 66 :initial-element #\Space)) ""
-            "  No matching providers" "" border)
+            (goal9-b3-overlay-text-line
+             "   No matching providers" width) "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-oauth-selector state width))))
     (let ((empty-login
@@ -688,12 +852,14 @@
             (cadr-cli::make-oauth-selector-state
              :mode :logout :options nil)))
       (is
-       (member "  No providers available"
+       (member (goal9-b3-overlay-text-line
+                "   No providers available" width)
                (goal9-b3-overlay-plain-lines
                 (cadr-cli::render-oauth-selector empty-login width))
                :test #'string=))
       (is
-       (member "  No providers logged in. Use /login first."
+       (member (goal9-b3-overlay-text-line
+                "   No providers logged in. Use /login first." width)
                (goal9-b3-overlay-plain-lines
                 (cadr-cli::render-oauth-selector empty-logout width))
                :test #'string=)))))

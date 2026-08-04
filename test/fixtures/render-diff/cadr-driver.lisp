@@ -545,13 +545,30 @@
        (mapcar #'response-message
                (json-vector-list (json-get scenario "responses"))))
       (cadr-tui:set-current-theme :dark)
+      (cadr-tui:set-keybindings
+       (cadr-tui:make-keybindings-manager
+        :user-bindings
+        (cadr-cli::settings-keybindings settings-manager)))
       (multiple-value-bind (compact expanded)
           (cadr-cli::make-tui-startup-lines resources)
         (let ((main-thread sb-thread:*current-thread*)
               (crash-after-ms
                 (json-get (json-get scenario "setup")
-                          "crashAfterMs")))
+                          "crashAfterMs"))
+              (scope-line
+                (and
+                 (string= (json-get scenario "id") "overlays-core")
+                 (cadr-cli::model-scope-startup-line
+                  (mapcar
+                   (lambda (model)
+                     (list :model model :thinking nil))
+                   (render-models))
+                  (cadr-tui:get-keybindings)
+                  :verbose-p nil :quiet-startup-p nil))))
           (write-ready-marker)
+          (when scope-line
+            (write-line scope-line)
+            (finish-output))
           (when crash-after-ms
             (sb-thread:make-thread
              (lambda ()
@@ -648,7 +665,10 @@
            :thinking
            (cadr-cli::model-footer-thinking-level
             (cadr-agent:agent-model agent) :high)
-           :cwd (namestring cwd)
+           :cwd
+           (cadr-cli::format-cwd-for-footer
+            (namestring cwd)
+            (namestring (user-homedir-pathname)))
            :footer-cwd (namestring cwd)
            :available-provider-count
            (if (member (json-get scenario "id")

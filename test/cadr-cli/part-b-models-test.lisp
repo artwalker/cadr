@@ -597,6 +597,7 @@
                  (cadr-cli::make-settings-manager
                   :global-path settings-path))
                (lifecycle-events nil)
+               (lifecycle-payloads nil)
                (session
                  (cadr-agent:create-session
                   :directory
@@ -631,6 +632,8 @@
                   (declare (ignore context))
                   (push (cadr-agent:extension-event-type value)
                         lifecycle-events)
+                  (push (cadr-agent:extension-event-payload value)
+                        lifecycle-payloads)
                   nil)))))
           (cadr-agent::replace-extension-bundles host (list bundle))
           (setf selected
@@ -638,7 +641,8 @@
                  agent registry openai settings
                  :config-path config-path
                  :auth-path auth-path
-                 :source :interactive))
+                 :source :cycle
+                 :thinking-level :max))
           (is (cadr-ai:models-equal-p
                openai
                (cadr-agent:agent-model agent)))
@@ -658,18 +662,41 @@
                "gpt-5.5"
                (cadr-cli::settings-default-model
                 settings)))
-          (is (eq
-               :model-change
-               (cadr-agent:session-entry-type
-                (car
-                 (last
-                  (cadr-agent:session-entries
-                   session))))))
+          (let ((entries (cadr-agent:session-entries session)))
+            (is (equal
+                 '(:model-change :thinking-level-change)
+                 (mapcar #'cadr-agent:session-entry-type entries)))
+            (is (string=
+                 "openai"
+                 (cadr-agent:session-entry-provider (first entries))))
+            (is (string=
+                 "gpt-5.5"
+                 (cadr-agent:session-entry-model-id (first entries))))
+            (is (string=
+                 (string-downcase
+                  (symbol-name
+                   (cadr-ai:clamp-thinking-level openai :max)))
+                 (cadr-agent:session-entry-thinking-level
+                  (second entries)))))
           (is (cadr-ai:models-equal-p
                openai
                (cadr-cli:provider-config-model
                 selected)))
           (is (member :model-select lifecycle-events))
+          (let ((payload
+                  (find-if
+                   (lambda (value)
+                     (eq :cycle (getf value :source)))
+                   lifecycle-payloads)))
+            (is (not (null payload)))
+            (is (eq :cycle (getf payload :source)))
+            (is (cadr-ai:models-equal-p
+                 custom (getf payload :previous-model)))
+            (is (cadr-ai:models-equal-p
+                 openai (getf payload :model))))
+          (is (eq
+               (cadr-ai:clamp-thinking-level openai :max)
+               (cadr-agent::agent-thinking-level agent)))
           (cadr-cli::set-cli-thinking-level agent settings :high)
           (is (member :thinking-level-select lifecycle-events)))))))
 

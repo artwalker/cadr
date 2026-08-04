@@ -6,6 +6,8 @@
     ("app.exit" . ("ctrl+d"))
     ("app.message.followUp" . ("alt+enter"))
     ("app.message.dequeue" . ("alt+up"))
+    ("app.model.cycleForward" . ("ctrl+p"))
+    ("app.model.cycleBackward" . ("shift+ctrl+p"))
     ("tui.editor.cursorUp" . ("up"))
     ("tui.editor.cursorDown" . ("down"))
     ("tui.editor.cursorLeft" . ("left" "ctrl+b"))

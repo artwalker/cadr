@@ -25,6 +25,22 @@
     (uiop:ensure-absolute-pathname
      (uiop:ensure-directory-pathname path)))))
 
+(defun display-directory-name (path)
+  (let* ((text
+           (etypecase path
+             (string path)
+             (pathname (namestring path))))
+         (trimmed (string-right-trim '(#\/ #\\) text)))
+    (cond
+      ((zerop (length trimmed))
+       (if (find #\\ text) "\\" "/"))
+      ((and (= 3 (length text))
+            (alpha-char-p (char text 0))
+            (char= #\: (char text 1))
+            (member (char text 2) '(#\/ #\\)))
+       text)
+      (t trimmed))))
+
 (defun parent-directory (directory)
   (let* ((path
            (uiop:ensure-directory-pathname directory))

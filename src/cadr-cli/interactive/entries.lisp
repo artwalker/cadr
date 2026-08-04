@@ -214,6 +214,19 @@
             (resource-snapshot-context-files
              resources))))))
     (let* ((logo (format nil "cadr v~A" version))
+           (cycle-keys
+             (cadr-tui:keybinding-keys
+              (cadr-tui:get-keybindings)
+              "app.model.cycleForward"))
+           (backward-cycle-keys
+             (cadr-tui:keybinding-keys
+              (cadr-tui:get-keybindings)
+              "app.model.cycleBackward"))
+           (cycle-help-line
+             (and (or cycle-keys backward-cycle-keys)
+                  (format
+                   nil "~{~A~^/~} to cycle models"
+                   (append cycle-keys backward-cycle-keys))))
            (compact
              (list
               logo
@@ -223,20 +236,22 @@
               "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr."))
            (expanded
              (append
-              (list
-               logo
-               "escape to interrupt"
-               "ctrl+c to clear"
-               "ctrl+c twice to exit"
-               "ctrl+d to exit (empty)"
-               "ctrl+z to suspend"
-               "ctrl+k to delete to end"
-               "ctrl+p/ctrl+n to cycle models"
-               "ctrl+o to expand tools"
-               "/ for commands"
-               "! to run bash"
-               ""
-               "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr.")
+              (remove
+               nil
+               (list
+                logo
+                "escape to interrupt"
+                "ctrl+c to clear"
+                "ctrl+c twice to exit"
+                "ctrl+d to exit (empty)"
+                "ctrl+z to suspend"
+                "ctrl+k to delete to end"
+                cycle-help-line
+                "ctrl+o to expand tools"
+                "/ for commands"
+                "! to run bash"
+                ""
+                "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr."))
               (when (sections)
                 (cons "" (sections))))))
       (values
@@ -283,13 +298,21 @@
                     ("ctrl+d to exit (empty)" "ctrl+d" "to exit (empty)")
                     ("ctrl+z to suspend" "ctrl+z" "to suspend")
                     ("ctrl+k to delete to end" "ctrl+k" "to delete to end")
-                    ("ctrl+p/ctrl+n to cycle models" "ctrl+p/ctrl+n" "to cycle models")
                     ("ctrl+o to expand tools" "ctrl+o" "to expand tools")
                     ("/ for commands" "/" "for commands")
                     ("! to run bash" "!" "to run bash"))
                   :test #'string=)))
-           (and parts
-                (key-hint (second parts) (third parts)))))
+           (cond
+             (parts
+              (key-hint (second parts) (third parts)))
+             ((and
+               (plusp (length line))
+               (uiop:string-suffix-p " to cycle models" line))
+              (key-hint
+               (subseq line 0
+                       (- (length line)
+                          (length " to cycle models")))
+               "to cycle models")))))
        (style-line (line index)
          (cond
            ((zerop index)

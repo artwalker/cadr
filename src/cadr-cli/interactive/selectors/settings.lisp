@@ -659,7 +659,8 @@
 
 (defun render-settings-option-list
     (options all-options selected width maximum
-     &key search-query search-p)
+     &key search-query search-p
+       (include-input-p search-p))
   (multiple-value-bind (visible start end total)
       (settings-selector-visible-slice options selected maximum)
     (let ((label-width
@@ -667,15 +668,9 @@
                 (settings-selector-max-label-width all-options)
                 1)))
       (append
-       (when search-p
+       (when include-input-p
          (list
-          (selector-fit-line
-           (concatenate
-            'string
-            (cadr-tui:theme-foreground :muted "> ")
-            (cadr-tui:theme-foreground :accent
-                                       (or search-query "")))
-           width)
+          (selector-input-line (or search-query "") width)
           ""))
        (if visible
            (loop for option in visible
@@ -694,9 +689,11 @@
                         (cadr-tui:theme-foreground :accent "→ ")
                         "  ")
                     (if selected-p
-                        (cadr-tui:theme-foreground :accent label)
+                        (cadr-tui:theme-foreground
+                         :accent
+                         (concatenate 'string label padding))
                         label)
-                    padding "  "
+                    (if selected-p "" padding) "  "
                     (cadr-tui:theme-foreground
                      (if selected-p :accent :muted)
                      (settings-option-display-value option)))
@@ -705,7 +702,7 @@
                   "  No matching settings" width)))
        (when (or (> start 0) (< end total))
          (list
-          (selector-muted-line
+          (selector-dim-line
            (format nil "  (~D/~D)" (1+ selected) total)
            width)))
        (let ((option (nth selected options)))
@@ -787,6 +784,31 @@
 
 (defun render-settings-selector
     (state width)
+  (when (eq :main (settings-selector-state-mode state))
+    (multiple-value-bind (input-lines input-row input-column)
+        (selector-input-rendering
+         (settings-selector-state-query state) width)
+      (return-from render-settings-selector
+        (render-selector-frame
+         (make-selector-frame
+          :sections
+          (list
+           :border
+           (list :component input-lines input-row input-column)
+           :blank
+           (list
+            :lines
+            (render-settings-option-list
+             (settings-selector-visible-options state)
+             (settings-selector-state-options state)
+             (settings-selector-state-selected state)
+             width 10
+             :search-query
+             (settings-selector-state-query state)
+             :search-p t
+             :include-input-p nil))
+           :border))
+         width))))
   (render-selector-frame
    (make-selector-frame
     :sections
@@ -795,14 +817,6 @@
      (list
       :lines
       (case (settings-selector-state-mode state)
-        (:main
-         (render-settings-option-list
-          (settings-selector-visible-options state)
-          (settings-selector-state-options state)
-          (settings-selector-state-selected state)
-          width 10
-          :search-query (settings-selector-state-query state)
-          :search-p t))
         (:warnings
          (render-settings-option-list
           (settings-selector-submenu-options state)

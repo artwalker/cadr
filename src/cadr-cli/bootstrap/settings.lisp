@@ -50,7 +50,15 @@
          (cadr-ai::json-get
           terminal-settings
           "showTerminalProgress"
-          nil)))))
+         nil)))))
+
+(defun settings-clear-on-shrink-p (manager)
+  ;; pi@74caa2649 settings-manager.ts:1093-1099 gives an explicit setting
+  ;; precedence over the environment and defaults to false.
+  (settings-boolean-value
+   manager "terminal"
+   (string= (or (uiop:getenv "CADR_CLEAR_ON_SHRINK") "") "1")
+   "clearOnShrink"))
 
 (defun settings-terminal-theme-mode (manager)
   (let ((configured
@@ -336,12 +344,9 @@
              :label "Clear on shrink"
              :description
              "Clear empty rows when content shrinks (may cause flicker)"
-             :value
-             (if (hash-table-p terminal)
-                 (eq t
-                     (cadr-ai::json-get
-                      terminal "clearOnShrink" nil))
-                 nil)
+            :value
+             (settings-clear-on-shrink-p
+              settings-manager)
              :values (list t nil))
             (make-settings-option
              :id "terminal-progress"

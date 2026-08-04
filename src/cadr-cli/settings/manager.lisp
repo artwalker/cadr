@@ -398,7 +398,9 @@
                   (copy-list value))
                  (t nil))))
          (when
-             (and keys
+             (and (or (stringp value)
+                      (vectorp value)
+                      (listp value))
                   (every #'stringp keys))
            (push
             (cons name keys)

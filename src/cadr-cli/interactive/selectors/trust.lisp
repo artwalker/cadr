@@ -27,7 +27,7 @@
         :label
         (format nil
                 "Trust parent folder (~A)"
-                parent-path)
+                (display-directory-name parent-path))
         :trusted-p t
         :saved-path parent-path
         :updates
@@ -86,7 +86,7 @@
                option saved-entry))
             options)))
     (%make-trust-selector-state
-     :cwd path
+     :cwd (display-directory-name path)
      :saved-entry saved-entry
      :project-trusted-p
      (not (null project-trusted-p))
@@ -199,14 +199,15 @@
                      "trusted"
                      "untrusted"))
                (path (getf entry :path)))
-          (if (string= path
-                       (trust-selector-state-cwd
-                        state))
+          (if (string= (display-directory-name path)
+                       (trust-selector-state-cwd state))
               (format nil "~A (~A)"
-                      decision path)
+                      decision
+                      (display-directory-name path))
               (format nil
                       "~A (inherited from ~A)"
-                      decision path))))))
+                      decision
+                      (display-directory-name path)))))))
 
 (defun render-trust-selector
     (state width)
@@ -221,26 +222,48 @@
      :border :blank
      (list :title "Project trust")
      (list
-      :help
+      :lines
       (list
-       (trust-selector-state-cwd state))
-      :muted)
+       (selector-component-text-line
+        (cadr-tui:theme-foreground
+         :muted
+         (trust-selector-state-cwd state))
+        width)))
      :blank
      (list
-      :help
+      :lines
       (list
-       (format nil "Saved decision: ~A"
-               (trust-decision-description state))
-       (format nil "Current session: ~A"
-               (if
-                   (trust-selector-state-project-trusted-p
-                    state)
-                   "trusted"
-                   "untrusted")))
-      :muted)
+       (selector-component-text-line
+        (cadr-tui:theme-foreground
+         :muted
+         (format nil "Saved decision: ~A"
+                 (trust-decision-description state)))
+        width)
+       (selector-component-text-line
+        (cadr-tui:theme-foreground
+         :muted
+         (format nil "Current session: ~A"
+                 (if
+                     (trust-selector-state-project-trusted-p
+                      state)
+                     "trusted"
+                     "untrusted")))
+        width)))
      :blank :viewport :blank
-     (list :help
-           (list "↑↓ navigate  enter save  escape cancel"))
+     (list
+      :lines
+      (list
+       (selector-component-text-line
+        (concatenate
+         'string
+         (raw-key-hint "↑↓" "navigate") "  "
+         (selector-keybinding-hint
+          (trust-selector-state-keybindings state)
+          "tui.select.confirm" "save") "  "
+         (selector-keybinding-hint
+          (trust-selector-state-keybindings state)
+          "tui.select.cancel" "cancel"))
+        width)))
      :blank :border)
     :item-renderer
     (lambda (option index selected-p total item-width)
@@ -249,7 +272,7 @@
               (trust-option-saved-p
                option
                (trust-selector-state-saved-entry state))))
-        (selector-fit-line
+        (selector-component-text-line
          (concatenate
           'string
           (if selected-p
@@ -259,7 +282,8 @@
           (if selected-p
               (cadr-tui:theme-foreground
                :accent (getf option :label))
-              (getf option :label))
+              (cadr-tui:theme-foreground
+               :text (getf option :label)))
           (if saved-p
               (cadr-tui:theme-foreground
                :success " ✓")

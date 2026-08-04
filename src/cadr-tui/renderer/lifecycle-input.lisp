@@ -8,6 +8,7 @@
   (wheel-scroll-lines 3 :type (integer 1 *))
   (mouse-p t :type boolean)
   (show-hardware-cursor-p nil :type boolean)
+  (clear-on-shrink-p nil :type boolean)
   open-url-function
   (last-document nil :type list)
   (prepared-source-lines nil :type list)
@@ -40,6 +41,7 @@
        (wheel-scroll-lines 3)
        (mouse-p t)
        (show-hardware-cursor-p nil)
+       (clear-on-shrink-p nil)
        open-url-function)
   (%make-terminal-renderer
    :terminal terminal
@@ -49,7 +51,16 @@
    :mouse-p (not (null mouse-p))
    :show-hardware-cursor-p
    (not (null show-hardware-cursor-p))
+   :clear-on-shrink-p
+   (not (null clear-on-shrink-p))
    :open-url-function open-url-function))
+
+(defun renderer-set-clear-on-shrink
+    (renderer enabled-p)
+  (setf
+   (terminal-renderer-clear-on-shrink-p renderer)
+   (not (null enabled-p)))
+  renderer)
 
 (defun invalidate-renderer (renderer)
   (setf (terminal-renderer-invalid-p renderer) t)

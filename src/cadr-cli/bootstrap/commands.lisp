@@ -120,6 +120,59 @@
   #-sbcl
   (funcall function))
 
+(defun model-scope-startup-line
+    (scoped-model-entries keybindings
+     &key verbose-p quiet-startup-p)
+  (when
+      (and scoped-model-entries
+           (or verbose-p (not quiet-startup-p)))
+    (let* ((models
+             (mapcar
+              (lambda (entry)
+                (let ((model (getf entry :model))
+                      (thinking (getf entry :thinking)))
+                  (format nil "~A~@[:~(~A~)~]"
+                          (cadr-ai:model-id model)
+                          thinking)))
+              scoped-model-entries))
+           (cycle-keys
+             (cadr-tui:keybinding-keys
+              keybindings "app.model.cycleForward"))
+           (cycle-hint
+             (if cycle-keys
+                 (cadr-tui:theme-foreground
+                  :muted
+                  (format nil " (~A to cycle)"
+                          (format-key-text
+                           (format nil "~{~A~^/~}" cycle-keys)
+                           :capitalize-p t)))
+                 "")))
+      (concatenate
+       'string
+       (cadr-tui:theme-foreground
+        :dim
+        (format nil "Model scope: ~{~A~^, ~}" models))
+       cycle-hint))))
+
+(defun model-cycle-target-entry
+    (entries current-model direction)
+  (let ((count (length entries)))
+    (when (> count 1)
+      (let* ((current-index
+               (or
+                (position
+                 current-model entries
+                 :key (lambda (entry)
+                        (getf entry :model))
+                 :test #'cadr-ai:models-equal-p)
+                0))
+             (next-index
+               (mod
+                (+ current-index
+                   (if (eq direction :backward) -1 1))
+                count)))
+        (nth next-index entries)))))
+
 (defun cli-handler (command)
   (let* ((input-terminal-p
            (cadr-tui:terminal-stream-p
@@ -142,6 +195,7 @@
          (auth-prompt-consumer nil)
          (model-consumer nil)
          (abort-requested-p nil)
+         (startup-scope-line nil)
          (frontend-output
            (if tui-p
                (make-notification-output-stream
@@ -1117,33 +1171,37 @@
              :api-key
              (cli-arguments-api-key command)))
            available-models)
-         (select-model (model)
+         (select-model
+             (model &key (source :interactive)
+                         (thinking-level nil thinking-level-p))
            (let ((updated
-                   (apply-cli-model-selection
+                   (apply
+                    #'apply-cli-model-selection
                     agent model-registry model
                     settings-manager
-                    :api-key
-                    (and
-                     (cli-arguments-provider command)
-                     (string-equal
-                      (provider-key
-                       (cadr-ai:model-provider model))
-                      (provider-key
-                       (cli-arguments-provider
-                        command)))
-                     (cli-arguments-api-key command))
-                    :base-url
-                    (and
-                     (cli-arguments-provider command)
-                     (string-equal
-                      (provider-key
-                       (cadr-ai:model-provider model))
-                      (provider-key
-                       (cli-arguments-provider
-                        command)))
-                     (cli-arguments-base-url
-                      command))
-                    :source :interactive)))
+                    (append
+                     (list
+                      :api-key
+                      (and
+                       (cli-arguments-provider command)
+                       (string-equal
+                        (provider-key
+                         (cadr-ai:model-provider model))
+                        (provider-key
+                         (cli-arguments-provider command)))
+                       (cli-arguments-api-key command))
+                      :base-url
+                      (and
+                       (cli-arguments-provider command)
+                       (string-equal
+                        (provider-key
+                         (cadr-ai:model-provider model))
+                        (provider-key
+                         (cli-arguments-provider command)))
+                       (cli-arguments-base-url command))
+                      :source source)
+                     (when thinking-level-p
+                       (list :thinking-level thinking-level))))))
              (setf config updated)
              (let* ((model-id
                       (cadr-ai:model-id
@@ -1172,6 +1230,53 @@
                  (funcall
                   warning-consumer warning))
                model-id)))
+         (cycle-model (direction)
+           (refresh-available-models)
+           (let* ((scoped-p
+                    (not (null scoped-model-entries)))
+                  (entries
+                    (if scoped-p
+                        (remove-if-not
+                         (lambda (entry)
+                           (find
+                            (getf entry :model)
+                            available-models
+                            :test #'cadr-ai:models-equal-p))
+                         scoped-model-entries)
+                        (mapcar
+                         (lambda (model)
+                           (list :model model :thinking nil))
+                         available-models)))
+                  (count (length entries)))
+             (when (<= count 1)
+               (return-from cycle-model
+                 (if scoped-p
+                     "Only one model in scope"
+                     "Only one model available")))
+             (let* ((next
+                      (model-cycle-target-entry
+                       entries
+                       (cadr-agent:agent-model agent)
+                       direction))
+                    (model (getf next :model))
+                    (thinking (getf next :thinking)))
+               (if thinking
+                   (select-model
+                    model :source :cycle
+                    :thinking-level thinking)
+                   (select-model model :source :cycle))
+               (let ((effective-thinking
+                       (cadr-agent::agent-thinking-level agent)))
+                 (format
+                  nil "Switched to ~A~A"
+                  (or (cadr-ai::model-name model)
+                      (cadr-ai:model-id model))
+                  (if
+                      (and (cadr-ai:model-reasoning-p model)
+                           (not (eq effective-thinking :off)))
+                      (format nil " (thinking: ~(~A~))"
+                              effective-thinking)
+                      ""))))))
          (resolve-model-reference (reference)
            (refresh-available-models)
            (exact-model-reference-match
@@ -1623,6 +1728,19 @@
           (lambda ()
             (case mode
            (:tui
+            (setf
+             startup-scope-line
+             (model-scope-startup-line
+              scoped-model-entries
+              (cadr-tui:get-keybindings)
+              :verbose-p
+              (cli-arguments-verbose-p command)
+              :quiet-startup-p
+              (settings-value
+               settings-manager "quietStartup" nil)))
+            (when startup-scope-line
+              (write-line startup-scope-line)
+              (finish-output))
             (multiple-value-bind
                   (file-text file-images)
                 (process-cli-file-arguments
@@ -1859,6 +1977,7 @@
                    (cadr-ai:user-message-content
                     message)))
                 (append steering follow-up))))
+           :cycle-model-function #'cycle-model
            :model-items-function #'model-items
            :login-options-function #'current-login-options
            :model-selector-function
@@ -1987,6 +2106,9 @@
                "CADR_HARDWARE_CURSOR")
               "")
              "1"))
+           :clear-on-shrink-p
+           (settings-clear-on-shrink-p
+            settings-manager)
            :initial-notices
            (let ((warning
                    (anthropic-warning)))

@@ -80,6 +80,53 @@
              (is (equal '(:dequeue) (event-kinds events)))))
       (cadr-tui:set-keybindings previous))))
 
+(test input-decoder-emits-model-cycle-actions-for-legacy-and-kitty-keys
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager))
+           (is
+            (equal
+             '(:model-cycle-forward)
+             (event-kinds
+              (cadr-tui:feed-input
+               (cadr-tui:make-input-decoder)
+               (string (code-char 16))))))
+           (cadr-tui:set-kitty-protocol-active t)
+           (is
+            (equal
+             '(:model-cycle-backward)
+             (event-kinds
+              (cadr-tui:feed-input
+               (cadr-tui:make-input-decoder)
+               (format nil "~C[1079::112;6u" #\Escape))))))
+      (cadr-tui:set-kitty-protocol-active nil)
+      (cadr-tui:set-keybindings previous))))
+
+(test input-decoder-honors-remapped-and-disabled-model-cycle-bindings
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager
+             :user-bindings
+             '(("app.model.cycleForward" . ("ctrl+g"))
+               ("app.model.cycleBackward" . nil))))
+           (is
+            (equal
+             '(:model-cycle-forward)
+             (event-kinds
+              (cadr-tui:feed-input
+               (cadr-tui:make-input-decoder)
+               (string (code-char 7))))))
+           (is
+            (null
+             (cadr-tui:feed-input
+              (cadr-tui:make-input-decoder)
+              (format nil "~C[27;6;112~~" #\Escape)))))
+      (cadr-tui:set-keybindings previous))))
+
 (test input-decoder-handles-real-xterm-and-windows-alt-sequences
   (let ((previous (cadr-tui:get-keybindings)))
     (unwind-protect

@@ -1,15 +1,19 @@
 (in-package #:cadr-tui)
 
 (defun clipped-frame-lines (terminal lines)
-  (loop for line in lines
-        collect
-        (multiple-value-bind (prefix width)
-            (slice-to-width line
-                            (terminal-columns terminal))
-          (declare (ignore width))
-          (concatenate
-           'string prefix
-           (format nil "~C[0m" #\Escape)))))
+  ;; Keep the natural document as the renderer's comparison buffer.  Clipping
+  ;; every line here made an unchanged large transcript allocate and copy in
+  ;; proportion to its complete history on every frame.
+  (declare (ignore terminal))
+  lines)
+
+(defun write-main-frame-line (stream terminal line)
+  (multiple-value-bind (prefix width)
+      (slice-to-width line
+                      (terminal-columns terminal))
+    (declare (ignore width))
+    (write-string prefix stream)
+    (format stream "~C[0m" #\Escape)))
 
 (defun kitty-parameter-integer
     (line parameter)
@@ -41,22 +45,17 @@
    :test #'=))
 
 (defun frame-image-change-p (current previous)
-  (loop for row below
-        (max (length current)
-             (length previous))
-        for new =
-        (if (< row (length current))
-            (nth row current)
-            "")
-        for old =
-        (if (< row (length previous))
-            (nth row previous)
-            "")
-        thereis
-        (and
-         (not (string= new old))
-         (or (image-line-p new)
-             (image-line-p old)))))
+  (loop
+    with new-tail = current
+    with old-tail = previous
+    while (or new-tail old-tail)
+    for new = (if new-tail (pop new-tail) "")
+    for old = (if old-tail (pop old-tail) "")
+    thereis
+    (and
+     (not (string= new old))
+     (or (image-line-p new)
+         (image-line-p old)))))
 
 (defun write-kitty-deletions (stream ids)
   (dolist (id ids)
@@ -101,7 +100,19 @@
 (defun main-renderer-position-cursor
     (renderer cursor-row cursor-column
      total-lines)
-  (if (zerop total-lines)
+  (let* ((height
+           (max
+            1
+            (terminal-rows
+             (terminal-renderer-terminal renderer))))
+         (viewport-top
+           (max 0 (- total-lines height)))
+         (cursor-visible-p
+           (and cursor-row cursor-column
+                (>= cursor-row viewport-top)
+                (< cursor-row total-lines))))
+    (if (or (zerop total-lines)
+            (not cursor-visible-p))
       (let ((output
               (format nil "~C[?25l"
                       #\Escape)))
@@ -140,7 +151,7 @@
          (terminal-renderer-hardware-cursor-row
           renderer)
          target-row)
-        output)))
+        output))))
 
 (defun main-renderer-store-frame
     (renderer current width height)
@@ -183,7 +194,8 @@
                    (when (plusp row)
                      (write-char #\Return stream)
                      (write-char #\Newline stream))
-                   (write-string line stream))
+                   (write-main-frame-line
+                    stream terminal line))
              (format stream "~C[?2026l"
                      #\Escape))))
     (terminal-write terminal output)
@@ -221,34 +233,46 @@
        'string output cursor-output))))
 
 (defun changed-line-range (current previous)
-  (loop with first = nil
-        with last = nil
-        for row below
-        (max (length current)
-             (length previous))
-        for new =
-        (or (nth row current) "")
-        for old =
-        (or (nth row previous) "")
-        unless (string= new old)
-          do
-          (unless first
-            (setf first row))
-          (setf last row)
-        finally
-        (return (values first last))))
+  (loop
+    with first = nil
+    with last = nil
+    with new-tail = current
+    with old-tail = previous
+    for row from 0
+    while (or new-tail old-tail)
+    for new = (if new-tail (pop new-tail) "")
+    for old = (if old-tail (pop old-tail) "")
+    unless (string= new old)
+      do
+      (unless first
+        (setf first row))
+      (setf last row)
+    finally
+    (return (values first last))))
 
 (defun render-main-frame
     (renderer lines &key
                       (cursor-row
                         (max 0 (1- (length lines))))
-                      (cursor-column 0))
+                      (cursor-column 0)
+                      overlay-active-p)
   (let* ((terminal
            (terminal-renderer-terminal renderer))
          (width
            (max 1 (terminal-columns terminal)))
          (height
            (max 1 (terminal-rows terminal)))
+         (previous-buffer-length
+           (if
+               (plusp
+                (terminal-renderer-previous-height
+                 renderer))
+               (+
+                (terminal-renderer-previous-viewport-top
+                 renderer)
+                (terminal-renderer-previous-height
+                 renderer))
+               height))
          (current
            (clipped-frame-lines terminal lines))
          (previous
@@ -271,7 +295,12 @@
             (/=
              height
              (terminal-renderer-previous-height
-              renderer)))))
+              renderer))))
+         (previous-viewport-top
+           (if height-changed-p
+               (max 0 (- previous-buffer-length height))
+               (terminal-renderer-previous-viewport-top
+                renderer))))
     (when (null previous)
       (return-from render-main-frame
         (render-main-full-frame
@@ -281,10 +310,15 @@
         (or
          (terminal-renderer-invalid-p renderer)
          width-changed-p
-         height-changed-p
-         (< (length current)
-            (terminal-renderer-max-lines-rendered
-             renderer)))
+         (and height-changed-p
+              (null (uiop:getenv "TERMUX_VERSION")))
+         (and
+          (terminal-renderer-clear-on-shrink-p
+           renderer)
+          (not overlay-active-p)
+          (< (length current)
+             (terminal-renderer-max-lines-rendered
+              renderer))))
       (return-from render-main-frame
         (render-main-full-frame
          renderer current t
@@ -293,17 +327,92 @@
           (first-changed last-changed)
         (changed-line-range current previous)
       (unless first-changed
-        (return-from render-main-frame
-          (main-renderer-position-cursor
-           renderer cursor-row cursor-column
-           (length current))))
-      (let* ((previous-viewport-top
-               (terminal-renderer-previous-viewport-top
-                renderer))
-             (viewport-top previous-viewport-top)
+        (let ((cursor-output
+                (main-renderer-position-cursor
+                 renderer cursor-row cursor-column
+                 (length current))))
+          (setf
+           (terminal-renderer-previous-viewport-top renderer)
+           previous-viewport-top
+           (terminal-renderer-previous-height renderer)
+           height)
+          (return-from render-main-frame cursor-output)))
+      (let* ((viewport-top previous-viewport-top)
              (hardware-row
                (terminal-renderer-hardware-cursor-row
                 renderer)))
+        (when (>= first-changed (length current))
+          (let* ((target-row
+                   (max 0 (1- (length current))))
+                 (extra-lines
+                   (- (length previous)
+                      (length current))))
+            (when (< target-row previous-viewport-top)
+              (return-from render-main-frame
+                (render-main-full-frame
+                 renderer current t
+                 cursor-row cursor-column)))
+            (when (> extra-lines height)
+              (return-from render-main-frame
+                (render-main-full-frame
+                 renderer current t
+                 cursor-row cursor-column)))
+            (let ((output
+                    (with-output-to-string (stream)
+                      (format stream "~C[?2026h"
+                              #\Escape)
+                      (when
+                          (frame-image-change-p
+                           current previous)
+                        (write-kitty-deletions
+                         stream
+                         (terminal-renderer-previous-image-ids
+                          renderer)))
+                      (write-relative-row-move
+                       stream
+                       (- target-row hardware-row))
+                      (write-char #\Return stream)
+                      (let ((clear-start-offset
+                              (if (zerop (length current)) 0 1)))
+                        (when
+                            (and (plusp extra-lines)
+                                 (plusp clear-start-offset))
+                          (format stream "~C[~DB"
+                                  #\Escape clear-start-offset))
+                        (loop for index below extra-lines
+                              do
+                                 (format stream "~C[2K"
+                                         #\Escape)
+                                 (when (< index (1- extra-lines))
+                                   (format stream "~C[1B"
+                                           #\Escape)))
+                        (let ((move-back
+                                (max
+                                 0
+                                 (+ (1- extra-lines)
+                                    clear-start-offset))))
+                          (when (plusp move-back)
+                            (format stream "~C[~DA"
+                                    #\Escape move-back))))
+                      (format stream "~C[?2026l"
+                              #\Escape))))
+              (terminal-write terminal output)
+              (setf
+               (terminal-renderer-cursor-row renderer)
+               target-row
+               (terminal-renderer-hardware-cursor-row renderer)
+               target-row
+               (terminal-renderer-previous-viewport-top renderer)
+               previous-viewport-top)
+              (let ((cursor-output
+                      (main-renderer-position-cursor
+                       renderer cursor-row cursor-column
+                       (length current))))
+                (main-renderer-store-frame
+                 renderer current width height)
+                (return-from render-main-frame
+                  (concatenate
+                   'string output cursor-output))))))
         (when (< first-changed
                  previous-viewport-top)
           (return-from render-main-frame
@@ -326,6 +435,10 @@
                (viewport-bottom
                  (+ previous-viewport-top
                     height -1))
+               (render-end
+                 (min last-changed
+                      (1- (length current))))
+               (final-row render-end)
                (output
                  (with-output-to-string (stream)
                    (format stream "~C[?2026h"
@@ -382,10 +495,9 @@
                          (write-char #\Newline stream))
                        (write-char #\Return stream))
                    (loop for row from first-changed
-                         to
-                         (min last-changed
-                              (1- (length current)))
-                         for line = (nth row current)
+                         to render-end
+                         for line in
+                         (nthcdr first-changed current)
                          do
                          (when (> row first-changed)
                            (write-char #\Return stream)
@@ -412,32 +524,51 @@
                              (format stream "~C[~DA"
                                      #\Escape
                                      (1- reserved))))
-                         (write-string line stream))
+                         (write-main-frame-line
+                          stream terminal line))
+                   (when (> (length previous)
+                            (length current))
+                     (let ((extra-lines
+                             (- (length previous)
+                                (length current))))
+                       (when (< render-end
+                                (1- (length current)))
+                         (let ((move-down
+                                 (- (1- (length current))
+                                    render-end)))
+                           (format stream "~C[~DB"
+                                   #\Escape move-down)
+                           (setf final-row
+                                 (1- (length current)))))
+                       (loop repeat extra-lines
+                             do
+                                (write-char #\Return stream)
+                                (write-char #\Newline stream)
+                                (format stream "~C[2K"
+                                        #\Escape))
+                       (when (plusp extra-lines)
+                         (format stream "~C[~DA"
+                                 #\Escape extra-lines))))
                    (format stream "~C[?2026l"
                            #\Escape))))
           (terminal-write terminal output)
-          (let ((final-row
-                  (min last-changed
-                       (max 0
-                            (1-
-                             (length current))))))
-            (setf
-             (terminal-renderer-cursor-row renderer)
-             (max 0 (1- (length current)))
-             (terminal-renderer-hardware-cursor-row
-              renderer)
-             final-row
-             (terminal-renderer-max-lines-rendered
-              renderer)
-             (max
-              (terminal-renderer-max-lines-rendered
-               renderer)
-              (length current))
-             (terminal-renderer-previous-viewport-top
-              renderer)
-             (max
-              previous-viewport-top
-              (- final-row height -1))))
+          (setf
+           (terminal-renderer-cursor-row renderer)
+           (max 0 (1- (length current)))
+           (terminal-renderer-hardware-cursor-row
+            renderer)
+           final-row
+           (terminal-renderer-max-lines-rendered
+            renderer)
+           (max
+            (terminal-renderer-max-lines-rendered
+             renderer)
+            (length current))
+           (terminal-renderer-previous-viewport-top
+            renderer)
+           (max
+            previous-viewport-top
+            (- final-row height -1)))
           (let ((cursor-output
                   (main-renderer-position-cursor
                    renderer cursor-row cursor-column

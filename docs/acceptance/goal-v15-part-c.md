@@ -195,3 +195,97 @@ DeepSeek live TUI                                PASS
 The live report ran seven items successfully, skipped the Anthropic item
 because `ANTHROPIC_API_KEY` is absent, and recorded 32 checks: 31 pass, one
 credential skip, zero failures.
+
+## Batch 3: D08-D12 selectors, viewport, model scope, and visible paths
+
+Commit: the batch commit containing this section.
+
+### Result
+
+This batch restores the fixed baseline's component ownership instead of
+maintaining Cadr's former line-compaction shim:
+
+| ID | Fixed-baseline contract | Cadr implementation | Independent regression |
+|---|---|---|---|
+| D08 | `model-selector.ts:91-129,248-307` composes borders, spacers, zero-padding `Text`, `Input`, and a bounded item viewport at natural height; `tui.ts:235-244` and `TuiMainScreen.ts:162-212,250-259,354-370` own document clipping, resize, and optional clear-on-shrink. | `interactive/selectors/common.lisp` now provides one component-shaped selector frame used by every selector family; `interactive/frame.lisp` preserves natural document height; `cadr-tui/renderer/main-screen.lisp` owns bottom viewport, shrink, resize, overlay suppression, and cursor visibility. The virtual terminal now models real bottom-row scrolling instead of discarding lines below its array. | `GOAL15-SELECTOR-OVERLAYS-PRESERVE-NATURAL-HEIGHT-AND-INPUT-CURSOR`; `GOAL15-OVERLAY-VIEWPORT-CROPS-THE-NATURAL-DOCUMENT-AND-HIDES-OFFSCREEN-CURSOR`; renderer shrink/resize/overlay/cursor tests; all 15 baseline-derived overlay line oracles. |
+| D09 | `interactive-mode.ts:719-731` emits `Model scope: ... (Ctrl+P to cycle)` when a scope is active and startup is not quiet; `core/keybindings.ts:77-83` owns both cycle actions. | `bootstrap/commands.lisp` emits the same gated copy and cycles the session-local scope with wrap, per-entry thinking, session entries, extension source, and configured keys; `cadr-tui/keybindings.lisp` owns the defaults. | `GOAL15-MODEL-SCOPE-STARTUP-COPY-FOLLOWS-BASELINE-GATE-AND-GRAMMAR`; `GOAL15-MODEL-CYCLE-TARGET-MATCHES-BASELINE-WRAP-AND-MISSING-CURRENT`; model-selection lifecycle regressions. |
+| D10 | `model-selector.ts:213-220,311-320` derives `tab scope (all/scoped)` from `tui.input.tab` and toggles scope. | Model and session selector keybinding definitions include the shared TUI action set; model help and raw input use the configured binding. | `GOAL15-MODEL-SCOPE-HINT-USES-KEY-AND-DESCRIPTION-STYLES`; existing configurable model/session selector tests. |
+| D11 | Fixed-baseline visible cwd, parent, and custom session-directory strings omit a non-root trailing separator. | `settings/trust.lisp` owns a display-only directory normalizer; footer, trust, and resume output reuse it without changing filesystem keys. | `GOAL15-VISIBLE-DIRECTORY-COPY-STRIPS-ONLY-NON-ROOT-TRAILING-SEPARATORS`; `GOAL15-TRUST-SELECTOR-COPY-AND-PATHS-MATCH-BASELINE`. |
+| D12 | `trust-selector.ts:52-87` uses keybinding-composed `escape/ctrl+c cancel`. | The trust selector derives the full hint from the shared cancel action and styles key/description spans separately. | `GOAL15-TRUST-HELP-STYLES-KEYS-AND-DESCRIPTIONS-INDEPENDENTLY`. |
+
+The clear-on-shrink gate follows fixed precedence exactly: an explicit
+`terminal.clearOnShrink` setting wins over `CADR_CLEAR_ON_SHRINK`; the
+environment is only a fallback and the default is false. Opening an actual
+overlay suppresses the full-clear branch. Termux height changes recompute the
+viewport without a full screen erase. These cases are locked independently of
+the screen SHA.
+
+### Snapshot and differential evidence
+
+The old overlay hashes encoded incomplete rows, fake cursor coordinates, and
+the selector compaction shim. Every new hash was accepted only after the
+independent exact-row, natural-height, cursor, ordering, help-copy, and
+bidirectional-wrap assertions passed. `docs/visual-parity.md` now mirrors the
+authoritative 13 base-screen and 15 overlay hash sets in the tests.
+
+All 12 differential scenarios were freshly captured for Cadr in both
+`100x32` and `48x20` against the retained fixed-baseline bytes. D08-D12 were
+then removed from the fail-closed disposition ledger. The analyzer accepted
+the complete matrix:
+
+```text
+render-diff analysis: aligned=6 requires-disposition=88 adjudicated=88
+```
+
+The remaining classes are I01 plus the approved later repair classes D04,
+D14-D16 and I02. No disposition retains D08, D09, D10, D11, or D12.
+
+### Verification
+
+```text
+cadr test summary: systems=9 checks=14589 pass=14589 skip=0 fail=0
+```
+
+The first complete verifier run did its job and rejected the initial D08
+implementation at the Goal 11 gate. Moving viewport ownership into the main
+renderer exposed two old renderer costs that the former 40-line frame shim had
+hidden: `clipped-frame-lines` rebuilt every historical line, while
+`changed-line-range` and image comparison indexed Lisp lists quadratically.
+The repair keeps the raw natural document as the comparison buffer, clips only
+lines crossing the terminal write boundary, and walks current/previous lists
+linearly. The fixed-baseline component ownership is therefore retained rather
+than traded back for the old compaction shim.
+
+The post-repair full N=5000 benchmark measured 4.001ms / 360,272 bytes for a
+stable frame, 28.004ms for key-to-frame, and 26.004ms for stream-to-frame
+(38.46 deltas/s). All are inside the existing Goal 11 release limits of 50ms,
+16MiB, and 20 deltas/s. `MAIN-RENDERER-KEEPS-RAW-DOCUMENT-LINES-AND-CLIPS-ONLY-AT-THE-TERMINAL-BOUNDARY`
+locks the ownership and terminal-width boundary independently.
+
+The root binary was rebuilt after the final source edit before the complete
+verifier rerun. That rerun passed every stage:
+
+```text
+root cadr binary freshness                       PASS
+code organization gate                           PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The live report ran seven items successfully, skipped the Anthropic item
+because `ANTHROPIC_API_KEY` is absent, and recorded 32 checks: 31 pass, one
+credential skip, zero failures. The real PTY contract now also consumes the
+baseline-width Input row; its stale short-row oracle was the sole failure in
+the preceding verifier run and was corrected before this clean rerun.

@@ -294,127 +294,119 @@
     (values visible start total)))
 
 (defun render-model-selector (state width)
-  (render-selector-frame
-   (make-selector-frame
-    :sections
-    (list
-     (list
-      :lines
-      (multiple-value-bind
-            (models start total)
-          (model-selector-visible-slice state 10)
-        (let ((selected
-                (model-selector-state-selected state))
-              (current
-                (model-selector-state-current-model state)))
-          (append
-       (append
-        (list
-         (selector-border-line width)
-         ""
-         (selector-fit-line
-          (if
-              (model-selector-state-scoped-models state)
-              (let ((scoped-p
-                      (eq :scoped
-                          (model-selector-state-scope
-                           state))))
-                (concatenate
-                 'string
+  (multiple-value-bind (models start total)
+      (model-selector-visible-slice state 10)
+    (let* ((selected
+             (model-selector-state-selected state))
+           (current
+             (model-selector-state-current-model state))
+           (scoped-p
+             (not (null
+                   (model-selector-state-scoped-models state))))
+           (scope-line
+             (if scoped-p
+                 (let ((showing-scoped-p
+                         (eq :scoped
+                             (model-selector-state-scope state))))
+                   (concatenate
+                    'string
+                    (cadr-tui:theme-foreground :muted "Scope: ")
+                    (cadr-tui:theme-foreground
+                     (if showing-scoped-p :muted :accent) "all")
+                    (cadr-tui:theme-foreground :muted " | ")
+                    (cadr-tui:theme-foreground
+                     (if showing-scoped-p :accent :muted) "scoped")))
                  (cadr-tui:theme-foreground
-                  :muted "Scope: ")
-                 (cadr-tui:theme-foreground
-                  (if scoped-p :muted :accent)
-                  "all")
-                 (cadr-tui:theme-foreground
-                  :muted " | ")
-                 (cadr-tui:theme-foreground
-                  (if scoped-p :accent :muted)
-                  "scoped")))
-              (cadr-tui:theme-foreground
-               :warning
-               "Only showing models from configured providers. Use /login to add providers."))
-          width))
-        (list
-         ""
-         (selector-fit-line
-          (concatenate
-           'string
-           (cadr-tui:theme-foreground
-            :muted "> ")
-           (cadr-tui:theme-foreground
-            :accent
-            (model-selector-state-query state)))
-          width)
-         ""))
-       (if models
-           (loop
-             for model in models
-             for index from start
-             for selected-p = (= index selected)
-             for current-p =
-               (model-equal-p model current)
-             collect
-             (selector-fit-line
-              (concatenate
-               'string
-               (if selected-p
-                   (cadr-tui:theme-foreground
-                    :accent "→ ")
-                   "  ")
-               (if selected-p
-                   (cadr-tui:theme-foreground
-                    :accent
-                    (cadr-ai:model-id model))
-                   (cadr-ai:model-id model))
-               " "
-               (cadr-tui:theme-foreground
-                :muted
-                (format nil "[~(~A~)]"
-                        (cadr-ai:model-provider
-                         model)))
-               (if current-p
-                   (cadr-tui:theme-foreground
-                    :success " ✓")
-                   ""))
-              width))
-           (list
-            (selector-muted-line
-             "  No matching models" width)))
-       (when (> total (length models))
-         (list
-          (selector-muted-line
-           (format nil "  (~D/~D)"
-                   (1+ selected) total)
-           width)))
-       (when
-           (and models
-                (model-selector-selected-model state))
-         (list
-          ""
-          (selector-muted-line
-           (format
-            nil "  Model Name: ~A"
-            (cadr-ai::model-name
-             (model-selector-selected-model state)))
-           width)))
-       (when
-           (model-selector-state-refresh-status-message
-            state)
-         (list
-          ""
-          (selector-fit-line
-           (cadr-tui:theme-foreground
-            :success
-            (format
-             nil "  ~A"
-             (model-selector-state-refresh-status-message
-              state)))
-           width)))
-           (list
-            ""
-            (selector-border-line width))))))))
-   width))
+                  :warning
+                  "Only showing models from configured providers. Use /login to add providers.")))
+           (body-lines
+             (append
+              (if models
+                  (loop
+                    for model in models
+                    for index from start
+                    for selected-p = (= index selected)
+                    for current-p = (model-equal-p model current)
+                    collect
+                    (selector-component-text-line
+                     (concatenate
+                      'string
+                      (if selected-p
+                          (cadr-tui:theme-foreground :accent "→ ")
+                          "  ")
+                      (if selected-p
+                          (cadr-tui:theme-foreground
+                           :accent (cadr-ai:model-id model))
+                          (cadr-ai:model-id model))
+                      " "
+                      (cadr-tui:theme-foreground
+                       :muted
+                       (format nil "[~(~A~)]"
+                               (cadr-ai:model-provider model)))
+                      (if current-p
+                          (cadr-tui:theme-foreground :success " ✓")
+                          ""))
+                     width :padding-x 0))
+                  (list
+                   (selector-component-text-line
+                    (cadr-tui:theme-foreground
+                     :muted "  No matching models")
+                    width :padding-x 0)))
+              (when (> total (length models))
+                (list
+                 (selector-component-text-line
+                  (cadr-tui:theme-foreground
+                   :muted
+                   (format nil "  (~D/~D)" (1+ selected) total))
+                  width :padding-x 0)))
+              (when (and models
+                         (model-selector-selected-model state))
+                (list
+                 ""
+                 (selector-component-text-line
+                  (cadr-tui:theme-foreground
+                   :muted
+                   (format nil "  Model Name: ~A"
+                           (cadr-ai::model-name
+                            (model-selector-selected-model state))))
+                  width :padding-x 0)))
+              (when
+                  (model-selector-state-refresh-status-message state)
+                (list
+                 ""
+                 (selector-component-text-line
+                  (cadr-tui:theme-foreground
+                   :success
+                   (format nil "  ~A"
+                           (model-selector-state-refresh-status-message
+                            state)))
+                  width :padding-x 0))))))
+      (render-selector-frame
+       (make-selector-frame
+        :sections
+        (list :border :blank
+              (list :lines
+                    (append
+                     (list
+                      (selector-component-text-line
+                       scope-line width :padding-x 0))
+                     (when scoped-p
+                       (list
+                        (selector-component-text-line
+                         (concatenate
+                          'string
+                          (selector-keybinding-hint
+                           (model-selector-state-keybindings state)
+                           "tui.input.tab" "scope")
+                          (cadr-tui:theme-foreground
+                           :muted " (all/scoped)"))
+                         width :padding-x 0)))))
+              :blank
+              (list :input (model-selector-state-query state))
+              :blank
+              (list :lines body-lines)
+              :blank :border))
+       width))))
 (defstruct (scoped-models-selector-state
             (:constructor
                 %make-scoped-models-selector-state))
@@ -1029,8 +1021,9 @@
 
 (defun render-scoped-models-selector
     (state width)
-  (render-selector-frame
-   (make-selector-frame
+  (let ((lines
+          (render-selector-frame
+           (make-selector-frame
     :sections
     (list
      (list
@@ -1051,25 +1044,26 @@
        (list
         (selector-border-line width)
         ""
-        (selector-title-line
-         "Model Configuration" width)
-        (selector-muted-line
-         (format
-          nil "Session-only. ~A to save to settings."
-          (scoped-models-binding-label
-           state "app.models.save"))
-         width)
+        (selector-component-text-line
+         (cadr-tui:theme-foreground
+          :accent
+          (cadr-tui:theme-bold "Model Configuration"))
+         width :padding-x 0)
+        (selector-component-text-line
+         (cadr-tui:theme-foreground
+          :muted
+          (format
+           nil "Session-only. ~A to save to settings."
+           (scoped-models-binding-label
+            state "app.models.save")))
+         width :padding-x 0)
         ""
-        (selector-fit-line
-         (concatenate
-          'string
-          (cadr-tui:theme-foreground
-           :muted "> ")
-          (cadr-tui:theme-foreground
-           :accent
-           (scoped-models-selector-state-query
-            state)))
-         width)
+        (first
+         (nth-value
+          0
+          (selector-input-rendering
+           (scoped-models-selector-state-query state)
+           width)))
         "")
        (if visible
            (loop
@@ -1114,19 +1108,24 @@
                  (format nil " [~A]" provider))
                 status)
              collect
-               (selector-fit-line line width))
+               (selector-component-text-line
+                line width :padding-x 0))
            (list
-            (selector-muted-line
-             "  No matching models" width)))
+            (selector-component-text-line
+             (cadr-tui:theme-foreground
+              :muted "  No matching models")
+             width :padding-x 0)))
        (when
            (or (> start 0)
                (< end (length items)))
          (list
-          (selector-muted-line
-           (format nil "  (~D/~D)"
-                   (1+ selected)
-                   (length items))
-           width)))
+          (selector-component-text-line
+           (cadr-tui:theme-foreground
+            :muted
+            (format nil "  (~D/~D)"
+                    (1+ selected)
+                    (length items)))
+           width :padding-x 0)))
        (when visible
          (let* ((item
                   (scoped-models-selector-selected-item
@@ -1136,18 +1135,20 @@
                        (getf item :model))))
            (list
             ""
-            (selector-muted-line
-             (format
-              nil "  ~A"
-              (if model
-                  (format nil "Model Name: ~A"
-                          (cadr-ai::model-name
-                           model))
-                  "Model unavailable"))
-             width))))
+            (selector-component-text-line
+             (cadr-tui:theme-foreground
+              :muted
+              (format
+               nil "  ~A"
+               (if model
+                   (format nil "Model Name: ~A"
+                           (cadr-ai::model-name
+                            model))
+                   "Model unavailable")))
+             width :padding-x 0))))
        (list
         ""
-        (selector-fit-line
+        (selector-component-text-line
          (concatenate
           'string
           (cadr-tui:theme-foreground
@@ -1185,6 +1186,12 @@
               (cadr-tui:theme-foreground
                :warning " (unsaved)")
               ""))
-         width)
+         width :padding-x 0)
              (selector-border-line width)))))))))
-   width))
+           width)))
+    (values
+     lines 5
+     (min (max 0 (1- width))
+          (+ 2
+             (cadr-tui:visible-width
+              (scoped-models-selector-state-query state)))))))

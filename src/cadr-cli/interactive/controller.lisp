@@ -136,12 +136,14 @@
 
 (defun make-interactive-renderer
     (terminal alt-p
-     &key show-hardware-cursor-p)
+     &key show-hardware-cursor-p
+       clear-on-shrink-p)
   (cadr-tui:make-terminal-renderer
    terminal
    :alt-p alt-p
    :show-hardware-cursor-p
    show-hardware-cursor-p
+   :clear-on-shrink-p clear-on-shrink-p
    :open-url-function
    #'open-tui-url))
 
@@ -234,6 +236,7 @@
        busy-input-function
        follow-up-input-function
        dequeue-function
+       cycle-model-function
        model-items-function
        login-options-function
        model-selector-function
@@ -282,6 +285,7 @@
        initial-notices
        alt-p
        show-hardware-cursor-p
+       clear-on-shrink-p
        (clock-function #'tui-monotonic-seconds)
        (sleep-function #'sleep)
        (terminal
@@ -360,7 +364,9 @@
            (make-interactive-renderer
             terminal alt-p
             :show-hardware-cursor-p
-            show-hardware-cursor-p))
+            show-hardware-cursor-p
+            :clear-on-shrink-p
+            clear-on-shrink-p))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -449,7 +455,12 @@
                (cadr-tui:render-frame
                 renderer lines
                 :cursor-row cursor-row
-                :cursor-column cursor-column))))
+                :cursor-column cursor-column
+                :overlay-active-p
+                (and
+                 (extension-custom-ui-state-p overlay)
+                 (extension-custom-ui-state-overlay-p overlay)
+                 (extension-custom-ui-visible-p overlay))))))
          (request-render (&optional force-p)
            (request-tui-render
             render-coordinator force-p))
@@ -1723,6 +1734,17 @@
                      "Restored ~D queued message~:P to editor"
                      count))))
              count))
+         (cycle-model (direction)
+           (when cycle-model-function
+             (handler-case
+                 (let ((message
+                         (funcall cycle-model-function direction)))
+                   (when (and (stringp message)
+                              (plusp (length message)))
+                     (status message)))
+               (error (condition)
+                 (show-error (princ-to-string condition)))))
+           (request-render))
          (accept-selection (value)
            (let ((kind overlay-kind))
              (setf overlay nil
@@ -1929,6 +1951,13 @@
                     "theme"))
                 (refresh-terminal-theme-policy))
               (when (eq overlay-kind :settings)
+                (when
+                    (and value
+                         (string=
+                          (getf value :id)
+                          "clear-on-shrink"))
+                  (cadr-tui:renderer-set-clear-on-shrink
+                   renderer (getf value :value)))
                 (synchronize-terminal-progress-setting)
                 (refresh-footer-state))
               (request-render))
@@ -2040,6 +2069,10 @@
                  (:dequeue
                   (restore-queued-messages :notify-p t)
                   (request-render))
+                 (:model-cycle-forward
+                  (cycle-model :forward))
+                 (:model-cycle-backward
+                  (cycle-model :backward))
                  (otherwise
                   (multiple-value-bind
                         (action value)

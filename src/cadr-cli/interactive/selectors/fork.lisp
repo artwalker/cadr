@@ -102,11 +102,15 @@
      :blank
      (list :title "Fork from Message" :plain)
      (list
-      :help
-      (cadr-tui:wrap-text
-       "Select a user message to copy the active path up to that point into a new session"
-       width)
-      :muted)
+      :lines
+      (mapcar
+       (lambda (line)
+         (selector-component-text-line
+          (cadr-tui:theme-foreground :muted line)
+          width))
+       (cadr-tui:wrap-text
+        "Select a user message to copy the active path up to that point into a new session"
+        (max 1 (- width 2)))))
      :blank :border :blank :viewport :count :blank :border)
     :item-renderer
     (lambda (item index selected-p total item-width)

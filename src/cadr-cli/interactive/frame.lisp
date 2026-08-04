@@ -6,107 +6,6 @@
       (nthcdr (- (length lines) count)
               lines)))
 
-(defun blank-render-line-p (line)
-  (zerop
-   (length
-    (string-trim
-     '(#\Space #\Tab #\Newline #\Return)
-     (cadr-tui:strip-terminal-sequences
-      line)))))
-
-(defun selected-overlay-line-p (line)
-  (let ((plain
-          (cadr-tui:strip-terminal-sequences
-           line)))
-    (or
-     (search
-      (cadr-tui:theme-background-ansi
-       :selected-bg :enabled-p t)
-      line)
-     (uiop:string-prefix-p "→ " plain)
-     (uiop:string-prefix-p "› " plain)
-     (uiop:string-prefix-p "> " plain))))
-
-(defun fit-overlay-lines (lines height)
-  (let ((available (max 0 height)))
-    (when (zerop available)
-      (return-from fit-overlay-lines nil))
-    (when (<= (length lines) available)
-      (return-from fit-overlay-lines lines))
-    (let* ((compact
-             (remove-if #'blank-render-line-p
-                        lines))
-           (selected
-             (position-if
-              #'selected-overlay-line-p compact)))
-      (when (<= (length compact) available)
-        (return-from fit-overlay-lines compact))
-      (unless selected
-        (let* ((head-count
-                 (min 4
-                      (max 1
-                           (ceiling available 2))))
-               (tail-count
-                 (- available head-count)))
-          (return-from fit-overlay-lines
-            (nconc
-             (subseq compact 0 head-count)
-             (when (plusp tail-count)
-               (copy-list
-                (nthcdr
-                 (- (length compact)
-                    tail-count)
-                 compact)))))))
-      (let* ((last-index
-               (1- (length compact)))
-             (head-count
-               (min 3
-                    (max 0 (- available 2))))
-             (reserved
-               (remove-duplicates
-                (append
-                 (loop for index below head-count
-                       collect index)
-                 (when (> available head-count)
-                   (list last-index)))
-                :test #'=))
-             (body-budget
-               (- available (length reserved)))
-             (body-start
-               (max
-                head-count
-                (min
-                 (- selected
-                    (floor body-budget 2))
-                 (max
-                  head-count
-                  (- last-index body-budget)))))
-             (body
-               (loop for index from body-start
-                     below
-                     (min last-index
-                          (+ body-start
-                             body-budget))
-                     collect index))
-             (indices
-               (sort
-                (remove-duplicates
-                 (append reserved
-                         body
-                         (list selected))
-                 :test #'=)
-                #'<)))
-        (when (> (length indices) available)
-          (setf
-           indices
-           (subseq indices
-                   (- (length indices)
-                      available))))
-        (mapcar
-         (lambda (index)
-           (nth index compact))
-         indices)))))
-
 (defun render-tui-overlay-lines (overlay width now)
   (cond
     ((session-selector-state-p overlay)
@@ -261,35 +160,18 @@
               width
               :spacer-when-empty-p nil
               :leading-spacer-p nil))
-           (overlay-lines
+           (overlay-rendering
              (and overlay
-                  (render-tui-overlay-lines
-                   overlay width now)))
-           (fixed-lines-without-editor
-             (+ (length pending-message-lines)
-                (length status-indicator)
-                (length widget-above-lines)
-                (length widget-below-lines)
-                (length footer-lines)))
+                  (multiple-value-list
+                   (render-tui-overlay-lines
+                    overlay width now))))
+           (overlay-lines (first overlay-rendering))
+           (overlay-row (second overlay-rendering))
+           (overlay-column (third overlay-rendering))
            (active-editor-lines
              (if overlay
-                 (fit-overlay-lines
-                  overlay-lines
-                  (max 0
-                       (- rows
-                          fixed-lines-without-editor)))
+                 overlay-lines
                  editor-lines))
-           (non-content-lines
-             (+ (length pending-message-lines)
-                (length status-indicator)
-                (length widget-above-lines)
-                (length active-editor-lines)
-                (length widget-below-lines)
-                (length footer-lines)))
-           (content-height
-             (max 0
-                  (- rows
-                     non-content-lines)))
            (entry-content
              (render-tui-entries
               (tui-state-entries state)
@@ -324,40 +206,29 @@
                    (list "")
                    entry-content)
                   entry-content)))
-           (visible
-             (cond
-               ((and full-document-p
-                     (null overlay))
-                all-content)
-               (t
-                (trailing-lines
-                 all-content content-height))))
-           (overlay-padding
-             ;; Editor-slot overlays keep their fixed viewport geometry;
-             ;; ordinary transcript composition keeps its natural height.
-             (and overlay
-                  (make-list
-                   (max 0
-                        (- content-height
-                           (length visible)))
-                   :initial-element "")))
+           (visible all-content)
            (cursor-row
-             (+ (if overlay
-                    (max content-height
-                         (length visible))
-                    (length visible))
-                (length pending-message-lines)
-                (length status-indicator)
-                (length widget-above-lines)
-                (if overlay 0 editor-row))))
+             (if overlay
+                 (and overlay-row
+                      (+ (length visible)
+                         (length pending-message-lines)
+                         (length status-indicator)
+                         (length widget-above-lines)
+                         overlay-row))
+                 (+ (length visible)
+                    (length pending-message-lines)
+                    (length status-indicator)
+                    (length widget-above-lines)
+                    editor-row))))
       (values
-       (nconc overlay-padding
-              visible
+       (nconc visible
               pending-message-lines
               status-indicator
               widget-above-lines
               active-editor-lines
               widget-below-lines
-              footer-lines)
+       footer-lines)
        cursor-row
-       (if overlay 0 editor-column)))))
+       (if overlay
+           overlay-column
+           editor-column)))))

@@ -190,11 +190,12 @@
              (frame-image-change-p
               current previous))
            (visible-cursor-row
-             (- cursor-row
-                (terminal-renderer-scroll-top
-                 renderer)))
+             (and cursor-row
+                  (- cursor-row
+                     (terminal-renderer-scroll-top
+                      renderer))))
            (cursor-visible-p
-             (and
+             (and visible-cursor-row cursor-column
               (>= visible-cursor-row 0)
               (< visible-cursor-row height)))
            (output
@@ -281,7 +282,8 @@
     (renderer lines &key
                       (cursor-row
                         (max 0 (1- (length lines))))
-                      (cursor-column 0))
+                      (cursor-column 0)
+                      overlay-active-p)
   (if (terminal-renderer-alt-screen-p renderer)
       (render-alt-frame
        renderer lines
@@ -290,4 +292,5 @@
       (render-main-frame
        renderer lines
        :cursor-row cursor-row
-       :cursor-column cursor-column)))
+       :cursor-column cursor-column
+       :overlay-active-p overlay-active-p)))

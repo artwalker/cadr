@@ -313,6 +313,7 @@
    #:alt-screen-renderer-p
    #:renderer-viewport-top
    #:renderer-following-output-p
+   #:renderer-set-clear-on-shrink
    #:renderer-start
    #:renderer-before-stop
    #:renderer-after-stop
