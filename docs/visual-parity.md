@@ -290,6 +290,15 @@ one `Spacer(1)` above the baseline `Text(..., outputPad=1)` rendering: one blank
 row, then one horizontal padding cell followed by `Operation aborted`, with no
 `Abort requested`, `session>`, `SB-SYS`, `SSL_`, or `../ssl/` row.
 
+Goal 15 closes the remaining busy/local-status composition gap: pending
+steering/follow-up rows and the active loader use the baseline component's
+one-cell horizontal padding and complete width; dequeue copy is generated from
+the configured `app.message.dequeue` key. Consecutive `/export` and `/reload`
+results travel through the same replaceable status channel, so only the latter
+remains visible. The real-controller regressions are
+`GOAL15-BUSY-STATUS-AND-QUEUED-MESSAGES-USE-BASELINE-TEXT-PADDING` and
+`GOAL15-CONSECUTIVE-LOCAL-COMMAND-STATUSES-REPLACE-THROUGH-THE-REAL-TUI`.
+
 ### B2 基础屏幕整屏合约
 
 用户 A/B 先后发现最后一行 transcript 与 editor 上边框过近，以及短会话整体被锚在
@@ -326,7 +335,7 @@ provider/model/cwd，并对 virtual terminal 全屏逐字节计算 SHA-256：
 | thinking | 80×24 | `029DB78936CC5F7F1A549ADBF4F6DA50F9968AD81F1398C6FD1672ED96BACD4F` |
 | tool-collapsed | 80×24 | `6DEE222A9E0C83464F53AD8653FCBDCE15FD63D294638EB3374D74094236DEFE` |
 | tool-expanded | 80×24 | `200859C6BA14DE80DD2C7F432BEDD659C66B7A9B58EE5A50410A6E6AC59E03AF` |
-| active-status | 80×24 | `F74BC8FFEBA3B20C90FA72E6FFA1AD1440FF8E0F10F6B91BDB996E62AD3A4538` |
+| active-status | 80×24 | `0B5F0BE1E3198B974634214CCB4C2E37360C834FDA34D8D1AE68EDF9B23E207C` |
 | above-widget | 80×24 | `1B2E5A37C04D1A3621244D7F2E094C5C7340772CB0C39A15F05D38A5B9A6C406` |
 | below-widget | 80×24 | `D6303174613AA56EACF5A0F79927B771449EDCB93CBCED5F5B66AC124C537A40` |
 | overflow-scrolled-to-top | 52×14 | `D15615BBF1F0A2F18155DAF639EAD4A2F49DAF29DA38ABF2D95A170242A5BEFD` |

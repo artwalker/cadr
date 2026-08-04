@@ -35,12 +35,10 @@
           (tui-state-follow-up-messages state)))
     (when (or steering follow-up)
       (flet ((pending-line (text)
-               (cadr-tui:theme-foreground
-                :dim
-                (cadr-tui:truncate-to-width
-                 (concatenate 'string " " text)
-                 width "")
-                :enabled-p t)))
+               (component-text-line
+                (cadr-tui:theme-foreground
+                 :dim text :enabled-p t)
+                width)))
         (nconc
          (list "")
          (mapcar
@@ -60,8 +58,6 @@
            (format
             nil "↳ ~A to edit all queued messages"
             (or
-             (first
-              (cadr-tui:keybinding-keys
-               (cadr-tui:get-keybindings)
-               "app.message.dequeue"))
-             "alt+up")))))))))
+             (key-display-text
+              "app.message.dequeue")
+             "Alt+Up")))))))))

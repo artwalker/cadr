@@ -467,12 +467,10 @@
            :cancel-function (constantly nil))))
        (values t nil))
       ((string= line "/reload")
-       (let ((message nil))
-         (cadr-cli::reload-cli-runtime
-          agent settings-manager
-          :completion-function
-          (lambda (text) (setf message text)))
-         (values t message)))
+       (cadr-cli::reload-cli-runtime
+        agent settings-manager
+        :completion-function status-consumer)
+       (values t nil))
       (t
        (let ((output (make-string-output-stream)))
          (if
@@ -480,7 +478,8 @@
               line agent
               :directory session-directory
               :cwd cwd
-              :output output)
+              :output output
+              :status-function status-consumer)
              (values t (get-output-stream-string output))
              (values nil nil)))))))
 

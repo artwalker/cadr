@@ -113,15 +113,20 @@
      (make-string padding
                   :initial-element #\Space))))
 
-(defun selector-component-text-line
+(defun component-text-line
     (line width &key (padding-x 1))
-  "Render one already-styled line with Pi Text/TruncatedText margins."
+  "Render one already-styled line with Pi Text component margins."
   (let ((margin
           (make-string (max 0 padding-x)
                        :initial-element #\Space)))
     (selector-fit-line
      (concatenate 'string margin line margin)
      width :pad-p t)))
+
+(defun selector-component-text-line
+    (line width &key (padding-x 1))
+  (component-text-line
+   line width :padding-x padding-x))
 
 (defun selector-border-line
     (width &optional (color :border))

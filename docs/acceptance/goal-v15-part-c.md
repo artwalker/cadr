@@ -289,3 +289,26 @@ because `ANTHROPIC_API_KEY` is absent, and recorded 32 checks: 31 pass, one
 credential skip, zero failures. The real PTY contract now also consumes the
 baseline-width Input row; its stale short-row oracle was the sole failure in
 the preceding verifier run and was corrected before this clean rerun.
+
+## Batch 4: D14-D15 busy and local-command status composition
+
+Commit: the batch commit containing this section.
+
+### Result
+
+| ID | Fixed-baseline contract | Cadr implementation | Independent regression |
+|---|---|---|---|
+| D14 | `interactive-mode.ts:4045-4061` renders queued messages as padded, fixed-width `Text`/`TruncatedText` rows and derives the dequeue key from `app.message.dequeue`; `packages/tui/src/components/loader.ts:43-45` gives the loader one horizontal padding cell. | `interactive/pending-messages.lisp:31-61` and `interactive/status.lisp:421-461` now reuse the shared component text-line primitive from `interactive/selectors/common.lisp:116-128`; queued rows and `Working...` occupy the complete component width, and configurable key display retains baseline `Alt+Up` spelling. | `GOAL15-BUSY-STATUS-AND-QUEUED-MESSAGES-USE-BASELINE-TEXT-PADDING`, plus the existing base-screen active-status and real busy-interaction oracles. |
+| D15 | `interactive-mode.ts:3232-3247` replaces the preceding status component; `/reload` (`:5453-5460`) and `/export` (`:5471-5511`) both use that channel. | `bootstrap/sessions.lisp:1156-1172,1362-1377` accepts the same status callback used by reload; `bootstrap/commands.lisp:1079-1085` wires it into production. The differential driver now exercises that real channel instead of converting command output into non-coalescing notices. | `GOAL15-EXPORT-AND-RELOAD-SHARE-BASELINE-STATUS-REPLACEMENT-CHANNEL`; `GOAL15-CONSECUTIVE-LOCAL-COMMAND-STATUSES-REPLACE-THROUGH-THE-REAL-TUI`. |
+
+Both original regressions were red before implementation. D14 rendered only
+19 visible cells inside a 40-cell component and used lowercase `alt+up`.
+D15 left both export and reload lines visible. The first D15 unit regression
+proved callback routing but was not sufficient: the real controller test and
+differential harness exposed that their fixture still converted command
+results to notices. The fixture now follows production's status callback, and
+the real controller retains only `Reloaded keybindings`.
+
+Fresh wide and narrow captures show matching queue/status row geometry and
+status replacement. D14 and D15 were removed from the fail-closed disposition
+ledger; I01 remains the sole class on the affected checkpoints.

@@ -1164,6 +1164,7 @@
          #'default-share-command-runner)
        changelog-path
        keybindings
+       status-function
        export-options-function
        (confirm-function
          (lambda (title message)
@@ -1364,8 +1365,13 @@
               (or (funcall export-options-function)
                   nil)
               nil))
-         (format output "Session exported to: ~A~%"
-                 (file-namestring path))
-         (finish-output output)
+         (let ((message
+                 (format nil "Session exported to: ~A"
+                         (file-namestring path))))
+           (if status-function
+               (funcall status-function message)
+               (progn
+                 (format output "~A~%" message)
+                 (finish-output output))))
          t))
       (t nil))))

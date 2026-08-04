@@ -193,7 +193,7 @@
       '(""
         " Steering: change direction"
         " Follow-up: after this"
-        " ↳ alt+up to edit all queued messages")
+        " ↳ Alt+Up to edit all queued messages")
       (mapcar
        (lambda (line)
          (string-right-trim
@@ -208,7 +208,7 @@
       (let ((screen (format nil "~{~A~^~%~}" lines)))
         (is (search "Steering: change direction" screen))
         (is (search "Follow-up: after this" screen))
-        (is (search "alt+up to edit all queued messages" screen))))))
+        (is (search "Alt+Up to edit all queued messages" screen))))))
 
 (test goal10-busy-tui-dequeue-restores-both-queues-to-the-editor
   (let ((started (sb-thread:make-semaphore :count 0))
@@ -292,7 +292,7 @@
                 :content "later")))
              (is
               (search
-               "ctrl+g to edit all queued messages"
+               "Ctrl+G to edit all queued messages"
                (format
                 nil "~{~A~^~%~}"
                 (cadr-cli::render-tui-pending-message-lines

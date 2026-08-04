@@ -1081,6 +1081,7 @@
              :directory session-directory
              :cwd cwd
              :output frontend-output
+             :status-function status-consumer
              :keybindings
              (settings-keybindings
               settings-manager)

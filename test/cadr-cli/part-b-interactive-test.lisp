@@ -93,9 +93,12 @@
      nil 20)))
   (is
    (equal
-    (list
+     (list
      ""
-     "⠋ Retrying (1/3) in 1s...")
+     (concatenate
+      'string
+      " ⠋ Retrying (1/3) in 1s..."
+      (make-string 14 :initial-element #\Space)))
     (mapcar
      #'cadr-tui:strip-terminal-sequences
      (cadr-cli::render-tui-status-indicator

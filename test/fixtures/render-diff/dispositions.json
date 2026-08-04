@@ -14,14 +14,6 @@
       "kind": "cadr-defect",
       "summary": "The untrusted-project warning emitted by the baseline is absent."
     },
-    "D14": {
-      "kind": "cadr-defect",
-      "summary": "Busy-state queue and Working output differ in left padding and Alt+Up key spelling."
-    },
-    "D15": {
-      "kind": "cadr-defect",
-      "summary": "Status replacement semantics differ: /reload leaves the preceding /export status visible."
-    },
     "D16": {
       "kind": "cadr-defect",
       "summary": "Fatal output is written before clean terminal teardown and overwrites the editor/footer region."
@@ -71,7 +63,7 @@
     { "scenario": "overlays-auth", "checkpoint": "login-cancelled", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "overlays-auth", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "stream-interrupt-queue", "checkpoint": "busy-queue", "dimensions": ["wide", "narrow"], "classes": ["I01", "D14"] },
+    { "scenario": "stream-interrupt-queue", "checkpoint": "busy-queue", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "stream-interrupt-queue", "checkpoint": "stream-aborted", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "stream-interrupt-queue", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
@@ -79,8 +71,8 @@
     { "scenario": "provider-error", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
     { "scenario": "commands-and-exit", "checkpoint": "slash-export", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-and-exit", "checkpoint": "slash-reload", "dimensions": ["wide", "narrow"], "classes": ["I01", "D15"] },
-    { "scenario": "commands-and-exit", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01", "D15"] },
+    { "scenario": "commands-and-exit", "checkpoint": "slash-reload", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "commands-and-exit", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
     { "scenario": "fatal-crash", "checkpoint": "fatal-crash", "dimensions": ["wide", "narrow"], "classes": ["I01", "I02", "D16"] }
   ]

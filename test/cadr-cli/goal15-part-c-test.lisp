@@ -518,3 +518,87 @@
        (search
         (cadr-tui:theme-foreground :muted description)
         line)))))
+
+(test goal15-busy-status-and-queued-messages-use-baseline-text-padding
+  ;; pi@74caa2649 TruncatedText and Loader both inherit Text's paddingX=1.
+  ;; The dequeue hint uses keyDisplayText, which capitalizes Alt+Up.
+  (let* ((width 40)
+         (state
+           (cadr-cli::make-tui-state :model "faux")))
+    (setf
+     (cadr-cli::tui-state-steering-messages state)
+     (list (cadr-ai:make-user-message :content "redirect"))
+     (cadr-cli::tui-state-follow-up-messages state)
+     (list (cadr-ai:make-user-message :content "later")))
+    (let ((lines
+            (cadr-cli::render-tui-pending-message-lines
+             state width)))
+      (is (string= "" (first lines)))
+      (dolist (line (rest lines))
+        (let ((plain
+                (cadr-tui:strip-terminal-sequences line)))
+          (is (= width (cadr-tui:visible-width plain)))
+          (is (char= #\Space (char plain 0)))
+          (is (char= #\Space (char plain (1- width))))))
+      (is
+       (search
+        "↳ Alt+Up to edit all queued messages"
+        (cadr-tui:strip-terminal-sequences
+         (car (last lines))))))
+    (let* ((lines
+             (cadr-cli::render-tui-status-indicator
+              "Working..." width :spinner-frame "x"))
+           (plain
+             (cadr-tui:strip-terminal-sequences
+              (second lines))))
+      (is (string= "" (first lines)))
+      (is (= width (cadr-tui:visible-width plain)))
+      (is (uiop:string-prefix-p " x Working..." plain))
+      (is (char= #\Space (char plain (1- width)))))))
+
+(test goal15-export-and-reload-share-baseline-status-replacement-channel
+  ;; interactive-mode.ts:3266-3281,5471-5511 sends both commands through
+  ;; showStatus, so adjacent statuses replace rather than accumulate.
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "goal15-status" :timestamp 0))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (state
+             (cadr-cli::make-tui-state :model "mock"))
+           (output (make-string-output-stream))
+           (status-function
+             (lambda (text)
+               (cadr-cli::add-tui-status state text))))
+      (declare (ignore _))
+      (is
+       (cadr-cli::handle-session-command
+        "/export" agent
+        :directory sessions :cwd cwd :output output
+        :status-function status-function))
+      (is (string= "" (get-output-stream-string output)))
+      (is (= 1 (length (cadr-cli::tui-state-entries state))))
+      (is
+       (uiop:string-prefix-p
+        "Session exported to: cadr-session-"
+        (cadr-cli::tui-entry-text
+         (first (cadr-cli::tui-state-entries state)))))
+      (funcall
+       status-function
+       "Reloaded keybindings, extensions, skills, prompts, themes, and context files")
+      (is (= 1 (length (cadr-cli::tui-state-entries state))))
+      (is
+       (string=
+        "Reloaded keybindings, extensions, skills, prompts, themes, and context files"
+        (cadr-cli::tui-entry-text
+         (first (cadr-cli::tui-state-entries state))))))))

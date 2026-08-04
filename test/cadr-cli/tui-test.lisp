@@ -2938,7 +2938,9 @@
                 (retry-ansi (second retry)))
            (is (string= "" (first working)))
            (is (string=
-                "⠋ Working..."
+                (concatenate
+                 'string " ⠋ Working..."
+                 (make-string 27 :initial-element #\Space))
                 (cadr-tui:strip-terminal-sequences
                  working-ansi)))
            (is (search
@@ -4080,6 +4082,50 @@
          (sb-thread:wait-on-semaphore release-worker :timeout 2d0)
          nil)))
     (is (not (null screen-checked-p)))))
+
+(test goal15-consecutive-local-command-statuses-replace-through-the-real-tui
+  ;; interactive-mode.ts:3232-3247 keeps one status component when local
+  ;; commands emit status back-to-back through the live controller bridge.
+  (let ((status-function nil))
+    (let ((state
+            (cadr-cli::run-tui
+             (constantly nil)
+             :model "mock"
+             :terminal
+             (make-instance
+              'footer-sync-test-terminal
+              :columns 90 :rows 16
+              :inputs
+              (list
+               (footer-sync-submit-input "/export")
+               (footer-sync-wait-for-screen-text
+                "Session exported to:")
+               (footer-sync-submit-input "/reload")
+               (footer-sync-wait-for-screen-text
+                "Reloaded keybindings")
+               (footer-sync-submit-input "/quit")))
+             :set-status-consumer
+             (lambda (function)
+               (setf status-function function))
+             :command-function
+             (lambda (line)
+               (cond
+                 ((string= line "/export")
+                  (funcall status-function
+                           "Session exported to: cadr-session.html")
+                  t)
+                 ((string= line "/reload")
+                  (funcall status-function
+                           "Reloaded keybindings")
+                  t))))))
+      (is
+       (equal
+        '((:status "Reloaded keybindings"))
+        (loop
+          for entry in (cadr-cli::tui-state-entries state)
+          collect
+          (list (cadr-cli::tui-entry-type entry)
+                (cadr-cli::tui-entry-text entry))))))))
 
 (test goal13-agent-lifecycle-alone-controls-working-indicator
   (let ((state (cadr-cli::make-tui-state)))

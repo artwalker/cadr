@@ -479,7 +479,12 @@
               plain :start (1+ editor-top))))
       (is
        (equal
-        '("" "⠋ Working..." "" "above widget")
+        (list
+         ""
+         (concatenate
+          'string " ⠋ Working..."
+          (make-string 47 :initial-element #\Space))
+         "" "above widget")
         (subseq plain (1+ answer) editor-top)))
       (is (string= "below widget"
                    (nth (1+ editor-bottom) plain)))
@@ -579,7 +584,7 @@
             ("thinking" . "029DB78936CC5F7F1A549ADBF4F6DA50F9968AD81F1398C6FD1672ED96BACD4F")
             ("tool-collapsed" . "6DEE222A9E0C83464F53AD8653FCBDCE15FD63D294638EB3374D74094236DEFE")
             ("tool-expanded" . "200859C6BA14DE80DD2C7F432BEDD659C66B7A9B58EE5A50410A6E6AC59E03AF")
-            ("active-status" . "F74BC8FFEBA3B20C90FA72E6FFA1AD1440FF8E0F10F6B91BDB996E62AD3A4538")
+            ("active-status" . "0B5F0BE1E3198B974634214CCB4C2E37360C834FDA34D8D1AE68EDF9B23E207C")
             ("above-widget" . "1B2E5A37C04D1A3621244D7F2E094C5C7340772CB0C39A15F05D38A5B9A6C406")
             ("below-widget" . "D6303174613AA56EACF5A0F79927B771449EDCB93CBCED5F5B66AC124C537A40")
             ("overflow-scrolled-to-top" . "D15615BBF1F0A2F18155DAF639EAD4A2F49DAF29DA38ABF2D95A170242A5BEFD")

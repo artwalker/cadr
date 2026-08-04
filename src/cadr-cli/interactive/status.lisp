@@ -433,10 +433,12 @@
                (separator
                  (if (plusp (length frame))
                      " " ""))
+               (inner-width
+                 (max 0 (- width 2)))
                (available
                  (max
                   0
-                  (- width
+                  (- inner-width
                      (cadr-tui:visible-width frame)
                      (length separator))))
                (trimmed-message
@@ -450,15 +452,16 @@
                      :accent)))
           (list
            ""
-           (concatenate
-            'string
-            (cadr-tui:theme-foreground
-             spinner-token frame
-             :enabled-p t)
-            separator
-            (cadr-tui:theme-foreground
-             :muted trimmed-message
-             :enabled-p t))))
+           (component-text-line
+            (concatenate
+             'string
+             (cadr-tui:theme-foreground
+              spinner-token frame
+              :enabled-p t)
+             separator
+             (cadr-tui:theme-foreground
+              :muted trimmed-message
+              :enabled-p t))
+            width)))
         (and reserve-idle-p
              (list blank blank)))))
-
