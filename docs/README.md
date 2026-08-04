@@ -36,6 +36,12 @@ remain evidence and must not silently override a current contract.
 - [code-organization.md](code-organization.md): permanent directory ownership,
   converged policy primitives, anti-bypass tests, and reviewed large-file
   symptom gate for maintainable future development.
+- [development-policy.md](development-policy.md): user-adjudicated permanent
+  development constraints, including the single product-identity owner and
+  exact exception process.
+- [product-identity-allowlist.json](product-identity-allowlist.json): exact,
+  fail-closed dispositions for retained upstream contracts and provenance;
+  opaque assets are locked by SHA-256.
 
 These four ledgers are independent: behavior, source, non-functional, and
 presentation evidence cannot substitute for one another. The runnable-example

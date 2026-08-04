@@ -134,6 +134,13 @@ run_code_organization_gate() {
       --manifest "$PROJECT_DIRECTORY/docs/code-organization-exemptions.json"
 }
 
+run_product_identity_gate() {
+  python3 "$PROJECT_DIRECTORY/test/product-identity-gate-test.py" &&
+    python3 "$PROJECT_DIRECTORY/scripts/check-product-identity.py" \
+      --root "$PROJECT_DIRECTORY" \
+      --manifest "$PROJECT_DIRECTORY/docs/product-identity-allowlist.json"
+}
+
 run_render_diff_gate() {
   python3 -u "$PROJECT_DIRECTORY/test/render-diff-gate-test.py" &&
     python3 -u "$PROJECT_DIRECTORY/scripts/render-diff.py" gate \
@@ -196,10 +203,17 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "product identity gate" \
+    run_product_identity_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic "product identity gate" "code organization gate failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "real source parity ledger" \
     run_source_parity_ledger_gate || DETERMINISTIC_READY=0
 else
-  skip_deterministic "real source parity ledger" "code organization gate failed"
+  skip_deterministic "real source parity ledger" "product identity gate failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

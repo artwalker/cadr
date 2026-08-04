@@ -1,0 +1,2021 @@
+{
+  "schema": 1,
+  "expected_findings": 274,
+  "allow": [
+    {
+      "path": "CHANGELOG.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_BASE_URL",
+      "line": "  and `PI_CL_BASE_URL`; use the `CADR_*` names.",
+      "occurrences": 1,
+      "reason": "Immutable migration history records a removed legacy environment name; no runtime reader remains."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_MODEL",
+      "line": "- Removed the completed `0.1.x` fallback for `PI_CL_PROVIDER`, `PI_CL_MODEL`,",
+      "occurrences": 1,
+      "reason": "Immutable migration history records a removed legacy environment name; no runtime reader remains."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_PROVIDER",
+      "line": "- Removed the completed `0.1.x` fallback for `PI_CL_PROVIDER`, `PI_CL_MODEL`,",
+      "occurrences": 1,
+      "reason": "Immutable migration history records a removed legacy environment name; no runtime reader remains."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "- Replaced the remaining 14 production `PI_*` environment names with their",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, automated the",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  and environment namespace from the migration-era `pi-cl` names to Cadr while",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  package, session-tree, compaction, and RPC compatibility with original pi.",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  still presented Cadr as pi.",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  the CLI identity also records alignment with pi `v0.83.0` plus 38 commits at",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Aligned the security model with original pi: tools execute directly by",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Fixed automatic version checks comparing upstream pi `0.83.x` releases with",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "  `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, automated the",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_CACHE_RETENTION",
+      "line": "| `PI_CACHE_RETENTION` | `CADR_CACHE_RETENTION` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_",
+      "line": "| `PI_CL_*` | `CADR_*` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_BASE_URL",
+      "line": "Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` were readable only",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_MODEL",
+      "line": "Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` were readable only",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_CL_PROVIDER",
+      "line": "Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` were readable only",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_CONFIG_DIR",
+      "line": "| `PI_CONFIG_DIR` | `CADR_CONFIG_DIR` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_EVAL_ARTIFACT_DIR",
+      "line": "| `PI_EVAL_ARTIFACT_DIR` | `CADR_EVAL_ARTIFACT_DIR` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_EXPERIMENTAL",
+      "line": "| `PI_EXPERIMENTAL` | `CADR_EXPERIMENTAL` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_MODEL",
+      "line": "| `PI_MODEL` | `CADR_EVAL_MODEL` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_OFFLINE",
+      "line": "| `PI_OFFLINE` | `CADR_OFFLINE` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_PROVIDER",
+      "line": "| `PI_PROVIDER` | `CADR_EVAL_PROVIDER` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_RADIUS_SERVER_URL",
+      "line": "| `PI_RADIUS_SERVER_URL` | `CADR_RADIUS_SERVER_URL` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_RADIUS_URL",
+      "line": "| `PI_RADIUS_URL` | `CADR_RADIUS_URL` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_SERVER_CADR_PATH",
+      "line": "| `PI_SERVER_CADR_PATH` | `CADR_SERVER_CADR_PATH` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_SERVER_DIR",
+      "line": "| `PI_SERVER_DIR` | `CADR_SERVER_DIR` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_SHARE_VIEWER_URL",
+      "line": "| `PI_SHARE_VIEWER_URL` | `CADR_SHARE_VIEWER_URL` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_SKIP_VERSION_CHECK",
+      "line": "| `PI_SKIP_VERSION_CHECK` | `CADR_SKIP_VERSION_CHECK` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "legacy-env",
+      "token": "PI_TIMING",
+      "line": "| `PI_TIMING` | `CADR_TIMING` |",
+      "occurrences": 1,
+      "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  --pi-repo . --output /tmp/cadr-render-gate \\",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  attributing Cadr traffic to the reference client's `originator=pi`.",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  pi's logo. This is a branding difference only; the page shell, copy, styling,",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  redacted summary and private `0600` crash-log path instead of pi's terminal",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  runtime debugging service. Original pi has no equivalent in-process Lisp",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  the few original pi selectors that clamp at a boundary.",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "## Differences from TypeScript pi",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "## Relationship to pi",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "At startup, when `~/.pi-cl/` exists and `~/.cadr/` does not, an interactive",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "It also exposes the original pi lifecycle events, runtime tool/provider",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Like original pi, `cadr` executes validated tool calls directly by default.",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Thanks to the pi authors and contributors for the design and reference",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "[`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`](https://github.com/earendil-works/pi/tree/74caa2649f10ed71b4378ce69f5d9fbfd2466ca5).",
+      "occurrences": 2,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "command surface follows the original pi command list. `--session` accepts a",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "implementations and compares pi's actual PTY output with Cadr's. It is a",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "introduced. Proposed mechanisms beyond original pi belong in",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "original pi command/response/event JSONL protocol. Without an explicit mode,",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "the original pi project or its maintainers. Both projects use the MIT License;",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "this project is a second implementation of pi; it also pays tribute to the MIT",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "uses Cadr's own single-path cons-cell grid mark rather than pi's brand asset.",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "with the original pi while remaining idiomatic Lisp.",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "| `pi-agent` | `cadr-agent` |",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "| `pi-ai` | `cadr-ai` |",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "| `pi-cl` | `cadr` |",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "| `pi-cli` | `cadr-cli` |",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "| `pi-tui` | `cadr-tui` |",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "| `~/.pi-cl/` | `~/.cadr/` |",
+      "occurrences": 1,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "[`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`](https://github.com/earendil-works/pi/tree/74caa2649f10ed71b4378ce69f5d9fbfd2466ca5).",
+      "occurrences": 2,
+      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "cadr-ai.asd",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                                           (:file \"pi-messages\")",
+      "occurrences": 1,
+      "reason": "ASDF component name implements the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "cadr-evals.asd",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                             (:file \"pi-harness-test\")",
+      "occurrences": 1,
+      "reason": "Deterministic test component retains its historical baseline-harness filename; it is not shipped product identity."
+    },
+    {
+      "path": "examples/extensions/doom-overlay/doom/build.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"$SOURCE_DIRECTORY/doomgeneric/doomgeneric_pi.c\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline DOOM example adapter filename is an internal pinned build input and produces no Cadr identity output."
+    },
+    {
+      "path": "examples/extensions/doom-overlay/doom/build.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  doomdef.c doomgeneric.c doomgeneric_pi.c doomstat.c dstrings.c f_finale.c \\",
+      "occurrences": 1,
+      "reason": "Fixed-baseline DOOM example adapter filename is an internal pinned build input and produces no Cadr identity output."
+    },
+    {
+      "path": "examples/extensions/doom-overlay/doom/build.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "cp \"$SCRIPT_DIRECTORY/doomgeneric_pi.c\" \\",
+      "occurrences": 1,
+      "reason": "Fixed-baseline DOOM example adapter filename is an internal pinned build input and produces no Cadr identity output."
+    },
+    {
+      "path": "scripts/check-product-identity.py",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "LEGACY_ENVIRONMENT = re.compile(r\"(?<![A-Za-z0-9_])PI_[A-Z0-9_]+(?![A-Za-z0-9_])\")",
+      "occurrences": 1,
+      "reason": "The gate's own exact detection grammar names the forbidden token classes; self-scanned so grammar changes require review."
+    },
+    {
+      "path": "scripts/check-product-identity.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        findings.append(Finding(path, \"pi-token\", match.group(0), line))",
+      "occurrences": 1,
+      "reason": "The gate's own exact detection grammar names the forbidden token classes; self-scanned so grammar changes require review."
+    },
+    {
+      "path": "scripts/check-product-identity.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    r\"(?<![A-Za-z0-9])pi(?=$|[^A-Za-z0-9])\", re.IGNORECASE",
+      "occurrences": 1,
+      "reason": "The gate's own exact detection grammar names the forbidden token classes; self-scanned so grammar changes require review."
+    },
+    {
+      "path": "scripts/check-product-identity.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "VALID_KINDS = frozenset((\"legacy-env\", \"upstream-org\", \"pi-token\"))",
+      "occurrences": 1,
+      "reason": "The gate's own exact detection grammar names the forbidden token classes; self-scanned so grammar changes require review."
+    },
+    {
+      "path": "scripts/check-product-identity.py",
+      "kind": "upstream-org",
+      "token": "badlogic",
+      "line": "UPSTREAM_ORGANIZATION = re.compile(r\"badlogic|earendil-works\", re.IGNORECASE)",
+      "occurrences": 1,
+      "reason": "The gate's own exact detection grammar names the forbidden token classes; self-scanned so grammar changes require review."
+    },
+    {
+      "path": "scripts/check-product-identity.py",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "UPSTREAM_ORGANIZATION = re.compile(r\"badlogic|earendil-works\", re.IGNORECASE)",
+      "occurrences": 1,
+      "reason": "The gate's own exact detection grammar names the forbidden token classes; self-scanned so grammar changes require review."
+    },
+    {
+      "path": "scripts/codex-websocket-cached-probe.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                        \"Turn ~D synthetic record ~3,'0D: alpha beta gamma delta epsilon zeta eta theta iota kappa lambda mu nu xi omicron pi rho sigma tau upsilon phi chi psi omega.~%\"",
+      "occurrences": 1,
+      "reason": "Synthetic fixture spells the Greek alphabet; pi is the mathematical letter, not product identity."
+    },
+    {
+      "path": "scripts/export-ts-payloads.ts",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5\",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
+    },
+    {
+      "path": "scripts/export-ts-payloads.ts",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5\",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
+    },
+    {
+      "path": "scripts/goal11-cold-start.py",
+      "kind": "legacy-env",
+      "token": "PI_CODING_AGENT_DIR",
+      "line": "                \"PI_CODING_AGENT_DIR\",",
+      "occurrences": 1,
+      "reason": "Baseline-only environment input points at the TypeScript coding-agent checkout; Cadr runtime never reads it."
+    },
+    {
+      "path": "scripts/goal11-performance-gate.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            / \"goal-v11-pi-baseline.json\"",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-performance-gate.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        and baseline[\"kind\"] == \"pi-goal11-structural-baseline\"",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tkind: \"pi-goal11-structural-baseline\",",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tprocess.stderr.write(`goal11 pi baseline: N=${count} frame/key/stream/mouse/wheel/append\\n`);",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tthrow new Error(\"usage: goal11-pi-baseline-bench.mjs BASELINE_WORKTREE [--quick]\");",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(`goal11 pi baseline: N=5000 continuous ${continuousEvents} events\\n`);",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/refresh-image-model-catalog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     \";; Generated from the fixed @earendil-works/pi-ai 0.83.0 OpenRouter image catalog.\"",
+      "occurrences": 1,
+      "reason": "Catalog refresh script preserves the immutable pi-ai source provenance in generated output."
+    },
+    {
+      "path": "scripts/refresh-image-model-catalog.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "     \";; Generated from the fixed @earendil-works/pi-ai 0.83.0 OpenRouter image catalog.\"",
+      "occurrences": 1,
+      "reason": "Catalog refresh script preserves the immutable pi-ai source provenance in generated output."
+    },
+    {
+      "path": "scripts/refresh-model-catalog.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     \";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.83.0 catalog snapshot.\"",
+      "occurrences": 1,
+      "reason": "Catalog refresh script preserves the immutable pi-ai source provenance in generated output."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_PACKAGE",
+      "line": "                PI_AI_MODEL_DATA_PACKAGE,",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_PACKAGE",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.83.0\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_SHA256",
+      "line": "        if digest != PI_AI_MODEL_DATA_SHA256:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_SHA256",
+      "line": "PI_AI_MODEL_DATA_SHA256 = \"f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE",
+      "line": "        (str(Path(\"/tmp/cadr-render-diff-pi-74caa2649\")).encode(), b\"<PI_BASELINE>\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_DRIVER",
+      "line": "        shutil.copy2(PI_DRIVER, cache / \"packages/coding-agent/test/goal15-render-driver.ts\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_DRIVER",
+      "line": "    shutil.copy2(PI_DRIVER, target)",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_DRIVER",
+      "line": "PI_DRIVER = ROOT / \"test/fixtures/render-diff/pi-driver.ts\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_OFFLINE",
+      "line": "            \"PI_OFFLINE\": \"1\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "        (b\"Pi can explain its own features\", b\"<PRODUCT_TITLE> can explain its own features\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "        (b\"extend Pi.\", b\"extend <PRODUCT_TITLE>.\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                        \"piScreenSha256\": hashlib.sha256(screens[\"pi\"]).hexdigest(),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                        for side in (\"pi\", \"cadr\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    f\"pi={pi_ids!r} cadr={cadr_ids!r}\"",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    for side in (\"pi\", \"cadr\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    side: checkpoints_by_side[side][index] for side in (\"pi\", \"cadr\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    side: records[side][\"normalizedOffset\"] for side in (\"pi\", \"cadr\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                \"--pi-repo\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                f\"pi-ai model-data artifact SHA-256 mismatch: {digest}\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                f\"{scenario['id']} {args.dimension}: pi={len(captures['pi'])} bytes \"",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                for side in (\"pi\", \"cadr\"):",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                pi_repo=args.pi_repo,",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                raise HarnessFailure(\"pi-ai artifact contains no provider model data\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                raw_summary = raw_difference_summary(segments[\"pi\"], segments[\"cadr\"])",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                screen_equal = screens[\"pi\"] == screens[\"cadr\"]",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                str(args.pi_repo),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             \"--pi-repo\", str(args.pi_repo), \"--scenario\", \"conversation-content\",",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            \"pi\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            args.pi_repo.resolve(), commit, args.baseline_cache.resolve()",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"To resume this session:\\x1b[0m pi \",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"pi-session-2023-11-14T22-13-20-000Z_render-session.html\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.83.0\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"pi\\x1b[39m\\x1b[22m\\x1b[38;2;102;102;102m v0.83.0\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            command.add_argument(\"--side\", choices=(\"pi\", \"cadr\", \"both\"), default=\"both\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            default=Path(\"/tmp/cadr-render-diff-pi-74caa2649\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            for index, checkpoint_id in enumerate(pi_ids):",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            for side in (\"pi\", \"cadr\"):",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            if pi_ids != cadr_ids:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            pi_ids = [item[\"id\"] for item in checkpoints_by_side[\"pi\"]]",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            previous = {\"pi\": 0, \"cadr\": 0}",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            raise HarnessFailure(\"npm pack did not return one pi-ai artifact\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            raise HarnessFailure(\"pi styled product header normalization drifted\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            same = normalized(captures[\"pi\"], \"pi\", sandbox) == normalized(captures[\"cadr\"], \"cadr\", sandbox)",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            str(side_root / (\"x/render-sessions\" if side == \"pi\" else \"render-sessions\")).encode(),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (b\" pi --session \", b\" <PRODUCT> --session \"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (b\"<HOME>/.pi/agent/\", b\"<HOME>/<PRODUCT_CONFIG>/\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (b\"Project .pi resources\", b\"Project <PRODUCT_CONFIG> resources\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (b\"To resume this session: pi \", b\"To resume this session: <PRODUCT> \"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (b\"pi v0.83.0\", b\"<PRODUCT> v<VERSION>\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (b\"restart pi.\", b\"restart <PRODUCT>.\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (str(Path(\"/tmp/cadr-render-diff-pi-74caa2649\")).encode(), b\"<PI_BASELINE>\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        [\"git\", \"-C\", str(pi_repo), \"archive\", \"--format=tar\", commit],",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        command.add_argument(\"--pi-repo\", type=Path, default=ROOT)",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        config_dir = cwd / (\".pi\" if side == \"pi\" else \".cadr\")",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        extract_baseline(pi_repo, commit, temporary)",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"dimension={args.dimension} pi_raw_equal={str(raw_equal['pi']).lower()} \"",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"pi_raw_equal={str(raw_equal['pi']).lower()} \"",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if normalize_fixed_values(pi_header) != expected_header:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if normalized(sample, \"pi\", sandbox) != sample:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.83.0\"",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        sides = (\"pi\", \"cadr\") if args.side == \"both\" else (args.side,)",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    agent_dir = home / (\".pi/agent\" if side == \"pi\" else \".cadr\")",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    escaped_side = re.escape((\"pi00\" if side == \"pi\" else \"cadr\").encode())",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    for side in (\"pi\", \"cadr\"):",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if side == \"pi\":",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    session_dir = side_root / (\"x/render-sessions\" if side == \"pi\" else \"render-sessions\")",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    session_suffix = rb\"/x/render-sessions\" if side == \"pi\" else rb\"/render-sessions\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    side_root = sandbox / (\"pi00\" if side == \"pi\" else \"cadr\")",
+      "occurrences": 2,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\"\"\"Capture and compare fixed-baseline pi and Cadr terminal byte streams.\"\"\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.83.0\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_DRIVER = ROOT / \"test/fixtures/render-diff/pi-driver.ts\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def ensure_baseline(pi_repo: Path, commit: str, cache: Path) -> Path:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def extract_baseline(pi_repo: Path, commit: str, destination: Path) -> None:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.83.0\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      --pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 1,
+      "reason": "Verification passes the repository to the fixed-baseline differential through its --pi-repo contract."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    --exclude=./.pi-cl \\",
+      "occurrences": 1,
+      "reason": "Migration smoke isolation excludes the retired on-disk namespace so user state cannot enter verification."
+    },
+    {
+      "path": "src/cadr-agent/export-html/template.js",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        const baseUrlMeta = document.querySelector('meta[name=\"pi-share-base-url\"]');",
+      "occurrences": 1,
+      "reason": "Approved browser integration meta name is an existing viewer contract; both ends must migrate atomically in a future viewer goal."
+    },
+    {
+      "path": "src/cadr-agent/export-html/template.js",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      const injectedParams = document.querySelector('meta[name=\"pi-url-params\"]');",
+      "occurrences": 1,
+      "reason": "Approved browser integration meta name is an existing viewer contract; both ends must migrate atomically in a future viewer goal."
+    },
+    {
+      "path": "src/cadr-ai/auth/radius-cloudflare.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           :api :pi-messages",
+      "occurrences": 1,
+      "reason": "Radius live discovery fixes pi-gateway as the registered OAuth client and pi-messages as its wire API."
+    },
+    {
+      "path": "src/cadr-ai/auth/radius-cloudflare.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      (\"client_id\" . \"pi-gateway\")",
+      "occurrences": 1,
+      "reason": "Radius live discovery fixes pi-gateway as the registered OAuth client and pi-messages as its wire API."
+    },
+    {
+      "path": "src/cadr-ai/image-models.generated.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";; Generated from the fixed @earendil-works/pi-ai 0.83.0 OpenRouter image catalog.",
+      "occurrences": 1,
+      "reason": "Generated catalog comment preserves the exact fixed pi-ai artifact provenance."
+    },
+    {
+      "path": "src/cadr-ai/image-models.generated.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": ";; Generated from the fixed @earendil-works/pi-ai 0.83.0 OpenRouter image catalog.",
+      "occurrences": 1,
+      "reason": "Generated catalog comment preserves the exact fixed pi-ai artifact provenance."
+    },
+    {
+      "path": "src/cadr-ai/models.generated.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.83.0 catalog snapshot.",
+      "occurrences": 1,
+      "reason": "Generated catalog comment preserves the exact fixed pi-ai artifact provenance."
+    },
+    {
+      "path": "src/cadr-ai/oauth/providers/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +radius-oauth-client-id+ \"pi-gateway\")",
+      "occurrences": 1,
+      "reason": "Radius live discovery fixes pi-gateway as the registered OAuth client and pi-messages as its wire API."
+    },
+    {
+      "path": "src/cadr-ai/package.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   #:make-pi-messages-provider",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/package.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   #:pi-messages-provider",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  pi-messages-provider)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defclass pi-messages-provider (provider) ())",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/provider.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(define-provider-constructor make-pi-messages-provider",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/definitions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     :base-url \"https://radius.pi.dev\"",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/definitions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     :protocol :pi-messages",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/definitions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     :protocols (:pi-messages)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              (pi-message-content",
+      "occurrences": 2,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        \"context\" (pi-context-json context)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ((provider pi-messages-provider) model context",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ((provider pi-messages-provider) model response)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ((provider pi-messages-provider) state event emit)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (let* ((data (pi-event-data event))",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun pi-context-json (context)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun pi-event-data (event)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/pi-messages.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun pi-message-content (content)",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/registry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       (apply #'make-pi-messages-provider common))",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/registry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      (:pi-messages",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   \"~A ~A · aligned with pi ~A (+~D, ~A)\"",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   +cadr-aligned-pi-commit+))",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   +cadr-aligned-pi-distance+",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   +cadr-aligned-pi-release+",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +cadr-aligned-pi-commit+ \"74caa2649\")",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +cadr-aligned-pi-distance+ 38)",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defparameter +cadr-aligned-pi-release+ \"v0.83.0\")",
+      "occurrences": 1,
+      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@74caa2649 settings-manager.ts:1093-1099 gives an explicit setting",
+      "occurrences": 1,
+      "reason": "Source comment pins the baseline file and lines that define the copied setting contract."
+    },
+    {
+      "path": "src/cadr-cli/interactive/components/announcement.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        :accent \"pi has joined Earendil\"))",
+      "occurrences": 1,
+      "reason": "Historical upstream announcement quotes the real pi event; changing it would fabricate history."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/common.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "  \"Render Pi Text-component wrapping and horizontal margins.\"",
+      "occurrences": 1,
+      "reason": "Internal docstring identifies the fixed Pi Text layout semantics being reproduced."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/common.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "  \"Render one already-styled line with Pi Text component margins.\"",
+      "occurrences": 1,
+      "reason": "Internal docstring identifies the fixed Pi Text layout semantics being reproduced."
+    },
+    {
+      "path": "src/cadr-cli/media.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             (* pi absolute))",
+      "occurrences": 1,
+      "reason": "Common Lisp mathematical PI constant used by the Lanczos image-resampling formula."
+    },
+    {
+      "path": "src/cadr-cli/media.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             (/ (* pi absolute) 3d0)))))))",
+      "occurrences": 1,
+      "reason": "Common Lisp mathematical PI constant used by the Lanczos image-resampling formula."
+    },
+    {
+      "path": "src/cadr-cli/media.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "          (/ (sin (/ (* pi absolute) 3d0))",
+      "occurrences": 1,
+      "reason": "Common Lisp mathematical PI constant used by the Lanczos image-resampling formula."
+    },
+    {
+      "path": "src/cadr-cli/media.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       (* (/ (sin (* pi absolute))",
+      "occurrences": 1,
+      "reason": "Common Lisp mathematical PI constant used by the Lanczos image-resampling formula."
+    },
+    {
+      "path": "src/cadr-cli/models/registry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     #'cadr-ai:make-pi-messages-provider)))",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-cli/models/registry.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (:pi-messages",
+      "occurrences": 1,
+      "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-cli/packages/manifest.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                   package \"pi\"))))",
+      "occurrences": 1,
+      "reason": "External extension ecosystem schema uses the package.json pi key; renaming would break existing packages."
+    },
+    {
+      "path": "src/cadr-cli/packages/manifest.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              (read-package-pi-manifest root)",
+      "occurrences": 1,
+      "reason": "External extension ecosystem schema uses the package.json pi key; renaming would break existing packages."
+    },
+    {
+      "path": "src/cadr-cli/packages/manifest.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      (return-from read-package-pi-manifest",
+      "occurrences": 1,
+      "reason": "External extension ecosystem schema uses the package.json pi key; renaming would break existing packages."
+    },
+    {
+      "path": "src/cadr-cli/packages/manifest.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun read-package-pi-manifest (root)",
+      "occurrences": 1,
+      "reason": "External extension ecosystem schema uses the package.json pi key; renaming would break existing packages."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           \"^https://github\\\\.com/(?:badlogic/pi-mono|earendil-works/(?:pi|pi-mono))(?=/|$)\"",
+      "occurrences": 3,
+      "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "upstream-org",
+      "token": "badlogic",
+      "line": "           \"^https://github\\\\.com/(?:badlogic/pi-mono|earendil-works/(?:pi|pi-mono))(?=/|$)\"",
+      "occurrences": 1,
+      "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-cli/support/changelog-share.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "           \"^https://github\\\\.com/(?:badlogic/pi-mono|earendil-works/(?:pi|pi-mono))(?=/|$)\"",
+      "occurrences": 1,
+      "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-evals/suites.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     \"@earendil-works/pi-coding-agent\")))",
+      "occurrences": 1,
+      "reason": "Eval intentionally detects generated extensions that still depend on the legacy TypeScript package."
+    },
+    {
+      "path": "src/cadr-evals/suites.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "     \"@earendil-works/pi-coding-agent\")))",
+      "occurrences": 1,
+      "reason": "Eval intentionally detects generated extensions that still depend on the legacy TypeScript package."
+    },
+    {
+      "path": "src/cadr-server/package.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   #:instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/protocol.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           (\"radiusPiId\" . ,(instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    (radius-reregister-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                  \"https://radius.pi.dev/\")))",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                 (instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              (radius-pi-heartbeats",
+      "occurrences": 2,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            (radius-pi-heartbeats",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            (radius-register-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           (radius-pi-heartbeats",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (heartbeat-radius-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (radius-pi-heartbeats",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (radius-reregister-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       (radius-pi-heartbeats presence))",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       (radius-pi-heartbeats presence)))",
+      "occurrences": 2,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      (return-from radius-reregister-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     (instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (install-pi-heartbeat",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    :reader radius-pi-heartbeats)",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "   (pi-heartbeats",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (when (instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defgeneric radius-disconnect-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defgeneric radius-register-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defmethod radius-disconnect-pi",
+      "occurrences": 2,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defmethod radius-register-pi",
+      "occurrences": 2,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun heartbeat-radius-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun install-pi-heartbeat",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/radius.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun radius-reregister-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/storage.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            . ,(instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/storage.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "     :radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                  (radius-register-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "               (radius-disconnect-pi",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        (radius-disconnect-pi",
+      "occurrences": 2,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       (instance-record-radius-pi-id",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       (radius-pi-id nil radius-pi-id-p))",
+      "occurrences": 2,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       radius-pi-id))",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/supervisor.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    (when radius-pi-id-p",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-server/types.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  radius-pi-id)",
+      "occurrences": 1,
+      "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
+    },
+    {
+      "path": "src/cadr-tui/composition/protocol.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (format nil \"~C_pi:c~C\" #\\Escape (code-char 7)))",
+      "occurrences": 1,
+      "reason": "Private baseline cursor marker is a renderer protocol sentinel, never visible product copy."
+    }
+  ],
+  "opaque_files": [
+    {
+      "path": "src/cadr-agent/export-html/vendor/highlight.min.js",
+      "sha256": "837a6fa5b0c736b52bbde2b2b6190f305da3fc9ed41681db5321507057b5c846",
+      "reason": "Exact vendored Highlight.js 11.9.0 bytes contain pi only in Lua and R mathematical builtin lists; digest lock prevents this exemption from covering any asset change."
+    }
+  ]
+}

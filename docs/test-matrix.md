@@ -38,6 +38,14 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 | Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
 | Release-local verification | root `build.sh` → `scripts/check-root-binary.sh` → `scripts/verify.sh`, plus `build-server.sh` | Root `cadr` must be strictly newer than the latest `src/` commit and filesystem edit; deterministic checks pass in the root test and both isolated builds; Goal 11 budgets, retained harnesses, and all available live paths pass |
 
+## Goal 16: product identity boundary
+
+| Contract | Coverage | Evidence |
+|---|---|---|
+| One private product identity owner | `GOAL16-PRODUCT-IDENTITY-HAS-ONE-PRIVATE-OWNER`, `GOAL16-THIRD-PARTY-ATTRIBUTION-USES-CADR-IDENTITY` | Slug, display name, repository URL and default share viewer derive from `src/cadr-ai/support/release.lisp`; provider attribution uses Cadr identity while exact external contracts remain unchanged |
+| Exact fail-closed identity inventory | `test/product-identity-gate-test.py`, `scripts/check-product-identity.py`, `docs/product-identity-allowlist.json` | Synthetic regressions reject unknown, moved, duplicated, wildcard, empty-reason and digest-drift entries; the same gate scans the real production tree and requires its full finding count to equal the exact manifest |
+| Release-gate integration | `scripts/verify.sh` stage `product identity gate` | Synthetic and real-tree checks run after code organization and before source parity, FiveAM, builds, harnesses or live work; failure blocks every later deterministic stage |
+
 ## Phase 1: cadr-ai
 
 | TypeScript behavior source | Common Lisp coverage | Evidence |

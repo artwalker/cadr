@@ -529,6 +529,8 @@ introduced. Proposed mechanisms beyond original pi belong in
 ./scripts/check-root-binary.sh
 python3 ./scripts/check-code-organization.py \
   --root . --manifest docs/code-organization-exemptions.json
+python3 ./scripts/check-product-identity.py \
+  --root . --manifest docs/product-identity-allowlist.json
 python3 ./scripts/render-diff.py gate \
   --pi-repo . --output /tmp/cadr-render-gate \
   --analysis-output /tmp/cadr-render-gate-analysis
