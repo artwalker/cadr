@@ -17,7 +17,9 @@
   max-attempts
   delay-ms
   success
-  final-error)
+  final-error
+  source
+  reason)
 
 (defstruct (agent
             (:constructor %make-agent))
@@ -94,7 +96,9 @@
                            max-attempts
                            delay-ms
                            success
-                           final-error)
+                           final-error
+                           source
+                           reason)
   (let ((event
           (make-agent-event
            :type type
@@ -113,7 +117,9 @@
            :max-attempts max-attempts
            :delay-ms delay-ms
            :success success
-           :final-error final-error)))
+           :final-error final-error
+           :source source
+           :reason reason)))
     (when (agent-on-event agent)
       (sb-thread:with-recursive-lock
           ((agent-event-lock agent))

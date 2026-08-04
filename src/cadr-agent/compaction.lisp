@@ -188,7 +188,7 @@
 
 (defun generate-compaction-summary
     (agent source-entries max-output-tokens
-     &optional custom-instructions)
+     &optional custom-instructions (reason :manual))
   (let* ((prompt
            (format
             nil
@@ -203,10 +203,8 @@
              custom-instructions)
             (entries-summary-text source-entries)))
          (response
-           (funcall
-            (agent-stream-function agent)
-            (agent-provider agent)
-            (agent-model agent)
+           (complete-summarization
+            agent
             (cadr-ai:make-context
              :system-prompt
              "You produce faithful context checkpoint summaries."
@@ -214,15 +212,11 @@
              (list
               (cadr-ai:make-user-message :content prompt))
              :tools nil)
-            (lambda (event)
-              (declare (ignore event)))
-            :max-tokens
             (min max-output-tokens
                  (cadr-ai:model-max-tokens
                   (agent-model agent)))
-            :abort-p
-            (lambda ()
-              (agent-aborted-p agent))))
+            :compaction
+            :reason reason))
          (summary
            (if response
                (assistant-message-text response)
@@ -392,7 +386,8 @@
                    (car (last entries))))
             (return-from %compact-agent nil))
           (emit-agent-event
-           agent :compaction-start)
+           agent :compaction-start
+           :reason reason)
           (handler-case
               (let* ((before
                        (run-compaction-lifecycle
@@ -421,7 +416,7 @@
                              (getf extension-compaction :summary)
                              (generate-compaction-summary
                               agent source-entries reserve
-                              custom-instructions)))
+                              custom-instructions reason)))
                        (first-kept-entry-id
                          (if from-extension-p
                              (getf extension-compaction

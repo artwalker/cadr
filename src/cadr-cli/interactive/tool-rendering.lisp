@@ -397,6 +397,22 @@
       cwd (cadr-ai:tool-call-arguments call)))
     (t (values "" nil))))
 
+(defun summarization-status-message (source reason)
+  (let ((cancel-hint
+          (format nil "(~A to cancel)"
+                  (key-text "app.interrupt"))))
+    (if (eq source :branch-summary)
+        (format nil "Summarizing branch... ~A" cancel-hint)
+        (case reason
+          (:threshold
+           (format nil "Auto-compacting... ~A" cancel-hint))
+          (:overflow
+           (format nil
+                   "Context overflow detected, Auto-compacting... ~A"
+                   cancel-hint))
+          (otherwise
+           (format nil "Compacting context... ~A" cancel-hint))))))
+
 (defun truncation-presentation-warning
     (truncation &key limit-kind limit-count
                        lines-truncated-p full-output-path
@@ -854,7 +870,33 @@
       (:compaction-start
        (setf
         (tui-state-status-message state)
-        "Compacting context..."))
+        (summarization-status-message
+         :compaction
+         (cadr-agent:agent-event-reason event))))
+      (:summarization-retry-scheduled
+       (add-tui-error
+        state
+        (or (cadr-agent:agent-event-error-message event)
+            "Unknown error"))
+       (setf
+        (tui-state-status-message state)
+        (format nil "Retrying (~D/~D) in ~Ds..."
+                (or (cadr-agent:agent-event-attempt event) 0)
+                (or (cadr-agent:agent-event-max-attempts event) 0)
+                (ceiling
+                 (or (cadr-agent:agent-event-delay-ms event) 0)
+                 1000))))
+      (:summarization-retry-attempt-start
+       (setf
+        (tui-state-status-message state)
+        (summarization-status-message
+         (cadr-agent:agent-event-source event)
+         (cadr-agent:agent-event-reason event))))
+      (:summarization-retry-finished
+       (when (and (tui-state-status-message state)
+                  (search "Retrying ("
+                          (tui-state-status-message state)))
+         (setf (tui-state-status-message state) nil)))
       (:compaction-end
        (setf
         (tui-state-status-message state)

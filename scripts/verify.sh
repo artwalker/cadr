@@ -225,10 +225,18 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "summarization choke point" \
+    "$PROJECT_DIRECTORY/scripts/test-summarization-choke-point.sh" ||
+    DETERMINISTIC_READY=0
+else
+  skip_deterministic "summarization choke point" "source parity ledger prerequisite failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "deterministic FiveAM" \
     "$PROJECT_DIRECTORY/scripts/test-cl.sh" || DETERMINISTIC_READY=0
 else
-  skip_deterministic "deterministic FiveAM" "source parity ledger prerequisite failed"
+  skip_deterministic "deterministic FiveAM" "summarization choke point failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ] && copy_isolated_tree; then

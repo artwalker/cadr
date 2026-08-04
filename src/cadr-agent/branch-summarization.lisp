@@ -153,17 +153,14 @@
              (format nil "<conversation>~%~A~%</conversation>~%~%~A"
                      conversation instructions))
            (response
-             (funcall
-              (agent-stream-function agent)
-              (agent-provider agent)
-              model
+             (complete-summarization
+              agent
               (cadr-ai:make-context
                :system-prompt +summarization-system-prompt+
                :messages (list (cadr-ai:make-user-message :content prompt))
                :tools nil)
-              (lambda (event) (declare (ignore event)))
-              :max-tokens 2048
-              :abort-p (lambda () (agent-aborted-p agent)))))
+              2048
+              :branch-summary)))
       (when (or (null response)
                 (eq :aborted (cadr-ai:assistant-message-stop-reason response)))
         (return-from generate-branch-summary nil))

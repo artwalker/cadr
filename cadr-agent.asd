@@ -55,6 +55,7 @@
                                (:file "commands")
                                (:file "lifecycle")))
                              (:file "tool")
+                             (:file "summarization")
                              (:file "compaction")
                              (:file "branch-summarization")
                              (:file "proxy")

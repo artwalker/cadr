@@ -17,8 +17,11 @@
 
 (defun faux-stream (responses captured-contexts)
   (lambda (provider model context on-event
-           &key max-tokens temperature abort-p)
-    (declare (ignore provider model max-tokens temperature))
+           &key max-tokens temperature abort-p
+             cache-retention session-id)
+    (declare
+     (ignore provider model max-tokens temperature
+             cache-retention session-id))
     (push context (symbol-value captured-contexts))
     (let ((message
             (if (and abort-p (funcall abort-p))

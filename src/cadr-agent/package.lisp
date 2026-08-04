@@ -107,6 +107,8 @@
    #:agent-event-delay-ms
    #:agent-event-success
    #:agent-event-final-error
+   #:agent-event-source
+   #:agent-event-reason
    #:schema-validation-error
    #:schema-validation-error-tool
    #:schema-validation-error-json-pointer

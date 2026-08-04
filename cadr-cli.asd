@@ -205,6 +205,7 @@
                              (:file "goal14-organization-test")
                              (:file "goal15-a0-test")
                              (:file "goal15-part-c-test")
+                             (:file "goal17-compaction-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

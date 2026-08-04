@@ -83,10 +83,10 @@
             :model (compaction-test-model)
             :stream-function
             (lambda (provider model context on-event
-                     &key max-tokens abort-p)
+                     &key max-tokens abort-p cache-retention session-id)
               (declare
                (ignore provider model on-event
-                       max-tokens abort-p))
+                       max-tokens abort-p cache-retention session-id))
               (push context *contexts*)
               nil))))
     (declare (special *contexts*))
@@ -238,10 +238,10 @@
         :compaction-keep-recent-tokens 4
         :stream-function
         (lambda (provider model context on-event
-                 &key max-tokens abort-p)
+                 &key max-tokens abort-p cache-retention session-id)
           (declare
            (ignore provider model context on-event
-                   max-tokens abort-p))
+                   max-tokens abort-p cache-retention session-id))
           (cadr-agent:agent-abort agent)
           (compaction-test-response
            "partial summary" :aborted))))
@@ -721,3 +721,218 @@
                        (cadr-agent:session-entry-message
                         entry)))))
                   entries))))))))
+
+(defun goal17-compaction-fixture (id stream-function on-event)
+  (let* ((root (uiop:ensure-directory-pathname
+                (merge-pathnames
+                 (format nil "cadr-goal17-~A/" id)
+                 (uiop:temporary-directory))))
+         (sessions (merge-pathnames "sessions/" root))
+         (cwd (merge-pathnames "cwd/" root)))
+    (ensure-directories-exist sessions)
+    (ensure-directories-exist cwd)
+    (let ((session
+            (cadr-agent:create-session
+             :directory sessions :cwd cwd :id id)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content (format nil "old context ~120@{x~}")))
+      (cadr-agent:session-append-message
+       session
+       (compaction-test-response "old answer" :stop))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content "current context remains after compaction"))
+      (let ((agent
+              (cadr-agent:make-agent
+               :provider :mock
+               :model (compaction-test-model)
+               :session session
+               :compaction-keep-recent-tokens 4
+               :stream-function stream-function
+               :on-event on-event)))
+        (setf (cadr-agent::agent-auto-retry-base-delay agent) 0)
+        (values
+         agent
+         session
+         root)))))
+
+(test goal17-compaction-start-carries-manual-threshold-and-overflow-reasons
+  (dolist (reason '(:manual :threshold :overflow))
+    (let ((events nil))
+      (multiple-value-bind (agent session root)
+          (goal17-compaction-fixture
+           (string-downcase (symbol-name reason))
+           (lambda (provider model context on-event
+                    &key max-tokens abort-p cache-retention session-id)
+             (declare
+              (ignore provider model context on-event max-tokens
+                      abort-p cache-retention session-id))
+             (compaction-test-response "summary" :stop))
+           (lambda (event) (push event events)))
+        (declare (ignore session))
+        (unwind-protect
+             (progn
+               (is-true
+                (cadr-agent:compact-agent
+                 agent :force-p t :reason reason))
+               (let ((start
+                       (find :compaction-start events
+                             :key #'cadr-agent:agent-event-type)))
+                 (is (not (null start)))
+                 (is (eq reason
+                         (cadr-agent:agent-event-reason start)))))
+          (uiop:delete-directory-tree
+           root :validate t :if-does-not-exist :ignore))))))
+
+(test goal17-compaction-abort-reaches-summary-request-and-preserves-session
+  (let ((events nil)
+        (observed-abort-p nil)
+        (agent nil))
+    (multiple-value-bind (created session root)
+        (goal17-compaction-fixture
+         "abort-during-summary"
+         (lambda (provider model context on-event
+                  &key max-tokens abort-p cache-retention session-id)
+           (declare
+            (ignore provider model context on-event max-tokens
+                    cache-retention session-id))
+           (is (functionp abort-p))
+           (cadr-agent:agent-abort agent)
+           (setf observed-abort-p (funcall abort-p))
+           (compaction-test-response nil :aborted))
+         (lambda (event) (push event events)))
+      (setf agent created)
+      (unwind-protect
+           (progn
+             (is-false
+              (cadr-agent:compact-agent agent :force-p t))
+             (is-true observed-abort-p)
+             (is
+              (zerop
+               (count :compaction
+                      (cadr-agent:session-entries session)
+                      :key #'cadr-agent:session-entry-type)))
+             (is (find :compaction-end events
+                       :key #'cadr-agent:agent-event-type)))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore)))))
+
+(test goal17-summarization-retries-transient-errors-with-isolated-request-options
+  (let ((events nil)
+        (calls nil)
+        (responses
+          (list
+           (compaction-test-response nil :error "terminated")
+           (compaction-test-response "summary" :stop))))
+    (multiple-value-bind (agent session root)
+        (goal17-compaction-fixture
+         "retry-transient"
+         (lambda (provider model context on-event
+                  &key max-tokens abort-p cache-retention session-id)
+           (declare
+            (ignore provider model context on-event max-tokens abort-p))
+           (push (list cache-retention session-id) calls)
+           (pop responses))
+         (lambda (event) (push event events)))
+      (declare (ignore session))
+      (unwind-protect
+           (progn
+             (is-true
+              (cadr-agent:compact-agent agent :force-p t))
+             (is (= 2 (length calls)))
+             (is (every (lambda (call) (eq :none (first call))) calls))
+             (is (every (lambda (call)
+                          (and (stringp (second call))
+                               (plusp (length (second call)))))
+                        calls))
+             (is (string= (second (first calls))
+                          (second (second calls))))
+             (is (equal
+                  '(:summarization-retry-scheduled
+                    :summarization-retry-attempt-start
+                    :summarization-retry-finished)
+                  (remove-if-not
+                   (lambda (type)
+                     (member type
+                             '(:summarization-retry-scheduled
+                               :summarization-retry-attempt-start
+                               :summarization-retry-finished)))
+                   (reverse (mapcar #'cadr-agent:agent-event-type events))))))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore)))))
+
+(test goal17-summarization-does-not-retry-deterministic-errors-or-aborts
+  (let ((calls 0))
+    (multiple-value-bind (agent session root)
+        (goal17-compaction-fixture
+         "no-retry-error"
+         (lambda (provider model context on-event
+                  &key max-tokens abort-p cache-retention session-id)
+           (declare
+            (ignore provider model context on-event max-tokens abort-p
+                    cache-retention session-id))
+           (incf calls)
+           (compaction-test-response nil :error "invalid request"))
+         nil)
+      (declare (ignore session))
+      (unwind-protect
+           (progn
+             (is-false
+              (cadr-agent:compact-agent agent :force-p t))
+             (is (= 1 calls)))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore))))
+  (let ((calls 0)
+        (agent nil))
+    (multiple-value-bind (created session root)
+        (goal17-compaction-fixture
+         "no-retry-abort"
+         (lambda (provider model context on-event
+                  &key max-tokens abort-p cache-retention session-id)
+           (declare
+            (ignore provider model context on-event max-tokens abort-p
+                    cache-retention session-id))
+           (incf calls)
+           (cadr-agent:agent-abort agent)
+           (compaction-test-response nil :aborted))
+         nil)
+      (declare (ignore session))
+      (setf agent created)
+      (unwind-protect
+           (progn
+             (is-false
+              (cadr-agent:compact-agent agent :force-p t))
+             (is (= 1 calls)))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore)))))
+
+(test goal17-branch-summary-uses-the-shared-retry-and-isolation-path
+  (let ((calls nil)
+        (responses
+          (list
+           (compaction-test-response nil :error "terminated")
+           (compaction-test-response "branch summary" :stop))))
+    (multiple-value-bind (agent session root)
+        (goal17-compaction-fixture
+         "branch-retry"
+         (lambda (provider model context on-event
+                  &key max-tokens abort-p cache-retention session-id)
+           (declare
+            (ignore provider model context on-event max-tokens abort-p))
+           (push (list cache-retention session-id) calls)
+           (pop responses))
+         nil)
+      (unwind-protect
+           (let ((result
+                   (cadr-agent:generate-branch-summary
+                    agent (cadr-agent:session-entries session))))
+             (is (not (null result)))
+             (is (= 2 (length calls)))
+             (is (every (lambda (call) (eq :none (first call))) calls))
+             (is (string= (second (first calls))
+                          (second (second calls)))))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore)))))
