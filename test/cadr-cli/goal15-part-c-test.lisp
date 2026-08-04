@@ -100,3 +100,154 @@
       "written"
       (read-text
        (merge-pathnames "notes/generated/result.txt" directory))))))
+
+(test goal15-startup-chrome-matches-fixed-baseline-padding-and-styles
+  ;; pi@74caa2649 interactive-mode.ts:754-812 constructs an ExpandableText
+  ;; with one horizontal cell of padding, styles the product and version
+  ;; separately, and styles key tokens independently from descriptions.
+  (let* ((width 72)
+         (lines
+           (cadr-cli::render-tui-startup-lines
+            '("cadr v0.2.0"
+              "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more"
+              "Press ctrl+o to show full startup help and loaded resources.")
+            width))
+         (logo (first lines))
+         (help (second lines)))
+    (is (= width (cadr-tui:visible-width logo)))
+    (is (= width (cadr-tui:visible-width help)))
+    (is
+     (uiop:string-prefix-p
+      " cadr v0.2.0"
+      (cadr-tui:strip-terminal-sequences logo)))
+    (is
+     (search
+      (cadr-tui:theme-bold
+       (cadr-tui:theme-foreground
+        :accent "cadr" :enabled-p t))
+      logo))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :dim " v0.2.0" :enabled-p t)
+      logo))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :dim "escape" :enabled-p t)
+      help))
+    (is
+     (search
+      (cadr-tui:theme-foreground
+       :muted " interrupt" :enabled-p t)
+      help))))
+
+(test goal15-root-composition-has-no-invented-idle-status-rows
+  ;; pi@74caa2649 interactive-mode.ts:734-746 leaves statusContainer empty
+  ;; while idle.  Only widgetContainerAbove contributes its default spacer.
+  (labels ((editor-top (status)
+             (let ((state
+                     (cadr-cli::make-tui-state
+                      :model "faux-1"
+                      :cwd "/tmp/project"
+                      :context-window 128000)))
+               (setf (cadr-cli::tui-state-status-message state) status)
+               (multiple-value-bind (lines row column)
+                   (cadr-cli::render-tui-state
+                    state (cadr-tui:make-multiline-editor)
+                    60 20 :full-document-p t
+                    :spinner-frame "x")
+                 (declare (ignore row column))
+                 (position-if
+                  (lambda (line)
+                    (let ((plain
+                            (cadr-tui:strip-terminal-sequences line)))
+                      (and (plusp (length plain))
+                           (every (lambda (character)
+                                    (char= character #\─))
+                                  plain))))
+                  lines)))))
+    (is (= 1 (editor-top nil)))
+    (is (= 3 (editor-top "Working...")))))
+
+(test goal15-footer-initial-context-and-thinking-follow-model-capability
+  ;; footer.ts:116-119 renders an absent initial usage estimate as 0.0%, but
+  ;; preserves NIL after compaction as unknown.  Lines 173-178 only append a
+  ;; thinking suffix for reasoning-capable models.
+  (let ((state
+          (cadr-cli::make-tui-state
+           :model "faux-1" :cwd "/tmp/project"
+           :context-window 128000))
+        (plain-model
+          (cadr-ai:make-model
+           :id "plain" :name "Plain" :provider :faux :api :faux
+           :base-url "http://localhost:0" :reasoning-p nil
+           :context-window 128000 :max-tokens 4096))
+        (reasoning-model
+          (cadr-ai:make-model
+           :id "reasoning" :name "Reasoning" :provider :faux :api :faux
+           :base-url "http://localhost:0" :reasoning-p t
+           :context-window 128000 :max-tokens 4096)))
+    (is (= 0d0 (cadr-cli::tui-state-context-percent state)))
+    (let ((footer
+            (mapcar
+             #'cadr-tui:strip-terminal-sequences
+             (cadr-tui:render-footer
+              72 :cwd "/tmp/project" :model "faux-1"
+              :context-percent
+              (cadr-cli::tui-state-context-percent state)
+              :context-window 128000 :auto-compact-p t))))
+      (is (search "0.0%/128k (auto)" (second footer))))
+    (cadr-cli::apply-tui-footer-state state '(:context-percent nil))
+    (is (null (cadr-cli::tui-state-context-percent state)))
+    (is (null (cadr-cli::model-footer-thinking-level plain-model :high)))
+    (is
+     (eq :high
+         (cadr-cli::model-footer-thinking-level reasoning-model :high)))))
+
+(test goal15-provider-stream-receives-the-active-session-id
+  ;; pi@74caa2649 agent.ts:430-440 forwards Agent.sessionId into every normal
+  ;; provider stream request, enabling provider cache usage and footer totals.
+  (let* ((captured nil)
+        (stream
+          (cadr-cli::make-extension-aware-stream-function
+           nil :session-id "session-15"
+           :stream-function
+           (lambda (provider model context on-event &rest options)
+             (declare (ignore provider model context on-event))
+             (setf captured options)
+             :streamed))))
+    (is
+     (eq :streamed
+         (funcall
+          stream nil
+          (cadr-ai:make-model :id "faux" :provider :faux :api :faux)
+          (cadr-ai:make-context)
+          (lambda (event) (declare (ignore event)))
+          :session-id nil)))
+    (is (string= "session-15" (getf captured :session-id)))))
+
+(test goal15-terminal-title-matches-fixed-baseline-session-grammar
+  ;; pi@74caa2649 interactive-mode.ts:843-854 uses APP_TITLE, optional session
+  ;; name, and the cwd basename, then delegates control-byte stripping to the
+  ;; terminal title boundary.
+  (is
+   (string=
+    "cadr - project"
+    (cadr-cli::tui-terminal-title "/tmp/project/" nil)))
+  (is
+   (string=
+    "cadr - project"
+    (cadr-cli::tui-terminal-title #P"/tmp/project/" nil)))
+  (is
+   (string=
+    "cadr - branch work - project"
+    (cadr-cli::tui-terminal-title
+     "/tmp/project/" "branch work")))
+  (is
+   (string=
+    (format nil "~C]0;cadr - branchwork - project~C"
+            #\Escape (code-char 7))
+    (cadr-cli::tui-terminal-title-sequence
+     "/tmp/project/"
+     (format nil "branch~Cwork" #\Escape)))))

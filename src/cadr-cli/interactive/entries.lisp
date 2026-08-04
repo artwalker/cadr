@@ -246,24 +246,87 @@
        expanded))))
 
 (defun render-tui-startup-lines (lines width)
-  (loop for line in lines
-        for index from 0
-        for styled =
-          (cond
-            ((zerop index)
-             (cadr-tui:theme-foreground
-              :accent
-              (cadr-tui:theme-bold line)
-              :enabled-p t))
-            ((and
-              (plusp (length line))
-              (char= (char line 0) #\[))
-             (cadr-tui:theme-foreground
-              :md-heading line
-              :enabled-p t))
-            (t
-             (cadr-tui:theme-foreground
-              :dim line
-              :enabled-p t)))
-        append
-        (cadr-tui:wrap-text styled width)))
+  (labels
+      ((key-hint (key description)
+         (concatenate
+          'string
+          (cadr-tui:theme-foreground
+           :dim key :enabled-p t)
+          (cadr-tui:theme-foreground
+           :muted
+           (format nil " ~A" description)
+           :enabled-p t)))
+       (compact-help ()
+         (format
+          nil "~{~A~^~A~}"
+          (list
+           (key-hint "escape" "interrupt")
+           (cadr-tui:theme-foreground
+            :muted " · " :enabled-p t)
+           (key-hint "ctrl+c/ctrl+d" "clear/exit")
+           (cadr-tui:theme-foreground
+            :muted " · " :enabled-p t)
+           (key-hint "/" "commands")
+           (cadr-tui:theme-foreground
+            :muted " · " :enabled-p t)
+           (key-hint "!" "bash")
+           (cadr-tui:theme-foreground
+            :muted " · " :enabled-p t)
+           (key-hint "ctrl+o" "more"))))
+       (expanded-help (line)
+         (let ((parts
+                 (assoc
+                  line
+                  '(("escape to interrupt" "escape" "to interrupt")
+                    ("ctrl+c to clear" "ctrl+c" "to clear")
+                    ("ctrl+c twice to exit" "ctrl+c twice" "to exit")
+                    ("ctrl+d to exit (empty)" "ctrl+d" "to exit (empty)")
+                    ("ctrl+z to suspend" "ctrl+z" "to suspend")
+                    ("ctrl+k to delete to end" "ctrl+k" "to delete to end")
+                    ("ctrl+p/ctrl+n to cycle models" "ctrl+p/ctrl+n" "to cycle models")
+                    ("ctrl+o to expand tools" "ctrl+o" "to expand tools")
+                    ("/ for commands" "/" "for commands")
+                    ("! to run bash" "!" "to run bash"))
+                  :test #'string=)))
+           (and parts
+                (key-hint (second parts) (third parts)))))
+       (style-line (line index)
+         (cond
+           ((zerop index)
+            (let ((split (position #\Space line)))
+              (if split
+                  (concatenate
+                   'string
+                   (cadr-tui:theme-bold
+                    (cadr-tui:theme-foreground
+                     :accent (subseq line 0 split)
+                     :enabled-p t))
+                   (cadr-tui:theme-foreground
+                    :dim (subseq line split)
+                    :enabled-p t))
+                  (cadr-tui:theme-bold
+                   (cadr-tui:theme-foreground
+                    :accent line :enabled-p t)))))
+           ((string=
+             line
+             "escape interrupt · ctrl+c/ctrl+d clear/exit · / commands · ! bash · ctrl+o more")
+            (compact-help))
+           ((expanded-help line))
+           ((and
+             (plusp (length line))
+             (char= (char line 0) #\[))
+            (cadr-tui:theme-foreground
+             :md-heading line :enabled-p t))
+           (t
+            (cadr-tui:theme-foreground
+             :dim line :enabled-p t)))))
+    (when lines
+      (cadr-tui:component-render
+       (cadr-tui:make-text-component
+        (format
+         nil "~{~A~^~%~}"
+         (loop for line in lines
+               for index from 0
+               collect (style-line line index)))
+        :padding-x 1 :padding-y 0)
+       width))))

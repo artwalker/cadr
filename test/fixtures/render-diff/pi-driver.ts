@@ -265,6 +265,7 @@ async function main(): Promise<void> {
 		settingsManager,
 		model,
 		resourceLoaderOptions: {
+			systemPrompt: "Render differential fixed system prompt.",
 			noExtensions: true,
 			noSkills: true,
 			noPromptTemplates: true,

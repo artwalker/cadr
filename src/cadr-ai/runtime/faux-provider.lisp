@@ -245,9 +245,21 @@
      (context-messages context))
     (when (context-tools context)
       (list
-       (format nil "tools:~{~A~^,~}"
-               (mapcar #'tool-name
-                       (context-tools context))))))))
+       (format
+        nil "tools:~A"
+        (stringify-json
+         (list-json-array
+          (mapcar
+           (lambda (tool)
+             ;; Fixed-baseline faux serializes the public Tool object.  The
+             ;; executable callback is not JSON data, while every built-in
+             ;; tool defaults its label to its name.
+             (json-object
+              "name" (tool-name tool)
+              "label" (tool-name tool)
+              "description" (tool-description tool)
+              "parameters" (tool-parameters tool)))
+           (context-tools context))))))))))
 
 (defun common-prefix-length (left right)
   (loop for index from 0

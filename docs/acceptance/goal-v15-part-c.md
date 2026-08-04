@@ -94,3 +94,104 @@ accepted by the user during Goal 14 B4; this batch does not alter the provider,
 model-resolution, or eval path. The other six runnable live items passed, one
 Anthropic item skipped for its missing credential, and the DeepSeek TUI live
 harness passed.
+
+## Batch 2: D01-D03 root composition and footer state
+
+Commit: the batch commit containing this section.
+
+### Result
+
+The startup, root-composition, and footer differences are closed at their
+shared ownership boundaries instead of being patched per screen:
+
+| ID | Fixed-baseline contract | Cadr implementation | Independent regression |
+|---|---|---|---|
+| D01 | `interactive-mode.ts:758-812` uses one horizontal padding cell, separate product/version styles, independently styled key tokens, and one surrounding spacer; `:843-853` sets `Pi - [session -] cwd-basename` as the terminal title. | `src/cadr-cli/interactive/entries.lisp:248-332` now composes the same startup component grammar; `interactive/controller.lisp:159-197,451-485,2077-2085` emits and refreshes the Cadr-branded title through the terminal boundary. | `GOAL15-STARTUP-CHROME-MATCHES-FIXED-BASELINE-PADDING-AND-STYLES`; `GOAL15-TERMINAL-TITLE-MATCHES-FIXED-BASELINE-SESSION-GRAMMAR` |
+| D02 | `interactive-mode.ts:734-746` leaves the idle status container empty and obtains the one default row from the above-editor widget container. | `src/cadr-cli/interactive/frame.lisp:170-203` no longer invents a second two-row idle status placeholder. | `GOAL15-ROOT-COMPOSITION-HAS-NO-INVENTED-IDLE-STATUS-ROWS` plus the existing independent geometry assertions for all base and overlay screens. |
+| D03 | `footer.ts:84-111,128-188` aggregates complete usage, begins at `0.0%`, preserves post-compaction unknown state, and adds thinking only for reasoning-capable models; `agent.ts:426-440` forwards the active session ID on every provider request. | `interactive/state.lisp:51-59,222-225`, `bootstrap/commands.lisp:1933-1940`, and `sdk/system-prompt.lisp:144-205` implement those state contracts. `cadr-ai/runtime/faux-provider.lisp:228-263` now counts the full public tool contract, matching fixed-baseline faux rather than names only. | `GOAL15-FOOTER-INITIAL-CONTEXT-AND-THINKING-FOLLOW-MODEL-CAPABILITY`; `GOAL15-PROVIDER-STREAM-RECEIVES-THE-ACTIVE-SESSION-ID`; `FAUX-PROVIDER-USAGE-COUNTS-THE-COMPLETE-TOOL-CONTRACT`. |
+
+The session-ID regression was introduced red with an explicit
+`:session-id NIL`. It exposed a real plist precedence bug: appending the active
+ID left the earlier NIL visible to `getf`. The implementation now copies the
+request options and replaces only a missing/NIL value before appending
+callbacks.
+
+### Differential-fixture correction
+
+The first recapture reported a false footer asymmetry (`648` versus `1.9k`)
+because the two harness drivers were not providing equal faux-provider input:
+the Cadr driver omitted the fixed system prompt and Cadr faux serialized only
+tool names, while fixed-baseline faux serializes each complete public tool
+object. The drivers now use the same fixed prompt and baseline-derived tool
+contracts. Cadr tools retain their real executors and real isolated working
+directory; only the scripted faux usage estimator receives the peer fixture
+path. Independent product tests lock active session-ID forwarding, full-tool
+serialization, and footer state so this fixture correction cannot conceal a
+production defect.
+
+After a fresh capture of all 12 scenarios at `100x32` and `48x20`, the full
+analyzer accepted every remaining difference only through an explicit class:
+
+```text
+render-diff analysis: aligned=6 requires-disposition=88 adjudicated=88
+```
+
+No analyzed checkpoint or disposition retains D01, D02, or D03. At the
+representative conversation checkpoint both sides now show
+`↑1.3k ↓6 W1.3k CH0.0% 2.0%`; remaining byte differences are I01 ANSI/update
+sequencing and later approved repair classes.
+
+### Snapshot migration
+
+The old self-snapshots protected the erroneous extra idle rows and unpadded
+startup chrome. All 13 base-screen cases and 15 overlay cases retain their
+pre-existing baseline-derived semantic assertions; their SHA values were
+regenerated only after those assertions passed. `viewport-exact-fill` changes
+from 13 to the baseline-derived natural height of 11. The unchanged
+`overflow-scrolled-to-top` SHA proves the explicit scroll path was unaffected.
+
+The new SHA sets are recorded directly in
+`GOAL9-B3-EVERY-BASE-SCREEN-STATE-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT`
+and `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT`;
+each is paired with the independent first-row, ordering, spacing, geometry,
+copy, and navigation assertions already required by the snapshot discipline.
+
+### Verification
+
+```text
+cadr test summary: systems=9 checks=14423 pass=14423 skip=0 fail=0
+```
+
+The first full `verify.sh` run correctly failed after D01 because the cold-start
+probe searched the raw PTY stream for contiguous plain `cadr v`; the now
+baseline-matching product/version SGR boundary separates those bytes even
+though the first frame is present. `scripts/goal11-cold-start.py` now removes
+only CSI/OSC terminal controls for readiness detection while retaining the raw
+stream for the actual TUI. A pathname-valued cwd exposed by the same real PTY
+path is accepted by the terminal-title formatter. The repaired probe measured
+the real frame at 168.844ms before the complete rerun.
+
+The final `./scripts/verify.sh` run passed every stage:
+
+```text
+root cadr binary freshness                       PASS
+code organization gate                           PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The live report ran seven items successfully, skipped the Anthropic item
+because `ANTHROPIC_API_KEY` is absent, and recorded 32 checks: 31 pass, one
+credential skip, zero failures.

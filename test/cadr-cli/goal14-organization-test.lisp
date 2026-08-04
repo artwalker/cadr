@@ -419,6 +419,7 @@
               "(defparameter +tui-theme-json-color-map+"
               "(defun poll-tui-theme-watcher")
              ("interactive/controller.lisp"
+              "(defun tui-terminal-title"
               "(defun route-tui-submission"
               "(defun run-tui")
              ("interactive/components/loaders.lisp"
@@ -449,7 +450,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 224 definition-count)
+    (is (= 229 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

@@ -150,6 +150,49 @@
              (cadr-ai:usage-cache-read
               (cadr-ai:assistant-message-usage second))))))))
 
+(test faux-provider-usage-counts-the-complete-tool-contract
+  ;; pi@74caa2649 providers/faux.ts:197-212 serializes each complete tool
+  ;; object.  Counting names alone materially under-reports footer context.
+  (let* ((parameters
+           (cadr-ai::json-object
+            "type" "object"
+            "properties"
+            (cadr-ai::json-object
+             "path" (cadr-ai::json-object "type" "string"))
+            "required" (cadr-ai::json-array "path")))
+         (tool
+           (cadr-ai:make-tool
+            :name "read" :description "Read file"
+            :parameters parameters))
+         (context
+           (cadr-ai:make-context
+            :system-prompt "S"
+            :messages
+            (list
+             (cadr-ai:make-user-message :content "U" :timestamp 1))
+            :tools (list tool)))
+         (expected-prompt
+           (format
+            nil "system:S~%~%user:U~%~%tools:~A"
+            (cadr-ai::stringify-json
+             (cadr-ai::list-json-array
+              (list
+               (cadr-ai::json-object
+                "name" "read"
+                "label" "read"
+                "description" "Read file"
+                "parameters" parameters))))))
+         (handle (cadr-ai:make-faux-provider)))
+    (cadr-ai:faux-set-responses
+     handle (list (cadr-ai:faux-assistant-message "ok")))
+    (let* ((message
+             (cadr-ai:faux-complete
+              handle (cadr-ai:faux-get-model handle) context))
+           (usage (cadr-ai:assistant-message-usage message)))
+      (is
+       (= (cadr-ai:estimate-text-tokens expected-prompt)
+          (cadr-ai:usage-input usage))))))
+
 (test faux-provider-abort-and-invalid-terminal-are-errors
   (let ((handle (cadr-ai:make-faux-provider)))
     (cadr-ai:faux-set-responses

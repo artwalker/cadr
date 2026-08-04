@@ -133,7 +133,7 @@
      (list
       "viewport-exact-fill"
       (goal9-b3-base-screen-state :entries single)
-      :rows 13)
+      :rows 11)
      (list
       "viewport-overflow"
       (goal9-b3-base-screen-state :entries multi)
@@ -293,7 +293,7 @@
               "Third concise answer."
               "────────────────" "/tmp/project" "mock-model")))
           ((string= name "viewport-exact-fill")
-           (is (= 13 (length natural)))
+           (is (= 11 (length natural)))
            (is (= 1 (goal9-b3-screen-line-position
                      "Give one concise answer." natural)))
            (goal9-b3-assert-screen-lines-in-order
@@ -532,7 +532,7 @@
          (overflow-lines
            (apply #'goal9-b3-base-screen-plain-lines
                   (cdr overflow))))
-    (is (= 13 (length exact-lines)))
+    (is (= 11 (length exact-lines)))
     (is (find-if (lambda (line) (search "Give one concise answer." line))
                  exact-lines))
     (is (find-if (lambda (line) (search "One concise answer." line))
@@ -547,19 +547,19 @@
 
 (test goal9-b3-every-base-screen-state-has-an-exact-full-virtual-terminal-snapshot
   (let ((expected
-          '(("cold-start" . "7D6B66412D3734322CB29B8E24C95C5978B4FACC77FB89A811A6D58AB3F27D7B")
-            ("single-turn" . "0732A443161016877BD9A9FC46AE593AAE2110B0ACE7F903635EA3CBB3B2A48C")
-            ("multi-turn" . "DC4A5F74E3FCB6EFDAAA1A55E3555F34FEF8D686A358F00ADECA00BD00180104")
-            ("viewport-exact-fill" . "E0493BAA8CFBBC1DF15E3254EF007840E1571AE163AF3010A04552FC71B59A7F")
-            ("viewport-overflow" . "53E1B55B933BEBCE43EDE639DB093965B148044B34191193152C067D1647CBE8")
-            ("thinking" . "AB0F8F4025EE9D5E026FF2FDC8AB8ABBF452926F61223944F965CFA8E567E310")
-            ("tool-collapsed" . "469F3BAE304DAC110474BFF5CB01483B72E4992C22E4B5EF7777B06018EF7343")
-            ("tool-expanded" . "DF40154B2A6E7B7F5E4E986B8498278881EF24CC7E98554509B2D84E23A5D0CC")
-            ("active-status" . "5B07189D441990503213180DB156B1106C0FDD95A83109BD6E93C13E84576BA1")
-            ("above-widget" . "3AF104FBC8FF61878FF37623FFB539799A28BEE22BE538726F08D2DF277A53D0")
-            ("below-widget" . "DC70F236342B1A935721471779EBCFA86DD0EFBE5CD4B9695148D5D33FE794D4")
+          '(("cold-start" . "9733E04F6DE7672AEEE75764D149C02DB371BBC574E60D8799993675E6A1330A")
+            ("single-turn" . "82D3A3D1162A88AEC7639414079F536E60D3E59B2A5FE04945EE6DC8557BF0B7")
+            ("multi-turn" . "99FC5B3F2A8F5F8D854064D8C0EB5890174DAD09F0C346BA8D048BFF4CB2012F")
+            ("viewport-exact-fill" . "FE62F046A32FEAF0196939D9EDD4EE7B22F43205DD2307660C9951A7C9D74531")
+            ("viewport-overflow" . "6FD90AA56FB8F791B62D1A1ACE1560C443CC8A10CCFF01B603E21179019761AA")
+            ("thinking" . "029DB78936CC5F7F1A549ADBF4F6DA50F9968AD81F1398C6FD1672ED96BACD4F")
+            ("tool-collapsed" . "6DEE222A9E0C83464F53AD8653FCBDCE15FD63D294638EB3374D74094236DEFE")
+            ("tool-expanded" . "200859C6BA14DE80DD2C7F432BEDD659C66B7A9B58EE5A50410A6E6AC59E03AF")
+            ("active-status" . "F74BC8FFEBA3B20C90FA72E6FFA1AD1440FF8E0F10F6B91BDB996E62AD3A4538")
+            ("above-widget" . "1B2E5A37C04D1A3621244D7F2E094C5C7340772CB0C39A15F05D38A5B9A6C406")
+            ("below-widget" . "D6303174613AA56EACF5A0F79927B771449EDCB93CBCED5F5B66AC124C537A40")
             ("overflow-scrolled-to-top" . "D15615BBF1F0A2F18155DAF639EAD4A2F49DAF29DA38ABF2D95A170242A5BEFD")
-            ("narrow-width" . "A417E912682A61AEB48FD0653D9E2CF1BBECF46D34ED09F44F64896619948596"))))
+            ("narrow-width" . "3879C2A71C2BF04C357276800FEC1C848F9FE13453A84C9E8579F25A569F6539"))))
     (dolist (case (goal9-b3-base-screen-cases))
       (is
        (string=

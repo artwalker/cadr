@@ -150,7 +150,8 @@
   (lambda
       (provider model context on-event
        &rest options)
-    (let ((callbacks
+    (let ((request-options (copy-list options))
+          (callbacks
             (list
              :on-payload
              (lambda (payload callback-model)
@@ -194,10 +195,14 @@
                   extension-host
                   :after-provider-response
                   :payload response))))))
+      (when (and session-id
+                 (null (getf request-options :session-id)))
+        (setf (getf request-options :session-id)
+              session-id))
       (apply
        stream-function
        provider model context on-event
-       (append options callbacks)))))
+       (append request-options callbacks)))))
 
 ;;; In-process SDK service facades.  These objects deliberately wrap the same
 ;;; settings, resource, auth, and model services used by the CLI; they do not

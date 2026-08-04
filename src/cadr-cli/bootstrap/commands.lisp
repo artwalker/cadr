@@ -1933,8 +1933,10 @@
            :provider
            (provider-config-name config)
            :thinking
-           (cadr-agent::agent-thinking-level
-            agent)
+           (model-footer-thinking-level
+            (cadr-agent:agent-model agent)
+            (cadr-agent::agent-thinking-level
+             agent))
            :cwd
            (format-cwd-for-footer
             (namestring

@@ -288,6 +288,165 @@
       :value session))
    sessions))
 
+(defun render-string-property (&optional description)
+  (if description
+      (cadr-ai::json-object
+       "type" "string" "description" description)
+      (cadr-ai::json-object "type" "string")))
+
+(defun render-number-property (&optional description)
+  (if description
+      (cadr-ai::json-object
+       "type" "number" "description" description)
+      (cadr-ai::json-object "type" "number")))
+
+(defun render-boolean-property (&optional description)
+  (if description
+      (cadr-ai::json-object
+       "type" "boolean" "description" description)
+      (cadr-ai::json-object "type" "boolean")))
+
+(defun render-object-schema (properties required)
+  (let ((schema
+          (cadr-ai::json-object
+           "type" "object"
+           "properties" properties)))
+    (when required
+      (setf (gethash "required" schema)
+            (cadr-ai::list-json-array required)))
+    schema))
+
+(defun render-baseline-tool-contract (name)
+  (cond
+    ((string= name "read")
+     (values
+      "Read the contents of a file. Supports text files and images (jpg, png, gif, webp, bmp). Images are sent as attachments. For text files, output is truncated to 2000 lines or 50KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete."
+      (render-object-schema
+       (cadr-ai::json-object
+        "path" (render-string-property
+                "Path to the file to read (relative or absolute)")
+        "offset" (render-number-property
+                  "Line number to start reading from (1-indexed)")
+        "limit" (render-number-property
+                 "Maximum number of lines to read"))
+       '("path"))))
+    ((string= name "bash")
+     (values
+      "Execute a bash command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
+      (render-object-schema
+       (cadr-ai::json-object
+        "command" (render-string-property "Bash command to execute")
+        "timeout" (render-number-property
+                   "Timeout in seconds (optional, no default timeout)"))
+       '("command"))))
+    ((string= name "edit")
+     (values
+      "Edit a single file using exact text replacement. Every edits[].oldText must match a unique, non-overlapping region of the original file. If two changes affect the same block or nearby lines, merge them into one edit instead of emitting overlapping edits. Do not include large unchanged regions just to connect distant changes."
+      (render-object-schema
+       (cadr-ai::json-object
+        "path" (render-string-property
+                "Path to the file to edit (relative or absolute)")
+        "edits"
+        (let ((array
+                (cadr-ai::json-object
+                 "type" "array"
+                 "items"
+                 (render-object-schema
+                  (cadr-ai::json-object
+                   "oldText"
+                   (render-string-property
+                    "Exact text for one targeted replacement. It must be unique in the original file and must not overlap with any other edits[].oldText in the same call.")
+                   "newText"
+                   (render-string-property
+                    "Replacement text for this targeted edit."))
+                  '("oldText" "newText"))
+                 "description"
+                 "One or more targeted replacements. Each edit is matched against the original file, not incrementally. Do not include overlapping or nested edits. If two changes touch the same block or nearby lines, merge them into one edit instead.")))
+          array))
+       '("path" "edits"))))
+    ((string= name "write")
+     (values
+      "Write content to a file. Creates the file if it doesn't exist, overwrites if it does. Automatically creates parent directories."
+      (render-object-schema
+       (cadr-ai::json-object
+        "path" (render-string-property
+                "Path to the file to write (relative or absolute)")
+        "content" (render-string-property
+                   "Content to write to the file"))
+       '("path" "content"))))
+    ((string= name "grep")
+     (values
+      "Search file contents for a pattern. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to 100 matches or 50KB (whichever is hit first). Long lines are truncated to 500 chars."
+      (render-object-schema
+       (cadr-ai::json-object
+        "pattern" (render-string-property
+                   "Search pattern (regex or literal string)")
+        "path" (render-string-property
+                "Directory or file to search (default: current directory)")
+        "glob" (render-string-property
+                "Filter files by glob pattern, e.g. '*.ts' or '**/*.spec.ts'")
+        "ignoreCase" (render-boolean-property
+                      "Case-insensitive search (default: false)")
+        "literal" (render-boolean-property
+                   "Treat pattern as literal string instead of regex (default: false)")
+        "context" (render-number-property
+                   "Number of lines to show before and after each match (default: 0)")
+        "limit" (render-number-property
+                 "Maximum number of matches to return (default: 100)"))
+       '("pattern"))))
+    ((string= name "find")
+     (values
+      "Search for files by glob pattern. Returns matching file paths relative to the search directory. Respects .gitignore. Output is truncated to 1000 results or 50KB (whichever is hit first)."
+      (render-object-schema
+       (cadr-ai::json-object
+        "pattern" (render-string-property
+                   "Glob pattern to match files, e.g. '*.ts', '**/*.json', or 'src/**/*.spec.ts'")
+        "path" (render-string-property
+                "Directory to search in (default: current directory)")
+        "limit" (render-number-property
+                 "Maximum number of results (default: 1000)"))
+       '("pattern"))))
+    ((string= name "ls")
+     (values
+      "List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to 500 entries or 50KB (whichever is hit first)."
+      (render-object-schema
+       (cadr-ai::json-object
+        "path" (render-string-property
+                "Directory to list (default: current directory)")
+        "limit" (render-number-property
+                 "Maximum number of entries to return (default: 500)"))
+       nil)))
+    (t (error "Missing render-diff tool contract: ~A" name))))
+
+(defun render-tools (cwd)
+  (mapcar
+   (lambda (tool)
+     (multiple-value-bind (description parameters)
+         (render-baseline-tool-contract
+          (cadr-ai:tool-name tool))
+       (cadr-ai:make-tool
+        :name (cadr-ai:tool-name tool)
+        :description description
+        :parameters parameters
+        :execution-mode
+        (cadr-ai::tool-execution-mode tool)
+        :executor (cadr-ai::tool-executor tool))))
+   (cadr-cli::make-all-coding-tools cwd)))
+
+(defun render-baseline-cwd (cwd)
+  ;; Faux usage must see byte-identical fixture context on both sides.  The
+  ;; tools still execute in Cadr's real isolated cwd; only the scripted faux
+  ;; provider's prompt estimate uses the peer path.
+  (let* ((value (namestring cwd))
+         (marker "/cadr/workspace/")
+         (position (search marker value)))
+    (unless position
+      (error "Unexpected render-diff cwd: ~A" value))
+    (concatenate
+     'string
+     (subseq value 0 position)
+     "/pi/workspace")))
+
 (defun command-dispatcher
     (agent cwd session-directory settings-manager
      auth-prompt-consumer status-consumer)
@@ -338,7 +497,7 @@
              (cadr-ai:make-faux-provider
               :model-definitions
               '((:id "faux-1" :name "Faux Model"
-                 :reasoning-p t :context-window 128000
+                 :reasoning-p nil :context-window 128000
                  :max-tokens 16384))
               :token-min 4096 :token-max 4096))
            (event-consumer nil)
@@ -349,23 +508,34 @@
            (settings-manager
              (cadr-cli::make-memory-settings-manager))
            (resources (cadr-cli::make-resource-snapshot))
+           (tools (render-tools cwd))
+           (base-stream-function
+             (lambda (provider model context on-event &rest options)
+               (declare (ignore provider))
+               (if (plusp tokens-per-second)
+                   (slow-faux-stream
+                    handle model context on-event options
+                    chunk-characters tokens-per-second)
+                   (apply #'cadr-ai:faux-stream
+                          handle model context on-event options))))
            (agent
              (cadr-agent:make-agent
               :provider :faux
               :model (cadr-ai:faux-get-model handle)
-             :tools (cadr-cli::make-all-coding-tools cwd)
-             :session session
+              :system-prompt
+              (format
+               nil
+               "Render differential fixed system prompt.~%Current working directory: ~A"
+               (render-baseline-cwd cwd))
+              :tools tools
+              :session session
               :auto-compact-p t
               :abort-p (lambda () abort-requested-p)
               :stream-function
-              (lambda (provider model context on-event &rest options)
-                (declare (ignore provider))
-                (if (plusp tokens-per-second)
-                    (slow-faux-stream
-                     handle model context on-event options
-                     chunk-characters tokens-per-second)
-                    (apply #'cadr-ai:faux-stream
-                           handle model context on-event options)))
+              (cadr-cli::make-extension-aware-stream-function
+               nil
+               :stream-function base-stream-function
+               :session-id (cadr-agent:session-id session))
               :on-event
               (lambda (event)
                 (when event-consumer
@@ -475,7 +645,9 @@
            :login-options-function #'render-auth-options
            :model "faux-1"
            :provider "faux"
-           :thinking :high
+           :thinking
+           (cadr-cli::model-footer-thinking-level
+            (cadr-agent:agent-model agent) :high)
            :cwd (namestring cwd)
            :footer-cwd (namestring cwd)
            :available-provider-count

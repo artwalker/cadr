@@ -146,23 +146,27 @@
     (multiple-value-bind (lines row column)
         (cadr-cli::render-tui-state
          state editor width rows)
-      (is (= 8 row))
+      (is (= 6 row))
       (is (zerop column))
       (is
        (equal
         (list
          ""
-         version-line
-         "escape interrupt · ctrl+c/ctrl+d clear/exit"
+         (format nil " ~A~A" version-line
+                 (make-string (- width 1 (length version-line))
+                              :initial-element #\Space))
+         (format nil " escape interrupt · ctrl+c/ctrl+d clear/exit~A"
+                 (make-string
+                  (- width
+                     (length " escape interrupt · ctrl+c/ctrl+d clear/exit"))
+                  :initial-element #\Space))
          ""
-         blank-row
-         blank-row
          ""
          border
          blank-row
          border
          ""
-         "?/0 (auto)                                              faux")
+         "0.0%/0 (auto)                                           faux")
         (goal9-b3-plain-lines lines))))))
 
 (test goal9-b3-settings-overlay-is-an-exact-baseline-screen

@@ -599,10 +599,15 @@ def normalize_fixed_values(data: bytes) -> bytes:
             b"pi\x1b[0m\x1b[38;2;102;102;102m v0.83.0",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
+        (
+            b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0",
+            b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
+        ),
         (b"cadr v0.2.0\x1b[22m", b"<PRODUCT> v<VERSION>\x1b[22m"),
         (b"pi v0.83.0", b"<PRODUCT> v<VERSION>"),
         (b"cadr v0.2.0", b"<PRODUCT> v<VERSION>"),
         (b"\x1b]0;\xcf\x80 - ", b"\x1b]0;<PRODUCT> - "),
+        (b"\x1b]0;cadr - ", b"\x1b]0;<PRODUCT> - "),
         (b"Pi can explain its own features", b"<PRODUCT_TITLE> can explain its own features"),
         (b"Cadr can explain its own features", b"<PRODUCT_TITLE> can explain its own features"),
         (b"extend Pi.", b"extend <PRODUCT_TITLE>."),
@@ -982,6 +987,17 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("fixed environment retained a provider credential variable")
         if normalized(sample, "pi", sandbox) != sample:
             raise HarnessFailure("normalization altered whitespace or ANSI color bytes")
+        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.83.0"
+        cadr_header = b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0"
+        expected_header = b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>"
+        if normalize_fixed_values(pi_header) != expected_header:
+            raise HarnessFailure("pi styled product header normalization drifted")
+        if normalize_fixed_values(cadr_header) != expected_header:
+            raise HarnessFailure("cadr styled product header normalization drifted")
+        if normalize_fixed_values(b"\x1b]0;\xcf\x80 - work\x07") != normalize_fixed_values(
+            b"\x1b]0;cadr - work\x07"
+        ):
+            raise HarnessFailure("terminal-title product normalization drifted")
         screen = tmux_screen(
             b"\x1b[2J\x1b[H\x1b[31mred\x1b[0m", 12, 4, sandbox / "tmux"
         )

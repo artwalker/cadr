@@ -156,6 +156,51 @@
         (funcall start-function line)
         :started)))
 
+(defun sanitize-terminal-title-text (text)
+  (coerce
+   (remove-if
+    (lambda (character)
+      (member character
+              (list #\Escape (code-char 7))))
+    (or text ""))
+   'string))
+
+(defun tui-terminal-title-cwd-basename (cwd)
+  (let* ((cwd-text
+           (etypecase cwd
+             (null "")
+             (pathname (uiop:native-namestring cwd))
+             (string cwd)))
+         (trimmed
+           (string-right-trim
+            '(#\/ #\\)
+            cwd-text))
+         (separator
+           (position-if
+            (lambda (character)
+              (or (char= character #\/)
+                  (char= character #\\)))
+            trimmed :from-end t)))
+    (if separator
+        (subseq trimmed (1+ separator))
+        trimmed)))
+
+(defun tui-terminal-title (cwd session-name)
+  (let ((basename
+          (tui-terminal-title-cwd-basename cwd))
+        (clean-session
+          (sanitize-terminal-title-text session-name)))
+    (if (plusp (length clean-session))
+        (format nil "cadr - ~A - ~A"
+                clean-session basename)
+        (format nil "cadr - ~A" basename))))
+
+(defun tui-terminal-title-sequence (cwd session-name)
+  (format nil "~C]0;~A~C"
+          #\Escape
+          (tui-terminal-title cwd session-name)
+          (code-char 7)))
+
 (defun run-tui
     (prompt-function
      &key
@@ -347,7 +392,9 @@
          (extension-ui-root nil)
          (active-session-path current-session-path)
          (active-theme-mode nil)
-         (terminal-progress-active-p nil))
+         (terminal-progress-active-p nil)
+         (terminal-active-p nil)
+         (last-terminal-title nil))
     (declare (ignore active-theme))
     (dolist (text initial-notices)
       (add-tui-warning state text))
@@ -406,6 +453,19 @@
          (request-render (&optional force-p)
            (request-tui-render
             render-coordinator force-p))
+         (synchronize-terminal-title ()
+           (when terminal-active-p
+             (let ((title
+                     (tui-terminal-title
+                      (or footer-cwd cwd)
+                      (tui-state-session-name state))))
+               (unless (string= title
+                                (or last-terminal-title ""))
+                 (cadr-tui:terminal-write
+                  terminal
+                  (format nil "~C]0;~A~C"
+                          #\Escape title (code-char 7)))
+                 (setf last-terminal-title title)))))
          (refresh-footer-state ()
            (when footer-state-function
              (let ((values
@@ -426,6 +486,7 @@
                 (tui-state-statuses state)
                 (footer-data-provider-statuses
                  footer-provider))))
+           (synchronize-terminal-title)
            (request-render))
          (reset-theme-watcher
              (summary &optional background)
@@ -1047,13 +1108,10 @@
                (cadr-tui:make-input-event
                 :kind :paste :text (getf arguments :text)))
               (request-render)
-              nil)
+             nil)
              (:set-title
               (let ((title
-                      (remove-if
-                       (lambda (character)
-                         (member character
-                                 (list #\Escape (code-char 7))))
+                      (sanitize-terminal-title-text
                        (getf arguments :title))))
                 (cadr-tui:terminal-write
                  terminal
@@ -2025,6 +2083,8 @@
            (cadr-tui:call-with-terminal
             terminal
             (lambda ()
+              (setf terminal-active-p t)
+              (synchronize-terminal-title)
               (refresh-terminal-theme-policy)
               (tick-status-animation)
               (request-render t)
@@ -2187,6 +2247,7 @@
               (cadr-tui:renderer-start renderer))
             :before-stop
             (lambda ()
+              (setf terminal-active-p nil)
               (when terminal-progress-active-p
                 (set-terminal-progress-state nil))
               (cadr-tui:renderer-before-stop

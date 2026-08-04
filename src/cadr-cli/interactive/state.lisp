@@ -55,7 +55,7 @@
   (cache-write-tokens 0 :type (integer 0 *))
   latest-cache-hit-rate
   (context-window 0 :type (integer 0 *))
-  context-percent
+  (context-percent 0d0)
   (auto-compact-p t :type boolean)
   (cost 0d0 :type double-float)
   (cost-known-p nil :type boolean)
@@ -218,6 +218,11 @@
           (tui-state-auto-compact-p state)
           (not (null value)))))))
   state)
+
+(defun model-footer-thinking-level (model thinking)
+  (and
+   (cadr-ai:model-reasoning-p model)
+   thinking))
 
 (defun synchronize-tui-editor-border (state editor)
   (when (typep editor 'cadr-tui:multiline-editor)

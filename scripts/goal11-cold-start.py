@@ -3,6 +3,7 @@ import errno
 import fcntl
 import os
 import pty
+import re
 import select
 import struct
 import subprocess
@@ -13,6 +14,12 @@ import time
 
 
 READY_MARKER = b"cadr v"
+CSI_SEQUENCE = re.compile(rb"\x1b\[[0-?]*[ -/]*[@-~]")
+OSC_SEQUENCE = re.compile(rb"\x1b\].*?(?:\x07|\x1b\\)", re.DOTALL)
+
+
+def visible_terminal_text(transcript):
+    return CSI_SEQUENCE.sub(b"", OSC_SEQUENCE.sub(b"", bytes(transcript)))
 
 
 def sanitized_environment(home):
@@ -48,7 +55,7 @@ def sanitized_environment(home):
 def read_until_ready(master_fd, process, timeout_seconds):
     transcript = bytearray()
     deadline = time.monotonic() + timeout_seconds
-    while READY_MARKER not in transcript:
+    while READY_MARKER not in visible_terminal_text(transcript):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             raise RuntimeError("timed out waiting for the first TUI frame")

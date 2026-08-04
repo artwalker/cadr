@@ -1120,7 +1120,7 @@
       (is (< alt-row
              (length alt-lines))))))
 
-(test idle-status-spacing-is-reserved-only-on-main-screen
+(test idle-status-helper-reserves-space-only-when-requested
   (is (= 2
          (length
           (cadr-cli::render-tui-status-indicator
@@ -3139,8 +3139,9 @@
                 #'cadr-tui:strip-terminal-sequences
                 lines))))
       (let* ((compact (plain-render))
-             (logo (position version-line
-                             compact :test #'string=))
+             (logo (position-if
+                    (lambda (line) (search version-line line))
+                    compact))
              (chat
                (position-if
                 (lambda (line)
@@ -3155,8 +3156,9 @@
              compact)))
       (cadr-cli::set-tui-tools-expanded state t)
       (let ((expanded (plain-render)))
-        (is (find "ctrl+c twice to exit"
-                  expanded :test #'string=))
+        (is (find-if
+             (lambda (line) (search "ctrl+c twice to exit" line))
+             expanded))
         (is (null
              (find-if
               (lambda (line)

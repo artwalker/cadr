@@ -10,18 +10,6 @@
       "kind": "intentional-difference",
       "summary": "The approved Goal 13 fatal boundary redacts the backtrace and writes a private crash log instead of dumping pi's uncaught-exception stack to the terminal."
     },
-    "D01": {
-      "kind": "cadr-defect",
-      "summary": "Startup chrome differs in output padding, product/version styling, terminal title, and compact-help spacing."
-    },
-    "D02": {
-      "kind": "cadr-defect",
-      "summary": "Transcript/editor composition inserts two extra rows and therefore changes clipping, viewport position, and cursor geometry."
-    },
-    "D03": {
-      "kind": "cadr-defect",
-      "summary": "Footer output differs in cwd formatting, initial context, usage accounting, and the single-provider thinking suffix."
-    },
     "D04": {
       "kind": "cadr-defect",
       "summary": "The untrusted-project warning emitted by the baseline is absent."
@@ -60,60 +48,60 @@
     }
   },
   "entries": [
-    { "scenario": "startup-first", "checkpoint": "startup", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
+    { "scenario": "startup-first", "checkpoint": "startup", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "startup-first", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "startup-existing", "checkpoint": "existing-session", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
+    { "scenario": "startup-existing", "checkpoint": "existing-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "startup-existing", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01", "D11"] },
 
-    { "scenario": "startup-untrusted", "checkpoint": "untrusted-startup", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D04"] },
+    { "scenario": "startup-untrusted", "checkpoint": "untrusted-startup", "dimensions": ["wide", "narrow"], "classes": ["I01", "D04"] },
     { "scenario": "startup-untrusted", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "conversation-content", "checkpoint": "plain", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
-    { "scenario": "conversation-content", "checkpoint": "markdown-code-thinking", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
-    { "scenario": "conversation-content", "checkpoint": "cjk-emoji", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
+    { "scenario": "conversation-content", "checkpoint": "plain", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "conversation-content", "checkpoint": "markdown-code-thinking", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "conversation-content", "checkpoint": "cjk-emoji", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "conversation-content", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "tools-success", "checkpoint": "bash-multiline", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "read-range", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "write", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "edit", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "grep", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "find", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-success", "checkpoint": "ls", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
+    { "scenario": "tools-success", "checkpoint": "bash-multiline", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-success", "checkpoint": "read-range", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-success", "checkpoint": "write", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-success", "checkpoint": "edit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-success", "checkpoint": "grep", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-success", "checkpoint": "find", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-success", "checkpoint": "ls", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "tools-success", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "tools-failure", "checkpoint": "tool-failure", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
-    { "scenario": "tools-failure", "checkpoint": "bash-nonzero", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
-    { "scenario": "tools-failure", "checkpoint": "bash-timeout", "dimensions": ["wide", "narrow"], "classes": ["I01", "D02", "D03"] },
+    { "scenario": "tools-failure", "checkpoint": "tool-failure", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-failure", "checkpoint": "bash-nonzero", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-failure", "checkpoint": "bash-timeout", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "tools-failure", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "overlays-core", "checkpoint": "overlay-model", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09", "D10"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-session", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-fork", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-tree", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-settings", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-trust", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08", "D09", "D11", "D12"] },
+    { "scenario": "overlays-core", "checkpoint": "overlay-model", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08", "D09", "D10"] },
+    { "scenario": "overlays-core", "checkpoint": "overlay-session", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08", "D09"] },
+    { "scenario": "overlays-core", "checkpoint": "overlay-fork", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08", "D09"] },
+    { "scenario": "overlays-core", "checkpoint": "overlay-tree", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08", "D09"] },
+    { "scenario": "overlays-core", "checkpoint": "overlay-settings", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08", "D09"] },
+    { "scenario": "overlays-core", "checkpoint": "overlay-trust", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08", "D09", "D11", "D12"] },
     { "scenario": "overlays-core", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "overlays-auth", "checkpoint": "auth-method-generic", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08"] },
-    { "scenario": "overlays-auth", "checkpoint": "login-provider", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08"] },
-    { "scenario": "overlays-auth", "checkpoint": "auth-method-provider", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08"] },
-    { "scenario": "overlays-auth", "checkpoint": "login-dialog", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D08"] },
-    { "scenario": "overlays-auth", "checkpoint": "login-cancelled", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
+    { "scenario": "overlays-auth", "checkpoint": "auth-method-generic", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08"] },
+    { "scenario": "overlays-auth", "checkpoint": "login-provider", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08"] },
+    { "scenario": "overlays-auth", "checkpoint": "auth-method-provider", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08"] },
+    { "scenario": "overlays-auth", "checkpoint": "login-dialog", "dimensions": ["wide", "narrow"], "classes": ["I01", "D08"] },
+    { "scenario": "overlays-auth", "checkpoint": "login-cancelled", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "overlays-auth", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "stream-interrupt-queue", "checkpoint": "busy-queue", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D14"] },
-    { "scenario": "stream-interrupt-queue", "checkpoint": "stream-aborted", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
+    { "scenario": "stream-interrupt-queue", "checkpoint": "busy-queue", "dimensions": ["wide", "narrow"], "classes": ["I01", "D14"] },
+    { "scenario": "stream-interrupt-queue", "checkpoint": "stream-aborted", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "stream-interrupt-queue", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "provider-error", "checkpoint": "provider-error", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
+    { "scenario": "provider-error", "checkpoint": "provider-error", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "provider-error", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "commands-and-exit", "checkpoint": "slash-export", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03"] },
-    { "scenario": "commands-and-exit", "checkpoint": "slash-reload", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D15"] },
-    { "scenario": "commands-and-exit", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01", "D01", "D02", "D03", "D11", "D15"] },
+    { "scenario": "commands-and-exit", "checkpoint": "slash-export", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "commands-and-exit", "checkpoint": "slash-reload", "dimensions": ["wide", "narrow"], "classes": ["I01", "D15"] },
+    { "scenario": "commands-and-exit", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01", "D11", "D15"] },
 
-    { "scenario": "fatal-crash", "checkpoint": "fatal-crash", "dimensions": ["wide", "narrow"], "classes": ["I01", "I02", "D01", "D02", "D03", "D16"] }
+    { "scenario": "fatal-crash", "checkpoint": "fatal-crash", "dimensions": ["wide", "narrow"], "classes": ["I01", "I02", "D16"] }
   ]
 }

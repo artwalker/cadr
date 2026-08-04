@@ -196,11 +196,7 @@
                         (length frames))
                        frames)
                       spinner-frame))))
-              (and
-               (not full-document-p)
-               (render-tui-status-indicator
-                nil width :reserve-idle-p t
-                :spinner-frame spinner-frame))))
+              nil))
            (header-lines
              (and (tui-state-header-component state)
                   (cadr-tui:component-render
