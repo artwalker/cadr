@@ -269,21 +269,11 @@
             (ignored error-output status)
           (funcall runner
                    '("gh" "auth" "status"))
-        (declare (ignore ignored))
+        (declare (ignore ignored error-output))
         (unless (and (integerp status)
                      (zerop status))
           (error
-           "GitHub CLI is not logged in. Run 'gh auth login' first.~@[ (~A)~]"
-           (let ((trimmed
-                   (and
-                    error-output
-                    (string-trim
-                     '(#\Space #\Tab #\Newline
-                       #\Return)
-                     error-output))))
-             (and trimmed
-                  (plusp (length trimmed))
-                  trimmed)))))
+           "GitHub CLI is not logged in. Run 'gh auth login' first.")))
     (file-error ()
       (error
        "GitHub CLI (gh) is not installed. Install it from https://cli.github.com/")))

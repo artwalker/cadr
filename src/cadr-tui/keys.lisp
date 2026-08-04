@@ -453,6 +453,9 @@
          ((between-p value 1 26)
           (format nil "ctrl+~C"
                   (code-char (+ value 96))))
+         ((between-p value 65 90)
+          (format nil "shift+~C"
+                  (code-char (+ value 32))))
          ((between-p value 32 126) data)
          (t nil))))
     (t nil)))

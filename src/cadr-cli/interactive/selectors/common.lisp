@@ -123,6 +123,17 @@
      (concatenate 'string margin line margin)
      width :pad-p t)))
 
+(defun component-text-lines
+    (text width &key (padding-x 1))
+  "Render Pi Text-component wrapping and horizontal margins."
+  (let ((content-width
+          (max 1 (- width (* 2 (max 0 padding-x))))))
+    (mapcar
+     (lambda (line)
+       (component-text-line
+        line width :padding-x padding-x))
+     (cadr-tui:wrap-text text content-width))))
+
 (defun selector-component-text-line
     (line width &key (padding-x 1))
   (component-text-line
@@ -297,12 +308,16 @@
       (:lines (copy-list (first arguments)))
       (:help
        (destructuring-bind (lines &optional (style :dim)) arguments
-         (mapcar
+         (mapcan
           (lambda (line)
-            (case style
-              (:muted (selector-muted-line line width))
-              (:raw (selector-fit-line line width))
-              (otherwise (selector-dim-line line width))))
+            (component-text-lines
+             (case style
+               (:muted
+                (cadr-tui:theme-foreground :muted line))
+               (:raw line)
+               (otherwise
+                (cadr-tui:theme-foreground :dim line)))
+             width))
           lines)))
       (:viewport
        (cond

@@ -1082,6 +1082,14 @@
              :cwd cwd
              :output frontend-output
              :status-function status-consumer
+             :ansi-theme-p tui-p
+             :model-price-function
+             (lambda (provider model-id)
+               (handler-case
+                   (cadr-ai:model-metadata-cache-read-price
+                    (cadr-ai:find-model-metadata
+                     provider model-id))
+                 (cadr-ai:configuration-error () 0d0)))
              :keybindings
              (settings-keybindings
               settings-manager)
@@ -1434,6 +1442,18 @@
                   (copy-list
                    (cadr-agent:session-messages new))
                   (cadr-agent:session-path new)))))
+         (clone-current-session ()
+           (let ((clone
+                   (clone-agent-session
+                    agent session-directory)))
+             (if (or (null clone)
+                     (eq clone :cancelled))
+                 (values nil nil nil)
+                 (values
+                  (cadr-agent:session-id clone)
+                  (copy-list
+                   (cadr-agent:session-messages clone))
+                  (cadr-agent:session-path clone)))))
          (session-items ()
            (loop
              for candidate in
@@ -2020,6 +2040,7 @@
            :on-trust-selected #'select-trust
            :on-import-confirmed #'confirm-import
            :on-fork-selected #'select-fork-entry
+           :on-clone-session #'clone-current-session
            :on-new-session #'start-new-session
            :on-session-selected #'select-session
            :on-tree-selected #'select-tree-entry

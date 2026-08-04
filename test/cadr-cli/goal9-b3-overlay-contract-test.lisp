@@ -302,7 +302,7 @@
       "Anthropic [API key] • unconfigured"))
     ("api-key"
      "components/login-dialog.ts:30-71,154-167"
-     ("Login to Anthropic" "Enter Anthropic API key" ">"
+     ("Login to Anthropic" "Enter API key" ">"
       "escape/ctrl+c to cancel, enter to submit"))
     ("import"
      "interactive-mode.ts:2244-2281,2299-2305,5523; components/extension-selector.ts:18-78"
@@ -386,14 +386,14 @@
             ("resume" . "DE1B4941BEAC9C1087885B26E7F97093682758FCDE492FCC4429385C01E548C8")
             ("fork" . "AA7D9886BCA3858198561FA431CA5DC5028A608B4EA200AA2F65FE9B50072D2E")
             ("tree" . "B0ECA829983C7840B4026E9C3F102D5D62AE7ED8CAB7412D5E7CC086DA59C117")
-            ("scoped-models" . "9827A029C2C8B9AB28C8EF754B887447C23FDE41EB5941145DDAC9A97FC68415")
+            ("scoped-models" . "02E5671BF390A2AF5F0DFCC6ED75A2ACC410A45D642197715148793D9CD51D46")
             ("trust" . "3D484AC3838FAE5ADA7A490D6274C6BD1C78FCC2F0BD196026F33EA1A4631A7E")
             ("login-method" . "305B0BB2D1C67D71D7851B1EF450E992212C08F8A680CC6DF00AA23CE3B033C0")
             ("login-provider" . "5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20")
             ("logout-provider" . "5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212")
-            ("api-key" . "FD7DC83C63AC1AD2767D362FE27C960FB4CBF110227CC99DADE7E85360AA3EED")
-            ("import" . "4C31E4E9C20137D0D0B854ADC6672CCEE13560ABE6AFC2DD79C5B5C73699E6F9")
-            ("extension-select" . "187DC5C5436CAF04A4F3DE928772AEB77494E4059B07ADE78E133C5084E40D64")
+            ("api-key" . "E465C3E57FB209D3B040B3D8ABC217D916DD147642AEC3B538BABF5135254185")
+            ("import" . "B836156D2E481FCB62CF14A058B69A6F2E9D1723E47C4A29B496A0F58CB134AC")
+            ("extension-select" . "BD71C617E1CE9E9A9CB32B6EEDFDC575600FB69772F4BA2CC866E36DA2C7BD9F")
             ("extension-custom" . "A85DF2C8310E88D1BEA5B9AE84CBF6735FBC83CBC1116082E52A2CBB9A76A2EC"))))
     (dolist (case (goal9-b3-overlay-screen-cases))
       (is
@@ -476,8 +476,10 @@
             (goal9-b3-overlay-text-line "  two [other] ✗" width) ""
             (goal9-b3-overlay-text-line "  Model Name: One Model" width) ""
             (goal9-b3-overlay-text-line
-             "enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider · alt+up/alt+down reorder · ctrl+s save · 1/2 enabled · 1 unavailable"
+             "  enter toggle · ctrl+a all · ctrl+x clear · ctrl+p provider · alt+up/alt+down  "
              width)
+            (goal9-b3-overlay-text-line
+             "reorder · ctrl+s save · 1/2 enabled · 1 unavailable" width)
             border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-scoped-models-selector state width))))))
@@ -703,7 +705,7 @@
       (list border
             (goal9-b3-overlay-text-line " Login to Anthropic" width)
             ""
-            (goal9-b3-overlay-text-line " Enter Anthropic API key" width)
+            (goal9-b3-overlay-text-line " Enter API key" width)
             (concatenate 'string "> "
                          (make-string 78 :initial-element #\Space))
             (goal9-b3-overlay-text-line
@@ -768,12 +770,12 @@
       (second rendered)))
     (is (string=
          (goal9-b3-overlay-text-line
-          " Enter Anthropic API key" 80)
+          " Enter API key" 80)
          (cadr-tui:strip-terminal-sequences
           (fourth rendered))))
     (is (search
          (cadr-tui:theme-foreground
-          :text "Enter Anthropic API key" :enabled-p t)
+          :text "Enter API key" :enabled-p t)
          (fourth rendered)))))
 
 (defun goal9-b3-overlay-auth-option (index &key status)
@@ -898,7 +900,9 @@
       (list border "" " Import session"
             " Replace current session with /tmp/session.jsonl?" ""
             " → Yes" "   No" ""
-            " ↑↓ navigate  enter select  escape/ctrl+c cancel" "" border)
+            (goal9-b3-overlay-text-line
+             " ↑↓ navigate  enter select  escape/ctrl+c cancel" 80)
+            "" border)
       (goal9-b3-overlay-plain-lines
        (cadr-cli::render-framed-select-state
         (cadr-cli::make-import-confirmation-list
@@ -929,7 +933,11 @@
                    collect
                    (format nil " ~A~A"
                            (if first-p "→ " "  ") label))
-             (list "" " ↑↓ navigate  enter select  escape/ctrl+c cancel" "" border))
+             (list
+              ""
+              (goal9-b3-overlay-text-line
+               " ↑↓ navigate  enter select  escape/ctrl+c cancel" 80)
+              "" border))
             (goal9-b3-overlay-plain-lines
              (cadr-cli::render-framed-select-state state 80)))))))))
 
@@ -957,7 +965,10 @@
          (goal9-b3-overlay-border 40) ""
          " Choose one (3s)" " Pick exactly one" ""
          " → Alpha" "   Beta" ""
-         " ↑↓ navigate  alt+y select  alt+x cancel" ""
+         (goal9-b3-overlay-text-line
+          " ↑↓ navigate  alt+y select  alt+x" 40)
+         (goal9-b3-overlay-text-line " cancel" 40)
+         ""
          (goal9-b3-overlay-border 40))
         plain))
       (is

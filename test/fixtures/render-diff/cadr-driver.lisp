@@ -37,6 +37,9 @@
 (defun json-vector-list (value)
   (if (vectorp value) (coerce value 'list) nil))
 
+(defun json-double (object key)
+  (coerce (json-get object key 0) 'double-float))
+
 (defun find-scenario (manifest scenario-id)
   (or
    (find scenario-id
@@ -95,13 +98,32 @@
        (cadr-ai:make-user-message
         :content text :timestamp timestamp))
       ((string= role "assistant")
-       (cadr-ai:make-assistant-message
+       (let* ((usage-spec (json-get spec "usage"))
+              (cost-spec (json-get usage-spec "cost")))
+         (cadr-ai:make-assistant-message
         :content (list (cadr-ai:make-text-content :text text))
-        :api :faux :provider :faux :model "faux-1"
-        :usage (cadr-ai:make-usage)
+        :api :faux
+        :provider
+        (intern (string-upcase (json-get spec "provider" "faux"))
+                :keyword)
+        :model (json-get spec "model" "faux-1")
+        :response-model (json-get spec "responseModel")
+        :usage
+        (cadr-ai:make-usage
+         :input (json-get usage-spec "input" 0)
+         :output (json-get usage-spec "output" 0)
+         :cache-read (json-get usage-spec "cacheRead" 0)
+         :cache-write (json-get usage-spec "cacheWrite" 0)
+         :cost
+         (cadr-ai:make-cost
+          :input (json-double cost-spec "input")
+          :output (json-double cost-spec "output")
+          :cache-read (json-double cost-spec "cacheRead")
+          :cache-write (json-double cost-spec "cacheWrite")
+          :total (json-double cost-spec "total")))
         :stop-reason :stop
         :response-id (format nil "render-seed-~D" index)
-        :timestamp timestamp))
+        :timestamp timestamp)))
       (t (error "Unsupported seed role: ~A" role)))))
 
 (defun append-seed-messages (session setup)
@@ -112,13 +134,12 @@
             session (seed-message spec index)))
   session)
 
-(defun make-render-session (cwd agent-dir scenario)
+(defun make-render-session (cwd session-directory scenario)
   (let* ((setup (json-get scenario "setup"))
          (persistent-p
            (not (null (json-get setup "persistentSession"))))
          (directory
-           (uiop:ensure-directory-pathname
-            (merge-pathnames "render-sessions/" agent-dir)))
+           (uiop:ensure-directory-pathname session-directory))
          (session
            (cadr-agent:create-session
             :directory directory
@@ -126,6 +147,10 @@
             :id "render-session"
             :timestamp +fixed-timestamp+))
          (sessions (list session)))
+    (setf (cadr-agent:session-path session)
+          (merge-pathnames
+           "2023-11-14T22-13-20-000Z_render-session.jsonl"
+           directory))
     (append-seed-messages session setup)
     (when persistent-p
       (let ((other
@@ -276,6 +301,14 @@
       :status '(:type :api-key :source "configured provider"))))
    #'string-lessp
    :key #'cadr-cli::oauth-selector-option-name))
+
+(defun render-logout-options ()
+  (list
+   (cadr-cli::make-oauth-selector-option
+    :id :faux :name "faux"
+    :auth-type :api-key
+    :method-name "faux API key"
+    :status '(:type :api-key :source "stored credential"))))
 
 (defun render-session-items (sessions)
   (mapcar
@@ -445,7 +478,7 @@
     (concatenate
      'string
      (subseq value 0 position)
-     "/pi/workspace")))
+     "/pi00/workspace")))
 
 (defun command-dispatcher
     (agent cwd session-directory settings-manager
@@ -479,14 +512,17 @@
               :directory session-directory
               :cwd cwd
               :output output
+              :ansi-theme-p t
+              :changelog-path
+              (uiop:getenv "RENDER_DIFF_REFERENCE_CHANGELOG")
               :status-function status-consumer)
              (values t (get-output-stream-string output))
              (values nil nil)))))))
 
-(defun run-scenario (scenario cwd agent-dir)
+(defun run-scenario (scenario cwd agent-dir session-directory)
   (multiple-value-bind
         (session session-directory persistent-p sessions)
-      (make-render-session cwd agent-dir scenario)
+      (make-render-session cwd session-directory scenario)
     (let* ((stream (json-get scenario "stream"))
            (chunk-characters
              (or (json-get stream "chunkCharacters") 4096))
@@ -503,6 +539,8 @@
            (auth-url-consumer nil)
            (auth-prompt-consumer nil)
            (status-consumer nil)
+           (extension-ui-consumer nil)
+           (extension-ui-worker nil)
            (abort-requested-p nil)
            (settings-manager
              (cadr-cli::make-memory-settings-manager))
@@ -556,7 +594,10 @@
                           "crashAfterMs"))
               (scope-line
                 (and
-                 (string= (json-get scenario "id") "overlays-core")
+                 (member
+                  (json-get scenario "id")
+                  '("overlays-core" "overlays-secondary")
+                  :test #'string=)
                  (cadr-cli::model-scope-startup-line
                   (mapcar
                    (lambda (model)
@@ -596,6 +637,31 @@
            (lambda (consumer) (setf auth-prompt-consumer consumer))
            :set-status-consumer
            (lambda (consumer) (setf status-consumer consumer))
+           :set-extension-ui-function
+           (lambda (consumer)
+             (setf extension-ui-consumer consumer)
+             (when
+                 (and consumer
+                      (not extension-ui-worker)
+                      (not (null
+                            (json-get
+                             (json-get scenario "setup")
+                             "extensionSurfaces"))))
+               (setf
+                extension-ui-worker
+                (sb-thread:make-thread
+                 (lambda ()
+                   (sleep 0.1)
+                   (funcall extension-ui-consumer :select
+                            '(:title "Extension Select"
+                              :options ("alpha" "beta")))
+                   (funcall extension-ui-consumer :input
+                            '(:title "Extension Input"
+                              :placeholder "type here"))
+                   (funcall extension-ui-consumer :editor
+                            '(:title "Extension Editor"
+                              :prefill "prefill")))
+                 :name "render-diff-extension-ui"))))
            :abort-function
            (lambda ()
              (setf abort-requested-p t)
@@ -629,6 +695,11 @@
                       "Model catalogs refreshed.")))
                (cadr-cli::model-selector-set-query
                 state (or query ""))))
+           :scoped-models-selector-function
+           (lambda ()
+             (cadr-cli::make-scoped-models-selector-state
+              :all-models (render-models)
+              :enabled-ids '("faux/faux-1" "other/other-1")))
            :settings-selector-function
            (lambda ()
              (cadr-cli::make-cli-settings-selector-state
@@ -652,6 +723,7 @@
            :session-items-function
            (lambda ()
              (render-session-items sessions))
+           :session-selector-show-rename-hint-p t
            :all-session-items-function
            (lambda ()
              (render-session-items sessions))
@@ -659,20 +731,75 @@
            (lambda ()
              (cadr-cli::session-tree-selector-data session))
            :login-options-function #'render-auth-options
+           :logout-options-function #'render-logout-options
+           :on-logout-selected (constantly nil)
+           :on-import-confirmed (constantly nil)
+           :on-clone-session
+           (lambda ()
+             (let ((clone
+                     (cadr-cli::clone-agent-session
+                      agent session-directory)))
+               (if (or (null clone)
+                       (eq clone :cancelled))
+                   (values nil nil nil)
+                   (values
+                    (cadr-agent:session-id clone)
+                    (copy-list
+                     (cadr-agent:session-messages clone))
+                    (cadr-agent:session-path clone)))))
+           :on-new-session
+           (lambda ()
+             (let ((new
+                     (cadr-agent:create-session
+                      :directory session-directory
+                      :cwd cwd
+                      :id "render-new-session"
+                      :timestamp +fixed-timestamp+)))
+               (cadr-cli::switch-agent-session agent new)
+               (values new nil
+                       (and persistent-p
+                            (namestring
+                             (cadr-agent:session-path new))))))
            :model "faux-1"
            :provider "faux"
            :thinking
            (cadr-cli::model-footer-thinking-level
             (cadr-agent:agent-model agent) :high)
+           :footer-state-function
+           (lambda ()
+             (let* ((current
+                      (cadr-agent:agent-session agent))
+                    (empty-p
+                      (null
+                       (and current
+                            (cadr-agent:session-messages current)))))
+               (append
+                (list
+                 :session-name
+                 (and current
+                      (cadr-agent:session-name current)))
+                (when empty-p
+                  (list
+                   :context-percent 0d0
+                   :input 0 :output 0
+                   :cache-read 0 :cache-write 0
+                   :latest-cache-hit-rate nil
+                   :cost 0d0 :cost-known-p nil)))))
            :cwd
            (cadr-cli::format-cwd-for-footer
             (namestring cwd)
             (namestring (user-homedir-pathname)))
            :footer-cwd (namestring cwd)
            :available-provider-count
-           (if (member (json-get scenario "id")
-                       '("overlays-core" "overlays-auth")
-                       :test #'string=)
+           (if (or (member (json-get scenario "id")
+                           '("overlays-core" "overlays-secondary")
+                           :test #'string=)
+                   (uiop:string-prefix-p
+                    "overlays-auth"
+                    (json-get scenario "id"))
+                   (string=
+                    "overlays-logout"
+                    (json-get scenario "id")))
                2
                1)
            :context-window 128000
@@ -697,16 +824,19 @@
            :alt-p nil
            :show-hardware-cursor-p nil))
         (when persistent-p
-          (cadr-cli::write-session-resume-hint
-           session session-directory
-           :terminal-p t
-           :default-session-directory-p nil)))
+          (let ((current
+                  (cadr-agent:agent-session agent)))
+            (cadr-cli::write-session-resume-hint
+             current session-directory
+             :terminal-p t
+             :default-session-directory-p nil))))
       (cadr-agent:agent-shutdown agent))))
 
 (defun main ()
   (destructuring-bind
-      (project quicklisp manifest-path scenario-id cwd-path agent-dir-path)
-      (subseq cl-user::*render-diff-arguments* 0 6)
+      (project quicklisp manifest-path scenario-id cwd-path agent-dir-path
+       session-directory-path)
+      (subseq cl-user::*render-diff-arguments* 0 7)
     (declare (ignore project quicklisp))
     (let* ((manifest
              (cadr-ai::parse-json
@@ -715,7 +845,10 @@
            (cwd (uiop:ensure-directory-pathname (pathname cwd-path)))
            (agent-dir
              (uiop:ensure-directory-pathname
-              (pathname agent-dir-path))))
-      (run-scenario scenario cwd agent-dir))))
+              (pathname agent-dir-path)))
+           (session-directory
+             (uiop:ensure-directory-pathname
+              (pathname session-directory-path))))
+      (run-scenario scenario cwd agent-dir session-directory))))
 
 (cadr-cli::call-with-fatal-condition-boundary #'main)

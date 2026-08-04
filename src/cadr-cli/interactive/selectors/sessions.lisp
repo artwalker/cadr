@@ -1087,7 +1087,15 @@
            :blank
            (list
             :help
-            (list "enter to save · escape to cancel"))
+            (list
+             (format nil "~A to save · ~A to cancel"
+                     (selector-keybinding-text
+                      (session-selector-state-keybindings selector)
+                      "tui.select.confirm")
+                     (selector-keybinding-text
+                      (session-selector-state-keybindings selector)
+                      "tui.select.cancel")))
+            :muted)
            :blank
            (list :border :accent)))
          width))))
@@ -1152,9 +1160,15 @@
         selector)
        (setf
         hint-1
-        (cadr-tui:theme-foreground
+       (cadr-tui:theme-foreground
          :error
-         "Delete session? enter confirm · escape cancel")
+         (format nil "Delete session? ~A confirm · ~A cancel"
+                 (selector-keybinding-text
+                  (session-selector-state-keybindings selector)
+                  "tui.select.confirm")
+                 (selector-keybinding-text
+                  (session-selector-state-keybindings selector)
+                  "tui.select.cancel")))
         hint-2 ""))
       ((session-selector-state-status-message selector)
        (setf
@@ -1227,8 +1241,10 @@
           (cadr-tui:theme-bold title)
           right width)
          width)
-        (selector-fit-line hint-1 width)
-        (selector-fit-line hint-2 width)
+        (selector-fit-line
+         (cadr-tui:truncate-to-width hint-1 width "…") width)
+        (selector-fit-line
+         (cadr-tui:truncate-to-width hint-2 width "…") width)
         ""
         (first
          (nth-value

@@ -28,6 +28,7 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "test/fixtures/render-diff/scenarios.json"
+DEFAULT_INTERFACE_REGISTRY = ROOT / "test/fixtures/render-diff/reachable-interfaces.json"
 DEFAULT_DISPOSITIONS = ROOT / "test/fixtures/render-diff/dispositions.json"
 PI_DRIVER = ROOT / "test/fixtures/render-diff/pi-driver.ts"
 CADR_DRIVER = ROOT / "test/fixtures/render-diff/cadr-driver.lisp"
@@ -38,6 +39,7 @@ KEYS = {
     "escape": b"\x1b",
     "ctrl+c": b"\x03",
     "ctrl+d": b"\x04",
+    "ctrl+r": b"\x12",
     "alt+enter": b"\x1b\r",
     "alt+up": b"\x1bp",
     "up": b"\x1b[A",
@@ -46,6 +48,7 @@ KEYS = {
     "right": b"\x1b[C",
     "tab": b"\t",
     "space": b" ",
+    "shift+l": b"L",
 }
 
 REQUIRED_COVERAGE = {
@@ -90,6 +93,235 @@ class HarnessFailure(RuntimeError):
     pass
 
 
+def git_blob(repo: Path, commit: str, path: str) -> str:
+    result = subprocess.run(
+        ["git", "-C", str(repo), "show", f"{commit}:{path}"],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise HarnessFailure(
+            f"cannot read fixed-baseline source {commit}:{path}: {result.stderr.strip()}"
+        )
+    return result.stdout
+
+
+def extract_baseline_slash_commands(repo: Path, commit: str) -> list[str]:
+    source = git_blob(
+        repo, commit, "packages/coding-agent/src/core/slash-commands.ts"
+    )
+    match = re.search(
+        r"BUILTIN_SLASH_COMMANDS[^=]*=\s*\[(.*?)\n\];", source, re.DOTALL
+    )
+    if match is None:
+        raise HarnessFailure("cannot locate fixed-baseline slash-command registry")
+    return re.findall(r'\{\s*name:\s*"([^"]+)"', match.group(1))
+
+
+def baseline_interactive_sources(repo: Path, commit: str) -> dict[str, str]:
+    prefix = "packages/coding-agent/src/modes/interactive"
+    result = subprocess.run(
+        ["git", "-C", str(repo), "ls-tree", "-r", "--name-only", commit, "--", prefix],
+        check=False,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    if result.returncode != 0:
+        raise HarnessFailure(
+            f"cannot enumerate fixed-baseline interactive sources: {result.stderr.strip()}"
+        )
+    paths = [path for path in result.stdout.splitlines() if path.endswith(".ts")]
+    if not paths:
+        raise HarnessFailure("fixed-baseline interactive source tree is empty")
+    return {path: git_blob(repo, commit, path) for path in paths}
+
+
+def baseline_interface_pattern() -> re.Pattern[str]:
+    return re.compile(
+        r"new\s+([A-Z][A-Za-z0-9]*(?:Selector|Dialog|Input|Editor)Component|"
+        r"SelectSubmenu|ThemeSubmenu|WarningSettingsSubmenu)\b"
+    )
+
+
+def extract_baseline_interface_constructors(repo: Path, commit: str) -> list[str]:
+    sources = baseline_interactive_sources(repo, commit)
+    pattern = baseline_interface_pattern()
+    return sorted({match for source in sources.values() for match in pattern.findall(source)})
+
+
+def extract_baseline_interface_sites(repo: Path, commit: str) -> list[str]:
+    sources = baseline_interactive_sources(repo, commit)
+    pattern = baseline_interface_pattern()
+    sites: list[str] = []
+    for path, source in sources.items():
+        for match in pattern.finditer(source):
+            line = source.count("\n", 0, match.start()) + 1
+            sites.append(f"{path}:{line}:{match.group(1)}")
+    return sorted(sites)
+
+
+def extract_cadr_overlay_kinds(repo: Path) -> list[str]:
+    source = (repo / "src/cadr-cli/interactive/controller.lisp").read_text(
+        encoding="utf-8"
+    )
+    kinds = set(re.findall(r"overlay-kind\s+:([a-z0-9-]+)", source))
+    kinds.update(re.findall(r"open-selector\s+:([a-z0-9-]+)", source))
+    return sorted(kinds)
+
+
+def manifest_checkpoints(manifest: dict[str, Any]) -> set[tuple[str, str]]:
+    return {
+        (scenario["id"], action["checkpoint"])
+        for scenario in manifest["scenarios"]
+        for action in scenario["actions"]
+        if "checkpoint" in action
+    } | {(scenario["id"], "process-exit") for scenario in manifest["scenarios"]}
+
+
+def validate_interface_registry(
+    data: dict[str, Any], manifest: dict[str, Any], repo: Path
+) -> dict[str, Any]:
+    if data.get("schemaVersion") != 1:
+        raise HarnessFailure("reachable-interface registry schemaVersion must be 1")
+    commit = manifest["baselineCommit"]
+    if data.get("baselineCommit") != commit:
+        raise HarnessFailure(
+            "reachable-interface registry baseline commit does not match manifest"
+        )
+    captures = manifest_checkpoints(manifest)
+
+    commands = data.get("slashCommands")
+    if not isinstance(commands, list):
+        raise HarnessFailure("reachable-interface registry must list slashCommands")
+    registered_commands = [entry.get("name") for entry in commands]
+    baseline_commands = extract_baseline_slash_commands(repo, commit)
+    missing_commands = [name for name in baseline_commands if name not in registered_commands]
+    stale_commands = [name for name in registered_commands if name not in baseline_commands]
+    if missing_commands:
+        raise HarnessFailure(
+            "unregistered baseline slash command: " + ", ".join(missing_commands)
+        )
+    if stale_commands:
+        raise HarnessFailure("stale slash command registration: " + ", ".join(stale_commands))
+    if registered_commands != baseline_commands:
+        raise HarnessFailure("slash command registry order differs from fixed baseline")
+
+    interfaces = data.get("interfaces")
+    if not isinstance(interfaces, list) or not interfaces:
+        raise HarnessFailure("reachable-interface registry must list interfaces")
+    ids: set[str] = set()
+    uncovered: list[str] = []
+    for entry in [*commands, *interfaces]:
+        capture = entry.get("capture")
+        if not isinstance(capture, dict):
+            uncovered.append(str(entry.get("id") or entry.get("name")))
+            continue
+        target = (capture.get("scenario"), capture.get("checkpoint"))
+        if target not in captures:
+            uncovered.append(str(entry.get("id") or entry.get("name")))
+    for entry in interfaces:
+        interface_id = entry.get("id")
+        if not isinstance(interface_id, str) or not interface_id:
+            raise HarnessFailure("reachable interface must have a non-empty id")
+        if interface_id in ids:
+            raise HarnessFailure(f"duplicate reachable interface id: {interface_id}")
+        ids.add(interface_id)
+        evidence = entry.get("baselineEvidence")
+        if not isinstance(evidence, dict):
+            raise HarnessFailure(f"missing baseline evidence for interface {interface_id}")
+        source = git_blob(repo, commit, evidence.get("path", ""))
+        token = evidence.get("token")
+        if not isinstance(token, str) or token not in source:
+            raise HarnessFailure(
+                f"stale baseline evidence for reachable interface {interface_id}"
+            )
+    if uncovered:
+        raise HarnessFailure(
+            "uncaptured reachable interface: " + ", ".join(sorted(uncovered))
+        )
+
+    constructor_map = data.get("baselineConstructors")
+    if not isinstance(constructor_map, dict):
+        raise HarnessFailure("reachable-interface registry must map baselineConstructors")
+    discovered_constructors = extract_baseline_interface_constructors(repo, commit)
+    if sorted(constructor_map) != discovered_constructors:
+        missing = sorted(set(discovered_constructors) - set(constructor_map))
+        stale = sorted(set(constructor_map) - set(discovered_constructors))
+        raise HarnessFailure(
+            "baseline interface constructor registry drift: "
+            f"unregistered={missing} stale={stale}"
+        )
+    for constructor, interface_ids in constructor_map.items():
+        if not isinstance(interface_ids, list) or not interface_ids:
+            raise HarnessFailure(
+                f"baseline constructor {constructor} has no reachable interface mapping"
+            )
+        unknown = sorted(set(interface_ids) - ids)
+        if unknown:
+            raise HarnessFailure(
+                f"baseline constructor {constructor} maps unknown interfaces: {unknown}"
+            )
+
+    site_map = data.get("baselineConstructorSites")
+    if not isinstance(site_map, dict):
+        raise HarnessFailure("reachable-interface registry must map baselineConstructorSites")
+    discovered_sites = extract_baseline_interface_sites(repo, commit)
+    if sorted(site_map) != discovered_sites:
+        missing = sorted(set(discovered_sites) - set(site_map))
+        stale = sorted(set(site_map) - set(discovered_sites))
+        raise HarnessFailure(
+            "baseline interface construction-site registry drift: "
+            f"unregistered={missing} stale={stale}"
+        )
+    for site, interface_ids in site_map.items():
+        if not isinstance(interface_ids, list) or not interface_ids:
+            raise HarnessFailure(
+                f"baseline construction site {site} has no reachable interface mapping"
+            )
+        unknown = sorted(set(interface_ids) - ids)
+        if unknown:
+            raise HarnessFailure(
+                f"baseline construction site {site} maps unknown interfaces: {unknown}"
+            )
+
+    overlay_map = data.get("cadrOverlayKinds")
+    if not isinstance(overlay_map, dict):
+        raise HarnessFailure("reachable-interface registry must map cadrOverlayKinds")
+    discovered_overlays = extract_cadr_overlay_kinds(repo)
+    if sorted(overlay_map) != discovered_overlays:
+        missing = sorted(set(discovered_overlays) - set(overlay_map))
+        stale = sorted(set(overlay_map) - set(discovered_overlays))
+        raise HarnessFailure(
+            "Cadr overlay-kind registry drift: "
+            f"unregistered={missing} stale={stale}"
+        )
+    for kind, interface_ids in overlay_map.items():
+        if not isinstance(interface_ids, list) or not interface_ids:
+            raise HarnessFailure(f"Cadr overlay kind {kind} has no interface mapping")
+        unknown = sorted(set(interface_ids) - ids)
+        if unknown:
+            raise HarnessFailure(
+                f"Cadr overlay kind {kind} maps unknown interfaces: {unknown}"
+            )
+
+    result = dict(data)
+    result["uncoveredInterfaces"] = []
+    return result
+
+
+def load_interface_registry(
+    path: Path, manifest: dict[str, Any], repo: Path
+) -> dict[str, Any]:
+    if not path.is_file():
+        raise HarnessFailure(f"reachable-interface registry is missing: {path}")
+    return validate_interface_registry(
+        json.loads(path.read_text(encoding="utf-8")), manifest, repo
+    )
+
+
 def load_manifest(path: Path) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schemaVersion") != 1:
@@ -112,6 +344,7 @@ def load_manifest(path: Path) -> dict[str, Any]:
     missing = sorted(REQUIRED_COVERAGE - coverage)
     if missing:
         raise HarnessFailure(f"render-diff manifest misses required coverage: {', '.join(missing)}")
+    load_interface_registry(DEFAULT_INTERFACE_REGISTRY, data, ROOT)
     return data
 
 
@@ -426,6 +659,7 @@ def driver_command(
     scenario_id: str,
     cwd: Path,
     agent_dir: Path,
+    session_dir: Path,
 ) -> tuple[list[str], Path]:
     if side == "pi":
         command = [
@@ -435,6 +669,7 @@ def driver_command(
             scenario_id,
             str(cwd),
             str(agent_dir),
+            str(session_dir),
         ]
         return command, baseline / "packages/coding-agent"
     quicklisp = Path(os.environ.get("QUICKLISP_SETUP", Path.home() / "quicklisp/setup.lisp"))
@@ -450,6 +685,7 @@ def driver_command(
         scenario_id,
         str(cwd),
         str(agent_dir),
+        str(session_dir),
     ]
     return command, ROOT
 
@@ -530,12 +766,15 @@ def capture_side(
     timeout: float,
     cadr_cache: Path | None = None,
 ) -> tuple[bytes, list[dict[str, Any]]]:
-    home = sandbox / side / "home"
-    cwd = sandbox / side / "workspace"
+    side_root = sandbox / ("pi00" if side == "pi" else "cadr")
+    home = side_root / "home"
+    cwd = side_root / "workspace"
     agent_dir = home / (".pi/agent" if side == "pi" else ".cadr")
+    session_dir = side_root / ("x/render-sessions" if side == "pi" else "render-sessions")
     home.mkdir(parents=True)
     cwd.mkdir(parents=True)
     agent_dir.mkdir(parents=True)
+    session_dir.mkdir(parents=True)
     (cwd / "sample.txt").write_text("alpha\n中文🙂\nomega\n", encoding="utf-8")
     (cwd / "notes").mkdir()
     (cwd / "notes/alpha.txt").write_text("needle alpha\n", encoding="utf-8")
@@ -544,9 +783,9 @@ def capture_side(
         config_dir = cwd / (".pi" if side == "pi" else ".cadr")
         config_dir.mkdir()
         (config_dir / "settings.json").write_text("{}\n", encoding="utf-8")
-    ready_path = sandbox / side / "ready"
+    ready_path = side_root / "ready"
     command, process_cwd = driver_command(
-        side, baseline, manifest_path, scenario["id"], cwd, agent_dir
+        side, baseline, manifest_path, scenario["id"], cwd, agent_dir, session_dir
     )
     master_fd, slave_fd = os.openpty()
     set_winsize(slave_fd, dimension["columns"], dimension["rows"])
@@ -557,6 +796,10 @@ def capture_side(
         environment = fixed_environment(
             home, dimension["columns"], dimension["rows"], ready_path
         )
+        if side == "cadr":
+            environment["RENDER_DIFF_REFERENCE_CHANGELOG"] = str(
+                baseline / "packages/coding-agent/CHANGELOG.md"
+            )
         if side == "cadr" and cadr_cache is not None:
             cadr_cache.mkdir(parents=True, exist_ok=True)
             environment["XDG_CACHE_HOME"] = str(cadr_cache)
@@ -663,16 +906,26 @@ def normalize_fixed_values(data: bytes) -> bytes:
         b"<CRASH_ID>",
         result,
     )
+    result = re.sub(
+        rb"(?<=--session )[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
+        b"<SESSION_ID>",
+        result,
+    )
     return result
 
 
 def normalized(data: bytes, side: str, sandbox: Path) -> bytes:
     """Apply only adjudication-candidate value substitutions; preserve layout and ANSI."""
     result = data
+    side_root = sandbox / ("pi00" if side == "pi" else "cadr")
     for old, new in (
-        (str(sandbox / side / "home").encode(), b"<HOME>"),
-        (str(sandbox / side / "workspace").encode(), b"<CWD>"),
-        (str(sandbox / side).encode(), b"<SANDBOX>"),
+        (
+            str(side_root / ("x/render-sessions" if side == "pi" else "render-sessions")).encode(),
+            b"<SESSION_DIR>",
+        ),
+        (str(side_root / "home").encode(), b"<HOME>"),
+        (str(side_root / "workspace").encode(), b"<CWD>"),
+        (str(side_root).encode(), b"<SANDBOX>"),
     ):
         result = result.replace(old, new)
     return normalize_fixed_values(result)
@@ -680,9 +933,11 @@ def normalized(data: bytes, side: str, sandbox: Path) -> bytes:
 
 def normalized_screen(data: bytes, side: str) -> bytes:
     """Normalize a terminal-emulated screen without changing replay geometry."""
-    escaped_side = re.escape(side.encode())
+    escaped_side = re.escape(("pi00" if side == "pi" else "cadr").encode())
     prefix = rb"/tmp/cadr-render-diff-[^/\r\n]+/" + escaped_side
-    result = re.sub(prefix + rb"/home", b"<HOME>", data)
+    session_suffix = rb"/x/render-sessions" if side == "pi" else rb"/render-sessions"
+    result = re.sub(prefix + session_suffix, b"<SESSION_DIR>", data)
+    result = re.sub(prefix + rb"/home", b"<HOME>", result)
     result = re.sub(prefix + rb"/workspace", b"<CWD>", result)
     result = re.sub(prefix, b"<SANDBOX>", result)
     return normalize_fixed_values(result)
@@ -1041,6 +1296,9 @@ def self_test(args: argparse.Namespace) -> int:
             b"\x1b]0;cadr - work\x07"
         ):
             raise HarnessFailure("terminal-title product normalization drifted")
+        resume_id = b"To resume this session: cadr --session 019fcc98-34ce-7166-84e3-ee03d1bfb3b2"
+        if not normalize_fixed_values(resume_id).endswith(b"--session <SESSION_ID>"):
+            raise HarnessFailure("resume-session UUID normalization drifted")
         screen = tmux_screen(
             b"\x1b[2J\x1b[H\x1b[31mred\x1b[0m", 12, 4, sandbox / "tmux"
         )

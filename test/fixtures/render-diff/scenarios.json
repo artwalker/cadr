@@ -159,7 +159,7 @@
     {
       "id": "overlays-core",
       "group": "overlays",
-      "coverage": ["overlay-model", "overlay-session", "overlay-fork", "overlay-tree", "overlay-settings", "overlay-trust"],
+      "coverage": ["overlay-model", "overlay-scoped-models", "overlay-session", "overlay-session-rename", "overlay-session-delete", "overlay-fork", "overlay-tree", "overlay-tree-label", "overlay-settings", "overlay-trust"],
       "description": "Every non-auth built-in overlay opened over a nonempty transcript.",
       "setup": {
         "persistentSession": true,
@@ -172,9 +172,13 @@
       "actions": [
         { "waitFor": "overlay answer" },
         { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" }, { "checkpoint": "overlay-model" }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" }, { "checkpoint": "overlay-session" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" }, { "checkpoint": "overlay-scoped-models" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" }, { "checkpoint": "overlay-session" },
+        { "send": "ctrl+r" }, { "waitFor": "Rename Session" }, { "checkpoint": "overlay-session-rename" }, { "send": "escape" }, { "pauseMs": 100 },
+        { "send": "ctrl+d" }, { "waitFor": "Delete session?" }, { "checkpoint": "overlay-session-delete" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
         { "sendText": "/fork" }, { "send": "enter" }, { "waitFor": "Fork from Message" }, { "checkpoint": "overlay-fork" }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" }, { "checkpoint": "overlay-tree" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" }, { "checkpoint": "overlay-tree" },
+        { "send": "shift+l" }, { "waitFor": "Label (empty to remove):" }, { "checkpoint": "overlay-tree-label" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 80 },
         { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" }, { "checkpoint": "overlay-settings" }, { "send": "escape" }, { "pauseMs": 80 },
         { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "Project trust" }, { "checkpoint": "overlay-trust" }, { "send": "escape" }, { "pauseMs": 80 },
         { "send": "ctrl+d" }
@@ -183,19 +187,73 @@
     {
       "id": "overlays-auth",
       "group": "overlays",
-      "coverage": ["overlay-auth-method", "overlay-login-provider", "overlay-login-dialog", "slash-login"],
-      "description": "Generic auth method, provider selector, provider-specific method, and login dialog.",
+      "coverage": ["overlay-auth-method", "overlay-login-provider", "slash-login"],
+      "description": "Generic authentication-method and provider selector chain.",
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login" }, { "send": "enter" }, { "waitFor": "Select authentication method:" }, { "checkpoint": "auth-method-generic" },
         { "send": "enter" }, { "waitFor": "Select provider to configure:" }, { "checkpoint": "login-provider" },
-        { "send": "escape" }, { "waitForNext": "Select authentication method:" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "send": "escape" }, { "waitForNext": "Select authentication method:" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-auth-oauth",
+      "group": "overlays",
+      "coverage": ["overlay-login-provider-method", "overlay-login-dialog"],
+      "description": "Provider-specific authentication method followed by its OAuth dialog.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
         { "sendSide": { "pi": "enter" } },
         { "waitFor": "Select authentication method for Render Auth:" }, { "checkpoint": "auth-method-provider" },
         { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
         { "pauseMs": 100 }, { "checkpoint": "login-cancelled" },
+        { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-auth-api-key",
+      "group": "overlays",
+      "coverage": ["overlay-login-api-key"],
+      "description": "Provider-specific API-key entry dialog.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
+        { "sendSide": { "pi": "enter" } },
+        { "waitFor": "Select authentication method for Render Auth:" }, { "send": "down" }, { "pauseMs": 50 }, { "send": "enter" }, { "waitFor": "Enter API key" }, { "checkpoint": "api-key-input" },
+        { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-logout",
+      "group": "overlays",
+      "coverage": ["overlay-logout", "slash-logout"],
+      "description": "Logout provider selector.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/logout" }, { "send": "enter" }, { "waitFor": "Select provider to logout:" }, { "checkpoint": "logout-provider" },
+        { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-secondary",
+      "group": "overlays",
+      "coverage": ["overlay-settings-warnings", "overlay-settings-thinking", "overlay-settings-theme", "overlay-settings-theme-automatic", "overlay-settings-theme-light", "overlay-settings-theme-dark", "overlay-import-confirmation"],
+      "description": "Every built-in secondary and tertiary settings/import interface.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" }, { "sendText": "Warnings" }, { "send": "enter" }, { "waitFor": "Anthropic extra usage" }, { "checkpoint": "settings-warnings" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "/settings" }, { "send": "enter" }, { "pauseMs": 100 }, { "sendText": "Thinking" }, { "send": "enter" }, { "waitFor": "Thinking Level" }, { "checkpoint": "settings-thinking" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "/settings" }, { "send": "enter" }, { "pauseMs": 100 }, { "sendText": "Theme" }, { "send": "enter" }, { "waitFor": "Select a theme" }, { "checkpoint": "settings-theme" },
+        { "send": "up" }, { "pauseMs": 50 }, { "send": "enter" }, { "waitFor": "Automatic Theme" }, { "checkpoint": "settings-theme-automatic" },
+        { "send": "enter" }, { "waitFor": "Light Theme" }, { "checkpoint": "settings-theme-light" }, { "send": "escape" }, { "pauseMs": 100 },
+        { "send": "down" }, { "pauseMs": 50 }, { "send": "enter" }, { "waitFor": "Dark Theme" }, { "checkpoint": "settings-theme-dark" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "/import missing.jsonl" }, { "send": "enter" }, { "waitFor": "Import session" }, { "checkpoint": "import-confirmation" }, { "send": "escape" }, { "pauseMs": 80 },
         { "send": "ctrl+d" }
       ]
     },
@@ -217,6 +275,33 @@
         { "checkpoint": "busy-queue" },
         { "send": "escape" }, { "waitFor": "Operation aborted" }, { "checkpoint": "stream-aborted" },
         { "send": "ctrl+c" }, { "pauseMs": 80 }, { "send": "ctrl+c" }
+      ]
+    },
+    {
+      "id": "extension-surfaces",
+      "group": "overlays",
+      "coverage": ["overlay-extension-select", "overlay-extension-input", "overlay-extension-editor"],
+      "description": "All three extension-owned modal UI surfaces.",
+      "setup": { "extensionSurfaces": true },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Extension Select" }, { "checkpoint": "extension-select" }, { "send": "escape" },
+        { "waitFor": "Extension Input" }, { "checkpoint": "extension-input" }, { "send": "escape" },
+        { "waitFor": "Extension Editor" }, { "checkpoint": "extension-editor" }, { "send": "escape" },
+        { "pauseMs": 80 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "autocomplete-surfaces",
+      "group": "overlays",
+      "coverage": ["autocomplete-slash", "autocomplete-path"],
+      "description": "Slash-command and file-path autocomplete surfaces.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/" }, { "waitFor": "settings" }, { "checkpoint": "autocomplete-slash" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+c" }, { "pauseMs": 100 },
+        { "sendText": "./" }, { "send": "tab" }, { "waitFor": "sample.txt" }, { "checkpoint": "autocomplete-path" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+c" },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -252,6 +337,67 @@
         { "sendText": "/export" }, { "send": "enter" }, { "waitFor": "Session exported to:" }, { "checkpoint": "slash-export" },
         { "sendText": "/reload" }, { "send": "enter" }, { "waitFor": "Reloaded keybindings" }, { "checkpoint": "slash-reload" },
         { "send": "ctrl+d" }, { "waitFor": "To resume this session:" }, { "checkpoint": "post-exit-resume" }
+      ]
+    },
+    {
+      "id": "commands-informational",
+      "group": "commands",
+      "coverage": ["slash-session", "slash-name", "slash-changelog", "slash-hotkeys", "slash-share", "slash-clone"],
+      "description": "Every informational or local persistent-session command.",
+      "setup": {
+        "persistentSession": true,
+        "seedMessages": [
+          { "role": "user", "text": "cost question" },
+          {
+            "role": "assistant",
+            "text": "first cost answer",
+            "provider": "openai-codex",
+            "model": "gpt-5.6-luna",
+            "responseModel": "gpt-5.6-luna-2026-07-01",
+            "usage": { "input": 10000, "output": 1000, "cacheWrite": 90000, "cost": { "input": 0.01, "output": 0.01, "cacheWrite": 0.09, "total": 0.11 } }
+          },
+          { "role": "user", "text": "cached question" },
+          {
+            "role": "assistant",
+            "text": "second cost answer",
+            "provider": "openai-codex",
+            "model": "gpt-5.6-luna",
+            "usage": { "input": 60000, "output": 2000, "cacheRead": 50000, "cost": { "input": 0.06, "output": 0.02, "cacheRead": 0.005, "total": 0.085 } }
+          },
+          {
+            "role": "assistant",
+            "text": "third cost answer",
+            "provider": "deepseek",
+            "model": "deepseek-v4-flash",
+            "usage": { "output": 400, "cacheRead": 3000, "cost": { "output": 0.001, "cacheRead": 0.003, "total": 0.004 } }
+          }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "third cost answer" },
+        { "sendText": "/session" }, { "send": "enter" }, { "waitFor": "Cache Re-billed:" }, { "checkpoint": "slash-session" },
+        { "sendText": "/name render name" }, { "send": "enter" }, { "waitFor": "Session name set:" }, { "checkpoint": "slash-name" },
+        { "sendText": "/changelog" }, { "send": "enter" }, { "waitFor": "What's New" }, { "pauseMs": 80 }, { "checkpoint": "slash-changelog" },
+        { "sendText": "/hotkeys" }, { "send": "enter" }, { "waitForNext": "Keyboard Shortcuts" }, { "pauseMs": 80 }, { "checkpoint": "slash-hotkeys" },
+        { "sendText": "/share" }, { "send": "enter" }, { "waitFor": "GitHub CLI" }, { "checkpoint": "slash-share" },
+        { "sendText": "/clone" }, { "send": "enter" }, { "waitFor": "Cloned to new session" }, { "checkpoint": "slash-clone" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "commands-empty-lifecycle",
+      "group": "commands",
+      "coverage": ["slash-copy", "slash-compact", "slash-import", "slash-new", "slash-quit"],
+      "description": "Empty-session commands, new-session lifecycle, and explicit quit.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/copy" }, { "send": "enter" }, { "waitFor": "No agent messages to copy yet." }, { "checkpoint": "slash-copy" },
+        { "sendText": "/compact" }, { "send": "enter" }, { "waitFor": "Nothing to compact" }, { "checkpoint": "slash-compact" },
+        { "sendText": "/import" }, { "send": "enter" }, { "waitFor": "Usage: /import" }, { "checkpoint": "slash-import" },
+        { "sendText": "/new" }, { "send": "enter" }, { "waitFor": "New session started" }, { "checkpoint": "slash-new" },
+        { "sendText": "/quit" }, { "send": "enter" }
       ]
     },
     {

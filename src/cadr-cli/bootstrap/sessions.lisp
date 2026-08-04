@@ -728,6 +728,8 @@
          clone
          (cadr-agent::copy-session-entry
           entry)))
+      (setf (cadr-agent:session-name clone)
+            (cadr-agent:session-name source))
       (run-session-lifecycle
        agent :session-shutdown
        :reason :fork
@@ -955,8 +957,76 @@
      :cache-write cache-write
      :cost cost)))
 
+(defun session-usage-breakdown (session)
+  (let ((totals (make-hash-table :test #'equal))
+        (order nil))
+    (flet
+        ((record (key usage)
+           (when (and key usage)
+             (unless (gethash key totals)
+               (setf (gethash key totals)
+                     (list :cost 0d0 :tokens 0))
+               (push key order))
+             (let ((entry (gethash key totals)))
+               (incf
+                (getf entry :cost)
+                (cadr-ai:cost-total
+                 (cadr-ai:usage-cost usage)))
+               (incf
+                (getf entry :tokens)
+                (+ (cadr-ai:usage-input usage)
+                   (cadr-ai:usage-output usage)
+                   (cadr-ai:usage-cache-read usage)
+                   (cadr-ai:usage-cache-write usage)))
+               (setf (gethash key totals) entry)))))
+      (dolist (session-entry
+               (cadr-agent:session-entries session))
+        (let ((message
+                (cadr-agent:session-entry-message
+                 session-entry)))
+          (cond
+            ((typep message 'cadr-ai:assistant-message)
+             (record
+              (format
+               nil "~(~A~)/~A"
+               (cadr-ai:assistant-message-provider message)
+               (or
+                (cadr-ai:assistant-message-response-model
+                 message)
+                (cadr-ai:assistant-message-model message)))
+              (cadr-ai:assistant-message-usage message)))
+            ((member
+              (cadr-agent:session-entry-type session-entry)
+              '(:compaction :branch-summary))
+             (record
+              "Tools/summaries"
+              (cadr-agent:session-entry-usage
+               session-entry)))))))
+    (stable-sort
+     (loop for key in (nreverse order)
+           for entry = (gethash key totals)
+           when (or
+                 (plusp (getf entry :cost))
+                 (plusp (getf entry :tokens)))
+             collect
+             (list :key key
+                   :cost (getf entry :cost)
+                   :tokens (getf entry :tokens)))
+     #'> :key (lambda (entry) (getf entry :cost)))))
+
+(defun session-info-style (text kind ansi-theme-p)
+  (case kind
+    (:heading
+     (cadr-tui:theme-bold
+      text :enabled-p ansi-theme-p))
+    (:label
+     (cadr-tui:theme-foreground
+      :dim text :enabled-p ansi-theme-p))
+    (otherwise text)))
+
 (defun write-session-command-info
-    (session output)
+    (session output
+     &key ansi-theme-p model-price-function)
   (let* ((stats
            (session-command-stats session))
          (input
@@ -965,24 +1035,44 @@
               (getf stats :cache-write)))
          (total
            (+ input
-              (getf stats :output))))
-    (format output "Session Info~%~%")
+              (getf stats :output)))
+         (breakdown
+           (session-usage-breakdown session))
+         (cache-waste
+           (compute-cache-waste
+            (cadr-agent:session-entries session)
+            :model-price-function
+            model-price-function)))
+    (format output "~A~%~%"
+            (session-info-style
+             "Session Info" :heading ansi-theme-p))
     (when (cadr-agent:session-name session)
-      (format output "Name: ~A~%"
+      (format output "~A ~A~%"
+              (session-info-style
+               "Name:" :label ansi-theme-p)
               (cadr-agent:session-name session)))
     (format
      output
-     "File: ~A~%ID: ~A~%~%Messages~%Total: ~:D~%User: ~:D~%Assistant: ~:D~%Tools: ~:D calls, ~:D results~%~%Tokens~%Input: ~:D~%"
+     "~A ~A~%~A ~A~%~%~A~%~A ~:D~%~A ~:D~%~A ~:D~%~A ~:D calls, ~:D results~%~%~A~%~A ~:D~%"
+     (session-info-style "File:" :label ansi-theme-p)
      (namestring
       (cadr-agent:session-path session))
+     (session-info-style "ID:" :label ansi-theme-p)
      (cadr-agent:session-id session)
+     (session-info-style "Messages" :heading ansi-theme-p)
+     (session-info-style "Total:" :label ansi-theme-p)
      (+ (getf stats :user)
         (getf stats :assistant)
         (getf stats :tool-results))
+     (session-info-style "User:" :label ansi-theme-p)
      (getf stats :user)
+     (session-info-style "Assistant:" :label ansi-theme-p)
      (getf stats :assistant)
+     (session-info-style "Tools:" :label ansi-theme-p)
      (getf stats :tool-calls)
      (getf stats :tool-results)
+     (session-info-style "Tokens" :heading ansi-theme-p)
+     (session-info-style "Input:" :label ansi-theme-p)
      input)
     (when
         (plusp
@@ -990,27 +1080,83 @@
             (getf stats :cache-write)))
       (format
        output
-       "  Cached: ~:D~%  Uncached: ~:D"
+       "  ~A ~:D ~A~%  ~A ~:D"
+       (session-info-style "Cached:" :label ansi-theme-p)
        (getf stats :cache-read)
+       (session-info-style
+        (format nil "(~,1F%)"
+                (* 100d0
+                   (/ (getf stats :cache-read)
+                      input)))
+        :label ansi-theme-p)
+       (session-info-style "Uncached:" :label ansi-theme-p)
        (+ (getf stats :input)
           (getf stats :cache-write)))
       (when (plusp
              (getf stats :cache-write))
-        (format output
-                " (~:D written to cache)"
-                (getf stats :cache-write)))
+        (format
+         output " ~A"
+         (session-info-style
+          (format nil "(~:D written to cache)"
+                  (getf stats :cache-write))
+          :label ansi-theme-p)))
       (terpri output))
     (format
      output
-     "Output: ~:D~%Total: ~:D~%"
+     "~A ~:D~%~A ~:D~%"
+     (session-info-style "Output:" :label ansi-theme-p)
      (getf stats :output)
+     (session-info-style "Total:" :label ansi-theme-p)
      total)
     (when
-        (plusp (getf stats :cost))
+        (or
+         (plusp (getf stats :cost))
+         (plusp
+          (cache-waste-missed-tokens cache-waste)))
       (format
        output
-       "~%Cost~%Total: $~,3F~%"
-       (getf stats :cost)))))
+       "~%~A~%~A $~,3F"
+       (session-info-style "Cost" :heading ansi-theme-p)
+       (session-info-style "Total:" :label ansi-theme-p)
+       (getf stats :cost))
+      (when (> (length breakdown) 1)
+        (dolist (entry breakdown)
+          (format
+           output "~%  ~A $~,3F ~A"
+           (session-info-style
+            (format nil "~A:" (getf entry :key))
+            :label ansi-theme-p)
+           (getf entry :cost)
+           (session-info-style
+            (format nil "(~A tokens)"
+                    (cadr-tui::format-footer-tokens
+                     (getf entry :tokens)))
+            :label ansi-theme-p))))
+      (when
+          (plusp
+           (cache-waste-missed-tokens cache-waste))
+        (let* ((count
+                 (cache-waste-miss-count cache-waste))
+               (detail
+                 (format nil "(~:D tokens, ~D ~A)"
+                         (cache-waste-missed-tokens cache-waste)
+                         count
+                         (if (= count 1) "miss" "misses"))))
+          (if (>= (cache-waste-missed-cost cache-waste)
+                  0.0001d0)
+              (format
+               output "~%~A $~,3F ~A"
+               (session-info-style
+                "Cache Re-billed:" :label ansi-theme-p)
+               (cache-waste-missed-cost cache-waste)
+               (session-info-style
+                detail :label ansi-theme-p))
+              (format
+               output "~%~A ~A"
+               (session-info-style
+                "Cache Re-billed:" :label ansi-theme-p)
+               detail))))
+      (terpri output))))
 
 (defun default-changelog-path ()
   (or
@@ -1036,6 +1182,58 @@
     ("/" . "Slash commands")
     ("!" . "Run bash command")
     ("!!" . "Run bash command without adding it to context")))
+
+(defun hotkeys-command-markdown (&optional user-bindings)
+  (let ((manager
+          (cadr-tui:make-keybindings-manager
+           :user-bindings user-bindings)))
+    (labels
+        ((display (name)
+           (format-key-text
+            (format
+             nil "~{~A~^/~}"
+             (cadr-tui:keybinding-keys manager name))
+            :capitalize-p t)))
+      (format
+       nil
+       "**Navigation**~%| Key | Action |~%|-----|--------|~%| `~A` / `~A` / `~A` / `~A` | Move cursor / browse history |~%| `~A` / `~A` | Move by word |~%| `~A` | Start of line |~%| `~A` | End of line |~%| `~A` | Jump forward to character |~%| `~A` | Jump backward to character |~%| `~A` / `~A` | Scroll by page |~%~%**Editing**~%| Key | Action |~%|-----|--------|~%| `~A` | Send message |~%| `~A` | New line |~%| `~A` | Delete word backwards |~%| `~A` | Delete word forwards |~%| `~A` | Delete to start of line |~%| `~A` | Delete to end of line |~%| `~A` | Paste the most-recently-deleted text |~%| `~A` | Cycle through the deleted text after pasting |~%| `~A` | Undo |~%~%**Other**~%| Key | Action |~%|-----|--------|~%| `~A` | Path completion / accept autocomplete |~%| `~A` | Cancel autocomplete / abort streaming |~%| `~A` | Clear editor (first) / exit (second) |~%| `~A` | Exit (when editor is empty) |~%| `~A` | Suspend to background |~%| `~A` | Cycle thinking level |~%| `~A` / `~A` | Cycle models |~%| `~A` | Open model selector |~%| `~A` | Toggle tool output expansion |~%| `~A` | Toggle thinking block visibility |~%| `~A` | Edit message in external editor |~%| `~A` | Copy last assistant message |~%| `~A` | Queue follow-up message |~%| `~A` | Restore queued messages |~%| `~A` | Paste image or text from clipboard |~%| `/` | Slash commands |~%| `!` | Run bash command |~%| `!!` | Run bash command (excluded from context) |"
+       (display "tui.editor.cursorUp")
+       (display "tui.editor.cursorDown")
+       (display "tui.editor.cursorLeft")
+       (display "tui.editor.cursorRight")
+       (display "tui.editor.cursorWordLeft")
+       (display "tui.editor.cursorWordRight")
+       (display "tui.editor.cursorLineStart")
+       (display "tui.editor.cursorLineEnd")
+       (display "tui.editor.jumpForward")
+       (display "tui.editor.jumpBackward")
+       (display "tui.editor.pageUp")
+       (display "tui.editor.pageDown")
+       (display "tui.input.submit")
+       (display "tui.input.newLine")
+       (display "tui.editor.deleteWordBackward")
+       (display "tui.editor.deleteWordForward")
+       (display "tui.editor.deleteToLineStart")
+       (display "tui.editor.deleteToLineEnd")
+       (display "tui.editor.yank")
+       (display "tui.editor.yankPop")
+       (display "tui.editor.undo")
+       (display "tui.input.tab")
+       (display "app.interrupt")
+       (display "app.clear")
+       (display "app.exit")
+       (display "app.suspend")
+       (display "app.thinking.cycle")
+       (display "app.model.cycleForward")
+       (display "app.model.cycleBackward")
+       (display "app.model.select")
+       (display "app.tools.expand")
+       (display "app.thinking.toggle")
+       (display "app.editor.external")
+       (display "app.message.copy")
+       (display "app.message.followUp")
+       (display "app.message.dequeue")
+       (display "app.clipboard.pasteImage")))))
 
 (defun write-hotkeys-command
     (output &optional user-bindings)
@@ -1166,6 +1364,8 @@
        keybindings
        status-function
        export-options-function
+       ansi-theme-p
+       model-price-function
        (confirm-function
          (lambda (title message)
            (declare (ignore title message))
@@ -1212,7 +1412,9 @@
           :message "The agent has no persistent session"))
        (write-session-command-info
         (cadr-agent:agent-session agent)
-        output)
+        output
+        :ansi-theme-p ansi-theme-p
+        :model-price-function model-price-function)
        (finish-output output)
        t)
       ((string= command "/share")
@@ -1236,27 +1438,38 @@
                (parse-changelog
                 (or changelog-path
                     (default-changelog-path)))))
-         (format output "What's New~%~%")
-         (if entries
-             (loop
-               for entry
-               in (reverse entries)
-               do
-               (format
-                output "~A~@[~%~]"
-                (normalize-changelog-links
-                 (getf entry :content)
-                 (getf entry :version))
-                (not
-                 (eq entry
-                     (first entries)))))
-             (format output
-                     "No changelog entries found.~%")))
+         (let ((markdown
+                 (if entries
+                     (format
+                      nil "~{~A~^~%~%~}"
+                      (mapcar
+                       (lambda (entry)
+                         (normalize-changelog-links
+                          (getf entry :content)
+                          (getf entry :version)))
+                       (reverse entries)))
+                     "No changelog entries found.")))
+           (if status-function
+               (funcall
+                status-function
+                (list :title "What's New"
+                      :markdown markdown)
+                :rich)
+               (format output "What's New~%~%~A~%"
+                       markdown))))
        (finish-output output)
        t)
       ((string= command "/hotkeys")
-       (write-hotkeys-command
-        output keybindings)
+       (if status-function
+           (funcall
+            status-function
+            (list
+             :title "Keyboard Shortcuts"
+             :markdown
+             (hotkeys-command-markdown keybindings))
+            :rich)
+           (write-hotkeys-command
+            output keybindings))
        (finish-output output)
        t)
       ((string= command "/new")
@@ -1264,8 +1477,11 @@
                (new-agent-session
                 agent directory cwd)))
          (unless (eq new :cancelled)
-           (format output
-                   "New session started~%")))
+           (if status-function
+               (funcall status-function
+                        "New session started" :success)
+               (format output
+                       "✓ New session started~%"))))
        (finish-output output)
        t)
       ((string= command "/compact")
@@ -1273,8 +1489,14 @@
                 agent
                 :force-p t
                 :custom-instructions argument)
-         (format output
-                 "session> Nothing to compact~%"))
+         (if status-function
+             (funcall
+              status-function
+              "Compaction failed: Nothing to compact (session too small)"
+              :error)
+             (format
+              output
+              "Error: Compaction failed: Nothing to compact (session too small)~%")))
        (finish-output output)
        t)
       ((string= command "/copy")
@@ -1290,9 +1512,13 @@
                (condition (condition)
                  (format output "~A~%"
                          condition)))
-             (format
-              output
-              "No agent messages to copy yet.~%")))
+             (if status-function
+                 (funcall status-function
+                          "No agent messages to copy yet."
+                          :error)
+                 (format
+                  output
+                  "Error: No agent messages to copy yet.~%"))))
        (finish-output output)
        t)
       ((string= command "/clone")
@@ -1315,8 +1541,12 @@
                (path-command-argument
                 line "/import")))
          (if (null path)
-             (format output
-                     "Usage: /import <path.jsonl>~%")
+             (if status-function
+                 (funcall status-function
+                          "Usage: /import <path.jsonl>"
+                          :error)
+                 (format output
+                         "Error: Usage: /import <path.jsonl>~%"))
              (if
                  (not
                   (funcall

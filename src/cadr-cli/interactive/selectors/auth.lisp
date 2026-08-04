@@ -121,16 +121,15 @@
        :blank
        (list
         :lines
-        (list
-         (selector-component-text-line
-          (concatenate
-           'string
-           (raw-key-hint "↑↓" "navigate") "  "
-           (selector-keybinding-hint
-            keybindings "tui.select.confirm" "select") "  "
-           (selector-keybinding-hint
-            keybindings "tui.select.cancel" "cancel"))
-          width)))
+        (component-text-lines
+         (concatenate
+          'string
+          (raw-key-hint "↑↓" "navigate") "  "
+          (selector-keybinding-hint
+           keybindings "tui.select.confirm" "select") "  "
+          (selector-keybinding-hint
+           keybindings "tui.select.cancel" "cancel"))
+         width))
        :blank
        (list :border :border)))
      width)))
@@ -213,8 +212,7 @@
            (selector-component-text-line
             (cadr-tui:theme-foreground
              :text
-             (format nil "Enter ~A API key"
-                     (oauth-selector-option-name option)))
+             "Enter API key")
             width)))
          (list :component input-lines row column)
          (list

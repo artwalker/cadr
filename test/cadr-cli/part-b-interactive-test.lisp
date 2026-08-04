@@ -622,7 +622,9 @@
                       '(#\Space) (nth row plain))))
         (is (equal
              (list "" "" (format nil "~60A" " Rename Session") "" ""
-                   "enter to save · escape to cancel" "")
+                   (format nil "~60A"
+                           " enter to save · escape/ctrl+c to cancel")
+                   "")
              (list
               (first plain)
               (third plain)
@@ -2076,7 +2078,7 @@
                   joined))
       (is (search "> renamed" joined))
       (is (= 9 label-row))
-      (is (= 9 label-column))
+      (is (= 11 label-column))
       (is (not (search "Edit Label" joined)))))))
 
 (test goal9-fork-history-overlay-matches-baseline-message-layout

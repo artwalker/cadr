@@ -146,6 +146,15 @@
 (defun add-tui-success (state text)
   (add-tui-message-entry state :success text))
 
+(defun add-tui-rich-command (state title markdown)
+  (append-tui-entry
+   state
+   (make-tui-entry
+    :type :command-markdown
+    :label title
+    :text markdown))
+  state)
+
 (defun terminal-hyperlink (url label)
   (format nil "~C]8;;~A~C~A~C]8;;~C"
           #\Escape url (code-char 7) label

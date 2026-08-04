@@ -42,11 +42,9 @@
     ((stream notification-output-stream) character)
   (sb-thread:with-mutex
       ((notification-stream-lock stream))
-    (if (char= character #\Newline)
-        (notification-stream-flush stream)
-        (write-char
-         character
-         (notification-stream-buffer stream))))
+    (write-char
+     character
+     (notification-stream-buffer stream)))
   character)
 
 #+sbcl
@@ -257,6 +255,7 @@
        on-trust-selected
        on-import-confirmed
        on-fork-selected
+       on-clone-session
        on-new-session
        on-session-selected
        on-tree-selected
@@ -345,6 +344,7 @@
              (cadr-tui:editor-set-autocomplete-provider
               editor
               (make-tui-autocomplete-provider
+               :base-path cwd
                :model-items-function
                model-items-function
                :login-options-function
@@ -626,10 +626,22 @@
            (sb-thread:with-mutex (lock)
              (add-tui-notice state text))
            (request-render))
-         (status (text)
-           (sb-thread:with-mutex (lock)
-             (add-tui-status state text))
-           (request-render))
+         (status (text &optional (level :status))
+           (case level
+             (:error (show-error text))
+             (:warning (warning text))
+             (:success (success text))
+             (:rich
+              (sb-thread:with-mutex (lock)
+                (add-tui-rich-command
+                 state
+                 (getf text :title)
+                 (getf text :markdown)))
+              (request-render))
+             (otherwise
+              (sb-thread:with-mutex (lock)
+                (add-tui-status state text))
+              (request-render))))
          (warning (text)
            (sb-thread:with-mutex (lock)
              (add-tui-warning state text))
@@ -1013,17 +1025,24 @@
                (getf arguments :overlay-options)
                (getf arguments :on-handle)))
              (:input
-              (show-extension-overlay
-               (make-runtime-auth-input-state
-                (list :type :text
-                      :message (getf arguments :title)
-                      :placeholder (getf arguments :placeholder)))
-               :signal (getf arguments :signal)
-               :timeout-ms (getf arguments :timeout-ms)))
+              (let* ((component
+                       (make-extension-input-dialog
+                        (getf arguments :title)))
+                     (custom-state
+                       (make-extension-custom-ui-state
+                        :component component
+                        :done-function #'finish-custom-ui
+                        :legacy-p t)))
+                (setf active-custom-ui-state custom-state)
+                (show-extension-overlay
+                 custom-state
+                 :signal (getf arguments :signal)
+                 :timeout-ms (getf arguments :timeout-ms))))
              (:editor
-              (let ((component (cadr-tui:make-multiline-editor)))
-                (cadr-tui:editor-set-text
-                 component (or (getf arguments :prefill) ""))
+              (let ((component
+                      (make-extension-editor-dialog
+                       (getf arguments :title)
+                       (getf arguments :prefill))))
                 (let ((custom-state
                         (make-extension-custom-ui-state
                          :component component
@@ -1646,6 +1665,20 @@
                 (open-scoped-models-selector))
                ((string= trimmed "/fork")
                 (open-fork-selector))
+               ((and (string= trimmed "/clone")
+                     on-clone-session)
+                (multiple-value-bind
+                      (selected-session
+                       selected-messages
+                       selected-path)
+                    (funcall on-clone-session)
+                  (when selected-session
+                    (replace-session-state
+                     selected-session
+                     selected-messages
+                     selected-path)
+                    (status
+                     "Cloned to new session"))))
                ((string= trimmed "/new")
                 (when on-new-session
                   (multiple-value-bind
@@ -1902,15 +1935,24 @@
                       (and
                        (eq overlay-kind :login-provider)
                        login-provider-auth-type)))
+                ;; Clear the visible overlay before waking a blocked extension
+                ;; UI caller.  That caller may synchronously open the next
+                ;; surface as soon as FINISH-CUSTOM-UI broadcasts; clearing it
+                ;; afterwards would clobber the replacement overlay.
+                (setf overlay nil
+                      overlay-kind nil)
                 (when
                     (eq cancelled-kind
                         :extension-custom)
                   (finish-custom-ui nil))
-                (setf overlay nil
-                      overlay-kind nil)
-                (if return-to-login-method-p
-                    (open-login-method-selector)
-                    (request-render))))
+                (cond
+                  (return-to-login-method-p
+                   (open-login-method-selector))
+                  ((eq cancelled-kind
+                       :import-confirmation)
+                   (status "Import cancelled"))
+                  (t
+                   (request-render)))))
              (:load-all
               (start-all-session-load
                overlay value)

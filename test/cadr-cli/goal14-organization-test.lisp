@@ -311,7 +311,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 103 definition-count)
+    (is (= 106 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -450,7 +450,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 227 definition-count)
+    (is (= 235 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -605,7 +605,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 291 definition-count)
+    (is (= 292 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

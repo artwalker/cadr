@@ -1146,48 +1146,51 @@
                             model))
                    "Model unavailable")))
              width :padding-x 0))))
-       (list
-        ""
-        (selector-component-text-line
-         (concatenate
-          'string
-          (cadr-tui:theme-foreground
-           :dim
-           (format
-            nil
-            "~A toggle · ~A all · ~A clear · ~A provider · ~A/~A reorder · ~A save · ~A"
-            (scoped-models-binding-label
-             state "tui.select.confirm")
-            (scoped-models-binding-label
-             state "app.models.enableAll")
-            (scoped-models-binding-label
-             state "app.models.clearAll")
-            (scoped-models-binding-label
-             state "app.models.toggleProvider")
-            (scoped-models-binding-label
-             state "app.models.reorderUp")
-            (scoped-models-binding-label
-             state "app.models.reorderDown")
-            (scoped-models-binding-label
-             state "app.models.save")
-            (if all-p
-                "all enabled"
-                (format
-                 nil "~D/~D enabled~@[ · ~D unavailable~]"
-                 enabled
-                 (length
-                  (scoped-models-selector-state-all-ids
-                   state))
-                 (and (plusp unavailable)
-                      unavailable)))))
-          (if
-              (scoped-models-selector-state-dirty-p
-               state)
-              (cadr-tui:theme-foreground
-               :warning " (unsaved)")
-              ""))
-         width :padding-x 0)
-             (selector-border-line width)))))))))
+       (append
+        (list "")
+        (mapcar
+         (lambda (line)
+           (selector-fit-line line width :pad-p t))
+         (cadr-tui:wrap-text
+          (concatenate
+           'string
+           (cadr-tui:theme-foreground
+            :dim
+            (format
+             nil
+             "  ~A toggle · ~A all · ~A clear · ~A provider · ~A/~A reorder · ~A save · ~A"
+             (scoped-models-binding-label
+              state "tui.select.confirm")
+             (scoped-models-binding-label
+              state "app.models.enableAll")
+             (scoped-models-binding-label
+              state "app.models.clearAll")
+             (scoped-models-binding-label
+              state "app.models.toggleProvider")
+             (scoped-models-binding-label
+              state "app.models.reorderUp")
+             (scoped-models-binding-label
+              state "app.models.reorderDown")
+             (scoped-models-binding-label
+              state "app.models.save")
+             (if all-p
+                 "all enabled"
+                 (format
+                  nil "~D/~D enabled~@[ · ~D unavailable~]"
+                  enabled
+                  (length
+                   (scoped-models-selector-state-all-ids
+                    state))
+                  (and (plusp unavailable)
+                       unavailable)))))
+           (if
+               (scoped-models-selector-state-dirty-p
+                state)
+               (cadr-tui:theme-foreground
+                :warning " (unsaved)")
+               ""))
+          width))
+        (list (selector-border-line width))))))))))
            width)))
     (values
      lines 5

@@ -718,10 +718,14 @@
               (max 1 (- width 4)))))))
        (list
         ""
-        (selector-dim-line
-         (if search-p
-             "  Type to search · Enter/Space to change · Esc to cancel"
-             "  Enter/Space to change · Esc to cancel")
+        (selector-fit-line
+         (cadr-tui:truncate-to-width
+          (cadr-tui:theme-foreground
+           :dim
+           (if search-p
+               "  Type to search · Enter/Space to change · Esc to cancel"
+               "  Enter/Space to change · Esc to cancel"))
+          width "...")
          width))))))
 
 (defun render-settings-select-submenu
@@ -730,7 +734,11 @@
          (selected (settings-selector-state-submenu-selected state)))
     (append
      (list
-      (selector-title-line title width)
+      (selector-component-text-line
+       (cadr-tui:theme-foreground
+        :accent
+        (cadr-tui:theme-bold title))
+       width :padding-x 0)
       "")
      (mapcar
       (lambda (line) (selector-muted-line line width))
@@ -752,16 +760,24 @@
                 for label = (settings-option-label option)
                 for desc = (settings-option-description option)
                 for prefix = (if selected-p "→ " "  ")
-                for primary =
-                  (if (and desc (> width 40))
-                      (concatenate
-                       'string label
+                for label-padding =
+                  (and desc (> width 40)
                        (make-string
                         (max 1 (- primary-width
                                   (cadr-tui:visible-width label)))
-                        :initial-element #\Space)
-                       desc)
-                      label)
+                        :initial-element #\Space))
+                for description-start =
+                  (+ (cadr-tui:visible-width prefix)
+                     (cadr-tui:visible-width label)
+                     (if label-padding
+                         (cadr-tui:visible-width label-padding)
+                         0))
+                for fitted-desc =
+                  (and label-padding
+                       (cadr-tui:truncate-to-width
+                        desc
+                        (max 0 (- width description-start 2))
+                        ""))
                 collect
                 (selector-fit-line
                  (concatenate
@@ -769,9 +785,19 @@
                   (if selected-p
                       (cadr-tui:theme-foreground :accent prefix)
                       prefix)
-                  (if selected-p
-                      (cadr-tui:theme-foreground :accent primary)
-                      primary))
+                  (cond
+                    (selected-p
+                     (cadr-tui:theme-foreground
+                      :accent
+                      (if label-padding
+                          (concatenate
+                           'string label label-padding fitted-desc)
+                          label)))
+                    (label-padding
+                     (concatenate
+                      'string label label-padding
+                      (cadr-tui:theme-foreground :muted fitted-desc)))
+                    (t label)))
                  width))
           (when (or (> start 0) (< end total))
             (list
@@ -832,21 +858,64 @@
           state width "Theme"
           "Select a theme, or choose Automatic to follow terminal appearance."))
         (:theme-light
-         (render-settings-select-submenu
-          state width "Light Theme"
-          "Select the theme to use for light terminal appearance"))
+         (append
+          (list
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             :accent
+             (cadr-tui:theme-bold "Automatic Theme"))
+            width :padding-x 0)
+           "")
+          (component-text-lines
+           (cadr-tui:theme-foreground
+            :muted
+            "Choose themes for terminal light and dark appearance.")
+           width :padding-x 0)
+          (list
+           (selector-muted-line
+            "Light/dark detection requires terminal support."
+            width)
+           "")
+          (render-settings-select-submenu
+           state width "Light Theme"
+           "Select the theme to use for light terminal appearance")))
         (:theme-dark
-         (render-settings-select-submenu
-          state width "Dark Theme"
-          "Select the theme to use for dark terminal appearance"))
+         (append
+          (list
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             :accent
+             (cadr-tui:theme-bold "Automatic Theme"))
+            width :padding-x 0)
+           "")
+          (component-text-lines
+           (cadr-tui:theme-foreground
+            :muted
+            "Choose themes for terminal light and dark appearance.")
+           width :padding-x 0)
+          (list
+           (selector-muted-line
+            "Light/dark detection requires terminal support."
+            width)
+           "")
+          (render-settings-select-submenu
+           state width "Dark Theme"
+           "Select the theme to use for dark terminal appearance")))
         (:theme-automatic
          (append
           (list
-           (selector-title-line "Automatic Theme" width)
-           ""
-           (selector-muted-line
-            "Choose themes for terminal light and dark appearance."
-            width)
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             :accent
+             (cadr-tui:theme-bold "Automatic Theme"))
+            width :padding-x 0)
+           "")
+          (component-text-lines
+           (cadr-tui:theme-foreground
+            :muted
+            "Choose themes for terminal light and dark appearance.")
+           width :padding-x 0)
+          (list
            (selector-muted-line
             "Light/dark detection requires terminal support."
             width)

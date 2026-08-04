@@ -207,7 +207,7 @@
       (is (zerop status)
           "Render-diff gate orchestration regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 2 tests" error-output))
+      (is (search "Ran 4 tests" error-output))
       (is (search "OK" error-output)))))
 
 (test goal11-continuous-alt-input-benchmarks-are-release-gated

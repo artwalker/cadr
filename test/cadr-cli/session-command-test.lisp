@@ -548,3 +548,127 @@
         (is (search "Total: 27" text))
         (is (search "Cost" text))
         (is (search "$0.047" text))))))
+
+(test post-goal15-session-info-matches-baseline-spacing-styles-percent-and-cost-breakdown
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "session-stats"))
+           (agent
+             (cadr-agent:make-agent
+              :provider :openai-codex
+              :model (cli-mock-model)
+              :session session))
+           (output (make-string-output-stream)))
+      (declare (ignore _))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "first"))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "one"))
+        :api :openai-responses
+        :provider :openai-codex
+        :model "gpt-5.6-luna"
+        :response-model "gpt-5.6-luna-2026-07-01"
+        :usage
+        (cadr-ai:make-usage
+         :input 10000 :output 1000 :cache-write 90000
+         :cost
+         (cadr-ai:make-cost
+          :input 0.010d0 :output 0.010d0
+          :cache-write 0.090d0 :total 0.110d0))
+        :stop-reason :stop :timestamp 1000))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "second"))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "two"))
+        :api :openai-responses
+        :provider :openai-codex
+        :model "gpt-5.6-luna"
+        :usage
+        (cadr-ai:make-usage
+         :input 60000 :output 2000 :cache-read 50000
+         :cost
+         (cadr-ai:make-cost
+          :input 0.060d0 :output 0.020d0
+          :cache-read 0.005d0 :total 0.085d0))
+        :stop-reason :stop :timestamp 2000))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "three"))
+        :api :openai-completions
+        :provider :deepseek
+        :model "deepseek-v4-flash"
+        :usage
+        (cadr-ai:make-usage
+         :input 0 :output 400 :cache-read 3000
+         :cost
+         (cadr-ai:make-cost
+          :cache-read 0.003d0 :output 0.001d0 :total 0.004d0))
+        :stop-reason :stop :timestamp 3000))
+      (let ((first-id
+              (cadr-agent:session-entry-id
+               (first (cadr-agent:session-entries session)))))
+        (cadr-agent:session-append-compaction
+         session "summary" (list first-id) first-id 1000
+         :usage
+         (cadr-ai:make-usage
+          :input 500 :output 100
+          :cost
+          (cadr-ai:make-cost
+           :input 0.001d0 :output 0.001d0 :total 0.002d0))))
+      (is
+       (cadr-cli::handle-session-command
+        "/session" agent
+        :directory sessions :cwd cwd :output output
+        :ansi-theme-p t))
+      (let* ((styled (get-output-stream-string output))
+             (plain
+               (cadr-tui:strip-terminal-sequences styled)))
+        (is (search (format nil "Session Info~%~%File:") plain))
+        (is (search (format nil "Messages~%Total:") plain))
+        (is (search (format nil "Tokens~%Input:") plain))
+        (is (search "Cached: 53,000 (24.8%)" plain))
+        (is (search "Uncached: 160,500 (90,000 written to cache)" plain))
+        (is (search "openai-codex/gpt-5.6-luna-2026-07-01: $0.110 (101k tokens)" plain))
+        (is (search "openai-codex/gpt-5.6-luna: $0.085 (112k tokens)" plain))
+        (is (search "deepseek/deepseek-v4-flash: $0.004 (3.4k tokens)" plain))
+        (is (search "Tools/summaries: $0.002 (600 tokens)" plain))
+        (is (search "Cache Re-billed: $0.045 (50,000 tokens, 1 miss)" plain))
+        (is (search (format nil "~C[1mSession Info" #\Escape) styled))
+        (is (search (format nil "~C[1mMessages" #\Escape) styled))
+        (is (search (format nil "~C[1mTokens" #\Escape) styled))
+        (is (search (format nil "~C[1mCost" #\Escape) styled))))))
+
+(test post-goal15-hotkeys-table-uses-baseline-natural-column-widths
+  (let* ((lines
+           (cadr-tui:render-markdown
+            (cadr-cli::hotkeys-command-markdown)
+            100 :padding-x 1))
+         (plain
+           (mapcar
+            (lambda (line)
+              (string-right-trim
+               " "
+               (cadr-tui:strip-terminal-sequences
+                line)))
+            lines)))
+    (is
+     (find
+      " │ Ctrl+P / Shift+Ctrl+P │ Cycle models                             │"
+      plain :test #'string=))
+    (is
+     (find
+      " │ !!                    │ Run bash command (excluded from context) │"
+      plain :test #'string=))))

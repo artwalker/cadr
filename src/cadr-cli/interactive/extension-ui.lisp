@@ -9,6 +9,132 @@
   (legacy-p nil :type boolean)
   (disposed-p nil :type boolean))
 
+(defclass extension-input-dialog (cadr-tui:component)
+  ((title
+    :initarg :title
+    :reader extension-input-dialog-title)
+   (input
+    :initarg :input
+    :reader extension-input-dialog-input)))
+
+(defun make-extension-input-dialog (title)
+  (make-instance
+   'extension-input-dialog
+   :title title
+   :input (cadr-tui:make-single-line-input :prompt "> ")))
+
+(defmethod cadr-tui:component-render
+    ((dialog extension-input-dialog) width &key focused-p)
+  (declare (ignore focused-p))
+  (multiple-value-bind (input-lines input-row input-column)
+      (cadr-tui:render-single-line-input
+       (extension-input-dialog-input dialog)
+       width)
+    (let ((prefix
+            (list
+             (selector-border-line width)
+             ""
+             (selector-component-text-line
+              (cadr-tui:theme-foreground
+               :accent (extension-input-dialog-title dialog)
+               :enabled-p t)
+              width)
+             "")))
+      (values
+       (append
+        prefix input-lines
+        (append
+         (list "")
+         (component-text-lines
+          (format
+           nil "~A  ~A"
+           (selector-keybinding-hint
+            (cadr-tui:get-keybindings)
+            "tui.select.confirm" "submit")
+           (selector-keybinding-hint
+            (cadr-tui:get-keybindings)
+            "tui.select.cancel" "cancel"))
+          width)
+         (list "" (selector-border-line width))))
+       (+ (length prefix) input-row)
+       input-column))))
+
+(defmethod cadr-tui:component-handle-event
+    ((dialog extension-input-dialog) event)
+  (if (member (cadr-tui:input-event-kind event)
+              '(:escape :cancel :interrupt))
+      (values :cancel nil)
+      (multiple-value-bind (action value)
+          (cadr-tui:component-handle-event
+           (extension-input-dialog-input dialog) event)
+        (values (if (eq action :submit) :select action)
+                value))))
+
+(defclass extension-editor-dialog (cadr-tui:component)
+  ((title
+    :initarg :title
+    :reader extension-editor-dialog-title)
+   (editor
+    :initarg :editor
+    :reader extension-editor-dialog-editor)))
+
+(defun make-extension-editor-dialog (title prefill)
+  (let ((editor (cadr-tui:make-multiline-editor)))
+    (cadr-tui:editor-set-text editor (or prefill ""))
+    (make-instance
+     'extension-editor-dialog
+     :title title :editor editor)))
+
+(defmethod cadr-tui:component-render
+    ((dialog extension-editor-dialog) width &key focused-p)
+  (declare (ignore focused-p))
+  (multiple-value-bind (editor-lines editor-row editor-column)
+      (cadr-tui:render-editor
+       (extension-editor-dialog-editor dialog)
+       width :focused-p t)
+    (let ((prefix
+            (list
+             (selector-border-line width)
+             ""
+             (selector-component-text-line
+              (cadr-tui:theme-foreground
+               :accent (extension-editor-dialog-title dialog)
+               :enabled-p t)
+              width)
+             "")))
+      (values
+       (append
+        prefix editor-lines
+        (append
+         (list "")
+         (component-text-lines
+          (format
+           nil "~A  ~A  ~A  ~A"
+           (selector-keybinding-hint
+            (cadr-tui:get-keybindings)
+            "tui.select.confirm" "submit")
+           (selector-keybinding-hint
+            (cadr-tui:get-keybindings)
+            "tui.input.newLine" "newline")
+           (selector-keybinding-hint
+            (cadr-tui:get-keybindings)
+            "tui.select.cancel" "cancel")
+           (selector-keybinding-hint
+            (cadr-tui:get-keybindings)
+            "app.editor.external" "external editor"))
+          width)
+         (list "" (selector-border-line width))))
+       (+ (length prefix) editor-row)
+       editor-column))))
+
+(defmethod cadr-tui:component-handle-event
+    ((dialog extension-editor-dialog) event)
+  (if (member (cadr-tui:input-event-kind event)
+              '(:escape :cancel :interrupt))
+      (values :cancel nil)
+      (cadr-tui:component-handle-event
+       (extension-editor-dialog-editor dialog) event)))
+
 (defstruct (runtime-auth-input-state
             (:constructor %make-runtime-auth-input-state))
   prompt
@@ -92,19 +218,18 @@
                       width)
                      "")
                     url-lines
-                    (list
-                     ""
-                     (selector-component-text-line
-                      (cadr-tui:theme-foreground
-                       :warning (getf prompt :instructions)
-                       :enabled-p t)
-                      width)
-                     ""
-                     (selector-component-text-line
-                      (cadr-tui:theme-foreground
-                       :dim (getf prompt :message)
-                       :enabled-p t)
-                      width)))))
+                    (list "")
+                    (component-text-lines
+                     (cadr-tui:theme-foreground
+                      :warning (getf prompt :instructions)
+                      :enabled-p t)
+                     width)
+                    (list "")
+                    (component-text-lines
+                     (cadr-tui:theme-foreground
+                      :dim (getf prompt :message)
+                      :enabled-p t)
+                     width))))
             (values
              (append
               prefix input-lines
@@ -191,13 +316,6 @@
     :height (max 1 (length labels))
     :show-filter-p nil)))
 
-(defun framed-select-key-hint (state name)
-  (let ((keys
-          (cadr-tui:keybinding-keys
-           (framed-select-state-keybindings state)
-           name)))
-    (format nil "~{~A~^/~}" keys)))
-
 (defun framed-select-title (state now)
   (let ((deadline (framed-select-state-deadline state)))
     (if deadline
@@ -236,19 +354,29 @@
          :separator '(#\Newline))))
      (list "")
      (mapcar
-      #'indented
+      (lambda (line)
+        (indented
+         (if (find #\Escape line)
+             line
+             (cadr-tui:theme-foreground
+              :text line :enabled-p t))))
       (cadr-tui:render-select-list
        (framed-select-state-select-list state)
        (max 1 (1- width))
        :ansi-theme-p t))
+     (list "")
+     (component-text-lines
+      (concatenate
+       'string
+       (raw-key-hint "↑↓" "navigate") "  "
+       (selector-keybinding-hint
+        (framed-select-state-keybindings state)
+        "tui.select.confirm" "select") "  "
+       (selector-keybinding-hint
+        (framed-select-state-keybindings state)
+        "tui.select.cancel" "cancel"))
+      width)
      (list
-      ""
-      (indented
-       (format nil "↑↓ navigate  ~A select  ~A cancel"
-               (framed-select-key-hint
-                state "tui.select.confirm")
-               (framed-select-key-hint
-                state "tui.select.cancel")))
       ""
       (cadr-tui:theme-foreground
        :border

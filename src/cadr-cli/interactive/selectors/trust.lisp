@@ -272,7 +272,7 @@
               (trust-option-saved-p
                option
                (trust-selector-state-saved-entry state))))
-        (selector-component-text-line
+        (component-text-lines
          (concatenate
           'string
           (if selected-p

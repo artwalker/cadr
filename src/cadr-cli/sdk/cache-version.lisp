@@ -26,6 +26,23 @@
      (cadr-ai:cost-cache-write
       (cadr-ai:usage-cost usage)))))
 
+(defun assistant-prompt-tokens (message)
+  (multiple-value-bind
+        (input cache-read cache-write
+         ignored-read-cost ignored-write-cost)
+      (assistant-cache-usage message)
+    (declare (ignore ignored-read-cost ignored-write-cost))
+    (+ input cache-read cache-write)))
+
+(defun assistant-reported-cache-p (message)
+  (multiple-value-bind
+        (ignored-input cache-read cache-write
+         ignored-read-cost ignored-write-cost)
+      (assistant-cache-usage message)
+    (declare
+     (ignore ignored-input ignored-read-cost ignored-write-cost))
+    (plusp (+ cache-read cache-write))))
+
 (defun cache-read-price-per-million
     (message model-price-function)
   (or
@@ -51,53 +68,64 @@
     (unless previous
       (return-from detect-cache-miss nil))
     (multiple-value-bind
-          (previous-input previous-read
-           previous-write ignored-read-cost
-           ignored-write-cost)
-        (assistant-cache-usage previous)
-      (declare
-       (ignore previous-input
-               ignored-read-cost
-               ignored-write-cost))
-      (multiple-value-bind
-            (current-input current-read
-             current-write current-read-cost
-             current-write-cost)
-          (assistant-cache-usage current-message)
-        (declare
-         (ignore current-input current-read-cost))
-        (let ((cacheable
-                (+ previous-read previous-write)))
-          (unless
-              (and
-               (plusp cacheable)
-               (zerop current-read)
-               (plusp current-write))
+          (current-input current-read current-write
+           current-read-cost current-write-cost)
+        (assistant-cache-usage current-message)
+      (let* ((prompt-tokens
+               (+ current-input current-read current-write))
+             (reported-cache-p
+               (or
+                (some #'assistant-reported-cache-p
+                      prior-messages)
+                (plusp (+ current-read current-write)))))
+        (unless
+            (and
+             (plusp prompt-tokens)
+             (or reported-cache-p
+                 (plusp (+ current-read current-write))))
+          (return-from detect-cache-miss nil))
+        (let ((missed-tokens
+                (-
+                 (min
+                  (assistant-prompt-tokens previous)
+                  prompt-tokens)
+                 current-read)))
+          (when (<= missed-tokens 1024)
             (return-from detect-cache-miss nil))
-          (let* ((write-price
-                   (*
-                    (/ current-write-cost
-                       current-write)
-                    1000000d0))
-                 (read-price
-                   (cache-read-price-per-million
-                    current-message
-                    model-price-function))
+          (let* ((paid-tokens (+ current-input current-write))
+                 (cost
+                   (cadr-ai:usage-cost
+                    (cadr-ai:assistant-message-usage
+                     current-message)))
+                 (paid-per-token
+                   (if (plusp paid-tokens)
+                       (/ (+ (cadr-ai:cost-input cost)
+                             current-write-cost)
+                          paid-tokens)
+                       0d0))
+                 (read-per-token
+                   (if (plusp current-read)
+                       (/ current-read-cost current-read)
+                       (/
+                        (cache-read-price-per-million
+                         current-message model-price-function)
+                        1000000d0)))
                  (missed-cost
-                   (*
-                    (/ cacheable 1000000d0)
-                    (max 0d0
-                         (- write-price
-                            read-price)))))
+                   (* missed-tokens
+                      (max 0d0
+                           (- paid-per-token
+                              read-per-token)))))
             (make-cache-miss
-             :missed-tokens cacheable
+             :missed-tokens missed-tokens
              :missed-cost missed-cost
              :idle-milliseconds
-             (-
-              (cadr-ai:assistant-message-timestamp
-               current-message)
-              (cadr-ai:assistant-message-timestamp
-               previous))
+             (max
+              0
+              (-
+               (cadr-ai:assistant-message-timestamp
+                current-message)
+               (cadr-ai:assistant-message-timestamp
+                previous)))
              :model-changed-p
              (not
               (and
@@ -107,8 +135,7 @@
                 (cadr-ai:assistant-message-provider
                  current-message))
                (string=
-                (cadr-ai:assistant-message-model
-                 previous)
+                (cadr-ai:assistant-message-model previous)
                 (cadr-ai:assistant-message-model
                  current-message))))
              :message current-message)))))))
@@ -116,26 +143,32 @@
 (defun compute-cache-waste
     (items &key model-price-function)
   (let ((prior nil)
-        (reset-p nil)
         (misses nil))
     (dolist (item items)
       (cond
-        ((eq item :compaction)
-         (setf reset-p t
-               prior nil))
-        ((typep item
-                'cadr-ai:assistant-message)
-         (if reset-p
-             (setf reset-p nil)
+        ((or
+          (member item '(:compaction :branch-summary))
+          (and
+           (typep item 'cadr-agent:session-entry)
+           (member
+            (cadr-agent:session-entry-type item)
+            '(:compaction :branch-summary))))
+         (setf prior nil))
+        (t
+         (let ((message
+                 (if (typep item 'cadr-agent:session-entry)
+                     (cadr-agent:session-entry-message item)
+                     item)))
+           (when (typep message 'cadr-ai:assistant-message)
              (let ((miss
                      (detect-cache-miss
-                      prior item
+                      prior message
                       :model-price-function
                       model-price-function)))
                (when miss
-                 (push miss misses))))
-         (setf prior
-               (append prior (list item))))))
+                 (push miss misses)))
+             (setf prior
+                   (append prior (list message))))))))
     (setf misses (nreverse misses))
     (make-cache-waste
      :missed-tokens

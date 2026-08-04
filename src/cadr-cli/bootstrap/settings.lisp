@@ -217,8 +217,8 @@
             (empty-json-object)))
          (theme-names
            (remove-duplicates
-            (cons
-             "dark"
+            (append
+             '("dark" "light")
              (loop
                for theme
                  in (and resources

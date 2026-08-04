@@ -243,6 +243,137 @@
          :type :notice :text "legacy notice entry")
          80)))))))
 
+(test post-goal15-notification-stream-preserves-one-multiline-component
+  (let ((notifications nil)
+        (stream nil))
+    (setf stream
+          (cadr-cli::make-notification-output-stream
+           (lambda (text)
+             (push text notifications))))
+    (write-string "Session Info\n\nFile: session.jsonl\nID: fixed\n" stream)
+    (is (null notifications))
+    (finish-output stream)
+    (is
+     (equal
+      '("Session Info\n\nFile: session.jsonl\nID: fixed\n")
+      notifications))))
+
+(test post-goal15-styled-multiline-notice-preserves-heading-and-label-colors
+  (let* ((heading
+           (cadr-tui:theme-bold
+            "Session Info" :enabled-p t))
+         (label
+           (cadr-tui:theme-foreground
+            :dim "File:" :enabled-p t))
+         (rendered
+           (cadr-cli::render-tui-entry
+            (cadr-cli::make-tui-entry
+             :type :notice
+             :text (format nil "~A~%~%~A session.jsonl~%"
+                           heading label))
+            80)))
+    (is (string= (concatenate 'string " " heading)
+                 (second rendered)))
+    (is (string= (concatenate 'string " " label " session.jsonl")
+                 (fourth rendered)))
+    (is (null
+         (search
+          (cadr-tui:theme-foreground
+           :dim heading :enabled-p t)
+          (second rendered))))))
+
+(test post-goal15-extension-editor-dialog-retains-baseline-frame-title-and-prefill
+  (let* ((dialog
+           (cadr-cli::make-extension-editor-dialog
+            "Extension Editor" "prefill"))
+         (plain
+           (mapcar #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:component-render dialog 80))))
+    (is (string= (make-string 80 :initial-element #\─)
+                 (first plain)))
+    (is-true
+     (some (lambda (line)
+             (search "Extension Editor" line))
+           plain))
+    (is-true (some (lambda (line) (search "prefill" line)) plain))
+    (is-true (some (lambda (line) (search "ctrl+g" line)) plain))
+    (is-true
+     (some (lambda (line) (search "external editor" line)) plain))))
+
+(test post-goal15-cancelling-sequential-extension-surfaces-does-not-clobber-the-next-overlay
+  (let ((extension-ui nil)
+        (results nil)
+        (worker nil)
+        (worker-done
+          (sb-thread:make-semaphore :count 0)))
+    (let ((terminal
+            (make-instance
+             'footer-sync-test-terminal
+             :columns 80 :rows 18
+             :inputs
+             (list
+              (footer-sync-wait-for-screen-text "Extension Select")
+              (string #\Escape)
+              (footer-sync-wait-for-screen-text "Extension Input")
+              (string #\Escape)
+              (footer-sync-wait-for-screen-text "Extension Editor")
+              (string #\Escape)
+              (let ((attempts 0))
+                (lambda (terminal)
+                  (let ((screen
+                          (format
+                           nil "~{~A~^~%~}"
+                           (mapcar
+                            #'cadr-tui:strip-terminal-sequences
+                            (cadr-tui:virtual-terminal-snapshot terminal)))))
+                    (or (null (search "Extension Editor" screen))
+                        (progn
+                          (when (> (incf attempts) 200)
+                            (error
+                             "Timed out waiting for extension editor cancellation"))
+                          nil)))))
+              (footer-sync-submit-input "/quit")))))
+      (unwind-protect
+           (progn
+             (cadr-cli::run-tui
+              (constantly nil)
+              :model "mock"
+              :terminal terminal
+              :set-extension-ui-function
+              (lambda (consumer)
+                (setf extension-ui consumer)
+                (unless worker
+                  (setf
+                   worker
+                   (sb-thread:make-thread
+                    (lambda ()
+                      (handler-case
+                          (setf
+                           results
+                           (list
+                            (funcall
+                             extension-ui :select
+                             '(:title "Extension Select"
+                               :options ("alpha" "beta")))
+                            (funcall
+                             extension-ui :input
+                             '(:title "Extension Input"))
+                            (funcall
+                             extension-ui :editor
+                             '(:title "Extension Editor"
+                               :prefill "prefill"))))
+                        (condition (condition)
+                          (setf results condition)))
+                      (sb-thread:signal-semaphore worker-done))
+                    :name "sequential-extension-ui-test")))))
+             (is
+              (sb-thread:wait-on-semaphore
+               worker-done :timeout 2d0))
+             (is (equal '(nil nil nil) results)))
+        (when (and worker
+                   (sb-thread:thread-alive-p worker))
+          (cadr-cli::stop-thread-for-cleanup worker))))))
+
 (test goal10-user-message-channels-match-baseline-prefix-copy-and-spacing
   (labels
       ((plain (type text)
@@ -4259,3 +4390,85 @@
        ""
        (footer-sync-submit-input "/quit"))))
     (is (null command-lines))))
+
+(test post-goal15-clone-replaces-transcript-before-showing-status
+  (let ((command-lines nil)
+        (screen nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :session "old-session"
+     :messages
+     (list
+      (cadr-ai:make-user-message
+       :content "old transcript must disappear"))
+     :on-clone-session
+     (lambda ()
+       (values
+        "new-session"
+        (list
+         (cadr-ai:make-user-message
+          :content "new cloned transcript"))
+        #p"/tmp/new-session.jsonl"))
+     :command-function
+     (lambda (line)
+       (push line command-lines)
+       t)
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 90 :rows 18
+      :inputs
+      (list
+       (footer-sync-submit-input "/clone")
+       (footer-sync-wait-for-screen-text
+        "Cloned to new session")
+       (lambda (terminal)
+         (setf
+          screen
+          (format
+           nil "~{~A~^~%~}"
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-tui:virtual-terminal-snapshot
+             terminal))))
+         t)
+       (footer-sync-submit-input "/quit"))))
+    (is (null command-lines))
+    (is (search "new cloned transcript" screen))
+    (is (search "Cloned to new session" screen))
+    (is (null
+         (search "old transcript must disappear"
+                 screen)))))
+
+(test post-goal15-import-escape-is-a-normal-baseline-cancellation-status
+  (let ((screen nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "mock"
+     :terminal
+     (make-instance
+      'footer-sync-test-terminal
+      :columns 90 :rows 18
+      :inputs
+      (list
+       (footer-sync-submit-input
+        "/import missing.jsonl")
+       (footer-sync-wait-for-screen-text
+        "Import session")
+       (string #\Escape)
+       (footer-sync-wait-for-screen-text
+        "Import cancelled")
+       (lambda (terminal)
+         (setf
+          screen
+          (format
+           nil "~{~A~^~%~}"
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-tui:virtual-terminal-snapshot
+             terminal))))
+         t)
+       (footer-sync-submit-input "/quit"))))
+    (is (search "Import cancelled" screen))
+    (is (null (search "Error:" screen)))))

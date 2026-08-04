@@ -295,8 +295,8 @@
                       #\Escape #\Escape)
               ""
               (format nil
-                      "~C[38;2;102;102;102m  Type to search · Enter/Space to change~C[0m"
-                      #\Escape #\Escape)
+                      "~C[38;2;102;102;102m  Type to search · Enter/Space to cha~C[0m...~C[0m"
+                      #\Escape #\Escape #\Escape)
               (format nil "~C[38;2;95;135;255m~A~C[39m"
                       #\Escape
                       (make-string width :initial-element #\─)
@@ -358,7 +358,7 @@
      (equal
       (list "────────────" (goal9-b3-full-width-input-line "term" 12)
         "" "→ Terminal p" "" "  Descript"
-        "  ion 24" "" "  Type to se" "────────────")
+        "  ion 24" "" "  Type to..." "────────────")
       (goal9-b3-plain-lines
        (cadr-cli::render-settings-selector state 12))))
     (cadr-cli::settings-selector-handle-event
@@ -468,7 +468,7 @@
     (is
      (equal
       (list
-       border (goal9-b3-full-width-line " Thinking Level" width) ""
+       border (goal9-b3-full-width-line "Thinking Level" width) ""
        "Select reasoning depth for thinking-capable models" ""
        "  off         No reasoning"
        "→ low         Light reasoning (~2k tokens)"
@@ -491,7 +491,7 @@
     (is
      (equal
       (list
-       border (goal9-b3-full-width-line " Theme" width) ""
+       border (goal9-b3-full-width-line "Theme" width) ""
        "Select a theme, or choose Automatic to follow terminal appearance."
        ""
        "  Automatic   Use separate themes for light and dark terminal appearance"
@@ -507,9 +507,11 @@
     (is
      (equal
       (list
-       border (goal9-b3-full-width-line " Automatic Theme" width) ""
-       "Choose themes for terminal light and dark appearance."
-       "Light/dark detection requires terminal support." ""
+       border (goal9-b3-full-width-line "Automatic Theme" width) ""
+       (goal9-b3-full-width-line
+        "Choose themes for terminal light and dark appearance." width)
+       "Light/dark detection requires terminal support."
+       ""
        "→ Light theme  dark"
        "  Dark theme   dark"
        "  Apply        save and go back"

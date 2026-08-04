@@ -67,27 +67,30 @@
     selection))
 
 (defparameter +tree-selector-keybinding-definitions+
-  (list
-   (cons
-    "app.tree.foldOrUp"
-    #+darwin '("alt+left" "ctrl+left")
-    #-darwin '("ctrl+left" "alt+left"))
-   (cons
-    "app.tree.unfoldOrDown"
-    #+darwin '("alt+right" "ctrl+right")
-    #-darwin '("ctrl+right" "alt+right"))
-   '("app.message.copy" . ("ctrl+x"))
-   '("app.tree.editLabel" . ("shift+l"))
-   '("app.tree.toggleLabelTimestamp"
-     . ("shift+t"))
-   '("app.tree.filter.default" . ("ctrl+d"))
-   '("app.tree.filter.noTools" . ("ctrl+t"))
-   '("app.tree.filter.userOnly" . ("ctrl+u"))
-   '("app.tree.filter.labeledOnly" . ("ctrl+l"))
-   '("app.tree.filter.all" . ("ctrl+a"))
-   '("app.tree.filter.cycleForward" . ("ctrl+o"))
-   '("app.tree.filter.cycleBackward"
-     . ("shift+ctrl+o"))))
+  (append
+   (copy-tree
+    cadr-tui::+tui-keybinding-definitions+)
+   (list
+    (cons
+     "app.tree.foldOrUp"
+     #+darwin '("alt+left" "ctrl+left")
+     #-darwin '("ctrl+left" "alt+left"))
+    (cons
+     "app.tree.unfoldOrDown"
+     #+darwin '("alt+right" "ctrl+right")
+     #-darwin '("ctrl+right" "alt+right"))
+    '("app.message.copy" . ("ctrl+x"))
+    '("app.tree.editLabel" . ("shift+l"))
+    '("app.tree.toggleLabelTimestamp"
+      . ("shift+t"))
+    '("app.tree.filter.default" . ("ctrl+d"))
+    '("app.tree.filter.noTools" . ("ctrl+t"))
+    '("app.tree.filter.userOnly" . ("ctrl+u"))
+    '("app.tree.filter.labeledOnly" . ("ctrl+l"))
+    '("app.tree.filter.all" . ("ctrl+a"))
+    '("app.tree.filter.cycleForward" . ("ctrl+o"))
+    '("app.tree.filter.cycleBackward"
+      . ("shift+ctrl+o")))))
 
 (defun make-tree-selector-keybindings
     (&optional user-bindings)
@@ -766,7 +769,17 @@
   (when (eq :label
             (tree-selector-state-mode state))
     (return-from tree-selector-handle-raw-input
-      (values nil nil nil)))
+      (cond
+        ((tree-selector-app-key-p
+          state data "tui.select.confirm")
+         (tree-selector-confirm-label state)
+         (values :changed nil t))
+        ((tree-selector-app-key-p
+          state data "tui.select.cancel")
+         (tree-selector-cancel-label state)
+         (values :changed nil t))
+        (t
+         (values nil nil nil)))))
   (labels
       ((changed (thunk)
          (funcall thunk)
@@ -1741,13 +1754,34 @@
               (list
                :lines
                (list
-                (selector-muted-line
-                 "  Label (empty to remove):" width)))
+                (selector-fit-line
+                 (concatenate
+                  'string "  "
+                  (cadr-tui:theme-foreground
+                   :muted "Label (empty to remove):"))
+                 width)))
               (list
-               :component label-lines label-row label-column)
+               :component
+               (mapcar
+                (lambda (line)
+                  (selector-fit-line
+                   (concatenate 'string "  " line)
+                   width))
+                label-lines)
+               label-row (+ 2 label-column))
               (list
-               :help
-               (list "  enter save  escape cancel")))
+               :lines
+               (list
+                (selector-fit-line
+                 (format
+                  nil "  ~A  ~A"
+                  (selector-keybinding-hint
+                   (tree-selector-state-keybindings state)
+                   "tui.select.confirm" "save")
+                  (selector-keybinding-hint
+                   (tree-selector-state-keybindings state)
+                   "tui.select.cancel" "cancel"))
+                 width))))
              (list
               (list :lines
                     (tree-selector-render-lines state width))))

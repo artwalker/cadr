@@ -105,6 +105,8 @@
        (string (code-char 8)) "ctrl+h"))
   (is (cadr-tui:matches-key
        (string #\Return) "enter"))
+  (is (string= "shift+l" (cadr-tui:parse-key "L")))
+  (is (cadr-tui:matches-key "L" "shift+l"))
   (is (not
        (cadr-tui:matches-key
         (string #\Return) "ctrl+-")))

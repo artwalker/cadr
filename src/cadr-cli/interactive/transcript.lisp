@@ -749,8 +749,10 @@
             collect
             (concatenate
              'string " "
-             (cadr-tui:theme-foreground
-              :dim line :enabled-p t)))))
+             (if (find #\Escape line)
+                 line
+                 (cadr-tui:theme-foreground
+                  :dim line :enabled-p t))))))
     (:status
      (cons
       ""
@@ -815,6 +817,28 @@
              (cadr-tui:theme-foreground
               :accent line :enabled-p t)))
       '("")))
+    (:command-markdown
+     (append
+      (list
+       ""
+       (selector-border-line width)
+       (selector-component-text-line
+        (cadr-tui:theme-foreground
+         :accent
+         (cadr-tui:theme-bold
+          (or (tui-entry-label entry) ""))
+         :enabled-p t)
+        width)
+       "")
+      (cadr-tui:render-markdown
+       (tui-entry-text entry)
+       width
+       :padding-x 1
+       :padding-y 1
+       :ansi-theme-p t
+       :syntax-highlight-function
+       #'tui-syntax-highlight)
+      (list (selector-border-line width))))
     (:auth-url
      (render-auth-url-lines
       (tui-entry-text entry)

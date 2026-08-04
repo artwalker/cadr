@@ -38,6 +38,22 @@ interface ResponseSpec {
 interface SeedMessage {
 	role: "user" | "assistant";
 	text: string;
+	provider?: string;
+	model?: string;
+	responseModel?: string;
+	usage?: {
+		input?: number;
+		output?: number;
+		cacheRead?: number;
+		cacheWrite?: number;
+		cost?: {
+			input?: number;
+			output?: number;
+			cacheRead?: number;
+			cacheWrite?: number;
+			total?: number;
+		};
+	};
 }
 
 interface ScenarioSetup {
@@ -45,6 +61,7 @@ interface ScenarioSetup {
 	projectTrusted?: boolean;
 	seedMessages?: SeedMessage[];
 	crashAfterMs?: number;
+	extensionSurfaces?: boolean;
 }
 
 interface Scenario {
@@ -105,17 +122,39 @@ function appendSeedMessages(session: SessionManager, messages: readonly SeedMess
 				timestamp: 1_700_000_000_000 + index,
 			});
 		} else {
-			session.appendMessage(
-				fauxAssistantMessage(message.text, {
+			const assistant = fauxAssistantMessage(message.text, {
 					timestamp: 1_700_000_000_000 + index,
 					responseId: `render-seed-${index}`,
-				}),
-			);
+				});
+			assistant.provider = message.provider ?? assistant.provider;
+			assistant.model = message.model ?? assistant.model;
+			assistant.responseModel = message.responseModel;
+			if (message.usage) {
+				assistant.usage = {
+					input: message.usage.input ?? 0,
+					output: message.usage.output ?? 0,
+					cacheRead: message.usage.cacheRead ?? 0,
+					cacheWrite: message.usage.cacheWrite ?? 0,
+					totalTokens:
+						(message.usage.input ?? 0) +
+						(message.usage.output ?? 0) +
+						(message.usage.cacheRead ?? 0) +
+						(message.usage.cacheWrite ?? 0),
+					cost: {
+						input: message.usage.cost?.input ?? 0,
+						output: message.usage.cost?.output ?? 0,
+						cacheRead: message.usage.cost?.cacheRead ?? 0,
+						cacheWrite: message.usage.cost?.cacheWrite ?? 0,
+						total: message.usage.cost?.total ?? 0,
+					},
+				};
+			}
+			session.appendMessage(assistant);
 		}
 	}
 }
 
-function createSessionManager(cwd: string, agentDir: string, scenario: Scenario): SessionManager {
+function createSessionManager(cwd: string, sessionDir: string, scenario: Scenario): SessionManager {
 	const setup = scenario.setup ?? {};
 	if (!setup.persistentSession) {
 		const session = SessionManager.inMemory(cwd, { id: "render-session" });
@@ -123,7 +162,6 @@ function createSessionManager(cwd: string, agentDir: string, scenario: Scenario)
 		return session;
 	}
 
-	const sessionDir = resolve(agentDir, "render-sessions");
 	const currentPath = createFixedSessionFile(sessionDir, cwd, "render-session", "render-session");
 	const session = SessionManager.open(currentPath, sessionDir, cwd);
 	appendSeedMessages(session, setup.seedMessages ?? []);
@@ -138,7 +176,7 @@ function createSessionManager(cwd: string, agentDir: string, scenario: Scenario)
 }
 
 async function registerComparisonProviders(modelRuntime: ModelRuntime, scenario: Scenario): Promise<void> {
-	if (scenario.id === "overlays-core") {
+	if (["overlays-core", "overlays-secondary"].includes(scenario.id)) {
 		modelRuntime.registerProvider("other", {
 			name: "Other Provider",
 			baseUrl: "https://render.invalid/v1",
@@ -158,7 +196,7 @@ async function registerComparisonProviders(modelRuntime: ModelRuntime, scenario:
 		});
 	}
 
-	if (scenario.id === "overlays-auth") {
+	if (scenario.id.startsWith("overlays-auth") || scenario.id === "overlays-logout") {
 		modelRuntime.registerProvider("render-auth", {
 			name: "Render Auth",
 			baseUrl: "https://render.invalid/v1",
@@ -202,9 +240,9 @@ async function registerComparisonProviders(modelRuntime: ModelRuntime, scenario:
 }
 
 async function main(): Promise<void> {
-	const [manifestPath, scenarioId, cwd, agentDir] = process.argv.slice(2);
-	if (!manifestPath || !scenarioId || !cwd || !agentDir) {
-		throw new Error("usage: pi-driver.ts MANIFEST SCENARIO CWD AGENT_DIR");
+	const [manifestPath, scenarioId, cwd, agentDir, sessionDir] = process.argv.slice(2);
+	if (!manifestPath || !scenarioId || !cwd || !agentDir || !sessionDir) {
+		throw new Error("usage: pi-driver.ts MANIFEST SCENARIO CWD AGENT_DIR SESSION_DIR");
 	}
 
 	process.env.PI_OFFLINE = "1";
@@ -284,7 +322,7 @@ async function main(): Promise<void> {
 				thinkingLevel: "high",
 				tools: ["read", "bash", "edit", "write", "grep", "find", "ls"],
 				scopedModels:
-					scenario.id === "overlays-core" && otherModel
+					["overlays-core", "overlays-secondary"].includes(scenario.id) && otherModel
 						? [{ model }, { model: otherModel }]
 						: [],
 			})),
@@ -295,7 +333,7 @@ async function main(): Promise<void> {
 	const runtime = await createAgentSessionRuntime(createRuntime, {
 		cwd,
 		agentDir,
-		sessionManager: createSessionManager(cwd, agentDir, scenario),
+		sessionManager: createSessionManager(cwd, sessionDir, scenario),
 	});
 
 	initTheme("dark", false);
@@ -308,6 +346,18 @@ async function main(): Promise<void> {
 			setTimeout(() => {
 				throw new Error("render-diff crash sentinel");
 			}, scenario.setup.crashAfterMs);
+		}
+		if (scenario.setup?.extensionSurfaces) {
+			const extensionUi = mode as unknown as {
+				showExtensionSelector(title: string, options: string[]): Promise<string | undefined>;
+				showExtensionInput(title: string, placeholder?: string): Promise<string | undefined>;
+				showExtensionEditor(title: string, prefill?: string): Promise<string | undefined>;
+			};
+			void (async () => {
+				await extensionUi.showExtensionSelector("Extension Select", ["alpha", "beta"]);
+				await extensionUi.showExtensionInput("Extension Input", "type here");
+				await extensionUi.showExtensionEditor("Extension Editor", "prefill");
+			})();
 		}
 		await mode.run();
 	} finally {

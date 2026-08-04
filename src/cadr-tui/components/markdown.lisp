@@ -371,32 +371,137 @@
                    (funcall border "│")
                    stream))))))
 
+(defun markdown-longest-word-width (text maximum)
+  (min
+   maximum
+   (loop for word in
+         (remove-if
+          (lambda (value) (zerop (length value)))
+          (uiop:split-string
+           text :separator '(#\Space #\Tab #\Newline #\Return)))
+         maximize (visible-width word) into longest
+         finally (return (or longest 0)))))
+
 (defun markdown-table-widths
-    (rows available-width)
+    (rows available-width ansi-theme-p
+     capabilities default-style-function)
   (let* ((column-count
            (loop for row in rows
                  maximize (length row)))
          (overhead
            (+ 1 (* 3 column-count)))
-         (per-column
-           (max
-            1
-            (min
-             30
-             (floor
-              (max column-count
-                   (- available-width overhead))
-              (max 1 column-count))))))
-    (loop for index below column-count
-          collect
-          (max
-           1
-           (min
-            per-column
-            (loop for row in rows
-                  maximize
-                  (visible-width
-                   (or (nth index row) ""))))))))
+         (available-for-cells
+           (- available-width overhead))
+         (natural-widths
+           (make-list column-count
+                      :initial-element 0))
+         (minimum-widths
+           (make-list column-count
+                      :initial-element 1)))
+    (dolist (row rows)
+      (loop for index below column-count
+            for rendered =
+              (render-inline-markdown
+               (or (nth index row) "")
+               ansi-theme-p capabilities
+               default-style-function)
+            do
+            (setf
+             (nth index natural-widths)
+             (max
+              (nth index natural-widths)
+              (visible-width rendered))
+             (nth index minimum-widths)
+             (max
+              (nth index minimum-widths)
+              (markdown-longest-word-width
+               rendered 30)))))
+    (let ((minimum-total
+            (reduce #'+ minimum-widths
+                    :initial-value 0)))
+      (when (> minimum-total available-for-cells)
+        (let* ((remaining
+                 (- available-for-cells
+                    column-count))
+               (weight-total
+                 (reduce
+                  #'+ minimum-widths
+                  :key
+                  (lambda (width)
+                    (max 0 (1- width)))
+                  :initial-value 0))
+               (growth
+                 (loop for width in minimum-widths
+                       collect
+                       (if (plusp weight-total)
+                           (floor
+                            (*
+                             (/ (max 0 (1- width))
+                                weight-total)
+                             remaining))
+                           0)))
+               (leftover
+                 (- remaining
+                    (reduce #'+ growth
+                            :initial-value 0))))
+          (setf
+           minimum-widths
+           (loop for amount in growth
+                 collect (1+ amount)))
+          (loop for tail on minimum-widths
+                while (plusp leftover)
+                do
+                (incf (first tail))
+                (decf leftover))
+          (setf minimum-total
+                (reduce #'+ minimum-widths
+                        :initial-value 0))))
+      (if
+          (<= (+ overhead
+                 (reduce #'+ natural-widths
+                         :initial-value 0))
+              available-width)
+          (mapcar #'max
+                  natural-widths minimum-widths)
+          (let* ((growth-potential
+                   (loop for natural in natural-widths
+                         for minimum in minimum-widths
+                         sum (max 0 (- natural minimum))))
+                 (extra
+                   (max 0
+                        (- available-for-cells
+                           minimum-total)))
+                 (widths
+                   (loop for natural in natural-widths
+                         for minimum in minimum-widths
+                         for delta =
+                           (max 0 (- natural minimum))
+                         collect
+                         (+ minimum
+                            (if (plusp growth-potential)
+                                (floor
+                                 (* (/ delta
+                                       growth-potential)
+                                    extra))
+                                0))))
+                 (remaining
+                   (- available-for-cells
+                      (reduce #'+ widths
+                              :initial-value 0))))
+            (loop while (plusp remaining)
+                  for grew-p = nil
+                  do
+                  (loop for tail on widths
+                        for natural in natural-widths
+                        while (plusp remaining)
+                        when (< (first tail) natural)
+                          do
+                          (incf (first tail))
+                          (decf remaining)
+                          (setf grew-p t))
+                  (unless grew-p
+                    (return)))
+            widths)))))
 
 (defun render-markdown-table
     (rows available-width
@@ -415,7 +520,9 @@
               (wrap-text line available-width))))
     (let* ((widths
              (markdown-table-widths
-              rows available-width))
+              rows available-width
+              ansi-theme-p capabilities
+              default-style-function))
            (separator
              (markdown-table-border-line
               #\├ #\┼ #\┤ widths

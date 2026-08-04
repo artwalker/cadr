@@ -57,6 +57,61 @@
     (is (search provider-title (third provider)))
     (is (search dialog-title (second dialog)))))
 
+(test post-goal15-overlay-title-styles-follow-baseline-component-classes
+  (let* ((width 48)
+         (ordinary
+           (first
+            (cadr-cli::render-selector-frame
+             (cadr-cli::make-selector-frame
+              :sections '((:title "Fork from Message" :plain)))
+             width)))
+         (settings-submenu
+           (first
+            (cadr-cli::render-selector-frame
+             (cadr-cli::make-selector-frame
+              :sections '((:title "Thinking Level")))
+             width)))
+         (auth
+           (first
+            (cadr-cli::render-selector-frame
+             (cadr-cli::make-selector-frame
+              :sections '((:title "Select authentication method:" :overlay)))
+             width)))
+         (extension-editor
+           (third
+            (cadr-tui:component-render
+             (cadr-cli::make-extension-editor-dialog
+              "Extension Editor" "prefill")
+             width))))
+    (is (search
+         (cadr-tui:theme-bold "Fork from Message" :enabled-p t)
+         ordinary))
+    (is (null
+         (search
+          (cadr-tui:theme-foreground
+           :accent
+           (cadr-tui:theme-bold "Fork from Message" :enabled-p t)
+           :enabled-p t)
+          ordinary)))
+    (dolist (case
+             `((,settings-submenu "Thinking Level")
+               (,auth "Select authentication method:")))
+      (destructuring-bind (line title) case
+        (is (search
+             (cadr-tui:theme-foreground
+              :accent
+              (cadr-tui:theme-bold title :enabled-p t)
+              :enabled-p t)
+             line))))
+    (is (search
+         (cadr-tui:theme-foreground
+          :accent "Extension Editor" :enabled-p t)
+         extension-editor))
+    (is (null
+         (search
+          (cadr-tui:theme-bold "Extension Editor" :enabled-p t)
+          extension-editor)))))
+
 (test goal14-a0-provider-search-and-login-inputs-render-a-visible-cursor
   (let* ((inverse-space
            (format nil "~C[7m ~C[27m" #\Escape #\Escape))
