@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "baselineCommit": "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
+  "slashCommands": [
+    "settings", "model", "scoped-models", "export", "import", "share",
+    "copy", "name", "session", "changelog", "hotkeys", "fork", "clone",
+    "tree", "trust", "login", "logout", "new", "compact", "resume",
+    "reload", "quit"
+  ],
+  "interfaceIds": [
+    "model-selector", "scoped-models-selector", "session-selector",
+    "session-rename", "session-delete-confirmation", "fork-selector",
+    "tree-selector", "tree-label-input", "trust-selector", "settings-selector",
+    "settings-warnings", "settings-thinking", "settings-theme",
+    "settings-theme-automatic", "settings-theme-light", "settings-theme-dark",
+    "import-confirmation", "login-auth-type-generic", "login-provider-selector",
+    "login-auth-type-provider", "login-dialog", "api-key-input",
+    "logout-provider-selector", "extension-selector", "extension-input",
+    "extension-editor", "autocomplete-slash", "autocomplete-path"
+  ],
+  "constructors": [
+    "ExtensionEditorComponent", "ExtensionInputComponent",
+    "ExtensionSelectorComponent", "LoginDialogComponent",
+    "ModelSelectorComponent", "OAuthSelectorComponent",
+    "ScopedModelsSelectorComponent", "SelectSubmenu", "SessionSelectorComponent",
+    "SettingsSelectorComponent", "ThemeSubmenu", "TreeSelectorComponent",
+    "TrustSelectorComponent", "UserMessageSelectorComponent",
+    "WarningSettingsSubmenu"
+  ],
+  "constructorSites": [
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:317:SelectSubmenu",
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:433:SelectSubmenu",
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:582:WarningSettingsSubmenu",
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:597:SelectSubmenu",
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:619:ThemeSubmenu",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2261:ExtensionSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2336:ExtensionInputComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2376:ExtensionEditorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4180:SettingsSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4477:TrustSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4499:ModelSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4590:ScopedModelsSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4630:UserMessageSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4689:TreeSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4821:SessionSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5018:ExtensionSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5056:OAuthSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5100:OAuthSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5193:LoginDialogComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5211:LoginDialogComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5265:ExtensionSelectorComponent",
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5337:LoginDialogComponent"
+  ]
+}

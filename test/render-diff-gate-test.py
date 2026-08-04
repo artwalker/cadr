@@ -75,7 +75,7 @@ class RenderDiffGateTest(unittest.TestCase):
                     RENDER_DIFF.gate(arguments)
         analyze.assert_not_called()
 
-    def test_reachable_interface_registry_is_complete_against_real_baseline(self) -> None:
+    def test_reachable_interface_registry_is_complete_against_fixed_baseline(self) -> None:
         manifest = RENDER_DIFF.load_manifest(
             ROOT / "test/fixtures/render-diff/scenarios.json"
         )
@@ -85,20 +85,36 @@ class RenderDiffGateTest(unittest.TestCase):
             ROOT,
         )
 
-        baseline_commands = RENDER_DIFF.extract_baseline_slash_commands(
-            ROOT, manifest["baselineCommit"]
+        inventory = RENDER_DIFF.load_baseline_interface_inventory(
+            ROOT / "test/fixtures/render-diff/baseline-interface-inventory.json",
+            ROOT,
+            manifest["baselineCommit"],
         )
-        self.assertEqual(len(baseline_commands), 22)
+        self.assertEqual(len(inventory["slashCommands"]), 22)
         self.assertEqual(
             [entry["name"] for entry in registry["slashCommands"]],
-            baseline_commands,
+            inventory["slashCommands"],
         )
-        baseline_sites = RENDER_DIFF.extract_baseline_interface_sites(
-            ROOT, manifest["baselineCommit"]
+        self.assertEqual(len(inventory["constructorSites"]), 22)
+        self.assertEqual(
+            sorted(registry["baselineConstructorSites"]),
+            inventory["constructorSites"],
         )
-        self.assertEqual(len(baseline_sites), 22)
-        self.assertEqual(sorted(registry["baselineConstructorSites"]), baseline_sites)
         self.assertEqual(len(registry["uncoveredInterfaces"]), 0)
+
+    def test_fixed_baseline_inventory_supports_gitless_isolated_builds(self) -> None:
+        manifest_path = ROOT / "test/fixtures/render-diff/scenarios.json"
+        with mock.patch.object(
+            RENDER_DIFF, "git_repository_has_commit", return_value=False
+        ):
+            manifest = RENDER_DIFF.load_manifest(manifest_path)
+            registry = RENDER_DIFF.load_interface_registry(
+                ROOT / "test/fixtures/render-diff/reachable-interfaces.json",
+                manifest,
+                ROOT,
+            )
+        self.assertEqual(len(registry["slashCommands"]), 22)
+        self.assertEqual(len(registry["interfaces"]), 28)
 
     def test_reachable_interface_registry_fails_closed_for_new_commands_and_missing_captures(self) -> None:
         manifest = RENDER_DIFF.load_manifest(
@@ -106,15 +122,21 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         registry_path = ROOT / "test/fixtures/render-diff/reachable-interfaces.json"
 
+        inventory = RENDER_DIFF.load_baseline_interface_inventory(
+            registry_path.with_name("baseline-interface-inventory.json"),
+            ROOT,
+            manifest["baselineCommit"],
+        )
         with mock.patch.object(
             RENDER_DIFF,
-            "extract_baseline_slash_commands",
-            return_value=[
-                *RENDER_DIFF.extract_baseline_slash_commands(
-                    ROOT, manifest["baselineCommit"]
-                ),
-                "new-reachable-command",
-            ],
+            "load_baseline_interface_inventory",
+            return_value={
+                **inventory,
+                "slashCommands": [
+                    *inventory["slashCommands"],
+                    "new-reachable-command",
+                ],
+            },
         ):
             with self.assertRaisesRegex(
                 RENDER_DIFF.HarnessFailure, "unregistered baseline slash command"
@@ -153,13 +175,14 @@ class RenderDiffGateTest(unittest.TestCase):
 
         with mock.patch.object(
             RENDER_DIFF,
-            "extract_baseline_interface_sites",
-            return_value=[
-                *RENDER_DIFF.extract_baseline_interface_sites(
-                    ROOT, manifest["baselineCommit"]
-                ),
-                "packages/coding-agent/src/modes/interactive/interactive-mode.ts:9999:NewDialogComponent",
-            ],
+            "load_baseline_interface_inventory",
+            return_value={
+                **inventory,
+                "constructorSites": [
+                    *inventory["constructorSites"],
+                    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:9999:NewDialogComponent",
+                ],
+            },
         ):
             with self.assertRaisesRegex(
                 RENDER_DIFF.HarnessFailure,

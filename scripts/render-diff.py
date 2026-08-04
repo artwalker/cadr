@@ -29,6 +29,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "test/fixtures/render-diff/scenarios.json"
 DEFAULT_INTERFACE_REGISTRY = ROOT / "test/fixtures/render-diff/reachable-interfaces.json"
+DEFAULT_BASELINE_INVENTORY = ROOT / "test/fixtures/render-diff/baseline-interface-inventory.json"
 DEFAULT_DISPOSITIONS = ROOT / "test/fixtures/render-diff/dispositions.json"
 PI_DRIVER = ROOT / "test/fixtures/render-diff/pi-driver.ts"
 CADR_DRIVER = ROOT / "test/fixtures/render-diff/cadr-driver.lisp"
@@ -108,6 +109,19 @@ def git_blob(repo: Path, commit: str, path: str) -> str:
     return result.stdout
 
 
+def git_repository_has_commit(repo: Path, commit: str) -> bool:
+    try:
+        result = subprocess.run(
+            ["git", "-C", str(repo), "cat-file", "-e", f"{commit}^{{commit}}"],
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+    except OSError:
+        return False
+    return result.returncode == 0
+
+
 def extract_baseline_slash_commands(repo: Path, commit: str) -> list[str]:
     source = git_blob(
         repo, commit, "packages/coding-agent/src/core/slash-commands.ts"
@@ -163,6 +177,43 @@ def extract_baseline_interface_sites(repo: Path, commit: str) -> list[str]:
     return sorted(sites)
 
 
+def load_baseline_interface_inventory(
+    path: Path, repo: Path, commit: str
+) -> dict[str, Any]:
+    if not path.is_file():
+        raise HarnessFailure(f"fixed-baseline interface inventory is missing: {path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("schemaVersion") != 1:
+        raise HarnessFailure("fixed-baseline interface inventory schemaVersion must be 1")
+    if data.get("baselineCommit") != commit:
+        raise HarnessFailure("fixed-baseline interface inventory commit does not match manifest")
+    for field in ("slashCommands", "interfaceIds", "constructors", "constructorSites"):
+        values = data.get(field)
+        if (
+            not isinstance(values, list)
+            or not values
+            or not all(isinstance(value, str) and value for value in values)
+            or len(values) != len(set(values))
+        ):
+            raise HarnessFailure(f"invalid fixed-baseline interface inventory field: {field}")
+
+    verified_from_git = git_repository_has_commit(repo, commit)
+    if verified_from_git:
+        extracted = {
+            "slashCommands": extract_baseline_slash_commands(repo, commit),
+            "constructors": extract_baseline_interface_constructors(repo, commit),
+            "constructorSites": extract_baseline_interface_sites(repo, commit),
+        }
+        for field, values in extracted.items():
+            if data[field] != values:
+                raise HarnessFailure(
+                    f"fixed-baseline interface inventory drift: {field}"
+                )
+    result = dict(data)
+    result["verifiedFromGit"] = verified_from_git
+    return result
+
+
 def extract_cadr_overlay_kinds(repo: Path) -> list[str]:
     source = (repo / "src/cadr-cli/interactive/controller.lisp").read_text(
         encoding="utf-8"
@@ -191,13 +242,16 @@ def validate_interface_registry(
         raise HarnessFailure(
             "reachable-interface registry baseline commit does not match manifest"
         )
+    baseline_inventory = load_baseline_interface_inventory(
+        DEFAULT_BASELINE_INVENTORY, repo, commit
+    )
     captures = manifest_checkpoints(manifest)
 
     commands = data.get("slashCommands")
     if not isinstance(commands, list):
         raise HarnessFailure("reachable-interface registry must list slashCommands")
     registered_commands = [entry.get("name") for entry in commands]
-    baseline_commands = extract_baseline_slash_commands(repo, commit)
+    baseline_commands = baseline_inventory["slashCommands"]
     missing_commands = [name for name in baseline_commands if name not in registered_commands]
     stale_commands = [name for name in registered_commands if name not in baseline_commands]
     if missing_commands:
@@ -232,9 +286,13 @@ def validate_interface_registry(
         evidence = entry.get("baselineEvidence")
         if not isinstance(evidence, dict):
             raise HarnessFailure(f"missing baseline evidence for interface {interface_id}")
-        source = git_blob(repo, commit, evidence.get("path", ""))
+        path = evidence.get("path")
         token = evidence.get("token")
-        if not isinstance(token, str) or token not in source:
+        if not isinstance(path, str) or not path or not isinstance(token, str) or not token:
+            raise HarnessFailure(
+                f"invalid baseline evidence for reachable interface {interface_id}"
+            )
+        if baseline_inventory["verifiedFromGit"] and token not in git_blob(repo, commit, path):
             raise HarnessFailure(
                 f"stale baseline evidence for reachable interface {interface_id}"
             )
@@ -242,11 +300,17 @@ def validate_interface_registry(
         raise HarnessFailure(
             "uncaptured reachable interface: " + ", ".join(sorted(uncovered))
         )
-
+    if sorted(ids) != sorted(baseline_inventory["interfaceIds"]):
+        missing = sorted(set(baseline_inventory["interfaceIds"]) - ids)
+        stale = sorted(ids - set(baseline_inventory["interfaceIds"]))
+        raise HarnessFailure(
+            "reachable interface inventory drift: "
+            f"unregistered={missing} stale={stale}"
+        )
     constructor_map = data.get("baselineConstructors")
     if not isinstance(constructor_map, dict):
         raise HarnessFailure("reachable-interface registry must map baselineConstructors")
-    discovered_constructors = extract_baseline_interface_constructors(repo, commit)
+    discovered_constructors = baseline_inventory["constructors"]
     if sorted(constructor_map) != discovered_constructors:
         missing = sorted(set(discovered_constructors) - set(constructor_map))
         stale = sorted(set(constructor_map) - set(discovered_constructors))
@@ -268,7 +332,7 @@ def validate_interface_registry(
     site_map = data.get("baselineConstructorSites")
     if not isinstance(site_map, dict):
         raise HarnessFailure("reachable-interface registry must map baselineConstructorSites")
-    discovered_sites = extract_baseline_interface_sites(repo, commit)
+    discovered_sites = baseline_inventory["constructorSites"]
     if sorted(site_map) != discovered_sites:
         missing = sorted(set(discovered_sites) - set(site_map))
         stale = sorted(set(site_map) - set(discovered_sites))
