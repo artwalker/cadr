@@ -450,7 +450,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 226 definition-count)
+    (is (= 227 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

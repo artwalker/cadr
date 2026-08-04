@@ -9,14 +9,6 @@
     "I02": {
       "kind": "intentional-difference",
       "summary": "The approved Goal 13 fatal boundary redacts the backtrace and writes a private crash log instead of dumping pi's uncaught-exception stack to the terminal."
-    },
-    "D04": {
-      "kind": "cadr-defect",
-      "summary": "The untrusted-project warning emitted by the baseline is absent."
-    },
-    "D16": {
-      "kind": "cadr-defect",
-      "summary": "Fatal output is written before clean terminal teardown and overwrites the editor/footer region."
     }
   },
   "entries": [
@@ -26,7 +18,7 @@
     { "scenario": "startup-existing", "checkpoint": "existing-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "startup-existing", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "startup-untrusted", "checkpoint": "untrusted-startup", "dimensions": ["wide", "narrow"], "classes": ["I01", "D04"] },
+    { "scenario": "startup-untrusted", "checkpoint": "untrusted-startup", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "startup-untrusted", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
     { "scenario": "conversation-content", "checkpoint": "plain", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
@@ -74,6 +66,6 @@
     { "scenario": "commands-and-exit", "checkpoint": "slash-reload", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "commands-and-exit", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
-    { "scenario": "fatal-crash", "checkpoint": "fatal-crash", "dimensions": ["wide", "narrow"], "classes": ["I01", "I02", "D16"] }
+    { "scenario": "fatal-crash", "checkpoint": "fatal-crash", "dimensions": ["wide", "narrow"], "classes": ["I01", "I02"] }
   ]
 }

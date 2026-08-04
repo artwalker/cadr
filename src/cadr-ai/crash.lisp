@@ -5,6 +5,12 @@
 
 (defvar *handling-fatal-condition-p* nil)
 
+(defstruct fatal-condition-report
+  program-name
+  type-name
+  user-message
+  log-path)
+
 (defparameter +credential-environment-names+
   '("ANTHROPIC_AUTH_TOKEN"
     "ANTHROPIC_OAUTH_TOKEN"
@@ -140,7 +146,7 @@
     #+sbcl
     (sb-debug:print-backtrace :stream output :count 100)))
 
-(defun report-fatal-condition
+(defun prepare-fatal-condition-report
     (condition &key
                  (program-name "cadr")
                  (crash-directory (default-crash-directory))
@@ -162,19 +168,49 @@
                    (write-private-crash-log
                     crash-directory program-name diagnostic)
                  (condition () nil))))
-        (format *error-output*
-                "~A exiting due to uncaught ~A: ~A~%"
-                program-name
-                (fatal-condition-type-name condition)
-                (funcall user-message-function
-                         condition all-secrets redactor))
-        (if path
-            (format *error-output* "Crash log: ~A~%"
-                    (namestring path))
-            (format *error-output*
-                    "Crash log could not be written.~%"))
-        (finish-output *error-output*)
-        (funcall exit-function 1))))
+        (make-fatal-condition-report
+         :program-name program-name
+         :type-name (fatal-condition-type-name condition)
+         :user-message
+         (funcall user-message-function
+                  condition all-secrets redactor)
+         :log-path path))))
+
+(defun emit-fatal-condition-report
+    (report &key (exit-function #'uiop:quit))
+  (let ((*handling-fatal-condition-p* t))
+    (format *error-output*
+            "~A exiting due to uncaught ~A: ~A~%"
+            (fatal-condition-report-program-name report)
+            (fatal-condition-report-type-name report)
+            (fatal-condition-report-user-message report))
+    (let ((path (fatal-condition-report-log-path report)))
+      (if path
+          (format *error-output* "Crash log: ~A~%"
+                  (namestring path))
+          (format *error-output*
+                  "Crash log could not be written.~%")))
+    (finish-output *error-output*)
+    (funcall exit-function 1)))
+
+(defun report-fatal-condition
+    (condition &key
+                 (program-name "cadr")
+                 (crash-directory (default-crash-directory))
+                 secrets
+                 (redactor #'redact-secrets)
+                 (user-message-function #'default-fatal-user-message)
+                 (exit-function #'uiop:quit))
+  (emit-fatal-condition-report
+   (prepare-fatal-condition-report
+    condition
+    :program-name program-name
+    :crash-directory crash-directory
+    :secrets secrets
+    :redactor redactor
+    :user-message-function user-message-function
+    :exit-function exit-function)
+   :exit-function exit-function))
 
 (defun call-with-fatal-condition-boundary
     (function &key
@@ -184,35 +220,52 @@
                 (redactor #'redact-secrets)
                 (user-message-function #'default-fatal-user-message)
                 (exit-function #'uiop:quit))
-  (labels ((fail (condition)
-             (report-fatal-condition
+  (let ((fatal-marker (gensym "FATAL-")))
+    (labels ((fail (condition)
+             (values
+              fatal-marker
+              (prepare-fatal-condition-report
               condition
               :program-name program-name
               :crash-directory crash-directory
               :secrets secrets
               :redactor redactor
               :user-message-function user-message-function
-              :exit-function exit-function)))
+              :exit-function exit-function))))
     #+sbcl
-    (block fatal-boundary
-      (let ((sb-ext:*invoke-debugger-hook*
-              (lambda (condition previous-hook)
-                (declare (ignore previous-hook))
-                (return-from fatal-boundary
-                  (fail condition)))))
-        (handler-bind
-            ((serious-condition
-               (lambda (condition)
-                 ;; Capture before stack unwinding so the log retains the
-                 ;; actual failure site rather than only this boundary.
-                 (return-from fatal-boundary
-                   (fail condition)))))
-          (funcall function))))
+    (multiple-value-bind (marker values-or-report)
+        (block fatal-boundary
+          (let ((sb-ext:*invoke-debugger-hook*
+                  (lambda (condition previous-hook)
+                    (declare (ignore previous-hook))
+                    (return-from fatal-boundary
+                      (fail condition)))))
+            (handler-bind
+                ((serious-condition
+                   (lambda (condition)
+                     ;; Prepare the redacted diagnostic at the failure site,
+                     ;; then unwind terminal cleanup before user output.
+                     (return-from fatal-boundary
+                       (fail condition)))))
+              (values nil
+                      (multiple-value-list
+                       (funcall function))))))
+      (if (eq marker fatal-marker)
+          (emit-fatal-condition-report
+           values-or-report :exit-function exit-function)
+          (values-list values-or-report)))
     #-sbcl
-    (block fatal-boundary
-      (handler-bind
-          ((serious-condition
-             (lambda (condition)
-               (return-from fatal-boundary
-                 (fail condition)))))
-        (funcall function)))))
+    (multiple-value-bind (marker values-or-report)
+        (block fatal-boundary
+          (handler-bind
+              ((serious-condition
+                 (lambda (condition)
+                   (return-from fatal-boundary
+                     (fail condition)))))
+            (values nil
+                    (multiple-value-list
+                     (funcall function)))))
+      (if (eq marker fatal-marker)
+          (emit-fatal-condition-report
+           values-or-report :exit-function exit-function)
+          (values-list values-or-report))))))

@@ -678,6 +678,17 @@
            :context-window 128000
            :session session
            :messages (cadr-agent:agent-messages agent)
+           :project-trust-warning
+           (cadr-cli::project-trust-warning-text
+            (not
+             (null
+              (json-get
+               (json-get scenario "setup")
+               "projectTrusted" t)))
+            cwd
+            :home-directory
+            (uiop:pathname-parent-directory-pathname
+             agent-dir))
            :current-session-path
            (and persistent-p
                 (namestring (cadr-agent:session-path session)))

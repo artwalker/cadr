@@ -602,3 +602,101 @@
         "Reloaded keybindings, extensions, skills, prompts, themes, and context files"
         (cadr-cli::tui-entry-text
          (first (cadr-cli::tui-state-entries state))))))))
+
+(test goal15-project-trust-resource-detection-matches-the-fixed-baseline
+  ;; trust-manager.ts:178-204 gates every project .pi resource and ancestor
+  ;; .agents/skills, while excluding the user's own ~/.agents/skills.
+  (with-test-directory (root)
+    (loop
+      for resource in
+      '("settings.json" "extensions/" "skills/" "prompts/" "themes/"
+        "SYSTEM.md" "APPEND_SYSTEM.md")
+      for index from 0
+      for project =
+        (merge-pathnames (format nil "case-~D/project/" index) root)
+      for target = (merge-pathnames
+                    (concatenate 'string ".cadr/" resource)
+                    project)
+      do
+         (if (char= #\/ (char resource (1- (length resource))))
+             (ensure-directories-exist (merge-pathnames "anchor" target))
+             (write-text target "fixture"))
+         (is
+          (cadr-cli::trust-requiring-project-resources-p
+           project :home-directory (merge-pathnames "home/" root))))
+    (let* ((home (merge-pathnames "home/" root))
+           (project (merge-pathnames "workspace/project/child/" root))
+           (ancestor-skills
+             (merge-pathnames "workspace/.agents/skills/" root)))
+      (ensure-directories-exist (merge-pathnames "anchor" project))
+      (ensure-directories-exist (merge-pathnames "anchor" ancestor-skills))
+      (is
+       (cadr-cli::trust-requiring-project-resources-p
+        project :home-directory home)))
+    (let* ((home (merge-pathnames "user-home/" root))
+           (project (merge-pathnames "projects/child/" home)))
+      (ensure-directories-exist
+       (merge-pathnames ".agents/skills/anchor" home))
+      (ensure-directories-exist (merge-pathnames "anchor" project))
+      (is
+       (null
+        (cadr-cli::trust-requiring-project-resources-p
+         project :home-directory home))))))
+
+(test goal15-untrusted-project-warning-copy-and-shape-match-the-fixed-baseline
+  ;; interactive-mode.ts:3531-3549 renders a bare yellow Text row after the
+  ;; transcript; it does not route through showWarning's "Warning:" prefix.
+  (with-test-directory (root)
+    (write-text (merge-pathnames ".cadr/SYSTEM.md" root) "fixture")
+    (let* ((text
+             (cadr-cli::project-trust-warning-text
+              nil root :home-directory (merge-pathnames "home/" root)))
+           (state (cadr-cli::make-tui-state :model "faux")))
+      (is
+       (string=
+        "This project is not trusted. Project .cadr resources and packages are ignored. Use /trust to save a trust decision, then restart cadr."
+        text))
+      (cadr-cli::add-tui-project-trust-warning state text)
+      (let* ((lines
+               (cadr-cli::render-tui-entry
+                (first (cadr-cli::tui-state-entries state)) 100))
+             (plain
+               (mapcar #'cadr-tui:strip-terminal-sequences lines)))
+        (is (string= "" (first plain)))
+        (is (uiop:string-prefix-p " This project is not trusted." (second plain)))
+        (is (null (search "Warning:" (format nil "~{~A~^~%~}" plain))))))
+    (is
+     (null
+      (cadr-cli::project-trust-warning-text
+       t root :home-directory (merge-pathnames "home/" root))))))
+
+(test goal15-fatal-summary-is-emitted-after-protected-terminal-teardown
+  ;; interactive-mode.ts:3671-3692 stops the TUI before writing fatal output.
+  (with-test-directory (directory)
+    (let* ((visible (make-string-output-stream))
+           (status
+             (let ((*error-output* visible))
+               (cadr-cli::call-with-fatal-condition-boundary
+                (lambda ()
+                  (unwind-protect
+                       (error "goal15 fatal ordering sentinel")
+                    (write-line "TERMINAL-RESTORED" visible)))
+                :crash-directory directory
+                :exit-function #'identity)))
+           (output (get-output-stream-string visible))
+           (restored (search "TERMINAL-RESTORED" output))
+           (fatal (search "cadr exiting due to uncaught SIMPLE-ERROR" output)))
+      (is (= 1 status))
+      (is (not (null restored)))
+      (is (not (null fatal)))
+      (when (and restored fatal)
+        (is (< restored fatal))))))
+
+(test goal15-fatal-boundary-preserves-normal-multiple-values
+  (is
+   (equal
+    '(alpha beta gamma)
+    (multiple-value-list
+     (cadr-cli::call-with-fatal-condition-boundary
+      (lambda () (values 'alpha 'beta 'gamma))
+      :exit-function #'identity)))))

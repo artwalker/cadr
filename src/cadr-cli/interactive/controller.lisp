@@ -282,6 +282,7 @@
        (context-window 0)
        session
        messages
+       project-trust-warning
        initial-notices
        alt-p
        show-hardware-cursor-p
@@ -402,6 +403,9 @@
          (terminal-active-p nil)
          (last-terminal-title nil))
     (declare (ignore active-theme))
+    (when project-trust-warning
+      (add-tui-project-trust-warning
+       state project-trust-warning))
     (dolist (text initial-notices)
       (add-tui-warning state text))
     (labels

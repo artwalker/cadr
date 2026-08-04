@@ -544,3 +544,14 @@ CADR_OFFLINE=1 \
 | Exit | `/quit`；重启后 Ctrl-C。 | cursor、bracketed paste/raw、alternate screen、无重复 final frame。 | 已确认 |
 
 Part B disposition: `B3 双终端 A/B 已由用户确认；Part B 于 2026-08-01 验收通过并关闭`
+
+## Goal 15 fixed-baseline differential closure
+
+The permanent raw-byte harness supplements these self-snapshots with a second
+oracle: the fixed baseline's actual PTY output. The `startup-untrusted` case now
+locks the bare yellow trust warning after seeded transcript content, and the
+`fatal-crash` case locks terminal teardown before fatal output. I01 retains raw
+ANSI/update differences for self-replay rather than normalizing them away; I02
+retains the approved redacted crash summary while keeping teardown geometry
+aligned. Exact scenario coverage and normalization boundaries are maintained in
+[`render-diff.md`](render-diff.md).

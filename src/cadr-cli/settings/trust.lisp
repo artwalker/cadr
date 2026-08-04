@@ -117,16 +117,44 @@
        object)))
   decision)
 
-(defun trust-requiring-project-resources-p (directory)
-  (let ((root
-          (uiop:ensure-directory-pathname directory)))
-    (some
-     #'probe-file
-     (list
-      (merge-pathnames ".cadr/settings.json" root)
-      (merge-pathnames ".cadr/extensions/" root)
-      (merge-pathnames ".cadr/skills/" root)
-      (merge-pathnames ".agents/skills/" root)))))
+(defparameter +trust-requiring-project-config-resources+
+  '("settings.json" "extensions/" "skills/" "prompts/" "themes/"
+    "SYSTEM.md" "APPEND_SYSTEM.md"))
+
+(defun trust-requiring-project-resources-p
+    (directory &key (home-directory (user-homedir-pathname)))
+  (let* ((root
+           (uiop:ensure-directory-pathname
+            (pathname (canonical-directory-name directory))))
+         (home
+           (uiop:ensure-directory-pathname
+            (pathname (canonical-directory-name home-directory))))
+         (config-root (merge-pathnames ".cadr/" root)))
+    (or
+     (some
+      (lambda (resource)
+        (probe-file (merge-pathnames resource config-root)))
+      +trust-requiring-project-config-resources+)
+     (loop for current = root then (parent-directory current)
+           while current
+           when
+           (and
+            (not
+             (equal (canonical-directory-name current)
+                    (canonical-directory-name home)))
+            (probe-file
+             (merge-pathnames ".agents/skills/" current)))
+             return t))))
+
+(defun project-trust-warning-text
+    (project-trusted-p directory
+     &key (home-directory (user-homedir-pathname)))
+  (when
+      (and
+       (not project-trusted-p)
+       (trust-requiring-project-resources-p
+        directory :home-directory home-directory))
+    "This project is not trusted. Project .cadr resources and packages are ignored. Use /trust to save a trust decision, then restart cadr."))
 
 (defun resolve-project-trusted
     (store directory

@@ -2090,6 +2090,9 @@
            :messages
            (copy-list
             (cadr-agent:agent-messages agent))
+           :project-trust-warning
+           (project-trust-warning-text
+            project-trusted-p cwd)
            :startup-compact-lines
            startup-compact
            :startup-expanded-lines

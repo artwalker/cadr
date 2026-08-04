@@ -789,6 +789,18 @@
              'string " "
              (cadr-tui:theme-foreground
               :warning line :enabled-p t)))))
+    (:project-trust-warning
+     (cons
+      ""
+      (loop for line in
+            (cadr-tui:wrap-text
+             (tui-entry-text entry)
+             (max 1 (- width 2)))
+            collect
+            (concatenate
+             'string " "
+             (cadr-tui:theme-foreground
+              :warning line :enabled-p t)))))
     (:success
      (append
       '("" "")
@@ -891,4 +903,3 @@
            (eq (tui-entry-type entry) :user))
           (cons "" rendered)
           rendered)))
-

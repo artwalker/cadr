@@ -140,6 +140,9 @@
 (defun add-tui-warning (state text)
   (add-tui-message-entry state :warning text))
 
+(defun add-tui-project-trust-warning (state text)
+  (add-tui-message-entry state :project-trust-warning text))
+
 (defun add-tui-success (state text)
   (add-tui-message-entry state :success text))
 

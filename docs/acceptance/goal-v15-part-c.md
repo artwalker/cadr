@@ -312,3 +312,60 @@ the real controller retains only `Reloaded keybindings`.
 Fresh wide and narrow captures show matching queue/status row geometry and
 status replacement. D14 and D15 were removed from the fail-closed disposition
 ledger; I01 remains the sole class on the affected checkpoints.
+
+## Batch 5: D04 and D16 trust warning and fatal teardown
+
+Commit: the batch commit containing this section.
+
+### Result
+
+| ID | Fixed-baseline contract | Cadr implementation | Independent regression |
+|---|---|---|---|
+| D04 | `packages/coding-agent/src/core/trust-manager.ts:29-37,178-204` checks every project `.pi` resource plus ancestor `.agents/skills`, excluding the user's own `~/.agents/skills`; `interactive-mode.ts:3520,3531-3549` appends a bare yellow warning after seeded messages. | `src/cadr-cli/settings/trust.lisp:120-157` implements the same resource and ancestor rules with the approved `.cadr` product substitution. `interactive/controller.lisp:285,406-410`, `interactive/entries.lisp:143-144`, and `interactive/transcript.lisp:792-803` preserve the baseline message order, padding, wrapping, and warning color without inventing a `Warning:` prefix. | `GOAL15-PROJECT-TRUST-RESOURCE-DETECTION-MATCHES-THE-FIXED-BASELINE`; `GOAL15-UNTRUSTED-PROJECT-WARNING-COPY-AND-SHAPE-MATCH-THE-FIXED-BASELINE`; wide/narrow `startup-untrusted` differential captures. |
+| D16 | `packages/coding-agent/src/modes/interactive/interactive-mode.ts:3671-3692` stops the TUI before writing fatal output. | `src/cadr-ai/crash.lisp:149-271` prepares the redacted diagnostic at the failure site, unwinds the protected terminal scope, and only then emits the approved I02 summary and private log path. Normal multiple values remain intact. | `GOAL15-FATAL-SUMMARY-IS-EMITTED-AFTER-PROTECTED-TERMINAL-TEARDOWN`; `GOAL15-FATAL-BOUNDARY-PRESERVES-NORMAL-MULTIPLE-VALUES`; existing Goal 13 redaction and interactive-interrupt regressions; wide/narrow `fatal-crash` differential captures. |
+
+Both original regressions were red. D04 recognized only a narrow subset of
+project resources and emitted no startup warning. D16 printed the fatal summary
+inside the protected terminal extent, so it could overwrite the editor/footer.
+The fix separates diagnostic capture from user-channel emission; it does not
+weaken I02 redaction or defer backtrace capture until after stack unwind.
+
+The fixed-baseline matrix was freshly recaptured for both repaired scenarios at
+`100x32` and `48x20`. D04 and D16 were removed from the fail-closed disposition
+ledger. The complete analyzer accepted only I01 and I02 where applicable:
+
+```text
+render-diff analysis: aligned=6 requires-disposition=88 adjudicated=88
+```
+
+The deterministic suite after the repair is fully green:
+
+```text
+cadr test summary: systems=9 checks=14630 pass=14630 skip=0 fail=0
+```
+
+After rebuilding the root image, `./scripts/verify.sh` passed every current
+stage:
+
+```text
+root cadr binary freshness                       PASS
+code organization gate                           PASS
+real source parity ledger                        PASS
+source parity drift self-test                    PASS
+deterministic FiveAM                             PASS
+isolated cadr build                              PASS
+isolated cadr-server build                       PASS
+Goal 11 performance and stability gate           PASS
+native acceptance smoke                          PASS
+native process modes                             PASS
+migration PTY smoke                              PASS
+Unix socket server smoke                         PASS
+terminal lifecycle PTY                           PASS
+deterministic TUI harness                        PASS
+credential-gated FiveAM                          PASS
+DeepSeek live TUI                                PASS
+```
+
+The live report ran seven items successfully, skipped the Anthropic item
+because `ANTHROPIC_API_KEY` is absent, and recorded 32 checks: 31 pass, one
+credential skip, zero failures.
