@@ -78,15 +78,20 @@ duplicate, or unknown dispositions make analysis fail.
 
 The scenario domain is fail-closed too. `reachable-interfaces.json` records all
 22 fixed-baseline slash commands, 28 reachable interface states, 15 component
-constructors at 22 source construction sites, and all 13 Cadr overlay kinds.
+constructors at 22 source construction sites, all 13 Cadr overlay kinds, and
+the required interface-significant-state domains. The latter currently lock
+seven source-backed tool states: bash line-limit, byte-limit, overlong-line,
+empty-output, nonzero-exit and timeout, plus a parallel tool batch.
 The gate extracts the command list and construction sites directly from the
 fixed baseline and cross-checks the tracked
 `baseline-interface-inventory.json`; source archives without `.git` validate
 against that already-audited inventory, while a real repository must prove the
 inventory still matches the fixed commit object. Overlay kinds are always
 extracted from current Cadr source. A new command, constructor, construction
-site, overlay kind, or registry row without a real manifest checkpoint fails
-before capture. This includes secondary and tertiary states such as auth type
+site, overlay kind, required significant state, or registry row without a real
+manifest checkpoint fails before capture. A state may be uncaptured only when
+its row has an explicit non-empty `notCapturedReason`; the current registry has
+zero such exclusions. This includes secondary and tertiary states such as auth type
 -> provider -> OAuth/API-key dialogs, session rename/delete, tree label,
 settings submenus, and extension custom UI.
 
@@ -97,16 +102,27 @@ settings submenus, and extension custom UI.
 | `wide` | 100 x 32 | Normal development terminal with room to expose spacing and footer placement. |
 | `narrow` | 48 x 20 | Forces wrapping, compact help, overlay clipping, and wide-character accounting. |
 
-The manifest contains 20 scripted scenarios, 83 checkpoints, and all 34 Goal 15
+The manifest contains 21 scripted scenarios, 89 checkpoints, and all 34 Goal 15
 coverage labels:
 fresh/existing/untrusted startup; plain/Markdown/code/CJK/emoji conversation;
 all seven tools; missing-read/nonzero/timeout errors; every required core and
 authentication overlay; streaming abort and both busy queues; provider and
-fatal errors; all 22 slash commands; generic and provider-specific auth layers;
+fatal errors; all 22 slash commands; bash truncation by lines, bytes and within
+a single line; empty/nonzero/timeout bash results; parallel tool calls; generic and provider-specific auth layers;
 settings secondary/tertiary layers; extension select/input/editor;
 autocomplete; and post-TUI resume output. Every scenario runs in both
-dimensions, producing 40 fresh captures. Checkpoints preserve intermediate
+dimensions, producing 42 fresh captures. Checkpoints preserve intermediate
 frames instead of judging only the final screen.
+
+| Significant state | Deterministic trigger | Capture point |
+|---|---|---|
+| bash line limit | 2,001 newline-terminated short lines; below 50KB | `tools-significant-states/bash-line-limit` |
+| bash byte limit | 400 complete 200-character lines; above 50KB and below 2,000 lines | `tools-significant-states/bash-byte-limit` |
+| bash overlong line | one 60KB line | `tools-significant-states/bash-overlong-line` |
+| bash empty output | `true` | `tools-significant-states/bash-empty` |
+| bash nonzero exit | print one line, then exit 7 | `tools-failure/bash-nonzero` |
+| bash timeout | two-second command with a one-second timeout | `tools-failure/bash-timeout` |
+| parallel tool calls | one faux response containing two independent `read` calls | `tools-significant-states/parallel-tool-calls` |
 
 The `/share` checkpoint is an approved intentional product-identity difference:
 the fixed baseline displays `https://pi.dev/session/#...`, while Cadr displays
@@ -134,6 +150,7 @@ the authority.
 | Tool elapsed time | Digits only between the exact `Took ` and `s` delimiters to `<ELAPSED>` | Process scheduling makes wall time nondeterministic; wording, unit, placement, styling, and all other numbers remain checked. |
 | Working spinner frame | One UTF-8 braille code point only between the exact accent SGR and exact dim `Working...` suffix to `⠋` | Frame phase is scheduler-dependent; color and surrounding text remain checked. |
 | Crash-log ID | Digits only between exact `cadr-crash-` and `.log` delimiters to `<CRASH_ID>` | PID/time/counter identity is intentionally unique; directory, filename grammar, and mode are tested elsewhere. |
+| Bash full-output file | Exact `/tmp/pi-bash-<hex>.log` or `/tmp/cadr-bash-<decimal>-<decimal>.log` grammar to `/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log` | The suffix is process-generated; the full warning copy, punctuation, color and replay geometry remain checked. |
 
 No rule removes or folds whitespace, ANSI sequences, colors, cursor positions,
 line endings, punctuation, ordering, whole lines, UUID-shaped arbitrary text, or

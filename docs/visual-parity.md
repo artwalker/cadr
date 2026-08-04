@@ -33,6 +33,9 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 - 工具成功/失败/参数回显和每个 overlay 的每一行提示文案必须以完整字符串或
   完整 virtual-screen snapshot 逐字断言；只搜索关键词、只检查样式 token 或仅
   断言事件类型不构成视觉合约证据。
+- 可达界面只是第一层闭包；每个界面的显著运行时状态也必须进入独立注册表，绑定
+  固定基线 `file:line` 证据、确定性触发方式和真实 checkpoint。删除必需状态、捕获
+  失效或既无捕获又无明确理由时，render-diff 在启动 PTY 前 fail-closed。
 - 无 overlay 的基础屏幕与 overlay 同级：冷启动、单轮、三轮、恰好填满、溢出、
   thinking、tool 折叠/展开、active status、widget、滚动 viewport 和窄屏都必须锁定完整 virtual
   terminal 字节；组件级顺序、行数或关键词断言不能代替整屏门禁。
@@ -586,3 +589,13 @@ capture、83 个 checkpoint 覆盖固定基线全部 22 条 slash command 和 28
 disposition 前，逐 checkpoint 去 ANSI/尾部 padding 复核了可见文本，先修正
 `/session`、标题分类、窄屏 Text wrap、clone session name、path autocomplete、
 settings/auth/extension 多层状态和 hotkeys table 等真实语义差异。
+
+Goal 16 关账后，工具状态闭包新增 7 项：bash 行数/字节/单行截断、空输出、非零
+退出、超时与并行 tool batch。固定基线普通 agent bash 的真实合同位于
+`core/tools/bash.ts:248-306`：模型 result 内保留详细 footer，但 TUI 先剥离该 footer，
+再只渲染一条 warning 色 `[Full output: ... Truncated: ...]`。Cadr 原先把 result footer
+当灰色正文回显后又添加黄色 warning，故同一路径出现两次。门禁
+`POST-GOAL16-BASH-CONTEXT-TRUNCATION-RENDERS-ONE-BASELINE-WARNING` 现在分别锁定
+模型可见文本不变、TUI 仅一条 warning、完整措辞与 warning 色；新场景在 wide/narrow
+两维逐状态捕获。此前 20 场景只证明“界面已到达”，没有任何超过 50KB/2,000 行的
+输入，因此重复提示在 14,827 条 Cadr 自测与 40 份差分 capture 中都不可观察。

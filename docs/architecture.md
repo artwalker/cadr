@@ -1880,7 +1880,7 @@ Part A 的 277-file histogram 把 15 个文件归入 `>=1000` 行的已审计 ou
 ## 32. Goal 15 fixed-baseline render differential
 
 `scripts/render-diff.py gate` 从本仓库保留的固定基线 commit object 归档 pi，使用
-immutable marker 对应的 hydrated cache，并对 manifest 的 20 个场景、wide/narrow
+immutable marker 对应的 hydrated cache，并对 manifest 的 21 个场景、wide/narrow
 两个尺寸逐项 fresh capture。每侧都通过真实 PTY 与原生 faux provider 驱动实际
 composition root；完整 raw bytes、SHA-256、checkpoint 与 normalized derivative
 分别保存。只有经用户批准、限定于精确分隔符的值替换进入 normalization；空白、
@@ -1890,9 +1890,13 @@ ANSI、颜色、光标、顺序、整行与无界数字均不归一化，raw 与
 command、28 个可达界面状态、15 类 constructor 的 22 个源码构造点，以及 Cadr 的
 13 个 overlay kind；固定基线集合先与 `baseline-interface-inventory.json` 交叉校验，
 无 `.git` 的源码归档使用该已审计快照，真实仓库则必须再与固定 commit object 一致；
-Cadr overlay kind 始终从当前源码提取。四个集合与 83 个 checkpoint 双向核对。
+Cadr overlay kind 始终从当前源码提取。界面闭包之外，checker 还独立固定 bash
+行数/字节/单行截断、空输出、非零退出、超时与并行 tool batch 七个显著状态；每项
+必须登记基线 token、确定性 trigger 与真实 capture，或登记非空不捕获理由，当前
+零豁免。上述集合与 89 个 checkpoint 双向核对。
 新增命令、constructor、构造点、overlay kind，或任一二级/三级界面没有真实 capture，
-都会在 analyze 前失败，不能再由人工挑选场景静默漏过。
+以及删除必需显著状态或使其 capture 失效，都会在 analyze 前失败，不能再由人工
+挑选场景静默漏过。
 
 Analyzer 以 tmux 重放未修改 raw stream，比较 checkpoint 的终端语义 screen，并
 fail closed 校验 `test/fixtures/render-diff/dispositions.json`：新差异无 disposition、
