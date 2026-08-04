@@ -4,6 +4,20 @@
   (asdf:component-version
    (asdf:find-system "cadr-ai")))
 
+(defparameter +cadr-product-slug+ "cadr")
+(defparameter +cadr-product-display-name+ "Cadr")
+(defparameter +cadr-canonical-repository-url+
+  "https://github.com/artwalker/cadr")
+
+(defun cadr-product-slug ()
+  +cadr-product-slug+)
+
+(defun cadr-product-display-name ()
+  +cadr-product-display-name+)
+
+(defun cadr-canonical-repository-url ()
+  +cadr-canonical-repository-url+)
+
 (defun cadr-version ()
   +cadr-version+)
 
@@ -14,7 +28,8 @@
 (defun cadr-release-identity ()
   (format
    nil
-   "cadr ~A · aligned with pi ~A (+~D, ~A)"
+   "~A ~A · aligned with pi ~A (+~D, ~A)"
+   (cadr-product-slug)
    (cadr-version)
    +cadr-aligned-pi-release+
    +cadr-aligned-pi-distance+

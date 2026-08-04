@@ -180,7 +180,7 @@
          "https://pi.dev/api/latest-version"
          (getf request :url)))
     (is (search
-         "pi/1.2.3"
+         "cadr/1.2.3"
          (cdr
           (assoc
            "User-Agent"
@@ -259,7 +259,7 @@
              (getf request :read-timeout)))
       (is (getf request :force-string))
       (is (search
-           "pi/1.2.3"
+           "cadr/1.2.3"
            (cdr
             (assoc
              "User-Agent"

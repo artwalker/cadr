@@ -142,7 +142,8 @@
            (options (second device-request)))
       (is (string= "https://auth.x.ai/oauth2/device/code"
                    (first device-request)))
-      (is (search "referrer=pi" (getf options :content))))
+      (is (search "referrer=cadr" (getf options :content)))
+      (is (not (search "referrer=pi" (getf options :content)))))
     (let ((event (first events)))
       (is (eq :device-code (getf event :type)))
       (is (string= "ABCD" (getf event :user-code)))

@@ -274,7 +274,7 @@
   (list
    :url "https://pi.dev/api/latest-version"
    :headers
-   `(("User-Agent" . ,(pi-user-agent version))
+   `(("User-Agent" . ,(cadr-user-agent version))
      ("Accept" . "application/json"))))
 
 (defparameter *version-check-http-function* nil)

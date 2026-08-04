@@ -77,8 +77,9 @@
                  (if (string< a b) -1 1))))
           finally (return 0))))
 
-(defun pi-user-agent (version)
-  (format nil "pi/~A (~(~A~); sbcl/~A; ~(~A~))"
+(defun cadr-user-agent (version)
+  (format nil "~A/~A (~(~A~); sbcl/~A; ~(~A~))"
+          (cadr-ai::cadr-product-slug)
           version
           (software-type)
           (lisp-implementation-version)

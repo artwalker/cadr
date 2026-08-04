@@ -137,7 +137,7 @@
        +xai-device-code-url+
        `(("client_id" . ,+xai-oauth-client-id+)
          ("scope" . ,+xai-oauth-scope+)
-         ("referrer" . "pi")))
+         ("referrer" . ,(cadr-product-slug))))
     (ensure-oauth-response-success "xAI" "device authorization"
                                    response status)
     (let ((device (parse-xai-device-authorization response)))

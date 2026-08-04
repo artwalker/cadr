@@ -193,9 +193,14 @@
          0))
   (is (= 0 (cadr-cli::compare-package-versions
             "0.70.5" "0.70.5")))
+  (is (string= "cadr" (cadr-ai::cadr-product-slug)))
+  (is (string= "Cadr" (cadr-ai::cadr-product-display-name)))
+  (is (string=
+       "https://github.com/artwalker/cadr"
+       (cadr-ai::cadr-canonical-repository-url)))
   (is (search
-       "pi/0.83.0 ("
-       (cadr-cli::pi-user-agent "0.83.0"))))
+       "cadr/0.83.0 ("
+       (cadr-cli::cadr-user-agent "0.83.0"))))
 
 (test git-source-parser-accepts-supported-forms-and-rejects-traversal
   (let ((https
@@ -228,6 +233,30 @@
          (cadr-cli::parse-git-source source)))))
 
 (test provider-attribution-and-stream-settings-follow-baseline-precedence
+  (flet ((header (name headers)
+           (cdr (assoc name headers :test #'string-equal))))
+    (let ((openrouter
+            (cadr-cli::provider-attribution-headers
+             :provider :openrouter :telemetry-p t))
+          (nvidia
+            (cadr-cli::provider-attribution-headers
+             :provider :nvidia :telemetry-p t))
+          (cloudflare
+            (cadr-cli::provider-attribution-headers
+             :provider :cloudflare-workers-ai :telemetry-p t))
+          (opencode
+            (cadr-cli::provider-attribution-headers
+             :provider :opencode :session-id "session")))
+      (is (string= "https://github.com/artwalker/cadr"
+                   (header "HTTP-Referer" openrouter)))
+      (is (string= "cadr"
+                   (header "X-OpenRouter-Title" openrouter)))
+      (is (string= "cadr"
+                   (header "X-BILLING-INVOKE-ORIGIN" nvidia)))
+      (is (string= "cadr-coding-agent"
+                   (header "User-Agent" cloudflare)))
+      (is (string= "cadr"
+                   (header "x-opencode-client" opencode)))))
   (let ((headers
           (cadr-cli::provider-attribution-headers
            :provider :openrouter

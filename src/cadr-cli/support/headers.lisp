@@ -26,13 +26,16 @@
               ((or (eq provider :openrouter)
                    (search "openrouter.ai"
                            (or base-url "")))
-               '(("HTTP-Referer" . "https://pi.dev")
-                 ("X-OpenRouter-Title" . "pi")
+               `(("HTTP-Referer" .
+                  ,(cadr-ai::cadr-canonical-repository-url))
+                 ("X-OpenRouter-Title" .
+                  ,(cadr-ai::cadr-product-slug))
                  ("X-OpenRouter-Categories" . "cli-agent")))
               ((or (eq provider :nvidia)
                    (search "integrate.api.nvidia.com"
                            (or base-url "")))
-               '(("X-BILLING-INVOKE-ORIGIN" . "Pi")))
+               `(("X-BILLING-INVOKE-ORIGIN" .
+                  ,(cadr-ai::cadr-product-slug))))
               ((or
                 (member provider
                         '(:cloudflare-workers-ai
@@ -41,7 +44,9 @@
                         (or base-url ""))
                 (search "gateway.ai.cloudflare.com"
                         (or base-url "")))
-               '(("User-Agent" . "pi-coding-agent"))))))
+               `(("User-Agent" .
+                  ,(format nil "~A-coding-agent"
+                           (cadr-ai::cadr-product-slug))))))))
         (session
           (when
               (and session-id
@@ -51,7 +56,8 @@
                     (search "opencode.ai"
                             (or base-url ""))))
             `(("x-opencode-session" . ,session-id)
-              ("x-opencode-client" . "pi")))))
+              ("x-opencode-client" .
+               ,(cadr-ai::cadr-product-slug))))))
     (merge-header-sources
      session defaults provider-headers
      request-headers)))
