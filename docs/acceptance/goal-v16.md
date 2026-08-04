@@ -1,6 +1,6 @@
 # Goal 16 验收记录
 
-状态：Part A0、A、B 与 Part C1-C5 已完成；Part D 身份门禁待落账。
+状态：Part A0、A、B、Part C1-C5 与 Part D 已完成并提交；等待用户验收。
 
 ## Part A0：压缩降级行为
 
@@ -146,11 +146,34 @@ HTML template SHA 同步更新，session entries、payload 与 wire 未变化。
 
 ### C5：文档收敛
 
+commit `481033fe1`。
+
 README 记录 14 项迁移表、share 过渡期、版本检查开关与外部合同边界；CHANGELOG
 把版本检查列为修复；architecture、审计、提案和 open-questions 均同步最终裁决。
 Part C 没有新增依赖、兼容层、telemetry 或未裁决机制。
 
-## Part C 完整验证（2026-08-05）
+## Part D：产品身份漂移门禁
+
+commit `44f8dd8a7`。
+
+- `scripts/check-product-identity.py` 只扫描 production 范围：`src/`、
+  `examples/`、`scripts/`、`.github/`、根 README/CHANGELOG、ASDF 与构建入口。
+- `docs/product-identity-allowlist.json` 共记录 274 次真实命中、251 条精确
+  disposition 与 1 个 SHA-256 锁定的 opaque 资产。每条 disposition 同时绑定
+  path、kind、token、完整行内容、出现次数与非空理由；目录、glob、正则或
+  空理由豁免均非法。
+- 门禁 fail-closed 拒绝新命中、移动后的同 token、重复/过期 disposition、
+  次数漂移、总数漂移与 opaque digest 漂移。`test/product-identity-gate-test.py`
+  的 9 个独立回归覆盖这些反例，并直接驱动当前真实仓库。
+- 测试先行证据：无 checker 时合成用例整批失败；checker 落地但无真实
+  manifest 时真实仓库用例失败；`verify.sh` 未接入时顺序合同回归失败。
+  实现后 9/9 通过，真实扫描数与 manifest 逐项相等。
+- `scripts/verify.sh` 在 code organization 后、source parity/FiveAM/构建前依次运行
+  合成回归与真实树扫描；任一失败会阻断后续确定性阶段。
+- 常设政策落入 `docs/development-policy.md`：改动 identity allowlist 等同改动
+  产品身份边界，须先书面提案并经用户逐项裁决。
+
+## Goal 16 完整验证（2026-08-05）
 
 `./scripts/test-cl.sh`：
 
@@ -164,6 +187,7 @@ cadr test summary: systems=9 checks=14827 pass=14827 skip=0 fail=0
 |---|---|
 | root cadr binary freshness | PASS |
 | code organization gate | PASS |
+| product identity gate | PASS（9 个合成/真实回归；274 命中 / 251 disposition / 1 opaque） |
 | real source parity ledger | PASS（595） |
 | source parity drift self-test | PASS |
 | deterministic FiveAM | PASS（14,827/14,827） |
@@ -186,7 +210,7 @@ live 项目级统计为 8 项、7 run/pass、1 个 `ANTHROPIC_API_KEY is not set
 根二进制新鲜度：
 
 ```text
-binary build time: 2026-08-05 01:31:08.949533433 +0800
+binary build time: 2026-08-05 02:07:50.103011288 +0800
 latest src commit: 5eb36c930 2026-08-05T01:28:46+08:00
 latest source mtime: 2026-08-05 01:23:24 +0800
 binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)

@@ -517,7 +517,7 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Goal 16 Part C: 14,827 checks / 14,827 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` builds repeat the same gate |
+| Deterministic ASDF gate | Goal 16 closeout: 14,827 checks / 14,827 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` builds repeat the same gate; the real product-identity scan records 274/274 exact findings |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Non-functional | N=5000 frame/key/stream each 4.00ms; 1200-turn/10-hour faux run has linear retained state, stable FD/thread counts, and 10MiB load/resume/continue below 0.33s |
 | Live-proven | Goal 10 closeout `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
