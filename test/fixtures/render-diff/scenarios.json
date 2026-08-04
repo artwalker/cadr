@@ -157,6 +157,39 @@
       ]
     },
     {
+      "id": "tools-significant-states",
+      "group": "tools",
+      "coverage": ["bash-truncation-lines", "bash-truncation-bytes", "bash-truncation-overlong-line", "bash-empty-output", "parallel-tool-calls"],
+      "description": "Deterministic captures for every registered output-volume and tool-batch state not covered by the ordinary success/failure scenarios.",
+      "responses": [
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-line-limit", "arguments": { "command": "for i in $(seq 1 2001); do printf 'line-%04d\\n' \"$i\"; done" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "line limit observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-byte-limit", "arguments": { "command": "for i in $(seq 1 400); do printf '%0200d\\n' \"$i\"; done" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "byte limit observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-overlong-line", "arguments": { "command": "head -c 61440 /dev/zero | tr '\\0' x" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "overlong line observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-empty", "arguments": { "command": "true" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "empty output observed." }], "stopReason": "stop" },
+        {
+          "content": [
+            { "type": "toolCall", "name": "read", "id": "tool-parallel-a", "arguments": { "path": "sample.txt" } },
+            { "type": "toolCall", "name": "read", "id": "tool-parallel-b", "arguments": { "path": "notes/alpha.txt" } }
+          ],
+          "stopReason": "toolUse"
+        },
+        { "content": [{ "type": "text", "text": "parallel calls observed." }], "stopReason": "stop" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "line limit" }, { "send": "enter" }, { "waitFor": "line limit observed." }, { "checkpoint": "bash-line-limit" },
+        { "sendText": "byte limit" }, { "send": "enter" }, { "waitFor": "byte limit observed." }, { "checkpoint": "bash-byte-limit" },
+        { "sendText": "overlong line" }, { "send": "enter" }, { "waitFor": "overlong line observed." }, { "checkpoint": "bash-overlong-line" },
+        { "sendText": "empty output" }, { "send": "enter" }, { "waitFor": "empty output observed." }, { "checkpoint": "bash-empty" },
+        { "sendText": "parallel calls" }, { "send": "enter" }, { "waitFor": "parallel calls observed." }, { "checkpoint": "parallel-tool-calls" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
       "id": "overlays-core",
       "group": "overlays",
       "coverage": ["overlay-model", "overlay-scoped-models", "overlay-session", "overlay-session-rename", "overlay-session-delete", "overlay-fork", "overlay-tree", "overlay-tree-label", "overlay-settings", "overlay-trust"],

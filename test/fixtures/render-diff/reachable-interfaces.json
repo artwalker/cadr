@@ -110,5 +110,85 @@
     "settings": ["settings-selector", "settings-warnings", "settings-thinking", "settings-theme", "settings-theme-automatic", "settings-theme-light", "settings-theme-dark"],
     "tree": ["tree-selector", "tree-label-input"],
     "trust": ["trust-selector"]
-  }
+  },
+  "significantStateDomains": {
+    "bash-output": [
+      "bash-output-line-limit",
+      "bash-output-byte-limit",
+      "bash-output-overlong-line",
+      "bash-output-empty"
+    ],
+    "bash-terminal": [
+      "bash-nonzero-exit",
+      "bash-timeout"
+    ],
+    "tool-batch": [
+      "parallel-tool-calls"
+    ]
+  },
+  "significantStates": [
+    {
+      "id": "bash-output-line-limit",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/core/tools/truncate.ts",
+        "token": "outputLinesArr.length >= maxLines"
+      },
+      "trigger": "A bash command emits 2,001 newline-terminated lines, exceeding the 2,000-line tail limit without exceeding 50KB.",
+      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-line-limit" }
+    },
+    {
+      "id": "bash-output-byte-limit",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/core/tools/truncate.ts",
+        "token": "outputBytesCount + lineBytes > maxBytes"
+      },
+      "trigger": "A bash command emits 400 complete 200-character lines, exceeding 50KB before 2,000 lines.",
+      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-byte-limit" }
+    },
+    {
+      "id": "bash-output-overlong-line",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/core/tools/truncate.ts",
+        "token": "lastLinePartial = true"
+      },
+      "trigger": "A bash command emits one 60KB line, forcing tail truncation inside that line.",
+      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-overlong-line" }
+    },
+    {
+      "id": "bash-output-empty",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/core/tools/bash.ts",
+        "token": "emptyText = \"(no output)\""
+      },
+      "trigger": "The true command exits successfully without writing stdout or stderr.",
+      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-empty" }
+    },
+    {
+      "id": "bash-nonzero-exit",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/core/tools/bash.ts",
+        "token": "Command exited with code ${exitCode}"
+      },
+      "trigger": "A bash command prints one line and exits with status 7.",
+      "capture": { "scenario": "tools-failure", "checkpoint": "bash-nonzero" }
+    },
+    {
+      "id": "bash-timeout",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/core/tools/bash.ts",
+        "token": "Command timed out after ${timeoutSecs} seconds"
+      },
+      "trigger": "A two-second command is run with a one-second timeout.",
+      "capture": { "scenario": "tools-failure", "checkpoint": "bash-timeout" }
+    },
+    {
+      "id": "parallel-tool-calls",
+      "baselineEvidence": {
+        "path": "packages/agent/src/agent-loop.ts",
+        "token": "await Promise.all"
+      },
+      "trigger": "One assistant response returns two independent read calls in the same tool batch.",
+      "capture": { "scenario": "tools-significant-states", "checkpoint": "parallel-tool-calls" }
+    }
+  ]
 }

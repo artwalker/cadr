@@ -44,6 +44,13 @@
     { "scenario": "tools-failure", "checkpoint": "bash-timeout", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "tools-failure", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
 
+    { "scenario": "tools-significant-states", "checkpoint": "bash-line-limit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-significant-states", "checkpoint": "bash-byte-limit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-significant-states", "checkpoint": "bash-overlong-line", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-significant-states", "checkpoint": "bash-empty", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-significant-states", "checkpoint": "parallel-tool-calls", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "tools-significant-states", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+
     { "scenario": "overlays-core", "checkpoint": "overlay-model", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "overlays-core", "checkpoint": "overlay-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "overlays-core", "checkpoint": "overlay-fork", "dimensions": ["wide", "narrow"], "classes": ["I01"] },

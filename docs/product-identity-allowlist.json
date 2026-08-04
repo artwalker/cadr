@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 274,
+  "expected_findings": 276,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -1094,6 +1094,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "        baseline_output = b\"Full output: /tmp/pi-bash-2ccded83dc83b1f8.log\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential self-test uses one fixed pi-shaped temporary path to prove bounded normalization against the Cadr path grammar."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "        command.add_argument(\"--pi-repo\", type=Path, default=ROOT)",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -1153,6 +1161,14 @@
       "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.83.0\"",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        rb\"/tmp/(?:pi|cadr)-bash-[0-9a-f-]+\\.log\",",
+      "occurrences": 1,
+      "reason": "Goal 15 differential normalization recognizes only the exact fixed-baseline and Cadr bash-output temporary-path grammar."
     },
     {
       "path": "scripts/render-diff.py",

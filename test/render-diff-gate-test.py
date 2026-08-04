@@ -101,6 +101,20 @@ class RenderDiffGateTest(unittest.TestCase):
             inventory["constructorSites"],
         )
         self.assertEqual(len(registry["uncoveredInterfaces"]), 0)
+        self.assertEqual(
+            {entry["id"] for entry in registry["significantStates"]},
+            {
+                "bash-output-line-limit",
+                "bash-output-byte-limit",
+                "bash-output-overlong-line",
+                "bash-output-empty",
+                "bash-nonzero-exit",
+                "bash-timeout",
+                "parallel-tool-calls",
+            },
+        )
+        self.assertEqual(len(registry["uncoveredSignificantStates"]), 0)
+        self.assertEqual(len(registry["excludedSignificantStates"]), 0)
 
     def test_fixed_baseline_inventory_supports_gitless_isolated_builds(self) -> None:
         manifest_path = ROOT / "test/fixtures/render-diff/scenarios.json"
@@ -189,6 +203,69 @@ class RenderDiffGateTest(unittest.TestCase):
                 "baseline interface construction-site registry drift",
             ):
                 RENDER_DIFF.load_interface_registry(registry_path, manifest, ROOT)
+
+    def test_significant_state_registry_fails_closed_for_missing_states_and_captures(self) -> None:
+        manifest = RENDER_DIFF.load_manifest(
+            ROOT / "test/fixtures/render-diff/scenarios.json"
+        )
+        registry_path = ROOT / "test/fixtures/render-diff/reachable-interfaces.json"
+        registry = RENDER_DIFF.load_interface_registry(registry_path, manifest, ROOT)
+
+        missing_state = {
+            **registry,
+            "significantStates": registry["significantStates"][:-1],
+        }
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure, "significant-state registry drift"
+        ):
+            RENDER_DIFF.validate_interface_registry(missing_state, manifest, ROOT)
+
+        missing_from_both = {
+            **registry,
+            "significantStateDomains": {
+                **registry["significantStateDomains"],
+                "tool-batch": [],
+            },
+            "significantStates": registry["significantStates"][:-1],
+        }
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure, "significant-state domain registry drift"
+        ):
+            RENDER_DIFF.validate_interface_registry(missing_from_both, manifest, ROOT)
+
+        uncaptured = {
+            **registry,
+            "significantStates": [
+                {
+                    **entry,
+                    **(
+                        {
+                            "capture": {
+                                "scenario": "missing-scenario",
+                                "checkpoint": "missing-checkpoint",
+                            }
+                        }
+                        if entry["id"] == "bash-output-byte-limit"
+                        else {}
+                    ),
+                }
+                for entry in registry["significantStates"]
+            ],
+        }
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure, "uncaptured significant state"
+        ):
+            RENDER_DIFF.validate_interface_registry(uncaptured, manifest, ROOT)
+
+    def test_bash_output_path_normalization_is_bounded_to_product_temp_files(self) -> None:
+        pi_path = b"Full output: /tmp/pi-bash-2ccded83dc83b1f8.log"
+        cadr_path = b"Full output: /tmp/cadr-bash-3994869173-466576989544909805.log"
+        unrelated = b"Full output: /tmp/custom-bash-2ccded83dc83b1f8.log"
+        self.assertEqual(
+            RENDER_DIFF.normalize_fixed_values(pi_path),
+            RENDER_DIFF.normalize_fixed_values(cadr_path),
+        )
+        self.assertEqual(RENDER_DIFF.normalize_fixed_values(unrelated), unrelated)
 
 
 if __name__ == "__main__":

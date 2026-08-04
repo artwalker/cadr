@@ -89,6 +89,17 @@ REQUIRED_COVERAGE = {
     "post-exit-resume",
 }
 
+REQUIRED_SIGNIFICANT_STATE_DOMAINS = {
+    "bash-output": [
+        "bash-output-line-limit",
+        "bash-output-byte-limit",
+        "bash-output-overlong-line",
+        "bash-output-empty",
+    ],
+    "bash-terminal": ["bash-nonzero-exit", "bash-timeout"],
+    "tool-batch": ["parallel-tool-calls"],
+}
+
 
 class HarnessFailure(RuntimeError):
     pass
@@ -371,8 +382,90 @@ def validate_interface_registry(
                 f"Cadr overlay kind {kind} maps unknown interfaces: {unknown}"
             )
 
+    state_domains = data.get("significantStateDomains")
+    if state_domains != REQUIRED_SIGNIFICANT_STATE_DOMAINS:
+        raise HarnessFailure(
+            "significant-state domain registry drift"
+        )
+    required_state_ids: list[str] = []
+    for domain, states in state_domains.items():
+        if (
+            not isinstance(domain, str)
+            or not domain
+            or not isinstance(states, list)
+            or not states
+            or not all(isinstance(state, str) and state for state in states)
+            or len(states) != len(set(states))
+        ):
+            raise HarnessFailure(f"invalid significant-state domain: {domain}")
+        required_state_ids.extend(states)
+    if len(required_state_ids) != len(set(required_state_ids)):
+        raise HarnessFailure("significant-state ids overlap across domains")
+
+    significant_states = data.get("significantStates")
+    if not isinstance(significant_states, list) or not significant_states:
+        raise HarnessFailure("reachable-interface registry must list significantStates")
+    registered_state_ids = [entry.get("id") for entry in significant_states]
+    if registered_state_ids != required_state_ids:
+        missing = sorted(set(required_state_ids) - set(registered_state_ids))
+        stale = sorted(set(registered_state_ids) - set(required_state_ids))
+        raise HarnessFailure(
+            "significant-state registry drift: "
+            f"unregistered={missing} stale={stale}"
+        )
+    uncovered_states: list[str] = []
+    accepted_exclusions: list[dict[str, str]] = []
+    for entry in significant_states:
+        state_id = entry.get("id")
+        trigger = entry.get("trigger")
+        if not isinstance(trigger, str) or not trigger.strip():
+            raise HarnessFailure(f"missing trigger for significant state {state_id}")
+        evidence = entry.get("baselineEvidence")
+        if not isinstance(evidence, dict):
+            raise HarnessFailure(
+                f"missing baseline evidence for significant state {state_id}"
+            )
+        path = evidence.get("path")
+        token = evidence.get("token")
+        if (
+            not isinstance(path, str)
+            or not path
+            or not isinstance(token, str)
+            or not token
+        ):
+            raise HarnessFailure(
+                f"invalid baseline evidence for significant state {state_id}"
+            )
+        if baseline_inventory["verifiedFromGit"] and token not in git_blob(
+            repo, commit, path
+        ):
+            raise HarnessFailure(
+                f"stale baseline evidence for significant state {state_id}"
+            )
+        capture = entry.get("capture")
+        reason = entry.get("notCapturedReason")
+        if isinstance(capture, dict) and isinstance(reason, str) and reason.strip():
+            raise HarnessFailure(
+                f"significant state {state_id} cannot be both captured and excluded"
+            )
+        if isinstance(capture, dict):
+            target = (capture.get("scenario"), capture.get("checkpoint"))
+            if target not in captures:
+                uncovered_states.append(str(state_id))
+        elif isinstance(reason, str) and reason.strip():
+            accepted_exclusions.append({"id": str(state_id), "reason": reason.strip()})
+        else:
+            uncovered_states.append(str(state_id))
+    if uncovered_states:
+        raise HarnessFailure(
+            "uncaptured significant state: "
+            + ", ".join(sorted(uncovered_states))
+        )
+
     result = dict(data)
     result["uncoveredInterfaces"] = []
+    result["uncoveredSignificantStates"] = []
+    result["excludedSignificantStates"] = accepted_exclusions
     return result
 
 
@@ -998,6 +1091,11 @@ def normalize_fixed_values(data: bytes) -> bytes:
         b"<SESSION_ID>",
         result,
     )
+    result = re.sub(
+        rb"/tmp/(?:pi|cadr)-bash-[0-9a-f-]+\.log",
+        b"/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log",
+        result,
+    )
     return result
 
 
@@ -1395,6 +1493,13 @@ def self_test(args: argparse.Namespace) -> int:
         resume_id = b"To resume this session: cadr --session 019fcc98-34ce-7166-84e3-ee03d1bfb3b2"
         if not normalize_fixed_values(resume_id).endswith(b"--session <SESSION_ID>"):
             raise HarnessFailure("resume-session UUID normalization drifted")
+        baseline_output = b"Full output: /tmp/pi-bash-2ccded83dc83b1f8.log"
+        cadr_output = b"Full output: /tmp/cadr-bash-3994869173-466576989544909805.log"
+        if normalize_fixed_values(baseline_output) != normalize_fixed_values(cadr_output):
+            raise HarnessFailure("bash-output path normalization drifted")
+        unrelated_output = b"Full output: /tmp/custom-bash-2ccded83dc83b1f8.log"
+        if normalize_fixed_values(unrelated_output) != unrelated_output:
+            raise HarnessFailure("bash-output path normalization escaped its grammar")
         screen = tmux_screen(
             b"\x1b[2J\x1b[H\x1b[31mred\x1b[0m", 12, 4, sandbox / "tmux"
         )
