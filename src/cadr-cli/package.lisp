@@ -115,10 +115,10 @@
    #:parse-null-environment
    #:restore-empty-sandbox-environment
    #:version-check-request
-   #:get-latest-pi-release
-   #:get-latest-pi-version
+   #:get-latest-cadr-release
+   #:get-latest-cadr-version
    #:newer-package-version-p
-   #:check-for-new-pi-version
+   #:check-for-new-cadr-version
    #:newer-release
    #:valid-thinking-level-p
    #:+default-thinking-level+

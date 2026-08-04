@@ -8,6 +8,8 @@ manifest and their native faux providers.  Each side runs under a real PTY.
 The collector fixes terminal size, dark theme, `C.UTF-8`, `TERM=xterm-256color`,
 `COLORTERM=truecolor`, isolated home/config/cwd directories, offline mode, faux
 response timestamps, response IDs, token boundaries, and response order.  It
+installs an isolated fake `gh` executable so `/share` deterministically reaches
+its successful user-visible URL path on both sides without external writes. It
 captures the complete PTY byte stream, including ANSI SGR, cursor movement,
 erase operations, terminal-mode setup/teardown, and post-TUI stdout.
 
@@ -105,6 +107,12 @@ settings secondary/tertiary layers; extension select/input/editor;
 autocomplete; and post-TUI resume output. Every scenario runs in both
 dimensions, producing 40 fresh captures. Checkpoints preserve intermediate
 frames instead of judging only the final screen.
+
+The `/share` checkpoint is an approved intentional product-identity difference:
+the fixed baseline displays `https://pi.dev/session/#...`, while Cadr displays
+`https://cadr.dev/session/#...`. The fake `gh` returns the same fixed Gist URL to
+both programs, so the disposition covers only the viewer boundary; the analyzer
+still fails closed for every other byte and semantic-screen difference.
 
 ## Normalization candidates
 

@@ -1039,6 +1039,7 @@
               "(defun cadr-product-slug"
               "(defun cadr-product-display-name"
               "(defun cadr-canonical-repository-url"
+              "(defun cadr-default-share-viewer-url"
               "(defun cadr-release-identity")
              ("support/retry.lisp"
               "(defun retryable-assistant-error-p"
@@ -1067,7 +1068,7 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 235 definition-count)
+    (is (= 237 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

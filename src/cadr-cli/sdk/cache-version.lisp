@@ -270,12 +270,18 @@
         environ-path
         :external-format :latin-1))))
 
-(defun version-check-request (version)
-  (list
-   :url "https://pi.dev/api/latest-version"
-   :headers
-   `(("User-Agent" . ,(cadr-user-agent version))
-     ("Accept" . "application/json"))))
+(defun version-check-request
+    (version
+     &key
+       (endpoint-value
+         (uiop:getenv "CADR_VERSION_CHECK_URL")))
+  (when (nonempty-environment-value-p
+         endpoint-value)
+    (list
+     :url endpoint-value
+     :headers
+     `(("User-Agent" . ,(cadr-user-agent version))
+       ("Accept" . "application/json")))))
 
 (defparameter *version-check-http-function* nil)
 
@@ -296,7 +302,7 @@
         (and (plusp (length trimmed))
              trimmed)))))
 
-(defun normalize-latest-pi-release (release)
+(defun normalize-latest-cadr-release (release)
   (let ((version
           (release-string-field
            release "version")))
@@ -320,19 +326,26 @@
            normalized "note" note))
         normalized))))
 
-(defun get-latest-pi-release
+(defun get-latest-cadr-release
     (current-version
      &key
        (timeout-milliseconds 10000)
+       (endpoint-value
+         (uiop:getenv "CADR_VERSION_CHECK_URL"))
        (offline-value
-         (uiop:getenv "PI_OFFLINE")))
-  (when (nonempty-environment-value-p
-         offline-value)
-    (return-from get-latest-pi-release
+         (uiop:getenv "CADR_OFFLINE")))
+  (when (or
+         (nonempty-environment-value-p
+          offline-value)
+         (not
+          (nonempty-environment-value-p
+           endpoint-value)))
+    (return-from get-latest-cadr-release
       nil))
   (let* ((request
            (version-check-request
-            current-version))
+            current-version
+            :endpoint-value endpoint-value))
          (timeout-seconds
            (/ timeout-milliseconds
               1000d0))
@@ -354,15 +367,15 @@
       (when (and
              (integerp status)
              (<= 200 status 299))
-        (normalize-latest-pi-release
+        (normalize-latest-cadr-release
          (cadr-ai::parse-json body))))))
 
-(defun get-latest-pi-version
+(defun get-latest-cadr-version
     (current-version
      &rest options
      &key &allow-other-keys)
   (let ((release
-          (apply #'get-latest-pi-release
+          (apply #'get-latest-cadr-release
                  current-version
                  options)))
     (and release
@@ -385,23 +398,26 @@
            '(#\Space #\Tab #\Newline #\Return)
            current))))))
 
-(defun check-for-new-pi-version
+(defun check-for-new-cadr-version
     (current-version
      &key
        (skip-value
          (uiop:getenv
-          "PI_SKIP_VERSION_CHECK"))
+          "CADR_SKIP_VERSION_CHECK"))
+       (endpoint-value
+         (uiop:getenv "CADR_VERSION_CHECK_URL"))
        (offline-value
-         (uiop:getenv "PI_OFFLINE"))
+         (uiop:getenv "CADR_OFFLINE"))
        (timeout-milliseconds 10000))
   (when (nonempty-environment-value-p
          skip-value)
-    (return-from check-for-new-pi-version
+    (return-from check-for-new-cadr-version
       nil))
   (handler-case
       (let ((release
-              (get-latest-pi-release
+              (get-latest-cadr-release
                current-version
+               :endpoint-value endpoint-value
                :offline-value offline-value
                :timeout-milliseconds
                timeout-milliseconds)))

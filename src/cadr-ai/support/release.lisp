@@ -8,6 +8,8 @@
 (defparameter +cadr-product-display-name+ "Cadr")
 (defparameter +cadr-canonical-repository-url+
   "https://github.com/artwalker/cadr")
+(defparameter +cadr-default-share-viewer-url+
+  "https://cadr.dev/session/")
 
 (defun cadr-product-slug ()
   +cadr-product-slug+)
@@ -17,6 +19,9 @@
 
 (defun cadr-canonical-repository-url ()
   +cadr-canonical-repository-url+)
+
+(defun cadr-default-share-viewer-url ()
+  +cadr-default-share-viewer-url+)
 
 (defun cadr-version ()
   +cadr-version+)

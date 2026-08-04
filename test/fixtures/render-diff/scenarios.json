@@ -380,7 +380,7 @@
         { "sendText": "/name render name" }, { "send": "enter" }, { "waitFor": "Session name set:" }, { "checkpoint": "slash-name" },
         { "sendText": "/changelog" }, { "send": "enter" }, { "waitFor": "What's New" }, { "pauseMs": 80 }, { "checkpoint": "slash-changelog" },
         { "sendText": "/hotkeys" }, { "send": "enter" }, { "waitForNext": "Keyboard Shortcuts" }, { "pauseMs": 80 }, { "checkpoint": "slash-hotkeys" },
-        { "sendText": "/share" }, { "send": "enter" }, { "waitFor": "GitHub CLI" }, { "checkpoint": "slash-share" },
+        { "sendText": "/share" }, { "send": "enter" }, { "waitFor": "Share URL:" }, { "checkpoint": "slash-share" },
         { "sendText": "/clone" }, { "send": "enter" }, { "waitFor": "Cloned to new session" }, { "checkpoint": "slash-clone" },
         { "send": "ctrl+d" }
       ]

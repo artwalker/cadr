@@ -39,6 +39,36 @@
     (is (search "https://example.com/docs" output))))
 
 (test changelog-parsing-and-share-command-keep-version-and-argv-semantics
+  (is (string=
+       "https://cadr.dev/session/"
+       (cadr-ai::cadr-default-share-viewer-url)))
+  (let ((previous-cadr
+          (uiop:getenv "CADR_SHARE_VIEWER_URL"))
+        (previous-pi
+          (uiop:getenv "PI_SHARE_VIEWER_URL")))
+    (unwind-protect
+         (progn
+           (sb-posix:unsetenv "CADR_SHARE_VIEWER_URL")
+           (sb-posix:setenv
+            "PI_SHARE_VIEWER_URL"
+            "https://upstream.invalid/session/" 1)
+           (is (string=
+                "https://cadr.dev/session/#default"
+                (cadr-cli::share-viewer-url "default")))
+           (sb-posix:setenv
+            "CADR_SHARE_VIEWER_URL"
+            "https://viewer.example/session/" 1)
+           (is (string=
+                "https://viewer.example/session/#override"
+                (cadr-cli::share-viewer-url "override"))))
+      (if previous-cadr
+          (sb-posix:setenv
+           "CADR_SHARE_VIEWER_URL" previous-cadr 1)
+          (sb-posix:unsetenv "CADR_SHARE_VIEWER_URL"))
+      (if previous-pi
+          (sb-posix:setenv
+           "PI_SHARE_VIEWER_URL" previous-pi 1)
+          (sb-posix:unsetenv "PI_SHARE_VIEWER_URL"))))
   (with-test-directory (root)
     (let ((path
             (merge-pathnames "CHANGELOG.md" root)))
@@ -108,7 +138,39 @@
         (is (string=
              "https://gist.github.com/me/abc123"
              gist))
-        (is (= 2 (length calls)))))))
+        (is (= 2 (length calls))))
+      (multiple-value-bind (agent remaining)
+          (cli-faux-agent nil)
+        (declare (ignore remaining))
+        (setf (cadr-agent:agent-session agent) session
+              (cadr-agent:agent-messages agent)
+              (cadr-agent:session-messages session))
+        (let ((output (make-string-output-stream)))
+          (is
+           (cadr-cli::handle-session-command
+            "/share" agent :output output
+            :share-runner
+            (lambda (argv)
+              (cond
+                ((equal argv
+                        '("gh" "auth" "status"))
+                 (values "" "" 0))
+                ((string=
+                  "gh"
+                  (first argv))
+                 (values
+                  "https://gist.github.com/me/abc123"
+                  "" 0))
+                (t
+                 (values "" "unexpected argv" 1))))))
+          (let ((rendered
+                  (get-output-stream-string output)))
+            (is (search
+                 "Share URL: https://cadr.dev/session/#abc123"
+                 rendered))
+            (is (search
+                 "Gist: https://gist.github.com/me/abc123"
+                 rendered))))))))
 
 (test html-export-escapes-attributes-and-sanitizes-urls
   (is (string=

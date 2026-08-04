@@ -24,3 +24,10 @@
 
 `OQ-G9-LIVE-GATE` 已由用户逐项批准并实施，裁决与证据归档于
 [`docs/proposals/goal-v9-live-test-gating.md`](proposals/goal-v9-live-test-gating.md)。
+
+- `OQ-G16-SHARE-VIEWER-TRANSITION`：2026-08-05 已裁决。`/share` 保持默认
+  启用，默认 viewer 统一为 `https://cadr.dev/session/`，并仅允许
+  `CADR_SHARE_VIEWER_URL` 覆盖。用户已知情接受：在 cadr.dev 页面上线前，
+  `/share` 会成功创建 Gist，但生成的 viewer 链接暂不可达；页面上线后无需修改
+  Cadr 代码。该过渡状态不得作为禁用 `/share`、回退上游 viewer 或引入其他
+  fallback 机制的理由。

@@ -691,6 +691,27 @@ def wait_exit(fd: int, output: bytearray, process: subprocess.Popen[bytes], time
     return process.returncode
 
 
+def install_fake_github_cli(home: Path) -> Path:
+    binary_directory = home / "render-diff-bin"
+    binary_directory.mkdir(parents=True, exist_ok=True)
+    binary = binary_directory / "gh"
+    binary.write_text(
+        "#!/usr/bin/env python3\n"
+        "import sys\n"
+        "arguments = sys.argv[1:]\n"
+        "if arguments == ['auth', 'status']:\n"
+        "    raise SystemExit(0)\n"
+        "if arguments[:2] == ['gist', 'create']:\n"
+        "    print('https://gist.github.com/render/render-gist-fixed')\n"
+        "    raise SystemExit(0)\n"
+        "print('unexpected render-diff gh arguments', file=sys.stderr)\n"
+        "raise SystemExit(2)\n",
+        encoding="utf-8",
+    )
+    binary.chmod(0o700)
+    return binary_directory
+
+
 def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> dict[str, str]:
     env = os.environ.copy()
     for key in ("TMUX", "TMUX_PANE", "WT_SESSION", "KITTY_WINDOW_ID", "SSH_TTY"):
@@ -698,6 +719,7 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
     for key in tuple(env):
         if credential_environment_variable_p(key):
             env.pop(key, None)
+    fake_binary_directory = install_fake_github_cli(home)
     env.update(
         {
             "HOME": str(home),
@@ -710,6 +732,7 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
             "LINES": str(rows),
             "NO_COLOR": "",
             "PI_OFFLINE": "1",
+            "PATH": str(fake_binary_directory) + os.pathsep + env.get("PATH", ""),
             "RENDER_DIFF_READY_PATH": str(ready_path),
         }
     )
@@ -1347,6 +1370,15 @@ def self_test(args: argparse.Namespace) -> int:
         isolated = fixed_environment(sandbox, 12, 4, sandbox / "ready")
         if any(credential_environment_variable_p(key) for key in isolated):
             raise HarnessFailure("fixed environment retained a provider credential variable")
+        fake_share = subprocess.run(
+            ["gh", "gist", "create", "--public=false", "/tmp/render.html"],
+            env=isolated,
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        ).stdout.strip()
+        if fake_share != "https://gist.github.com/render/render-gist-fixed":
+            raise HarnessFailure("render-diff fake GitHub CLI contract drifted")
         if normalized(sample, "pi", sandbox) != sample:
             raise HarnessFailure("normalization altered whitespace or ANSI color bytes")
         pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.83.0"
@@ -1368,7 +1400,7 @@ def self_test(args: argparse.Namespace) -> int:
         )
         if b"red" not in screen or b"<CURSOR 3,0,1>" not in screen:
             raise HarnessFailure("tmux semantic replay lost text or cursor state")
-        raw_path = b"/tmp/cadr-render-diff-fixed/pi/workspace"
+        raw_path = b"/tmp/cadr-render-diff-fixed/pi00/workspace"
         path_screen = normalized_screen(
             tmux_screen(
                 b"\x1b[2J\x1b[H" + raw_path,

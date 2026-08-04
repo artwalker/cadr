@@ -251,13 +251,16 @@
 
 (defun share-viewer-url
     (gist-id &optional viewer-base-url)
-  (format
-   nil "~A#~A"
-   (or viewer-base-url
-       (uiop:getenv "PI_SHARE_VIEWER_URL")
-       (uiop:getenv "CADR_SHARE_VIEWER_URL")
-       "https://pi.dev/session/")
-   gist-id))
+  (let ((configured
+          (uiop:getenv "CADR_SHARE_VIEWER_URL")))
+    (format
+     nil "~A#~A"
+     (or viewer-base-url
+         (and configured
+              (plusp (length configured))
+              configured)
+         (cadr-ai::cadr-default-share-viewer-url))
+     gist-id)))
 
 (defun share-session-as-gist
     (session

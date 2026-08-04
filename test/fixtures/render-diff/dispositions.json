@@ -9,6 +9,10 @@
     "I02": {
       "kind": "intentional-difference",
       "summary": "The approved Goal 13 fatal boundary redacts the backtrace and writes a private crash log instead of dumping pi's uncaught-exception stack to the terminal."
+    },
+    "I03": {
+      "kind": "intentional-difference",
+      "summary": "Cadr shares through its own cadr.dev session viewer while the fixed pi baseline links to pi.dev; gist storage and the visible Share URL/Gist contract remain unchanged."
     }
   },
   "entries": [
@@ -79,7 +83,7 @@
     { "scenario": "commands-informational", "checkpoint": "slash-hotkeys", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "commands-informational", "checkpoint": "slash-name", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "commands-informational", "checkpoint": "slash-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-share", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
+    { "scenario": "commands-informational", "checkpoint": "slash-share", "dimensions": ["wide", "narrow"], "classes": ["I01", "I03"], "note": "User-approved product identity boundary: https://cadr.dev/session/ replaces https://pi.dev/session/." },
     { "scenario": "commands-informational", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "extension-surfaces", "checkpoint": "extension-editor", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
     { "scenario": "extension-surfaces", "checkpoint": "extension-input", "dimensions": ["wide", "narrow"], "classes": ["I01"] },

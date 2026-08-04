@@ -173,11 +173,16 @@
         (format nil "FOO=bar~CBAZ=qux~C"
                 (code-char 0)
                 (code-char 0)))))
+  (is (null
+       (cadr-cli:version-check-request
+        "1.2.3" :endpoint-value nil)))
   (let ((request
           (cadr-cli:version-check-request
-           "1.2.3")))
+           "1.2.3"
+           :endpoint-value
+           "https://updates.cadr.dev/latest")))
     (is (string=
-         "https://pi.dev/api/latest-version"
+         "https://updates.cadr.dev/latest"
          (getf request :url)))
     (is (search
          "cadr/1.2.3"
@@ -234,10 +239,12 @@
              "{\"packageName\":\" @new/pi \",\"version\":\" 1.2.4 \",\"note\":\" **Read this** \"}"
              200 nil))))
     (let ((release
-            (cadr-cli:get-latest-pi-release
+            (cadr-cli:get-latest-cadr-release
              "1.2.3"
              :timeout-milliseconds 2500
-             :offline-value nil)))
+             :offline-value nil
+             :endpoint-value
+             "https://updates.cadr.dev/latest")))
       (is (string=
            "1.2.4"
            (cadr-ai::json-get release "version")))
@@ -250,7 +257,7 @@
            (cadr-ai::json-get release "note"))))
     (let ((request (first requests)))
       (is (string=
-           "https://pi.dev/api/latest-version"
+           "https://updates.cadr.dev/latest"
            (getf request :url)))
       (is (eq :get (getf request :method)))
       (is (= 2.5d0
@@ -266,20 +273,26 @@
              (getf request :headers)
              :test #'string-equal)))))
     (is (null
-         (cadr-cli:check-for-new-pi-version
+         (cadr-cli:check-for-new-cadr-version
           "1.2.3"
-          :skip-value "1")))
+          :skip-value "1"
+          :endpoint-value
+          "https://updates.cadr.dev/latest")))
     (is (= 1 (length requests)))
     (is (string=
          "1.2.4"
-         (cadr-cli:get-latest-pi-version
+         (cadr-cli:get-latest-cadr-version
           "1.2.3"
-          :offline-value nil)))
+          :offline-value nil
+          :endpoint-value
+          "https://updates.cadr.dev/latest")))
     (is (= 2 (length requests)))
     (is (null
-         (cadr-cli:get-latest-pi-release
+         (cadr-cli:get-latest-cadr-release
           "1.2.3"
-          :offline-value "1")))
+          :offline-value "1"
+          :endpoint-value
+          "https://updates.cadr.dev/latest")))
     (is (= 2 (length requests)))))
 
 (test version-check-validates-responses-and-swallows-automatic-errors
@@ -289,41 +302,71 @@
             (values "{\"version\":\"\"}"
                     200 nil))))
     (is (null
-         (cadr-cli:get-latest-pi-release
+         (cadr-cli:get-latest-cadr-release
           "1.2.3"
-          :offline-value nil))))
+          :offline-value nil
+          :endpoint-value
+          "https://updates.cadr.dev/latest"))))
   (let ((cadr-cli::*version-check-http-function*
           (lambda (&rest arguments)
             (declare (ignore arguments))
             (values "{\"version\":\"9.9.9\"}"
                     503 nil))))
     (is (null
-         (cadr-cli:get-latest-pi-release
+         (cadr-cli:get-latest-cadr-release
           "1.2.3"
-          :offline-value nil))))
+          :offline-value nil
+          :endpoint-value
+          "https://updates.cadr.dev/latest"))))
   (let ((cadr-cli::*version-check-http-function*
           (lambda (&rest arguments)
             (declare (ignore arguments))
             (error "offline"))))
     (signals error
-      (cadr-cli:get-latest-pi-version
+      (cadr-cli:get-latest-cadr-version
        "1.2.3"
-       :offline-value nil))
+       :offline-value nil
+       :endpoint-value
+       "https://updates.cadr.dev/latest"))
     (is (null
-         (cadr-cli:check-for-new-pi-version
+         (cadr-cli:check-for-new-cadr-version
           "1.2.3"
           :skip-value nil
-          :offline-value nil))))
+          :offline-value nil
+          :endpoint-value
+          "https://updates.cadr.dev/latest"))))
   (let ((cadr-cli::*version-check-http-function*
           (lambda (&rest arguments)
             (declare (ignore arguments))
             (values "{\"version\":\"1.2.3\"}"
                     200 nil))))
     (is (null
-         (cadr-cli:check-for-new-pi-version
+         (cadr-cli:check-for-new-cadr-version
           "1.2.3"
           :skip-value nil
-          :offline-value nil)))))
+          :offline-value nil
+          :endpoint-value
+          "https://updates.cadr.dev/latest")))))
+
+(test version-check-is-disabled-without-a-cadr-endpoint
+  (let* ((requests 0)
+        (cadr-cli::*version-check-http-function*
+          (lambda (&rest arguments)
+            (declare (ignore arguments))
+            (incf requests)
+            (values "{}" 200 nil))))
+    (is (null
+         (cadr-cli:get-latest-cadr-release
+          "0.2.0"
+          :endpoint-value nil
+          :offline-value nil)))
+    (is (null
+         (cadr-cli:check-for-new-cadr-version
+          "0.2.0"
+          :endpoint-value ""
+          :skip-value nil
+          :offline-value nil)))
+    (is (= 0 requests))))
 
 (test system-prompt-lists-only-described-tools-and-dedupes-guidelines
   (let ((prompt
