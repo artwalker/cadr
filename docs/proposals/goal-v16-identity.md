@@ -1,8 +1,9 @@
 # Goal 16 Part B：产品身份收敛提案
 
-状态：**blocked，等待用户逐项裁决。** 固定实现基线为
+状态：**已逐项裁决并实施。** 固定实现基线为
 `3dbb58b895a1f732d6354233e91d6981b0a35c09`，Part A 审计提交为
-`dcba371ff`。本提案不授权 Part C；事实清单见
+`dcba371ff`。六项均已由用户逐项裁决，最终 B1 以 2026-08-05 覆盖裁决为准；
+事实清单见
 `docs/identity-audit.md`。
 
 ## 1. 边界与不变量
@@ -37,7 +38,7 @@ xAI 的 `client_id`、scope、token endpoint 均不改。Part C 必须真实发�
 authorization 请求；若服务端因 referrer 拒绝，立即停止该批、回滚单值并把
 `referrer=pi` 改判为有证据的 `功能约束保留`，不得靠 fixture 宣告成功。
 
-## 3. 决策 B1：`/share` 默认禁用，显式配置后才外发
+## 3. 决策 B1：`/share` 默认使用 Cadr viewer
 
 ### 3.1 确切需求与事实
 
@@ -46,18 +47,17 @@ authorization 请求；若服务端因 referrer 拒绝，立即停止该批、�
 为 `https://pi.dev/session/`；也就是说存储在 GitHub Gist，但会话的读取和呈现
 依赖上游 viewer 代码。这是用户数据外发边界，不是普通品牌字符串。
 
-### 3.2 建议裁决
+### 3.2 最终裁决（2026-08-05，覆盖此前全部说法）
 
-**默认禁用。** 只有显式设置非空 `CADR_SHARE_VIEWER_URL`，或测试/调用方显式
-传入 `viewer-base-url` 时才允许分享。必须在运行 `gh auth status` 和创建 Gist
-之前解析 viewer；未配置时返回精确错误：
+`/share` 保持默认启用，默认 viewer 固定为
+`https://cadr.dev/session/`；非空 `CADR_SHARE_VIEWER_URL` 与调用方显式
+`viewer-base-url` 依次覆盖默认值。viewer URL 与产品 slug、显示名、规范仓库 URL
+同由 `src/cadr-ai/support/release.lisp` 的产品身份常量组持有。
 
-```text
-Session sharing is not configured. Set CADR_SHARE_VIEWER_URL to a trusted viewer URL.
-```
-
-这样不会生成无 viewer 可用的孤儿 Gist，也不会把会话默认交给上游代码。
-`share-viewer-url` 的显式参数调用保持有效。
+分享成功输出必须同时显示 viewer URL，使用户清楚链接指向何处。用户已知情接受：
+在 cadr.dev 页面上线前，命令会创建 Gist 并返回暂不可达的 viewer 链接；页面上线
+后无需修改 Cadr。不得用该过渡期作为默认禁用、回退 pi.dev 或增加 fallback 的
+理由。
 
 ### 3.3 最小实现面
 
@@ -65,22 +65,22 @@ Session sharing is not configured. Set CADR_SHARE_VIEWER_URL to a trusted viewer
 - `test/cadr-cli/goal9-a2-workflows-test.lisp` 及现有 share 合同所在测试
 - `README.md`、`CHANGELOG.md`
 
-不引入 Cadr 托管服务；`cadr.dev` 上线后只需配置默认 deployment，不重写分享
-流程。
+本批不实现 viewer 页面；`cadr.dev` 上线后只需部署兼容静态页，不重写分享流程。
 
 ### 3.4 替代方案及否决理由
 
 - **保留 pi.dev 默认值**：功能连续，但继续把 Cadr 会话交给未受本项目控制的
   上游 viewer，身份和信任边界均未收口，否决。
-- **现在写死 `https://cadr.dev/session/`**：服务尚不存在，会把可解释的禁用变成
-  隐蔽的坏链接，否决。
+- **默认禁用**：用户明确要求 `/share` 继续产出 Cadr 链接，否决。
+- **因页面尚未上线而回退 pi.dev**：继续把 Cadr 会话交给上游 viewer 且冒用上游
+  身份，否决。
 - **只改成 GitHub Gist URL**：改变基线交互，且 raw Gist 不是 session viewer，
   否决。
 
 ### 3.5 回滚
 
-该批只需回滚 share 默认策略提交；显式 `CADR_SHARE_VIEWER_URL` 路径和生成的
-HTML 均不受影响。
+该批只需回滚默认 viewer 常量；显式 `CADR_SHARE_VIEWER_URL` 路径和生成的 HTML
+均不受影响。
 
 ## 4. 决策 B2：版本检查默认禁用，显式配置 Cadr endpoint
 
@@ -193,9 +193,9 @@ schema：
 | synthetic tool call ID `pi_tool_load_` | `cadr_tool_load_` | `src/cadr-ai/providers/openai.lisp:201-207`；provider/session ID，算法与 payload 不变 |
 | `Radius Pi` / `cadr-radius-pi-` | `Radius instance` / `cadr-radius-instance-` | `src/cadr-server/radius.lisp:468,553,568,579,627`；日志与线程名，远端字段不变 |
 
-导出 HTML 的 `pi-url-params`、`pi-share-base-url` 不在本组直接替换：若 B1
-批准为默认禁用，它们作为现有上游 viewer 注入合同留在 allowlist；未来自建
-viewer 时与 viewer 一起原子迁移，避免只改一端造成静默失效。
+导出 HTML 的 `pi-url-params`、`pi-share-base-url` 不在本组直接替换：最终 B1
+裁决只改变 viewer URL，这两个 meta 名仍是现有浏览器集成合同，精确留在
+allowlist；未来 viewer 合同升级时两端原子迁移，避免只改一端造成静默失效。
 
 最小文件面限于 Part A 表格指向的生产文件、对应现有测试、README/CHANGELOG。
 任何新的第三方资产、endpoint 或协议字段都不在授权内。
@@ -262,8 +262,8 @@ architecture 中明确只承载无产品语义的失败安全原语。release �
 
 ## 9. 请求逐项裁决
 
-1. **B1**：`/share` 无 `CADR_SHARE_VIEWER_URL` 时默认禁用，且在创建 Gist 前
-   fail closed。
+1. **B1**：`/share` 默认使用 `https://cadr.dev/session/`，仅由非空
+   `CADR_SHARE_VIEWER_URL` 或显式参数覆盖；页面上线前的暂不可达状态已知情接受。
 2. **B2**：版本检查无 `CADR_VERSION_CHECK_URL` 时默认禁用；配置后才请求。
 3. **B3**：14 个 `PI_*` 硬切，不设 alias 或 warning 兼容期。
 4. **B4**：第 6 节自由身份值整组替换；viewer meta 依 B1 暂留精确合同。
@@ -271,4 +271,4 @@ architecture 中明确只承载无产品语义的失败安全原语。release �
 6. **B6**：复用 release identity 作为私有单一来源，并按 C1→C5、D 的批次和
    文件边界实施。
 
-上述裁决前不修改任何生产代码。
+上述六项现均已裁决；实施证据见 `docs/acceptance/goal-v16.md`。

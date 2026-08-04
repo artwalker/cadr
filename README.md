@@ -150,6 +150,17 @@ CADR_MODEL=deepseek-v4-flash
 CADR_BASE_URL=https://api.deepseek.com
 ```
 
+Service behavior is explicit:
+
+- `/share` uses `https://cadr.dev/session/` by default and
+  `CADR_SHARE_VIEWER_URL` as its sole environment override. The success output
+  prints the viewer URL. Until that static viewer is deployed, sharing still
+  creates the private Gist but the returned viewer link is knowingly
+  unavailable; deployment requires no Cadr code change.
+- automatic version checks are disabled unless `CADR_VERSION_CHECK_URL` is a
+  non-empty Cadr-compatible endpoint. `CADR_OFFLINE` or
+  `CADR_SKIP_VERSION_CHECK` disables even a configured endpoint.
+
 Equivalent command-line options are `--provider`, `--model`, and
 `--base-url`. Per-provider settings may also be stored in
 `~/.cadr/config.json`:
@@ -318,6 +329,26 @@ Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` were readable only
 through the `0.1.x` transition release. Support is removed in `0.2.0`; new
 configuration must use `CADR_PROVIDER`, `CADR_MODEL`, and `CADR_BASE_URL`.
 
+Goal 16 completed the remaining runtime namespace hard cut. No old name is
+read, and no compatibility warning or alias is retained:
+
+| Old | New |
+|---|---|
+| `PI_CACHE_RETENTION` | `CADR_CACHE_RETENTION` |
+| `PI_CONFIG_DIR` | `CADR_CONFIG_DIR` |
+| `PI_EVAL_ARTIFACT_DIR` | `CADR_EVAL_ARTIFACT_DIR` |
+| `PI_EXPERIMENTAL` | `CADR_EXPERIMENTAL` |
+| `PI_MODEL` | `CADR_EVAL_MODEL` |
+| `PI_OFFLINE` | `CADR_OFFLINE` |
+| `PI_PROVIDER` | `CADR_EVAL_PROVIDER` |
+| `PI_RADIUS_SERVER_URL` | `CADR_RADIUS_SERVER_URL` |
+| `PI_RADIUS_URL` | `CADR_RADIUS_URL` |
+| `PI_SERVER_CADR_PATH` | `CADR_SERVER_CADR_PATH` |
+| `PI_SERVER_DIR` | `CADR_SERVER_DIR` |
+| `PI_SHARE_VIEWER_URL` | `CADR_SHARE_VIEWER_URL` |
+| `PI_SKIP_VERSION_CHECK` | `CADR_SKIP_VERSION_CHECK` |
+| `PI_TIMING` | `CADR_TIMING` |
+
 ## Lisp extensions
 
 Extensions are an `extension.lisp` file or a directory containing one.
@@ -443,6 +474,10 @@ and inspect them before sharing.
 - By explicit user decision, OpenAI OAuth authorization requests and Codex
   Responses requests identify this client with `originator=cadr`, rather than
   attributing Cadr traffic to the reference client's `originator=pi`.
+- Third-party attribution headers, xAI device authorization, `/share`, and
+  Cadr-owned repository/browser/runtime identifiers use the single Cadr
+  product identity source. Radius registration/API/wire names and fixed
+  baseline provenance remain exact external contracts, not product branding.
 - OAuth success and failure pages use Cadr's own cons-cell grid mark instead of
   pi's logo. This is a branding difference only; the page shell, copy, styling,
   escaping, and HTTP framing remain aligned.
@@ -482,7 +517,7 @@ introduced. Proposed mechanisms beyond original pi belong in
 
 | Level | Current evidence |
 |---|---|
-| Deterministic ASDF gate | Goal 10 closeout: 7192 checks / 7192 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` builds repeat the same gate |
+| Deterministic ASDF gate | Goal 16 Part C: 14,827 checks / 14,827 pass / 0 skip / 0 fail; isolated `cadr`/`cadr-server` builds repeat the same gate |
 | Deterministic | Fixture/request/response parity for all baseline protocols, including temporary-store `/login openai` → `openai-codex` → default resolver → stubbed Codex transport |
 | Non-functional | N=5000 frame/key/stream each 4.00ms; 1200-turn/10-hour faux run has linear retained state, stable FD/thread counts, and 10MiB load/resume/continue below 0.33s |
 | Live-proven | Goal 10 closeout `verify.sh`: `test-live.sh` produced 32 checks / 31 pass / one unavailable-Anthropic skip / 0 fail, then the real DeepSeek PTY/TUI two-turn edit passed |
@@ -510,7 +545,7 @@ CI artifact gate. See the [delivery checklist](docs/delivery-checklist.md).
 
 The release-local entry then runs deterministic FiveAM, isolated builds of both
 native images, the Goal 11 performance/stability gate, every retained
-process/PTY harness, the complete fresh 12-scenario by 2-dimension
+process/PTY harness, the complete fresh 20-scenario by 2-dimension
 fixed-baseline render matrix, credential-gated live FiveAM, and the DeepSeek live TUI
 when its key is available. It prints separate deterministic and live tables and
 exits nonzero for any executed failure; absent credentials are reported as

@@ -31,3 +31,16 @@
   `/share` 会成功创建 Gist，但生成的 viewer 链接暂不可达；页面上线后无需修改
   Cadr 代码。该过渡状态不得作为禁用 `/share`、回退上游 viewer 或引入其他
   fallback 机制的理由。
+
+- `OQ-CANONICAL-REPOSITORY-URL`：2026-08-05 已裁决并实施。
+  `src/cadr-cli/support/changelog-share.lisp:144,152-160` 将 `/share` 的
+  changelog 链接改写并钉向 `https://github.com/earendil-works/pi`。但
+  `CHANGELOG.md` 记录的是 **Cadr 自身**的变更（如"Added the fourth parity
+  ledger"、"Replaced the OAuth callback page's interim block-C mark with Cadr's
+  cons-cell identity"），链向上游仓库属对外冒用上游身份，与已修正的
+  `originator=pi`、pi logo 同族。
+  用户已确认规范仓库为 `https://github.com/artwalker/cadr`；仓库私有不改变其
+  canonical URL。C4 已让 `/changelog` 的运行时链接重写从 release identity 的
+  单一来源读取该 URL，不改 `origin`。`src/cadr-evals/suites.lisp` 的 legacy TS
+  扩展检测与 generated catalog 的 `pi-ai` 来源注释经全树审计确认是基线证据，
+  继续进入精确 allowlist，不随产品身份替换。

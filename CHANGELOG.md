@@ -20,6 +20,10 @@ tag/Release step.
   5,000-entry stress tier while preserving the complete logical document.
 - Replaced the OAuth callback page's interim block-C mark with Cadr's
   single-path square-grid cons-cell identity.
+- Changed `/share` to use `https://cadr.dev/session/` by default, with
+  `CADR_SHARE_VIEWER_URL` as the sole environment override.
+- Replaced the remaining 14 production `PI_*` environment names with their
+  `CADR_*` equivalents without legacy aliases.
 
 ### Fixed
 
@@ -28,6 +32,12 @@ tag/Release step.
 - Interactive cleanup now bounds every background-thread join and forcibly
   stops an unresponsive worker instead of deadlocking exit.
 - `/export` now reports the baseline-aligned bare output filename.
+- Fixed automatic version checks comparing upstream pi `0.83.x` releases with
+  Cadr `0.2.x`; checks are now disabled unless `CADR_VERSION_CHECK_URL` names a
+  Cadr-compatible endpoint.
+- Fixed outbound provider attribution, changelog links, browser storage,
+  temporary files, synthetic tool IDs, examples, and Radius diagnostics that
+  still presented Cadr as pi.
 
 ### Security
 

@@ -1907,3 +1907,23 @@ render differential 是跨实现 oracle，不是第五本账，也不能替代�
 源码能力、长期性能与脚本未覆盖交互的审计。未来基线升级必须同时更新 manifest 与
 disposition 的 commit、重跑完整矩阵并逐条裁决全部新差异；流程见
 `docs/source-parity-upgrade.md`。
+
+## 33. Goal 16 product identity boundary
+
+产品身份由 `src/cadr-ai/support/release.lisp` 的私有常量组单点拥有：slug、显示名、
+规范仓库 URL 与默认 share viewer。CLI、server、provider attribution 与导出路径
+只能从该 owner 派生，不得复制产品字符串；环境变量与可配置 endpoint 留在各自
+feature owner，但只接受 `CADR_*` 合同。
+
+`/share` 默认生成 `https://cadr.dev/session/#<gist-id>`，非空
+`CADR_SHARE_VIEWER_URL` 与显式参数可覆盖，成功输出明示 viewer 地址。页面部署前
+链接暂不可达是用户已知情接受的过渡状态，不触发回退或额外 fallback。版本检查
+没有默认网络端点：只有 `CADR_VERSION_CHECK_URL` 非空时才请求 Cadr-compatible
+release；这修复了把 pi `0.83.x` 与 Cadr `0.2.x` 比较的产品语义错误。
+
+14 个生产 `PI_*` 环境名已硬切为精确的 `CADR_*` 映射，无 alias、warning 或
+旧名 fallback。Radius 的 `pi-gateway`、`radius.pi.dev`、`pis/*`、
+`radiusPiId`、`pi-messages`，扩展 manifest 的 `"pi"` key，以及 catalog、固定
+baseline、历史 announcement 与 `aligned with pi` 声明是外部合同或溯源，不是
+Cadr 自称 pi。Goal 16 Part D 的身份门禁以逐路径、逐固定文本、逐理由 allowlist
+保护这条边界；目录级豁免非法，真实树命中数必须与 manifest 一致。

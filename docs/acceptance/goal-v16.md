@@ -1,7 +1,6 @@
 # Goal 16 验收记录
 
-状态：Part A0 与 Part A 已完成；Part B 提案已提交并 blocked 等待用户逐项
-裁决，Part C/D 未获授权。
+状态：Part A0、A、B 与 Part C1-C5 已完成；Part D 身份门禁待落账。
 
 ## Part A0：压缩降级行为
 
@@ -75,11 +74,12 @@ fallback。修复后 `CADR-AGENT-SUITE` 为 1024/1024/0/0。
 - catalog 注释、固定基线 harness、版本对齐声明、扩展 manifest `"pi"` schema
   与 Radius wire dialect 已给出逐条保留理由。
 
-## Part B：待裁决提案
+## Part B：已裁决提案
 
 提案：`docs/proposals/goal-v16-identity.md`。它把实现决策拆成六项：
 
-1. `/share` 未显式配置受信 viewer 时默认禁用，并在创建 Gist 前 fail closed；
+1. `/share` 默认 viewer 最终裁决为 `https://cadr.dev/session/`，保持启用并仅由
+   `CADR_SHARE_VIEWER_URL` 或显式参数覆盖；用户已知情接受页面上线前链接暂不可达；
 2. 版本检查未配置 Cadr endpoint 时默认禁用；
 3. 14 个 `PI_*` 环境变量硬切为 `CADR_*`，不保留 alias 或 warning 兼容期；
 4. 仓库链接、临时文件、HTML localStorage、synthetic call ID、Radius 自由文案和
@@ -97,6 +97,99 @@ GET https://radius.pi.dev/             -> HTTP 200
 GET https://radius.pi.dev/v1/oauth     -> HTTP 200
 discovery.clientId                     -> pi-gateway
 discovery.scope                        -> gateway offline_access
+```
+
+## Part C：身份收敛实施
+
+### C1：单一身份源与第三方 attribution
+
+提交 `cc4f1f0e0`。`src/cadr-ai/support/release.lisp` 统一拥有产品 slug、显示名、
+规范仓库 URL 与默认 share viewer；版本 User-Agent、OpenRouter、NVIDIA、
+Cloudflare、OpenCode 和 xAI device-code referrer 均从 Cadr 身份派生。xAI 以相同
+client ID/scope、`referrer=cadr` 发起真实 device authorization 请求并得到 HTTP
+200，故无需回退功能约束。
+
+合同门禁包括 `GOAL16-PRODUCT-IDENTITY-HAS-ONE-PRIVATE-OWNER`、
+`GOAL16-THIRD-PARTY-ATTRIBUTION-USES-CADR-IDENTITY` 与现有 xAI OAuth payload
+测试；provider payload 其余字段不变。
+
+### C2：服务端点
+
+提交 `ac23e11bb`。`/share` 使用 `https://cadr.dev/session/` 默认 viewer，非空
+`CADR_SHARE_VIEWER_URL` 和显式参数保持覆盖优先级；成功状态同时呈现生成链接和
+viewer 地址。render-diff 的 `slash-share` 只新增获批的 I03 URL 差异，完整
+40/40 capture 与 fail-closed disposition 均通过。
+
+版本检查不再查询 pi.dev；未配置 `CADR_VERSION_CHECK_URL` 时不发网络请求，配置
+后复用原 timeout、JSON、比较与静默网络失败合同，`CADR_OFFLINE` 和
+`CADR_SKIP_VERSION_CHECK` 仍可关闭。该项在 CHANGELOG 记为修复，因为比较两个
+不同产品的版本号本身无语义。
+
+### C3：环境变量硬切
+
+提交 `af8612d95`。14 个生产旧名按批准表一次硬切为 `CADR_*`，其中
+`PI_MODEL -> CADR_EVAL_MODEL`、`PI_PROVIDER -> CADR_EVAL_PROVIDER` 是明确重命名，
+不是简单换前缀。生产 `src/` 的旧名扫描为零；固定 TypeScript 基线 driver 中的
+`PI_OFFLINE` 不属于 Cadr runtime，继续保留。
+
+门禁 `GOAL16-C3-PRODUCTION-ENVIRONMENT-NAMES-ARE-CADR-ONLY` 同时证明新名生效、
+旧名不再读取；Bedrock/eval/server/tool/version 的行为回归全部通过。
+
+### C4：自由身份值
+
+提交 `5eb36c930`。`/changelog` 规范仓库、WSL 临时文件、notify 示例、导出 HTML
+localStorage、synthetic tool-call ID 与 Radius 自由日志/线程文案完成替换。Radius
+client/API/wire、扩展 manifest、generated provenance 和固定基线输入未改。
+
+门禁 `GOAL16-C4-FREE-IDENTITY-VALUES-ARE-CADR-OWNED` 逐文件断言旧字符串消失；
+HTML template SHA 同步更新，session entries、payload 与 wire 未变化。
+
+### C5：文档收敛
+
+README 记录 14 项迁移表、share 过渡期、版本检查开关与外部合同边界；CHANGELOG
+把版本检查列为修复；architecture、审计、提案和 open-questions 均同步最终裁决。
+Part C 没有新增依赖、兼容层、telemetry 或未裁决机制。
+
+## Part C 完整验证（2026-08-05）
+
+`./scripts/test-cl.sh`：
+
+```text
+cadr test summary: systems=9 checks=14827 pass=14827 skip=0 fail=0
+```
+
+`./scripts/verify.sh`：
+
+| 阶段 | 结果 |
+|---|---|
+| root cadr binary freshness | PASS |
+| code organization gate | PASS |
+| real source parity ledger | PASS（595） |
+| source parity drift self-test | PASS |
+| deterministic FiveAM | PASS（14,827/14,827） |
+| isolated cadr build | PASS（无 core compression 时无压缩降级） |
+| isolated cadr-server build | PASS（无 core compression 时无压缩降级） |
+| Goal 11 performance and stability gate | PASS |
+| native acceptance smoke | PASS |
+| native process modes | PASS |
+| migration PTY smoke | PASS |
+| Unix socket server smoke | PASS |
+| terminal lifecycle PTY | PASS（6/6） |
+| deterministic TUI harness | PASS |
+| fixed-baseline render differential | PASS（40/40；160/160 dispositions） |
+| credential-gated FiveAM | PASS（7 pass / 1 Anthropic credential skip / 0 fail） |
+| DeepSeek live TUI | PASS |
+
+live 项目级统计为 8 项、7 run/pass、1 个 `ANTHROPIC_API_KEY is not set` skip；
+检查级统计为 32 checks / 31 pass / 1 skip / 0 fail。该结果不冒充确定性证据。
+
+根二进制新鲜度：
+
+```text
+binary build time: 2026-08-05 01:31:08.949533433 +0800
+latest src commit: 5eb36c930 2026-08-05T01:28:46+08:00
+latest source mtime: 2026-08-05 01:23:24 +0800
+binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
 
 ## 本阶段完整门禁

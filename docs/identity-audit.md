@@ -1,6 +1,6 @@
 # Goal 16 产品身份全树审计
 
-状态：Part A 完成，固定代码基线为
+状态：Part A 审计完成，Part C 已按用户裁决实施；固定审计代码基线为
 `3dbb58b895a1f732d6354233e91d6981b0a35c09`。本文件只记录事实与判定，
 不授权 Part C 实现。
 
@@ -142,3 +142,16 @@ viewer 代码处理仍是外部信任边界，不能用“fragment 不上服务�
 Part C 的门禁必须 fail-closed：产品源码中新出现 `pi`/上游域名/仓库名时，只有
 本文件第 7 节对应的逐条 allowlist 才可通过；不能用目录级或正则级大豁免把
 未来残留一起吞掉。
+
+## 9. Part C 实施处置（2026-08-05）
+
+| 批次 | 处置 | 提交 |
+|---|---|---|
+| C1 | 产品 slug、显示名、规范仓库、默认 viewer 的身份常量组进入 `release.lisp`；第三方 UA/header 与 xAI referrer 统一为 Cadr。xAI 真实 device-code 请求返回 HTTP 200。 | `cc4f1f0e0` |
+| C2 | `/share` 默认 viewer 改为 `https://cadr.dev/session/`，支持 `CADR_SHARE_VIEWER_URL` 覆盖并在输出中明示 viewer；版本检查改为仅在 `CADR_VERSION_CHECK_URL` 非空时启用。 | `ac23e11bb` |
+| C3 | 14 个生产 `PI_*` 名称按批准映射硬切为 `CADR_*`，无 alias、warning 或旧名 fallback。 | `af8612d95` |
+| C4 | changelog 仓库、WSL 临时文件、通知标题、导出 storage key、synthetic tool ID 与 Radius 自由文案全部改为 Cadr；外部协议与基线溯源不动。 | `5eb36c930` |
+
+当前生产源中的旧环境变量已清零；Radius client/API/wire、扩展 manifest、catalog
+来源、固定基线工具与 `aligned with pi` 声明继续按第 7 节精确保留。Part D 将该
+边界固化为受跟踪 allowlist、合成自测和真实树扫描，不把本审计文本当运行时豁免。
