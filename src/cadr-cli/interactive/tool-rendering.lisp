@@ -349,6 +349,31 @@
                   (plusp (length diff)))
              diff
              text)))
+      ((string-equal
+        (cadr-ai:tool-call-name call) "bash")
+       (let* ((truncated-p
+                (tool-result-detail
+                 result :truncated "truncated"))
+              (full-output-path
+                (tool-result-detail
+                 result :full-output-path "fullOutputPath"))
+              (footer-start
+                (and
+                 truncated-p
+                 (stringp full-output-path)
+                 (plusp (length full-output-path))
+                 (plusp (length text))
+                 (char= #\] (char text (1- (length text))))
+                 (search (format nil "~%~%[") text
+                         :from-end t))))
+         (if
+             (and footer-start
+                  (search full-output-path text
+                          :start2 footer-start))
+             (string-right-trim
+              '(#\Space #\Tab #\Newline #\Return)
+              (subseq text 0 footer-start))
+             text)))
       (t text))))
 
 (defun tool-call-preview-output (call cwd)

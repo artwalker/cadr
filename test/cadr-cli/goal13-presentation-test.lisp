@@ -337,6 +337,65 @@
          :enabled-p t)
         rendered)))))
 
+(test post-goal16-bash-context-truncation-renders-one-baseline-warning
+  (let* ((path "/tmp/cadr-bash-fixed.log")
+         (model-notice
+           (format nil
+                   "[Showing lines 25-277 of 277 (50.0KB limit). Full output: ~A]"
+                   path))
+         (warning
+           (format nil
+                   "[Full output: ~A. Truncated: 253 lines shown (50.0KB limit)]"
+                   path))
+         (call
+           (cadr-ai:make-tool-call
+            :id "bash-truncated" :name "bash"
+            :arguments (args "command" "produce-large-output")))
+         (result
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "bash-truncated"
+            :tool-name "bash" :is-error nil
+            :content
+            (list
+             (cadr-ai:make-text-content
+              :text
+              (format nil "tail-line~%~%~A" model-notice)))
+            :details
+            (list
+             :truncated t :truncated-by :bytes
+             :output-lines 253 :total-lines 277
+             :max-bytes (* 50 1024)
+             :full-output-path path)))
+         (state (cadr-cli::make-tui-state)))
+    ;; The model-visible result keeps its exact truncation footer.
+    (is
+     (string=
+      (format nil "tail-line~%~%~A" model-notice)
+      (cadr-cli::tool-result-text result)))
+    (goal13-start-tool-block state call)
+    (let* ((block
+             (goal13-finish-tool-block state call result))
+           (rendered (goal13-rendered-tool block))
+           (plain (cadr-tui:strip-terminal-sequences rendered)))
+      ;; The TUI owns a separate warning line and must not echo the
+      ;; model-only footer as ordinary tool output.
+      (is (string= "tail-line" (cadr-tui:tool-block-output block)))
+      (is
+       (equal
+        (list warning)
+        (cadr-tui::tool-block-supplemental-lines block)))
+      (is
+       (search
+        (cadr-tui:theme-foreground
+         :warning warning :enabled-p t)
+        rendered))
+      (is (= 1
+             (loop with start = 0
+                   for position = (search path plain :start2 start)
+                   while position
+                   count t
+                   do (setf start (+ position (length path)))))))))
+
 (test goal13-edit-call-renders-preexecution-preview-and-validation-state
   (with-test-directory (directory)
     (write-text
