@@ -388,6 +388,30 @@ Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown�
 第三轮不再以“抽查六个 overlay”代表全部交互面。下表已由当前机械门禁锁定；
 每一行均以去 ANSI 的完整行数组、ANSI 语义样式和首末循环事件共同验证。
 
+标题颜色按固定基线组件类别决定，不存在“所有 overlay 标题统一 accent”的规则：
+
+| 类别 | 固定基线依据 | 标题样式 |
+|---|---|---|
+| 主列表无标题 | `model-selector.ts`、`settings-selector.ts` 的主层直接渲染列表 | 无标题 |
+| 会话/树/分叉类 | `session-selector.ts:132,873`、`user-message-selector.ts:123`、`tree-selector.ts:1377` | 普通亮色 bold |
+| 认证、信任、扩展 selector/dialog | `extension-selector.ts:44-48`、`login-dialog.ts:44-48`、`trust-selector.ts:48-50` | accent bold |
+| settings 子层 | `settings-selector.ts:167-188,349-352` | accent bold、无外层横向 padding |
+| extension input/editor | 固定基线 extension UI 的自定义输入/编辑组件 | accent、非 bold |
+
+`POST-GOAL15-OVERLAY-TITLE-STYLES-FOLLOW-BASELINE-COMPONENT-CLASSES` 对每类独立断言，
+因此 `/login` 的 accent 与 `/fork`、`/resume` 的普通亮色不会再被同一全局颜色改动绑死。
+
+### Goal 15 post-close `/session` 对齐
+
+固定基线 `interactive-mode.ts:5723-5783` 用一个 `Text(info, 1, 0)` 组件渲染完整
+信息：组内逐行连续，组间才空一行；`Session Info`、`Messages`、`Tokens`、`Cost`
+为 bold，字段标签为 dim；Cached 同时显示命中率；Cost 按实际 provider/model 分组，
+并追加 cache re-billed tokens/cost/miss count。Cadr 的 notification stream 现在先缓冲
+完整多行文本，到 `finish-output` 时只创建一个 transcript component；
+`write-session-command-info` 按同一结构和数值口径输出。门禁
+`POST-GOAL15-SESSION-INFO-MATCHES-BASELINE-SPACING-STYLES-PERCENT-AND-COST-BREAKDOWN`
+同时锁定 S01-S04，纯字符串包含无法再掩盖逐行 spacer 错误。
+
 | Surface | 标题 | 提示 | 搜索 | 条目、顺序和值 | 计数 | 选中、边框与间距 | 描述 | 循环 |
 |---|---|---|---|---|---|---|---|---|
 | `/model` | 无额外 `Select Model` 标题 | 未 scoped 时 `Only showing models from configured providers. Use /login to add providers.`；刷新后 `Model catalogs refreshed.`；scoped 状态显示 `Scope: all | scoped` 与按配置键生成的 `tab scope (all/scoped)` | `> ` | 当前过滤顺序；`id [provider]`，当前模型 `✓` | 超 viewport 时位置/总数 | `→` accent；上下 `─`，各区块空行固定 | 选中项下 `Model Name: ...` | 双向 |
@@ -427,8 +451,8 @@ Markdown 源标记是刻意设计，使复制出的文本仍是合法 Markdown�
 | login-provider | `5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20` |
 | logout-provider | `5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212` |
 | api-key | `FD7DC83C63AC1AD2767D362FE27C960FB4CBF110227CC99DADE7E85360AA3EED` |
-| import | `4C31E4E9C20137D0D0B854ADC6672CCEE13560ABE6AFC2DD79C5B5C73699E6F9` |
-| extension-select | `187DC5C5436CAF04A4F3DE928772AEB77494E4059B07ADE78E133C5084E40D64` |
+| import | `B836156D2E481FCB62CF14A058B69A6F2E9D1723E47C4A29B496A0F58CB134AC` |
+| extension-select | `BD71C617E1CE9E9A9CB32B6EEDFDC575600FB69772F4BA2CC866E36DA2C7BD9F` |
 | extension-custom | `A85DF2C8310E88D1BEA5B9AE84CBF6735FBC83CBC1116082E52A2CBB9A76A2EC` |
 
 ### B2 SHA snapshot 独立语义 oracle 审计
@@ -555,3 +579,10 @@ ANSI/update differences for self-replay rather than normalizing them away; I02
 retains the approved redacted crash summary while keeping teardown geometry
 aligned. Exact scenario coverage and normalization boundaries are maintained in
 [`render-diff.md`](render-diff.md).
+
+关账后第一轮把人工挑选的 12 个场景扩成机械闭合集合：20 个场景、40 份 fresh
+capture、83 个 checkpoint 覆盖固定基线全部 22 条 slash command 和 28 个可达界面
+状态。新增捕获中出现的旧 I01 terminal-emitter 差异继续保留 raw 证据；在套用既有
+disposition 前，逐 checkpoint 去 ANSI/尾部 padding 复核了可见文本，先修正
+`/session`、标题分类、窄屏 Text wrap、clone session name、path autocomplete、
+settings/auth/extension 多层状态和 hotkeys table 等真实语义差异。

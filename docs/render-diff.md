@@ -38,7 +38,7 @@ Run the Part A mechanical gate:
 ```
 
 That command is the harness self-test. The permanent release gate captures the
-complete 12-scenario by 2-dimension matrix and then invokes the fail-closed
+complete 20-scenario by 2-dimension matrix and then invokes the fail-closed
 analyzer on those fresh artifacts:
 
 ```sh
@@ -74,6 +74,20 @@ normalized streams are used only for per-checkpoint raw-byte segmentation.
 `test/fixtures/render-diff/dispositions.json` is fail-closed: missing, stale,
 duplicate, or unknown dispositions make analysis fail.
 
+The scenario domain is fail-closed too. `reachable-interfaces.json` records all
+22 fixed-baseline slash commands, 28 reachable interface states, 15 component
+constructors at 22 source construction sites, and all 13 Cadr overlay kinds.
+The gate extracts the command list and construction sites directly from the
+fixed baseline and cross-checks the tracked
+`baseline-interface-inventory.json`; source archives without `.git` validate
+against that already-audited inventory, while a real repository must prove the
+inventory still matches the fixed commit object. Overlay kinds are always
+extracted from current Cadr source. A new command, constructor, construction
+site, overlay kind, or registry row without a real manifest checkpoint fails
+before capture. This includes secondary and tertiary states such as auth type
+-> provider -> OAuth/API-key dialogs, session rename/delete, tree label,
+settings submenus, and extension custom UI.
+
 ## Fixed dimensions and scenarios
 
 | Dimension | Columns x rows | Reason |
@@ -81,12 +95,15 @@ duplicate, or unknown dispositions make analysis fail.
 | `wide` | 100 x 32 | Normal development terminal with room to expose spacing and footer placement. |
 | `narrow` | 48 x 20 | Forces wrapping, compact help, overlay clipping, and wide-character accounting. |
 
-The manifest contains 12 scripted scenarios and all 34 Goal 15 coverage labels:
+The manifest contains 20 scripted scenarios, 83 checkpoints, and all 34 Goal 15
+coverage labels:
 fresh/existing/untrusted startup; plain/Markdown/code/CJK/emoji conversation;
 all seven tools; missing-read/nonzero/timeout errors; every required core and
 authentication overlay; streaming abort and both busy queues; provider and
-fatal errors; `/export`, `/reload`, `/login`; and post-TUI resume output.  Every
-scenario runs in both dimensions.  Checkpoints preserve the intermediate
+fatal errors; all 22 slash commands; generic and provider-specific auth layers;
+settings secondary/tertiary layers; extension select/input/editor;
+autocomplete; and post-TUI resume output. Every scenario runs in both
+dimensions, producing 40 fresh captures. Checkpoints preserve intermediate
 frames instead of judging only the final screen.
 
 ## Normalization candidates
@@ -100,6 +117,7 @@ the authority.
 | Isolated home | Exact per-side temporary home prefix to `<HOME>` | The programs must use different isolated homes; punctuation and suffixes remain checked. |
 | Isolated cwd | Exact per-side temporary workspace prefix to `<CWD>` | The programs must use different workspaces; punctuation and suffixes remain checked. |
 | Isolated sandbox | Exact per-side temporary sandbox prefix to `<SANDBOX>` | Parent-directory text otherwise contains the random `mkdtemp` name. |
+| Isolated session directory | Exact per-side temporary session directory to `<SESSION_DIR>` | Both drivers persist the same fixture state outside their product-specific config roots; suffixes and command syntax remain checked. |
 | Fixed baseline cache | Exact `/tmp/cadr-render-diff-pi-74caa2649` to `<PI_BASELINE>` | The pi crash stack necessarily names the materialized immutable baseline. |
 | Product/version header | Exact plain and observed styled `pi v0.83.0` / `cadr v0.2.0` forms to `<PRODUCT> v<VERSION>` | Product rename and release version are approved; surrounding SGR remains checked. |
 | Terminal-title product | Exact OSC title prefix `π - ` to `<PRODUCT> - ` | Only the brand glyph is replaced; title existence, workspace suffix, framing, and BEL remain checked. |
