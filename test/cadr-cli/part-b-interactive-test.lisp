@@ -1229,6 +1229,13 @@
            :key #'first
            :test #'string=)))))
 
+(test goal16-default-wsl-clipboard-path-uses-cadr-identity
+  (let ((name
+          (file-namestring
+           (cadr-cli::default-clipboard-temporary-path))))
+    (is (uiop:string-prefix-p "cadr-wsl-clip-" name))
+    (is (uiop:string-suffix-p name ".png"))))
+
 (defun image-test-base64-value (character)
   (position
    character

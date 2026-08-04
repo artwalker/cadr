@@ -107,6 +107,10 @@
          (search-output
            (find "tool_search_output" input
                  :key (lambda (item) (cadr-ai::json-get item "type"))
+                 :test #'string=))
+         (search-call
+           (find "tool_search_call" input
+                 :key (lambda (item) (cadr-ai::json-get item "type"))
                  :test #'string=)))
     (is (= 2 (length tools)))
     (is (not (find "write" tools :key (lambda (item) (cadr-ai::json-get item "name"))
@@ -117,6 +121,13 @@
     (is (string= "lark"
                  (cadr-ai::json-get (cadr-ai::json-get custom "format") "syntax")))
     (is (hash-table-p search-output))
+    (is (hash-table-p search-call))
+    (is (uiop:string-prefix-p
+         "cadr_tool_load_"
+         (cadr-ai::json-get search-call "call_id")))
+    (is (string=
+         (cadr-ai::json-get search-call "call_id")
+         (cadr-ai::json-get search-output "call_id")))
     (let ((loaded (cadr-ai::json-get search-output "tools")))
       (is (= 1 (length loaded)))
       (is (string= "write" (cadr-ai::json-get (aref loaded 0) "name")))

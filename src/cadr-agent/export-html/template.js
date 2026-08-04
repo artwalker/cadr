@@ -1663,7 +1663,7 @@
       const overlay = document.getElementById('sidebar-overlay');
       const hamburger = document.getElementById('hamburger');
       const sidebarResizer = document.getElementById('sidebar-resizer');
-      const SIDEBAR_WIDTH_STORAGE_KEY = 'pi-share:v1:sidebar-width';
+      const SIDEBAR_WIDTH_STORAGE_KEY = 'cadr-share:v1:sidebar-width';
       const MIN_CONTENT_WIDTH = 320;
 
       function isMobileLayout() {

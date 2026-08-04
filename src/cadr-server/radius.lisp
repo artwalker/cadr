@@ -460,7 +460,7 @@
       (error (cause)
         (format
          *error-output*
-         "cadr-server: Radius Pi ~A re-registration failed: ~A~%"
+         "cadr-server: Radius instance ~A re-registration failed: ~A~%"
          (instance-record-id instance)
          cause)
         (finish-output *error-output*))))
@@ -545,7 +545,7 @@
                    cause)
                 (log-radius-retry
                  (format nil
-                         "Radius Pi ~A"
+                         "Radius instance ~A"
                          instance-id)
                  "heartbeat"
                  state delay cause))
@@ -560,7 +560,7 @@
                             (radius-backoff-delay 1)))
                       (format
                        *error-output*
-                       "cadr-server: Radius Pi ~A re-registration skipped; retrying in ~Ams~%"
+                       "cadr-server: Radius instance ~A re-registration skipped; retrying in ~Ams~%"
                        instance-id retry-delay)
                       (finish-output
                        *error-output*)
@@ -571,7 +571,7 @@
                          state)))
                   (log-radius-retry
                    (format nil
-                           "Radius Pi ~A"
+                           "Radius instance ~A"
                            instance-id)
                    "re-registration"
                    state recovery-delay
@@ -619,7 +619,7 @@
         (heartbeat-radius-pi
          presence instance-id state))
       (format nil
-              "cadr-radius-pi-~A"
+              "cadr-radius-instance-~A"
               instance-id)
       :radius-id radius-id))))
 

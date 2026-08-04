@@ -67,6 +67,31 @@
             (is (not (search retired source))
                 "~A still reads retired ~A" relative retired)))))))
 
+(test goal16-c4-free-identity-values-are-cadr-owned
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (contracts
+           '(("src/cadr-cli/interactive/clipboard.lisp"
+              "cadr-wsl-clip-" "pi-wsl-clip-")
+             ("examples/extensions/notify.lisp"
+              "example-notify-terminal \"Cadr\"" "example-notify-terminal \"Pi\"")
+             ("src/cadr-agent/export-html/template.js"
+              "cadr-share:v1:sidebar-width" "pi-share:v1:sidebar-width")
+             ("src/cadr-ai/providers/openai.lisp"
+              "cadr_tool_load_" "pi_tool_load_")
+             ("src/cadr-server/radius.lisp"
+              "Radius instance" "Radius Pi")
+             ("src/cadr-server/radius.lisp"
+              "cadr-radius-instance-" "cadr-radius-pi-"))))
+    (dolist (contract contracts)
+      (destructuring-bind (relative replacement retired) contract
+        (let ((source (goal14-b1-source root relative)))
+          (is (not (null source)) "missing identity owner ~A" relative)
+          (when source
+            (is (search replacement source)
+                "~A omits ~A" relative replacement)
+            (is (not (search retired source))
+                "~A still carries ~A" relative retired)))))))
+
 (test goal14-b1-interactive-leaf-services-have-exact-owners
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (owners

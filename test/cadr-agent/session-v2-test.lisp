@@ -429,9 +429,15 @@
        (export-test-sha256
         cadr-agent::+export-html-template-css+)))
   (is (string=
-       "1893cdb77587f592eef5717905391269886d6d7a4dc6a488417a73da374d9226"
+       "822c3fbcbc907edebf200f52ff06a7f15b126bab5810f989a2acf6352bfe20b8"
        (export-test-sha256
         cadr-agent::+export-html-template-js+)))
+  (is (search
+       "cadr-share:v1:sidebar-width"
+       cadr-agent::+export-html-template-js+))
+  (is (not (search
+            "pi-share:v1:sidebar-width"
+            cadr-agent::+export-html-template-js+)))
   (is (search
        "marked v18.0.5 - a markdown parser"
        cadr-agent::+export-html-marked-js+))

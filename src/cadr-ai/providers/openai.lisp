@@ -199,7 +199,7 @@
                (setf loaded (nreverse loaded))
                (let* ((names (mapcar #'tool-name loaded))
                       (search-id
-                        (format nil "pi_tool_load_~A"
+                        (format nil "cadr_tool_load_~A"
                                 (short-hash
                                  (format nil "~A:~{~A~^,~}"
                                          (tool-result-message-tool-call-id message)

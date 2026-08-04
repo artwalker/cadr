@@ -141,7 +141,8 @@
                             :separator '(#\/)))))))))
         (format
          nil
-         "https://github.com/earendil-works/pi/~A/~A/~A~:[~;/~]~A~A"
+         "~A/~A/~A/~A~:[~;/~]~A~A"
+         (cadr-ai::cadr-canonical-repository-url)
          (if directory-p "tree" "blob")
          tag repository-path
          directory-p query fragment)))))
@@ -149,15 +150,16 @@
 (defun normalize-changelog-target (target tag)
   (let ((canonical
           (cl-ppcre:regex-replace
-           "^https://github\\.com/(?:badlogic|earendil-works)/pi-mono(?=/|$)"
+           "^https://github\\.com/(?:badlogic/pi-mono|earendil-works/(?:pi|pi-mono))(?=/|$)"
            target
-           "https://github.com/earendil-works/pi")))
+           (cadr-ai::cadr-canonical-repository-url))))
     (setf canonical
           (cl-ppcre:regex-replace
-           "^https://github\\.com/earendil-works/pi/(blob|tree)/(?:main|master)/"
+           "^https://github\\.com/artwalker/cadr/(blob|tree)/(?:main|master)/"
            canonical
            (format nil
-                   "https://github.com/earendil-works/pi/\\1/~A/"
+                   "~A/\\1/~A/"
+                   (cadr-ai::cadr-canonical-repository-url)
                    tag)))
     (if (or (uiop:string-prefix-p "#" canonical)
             (uiop:string-prefix-p "//" canonical)

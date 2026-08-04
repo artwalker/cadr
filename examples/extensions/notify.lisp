@@ -25,4 +25,4 @@
  :handler
  (lambda (event context)
    (declare (ignore event context))
-   (example-notify-terminal "Pi" "Ready for input")))
+   (example-notify-terminal "Cadr" "Ready for input")))

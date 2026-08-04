@@ -323,7 +323,7 @@
 
 (defun default-clipboard-temporary-path ()
   (merge-pathnames
-   (format nil "pi-wsl-clip-~A.png"
+   (format nil "cadr-wsl-clip-~A.png"
            (cadr-ai:uuid-v7))
    (uiop:temporary-directory)))
 
@@ -447,4 +447,3 @@
             command-runner)))))
       (read-clipboard-image-via-native
        native-image-reader)))
-

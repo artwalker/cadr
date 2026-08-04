@@ -58,13 +58,13 @@
            (cadr-cli::normalize-changelog-links
             input "0.79.0")))
     (is (search
-         "https://github.com/earendil-works/pi/blob/v0.79.0/packages/coding-agent/README.md#x"
+         "https://github.com/artwalker/cadr/blob/v0.79.0/packages/coding-agent/README.md#x"
          output))
     (is (search
-         "https://github.com/earendil-works/pi/tree/v0.79.0/packages/coding-agent/examples/extensions/"
+         "https://github.com/artwalker/cadr/tree/v0.79.0/packages/coding-agent/examples/extensions/"
          output))
     (is (search
-         "https://github.com/earendil-works/pi/issues/1"
+         "https://github.com/artwalker/cadr/issues/1"
          output))
     (is (search "https://example.com/docs" output))))
 
