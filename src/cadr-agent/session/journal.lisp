@@ -330,11 +330,10 @@
 (defun session-append-compaction
     (session summary source-ids first-kept-id tokens-before
      &key details usage from-hook-p)
-  (unless (and (stringp summary)
-               (plusp (length summary)))
+  (unless (stringp summary)
     (session-failure
      (session-path session) nil
-     "Compaction summary must not be empty"))
+     "Compaction summary must be a string"))
   (unless (and (stringp first-kept-id)
                (gethash first-kept-id
                         (session-by-id session)))
@@ -643,4 +642,3 @@
              :timestamp
              (session-entry-timestamp entry))))
           (otherwise nil))))
-

@@ -287,7 +287,6 @@
            (unless
                (and
                 (stringp summary)
-                (plusp (length summary))
                 (vector-of-strings-p source-ids)
                 (stringp first-kept-id)
                 (integerp tokens-before)
@@ -562,4 +561,3 @@
        (and entries
             (session-entry-id
              (car (last entries)))))))))
-

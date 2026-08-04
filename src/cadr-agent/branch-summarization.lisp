@@ -166,20 +166,25 @@
               :abort-p (lambda () (agent-aborted-p agent)))))
       (when (or (null response)
                 (eq :aborted (cadr-ai:assistant-message-stop-reason response)))
-        (error 'cadr-ai:request-aborted :message "Branch summary aborted"))
+        (return-from generate-branch-summary nil))
       (when (eq :error (cadr-ai:assistant-message-stop-reason response))
-        (error "Branch summary failed: ~A"
+        (error "~A"
                (or (cadr-ai:assistant-message-error-message response)
-                   "Unknown error")))
+                   "Summarization failed")))
       (multiple-value-bind (read-files modified-files)
           (compute-file-operation-lists
            (branch-summary-preparation-file-operations preparation))
-        (make-branch-summary-result
-         :summary
-         (concatenate
-          'string +branch-summary-preamble+
-          (assistant-message-text response)
-          (format-file-operations read-files modified-files))
-         :usage (cadr-ai:assistant-message-usage response)
-         :read-files read-files
-         :modified-files modified-files)))))
+        (let ((summary
+                (concatenate
+                 'string +branch-summary-preamble+
+                 (assistant-message-text response)
+                 (format-file-operations
+                  read-files modified-files))))
+          (make-branch-summary-result
+           :summary
+           (if (plusp (length summary))
+               summary
+               "No summary generated")
+           :usage (cadr-ai:assistant-message-usage response)
+           :read-files read-files
+           :modified-files modified-files))))))

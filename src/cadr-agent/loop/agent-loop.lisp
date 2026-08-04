@@ -238,6 +238,9 @@
                       (if (member :replace-instructions-p before)
                           (getf before :replace-instructions-p)
                           replace-instructions-p))))
+               (unless result
+                 (return-from agent-navigate-tree
+                   (values nil t nil nil)))
                (setf summary-text (branch-summary-result-summary result)
                      summary-usage (branch-summary-result-usage result)
                      summary-details
@@ -268,7 +271,8 @@
          (if new-leaf-id
              (session-branch session new-leaf-id)
              (setf (session-leaf-id session) nil))
-         (when summary-text
+         (when (and summary-text
+                    (plusp (length summary-text)))
            (let ((summary-id
                    (session-append-branch-summary
                     session old-leaf-id summary-text

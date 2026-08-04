@@ -238,7 +238,7 @@
                         (cadr-agent:session-entries session)
                         :key #'cadr-agent:session-entry-type)))))))
 
-(test session-compaction-invalid-or-failing-hook-falls-back-and-abort-stops
+(test session-compaction-empty-hook-is-used-failing-hook-falls-back-and-abort-stops
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)
     (dolist (mode '(:blank :error))
@@ -288,15 +288,23 @@
                   (list
                    (make-text-content :text "default checkpoint")))))
             (is-true (cadr-agent:compact-agent agent :force-p t))
-            (is (= 1 default-calls))
-            (is-false (getf after-payload :from-extension-p))
+            (is (= (if (eq mode :blank) 0 1)
+                   default-calls))
+            (is (eq (eq mode :blank)
+                    (not
+                     (null
+                      (getf after-payload
+                            :from-extension-p)))))
             (let ((entry
                     (find :compaction
                           (cadr-agent:session-entries session)
                           :key #'cadr-agent:session-entry-type)))
-              (is (string= "default checkpoint"
+              (is (string= (if (eq mode :blank)
+                               "  "
+                               "default checkpoint")
                            (cadr-agent:session-entry-summary entry)))
-              (is-false (cadr-agent:session-entry-from-hook-p entry)))))))
+              (is (eq (eq mode :blank)
+                      (cadr-agent:session-entry-from-hook-p entry))))))))
     (let* ((bundle
              (make-test-extension-bundle
               "abort-compaction"

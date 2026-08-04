@@ -224,20 +224,20 @@
             (lambda ()
               (agent-aborted-p agent))))
          (summary
-           (and response
-                (assistant-message-text response))))
+           (if response
+               (assistant-message-text response)
+               "")))
     (when
-        (or (null response)
-            (member
-             (cadr-ai:assistant-message-stop-reason response)
-             '(:error :aborted))
-            (null summary)
-            (zerop
-             (length
-              (string-trim
-               '(#\Space #\Tab #\Newline #\Return)
-               summary))))
-      (error "The current model did not produce a compaction summary"))
+        (and
+         response
+         (eq
+          :error
+          (cadr-ai:assistant-message-stop-reason response)))
+      (error
+       "Summarization failed: ~A"
+       (or
+        (cadr-ai:assistant-message-error-message response)
+        "Unknown error")))
     summary))
 
 (defun effective-compaction-limit
@@ -325,10 +325,6 @@
          (tokens-before (getf value :tokens-before)))
      (and
       (stringp summary)
-      (plusp
-       (length
-        (string-trim '(#\Space #\Tab #\Newline #\Return)
-                     summary)))
       (stringp first-kept-entry-id)
       (integerp tokens-before)
       (not (minusp tokens-before))))))
@@ -436,6 +432,10 @@
                              (getf extension-compaction
                                    :tokens-before)
                              tokens-before)))
+                (when
+                    (extension-cancellation-aborted-p signal)
+                  (emit-agent-event agent :compaction-end)
+                  (return-from %compact-agent nil))
                 (assert-agent-not-shutdown agent)
                 (let* ((entry-id
                          (session-append-compaction
