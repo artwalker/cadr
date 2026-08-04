@@ -1,6 +1,7 @@
 # Goal 16 验收记录
 
-状态：Part A0 与 Part A 已完成；Part B 提案待提交，Part C/D 未获授权。
+状态：Part A0 与 Part A 已完成；Part B 提案已提交并 blocked 等待用户逐项
+裁决，Part C/D 未获授权。
 
 ## Part A0：压缩降级行为
 
@@ -59,11 +60,12 @@ fallback。修复后 `CADR-AGENT-SUITE` 为 1024/1024/0/0。
 
 ## Part A：身份审计
 
-产物：`docs/identity-audit.md`。Part A 的 staged diff 仅包含该审计和本报告，
-生产代码零变更。结果：
+提交：`dcba371ff`（`docs: audit product identity across the full tree`）。产物：
+`docs/identity-audit.md`。Part A 的 staged diff 仅包含该审计和本报告，生产代码
+零变更。结果：
 
 - 全量枚举得到 14 个不同的生产 `PI_*` 环境变量；
-- 六组第三方归因字段及 xAI referrer 均为 `须替换`，已有用户预裁；
+- 六组第三方归因值（含 xAI referrer）均为 `须替换`，已有用户预裁；
 - Radius `pi-gateway` 有 live discovery 的注册合同证据，`radius.pi.dev` 是真实
   provider/API endpoint，二者不是推测性保留；
 - `/share`、版本检查、HTML viewer meta 合同和环境变量迁移已分离为 Part B
@@ -72,6 +74,21 @@ fallback。修复后 `CADR-AGENT-SUITE` 为 1024/1024/0/0。
   自由日志文案与导出 Lisp API 名残留；
 - catalog 注释、固定基线 harness、版本对齐声明、扩展 manifest `"pi"` schema
   与 Radius wire dialect 已给出逐条保留理由。
+
+## Part B：待裁决提案
+
+提案：`docs/proposals/goal-v16-identity.md`。它把实现决策拆成六项：
+
+1. `/share` 未显式配置受信 viewer 时默认禁用，并在创建 Gist 前 fail closed；
+2. 版本检查未配置 Cadr endpoint 时默认禁用；
+3. 14 个 `PI_*` 环境变量硬切为 `CADR_*`，不保留 alias 或 warning 兼容期；
+4. 仓库链接、临时文件、HTML localStorage、synthetic call ID、Radius 自由文案和
+   example 标题等非合同身份值整组替换；
+5. Radius 注册/API/wire、扩展 manifest、catalog/基线溯源等精确 allowlist；
+6. 复用既有 release identity 作为私有单一来源，按 C1→C5 后进入 D 门禁。
+
+用户在 Goal 16 规格中预裁的 User-Agent、OpenRouter、NVIDIA、Cloudflare、
+OpenCode 与 xAI referrer 值不重复请求裁决。Part B 只写文档，未修改生产代码。
 
 Radius 外部核验（2026-08-04）：
 
