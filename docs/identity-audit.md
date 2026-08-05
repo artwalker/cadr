@@ -155,3 +155,15 @@ Part C 的门禁必须 fail-closed：产品源码中新出现 `pi`/上游域名/
 当前生产源中的旧环境变量已清零；Radius client/API/wire、扩展 manifest、catalog
 来源、固定基线工具与 `aligned with pi` 声明继续按第 7 节精确保留。Part D 将该
 边界固化为受跟踪 allowlist、合成自测和真实树扫描，不把本审计文本当运行时豁免。
+
+## 10. Goal 17 固定基线门禁扩展复核（2026-08-05）
+
+Goal 17 将呈现、tool result 与 event 对拍扩展为三个真实固定基线驱动器，并把
+它们纳入 `verify.sh`。这些驱动器必须在代码中精确区分 `pi` 与 `cadr` 两侧、启动
+上游进程、识别上游路径/身份字符串，并仅向上游子进程注入 `PI_OFFLINE`；这些
+字样是对拍输入，不是 Cadr 自我标识或运行时兼容入口。
+
+组织拆分同时移动了 config selector、direct user bash 与 package update 的基线
+出处注释，但没有改变产品身份。真实树重新生成后为 **348 个命中、311 条精确
+disposition、1 个 digest 锁定 opaque 文件**。allowlist 仍逐行锁定完整文本与出现
+次数；任何新增、删除、移动或数量变化都会 fail-closed，不存在目录级豁免。

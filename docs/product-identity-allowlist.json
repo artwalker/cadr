@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 276,
+  "expected_findings": 348,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -254,7 +254,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  --pi-repo . --output /tmp/cadr-render-gate \\",
+      "line": "  --tier core --pi-repo . --output /tmp/cadr-render-gate \\",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -367,14 +367,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "command surface follows the original pi command list. `--session` accepts a",
-      "occurrences": 1,
-      "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
-    },
-    {
-      "path": "README.md",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "implementations and compares pi's actual PTY output with Cadr's. It is a",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -579,6 +571,70 @@
       "reason": "Synthetic fixture spells the Greek alphabet; pi is the mathematical letter, not product identity."
     },
     {
+      "path": "scripts/event-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_OFFLINE",
+      "line": "            \"PI_OFFLINE\": \"1\",",
+      "occurrences": 1,
+      "reason": "The differential harness injects this variable only into the fixed upstream pi subprocess; Cadr uses CADR_OFFLINE."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "\"\"\"Fail-closed Pi/Cadr JSONL and RPC event differential gate.\"\"\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                differences = compare_records(normalized[\"pi\"], normalized[\"cadr\"])",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                for side in (\"pi\", \"cadr\"):",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        default=Path(\"/tmp/cadr-render-diff-pi-74caa2649\"),",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if side not in {\"pi\", \"cadr\"}:",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        shutil.copyfile(FIXTURES / \"pi-driver.ts\", driver)",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if side == \"pi\":",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
       "path": "scripts/export-ts-payloads.ts",
       "kind": "pi-token",
       "token": "pi",
@@ -710,6 +766,14 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_BASELINE",
+      "line": "            b\"<PI_BASELINE>/packages/coding-agent/test/\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE",
       "line": "        (str(Path(\"/tmp/cadr-render-diff-pi-74caa2649\")).encode(), b\"<PI_BASELINE>\"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -750,6 +814,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "Pi",
+      "line": "                    f\"an exact Pi/Cadr SHA-256 pair: {scenario}/{checkpoint}\"",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "Pi",
       "line": "        (b\"Pi can explain its own features\", b\"<PRODUCT_TITLE> can explain its own features\"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -782,6 +854,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "                        side=\"pi\",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "                    f\"pi={pi_ids!r} cadr={cadr_ids!r}\"",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -793,6 +873,30 @@
       "line": "                    for side in (\"pi\", \"cadr\")",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    or set(pair) != {\"pi\", \"cadr\"}",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    pi_repo=args.pi_repo,",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    screen_text_and_geometry(screens[\"pi\"])",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -822,6 +926,30 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "                args.pi_repo.resolve(),",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                args.pi_repo.resolve(), commit, args.baseline_cache.resolve()",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                b\"/tmp/cadr-render-diff-pi-74caa2649/\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "                f\"pi-ai model-data artifact SHA-256 mismatch: {digest}\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -846,9 +974,17 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                pi_repo=args.pi_repo,",
+      "line": "                if [record[\"id\"] for record in visible_checkpoints] != pi_ids:",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                pi_screens[key] = screens[\"pi\"]",
       "occurrences": 2,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -886,6 +1022,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "                visible_stem = f\"{scenario_id}.{dimension_id}.pi.visible\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "             \"--pi-repo\", str(args.pi_repo), \"--scenario\", \"conversation-content\",",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -902,9 +1046,25 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            args.pi_repo.resolve(), commit, args.baseline_cache.resolve()",
+      "line": "            \"pi\": result.get(\"piScreenSha256\"),",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            artifact_side = \"pi.visible\" if visible_sites and side == \"pi\" else side",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"/\" + (b\"pi00\" if side == \"pi\" else b\"cadr\") + b\"/render-sessions\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -913,6 +1073,14 @@
       "line": "            b\"To resume this session:\\x1b[0m pi \",",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"\\x1b[2mTo resume this session:\\x1b[22m pi \",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -982,6 +1150,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "            if side != \"pi\":",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "            pi_ids = [item[\"id\"] for item in checkpoints_by_side[\"pi\"]]",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -1022,7 +1198,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            str(side_root / (\"x/render-sessions\" if side == \"pi\" else \"render-sessions\")).encode(),",
+      "line": "        (b\" pi --session \", b\" <PRODUCT> --session \"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1030,9 +1206,9 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        (b\" pi --session \", b\" <PRODUCT> --session \"),",
+      "line": "        (b\" pi --session-dir \", b\" <PRODUCT> --session-dir \"),",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1089,6 +1265,14 @@
       "line": "        [\"git\", \"-C\", str(pi_repo), \"archive\", \"--format=tar\", commit],",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        args.pi_repo.resolve(),",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1158,6 +1342,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "        if not isinstance(expected, dict) or set(expected) != {\"pi\", \"cadr\"}:",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.83.0\"",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -1214,17 +1406,25 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    session_dir = side_root / (\"x/render-sessions\" if side == \"pi\" else \"render-sessions\")",
+      "line": "    if side not in {\"pi\", \"cadr\"}:",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    session_suffix = rb\"/x/render-sessions\" if side == \"pi\" else rb\"/render-sessions\"",
+      "line": "    pi_screens: dict[str, bytes] = {}",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    return sandbox / (\"pi00\" if side == \"pi\" else \"cadr\") / \"render-sessions\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1283,6 +1483,222 @@
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
     {
+      "path": "scripts/test-render-diff-full.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  --pi-repo \"$project_root\" \\",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_OFFLINE",
+      "line": "        \"PI_OFFLINE\": \"1\",",
+      "occurrences": 1,
+      "reason": "The differential harness injects this variable only into the fixed upstream pi subprocess; Cadr uses CADR_OFFLINE."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    pi_results[scenario_id],",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    scenario, pi_results[scenario_id], cadr_results[scenario_id]",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            f\"{scenario_id}: isError pi={pi.get('isError')!r} cadr={cadr.get('isError')!r}\"",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            shutil.copyfile(pi_output, artifacts / \"pi.json\")",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        \"pi\",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_output = output_directory / \"pi.json\"",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_results = load_result_file(pi_output, scenarios, \"pi\")",
+      "occurrences": 3,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        run_pi(baseline, manifest_path, workspace, pi_output, env, arguments.timeout)",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    driver = stage / \"pi-driver.ts\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    for side, result in ((\"pi\", pi_result), (\"cadr\", cadr_result)):",
+      "occurrences": 4,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if pi.get(\"content\") != cadr.get(\"content\"):",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if pi.get(\"isError\") != cadr.get(\"isError\"):",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if pi.get(\"typedFullOutputPath\") != cadr.get(\"typedFullOutputPath\"):",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    if pi.get(\"typedFullOutputSha256\") != cadr.get(\"typedFullOutputSha256\"):",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi = _canonical_result(normalize_result(pi_raw))",
+      "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    scenario: dict[str, Any], pi_result: dict[str, Any], cadr_result: dict[str, Any]",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    scenario_id: str, pi_raw: dict[str, Any], cadr_raw: dict[str, Any]",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    shutil.copyfile(FIXTURES / \"pi-driver.ts\", driver)",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    stage = output.parent / \"pi-stage\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\"\"\"Run byte-exact tool-result parity against the fixed pi baseline.\"\"\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/tool-result-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def run_pi(",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "      --baseline \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "      --baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "      --baseline-repo \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-74caa2649\"",
+      "occurrences": 1,
+      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
+    },
+    {
       "path": "scripts/verify.sh",
       "kind": "pi-token",
       "token": "pi",
@@ -1297,6 +1713,14 @@
       "line": "    --exclude=./.pi-cl \\",
       "occurrences": 1,
       "reason": "Migration smoke isolation excludes the retired on-disk namespace so user state cannot enter verification."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-74caa2649\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "src/cadr-agent/export-html/template.js",
@@ -1603,6 +2027,14 @@
       "reason": "Internal docstring identifies the fixed Pi Text layout semantics being reproduced."
     },
     {
+      "path": "src/cadr-cli/interactive/user-bash.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; Fixed pi@74caa2649 BashExecutionComponent is deliberately separate from",
+      "occurrences": 1,
+      "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
+    },
+    {
       "path": "src/cadr-cli/media.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -1649,6 +2081,30 @@
       "line": "    (:pi-messages",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-cli/packages/commands.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "            ;; Match Pi's Git update contract: an unavailable, empty, or",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi package-update contract used for behavioral alignment."
+    },
+    {
+      "path": "src/cadr-cli/packages/config-selector.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": ";; `cadr config` is a standalone, non-alt-screen selector, matching Pi's",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi ConfigSelector contract used for behavioral alignment."
+    },
+    {
+      "path": "src/cadr-cli/packages/config-selector.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      (read-package-pi-manifest root)",
+      "occurrences": 1,
+      "reason": "The function name describes the external pi package manifest schema, which remains a compatibility contract."
     },
     {
       "path": "src/cadr-cli/packages/manifest.lisp",
@@ -1705,6 +2161,14 @@
       "line": "           \"^https://github\\\\.com/(?:badlogic/pi-mono|earendil-works/(?:pi|pi-mono))(?=/|$)\"",
       "occurrences": 1,
       "reason": "Exact legacy upstream URL recognizer rewrites old links to Cadr's canonical repository; target identity is Cadr-owned."
+    },
+    {
+      "path": "src/cadr-cli/tools/bash.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; Fixed pi@74caa2649 agent-session.ts:2803-2824 records the direct shell",
+      "occurrences": 1,
+      "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
     {
       "path": "src/cadr-evals/suites.lisp",
