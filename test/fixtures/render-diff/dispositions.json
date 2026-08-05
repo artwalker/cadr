@@ -3163,16 +3163,8 @@
         "wide"
       ],
       "classes": [
-        "I01",
-        "I04"
-      ],
-      "screenSha256": {
-        "wide": {
-          "pi": "37bd714cb79fa6c4c31f9d0053117ec4d5870fe2b6914c205112b3e4bf266caa",
-          "cadr": "40c4eb8b616a8ce61aa54d08805392e6833365681d1f855ad7773c03f53481da"
-        }
-      },
-      "note": "The earlier full-output rows in this cumulative state sweep carry the approved Cadr product prefix; their physical cell history shifts the later wide viewport by two rows. The grep result itself is byte-equivalent."
+        "I01"
+      ]
     },
     {
       "scenario": "tools-significant-states",
