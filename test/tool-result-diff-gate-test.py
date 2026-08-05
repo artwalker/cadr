@@ -9,6 +9,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest import mock
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -187,6 +188,35 @@ class ToolResultDiffGateTest(unittest.TestCase):
             )
             with self.assertRaisesRegex(TOOL_DIFF.GateFailure, "duplicate"):
                 TOOL_DIFF.load_result_file(path, expected, "pi")
+
+    def test_workspace_reset_preserves_each_scenario_cwd_inode(self) -> None:
+        scenarios = [
+            {
+                "id": "grep-success",
+                "setup": {
+                    "files": [
+                        {"path": "a.txt", "text": "alpha"},
+                        {"path": "b.txt", "text": "beta"},
+                    ]
+                },
+            }
+        ]
+        with tempfile.TemporaryDirectory(prefix="cadr-tool-diff-workspace-") as temp:
+            root = Path(temp) / "workspace"
+            TOOL_DIFF.materialize_workspace(root, scenarios)
+            cwd = root / "grep-success"
+            first_inode = cwd.stat().st_ino
+            (cwd / "runtime-only.txt").write_text("dirty", encoding="utf-8")
+            with mock.patch.object(
+                TOOL_DIFF.shutil, "rmtree", wraps=TOOL_DIFF.shutil.rmtree
+            ) as remove_tree:
+                TOOL_DIFF.materialize_workspace(root, scenarios)
+            removed_roots = [Path(call.args[0]) for call in remove_tree.call_args_list]
+            self.assertNotIn(root, removed_roots)
+            self.assertEqual(cwd.stat().st_ino, first_inode)
+            self.assertFalse((cwd / "runtime-only.txt").exists())
+            self.assertEqual((cwd / "a.txt").read_text(), "alpha")
+            self.assertEqual((cwd / "b.txt").read_text(), "beta")
 
 
 if __name__ == "__main__":

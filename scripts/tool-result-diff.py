@@ -248,14 +248,26 @@ def _write_fixture_file(path: Path, spec: dict[str, Any]) -> None:
 
 
 def materialize_workspace(root: Path, scenarios: list[dict[str, Any]]) -> None:
-    if root.exists():
-        shutil.rmtree(root)
-    root.mkdir(parents=True, mode=0o777)
+    root.mkdir(parents=True, mode=0o777, exist_ok=True)
     root.chmod(0o777)
+    expected = {scenario["id"] for scenario in scenarios}
+    for child in root.iterdir():
+        if child.name not in expected:
+            if child.is_dir() and not child.is_symlink():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
     for scenario in scenarios:
         cwd = root / scenario["id"]
-        cwd.mkdir(mode=0o777)
+        if cwd.exists() and (not cwd.is_dir() or cwd.is_symlink()):
+            cwd.unlink()
+        cwd.mkdir(mode=0o777, exist_ok=True)
         cwd.chmod(0o777)
+        for child in cwd.iterdir():
+            if child.is_dir() and not child.is_symlink():
+                shutil.rmtree(child)
+            else:
+                child.unlink()
         setup = scenario.get("setup", {})
         for directory in setup.get("directories", []):
             target = cwd / _safe_relative(directory["path"])
