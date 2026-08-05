@@ -47,12 +47,20 @@
       "reason": "One tree-selector state machine whose branch projection, filters, paging, labels, and copy behavior share parent-linked tree invariants."
     },
     {
+      "path": "src/cadr-cli/interactive/transcript.lisp",
+      "reason": "Single transcript projection owner for every persisted and session message variant; shared entry spacing, Markdown transforms, custom renderers, and cache semantics make a split duplicate observable layout policy."
+    },
+    {
       "path": "src/cadr-cli/interactive/syntax.lisp",
       "reason": "Single deterministic syntax-highlighting engine and language table; its scanners share token precedence and style semantics."
     },
     {
       "path": "src/cadr-cli/media.lisp",
       "reason": "Single image/media ingestion and transformation owner with shared MIME, dimension, resize, and encoding invariants."
+    },
+    {
+      "path": "src/cadr-cli/packages/config-selector.lisp",
+      "reason": "Single standalone config-selector state machine whose resource discovery, scoped filtering, terminal event loop, and persistence callbacks share one non-alt-screen interaction contract."
     },
     {
       "path": "src/cadr-tui/components/markdown.lisp",

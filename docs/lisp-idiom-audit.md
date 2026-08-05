@@ -8,17 +8,17 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=273 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=275 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 273 Lisp files and 105,619 physical lines.  The form
+The audited tree contains 275 Lisp files and 106,580 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 61 | 24,812 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
-| `cadr-agent` | 36 | 15,940 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 108 | 42,159 | 66 | 18 | 6 | 28 | 0 | 85 | 2 | 0 |
+| `cadr-ai` | 61 | 24,833 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
+| `cadr-agent` | 36 | 15,962 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
+| `cadr-cli` | 110 | 43,077 | 66 | 18 | 6 | 28 | 0 | 85 | 2 | 0 |
 | `cadr-tui` | 36 | 15,092 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `cadr-server` | 11 | 2,768 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
@@ -130,7 +130,7 @@ a net seven files. B10 replaced four mixed AI files with seventeen capability,
 transport, runtime, and support owners, for a net thirteen files. B11 replaced
 five mixed provider/authentication owners with 25 protocol, authentication,
 OAuth, declaration, registry, and runtime-projection owners, for a net twenty
-files. The audit therefore follows the current 273 files rather than treating the old file set
+files. The audit therefore follows the current 275 files rather than treating the old file set
 as permanent:
 
 | added file | required capability | Lisp-idiom disposition |
@@ -141,10 +141,10 @@ as permanent:
 | `src/cadr-cli/crash.lisp` | apply the shared boundary to CLI entrypoints | keep as a thin boundary adapter; no owned polymorphic protocol exists |
 | `src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp` | give each interactive leaf service one exact output or data owner before selector convergence | keep the plain closed state/value functions; the extraction adds no polymorphic protocol and leaves selectors together until `selector-frame` owns their shared behavior |
 | `src/cadr-cli/interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` | give selector framing and each selector family one exact owner | keep `selector-frame` as composition plus plain closed domain state; do not introduce an open hierarchy for fixed overlays |
-| `src/cadr-cli/{support,settings,models,packages,extensions,sdk}/*.lisp` | replace eight mixed service files with 37 named domain owners | keep the cohesive plain functions/classes in their existing package; the split changes ownership, not dispatch semantics |
+| `src/cadr-cli/{support,settings,models,packages,extensions,sdk}/*.lisp` | replace eight mixed service files with 38 named domain owners, including the standalone config selector | keep the cohesive plain functions/classes in their existing package; the split changes ownership, not dispatch semantics |
 | `src/cadr-cli/bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` | separate tool construction, session lifecycle, settings/runtime, authentication, command dispatch, and the process entrypoint | keep command-domain functions explicit; `bootstrap/commands.lisp` is the sole mode-output injection owner and `bootstrap/main.lisp` stays a thin entrypoint |
 | `src/cadr-cli/modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` | separate RPC command domains from the JSONL loop | keep the closed RPC command handlers explicit; every domain emits only through the shared `rpc-write-object` wire sink |
-| `src/cadr-cli/interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` | separate interactive state, reducers, rendering, composition, extension bridges, and lifecycle control | keep the closed state records and explicit controller functions; composition and mutation now have named owners without inventing an open hierarchy |
+| `src/cadr-cli/interactive/{state,status,user-bash,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` | separate direct bash rendering, interactive state, reducers, transcript projection, composition, extension bridges, and lifecycle control | keep the closed state records and explicit controller functions; composition and mutation now have named owners without inventing an open hierarchy |
 | `src/cadr-cli/interactive/components/{loaders,countdown,armin,daxnuts,announcement}.lisp` | separate reusable loader primitives from independent animated and announcement components | keep each component's existing CLOS lifecycle while making its source owner exact |
 | `src/cadr-tui/components/{markdown,image,tool-block,status,select-list}.lisp` | separate Markdown/image/tool/status/select rendering families | keep plain render functions and closed tool/select state; these are value transformations, not an open object protocol |
 | `src/cadr-tui/composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` | separate the reusable component protocol from concrete content, settings, loader, and root orchestration | keep the existing CLOS protocol and load it before implementations; no new dispatch surface is needed |

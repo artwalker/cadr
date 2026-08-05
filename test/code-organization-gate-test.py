@@ -69,7 +69,7 @@ class CodeOrganizationGateTest(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         self.assertIn("threshold >= 1000 lines", result.stdout)
-        self.assertIn("15 reviewed exemptions", result.stdout)
+        self.assertIn("17 reviewed exemptions", result.stdout)
         self.assertIn("symptom detector only", result.stdout)
 
     def test_exact_threshold_without_exemption_fails(self) -> None:

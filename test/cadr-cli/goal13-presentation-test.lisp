@@ -1246,7 +1246,7 @@
            '(("cadr-core" 6)
              ("cadr-ai" 61)
              ("cadr-agent" 36)
-             ("cadr-cli" 108)
+             ("cadr-cli" 110)
              ("cadr-tui" 36)
              ("cadr-storage" 2)
              ("cadr-server" 11)
@@ -1255,7 +1255,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=273 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=275 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1273,7 +1273,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 273 total))
+    (is (= 275 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1295,6 +1295,7 @@
            "src/cadr-cli/{support,settings,models,packages,extensions,sdk}/*.lisp"
            "src/cadr-cli/bootstrap/{tools,sessions,settings,auth,commands,main}.lisp"
            "src/cadr-cli/modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp"
+           "src/cadr-cli/interactive/{state,status,user-bash,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp"
            "src/cadr-tui/components/{markdown,image,tool-block,status,select-list}.lisp"
            "src/cadr-tui/composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp"
            "src/cadr-tui/renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp"

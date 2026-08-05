@@ -41,6 +41,7 @@
                               :components ((:file "source")
                                            (:file "settings")
                                            (:file "manifest")
+                                           (:file "config-selector")
                                            (:file "commands")))
                              (:file "resource-loader")
                              (:module "models"
@@ -138,6 +139,7 @@
                                            (:file "entries")
                                            (:file "status")
                                            (:file "extension-ui")
+                                           (:file "user-bash")
                                            (:file "transcript")
                                            (:file "tool-rendering")
                                            (:file "pending-messages")

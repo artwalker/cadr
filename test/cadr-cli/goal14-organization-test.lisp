@@ -272,6 +272,7 @@
              ("packages/source.lisp" "(defstruct package-source")
              ("packages/settings.lisp" "(defun settings-package-entries")
              ("packages/manifest.lisp" "(defun read-package-pi-manifest")
+             ("packages/config-selector.lisp" "(defstruct config-resource-item")
              ("packages/commands.lisp" "(defstruct package-command-options")
              ("extensions/discovery.lisp" "(defstruct extension-source-record")
              ("extensions/loader.lisp" "(defun call-with-extension-output-boundary")
@@ -460,6 +461,9 @@
              ("interactive/status.lisp"
               "(defstruct (tui-render-coordinator"
               "(defun render-tui-status-indicator")
+             ("interactive/user-bash.lisp"
+              "(defun render-user-bash-entry"
+              "(defun append-tui-user-bash-result")
              ("interactive/transcript.lisp"
               "(defun seed-tui-message"
               "(defun render-tui-entries")
@@ -532,7 +536,7 @@
            (goal14-b1-source root "src/cadr-cli/interactive/controller.lisp"))
          (b6-sources
            (loop for name in
-                 '("state" "status" "transcript" "tool-rendering"
+                 '("state" "status" "user-bash" "transcript" "tool-rendering"
                    "entries" "pending-messages" "frame" "extension-ui"
                    "autocomplete" "themes" "controller")
                  collect
@@ -574,6 +578,7 @@
              ("(:file \"entries\")" 1)
              ("(:file \"status\")" 1)
              ("(:file \"extension-ui\")" 1)
+             ("(:file \"user-bash\")" 1)
              ("(:file \"transcript\")" 1)
              ("(:file \"tool-rendering\")" 1)
              ("(:file \"pending-messages\")" 1)

@@ -10,20 +10,20 @@ The Goal 14 draft recorded 135 production files.  Goal 13 added five approved
 export assets and three crash/cleanup files; Goal 14 B3 then added the six-file
 `cadr-core` leaf, B1 extracted eight interactive leaf owners, B2 replaced
 the remaining selector monolith with eight selector owners, B4 replaced
-eight mixed CLI service files with 37 domain owners, B5 split CLI bootstrap
+eight mixed CLI service files with 38 domain owners, B5 split CLI bootstrap
 and RPC command handling into eleven cohesive owners, B6 replaced the two
-interactive controller/component monoliths with sixteen responsibility owners,
+interactive controller/component monoliths with seventeen responsibility owners,
 and B7 replaced three reusable TUI monoliths with sixteen protocol-ordered
 owners. B8 replaced three agent session/storage/loop monoliths with thirteen
 owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 277 current files.
+goal is supposed to police, so this ledger covers all 280 current files.
 
-- 272 Lisp files, 101,013 lines, 4,266 top-level definitions.
+- 275 Lisp files, 106,580 lines, 4,470 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 277 production files and 105,288 physical lines in total.
+- 280 production files and 110,855 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -42,6 +42,7 @@ files with unrelated facilities fail.
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
 | `src/cadr-agent/branch-summarization.lisp` | 185 | 11 | Prepare a session branch and ask the model for its branch summary. | 合格 |
+| `src/cadr-agent/summarization.lisp` | 86 | 4 | Own the shared conversation-summary prompt, request, and retry contract. | 合格 |
 | `src/cadr-agent/compaction.lisp` | 513 | 23 | Estimate context, choose a cut point, and execute the compaction lifecycle. | 合格·大体量 |
 | `src/cadr-agent/conditions.lisp` | 43 | 9 | Define agent-layer condition types. | 合格 |
 | `src/cadr-agent/execution-env.lisp` | 884 | 55 | Implement the replaceable filesystem/process execution environment used by tools and harnesses. | 合格·大体量 |
@@ -197,8 +198,9 @@ files with unrelated facilities fail.
 | `src/cadr-cli/interactive/theme.lisp` | 215 | 11 | Detect, resolve, export, and discover interactive themes. | 合格 |
 | `src/cadr-cli/interactive/themes.lisp` | 374 | 12 | Watch, validate, and apply live TUI theme files and terminal theme changes. | 合格 |
 | `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | 3 | Own incremental tool-render session state and projection. | 合格 |
-| `src/cadr-cli/interactive/transcript.lisp` | 894 | 25 | Project every session entry and assistant/user/custom transcript component. | 合格·大体量 |
-| `src/cadr-cli/interactive/tool-rendering.lisp` | 895 | 23 | Project tool calls/results and reduce agent events into TUI state. | 合格·大体量 |
+| `src/cadr-cli/interactive/user-bash.lisp` | 213 | 9 | Render and update direct user bash executions independently of agent tool calls. | 合格 |
+| `src/cadr-cli/interactive/transcript.lisp` | 1,045 | 29 | Project every session entry and assistant/user/custom transcript component. | 合格·大体量 |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 955 | 23 | Project agent tool calls/results and reduce agent events into TUI state. | 合格·大体量 |
 | `src/cadr-cli/interactive/entries.lisp` | 270 | 18 | Own append, replacement, invalidation, and status-entry mutation. | 合格 |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 68 | 3 | Render and restore queued steering and follow-up input. | 合格 |
 | `src/cadr-cli/interactive/frame.lisp` | 368 | 7 | Compose transcript, status, widgets, overlays, editor, and footer into one frame. | 合格 |
@@ -229,7 +231,8 @@ files with unrelated facilities fail.
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | 10 | Create, switch, fork, compact, and inspect RPC sessions and trees. | 合格 |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 301 | 11 | Bridge extension UI requests to RPC dialogs with cancellation and timeout. | 合格·大体量 |
 | `src/cadr-cli/output-accumulator.lisp` | 199 | 17 | Accumulate split UTF-8 process output into a bounded tail and spill file. | 合格 |
-| `src/cadr-cli/packages/commands.lisp` | 578 | 9 | Parse package commands and execute help/list/install/update/remove workflows. | 合格 |
+| `src/cadr-cli/packages/config-selector.lisp` | 1,529 | 70 | Own the standalone config selector, resource projection, and scoped persistence interaction. | 合格·大体量 |
+| `src/cadr-cli/packages/commands.lisp` | 863 | 23 | Parse package commands and execute help/list/install/update/remove workflows. | 合格 |
 | `src/cadr-cli/packages/manifest.lisp` | 186 | 5 | Parse package manifests and project resource paths. | 合格 |
 | `src/cadr-cli/packages/settings.lisp` | 214 | 10 | Persist, remove, deduplicate, and materialize configured package records. | 合格 |
 | `src/cadr-cli/packages/source.lisp` | 348 | 13 | Parse and canonicalize npm, Git, SSH, and local package sources. | 合格 |
@@ -409,11 +412,11 @@ not chopped up to make the chart prettier.
 | `cli/main.lisp` | **Completed in B5:** `bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` (6). |
 | `cli/model-services.lisp` | **Completed in B4:** `models/{auth-storage,store,registry,matching,credential-print}.lisp` (5). |
 | `cli/modes/rpc/mode.lisp` | **Completed in B5:** `modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` (5). |
-| `cli/package-manager.lisp` | **Completed in B4:** `packages/{source,settings,manifest,commands}.lisp` (4). |
+| `cli/package-manager.lisp` | **Completed in B4:** `packages/{source,settings,manifest,config-selector,commands}.lisp` (5). |
 | `cli/sdk-services.lisp` | **Completed in B4:** `sdk/{cache-version,system-prompt,settings-service,resource-service,model-service}.lisp` (5). |
 | `cli/sdk.lisp` | **Completed in B4:** `sdk/{session-manager,agent-session,session-runtime}.lisp` (3). |
 | `cli/settings.lisp` | **Completed in B4:** `settings/{config-values,manager,trust}.lisp` (3). |
-| `cli/tui.lisp` | **Completed in B6:** `interactive/{state,status,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` (11); the existing B1 `status` and `transcript` owners absorbed their controller-side responsibilities. |
+| `cli/tui.lisp` | **Completed in B6:** `interactive/{state,status,user-bash,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp` (12); the existing B1 `status` and `transcript` owners absorbed their controller-side responsibilities. |
 | `cli/utilities.lisp` | **Completed in B4:** `support/{threads,atomic-write,changelog-share,html,resume-version-git,headers,external-editor}.lisp` (7). |
 | `tui/components.lisp` | **Completed in B7:** `components/{markdown,image,tool-block,status,select-list}.lisp` (5). |
 | `tui/composition.lisp` | **Completed in B7:** `composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` (6). |
