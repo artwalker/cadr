@@ -100,6 +100,7 @@
        (rpc-success id type))
       ((string= type "abort")
        (cadr-agent:agent-abort agent)
+       (cadr-agent:agent-wait-for-idle agent)
        (rpc-success id type))
       ((string= type "new_session")
        (rpc-success
@@ -277,17 +278,16 @@
                     mode)))))
        (rpc-success id type))
       ((string= type "compact")
-       (let ((compacted-p
+       (let ((result
                (cadr-agent:compact-agent
-                agent :force-p t)))
+                agent :force-p t
+                :custom-instructions
+                (cadr-ai::json-get
+                 object "customInstructions"))))
          (rpc-success
           id type
-          (if compacted-p
-              (cadr-agent::session-entry-to-json
-               (car
-                (last
-                 (cadr-agent:session-entries
-                  session))))
+          (if result
+              (compaction-result-to-json result)
               'null))))
       ((string= type "set_auto_compaction")
        (setf

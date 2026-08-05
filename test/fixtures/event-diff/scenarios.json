@@ -1,0 +1,134 @@
+{
+  "version": 1,
+  "baselineCommit": "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
+  "scenarios": [
+    {
+      "name": "normal",
+      "modes": ["json", "rpc"],
+      "action": "prompt",
+      "prompt": "Return the fixed normal event response.",
+      "responses": [
+        {"content": [{"type": "text", "text": "normal response"}]}
+      ]
+    },
+    {
+      "name": "transient-retry",
+      "modes": ["json", "rpc"],
+      "action": "prompt",
+      "prompt": "Exercise one transient retry.",
+      "retry": {"enabled": true, "maxRetries": 1, "baseDelayMs": 0},
+      "responses": [
+        {"content": [], "stopReason": "error", "errorMessage": "HTTP 503: service unavailable"},
+        {"content": [{"type": "text", "text": "retry recovered"}]}
+      ]
+    },
+    {
+      "name": "deterministic-error",
+      "modes": ["json", "rpc"],
+      "action": "prompt",
+      "prompt": "Exercise a deterministic provider error.",
+      "responses": [
+        {"content": [], "stopReason": "error", "errorMessage": "invalid_api_key"}
+      ]
+    },
+    {
+      "name": "abort",
+      "modes": ["json", "rpc"],
+      "action": "abort",
+      "prompt": "Start a response and abort after the first text delta.",
+      "stream": {"tokensPerSecond": 20, "tokenSize": 1},
+      "responses": [
+        {"content": [{"type": "text", "text": "first second third fourth fifth"}]}
+      ]
+    },
+    {
+      "name": "manual-compaction",
+      "modes": ["json", "rpc"],
+      "action": "manual-compaction",
+      "prompt": "",
+      "seedMessages": [
+        {"role": "user", "text": "old question one with enough deterministic context to compact"},
+        {"role": "assistant", "text": "old answer one with enough deterministic context to compact"},
+        {"role": "user", "text": "old question two with enough deterministic context to compact"},
+        {"role": "assistant", "text": "old answer two with enough deterministic context to compact"},
+        {"role": "user", "text": "old question three with enough deterministic context to compact"},
+        {"role": "assistant", "text": "old answer three with enough deterministic context to compact"},
+        {"role": "user", "text": "recent question four with enough deterministic context to retain"},
+        {"role": "assistant", "text": "recent answer four with enough deterministic context to retain"}
+      ],
+      "responses": [
+        {"content": [{"type": "text", "text": "Summary of earlier context."}]},
+        {"content": [{"type": "text", "text": "Summary of the split turn prefix."}]},
+        {"content": [{"type": "text", "text": "Summary continuation."}]}
+      ]
+    },
+    {
+      "name": "threshold-compaction",
+      "modes": ["json", "rpc"],
+      "action": "threshold-compaction",
+      "prompt": "Trigger threshold compaction.",
+      "contextWindow": 400,
+      "compaction": {"reserveTokens": 250, "keepRecentTokens": 50},
+      "seedMessages": [
+        {"role": "user", "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+        {"role": "assistant", "text": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+        {"role": "user", "text": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+        {"role": "assistant", "text": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+      ],
+      "responses": [
+        {"content": [{"type": "text", "text": "threshold response"}]},
+        {"content": [{"type": "text", "text": "Threshold summary."}]}
+      ]
+    },
+    {
+      "name": "overflow-compaction",
+      "modes": ["json", "rpc"],
+      "action": "overflow-compaction",
+      "prompt": "Trigger overflow compaction and retry.",
+      "contextWindow": 96,
+      "compaction": {"reserveTokens": 16, "keepRecentTokens": 16},
+      "seedMessages": [
+        {"role": "user", "text": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+        {"role": "assistant", "text": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+        {"role": "user", "text": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"},
+        {"role": "assistant", "text": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"}
+      ],
+      "responses": [
+        {"content": [], "stopReason": "error", "errorMessage": "context_length_exceeded"},
+        {"content": [{"type": "text", "text": "Overflow summary."}]},
+        {"content": [{"type": "text", "text": "overflow recovered"}]}
+      ]
+    },
+    {
+      "name": "tool-failure",
+      "modes": ["json", "rpc"],
+      "action": "prompt",
+      "prompt": "Call fixture_fail once.",
+      "responses": [
+        {
+          "content": [
+            {"type": "toolCall", "name": "fixture_fail", "id": "fixture-tool-call", "arguments": {"value": "bad"}}
+          ],
+          "stopReason": "toolUse"
+        },
+        {"content": [{"type": "text", "text": "tool failure observed"}]}
+      ]
+    },
+    {
+      "name": "tool-call-error-sidecar",
+      "modes": ["json", "rpc"],
+      "action": "prompt",
+      "prompt": "Call fixture_fail once and observe the extension sidecar.",
+      "toolCallErrorSidecar": true,
+      "responses": [
+        {
+          "content": [
+            {"type": "toolCall", "name": "fixture_fail", "id": "fixture-hook-call", "arguments": {"value": "bad"}}
+          ],
+          "stopReason": "toolUse"
+        },
+        {"content": [{"type": "text", "text": "hook failure observed"}]}
+      ]
+    }
+  ]
+}

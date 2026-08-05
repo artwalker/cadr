@@ -82,9 +82,10 @@
               (lambda (event)
                 (when previous
                   (funcall previous event))
-                (rpc-write-object
-                 state
-                 (agent-event-to-json event))))
+                (let ((object
+                        (agent-event-to-json event)))
+                  (when object
+                    (rpc-write-object state object)))))
              (read-rpc-jsonl-lines
               input
               (lambda (line)
