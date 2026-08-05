@@ -1,7 +1,6 @@
 (in-package #:cadr-agent)
 
 (defun stream-assistant (agent)
-  (maybe-compact-agent agent)
   (let* ((started-p nil)
          (messages (copy-list (agent-messages agent)))
          (context-result
@@ -146,17 +145,20 @@
    agent turn-hook-messages))
 
 (defun emit-agent-end (agent)
-  (run-agent-lifecycle
-   agent :agent-end
-   (list :messages
-         (copy-list (agent-messages agent))))
-  (emit-agent-event
-   agent :agent-end
-   :messages (copy-list (agent-messages agent))
-   :will-retry
-   (agent-will-retry-p
-    agent
-    (last-agent-assistant-message agent))))
+  (let ((messages
+          (if *agent-run-new-messages*
+              (coerce *agent-run-new-messages* 'list)
+              nil)))
+    (run-agent-lifecycle
+     agent :agent-end
+     (list :messages messages))
+    (emit-agent-event
+     agent :agent-end
+     :messages messages
+     :will-retry
+     (agent-will-retry-p
+      agent
+      (last-agent-assistant-message agent)))))
 
 (defun remove-retry-error-from-agent-state (agent)
   (let ((messages (agent-messages agent)))
@@ -257,11 +259,41 @@
 
 (defun run-agent-with-retries
     (agent initial-messages)
-  (loop
+  (loop with overflow-recovery-attempted-p = nil
     for messages = initial-messages then nil
-    for result = (run-agent-loop agent messages)
+    for result =
+      (let ((*agent-run-new-messages*
+              (make-array
+               0 :adjustable t :fill-pointer 0)))
+        (run-agent-loop agent messages))
     do
     (cond
+      ((context-overflow-message-p result)
+       (cond
+         (overflow-recovery-attempted-p
+          (emit-agent-event
+           agent :compaction-end
+           :reason :overflow
+           :result nil
+           :aborted nil
+           :will-retry nil
+           :error-message
+           "Context overflow recovery failed after one compact-and-retry attempt. Try reducing context or switching to a larger-context model.")
+          (return result))
+         ((or (null (agent-session agent))
+              (agent-shutdown-p agent))
+          (return result))
+         (t
+          (setf overflow-recovery-attempted-p t)
+          ;; The failed assistant message remains durable in the session, but
+          ;; baseline continuation removes it from the live provider context.
+          (remove-retry-error-from-agent-state agent)
+          (if (%compact-agent
+               agent :force-p t
+               :reason :overflow
+               :will-retry-p t)
+              (remove-retry-error-from-agent-state agent)
+              (return result)))))
       ((and
         (retryable-assistant-error-p result)
         (prepare-agent-retry agent result)))
@@ -270,9 +302,22 @@
         (eq :error
             (cadr-ai:assistant-message-stop-reason
              result)))
-       (return
-        (finish-agent-retry-failure
-         agent result)))
+       (let ((final
+               (finish-agent-retry-failure
+                agent result)))
+         (unless
+             (or
+              (context-overflow-message-p final)
+              (agent-shutdown-p agent))
+           (maybe-compact-agent agent))
+         (return final)))
       (t
+       (unless
+           (or
+            (and
+             (typep result 'cadr-ai:assistant-message)
+             (eq :aborted
+                 (cadr-ai:assistant-message-stop-reason result)))
+            (agent-shutdown-p agent))
+         (maybe-compact-agent agent))
        (return result)))))
-

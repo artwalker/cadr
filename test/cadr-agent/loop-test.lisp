@@ -72,6 +72,48 @@
                      (assistant-message-content
                       (second (agent-messages agent))))))))))
 
+(test goal17-agent-end-messages-exclude-preexisting-context
+  (let* ((old-user
+           (cadr-ai:make-user-message :content "old request"))
+         (old-assistant
+           (assistant
+            (list (make-text-content :text "old answer"))))
+         (*responses*
+           (list
+            (assistant
+             (list (make-text-content :text "new answer")))))
+         (*contexts* nil)
+         (events nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :messages (list old-user old-assistant)
+             :stream-function
+             (faux-stream '*responses* '*contexts*)
+             :on-event (lambda (event) (push event events)))))
+      (agent-prompt agent "new request")
+      (let* ((event
+               (find :agent-end events
+                     :key #'agent-event-type))
+             (messages
+               (cadr-agent:agent-event-messages event)))
+        (is (= 2 (length messages)))
+        (is
+         (string=
+          "new request"
+          (cadr-ai:user-message-content (first messages))))
+        (is
+         (string=
+          "new answer"
+          (cadr-ai:text-content-text
+           (first
+            (cadr-ai:assistant-message-content
+             (second messages))))))
+        (is-false (member old-user messages :test #'eq))
+        (is-false (member old-assistant messages :test #'eq))))))
+
 (test error-and-abort-stop-the-run-cleanly
   (dolist (reason '(:error :aborted))
     (let ((*responses* (list (assistant nil reason)))

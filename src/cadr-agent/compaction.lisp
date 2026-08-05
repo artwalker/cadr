@@ -1,16 +1,35 @@
 (in-package #:cadr-agent)
 
-(defun content-block-estimated-characters (block)
+(defun text-estimated-tokens (text)
+  (ceiling (utf16-code-unit-length text) 4))
+
+(defun text-and-image-content-estimated-characters (content)
+  (if (stringp content)
+      (utf16-code-unit-length content)
+      (reduce
+       #'+ content
+       :key
+       (lambda (block)
+         (cond
+           ((typep block 'cadr-ai:text-content)
+            (utf16-code-unit-length
+             (cadr-ai:text-content-text block)))
+           ((typep block 'cadr-ai:image-content) 4800)
+           (t 0)))
+       :initial-value 0)))
+
+(defun assistant-content-block-estimated-characters (block)
   (cond
     ((typep block 'cadr-ai:text-content)
-     (length (cadr-ai:text-content-text block)))
+     (utf16-code-unit-length
+      (cadr-ai:text-content-text block)))
     ((typep block 'cadr-ai:thinking-content)
-     (length (cadr-ai:thinking-content-thinking block)))
-    ((typep block 'cadr-ai:image-content)
-     4800)
+     (utf16-code-unit-length
+      (cadr-ai:thinking-content-thinking block)))
     ((typep block 'cadr-ai:tool-call)
-     (+ (length (cadr-ai:tool-call-name block))
-        (length
+     (+ (utf16-code-unit-length
+         (cadr-ai:tool-call-name block))
+        (utf16-code-unit-length
          (cadr-ai::stringify-json
           (json-safe-value
            (cadr-ai:tool-call-arguments block))))))
@@ -18,29 +37,33 @@
 
 (defun message-estimated-tokens (message)
   (ceiling
-   (max
-    1
-    (cond
-      ((typep message 'cadr-ai:user-message)
-       (let ((content
-               (cadr-ai:user-message-content message)))
-         (if (stringp content)
-             (length content)
-             (reduce #'+ content
-                     :key
-                     #'content-block-estimated-characters
-                     :initial-value 0))))
-      ((typep message 'cadr-ai:assistant-message)
-       (reduce #'+
-               (cadr-ai:assistant-message-content message)
-               :key #'content-block-estimated-characters
-               :initial-value 0))
-      ((typep message 'cadr-ai:tool-result-message)
-       (reduce #'+
-               (cadr-ai:tool-result-message-content message)
-               :key #'content-block-estimated-characters
-               :initial-value 0))
-      (t 0)))
+   (cond
+     ((typep message 'cadr-ai:user-message)
+      (text-and-image-content-estimated-characters
+       (cadr-ai:user-message-content message)))
+     ((typep message 'cadr-ai:assistant-message)
+      (reduce
+       #'+ (cadr-ai:assistant-message-content message)
+       :key #'assistant-content-block-estimated-characters
+       :initial-value 0))
+     ((typep message 'cadr-ai:tool-result-message)
+      (text-and-image-content-estimated-characters
+       (cadr-ai:tool-result-message-content message)))
+     ((typep message 'bash-execution-message)
+      (+ (utf16-code-unit-length
+          (bash-execution-message-command message))
+         (utf16-code-unit-length
+          (bash-execution-message-output message))))
+     ((typep message 'custom-agent-message)
+      (text-and-image-content-estimated-characters
+       (custom-agent-message-content message)))
+     ((typep message 'branch-summary-message)
+      (utf16-code-unit-length
+       (branch-summary-message-summary message)))
+     ((typep message 'compaction-summary-agent-message)
+      (utf16-code-unit-length
+       (compaction-summary-agent-message-summary message)))
+     (t 0))
    4))
 
 (defun valid-assistant-usage-p (message)
@@ -73,13 +96,28 @@
                 :initial-value 0))))
 
 (defun compaction-entry-estimated-tokens (entry)
-  (ecase (session-entry-type entry)
+  (case (session-entry-type entry)
     (:message
      (message-estimated-tokens
       (session-entry-message entry)))
     (:compaction
-     (message-estimated-tokens
-      (compaction-summary-message entry)))))
+     (text-estimated-tokens
+      (session-entry-summary entry)))
+    (:branch-summary
+     (text-estimated-tokens
+      (session-entry-summary entry)))
+    (:custom-message
+     (ceiling
+      (text-and-image-content-estimated-characters
+       (session-entry-content entry))
+      4))
+    (otherwise 0)))
+
+(defun session-context-estimated-tokens (session)
+  (reduce
+   #'+ (session-context-entries session)
+   :key #'compaction-entry-estimated-tokens
+   :initial-value 0))
 
 (defun compaction-cut-point (entries keep-recent-tokens)
   (let ((accumulated 0)
@@ -109,7 +147,7 @@
 (defun truncate-summary-tool-result (text)
   (if (<= (length text) 2000)
       text
-      (format nil "~A~%[... ~D characters truncated]"
+      (format nil "~A~%~%[... ~D more characters truncated]"
               (subseq text 0 2000)
               (- (length text) 2000))))
 
@@ -167,16 +205,18 @@
 (defun entries-summary-text (entries)
   (format
    nil "~{~A~^~%~%~}"
-   (loop for entry in entries
-         collect
-         (ecase (session-entry-type entry)
-           (:message
-            (message-summary-text
-             (session-entry-message entry)))
-           (:compaction
-            (format nil
-                    "[Previous compaction summary]: ~A"
-                    (session-entry-summary entry)))))))
+   (loop
+     for entry in entries
+     for text =
+       (case (session-entry-type entry)
+         (:message
+          (message-summary-text
+           (session-entry-message entry)))
+         (:compaction
+          (format nil
+                  "[Previous compaction summary]: ~A"
+                  (session-entry-summary entry))))
+     when text collect text)))
 
 (defun assistant-message-text (message)
   (format
@@ -186,33 +226,124 @@
          when (typep block 'cadr-ai:text-content)
            collect (cadr-ai:text-content-text block))))
 
+(defparameter +compaction-summarization-system-prompt+
+  "You are a context summarization assistant. Your task is to read a conversation between a user and an AI assistant, then produce a structured summary following the exact format specified.
+
+Do NOT continue the conversation. Do NOT respond to any questions in the conversation. ONLY output the structured summary.")
+
+(defparameter +compaction-summarization-prompt+
+  "The messages above are a conversation to summarize. Create a structured context checkpoint summary that another LLM will use to continue the work.
+
+Use this EXACT format:
+
+## Goal
+[What is the user trying to accomplish? Can be multiple items if the session covers different tasks.]
+
+## Constraints & Preferences
+- [Any constraints, preferences, or requirements mentioned by user]
+- [Or \"(none)\" if none were mentioned]
+
+## Progress
+### Done
+- [x] [Completed tasks/changes]
+
+### In Progress
+- [ ] [Current work]
+
+### Blocked
+- [Issues preventing progress, if any]
+
+## Key Decisions
+- **[Decision]**: [Brief rationale]
+
+## Next Steps
+1. [Ordered list of what should happen next]
+
+## Critical Context
+- [Any data, examples, or references needed to continue]
+- [Or \"(none)\" if not applicable]
+
+Keep each section concise. Preserve exact file paths, function names, and error messages.")
+
+(defparameter +compaction-update-summarization-prompt+
+  "The messages above are NEW conversation messages to incorporate into the existing summary provided in <previous-summary> tags.
+
+Update the existing structured summary with new information. RULES:
+- PRESERVE all existing information from the previous summary
+- ADD new progress, decisions, and context from the new messages
+- UPDATE the Progress section: move items from \"In Progress\" to \"Done\" when completed
+- UPDATE \"Next Steps\" based on what was accomplished
+- PRESERVE exact file paths, function names, and error messages
+- If something is no longer relevant, you may remove it
+
+Use this EXACT format:
+
+## Goal
+[Preserve existing goals, add new ones if the task expanded]
+
+## Constraints & Preferences
+- [Preserve existing, add new ones discovered]
+
+## Progress
+### Done
+- [x] [Include previously done items AND newly completed items]
+
+### In Progress
+- [ ] [Current work - update based on progress]
+
+### Blocked
+- [Current blockers - remove if resolved]
+
+## Key Decisions
+- **[Decision]**: [Brief rationale] (preserve all previous, add new)
+
+## Next Steps
+1. [Update based on current state]
+
+## Critical Context
+- [Preserve important context, add new if needed]
+
+Keep each section concise. Preserve exact file paths, function names, and error messages.")
+
 (defun generate-compaction-summary
-    (agent source-entries max-output-tokens
-     &optional custom-instructions (reason :manual))
-  (let* ((prompt
+    (agent messages max-output-tokens
+     &optional custom-instructions (reason :manual)
+               previous-summary)
+  (let* ((conversation
+           (serialize-conversation
+            (convert-agent-messages-to-llm messages)))
+         (base-prompt
+           (if previous-summary
+               +compaction-update-summarization-prompt+
+               +compaction-summarization-prompt+))
+         (base-prompt
+           (if (and custom-instructions
+                    (plusp (length custom-instructions)))
+               (format nil "~A~%~%Additional focus: ~A"
+                       base-prompt custom-instructions)
+               base-prompt))
+         (prompt
            (format
             nil
-            "Summarize the conversation below into a compact checkpoint for another coding agent. Preserve the user's goal, constraints, decisions, completed work, exact paths/symbols/errors, pending work, and anything needed to continue. Do not continue the conversation and do not answer its questions.~@[~%~%Additional focus: ~A~]~%~%~A"
-            (and
-             custom-instructions
-             (plusp
-              (length
-               (string-trim
-                '(#\Space #\Tab #\Newline #\Return)
-                custom-instructions)))
-             custom-instructions)
-            (entries-summary-text source-entries)))
+            "<conversation>~%~A~%</conversation>~%~%~A~A"
+            conversation
+            (if previous-summary
+                (format nil
+                        "<previous-summary>~%~A~%</previous-summary>~%~%"
+                        previous-summary)
+                "")
+            base-prompt))
          (response
            (complete-summarization
             agent
             (cadr-ai:make-context
              :system-prompt
-             "You produce faithful context checkpoint summaries."
+             +compaction-summarization-system-prompt+
              :messages
              (list
               (cadr-ai:make-user-message :content prompt))
              :tools nil)
-            (min max-output-tokens
+            (min (floor (* 4 max-output-tokens) 5)
                  (cadr-ai:model-max-tokens
                   (agent-model agent)))
             :compaction
@@ -232,12 +363,107 @@
        (or
         (cadr-ai:assistant-message-error-message response)
         "Unknown error")))
-    summary))
+    (values
+     summary
+     (and response
+          (cadr-ai:assistant-message-usage response)))))
 
-(defun effective-compaction-limit
-    (configured context-window divisor)
-  (min configured
-       (max 1 (floor context-window divisor))))
+(defparameter +turn-prefix-summarization-prompt+
+  "This is the PREFIX of a turn that was too large to keep. The SUFFIX (recent work) is retained.
+
+Summarize the prefix to provide context for the retained suffix:
+
+## Original Request
+[What did the user ask for in this turn?]
+
+## Early Progress
+- [Key decisions and work done in the prefix]
+
+## Context for Suffix
+- [Information needed to understand the retained recent work]
+
+Be concise. Focus on what's needed to understand the kept suffix.")
+
+(defun generate-turn-prefix-summary
+    (agent messages max-output-tokens reason)
+  (let* ((prompt
+           (format
+            nil "<conversation>~%~A~%</conversation>~%~%~A"
+            (serialize-conversation
+             (convert-agent-messages-to-llm messages))
+            +turn-prefix-summarization-prompt+))
+         (response
+           (complete-summarization
+            agent
+            (cadr-ai:make-context
+             :system-prompt
+             +compaction-summarization-system-prompt+
+             :messages
+             (list (cadr-ai:make-user-message :content prompt))
+             :tools nil)
+            (min (floor max-output-tokens 2)
+                 (cadr-ai:model-max-tokens
+                  (agent-model agent)))
+            :compaction
+            :reason reason))
+         (summary
+           (if response
+               (assistant-message-text response)
+               "")))
+    (when
+        (and
+         response
+         (eq :error
+             (cadr-ai:assistant-message-stop-reason response)))
+      (error
+       "Turn prefix summarization failed: ~A"
+       (or
+        (cadr-ai:assistant-message-error-message response)
+        "Unknown error")))
+    (values
+     summary
+     (and response
+          (cadr-ai:assistant-message-usage response)))))
+
+(defun optional-usage-value-sum (first second accessor)
+  (let ((first-value (funcall accessor first))
+        (second-value (funcall accessor second)))
+    (and (or first-value second-value)
+         (+ (or first-value 0)
+            (or second-value 0)))))
+
+(defun combine-compaction-usage (first second)
+  (let ((first-cost (cadr-ai:usage-cost first))
+        (second-cost (cadr-ai:usage-cost second)))
+    (cadr-ai:make-usage
+     :input (+ (cadr-ai:usage-input first)
+               (cadr-ai:usage-input second))
+     :output (+ (cadr-ai:usage-output first)
+                (cadr-ai:usage-output second))
+     :cache-read (+ (cadr-ai:usage-cache-read first)
+                    (cadr-ai:usage-cache-read second))
+     :cache-write (+ (cadr-ai:usage-cache-write first)
+                     (cadr-ai:usage-cache-write second))
+     :cache-write-1h
+     (optional-usage-value-sum
+      first second #'cadr-ai:usage-cache-write-1h)
+     :reasoning
+     (optional-usage-value-sum
+      first second #'cadr-ai:usage-reasoning)
+     :total (+ (cadr-ai:usage-total first)
+               (cadr-ai:usage-total second))
+     :cost
+     (cadr-ai:make-cost
+      :input (+ (cadr-ai:cost-input first-cost)
+                (cadr-ai:cost-input second-cost))
+      :output (+ (cadr-ai:cost-output first-cost)
+                 (cadr-ai:cost-output second-cost))
+      :cache-read (+ (cadr-ai:cost-cache-read first-cost)
+                     (cadr-ai:cost-cache-read second-cost))
+      :cache-write (+ (cadr-ai:cost-cache-write first-cost)
+                      (cadr-ai:cost-cache-write second-cost))
+      :total (+ (cadr-ai:cost-total first-cost)
+                (cadr-ai:cost-total second-cost))))))
 
 (defun compaction-entry-message (entry)
   (and (eq :message (session-entry-type entry))
@@ -330,6 +556,53 @@
          (run-extension-lifecycle-hooks
           host event :payload payload))))
 
+(defun generate-prepared-compaction-summary
+    (agent source-entries preparation reserve
+     custom-instructions reason)
+  (declare (ignore source-entries))
+  (multiple-value-bind (summary usage)
+      (if (and (getf preparation :is-split-turn-p)
+               (getf preparation :turn-prefix-messages))
+          (let ((history-text "No prior history.")
+                (history-usage nil))
+            (when (getf preparation :messages-to-summarize)
+              (multiple-value-setq
+                  (history-text history-usage)
+                (generate-compaction-summary
+                 agent
+                 (getf preparation :messages-to-summarize)
+                 reserve custom-instructions reason
+                 (getf preparation :previous-summary))))
+            (when (agent-aborted-p agent)
+              (return-from generate-prepared-compaction-summary
+                (values nil nil)))
+            (multiple-value-bind (prefix-text prefix-usage)
+                (generate-turn-prefix-summary
+                 agent
+                 (getf preparation :turn-prefix-messages)
+                 reserve reason)
+              (values
+               (format
+                nil
+                "~A~%~%---~%~%**Turn Context (split turn):**~%~%~A"
+                history-text prefix-text)
+               (if history-usage
+                   (combine-compaction-usage
+                    history-usage prefix-usage)
+                   prefix-usage))))
+          (generate-compaction-summary
+           agent (getf preparation :messages-to-summarize)
+           reserve custom-instructions reason
+           (getf preparation :previous-summary)))
+    (let ((file-ops (getf preparation :file-ops)))
+      (values
+       (concatenate
+        'string summary
+        (format-file-operations
+         (getf file-ops :read-files)
+         (getf file-ops :modified-files)))
+       usage))))
+
 (defun %compact-agent
     (agent &key force-p custom-instructions
                 (reason :manual) will-retry-p)
@@ -342,17 +615,13 @@
                  context-window
                  (plusp context-window))
       (return-from %compact-agent nil))
-    (let* ((messages (agent-messages agent))
+    (let* ((messages (session-messages session))
            (tokens-before
              (context-estimated-tokens messages))
            (reserve
-             (effective-compaction-limit
-              (agent-compaction-reserve-tokens agent)
-              context-window 4))
+             (agent-compaction-reserve-tokens agent))
            (keep-recent
-             (effective-compaction-limit
-              (agent-compaction-keep-recent-tokens agent)
-              context-window 4)))
+             (agent-compaction-keep-recent-tokens agent)))
       (unless
           (or force-p
               (> tokens-before
@@ -404,19 +673,28 @@
                             (getf before :compaction))))
                 (when (or (getf before :cancel-p)
                           (extension-cancellation-aborted-p signal))
-                  (emit-agent-event agent :compaction-end)
+                  (emit-agent-event
+                   agent :compaction-end
+                   :reason reason
+                   :result nil
+                   :aborted t
+                   :will-retry nil)
                   (return-from %compact-agent nil))
                 (unless (usable-extension-compaction-p
                          extension-compaction)
                   (setf extension-compaction nil))
                 (let* ((from-extension-p
                          (not (null extension-compaction)))
+                       (generated
+                         (unless from-extension-p
+                           (multiple-value-list
+                            (generate-prepared-compaction-summary
+                             agent source-entries preparation reserve
+                             custom-instructions reason))))
                        (summary
                          (if from-extension-p
                              (getf extension-compaction :summary)
-                             (generate-compaction-summary
-                              agent source-entries reserve
-                              custom-instructions reason)))
+                             (first generated)))
                        (first-kept-entry-id
                          (if from-extension-p
                              (getf extension-compaction
@@ -426,10 +704,23 @@
                          (if from-extension-p
                              (getf extension-compaction
                                    :tokens-before)
-                             tokens-before)))
+                             tokens-before))
+                       (usage
+                         (if from-extension-p
+                             (getf extension-compaction :usage)
+                             (second generated)))
+                       (details
+                         (if from-extension-p
+                             (getf extension-compaction :details)
+                             (getf preparation :file-ops))))
                 (when
                     (extension-cancellation-aborted-p signal)
-                  (emit-agent-event agent :compaction-end)
+                  (emit-agent-event
+                   agent :compaction-end
+                   :reason reason
+                   :result nil
+                   :aborted t
+                   :will-retry nil)
                   (return-from %compact-agent nil))
                 (assert-agent-not-shutdown agent)
                 (let* ((entry-id
@@ -437,12 +728,8 @@
                           session summary source-ids
                           first-kept-entry-id
                           effective-tokens-before
-                          :details
-                          (and from-extension-p
-                               (getf extension-compaction :details))
-                          :usage
-                          (and from-extension-p
-                               (getf extension-compaction :usage))
+                          :details details
+                          :usage usage
                           :from-hook-p from-extension-p))
                        (entry
                          (gethash entry-id
@@ -457,14 +744,40 @@
                     (not (null will-retry-p)))))
                 (setf (agent-messages agent)
                       (session-messages session))
-                (emit-agent-event
-                 agent :compaction-end)
-                t))
+                (let ((result
+                        (list
+                         :summary summary
+                         :first-kept-entry-id first-kept-entry-id
+                         :tokens-before effective-tokens-before
+                         :estimated-tokens-after
+                         (session-context-estimated-tokens session)
+                         :usage usage
+                         :details details)))
+                  (emit-agent-event
+                   agent :compaction-end
+                   :reason reason
+                   :result result
+                   :aborted nil
+                   :will-retry (not (null will-retry-p)))
+                  result)))
             (error (condition)
               (emit-agent-event
-               agent :compaction-error
+               agent :compaction-end
+               :reason reason
+               :result nil
+               :aborted nil
+               :will-retry nil
                :error-message
-               (princ-to-string condition))
+               (format
+                nil
+                (case reason
+                  (:overflow
+                   "Context overflow recovery failed: ~A")
+                  (:threshold
+                   "Auto-compaction failed: ~A")
+                  (otherwise
+                   "Compaction failed: ~A"))
+                (princ-to-string condition)))
               nil)))))))
 
 (defun compact-agent
@@ -482,7 +795,7 @@
 
 (defun maybe-compact-agent (agent)
   (when (agent-auto-compact-p agent)
-    (compact-agent agent :reason :threshold)))
+    (%compact-agent agent :reason :threshold)))
 
 (defun context-overflow-message-p (message)
   (when

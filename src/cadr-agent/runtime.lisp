@@ -4,6 +4,8 @@
   type
   message
   messages
+  result
+  aborted
   stream-event
   tool-call
   tool-result
@@ -83,6 +85,8 @@
                          &key
                            message
                            messages
+                           result
+                           aborted
                            stream-event
                            tool-call
                            tool-result
@@ -104,6 +108,8 @@
            :type type
            :message message
            :messages messages
+           :result result
+           :aborted aborted
            :stream-event stream-event
            :tool-call tool-call
            :tool-result tool-result

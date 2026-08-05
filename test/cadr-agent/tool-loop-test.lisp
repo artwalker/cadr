@@ -43,6 +43,7 @@
                  'tool-result-message))
       (is (not (tool-result-message-is-error
                 (third (agent-messages agent)))))
+      (setf events (nreverse events))
       (is (equal
            '(:agent-start :turn-start :message-start :message-end
              :message-start :message-end
@@ -50,7 +51,16 @@
              :message-start :message-end :turn-end
              :turn-start :message-start :message-update :message-end
              :turn-end :agent-end :agent-settled)
-           (event-types (nreverse events))))
+           (event-types events)))
+      (let ((messages
+              (cadr-agent:agent-event-messages
+               (find :agent-end events
+                     :key #'agent-event-type))))
+        (is (= 4 (length messages)))
+        (is (typep (first messages) 'cadr-ai:user-message))
+        (is (typep (second messages) 'cadr-ai:assistant-message))
+        (is (typep (third messages) 'cadr-ai:tool-result-message))
+        (is (typep (fourth messages) 'cadr-ai:assistant-message)))
       (let ((second-context (first *contexts*)))
         (is (typep (third (cadr-ai:context-messages second-context))
                    'tool-result-message))))))

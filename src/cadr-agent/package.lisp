@@ -93,6 +93,8 @@
    #:agent-event-type
    #:agent-event-message
    #:agent-event-messages
+   #:agent-event-result
+   #:agent-event-aborted
    #:agent-event-stream-event
    #:agent-event-tool-call
    #:agent-event-tool-result

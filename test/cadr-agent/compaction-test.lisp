@@ -142,24 +142,38 @@
                 session
                 (cadr-ai:make-user-message
                  :content
-                 (format nil "old context ~120@{x~}"))))
+                 (concatenate
+                  'string "old context "
+                  (make-string 120 :initial-element #\x)))))
              (_old-assistant
                (cadr-agent:session-append-message
                 session
                 (compaction-test-response
-                 (format nil "old answer ~120@{y~}")
+                 (concatenate
+                  'string "old answer "
+                  (make-string 120 :initial-element #\y))
                  :stop)))
              (*responses*
                (list
                 (compaction-test-response summary :stop)
-                (compaction-test-response "continued" :stop)))
+                (cadr-ai:make-assistant-message
+                 :content
+                 (list
+                  (cadr-ai:make-text-content :text "continued"))
+                 :api :openai-responses
+                 :provider :openai
+                 :model "tiny"
+                 :usage
+                 (cadr-ai:make-usage
+                  :input 30 :output 2 :total 32)
+                 :stop-reason :stop)))
              (*contexts* nil)
              (agent
                (cadr-agent:make-agent
                 :provider :mock
                 :model (compaction-test-model)
                 :session session
-                :compaction-reserve-tokens 20
+                :compaction-reserve-tokens 21
                 :compaction-keep-recent-tokens 4
                 :stream-function
                 (faux-stream '*responses* '*contexts*))))
@@ -302,10 +316,10 @@
         (is-false (cadr-agent:agent-busy-p agent))
         (is
          (string=
-          "Summarization failed: summary provider failed"
+          "Context overflow recovery failed: Summarization failed: summary provider failed"
           (cadr-agent:agent-event-error-message
            (find
-            :compaction-error events
+            :compaction-end events
             :key #'cadr-agent:agent-event-type)))))
       (let ((continued
               (cadr-agent:agent-prompt agent "continue anyway")))
@@ -419,7 +433,9 @@
               session
               (cadr-ai:make-user-message
                :content
-               (format nil "old-secret-user ~120@{x~}"))))
+               (concatenate
+                'string "old-secret-user "
+                (make-string 120 :initial-element #\x)))))
            (old-assistant-id
              (cadr-agent:session-append-message
               session
@@ -428,7 +444,9 @@
                (list
                 (cadr-ai:make-text-content
                  :text
-                 (format nil "old-secret-assistant ~120@{y~}")))
+                 (concatenate
+                  'string "old-secret-assistant "
+                  (make-string 120 :initial-element #\y))))
                :api :openai-responses
                :provider :openai
                :model "tiny"
@@ -496,7 +514,7 @@
               :model model
               :session session
               :extension-host host
-              :compaction-reserve-tokens 20
+              :compaction-reserve-tokens 21
               :compaction-keep-recent-tokens 4
               :stream-function
               (faux-stream '*responses* '*contexts*))))
@@ -536,9 +554,10 @@
           (is (member old-user-id
                       (cadr-agent:session-entry-source-ids compaction)
                       :test #'string=))
-          (is (member old-assistant-id
-                      (cadr-agent:session-entry-source-ids compaction)
-                      :test #'string=))
+          (is-false
+           (member old-assistant-id
+                   (cadr-agent:session-entry-source-ids compaction)
+                   :test #'string=))
           (is (stringp
                (cadr-agent:session-entry-first-kept-id
                 compaction)))
@@ -787,6 +806,43 @@
           (uiop:delete-directory-tree
            root :validate t :if-does-not-exist :ignore))))))
 
+(test goal17-compaction-ignores-thinking-level-metadata
+  (multiple-value-bind (agent session root)
+      (goal17-compaction-fixture
+       "thinking-level-metadata"
+       (lambda (provider model context on-event
+                &key max-tokens abort-p cache-retention session-id)
+         (declare
+          (ignore provider model context on-event max-tokens
+                  abort-p cache-retention session-id))
+         (compaction-test-response "summary" :stop))
+       nil)
+    (unwind-protect
+         (progn
+           (cadr-agent:session-append-thinking-level-change
+            session "high")
+           (let ((metadata
+                   (find :thinking-level-change
+                         (cadr-agent:session-entries session)
+                         :key #'cadr-agent:session-entry-type)))
+             (is
+              (zerop
+               (cadr-agent::compaction-entry-estimated-tokens
+                metadata)))
+             (is-false
+              (search "high"
+                      (cadr-agent::entries-summary-text
+                       (list metadata)))))
+           (is-true
+            (cadr-agent:compact-agent
+             agent :force-p t :reason :manual))
+           (is
+            (find :compaction
+                  (cadr-agent:session-entries session)
+                  :key #'cadr-agent:session-entry-type)))
+      (uiop:delete-directory-tree
+       root :validate t :if-does-not-exist :ignore))))
+
 (test goal17-compaction-abort-reaches-summary-request-and-preserves-session
   (let ((events nil)
         (observed-abort-p nil)
@@ -816,7 +872,18 @@
                       (cadr-agent:session-entries session)
                       :key #'cadr-agent:session-entry-type)))
              (is (find :compaction-end events
-                       :key #'cadr-agent:agent-event-type)))
+                       :key #'cadr-agent:agent-event-type))
+             (let ((event
+                     (find :compaction-end events
+                           :key #'cadr-agent:agent-event-type)))
+               (is (eq :manual
+                       (cadr-agent:agent-event-reason event)))
+               (is-true
+                (cadr-agent:agent-event-aborted event))
+               (is-false
+                (cadr-agent:agent-event-result event))
+               (is-false
+                (cadr-agent:agent-event-error-message event))))
         (uiop:delete-directory-tree
          root :validate t :if-does-not-exist :ignore)))))
 
@@ -860,7 +927,15 @@
                              '(:summarization-retry-scheduled
                                :summarization-retry-attempt-start
                                :summarization-retry-finished)))
-                   (reverse (mapcar #'cadr-agent:agent-event-type events))))))
+                   (reverse (mapcar #'cadr-agent:agent-event-type events)))))
+             (let ((finished
+                     (find :summarization-retry-finished events
+                           :key #'cadr-agent:agent-event-type)))
+               (is-false (cadr-agent:agent-event-success finished))
+               (is-false (cadr-agent:agent-event-attempt finished))
+               (is-false (cadr-agent:agent-event-final-error finished))
+               (is-false (cadr-agent:agent-event-source finished))
+               (is-false (cadr-agent:agent-event-reason finished))))
         (uiop:delete-directory-tree
          root :validate t :if-does-not-exist :ignore)))))
 
@@ -934,5 +1009,375 @@
              (is (every (lambda (call) (eq :none (first call))) calls))
              (is (string= (second (first calls))
                           (second (second calls)))))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore)))))
+
+(test goal17-summary-tool-result-truncation-marker-matches-baseline-exactly
+  (let* ((text (make-string 2001 :initial-element #\x))
+         (expected
+           (concatenate
+            'string
+            (make-string 2000 :initial-element #\x)
+            (format nil "~%~%[... 1 more characters truncated]"))))
+    (is
+     (string=
+      expected
+      (cadr-agent::truncate-summary-tool-result text)))))
+
+(test goal17-split-turn-compaction-uses-two-summaries-and-combines-usage
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (flet ((response (text input output)
+             (cadr-ai:make-assistant-message
+              :content
+              (list (cadr-ai:make-text-content :text text))
+              :api :openai-responses :provider :openai :model "split"
+              :usage
+              (cadr-ai:make-usage
+               :input input :output output :total (+ input output))
+              :stop-reason :stop)))
+      (let* ((session
+               (cadr-agent:create-session
+                :directory sessions :cwd cwd :id "goal17-split-turn"))
+             (_history-user
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-user-message :content "history request")))
+             (_history-assistant
+               (cadr-agent:session-append-message
+                session
+                (compaction-test-response "history answer" :stop)))
+             (_prefix-user
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-user-message :content "large current request")))
+             (kept-id
+               (cadr-agent:session-append-message
+                session
+                (compaction-test-response
+                 (make-string 80 :initial-element #\k) :stop)))
+             (*responses*
+               (list
+                (response "Summary of earlier context." 217 7)
+                (response "Summary of the split turn prefix." 420 9)))
+             (*contexts* nil)
+             (max-token-values nil)
+             (events nil)
+             (model
+               (cadr-ai:make-model
+                :id "split" :provider :openai :api :openai-responses
+                :base-url "https://example.invalid"
+                :max-tokens 100 :context-window 100))
+             (agent
+               (cadr-agent:make-agent
+                :provider :mock :model model :session session
+                :compaction-reserve-tokens 20
+                :compaction-keep-recent-tokens 4
+                :stream-function
+                (lambda (provider request-model context on-event
+                         &key max-tokens abort-p cache-retention session-id)
+                  (declare
+                   (ignore provider request-model on-event abort-p
+                           cache-retention session-id))
+                  (push context *contexts*)
+                  (push max-tokens max-token-values)
+                  (pop *responses*))
+                :on-event (lambda (event) (push event events)))))
+        (declare
+         (ignore _history-user _history-assistant _prefix-user)
+         (special *responses* *contexts*))
+        (let* ((result
+                 (cadr-agent:compact-agent
+                  agent :force-p t :reason :manual))
+               (expected
+                 (format
+                  nil
+                  "Summary of earlier context.~%~%---~%~%**Turn Context (split turn):**~%~%Summary of the split turn prefix."))
+               (usage (getf result :usage))
+               (event
+                 (find :compaction-end events
+                       :key #'cadr-agent:agent-event-type)))
+          (is (= 2 (length *contexts*)))
+          (is (equal '(16 10) (nreverse max-token-values)))
+          (is (string= expected (getf result :summary)))
+          (is (string= kept-id (getf result :first-kept-entry-id)))
+          (is (= 637 (cadr-ai:usage-input usage)))
+          (is (= 16 (cadr-ai:usage-output usage)))
+          (is (= 653 (cadr-ai:usage-total usage)))
+          (is (eq result (cadr-agent:agent-event-result event)))
+          (is (string= expected
+                       (cadr-agent:session-entry-summary
+                        (find :compaction
+                              (cadr-agent:session-entries session)
+                              :key #'cadr-agent:session-entry-type))))
+          (is (null *responses*)))))))
+
+(test goal17-small-windows-use-unmodified-reserve-and-eighty-percent-summary-budget
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "goal17-small-window"))
+           (_old-user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content "old context to summarize")))
+           (_old-assistant
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list (cadr-ai:make-text-content :text "old answer"))
+               :api :openai-responses :provider :openai :model "small"
+               :usage (cadr-ai:make-usage :input 16000 :total 16000)
+               :stop-reason :stop)))
+           (_tail
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content (make-string 81000 :initial-element #\x))))
+           (observed-max-tokens nil)
+           (model
+             (cadr-ai:make-model
+              :id "small" :provider :openai :api :openai-responses
+              :base-url "https://example.invalid"
+              :max-tokens 32000 :context-window 32000))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock :model model :session session
+              :stream-function
+              (lambda (provider request-model context on-event
+                       &key max-tokens abort-p cache-retention session-id)
+                (declare
+                 (ignore provider request-model context on-event abort-p
+                         cache-retention session-id))
+                (setf observed-max-tokens max-tokens)
+                (compaction-test-response "summary" :stop)))))
+      (declare (ignore _old-user _old-assistant _tail))
+      (is-true
+       (cadr-agent:compact-agent agent :reason :threshold))
+      (is (= 13107 observed-max-tokens)))))
+
+(test goal17-threshold-compaction-runs-after-the-completing-agent-run
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "goal17-post-run-compaction"))
+           (_old-user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content (make-string 120 :initial-element #\x))))
+           (_old-assistant
+             (cadr-agent:session-append-message
+              session
+              (compaction-test-response "old" :stop)))
+           (*responses*
+             (list
+              (cadr-ai:make-assistant-message
+               :content (list (cadr-ai:make-text-content :text "answer"))
+               :api :openai-responses :provider :openai :model "tiny"
+               :usage (cadr-ai:make-usage :input 90 :total 90)
+               :stop-reason :stop)
+              (compaction-test-response "history summary" :stop)
+              (compaction-test-response "turn prefix summary" :stop)))
+           (*contexts* nil)
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock :model (compaction-test-model)
+              :session session
+              :compaction-reserve-tokens 20
+              :compaction-keep-recent-tokens 1
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare
+       (ignore _old-user _old-assistant)
+       (special *responses* *contexts*))
+      (let ((result (cadr-agent:agent-prompt agent "current request")))
+        (is
+         (string=
+          "answer"
+          (cadr-ai:text-content-text
+           (first (cadr-ai:assistant-message-content result)))))
+        (is (= 3 (length *contexts*)))
+        (is
+         (= 1
+            (count :compaction
+                   (cadr-agent:session-entries session)
+                   :key #'cadr-agent:session-entry-type)))
+        (is (null *responses*))))))
+
+(test goal17-threshold-compaction-runs-after-a-final-nonretryable-error
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "goal17-post-error-compaction"))
+           (_old-user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content (make-string 120 :initial-element #\x))))
+           (_old-assistant
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list (cadr-ai:make-text-content :text "old"))
+               :api :openai-responses :provider :openai :model "tiny"
+               :usage (cadr-ai:make-usage :input 70 :total 70)
+               :stop-reason :stop)))
+           (*responses*
+             (list
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text (make-string 80 :initial-element #\e)))
+               :api :openai-responses :provider :openai :model "tiny"
+               :usage (cadr-ai:make-usage)
+               :stop-reason :error
+               :error-message "invalid request")
+              (compaction-test-response "history summary" :stop)
+              (compaction-test-response "turn prefix summary" :stop)))
+           (*contexts* nil)
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock :model (compaction-test-model)
+              :session session
+              :compaction-reserve-tokens 20
+              :compaction-keep-recent-tokens 4
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (declare
+       (ignore _old-user _old-assistant)
+       (special *responses* *contexts*))
+      (let ((result (cadr-agent:agent-prompt agent "current request")))
+        (is
+         (eq :error
+             (cadr-ai:assistant-message-stop-reason result)))
+        (is (= 3 (length *contexts*)))
+        (is
+         (= 1
+            (count :compaction
+                   (cadr-agent:session-entries session)
+                   :key #'cadr-agent:session-entry-type)))
+        (is (null *responses*))))))
+
+(test goal17-pre-prompt-compaction-precedes-the-new-turn
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "goal17-pre-prompt-compaction"))
+           (_old-user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message :content "old request")))
+           (_old-assistant
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-assistant-message
+               :content
+               (list
+                (cadr-ai:make-text-content
+                 :text (make-string 40 :initial-element #\a)))
+               :api :openai-responses :provider :openai :model "tiny"
+               :usage (cadr-ai:make-usage :input 90 :total 90)
+               :stop-reason :stop)))
+           (*responses*
+             (list
+              (compaction-test-response "summary" :stop)
+              (compaction-test-response "new answer" :stop)))
+           (*contexts* nil)
+           (events nil)
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock :model (compaction-test-model)
+              :session session
+              :compaction-reserve-tokens 20
+              :compaction-keep-recent-tokens 4
+              :stream-function (faux-stream '*responses* '*contexts*)
+              :on-event (lambda (event) (push event events)))))
+      (declare
+       (ignore _old-user _old-assistant)
+       (special *responses* *contexts*))
+      (cadr-agent:agent-prompt agent "new request")
+      (let* ((types
+               (mapcar #'cadr-agent:agent-event-type
+                       (nreverse events)))
+             (compaction-position
+               (position :compaction-start types))
+             (turn-position (position :turn-start types)))
+        (is (integerp compaction-position))
+        (is (integerp turn-position))
+        (is (< compaction-position turn-position)))
+      (is
+       (not
+        (context-contains-text-p
+         (first (nreverse *contexts*)) "new request"))))))
+
+(test goal17-threshold-failure-and-second-overflow-use-baseline-guidance
+  (let ((events nil))
+    (multiple-value-bind (agent session root)
+        (goal17-compaction-fixture
+         "threshold-failure-copy"
+         (lambda (provider model context on-event
+                  &key max-tokens abort-p cache-retention session-id)
+           (declare
+            (ignore provider model context on-event max-tokens abort-p
+                    cache-retention session-id))
+           (compaction-test-response nil :error "invalid request"))
+         (lambda (event) (push event events)))
+      (declare (ignore session))
+      (unwind-protect
+           (progn
+             (is-false
+              (cadr-agent:compact-agent
+               agent :force-p t :reason :threshold))
+             (is
+              (string=
+               "Auto-compaction failed: Summarization failed: invalid request"
+               (cadr-agent:agent-event-error-message
+                (find :compaction-end events
+                      :key #'cadr-agent:agent-event-type)))))
+        (uiop:delete-directory-tree
+         root :validate t :if-does-not-exist :ignore))))
+  (let ((events nil)
+        (*responses*
+          (list
+           (compaction-test-response
+            nil :error "context_length_exceeded")
+           (compaction-test-response "summary" :stop)
+           (compaction-test-response
+            nil :error "context_length_exceeded")))
+        (*contexts* nil))
+    (declare (special *responses* *contexts*))
+    (multiple-value-bind (agent session root)
+        (goal17-compaction-fixture
+         "second-overflow-guidance"
+         (faux-stream '*responses* '*contexts*)
+         (lambda (event) (push event events)))
+      (declare (ignore session))
+      (setf (cadr-agent::agent-auto-compact-p agent) nil)
+      (unwind-protect
+           (progn
+             (let ((result
+                     (cadr-agent:agent-prompt agent "overflow twice")))
+               (is
+                (eq :error
+                    (cadr-ai:assistant-message-stop-reason result))))
+             (is
+              (string=
+               "Context overflow recovery failed after one compact-and-retry attempt. Try reducing context or switching to a larger-context model."
+               (cadr-agent:agent-event-error-message
+                (find :compaction-end events
+                      :key #'cadr-agent:agent-event-type)))))
         (uiop:delete-directory-tree
          root :validate t :if-does-not-exist :ignore)))))

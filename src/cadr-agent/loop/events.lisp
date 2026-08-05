@@ -2,6 +2,8 @@
 
 (defvar *agent-run-system-prompt* :use-agent-system-prompt)
 
+(defvar *agent-run-new-messages* nil)
+
 (defparameter +non-retryable-assistant-error-pattern+
   (cl-ppcre:create-scanner
    "(GoUsageLimitError|FreeUsageLimitError|Monthly usage limit reached|available balance|insufficient_quota|out of budget|quota exceeded|billing)"
@@ -107,6 +109,8 @@
           (lifecycle-message-end agent message)))
     (emit-agent-event
      agent :message-end :message final)
+    (when *agent-run-new-messages*
+      (vector-push-extend final *agent-run-new-messages*))
     (when
         (and
          (typep final 'cadr-ai:assistant-message)
@@ -163,4 +167,3 @@
   (remove-if-not
    (lambda (block) (typep block 'cadr-ai:tool-call))
    (cadr-ai:assistant-message-content message)))
-

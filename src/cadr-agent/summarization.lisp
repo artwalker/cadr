@@ -43,20 +43,22 @@
     (let ((response
             (cadr-ai:retry-assistant-call
              (lambda ()
-               (or
-                (funcall
-                 (agent-stream-function agent)
-                 (agent-provider agent)
-                 (agent-model agent)
-                 context
-                 (lambda (event) (declare (ignore event)))
-                 :max-tokens max-tokens
-                 :cache-retention :none
-                 :session-id session-id
-                 :abort-p (lambda () (agent-aborted-p agent)))
-                (progn
-                  (setf no-response-p t)
-                  (make-empty-aborted-summary-response agent))))
+               (if (agent-aborted-p agent)
+                   (make-empty-aborted-summary-response agent)
+                   (or
+                    (funcall
+                     (agent-stream-function agent)
+                     (agent-provider agent)
+                     (agent-model agent)
+                     context
+                     (lambda (event) (declare (ignore event)))
+                     :max-tokens max-tokens
+                     :cache-retention :none
+                     :session-id session-id
+                     :abort-p (lambda () (agent-aborted-p agent)))
+                    (progn
+                      (setf no-response-p t)
+                      (make-empty-aborted-summary-response agent)))))
              (summarization-retry-policy agent)
              :abort-p (lambda () (agent-aborted-p agent))
              :sleep-function
@@ -78,9 +80,7 @@
                 :reason reason))
              :on-retry-finished
              (lambda (success attempt final-error)
+               (declare (ignore success attempt final-error))
                (emit-agent-event
-                agent :summarization-retry-finished
-                :success success
-                :attempt attempt
-                :final-error final-error)))))
+                agent :summarization-retry-finished)))))
       (unless no-response-p response))))

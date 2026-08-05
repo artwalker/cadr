@@ -75,6 +75,23 @@ second" (cadr-ai:content-text content)))
              (:finished t 2))
            (nreverse events))))))
 
+(test goal17-retry-classifier-matches-the-baseline-transient-pattern-matrix
+  (dolist
+      (text
+       '("rate_limit"
+         "service_unavailable"
+         "upstream server-error"
+         "internal_server_error"
+         "provider_returned_error"
+         "network:error"
+         "connection.error"
+         "request time out"
+         "websocket_closed"
+         "websocket:error"))
+    (is-true
+     (cadr-ai:retryable-assistant-error-p
+      (utility-error-message text)))))
+
 (test context-token-estimation-rejects-stale-usage
   (let* ((old
            (cadr-ai:make-assistant-message

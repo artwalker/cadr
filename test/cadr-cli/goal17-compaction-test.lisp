@@ -101,3 +101,18 @@
      (string=
       "Context overflow detected, Auto-compacting... (escape to cancel)"
       (cadr-cli::tui-state-status-message state)))))
+
+(test goal17-threshold-compaction-failure-copy-is-not-reprefixed
+  (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::tui-handle-agent-event
+     state
+     (cadr-agent::make-agent-event
+      :type :compaction-end
+      :reason :threshold
+      :error-message
+      "Auto-compaction failed: Summarization failed: invalid request"))
+    (is
+     (string=
+      "Auto-compaction failed: Summarization failed: invalid request"
+      (cadr-cli::tui-entry-text
+       (car (last (cadr-cli::tui-state-entries state))))))))

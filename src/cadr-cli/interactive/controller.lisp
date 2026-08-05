@@ -1241,6 +1241,9 @@
                    :compaction-end
                    (cadr-agent:agent-event-type
                     event))
+                  (null
+                   (cadr-agent:agent-event-error-message
+                    event))
                   session-state-function)
                  (multiple-value-bind
                        (display-messages

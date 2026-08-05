@@ -59,6 +59,25 @@
                 collect
                 (cadr-agent::agent-event-will-retry
                  event))))
+      (let ((runs
+              (loop for event in events
+                    when (eq :agent-end
+                             (agent-event-type event))
+                      collect (cadr-agent:agent-event-messages event))))
+        (is (= 2 (length (first runs))))
+        (is (typep (first (first runs))
+                   'cadr-ai:user-message))
+        (is (eq :error
+                (cadr-ai:assistant-message-stop-reason
+                 (second (first runs)))))
+        (is (= 1 (length (second runs))))
+        (is
+         (string=
+          "recovered"
+          (cadr-ai:text-content-text
+           (first
+            (cadr-ai:assistant-message-content
+             (first (second runs))))))))
       (is
        (equal
         '((:start 1 3 0 "overloaded_error")

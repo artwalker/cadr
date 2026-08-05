@@ -10,27 +10,75 @@
     "quota exceeded"
     "billing"))
 
-(defparameter +retryable-assistant-error-fragments+
-  '("overloaded" "rate limit" "rate-limit" "ratelimit"
-    "too many requests" "429" "500" "502" "503" "504" "524"
-    "service unavailable" "server error" "internal error"
-    "provider returned error" "network error" "connection error"
-    "connection refused" "connection lost" "other side closed"
-    "fetch failed" "getaddrinfo" "enotfound" "eai_again"
-    "upstream connect" "reset before headers" "socket hang up"
-    "socket connection was closed" "timed out" "timeout"
-    "terminated" "websocket closed" "websocket error"
+(defparameter +retryable-assistant-error-patterns+
+  '("overloaded" "rate.?limit" "too many requests"
+    "429" "500" "502" "503" "504" "524"
+    "service.?unavailable" "server.?error" "internal.?error"
+    "provider.?returned.?error" "network.?error"
+    "connection.?error" "connection.?refused"
+    "connection.?lost" "other side closed" "fetch failed"
+    "getaddrinfo" "ENOTFOUND" "EAI_AGAIN" "upstream.?connect"
+    "reset before headers" "socket hang up"
+    "socket connection was closed" "timed? out" "timeout"
+    "terminated" "websocket.?closed" "websocket.?error"
     "ended without" "stream ended before message_stop"
     "stream ended before a terminal response event"
     "http2 request did not get a response" "retry delay"
     "you can retry your request" "try your request again"
-    "please retry your request" "resourceexhausted"))
+    "please retry your request" "ResourceExhausted"))
 
 (defun text-contains-any-p (text fragments)
   (some
    (lambda (fragment)
      (search fragment text :test #'char-equal))
    fragments))
+
+(defun retry-pattern-matches-at-p
+    (pattern text pattern-index text-index)
+  (cond
+    ((= pattern-index (length pattern)) t)
+    ((>= text-index (length text))
+     (and
+      (< (1+ pattern-index) (length pattern))
+      (char= #\? (char pattern (1+ pattern-index)))
+      (retry-pattern-matches-at-p
+       pattern text (+ pattern-index 2) text-index)))
+    (t
+     (let* ((pattern-character
+              (char pattern pattern-index))
+            (optional-p
+              (and
+               (< (1+ pattern-index) (length pattern))
+               (char= #\? (char pattern (1+ pattern-index)))))
+            (matches-p
+              (or
+               (char= #\. pattern-character)
+               (char-equal
+                pattern-character
+                (char text text-index)))))
+       (if optional-p
+           (or
+            (retry-pattern-matches-at-p
+             pattern text (+ pattern-index 2) text-index)
+            (and
+             matches-p
+             (retry-pattern-matches-at-p
+              pattern text (+ pattern-index 2) (1+ text-index))))
+           (and
+            matches-p
+            (retry-pattern-matches-at-p
+             pattern text (1+ pattern-index) (1+ text-index))))))))
+
+(defun text-matches-retry-pattern-p (text pattern)
+  (loop for index from 0 to (length text)
+        thereis
+        (retry-pattern-matches-at-p pattern text 0 index)))
+
+(defun text-matches-any-retry-pattern-p (text patterns)
+  (some
+   (lambda (pattern)
+     (text-matches-retry-pattern-p text pattern))
+   patterns))
 
 (defun retryable-assistant-error-p (message)
   (let ((text (assistant-message-error-message message)))
@@ -40,8 +88,8 @@
          (not
           (text-contains-any-p
            text +non-retryable-assistant-error-fragments+))
-         (text-contains-any-p
-          text +retryable-assistant-error-fragments+))))
+         (text-matches-any-retry-pattern-p
+          text +retryable-assistant-error-patterns+))))
 
 (defstruct retry-policy
   (enabled-p t :type boolean)

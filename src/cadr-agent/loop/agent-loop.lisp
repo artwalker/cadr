@@ -4,8 +4,7 @@
   (run-agent-lifecycle agent :agent-start)
   (emit-agent-event agent :agent-start)
   (begin-agent-turn agent 1 initial-messages)
-  (loop with overflow-recovery-attempted-p = nil
-        for turn from 1
+  (loop for turn from 1
         do
         (when (> turn (agent-max-turns agent))
           (let ((message (turn-limit-message agent)))
@@ -24,16 +23,11 @@
               (emit-agent-end agent)
               (return-from run-agent-loop
                 final-message))))
-        (let* ((session (agent-session agent))
-               (parent-leaf-id
-                 (and session
-                      (session-leaf-id session)))
-               (streamed-message (stream-assistant agent))
+        (let* ((streamed-message (stream-assistant agent))
                (calls
                  (assistant-tool-calls streamed-message))
                (results nil)
                (tool-hook-messages nil)
-               (retry-overflow-p nil)
                (terminal-p
                  (member
                   (cadr-ai:assistant-message-stop-reason
@@ -70,68 +64,38 @@
              agent :turn-end
              :message message
              :tool-results results)
-            (when
-                (and session
-                     parent-leaf-id
-                     (not overflow-recovery-attempted-p)
-                     (context-overflow-message-p
-                      streamed-message))
-              (let ((error-leaf-id
-                      (session-leaf-id session)))
-                (setf
-                 overflow-recovery-attempted-p t)
-                (session-branch session parent-leaf-id)
-                (setf
-                 (agent-messages agent)
-                 (session-messages session))
-                (if
-                    (compact-agent
-                     agent :force-p t
-                     :reason :overflow
-                     :will-retry-p t)
-                    (progn
-                      (setf retry-overflow-p t)
-                      (begin-agent-turn
-                       agent (1+ turn) nil))
-                    (progn
-                      (session-branch
-                       session error-leaf-id)
-                      (setf
-                       (agent-messages agent)
-                       (session-messages session))))))
-            (unless retry-overflow-p
-              (cond
-                (terminal-p
-                 (emit-agent-end agent)
-                 (return-from run-agent-loop message))
-                (t
-                 (let ((steering
-                         (drain-agent-queue
-                          agent :steering)))
-                   (cond
-                     ((or calls steering)
-                      (begin-agent-turn
-                       agent (1+ turn) steering))
-                     (t
-                      (let ((follow-up
-                              (drain-agent-queue
-                               agent :follow-up)))
-                        (if follow-up
-                            (begin-agent-turn
-                             agent (1+ turn) follow-up)
-                            (progn
-                              (emit-agent-end agent)
-                              (let ((late-follow-up
-                                      (drain-agent-queue
-                                       agent :follow-up)))
-                                (if late-follow-up
-                                    (begin-agent-turn
-                                     agent
-                                     (1+ turn)
-                                     late-follow-up)
-                                    (return-from
-                                        run-agent-loop
-                                      message))))))))))))))))
+            (cond
+              (terminal-p
+               (emit-agent-end agent)
+               (return-from run-agent-loop message))
+              (t
+               (let ((steering
+                       (drain-agent-queue
+                        agent :steering)))
+                 (cond
+                   ((or calls steering)
+                    (begin-agent-turn
+                     agent (1+ turn) steering))
+                   (t
+                    (let ((follow-up
+                            (drain-agent-queue
+                             agent :follow-up)))
+                      (if follow-up
+                          (begin-agent-turn
+                           agent (1+ turn) follow-up)
+                          (progn
+                            (emit-agent-end agent)
+                            (let ((late-follow-up
+                                    (drain-agent-queue
+                                     agent :follow-up)))
+                              (if late-follow-up
+                                  (begin-agent-turn
+                                   agent
+                                   (1+ turn)
+                                   late-follow-up)
+                                  (return-from
+                                      run-agent-loop
+                                    message)))))))))))))))
 
 (defun call-with-agent-run (agent function)
     (sb-thread:with-mutex
@@ -418,6 +382,7 @@
      agent
      (lambda ()
        (ensure-agent-session-started agent)
+       (maybe-compact-agent agent)
        (multiple-value-bind
              (messages system-prompt handled-p)
            (prepare-agent-prompt

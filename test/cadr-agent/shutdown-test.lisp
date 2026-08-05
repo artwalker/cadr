@@ -230,7 +230,8 @@
           (entered
             (sb-thread:make-semaphore :count 0))
           (release
-            (sb-thread:make-semaphore :count 0)))
+            (sb-thread:make-semaphore :count 0))
+          (provider-calls 0))
       (cadr-agent::session-append-message
        session
        (assistant
@@ -245,6 +246,7 @@
         (make-string 80 :initial-element #\c)))
       (let* ((original-leaf
                (cadr-agent::session-leaf-id session))
+             (compaction-error nil)
              (agent
                (make-agent
                 :provider :mock
@@ -257,15 +259,20 @@
                  :max-tokens 128
                  :context-window 128)
                 :session session
+                :compaction-keep-recent-tokens 4
                 :stream-function
                 (lambda
                     (provider model context on-event
-                     &key max-tokens temperature abort-p)
+                     &key max-tokens temperature abort-p
+                          cache-retention session-id)
                   (declare
                    (ignore provider model context on-event
-                           max-tokens temperature abort-p))
-                  (sb-thread:signal-semaphore entered)
-                  (sb-thread:wait-on-semaphore release)
+                           max-tokens temperature abort-p
+                           cache-retention session-id))
+                  (incf provider-calls)
+                  (when (= 1 provider-calls)
+                    (sb-thread:signal-semaphore entered)
+                    (sb-thread:wait-on-semaphore release))
                   (assistant
                    (list
                     (make-text-content
@@ -273,8 +280,12 @@
              (compaction-thread
                (sb-thread:make-thread
                 (lambda ()
-                  (cadr-agent:compact-agent
-                   agent :force-p t)))))
+                  (handler-case
+                      (cadr-agent:compact-agent
+                       agent :force-p t)
+                    (error (condition)
+                      (setf compaction-error condition)
+                      (sb-thread:signal-semaphore entered)))))))
         (sb-thread:wait-on-semaphore entered)
         (let ((shutdown-thread
                 (sb-thread:make-thread
@@ -292,6 +303,8 @@
                 :key #'cadr-agent::session-entry-type)))
         (is (string= original-leaf
                      (cadr-agent::session-leaf-id session)))
+        (is (null compaction-error))
+        (is (= 1 provider-calls))
         (signals cadr-agent:agent-shutdown-error
           (cadr-agent:agent-navigate-tree
            agent first))))))
