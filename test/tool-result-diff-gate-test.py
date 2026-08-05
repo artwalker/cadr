@@ -218,6 +218,16 @@ class ToolResultDiffGateTest(unittest.TestCase):
             self.assertEqual((cwd / "a.txt").read_text(), "alpha")
             self.assertEqual((cwd / "b.txt").read_text(), "beta")
 
+    def test_fixed_environment_serializes_ripgrep_traversal(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cadr-tool-diff-env-") as temp:
+            root = Path(temp)
+            environment = TOOL_DIFF._fixed_environment(
+                root / "home", root / "bin"
+            )
+            config = Path(environment["RIPGREP_CONFIG_PATH"])
+            self.assertEqual(config.read_text(encoding="ascii"), "--threads=1\n")
+            self.assertEqual(config.parent, root / "home")
+
     def test_render_baseline_cache_marker_is_an_accepted_fixed_checkout(self) -> None:
         with tempfile.TemporaryDirectory(prefix="cadr-tool-diff-baseline-") as temp:
             baseline = Path(temp)

@@ -306,6 +306,14 @@ def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
         link = private_bin / name
         if not link.exists():
             link.symlink_to(source)
+    # ripgrep emits matches in traversal-completion order when it uses its
+    # default worker pool.  That order is intentionally unspecified, so two
+    # consecutive executions over identical files can disagree even when both
+    # implementations invoke the same binary with the same arguments.  A
+    # one-worker config removes scheduler order from this byte-exact oracle;
+    # product arguments still remain authoritative and are compared unchanged.
+    ripgrep_config = home / "ripgrep.conf"
+    ripgrep_config.write_text("--threads=1\n", encoding="ascii")
     env = {
         "HOME": str(home),
         "TMPDIR": str(home / "tmp"),
@@ -318,6 +326,7 @@ def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
         "COLUMNS": "80",
         "LINES": "24",
         "PI_OFFLINE": "1",
+        "RIPGREP_CONFIG_PATH": str(ripgrep_config),
     }
     (home / "tmp").mkdir(mode=0o777)
     (home / "tmp").chmod(0o777)
