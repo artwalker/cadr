@@ -302,7 +302,21 @@
     (is (search "│ alpha" joined))
     (is (search
          (format nil "~C[1m" #\Escape)
-         (format nil "~{~A~^~%~}" lines)))))
+         (format nil "~{~A~^~%~}" lines)))
+    ;; pi@74caa2649 packages/tui/src/components/markdown.ts:807-851
+    ;; emits table borders as literal box glyphs.  Only inline cell content
+    ;; and the header receive theme styling.
+    (is (char= #\┌ (char (first lines) 0)))
+    (is
+     (every
+      (lambda (line)
+        (let ((plain-line
+                (cadr-tui:strip-terminal-sequences line)))
+          (or (zerop (length plain-line))
+              (not (find (char plain-line 0)
+                         '(#\┌ #\│ #\├ #\└)))
+              (char= (char line 0) (char plain-line 0)))))
+      lines))))
 
 (test goal9-markdown-theme-uses-semantic-colors-and-local-resets
   (let* ((caps
@@ -1033,4 +1047,42 @@
                    :dim "2.0%/128k (auto)" :enabled-p t)))
            (is (search whole line))
            (is (null (search context-only line))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal17-autocomplete-unselected-description-owns-the-column-gap
+  ;; Fixed pi@74caa2649 select-list.ts:139-171 keeps the unselected prefix
+  ;; and primary label plain, then starts the dim description span at the
+  ;; entire inter-column gap.  This locks the span boundary independently of
+  ;; a terminal screen diff.
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((width 64)
+                (label "model")
+                (description "Select model")
+                (primary-width 16)
+                (gap (make-string 11 :initial-element #\Space))
+                (line
+                  (cadr-tui::render-editor-autocomplete-item
+                   (cadr-tui:make-autocomplete-item
+                    :value "model" :label label
+                    :description description)
+                   nil width primary-width))
+                (expected-prefix
+                  (concatenate
+                   'string "  " label
+                   (cadr-tui:theme-foreground
+                    :muted
+                    (concatenate 'string gap description)
+                    :enabled-p t)))
+                (wrong-boundary
+                  (concatenate
+                   'string "  " label gap
+                   (cadr-tui:theme-foreground
+                    :muted description :enabled-p t))))
+           (is (zerop (or (search expected-prefix line) -1)))
+           (is (null (search wrong-boundary line)))
+           (is (= width (cadr-tui:visible-width line))))
       (cadr-tui:reset-current-theme))))

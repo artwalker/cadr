@@ -27,6 +27,10 @@ second" (cadr-ai:content-text content)))
   ;; The fixed TypeScript baseline estimates tokens with text.length / 4.
   ;; JavaScript length counts non-BMP characters as two UTF-16 code units.
   (is (= 2 (cadr-ai:estimate-text-tokens "abc🙂")))
+  (is (= 2 (cadr-ai::estimate-content-tokens "abc🙂")))
+  (is (= 2
+         (cadr-ai:estimate-message-tokens
+          (cadr-ai:make-user-message :content "abc🙂"))))
   (is (= 3 (cadr-ai:estimate-text-tokens "🙂🙂🙂🙂🙂")))
   (is (= 1 (cadr-ai:estimate-text-tokens "中文"))))
 
@@ -99,7 +103,10 @@ second" (cadr-ai:content-text content)))
      (cadr-ai:retryable-assistant-error-p
       (utility-error-message text)))))
 
-(test context-token-estimation-rejects-stale-usage
+(test context-token-estimation-rejects-usage-older-than-a-prefix-message
+  ;; pi@74caa2649 packages/ai/src/utils/estimate.ts:63-84 treats a newer
+  ;; prefix message (for example, a compaction summary) as invalidating usage
+  ;; reported by an older assistant response.
   (let* ((old
            (cadr-ai:make-assistant-message
             :content (list (cadr-ai:make-text-content :text "kept"))
@@ -119,7 +126,8 @@ second" (cadr-ai:content-text content)))
               :timestamp 300)))))
     (let ((estimate (cadr-ai:estimate-context-tokens context)))
       (is (= 1005 (cadr-ai:context-usage-estimate-tokens estimate)))
-      (is (= 0 (cadr-ai:context-usage-estimate-usage-tokens estimate)))
+      (is (= 0
+             (cadr-ai:context-usage-estimate-usage-tokens estimate)))
       (is (= 1005
              (cadr-ai:context-usage-estimate-trailing-tokens estimate)))
       (is (null

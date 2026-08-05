@@ -142,15 +142,20 @@
      (and
       (plusp prompt-total)
       (* 100d0
-         (/ cache-read prompt-total)))
-     (tui-state-context-percent state)
-     (and
-      (plusp
-       (tui-state-context-window state))
-      (* 100d0
-         (/ context-total
-            (tui-state-context-window
-             state)))))
+         (/ cache-read prompt-total))))
+    (unless
+        (member
+         (cadr-ai:assistant-message-stop-reason message)
+         '(:aborted :error))
+      (setf
+       (tui-state-context-percent state)
+       (and
+        (plusp
+         (tui-state-context-window state))
+        (* 100d0
+           (/ context-total
+              (tui-state-context-window
+               state))))))
     (when (assistant-price-known-p message)
       (setf (tui-state-cost-known-p state) t)
       (incf (tui-state-cost state)
@@ -234,6 +239,29 @@
        (assistant-message-has-tool-calls-p
         message)))
      (accumulate-message-usage state message))
+    (cadr-agent:bash-execution-message
+     (append-tui-entry
+      state
+      (make-tui-entry
+       :type :bash-execution
+       :label
+       (cadr-agent:bash-execution-message-command message)
+       :text
+       (cadr-agent:bash-execution-message-output message)
+       :expanded-p (tui-state-tools-expanded-p state)
+       :custom-options
+       (list
+        :exit-code
+        (cadr-agent:bash-execution-message-exit-code message)
+        :cancelled-p
+        (cadr-agent:bash-execution-message-cancelled-p message)
+        :truncated-p
+        (cadr-agent:bash-execution-message-truncated-p message)
+        :full-output-path
+        (cadr-agent:bash-execution-message-full-output-path message)
+        :exclude-from-context-p
+        (cadr-agent:bash-execution-message-exclude-from-context-p
+         message)))))
     (cadr-agent:custom-agent-message
      (when (cadr-agent::custom-agent-message-display-p message)
        (append-tui-entry
@@ -430,15 +458,10 @@
     (when message
       (cons
        ""
-       (loop for line in
-             (cadr-tui:render-markdown
-              message width
-              :padding-x 1
-              :ansi-theme-p t)
-             collect
-             (cadr-tui:theme-foreground
-              :error line
-              :enabled-p t))))))
+       (component-text-lines
+        (cadr-tui:theme-foreground
+         :error message :enabled-p t)
+        width :padding-x 1)))))
 
 (defun tui-syntax-highlight (language source)
   (simple-syntax-highlight
@@ -839,8 +862,10 @@
            (cadr-tui:render-tool-block
             (tui-entry-tool-block entry)
             width
-            :ansi-theme-p t
+           :ansi-theme-p t
             :now now))))
+    (:bash-execution
+     (render-user-bash-entry entry width :now now))
     ((:custom-message :custom-entry)
      (render-extension-custom-entry
       entry width extension-host))
@@ -849,81 +874,58 @@
     (:notice
      (cons
       ""
-      (loop for line in
-            (cadr-tui:wrap-text
-             (tui-entry-text entry)
-             (max 1 (- width 2)))
-            collect
-            (concatenate
-             'string " "
-             (if (find #\Escape line)
-                 line
-                 (cadr-tui:theme-foreground
-                  :dim line :enabled-p t))))))
+      (component-text-lines
+       (let ((text (tui-entry-text entry)))
+         (if (find #\Escape text)
+             text
+             (cadr-tui:theme-foreground
+              :dim text :enabled-p t)))
+       width :padding-x 1)))
     (:status
      (cons
       ""
-      (loop for line in
-            (cadr-tui:wrap-text
-             (tui-entry-text entry)
-             (max 1 (- width 2)))
-            collect
-            (concatenate
-             'string " "
-             (cadr-tui:theme-foreground
-              :dim line :enabled-p t)))))
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :dim (tui-entry-text entry) :enabled-p t)
+       width :padding-x 1)))
     (:error
      (cons
       ""
-      (loop for line in
-            (cadr-tui:wrap-text
-             (format nil "Error: ~A"
-                     (tui-entry-text entry))
-             (max 1 (- width 2)))
-            collect
-            (concatenate
-             'string " "
-             (cadr-tui:theme-foreground
-              :error line :enabled-p t)))))
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :error
+        (format nil "Error: ~A"
+                (tui-entry-text entry))
+        :enabled-p t)
+       width :padding-x 1)))
     (:warning
      (cons
       ""
-      (loop for line in
-            (cadr-tui:wrap-text
-             (format nil "Warning: ~A"
-                     (tui-entry-text entry))
-             (max 1 (- width 2)))
-            collect
-            (concatenate
-             'string " "
-             (cadr-tui:theme-foreground
-              :warning line :enabled-p t)))))
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :warning
+        (format nil "Warning: ~A"
+                (tui-entry-text entry))
+        :enabled-p t)
+       width :padding-x 1)))
     (:project-trust-warning
      (cons
       ""
-      (loop for line in
-            (cadr-tui:wrap-text
-             (tui-entry-text entry)
-             (max 1 (- width 2)))
-            collect
-            (concatenate
-             'string " "
-             (cadr-tui:theme-foreground
-              :warning line :enabled-p t)))))
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :warning (tui-entry-text entry) :enabled-p t)
+       width :padding-x 1)))
     (:success
      (append
-      '("" "")
-      (loop for line in
-            (cadr-tui:wrap-text
-             (format nil "✓ ~A"
-                     (tui-entry-text entry))
-             (max 1 (- width 2)))
-            collect
-            (concatenate
-             'string " "
-             (cadr-tui:theme-foreground
-              :accent line :enabled-p t)))
-      '("")))
+      (list "" (make-string width :initial-element #\Space))
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :accent
+        (format nil "✓ ~A"
+                (tui-entry-text entry))
+        :enabled-p t)
+       width :padding-x 1)
+      (list (make-string width :initial-element #\Space))))
     (:command-markdown
      (append
       (list
@@ -1035,6 +1037,9 @@
       (if
           (and
            (plusp index)
-           (eq (tui-entry-type entry) :user))
+           (member
+            (tui-entry-type entry)
+            '(:user :branch-summary :compaction-summary)
+            :test #'eq))
           (cons "" rendered)
           rendered)))

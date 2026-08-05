@@ -170,7 +170,10 @@
   (let ((expected
           '(("model" 4 2)
             ("model-scoped" 5 2)
-            ("settings" 1 2)
+            ;; pi@74caa2649 focuses SettingsList, which does not implement
+            ;; Focusable.  Its private Input therefore never emits the
+            ;; hardware-cursor marker.
+            ("settings" nil nil)
             ("resume" 7 2)
             ("fork" nil nil)
             ("tree" nil nil)
@@ -392,8 +395,8 @@
             ("login-provider" . "5CA87C165CDB0E54D1D8A1FB03379A4CE5BC0363904D1E243935F513956EBA20")
             ("logout-provider" . "5B88F48EC8368B4395CC5CDCBEE9CBF86B564CD0924F48282ED8E9DE81308212")
             ("api-key" . "E465C3E57FB209D3B040B3D8ABC217D916DD147642AEC3B538BABF5135254185")
-            ("import" . "B836156D2E481FCB62CF14A058B69A6F2E9D1723E47C4A29B496A0F58CB134AC")
-            ("extension-select" . "BD71C617E1CE9E9A9CB32B6EEDFDC575600FB69772F4BA2CC866E36DA2C7BD9F")
+            ("import" . "849571FA52813EF3B4697FD0F147FC48BC2766470A38A4FC6EA72BC7E86C8FB3")
+            ("extension-select" . "E61E0DD33F62647FE9DC33DD667500EC1FAEF81FC40E393707D552721082DCE2")
             ("extension-custom" . "A85DF2C8310E88D1BEA5B9AE84CBF6735FBC83CBC1116082E52A2CBB9A76A2EC"))))
     (dolist (case (goal9-b3-overlay-screen-cases))
       (is
@@ -748,7 +751,7 @@
     (is
      (search
       (cadr-tui:theme-foreground
-       :success "✓ configured" :enabled-p t)
+       :success " ✓ configured" :enabled-p t)
       joined))
     (is
      (search
@@ -895,19 +898,34 @@
 
 (test goal9-b3-import-and-extension-overlays-have-complete-baseline-line-contracts
   (let ((border (goal9-b3-overlay-border 80)))
-    (is
-     (equal
-      (list border "" " Import session"
-            " Replace current session with /tmp/session.jsonl?" ""
-            " → Yes" "   No" ""
-            (goal9-b3-overlay-text-line
-             " ↑↓ navigate  enter select  escape/ctrl+c cancel" 80)
-            "" border)
-      (goal9-b3-overlay-plain-lines
-       (cadr-cli::render-framed-select-state
-        (cadr-cli::make-import-confirmation-list
-         "/import '/tmp/session.jsonl'" "/tmp/session.jsonl")
-        80))))
+    (let ((rendered
+            (cadr-cli::render-framed-select-state
+             (cadr-cli::make-import-confirmation-list
+              "/import '/tmp/session.jsonl'" "/tmp/session.jsonl")
+             80)))
+      (is
+       (equal
+        (list border ""
+              (goal9-b3-overlay-text-line " Import session" 80)
+              (goal9-b3-overlay-text-line
+               " Replace current session with /tmp/session.jsonl?" 80)
+              ""
+              (goal9-b3-overlay-text-line " → Yes" 80)
+              (goal9-b3-overlay-text-line "   No" 80)
+              ""
+              (goal9-b3-overlay-text-line
+               " ↑↓ navigate  enter select  escape/ctrl+c cancel" 80)
+              "" border)
+        (goal9-b3-overlay-plain-lines rendered)))
+      (is
+       (search
+        (cadr-tui:theme-foreground
+         :accent
+         (cadr-tui:theme-bold
+          "Replace current session with /tmp/session.jsonl?"
+          :enabled-p t)
+         :enabled-p t)
+        (fourth rendered))))
     (dolist
         (case
          (list
@@ -925,14 +943,17 @@
             (append
              (list border "")
              (mapcar (lambda (line)
-                       (concatenate 'string " " line))
+                       (goal9-b3-overlay-text-line
+                        (concatenate 'string " " line) 80))
                      title-lines)
              (list "")
              (loop for label in labels
                    for first-p = t then nil
                    collect
-                   (format nil " ~A~A"
-                           (if first-p "→ " "  ") label))
+                   (goal9-b3-overlay-text-line
+                    (format nil " ~A~A"
+                            (if first-p "→ " "  ") label)
+                    80))
              (list
               ""
               (goal9-b3-overlay-text-line
@@ -963,8 +984,12 @@
        (equal
         (list
          (goal9-b3-overlay-border 40) ""
-         " Choose one (3s)" " Pick exactly one" ""
-         " → Alpha" "   Beta" ""
+         (goal9-b3-overlay-text-line " Choose one" 40)
+         (goal9-b3-overlay-text-line " Pick exactly one (3s)" 40)
+         ""
+         (goal9-b3-overlay-text-line " → Alpha" 40)
+         (goal9-b3-overlay-text-line "   Beta" 40)
+         ""
          (goal9-b3-overlay-text-line
           " ↑↓ navigate  alt+y select  alt+x" 40)
          (goal9-b3-overlay-text-line " cancel" 40)
@@ -975,9 +1000,10 @@
        (search
         (cadr-tui:theme-foreground
          :accent
-         (cadr-tui:theme-bold "Choose one (3s)" :enabled-p t)
+         (cadr-tui:theme-bold
+          "Pick exactly one (3s)" :enabled-p t)
          :enabled-p t)
-        (third rendered))))
+        (fourth rendered))))
     (multiple-value-bind (action value handled-p)
         (cadr-cli::framed-select-state-handle-raw-input
          state (format nil "~C[A" #\Escape))

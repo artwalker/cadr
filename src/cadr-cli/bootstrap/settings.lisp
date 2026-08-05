@@ -238,23 +238,25 @@
                  configured
                  "dark")))
          (follow-up-key
-           (or
-            (and keybindings
-                 (first
-                  (cadr-tui:keybinding-keys
-                   keybindings "app.message.followUp")))
-            (and keybindings
-                 (let ((binding
-                         (assoc
-                          "app.message.followUp"
-                          (cadr-tui::keybindings-manager-user-bindings
-                           keybindings)
-                          :test #'string=)))
-                   (let ((value (cdr binding)))
-                     (if (listp value)
-                         (first value)
-                         value))))
-            "alt+enter"))
+           (format-key-text
+            (or
+             (and keybindings
+                  (first
+                   (cadr-tui:keybinding-keys
+                    keybindings "app.message.followUp")))
+             (and keybindings
+                  (let ((binding
+                          (assoc
+                           "app.message.followUp"
+                           (cadr-tui::keybindings-manager-user-bindings
+                            keybindings)
+                           :test #'string=)))
+                    (let ((value (cdr binding)))
+                      (if (listp value)
+                          (first value)
+                          value))))
+             "alt+enter")
+            :capitalize-p t))
          (options
            (list
             (make-settings-option

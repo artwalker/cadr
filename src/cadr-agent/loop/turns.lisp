@@ -1,7 +1,47 @@
 (in-package #:cadr-agent)
 
+(defun merge-terminal-assistant-partial
+    (message partial)
+  (if
+      (and
+       partial
+       (typep message 'cadr-ai:assistant-message)
+       (typep partial 'cadr-ai:assistant-message)
+       (member
+        (cadr-ai:assistant-message-stop-reason message)
+        '(:aborted :error)))
+      (let* ((message-content
+               (cadr-ai:assistant-message-content message))
+             (partial-content
+               (cadr-ai:assistant-message-content partial))
+             (message-usage
+               (cadr-ai:assistant-message-usage message))
+             (partial-usage
+               (cadr-ai:assistant-message-usage partial))
+             (inherit-content-p
+               (and (null message-content)
+                    partial-content))
+             (inherit-usage-p
+               (and
+                (zerop (cadr-ai:usage-total message-usage))
+                (plusp (cadr-ai:usage-total partial-usage)))))
+        (if (or inherit-content-p inherit-usage-p)
+            (let ((merged (copy-structure message)))
+              (when inherit-content-p
+                (setf
+                 (cadr-ai:assistant-message-content merged)
+                 (copy-list partial-content)))
+              (when inherit-usage-p
+                (setf
+                 (cadr-ai:assistant-message-usage merged)
+                 partial-usage))
+              merged)
+            message))
+      message))
+
 (defun stream-assistant (agent)
   (let* ((started-p nil)
+         (last-partial nil)
          (messages (copy-list (agent-messages agent)))
          (context-result
            (run-agent-lifecycle
@@ -15,13 +55,19 @@
              (lambda (event)
                (case (cadr-ai:stream-event-type event)
                  (:start
-                  (setf started-p t)
+                  (setf
+                   started-p t
+                   last-partial
+                   (cadr-ai:stream-event-message event))
                   (emit-message-start
                    agent
                    (cadr-ai:stream-event-message event)))
                  ((:text-start :text-delta :text-end
                    :thinking-start :thinking-delta :thinking-end
                    :tool-call-start :tool-call-delta :tool-call-end)
+                  (setf
+                   last-partial
+                   (cadr-ai:stream-event-message event))
                   (emit-message-update
                    agent
                    (cadr-ai:stream-event-message event)
@@ -48,7 +94,7 @@
                     (agent-provider agent)
                     (agent-model agent)
                     context callback
-                    :abort-p (second options))
+                    :abort-p (getf options :abort-p))
                    (funcall
                     (agent-stream-function agent)
                     (agent-provider agent)
@@ -56,10 +102,13 @@
                     context callback
                     :reasoning
                     (agent-thinking-level agent)
-                    :abort-p (second options))))))
-      (unless started-p
-        (emit-message-start agent message))
-      (emit-message-end agent message))))
+                    :abort-p (getf options :abort-p))))))
+      (let ((final
+              (merge-terminal-assistant-partial
+               message last-partial)))
+        (unless started-p
+          (emit-message-start agent final))
+        (emit-message-end agent final)))))
 
 (defun turn-limit-message (agent)
   (cadr-ai:make-assistant-message

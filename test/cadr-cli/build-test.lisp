@@ -141,6 +141,11 @@
                  nil
                  "cadr ~A · aligned with pi v0.83.0 (+38, 74caa2649)"
                  version))))
+    (dolist (asd
+              '("cadr-core.asd" "cadr-ai.asd" "cadr-agent.asd"
+                "cadr-tui.asd" "cadr-cli.asd" "cadr-storage.asd"
+                "cadr-server.asd" "cadr-evals.asd" "cadr-protocol.asd"))
+      (asdf:load-asd (merge-pathnames asd root)))
     (is (stringp version))
     (when (stringp version)
       (dolist (system

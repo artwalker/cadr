@@ -400,6 +400,65 @@
                  block))))))))
     result))
 
+(defun session-display-messages (session)
+  "Project the active session context into typed transcript messages.
+
+Unlike SESSION-MESSAGES, this projection is display-facing: branch and
+compaction summaries retain their component types instead of being converted
+to provider-facing user messages containing <summary> wrappers."
+  (when session
+    (loop
+      for entry in (cadr-agent::session-context-entries session)
+      for message =
+        (case (cadr-agent:session-entry-type entry)
+          (:message
+           (cadr-agent:session-entry-message entry))
+          (:custom-message
+           (cadr-agent:make-custom-agent-message
+            :custom-type
+            (cadr-agent:session-entry-custom-type entry)
+            :content
+            (cadr-agent:session-entry-content entry)
+            :display-p
+            (cadr-agent:session-entry-display-p entry)
+            :details
+            (cadr-agent:session-entry-details entry)
+            :timestamp
+            (cadr-agent:session-entry-timestamp entry)))
+          (:branch-summary
+           (cadr-agent:make-branch-summary-message
+            :summary
+            (cadr-agent:session-entry-summary entry)
+            :from-id
+            (cadr-agent:session-entry-from-id entry)
+            :timestamp
+            (cadr-agent:session-entry-timestamp entry)))
+          (:compaction
+           (cadr-agent:make-compaction-summary-agent-message
+            :summary
+            (cadr-agent:session-entry-summary entry)
+            :tokens-before
+            (cadr-agent:session-entry-tokens-before entry)
+            :timestamp
+            (cadr-agent:session-entry-timestamp entry))))
+      when message collect message)))
+
+(defun session-compaction-display-state (session)
+  "Return the compaction-aware transcript projection consumed by the TUI.
+
+The typed compaction summary is already part of SESSION-DISPLAY-MESSAGES, so
+the legacy separate summary values stay NIL to prevent a duplicate entry."
+  (values (session-display-messages session) nil nil))
+
+(defun session-compaction-status (session)
+  (when session
+    (let ((count
+            (count :compaction
+                   (cadr-agent:session-entries session)
+                   :key #'cadr-agent:session-entry-type)))
+      (when (plusp count)
+        (format nil "Session compacted ~D time~:P" count)))))
+
 (defun session-entry-tree-selector-data
     (session entry label-timestamps tool-calls)
   (let* ((type
@@ -412,6 +471,8 @@
              (cadr-ai:assistant-message :assistant)
              (cadr-ai:tool-result-message
               :tool-result)
+             (cadr-agent:bash-execution-message
+              :bash-execution)
              (otherwise nil)))
          (id
            (cadr-agent:session-entry-id entry))
@@ -431,6 +492,10 @@
      :role role
      :text
      (cond
+       ((typep message
+               'cadr-agent:bash-execution-message)
+        (cadr-agent:bash-execution-message-command
+         message))
        (message
         (session-message-search-text message))
        ((member type
@@ -458,12 +523,24 @@
        (t ""))
      :label
      (cadr-agent:session-label session id)
+     :entry-label
+     (and
+      (eq type :label)
+      (cadr-agent:session-entry-label entry))
      :label-timestamp
      (gethash id label-timestamps)
      :tool-call-only-p
      (and
       (typep message 'cadr-ai:assistant-message)
       (assistant-tool-call-only-p message))
+     :stop-reason
+     (and
+      (typep message 'cadr-ai:assistant-message)
+      (cadr-ai:assistant-message-stop-reason message))
+     :error-message
+     (and
+      (typep message 'cadr-ai:assistant-message)
+      (cadr-ai:assistant-message-error-message message))
      :error-p
      (or
       (and
@@ -479,6 +556,8 @@
         message)))
      :summary
      (cadr-agent:session-entry-summary entry)
+     :tokens-before
+     (cadr-agent:session-entry-tokens-before entry)
      :name
      (cadr-agent:session-entry-name entry)
      :model-id
@@ -1401,8 +1480,13 @@
                   output
                   "Session name: ~A~%"
                   (cadr-agent:session-name session))
-                 (format output
-                         "Usage: /name <name>~%"))))
+                 (if status-function
+                     (funcall
+                      status-function
+                      "Usage: /name <name>"
+                      :warning)
+                     (format output
+                             "Usage: /name <name>~%")))))
        (finish-output output)
        t)
       ((string= command "/session")

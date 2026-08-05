@@ -223,7 +223,7 @@
       (mapcar #'cadr-cli::settings-option-id options)))
     (is
      (uiop:string-prefix-p
-      "alt+enter queues follow-up messages"
+      "Alt+Enter queues follow-up messages"
       (cadr-cli::settings-option-description
        (find "follow-up-mode" options
              :key #'cadr-cli::settings-option-id
@@ -469,11 +469,16 @@
      (equal
       (list
        border (goal9-b3-full-width-line "Thinking Level" width) ""
-       "Select reasoning depth for thinking-capable models" ""
+       (goal9-b3-full-width-line
+        "Select reasoning depth for thinking-capable models" width)
+       ""
        "  off         No reasoning"
        "→ low         Light reasoning (~2k tokens)"
        "  high        Deep reasoning (~16k tokens)"
-       "" "  Enter to select · Esc to go back" border)
+       ""
+       (goal9-b3-full-width-line
+        "  Enter to select · Esc to go back" width)
+       border)
       (goal9-b3-plain-lines
        (cadr-cli::render-settings-selector state width))))
     (cadr-cli::settings-selector-handle-event
@@ -492,12 +497,17 @@
      (equal
       (list
        border (goal9-b3-full-width-line "Theme" width) ""
-       "Select a theme, or choose Automatic to follow terminal appearance."
+       (goal9-b3-full-width-line
+        "Select a theme, or choose Automatic to follow terminal appearance."
+        width)
        ""
        "  Automatic   Use separate themes for light and dark terminal appearance"
        "→ dark"
        "  light"
-       "" "  Enter to select · Esc to go back" border)
+       ""
+       (goal9-b3-full-width-line
+        "  Enter to select · Esc to go back" width)
+       border)
       (goal9-b3-plain-lines
        (cadr-cli::render-settings-selector state width))))
     (cadr-cli::settings-selector-handle-event
@@ -510,7 +520,8 @@
        border (goal9-b3-full-width-line "Automatic Theme" width) ""
        (goal9-b3-full-width-line
         "Choose themes for terminal light and dark appearance." width)
-       "Light/dark detection requires terminal support."
+       (goal9-b3-full-width-line
+        "Light/dark detection requires terminal support." width)
        ""
        "→ Light theme  dark"
        "  Dark theme   dark"
@@ -594,7 +605,7 @@
               :submenu :theme)))))
     (is
      (uiop:string-prefix-p
-      "alt+f queues follow-up messages"
+      "Alt+F queues follow-up messages"
       (cadr-cli::settings-option-description follow-up)))
     (cadr-cli::settings-selector-handle-event
      state (cadr-tui:make-input-event :kind :enter))

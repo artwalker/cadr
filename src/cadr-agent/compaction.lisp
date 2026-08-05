@@ -145,11 +145,33 @@
          candidate)))
 
 (defun truncate-summary-tool-result (text)
-  (if (<= (length text) 2000)
-      text
-      (format nil "~A~%~%[... ~D more characters truncated]"
-              (subseq text 0 2000)
-              (- (length text) 2000))))
+  (let ((total-units (utf16-code-unit-length text)))
+    (if (<= total-units 2000)
+        text
+        (let ((prefix
+                (with-output-to-string (output)
+                  (loop with units = 0
+                        for character across text
+                        for code = (char-code character)
+                        for width = (if (> code #xffff) 2 1)
+                        while (< units 2000)
+                        do
+                        (cond
+                          ((<= (+ units width) 2000)
+                           (write-char character output)
+                           (incf units width))
+                          (t
+                           ;; JavaScript String.slice may end between the two
+                           ;; UTF-16 code units of an astral character.
+                           (write-char
+                            (code-char
+                             (+ #xd800
+                                (ash (- code #x10000) -10)))
+                            output)
+                           (incf units)))))))
+          (format nil "~A~%~%[... ~D more characters truncated]"
+                  prefix
+                  (- total-units 2000))))))
 
 (defun content-block-display-text (block)
   (cond

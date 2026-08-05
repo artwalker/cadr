@@ -979,6 +979,22 @@
         available
         nil)))
 
+(defun scoped-models-selector-provider-count (state)
+  (let* ((all-models
+           (scoped-models-selector-state-all-models
+            state))
+         (active-models
+           (or
+            (session-scoped-models
+             all-models
+             (scoped-models-selector-state-enabled-ids
+              state))
+            all-models)))
+    (length
+     (remove-duplicates
+      (mapcar #'cadr-ai:model-provider active-models)
+      :test #'eq))))
+
 (defun scoped-models-selector-counts (state)
   (let ((enabled
           (scoped-models-selector-state-enabled-ids

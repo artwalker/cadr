@@ -317,52 +317,82 @@
     :show-filter-p nil)))
 
 (defun framed-select-title (state now)
-  (let ((deadline (framed-select-state-deadline state)))
+  (let ((deadline (framed-select-state-deadline state))
+        (base-title
+          (if (framed-select-state-message state)
+              (format nil "~A~%~A"
+                      (framed-select-state-title state)
+                      (framed-select-state-message state))
+              (framed-select-state-title state))))
     (if deadline
         (format nil "~A (~Ds)"
-                (framed-select-state-title state)
+                base-title
                 (max 0 (ceiling (- deadline now))))
-        (framed-select-state-title state))))
+        base-title)))
 
 (defun render-framed-select-state
     (state width &key (now (tui-monotonic-seconds)))
-  (labels ((indented (line)
-             (cadr-tui:truncate-to-width
-              (concatenate 'string " " line)
-              width "")))
+  (labels ((framed-text-lines (text)
+             (component-text-lines text width :padding-x 1))
+           (framed-title-lines ()
+             (let* ((content-width (max 1 (- width 2)))
+                    (lines
+                      (mapcan
+                       (lambda (line)
+                         (cadr-tui:wrap-text line content-width))
+                       (uiop:split-string
+                        (framed-select-title state now)
+                        :separator '(#\Newline))))
+                    (last-index (1- (length lines))))
+               (loop for line in lines
+                     for index from 0
+                     collect
+                     (if (= index last-index)
+                         (component-text-line
+                          (cadr-tui:theme-foreground
+                           :accent
+                           (cadr-tui:theme-bold
+                            line :enabled-p t)
+                           :enabled-p t)
+                          width :padding-x 1)
+                         (concatenate
+                          'string
+                          " "
+                          (cadr-tui:theme-foreground
+                           :accent
+                           (concatenate
+                            'string
+                            (cadr-tui:theme-bold
+                             line :enabled-p t)
+                            (make-string
+                             (max 0
+                                  (- width 1
+                                     (cadr-tui:visible-width line)))
+                             :initial-element #\Space))
+                           :enabled-p t)))))))
     (append
      (list
       (cadr-tui:theme-foreground
        :border
        (make-string width :initial-element #\─))
       "")
-     (mapcar
-      (lambda (line)
-        (indented
-         (cadr-tui:theme-foreground
-          :accent
-          (cadr-tui:theme-bold line :enabled-p t)
-          :enabled-p t)))
-      (uiop:split-string
-       (framed-select-title state now)
-       :separator '(#\Newline)))
-     (when (framed-select-state-message state)
-       (mapcar
-        #'indented
-        (uiop:split-string
-         (framed-select-state-message state)
-         :separator '(#\Newline))))
+     (framed-title-lines)
      (list "")
-     (mapcar
+     (mapcan
       (lambda (line)
-        (indented
+        (framed-text-lines
          (if (find #\Escape line)
              line
-             (cadr-tui:theme-foreground
-              :text line :enabled-p t))))
+             (concatenate
+              'string
+              (subseq line 0 (min 2 (length line)))
+              (cadr-tui:theme-foreground
+               :text
+               (subseq line (min 2 (length line)))
+               :enabled-p t)))))
       (cadr-tui:render-select-list
        (framed-select-state-select-list state)
-       (max 1 (1- width))
+       (max 1 (- width 2))
        :ansi-theme-p t))
      (list "")
      (component-text-lines

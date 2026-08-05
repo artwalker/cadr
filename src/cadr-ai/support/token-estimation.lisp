@@ -17,7 +17,7 @@
 
 (defun estimated-content-characters (content)
   (if (stringp content)
-      (length content)
+      (utf16-code-unit-length content)
       (loop for block in (coerce (or content nil) 'list)
             sum
             (cond
@@ -63,31 +63,39 @@
       4))
     (t 0)))
 
-(defun message-timestamp (message)
-  (etypecase message
-    (user-message (user-message-timestamp message))
-    (assistant-message (assistant-message-timestamp message))
-    (tool-result-message (tool-result-message-timestamp message))))
+(defun context-message-timestamp (message)
+  (typecase message
+    (user-message
+     (user-message-timestamp message))
+    (assistant-message
+     (assistant-message-timestamp message))
+    (tool-result-message
+     (tool-result-message-timestamp message))
+    (otherwise nil)))
 
 (defun applicable-usage-info (messages)
-  (loop with latest-prefix-timestamp = most-negative-fixnum
-        with result = nil
+  (loop with result = nil
+        with latest-prefix-timestamp = nil
         for message in messages
         for index from 0
         do
         (when (typep message 'assistant-message)
-          (let ((usage (assistant-message-usage message)))
-            (when (and
-                   (>= (assistant-message-timestamp message)
-                       latest-prefix-timestamp)
-                   (not
-                    (member (assistant-message-stop-reason message)
-                            '(:aborted :error)))
-                   (plusp (usage-total usage)))
+          (let ((usage (assistant-message-usage message))
+                (timestamp
+                  (assistant-message-timestamp message)))
+            (when (and (not
+                        (member (assistant-message-stop-reason message)
+                                '(:aborted :error)))
+                       (or (null latest-prefix-timestamp)
+                           (>= timestamp latest-prefix-timestamp))
+                       (plusp (usage-total usage)))
               (setf result (cons index usage)))))
-        (setf latest-prefix-timestamp
-              (max latest-prefix-timestamp
-                   (message-timestamp message)))
+        (let ((timestamp (context-message-timestamp message)))
+          (when timestamp
+            (setf latest-prefix-timestamp
+                  (if latest-prefix-timestamp
+                      (max latest-prefix-timestamp timestamp)
+                      timestamp))))
         finally (return result)))
 
 (defun estimate-message-list (messages)

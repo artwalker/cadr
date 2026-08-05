@@ -300,31 +300,26 @@
 (defun markdown-table-border-line
     (left middle right widths
      ansi-theme-p)
-  (theme-foreground
-   :border-muted
-   (with-output-to-string (stream)
-     (write-char left stream)
-     (loop for width in widths
-           for first-p = t then nil
-           do
-           (unless first-p
-             (write-char middle stream))
-           (write-string
-            (make-string
-             (+ width 2)
-             :initial-element #\─)
-            stream))
-     (write-char right stream))
-   :enabled-p ansi-theme-p))
+  (declare (ignore ansi-theme-p))
+  (with-output-to-string (stream)
+    (write-char left stream)
+    (loop for width in widths
+          for first-p = t then nil
+          do
+          (unless first-p
+            (write-char middle stream))
+          (write-string
+           (make-string
+            (+ width 2)
+            :initial-element #\─)
+           stream))
+    (write-char right stream)))
 
 (defun markdown-table-row-lines
     (cells widths ansi-theme-p header-p
      capabilities default-style-function)
   (let ((border
-          (lambda (text)
-            (theme-foreground
-             :border-muted text
-             :enabled-p ansi-theme-p)))
+          #'identity)
         (cell-lines nil))
     (loop for width in widths
           for index from 0

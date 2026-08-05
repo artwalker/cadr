@@ -320,6 +320,23 @@
           (aref starts (1+ old-end))
           (length original)))))
 
+(defun replacement-covers-line-content-p
+    (replacement original starts old-start old-end)
+  (let ((next-line-start
+          (if (< (1+ old-end) (length starts))
+              (aref starts (1+ old-end))
+              (length original))))
+    (and
+     (= (replacement-start replacement)
+        (aref starts old-start))
+     (or
+      (= (replacement-end replacement) next-line-start)
+      (and
+       (plusp next-line-start)
+       (char= (char original (1- next-line-start)) #\Newline)
+       (= (replacement-end replacement)
+          (1- next-line-start)))))))
+
 (defun replacement-diff-ranges
     (original updated replacements)
   (let ((old-starts
@@ -348,13 +365,38 @@
                (replacement-covers-whole-lines-p
                 replacement original old-starts
                 old-start old-end))
+             (old-length
+               (- (replacement-end replacement)
+                  (replacement-start replacement)))
+             (preserved-line-prefix-p
+               (and
+                    (replacement-covers-line-content-p
+                     replacement original old-starts
+                     old-start old-end)
+                    (plusp old-length)
+                    (> new-length old-length)
+                    (string=
+                     original
+                     (replacement-new replacement)
+                     :start1 (replacement-start replacement)
+                     :end1 (replacement-end replacement)
+                     :start2 0
+                     :end2 old-length)
+                    (char= (char (replacement-new replacement) old-length)
+                           #\Newline)))
              (new-start
-               (if (and (zerop new-length)
-                        whole-lines-p
-                        (= new-offset (length updated)))
-                   (length new-starts)
-                   (edit-line-index-at-offset
-                    new-starts new-offset)))
+               (cond
+                 (preserved-line-prefix-p
+                  (edit-line-index-at-offset
+                   new-starts
+                   (+ new-offset old-length 1)))
+                 ((and (zerop new-length)
+                       whole-lines-p
+                       (= new-offset (length updated)))
+                  (length new-starts))
+                 (t
+                  (edit-line-index-at-offset
+                   new-starts new-offset))))
              (new-end
                (cond
                  ((plusp new-length)
@@ -368,7 +410,10 @@
                  (t new-start))))
         (push
          (make-edit-diff-range
-          :old-start old-start
+          :old-start
+          (if preserved-line-prefix-p
+              (1+ old-end)
+              old-start)
           :old-end old-end
           :new-start new-start
           :new-end new-end)
@@ -439,7 +484,8 @@
             (min (length old-lines)
                  (+ old-end 5))
           do
-          (when (plusp group-index)
+          (when (or (plusp group-index)
+                    (plusp before))
             (push
              (format nil " ~vA ..." width "")
              output))
@@ -473,7 +519,14 @@
                  (format-edit-diff-line
                   #\Space (1+ index) width
                   (aref old-lines index))
-                 output)))
+                 output))
+          (when
+              (and
+               (= group-index (1- (length groups)))
+               (< after (length old-lines)))
+            (push
+             (format nil " ~vA ..." width "")
+             output)))
     (values
      (join-lines (nreverse output))
      (and groups

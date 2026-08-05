@@ -27,6 +27,10 @@
           (cadr-ai:model-context-window
            (cadr-agent:agent-model agent))
           16
+          (cadr-agent::agent-compaction-reserve-tokens agent)
+          4
+          (cadr-agent::agent-compaction-keep-recent-tokens agent)
+          4
           (cadr-agent::agent-auto-compact-p agent)
           nil)
     (values agent remaining)))
@@ -70,7 +74,10 @@
            (list
             (cli-test-assistant "branch-a-assistant")
             (cli-test-assistant "branch-b-assistant")
-            (cli-test-assistant "compact-summary")))
+            ;; The fixed baseline summarizes a split turn in two requests:
+            ;; older history first, then the retained turn prefix.
+            (cli-test-assistant "compact-history")
+            (cli-test-assistant "compact-turn-prefix")))
         (is
          (cadr-cli::handle-session-command
           "/name workflow"
@@ -115,10 +122,11 @@
          (find :compaction
                (cadr-agent:session-entries source)
                :key #'cadr-agent:session-entry-type))
-        (is (search
-             "compact-summary"
-             (goal9-a2-message-transcript
-              (cadr-agent:agent-messages agent))))
+        (let ((compacted
+                (goal9-a2-message-transcript
+                 (cadr-agent:agent-messages agent))))
+          (is (search "compact-history" compacted))
+          (is (search "compact-turn-prefix" compacted)))
 
         (is
          (cadr-cli::handle-session-command

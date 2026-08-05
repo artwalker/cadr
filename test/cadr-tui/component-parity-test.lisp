@@ -332,3 +332,25 @@
       (is (string=
            expected
            (cadr-tui::format-footer-tokens count))))))
+
+(test goal17-narrow-footer-truncation-keeps-the-baseline-dim-ellipsis
+  ;; footer.ts:229 passes a dim-styled ellipsis to truncateToWidth.  Keeping
+  ;; the ellipsis in the same style run matters after terminal replay.
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((ellipsis
+                  (cadr-tui:theme-foreground
+                   :dim "..." :enabled-p t))
+                (line
+                  (first
+                   (cadr-tui:render-footer
+                    8 :cwd "/long/path"
+                    :model "model"
+                    :ansi-theme-p t))))
+           (is (= 8 (cadr-tui:visible-width line)))
+           (is (search ellipsis line)))
+      (cadr-tui:reset-current-theme))))

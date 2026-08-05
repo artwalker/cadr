@@ -30,11 +30,13 @@
       :stream-function
       (lambda
           (provider model context on-event
-           &key max-tokens temperature abort-p)
+           &key max-tokens temperature abort-p
+             cache-retention session-id)
         (declare
          (ignore
           provider model context
-          max-tokens temperature abort-p))
+          max-tokens temperature abort-p
+          cache-retention session-id))
         (let ((message (pop remaining)))
           (funcall
            on-event

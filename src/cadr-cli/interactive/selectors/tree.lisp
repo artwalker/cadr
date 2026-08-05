@@ -224,8 +224,18 @@
     (and
      (eq (getf entry :type) :message)
      (eq (getf entry :role) :assistant)
-     (getf entry :tool-call-only-p)
-     (not (getf entry :error-p))
+     (zerop
+      (length
+       (tree-selector-normalize-display-text
+        (getf entry :text))))
+     (not
+      (let ((stop-reason
+              (getf entry :stop-reason)))
+        (and stop-reason
+             (not
+              (member stop-reason
+                      '(:stop :tool-use)
+                      :test #'eq)))))
      (not
       (equal (getf entry :id)
              current-leaf-id))))
@@ -1323,13 +1333,24 @@
                   'string
                   (cadr-tui:theme-foreground
                    :success "assistant: ")
-                  (if (plusp (length text))
-                      text
-                      (cadr-tui:theme-foreground
-                       :muted
-                       (if (getf entry :error-p)
-                           "(aborted)"
-                           "(no content)")))))
+                  (cond
+                    ((plusp (length text))
+                     text)
+                    ((eq (getf entry :stop-reason)
+                         :aborted)
+                     (cadr-tui:theme-foreground
+                      :muted "(aborted)"))
+                    ((getf entry :error-message)
+                     (cadr-tui:theme-foreground
+                      :error
+                      (let ((error-text
+                              (tree-selector-normalize-display-text
+                               (getf entry :error-message))))
+                        (subseq error-text 0
+                                (min 80 (length error-text))))))
+                    (t
+                     (cadr-tui:theme-foreground
+                      :muted "(no content)")))))
                 ((:tool-result :toolresult)
                  (cadr-tui:theme-foreground
                   :muted
@@ -1364,9 +1385,11 @@
              (:compaction
               (cadr-tui:theme-foreground
                :border-accent
-               (if (plusp (length text))
-                   (format nil "[compaction]: ~A" text)
-                   "[compaction]")))
+               (format nil "[compaction: ~Dk tokens]"
+                       (round
+                        (or (getf entry :tokens-before)
+                            0)
+                        1000))))
              (:branch-summary
               (concatenate
                'string
@@ -1395,7 +1418,7 @@
               (cadr-tui:theme-foreground
                :dim
                (format nil "[label: ~A]"
-                       (or (getf entry :label)
+                       (or (getf entry :entry-label)
                            "(cleared)"))))
              (:session-info
               (cadr-tui:theme-foreground

@@ -52,14 +52,14 @@
 
 (defun call-with-remote-repl (agent port function)
   (if (null port)
-      (funcall function)
+      (funcall function nil)
       (let ((started-port nil))
         (install-active-agent agent)
         (unwind-protect
              (progn
                (setf started-port
                      (start-remote-repl port))
-               (funcall function))
+               (funcall function started-port))
           (when started-port
             (ignore-errors
               (uiop:symbol-call

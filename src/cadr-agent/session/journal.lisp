@@ -7,7 +7,9 @@
     (cadr-ai:assistant-message
      (cadr-ai:assistant-message-timestamp message))
     (cadr-ai:tool-result-message
-     (cadr-ai:tool-result-message-timestamp message))))
+     (cadr-ai:tool-result-message-timestamp message))
+    (bash-execution-message
+     (bash-execution-message-timestamp message))))
 
 (defun make-session-entry-id (by-id)
   (loop repeat 100
@@ -198,7 +200,9 @@
         ((typep message 'cadr-ai:user-message)
          (cadr-ai:user-message-timestamp message))
         ((typep message 'cadr-ai:assistant-message)
-         (cadr-ai:assistant-message-timestamp message))))))
+         (cadr-ai:assistant-message-timestamp message))
+        ((typep message 'bash-execution-message)
+         (bash-execution-message-timestamp message))))))
 
 (defun create-session (&key
                              (directory

@@ -1041,6 +1041,28 @@
       expected
       (cadr-agent::truncate-summary-tool-result text)))))
 
+(test goal17-summary-tool-result-truncates-by-javascript-utf16-code-units
+  ;; pi@74caa2649 compaction/utils.ts:88-99 uses String.length and slice,
+  ;; whose unit is UTF-16 rather than Unicode scalar values.
+  (let* ((emoji (string (code-char #x1f642)))
+         (text
+           (concatenate
+            'string
+            (apply #'concatenate 'string
+                   (make-list 1000 :initial-element emoji))
+            "x"))
+         (expected-prefix
+           (apply #'concatenate 'string
+                  (make-list 1000 :initial-element emoji)))
+         (expected
+           (format nil "~A~%~%[... 1 more characters truncated]"
+                   expected-prefix)))
+    (is (= 2001 (cadr-agent::utf16-code-unit-length text)))
+    (is
+     (string=
+      expected
+      (cadr-agent::truncate-summary-tool-result text)))))
+
 (test goal17-split-turn-compaction-uses-two-summaries-and-combines-usage
   (with-session-directories (sessions cwd other-cwd)
     (values other-cwd)

@@ -1158,18 +1158,24 @@
     (cond
       ((session-selector-state-confirming-delete-path
         selector)
-       (setf
-        hint-1
-       (cadr-tui:theme-foreground
-         :error
-         (format nil "Delete session? ~A confirm · ~A cancel"
-                 (selector-keybinding-text
-                  (session-selector-state-keybindings selector)
-                  "tui.select.confirm")
-                 (selector-keybinding-text
-                  (session-selector-state-keybindings selector)
-                  "tui.select.cancel")))
-        hint-2 ""))
+       (let* ((keybindings
+                (session-selector-state-keybindings selector))
+              (confirm-hint
+                (concatenate
+                 'string
+                 "Delete session? "
+                 (selector-keybinding-hint
+                  keybindings "tui.select.confirm" "confirm")
+                 " · "
+                 (selector-keybinding-hint
+                  keybindings "tui.select.cancel" "cancel"))))
+         (setf
+          hint-1
+          (cadr-tui:theme-foreground
+           :error
+           (cadr-tui:truncate-to-width
+            confirm-hint width "…"))
+          hint-2 "")))
       ((session-selector-state-status-message selector)
        (setf
         hint-1
@@ -1276,6 +1282,11 @@
                 (session-selector-state-current-session-path
                  selector))
              for name-p = (named-session-p record)
+             for confirming-delete-p =
+               (same-session-path-p
+                (session-search-record-path record)
+                (session-selector-state-confirming-delete-path
+                 selector))
              for prefix =
                (session-selector-node-prefix nodes index)
              for raw-label =
@@ -1312,20 +1323,21 @@
                (cadr-tui:truncate-to-width
                 raw-label available "…")
              for styled-label =
-               (funcall
-                (cond
-                  (current-p
-                   (lambda (text)
-                     (cadr-tui:theme-foreground
-                      :accent text)))
-                  (name-p
-                   (lambda (text)
-                     (cadr-tui:theme-foreground
-                      :warning text)))
-                  (t #'identity))
-                (if selected-p
-                    (cadr-tui:theme-bold fitted-label)
-                    fitted-label))
+               (let ((colored-label
+                       (cond
+                         (confirming-delete-p
+                          (cadr-tui:theme-foreground
+                           :error fitted-label))
+                         (current-p
+                          (cadr-tui:theme-foreground
+                           :accent fitted-label))
+                         (name-p
+                          (cadr-tui:theme-foreground
+                           :warning fitted-label))
+                         (t fitted-label))))
+                 (if selected-p
+                     (cadr-tui:theme-bold colored-label)
+                     colored-label))
              for left =
                (concatenate
                 'string cursor
@@ -1344,7 +1356,8 @@
                 (make-string spacing
                              :initial-element #\Space)
                 (cadr-tui:theme-foreground
-                 :dim right-part))
+                 (if confirming-delete-p :error :dim)
+                 right-part))
              collect
                (if selected-p
                    (cadr-tui:theme-background

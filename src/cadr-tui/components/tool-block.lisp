@@ -411,6 +411,65 @@
         (terminal-hyperlink styled url)
         styled)))
 
+(defun style-default-tool-header-parts
+    (text suffix-regex main-token suffix-token ansi-theme-p
+     &key bold-main-p prefix)
+  (multiple-value-bind (start end)
+      (cl-ppcre:scan suffix-regex text)
+    (declare (ignore end))
+    (let* ((split (or start (length text)))
+           (main
+             (concatenate
+              'string (or prefix "")
+              (subseq text 0 split)))
+           (suffix (subseq text split)))
+      (concatenate
+       'string
+       (theme-foreground
+        main-token
+        (if bold-main-p
+            (theme-bold main :enabled-p ansi-theme-p)
+            main)
+        :enabled-p ansi-theme-p)
+       (if (plusp (length suffix))
+           (theme-foreground
+            suffix-token suffix :enabled-p ansi-theme-p)
+           "")))))
+
+(defun render-default-tool-header
+    (block status-token indicator ansi-theme-p)
+  (let* ((name (tool-block-name block))
+         (summary (tool-block-summary block))
+         (indicator-text
+           (and
+            indicator
+            (theme-foreground
+             status-token indicator :enabled-p ansi-theme-p))))
+    (if (string-equal name "bash")
+        (format
+         nil "~@[~A ~]~A"
+         indicator-text
+         (style-default-tool-header-parts
+          summary
+          " \\(timeout [0-9]+(?:\\.[0-9]+)?s\\)$"
+          :tool-title :muted ansi-theme-p
+          :bold-main-p t :prefix "$ "))
+        (format
+         nil "~@[~A ~]~A~@[ ~A~]"
+         indicator-text
+         (theme-foreground
+          :tool-title
+          (theme-bold name :enabled-p ansi-theme-p)
+          :enabled-p ansi-theme-p)
+         (and
+          (plusp (length summary))
+          (if (string-equal name "read")
+              (style-default-tool-header-parts
+               summary ":[0-9]+(?:-[0-9]+)?$"
+               :accent :warning ansi-theme-p)
+              (theme-foreground
+               :accent summary :enabled-p ansi-theme-p)))))))
+
 (defun tool-output-preview-lines
     (block content-width ansi-theme-p)
   (let* ((styled-lines
@@ -443,13 +502,20 @@
                          budget)))
          (cons
           (truncate-to-width
-           (theme-foreground
-            :muted
-            (format nil
-                    "... (~D earlier lines, ~A to expand)"
-                    skipped
-                    (tool-block-expand-key-text block))
-            :enabled-p ansi-theme-p)
+           (concatenate
+            'string
+            (theme-foreground
+             :muted
+             (format nil "... (~D earlier lines," skipped)
+             :enabled-p ansi-theme-p)
+            " "
+            (theme-foreground
+             :dim
+             (tool-block-expand-key-text block)
+             :enabled-p ansi-theme-p)
+            (theme-foreground
+             :muted " to expand)"
+             :enabled-p ansi-theme-p))
            content-width "...")
           (nthcdr skipped visual-lines))))
       (t
@@ -482,66 +548,8 @@
                      (render-tool-header-segment
                       segment ansi-theme-p))
                    (tool-block-header-segments block)))
-                 (format
-                  nil "~@[~A ~]~A~@[ ~A~]"
-              (and
-               indicator
-               (theme-foreground
-                status-token indicator
-                :enabled-p ansi-theme-p))
-              (theme-foreground
-               :tool-title
-               (theme-bold
-                (if
-                    (string-equal
-                     (tool-block-name block)
-                     "bash")
-                    "$"
-                    (tool-block-name block))
-                :enabled-p ansi-theme-p)
-               :enabled-p ansi-theme-p)
-              (let ((summary
-                      (tool-block-summary block)))
-                (when (plusp (length summary))
-                  (labels
-                      ((colored-parts
-                           (suffix-regex main-token suffix-token
-                            &key bold-main-p)
-                         (multiple-value-bind (start end)
-                             (cl-ppcre:scan suffix-regex summary)
-                           (declare (ignore end))
-                           (let* ((split (or start (length summary)))
-                                  (main (subseq summary 0 split))
-                                  (suffix (subseq summary split)))
-                             (concatenate
-                              'string
-                              (theme-foreground
-                               main-token
-                               (if bold-main-p
-                                   (theme-bold
-                                    main :enabled-p ansi-theme-p)
-                                   main)
-                               :enabled-p ansi-theme-p)
-                              (if (plusp (length suffix))
-                                  (theme-foreground
-                                   suffix-token suffix
-                                   :enabled-p ansi-theme-p)
-                                  ""))))))
-                    (cond
-                      ((string-equal
-                        (tool-block-name block) "bash")
-                       (colored-parts
-                        " \\(timeout [0-9]+(?:\\.[0-9]+)?s\\)$"
-                        :tool-title :muted :bold-main-p t))
-                      ((string-equal
-                        (tool-block-name block) "read")
-                       (colored-parts
-                        ":[0-9]+(?:-[0-9]+)?$"
-                        :accent :warning))
-                      (t
-                       (theme-foreground
-                        :accent summary
-                        :enabled-p ansi-theme-p)))))))))
+                 (render-default-tool-header
+                  block status-token indicator ansi-theme-p)))
            (header-lines
              (wrap-text
               (cl-ppcre:regex-replace-all
@@ -588,12 +596,14 @@
               (and (tool-block-supplemental-lines block)
                    (cons
                     ""
-                    (mapcar
-                     (lambda (line)
-                       (theme-foreground
-                        :warning line
-                        :enabled-p ansi-theme-p))
-                     (tool-block-supplemental-lines block))))
+                    (loop for line in
+                          (tool-block-supplemental-lines block)
+                          nconc
+                          (wrap-logical-line
+                           (theme-foreground
+                            :warning line
+                            :enabled-p ansi-theme-p)
+                           content-width))))
               (and timing-line
                    (list "" timing-line))
               (list ""))))

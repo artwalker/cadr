@@ -206,7 +206,10 @@
                  (theme-foreground
                   :dim location
                   :enabled-p ansi-theme-p)
-                 width "...")
+                 width
+                 (theme-foreground
+                  :dim "..."
+                  :enabled-p ansi-theme-p))
                 (truncate-to-width
                  second-line width "" nil))))
         (if statuses

@@ -745,13 +745,10 @@
                     :start
                     (1+ compaction-position))))
                (let ((estimate
-                       (cadr-ai:estimate-context-tokens
-                        (cadr-agent:agent-messages
-                         agent))))
+                       (cadr-agent::context-estimated-tokens
+                        (cadr-agent:agent-messages agent))))
                  (* 100d0
-                    (/ (cadr-ai:context-usage-estimate-tokens
-                        estimate)
-                       window))))))
+                    (/ estimate window))))))
          (current-cache-hit-rate ()
            (let ((current
                    (cadr-agent:agent-session agent)))
@@ -802,7 +799,12 @@
                     (remove-duplicates
                      (mapcar
                       #'cadr-ai:model-provider
-                      available-models)
+                      (if scoped-model-entries
+                          (mapcar
+                           (lambda (entry)
+                             (getf entry :model))
+                           scoped-model-entries)
+                          available-models))
                      :test #'eq))
                   (messages
                     (and
@@ -988,20 +990,30 @@
                   :rpc
                   :interactive))))
          (run-user-bash (command exclude-p)
-           (multiple-value-bind (content details)
-               (execute-user-bash
-                (cli-extension-manager-host
-                 extension-manager)
-                cwd command
-                :exclude-from-context-p
-                exclude-p
-                :abort-p
-                (lambda () abort-requested-p))
-             (declare (ignore details))
-             (if content
-                 (cadr-ai:text-content-text
-                  (first content))
-                 "")))
+           (if (eq mode :tui)
+               (let ((*bash-live-output*
+                       (bash-live-output-for-mode
+                        mode frontend-output)))
+                 (record-user-bash-result
+                  agent
+                  (execute-user-bash-for-tui
+                   (cli-extension-manager-host extension-manager)
+                   cwd command
+                   :exclude-from-context-p exclude-p
+                   :abort-p (lambda () abort-requested-p))))
+               (multiple-value-bind (content details)
+                   (execute-user-bash
+                    (cli-extension-manager-host extension-manager)
+                    cwd command
+                    :exclude-from-context-p exclude-p
+                    :abort-p (lambda () abort-requested-p))
+                 (record-user-bash-result
+                  agent
+                  (make-user-bash-result-from-execution
+                   command exclude-p content details))
+                 (if content
+                     (cadr-ai:text-content-text (first content))
+                     ""))))
          (refresh-package-resources ()
            (setf
             package-records
@@ -1503,36 +1515,7 @@
            (let ((current
                    (cadr-agent:agent-session
                     agent)))
-             (if (null current)
-                 (values nil nil nil)
-                 (let* ((entries
-                          (cadr-agent::session-path-entries
-                           current))
-                        (compaction
-                          (find
-                           :compaction entries
-                           :from-end t
-                           :key
-                           #'cadr-agent:session-entry-type)))
-                   (values
-                    (loop
-                      for entry in entries
-                      when
-                        (eq
-                         :message
-                         (cadr-agent:session-entry-type
-                          entry))
-                        collect
-                        (cadr-agent:session-entry-message
-                         entry))
-                    (and
-                     compaction
-                     (cadr-agent:session-entry-summary
-                      compaction))
-                    (and
-                     compaction
-                     (cadr-agent:session-entry-tokens-before
-                      compaction)))))))
+             (session-compaction-display-state current)))
          (select-session (candidate)
            (switch-agent-session agent candidate)
            (values
@@ -1622,11 +1605,9 @@
          (extension-context-usage ()
            (let* ((model (cadr-agent:agent-model agent))
                   (window (cadr-ai:model-context-window model))
-                  (estimate
-                    (cadr-ai:estimate-context-tokens
-                     (cadr-agent:agent-messages agent)))
                   (tokens
-                    (cadr-ai:context-usage-estimate-tokens estimate)))
+                    (cadr-agent::context-estimated-tokens
+                     (cadr-agent:agent-messages agent))))
              (and
               (plusp window)
               (list :tokens tokens
@@ -1757,7 +1738,8 @@
       (call-with-remote-repl
        agent
        (cli-arguments-slynk-port command)
-       (lambda ()
+       (lambda (remote-repl-port)
+         (declare (ignore remote-repl-port))
          (call-with-cli-signal-handlers
           agent
           (lambda ()
@@ -2136,7 +2118,8 @@
              (cadr-agent:agent-session agent)))
            :messages
            (copy-list
-            (cadr-agent:agent-messages agent))
+            (session-display-messages
+             (cadr-agent:agent-session agent)))
            :project-trust-warning
            (project-trust-warning-text
             project-trusted-p cwd)
@@ -2164,7 +2147,13 @@
            (let ((warning
                    (anthropic-warning)))
              (and warning
-                  (list warning)))))
+                  (list warning)))
+           :initial-statuses
+           (let ((status
+                   (session-compaction-status
+                    (cadr-agent:agent-session agent))))
+             (and status
+                  (list status)))))
             (let ((active-session
                     (cadr-agent:agent-session agent)))
               (when active-session

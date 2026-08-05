@@ -191,7 +191,7 @@
     (is
      (equal
       '(""
-        " Reloaded keybindings, extensions, skills, prompts, themes, and context files")
+        " Reloaded keybindings, extensions, skills, prompts, themes, and context files             ")
       (mapcar
        #'cadr-tui:strip-terminal-sequences
        (cadr-cli::render-tui-entry
@@ -219,7 +219,8 @@
     (is (= 1 (length (cadr-cli::tui-state-entries state))))
     (is
      (equal
-      '("" " Restored 1 queued message to editor")
+      '(""
+        " Restored 1 queued message to editor                                            ")
       (mapcar
        #'cadr-tui:strip-terminal-sequences
        (cadr-cli::render-tui-entry
@@ -272,10 +273,25 @@
              :text (format nil "~A~%~%~A session.jsonl~%"
                            heading label))
             80)))
-    (is (string= (concatenate 'string " " heading)
-                 (second rendered)))
-    (is (string= (concatenate 'string " " label " session.jsonl")
-                 (fourth rendered)))
+    (let ((heading-line (concatenate 'string " " heading))
+          (label-line
+            (concatenate 'string " " label " session.jsonl")))
+      (is
+       (string=
+        (concatenate
+         'string heading-line
+         (make-string
+          (- 80 (cadr-tui:visible-width heading-line))
+          :initial-element #\Space))
+        (second rendered)))
+      (is
+       (string=
+        (concatenate
+         'string label-line
+         (make-string
+          (- 80 (cadr-tui:visible-width label-line))
+          :initial-element #\Space))
+        (fourth rendered))))
     (is (null
          (search
           (cadr-tui:theme-foreground
@@ -383,11 +399,16 @@
            (cadr-cli::make-tui-entry
             :type type :text text)
            80))))
-    (is (equal '("" " Error: broken")
+    (is (equal '(""
+                 " Error: broken                                                                  ")
                (plain :error "broken")))
-    (is (equal '("" " Warning: caution")
+    (is (equal '(""
+                 " Warning: caution                                                               ")
                (plain :warning "caution")))
-    (is (equal '("" "" " ✓ New session started" "")
+    (is (equal (list ""
+                     (make-string 80 :initial-element #\Space)
+                     " ✓ New session started                                                         "
+                     (make-string 80 :initial-element #\Space))
                (plain :success "New session started")))
     (dolist (type '(:notice :status :error :warning :success))
       (is (notany
@@ -1232,15 +1253,24 @@
            state editor 40 8 :full-document-p t)
         (declare (ignore main-column alt-column))
         ;; pi@74caa2649 root composition is a natural document in both main
-        ;; and alt modes.  Only the renderer selects a viewport.
+        ;; and alt modes.  Only the renderer selects a viewport.  Pi's Text
+        ;; component pads notice lines to the full width, so document-content
+        ;; assertions must ignore only that baseline-owned right padding.
         (is (equal main-lines alt-lines))
         (is (> (length main-lines) 8))
         (is (= main-row alt-row))
-        (is (find " notice-1"
-                  (mapcar
-                   #'cadr-tui:strip-terminal-sequences
-                   main-lines)
-                  :test #'string=))
+        (let ((notice-line
+                (find-if
+                 (lambda (line)
+                   (string=
+                    " notice-1"
+                    (string-right-trim
+                     " "
+                     (cadr-tui:strip-terminal-sequences line))))
+                 main-lines)))
+          (is (stringp notice-line))
+          (when notice-line
+            (is (= 40 (cadr-tui:visible-width notice-line)))))
         (let* ((terminal
                  (cadr-tui:make-virtual-terminal
                   :columns 40 :rows 8))
@@ -1253,11 +1283,14 @@
                   (cadr-tui:virtual-terminal-snapshot terminal)))
             (is (= 8 (length screen)))
             (is (null
-                 (find " notice-1"
-                       (mapcar
-                        #'cadr-tui:strip-terminal-sequences
-                        screen)
-                       :test #'string=)))))))))
+                 (find-if
+                  (lambda (line)
+                    (string=
+                     " notice-1"
+                     (string-right-trim
+                      " "
+                      (cadr-tui:strip-terminal-sequences line))))
+                  screen)))))))))
 
 (test idle-status-helper-reserves-space-only-when-requested
   (is (= 2
@@ -1644,7 +1677,7 @@
      (search
       (cadr-tui:theme-foreground
        :tool-title
-       (cadr-tui:theme-bold "sleep 1" :enabled-p t)
+       (cadr-tui:theme-bold "$ sleep 1" :enabled-p t)
        :enabled-p t)
       bash-header))
     (is
@@ -1818,6 +1851,70 @@
               nil))
            (is (equal '(:forward :backward)
                       (nreverse directions))))
+      (cadr-tui:set-keybindings previous))))
+
+(test goal17-local-status-actions-match-baseline-and-refresh-cycle-footer
+  (let ((footer-state
+          '(:model "faux-1"
+            :provider "faux"
+            :thinking :high
+            :context-window 128000
+            :context-percent 0d0))
+        (screen nil)
+        (previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager))
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "faux-1"
+            :provider "faux"
+            :thinking :high
+            :context-window 128000
+            :available-provider-count 2
+            :footer-state-function
+            (lambda () (copy-list footer-state))
+            :cycle-model-function
+            (lambda (direction)
+              (is (eq :forward direction))
+              (setf footer-state
+                    '(:model "other-1"
+                      :provider "other"
+                      :thinking :off
+                      :context-window 64000
+                      :context-percent 0d0))
+              "Switched to Other Model")
+            :terminal
+            (make-instance
+             'footer-sync-test-terminal
+             :columns 100 :rows 22
+             :inputs
+             (list
+              (string (code-char 16))
+              (footer-sync-wait-for-screen-text
+               "Switched to Other Model")
+              (string (code-char 15))
+              (footer-sync-wait-for-screen-text
+               "Tool output: expanded")
+              (string (code-char 15))
+              (footer-sync-wait-for-screen-text
+               "Tool output: collapsed")
+              (lambda (terminal)
+                (setf
+                 screen
+                 (format
+                  nil "~{~A~^~%~}"
+                  (mapcar
+                   #'cadr-tui:strip-terminal-sequences
+                   (cadr-tui:virtual-terminal-snapshot
+                    terminal))))
+                t)
+              (footer-sync-submit-input "/quit"))))
+           (is (search "Tool output: collapsed" screen))
+           (is (search "0.0%/64k (auto)" screen))
+           (is (search "(other) other-1" screen))
+           (is (null (search "faux-1" screen))))
       (cadr-tui:set-keybindings previous))))
 
 (test goal9-b3-logout-opens-stored-provider-selector-and-removes-selection
@@ -2451,6 +2548,393 @@
           '(#\Space)
           (cadr-tui::strip-ansi line)))
        (cadr-cli::render-tui-entry entry 80))))))
+
+(test goal17-operation-aborted-padding-is-outside-error-color-span
+  ;; Fixed pi@74caa2649 assistant-message.ts:194 constructs
+  ;; Text(theme.fg("error", message), outputPad=1, 0): Text owns the
+  ;; padding, so the leading/trailing cells are not part of the red span.
+  (let* ((entry
+           (cadr-cli::make-tui-entry
+            :type :assistant
+            :stop-reason :aborted
+            :error-message "Request was aborted"))
+         (lines (cadr-cli::render-tui-entry entry 80))
+         (abort-line
+           (find-if
+            (lambda (line)
+              (search "Operation aborted" line))
+            lines))
+         (styled-message
+           (cadr-tui:theme-foreground
+            :error "Operation aborted" :enabled-p t))
+         (expected-prefix
+           (concatenate 'string " " styled-message))
+         (prefix-position
+           (and abort-line
+                (search expected-prefix abort-line))))
+    (is (stringp abort-line))
+    (is (integerp prefix-position))
+    (when prefix-position
+      (let ((after-prefix
+              (+ prefix-position (length expected-prefix))))
+        (is (> (length abort-line) after-prefix))
+        (is (char= #\Space
+                   (char abort-line after-prefix)))))))
+
+(test goal17-transcript-text-entries-use-baseline-text-component-padding
+  ;; Fixed pi@74caa2649 interactive-mode.ts:3244,3918-3924 and
+  ;; 5915-5917 render these transcript messages through Text.  Text owns
+  ;; full-width padding outside the themed content; hand-built lines do not.
+  (dolist (spec
+            '((:notice "Notice text" :dim "Notice text")
+              (:status "Status text" :dim "Status text")
+              (:error "transport failed" :error
+               "Error: transport failed")
+              (:warning "check this" :warning
+               "Warning: check this")
+              (:project-trust-warning "Trust warning" :warning
+               "Trust warning")
+              (:success "New session started" :accent
+               "✓ New session started")))
+    (destructuring-bind (type text color expected-text) spec
+      (let* ((width 48)
+             (entry
+               (cadr-cli::make-tui-entry
+                :type type :text text))
+             (rendered
+               (cadr-cli::render-tui-entry entry width))
+             (content
+               (find-if
+                (lambda (line)
+                  (search expected-text line))
+                rendered))
+             (styled
+               (cadr-tui:theme-foreground
+                color expected-text :enabled-p t))
+             (expected
+               (concatenate
+                'string " " styled
+                (make-string
+                 (- width 1
+                    (cadr-tui:visible-width styled))
+                 :initial-element #\Space))))
+        (is (stringp content))
+        (is (string= expected content))
+        (is (= width (cadr-tui:visible-width content)))))))
+
+(test goal17-oauth-provider-status-span-owns-its-leading-space
+  ;; Fixed pi@74caa2649 oauth-selector.ts:98-151 includes the separator space
+  ;; inside every status span.  It never inserts an unstyled gap between the
+  ;; provider label and status.
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((state
+                  (cadr-cli::make-oauth-selector-state
+                   :mode :login
+                   :options
+                   (list
+                    (cadr-cli::make-oauth-selector-option
+                     :id :anthropic :name "Anthropic"
+                     :auth-type :oauth)
+                    (cadr-cli::make-oauth-selector-option
+                     :id :faux :name "faux" :auth-type :oauth
+                     :status '(:type :oauth
+                               :source "stored credential")))))
+                (lines (cadr-cli::render-oauth-selector state 80))
+                (anthropic
+                  (find-if (lambda (line) (search "Anthropic" line)) lines))
+                (faux
+                  (find-if (lambda (line) (search "faux" line)) lines)))
+           (is
+            (search
+             (concatenate
+              'string
+              (cadr-tui:theme-foreground
+               :accent "Anthropic" :enabled-p t)
+              (cadr-tui:theme-foreground
+               :muted " • unconfigured" :enabled-p t))
+             anthropic))
+           (is
+            (search
+             (concatenate
+              'string
+              (cadr-tui:theme-foreground
+               :text "faux" :enabled-p t)
+              (cadr-tui:theme-foreground
+               :success " ✓ configured" :enabled-p t))
+             faux)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal17-fork-help-wrap-keeps-text-padding-inside-muted-span
+  ;; Fixed pi@74caa2649 user-message-selector.ts:123-130 renders the help as
+  ;; Text(theme.fg("muted", ...), 1, 0).  The ANSI-aware wrapper therefore
+  ;; carries the muted span through intermediate-line padding, while the final
+  ;; line resets at the end of the actual text before Text adds its padding.
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((width 48)
+                (message
+                  "Select a user message to copy the active path up to that point into a new session")
+                (content-width (- width 2))
+                (expected-lines
+                  (mapcar
+                   (lambda (wrapped)
+                     (cadr-cli::component-text-line
+                      wrapped width :padding-x 1))
+                   (cadr-tui:wrap-text
+                    (cadr-tui:theme-foreground
+                     :muted message :enabled-p t)
+                    content-width)))
+                (rendered
+                  (cadr-cli::render-user-message-selector
+                   (cadr-cli::make-user-message-selector-state
+                    :items
+                    (list
+                     (cadr-tui:make-select-item
+                      :label "question" :value "u1")))
+                   width))
+                (start
+                  (position-if
+                   (lambda (candidate)
+                     (search "Select a user message" candidate))
+                   rendered))
+                (actual-lines
+                  (and start
+                       (subseq rendered start
+                               (+ start (length expected-lines))))))
+           (is (integerp start))
+           (is (equal expected-lines actual-lines))
+           (is (every
+                (lambda (line)
+                  (= width (cadr-tui:visible-width line)))
+                actual-lines)))
+      (cadr-tui:reset-current-theme))))
+
+(test goal17-session-delete-confirmation-keeps-key-and-row-error-styles
+  ;; Fixed pi@74caa2649 session-selector.ts:158-161,448-509 preserves the
+  ;; nested keyHint dim/muted styles inside the error prompt and marks both
+  ;; the selected session label and its right metadata as error while delete
+  ;; confirmation is active.
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((path "/tmp/goal17-delete-session.jsonl")
+                (record
+                  (cadr-cli:make-session-search-record
+                   :id "delete" :path path
+                   :first-message "delete me" :message-count 2
+                   :modified 0 :all-messages-text "delete me"))
+                (state
+                  (cadr-cli::make-session-selector-state
+                   :current-sessions (list record)
+                   :all-sessions (list record) :all-loaded-p t))
+                (keybindings
+                  (cadr-cli::session-selector-state-keybindings state)))
+           (setf
+            (cadr-cli::session-selector-state-confirming-delete-path state)
+            path)
+           (let* ((lines (cadr-cli::render-session-selector state 100))
+                  (hint
+                    (find-if
+                     (lambda (line) (search "Delete session?" line))
+                     lines))
+                  (row
+                    (find-if
+                     (lambda (line) (search "delete me" line))
+                     lines))
+                  (confirm-key
+                    (cadr-cli::selector-keybinding-text
+                     keybindings "tui.select.confirm"))
+                  (cancel-key
+                    (cadr-cli::selector-keybinding-text
+                     keybindings "tui.select.cancel")))
+             (is
+              (search
+               (cadr-tui:theme-foreground
+                :dim confirm-key :enabled-p t)
+               hint))
+             (is
+              (search
+               (cadr-tui:theme-foreground
+                :muted " confirm" :enabled-p t)
+               hint))
+             (is
+              (search
+               (cadr-tui:theme-foreground
+                :dim cancel-key :enabled-p t)
+               hint))
+             (is
+              (search
+               (cadr-tui:theme-bold
+                (cadr-tui:theme-foreground
+                 :error "delete me" :enabled-p t)
+                :enabled-p t)
+               row))
+             (is
+              (search
+               (cadr-tui:theme-foreground
+                :error
+                (format nil "2 ~A"
+                        (cadr-cli::session-selector-format-age 0))
+                :enabled-p t)
+               row))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal17-extension-selector-keeps-unselected-prefix-outside-text-color
+  ;; Fixed pi@74caa2649 extension-selector.ts:92-95 constructs unselected
+  ;; rows as a plain two-cell prefix followed by only the themed label.  Text
+  ;; then adds its own plain one-cell margin and full-width padding.
+  (let* ((width 40)
+         (rendered
+           (cadr-cli::render-framed-select-state
+            (cadr-cli::make-framed-select-state
+             "Choose" '("Alpha" "Beta") '(1 2))
+            width))
+         (beta-line
+           (find-if
+            (lambda (line) (search "Beta" line))
+            rendered))
+         (expected
+           (concatenate
+            'string
+            "   "
+            (cadr-tui:theme-foreground
+             :text "Beta" :enabled-p t)
+            (make-string 33 :initial-element #\Space))))
+    (is (stringp beta-line))
+    (is (string= expected beta-line))
+    (is (= width (cadr-tui:visible-width beta-line)))))
+
+(test goal17-extension-confirm-renders-title-and-message-as-one-multiline-text
+  ;; Fixed pi@74caa2649 interactive-mode.ts:2299-2305 passes one multiline
+  ;; title to ExtensionSelectorComponent.  The first physical line therefore
+  ;; keeps the outer accent active through Text's trailing padding, while the
+  ;; countdown is appended after the final message line.
+  (let* ((width 40)
+         (state
+           (cadr-cli::make-framed-select-state
+            "Import session" '("Yes" "No") '(t nil)
+            :message "Replace current session?")))
+    (setf (cadr-cli::framed-select-state-deadline state) 13d0)
+    (let* ((rendered
+             (cadr-cli::render-framed-select-state
+              state width :now 10d0))
+           (title-line
+             (find-if
+              (lambda (line) (search "Import session" line))
+              rendered))
+           (message-line
+             (find-if
+              (lambda (line) (search "Replace current session" line))
+              rendered))
+           (expected-title
+             (concatenate
+              'string
+              " "
+              (cadr-tui:theme-foreground
+               :accent
+               (concatenate
+                'string
+                (cadr-tui:theme-bold
+                 "Import session" :enabled-p t)
+                (make-string 25 :initial-element #\Space))
+               :enabled-p t))))
+      (is (string= expected-title title-line))
+      (is (search "Replace current session? (3s)"
+                  message-line))
+      (is (null (search "Import session (3s)" title-line))))))
+
+(test goal17-settings-submenu-uses-select-list-and-text-width-contracts
+  ;; Fixed pi@74caa2649 settings-selector.ts:191-218 uses natural-width
+  ;; SelectList rows, but Automatic Theme diagnostics are Text components and
+  ;; therefore pad to the full viewport width.
+  (let ((state
+          (cadr-cli::make-settings-selector-state
+           :options nil
+           :theme-names '("dark" "light")
+           :current-theme "dark")))
+    (setf (cadr-cli::settings-selector-state-mode state)
+          :theme-single
+          (cadr-cli::settings-selector-state-submenu-selected state)
+          1)
+    (let* ((rendered
+             (cadr-cli::render-settings-select-submenu
+              state 100 "Theme"
+              "Select a theme, or choose Automatic to follow terminal appearance."))
+           (automatic
+             (find-if
+              (lambda (line)
+                (string=
+                 "  Automatic   Use separate themes for light and dark terminal appearance"
+                 (string-right-trim
+                  " "
+                  (cadr-tui:strip-terminal-sequences line))))
+              rendered))
+           (dark
+             (find-if
+              (lambda (line)
+                (string=
+                 "→ dark"
+                 (string-right-trim
+                  " "
+                  (cadr-tui:strip-terminal-sequences line))))
+              rendered))
+           (light
+             (find-if
+              (lambda (line)
+                (string=
+                 "  light"
+                 (string-right-trim
+                  " "
+                  (cadr-tui:strip-terminal-sequences line))))
+              rendered)))
+      (is
+       (string=
+        (concatenate
+         'string
+         "  Automatic"
+         (cadr-tui:theme-foreground
+          :muted
+          "   Use separate themes for light and dark terminal appearance"
+          :enabled-p t))
+        automatic))
+      (is
+       (string=
+        (cadr-tui:theme-foreground
+         :accent "→ dark" :enabled-p t)
+        dark))
+      (is (string= "  light" light)))
+    (setf (cadr-cli::settings-selector-state-mode state)
+          :theme-automatic)
+    (let* ((rendered
+             (cadr-cli::render-settings-selector state 100))
+           (diagnostic
+             (find-if
+              (lambda (line)
+                (search
+                 "Light/dark detection requires terminal support."
+                 line))
+              rendered)))
+      (is (stringp diagnostic))
+      (is (= 100 (cadr-tui:visible-width diagnostic)))
+      (is
+       (string=
+        (concatenate
+         'string
+         (cadr-tui:theme-foreground
+          :muted
+          "Light/dark detection requires terminal support."
+          :enabled-p t)
+         (make-string 53 :initial-element #\Space))
+        diagnostic)))))
 
 (test goal10-selector-overlays-preserve-transcript-above-editor-area
   (let* ((state
@@ -3126,7 +3610,13 @@
       (let ((plain
               (mapcar #'cadr-tui:strip-terminal-sequences rendered)))
         (is (> (length plain) 8))
-        (is (find " Viewport contract" plain :test #'string=))
+        (is
+         (find-if
+          (lambda (line)
+            (and (= 40 (length line))
+                 (uiop:string-prefix-p
+                  " Viewport contract" line)))
+          plain))
         (dolist (label labels)
           (is
            (find-if
@@ -4271,6 +4761,12 @@
       (is (search "Working..." (format nil "~{~A~^~%~}" lines))))
     (cadr-cli::tui-handle-agent-event
      state
+     (cadr-agent::make-agent-event :type :agent-end))
+    ;; pi@74caa2649 interactive-mode.ts:3088-3100 clears the working status
+    ;; on agent_end; agent_settled is reserved for shutdown coordination.
+    (is (null (cadr-cli::tui-state-agent-working-p state)))
+    (cadr-cli::tui-handle-agent-event
+     state
      (cadr-agent::make-agent-event :type :agent-settled))
     (is (null (cadr-cli::tui-state-agent-working-p state)))))
 
@@ -4472,3 +4968,210 @@
        (footer-sync-submit-input "/quit"))))
     (is (search "Import cancelled" screen))
     (is (null (search "Error:" screen)))))
+
+(test goal17-footer-provider-label-follows-the-live-scoped-model-projection
+  ;; pi@74caa2649 interactive-mode.ts:4406-4414 and footer.ts:190-198
+  ;; derive the optional provider badge from the live scoped-model projection.
+  ;; Narrowing two providers to one must remove the badge immediately.
+  (let* ((screen nil)
+         (provider-label-waiter
+           (let ((attempts 0))
+             (lambda (terminal)
+               (let ((rendered
+                       (format
+                        nil "~{~A~^~%~}"
+                        (mapcar
+                         #'cadr-tui:strip-terminal-sequences
+                         (cadr-tui:virtual-terminal-snapshot
+                          terminal)))))
+                 (or
+                  (and (search "faux-1" rendered)
+                       (null
+                        (search "(faux) faux-1" rendered)))
+                  (progn
+                    (when (> (incf attempts) 200)
+                      (error
+                       "Timed out waiting for the scoped provider badge to disappear:~%~A"
+                       rendered))
+                    nil))))))
+         (faux
+           (cadr-ai:make-model
+            :id "faux-1" :name "Faux"
+            :provider :faux :api :faux))
+         (other
+           (cadr-ai:make-model
+            :id "other-1" :name "Other"
+            :provider :other :api :faux))
+         (terminal
+           (make-instance
+            'footer-sync-test-terminal
+            :columns 90 :rows 18
+            :inputs
+            (list
+             (footer-sync-submit-input "/scoped-models")
+             (footer-sync-wait-for-screen-text
+              "Model Configuration")
+             (string #\Return)
+             (string #\Escape)
+             provider-label-waiter
+             (lambda (terminal)
+               (setf
+                screen
+                (format
+                 nil "~{~A~^~%~}"
+                 (mapcar
+                  #'cadr-tui:strip-terminal-sequences
+                  (cadr-tui:virtual-terminal-snapshot
+                   terminal))))
+               t)
+             (footer-sync-submit-input "/quit"))))
+         (state
+           (cadr-cli::run-tui
+            (constantly nil)
+            :model "faux-1"
+            :provider "faux"
+            :available-provider-count 2
+            :scoped-models-selector-function
+            (lambda ()
+              (cadr-cli::make-scoped-models-selector-state
+               :all-models (list faux other)
+               :enabled-ids :all))
+            :terminal terminal)))
+    (is
+     (not
+      (cadr-cli::tui-state-multiple-providers-p
+       state)))
+    (is (search "faux-1" screen))
+    (is (null (search "(faux) faux-1" screen)))))
+
+(test goal17-terminal-assistant-usage-does-not-replace-valid-context-state
+  ;; pi@74caa2649 agent-session.ts:3164-3207 rejects error/aborted usage as
+  ;; context evidence.  footer.ts:87-104 still counts its billed totals.
+  (dolist (reason '(:error :aborted))
+    (let* ((state
+             (cadr-cli::make-tui-state
+              :model "faux-1" :context-window 128000))
+           (message
+             (cadr-ai:make-assistant-message
+              :api :faux :provider :faux :model "faux-1"
+              :usage
+              (cadr-ai:make-usage
+               :input 1300 :output 14 :cache-write 1300)
+              :stop-reason reason
+              :error-message
+              (if (eq reason :aborted)
+                  "Request was aborted"
+                  "render transport failed"))))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :message-start :message message))
+      (cadr-cli::tui-handle-agent-event
+       state
+       (cadr-agent::make-agent-event
+        :type :message-end :message message))
+      (is (= 1300
+             (cadr-cli::tui-state-input-tokens state)))
+      (is (= 14
+             (cadr-cli::tui-state-output-tokens state)))
+      (is (= 1300
+             (cadr-cli::tui-state-cache-write-tokens state)))
+      (is (= 0d0
+             (cadr-cli::tui-state-context-percent state))))))
+
+(test goal17-message-end-usage-survives-the-pre-persistence-footer-refresh
+  ;; pi@74caa2649 agent.ts:529-575 updates Agent state before message_end
+  ;; listeners run.  Cadr persistence follows message_end, so a stale external
+  ;; footer snapshot must not erase the final usage before turn_end catches up.
+  (let ((event-consumer nil)
+        (persisted-p nil)
+        (message-ended
+          (sb-thread:make-semaphore :count 0))
+        (release-worker
+          (sb-thread:make-semaphore :count 0))
+        (worker-finished
+          (sb-thread:make-semaphore :count 0))
+        (screen nil))
+    (let ((message
+            (cadr-ai:make-assistant-message
+             :api :faux :provider :faux :model "faux-1"
+             :usage
+             (cadr-ai:make-usage
+              :input 1300 :output 14 :cache-write 1300)
+             :stop-reason :aborted
+             :error-message "Request was aborted")))
+      (cadr-cli::run-tui
+       (lambda (line)
+         (declare (ignore line))
+         (funcall
+          event-consumer
+          (cadr-agent::make-agent-event :type :agent-start))
+         (funcall
+          event-consumer
+          (cadr-agent::make-agent-event
+           :type :message-start :message message))
+         (funcall
+          event-consumer
+          (cadr-agent::make-agent-event
+           :type :message-end :message message))
+         (sb-thread:signal-semaphore message-ended)
+         (sb-thread:wait-on-semaphore
+          release-worker :timeout 2d0)
+         (setf persisted-p t)
+         (funcall
+          event-consumer
+          (cadr-agent::make-agent-event
+           :type :turn-end :message message))
+         (funcall
+          event-consumer
+          (cadr-agent::make-agent-event
+           :type :agent-settled))
+         (sb-thread:signal-semaphore worker-finished))
+       :model "faux-1"
+       :context-window 128000
+       :set-event-consumer
+       (lambda (consumer)
+         (setf event-consumer consumer))
+       :footer-state-function
+       (lambda ()
+         (if persisted-p
+             (list :input 1300 :output 14
+                   :cache-read 0 :cache-write 1300
+                   :context-percent 0d0)
+             (list :input 0 :output 0
+                   :cache-read 0 :cache-write 0
+                   :context-percent 0d0)))
+       :terminal
+       (make-instance
+        'footer-sync-test-terminal
+        :columns 100 :rows 18
+        :inputs
+        (list
+         (footer-sync-submit-input "start slow stream")
+         (lambda (terminal)
+           (declare (ignore terminal))
+           (is
+            (sb-thread:wait-on-semaphore
+             message-ended :timeout 2d0)))
+         (footer-sync-wait-for-screen-text
+          "Operation aborted")
+         (lambda (terminal)
+           (setf
+            screen
+            (format
+             nil "~{~A~^~%~}"
+             (mapcar
+              #'cadr-tui:strip-terminal-sequences
+              (cadr-tui:virtual-terminal-snapshot
+               terminal))))
+           (sb-thread:signal-semaphore release-worker)
+           t)
+         (lambda (terminal)
+           (declare (ignore terminal))
+           (sb-thread:wait-on-semaphore
+            worker-finished :timeout 2d0))
+         (footer-sync-submit-input "/quit"))))
+      (is (search "Operation aborted" screen))
+      (is (search "↑1.3k" screen))
+      (is (search "↓14" screen))
+      (is (search "W1.3k" screen)))))

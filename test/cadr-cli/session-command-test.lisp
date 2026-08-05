@@ -549,6 +549,39 @@
         (is (search "Cost" text))
         (is (search "$0.047" text))))))
 
+(test goal17-name-without-argument-uses-baseline-warning-channel
+  (with-test-directory (root)
+    (let* ((sessions (merge-pathnames "sessions/" root))
+           (cwd (merge-pathnames "project/" root))
+           (_
+             (ensure-directories-exist
+              (merge-pathnames "anchor" cwd)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "unnamed"))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (cli-mock-model)
+              :session session))
+           (output (make-string-output-stream))
+           (statuses nil))
+      (declare (ignore _))
+      (is
+       (cadr-cli::handle-session-command
+        "/name" agent
+        :directory sessions
+        :cwd cwd
+        :output output
+        :status-function
+        (lambda (text &optional (level :status))
+          (push (list text level) statuses))))
+      (is
+       (equal
+        '(("Usage: /name <name>" :warning))
+        statuses))
+      (is (string= "" (get-output-stream-string output))))))
+
 (test post-goal15-session-info-matches-baseline-spacing-styles-percent-and-cost-breakdown
   (with-test-directory (root)
     (let* ((sessions (merge-pathnames "sessions/" root))

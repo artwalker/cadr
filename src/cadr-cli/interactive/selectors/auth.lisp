@@ -431,19 +431,23 @@
     (cond
       ((null status)
        (cadr-tui:theme-foreground
-        :muted label :enabled-p t))
+        :muted
+        (concatenate 'string " " label)
+        :enabled-p t))
       ((and type
             (not (eq type
                      (oauth-selector-option-auth-type option))))
        (concatenate
         'string
         (cadr-tui:theme-foreground
-         :muted "• " :enabled-p t)
+         :muted " • " :enabled-p t)
         (cadr-tui:theme-foreground
          :warning (subseq label 2) :enabled-p t)))
       (t
        (cadr-tui:theme-foreground
-        :success label :enabled-p t)))))
+        :success
+        (concatenate 'string " " label)
+        :enabled-p t)))))
 
 (defun oauth-selector-handle-event
     (state event)
@@ -585,7 +589,7 @@
                      "")))
           (selector-component-text-line
            (concatenate
-            'string prefix name auth-type " "
+            'string prefix name auth-type
             (oauth-option-status-rendered option))
            item-width)))
       :count-renderer

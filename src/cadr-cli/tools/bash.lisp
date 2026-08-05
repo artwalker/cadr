@@ -2,10 +2,37 @@
 
 (defvar *bash-live-output* nil)
 
+(defstruct user-bash-result
+  (command "" :type string)
+  (output "" :type string)
+  exit-code
+  (cancelled-p nil :type boolean)
+  (truncated-p nil :type boolean)
+  full-output-path
+  (exclude-from-context-p nil :type boolean))
+
+(define-condition user-bash-aborted (error)
+  ((message
+    :initarg :message
+    :reader user-bash-aborted-message)
+   (content
+    :initarg :content
+    :reader user-bash-aborted-content)
+   (details
+    :initarg :details
+    :reader user-bash-aborted-details))
+  (:report
+   (lambda (condition stream)
+     (write-string
+      (user-bash-aborted-message condition)
+      stream))))
+
 (defun bash-live-output-for-mode (mode frontend-output)
   (case mode
     (:repl frontend-output)
-    (:tui nil)
+    ;; RUN-TUI installs an entry-local stream.  Preserve it through the
+    ;; bootstrap's mode projection instead of replacing it with NIL.
+    (:tui *bash-live-output*)
     (otherwise *error-output*)))
 
 (defun bash-strip-exit-footer (text exit-code)
@@ -33,11 +60,106 @@
              (subseq text 0 end))))
       (t text))))
 
+(defun bash-strip-status-footer (text status)
+  (cond
+    ((string= text status) "")
+    ((and (> (length text) (length status))
+          (string= status text
+                   :start2 (- (length text) (length status))))
+     (string-right-trim
+      '(#\Space #\Tab #\Newline #\Return)
+      (subseq text 0 (- (length text) (length status)))))
+    (t text)))
+
+(defun bash-strip-truncation-footer (text)
+  (let ((footer-start
+          (and (plusp (length text))
+               (char= #\] (char text (1- (length text))))
+               (search (format nil "~%~%[") text :from-end t))))
+    (if (and footer-start
+             (search "Full output: " text :start2 footer-start))
+        (string-right-trim
+         '(#\Space #\Tab #\Newline #\Return)
+         (subseq text 0 footer-start))
+        text)))
+
+(defun make-user-bash-result-from-execution
+    (command exclude-from-context-p content details)
+  (let* ((exit-code (getf details :exit-code))
+         (raw-output
+           (if content
+               (cadr-ai:text-content-text (first content))
+               ""))
+         (without-exit
+           (if (numberp exit-code)
+               (bash-strip-exit-footer raw-output exit-code)
+               raw-output)))
+    (make-user-bash-result
+     :command command
+     :output (bash-strip-truncation-footer without-exit)
+     :exit-code exit-code
+     :cancelled-p (not (null (getf details :cancelled)))
+     :truncated-p (not (null (getf details :truncated)))
+     :full-output-path (getf details :full-output-path)
+     :exclude-from-context-p
+     (not (null exclude-from-context-p)))))
+
+(defun record-user-bash-result (agent result)
+  ;; Fixed pi@74caa2649 agent-session.ts:2803-2824 records the direct shell
+  ;; message immediately when the agent is idle. TUI dispatch serializes idle
+  ;; direct commands, so the same one-step append preserves ordering here.
+  (when (and agent (user-bash-result-p result))
+    (cadr-agent::append-agent-message
+     agent
+     (cadr-agent:make-bash-execution-message
+      :command (user-bash-result-command result)
+      :output (user-bash-result-output result)
+      :exit-code (user-bash-result-exit-code result)
+      :cancelled-p (user-bash-result-cancelled-p result)
+      :truncated-p (user-bash-result-truncated-p result)
+      :full-output-path
+      (user-bash-result-full-output-path result)
+      :exclude-from-context-p
+      (user-bash-result-exclude-from-context-p result))))
+  result)
+
+(defun execute-user-bash-for-tui
+    (extension-host cwd command
+     &key exclude-from-context-p timeout abort-p)
+  (handler-case
+      (multiple-value-bind (content details)
+          (execute-user-bash
+           extension-host cwd command
+           :exclude-from-context-p exclude-from-context-p
+           :timeout timeout :abort-p abort-p)
+        (make-user-bash-result-from-execution
+         command exclude-from-context-p content details))
+    (user-bash-aborted (condition)
+      (make-user-bash-result-from-execution
+       command exclude-from-context-p
+       (user-bash-aborted-content condition)
+       (user-bash-aborted-details condition)))
+    (error (condition)
+      (let ((message (format nil "~A" condition)))
+        (if (or (string= message "Command aborted")
+                (uiop:string-suffix-p
+                 (format nil "~%Command aborted") message))
+            (make-user-bash-result
+             :command command
+             :output
+             (bash-strip-truncation-footer
+              (bash-strip-status-footer message "Command aborted"))
+             :exit-code nil
+             :cancelled-p t
+             :exclude-from-context-p
+             (not (null exclude-from-context-p)))
+            (error condition))))))
+
 (defun bash-output-path ()
   (merge-pathnames
-   (format nil "cadr-bash-~D-~D.log"
-           (get-universal-time)
-           (random most-positive-fixnum))
+   (format nil "cadr-bash-~A.log"
+           (cadr-ai:octets-hex
+            (cadr-ai::secure-random-bytes 8)))
    (uiop:temporary-directory)))
 
 (defun process-deadline (timeout)
@@ -186,21 +308,43 @@
                             :if-exists :supersede
                             :if-does-not-exist :create
                             :external-format :utf-8)
-                    (loop for character =
-                            (read-char
-                             process-output nil :eof)
-                          until (eq character :eof)
-                          do
+                    ;; Match Node's pipe `data` contract: block for the first
+                    ;; character, then drain the currently available burst
+                    ;; into one bounded callback chunk.  Per-character flushes
+                    ;; turn a normal command into thousands of render requests.
+                    (let ((buffer (make-string 4096)))
+                      (loop
+                        for first =
+                          (read-char process-output nil :eof)
+                        until (eq first :eof)
+                        do
+                        (setf (char buffer 0) first)
+                        (let ((count 1)
+                              (eof-p nil))
+                          (loop while (< count (length buffer))
+                                for next =
+                                  (read-char-no-hang
+                                   process-output nil :eof)
+                                do
+                                (cond
+                                  ((eq next :eof)
+                                   (setf eof-p t)
+                                   (return))
+                                  ((null next)
+                                   (return))
+                                  (t
+                                   (setf (char buffer count) next)
+                                   (incf count))))
                           (setf
                            last-output-time
                            (get-internal-real-time))
-                          (write-char character capture)
-                          (write-char character full)
+                          (write-string buffer capture :end count)
+                          (write-string buffer full :end count)
                           (when live-output
-                            (write-char
-                             character live-output)
-                            (finish-output
-                             live-output))))
+                            (write-string buffer live-output :end count)
+                            (finish-output live-output))
+                          (when eof-p
+                            (return))))))
                 (error (condition)
                   (unless forced-output-close-p
                     (setf reader-error condition)))))
@@ -254,8 +398,22 @@
                      (delete-file output-path)))
                  (when aborted-p
                    (error
+                    'user-bash-aborted
+                    :message
                     (append-bash-status
-                     text "Command aborted")))
+                     text "Command aborted")
+                    :content
+                    (list
+                     (cadr-ai:make-text-content
+                      :text text))
+                    :details
+                    (append
+                     (list :exit-code nil :cancelled t)
+                     details
+                     (list
+                      :full-output-path
+                      (and truncated
+                           (namestring output-path))))))
                  (when timed-out-p
                    (error
                     (append-bash-status

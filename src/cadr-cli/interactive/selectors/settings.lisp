@@ -740,9 +740,9 @@
         (cadr-tui:theme-bold title))
        width :padding-x 0)
       "")
-     (mapcar
-      (lambda (line) (selector-muted-line line width))
-      (cadr-tui:wrap-text description width))
+     (component-text-lines
+      (cadr-tui:theme-foreground :muted description)
+      width :padding-x 0)
      (list "")
      (multiple-value-bind (visible start end total)
          (settings-selector-visible-slice options selected 10)
@@ -779,34 +779,31 @@
                         (max 0 (- width description-start 2))
                         ""))
                 collect
-                (selector-fit-line
-                 (concatenate
-                  'string
-                  (if selected-p
-                      (cadr-tui:theme-foreground :accent prefix)
-                      prefix)
-                  (cond
-                    (selected-p
-                     (cadr-tui:theme-foreground
-                      :accent
-                      (if label-padding
-                          (concatenate
-                           'string label label-padding fitted-desc)
-                          label)))
-                    (label-padding
+                (if selected-p
+                    (cadr-tui:theme-foreground
+                     :accent
                      (concatenate
-                      'string label label-padding
-                      (cadr-tui:theme-foreground :muted fitted-desc)))
-                    (t label)))
-                 width))
+                      'string prefix label
+                      (or label-padding "")
+                      (or fitted-desc "")))
+                    (concatenate
+                     'string prefix label
+                     (if label-padding
+                         (cadr-tui:theme-foreground
+                          :muted
+                          (concatenate
+                           'string label-padding fitted-desc))
+                         ""))))
           (when (or (> start 0) (< end total))
             (list
-             (selector-muted-line
-              (format nil "  (~D/~D)" (1+ selected) total)
-              width))))))
-     (list ""
-           (selector-dim-line
-            "  Enter to select · Esc to go back" width)))))
+             (cadr-tui:theme-foreground
+              :muted
+              (format nil "  (~D/~D)" (1+ selected) total)))))))
+     (list "")
+     (component-text-lines
+      (cadr-tui:theme-foreground
+       :dim "  Enter to select · Esc to go back")
+      width :padding-x 0))))
 
 (defun render-settings-selector
     (state width)
@@ -815,26 +812,29 @@
         (selector-input-rendering
          (settings-selector-state-query state) width)
       (return-from render-settings-selector
-        (render-selector-frame
-         (make-selector-frame
-          :sections
-          (list
-           :border
-           (list :component input-lines input-row input-column)
-           :blank
-           (list
-            :lines
-            (render-settings-option-list
-             (settings-selector-visible-options state)
-             (settings-selector-state-options state)
-             (settings-selector-state-selected state)
-             width 10
-             :search-query
-             (settings-selector-state-query state)
-             :search-p t
-             :include-input-p nil))
-           :border))
-         width))))
+        (multiple-value-bind (lines cursor-row cursor-column)
+            (render-selector-frame
+             (make-selector-frame
+              :sections
+              (list
+               :border
+               (list :component input-lines input-row input-column)
+               :blank
+               (list
+                :lines
+                (render-settings-option-list
+                 (settings-selector-visible-options state)
+                 (settings-selector-state-options state)
+                 (settings-selector-state-selected state)
+                 width 10
+                 :search-query
+                 (settings-selector-state-query state)
+                 :search-p t
+                 :include-input-p nil))
+               :border))
+             width)
+          (declare (ignore cursor-row cursor-column))
+          (values lines nil nil)))))
   (render-selector-frame
    (make-selector-frame
     :sections
@@ -872,9 +872,11 @@
             "Choose themes for terminal light and dark appearance.")
            width :padding-x 0)
           (list
-           (selector-muted-line
-            "Light/dark detection requires terminal support."
-            width)
+           (component-text-line
+            (cadr-tui:theme-foreground
+             :muted
+             "Light/dark detection requires terminal support.")
+            width :padding-x 0)
            "")
           (render-settings-select-submenu
            state width "Light Theme"
@@ -894,9 +896,11 @@
             "Choose themes for terminal light and dark appearance.")
            width :padding-x 0)
           (list
-           (selector-muted-line
-            "Light/dark detection requires terminal support."
-            width)
+           (component-text-line
+            (cadr-tui:theme-foreground
+             :muted
+             "Light/dark detection requires terminal support.")
+            width :padding-x 0)
            "")
           (render-settings-select-submenu
            state width "Dark Theme"
@@ -916,9 +920,11 @@
             "Choose themes for terminal light and dark appearance.")
            width :padding-x 0)
           (list
-           (selector-muted-line
-            "Light/dark detection requires terminal support."
-            width)
+           (component-text-line
+            (cadr-tui:theme-foreground
+             :muted
+             "Light/dark detection requires terminal support.")
+            width :padding-x 0)
            "")
           (render-settings-option-list
            (settings-selector-submenu-options state)

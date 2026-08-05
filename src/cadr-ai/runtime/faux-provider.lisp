@@ -14,7 +14,8 @@
   (prompt-cache (make-hash-table :test #'equal)
                 :type hash-table)
   (token-min 3 :type (integer 1 *))
-  (token-max 5 :type (integer 1 *)))
+  (token-max 5 :type (integer 1 *))
+  (tokens-per-second 0 :type (real 0 *)))
 
 (defun faux-text (text)
   (make-text-content :text text))
@@ -72,7 +73,8 @@
           (provider-id :faux)
           model-definitions
           (token-min 3)
-          (token-max 5))
+          (token-max 5)
+          (tokens-per-second 0))
   (let* ((definitions
            (or model-definitions
                '((:id "faux-1"
@@ -92,7 +94,9 @@
             :token-min
             (max 1 (min token-min token-max))
             :token-max
-            (max token-min token-max))))
+            (max token-min token-max)
+            :tokens-per-second
+            (max 0 tokens-per-second))))
     (setf
      (faux-handle-provider handle)
      (make-runtime-provider
@@ -152,10 +156,35 @@
      (make-tool-call
       :id (tool-call-id block)
       :name (tool-call-name block)
-      :arguments (tool-call-arguments block)
+      :arguments (copy-json-value (tool-call-arguments block))
       :thought-signature
       (tool-call-thought-signature block)))
     (t block)))
+
+(defun faux-copy-usage (usage)
+  (let ((snapshot (copy-usage usage)))
+    (setf (usage-cost snapshot)
+          (copy-cost (usage-cost usage)))
+    snapshot))
+
+(defun faux-copy-stream-message (message)
+  (make-assistant-message
+   :content
+   (mapcar #'faux-copy-content-block
+           (assistant-message-content message))
+   :api (assistant-message-api message)
+   :provider (assistant-message-provider message)
+   :model (assistant-message-model message)
+   :response-model (assistant-message-response-model message)
+   :response-id (assistant-message-response-id message)
+   :usage (faux-copy-usage (assistant-message-usage message))
+   :stop-reason (assistant-message-stop-reason message)
+   :error-message (assistant-message-error-message message)
+   :raw-stop-reason (assistant-message-raw-stop-reason message)
+   :diagnostics
+   (mapcar #'copy-assistant-message-diagnostic
+           (assistant-message-diagnostics message))
+   :timestamp (assistant-message-timestamp message)))
 
 (defun faux-copy-message (message handle model)
   (make-assistant-message
@@ -325,8 +354,15 @@
   (let ((step (pop (faux-handle-responses handle))))
     (unless step
       (return-from faux-resolve
-        (faux-error-message
-         handle model "No more faux responses queued")))
+        (values
+         (faux-with-usage
+          handle
+          (faux-error-message
+           handle model "No more faux responses queued")
+          context
+          (getf options :session-id)
+          (getf options :cache-retention))
+         t)))
     (handler-case
         (let* ((resolved
                  (if (functionp step)
@@ -347,8 +383,10 @@
            (getf options :session-id)
            (getf options :cache-retention)))
       (error (condition)
-        (faux-error-message
-         handle model (princ-to-string condition))))))
+        (values
+         (faux-error-message
+          handle model (princ-to-string condition))
+         t)))))
 
 (defun faux-complete
     (handle model context &rest options
@@ -357,7 +395,7 @@
     (return-from faux-complete
       (faux-error-message
        handle model "Request was aborted" t)))
-  (faux-resolve handle model context options))
+  (nth-value 0 (faux-resolve handle model context options)))
 
 (defun faux-emit
     (emit type message
@@ -366,73 +404,189 @@
    emit
    (make-stream-event
     :type type
-    :message message
+    :message
+    (if (eq :pending (assistant-message-stop-reason message))
+        (faux-copy-stream-message message)
+        message)
     :content-index content-index
     :delta delta
     :content content
     :tool-call tool-call
     :reason reason)))
 
+(defun faux-partial-message (message)
+  (make-assistant-message
+   :content nil
+   :api (assistant-message-api message)
+   :provider (assistant-message-provider message)
+   :model (assistant-message-model message)
+   :response-model (assistant-message-response-model message)
+   :response-id (assistant-message-response-id message)
+   :usage (assistant-message-usage message)
+   :stop-reason :pending
+   :error-message (assistant-message-error-message message)
+   :raw-stop-reason (assistant-message-raw-stop-reason message)
+   :timestamp (assistant-message-timestamp message)))
+
+(defun faux-aborted-partial-message (partial)
+  (make-assistant-message
+   :content (mapcar #'faux-copy-content-block
+                    (assistant-message-content partial))
+   :api (assistant-message-api partial)
+   :provider (assistant-message-provider partial)
+   :model (assistant-message-model partial)
+   :response-model (assistant-message-response-model partial)
+   :response-id (assistant-message-response-id partial)
+   :usage (assistant-message-usage partial)
+   :stop-reason :aborted
+   :error-message "Request was aborted"
+   :timestamp (unix-milliseconds)))
+
+(defun faux-split-string (handle text)
+  (let ((chunks nil)
+        (index 0)
+        (minimum (faux-handle-token-min handle))
+        (maximum (faux-handle-token-max handle)))
+    (loop while (< index (length text))
+          for token-size =
+            (+ minimum (random (1+ (- maximum minimum))))
+          for end =
+            (min (length text) (+ index (* 4 token-size)))
+          do
+          (push (subseq text index end) chunks)
+          (setf index end))
+    (or (nreverse chunks) (list ""))))
+
+(defun faux-wait-for-chunk (handle chunk)
+  (let ((rate (faux-handle-tokens-per-second handle)))
+    (when (plusp rate)
+      (sleep
+       (/ (estimate-text-tokens chunk) rate))))
+  nil)
+
+(defun faux-stream-aborted-p (abort-p)
+  (cadr-core:cancellation-predicate-aborted-p abort-p))
+
+(defun faux-emit-aborted (on-event partial)
+  (let ((aborted (faux-aborted-partial-message partial)))
+    (faux-emit on-event :error aborted :reason :aborted)
+    aborted))
+
 (defun faux-stream
     (handle model context on-event
      &rest options &key abort-p &allow-other-keys)
-  (let ((message
-          (if (cadr-core:cancellation-predicate-aborted-p abort-p)
-              (faux-error-message
-               handle model "Request was aborted" t)
-              (faux-resolve handle model context options))))
-    (when (member (assistant-message-stop-reason message)
-                  '(:error :aborted))
-      (faux-emit
-       on-event :error message
-       :reason (assistant-message-stop-reason message))
-      (return-from faux-stream message))
-    (faux-emit on-event :start message)
-    (loop for block in (assistant-message-content message)
-          for index from 0
-          do
-          (cond
+  (multiple-value-bind (message resolution-error-p)
+      (faux-resolve handle model context options)
+    (let ((partial (faux-partial-message message)))
+      (when resolution-error-p
+        (faux-emit on-event :error message :reason :error)
+        (return-from faux-stream message))
+      (when (faux-stream-aborted-p abort-p)
+        (return-from faux-stream
+          (faux-emit-aborted on-event partial)))
+      (faux-emit on-event :start partial)
+      (loop for block in (assistant-message-content message)
+            for index from 0
+            do
+            (cond
             ((typep block 'thinking-content)
-             (faux-emit
-              on-event :thinking-start message
-              :content-index index)
-             (faux-emit
-              on-event :thinking-delta message
-              :content-index index
-              :delta
-              (thinking-content-thinking block))
-             (faux-emit
-              on-event :thinking-end message
-              :content-index index
-              :content
-              (thinking-content-thinking block)))
+             (let ((partial-block
+                     (make-thinking-content
+                      :thinking "")))
+               (setf (assistant-message-content partial)
+                     (append (assistant-message-content partial)
+                             (list partial-block)))
+               (faux-emit
+                on-event :thinking-start partial
+                :content-index index)
+               (dolist (chunk
+                        (faux-split-string
+                         handle (thinking-content-thinking block)))
+                 (faux-wait-for-chunk handle chunk)
+                 (when (faux-stream-aborted-p abort-p)
+                   (return-from faux-stream
+                     (faux-emit-aborted on-event partial)))
+                 (setf (thinking-content-thinking partial-block)
+                       (concatenate
+                        'string
+                        (thinking-content-thinking partial-block)
+                        chunk))
+                 (faux-emit
+                  on-event :thinking-delta partial
+                  :content-index index :delta chunk))
+               (faux-emit
+                on-event :thinking-end partial
+                :content-index index
+                :content
+                (thinking-content-thinking block))))
             ((typep block 'text-content)
-             (faux-emit
-              on-event :text-start message
-              :content-index index)
-             (faux-emit
-              on-event :text-delta message
-              :content-index index
-              :delta (text-content-text block))
-             (faux-emit
-              on-event :text-end message
-              :content-index index
-              :content (text-content-text block)))
+             (let ((partial-block
+                     (make-text-content
+                      :text "")))
+               (setf (assistant-message-content partial)
+                     (append (assistant-message-content partial)
+                             (list partial-block)))
+               (faux-emit
+                on-event :text-start partial
+                :content-index index)
+               (dolist (chunk
+                        (faux-split-string
+                         handle (text-content-text block)))
+                 (faux-wait-for-chunk handle chunk)
+                 (when (faux-stream-aborted-p abort-p)
+                   (return-from faux-stream
+                     (faux-emit-aborted on-event partial)))
+                 (setf (text-content-text partial-block)
+                       (concatenate
+                        'string
+                        (text-content-text partial-block)
+                        chunk))
+                 (faux-emit
+                  on-event :text-delta partial
+                  :content-index index :delta chunk))
+               (faux-emit
+                on-event :text-end partial
+                :content-index index
+                :content (text-content-text block))))
             ((typep block 'tool-call)
-             (faux-emit
-              on-event :tool-call-start message
-              :content-index index)
-             (faux-emit
-              on-event :tool-call-delta message
-              :content-index index
-              :delta
-              (stringify-json
-               (tool-call-arguments block)))
-             (faux-emit
-              on-event :tool-call-end message
-              :content-index index
-              :tool-call block))))
-    (faux-emit
-     on-event :done message
-     :reason (assistant-message-stop-reason message))
-    message))
+             (let ((partial-block
+                     (make-tool-call
+                      :id (tool-call-id block)
+                      :name (tool-call-name block)
+                      :arguments (json-object))))
+               (setf (assistant-message-content partial)
+                     (append (assistant-message-content partial)
+                             (list partial-block)))
+               (faux-emit
+                on-event :tool-call-start partial
+                :content-index index)
+               (dolist (chunk
+                        (faux-split-string
+                         handle
+                         (stringify-json
+                          (tool-call-arguments block))))
+                 (faux-wait-for-chunk handle chunk)
+                 (when (faux-stream-aborted-p abort-p)
+                   (return-from faux-stream
+                     (faux-emit-aborted on-event partial)))
+                 (faux-emit
+                  on-event :tool-call-delta partial
+                  :content-index index :delta chunk))
+               (setf (tool-call-arguments partial-block)
+                     (tool-call-arguments block))
+               (faux-emit
+                on-event :tool-call-end partial
+                :content-index index
+                :tool-call block)))))
+      (when (eq :pending (assistant-message-stop-reason message))
+        (error "Faux response ended without a stop reason"))
+      (when (member (assistant-message-stop-reason message)
+                    '(:error :aborted))
+        (faux-emit
+         on-event :error message
+         :reason (assistant-message-stop-reason message))
+        (return-from faux-stream message))
+      (faux-emit
+       on-event :done message
+       :reason (assistant-message-stop-reason message))
+      message)))

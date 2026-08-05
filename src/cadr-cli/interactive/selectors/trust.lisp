@@ -232,23 +232,24 @@
      :blank
      (list
       :lines
-      (list
-       (selector-component-text-line
+      (append
+       (component-text-lines
         (cadr-tui:theme-foreground
          :muted
          (format nil "Saved decision: ~A"
                  (trust-decision-description state)))
         width)
-       (selector-component-text-line
-        (cadr-tui:theme-foreground
-         :muted
-         (format nil "Current session: ~A"
-                 (if
-                     (trust-selector-state-project-trusted-p
-                      state)
-                     "trusted"
-                     "untrusted")))
-        width)))
+       (list
+        (selector-component-text-line
+         (cadr-tui:theme-foreground
+          :muted
+          (format nil "Current session: ~A"
+                  (if
+                      (trust-selector-state-project-trusted-p
+                       state)
+                      "trusted"
+                      "untrusted")))
+         width))))
      :blank :viewport :blank
      (list
       :lines

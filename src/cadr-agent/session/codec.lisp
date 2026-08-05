@@ -303,6 +303,33 @@
            #'assistant-diagnostic-to-json
            (cadr-ai:assistant-message-diagnostics message))))
        object))
+    ((typep message 'bash-execution-message)
+     (let ((object
+             (cadr-ai::json-object
+              "role" "bashExecution"
+              "command"
+              (bash-execution-message-command message)
+              "output"
+              (bash-execution-message-output message)
+              "cancelled"
+              (bash-execution-message-cancelled-p message)
+              "truncated"
+              (bash-execution-message-truncated-p message)
+              "timestamp"
+              (bash-execution-message-timestamp message)
+              "excludeFromContext"
+              (bash-execution-message-exclude-from-context-p
+               message))))
+       (when (integerp
+              (bash-execution-message-exit-code message))
+         (cadr-ai::json-put
+          object "exitCode"
+          (bash-execution-message-exit-code message)))
+       (when (bash-execution-message-full-output-path message)
+         (cadr-ai::json-put
+          object "fullOutputPath"
+          (bash-execution-message-full-output-path message)))
+       object))
     ((typep message 'cadr-ai:tool-result-message)
      (cadr-ai::json-object
       "role" "toolResult"
@@ -509,6 +536,27 @@
         (eq t
             (json-get-either object "isError" "is_error"))
         :timestamp (cadr-ai::json-get object "timestamp")))
+      ((member type '("bashExecution" "bash_execution")
+               :test #'string=)
+       (make-bash-execution-message
+        :command (or (cadr-ai::json-get object "command") "")
+        :output (or (cadr-ai::json-get object "output") "")
+        :exit-code
+        (json-get-either object "exitCode" "exit_code")
+        :cancelled-p
+        (not (null (cadr-ai::json-get object "cancelled")))
+        :truncated-p
+        (not (null (cadr-ai::json-get object "truncated")))
+        :full-output-path
+        (json-get-either
+         object "fullOutputPath" "full_output_path")
+        :timestamp (cadr-ai::json-get object "timestamp")
+        :exclude-from-context-p
+        (not
+         (null
+          (json-get-either
+           object "excludeFromContext"
+           "exclude_from_context")))))
       ((string= type "custom")
        (cadr-ai:make-user-message
         :content
@@ -523,4 +571,3 @@
   (write-string (cadr-ai::stringify-json object) stream)
   (terpri stream)
   (finish-output stream))
-

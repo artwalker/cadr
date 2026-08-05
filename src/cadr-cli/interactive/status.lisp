@@ -433,26 +433,15 @@
                (separator
                  (if (plusp (length frame))
                      " " ""))
-               (inner-width
-                 (max 0 (- width 2)))
-               (available
-                 (max
-                  0
-                  (- inner-width
-                     (cadr-tui:visible-width frame)
-                     (length separator))))
-               (trimmed-message
-                 (cadr-tui:truncate-to-width
-                  message available ""))
                (spinner-token
                  (if
                      (uiop:string-prefix-p
                       "Retrying (" message)
                      :warning
                      :accent)))
-          (list
+          (cons
            ""
-           (component-text-line
+           (component-text-lines
             (concatenate
              'string
              (cadr-tui:theme-foreground
@@ -460,7 +449,7 @@
               :enabled-p t)
              separator
              (cadr-tui:theme-foreground
-              :muted trimmed-message
+              :muted message
               :enabled-p t))
             width)))
         (and reserve-idle-p

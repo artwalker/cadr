@@ -57,9 +57,22 @@
               "message_update"
               (cadr-ai::json-get record "type"))
           collect
-          (cadr-ai::json-get
+           (cadr-ai::json-get
            (cadr-ai::json-get record "assistantMessageEvent")
            "type")))
+
+(defun goal9-a2-process-text-deltas (records)
+  (loop for record in records
+        for event =
+          (and
+           (string=
+            "message_update"
+            (cadr-ai::json-get record "type"))
+           (cadr-ai::json-get record "assistantMessageEvent"))
+        when (and event
+                  (string= "text_delta"
+                           (cadr-ai::json-get event "type")))
+          collect (cadr-ai::json-get event "delta")))
 
 (defun goal9-a2-process-final-assistant-text (records)
   (let* ((record
@@ -89,25 +102,30 @@
      (cadr-ai::json-get (aref content 0) "text"))))
 
 (defun goal9-a2-assert-process-faux-event-contract (records expected-text)
-  (is
-   (equal
-    '("agent_start"
-      "turn_start"
-      "message_start"
-      "message_end"
-      "message_start"
-      "message_update"
-      "message_update"
-      "message_update"
-      "message_end"
-      "turn_end"
-      "agent_end"
-      "agent_settled")
-    (goal9-a2-process-event-types records)))
-  (is
-   (equal
-    '("text_start" "text_delta" "text_end")
-    (goal9-a2-process-update-types records)))
+  (let* ((event-types (goal9-a2-process-event-types records))
+         (update-types (goal9-a2-process-update-types records))
+         (deltas (goal9-a2-process-text-deltas records)))
+    (is
+     (equal
+      '("agent_start" "turn_start" "message_start" "message_end"
+        "message_start")
+      (subseq event-types 0 5)))
+    (is
+     (equal
+      '("message_end" "turn_end" "agent_end" "agent_settled")
+      (last event-types 4)))
+    (is (every (lambda (type) (string= "message_update" type))
+               (subseq event-types 5 (- (length event-types) 4))))
+    (is (string= "text_start" (first update-types)))
+    (is (string= "text_end" (car (last update-types))))
+    (is (plusp (length deltas)))
+    (is
+     (every (lambda (type) (string= "text_delta" type))
+            (subseq update-types 1 (1- (length update-types)))))
+    (is
+     (string=
+      expected-text
+      (apply #'concatenate 'string deltas))))
   (is
    (string=
     expected-text
@@ -146,7 +164,12 @@
     (is (string= "" errors))
     (let ((records
             (goal9-a2-process-json-lines output)))
-      (is (= 12 (length records)))
+      (is
+       (notany
+        (lambda (record)
+          (string= "response"
+                   (cadr-ai::json-get record "type")))
+        records))
       (goal9-a2-assert-process-faux-event-contract
        records +goal9-a2-process-json-text+))))
 

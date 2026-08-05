@@ -345,7 +345,7 @@
                    path))
          (warning
            (format nil
-                   "Output truncated. Full output: ~A"
+                   "[Full output: ~A. Truncated: 253 lines shown (50.0KB limit)]"
                    path))
          (call
            (cadr-ai:make-tool-call
@@ -707,9 +707,9 @@
                     :border-accent
                     (cadr-cli::tree-selector-entry-display-text
                      '(:type :compaction
-                       :text "Semantic compaction")
+                       :tokens-before 42000)
                      nil)
-                    "[compaction]: Semantic compaction")))
+                    "[compaction: 42k tokens]")))
                (goal13-note-semantic-probe
                 seen (first probe) (second probe) (third probe))))
            (let* ((error-rendered
@@ -1245,7 +1245,7 @@
          (systems
            '(("cadr-core" 6)
              ("cadr-ai" 61)
-             ("cadr-agent" 35)
+             ("cadr-agent" 36)
              ("cadr-cli" 108)
              ("cadr-tui" 36)
              ("cadr-storage" 2)
@@ -1255,7 +1255,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=272 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=273 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1273,7 +1273,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 272 total))
+    (is (= 273 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"

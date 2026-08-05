@@ -7,6 +7,24 @@
          when (typep block 'cadr-ai:text-content)
            collect (cadr-ai:text-content-text block))))
 
+(defun parse-user-bash-input (line)
+  (let ((trimmed
+          (string-trim
+           '(#\Space #\Tab #\Newline #\Return)
+           line)))
+    (when (and (plusp (length trimmed))
+               (char= (char trimmed 0) #\!))
+      (let* ((exclude-p
+               (and (> (length trimmed) 1)
+                    (char= (char trimmed 1) #\!)))
+             (start (if exclude-p 2 1))
+             (command
+               (string-left-trim
+                '(#\Space #\Tab)
+                (subseq trimmed start))))
+        (when (plusp (length command))
+          (values command exclude-p t))))))
+
 (defun dispatch-user-input
     (line prompt-function
      &key command-function template-function
@@ -21,21 +39,13 @@
     (cond
       ((and bash-function
             (char= (char trimmed 0) #\!))
-       (let* ((exclude-p
-                (and (> (length trimmed) 1)
-                     (char= (char trimmed 1)
-                            #\!)))
-              (start (if exclude-p 2 1))
-              (command
-                (string-left-trim
-                 '(#\Space #\Tab)
-                 (subseq trimmed start))))
-         (if (zerop (length command))
-             (values :empty nil)
+       (multiple-value-bind (command exclude-p present-p)
+           (parse-user-bash-input trimmed)
+         (if present-p
              (values
               :bash
-              (funcall
-               bash-function command exclude-p)))))
+              (funcall bash-function command exclude-p))
+             (values :empty nil))))
       ((char= (char trimmed 0) #\/)
        (multiple-value-bind (handled command-result)
            (if command-function

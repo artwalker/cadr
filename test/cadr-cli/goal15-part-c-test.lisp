@@ -498,6 +498,51 @@
       :cwd "/tmp/project/"
       :saved-entry '(:path "/tmp/" :decision t))))))
 
+(test goal17-trust-inherited-description-wraps-as-baseline-text
+  ;; pi@74caa2649 trust-selector.ts renders the saved decision through Text,
+  ;; so a narrow inherited path wraps instead of being truncated.
+  (let* ((width 48)
+         (lines
+           (mapcar
+            #'cadr-tui:strip-terminal-sequences
+            (cadr-cli::render-trust-selector
+             (cadr-cli::make-trust-selector-state
+              :cwd "/tmp/cadr-render-diff-abcdefgh/cadr/workspace/"
+              :saved-entry
+              '(:path "/tmp/cadr-render-diff-abcdefgh/cadr/"
+                :decision t)
+              :project-trusted-p t)
+             width)))
+         (saved-index
+           (position-if
+            (lambda (line)
+              (search "Saved decision:" line))
+            lines))
+         (current-index
+           (position-if
+            (lambda (line)
+              (search "Current session:" line))
+            lines)))
+    (is (integerp saved-index))
+    (is (integerp current-index))
+    (when (and (integerp saved-index)
+               (integerp current-index))
+      (is (= (+ saved-index 2) current-index))
+      (is
+       (string=
+        "Saved decision: trusted (inherited from"
+        (string-trim '(#\Space)
+                     (nth saved-index lines))))
+      (is
+       (string=
+        "/tmp/cadr-render-diff-abcdefgh/cadr)"
+        (string-trim '(#\Space)
+                     (nth (1+ saved-index) lines))))
+      (loop for index from saved-index below current-index
+            do (is (= width
+                      (cadr-tui:visible-width
+                       (nth index lines))))))))
+
 (test goal15-trust-help-styles-keys-and-descriptions-independently
   ;; trust-selector.ts:75-84 composes three key hints rather than dimming the
   ;; complete row as one string.

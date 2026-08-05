@@ -131,3 +131,108 @@
         (is (= 2 (length (agent-messages agent))))
         (is (= 1 (count :turn-end (event-types events))))
         (is (= 1 (count :agent-end (event-types events))))))))
+
+(test goal17-terminal-abort-preserves-last-partial-content-and-usage
+  ;; Fixed pi@74caa2649 faux.ts:288-297,313-344 turns the last partial into
+  ;; the aborted terminal message.  Providers may return a sparse terminal
+  ;; object, so the agent must preserve content and usage already observed.
+  (let* ((partial
+           (make-assistant-message
+            :api :mock :provider :openai :model "mock"
+            :content
+            (list (make-text-content :text "partial response"))
+            :usage
+            (cadr-ai:make-usage
+             :input 1300 :output 14 :cache-write 1300)
+            :stop-reason :pending))
+         (terminal
+           (make-assistant-message
+            :api :mock :provider :openai :model "mock"
+            :stop-reason :aborted
+            :error-message "Request was aborted"))
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :stream-function
+            (lambda (provider model context on-event &rest options)
+              (declare
+               (ignore provider model context options))
+              (funcall
+               on-event
+               (make-stream-event
+                :type :start :message partial))
+              (funcall
+               on-event
+               (make-stream-event
+                :type :text-delta
+                :delta "partial response"
+                :message partial))
+              terminal))))
+    (agent-prompt agent "stop this stream")
+    (let ((committed (car (last (agent-messages agent)))))
+      (is (eq :aborted
+              (assistant-message-stop-reason committed)))
+      (is (string= "Request was aborted"
+                   (cadr-ai:assistant-message-error-message
+                    committed)))
+      (is (string= "partial response"
+                   (text-content-text
+                    (first
+                     (assistant-message-content committed)))))
+      (is (= 1300
+             (cadr-ai:usage-input
+              (cadr-ai:assistant-message-usage committed))))
+      (is (= 14
+             (cadr-ai:usage-output
+              (cadr-ai:assistant-message-usage committed))))
+      (is (= 1300
+             (cadr-ai:usage-cache-write
+              (cadr-ai:assistant-message-usage committed)))))))
+
+(test goal17-provider-error-terminal-payload-remains-authoritative
+  (let* ((partial
+           (make-assistant-message
+            :api :mock :provider :openai :model "mock"
+            :content
+            (list (make-text-content :text "partial response"))
+            :usage (cadr-ai:make-usage :input 1300)
+            :stop-reason :pending))
+         (terminal
+           (make-assistant-message
+            :api :mock :provider :openai :model "mock"
+            :content
+            (list (make-text-content :text "provider final"))
+            :usage (cadr-ai:make-usage :input 17 :output 3)
+            :stop-reason :error
+            :error-message "render transport failed"))
+         (agent
+           (make-agent
+            :provider :mock
+            :model (mock-model)
+            :stream-function
+            (lambda (provider model context on-event &rest options)
+              (declare
+               (ignore provider model context options))
+              (funcall
+               on-event
+               (make-stream-event
+                :type :start :message partial))
+              terminal))))
+    (agent-prompt agent "trigger provider error")
+    (let ((committed (car (last (agent-messages agent)))))
+      (is (eq :error
+              (assistant-message-stop-reason committed)))
+      (is (string= "render transport failed"
+                   (cadr-ai:assistant-message-error-message
+                    committed)))
+      (is (string= "provider final"
+                   (text-content-text
+                    (first
+                     (assistant-message-content committed)))))
+      (is (= 17
+             (cadr-ai:usage-input
+              (cadr-ai:assistant-message-usage committed))))
+      (is (= 3
+             (cadr-ai:usage-output
+              (cadr-ai:assistant-message-usage committed)))))))

@@ -285,6 +285,7 @@
        messages
        project-trust-warning
        initial-notices
+       initial-statuses
        alt-p
        show-hardware-cursor-p
        clear-on-shrink-p
@@ -412,6 +413,8 @@
        state project-trust-warning))
     (dolist (text initial-notices)
       (add-tui-warning state text))
+    (dolist (text initial-statuses)
+      (add-tui-status state text))
     (labels
         ((current-editor ()
            (or custom-editor-component editor))
@@ -485,8 +488,10 @@
                   (format nil "~C]0;~A~C"
                           #\Escape title (code-char 7)))
                  (setf last-terminal-title title)))))
-         (refresh-footer-state ()
-           (when footer-state-function
+         (refresh-footer-state
+             (&optional (refresh-session-state-p t))
+           (when (and refresh-session-state-p
+                      footer-state-function)
              (let ((values
                      (funcall
                       footer-state-function)))
@@ -1255,80 +1260,88 @@
               nil)
              (otherwise nil)))
          (consume-event (event)
-           (when (synchronize-terminal-progress-setting)
-             (case
-                 (cadr-agent:agent-event-type event)
-               ((:agent-start :compaction-start)
-                (set-terminal-progress-state t))
-               ((:agent-end :compaction-end)
-                (set-terminal-progress-state nil))))
-           (sb-thread:with-mutex (lock)
-             (if
-                 (and
-                  (eq
-                   :compaction-end
-                   (cadr-agent:agent-event-type
-                    event))
-                  (null
-                   (cadr-agent:agent-event-error-message
-                    event))
-                  session-state-function)
-                 (multiple-value-bind
-                       (display-messages
-                        compaction-summary
-                        compaction-tokens-before)
-                     (funcall
-                      session-state-function)
+           (let ((event-type
+                   (cadr-agent:agent-event-type event)))
+             (when (synchronize-terminal-progress-setting)
+               (case
+                   event-type
+                 ((:agent-start :compaction-start)
+                  (set-terminal-progress-state t))
+                 ((:agent-end :compaction-end)
+                  (set-terminal-progress-state nil))))
+             (sb-thread:with-mutex (lock)
+               (if
+                   (and
+                    (eq :compaction-end event-type)
+                    (null
+                     (cadr-agent:agent-event-error-message
+                      event))
+                    session-state-function)
+                   (multiple-value-bind
+                         (display-messages
+                          compaction-summary
+                          compaction-tokens-before)
+                       (funcall
+                        session-state-function)
+                     (tui-handle-agent-event
+                      state event
+                      :extension-host extension-host
+                      :display-messages
+                      display-messages
+                      :compaction-summary
+                      compaction-summary
+                      :compaction-tokens-before
+                      compaction-tokens-before
+                      :clock-function clock-function))
                    (tui-handle-agent-event
                     state event
                     :extension-host extension-host
-                    :display-messages
-                    display-messages
-                    :compaction-summary
-                    compaction-summary
-                    :compaction-tokens-before
-                    compaction-tokens-before
-                    :clock-function clock-function))
-                 (tui-handle-agent-event
-                  state event
-                  :extension-host extension-host
-                  :clock-function clock-function)))
-           (refresh-footer-state))
+                    :clock-function clock-function)))
+             ;; MESSAGE-END is emitted before Cadr persists the final
+             ;; assistant message.  Preserve the event-local usage until the
+             ;; subsequent turn/agent event can read the committed session.
+             (refresh-footer-state
+              (not (eq :message-end event-type)))))
          (start-work (line)
            (unless busy-p
-             (setf abort-requested-p nil)
-             (when reset-abort-function
-               (funcall reset-abort-function))
-             (sb-thread:with-mutex (lock)
-               (setf busy-p t)
-               (if
-                   (let ((trimmed
-                           (string-left-trim
-                            '(#\Space #\Tab
-                              #\Newline #\Return)
-                            line)))
-                     (and
-                      (plusp (length trimmed))
-                      (char= (char trimmed 0)
-                             #\!)))
-                   (when (typep (current-editor)
-                                'cadr-tui:multiline-editor)
-                     (cadr-tui:editor-set-border-mode
-                      (current-editor) :bash))
-                   (when (typep (current-editor)
-                                'cadr-tui:multiline-editor)
-                     (cadr-tui:editor-set-border-mode
-                      (current-editor) :thinking
-                      (or
-                       (tui-state-thinking state)
-                       :off)))))
-             (request-render)
-             (setf
-              worker
-              (sb-thread:make-thread
-               (lambda ()
-                 (unwind-protect
-                      (call-with-tui-command-error-notice
+             (let ((live-bash-entry nil))
+               (setf abort-requested-p nil)
+               (when reset-abort-function
+                 (funcall reset-abort-function))
+               (sb-thread:with-mutex (lock)
+                 (setf busy-p t)
+                 (multiple-value-bind
+                       (bash-command exclude-p present-p)
+                     (parse-user-bash-input line)
+                   (when (and bash-function present-p)
+                     (setf
+                      live-bash-entry
+                      (append-tui-user-bash-running
+                       state bash-command exclude-p))))
+               (when (typep (current-editor)
+                            'cadr-tui:multiline-editor)
+                 (cadr-tui:editor-set-border-mode
+                  (current-editor) :thinking
+                  (or
+                   (tui-state-thinking state)
+                   :off))))
+               (request-render)
+               (setf
+                worker
+                (sb-thread:make-thread
+                 (lambda ()
+                   (unwind-protect
+                        (let
+                            ((*bash-live-output*
+                               (and
+                                live-bash-entry
+                                (make-notification-output-stream
+                                 (lambda (chunk)
+                                   (sb-thread:with-mutex (lock)
+                                     (append-tui-user-bash-output
+                                      live-bash-entry chunk))
+                                   (request-render))))))
+                          (call-with-tui-command-error-notice
                        (lambda ()
                          (multiple-value-bind
                                (kind result)
@@ -1345,26 +1358,48 @@
                                    :unknown-command)
                              (show-error
                               "Unknown command"))
-                           (when
-                               (and
-                                (member kind '(:command :bash))
-                                (stringp result)
-                                (plusp
-                                 (length result)))
-                             (notice result))))
-                       #'show-error)
-                   (sb-thread:with-mutex (lock)
-                     (setf busy-p nil
-                           abort-requested-p nil)
-                     (when (typep (current-editor)
-                                  'cadr-tui:multiline-editor)
-                       (cadr-tui:editor-set-border-mode
-                        (current-editor) :thinking
-                        (or
-                         (tui-state-thinking state)
-                         :off))))
-                   (refresh-footer-state)))
-               :name "cadr-tui-dispatch"))))
+                           (cond
+                             ((and (eq kind :bash)
+                                   (user-bash-result-p result))
+                              (sb-thread:with-mutex (lock)
+                                (if live-bash-entry
+                                    (complete-tui-user-bash-entry
+                                     live-bash-entry result)
+                                    (append-tui-user-bash-result
+                                     state result)))
+                              (request-render))
+                             ((and (eq kind :bash)
+                                   live-bash-entry
+                                   (stringp result))
+                              (sb-thread:with-mutex (lock)
+                                (complete-tui-user-bash-string
+                                 live-bash-entry result))
+                              (request-render))
+                             ((and
+                               (eq kind :command)
+                               (stringp result)
+                               (plusp (length result)))
+                              (notice result)))))
+                           #'show-error))
+                     (sb-thread:with-mutex (lock)
+                       (when
+                           (and live-bash-entry
+                                (getf
+                                 (tui-entry-custom-options live-bash-entry)
+                                 :running-p))
+                         (stop-tui-user-bash-entry live-bash-entry))
+                       (setf busy-p nil
+                             abort-requested-p nil)
+                       (when (typep (current-editor)
+                                    'cadr-tui:multiline-editor)
+                         (cadr-tui:editor-set-border-mode
+                          (current-editor) :thinking
+                          (or
+                           (tui-state-thinking state)
+                           :off))))
+                     (request-render)
+                     (refresh-footer-state)))
+                 :name "cadr-tui-dispatch")))))
          (open-selector (kind items)
            (setf
             overlay-kind kind
@@ -1812,7 +1847,7 @@
                      (status message)))
                (error (condition)
                  (show-error (princ-to-string condition)))))
-           (request-render))
+           (refresh-footer-state))
          (accept-selection (value)
            (let ((kind overlay-kind))
              (setf overlay nil
@@ -1989,6 +2024,13 @@
                overlay value)
               (request-render))
              (:changed
+              (when (eq overlay-kind :scoped-models)
+                (setf
+                 (tui-state-multiple-providers-p state)
+                 (> (scoped-models-selector-provider-count
+                     overlay)
+                    1))
+                (refresh-footer-state))
               (when
                   (and
                    (eq overlay-kind :settings)
@@ -2140,7 +2182,13 @@
                         (request-render))))
                  (:toggle-tools
                   (toggle-last-tool-block state)
-                  (request-render))
+                  (status
+                   (format
+                    nil "Tool output: ~A"
+                    (if
+                        (tui-state-tools-expanded-p state)
+                        "expanded"
+                        "collapsed"))))
                  (:follow-up
                   (submit-follow-up))
                  (:dequeue

@@ -335,6 +335,29 @@
           object "finalError"
            (cadr-agent:agent-event-final-error
            event))))
+      (:summarization-retry-scheduled
+       (cadr-ai::json-put
+        object "attempt"
+        (cadr-agent:agent-event-attempt event))
+       (cadr-ai::json-put
+        object "maxAttempts"
+        (cadr-agent:agent-event-max-attempts event))
+       (cadr-ai::json-put
+        object "delayMs"
+        (cadr-agent:agent-event-delay-ms event))
+       (cadr-ai::json-put
+        object "errorMessage"
+        (cadr-agent:agent-event-error-message event)))
+      (:summarization-retry-attempt-start
+       (cadr-ai::json-put
+        object "source"
+        (json-event-type-name
+         (cadr-agent:agent-event-source event)))
+       (when (cadr-agent:agent-event-reason event)
+         (cadr-ai::json-put
+          object "reason"
+          (json-event-type-name
+           (cadr-agent:agent-event-reason event)))))
       (:compaction-start
        (cadr-ai::json-put
         object "reason"

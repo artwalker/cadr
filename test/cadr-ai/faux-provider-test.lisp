@@ -75,16 +75,28 @@
          :id "tool-1"))
        :stop-reason :tool-use)))
     (let ((events nil)
-          (deltas nil))
+          (retained-events nil)
+          (deltas nil)
+          (text-start-snapshot nil))
       (cadr-ai:faux-stream
        handle
        (cadr-ai:faux-get-model handle)
        (cadr-ai:make-context)
        (lambda (event)
+         (setf retained-events
+               (append retained-events (list event)))
          (setf events
                (append events
                        (list
                         (cadr-ai:stream-event-type event))))
+         (when (eq :text-start
+                   (cadr-ai:stream-event-type event))
+           (setf text-start-snapshot
+                 (cadr-ai:text-content-text
+                  (first
+                   (last
+                    (cadr-ai:assistant-message-content
+                     (cadr-ai:stream-event-message event)))))))
          (when (eq :tool-call-delta
                    (cadr-ai:stream-event-type event))
            (setf deltas
@@ -95,15 +107,206 @@
            '(:start
              :thinking-start :thinking-delta :thinking-end
              :text-start :text-delta :text-end
-             :tool-call-start :tool-call-delta :tool-call-end
-             :done)
-           events))
+             :tool-call-start)
+           (subseq events 0 8)))
+      (is (equal '(:tool-call-end :done) (last events 2)))
+      (is (= (ceiling
+              (length
+               (cadr-ai::stringify-json
+                (cadr-ai::json-object "text" "hi" "count" 12)))
+              4)
+             (count :tool-call-delta events)))
+      (is (string= "" text-start-snapshot))
+      (let* ((start
+               (find :start retained-events
+                     :key #'cadr-ai:stream-event-type))
+             (thinking-start
+               (find :thinking-start retained-events
+                     :key #'cadr-ai:stream-event-type))
+             (thinking-delta
+               (find :thinking-delta retained-events
+                     :key #'cadr-ai:stream-event-type))
+             (text-start
+               (find :text-start retained-events
+                     :key #'cadr-ai:stream-event-type))
+             (tool-start
+               (find :tool-call-start retained-events
+                     :key #'cadr-ai:stream-event-type))
+             (tool-end
+               (find :tool-call-end retained-events
+                     :key #'cadr-ai:stream-event-type)))
+        ;; Fixed Pi faux.ts snapshots every partial event deeply.  Retaining
+        ;; an earlier event must not expose later mutations of the live
+        ;; accumulator.
+        (is (null
+             (cadr-ai:assistant-message-content
+              (cadr-ai:stream-event-message start))))
+        (is (= 1
+               (length
+                (cadr-ai:assistant-message-content
+                 (cadr-ai:stream-event-message thinking-start)))))
+        (is (string=
+             ""
+             (cadr-ai:thinking-content-thinking
+              (first
+               (cadr-ai:assistant-message-content
+                (cadr-ai:stream-event-message thinking-start))))))
+        (is (string=
+             "go"
+             (cadr-ai:thinking-content-thinking
+              (first
+               (cadr-ai:assistant-message-content
+                (cadr-ai:stream-event-message thinking-delta))))))
+        (let ((blocks
+                (cadr-ai:assistant-message-content
+                 (cadr-ai:stream-event-message text-start))))
+          (is (= 2 (length blocks)))
+          (is (string= "go"
+                       (cadr-ai:thinking-content-thinking (first blocks))))
+          (is (string= ""
+                       (cadr-ai:text-content-text (second blocks)))))
+        (is (= 3
+               (length
+                (cadr-ai:assistant-message-content
+                 (cadr-ai:stream-event-message tool-start)))))
+        (is (= 0
+               (hash-table-count
+                (cadr-ai:tool-call-arguments
+                 (third
+                  (cadr-ai:assistant-message-content
+                   (cadr-ai:stream-event-message tool-start)))))))
+        (is (= 2
+               (hash-table-count
+                (cadr-ai:tool-call-arguments
+                 (third
+                  (cadr-ai:assistant-message-content
+                   (cadr-ai:stream-event-message tool-end)))))))
+        (is (not (eq (cadr-ai:stream-event-message start)
+                     (cadr-ai:stream-event-message thinking-start))))
+        (is (not (eq (cadr-ai:stream-event-message thinking-start)
+                     (cadr-ai:stream-event-message thinking-delta))))
+        (is (not
+             (eq
+              (first
+               (cadr-ai:assistant-message-content
+                (cadr-ai:stream-event-message thinking-start)))
+              (first
+               (cadr-ai:assistant-message-content
+                (cadr-ai:stream-event-message thinking-delta))))))
+        (is (not
+             (eq
+              (cadr-ai:assistant-message-usage
+               (cadr-ai:stream-event-message thinking-start))
+              (cadr-ai:assistant-message-usage
+               (cadr-ai:stream-event-message thinking-delta)))))
+        (is (not (eq (cadr-ai:stream-event-message thinking-delta)
+                     (cadr-ai:stream-event-message text-start)))))
       (let ((arguments
               (cadr-ai::parse-json
                (apply #'concatenate 'string deltas))))
         (is (string=
              "hi" (cadr-ai::json-get arguments "text")))
         (is (= 12 (cadr-ai::json-get arguments "count")))))))
+
+(test faux-provider-stream-chunks-and-aborts-with-finalized-partials
+  (let ((handle
+          (cadr-ai:make-faux-provider
+           :token-min 1 :token-max 1
+           :tokens-per-second 1000000))
+        (events nil)
+        (deltas nil)
+        (abort-p nil)
+        (text-start-snapshot nil)
+        (aborted-message nil))
+    (cadr-ai:faux-set-responses
+     handle
+     (list (cadr-ai:faux-assistant-message "abcdefghij")))
+    (setf
+     aborted-message
+     (cadr-ai:faux-stream
+      handle
+      (cadr-ai:faux-get-model handle)
+      (cadr-ai:make-context)
+      (lambda (event)
+        (push (cadr-ai:stream-event-type event) events)
+        (when (eq :text-start
+                  (cadr-ai:stream-event-type event))
+          (setf text-start-snapshot
+                (cadr-ai:text-content-text
+                 (first
+                  (cadr-ai:assistant-message-content
+                   (cadr-ai:stream-event-message event))))))
+        (when (eq :text-delta
+                  (cadr-ai:stream-event-type event))
+          (push (cadr-ai:stream-event-delta event) deltas)
+          (setf abort-p t)))
+      :abort-p (lambda () abort-p)))
+    (is (equal
+         '(:start :text-start :text-delta :error)
+         (nreverse events)))
+    (is (equal '("abcd") (nreverse deltas)))
+    (is (string= "" text-start-snapshot))
+    (is (eq :aborted
+            (cadr-ai:assistant-message-stop-reason
+             aborted-message)))
+    (is (string=
+         "abcd"
+         (cadr-ai:text-content-text
+          (first
+           (cadr-ai:assistant-message-content
+            aborted-message)))))))
+
+(test faux-provider-stream-error-and-empty-queue-match-baseline-lifecycle
+  (let ((handle (cadr-ai:make-faux-provider))
+        (events nil))
+    (cadr-ai:faux-set-responses
+     handle
+     (list
+      (cadr-ai:faux-assistant-message
+       nil :stop-reason :error :error-message "terminated")))
+    (cadr-ai:faux-stream
+     handle (cadr-ai:faux-get-model handle)
+     (cadr-ai:make-context)
+     (lambda (event)
+       (push (cadr-ai:stream-event-type event) events)))
+    (is (equal '(:start :error) (nreverse events)))
+    (setf events nil)
+    (let ((exhausted
+            (cadr-ai:faux-stream
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context
+              :system-prompt "usage is still estimated")
+             (lambda (event)
+               (push (cadr-ai:stream-event-type event) events)))))
+      (is (equal '(:error) (nreverse events)))
+      (is (plusp
+           (cadr-ai:usage-input
+            (cadr-ai:assistant-message-usage exhausted)))))))
+
+(test faux-provider-response-factory-exception-is-error-only
+  ;; Fixed Pi faux.ts catches response-step exceptions before entering
+  ;; streamWithDeltas, so no synthetic start event precedes the error.
+  (let ((handle (cadr-ai:make-faux-provider))
+        (events nil))
+    (cadr-ai:faux-set-responses
+     handle
+     (list
+      (lambda (&rest ignored)
+        (declare (ignore ignored))
+        (error "boom"))))
+    (let ((message
+            (cadr-ai:faux-stream
+             handle (cadr-ai:faux-get-model handle)
+             (cadr-ai:make-context)
+             (lambda (event)
+               (push event events)))))
+      (setf events (nreverse events))
+      (is (equal '(:error)
+                 (mapcar #'cadr-ai:stream-event-type events)))
+      (is (eq :error
+              (cadr-ai:assistant-message-stop-reason message)))
+      (is (string= "boom"
+                   (cadr-ai:assistant-message-error-message message))))))
 
 (test faux-provider-estimates-usage-and-session-cache
   (let* ((handle (cadr-ai:make-faux-provider))

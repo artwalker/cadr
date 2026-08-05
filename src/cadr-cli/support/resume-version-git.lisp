@@ -40,9 +40,10 @@
     (when command
       (format
        output "~A ~A~%"
-       (cadr-tui:theme-foreground
-        :dim "To resume this session:"
-        :enabled-p terminal-p)
+       (cadr-tui::theme-style
+        "To resume this session:" 2 22
+        (cadr-tui:current-theme)
+        terminal-p t)
        command)
       (finish-output output))
     command))

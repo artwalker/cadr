@@ -171,7 +171,11 @@
     (is (search "--slynk <port>" (get-output-stream-string output)))))
 
 (test goal10-slynk-runtime-is-loopback-scoped-and-cleans-up
-  (let ((port (unused-loopback-port)))
+  ;; Let the kernel allocate the listening port inside Slynk's bind call.
+  ;; Probing and releasing an ephemeral port before create-server races every
+  ;; other process on the host and made this test fail deterministically under
+  ;; parallel load with ADDRESS-IN-USE-ERROR.
+  (let ((port nil))
     (with-test-directory (directory)
       (let* ((session
                (cadr-agent:create-session
@@ -185,8 +189,10 @@
              (progn
                (is (null (cadr-cli:active-agent)))
                (cadr-cli::call-with-remote-repl
-                agent port
-                (lambda ()
+                agent 0
+                (lambda (started-port)
+                  (setf port started-port)
+                  (is-true (and (integerp port) (plusp port)))
                   (is (eq agent (cadr-cli:active-agent)))
                   (cadr-agent:agent-prompt agent "first")
                   (cadr-agent:agent-wait-for-idle agent)
@@ -194,18 +200,11 @@
                       (remote-repl-connect port)
                     (unwind-protect
                          (progn
-                           (let* ((server
-                                    (find
-                                     port slynk::*servers*
-                                     :key #'cadr))
-                                  (address
-                                    (and
-                                     server
-                                     (nth-value
-                                      0
-                                      (sb-bsd-sockets:socket-name
-                                       (first server))))))
-                             (is-true server)
+                           (let ((address
+                                   (nth-value
+                                    0
+                                    (sb-bsd-sockets:socket-peername
+                                     socket))))
                              (is
                               (equalp
                                (sb-bsd-sockets:make-inet-address
@@ -279,7 +278,8 @@
            (sb-bsd-sockets:socket-listen socket 1)
            (signals cadr-ai:configuration-error
              (cadr-cli::call-with-remote-repl
-              nil port (lambda () nil))))
+              nil port (lambda (started-port)
+                         (declare (ignore started-port))))))
       (sb-bsd-sockets:socket-close socket))))
 
 (test goal10-slynk-init-is-isolated-from-the-build-users-home

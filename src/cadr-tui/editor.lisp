@@ -1711,9 +1711,11 @@
                  (if (> remaining-width 10)
                      (list
                       (concatenate
-                       'string prefix short-label spacing)
-                      (truncate-to-width
-                       description remaining-width "" nil))
+                       'string prefix short-label)
+                      (concatenate
+                       'string spacing
+                       (truncate-to-width
+                        description remaining-width "" nil)))
                      (list
                       (concatenate
                        'string prefix
