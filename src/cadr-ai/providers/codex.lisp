@@ -27,7 +27,7 @@
       (unless reasoning
         (remhash "reasoning"
                  (request-spec-payload request)))
-      ;; Pi's Codex Responses body has no max_output_tokens field.  The
+      ;; The fixed Codex Responses baseline has no max_output_tokens field.  The
       ;; ChatGPT backend rejects the ordinary Responses parameter.
       (remhash "max_output_tokens"
                (request-spec-payload request))

@@ -475,7 +475,7 @@
       (faux-resolve handle model context options)
     (let ((partial (faux-partial-message message))
           (queued-events nil)
-          ;; Pi's zero-delay faux producer queues the whole stream before its
+          ;; The fixed zero-delay faux baseline queues the whole stream before its
           ;; consumer runs.  Paced streams yield at each chunk instead.
           (paced-p
             (plusp (faux-handle-tokens-per-second handle))))
