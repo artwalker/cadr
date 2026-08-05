@@ -9,6 +9,7 @@
   output-token
   source-language
   syntax-highlight-function
+  (expand-key-text "ctrl+o" :type string)
   (supplemental-lines nil :type list)
   (status :running :type symbol)
   preview-status
@@ -21,6 +22,7 @@
                              (output "") output-token
                              source-language
                              syntax-highlight-function
+                             (expand-key-text "ctrl+o")
                              supplemental-lines
                              (status :running) preview-status
                              started-at ended-at
@@ -34,6 +36,7 @@
    :output-token output-token
    :source-language source-language
    :syntax-highlight-function syntax-highlight-function
+   :expand-key-text expand-key-text
    :supplemental-lines (copy-list supplemental-lines)
    :status status
    :preview-status preview-status
@@ -443,8 +446,9 @@
            (theme-foreground
             :muted
             (format nil
-                    "... (~D earlier lines, to expand)"
-                    skipped)
+                    "... (~D earlier lines, ~A to expand)"
+                    skipped
+                    (tool-block-expand-key-text block))
             :enabled-p ansi-theme-p)
            content-width "...")
           (nthcdr skipped visual-lines))))
@@ -456,8 +460,9 @@
           (theme-foreground
            :muted
            (format nil
-                   "... (~D more lines, to expand)"
-                   (- (length visual-lines) budget))
+                   "... (~D more lines, ~A to expand)"
+                   (- (length visual-lines) budget)
+                   (tool-block-expand-key-text block))
            :enabled-p ansi-theme-p)
           content-width "...")))))))
 

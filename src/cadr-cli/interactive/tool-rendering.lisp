@@ -484,14 +484,14 @@
       (let ((warning
               (cond
                 ((string-equal name "bash")
-                 (let ((details
-                         (cadr-ai:tool-result-message-details
-                          result)))
-                   (truncation-presentation-warning
-                    details
-                    :full-output-path
-                    (detail :full-output-path "fullOutputPath")
-                    :separator ". ")))
+                 (let ((full-output-path
+                         (detail :full-output-path "fullOutputPath")))
+                   (when (and (detail :truncated "truncated")
+                              (stringp full-output-path)
+                              (plusp (length full-output-path)))
+                     (format nil
+                             "Output truncated. Full output: ~A"
+                             full-output-path))))
                 ((string-equal name "read")
                  (let ((truncation
                          (cadr-ai:tool-result-message-details result)))
@@ -753,6 +753,8 @@
                          (tool-source-language call))
                         :syntax-highlight-function
                         #'tui-syntax-highlight
+                        :expand-key-text
+                        (key-text "app.tools.expand")
                         :started-at
                         (funcall clock-function)
                         :collapsed-p

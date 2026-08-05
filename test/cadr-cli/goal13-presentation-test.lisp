@@ -345,7 +345,7 @@
                    path))
          (warning
            (format nil
-                   "[Full output: ~A. Truncated: 253 lines shown (50.0KB limit)]"
+                   "Output truncated. Full output: ~A"
                    path))
          (call
            (cadr-ai:make-tool-call

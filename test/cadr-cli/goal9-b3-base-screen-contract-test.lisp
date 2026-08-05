@@ -335,7 +335,7 @@
            (goal9-b3-assert-screen-lines-in-order
             natural
             '("Run the command." "$ printf lines"
-              "... (2 earlier lines, to expand)"
+              "... (2 earlier lines, ctrl+o to expand)"
               "three" "seven" "Took 0.3s"
               "────────────────"))
            (is

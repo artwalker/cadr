@@ -33,6 +33,23 @@
       (format nil "~{~A~^~%~}"
               (cadr-tui:virtual-terminal-snapshot terminal))))))
 
+(test goal17-bash-collapsed-preview-uses-the-configured-expand-key
+  (let* ((block
+           (cadr-tui:make-tool-block
+            :name "bash" :summary "printf lines"
+            :output
+            (format nil "~{line-~D~^~%~}"
+                    (loop for index from 1 to 8 collect index))
+            :status :complete :collapsed-p t
+            :expand-key-text "ctrl+x"))
+         (text
+           (format nil "~{~A~^~%~}"
+                   (mapcar
+                    #'cadr-tui:strip-terminal-sequences
+                    (cadr-tui:render-tool-block block 72)))))
+    (is (search "... (3 earlier lines, ctrl+x to expand)" text))
+    (is (null (search "earlier lines, to expand" text)))))
+
 (test goal17-compaction-status-distinguishes-reason-and-configured-interrupt-key
   (let ((previous (cadr-tui:get-keybindings)))
     (unwind-protect
