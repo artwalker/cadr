@@ -218,6 +218,23 @@ class ToolResultDiffGateTest(unittest.TestCase):
             self.assertEqual((cwd / "a.txt").read_text(), "alpha")
             self.assertEqual((cwd / "b.txt").read_text(), "beta")
 
+    def test_render_baseline_cache_marker_is_an_accepted_fixed_checkout(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cadr-tool-diff-baseline-") as temp:
+            baseline = Path(temp)
+            (baseline / ".goal15-render-baseline").write_text(
+                TOOL_DIFF.EXPECTED_BASELINE + "\n", encoding="ascii"
+            )
+            TOOL_DIFF.validate_baseline(baseline)
+
+    def test_render_baseline_cache_marker_fails_closed_on_commit_drift(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cadr-tool-diff-baseline-") as temp:
+            baseline = Path(temp)
+            (baseline / ".goal15-render-baseline").write_text(
+                "0" * 40 + "\n", encoding="ascii"
+            )
+            with self.assertRaisesRegex(TOOL_DIFF.GateFailure, "baseline checkout"):
+                TOOL_DIFF.validate_baseline(baseline)
+
 
 if __name__ == "__main__":
     unittest.main()

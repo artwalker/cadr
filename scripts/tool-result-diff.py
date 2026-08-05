@@ -342,6 +342,22 @@ def _run(
         raise GateFailure(f"{label} driver failed ({completed.returncode}):\n{output}")
 
 
+def validate_baseline(baseline: Path) -> None:
+    head = subprocess.run(
+        ["git", "-C", str(baseline), "rev-parse", "HEAD"],
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        check=False,
+    )
+    if head.returncode == 0 and head.stdout.strip() == EXPECTED_BASELINE:
+        return
+    marker = baseline / ".goal15-render-baseline"
+    if marker.is_file() and marker.read_text(encoding="ascii").strip() == EXPECTED_BASELINE:
+        return
+    raise GateFailure(f"baseline checkout is not {EXPECTED_BASELINE}: {baseline}")
+
+
 def run_pi(
     baseline: Path,
     manifest_path: Path,
@@ -350,15 +366,7 @@ def run_pi(
     env: dict[str, str],
     timeout: float,
 ) -> None:
-    head = subprocess.run(
-        ["git", "-C", str(baseline), "rev-parse", "HEAD"],
-        text=True,
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        check=False,
-    )
-    if head.returncode != 0 or head.stdout.strip() != EXPECTED_BASELINE:
-        raise GateFailure(f"baseline checkout is not {EXPECTED_BASELINE}: {baseline}")
+    validate_baseline(baseline)
     tsx = baseline / "node_modules/.bin/tsx"
     if not tsx.exists():
         raise GateFailure(f"fixed baseline dependencies are unavailable: {tsx}")
@@ -367,12 +375,23 @@ def run_pi(
     driver = stage / "pi-driver.ts"
     shutil.copyfile(FIXTURES / "pi-driver.ts", driver)
     (stage / "package.json").symlink_to(baseline / "package.json")
+    (stage / "tsconfig.json").symlink_to(baseline / "tsconfig.json")
+    (stage / "tsconfig.base.json").symlink_to(baseline / "tsconfig.base.json")
     (stage / "packages").symlink_to(baseline / "packages", target_is_directory=True)
     (stage / "node_modules").symlink_to(
         baseline / "node_modules", target_is_directory=True
     )
     _run(
-        [str(tsx), str(driver), str(baseline), str(manifest_path), str(workspace), str(output)],
+        [
+            str(tsx),
+            "--tsconfig",
+            str(stage / "tsconfig.json"),
+            str(driver),
+            str(baseline),
+            str(manifest_path),
+            str(workspace),
+            str(output),
+        ],
         env,
         timeout,
         "pi",
