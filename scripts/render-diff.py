@@ -1468,7 +1468,6 @@ def run_actions(
     ready_path: Path | None = None,
 ) -> None:
     settled_target = 0
-    settled_render_floor = 0
     for index, action in enumerate(actions, start=1):
         try:
             if "waitFor" in action:
@@ -1513,9 +1512,6 @@ def run_actions(
                     )
             elif "send" in action:
                 try:
-                    if action["send"] == "enter":
-                        drain(master_fd, output)
-                        settled_render_floor = output.count(b"\x1b[?2026l")
                     os.write(master_fd, KEYS[action["send"]])
                 except KeyError as error:
                     raise HarnessFailure(f"unknown key: {action['send']}") from error
@@ -1583,48 +1579,6 @@ def run_actions(
                             raise HarnessFailure(
                                 "timed out waiting for settled render frame"
                             )
-                        if side == "cadr":
-                            # Pi's subscriber runs after its synchronous
-                            # interactive renderer. Cadr's marker is emitted
-                            # after requesting the controller cleanup render;
-                            # depending on scheduling, that frame may already
-                            # be in the PTY or may still be pending. Require a
-                            # post-submit completed frame whose payload is no
-                            # longer the busy frame, instead of blindly waiting
-                            # for one more frame after observing the marker.
-                            render_begin = b"\x1b[?2026h"
-                            render_end = b"\x1b[?2026l"
-                            while True:
-                                wait_for_complete_render(
-                                    master_fd,
-                                    output,
-                                    max(0.0, deadline - time.monotonic()),
-                                    process,
-                                )
-                                drain(master_fd, output)
-                                last_begin = output.rfind(render_begin)
-                                last_end = output.rfind(render_end)
-                                if (
-                                    output.count(render_end) > settled_render_floor
-                                    and last_begin >= 0
-                                    and last_end > last_begin
-                                    and b"Working..."
-                                    not in output[last_begin:last_end]
-                                ):
-                                    break
-                                remaining = deadline - time.monotonic()
-                                if remaining <= 0:
-                                    raise HarnessFailure(
-                                        "timed out waiting for settled non-busy render frame"
-                                    )
-                                wait_for_count(
-                                    master_fd,
-                                    output,
-                                    render_end,
-                                    output.count(render_end) + 1,
-                                    remaining,
-                                    process,
-                                )
                         wait_for_complete_render(
                             master_fd,
                             output,

@@ -68,7 +68,55 @@
            (goal17-live-bash-terminal-completion-marker terminal)
            screen)
       (sb-thread:signal-semaphore
-       (goal17-live-bash-terminal-complete-rendered terminal)))))
+      (goal17-live-bash-terminal-complete-rendered terminal)))))
+
+(test goal17-work-render-ack-fires-after-worker-cleanup-terminal-write
+  (let ((work-rendered
+          (sb-thread:make-semaphore :count 0))
+        (prompt-line nil)
+        (settled-screen nil)
+        (settled-full-redraws 0))
+    (let ((terminal
+            (make-instance
+             'goal17-scripted-terminal
+             :columns 80 :rows 16
+             :inputs
+             (list
+              (format nil "event~C" #\Return)
+              (let ((attempts 0))
+                (lambda ()
+                  (cond
+                    ((sb-thread:try-semaphore work-rendered)
+                     (format nil "/quit~C" #\Return))
+                    ((> (incf attempts) 5000)
+                     (error "Work render acknowledgement was never emitted"))
+                    (t nil))))))))
+      (cadr-cli::run-tui
+       (lambda (line)
+         (setf prompt-line line))
+       :work-rendered-function
+       (lambda ()
+         (setf
+          settled-screen
+         (format
+           nil "~{~A~^~%~}"
+           (cadr-tui:virtual-terminal-snapshot terminal)))
+         (setf
+          settled-full-redraws
+          (count-if
+           (lambda (write)
+             (search
+              (format nil "~C[2J~C[H~C[3J"
+                      #\Escape #\Escape #\Escape)
+              write))
+           (cadr-tui::virtual-writes terminal)))
+         (sb-thread:signal-semaphore work-rendered))
+       :model "faux"
+       :terminal terminal))
+    (is (string= "event" prompt-line))
+    (is-true settled-screen)
+    (is (= 1 settled-full-redraws))
+    (is (null (search "Working..." settled-screen)))))
 
 (test goal17-user-bash-result-is-rendered-through-the-tui
   (let ((terminal

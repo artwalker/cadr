@@ -208,6 +208,7 @@
        template-function
        bash-function
        set-event-consumer
+       work-rendered-function
        set-notice-consumer
        set-status-consumer
        set-warning-consumer
@@ -406,7 +407,8 @@
          (active-theme-mode nil)
          (terminal-progress-active-p nil)
          (terminal-active-p nil)
-         (last-terminal-title nil))
+         (last-terminal-title nil)
+         (pending-work-render-p nil))
     (declare (ignore active-theme))
     (when project-trust-warning
       (add-tui-project-trust-warning
@@ -447,31 +449,38 @@
                  (or (getf options :non-capturing)
                      (getf options :non-capturing-p))))))))
          (render-now ()
-           (sb-thread:with-mutex (lock)
-             (multiple-value-bind
-                   (lines cursor-row cursor-column)
-                 (render-tui-state
-                  state (current-editor)
-                  (cadr-tui:terminal-columns terminal)
-                  (cadr-tui:terminal-rows terminal)
-                  :overlay overlay
-                  :busy-p
-                  (tui-state-agent-working-p state)
-                  :extension-host extension-host
-                  :full-document-p alt-p
-                  :now (funcall clock-function)
-                  :spinner-frame
-                  (tui-status-animation-frame
-                   status-animation))
-               (cadr-tui:render-frame
-                renderer lines
-                :cursor-row cursor-row
-                :cursor-column cursor-column
-                :overlay-active-p
-                (and
-                 (extension-custom-ui-state-p overlay)
-                 (extension-custom-ui-state-overlay-p overlay)
-                 (extension-custom-ui-visible-p overlay))))))
+           (let ((work-rendered-p nil))
+             (sb-thread:with-mutex (lock)
+               (multiple-value-bind
+                     (lines cursor-row cursor-column)
+                   (render-tui-state
+                    state (current-editor)
+                    (cadr-tui:terminal-columns terminal)
+                    (cadr-tui:terminal-rows terminal)
+                    :overlay overlay
+                    :busy-p
+                    (tui-state-agent-working-p state)
+                    :extension-host extension-host
+                    :full-document-p alt-p
+                    :now (funcall clock-function)
+                    :spinner-frame
+                    (tui-status-animation-frame
+                     status-animation))
+                 (cadr-tui:render-frame
+                  renderer lines
+                  :cursor-row cursor-row
+                  :cursor-column cursor-column
+                  :overlay-active-p
+                  (and
+                   (extension-custom-ui-state-p overlay)
+                   (extension-custom-ui-state-overlay-p overlay)
+                   (extension-custom-ui-visible-p overlay)))
+                 (setf
+                  work-rendered-p pending-work-render-p
+                  pending-work-render-p nil)))
+             (when (and work-rendered-p
+                        work-rendered-function)
+               (funcall work-rendered-function))))
          (request-render (&optional force-p)
            (request-tui-render
             render-coordinator force-p))
@@ -1398,7 +1407,18 @@
                            (tui-state-thinking state)
                            :off))))
                      (request-render)
-                     (refresh-footer-state)))
+                     (refresh-footer-state)
+                     ;; The render-diff harness needs a causal acknowledgement
+                     ;; after all worker cleanup state has been applied.  The
+                     ;; optional callback is absent in production; when set,
+                     ;; invalidate incremental renderer history so the final
+                     ;; checkpoint is a canonical redraw rather than a product
+                     ;; of partial-update scheduling.
+                     (when work-rendered-function
+                       (sb-thread:with-mutex (lock)
+                         (setf pending-work-render-p t)
+                         (cadr-tui:invalidate-renderer renderer))
+                       (request-render t))))
                  :name "cadr-tui-dispatch")))))
          (open-selector (kind items)
            (setf

@@ -1020,10 +1020,7 @@
               :on-event
               (lambda (event)
                 (when event-consumer
-                  (funcall event-consumer event))
-                (when (eq (cadr-agent:agent-event-type event)
-                          :agent-settled)
-                  (append-ready-marker "agent-settled"))))))
+                  (funcall event-consumer event))))))
       ;; pi@74caa2649 sdk.ts:362-374 records model/thinking only for a new
       ;; session.  Existing sessions restore their graph and append thinking
       ;; only when the active branch has no thinking-level entry.
@@ -1142,6 +1139,9 @@
                    (lambda ()
                      (run-runtime-actions agent actions))
                    :name "render-diff-runtime-actions")))))
+           :work-rendered-function
+           (lambda ()
+             (append-ready-marker "agent-settled"))
            :set-auth-url-consumer
            (lambda (consumer) (setf auth-url-consumer consumer))
            :set-auth-prompt-consumer

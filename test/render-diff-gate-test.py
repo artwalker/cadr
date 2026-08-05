@@ -108,16 +108,15 @@ class RenderDiffGateTest(unittest.TestCase):
             os.close(write_fd)
             os.close(read_fd)
 
-    def test_agent_settled_wait_requires_a_post_submit_non_busy_frame(self) -> None:
+    def test_agent_settled_wait_consumes_the_render_acknowledged_frame(self) -> None:
         source = (ROOT / "scripts/render-diff.py").read_text(encoding="utf-8")
         branch = source.split('elif "waitForAgentSettled" in action:', 1)[1].split(
             'elif "checkpoint" in action:', 1
         )[0]
 
-        self.assertIn("output.count(render_end) > settled_render_floor", branch)
-        self.assertIn('b"Working..."', branch)
-        self.assertIn("wait_for_count(", branch)
+        self.assertIn("settled_count >= settled_target", branch)
         self.assertIn("wait_for_complete_render(", branch)
+        self.assertNotIn('b"Working..."', branch)
 
     def test_agent_settled_accepts_cleanup_frame_completed_before_marker_poll(self) -> None:
         with tempfile.TemporaryDirectory(prefix="cadr-render-settled-") as temporary:
@@ -140,40 +139,6 @@ class RenderDiffGateTest(unittest.TestCase):
                     [],
                     ready,
                 )
-
-    def test_agent_settled_rejects_busy_frame_until_cleanup_frame_arrives(self) -> None:
-        with tempfile.TemporaryDirectory(prefix="cadr-render-settled-") as temporary:
-            ready = Path(temporary) / "ready"
-            ready.write_text("ready\nagent-settled\n", encoding="utf-8")
-            output = bytearray(b"\x1b[?2026hWorking...\x1b[?2026l")
-            observed: list[float] = []
-
-            def finish_render(
-                _fd: int,
-                target: bytearray,
-                timeout: float,
-                _process: object,
-            ) -> None:
-                observed.append(timeout)
-                target.extend(b"\x1b[?2026hsettled\x1b[?2026l")
-
-            with mock.patch.object(RENDER_DIFF, "drain"), mock.patch.object(
-                RENDER_DIFF,
-                "read_ready",
-                side_effect=finish_render,
-            ):
-                RENDER_DIFF.run_actions(
-                    "cadr",
-                    [{"waitForAgentSettled": True}],
-                    -1,
-                    output,
-                    mock.Mock(),
-                    1.0,
-                    [],
-                    ready,
-                )
-
-        self.assertTrue(observed)
 
     def test_pause_action_never_passes_a_negative_select_timeout(self) -> None:
         observed: list[float] = []
@@ -202,22 +167,25 @@ class RenderDiffGateTest(unittest.TestCase):
     def test_agent_settled_action_waits_on_the_driver_side_channel(self) -> None:
         with tempfile.TemporaryDirectory(prefix="cadr-render-settled-") as temporary:
             ready = Path(temporary) / "ready"
-            ready.write_text("ready\nagent-settled\n", encoding="utf-8")
+            ready.write_text("ready\n", encoding="utf-8")
             observed: list[float] = []
 
-            def finish_render(
+            def publish_render_ack(
                 _fd: int,
                 output: bytearray,
                 timeout: float,
                 _process: object,
             ) -> None:
                 observed.append(timeout)
+                ready.write_text(
+                    "ready\nagent-settled\n", encoding="utf-8"
+                )
                 output.extend(b"\x1b[?2026hsettled\x1b[?2026l")
 
             with mock.patch.object(
                 RENDER_DIFF,
                 "read_ready",
-                side_effect=finish_render,
+                side_effect=publish_render_ack,
             ), mock.patch.object(RENDER_DIFF, "drain"):
                 RENDER_DIFF.run_actions(
                     "cadr",
@@ -233,12 +201,11 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertTrue(observed)
 
     def test_both_render_drivers_publish_agent_settled_side_channel_events(self) -> None:
-        self.assertIn(
-            "agent-settled",
-            (ROOT / "test/fixtures/render-diff/cadr-driver.lisp").read_text(
-                encoding="utf-8"
-            ),
-        )
+        cadr_driver = (
+            ROOT / "test/fixtures/render-diff/cadr-driver.lisp"
+        ).read_text(encoding="utf-8")
+        self.assertIn(":work-rendered-function", cadr_driver)
+        self.assertIn('(append-ready-marker "agent-settled")', cadr_driver)
         self.assertIn(
             "agent-settled",
             (ROOT / "test/fixtures/render-diff/pi-driver.ts").read_text(
