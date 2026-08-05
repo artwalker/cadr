@@ -118,6 +118,30 @@
     (is (= 1 settled-full-redraws))
     (is (null (search "Working..." settled-screen)))))
 
+(test goal17-work-render-ack-does-not-redraw-local-commands
+  (let ((work-render-count 0)
+        (command-lines nil))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :command-function
+     (lambda (line)
+       (push line command-lines)
+       (values t "local done"))
+     :work-rendered-function
+     (lambda ()
+       (incf work-render-count))
+     :model "faux"
+     :terminal
+     (make-instance
+      'goal17-scripted-terminal
+      :columns 80 :rows 16
+      :inputs
+      (list
+       (format nil "/local~C" #\Return)
+       (format nil "/quit~C" #\Return))))
+    (is (equal '("/local") command-lines))
+    (is (= 0 work-render-count))))
+
 (test goal17-user-bash-result-is-rendered-through-the-tui
   (let ((terminal
           (make-instance

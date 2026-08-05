@@ -1313,7 +1313,8 @@
               (not (eq :message-end event-type)))))
          (start-work (line)
            (unless busy-p
-             (let ((live-bash-entry nil))
+             (let ((live-bash-entry nil)
+                   (work-kind nil))
                (setf abort-requested-p nil)
                (when reset-abort-function
                  (funcall reset-abort-function))
@@ -1350,7 +1351,7 @@
                                      (append-tui-user-bash-output
                                       live-bash-entry chunk))
                                    (request-render))))))
-                          (call-with-tui-command-error-notice
+                         (call-with-tui-command-error-notice
                        (lambda ()
                          (multiple-value-bind
                                (kind result)
@@ -1362,6 +1363,7 @@
                               template-function
                               :bash-function
                               bash-function)
+                           (setf work-kind kind)
                            (when
                                (eq kind
                                    :unknown-command)
@@ -1414,7 +1416,8 @@
                      ;; invalidate incremental renderer history so the final
                      ;; checkpoint is a canonical redraw rather than a product
                      ;; of partial-update scheduling.
-                     (when work-rendered-function
+                     (when (and work-rendered-function
+                                (eq work-kind :prompt))
                        (sb-thread:with-mutex (lock)
                          (setf pending-work-render-p t)
                          (cadr-tui:invalidate-renderer renderer))

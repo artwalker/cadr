@@ -96,16 +96,19 @@
         { "sendText": "plain prompt" },
         { "send": "enter" },
         { "waitFor": "Fixed plain response." },
+        { "waitForAgentSettled": true },
         { "checkpoint": "plain" },
         { "sendText": "markdown prompt" },
         { "send": "enter" },
         { "waitFor": "Heading" },
         { "pauseMs": 80 },
+        { "waitForAgentSettled": true },
         { "checkpoint": "markdown-code-thinking" },
         { "sendText": "cjk emoji prompt" },
         { "send": "enter" },
         { "waitFor": "中文宽度" },
         { "pauseMs": 40 },
+        { "waitForAgentSettled": true },
         { "checkpoint": "cjk-emoji" },
         { "send": "ctrl+d" }
       ]
@@ -141,17 +144,17 @@
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "sendText": "run bash" }, { "send": "enter" }, { "waitFor": "bash done." }, { "checkpoint": "bash-multiline" },
-        { "sendText": "run read" }, { "send": "enter" }, { "waitFor": "read done." }, { "checkpoint": "read-range" },
-        { "sendText": "run write" }, { "send": "enter" }, { "waitFor": "write done." }, { "checkpoint": "write" },
-        { "sendText": "run edit" }, { "send": "enter" }, { "waitFor": "edit done." }, { "checkpoint": "edit" },
-        { "sendText": "run grep" }, { "send": "enter" }, { "waitFor": "grep done." }, { "checkpoint": "grep" },
-        { "sendText": "run find" }, { "send": "enter" }, { "waitFor": "find done." }, { "checkpoint": "find" },
-        { "sendText": "run ls" }, { "send": "enter" }, { "waitFor": "ls done." }, { "pauseMs": 40 }, { "checkpoint": "ls" },
-        { "sendText": "run offset-only read" }, { "send": "enter" }, { "waitFor": "offset-only read done." }, { "checkpoint": "read-offset-without-limit" },
-        { "sendText": "run grep default path" }, { "send": "enter" }, { "waitFor": "default grep done." }, { "checkpoint": "grep-default-path" },
-        { "sendText": "run find default path" }, { "send": "enter" }, { "waitFor": "default find done." }, { "checkpoint": "find-default-path" },
-        { "sendText": "run long command" }, { "send": "enter" }, { "waitFor": "long command tree done." }, { "checkpoint": "bash-long-command" },
+        { "sendText": "run bash" }, { "send": "enter" }, { "waitFor": "bash done." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-multiline" },
+        { "sendText": "run read" }, { "send": "enter" }, { "waitFor": "read done." }, { "waitForAgentSettled": true }, { "checkpoint": "read-range" },
+        { "sendText": "run write" }, { "send": "enter" }, { "waitFor": "write done." }, { "waitForAgentSettled": true }, { "checkpoint": "write" },
+        { "sendText": "run edit" }, { "send": "enter" }, { "waitFor": "edit done." }, { "waitForAgentSettled": true }, { "checkpoint": "edit" },
+        { "sendText": "run grep" }, { "send": "enter" }, { "waitFor": "grep done." }, { "waitForAgentSettled": true }, { "checkpoint": "grep" },
+        { "sendText": "run find" }, { "send": "enter" }, { "waitFor": "find done." }, { "waitForAgentSettled": true }, { "checkpoint": "find" },
+        { "sendText": "run ls" }, { "send": "enter" }, { "waitFor": "ls done." }, { "pauseMs": 40 }, { "waitForAgentSettled": true }, { "checkpoint": "ls" },
+        { "sendText": "run offset-only read" }, { "send": "enter" }, { "waitFor": "offset-only read done." }, { "waitForAgentSettled": true }, { "checkpoint": "read-offset-without-limit" },
+        { "sendText": "run grep default path" }, { "send": "enter" }, { "waitFor": "default grep done." }, { "waitForAgentSettled": true }, { "checkpoint": "grep-default-path" },
+        { "sendText": "run find default path" }, { "send": "enter" }, { "waitFor": "default find done." }, { "waitForAgentSettled": true }, { "checkpoint": "find-default-path" },
+        { "sendText": "run long command" }, { "send": "enter" }, { "waitFor": "long command tree done." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-long-command" },
         { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" }, { "send": "ctrl+a" }, { "sendRepeated": { "key": "down", "count": 30 } }, { "checkpoint": "tree-rich-tools" }, { "send": "escape" }, { "pauseMs": 80 },
         { "send": "ctrl+d" }
       ]
@@ -171,9 +174,9 @@
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "sendText": "missing read" }, { "send": "enter" }, { "waitFor": "read failure observed." }, { "checkpoint": "tool-failure" },
-        { "sendText": "exit seven" }, { "send": "enter" }, { "waitFor": "exit failure observed." }, { "checkpoint": "bash-nonzero" },
-        { "sendText": "timeout command" }, { "send": "enter" }, { "waitFor": "timeout observed." }, { "pauseMs": 40 }, { "checkpoint": "bash-timeout" },
+        { "sendText": "missing read" }, { "send": "enter" }, { "waitFor": "read failure observed." }, { "waitForAgentSettled": true }, { "checkpoint": "tool-failure" },
+        { "sendText": "exit seven" }, { "send": "enter" }, { "waitFor": "exit failure observed." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-nonzero" },
+        { "sendText": "timeout command" }, { "send": "enter" }, { "waitFor": "timeout observed." }, { "pauseMs": 40 }, { "waitForAgentSettled": true }, { "checkpoint": "bash-timeout" },
         { "send": "ctrl+d" }
       ]
     },
@@ -286,7 +289,7 @@
         { "sendText": "write preview" }, { "send": "enter" }, { "waitFor": "write preview observed." },
         { "sendText": "edit multiline diff" }, { "send": "enter" }, { "waitFor": "multiline diff observed." },
         { "sendText": "edit insertion diff" }, { "send": "enter" }, { "waitFor": "insertion diff observed." },
-        { "checkpoint": "tool-render-branches" },
+        { "waitForAgentSettled": true }, { "checkpoint": "tool-render-branches" },
         { "send": "ctrl+d" }
       ]
     },
@@ -302,7 +305,7 @@
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "run interruptible bash tool" }, { "send": "enter" }, { "waitFor": "sleep 5" }, { "pauseMs": 100 }, { "send": "escape" },
-        { "waitFor": "Command aborted" }, { "checkpoint": "bash-tool-aborted" },
+        { "waitFor": "Command aborted" }, { "waitForAgentSettled": true }, { "checkpoint": "bash-tool-aborted" },
         { "send": "ctrl+d" }
       ]
     },
@@ -696,7 +699,7 @@
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "cause provider error" }, { "send": "enter" },
-        { "waitFor": "render transport failed" }, { "checkpoint": "provider-error" },
+        { "waitFor": "render transport failed" }, { "waitForAgentSettled": true }, { "checkpoint": "provider-error" },
         { "send": "ctrl+d" }
       ]
     },

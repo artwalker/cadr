@@ -268,6 +268,51 @@ class RenderDiffGateTest(unittest.TestCase):
                 actions[checkpoint]["checkpoint"],
             )
 
+    def test_every_completed_agent_work_checkpoint_waits_for_causal_idle_frame(self) -> None:
+        manifest = RENDER_DIFF.load_manifest(
+            ROOT / "test/fixtures/render-diff/scenarios.json"
+        )
+        scenarios = {
+            item["id"]: item["actions"] for item in manifest["scenarios"]
+        }
+        expected = {
+            "conversation-content": {
+                "plain",
+                "markdown-code-thinking",
+                "cjk-emoji",
+            },
+            "tools-success": {
+                "bash-multiline",
+                "read-range",
+                "write",
+                "edit",
+                "grep",
+                "find",
+                "ls",
+                "read-offset-without-limit",
+                "grep-default-path",
+                "find-default-path",
+                "bash-long-command",
+            },
+            "tools-failure": {"tool-failure", "bash-nonzero", "bash-timeout"},
+            "tools-render-branch-sweep": {"tool-render-branches"},
+            "tool-bash-abort": {"bash-tool-aborted"},
+            "provider-error": {"provider-error"},
+        }
+        for scenario_id, checkpoints in expected.items():
+            actions = scenarios[scenario_id]
+            for checkpoint_id in checkpoints:
+                checkpoint = next(
+                    index
+                    for index, action in enumerate(actions)
+                    if action.get("checkpoint") == checkpoint_id
+                )
+                self.assertEqual(
+                    {"waitForAgentSettled": True},
+                    actions[checkpoint - 1],
+                    f"{scenario_id}/{checkpoint_id}",
+                )
+
     def test_stream_abort_capture_waits_for_the_agent_end_frame(self) -> None:
         manifest = RENDER_DIFF.load_manifest(
             ROOT / "test/fixtures/render-diff/scenarios.json"
