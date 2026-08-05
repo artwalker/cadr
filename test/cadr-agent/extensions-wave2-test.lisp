@@ -1566,7 +1566,9 @@
                       :action :retry
                       :arguments
                       (if (= attempt 1)
-                          (cadr-ai::json-object "value" 7)
+                          (cadr-ai::json-object
+                           "value"
+                           (cadr-ai::json-object "still" "invalid"))
                           (cadr-ai::json-object "value" "valid"))))))
                 (cadr-agent:define-event-hook
                  :tool-call-after
