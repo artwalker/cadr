@@ -29,6 +29,26 @@
 (defparameter *tool-result-diff-arguments*
   cl-user::*tool-result-diff-arguments*)
 
+(defclass permission-denied-context
+    (cadr-agent:execution-tool-context)
+  ((cwd :initarg :cwd :reader permission-denied-context-cwd)))
+
+(defmethod cadr-agent:execution-tool-resolve-path
+    ((context permission-denied-context) path &optional base-directory)
+  (declare (ignore base-directory))
+  (namestring
+   (merge-pathnames path (permission-denied-context-cwd context))))
+
+(defmethod cadr-agent:execution-tool-read-binary
+    ((context permission-denied-context) path)
+  (values
+   nil
+   (cadr-agent:make-harness-operation-error
+    :code :eacces
+    :message
+    (format nil "EACCES: permission denied, access '~A'" path)
+    :path path)))
+
 (defun json-get (object key &optional default)
   (if (hash-table-p object)
       (gethash key object default)
@@ -97,7 +117,13 @@
             (merge-pathnames
              (format nil "~A/" scenario-id)
              workspace)))
-         (tools (cadr-cli::make-all-coding-tools cwd))
+         (context
+           (and (string=
+                 "permission-denied"
+                 (or (json-get scenario "contract") ""))
+                (make-instance
+                 'permission-denied-context :cwd cwd :env nil)))
+         (tools (cadr-cli::make-all-coding-tools cwd :context context))
          (agent
            (cadr-agent:make-agent
             :provider :fixed

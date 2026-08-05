@@ -22,7 +22,8 @@
             (process-image-data bytes)
             (call-with-normalized-file-operation
              :read display-path
-             (lambda () (process-image-file path))))
+             (lambda () (process-image-file path))
+             :resolved-path path))
       (when mime-type
         (let ((note
                 (format
@@ -46,7 +47,8 @@
                       :read display-path
                       (lambda ()
                         (uiop:read-file-string
-                         path :external-format :utf-8)))))
+                         path :external-format :utf-8))
+                      :resolved-path path)))
            (lines (split-all-lines text))
            (start (if (zerop offset)
                       0
@@ -139,4 +141,7 @@
         :read display-path
         (lambda ()
           (read-tool-file
-           cwd arguments :context context)))))))
+           cwd arguments :context context))
+        :resolved-path
+        (unless context
+          (resolve-readable-tool-path cwd display-path)))))))

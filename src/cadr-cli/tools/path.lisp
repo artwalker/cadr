@@ -233,30 +233,37 @@
       (normalized-tool-directory base)))))
 
 (defun signal-normalized-file-operation-error
-    (operation display-path)
-  (error
-   (case operation
-     (:read "Could not read file: ~A")
-     (:write "Could not write file: ~A")
-     (:edit "Could not edit file: ~A")
-     ((:find :grep :glob) "Could not search path: ~A")
-     (:ls "Could not list directory: ~A")
-     (otherwise "Could not access path: ~A"))
-   display-path))
+    (operation display-path condition resolved-path)
+  (if (and (eq operation :read)
+           resolved-path
+           (search "Permission denied"
+                   (princ-to-string condition)
+                   :test #'char-equal))
+      (error "EACCES: permission denied, access '~A'"
+             (namestring resolved-path))
+      (error
+       (case operation
+         (:read "Could not read file: ~A")
+         (:write "Could not write file: ~A")
+         (:edit "Could not edit file: ~A")
+         ((:find :grep :glob) "Could not search path: ~A")
+         (:ls "Could not list directory: ~A")
+         (otherwise "Could not access path: ~A"))
+       display-path)))
 
 (defun call-with-normalized-file-operation
-    (operation display-path function)
+    (operation display-path function &key resolved-path)
   (handler-case
       (funcall function)
-    (file-error ()
+    (file-error (condition)
       (signal-normalized-file-operation-error
-       operation display-path))
-    (stream-error ()
+       operation display-path condition resolved-path))
+    (stream-error (condition)
       (signal-normalized-file-operation-error
-       operation display-path))
-    (type-error ()
+       operation display-path condition resolved-path))
+    (type-error (condition)
       (signal-normalized-file-operation-error
-       operation display-path))))
+       operation display-path condition resolved-path))))
 
 (defun required-string (arguments key)
   (let ((value (cadr-ai::json-get arguments key)))

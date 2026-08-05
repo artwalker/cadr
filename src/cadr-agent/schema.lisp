@@ -679,11 +679,142 @@
     (walk schema value "" nil))
   value)
 
+(defun schema-coercion-types (schema)
+  (multiple-value-bind (type present-p)
+      (gethash "type" schema)
+    (cond
+      ((not present-p) nil)
+      ((stringp type) (list type))
+      ((vectorp type) (coerce type 'list))
+      (t nil))))
+
+(defun coerce-json-number-string (value integer-only-p)
+  (let ((trimmed
+          (string-trim '(#\Space #\Tab #\Return #\Newline)
+                       value)))
+    (when (and (plusp (length trimmed))
+               (cadr-ai::valid-json-number-token-p trimmed))
+      (let ((number
+              (cadr-ai::parse-json-number-token trimmed)))
+        (when (or (not integer-only-p)
+                  (integerp number))
+          number)))))
+
+(defun coerce-json-schema-primitive (value type failure)
+  (cond
+    ((string= type "string")
+     (cond
+       ((eq value 'null) "")
+       ((or (realp value) (eq value t) (null value))
+        (cadr-ai::stringify-json value))
+       (t failure)))
+    ((string= type "number")
+     (cond
+       ((eq value 'null) 0)
+       ((stringp value)
+        (or (coerce-json-number-string value nil) failure))
+       ((eq value t) 1)
+       ((null value) 0)
+       (t failure)))
+    ((string= type "integer")
+     (cond
+       ((eq value 'null) 0)
+       ((stringp value)
+        (or (coerce-json-number-string value t) failure))
+       ((eq value t) 1)
+       ((null value) 0)
+       (t failure)))
+    ((string= type "boolean")
+     (cond
+       ((eq value 'null) nil)
+       ((and (stringp value) (string= value "true")) t)
+       ((and (stringp value) (string= value "false")) nil)
+       ((and (realp value) (= value 1)) t)
+       ((and (realp value) (= value 0)) nil)
+       (t failure)))
+    ((string= type "null")
+     (if (or (and (stringp value) (zerop (length value)))
+             (and (realp value) (zerop value))
+             (null value))
+         'null
+         failure))
+    (t failure)))
+
+(defun coerce-json-schema-instance (schema value &key (root schema))
+  "Apply the baseline tool-argument primitive conversions in place."
+  (let ((failure (gensym "SCHEMA-COERCION-FAILURE")))
+    (labels
+        ((coerce-type (node candidate)
+           (if (some (lambda (type)
+                       (json-schema-type-match-p candidate type))
+                     (schema-coercion-types node))
+               candidate
+               (loop for type in (schema-coercion-types node)
+                     for converted =
+                       (coerce-json-schema-primitive
+                        candidate type failure)
+                     when (and (not (eq converted failure))
+                               (json-schema-type-match-p converted type))
+                       return converted
+                     finally (return candidate))))
+         (walk (node candidate)
+           (multiple-value-bind (reference present-p)
+               (gethash "$ref" node)
+             (when present-p
+               (setf candidate
+                     (walk
+                      (resolve-local-schema-reference root reference "")
+                      candidate))))
+           (setf candidate (coerce-type node candidate))
+           (when (hash-table-p candidate)
+             (let ((properties (gethash "properties" node))
+                   (additional (gethash "additionalProperties" node)))
+               (when properties
+                 (maphash
+                  (lambda (key property-schema)
+                    (multiple-value-bind (item present-p)
+                        (gethash key candidate)
+                      (when present-p
+                        (setf (gethash key candidate)
+                              (walk property-schema item)))))
+                  properties))
+               (when (hash-table-p additional)
+                 (maphash
+                  (lambda (key item)
+                    (unless (and properties
+                                 (nth-value 1 (gethash key properties)))
+                      (setf (gethash key candidate)
+                            (walk additional item))))
+                  candidate))))
+           (when (vectorp candidate)
+             (multiple-value-bind (items present-p)
+                 (gethash "items" node)
+               (when present-p
+                 (cond
+                   ((hash-table-p items)
+                    (loop for index below (length candidate)
+                          do (setf (aref candidate index)
+                                   (walk items (aref candidate index)))))
+                   ((vectorp items)
+                    (loop for index below (min (length candidate)
+                                               (length items))
+                          do (setf (aref candidate index)
+                                   (walk (aref items index)
+                                         (aref candidate index)))))))))
+           (multiple-value-bind (schemas present-p)
+               (gethash "allOf" node)
+             (when present-p
+               (loop for item across schemas
+                     do (setf candidate (walk item candidate)))))
+           candidate))
+      (walk schema value))))
+
 (defun validate-tool-arguments (tool arguments)
   (handler-case
-      (validate-json-schema-instance
-       (cadr-ai:tool-parameters tool)
-       arguments)
+      (let ((schema (cadr-ai:tool-parameters tool)))
+        (validate-json-schema-instance
+         schema
+         (coerce-json-schema-instance schema arguments)))
     (native-schema-error (condition)
       (let ((pointer
               (native-schema-error-json-pointer condition))

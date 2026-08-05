@@ -16,11 +16,13 @@ import type {
 	AgentMessage,
 } from "./packages/agent/src/types.ts";
 import { createAllTools } from "./packages/coding-agent/src/core/tools/index.ts";
+import { createReadTool } from "./packages/coding-agent/src/core/tools/read.ts";
 
 type Scenario = {
 	id: string;
 	tool: string;
 	arguments: Record<string, unknown>;
+	contract?: string;
 };
 
 class FixedAssistantStream extends EventStream<AssistantMessageEvent, AssistantMessage> {
@@ -120,7 +122,19 @@ async function serializeResult(scenario: Scenario, result: ToolResultMessage) {
 
 async function runScenario(workspace: string, scenario: Scenario) {
 	const cwd = join(workspace, scenario.id);
-	const tools = Object.values(createAllTools(cwd));
+	const allTools = createAllTools(cwd);
+	if (scenario.contract === "permission-denied") {
+		const path = join(cwd, String(scenario.arguments.path));
+		allTools.read = createReadTool(cwd, {
+			operations: {
+				access: async () => {
+					throw new Error(`EACCES: permission denied, access '${path}'`);
+				},
+				readFile: async () => Buffer.alloc(0),
+			},
+		});
+	}
+	const tools = Object.values(allTools);
 	const context: AgentContext = {
 		systemPrompt: "fixed tool-result differential",
 		messages: [],

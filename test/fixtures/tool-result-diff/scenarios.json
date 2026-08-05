@@ -13,7 +13,18 @@
       "id": "read-failure",
       "tool": "read",
       "outcome": "failure",
+      "contract": "path-not-found",
       "arguments": {"path": "missing.txt"}
+    },
+    {
+      "id": "read-permission-denied",
+      "tool": "read",
+      "outcome": "failure",
+      "contract": "permission-denied",
+      "arguments": {"path": "locked.txt"},
+      "setup": {
+        "files": [{"path": "locked.txt", "text": "secret", "mode": "0000"}]
+      }
     },
     {
       "id": "bash-success",
@@ -25,7 +36,22 @@
       "id": "bash-failure",
       "tool": "bash",
       "outcome": "failure",
+      "contract": "nonzero-exit",
       "arguments": {"command": "printf 'oops\\n'; exit 7"}
+    },
+    {
+      "id": "bash-timeout",
+      "tool": "bash",
+      "outcome": "failure",
+      "contract": "timeout",
+      "arguments": {"command": "/usr/bin/sleep 5", "timeout": 1}
+    },
+    {
+      "id": "bash-invalid-arguments",
+      "tool": "bash",
+      "outcome": "failure",
+      "contract": "invalid-arguments",
+      "arguments": {"command": 42}
     },
     {
       "id": "bash-broken-pipe",
@@ -40,6 +66,7 @@
       "id": "bash-full-output-path",
       "tool": "bash",
       "outcome": "success",
+      "contract": "output-over-limit",
       "arguments": {"command": "/usr/bin/head -c 61440 /dev/zero | /usr/bin/tr '\\0' x"}
     },
     {

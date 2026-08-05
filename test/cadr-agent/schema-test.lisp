@@ -120,3 +120,38 @@
   (signals cadr-agent::native-schema-error
     (cadr-agent::validate-json-schema-definition
      (schema-object "$ref" "#/$defs/missing"))))
+
+(test native-schema-coerces-tool-arguments-like-baseline
+  (let* ((schema
+           (schema-object
+            "type" "object"
+            "properties"
+            (schema-object
+             "command" (schema-object "type" "string")
+             "count" (schema-object "type" "integer")
+             "enabled" (schema-object "type" "boolean")
+             "items" (schema-object
+                      "type" "array"
+                      "items" (schema-object "type" "number")))
+            "required" (vector "command" "count" "enabled" "items")
+            "additionalProperties" nil))
+         (tool
+           (make-tool
+            :name "coercion"
+            :description "Coercion parity"
+            :parameters schema
+            :executor (lambda (id arguments)
+                        (declare (ignore id arguments)))))
+         (arguments
+           (schema-object
+            "command" 42
+            "count" "7"
+            "enabled" "false"
+            "items" (vector "1.5" 2))))
+    (let ((validated
+            (cadr-agent:validate-tool-arguments tool arguments)))
+      (is (string= "42" (gethash "command" validated)))
+      (is (= 7 (gethash "count" validated)))
+      (is (null (gethash "enabled" validated)))
+      (is (= 1.5d0 (aref (gethash "items" validated) 0)))
+      (is (= 2 (aref (gethash "items" validated) 1))))))

@@ -21,6 +21,14 @@ ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "test/fixtures/tool-result-diff"
 EXPECTED_BASELINE = "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
 EXPECTED_TOOLS = ["read", "bash", "edit", "write", "grep", "find", "ls"]
+REQUIRED_FAILURE_CONTRACTS = {
+    "path-not-found",
+    "permission-denied",
+    "nonzero-exit",
+    "timeout",
+    "output-over-limit",
+    "invalid-arguments",
+}
 PLACEHOLDER = "<FULL_OUTPUT_PATH>"
 NOISE_MARKERS = (b"Broken pipe", b"EPIPE", b"write error")
 
@@ -82,6 +90,16 @@ def load_manifest(path: Path) -> dict[str, Any]:
     broken_pipe = [case for case in scenarios if case.get("contract") == "broken-pipe"]
     if len(broken_pipe) != 1 or broken_pipe[0]["tool"] != "bash":
         raise GateFailure("tool-result manifest must contain one bash broken-pipe scenario")
+    contracts = {
+        case.get("contract")
+        for case in scenarios
+        if isinstance(case.get("contract"), str)
+    }
+    missing_contracts = sorted(REQUIRED_FAILURE_CONTRACTS - contracts)
+    if missing_contracts:
+        raise GateFailure(
+            "tool-result failure contracts missing: " + ", ".join(missing_contracts)
+        )
     return manifest
 
 
@@ -226,27 +244,30 @@ def _write_fixture_file(path: Path, spec: dict[str, Any]) -> None:
     else:
         data = spec.get("text", "").encode("utf-8")
     path.write_bytes(data)
-    path.chmod(int(spec.get("mode", "0644"), 8))
+    path.chmod(int(spec.get("mode", "0666"), 8))
 
 
 def materialize_workspace(root: Path, scenarios: list[dict[str, Any]]) -> None:
     if root.exists():
         shutil.rmtree(root)
-    root.mkdir(parents=True, mode=0o755)
+    root.mkdir(parents=True, mode=0o777)
+    root.chmod(0o777)
     for scenario in scenarios:
         cwd = root / scenario["id"]
-        cwd.mkdir(mode=0o755)
+        cwd.mkdir(mode=0o777)
+        cwd.chmod(0o777)
         setup = scenario.get("setup", {})
         for directory in setup.get("directories", []):
             target = cwd / _safe_relative(directory["path"])
             target.mkdir(parents=True, exist_ok=True)
-            target.chmod(int(directory.get("mode", "0755"), 8))
+            target.chmod(int(directory.get("mode", "0777"), 8))
         for file_spec in setup.get("files", []):
             _write_fixture_file(cwd / _safe_relative(file_spec["path"]), file_spec)
 
 
 def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
     home.mkdir(parents=True, exist_ok=True)
+    home.chmod(0o777)
     private_bin.mkdir(parents=True, exist_ok=True)
     node = shutil.which("node")
     sbcl = shutil.which("sbcl")
@@ -261,6 +282,7 @@ def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
         "fd": Path("/usr/bin/fdfind"),
         "grep": Path("/usr/bin/grep"),
         "head": Path("/usr/bin/head"),
+        "sleep": Path("/usr/bin/sleep"),
         "yes": Path("/usr/bin/yes"),
         "seq": Path("/usr/bin/seq"),
         "tr": Path("/usr/bin/tr"),
@@ -285,7 +307,8 @@ def _fixed_environment(home: Path, private_bin: Path) -> dict[str, str]:
         "LINES": "24",
         "PI_OFFLINE": "1",
     }
-    (home / "tmp").mkdir(mode=0o755)
+    (home / "tmp").mkdir(mode=0o777)
+    (home / "tmp").chmod(0o777)
     return env
 
 
@@ -383,6 +406,7 @@ def gate(arguments: argparse.Namespace) -> int:
         workspace = temp / "workspace"
         output_directory = temp / "output"
         output_directory.mkdir(mode=0o777)
+        output_directory.chmod(0o777)
         home = temp / "home"
         private_bin = temp / "bin"
         env = _fixed_environment(home, private_bin)
