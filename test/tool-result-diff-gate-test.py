@@ -49,6 +49,25 @@ class ToolResultDiffGateTest(unittest.TestCase):
         ]
         self.assertEqual(len(broken_pipe), 1)
         self.assertEqual(broken_pipe[0]["tool"], "bash")
+        contracts = {
+            case.get("contract") for case in manifest["scenarios"]
+        }
+        self.assertTrue(TOOL_DIFF.REQUIRED_FAILURE_CONTRACTS <= contracts)
+
+    def test_manifest_fails_closed_when_a_required_failure_class_is_missing(self) -> None:
+        manifest = json.loads(self.manifest_path.read_text(encoding="utf-8"))
+        manifest["scenarios"] = [
+            case
+            for case in manifest["scenarios"]
+            if case.get("contract") != "permission-denied"
+        ]
+        with tempfile.TemporaryDirectory(prefix="cadr-tool-diff-manifest-") as temp:
+            path = Path(temp) / "scenarios.json"
+            path.write_text(json.dumps(manifest), encoding="utf-8")
+            with self.assertRaisesRegex(
+                TOOL_DIFF.GateFailure, "permission-denied"
+            ):
+                TOOL_DIFF.load_manifest(path)
 
     def test_drivers_use_real_production_agent_wrappers(self) -> None:
         pi_driver = (
