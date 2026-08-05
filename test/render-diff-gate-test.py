@@ -108,16 +108,72 @@ class RenderDiffGateTest(unittest.TestCase):
             os.close(write_fd)
             os.close(read_fd)
 
-    def test_agent_settled_wait_requires_the_following_render_end(self) -> None:
+    def test_agent_settled_wait_requires_a_post_submit_non_busy_frame(self) -> None:
         source = (ROOT / "scripts/render-diff.py").read_text(encoding="utf-8")
         branch = source.split('elif "waitForAgentSettled" in action:', 1)[1].split(
             'elif "checkpoint" in action:', 1
         )[0]
 
-        self.assertIn("render_end_target = output.count(render_end) + 1", branch)
+        self.assertIn("output.count(render_end) > settled_render_floor", branch)
+        self.assertIn('b"Working..."', branch)
         self.assertIn("wait_for_count(", branch)
-        self.assertIn("render_end_target", branch)
         self.assertIn("wait_for_complete_render(", branch)
+
+    def test_agent_settled_accepts_cleanup_frame_completed_before_marker_poll(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cadr-render-settled-") as temporary:
+            ready = Path(temporary) / "ready"
+            ready.write_text("ready\nagent-settled\n", encoding="utf-8")
+            output = bytearray(b"\x1b[?2026hsettled\x1b[?2026l")
+
+            with mock.patch.object(RENDER_DIFF, "drain"), mock.patch.object(
+                RENDER_DIFF,
+                "read_ready",
+                side_effect=AssertionError("must not wait for a nonexistent extra frame"),
+            ):
+                RENDER_DIFF.run_actions(
+                    "cadr",
+                    [{"waitForAgentSettled": True}],
+                    -1,
+                    output,
+                    mock.Mock(),
+                    1.0,
+                    [],
+                    ready,
+                )
+
+    def test_agent_settled_rejects_busy_frame_until_cleanup_frame_arrives(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cadr-render-settled-") as temporary:
+            ready = Path(temporary) / "ready"
+            ready.write_text("ready\nagent-settled\n", encoding="utf-8")
+            output = bytearray(b"\x1b[?2026hWorking...\x1b[?2026l")
+            observed: list[float] = []
+
+            def finish_render(
+                _fd: int,
+                target: bytearray,
+                timeout: float,
+                _process: object,
+            ) -> None:
+                observed.append(timeout)
+                target.extend(b"\x1b[?2026hsettled\x1b[?2026l")
+
+            with mock.patch.object(RENDER_DIFF, "drain"), mock.patch.object(
+                RENDER_DIFF,
+                "read_ready",
+                side_effect=finish_render,
+            ):
+                RENDER_DIFF.run_actions(
+                    "cadr",
+                    [{"waitForAgentSettled": True}],
+                    -1,
+                    output,
+                    mock.Mock(),
+                    1.0,
+                    [],
+                    ready,
+                )
+
+        self.assertTrue(observed)
 
     def test_pause_action_never_passes_a_negative_select_timeout(self) -> None:
         observed: list[float] = []
