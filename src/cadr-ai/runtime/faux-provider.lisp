@@ -169,21 +169,17 @@
 
 (defun faux-copy-stream-message (message)
   (make-assistant-message
-   :content
-   (mapcar #'faux-copy-content-block
-           (assistant-message-content message))
+   :content (copy-list (assistant-message-content message))
    :api (assistant-message-api message)
    :provider (assistant-message-provider message)
    :model (assistant-message-model message)
    :response-model (assistant-message-response-model message)
    :response-id (assistant-message-response-id message)
-   :usage (faux-copy-usage (assistant-message-usage message))
+   :usage (assistant-message-usage message)
    :stop-reason (assistant-message-stop-reason message)
    :error-message (assistant-message-error-message message)
    :raw-stop-reason (assistant-message-raw-stop-reason message)
-   :diagnostics
-   (mapcar #'copy-assistant-message-diagnostic
-           (assistant-message-diagnostics message))
+   :diagnostics (assistant-message-diagnostics message)
    :timestamp (assistant-message-timestamp message)))
 
 (defun faux-copy-message (message handle model)
@@ -477,14 +473,27 @@
      &rest options &key abort-p &allow-other-keys)
   (multiple-value-bind (message resolution-error-p)
       (faux-resolve handle model context options)
-    (let ((partial (faux-partial-message message)))
-      (when resolution-error-p
-        (faux-emit on-event :error message :reason :error)
-        (return-from faux-stream message))
-      (when (faux-stream-aborted-p abort-p)
-        (return-from faux-stream
-          (faux-emit-aborted on-event partial)))
-      (faux-emit on-event :start partial)
+    (let ((partial (faux-partial-message message))
+          (queued-events nil)
+          ;; Pi's zero-delay faux producer queues the whole stream before its
+          ;; consumer runs.  Paced streams yield at each chunk instead.
+          (paced-p
+            (plusp (faux-handle-tokens-per-second handle))))
+      (labels ((emit-event (event)
+                 (if paced-p
+                     (funcall on-event event)
+                     (push event queued-events)))
+               (finish (result)
+                 (dolist (event (nreverse queued-events))
+                   (funcall on-event event))
+                 result))
+        (when resolution-error-p
+          (faux-emit #'emit-event :error message :reason :error)
+          (return-from faux-stream (finish message)))
+        (when (faux-stream-aborted-p abort-p)
+          (return-from faux-stream
+            (finish (faux-emit-aborted #'emit-event partial))))
+        (faux-emit #'emit-event :start partial)
       (loop for block in (assistant-message-content message)
             for index from 0
             do
@@ -497,7 +506,7 @@
                      (append (assistant-message-content partial)
                              (list partial-block)))
                (faux-emit
-                on-event :thinking-start partial
+                #'emit-event :thinking-start partial
                 :content-index index)
                (dolist (chunk
                         (faux-split-string
@@ -505,17 +514,18 @@
                  (faux-wait-for-chunk handle chunk)
                  (when (faux-stream-aborted-p abort-p)
                    (return-from faux-stream
-                     (faux-emit-aborted on-event partial)))
+                     (finish
+                      (faux-emit-aborted #'emit-event partial))))
                  (setf (thinking-content-thinking partial-block)
                        (concatenate
                         'string
                         (thinking-content-thinking partial-block)
                         chunk))
                  (faux-emit
-                  on-event :thinking-delta partial
+                  #'emit-event :thinking-delta partial
                   :content-index index :delta chunk))
                (faux-emit
-                on-event :thinking-end partial
+                #'emit-event :thinking-end partial
                 :content-index index
                 :content
                 (thinking-content-thinking block))))
@@ -527,7 +537,7 @@
                      (append (assistant-message-content partial)
                              (list partial-block)))
                (faux-emit
-                on-event :text-start partial
+                #'emit-event :text-start partial
                 :content-index index)
                (dolist (chunk
                         (faux-split-string
@@ -535,17 +545,18 @@
                  (faux-wait-for-chunk handle chunk)
                  (when (faux-stream-aborted-p abort-p)
                    (return-from faux-stream
-                     (faux-emit-aborted on-event partial)))
+                     (finish
+                      (faux-emit-aborted #'emit-event partial))))
                  (setf (text-content-text partial-block)
                        (concatenate
                         'string
                         (text-content-text partial-block)
                         chunk))
                  (faux-emit
-                  on-event :text-delta partial
+                  #'emit-event :text-delta partial
                   :content-index index :delta chunk))
                (faux-emit
-                on-event :text-end partial
+                #'emit-event :text-end partial
                 :content-index index
                 :content (text-content-text block))))
             ((typep block 'tool-call)
@@ -558,7 +569,7 @@
                      (append (assistant-message-content partial)
                              (list partial-block)))
                (faux-emit
-                on-event :tool-call-start partial
+                #'emit-event :tool-call-start partial
                 :content-index index)
                (dolist (chunk
                         (faux-split-string
@@ -568,14 +579,15 @@
                  (faux-wait-for-chunk handle chunk)
                  (when (faux-stream-aborted-p abort-p)
                    (return-from faux-stream
-                     (faux-emit-aborted on-event partial)))
-                 (faux-emit
-                  on-event :tool-call-delta partial
+                     (finish
+                      (faux-emit-aborted #'emit-event partial))))
+                (faux-emit
+                  #'emit-event :tool-call-delta partial
                   :content-index index :delta chunk))
                (setf (tool-call-arguments partial-block)
                      (tool-call-arguments block))
                (faux-emit
-                on-event :tool-call-end partial
+                #'emit-event :tool-call-end partial
                 :content-index index
                 :tool-call block)))))
       (when (eq :pending (assistant-message-stop-reason message))
@@ -583,10 +595,10 @@
       (when (member (assistant-message-stop-reason message)
                     '(:error :aborted))
         (faux-emit
-         on-event :error message
+         #'emit-event :error message
          :reason (assistant-message-stop-reason message))
-        (return-from faux-stream message))
+        (return-from faux-stream (finish message)))
       (faux-emit
-       on-event :done message
+       #'emit-event :done message
        :reason (assistant-message-stop-reason message))
-      message)))
+      (finish message)))))

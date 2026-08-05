@@ -116,7 +116,7 @@
                 (cadr-ai::json-object "text" "hi" "count" 12)))
               4)
              (count :tool-call-delta events)))
-      (is (string= "" text-start-snapshot))
+      (is (string= "ok" text-start-snapshot))
       (let* ((start
                (find :start retained-events
                      :key #'cadr-ai:stream-event-type))
@@ -135,9 +135,12 @@
              (tool-end
                (find :tool-call-end retained-events
                      :key #'cadr-ai:stream-event-type)))
-        ;; Fixed Pi faux.ts snapshots every partial event deeply.  Retaining
-        ;; an earlier event must not expose later mutations of the live
-        ;; accumulator.
+        ;; Fixed Pi faux.ts shallow-copies the AssistantMessage shell while
+        ;; retaining its content-block objects.  With zero-delay scheduling,
+        ;; the producer finishes mutating those blocks before the consumer
+        ;; serializes the queued events.  Earlier event shells therefore keep
+        ;; their original content array shape but expose each block's final
+        ;; value.
         (is (null
              (cadr-ai:assistant-message-content
               (cadr-ai:stream-event-message start))))
@@ -146,7 +149,7 @@
                 (cadr-ai:assistant-message-content
                  (cadr-ai:stream-event-message thinking-start)))))
         (is (string=
-             ""
+             "go"
              (cadr-ai:thinking-content-thinking
               (first
                (cadr-ai:assistant-message-content
@@ -163,13 +166,13 @@
           (is (= 2 (length blocks)))
           (is (string= "go"
                        (cadr-ai:thinking-content-thinking (first blocks))))
-          (is (string= ""
+          (is (string= "ok"
                        (cadr-ai:text-content-text (second blocks)))))
         (is (= 3
                (length
                 (cadr-ai:assistant-message-content
                  (cadr-ai:stream-event-message tool-start)))))
-        (is (= 0
+        (is (= 2
                (hash-table-count
                 (cadr-ai:tool-call-arguments
                  (third
@@ -185,20 +188,18 @@
                      (cadr-ai:stream-event-message thinking-start))))
         (is (not (eq (cadr-ai:stream-event-message thinking-start)
                      (cadr-ai:stream-event-message thinking-delta))))
-        (is (not
-             (eq
-              (first
-               (cadr-ai:assistant-message-content
-                (cadr-ai:stream-event-message thinking-start)))
-              (first
-               (cadr-ai:assistant-message-content
-                (cadr-ai:stream-event-message thinking-delta))))))
-        (is (not
-             (eq
-              (cadr-ai:assistant-message-usage
-               (cadr-ai:stream-event-message thinking-start))
-              (cadr-ai:assistant-message-usage
+        (is (eq
+             (first
+              (cadr-ai:assistant-message-content
+               (cadr-ai:stream-event-message thinking-start)))
+             (first
+              (cadr-ai:assistant-message-content
                (cadr-ai:stream-event-message thinking-delta)))))
+        (is (eq
+             (cadr-ai:assistant-message-usage
+              (cadr-ai:stream-event-message thinking-start))
+             (cadr-ai:assistant-message-usage
+              (cadr-ai:stream-event-message thinking-delta))))
         (is (not (eq (cadr-ai:stream-event-message thinking-delta)
                      (cadr-ai:stream-event-message text-start)))))
       (let ((arguments
