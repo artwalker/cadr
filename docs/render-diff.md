@@ -33,25 +33,41 @@ Run one pair:
   --output .tmp/render-diff
 ```
 
-Run the Part A mechanical gate:
+Run the harness self-test:
 
 ```sh
 ./scripts/test-render-diff.sh
 ```
 
-That command is the harness self-test. The permanent release gate captures the
-complete 20-scenario by 2-dimension matrix and then invokes the fail-closed
-analyzer on those fresh artifacts:
+The permanent gate has two explicit tiers. `scripts/verify.sh` runs the core
+tier: 31 scenarios in both dimensions, producing 62 fresh captures before the
+fail-closed analyzer runs:
 
 ```sh
 python3 ./scripts/render-diff.py gate \
+  --tier core \
   --pi-repo . \
   --output /tmp/cadr-render-gate \
   --analysis-output /tmp/cadr-render-gate-analysis
 ```
 
-`scripts/verify.sh` runs this exact real-input path as
-`fixed-baseline render differential`; it does not substitute a synthetic
+The full tier adds six branch-sweep scenarios, for 37 scenarios and 74 fresh
+captures. Upstream baseline upgrades invoke it directly:
+
+```sh
+./scripts/test-render-diff-full.sh
+```
+
+Before a release tag, the executable aggregate first runs the ordinary verifier
+and then this full tier on the same HEAD:
+
+```sh
+./scripts/verify-release.sh
+```
+
+Either stage failing blocks the tag; the wrapper does not create or push one.
+
+Both tiers drive the same real-input path; neither substitutes a synthetic
 fixture or a previously captured matrix. The fixed baseline is archived from
 the Cadr repository's retained baseline commit object. The immutable hydrated
 cache is reused only when its marker matches that commit.
@@ -60,8 +76,7 @@ Every capture produces immutable `.raw` bytes and a sibling SHA-256 file.  A
 `.normalized.raw` derivative is for adjudication only; raw evidence is always
 retained.
 
-Analyze a complete Part B capture and require a disposition for every
-difference:
+Analyze a complete capture and require a disposition for every difference:
 
 ```sh
 ./scripts/render-diff.py analyze \
@@ -79,9 +94,10 @@ duplicate, or unknown dispositions make analysis fail.
 The scenario domain is fail-closed too. `reachable-interfaces.json` records all
 22 fixed-baseline slash commands, 28 reachable interface states, 15 component
 constructors at 22 source construction sites, all 13 Cadr overlay kinds, and
-the required interface-significant-state domains. The latter currently lock
-seven source-backed tool states: bash line-limit, byte-limit, overlong-line,
-empty-output, nonzero-exit and timeout, plus a parallel tool batch.
+the required interface-significant-state domains. The latter currently lock 11
+source-backed states: bash line-limit, byte-limit, overlong-line, empty-output,
+nonzero-exit and timeout; a parallel tool batch; invalid tool arguments; and
+manual, threshold and overflow compaction.
 The gate extracts the command list and construction sites directly from the
 fixed baseline and cross-checks the tracked
 `baseline-interface-inventory.json`; source archives without `.git` validate
@@ -95,6 +111,19 @@ zero such exclusions. This includes secondary and tertiary states such as auth t
 -> provider -> OAuth/API-key dialogs, session rename/delete, tree label,
 settings submenus, and extension custom UI.
 
+The complete tier also has a source-derived presentation-branch gate. The
+checked fixed-baseline inventory contains 707 sink sites and 1,228 reachable
+branches from 210 parsed TypeScript files plus nine terminal assets. It
+classifies 682 sites/1,200 branches as printable terminal content and 25
+sites/28 branches as terminal-protocol output. Typed in-root producer returns,
+render-array pushes, slash-command metadata, authentication metadata, and
+terminal assets are followed to their terminal sink; unresolved in-root
+dataflow is a hard failure and is currently zero. Every printable branch must
+be observed by a full-tier checkpoint or named in
+`visible-string-exemptions.json` with an exact physical obstruction. The
+exemption registry is currently empty. The core tier may defer this expensive
+whole-branch proof, but it cannot change or waive its inventory.
+
 ## Fixed dimensions and scenarios
 
 | Dimension | Columns x rows | Reason |
@@ -102,17 +131,18 @@ settings submenus, and extension custom UI.
 | `wide` | 100 x 32 | Normal development terminal with room to expose spacing and footer placement. |
 | `narrow` | 48 x 20 | Forces wrapping, compact help, overlay clipping, and wide-character accounting. |
 
-The manifest contains 21 scripted scenarios, 89 checkpoints, and all 34 Goal 15
-coverage labels:
+The manifest contains 37 scripted scenarios. The 31-scenario core tier has 83
+named checkpoints and 101 coverage labels; the six full-only branch sweeps
+raise the full tier to 93 checkpoints and 122 coverage labels:
 fresh/existing/untrusted startup; plain/Markdown/code/CJK/emoji conversation;
 all seven tools; missing-read/nonzero/timeout errors; every required core and
 authentication overlay; streaming abort and both busy queues; provider and
 fatal errors; all 22 slash commands; bash truncation by lines, bytes and within
 a single line; empty/nonzero/timeout bash results; parallel tool calls; generic and provider-specific auth layers;
 settings secondary/tertiary layers; extension select/input/editor;
-autocomplete; and post-TUI resume output. Every scenario runs in both
-dimensions, producing 42 fresh captures. Checkpoints preserve intermediate
-frames instead of judging only the final screen.
+autocomplete; and post-TUI resume output. Every selected scenario runs in both
+dimensions, producing 62 core captures or 74 full captures. Checkpoints
+preserve intermediate frames instead of judging only the final screen.
 
 | Significant state | Deterministic trigger | Capture point |
 |---|---|---|
@@ -123,6 +153,16 @@ frames instead of judging only the final screen.
 | bash nonzero exit | print one line, then exit 7 | `tools-failure/bash-nonzero` |
 | bash timeout | two-second command with a one-second timeout | `tools-failure/bash-timeout` |
 | parallel tool calls | one faux response containing two independent `read` calls | `tools-significant-states/parallel-tool-calls` |
+| invalid tool arguments | numeric `read` path rejected by schema validation | `tools-significant-states/tool-invalid-arguments` |
+| manual compaction | deterministic manual compaction event through the production interactive consumer | `compaction-status-manual/compaction-manual` |
+| threshold compaction | deterministic threshold compaction event through the production interactive consumer | `compaction-status-threshold/compaction-threshold` |
+| overflow compaction | deterministic overflow compaction event through the production interactive consumer | `compaction-status-overflow/compaction-overflow` |
+
+Agent-backed significant-state checkpoints wait on an out-of-band
+`agent_settled` marker published by both real drivers after their interactive
+event consumer has handled the event. They do not use a millisecond pause as a
+proxy for a completed frame; the PTY is drained after the marker before the
+checkpoint offset is recorded.
 
 The `/share` checkpoint is an approved intentional product-identity difference:
 the fixed baseline displays `https://pi.dev/session/#...`, while Cadr displays
@@ -177,6 +217,15 @@ normalization.
 This gate intentionally does not replace real-user testing.  Faux replay cannot
 cover real-provider chunk timing, mouse interaction, resize transitions, host
 terminal bugs, or state accumulated during long-running sessions.
+
+The pre-Goal-17 matrix failed for a simpler reason: byte-exact comparison can
+only judge a state that a scenario actually creates. Its hand-picked screens
+never entered the line-limit, byte-limit, overlong-line, or three compaction
+branches, so those branches had no obligation and no failure signal. The
+source-derived branch inventory closes that omission class for printable
+baseline branches; it does not claim to cover non-string subprocess semantics,
+provider payloads, model-visible tool results, or agent-event ordering. Those
+remain separate gates.
 
 ## Relationship to the parity ledgers
 

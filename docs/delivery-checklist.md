@@ -24,3 +24,17 @@ later, and the old image is accidentally handed to manual A/B.
 Clean CI checkouts have no root binary. `verify.sh` records the root stage as
 N/A there and continues with its isolated build. N/A is not acceptable for a
 user-facing delivery: steps 2 and 3 remain mandatory locally.
+
+Before creating a release tag, run `./scripts/verify-release.sh` on the exact
+commit to be tagged. It runs the ordinary verifier first and then the complete
+fixed-baseline render inventory; either failure blocks the tag. Any subsequent
+change to HEAD invalidates that evidence and requires rerunning the command.
+The script verifies only and never creates or pushes a tag.
+
+The Goal 17 cross-implementation evidence is channel-specific and none may be
+substituted for another: the ordinary verifier must pass the core PTY render
+matrix, exact tool-result differential, and JSON/RPC event differential; the
+pre-tag wrapper must then pass the full 74-capture baseline-visible branch
+inventory. Record the exact command summaries in the active goal acceptance
+report. A green historical fixture or an earlier commit is not delivery
+evidence.

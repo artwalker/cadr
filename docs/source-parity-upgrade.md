@@ -60,23 +60,43 @@ ledger still describing the old source set.
 The source inventory is only the first upgrade gate. The same upgrade must also
 update `baselineCommit` in both
 `test/fixtures/render-diff/scenarios.json` and
-`test/fixtures/render-diff/dispositions.json`, update the fixed-version baseline
-artifact and digest in `scripts/render-diff.py` if upstream's generated model
-data changed, and run the complete real render matrix:
+`test/fixtures/render-diff/dispositions.json`; regenerate
+`baseline-visible-strings.json` and its TypeScript source inventory from the new
+tree; and adjudicate every added, removed, or changed source site/branch. The
+extractor must again report zero unresolved in-root dataflow. A printable branch
+without a full-tier checkpoint or an exact physical-obstruction exemption blocks
+the upgrade; the current exemption registry is empty.
+
+The same change must update the baseline commit in
+`test/fixtures/event-diff/scenarios.json` and the fixed commit constants used by
+`scripts/event-diff.py` and `scripts/tool-result-diff.py`. Update the
+fixed-version baseline artifact and digest in `scripts/render-diff.py` if
+upstream's generated model data changed, then run the complete real render
+matrix:
 
 ```sh
-python3 ./scripts/render-diff.py gate \
-  --pi-repo . \
-  --output /tmp/cadr-render-upgrade \
-  --analysis-output /tmp/cadr-render-upgrade-analysis
+./scripts/test-render-diff-full.sh
 ```
 
-This captures every manifest scenario in both dimensions before analysis. A
-new difference without a human disposition fails; a disposition whose
-difference disappeared also fails. Every new difference must be classified as
-a Cadr defect or an intentional difference with its baseline evidence and user
-ruling. Raw PTY bytes and their SHA-256 files remain authoritative; upgrade work
-must not broaden normalization to make a new difference disappear. The same
-command runs as the `fixed-baseline render differential` stage of
-`scripts/verify.sh`, so an upgrade cannot be accepted from the source ledger
-alone.
+This captures all 37 manifest scenarios in both dimensions (74 fresh captures)
+before analysis. A new difference without a human disposition fails; a
+disposition whose difference disappeared also fails. Every new difference must
+be classified as a Cadr defect or an intentional difference with its baseline
+evidence and user ruling. Raw PTY bytes and their SHA-256 files remain
+authoritative; upgrade work must not broaden normalization to make a new
+difference disappear. `scripts/verify.sh` runs the 31-scenario core tier (62
+captures); the full wrapper above is separately mandatory after every upstream
+baseline change and before a release tag, so an upgrade cannot be accepted from
+the source ledger or core render tier alone.
+
+Finally run both non-visual cross-implementation gates against the same new
+baseline:
+
+```sh
+python3 ./scripts/tool-result-diff.py
+python3 ./scripts/event-diff.py
+```
+
+This is required even when the PTY matrix is unchanged: tool text returned to
+the model and JSON/RPC event ordering are distinct observable channels and are
+not derivable from a rendered screen.

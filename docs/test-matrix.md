@@ -36,7 +36,7 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 |---|---|---|
 | One production version source | `GOAL10-PART-E-RELEASE-IDENTITY-HAS-ONE-VERSION-SOURCE`, `GOAL9-PART-E-VERSION-REACHES-SERVER-CLI-AND-RADIUS-REGISTRATION` | All eight ASDF systems, both CLIs, TUI, HTTP and Radius derive from `version.sexp`; CLI/README/CHANGELOG/Release-draft identity is exact and production literal audit rejects drift |
 | Repository/document hygiene | `GOAL9-PART-E-REPOSITORY-HYGIENE-AND-NAVIGATION-CONTRACT` | Root changelog, docs index, ignored local state, archived goal inputs and removed empty `packages/` tree are checked together |
-| Release-local verification | root `build.sh` → `scripts/check-root-binary.sh` → `scripts/verify.sh`, plus `build-server.sh` | Root `cadr` must be strictly newer than the latest `src/` commit and filesystem edit; deterministic checks pass in the root test and both isolated builds; Goal 11 budgets, retained harnesses, and all available live paths pass |
+| Release-local verification | root `build.sh` → `scripts/check-root-binary.sh` → `scripts/verify-release.sh`, plus `build-server.sh` | Root `cadr` must be strictly newer than the latest `src/` commit and filesystem edit; the ordinary verifier, both isolated builds, Goal 11 budgets, retained harnesses, all available live paths, and the full 74-capture fixed-baseline render inventory pass on the tag candidate |
 
 ## Goal 16: product identity boundary
 
@@ -45,6 +45,17 @@ The current TypeScript manifest is `362 C / 0 U / 0 M / 1 N/A = 363`.
 | One private product identity owner | `GOAL16-PRODUCT-IDENTITY-HAS-ONE-PRIVATE-OWNER`, `GOAL16-THIRD-PARTY-ATTRIBUTION-USES-CADR-IDENTITY` | Slug, display name, repository URL and default share viewer derive from `src/cadr-ai/support/release.lisp`; provider attribution uses Cadr identity while exact external contracts remain unchanged |
 | Exact fail-closed identity inventory | `test/product-identity-gate-test.py`, `scripts/check-product-identity.py`, `docs/product-identity-allowlist.json` | Synthetic regressions reject unknown, moved, duplicated, wildcard, empty-reason and digest-drift entries; the same gate scans the real production tree and requires its full finding count to equal the exact manifest |
 | Release-gate integration | `scripts/verify.sh` stage `product identity gate` | Synthetic and real-tree checks run after code organization and before source parity, FiveAM, builds, harnesses or live work; failure blocks every later deterministic stage |
+
+## Goal 17: cross-implementation observable-channel gates
+
+| Contract | Coverage | Evidence |
+|---|---|---|
+| Source-derived terminal branch inventory | `test/baseline-visible-strings-extractor-test.py`, `test/render-diff-gate-test.py`, `baseline-visible-strings.json`, empty `visible-string-exemptions.json` | Fixed Pi source yields 707 sites/1,228 branches across 219 source/assets: 1,200 printable and 28 terminal-protocol branches; zero unresolved in-root dataflow; every printable branch must map to a full-tier checkpoint or an exact physical-obstruction exemption |
+| Significant terminal states | 31 core scenarios/62 captures; 37 full scenarios/74 captures | Byte/line/overlong truncation, empty/nonzero/timeout bash, parallel tools, invalid arguments, and manual/threshold/overflow compaction are deterministic checkpoints in both wide and narrow PTYs |
+| Model-visible tool results | `scripts/tool-result-diff.py` | Nineteen reset-workspace scenarios compare exact text, typed details and `isError` for all seven built-in tools; cwd, HOME, PATH, locale and fixture bytes are fixed, and the SIGPIPE pipeline is an explicit regression |
+| JSON and RPC behavior | `scripts/event-diff.py`, `test/event-diff-gate-test.py` | Ten faux-provider scenarios run in both modes and both implementations; 40 exact raw artifacts cover completion, retry, abort, tool failure and all compaction reasons with exact-pointer-only normalization |
+| Summarization policy choke point | `scripts/check-summarization-choke-point.sh`, `scripts/test-summarization-choke-point.sh`, `test/cadr-cli/goal17-compaction-test.lisp` | Compaction, split-turn and branch summaries cannot bypass the single retry/cache/session owner; transient errors retry, deterministic errors and aborts do not, and cancellation preserves the prior session tree |
+| Release and upgrade enforcement | `scripts/verify.sh`, `scripts/verify-release.sh`, `scripts/test-render-diff-full.sh` | Every delivery runs core render plus tool/event differentials; a tag candidate and every baseline upgrade must additionally pass the full branch inventory; wrappers propagate failure and never tag or push |
 
 ## Phase 1: cadr-ai
 
@@ -150,7 +161,7 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
 | Live evals | `scripts/test-live.sh` → `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
-| Single local release gate | `scripts/verify.sh`, `scripts/check-root-binary.sh`, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT`, `DELIVERY-BINARY-FRESHNESS-CHECK-REJECTS-MISSING-STALE-AND-DIRTY-IMAGES` | Existing root image freshness → deterministic FiveAM → isolated dual build → retained process/PTY harnesses → availability-gated live FiveAM → DeepSeek live TUI; clean CI without a root image records N/A, while user delivery separately requires root rebuild and direct freshness proof |
+| Single local release gate | `scripts/verify-release.sh`, `scripts/verify.sh`, `scripts/check-root-binary.sh`, release-wrapper contract tests, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT`, `DELIVERY-BINARY-FRESHNESS-CHECK-REJECTS-MISSING-STALE-AND-DIRTY-IMAGES` | Existing root image freshness → deterministic FiveAM → isolated dual build → retained process/PTY harnesses → core render/tool/event differentials → availability-gated live checks → full 74-capture render inventory; the pre-tag wrapper short-circuits on either verifier failure and never tags or pushes |
 
 ## Goal 11: non-functional parity
 

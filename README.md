@@ -38,13 +38,19 @@ an auxiliary inventory for the fixed-baseline runnable examples, not a fifth
 ledger. [`docs/source-parity-upgrade.md`](docs/source-parity-upgrade.md) defines
 the fail-closed source drift gate for a future baseline upgrade.
 
-The fixed-baseline render differential is the only gate that executes both
-implementations and compares pi's actual PTY output with Cadr's. It is a
-cross-implementation oracle, not a fifth ledger: the four ledgers remain the
-implementation-side records, while the differential catches an assertion or
-snapshot that encoded the wrong behavior. Its complete real matrix runs in
-`scripts/verify.sh`; every non-aligned result requires an explicit, non-stale
-disposition.
+Goal 17's fixed-baseline differentials execute both implementations. The
+render differential compares PTY bytes and terminal
+geometry, the tool-result differential compares the exact text and error bit
+returned to the model, and the event differential compares JSON and RPC event
+records and ordering. They are cross-implementation oracles, not additional
+ledgers: the four ledgers remain the implementation-side records, while the
+differentials catch an assertion or fixture that encoded the wrong behavior.
+`scripts/verify.sh` runs the core render matrix and both non-visual
+differentials on every delivery. `scripts/verify-release.sh` composes that
+verifier with the complete baseline-visible branch inventory and is the
+mandatory pre-tag entrypoint; `scripts/test-render-diff-full.sh` is mandatory
+after every upstream baseline upgrade. Every non-aligned result requires an
+explicit, non-stale disposition.
 
 Those four axes answer whether Cadr is correct. The permanent
 [`docs/code-organization.md`](docs/code-organization.md) contract answers
@@ -499,8 +505,10 @@ and inspect them before sharing.
   excludes those blocks and `test-live.sh` runs them explicitly.
 - By explicit user decision, `scripts/verify.sh` is a local-only release gate
   that composes deterministic tests, isolated builds, performance/stability,
-  process/PTY, the complete fixed-baseline render differential, and available
-  live stages; Cadr does not add a remote CI workflow for it.
+  process/PTY, the core fixed-baseline render differential, exact tool-result
+  and event-stream differentials, and available live stages; Cadr does not add
+  a remote CI workflow for it. The complete render inventory remains a separate
+  mandatory pre-tag and post-upstream-upgrade gate.
 - External shell harnesses remain only where a unit test cannot faithfully
   observe the real boundary:
   `acceptance-smoke.sh` (native image and cross-process sessions),
@@ -524,6 +532,11 @@ introduced. Proposed mechanisms beyond original pi belong in
 | Credential-gated | The live report lists every run, skip reason, and failure output/classification; fixtures are not presented as live evidence |
 | Human acceptance | Goal 5 TUI checklist and Goal 9 Part B three-round dual-terminal A/B acceptance passed |
 
+Goal 17's exact closeout totals, gate artifacts, commit sequence, and binary
+freshness proof are recorded in
+[`docs/acceptance/goal-v17.md`](docs/acceptance/goal-v17.md); the report does not
+promote an intermediate run to final evidence.
+
 ```bash
 ./build.sh
 ./scripts/check-root-binary.sh
@@ -532,9 +545,13 @@ python3 ./scripts/check-code-organization.py \
 python3 ./scripts/check-product-identity.py \
   --root . --manifest docs/product-identity-allowlist.json
 python3 ./scripts/render-diff.py gate \
-  --pi-repo . --output /tmp/cadr-render-gate \
+  --tier core --pi-repo . --output /tmp/cadr-render-gate \
   --analysis-output /tmp/cadr-render-gate-analysis
+./scripts/test-render-diff-full.sh
+python3 ./scripts/tool-result-diff.py
+python3 ./scripts/event-diff.py
 ./scripts/verify.sh
+./scripts/verify-release.sh  # mandatory pre-tag aggregate
 ```
 
 Before user-facing delivery, the root image must be rebuilt and the freshness
@@ -545,14 +562,17 @@ present; a stale image fails before the expensive stages. A clean CI checkout
 has no root image, so that stage is N/A there and the isolated build remains the
 CI artifact gate. See the [delivery checklist](docs/delivery-checklist.md).
 
-The release-local entry then runs deterministic FiveAM, isolated builds of both
-native images, the Goal 11 performance/stability gate, every retained
-process/PTY harness, the complete fresh 20-scenario by 2-dimension
-fixed-baseline render matrix, credential-gated live FiveAM, and the DeepSeek live TUI
-when its key is available. It prints separate deterministic and live tables and
-exits nonzero for any executed failure; absent credentials are reported as
-explicit skips. It does not create or invoke a remote CI workflow. Individual
-stages remain available for diagnosis:
+The local verifier runs deterministic FiveAM, isolated builds of both native
+images, the Goal 11 performance/stability gate, every retained process/PTY
+harness, the fresh core render matrix, exact tool-result and JSON/RPC event
+differentials, credential-gated live FiveAM, and the DeepSeek live TUI when its
+key is available. The complete render inventory is intentionally separate;
+`verify-release.sh` makes it fail-closed before a tag, while baseline upgrades
+run `test-render-diff-full.sh` directly. The
+verifier prints separate deterministic and live tables and exits nonzero for
+any executed failure; absent credentials are reported as explicit skips. It
+does not create or invoke a remote CI workflow. Individual stages remain
+available for diagnosis:
 
 ```bash
 ./scripts/test-cl.sh

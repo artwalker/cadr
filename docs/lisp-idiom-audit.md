@@ -8,22 +8,22 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=272 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=273 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 272 Lisp files and 101,013 physical lines.  The form
+The audited tree contains 273 Lisp files and 105,619 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 61 | 24,526 | 45 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
-| `cadr-agent` | 35 | 15,284 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 108 | 38,777 | 63 | 16 | 6 | 24 | 0 | 76 | 2 | 0 |
-| `cadr-tui` | 36 | 14,791 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
+| `cadr-ai` | 61 | 24,812 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
+| `cadr-agent` | 36 | 15,940 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
+| `cadr-cli` | 108 | 42,159 | 66 | 18 | 6 | 28 | 0 | 85 | 2 | 0 |
+| `cadr-tui` | 36 | 15,092 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `cadr-server` | 11 | 2,779 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
+| `cadr-server` | 11 | 2,768 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
 | `cadr-protocol` | 5 | 1,427 | 4 | 0 | 0 | 0 | 0 | 5 | 0 | 0 |
-| `cadr-evals` | 8 | 3,039 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
+| `cadr-evals` | 8 | 3,031 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
 
 The audit distinguishes three kinds of dispatch that are easy to conflate:
 
@@ -40,7 +40,7 @@ Only the first category is a CLOS candidate.
 |---|---|---|---|---|---|
 | `cadr-core` | Bounded cleanup, cancellation, atomic replacement, secret-safe printing, and UTC conversion each have one policy owner. | These are closed SBCL/UIOP primitives, not extensible product objects; plain functions and one declaration macro expose the exact policy. | Compatibility wrappers in product packages delegate without policy. | Cleanup and filesystem conditions are normalized at the leaf boundary; no caller-selectable recovery exists. | **Keep.** Goal 14 B3 introduced this leaf specifically to remove repeated failure-policy invariants before later file extraction. |
 | `cadr-ai` | Provider streaming reducers centralize scratch/final content and preserve exact wire text; request cancellation is dynamically scoped at the transport boundary.  The invariants are covered by payload and delta-boundary tests.  `src/cadr-ai/crash.lisp` adds the shared fatal-condition boundary and exact secret redaction. | Provider, credential and content records are value objects, so structs are appropriate; credential-bearing records have redacted `print-object` methods.  Most `case`/`cond` forms discriminate API names, JSON event tags, content types, or HTTP status, not extensible owned objects.  Stream classes/generics are already used where behavior is polymorphic. | Generated model/catalog forms must stay generated; a macro would hide rather than remove their source of truth. | Transport/parse handlers translate failures at abstraction boundaries.  The fatal boundary deliberately uses `handler-bind` so it captures the failure before stack unwind; it offers no fake recovery choice. | **Keep.** The post-audit crash boundary uses the correct pre-unwind condition mechanism; another hierarchy would add indirection without satisfying a C2-B reason. |
-| `cadr-agent` | Agent/session list tails are centralized with head sentinels; storage owns entry/leaf invariants; extension event validation is centralized.  The remaining concrete defect is obsolete server-rendered HTML code left behind after the baseline exporter replaced it. | Real substitutability already uses generics: execution environments (`execution-env.lisp:3-35`), session storage/repositories (`storage/protocol.lisp:3-35`), and their memory/JSONL/SQLite methods.  Session entry/message tags remain serialized data and should not become an open class hierarchy. | The extension surface already uses `define-tool`, `define-command`, `define-event-hook`, provider, renderer, shortcut, and flag macros (`extensions/registration.lisp:732-812`).  Additional macros would obscure the frozen export surface. | Tool failure is the one site with a useful local choice and already uses `restart-case` plus `handler-bind` (`loop/tool-execution.lisp:191-270`; `tool.lisp:230-294`).  Persistence/schema handlers translate corrupt external data and correctly unwind. | **One rewrite: C2-R1.** Delete five unreachable legacy HTML helpers and move the one live compaction formatter beside its only callers; keep all other structures. |
+| `cadr-agent` | Agent/session list tails are centralized with head sentinels; storage owns entry/leaf invariants; extension event validation is centralized. Goal 17 adds one summarization choke point that solely owns retry, cache-retention, routing identity, and abort policy for compaction and branch summaries. The remaining concrete defect is obsolete server-rendered HTML code left behind after the baseline exporter replaced it. | Real substitutability already uses generics: execution environments (`execution-env.lisp:3-35`), session storage/repositories (`storage/protocol.lisp:3-35`), and their memory/JSONL/SQLite methods. Session entry/message tags remain serialized data and should not become an open class hierarchy. The summarization policy is closed behavior over an agent and is correctly a function, not a new class protocol. | The extension surface already uses `define-tool`, `define-command`, `define-event-hook`, provider, renderer, shortcut, and flag macros (`extensions/registration.lisp:732-812`). The summarization owner is protected by a source-level anti-bypass gate; wrapping it in a macro would hide rather than strengthen the call graph. | Tool failure is the one site with a useful local choice and already uses `restart-case` plus `handler-bind` (`loop/tool-execution.lisp:191-270`; `tool.lisp:230-294`). Summary retries classify transient errors at their single request boundary, while deterministic errors and aborts unwind immediately. Persistence/schema handlers translate corrupt external data and correctly unwind. | **One rewrite: C2-R1.** Delete five unreachable legacy HTML helpers and move the one live compaction formatter beside its only callers; keep all other structures. |
 | `cadr-cli` | Frontend notices, statuses, warnings, auth URLs, and prompts remain distinct consumers in `bootstrap/commands.lisp`; RPC wire output remains owned by `modes/rpc/jsonl.lisp`.  Extension source output and infrastructure diagnostics use separate dynamic stream boundaries (`extensions/loader.lisp`).  `selector-frame` owns selector chrome, viewport/count, and wrap navigation while domain selectors retain distinct search and payload rules.  `src/cadr-cli/crash.lisp` applies the shared sanitized boundary to shipped entrypoints. | SDK lifecycle objects use classes/generics under `sdk/`.  Selector/editor/runtime state is closed mutable data and correctly remains structs plus explicit state-machine cases.  The selector frame is a composable value object rather than an open hierarchy.  The crash adapter is a boundary function, not a new object protocol. | Similar selector state machines are not semantically identical, but their frame decisions are one component.  Bootstrap and RPC command families are cohesive functions with one mode sink each; a macro over domain handlers would hide distinct command, cancellation, and payload contracts. | CLI handlers convert filesystem, subprocess, configuration, extension and fatal failures into stable user/wire outcomes.  No caller can choose a meaningful restart at those I/O sites. | **Keep.** Shared selector presentation, diagnostic, time, and crash bug classes are prevented by component/channel ownership and one shared fatal boundary rather than more exception syntax. |
 | `cadr-tui` | Layout, focus, cache invalidation, disposal, and rendering are enforced by the component protocol and exact composition owners (`composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp`). Terminal lifecycle is owned by the renderer terminal protocol. `src/cadr-tui/threads.lisp` centralizes bounded worker shutdown. | This is the strongest CLOS use in the tree: component inheritance and generic rendering/event/disposal, plus terminal/virtual-terminal methods (`renderer/{terminal-protocol,virtual-terminal}.lisp`; `terminal.lisp:218-817`). Editor, decoder, fuzzy, undo, key and thread handles are closed value/state records; bounded cleanup is a function over SBCL's closed thread primitive, so a wrapper class would add no substitutability. | No repeated constructor/validator group meets the significant-reduction threshold without hiding terminal semantics. | Terminal capability and image/decoder handlers provide fallback values. Bounded join handles cleanup failure as a fixed lifecycle policy, not an interactive recovery choice. | **Keep for C2.** B7 preserves the existing CLOS protocols while giving every implementation family one exact owner. |
 | `cadr-storage` | This is a 31-line compatibility system boundary with no state of its own. | It re-exports the repository-backed implementation; another object model would duplicate it. | None. | None. | **Keep.** |
@@ -94,9 +94,9 @@ consumer can safely take.
 
 Current use is consistent: wire/value/state records are structs; objects with
 substitutable behavior, lifecycle, inheritance, or method combination are
-classes.  The raw ratio (216 structs, 57 classes) is explained by the product's
+classes.  The raw ratio (222 structs, 59 classes) is explained by the product's
 large protocol/event surface and is not evidence of TypeScript translation.
-The 67 generics and 201 methods are concentrated exactly where open behavior
+The 67 generics and 205 methods are concentrated exactly where open behavior
 exists.
 
 ### 6. Repeated bug classes
@@ -130,7 +130,7 @@ a net seven files. B10 replaced four mixed AI files with seventeen capability,
 transport, runtime, and support owners, for a net thirteen files. B11 replaced
 five mixed provider/authentication owners with 25 protocol, authentication,
 OAuth, declaration, registry, and runtime-projection owners, for a net twenty
-files. The audit therefore follows the current 272 files rather than treating the old file set
+files. The audit therefore follows the current 273 files rather than treating the old file set
 as permanent:
 
 | added file | required capability | Lisp-idiom disposition |
@@ -150,6 +150,7 @@ as permanent:
 | `src/cadr-tui/composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp` | separate the reusable component protocol from concrete content, settings, loader, and root orchestration | keep the existing CLOS protocol and load it before implementations; no new dispatch surface is needed |
 | `src/cadr-tui/renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp` | separate terminal protocols, deterministic virtual terminal, lifecycle/input, and screen-specific rendering | keep terminal polymorphism and closed renderer state; main- and alt-screen algorithms remain explicit owners |
 | `src/cadr-agent/{session,storage,loop}/*.lisp` | separate codecs, journals, migration/discovery/export, storage protocols/backends, lifecycle events, tool execution, turns, and loop entrypoints | keep serialized tags and mutable closed state explicit; retain CLOS only for the storage protocol and keep B3 time/atomic decisions delegated before extraction |
+| `src/cadr-agent/summarization.lisp` | one non-bypassable owner for retry classification, abort-aware backoff, cache isolation, and fresh routing identity across every summary request | keep as a plain function over the closed agent/request protocol; `check-summarization-choke-point.sh` proves all compaction, split-turn, and branch call sites pass through it, so a macro or class would add syntax without another invariant |
 | `src/cadr-agent/extensions/*.lisp` | separate context/UI contracts, API copying/events, registration, snapshots, rendering, provider projection, commands/templates, and lifecycle dispatch | keep the frozen macro/event surface explicit; preserve B3 cancellation and injected output ownership rather than introducing a second host abstraction |
 | `src/cadr-tui/threads.lisp` | bounded join/forced-stop cleanup for terminal workers | keep as one function over SBCL's closed thread primitive; wrapping threads in a new class would not remove another invariant |
 | `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time}.lisp` | one bottom-layer owner for five repeated failure-safety decisions | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |
