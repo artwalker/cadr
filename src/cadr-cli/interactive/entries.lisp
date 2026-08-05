@@ -155,6 +155,31 @@
     :text markdown))
   state)
 
+(defun add-tui-version-update-notification
+    (state version &optional note)
+  (append-tui-entry
+   state
+   (make-tui-entry
+    :type :version-update
+    :text version
+    :label
+    (let ((trimmed
+            (string-trim
+             '(#\Space #\Tab #\Newline #\Return)
+             (or note ""))))
+      (and (plusp (length trimmed)) trimmed))))
+  state)
+
+(defun add-tui-package-update-notification
+    (state packages)
+  (append-tui-entry
+   state
+   (make-tui-entry
+    :type :package-update
+    :custom-options
+    (list :packages (copy-list packages))))
+  state)
+
 (defun terminal-hyperlink (url label)
   (format nil "~C]8;;~A~C~A~C]8;;~C"
           #\Escape url (code-char 7) label

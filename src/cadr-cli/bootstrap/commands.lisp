@@ -47,11 +47,15 @@
            (format output "~&session> compacting context...~%")
            (finish-output output))
           ((eq type :compaction-end)
-           (format output "~&session> context compacted~%")
+           (if (cadr-agent:agent-event-error-message event)
+               (format
+                output "~&error> ~A~%"
+                (cadr-agent:agent-event-error-message event))
+               (format output "~&session> context compacted~%"))
            (finish-output output))
           ((eq type :compaction-error)
            (format
-            output "~&error> Context compaction failed: ~A~%"
+            output "~&error> ~A~%"
             (cadr-agent:agent-event-error-message event))
            (finish-output output)))))))
 
@@ -172,6 +176,16 @@
                    (if (eq direction :backward) -1 1))
                 count)))
         (nth next-index entries)))))
+
+(defun check-for-new-cadr-version-for-command (command)
+  (if (cli-arguments-offline-p command)
+      (check-for-new-cadr-version
+       (cadr-ai::cadr-version)
+       :offline-value "1")
+      ;; Do not pass NIL here: omitting the keyword preserves the
+      ;; CADR_OFFLINE environment default owned by the version checker.
+      (check-for-new-cadr-version
+       (cadr-ai::cadr-version))))
 
 (defun cli-handler (command)
   (let* ((input-terminal-p
@@ -1823,6 +1837,18 @@
                (cli-extension-manager-host
                 extension-manager))
               function))
+           :version-update-check-function
+           (lambda ()
+             (check-for-new-cadr-version-for-command
+              command))
+           :package-update-check-function
+           (lambda ()
+             (check-for-available-package-updates
+              package-records
+              :offline-p
+              (or
+               (cli-arguments-offline-p command)
+               (offline-mode-p))))
            :footer-state-function
            #'current-footer-state
            :footer-cwd cwd

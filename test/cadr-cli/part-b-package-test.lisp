@@ -326,3 +326,366 @@
         (is (uiop:subpathp
              (first (getf paths :prompts))
              package))))))
+
+(test goal17-installed-git-package-update-check-matches-the-baseline-contract
+  ;; pi@74caa2649 package-manager.ts:1159-1221 checks every unpinned,
+  ;; materialized package and compares local HEAD with the remote upstream.
+  (with-test-directory (root)
+    (let* ((path (merge-pathnames "github.com/user/repo/" root))
+           (missing-path
+             (merge-pathnames "github.com/user/missing/" root))
+           (source
+             (cadr-cli::parse-package-source
+              "git:github.com/user/repo"))
+           (pinned-source
+             (cadr-cli::parse-package-source
+              "git:github.com/user/pinned@v1"))
+           (record
+             (list :scope :global
+                   :source "git:github.com/user/repo"
+                   :parsed source
+                   :path path))
+           (pinned-record
+             (list :scope :global
+                   :source "git:github.com/user/pinned@v1"
+                   :parsed pinned-source
+                   :path path))
+           (missing-record
+             (list :scope :global
+                   :source "git:github.com/user/missing"
+                   :parsed
+                   (cadr-cli::parse-package-source
+                    "git:github.com/user/missing")
+                   :path missing-path))
+           (commands nil)
+           (local (make-string 40 :initial-element #\a))
+           (remote (make-string 40 :initial-element #\b)))
+      (ensure-directories-exist
+       (merge-pathnames "anchor" path))
+      (flet ((runner (argv)
+               (push argv commands)
+               (cond
+                 ((member "--abbrev-ref" argv :test #'string=)
+                  "origin/main")
+                 ((member "ls-remote" argv :test #'string=)
+                  (format nil "~A~Crefs/heads/main~%" remote #\Tab))
+                 ((member "HEAD" argv :test #'string=)
+                  local)
+                 (t (error "Unexpected git command: ~S" argv)))))
+        (is (equal
+             '("github.com/user/repo")
+             (cadr-cli::check-for-available-package-updates
+              (list record) :runner #'runner)))
+        (is
+         (some
+          (lambda (argv)
+            (and (member "ls-remote" argv :test #'string=)
+                 (member "refs/heads/main" argv :test #'string=)))
+          commands))
+        (is
+         (notany
+          (lambda (argv)
+            (or
+             (member "core.sshCommand=ssh -oBatchMode=yes"
+                     argv :test #'string=)
+             (member "core.sshCommand" argv :test #'string=)))
+          commands))
+        (setf commands nil)
+        (is (null
+             (cadr-cli::check-for-available-package-updates
+              (list record) :runner #'runner :offline-p t)))
+        (is (null commands))
+        (is (null
+             (cadr-cli::check-for-available-package-updates
+              (list pinned-record missing-record)
+              :runner #'runner)))
+        (is (null commands))
+        (flet ((same-runner (argv)
+                 (cond
+                   ((member "--abbrev-ref" argv :test #'string=)
+                    "origin/main")
+                   ((member "ls-remote" argv :test #'string=)
+                    (format nil "~A~Crefs/heads/main~%"
+                            local #\Tab))
+                   (t local))))
+          (is (null
+               (cadr-cli::check-for-available-package-updates
+                (list record) :runner #'same-runner))))
+        (dolist (unusable-upstream
+                 '("" "not-an-object-id"))
+          (let ((remote-queries nil))
+            (flet ((fallback-runner (argv)
+                     (cond
+                       ((member "--abbrev-ref" argv :test #'string=)
+                        "origin/main")
+                       ((member "ls-remote" argv :test #'string=)
+                        (let ((ref (car (last argv))))
+                          (push ref remote-queries)
+                          (if (string= ref "HEAD")
+                              (format nil "~A~CHEAD~%" remote #\Tab)
+                              unusable-upstream)))
+                       (t local))))
+              (is
+               (equal
+                '("github.com/user/repo")
+                (cadr-cli::check-for-available-package-updates
+                 (list record) :runner #'fallback-runner)))
+              (is
+               (equal
+                '("refs/heads/main" "HEAD")
+                (nreverse remote-queries))))))
+        (let ((remote-queries nil))
+          (flet ((no-upstream-runner (argv)
+                   (cond
+                     ((member "--abbrev-ref" argv :test #'string=)
+                      "main")
+                     ((member "ls-remote" argv :test #'string=)
+                      (push (car (last argv)) remote-queries)
+                      (format nil "~A~CHEAD~%" remote #\Tab))
+                     (t local))))
+            (is
+             (equal
+              '("github.com/user/repo")
+              (cadr-cli::check-for-available-package-updates
+               (list record) :runner #'no-upstream-runner)))
+            (is (equal '("HEAD") (nreverse remote-queries)))))
+        (flet ((malformed-runner (argv)
+                 (cond
+                   ((member "--abbrev-ref" argv :test #'string=)
+                    "origin/main")
+                   ((member "ls-remote" argv :test #'string=)
+                    "not-an-object-id")
+                   (t local))))
+          (is (null
+               (cadr-cli::check-for-available-package-updates
+                (list record) :runner #'malformed-runner))))
+        (flet ((failed-runner (argv)
+                 (declare (ignore argv))
+                 (error "private git failure")))
+          (is (null
+               (cadr-cli::check-for-available-package-updates
+                (list record) :runner #'failed-runner))))))))
+
+(test goal17-package-update-checks-are-project-first-bounded-and-stable
+  ;; pi@74caa2649 package-manager.ts:1164-1221 queues project packages before
+  ;; user packages, runs at most four checks, and stores results by input index.
+  ;; Semaphores force reverse completion without relying on scheduler timing.
+  (with-test-directory (root)
+    (labels
+        ((make-record (scope name)
+           (let ((path (merge-pathnames
+                        (format nil "~A/" name) root)))
+             (ensure-directories-exist
+              (merge-pathnames "anchor" path))
+             (list
+              :scope scope
+              :source (format nil "git:github.com/user/~A" name)
+              :parsed
+              (cadr-cli::parse-package-source
+               (format nil "git:github.com/user/~A" name))
+              :path path))))
+      (let* ((input
+               (list
+                (make-record :global "g1")
+                (make-record :project "p1")
+                (make-record :global "g2")
+                (make-record :project "p2")
+                (make-record :global "g3")
+                (make-record :project "p3")))
+             (scheduled
+               (cadr-cli::package-update-records-project-first
+                input))
+             (count (length scheduled))
+             (path-indices (make-hash-table :test #'equal))
+             (gates
+               (make-array
+                count
+                :initial-contents
+                (loop repeat count collect
+                  (sb-thread:make-semaphore :count 0))))
+             (started (sb-thread:make-semaphore :count 0))
+             (finished (sb-thread:make-semaphore :count 0))
+             (lock
+               (sb-thread:make-mutex
+                :name "goal17 package concurrency test"))
+             (active 0)
+             (maximum-active 0)
+             (started-count 0)
+             (local (make-string 40 :initial-element #\a))
+             (remote (make-string 40 :initial-element #\b))
+             (result nil)
+             (check-thread nil))
+        (loop for record in scheduled
+              for index from 0
+              do
+              (setf
+               (gethash
+                (namestring (getf record :path))
+                path-indices)
+               index))
+        (flet ((runner (argv)
+                 (let* ((path (third argv))
+                        (index (gethash path path-indices)))
+                   (cond
+                     ((member "ls-remote" argv :test #'string=)
+                      (sb-thread:with-mutex (lock)
+                        (decf active))
+                      (sb-thread:signal-semaphore finished)
+                      (format nil "~A~Crefs/heads/main~%"
+                              remote #\Tab))
+                     ((member "--abbrev-ref" argv :test #'string=)
+                      "origin/main")
+                     (t
+                      (sb-thread:with-mutex (lock)
+                        (incf active)
+                        (incf started-count)
+                        (setf maximum-active
+                              (max maximum-active active)))
+                      (sb-thread:signal-semaphore started)
+                      (unless
+                          (sb-thread:wait-on-semaphore
+                           (aref gates index) :timeout 5)
+                        (error "Package update gate timed out"))
+                      local)))))
+          (unwind-protect
+               (progn
+                 (setf
+                  check-thread
+                  (sb-thread:make-thread
+                   (lambda ()
+                     (setf
+                      result
+                      (cadr-cli::check-for-available-package-updates
+                       input :runner #'runner)))
+                   :name "goal17 package checker"))
+                 (loop repeat 4 do
+                   (is
+                    (sb-thread:wait-on-semaphore
+                     started :timeout 5)))
+                 (sb-thread:with-mutex (lock)
+                   (is (= 4 active))
+                   (is (= 4 maximum-active))
+                   (is (= 4 started-count)))
+                 (dolist (index '(3 2))
+                   (sb-thread:signal-semaphore
+                    (aref gates index))
+                   (is
+                    (sb-thread:wait-on-semaphore
+                     finished :timeout 5))
+                   (is
+                    (sb-thread:wait-on-semaphore
+                     started :timeout 5)))
+                 (sb-thread:with-mutex (lock)
+                   (is (= 4 active))
+                   (is (= 4 maximum-active))
+                   (is (= 6 started-count)))
+                 (dolist (index '(5 4 1 0))
+                   (sb-thread:signal-semaphore
+                    (aref gates index))
+                   (is
+                    (sb-thread:wait-on-semaphore
+                     finished :timeout 5)))
+                 (is
+                  (sb-thread:join-thread
+                   check-thread :timeout 5 :default nil))
+                 (setf check-thread nil)
+                 (is
+                  (equal
+                   '("github.com/user/p1"
+                     "github.com/user/p2"
+                     "github.com/user/p3"
+                     "github.com/user/g1"
+                     "github.com/user/g2"
+                     "github.com/user/g3")
+                   result)))
+            (dotimes (index count)
+              (sb-thread:signal-semaphore
+               (aref gates index)))
+            (when check-thread
+              (sb-thread:join-thread
+               check-thread :timeout 5 :default nil)
+              (when (sb-thread:thread-alive-p check-thread)
+                (sb-thread:terminate-thread check-thread)))))))))
+
+(test goal17-package-update-check-discards-diagnostics-and-kills-timeout-tree
+  (let ((user-errors
+          (make-string-output-stream)))
+    (let ((*error-output* user-errors))
+      (is (string=
+           (format nil "remote-output~%")
+           (cadr-cli::default-package-update-check-runner
+            (list "/bin/sh" "-c"
+                  "printf 'remote-output\\n'; printf 'private git diagnostic\\n' >&2")))))
+    (is (string= "" (get-output-stream-string user-errors))))
+  (let ((previous-prompt
+          (uiop:getenv "GIT_TERMINAL_PROMPT"))
+        (previous-ssh
+          (uiop:getenv "GIT_SSH_COMMAND")))
+    (unwind-protect
+         (progn
+           (sb-posix:setenv "GIT_TERMINAL_PROMPT" "ask" 1)
+           (sb-posix:setenv
+            "GIT_SSH_COMMAND" "ssh -F /tmp/user-config" 1)
+           (is
+            (string=
+             (format nil "0|ssh -F /tmp/user-config~%")
+             (cadr-cli::default-package-update-check-runner
+              (list
+               "/bin/sh" "-c"
+               "printf '%s|%s\\n' \"$GIT_TERMINAL_PROMPT\" \"$GIT_SSH_COMMAND\"")))))
+      (if previous-prompt
+          (sb-posix:setenv
+           "GIT_TERMINAL_PROMPT" previous-prompt 1)
+          (sb-posix:unsetenv "GIT_TERMINAL_PROMPT"))
+      (if previous-ssh
+          (sb-posix:setenv "GIT_SSH_COMMAND" previous-ssh 1)
+          (sb-posix:unsetenv "GIT_SSH_COMMAND"))))
+  (with-test-directory (root)
+    (let* ((pid-path
+             (merge-pathnames "child.pid" root))
+           (clock-calls 0)
+           (timed-out-p nil))
+      (flet ((clock ()
+               (incf clock-calls)
+               (if (and (> clock-calls 1)
+                        (probe-file pid-path))
+                   (* 2 internal-time-units-per-second)
+                   0)))
+        (handler-case
+            (cadr-cli::default-package-update-check-runner
+             (list
+              "/bin/sh" "-c"
+              (format nil
+                      "trap '' TERM; sleep 30 & child=$!; printf '%s' \"$child\" > '~A'; wait"
+                      (namestring pid-path)))
+             :timeout-seconds 1
+             :clock #'clock)
+          (error (condition)
+            (setf timed-out-p
+                  (search "timed out"
+                          (princ-to-string condition))))))
+      (is (not (null timed-out-p)))
+      (is (probe-file pid-path))
+      (let ((child-pid
+              (parse-integer
+               (string-trim
+                '(#\Space #\Tab #\Newline #\Return)
+                (uiop:read-file-string pid-path)))))
+        (let* ((process-path
+                 (pathname
+                  (format nil "/proc/~D/stat" child-pid)))
+               (stat
+                 (and (probe-file process-path)
+                      (ignore-errors
+                        (uiop:read-file-string
+                         process-path))))
+               (close
+                 (and stat
+                      (position #\) stat :from-end t)))
+               (state
+                 (and close
+                      (< (+ close 2) (length stat))
+                      (char stat (+ close 2)))))
+          ;; PID 1 in a container can retain an already-killed orphan as a
+          ;; zombie. Such a process cannot execute git or ssh.
+          (is (member state '(nil #\Z #\X #\x))))))))

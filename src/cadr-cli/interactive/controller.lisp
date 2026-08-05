@@ -215,6 +215,8 @@
        set-auth-prompt-consumer
        set-model-consumer
        set-extension-ui-function
+       version-update-check-function
+       package-update-check-function
        extension-overlay-opened-function
        footer-state-function
        footer-cwd
@@ -384,6 +386,8 @@
          (done-p nil)
          (last-clear-at nil)
          (worker nil)
+         (version-update-worker nil)
+         (package-update-worker nil)
          (session-loader-worker nil)
          (custom-ui-lock
            (sb-thread:make-mutex
@@ -654,6 +658,30 @@
            (sb-thread:with-mutex (lock)
              (add-tui-success state text))
            (request-render))
+         (show-version-update (release)
+           (let ((version
+                   (and (hash-table-p release)
+                        (cadr-ai::json-get
+                         release "version")))
+                 (note
+                   (and (hash-table-p release)
+                        (cadr-ai::json-get
+                         release "note"))))
+             (when (and (stringp version)
+                        (plusp (length version)))
+               (sb-thread:with-mutex (lock)
+                 (add-tui-version-update-notification
+                  state version
+                  (and (stringp note) note)))
+               (request-render))))
+         (show-package-updates (packages)
+           (when (and (listp packages)
+                      packages
+                      (every #'stringp packages))
+             (sb-thread:with-mutex (lock)
+               (add-tui-package-update-notification
+                state packages))
+             (request-render)))
          (show-auth-url (url)
            (sb-thread:with-mutex (lock)
              (add-tui-auth-url state url))
@@ -2161,6 +2189,28 @@
       (when set-extension-ui-function
         (funcall set-extension-ui-function
                  #'extension-ui-call))
+      (when version-update-check-function
+        (setf
+         version-update-worker
+         (sb-thread:make-thread
+          (lambda ()
+            (handler-case
+                (show-version-update
+                 (funcall
+                  version-update-check-function))
+              (condition () nil)))
+          :name "cadr-version-update-check")))
+      (when package-update-check-function
+        (setf
+         package-update-worker
+         (sb-thread:make-thread
+          (lambda ()
+            (handler-case
+                (show-package-updates
+                 (funcall
+                  package-update-check-function))
+              (condition () nil)))
+          :name "cadr-package-update-check")))
       (unwind-protect
            (cadr-tui:call-with-terminal
             terminal
@@ -2355,6 +2405,14 @@
                   session-loader-worker))
           (stop-thread-for-cleanup
            session-loader-worker))
+        (dolist (update-worker
+                 (list version-update-worker
+                       package-update-worker))
+          (when (and update-worker
+                     (sb-thread:thread-alive-p
+                      update-worker))
+            (stop-thread-for-cleanup
+             update-worker)))
         (when set-event-consumer
           (funcall set-event-consumer nil))
         (when set-notice-consumer

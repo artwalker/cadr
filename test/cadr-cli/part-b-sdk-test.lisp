@@ -368,6 +368,47 @@
           :offline-value nil)))
     (is (= 0 requests))))
 
+(test goal17-bootstrap-version-check-preserves-cadr-offline-environment
+  ;; Exercise the exact decision seam installed by CLI-HANDLER.  Passing an
+  ;; explicit NIL :OFFLINE-VALUE here would override CADR_OFFLINE and call the
+  ;; transport despite the process-wide offline contract.
+  (let ((previous-offline (uiop:getenv "CADR_OFFLINE"))
+        (previous-endpoint
+          (uiop:getenv "CADR_VERSION_CHECK_URL"))
+        (requests 0))
+    (unwind-protect
+         (let ((cadr-cli::*version-check-http-function*
+                 (lambda (&rest arguments)
+                   (declare (ignore arguments))
+                   (incf requests)
+                   (values "{\"version\":\"999.0.0\"}"
+                           200 nil))))
+           (sb-posix:setenv "CADR_VERSION_CHECK_URL"
+                            "https://updates.invalid/latest" 1)
+           (sb-posix:setenv "CADR_OFFLINE" "1" 1)
+           (is
+            (null
+             (cadr-cli::check-for-new-cadr-version-for-command
+              (cadr-cli::make-cli-arguments))))
+           (is (= 0 requests))
+           (sb-posix:unsetenv "CADR_OFFLINE")
+           (is
+            (cadr-cli::check-for-new-cadr-version-for-command
+             (cadr-cli::make-cli-arguments)))
+           (is (= 1 requests))
+           (is
+            (null
+             (cadr-cli::check-for-new-cadr-version-for-command
+              (cadr-cli::make-cli-arguments :offline-p t))))
+           (is (= 1 requests)))
+      (if previous-offline
+          (sb-posix:setenv "CADR_OFFLINE" previous-offline 1)
+          (sb-posix:unsetenv "CADR_OFFLINE"))
+      (if previous-endpoint
+          (sb-posix:setenv
+           "CADR_VERSION_CHECK_URL" previous-endpoint 1)
+          (sb-posix:unsetenv "CADR_VERSION_CHECK_URL")))))
+
 (test system-prompt-lists-only-described-tools-and-dedupes-guidelines
   (let ((prompt
           (cadr-cli:build-system-prompt

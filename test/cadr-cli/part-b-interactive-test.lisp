@@ -2774,6 +2774,243 @@
       (is (eq :cancel action))
       (is (null value)))))
 
+(test goal17-settings-selector-does-not-position-an-unfocused-search-cursor
+  ;; pi@74caa2649 settings-selector.ts:860 returns SettingsList as the focus
+  ;; target, but SettingsList is not Focusable and its private Input therefore
+  ;; emits no CURSOR_MARKER.  Moving the hardware cursor to a clipped search
+  ;; row corrupts the next differential frame on narrow terminals.
+  (let ((state
+          (cadr-cli::make-settings-selector-state
+           :options
+           (list
+            (cadr-cli::make-settings-option
+             :id "one" :label "One" :description "First"
+             :value t :values (list t nil))))))
+    (multiple-value-bind (lines cursor-row cursor-column)
+        (cadr-cli::render-settings-selector state 48)
+      (is (consp lines))
+      (is (null cursor-row))
+      (is (null cursor-column)))))
+
+(defclass goal17-update-test-terminal
+    (cadr-tui::virtual-terminal)
+  ((inputs
+    :initarg :inputs
+    :accessor goal17-update-test-terminal-inputs)))
+
+(defmethod cadr-tui:terminal-read-input
+    ((terminal goal17-update-test-terminal))
+  (let ((next
+          (first
+           (goal17-update-test-terminal-inputs
+            terminal))))
+    (cond
+      ((null next) "")
+      ((functionp next)
+       (let ((value (funcall next terminal)))
+         (if value
+             (progn
+               (pop
+                (goal17-update-test-terminal-inputs
+                 terminal))
+               value)
+             "")))
+      (t
+       (pop
+        (goal17-update-test-terminal-inputs
+         terminal))))))
+
+(defun goal17-update-screen-contains-p (terminal text)
+  (search
+   text
+   (format
+    nil "~{~A~^~%~}"
+    (cadr-tui:virtual-terminal-snapshot
+     terminal))))
+
+(test goal17-tui-startup-runs-both-real-update-notification-check-surfaces
+  (let* ((release (make-hash-table :test #'equal))
+         (terminal
+           (make-instance
+            'goal17-update-test-terminal
+            :columns 80 :rows 40
+            :inputs
+            (list
+             (lambda (value)
+               (and
+                (goal17-update-screen-contains-p
+                 value "Update Available")
+                (goal17-update-screen-contains-p
+                 value "Package Updates Available")
+                (format nil "/quit~C" #\Return)))))))
+    (cadr-ai::json-put release "version" "9.9.9")
+    (cadr-ai::json-put release "note" "Release note")
+    (cadr-cli::run-tui
+     (constantly nil)
+     :model "faux"
+     :terminal terminal
+     :sleep-function (constantly nil)
+     :version-update-check-function
+     (lambda () release)
+     :package-update-check-function
+     (lambda () '("alpha" "beta")))
+    (is
+     (goal17-update-screen-contains-p
+      terminal "New version 9.9.9 is available."))
+    (is
+     (goal17-update-screen-contains-p
+      terminal "Package updates are available."))))
+
+(test goal17-update-notifications-use-the-baseline-controller-surface
+  ;; pi@74caa2649 interactive-mode.ts:3928-3973 exposes both notification
+  ;; methods publicly after INIT.  These assertions come from that component
+  ;; composition, not from Cadr's current rendering.
+  (cadr-tui:set-current-theme :dark)
+  (flet ((pad (text)
+           (concatenate
+            'string text
+            (make-string (- 80 (length text))
+                         :initial-element #\Space))))
+    (let ((state (cadr-cli::make-tui-state)))
+    (cadr-cli::add-tui-version-update-notification
+     state "9.9.9" "Release note")
+    (cadr-cli::add-tui-package-update-notification
+     state '("alpha" "beta"))
+    (let* ((entries (cadr-cli::tui-state-entries state))
+           (version-lines
+             (mapcar #'cadr-tui::strip-ansi
+                     (cadr-cli::render-tui-entry (first entries) 80)))
+           (package-lines
+             (mapcar #'cadr-tui::strip-ansi
+                     (cadr-cli::render-tui-entry (second entries) 80))))
+      (is (equal
+           (list
+            ""
+            (make-string 80 :initial-element #\─)
+            (pad " Update Available")
+            (pad " New version 9.9.9 is available. Run cadr update")
+            ""
+            (pad " Release note")
+            ""
+            (pad " Changelog: https://github.com/artwalker/cadr/blob/main/CHANGELOG.md")
+            (make-string 80 :initial-element #\─))
+           version-lines))
+      (is (equal
+           (list
+            ""
+            (make-string 80 :initial-element #\─)
+            (pad " Package Updates Available")
+            (pad " Package updates are available. Run cadr update --extensions")
+            (pad " Packages:")
+            (pad " - alpha")
+            (pad " - beta")
+            (make-string 80 :initial-element #\─))
+           package-lines))))))
+
+(test goal17-version-update-changelog-link-honors-terminal-capabilities
+  ;; pi@74caa2649 terminal-image.ts:526-528 and interactive-mode.ts:3932-3935
+  ;; style the visible URL inside an OSC 8 link terminated with ST.  Compare
+  ;; the complete rendered line so BEL termination or reversed ANSI nesting
+  ;; cannot hide behind SEARCH or STRIP-ANSI.
+  (let ((original (cadr-tui:get-terminal-capabilities))
+        (width 100)
+        (url (cadr-ai::cadr-changelog-url)))
+    (unwind-protect
+         (labels
+             ((render-changelog-line (hyperlinks-p)
+                (cadr-tui:set-terminal-capabilities
+                 (cadr-tui:make-terminal-capabilities
+                  :hyperlinks-p hyperlinks-p))
+                (let ((state (cadr-cli::make-tui-state)))
+                  (cadr-cli::add-tui-version-update-notification
+                   state "9.9.9")
+                  (nth
+                   4
+                   (cadr-cli::render-tui-entry
+                    (first
+                     (cadr-cli::tui-state-entries state))
+                    width))))
+              (expected-line (hyperlinks-p)
+                (let* ((styled-url
+                         (cadr-tui:theme-foreground
+                          :accent url :enabled-p t))
+                       (visible-url
+                         (if hyperlinks-p
+                             (cadr-tui:terminal-hyperlink
+                              styled-url url)
+                             styled-url))
+                       (content
+                         (concatenate
+                          'string
+                          (cadr-tui:theme-foreground
+                           :muted "Changelog: " :enabled-p t)
+                          visible-url))
+                       (padded
+                         (concatenate
+                          'string " " content
+                          (make-string
+                           (- width 1
+                              (cadr-tui:visible-width content))
+                           :initial-element #\Space))))
+                  padded)))
+           (is
+            (string=
+             (expected-line nil)
+             (render-changelog-line nil)))
+           (let ((linked (render-changelog-line t)))
+             (is (string= (expected-line t) linked))
+             (is (null (position (code-char 7) linked)))))
+      (cadr-tui:set-terminal-capabilities original))))
+
+(test goal17-update-title-and-border-ansi-nesting-matches-pi
+  ;; pi@74caa2649 interactive-mode.ts:3941-3944 composes
+  ;; bold(fg(warning, title)); DynamicBorder applies only fg(warning, border).
+  ;; Lock the complete raw lines so reversed reset ordering cannot pass.
+  (let* ((width 80)
+         (state (cadr-cli::make-tui-state)))
+    (cadr-cli::add-tui-version-update-notification
+     state "9.9.9")
+    (cadr-cli::add-tui-package-update-notification
+     state '("alpha"))
+    (flet ((padded-line (content)
+             (concatenate
+              'string " " content
+              (make-string
+               (- width 1
+                  (cadr-tui:visible-width content))
+               :initial-element #\Space)))
+           (expected-title (text)
+             (cadr-tui:theme-bold
+              (cadr-tui:theme-foreground
+               :warning text :enabled-p t)
+              :enabled-p t)))
+      (let* ((entries (cadr-cli::tui-state-entries state))
+             (version-lines
+               (cadr-cli::render-tui-entry
+                (first entries) width))
+             (package-lines
+               (cadr-cli::render-tui-entry
+                (second entries) width))
+             (border
+               (cadr-tui:theme-foreground
+                :warning
+                (make-string width :initial-element #\─)
+                :enabled-p t)))
+        (is (string= border (second version-lines)))
+        (is (string= border (car (last version-lines))))
+        (is
+         (string=
+          (padded-line
+           (expected-title "Update Available"))
+          (third version-lines)))
+        (is (string= border (second package-lines)))
+        (is (string= border (car (last package-lines))))
+        (is
+         (string=
+          (padded-line
+           (expected-title "Package Updates Available"))
+          (third package-lines)))))))
+
 (test cli-settings-selector-persists-and-applies-live-agent-settings
   (let* ((manager
            (cadr-cli::make-memory-settings-manager))

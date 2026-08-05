@@ -23,6 +23,10 @@
 (defun cadr-default-share-viewer-url ()
   +cadr-default-share-viewer-url+)
 
+(defun cadr-changelog-url ()
+  (format nil "~A/blob/main/CHANGELOG.md"
+          (cadr-canonical-repository-url)))
+
 (defun cadr-version ()
   +cadr-version+)
 
