@@ -72,6 +72,47 @@
       (is (not (cadr-ai::json-present-p generation-config "top_p")))
       (is (not (cadr-ai::json-present-p generation-config "top_k"))))))
 
+(test codex-responses-omits-ordinary-openai-output-limit
+  (let* ((codex-model
+           (make-model
+            :id "gpt-5.5"
+            :provider :openai-codex
+            :api :openai-codex-responses
+            :base-url "https://chatgpt.com/backend-api"))
+         (openai-model
+           (make-model
+            :id "gpt-5.5"
+            :provider :openai
+            :api :openai-responses
+            :base-url "https://api.openai.com"))
+         (context (sample-context))
+         (openai-request
+           (build-request
+            (make-openai-provider :api-key "openai-test")
+            openai-model
+            context
+            :stream-p t
+            :max-tokens 4096))
+         (codex-request
+           (build-request
+            (cadr-ai:make-openai-codex-provider
+             :oauth-access-token "oauth-test"
+             :oauth-account-id "acct-test")
+            codex-model
+            context
+            :stream-p t
+            :max-tokens 4096)))
+    ;; Ordinary Responses supports max_output_tokens; the ChatGPT Codex
+    ;; endpoint rejects that parameter and Pi never sends it.
+    (is (= 4096
+           (cadr-ai::json-get
+            (request-spec-payload openai-request)
+            "max_output_tokens")))
+    (is (not
+         (cadr-ai::json-present-p
+          (request-spec-payload codex-request)
+          "max_output_tokens")))))
+
 (test providers-reject-missing-api-key
   (let ((model (make-model :id "gpt-test"
                            :provider :openai
