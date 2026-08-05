@@ -137,6 +137,22 @@
                (cadr-agent:create-session
                 :directory sessions :cwd cwd
                 :id (format nil "empty-summary-~D" index)))
+             (_discarded-user
+               (cadr-agent:session-append-message
+                session
+                (cadr-ai:make-user-message
+                 :content
+                 (concatenate
+                  'string "discarded context "
+                  (make-string 40 :initial-element #\d)))))
+             (_discarded-assistant
+               (cadr-agent:session-append-message
+                session
+                (compaction-test-response
+                 (concatenate
+                  'string "discarded answer "
+                  (make-string 40 :initial-element #\e))
+                 :stop)))
              (_old-user
                (cadr-agent:session-append-message
                 session
@@ -174,11 +190,12 @@
                 :model (compaction-test-model)
                 :session session
                 :compaction-reserve-tokens 21
-                :compaction-keep-recent-tokens 4
+                :compaction-keep-recent-tokens 40
                 :stream-function
                 (faux-stream '*responses* '*contexts*))))
         (declare
-         (ignore _old-user _old-assistant)
+         (ignore _discarded-user _discarded-assistant
+                 _old-user _old-assistant)
          (special *responses* *contexts*))
         (let ((result
                 (cadr-agent:agent-prompt
@@ -316,7 +333,7 @@
         (is-false (cadr-agent:agent-busy-p agent))
         (is
          (string=
-          "Context overflow recovery failed: Summarization failed: summary provider failed"
+          "Context overflow recovery failed: Turn prefix summarization failed: summary provider failed"
           (cadr-agent:agent-event-error-message
            (find
             :compaction-end events
