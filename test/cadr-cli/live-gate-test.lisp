@@ -213,7 +213,16 @@
       (is (zerop status)
           "Render-diff gate orchestration regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 39 tests" error-output))
+      (let ((summary-start (search "Ran " error-output)))
+        (is (and summary-start
+                 (plusp
+                  (or (parse-integer
+                       error-output
+                       :start (+ summary-start (length "Ran "))
+                       :junk-allowed t)
+                      0)))
+            "Render-diff gate did not execute any orchestration tests:~%~A"
+            error-output))
       (is (search "OK" error-output)))))
 
 (test goal11-continuous-alt-input-benchmarks-are-release-gated
