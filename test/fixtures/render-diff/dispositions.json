@@ -13,107 +13,3671 @@
     "I03": {
       "kind": "intentional-difference",
       "summary": "Cadr shares through its own cadr.dev session viewer while the fixed pi baseline links to pi.dev; gist storage and the visible Share URL/Gist contract remain unchanged."
+    },
+    "I04": {
+      "kind": "intentional-difference",
+      "summary": "The user-approved Goal 16 product identity replaces pi names, commands, configuration paths, and repository links with their Cadr counterparts."
     }
   },
   "entries": [
-    { "scenario": "startup-first", "checkpoint": "startup", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "startup-first", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "startup-existing", "checkpoint": "existing-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "startup-existing", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "startup-untrusted", "checkpoint": "untrusted-startup", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "startup-untrusted", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "conversation-content", "checkpoint": "plain", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "conversation-content", "checkpoint": "markdown-code-thinking", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "conversation-content", "checkpoint": "cjk-emoji", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "conversation-content", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "tools-success", "checkpoint": "bash-multiline", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "read-range", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "write", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "edit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "grep", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "find", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "ls", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-success", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "tools-failure", "checkpoint": "tool-failure", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-failure", "checkpoint": "bash-nonzero", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-failure", "checkpoint": "bash-timeout", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-failure", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "tools-significant-states", "checkpoint": "bash-line-limit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-significant-states", "checkpoint": "bash-byte-limit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-significant-states", "checkpoint": "bash-overlong-line", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-significant-states", "checkpoint": "bash-empty", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-significant-states", "checkpoint": "parallel-tool-calls", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "tools-significant-states", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "overlays-core", "checkpoint": "overlay-model", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-fork", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-tree", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-settings", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-trust", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "overlays-auth", "checkpoint": "auth-method-generic", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth", "checkpoint": "login-provider", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth-oauth", "checkpoint": "auth-method-provider", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth-oauth", "checkpoint": "login-dialog", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth-oauth", "checkpoint": "login-cancelled", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "stream-interrupt-queue", "checkpoint": "busy-queue", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "stream-interrupt-queue", "checkpoint": "stream-aborted", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "stream-interrupt-queue", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "provider-error", "checkpoint": "provider-error", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "provider-error", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "commands-and-exit", "checkpoint": "slash-export", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-and-exit", "checkpoint": "slash-reload", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-and-exit", "checkpoint": "post-exit-resume", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "autocomplete-surfaces", "checkpoint": "autocomplete-path", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "autocomplete-surfaces", "checkpoint": "autocomplete-slash", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "autocomplete-surfaces", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-compact", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-copy", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-import", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-new", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-empty-lifecycle", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-changelog", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-clone", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-hotkeys", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-name", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-session", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "commands-informational", "checkpoint": "slash-share", "dimensions": ["wide", "narrow"], "classes": ["I01", "I03"], "note": "User-approved product identity boundary: https://cadr.dev/session/ replaces https://pi.dev/session/." },
-    { "scenario": "commands-informational", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "extension-surfaces", "checkpoint": "extension-editor", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "extension-surfaces", "checkpoint": "extension-input", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "extension-surfaces", "checkpoint": "extension-select", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "extension-surfaces", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth-api-key", "checkpoint": "api-key-input", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth-api-key", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-auth-oauth", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-scoped-models", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-session-delete", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-session-rename", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-core", "checkpoint": "overlay-tree-label", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-logout", "checkpoint": "logout-provider", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-logout", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "import-confirmation", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "settings-theme", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "settings-theme-automatic", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "settings-theme-dark", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "settings-theme-light", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "settings-thinking", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "settings-warnings", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-    { "scenario": "overlays-secondary", "checkpoint": "process-exit", "dimensions": ["wide", "narrow"], "classes": ["I01"] },
-
-    { "scenario": "fatal-crash", "checkpoint": "fatal-crash", "dimensions": ["wide", "narrow"], "classes": ["I01", "I02"] }
+    {
+      "scenario": "autocomplete-surfaces",
+      "checkpoint": "autocomplete-path",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6908e6a2e6229922ea3e898eecdf3c4e54a091324d411eded57476d7a1993aef",
+          "cadr": "44e4eeea47345eb187a38e0a436bae388b72aa8cb8b734ed8594d27ebb3fbd19"
+        },
+        "narrow": {
+          "pi": "8f40900fdd3c26cd68a6f46bb32f2b4f7a3b6a09927c01d289e36eb142c87e0c",
+          "cadr": "959588201c6ba0793cb828e5759fb982a6d02b269361e0d3d99109613ac645fa"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "autocomplete-surfaces",
+      "checkpoint": "autocomplete-slash",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b405eccb27cd50cdd5bd26996f54a60fe1e6d5578f17110de708b71e64ef5f4f",
+          "cadr": "c8cd53c4fd0b0b8723785fe6149411f0e93a99d4991ba92f2e1ecd100c025f34"
+        },
+        "narrow": {
+          "pi": "dd25d6ab6231c120ef42c2f8ab50994cf870b90c5cf21e6241eff68d5eff9306",
+          "cadr": "24d3fabe16861be534a96ac2cafabcd1156edfc463578028f8583a3620b4f0a0"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "autocomplete-surfaces",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "78d97cd7f3752d17209196cc97051ceecda69483fe294ccd7c6a8ec2703450d1",
+          "cadr": "916a1bc566322c8b29fdaf7b6ebf63b0005c5995285bd8d16c51007822ebb142"
+        },
+        "narrow": {
+          "pi": "54cc4a095b638fc68767ea3a48bb7a98a3c364fc4e4fff2f3cb2568f07a3b240",
+          "cadr": "45fef5ee3ff05c48aeff29423a057a1e10a9cf6b11107e4df85e17f359d51e14"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-and-exit",
+      "checkpoint": "post-exit-resume",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9592ba5030c0c66e5b9d9e3a8f7d480101f41c333c298d8ef5d2c7e902d21b0b",
+          "cadr": "941d29b0ac92afc93c827ce78a3f86886ef9051412bc1b7d4e964772c7476dd8"
+        },
+        "narrow": {
+          "pi": "1e3901149ad3899e84db440c202f8db2123f549372a3a0065b9bc256fbfa018a",
+          "cadr": "9dcbf5674daf393af9b1147d8adfbf94961d14025f001551f3236e5fadf13fb1"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-and-exit",
+      "checkpoint": "slash-export",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e640a3a95242081a1b5c9d9ccdbc9fe43469d9547357c7da3c3fa8080fc6b59f",
+          "cadr": "da8ae999daf2c7e28c2e14a06fe2e912947cf5b61659c2f75aee4baf30e16e9a"
+        },
+        "narrow": {
+          "pi": "99e2a2829b1ba3882cd041cc4d39baf241e798834c0bc6e5680eba788090eaa4",
+          "cadr": "6584229a85f04853d82ba3b8b4c004f1eedf80dd89ff267eb73c1c1cc3a6c9dc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-and-exit",
+      "checkpoint": "slash-reload",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a9a6162669fd6246c2ee6eedb1d54c607bbbdd3e9e862b96c77bd6b69d9a2058",
+          "cadr": "b1b821e7203f1e10e0ec739d4dc4a18712f3cd5ee383c950dee2b1202feb40de"
+        },
+        "narrow": {
+          "pi": "cf510068f5665320e9f9f5c5b1cd48842fddfadaa8b8ac5a55988eae3fea2f93",
+          "cadr": "6f7d42a4e233a9577604c9b002232c3e3ea1d7b52478d2edbd7ba0eaf1839d97"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "88155ef22af03c8c6a435ddd0b00180149e8aadf570bf904bbdc8521fb519a2b",
+          "cadr": "1d32d9f64f2eef117bd20c4ae48a823957608d2b42abeb2525662d44f6ee050e"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-compact",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "30206353e0cd1ec100191b9330b97a1fee21eac8cbe314bab3f6f044b456168e",
+          "cadr": "42b9acef80e3ab6a0894b0222296167981dbfba841045d5b4247da0438830932"
+        },
+        "narrow": {
+          "pi": "3606d4f68c909db4730020505b6547aa188d21d9680ecfa74a31f85bf21455c1",
+          "cadr": "fbd396e6fd9089171f4e06fa6d20bc0cfde4aa721d627f7c21cfe9acdcb2d8dc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-copy",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "43e68759f96b17c24e7c4b077a2820a766301c9c16e8ce2a5e22fec56ecfbda0",
+          "cadr": "d4ecc1c925d658c5402845b6c8d27566573ade584bf08bb9e8e71bbb2a9ec2eb"
+        },
+        "narrow": {
+          "pi": "681e5e952495e120fe93834055f10cb0b936c1799a4f07353b3fbd904624c4e3",
+          "cadr": "995d644b8dd5f22769bfa0950e55b74000dc51dbabeb8f02f1d5944f78e889f8"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-import",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2f9bb085d918bbd7cecff5db9e2aed904ec1dc69329dbaa55e8dfbd22bc21943",
+          "cadr": "c236f466dd835bcffc31cc66cfaff13f99c21f14bce58ab60ae68cd8f801286f"
+        },
+        "narrow": {
+          "pi": "dbcb3ccdacf90f22012d23e71ed1a683ef2038afda80e0c36066da3d0da5d61b",
+          "cadr": "73b955009ee2047584766cc78adc073ed0a90cd834da12146df9f2694bc05e55"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-new",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-empty-lifecycle",
+      "checkpoint": "slash-new",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "60325f11b4d0d4ff6eb53fa7e54437fa92b0ad8d6a73e770dc13a1158f56d0a2",
+          "cadr": "e7e36a9a4dad9c2dc987df8a39cfb524489bfbdc5be5ef5f5fa61290d509177b"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f50ddcd7ecd029ad5e05e03ba03b38fda9e30bf2b96a7536ec03498291ccd124",
+          "cadr": "77387bf6b0c9fcc1d148b70050e49f1799aa5a21b3093dcdfb6d7d8c07111dcf"
+        },
+        "narrow": {
+          "pi": "b40b9c70feb7981da02ac7a4bdefb7d7deecf3395a993a163e3c2af85618a6a8",
+          "cadr": "0fc7d6d8b15468b5fea6825a8e0c33ed660e79045012a85fbac399c077de30b7"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-changelog",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "cf8349b23cc15e6e5715004028850453cb55306b625a04025e7ec71ab3652ce5",
+          "cadr": "7b61208a746ce54179b3783939ab0c6e8b026bbb3c644ab034c5461e21518b9b"
+        },
+        "narrow": {
+          "pi": "99758f8868819769533eb2272ff2ae41aeab348446c8858ea1fc58d18fbbc70b",
+          "cadr": "9a77bcb52d8b08111ff7643820850c1bb7a9f194ff1737b18df1eb677efa3631"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-clone",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-clone",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "badeae3f965e415bd54748d949d6c1b32fa8ec6f394bc968afdd68788639898b",
+          "cadr": "d2d9969e961a8b820bfdba3c1cd08e7b65880de609a2b900bcd30420d59aab9a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-hotkeys",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-name",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-session",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-session",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "commands-informational",
+      "checkpoint": "slash-share",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I03",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8bf271cffc2c5e050097ecaee4b75c198f0aef55b2bafaee36e9def306ae891c",
+          "cadr": "a656e841370cd8cc8f65adea9e636aeb973f512fe3bf69b6d89400f247611a29"
+        },
+        "narrow": {
+          "pi": "b1dbcebb3d0a86cb5a61e62b51e28aedc2f0ece5a8fc49a6ab6e391e28baa7f3",
+          "cadr": "d15619469002c75bbc9563f04784914185fae55accb9c51ff526405135b9beea"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "compaction-status-manual",
+      "checkpoint": "compaction-manual",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5316599b57264881d495e391948954a25f789c1f7fc7631b8bf0a27627dee4b0",
+          "cadr": "a200405b0d8e5c129f9a2bcec120f38978fc920406f3889a67cb493b74785c8a"
+        },
+        "narrow": {
+          "pi": "ff4c3d9eb66cc6594eef930a5fbd67dce331b74b6a437bb4040c2d06bd84204d",
+          "cadr": "ce45e572e97d653a77e3bb695ed67dc64cb765b77d2e45568c3b2f2c151fcb43"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "compaction-status-manual",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "83e2732b245219017d12beec588a54edf16627702c5de6dba35efba1ea57dfb2",
+          "cadr": "76e3eb6753890051d0d5c38092bd79ad32b2b410108bc170b74c5fed53f0a5ce"
+        },
+        "narrow": {
+          "pi": "9833079f8960c7372e83f4434c552c6cb608342ceae154cbf7e787f6f202e4da",
+          "cadr": "fac346c5d0f2ad50206f69b5e09aa2ba6f3305738fe363f1686fa4da8bbc61dc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "compaction-status-overflow",
+      "checkpoint": "compaction-overflow",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "be628c0217dacf416eec0a6d49a93bf72a60deac687875d0a6c6172938d49189",
+          "cadr": "19be39745c7c89f66eb0831d426a652bb7ac6703173b9e1c03b019b97afc9353"
+        },
+        "narrow": {
+          "pi": "0199730de210f0ec454bb72bcad567cbfc37280f353db91ae49f09ef766ce28e",
+          "cadr": "c6b080cf92bc44313ac1b3860b6565ce8578d59f5f60ae511652c336e03c3429"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "compaction-status-overflow",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e467f267875605779031011767bbd3137d07c6722c4f1054fb3ca4a43fe7d8d0",
+          "cadr": "4c5b2ac34d919c636d2bdd4063feab9eefdf39b253e28a48ff8b0cb665dcb697"
+        },
+        "narrow": {
+          "pi": "e141699b7ab320129d3230bee735fd5f17be2ba0434d4ebcf38f98cf9ee58cae",
+          "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "compaction-status-threshold",
+      "checkpoint": "compaction-threshold",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "d729bcc4bd4b59d64d6e68993946f68a28fd5ea6ed08d44ab3c7dbdbee1d89f3",
+          "cadr": "88116d1120bb0d841030851a16bdf1f1d4ce42d72cb1ff1d8eea15f32ba5f9ff"
+        },
+        "narrow": {
+          "pi": "112eb7334438b675a9ad0530e99b90e75ba04d03830145c7d7eabe7bbaea57d6",
+          "cadr": "440a56e07d11c8c185c5d3490fa22c28f56fafe1806c2f3253dc856bbd9ea125"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "compaction-status-threshold",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "be6705eb50acb54981f4e93a123e4b15a0570b0f3d833efeec8bd176a235c4a6",
+          "cadr": "0033586f7b5287131698bc130c3174ab086e252b928f8badfab386afd29b9750"
+        },
+        "narrow": {
+          "pi": "65f807870aee9e6fe2c38d521a9c12b35bc807544c87a47d19b8e88c0a7a690e",
+          "cadr": "9f615f32cea67934c86fe59733a6e3365e77d5477489a893203ab55f33dbd28e"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "config-selector-empty",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9b9146c56e81efb8b328dd014332316f49aa23445b6f56070ce872d3461f3fd5",
+          "cadr": "c25ad42ceb2d34cbb3c7662c56fac50aab48ed45c53ffd10025a3e5734db8c04"
+        },
+        "narrow": {
+          "pi": "403e76793037def1591c075ea97fa3ceb49115bc08ad95aa30c3fc1605529bd2",
+          "cadr": "16ef3aafaf1aaa9211d88fee77d448783997727e6a9c6212e6f9c98701717d1b"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "config-selector-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "fdaecd150eba9f2e3c9b1ae5ee0f54a6f73ecacdf30ea536e0f511c7dd64f858",
+          "cadr": "c07eea81d8a0ca4ee99e212b9621d77ea2877aec455ace255cde120c396195a4"
+        },
+        "narrow": {
+          "pi": "b021d2a97174abc51d28d4a5089bec1e89da7e185c1c4712dd5674a823060b1c",
+          "cadr": "26809b247e1c7d3777ba98ed120e9d2d0eb983e9e8ecaf39e603360398a6a175"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "conversation-content",
+      "checkpoint": "cjk-emoji",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "conversation-content",
+      "checkpoint": "markdown-code-thinking",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "conversation-content",
+      "checkpoint": "markdown-code-thinking",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6ccd3701bf38c018aca3f7a79786bbae63ecbdd8d0be09be5aaafc2ff232b336",
+          "cadr": "36e4226aaa1a58c780176e7cb6fbc4232d9eaed0bb1eedc0b9559d500b85b9e7"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "conversation-content",
+      "checkpoint": "plain",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "94387fc76f5bceb33cd44f0b81d66cd1440ed2d0a01124b10a756f7e003913d1",
+          "cadr": "04e7ab7a1ef8132cbded8f53027ff400ab9c542ff82d7bb7aa641a4d193eba5e"
+        },
+        "narrow": {
+          "pi": "0a5ae1558ea589d92eac5e1e37ea9e6838138de5bc86b9cbc69123bd4cfa2b1f",
+          "cadr": "f9013c68b70dce182017eca7fb29fedf9da0ec226944f884a91c7222d079e2b3"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "conversation-content",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "extension-editor",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f74f4190b5907111a911af44e378632e24fd6fc9d66ef7ebf3bc0d9712181786",
+          "cadr": "67a408bd7ada202a5348b3a7f7c2793dc3f1bd9c31f58d89e07fedaf166519ce"
+        },
+        "narrow": {
+          "pi": "e1b4947112be7f0836a762c3f0c5c31499e50845f0b741610b8d60c37bfae8a7",
+          "cadr": "aa0aee4774b77073200d6cd8d1de96a06ab5705e860c336ce51e0414931b8cc4"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "extension-input",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6cb1aa1676ee189ae8acac509aa7a7e0c1a565a5725d047a8a6ff2faa01fa479",
+          "cadr": "085d3539fed226be1d6d5d9a0b42b7fc65fcc146f23730eade46f9458f894b34"
+        },
+        "narrow": {
+          "pi": "110046c6b43b5aeb58dd55b46c2cb7337f2157df855a1b751c31460ce62e488b",
+          "cadr": "e5539fec7495fe0055091cc92d577288003056de1bdeab113705a073d4c6d538"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "extension-select",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "48c79f8fcb6e3cc4f24a39b8a2ffa77ab5e4472189b83af742827799db2df895",
+          "cadr": "2b61e9b77a00e442502cb5789ebf78ec740ccfed283cc0f094666a11019693ca"
+        },
+        "narrow": {
+          "pi": "e1e043905e73beb8b08ede71269d05f40d1a72df4e888b33640335782ba62218",
+          "cadr": "f6aac3c285f5fceb48768cb55df13d7aaedf983c919a3c5e4d68930affc4ee7d"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "extension-surfaces",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        },
+        "narrow": {
+          "pi": "e64258dbcd7fbbb645279a602b8a3bbae02a42333c88cce2681923f7a000d5ce",
+          "cadr": "f03e25904ead492705ee2931dca12115c291416f711ec62783a51ead1f02d784"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "fatal-crash",
+      "checkpoint": "fatal-crash",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I02",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "072d2ab95414916bb91eb33f717ec0099de0719ab7d8699a9aa4ca6c60604e38",
+          "cadr": "9eaec86807166acad192e1f995751544a775b336064034655f614073cc3e015a"
+        },
+        "narrow": {
+          "pi": "8997e9bca4780711d7a5b2ff69b027894f74c734da9cf95d19fa5284f7a552b3",
+          "cadr": "ff2cb2326541cd7ea74f6ea20fa5109142c30228bf0c5d8164108587e65b93de"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "local-status-sweep",
+      "checkpoint": "local-statuses",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "d7acb5c6df0d4444842897d321d83a7b95502f4dee553858a60c038174cecb36",
+          "cadr": "3530e8078ff1a9e393d94009dcc56289eb9e0a365a6516310a66fb885d466031"
+        },
+        "narrow": {
+          "pi": "4bbe3d7b924e747da52173213000f49e76cf21efc04c3b72051bde56605d9534",
+          "cadr": "962a120148d3caad8957b4e769ca1f1d51223e80f69fa887cb4e6c738d9bf630"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "local-status-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8f5953b649baf721dd3953d207c9fbf936aca0c832670b903b8b2d02a58dd153",
+          "cadr": "fdfcec7ae2fceab4ed7f0a6f610e0aeae7efff811a07462edb7f22f54b240013"
+        },
+        "narrow": {
+          "pi": "e90f88b3b81292ac9036500e1940c1fe84fb518169a7ae55a20dae29a4ee2de5",
+          "cadr": "b642dda4f2d5ec0cc4d680bd44d1ed12611e716521c47d3f8b767d898054388e"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "auth-method-generic",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8e5f20f929c6c9191ebd64ce26db1587211fc8358fae3c1f0d08a1235b2d61e7",
+          "cadr": "ad934418accd22e8f06937a7a6ddc29baccdcf7062a3ca135b757ec69fa80d3d"
+        },
+        "narrow": {
+          "pi": "38aa30daaca1c8d2cf2b6ceba4c75978069aa4fe4b868177f512dc3844372f2a",
+          "cadr": "1e378996c460ce5a959a2119f9b96d9b2fb5c9f2a9f97ddc21fffd3686d4d2e9"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "login-provider",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "login-provider",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "366c0472554a01c1a47618751e0b3baa7a6bcae4adf3ea44eb94130cfff2f02d",
+          "cadr": "7a066f9ff74097a53a6c4437a90b59ce3e38f71a718dad511136bb88c8f80d77"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-auth",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
+          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth-api-key",
+      "checkpoint": "api-key-input",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "967ae01136ae1f6597672e916b0826aaa7592be6a8be421c31fe7ee67c177572",
+          "cadr": "d7c1e25de67d2dbfc1d5dab12242b2a6be12eb088c286bf4eb9bc6d14f2a3b02"
+        },
+        "narrow": {
+          "pi": "74d03d8b50d2706b4b5d6bdd98089f1049498911f3bee4d2ca7ff17e11cff652",
+          "cadr": "4b59d9ad7ed41d78f125796f45560b07c843831b74db379a8d3c40748641fbf3"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth-api-key",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
+          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+        },
+        "narrow": {
+          "pi": "6ac598b14ebae25c5c011ab69526cdc21ec7dea86e6a09ffbd97b0810f207fd6",
+          "cadr": "bef2fc5a9980165b95cd04c1cbb2b70c63ec84e4791ff4c50121b1f3049a3db5"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "auth-method-provider",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "29ccce6dc854a2c05d15774420f8bf278c2630037f738ccfd6a0aac771af9298",
+          "cadr": "a81aac87b53fa9556ff525429c1dcf57bd04c1cb0749d3ac4e71fffb07cc4381"
+        },
+        "narrow": {
+          "pi": "89faa68aaecfef483047052c641f1a93482f6495bfe22f7d66807d7fdf5fa9b8",
+          "cadr": "a02eecb0b523d454275e5dc2797fdf1ff5e74b4b9a2b510c4ea81d88af9087a0"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "login-cancelled",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "57aa6cc003afea48e6454e3ca80958f8677e40f9dde64496fc7a0a6881a7e136",
+          "cadr": "e36e66c71c89f81f559ce66b8fb70643447e5e50a705f9331da255e404022ca2"
+        },
+        "narrow": {
+          "pi": "f6af16c19d974c8da74cd23e7364d54d8708d85265194fabc4eb8b4448d89813",
+          "cadr": "441769affcb880bf8502033e714189c1e734d22cb353da7d85d7a4149f858a52"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "login-dialog",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "69a918ce25db25e95c2b1b86da362cbace417ad74abbca3b8afd80acf5cb1f68",
+          "cadr": "6b93ef2eb34b8d997413fdecae3bd93c873f521031af5c7a9a579041b438c36b"
+        },
+        "narrow": {
+          "pi": "ad31dbafafc9c7d497ca72cd4bcc805995391f7e59bf293a8b28655316dc1a30",
+          "cadr": "333c1185b407ef3dc77af78440abe0c158d82cdf5aa37ded1c55043eff526637"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
+          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+        },
+        "narrow": {
+          "pi": "9277b4f1b8164d7457e29a82263bb8120b3d6ca5dcad9764aaf6de1148fcd866",
+          "cadr": "28595cecb2e431781c9c785112e47889298955a6f646751381d29e12973c8108"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-fork",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-fork",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "1a256b987bed61f5a549586416cb8b595d764c3c3618831cf6e60f3a174a5797",
+          "cadr": "11cb77091184d2266d257e60b40b0006248901ab5b951310b6a4dc84d6b11ed7"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-model",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-model",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a27b681b6d7d730891ddeca2f9856df1036d24896601505f8f8786d5381a5f7c",
+          "cadr": "593469f0586180b025fcd5e1e16eb5376b7ec5b6be0935dc9ab008258ce5d7d5"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-scoped-models",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-scoped-models",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "1a3718f32100aabd7a0fb10b2dc6bb8981e74abf2bbf919405d4ce0a2c297269",
+          "cadr": "c2e8fe5225a00b68e5803c7b4e62cad4701fd20bfd913673baa4fffc3d4b9416"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-session",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-session",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "63db3549c8c4701a1acb7e9ec1576a581145e3b127b415762be421c5d41cf725",
+          "cadr": "34905ae91c6a80a4154c87fea6d62a9059eac4510155afa2ec97df6936cbe520"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-session-delete",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-session-delete",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9ae46cf56fe77260687d33dcf3207b5283953a0855b9015fa926d036edc7aa42",
+          "cadr": "2c31badc6e292b36b0950b78a6bacf19aaefcbfbb8aede6c949e5d7ca6e6fd2f"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-session-rename",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-session-rename",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3bc10c8beda922d0d3947f817ead2e57bb0c38619b41177ab46ffae806a547ea",
+          "cadr": "d89d4c84f288068d4ec8ca51adde00e6fea93184ea229391fd4883800d8eb05a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-settings",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-settings",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9c78aa44a4a6b9c355a800938fef86a050c156bdc9a50085c1cf7ec21bed3f50",
+          "cadr": "1c62e77fa570a7bbf0f22ba63fdd8685175503c9cc89678e8623552e9e569ac3"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-tree",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-tree",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "89f44673dd20b158072a632966ac0e1ddb4cca0db1100e6ae35c0e25b676bf95",
+          "cadr": "03bc090462d1b2fef9eca9035b45036ad0ec8f60ab3045ef78a1db0a207bbba3"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-tree-label",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-tree-label",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b106d55e7f12a9ae31a9e53b2cec9c15c9a90237e5b9fb2e37f52c378fd58259",
+          "cadr": "99f809cbd31ddb320450b7e3b73be6d661cd69da2c0935e45da5c6047dca658a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-trust",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-trust",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "aa70393fb97389d50d62d58c35b94a9d7f00838e154e327eb65de6adcf69e8ac",
+          "cadr": "a0170a80763a63e4e21030606794dd684c1749d56d86b84a7c911dca856f1fda"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "10cc452344a07c76d2f6119b1e19da3e04da7efd5fccf05a7b48379345a32672",
+          "cadr": "e5bb14526c2dd3d1ff4f3e918d8b6beb9a93141a7a136da86c534147703697c4"
+        },
+        "narrow": {
+          "pi": "b33201a05e0404f71d3ddc82751e0cc92a6bbb79d2b8a715cfb5ed2300b1ba74",
+          "cadr": "336d040f817d0188b55d17cd407eb7b73e6a8a7cde614aadb3ed862ebf1ac616"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-logout",
+      "checkpoint": "logout-provider",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "1275837d2a88790e004fb0de8b0b9bec41e84702c4dac4988d52df870f9e3c8c",
+          "cadr": "ac5f89e4ce12756df57a591f9e2b2c74993d174bb9f23f92cc4bdc1b62b7227e"
+        },
+        "narrow": {
+          "pi": "5dea3f00405422d0b02e20be8936e66708e4fe0b58107d380d7ed7ddc7f0a349",
+          "cadr": "c93d285f3a27832359212c9b5069d966ef94dd3ce3cd16ad42ece4bf3b40f821"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-logout",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
+          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+        },
+        "narrow": {
+          "pi": "1b3955252266d55da7db6ee304214d3a48aaef992823bed6e993ab84a8725d32",
+          "cadr": "7ba453d726ab494c0b768b95150c66737b2751246b3ac6ba0632b1ce667048d9"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "import-confirmation",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "import-confirmation",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c8485998665bfaa232d9490a531dee6ba756a16c2b656c48e12596421a6c9b7e",
+          "cadr": "7ada8d44c41dcb300f7aef06cf7801dd3fc82fd3da4fd20c0cb8530cb9205241"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3ef4a93a59901125709f787bf3276d0b161fe5c349debb16c6ee60bf1d4d6a8f",
+          "cadr": "a54b1917ef473ed24e3fef8738b764ad55ef47204e036e0d8a45c5133d03d309"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "031190712b99c1aeeb1beb00e1fb38ed4c5c78daed3ade2cc077e04b9693147b",
+          "cadr": "e2826e7e2f9a7d5126ca03ffb228a4381a867edc39dcb94e425c52700f6824ec"
+        },
+        "narrow": {
+          "pi": "7d7b88f3bd414deb247e1357faafa94efad158286c79a4e07c99f93cc8717b5a",
+          "cadr": "0c27ec4f51ddd347250213b19ef64916c6b35ddc23ea8019c320a256ef561816"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-automatic",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-automatic",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a92561f6cf0100158f2a28d0d3f2a00a7d62600eaa157e5be39955b4541d2f6b",
+          "cadr": "657d4a8e0f37a175114002767ae35dd5abb988fed40b6e99c54ab27299a94422"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-dark",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-dark",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "db7433a6ff0bc9959083dfe4adfbd1a6f71ef8b9027e25888e180e7d0151e591",
+          "cadr": "b62011de328391c63e737e2daadff791decd9045da0b98c4100a19911ee45507"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-light",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-theme-light",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "d3ed2cb0dc5ac9fa61a1fc2fb4be8349971de7a9f3a30971ac26484aada5601c",
+          "cadr": "47b12af3e53915d04e454ac934330417438003585266129f8517f28649ed7aa1"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-thinking",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "250b052b579c20bb16f3703dd0bab2c6a65b156bc78a629215d44ad59c8ed43e",
+          "cadr": "63f75742cf610337a98edad15a46f910613528a027f378d832280083d92c405a"
+        },
+        "narrow": {
+          "pi": "c481517e77dcd35469f558e4f59f557504e364ad805b105fd5a41cfb9cb7ea7c",
+          "cadr": "b8a2a272cad0bb8aee3fa02ddee666bc1f68f764cf69beaeec56aad8ca6bcfa8"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "overlays-secondary",
+      "checkpoint": "settings-warnings",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "769342dfb42695c3159cb72677b4f82f00e67d1acb80a720af50827858417449",
+          "cadr": "8ae5974b1e8bf0d3753ae62bbdb06a4504fe0f15ae1497f651c61e4e860b277c"
+        },
+        "narrow": {
+          "pi": "75b733fc17c5c94fddeef081d15c802ca6570016292b9f9b8f8410835f69c1cf",
+          "cadr": "2ec3ea918527d0955ceae1bb10901de4b4d7a3283566affe718df3d343858101"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "provider-error",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "7dc4ae087061abab51aeee217963b5ec91c744e697193040507c203a36fecccf",
+          "cadr": "ee63e33a5d02edd8683f0747d26d694ce86abc5070e1ac4cc6867fba2c8bb8d5"
+        },
+        "narrow": {
+          "pi": "1a3db54a63cf33c1adae158fbe3238cd1f8641e2fb7f7b7db9b04b889970659a",
+          "cadr": "5b13680a8ce656a1207f329b38e7d664d446347594ebddeeeceee88a04e8d10c"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "provider-error",
+      "checkpoint": "provider-error",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2f3261da9bea9459d748c81a46c40307681cdfd1f7e5d26a349a1ae660994b29",
+          "cadr": "d716f169af85eb6b08dc3f53ea3ccfe64acb739932d3b877a3132f259a6b98b6"
+        },
+        "narrow": {
+          "pi": "0242d08e100880d81024aab7b163a676f377438e9a5b7bdab52575676bc51c7c",
+          "cadr": "8c42a1632219fd03d6281ac0b5e063e597e5b6be164952a261ff4f4c01742128"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "selector-scoped-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
+          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+        },
+        "narrow": {
+          "pi": "885e545001a60e88d0b74407c35d49b25e452997342d5ab0ced9e4d7493214f7",
+          "cadr": "49e2a0d3447d7b62634d0fec5a9bd8919b9f5684c181e968b885f9c473abea14"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "selector-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "684f80a215b06cbf2093c87daae76222b3f9f301b80c5643b2b64c28ddfde05d",
+          "cadr": "9ba88803dda0ccab83f46f8f66dca9c2af46e501333d70e0a04a85a31c7fc294"
+        },
+        "narrow": {
+          "pi": "2a58b994147e90a7dcb1709d33eef8bc4c55775de0d648e4bd18f79362b61f8d",
+          "cadr": "a7f917ad841f374a019a7a0841741e7303c1eb932d8080bc121294411206ffbf"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "selector-trust-inherited",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "selector-trust-inherited",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        },
+        "narrow": {
+          "pi": "bc67742cfe0e7ff4bbf8ee10b609ddf25302259397a84c9116d506572a6c8239",
+          "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-01",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-01",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f1adf8c0d69e5b4f57943844692462d3c0056c265e4d0cfc30df7d15dc8bcad4",
+          "cadr": "3d835b46f25b5cb65fe39550abef4da2003907822866b05107aa03eeb1443e65"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-02",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-02",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "95b5349425bf114b3344ea15cc7e3beb46f566d6cb52f56f4d5bb0d2c4465006",
+          "cadr": "1ad9ae9099f906c3fa6e1cc9c6ef1895968a3b94c113208ac25c25840a95bb49"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-03",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-03",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c212364b224ceecdaee5cf68b7a0391b2678677d2424e2ef89f47eb8a8a5f874",
+          "cadr": "83b94743dd6cb8d36f2ef3a4ed44057edc30c4d86aa6f59dadd12894bea4fcdc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-04",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-04",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c29ce07a0072ab87888312e66008e4f320e9f70900672b20ba30d676e05644e5",
+          "cadr": "951da62c4abb147fbc9dd6e0ce054074a7f3ad8823166051929c723352556979"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-05",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-05",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3ce60187fc514c7c6abd8e721c9bdd807dcf680ad9198d3d9ebd42ea038f3297",
+          "cadr": "9c3e84d99e39ad69b4510aa40c3dd89d6f1fb045342970cf04cfeec61ca68913"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-06",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-06",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c5f46f4268332990574ecc09fc70bc29727187858eee8a0d00def34ae7266e52",
+          "cadr": "fe21120601bdce4733cdd3dbd4899ffbd54b79f5207d75dbd50f84d5f45c0bab"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-07",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-07",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f751db0835a6642f235c875396521ab80209719108cd7c1aa8a2e6fa8b8743a1",
+          "cadr": "489e7fde57af261fe6d03794571daf62656e8fe67b75aa61d5d7354f0a6bab27"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-08",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-08",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "59b1109b6fbddae3a07253a79179136c5362c6aa15e15c66aa6c6aab9592e466",
+          "cadr": "c3c575ce8748cb312577891190436132fb69c639fb3ad56fe4e8b76bdf19066c"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-09",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-09",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a87e1b944138339f997de09018200fae7b70c07a0a1d117a966838a07aeb54a1",
+          "cadr": "34271bde2db79c011ad6bb64e4e8a8f78a237a50d47ef5370b21e23d834812b4"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-10",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-10",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b34c1f362bcfe267a927ef230f2557eee4859cc226bf0c1116f82d926df3df50",
+          "cadr": "621ff25b9c31837ae7b69ecf5b70e9ec72017919f208168bd678cf291b39ee2e"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-11",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-11",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ec58eb08cb4755429ca9090280b8bd6317a228e151e7de3363233ce1020971ab",
+          "cadr": "656b2afb6391b4c21848d87ca205b66986acf0d8e4369d9c5b9c5800bd0c580f"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-12",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-12",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9de515ffd9fd975c6af03f9dc418b6171bf363cd4fb5455d74a6051eb866b5ee",
+          "cadr": "46dbf0358c8883ed419b9afc9bda287e0e7caef1b61a7d2d57be49cce6b3a627"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-13",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-13",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5045e0599bc6e480bc76669456302cf91526b4ddfa681a2be46d205a8945a3d7",
+          "cadr": "4bbdfb1b306da4b289d6cddcbc7d4132c5f4bde83dc10041662e657fb3ed1c38"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-14",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-14",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ac2bdff88b926f54fe4ae14375182db07f6925eccdd3091f306286b9932086e8",
+          "cadr": "f65937767e8bad87de6c7e9afe834ef4962eaa28200c6d208f0c1356015a4168"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-15",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-15",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f0a19bf475af405f3bc0c9a97df80895ba87cc17d9b88ffc40a112ceae9ea9a0",
+          "cadr": "e80d8e060ca841feb0e26046611839d9e205abc98de2b152511a8284007a5f27"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-16",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-16",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5739cfd5b378bdefe3873981d53f4e6c8a0b1ba2d4977f50da2f710afd02e7ba",
+          "cadr": "509de509c57c7c6995772b0ec0b45ed0300a084ad620e5b1fbef121a4398010c"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-17",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-17",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c62c4b1a08e00f44478a25cb942b110837b98ddbb87ea2d5c708a3c19571c9a3",
+          "cadr": "26bfd6989305a9022c9657e8460d259a628e5e277a2997be06a03b5af4ad0bea"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-18",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-18",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "021dc0d4dd3ae234b3eb2b4ebfe63504235ac42753eee1c3109f7c32939f1c9b",
+          "cadr": "6fd94c9b5077c3d98fb9dba35d93b6f57691b9b959d98cca220a34e5f7b5037d"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-19",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-19",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ee6f78b010e73c8f8db56e624c60825d530d8327cad5905c8049ea3c66e6e5c9",
+          "cadr": "9126700065406b5ddfeca243d268cb10bf618dcc98abbfda4c4cb50443c12c42"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-20",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-20",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "76d806411260d862b9ae0b0cb19498b6a7d967763452f927c23815ed107a50bd",
+          "cadr": "b2b4d3f81872566313695e006c044c5cc13471a287bd3d07453203e625865281"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-21",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-21",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4a6723f657070386666ae838f9539fd737ff2920a3729a99b2d25f91f4b4de5f",
+          "cadr": "7612b76b963552a1afa0f232a9083b218dfb84bda2b958e36fb9eec79efb1d6d"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-22",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-22",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "657b8895890cc98d14525b88072b3164c4b6d09fde2cbee7a3410f7cbce5b986",
+          "cadr": "277999717a729f859f05b27019eac442c5dfdfa39d7ca17269dde86d88934b3f"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-23",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-23",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ebfe3a8293b97892a052977476358ce33bb57bb914f0387f612d4bec0bdba4c3",
+          "cadr": "880771bc44e0ae2188c833d3b0ae3a9d67519c02c775b49dd3d485ebfe7a131b"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-24",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-24",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e316270fa70965327d06980d71e3bf78a894e874b994f27816d325047f2edda4",
+          "cadr": "badaa0c9a4bf10a0021b558f2ed2b07b2ae70a51a241695175bf63cda3d74407"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-25",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-25",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f05d7422647c357f3bdd09965a8421e642190585a2b2c39e4ed4a28014201f25",
+          "cadr": "06cacd5f269d9c93d6ca5fff5719a60adbef4de7bbb64c8ed6a42a3b85b54a6a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-26",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-26",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f1adf8c0d69e5b4f57943844692462d3c0056c265e4d0cfc30df7d15dc8bcad4",
+          "cadr": "3d835b46f25b5cb65fe39550abef4da2003907822866b05107aa03eeb1443e65"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-27",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-27",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "95b5349425bf114b3344ea15cc7e3beb46f566d6cb52f56f4d5bb0d2c4465006",
+          "cadr": "1ad9ae9099f906c3fa6e1cc9c6ef1895968a3b94c113208ac25c25840a95bb49"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-28",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-28",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c212364b224ceecdaee5cf68b7a0391b2678677d2424e2ef89f47eb8a8a5f874",
+          "cadr": "83b94743dd6cb8d36f2ef3a4ed44057edc30c4d86aa6f59dadd12894bea4fcdc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-29",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-29",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c29ce07a0072ab87888312e66008e4f320e9f70900672b20ba30d676e05644e5",
+          "cadr": "951da62c4abb147fbc9dd6e0ce054074a7f3ad8823166051929c723352556979"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-30",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-30",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3ce60187fc514c7c6abd8e721c9bdd807dcf680ad9198d3d9ebd42ea038f3297",
+          "cadr": "9c3e84d99e39ad69b4510aa40c3dd89d6f1fb045342970cf04cfeec61ca68913"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-31",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-31",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c5f46f4268332990574ecc09fc70bc29727187858eee8a0d00def34ae7266e52",
+          "cadr": "fe21120601bdce4733cdd3dbd4899ffbd54b79f5207d75dbd50f84d5f45c0bab"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-32",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "settings-state-sweep",
+      "checkpoint": "settings-row-32",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f751db0835a6642f235c875396521ab80209719108cd7c1aa8a2e6fa8b8743a1",
+          "cadr": "489e7fde57af261fe6d03794571daf62656e8fe67b75aa61d5d7354f0a6bab27"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-existing",
+      "checkpoint": "existing-session",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "566372e70224015811539ce7d7bf6d01fbd90aefac6386a8d760402e6d0034a2",
+          "cadr": "88cef79f654a4f9574cc0d299c940e1746c03bb645f1fd26566c556e9d529b12"
+        },
+        "narrow": {
+          "pi": "f6358753477a7f5ad0ee47572cc36f19bf9e8222a1ff2f480afa4d5a0d5be918",
+          "cadr": "8750ee4447248a74252c0edfaa6c79b31f0c0dca69658d31f01716469e095829"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-existing",
+      "checkpoint": "post-exit-resume",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "20c1c1d935f39ee4cffd2c28cee960ed01d53b2d7fa4bc254f88a7fdc9903ed7",
+          "cadr": "fc4e3c7619634cbc5e4e5642565ea1ae1923ef2ed74a279a89384fcf40f9989b"
+        },
+        "narrow": {
+          "pi": "aa9b9c6c168fe5fc84a89c5bc923c70572c6b2eff6f3493462380822111a2a76",
+          "cadr": "d6a4898d255f90e0b550d48f6b2e8fddb2da5a9c426426c0307e2ea19fada45d"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-first",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        },
+        "narrow": {
+          "pi": "bc67742cfe0e7ff4bbf8ee10b609ddf25302259397a84c9116d506572a6c8239",
+          "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-first",
+      "checkpoint": "startup",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "594ca3d392479b51cf6bb8e3c8a6ea1b17ffed80657d1f23018da7767b811913",
+          "cadr": "d3cc299057a55739e80b95e4a1f437a62edef2559cb8c22e3af5c4eed1574b77"
+        },
+        "narrow": {
+          "pi": "1a4df16bc8ac69b391ed58423554e2d6e62fb9a1b7006360d847b8e19d81563a",
+          "cadr": "4c4a94c6595ae9cfbe5b56a227a29eb4b0b1e7a8b4ccc4452f2db09d4dbc0806"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-untrusted",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a7be2f79beb9f036a6d2ad76f69bea1f13771aa432919f48cf0b4767a5713752",
+          "cadr": "661997dee35da7c702b095596a45d8c44911d3f8f79a8c99a2185967c6d1ac12"
+        },
+        "narrow": {
+          "pi": "6ee4d903c454fa1d359ef967cc153c9f3fa233088773a332b19fa2ca169fda49",
+          "cadr": "b02d6447fb57fb6727a0cba6a4def76679cdc2d1f0d86d53d8305f034455188f"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-untrusted",
+      "checkpoint": "trust-untrusted",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "68ecf9eaefec0b7008741e6f9d559cf04558e00a4d51aa20e9ecb0ab55584667",
+          "cadr": "98d5932d442113a28e9ece5f997a95a5cf3333822a95a8eb8accbd396b70436a"
+        },
+        "narrow": {
+          "pi": "8ed82098726b052fd9d6d2f5f2bee609deb72e350ce2dd7b9402ebc5b304e4a3",
+          "cadr": "486cedbbf5465cc7113cd994d54f45a6bf532871621a786b37956fa2b853aeb0"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-untrusted",
+      "checkpoint": "trust-untrusted-saved",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "628ff0754da1f96726ae249e2d9b855b11af7aee644dae1ca3ec9cacdc29a724",
+          "cadr": "932d8c0c36cddd73ead766cb3ff4df58416eef5ba36b7553bc87a4f513b309f4"
+        },
+        "narrow": {
+          "pi": "8fa4af8a0636bbd826b05479ce1c3851e625314cd2f43df79040ed51f476450d",
+          "cadr": "369f53d5bf3d303c0fca35b56da77c118257c737a0fbf6f2d1de930fcba45fb3"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "startup-untrusted",
+      "checkpoint": "untrusted-startup",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "88025e0e13c1b75f1b753513dd9024af25913b856e0fc9236d9cc836bb8236c8",
+          "cadr": "572962a3f140f54048bbf0d9e06f08cf91f0473024860d6442272acea0965790"
+        },
+        "narrow": {
+          "pi": "c68a7091508c5b3c71ead412d601503d76d43f21cf3fe4b0e417a12bd2e7c965",
+          "cadr": "7d73a2df6c6ec94771270a8b450b7cb355fe5e74fff6d359a4fdf0e14ec1bf30"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "busy-queue",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "31a25e6f805c48cc6e9bb1088a82ccd0e2dc80f5dccc3ecd24351ea6c704283f",
+          "cadr": "d7f4044b7d26bc04f80e83a2a52f720cce611bddc04af154353b1f1920f5e6c3"
+        },
+        "narrow": {
+          "pi": "43d631b736fd71daa2718c18199f3c0ee719b30a8a46c33a3c04a909444ab992",
+          "cadr": "03bff111a951e8273714b68c34a43ecdafc58f6d3bf01a1243186a100326d98c"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6ceaea62d6935bb2a1d9b3813a34e95e0ed382dc5914eba1ddec66172af45dca",
+          "cadr": "e886a505cc473548962695338bfa132157177f78354a02d3369a589765502715"
+        },
+        "narrow": {
+          "pi": "d8cf3ddd13057a37ec068d7f5a9c5ec454166244505154e42bada5d54b45d8c8",
+          "cadr": "1c0d8e44d34e24fc463a05cc21afdcfa5224dd373105db97747e4c58e082b595"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "stream-aborted",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "7cfa0a4692527bc3fd8fdf2c504b55b7d925e190987b4f4136374b86518c1c11",
+          "cadr": "03c0ec6d0b8984d69949e9464961971f194120aca78d798c0ebb0651ca7369d1"
+        },
+        "narrow": {
+          "pi": "6430bda826774452563dd83c0f09ba11232b998d2c3952ebe488b1ec7797894a",
+          "cadr": "b2dce4a87fec8da9663a5bea853e9e93e4ede51f0e961b05212f99dd24365b3e"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tool-bash-abort",
+      "checkpoint": "bash-tool-aborted",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tool-bash-abort",
+      "checkpoint": "bash-tool-aborted",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e4c0d83ecdd81c3dd3c0a43c84fd92afc5604b4d89e7510d8f56fd15f00de92b",
+          "cadr": "b599e01d5ca236e9bfed1c55d8bb147accc6378045372b3c450995ccdb94c09d"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tool-bash-abort",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tool-bash-abort",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b13696c6875047e389a5ac0fac74b29af4fcbb9dc3fddf05475f8e87b9c077e3",
+          "cadr": "69cde42239c744b656e45983337394fbc4f170940ed5bdaa565e1fcd8754d120"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-failure",
+      "checkpoint": "bash-nonzero",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-failure",
+      "checkpoint": "bash-timeout",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-failure",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-failure",
+      "checkpoint": "tool-failure",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-failure",
+      "checkpoint": "tool-failure",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f0e8e58d4a4eca93a2d161c43c6c102a1675874fa2df3e55b159d42f3496ea95",
+          "cadr": "0f4484b405b70dc973ab34dfb6e34f5c124048e80ea32fbfe096f901900477bc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-render-branch-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-render-branch-sweep",
+      "checkpoint": "tool-render-branches",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "bash-byte-limit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a07319e524b17ce9e28c50000b3486920644f3cdf581c648d795f15a84d4fad5",
+          "cadr": "d8d06cc17173319edcb74b5e2622e2621a670cf609e5959e79d0e3da73bc25ba"
+        },
+        "narrow": {
+          "pi": "0e04c0aaf082bdd3e67f948c94ae38b1eb6b07dfbeb8b9461b2e914e5ba360db",
+          "cadr": "fc3f011661d3867942edb9331eeac4d7f4b81fefdc8e9fd6e43e9479898132bc"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "bash-empty",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "bash-empty",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "b544499d3f6ba242900e9ae93b37c86eae55789d3344839790c3ea859a45ccfc",
+          "cadr": "b11d24f2e148f088fc6741db03a9a32de763dbcde9c80dd93812f82862c08d5a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "bash-line-limit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c5017ca7248d06378b5fae3c044e32f8a9fdc86d902244ab67a1d951fc5894e9",
+          "cadr": "40d2f8be6c59feb12822e68cc5051da945899a7d90f1069efa43a727c6defc65"
+        },
+        "narrow": {
+          "pi": "4553aa62e0004702735ba87815f666b05b4ed950fb8080bf2db710b95e99b131",
+          "cadr": "1a9397d525a5ba9fdcc30b7ca21431afd7a689af6d405620573b0410ddc58d47"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "bash-overlong-line",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c14096ec9d10290d259fe5c2419d5116e987aad0fc4ea47b725277f4d5cf1e7e",
+          "cadr": "4aadf409ef2723d5b9c82b9a3780b7043c9b8750647ba4cbb76d20c3ecbc8038"
+        },
+        "narrow": {
+          "pi": "28d3fc1b4da44c090a213e52f28e4529a91c4fb98a8e36cb2f92e39f0246d88e",
+          "cadr": "8b11ef82f7e8812eb5e68acf5e3903f59213480d7ea84631e383aa8cae45bad7"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "find-invalid-arguments",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "grep-invalid-arguments",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "grep-invalid-arguments",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "52bc3b7013b0b1deb2374256a8b09717818c975d42a4aa3bca6c59e282da220b",
+          "cadr": "44e97d22074d092ca19baf20a456a0b5ad63c015645ab6198c9e88153e9cf621"
+        }
+      },
+      "note": "The approved Cadr bash-log product prefix wraps one row earlier in the preceding narrow truncation checkpoints, shifting the later viewport by two rows; the current grep result itself is byte-equivalent."
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "parallel-tool-calls",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-significant-states",
+      "checkpoint": "tool-invalid-arguments",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "bash-long-command",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "bash-multiline",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "bash-multiline",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6857bc030329b1555880ac30e4aec3d8387c9b73ba319eac1e0afce8dbbcacb5",
+          "cadr": "8ad19ac58e848274839e5e8e02473d0af0c10baad989a449d168eebc8fc5be6a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "edit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "find",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "find-default-path",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "grep",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "grep-default-path",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "ls",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "read-offset-without-limit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "read-range",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "tree-rich-tools",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "write",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "tree-entry-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "15f123a13264dd4fd8743a3a2f4c1a0759aeabe0618170463a86e69cf32973b3",
+          "cadr": "83c72c53dca1aa72d6293f6f7891bc89ab308eb67dc2659e1388131d35e56490"
+        },
+        "narrow": {
+          "pi": "8d844bfe1102a281f8220adce87a571e74c9335942cc64bb28d3088925a12e28",
+          "cadr": "0d207950aa9bd816c821c0a17115e3da29fc339aee4bbe74a07b01ae4c7ed03c"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tree-entry-state-sweep",
+      "checkpoint": "seeded-transcript",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "bcb3a205359510ec7b557984a296d7fa7daf0649be1d79089d9ba33ade3d60da",
+          "cadr": "c16b3b569c6e3c806495c4008e6053a92549f406c356f7f62ecf767090a03be2"
+        },
+        "narrow": {
+          "pi": "b9c6065e2ffb37865c354dc45fc4f743d465473f90c6d45ab5ae20c451f11cf4",
+          "cadr": "600b8fc9b9c31349e853c904b59cd6f48535a5fe0bd94ddf7d954c123d0181e7"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "tree-entry-state-sweep",
+      "checkpoint": "tree-entry-states",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "update-notifications",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9f654b0b33f7e763ae62c430e416928d858572a70d7415ed1f3143f3f2ea4d1b",
+          "cadr": "cbe9e1d5b6a0ad5e9e8a7cb1fb8e0a3532935996bdbc1259d8535556f6320ef8"
+        },
+        "narrow": {
+          "pi": "4be092b33ddae2713a3c7ce412c1ba05e554337a24bc1b69a52ccd914d3e4737",
+          "cadr": "3894bd9801a01585e24f900ddb3aa86cc0d750554ef39c03e2dd6e2e961c009f"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "update-notifications",
+      "checkpoint": "version-and-package-updates",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ab12fd118899fa64cb6cffddcd49cca38849628e6b7fa69d781401ff055c2fb7",
+          "cadr": "48943959f769c2f7e1a1d1ef6810fd5937fa89e780e093e78669e1c2b269298e"
+        },
+        "narrow": {
+          "pi": "90de416c04e51264220684b827d869742400fdb66a8c3afcab8a3aa40835b2ec",
+          "cadr": "f0daeb37e6d4706ebd903fd43c0170e2a78804fa34667b2725be361113ff3ff0"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "update-notifications-no-hyperlinks",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "af1cd0a740ea5aff636ddc74ee4fa1fe97477db085aea407d4aff36fe486d967",
+          "cadr": "5b6ff5f0a14611e7a0c73e552423a1430ce11702fb58345e083828a0bf1ce98e"
+        },
+        "narrow": {
+          "pi": "68e1c427d103b9c768bf818a7d23791e1ecc7e356b74e0b8b48556f442250d41",
+          "cadr": "06ebd733560d7f62369567faa0b1d9f5233cb1cb50005605aef3b731961f05ab"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "update-notifications-no-hyperlinks",
+      "checkpoint": "version-and-package-updates-no-hyperlinks",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "627445ec864aaa69836f619fd5d6d7c6cd39e236a2907b20e27ddcd5f749d54f",
+          "cadr": "fcaaa1a9a3dc3aef180c0f5fe59d1c1b0c676c7ce88e784c21f6060801e564e5"
+        },
+        "narrow": {
+          "pi": "68126e5bf17bcee86b1cb6338ddac39eba59053db2a85265f95cb76c4493adbc",
+          "cadr": "efff065e3c0cb202d5831f59189dd0814d47d8aceafeb28ab155f1403d94f5f4"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "cc2fb18f90d6aca985b4b6aad6c36e78a255930d03660fc0188e67960317a601",
+          "cadr": "24e9aac09bb6bfb49885e31e18f95fb46f6aeb2afba7195385206724be9af736"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-cancelled",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-cancelled",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c8fecb89a307080da326b925bc627921a6dff262cd818baf1be526cb5fa3d585",
+          "cadr": "831a306e9c5a979bd5a99173cbd96098f15529be023e0758c55ee9e698890d38"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-expanded",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f497f4a7a92dfd12cd0832a92b742c554e7f95b1898359e5ebf65962236293a6",
+          "cadr": "351faeca73e100b9cff8f2a9c729f55bc94703bb1a0798a3d5a8a3a438ff83ee"
+        },
+        "narrow": {
+          "pi": "23d26d07a0507b6953263a0c5124ad74986ad01c80834374ae7bf28561f175cc",
+          "cadr": "afb270603d211f54630352cda39a80431dc64513927a44877a36ab44a03fd048"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-nonzero",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e1a58dcc8903e834cb55594e6de75109e043f936b22eefedf11fd1903511c842",
+          "cadr": "75bc3f4ad5cd693c86501f45cd8bf4d01af00ba94f589ef9dc69337d5e8a11bc"
+        },
+        "narrow": {
+          "pi": "9abe0bfaf3dd76bf091ec5f05525fe87f16cb47df2c4ab1174ec762276a9766f",
+          "cadr": "7261a057d25318685b347a92f467a840264b0bde8531bf15eadf8afdaeee308e"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-running",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ]
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-running",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "440f298491e5896ab8ffbc2937f4c2b5b8a735f743ee598907bc6b8df3625c2c",
+          "cadr": "fcfee5ee30889ddeef2c31064df4200fb879d317f30c16e44c1583d75ff5cb6a"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    },
+    {
+      "scenario": "user-bash-state-sweep",
+      "checkpoint": "user-bash-truncated",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5aee665483cd9634f08acee1c21c228f349bea4cfa412918836eca6885a1c8c6",
+          "cadr": "2a7fa56dc9efd20f8cafa9eb42473620211f6c54836f77b68c7bbfd53fa03c4b"
+        },
+        "narrow": {
+          "pi": "c4a296fd10013547a52c2480cd606c7ae9c9fba35a8a085a49dbcc9983a4a021",
+          "cadr": "a0832e3e76160fbd0753b789a2a7da9761ba1295ac0884340f773474a72fe8c4"
+        }
+      },
+      "note": "Exact approved semantic screen pair; no product defect is admitted."
+    }
   ]
 }

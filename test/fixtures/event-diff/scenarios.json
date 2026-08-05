@@ -63,6 +63,28 @@
       ]
     },
     {
+      "name": "summarization-transient-retry",
+      "modes": ["json", "rpc"],
+      "action": "manual-compaction",
+      "prompt": "",
+      "retry": {"enabled": true, "maxRetries": 1, "baseDelayMs": 0},
+      "seedMessages": [
+        {"role": "user", "text": "old question one with enough deterministic context to compact"},
+        {"role": "assistant", "text": "old answer one with enough deterministic context to compact"},
+        {"role": "user", "text": "old question two with enough deterministic context to compact"},
+        {"role": "assistant", "text": "old answer two with enough deterministic context to compact"},
+        {"role": "user", "text": "old question three with enough deterministic context to compact"},
+        {"role": "assistant", "text": "old answer three with enough deterministic context to compact"},
+        {"role": "user", "text": "recent question four with enough deterministic context to retain"},
+        {"role": "assistant", "text": "recent answer four with enough deterministic context to retain"}
+      ],
+      "responses": [
+        {"content": [], "stopReason": "error", "errorMessage": "terminated"},
+        {"content": [{"type": "text", "text": "Summary recovered after a transient failure."}]},
+        {"content": [{"type": "text", "text": "Summary of the retained split turn prefix."}]}
+      ]
+    },
+    {
       "name": "threshold-compaction",
       "modes": ["json", "rpc"],
       "action": "threshold-compaction",

@@ -30,9 +30,12 @@ ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_MANIFEST = ROOT / "test/fixtures/render-diff/scenarios.json"
 DEFAULT_INTERFACE_REGISTRY = ROOT / "test/fixtures/render-diff/reachable-interfaces.json"
 DEFAULT_BASELINE_INVENTORY = ROOT / "test/fixtures/render-diff/baseline-interface-inventory.json"
+DEFAULT_VISIBLE_STRING_INVENTORY = ROOT / "test/fixtures/render-diff/baseline-visible-strings.json"
+DEFAULT_VISIBLE_STRING_EXEMPTIONS = ROOT / "test/fixtures/render-diff/visible-string-exemptions.json"
 DEFAULT_DISPOSITIONS = ROOT / "test/fixtures/render-diff/dispositions.json"
 PI_DRIVER = ROOT / "test/fixtures/render-diff/pi-driver.ts"
 CADR_DRIVER = ROOT / "test/fixtures/render-diff/cadr-driver.lisp"
+VISIBLE_STRING_EXTRACTOR = ROOT / "test/fixtures/render-diff/baseline-visible-strings.ts"
 PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.83.0"
 PI_AI_MODEL_DATA_SHA256 = "f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4"
 KEYS = {
@@ -40,7 +43,16 @@ KEYS = {
     "escape": b"\x1b",
     "ctrl+c": b"\x03",
     "ctrl+d": b"\x04",
+    "ctrl+a": b"\x01",
+    "ctrl+l": b"\x0c",
     "ctrl+r": b"\x12",
+    "ctrl+o": b"\x0f",
+    "ctrl+p": b"\x10",
+    "ctrl+t": b"\x14",
+    "ctrl+u": b"\x15",
+    "ctrl+x": b"\x18",
+    "ctrl+z": b"\x1a",
+    "shift+tab": b"\x1b[Z",
     "alt+enter": b"\x1b\r",
     "alt+up": b"\x1bp",
     "up": b"\x1b[A",
@@ -83,6 +95,11 @@ REQUIRED_COVERAGE = {
     "busy-queue",
     "provider-error",
     "fatal-crash",
+    "tool-invalid-arguments",
+    "compaction-manual",
+    "compaction-threshold",
+    "compaction-overflow",
+    "settings-state-sweep",
     "slash-export",
     "slash-login",
     "slash-reload",
@@ -98,11 +115,31 @@ REQUIRED_SIGNIFICANT_STATE_DOMAINS = {
     ],
     "bash-terminal": ["bash-nonzero-exit", "bash-timeout"],
     "tool-batch": ["parallel-tool-calls"],
+    "tool-validation": ["tool-invalid-arguments"],
+    "agent-compaction": [
+        "compaction-manual",
+        "compaction-threshold",
+        "compaction-overflow",
+    ],
 }
 
 
 class HarnessFailure(RuntimeError):
     pass
+
+
+def scenario_checkpoint_ids(scenario: dict[str, Any]) -> list[str]:
+    ids: list[str] = []
+    for action in scenario["actions"]:
+        if "checkpoint" in action:
+            ids.append(action["checkpoint"])
+        specification = action.get("sendRepeated")
+        if isinstance(specification, dict) and specification.get("checkpointPrefix"):
+            ids.extend(
+                f"{specification['checkpointPrefix']}-{index:02d}"
+                for index in range(1, specification["count"] + 1)
+            )
+    return ids
 
 
 def git_blob(repo: Path, commit: str, path: str) -> str:
@@ -236,10 +273,9 @@ def extract_cadr_overlay_kinds(repo: Path) -> list[str]:
 
 def manifest_checkpoints(manifest: dict[str, Any]) -> set[tuple[str, str]]:
     return {
-        (scenario["id"], action["checkpoint"])
+        (scenario["id"], checkpoint_id)
         for scenario in manifest["scenarios"]
-        for action in scenario["actions"]
-        if "checkpoint" in action
+        for checkpoint_id in scenario_checkpoint_ids(scenario)
     } | {(scenario["id"], "process-exit") for scenario in manifest["scenarios"]}
 
 
@@ -530,12 +566,7 @@ def expand_dispositions(
     classes = data["classes"]
     dimensions = {dimension["id"] for dimension in manifest["dimensions"]}
     scenarios = {
-        scenario["id"]: {
-            action["checkpoint"]
-            for action in scenario["actions"]
-            if "checkpoint" in action
-        }
-        | {"process-exit"}
+        scenario["id"]: set(scenario_checkpoint_ids(scenario)) | {"process-exit"}
         for scenario in manifest["scenarios"]
     }
     expanded: dict[str, dict[str, Any]] = {}
@@ -551,6 +582,7 @@ def expand_dispositions(
         if (
             not isinstance(entry_dimensions, list)
             or not entry_dimensions
+            or len(entry_dimensions) != len(set(entry_dimensions))
             or any(dimension not in dimensions for dimension in entry_dimensions)
         ):
             raise HarnessFailure(
@@ -559,10 +591,37 @@ def expand_dispositions(
         if (
             not isinstance(entry_classes, list)
             or not entry_classes
+            or len(entry_classes) != len(set(entry_classes))
             or any(class_id not in classes for class_id in entry_classes)
         ):
             raise HarnessFailure(
                 f"invalid render-diff disposition classes: {scenario}/{checkpoint}"
+            )
+        screen_pairs = entry.get("screenSha256")
+        screen_classes = set(entry_classes) - {"I01"}
+        if screen_classes:
+            if (
+                not isinstance(screen_pairs, dict)
+                or set(screen_pairs) != set(entry_dimensions)
+                or any(
+                    not isinstance(pair, dict)
+                    or set(pair) != {"pi", "cadr"}
+                    or any(
+                        not isinstance(value, str)
+                        or not re.fullmatch(r"[0-9a-f]{64}", value)
+                        for value in pair.values()
+                    )
+                    for pair in screen_pairs.values()
+                )
+            ):
+                raise HarnessFailure(
+                    "screen disposition must bind every declared dimension to "
+                    f"an exact Pi/Cadr SHA-256 pair: {scenario}/{checkpoint}"
+                )
+        elif screen_pairs not in (None, {}):
+            raise HarnessFailure(
+                "terminal-protocol-only disposition must not declare screen hashes: "
+                f"{scenario}/{checkpoint}"
             )
         for dimension in entry_dimensions:
             key = f"{scenario}/{dimension}/{checkpoint}"
@@ -572,6 +631,11 @@ def expand_dispositions(
                 "classes": entry_classes,
                 "kinds": sorted({classes[class_id]["kind"] for class_id in entry_classes}),
                 "note": entry.get("note", ""),
+                "screenSha256": (
+                    screen_pairs.get(dimension)
+                    if isinstance(screen_pairs, dict)
+                    else None
+                ),
             }
     return expanded
 
@@ -601,6 +665,8 @@ def extract_baseline(pi_repo: Path, commit: str, destination: Path) -> None:
         stream.extractall(destination, filter="data")
     target = destination / "packages/coding-agent/test/goal15-render-driver.ts"
     shutil.copy2(PI_DRIVER, target)
+    visible_target = destination / "packages/coding-agent/test/goal17-visible-strings.ts"
+    shutil.copy2(VISIBLE_STRING_EXTRACTOR, visible_target)
 
 
 def hydrate_baseline_model_data(baseline: Path) -> None:
@@ -652,6 +718,10 @@ def ensure_baseline(pi_repo: Path, commit: str, cache: Path) -> Path:
     if marker.is_file() and marker.read_text(encoding="ascii").strip() == commit:
         hydrate_baseline_model_data(cache)
         shutil.copy2(PI_DRIVER, cache / "packages/coding-agent/test/goal15-render-driver.ts")
+        shutil.copy2(
+            VISIBLE_STRING_EXTRACTOR,
+            cache / "packages/coding-agent/test/goal17-visible-strings.ts",
+        )
         return cache
     if cache.exists():
         raise HarnessFailure(
@@ -673,6 +743,486 @@ def ensure_baseline(pi_repo: Path, commit: str, cache: Path) -> Path:
         shutil.rmtree(temporary)
         raise
     return cache
+
+
+def prepare_instrumented_baseline(
+    baseline: Path, commit: str, destination: Path
+) -> Path:
+    if destination.exists():
+        raise HarnessFailure(
+            f"instrumented baseline destination already exists: {destination}"
+        )
+    destination.mkdir(parents=True)
+    subprocess.run(
+        ["cp", "-a", "-l", f"{baseline}/.", str(destination)],
+        check=True,
+    )
+    result = subprocess.run(
+        [
+            str(baseline / "node_modules/.bin/tsx"),
+            "packages/coding-agent/test/goal17-visible-strings.ts",
+            str(baseline),
+            commit,
+            "--instrument",
+            str(destination),
+        ],
+        cwd=baseline,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    inventory = json.loads(result.stdout)
+    validate_visible_string_inventory(inventory, commit)
+    (destination / ".goal17-visible-baseline").write_text(
+        commit + "\n", encoding="ascii"
+    )
+    return destination
+
+
+def generate_visible_string_inventory(baseline: Path, commit: str) -> dict[str, Any]:
+    result = subprocess.run(
+        [
+            str(baseline / "node_modules/.bin/tsx"),
+            "packages/coding-agent/test/goal17-visible-strings.ts",
+            str(baseline),
+            commit,
+        ],
+        cwd=baseline,
+        check=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+    )
+    return json.loads(result.stdout)
+
+
+def validate_visible_string_inventory(data: dict[str, Any], commit: str) -> None:
+    if data.get("schemaVersion") != 3:
+        raise HarnessFailure("visible-string inventory schemaVersion must be 3")
+    if data.get("baselineCommit") != commit:
+        raise HarnessFailure("visible-string inventory commit does not match manifest")
+    unresolved_dataflow = data.get("unresolvedDataflow")
+    if not isinstance(unresolved_dataflow, list):
+        raise HarnessFailure("visible-string inventory unresolvedDataflow must be a list")
+    if unresolved_dataflow:
+        raise HarnessFailure(
+            "visible-string inventory contains unresolved dataflow: "
+            + ", ".join(
+                f"{item.get('path')}:{item.get('line')}:{item.get('expression')}"
+                for item in unresolved_dataflow
+                if isinstance(item, dict)
+            )
+        )
+    entries = data.get("entries")
+    if not isinstance(entries, list) or not entries:
+        raise HarnessFailure("visible-string inventory must contain entries")
+    ids: set[str] = set()
+    sites: set[tuple[Any, ...]] = set()
+    obligations: set[tuple[str, str]] = set()
+    for entry in entries:
+        entry_id = entry.get("id")
+        if not isinstance(entry_id, str) or not entry_id:
+            raise HarnessFailure("visible-string inventory entry has no id")
+        if entry_id in ids:
+            raise HarnessFailure(f"duplicate visible-string inventory entry: {entry_id}")
+        site = entry.get("site")
+        sink = entry.get("sink")
+        if (
+            not isinstance(site, dict)
+            or not isinstance(site.get("path"), str)
+            or not isinstance(site.get("line"), int)
+            or not isinstance(site.get("column"), int)
+            or not isinstance(site.get("start"), int)
+            or not isinstance(site.get("end"), int)
+            or not isinstance(site.get("kind"), str)
+            or not re.fullmatch(r"[0-9a-f]{64}", str(site.get("nodeSha256", "")))
+        ):
+            raise HarnessFailure(f"invalid visible-string site for {entry_id}")
+        if (
+            not isinstance(sink, dict)
+            or sink.get("kind") != site.get("kind")
+            or sink.get("channel")
+            not in {"printable-visible", "terminal-protocol"}
+        ):
+            raise HarnessFailure(f"invalid visible-string sink contract for {entry_id}")
+        site_key = (site["path"], site["start"], site["end"], site["kind"])
+        if site_key in sites:
+            raise HarnessFailure(f"duplicate visible-string site: {site_key}")
+        sites.add(site_key)
+        branches = entry.get("branches")
+        if not isinstance(branches, list) or not branches:
+            raise HarnessFailure(f"visible-string entry {entry_id} has no branches")
+        branch_ids: set[str] = set()
+        branch_signatures: set[tuple[tuple[str, ...], tuple[tuple[str, tuple[str, ...]], ...]]] = set()
+        for branch in branches:
+            branch_id = branch.get("id") if isinstance(branch, dict) else None
+            segments = branch.get("segments") if isinstance(branch, dict) else None
+            conditions = branch.get("conditions") if isinstance(branch, dict) else None
+            runtime_choices = (
+                branch.get("runtimeChoices") if isinstance(branch, dict) else None
+            )
+            if (
+                not isinstance(branch_id, str)
+                or not re.fullmatch(r"B-[0-9a-f]{12}", branch_id)
+                or branch_id in branch_ids
+                or not isinstance(conditions, list)
+                or not all(isinstance(condition, str) for condition in conditions)
+                or not isinstance(runtime_choices, list)
+                or not all(
+                    isinstance(choice, str)
+                    and re.fullmatch(r"C-[0-9a-f]{12}:(?:true|false)", choice)
+                    for choice in runtime_choices
+                )
+                or len(runtime_choices) != len(set(runtime_choices))
+                or not isinstance(segments, list)
+                or not segments
+                or not all(isinstance(segment, dict) for segment in segments)
+            ):
+                raise HarnessFailure(f"invalid visible-string branch for {entry_id}")
+            visible_fingerprint = tuple(
+                (
+                    str(segment.get("text", "")) if segment.get("kind") == "literal" else "<slot>",
+                    tuple(str(value) for value in segment.get("stylePath", [])),
+                )
+                for segment in segments
+            )
+            signature = (tuple(runtime_choices), visible_fingerprint)
+            if signature in branch_signatures:
+                raise HarnessFailure(
+                    f"duplicate visible-string runtime branch for {entry_id}: "
+                    + ",".join(runtime_choices)
+                )
+            branch_signatures.add(signature)
+            branch_ids.add(branch_id)
+            obligations.add((entry_id, branch_id))
+        ids.add(entry_id)
+
+    if len(obligations) != sum(len(entry["branches"]) for entry in entries):
+        raise HarnessFailure("duplicate visible-string site/branch obligation")
+
+
+def load_visible_string_exemptions(
+    path: Path, commit: str
+) -> dict[tuple[str, str], dict[str, Any]]:
+    if not path.is_file():
+        raise HarnessFailure(f"visible-string exemption registry is missing: {path}")
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if data.get("schemaVersion") != 3:
+        raise HarnessFailure("visible-string exemptions schemaVersion must be 3")
+    if data.get("baselineCommit") != commit:
+        raise HarnessFailure("visible-string exemptions commit does not match manifest")
+    result: dict[tuple[str, str], dict[str, Any]] = {}
+    for entry in data.get("entries", []):
+        entry_id = entry.get("id")
+        branch_id = entry.get("branchId")
+        reason = entry.get("reason")
+        obstacle_kind = entry.get("obstacleKind")
+        evidence = entry.get("baselineEvidence")
+        probe = entry.get("probe")
+        decision = entry.get("userDecisionId")
+        if (
+            not isinstance(entry_id, str)
+            or not entry_id
+            or not isinstance(branch_id, str)
+            or not re.fullmatch(r"B-[0-9a-f]{12}", branch_id)
+            or not isinstance(reason, str)
+            or not reason.strip()
+            or obstacle_kind
+            not in {
+                "unavailable-physical-device",
+                "unavailable-operating-system",
+                "unavailable-terminal-capability",
+            }
+            or not isinstance(evidence, dict)
+            or not isinstance(evidence.get("path"), str)
+            or not re.fullmatch(r"packages/(?:coding-agent|tui)/src/.+", evidence["path"])
+            or not isinstance(evidence.get("line"), int)
+            or evidence["line"] < 1
+            or not isinstance(probe, dict)
+            or not isinstance(probe.get("command"), list)
+            or not probe["command"]
+            or not all(isinstance(part, str) and part for part in probe["command"])
+            or not isinstance(probe.get("expected"), str)
+            or not probe["expected"]
+            or not isinstance(probe.get("observed"), str)
+            or not probe["observed"]
+            or not isinstance(decision, str)
+            or not re.fullmatch(
+                r"USER-[0-9]{4}-[0-9]{2}-[0-9]{2}-[A-Z0-9][A-Z0-9-]*",
+                decision,
+            )
+        ):
+            raise HarnessFailure("invalid visible-string structured exemption")
+        obligation = (entry_id, branch_id)
+        if obligation in result:
+            raise HarnessFailure(
+                f"duplicate visible-string exemption: {entry_id}/{branch_id}"
+            )
+        result[obligation] = {
+            "reason": reason.strip(),
+            "obstacleKind": obstacle_kind,
+            "baselineEvidence": evidence,
+            "probe": probe,
+            "userDecisionId": decision,
+        }
+    return result
+
+
+def validate_checked_visible_string_inventory(
+    baseline: Path, commit: str, inventory_path: Path
+) -> dict[str, Any]:
+    if not inventory_path.is_file():
+        raise HarnessFailure(f"visible-string inventory is missing: {inventory_path}")
+    checked = json.loads(inventory_path.read_text(encoding="utf-8"))
+    validate_visible_string_inventory(checked, commit)
+    generated = generate_visible_string_inventory(baseline, commit)
+    validate_visible_string_inventory(generated, commit)
+    if generated != checked:
+        raise HarnessFailure(
+            "fixed-baseline visible-string inventory drift; run render-diff.py inventory"
+        )
+    return checked
+
+
+def screen_text_and_geometry(data: bytes) -> bytes:
+    """Remove styling only; retain every visible byte, cell space, line, and cursor record."""
+    result = re.sub(rb"\x1b\[[0-?]*[ -/]*[@-~]", b"", data)
+    lines = []
+    for line in result.splitlines(keepends=True):
+        ending = b"\n" if line.endswith(b"\n") else b""
+        body = line[:-1] if ending else line
+        if b"<PRODUCT" in body:
+            body = body.rstrip(b" ")
+        lines.append(body + ending)
+    result = b"".join(lines)
+    return re.sub(rb"<CURSOR [0-9]+,[0-9]+,0>", b"<CURSOR hidden>", result)
+
+
+VISIBLE_SITE_MARKER = re.compile(
+    rb"\x1b\]777;cadr-visible-branch;phase=(begin|end);"
+    rb"site=(VS-[0-9a-f]{16});"
+    rb"branch=(B-[0-9a-f]{12})\x07"
+)
+
+
+def visible_branch_ids(data: bytes, label: str) -> list[tuple[str, str]]:
+    return [
+        obligation
+        for obligation, _effect in visible_branch_effects(data, label)
+    ]
+
+
+def visible_branch_effects(
+    data: bytes, label: str
+) -> list[tuple[tuple[str, str], bool]]:
+    markers = list(VISIBLE_SITE_MARKER.finditer(data))
+    if data.count(b"\x1b]777;cadr-visible-branch;") != len(markers):
+        raise HarnessFailure(f"malformed visible-site branch marker in {label}")
+
+    def has_terminal_cell_effect(start: int, end: int) -> bool:
+        cursor = start
+        while cursor < end:
+            value = data[cursor]
+            if value == 0x1B:
+                if cursor + 1 >= end:
+                    return False
+                introducer = data[cursor + 1]
+                if introducer == ord("["):
+                    match = re.match(rb"\x1b\[[0-?]*[ -/]*[@-~]", data[cursor:end])
+                    if match:
+                        cursor += len(match.group(0))
+                        continue
+                elif introducer == ord("]"):
+                    match = re.match(rb"\x1b\].*?(?:\x07|\x1b\\)", data[cursor:end], re.DOTALL)
+                    if match:
+                        cursor += len(match.group(0))
+                        continue
+                elif introducer in b"P_X^":
+                    match = re.match(rb"\x1b[P_X^].*?\x1b\\", data[cursor:end], re.DOTALL)
+                    if match:
+                        cursor += len(match.group(0))
+                        continue
+                cursor += 2
+                continue
+            if value >= 0x20 and value != 0x7F:
+                return True
+            if value in b"\t\n\r\b":
+                return True
+            cursor += 1
+        return False
+
+    active: list[dict[str, Any]] = []
+    result: list[tuple[tuple[str, str], bool]] = []
+    offset = 0
+    for marker in markers:
+        if has_terminal_cell_effect(offset, marker.start()):
+            for frame in active:
+                frame["effect"] = True
+        phase, site_id, branch_id = (
+            value.decode("ascii") for value in marker.groups()
+        )
+        obligation = (site_id, branch_id)
+        if phase == "begin":
+            active.append({"obligation": obligation, "effect": False})
+        else:
+            matching_index = next(
+                (
+                    index
+                    for index, frame in enumerate(active)
+                    if frame["obligation"] == obligation
+                ),
+                None,
+            )
+            if matching_index is None:
+                raise HarnessFailure(
+                    f"unmatched visible-site branch end marker in {label}: "
+                    + "/".join(obligation)
+                )
+            # Nested typed string producers can emit crossing lifetimes: the
+            # deepest producer begins first, while its caller ends first. Match
+            # the exact site/branch instead of imposing a stack shape that the
+            # instrumented baseline does not promise.
+            frame = active.pop(matching_index)
+            result.append((obligation, bool(frame["effect"])))
+        offset = marker.end()
+    if has_terminal_cell_effect(offset, len(data)):
+        for frame in active:
+            frame["effect"] = True
+    if active:
+        raise HarnessFailure(
+            f"unterminated visible-site branch marker in {label}: "
+            + ", ".join("/".join(frame["obligation"]) for frame in active)
+        )
+    return result
+
+
+def analyze_visible_string_coverage(
+    inventory: dict[str, Any], manifest: dict[str, Any],
+    marker_streams: dict[str, bytes], exemptions_path: Path, analysis_root: Path,
+) -> None:
+    exemptions = load_visible_string_exemptions(
+        exemptions_path, manifest["baselineCommit"]
+    )
+    all_inventory_branches = {
+        (entry["id"], branch["id"])
+        for entry in inventory["entries"]
+        for branch in entry["branches"]
+    }
+    inventory_branches = {
+        (entry["id"], branch["id"])
+        for entry in inventory["entries"]
+        if entry["sink"]["channel"] == "printable-visible"
+        for branch in entry["branches"]
+    }
+    unknown_exemptions = sorted(set(exemptions) - inventory_branches)
+    if unknown_exemptions:
+        raise HarnessFailure(
+            "stale visible-string exemptions: "
+            + ", ".join(f"{site}/{branch}" for site, branch in unknown_exemptions)
+        )
+    channels = {
+        (entry["id"], branch["id"]): entry["sink"]["channel"]
+        for entry in inventory["entries"]
+        for branch in entry["branches"]
+    }
+    captures: dict[tuple[str, str], list[str]] = {}
+    effectless_printable_markers: dict[tuple[str, str], list[str]] = {}
+    for key, stream in marker_streams.items():
+        for obligation, has_effect in visible_branch_effects(stream, key):
+            if obligation not in all_inventory_branches:
+                raise HarnessFailure(
+                    "instrumented capture emitted unknown site/branch: "
+                    + "/".join(obligation)
+                )
+            if channels[obligation] == "printable-visible" and not has_effect:
+                effectless_printable_markers.setdefault(obligation, []).append(key)
+                continue
+            captures.setdefault(obligation, []).append(key)
+    effectless_only = {
+        obligation: keys
+        for obligation, keys in effectless_printable_markers.items()
+        if obligation not in captures
+    }
+    if effectless_only:
+        raise HarnessFailure(
+            "printable visible-site marker reached the PTY without a terminal "
+            "cell/effect: "
+            + ", ".join(
+                f"{site}/{branch}@{key}"
+                for (site, branch), keys in sorted(effectless_only.items())
+                for key in keys[:1]
+            )
+        )
+    covered_exemptions = sorted(
+        obligation for obligation in exemptions if obligation in captures
+    )
+    if covered_exemptions:
+        raise HarnessFailure(
+            "visible-string exemptions now have real captures: "
+            + ", ".join(
+                f"{site}/{branch}" for site, branch in covered_exemptions
+            )
+        )
+    missing = sorted(
+        obligation for obligation in inventory_branches
+        if obligation not in captures and obligation not in exemptions
+    )
+    report = []
+    by_id = {entry["id"]: entry for entry in inventory["entries"]}
+    branches_by_id = {
+        (entry["id"], branch["id"]): branch
+        for entry in inventory["entries"]
+        for branch in entry["branches"]
+    }
+    for obligation in sorted(all_inventory_branches):
+        entry_id, branch_id = obligation
+        observed = sorted(set(captures.get(obligation, [])))
+        report.append(
+            {
+                "id": entry_id,
+                "branchId": branch_id,
+                "site": by_id[entry_id]["site"],
+                "sink": by_id[entry_id]["sink"],
+                "branch": branches_by_id[obligation],
+                "captures": observed,
+                "exemption": exemptions.get(obligation),
+            }
+        )
+    report_path = analysis_root / "visible-string-coverage.json"
+    report_path.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    if missing:
+        previews = [
+            f"{entry_id}/{branch_id}="
+            f"{by_id[entry_id]['site']['path']}:{by_id[entry_id]['site']['line']}"
+            for entry_id, branch_id in missing[:20]
+        ]
+        raise HarnessFailure(
+            "uncaptured baseline visible-string branches "
+            f"({len(missing)} of {len(inventory_branches)}; "
+            f"captured={len(captures)}): "
+            + ", ".join(previews)
+            + f"; report={report_path}"
+        )
+    printable_captures = sum(
+        obligation in captures for obligation in inventory_branches
+    )
+    protocol_branches = all_inventory_branches - inventory_branches
+    protocol_captures = sum(
+        obligation in captures for obligation in protocol_branches
+    )
+    print(
+        "visible-string coverage: "
+        f"printable_sites={sum(entry['sink']['channel'] == 'printable-visible' for entry in inventory['entries'])} "
+        f"printable_branches={len(inventory_branches)} "
+        f"printable_cell_effect_captures={printable_captures} "
+        f"structured_exemptions={len(exemptions)} "
+        f"protocol_sites={sum(entry['sink']['channel'] == 'terminal-protocol' for entry in inventory['entries'])} "
+        f"protocol_branches={len(protocol_branches)} "
+        f"protocol_observed={protocol_captures} report={report_path}"
+    )
 
 
 def set_winsize(fd: int, columns: int, rows: int) -> None:
@@ -737,9 +1287,13 @@ def wait_for(
     needle: bytes,
     timeout: float,
     process: subprocess.Popen[bytes],
+    *,
+    semantic: bool = False,
 ) -> None:
     deadline = time.monotonic() + timeout
-    while needle not in output:
+    while needle not in (
+        VISIBLE_SITE_MARKER.sub(b"", bytes(output)) if semantic else output
+    ):
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             tail = bytes(output[-4000:]).decode("utf-8", errors="backslashreplace")
@@ -754,9 +1308,15 @@ def wait_for_count(
     minimum: int,
     timeout: float,
     process: subprocess.Popen[bytes],
+    *,
+    semantic: bool = False,
 ) -> None:
     deadline = time.monotonic() + timeout
-    while output.count(needle) < minimum:
+    while (
+        VISIBLE_SITE_MARKER.sub(b"", bytes(output)).count(needle)
+        if semantic
+        else output.count(needle)
+    ) < minimum:
         remaining = deadline - time.monotonic()
         if remaining <= 0:
             tail = bytes(output[-4000:]).decode("utf-8", errors="backslashreplace")
@@ -878,25 +1438,43 @@ def run_actions(
     process: subprocess.Popen[bytes],
     timeout: float,
     checkpoints: list[dict[str, Any]],
+    ready_path: Path | None = None,
 ) -> None:
+    settled_target = 0
     for index, action in enumerate(actions, start=1):
         try:
             if "waitFor" in action:
-                wait_for(master_fd, output, action["waitFor"].encode(), timeout, process)
+                wait_for(
+                    master_fd,
+                    output,
+                    action["waitFor"].encode(),
+                    timeout,
+                    process,
+                    semantic=True,
+                )
             elif "waitForNext" in action:
                 needle = action["waitForNext"].encode()
+                semantic_output = VISIBLE_SITE_MARKER.sub(b"", bytes(output))
                 wait_for_count(
                     master_fd,
                     output,
                     needle,
-                    output.count(needle) + 1,
+                    semantic_output.count(needle) + 1,
                     timeout,
                     process,
+                    semantic=True,
                 )
             elif "waitForHex" in action:
                 wait_for(master_fd, output, bytes.fromhex(action["waitForHex"]), timeout, process)
             elif "waitForSide" in action:
-                wait_for(master_fd, output, action["waitForSide"][side].encode(), timeout, process)
+                wait_for(
+                    master_fd,
+                    output,
+                    action["waitForSide"][side].encode(),
+                    timeout,
+                    process,
+                    semantic=True,
+                )
             elif "sendText" in action:
                 render_end = b"\x1b[?2026l"
                 for character in action["sendText"]:
@@ -910,6 +1488,33 @@ def run_actions(
                     os.write(master_fd, KEYS[action["send"]])
                 except KeyError as error:
                     raise HarnessFailure(f"unknown key: {action['send']}") from error
+            elif "sendRepeated" in action:
+                specification = action["sendRepeated"]
+                key = specification.get("key")
+                count = specification.get("count")
+                checkpoint_prefix = specification.get("checkpointPrefix")
+                if key not in KEYS or not isinstance(count, int) or count < 1:
+                    raise HarnessFailure(f"invalid repeated key action: {specification!r}")
+                if checkpoint_prefix is not None and (
+                    not isinstance(checkpoint_prefix, str) or not checkpoint_prefix
+                ):
+                    raise HarnessFailure(
+                        f"invalid repeated checkpoint prefix: {specification!r}"
+                    )
+                render_end = b"\x1b[?2026l"
+                for repeated_index in range(1, count + 1):
+                    before = output.count(render_end)
+                    os.write(master_fd, KEYS[key])
+                    wait_for_count(
+                        master_fd, output, render_end, before + 1, timeout, process
+                    )
+                    if checkpoint_prefix:
+                        checkpoints.append(
+                            {
+                                "id": f"{checkpoint_prefix}-{repeated_index:02d}",
+                                "offset": len(output),
+                            }
+                        )
             elif "sendSide" in action:
                 key = action["sendSide"].get(side)
                 if key is not None:
@@ -920,7 +1525,41 @@ def run_actions(
             elif "pauseMs" in action:
                 deadline = time.monotonic() + action["pauseMs"] / 1000
                 while time.monotonic() < deadline:
-                    read_ready(master_fd, output, min(0.01, deadline - time.monotonic()), process)
+                    read_ready(
+                        master_fd,
+                        output,
+                        max(0.0, min(0.01, deadline - time.monotonic())),
+                        process,
+                    )
+            elif "waitForAgentSettled" in action:
+                if action["waitForAgentSettled"] is not True or ready_path is None:
+                    raise HarnessFailure(
+                        f"invalid agent-settled action or missing side channel: {action!r}"
+                    )
+                settled_target += 1
+                deadline = time.monotonic() + timeout
+                while True:
+                    try:
+                        settled_count = ready_path.read_text(
+                            encoding="utf-8"
+                        ).splitlines().count("agent-settled")
+                    except FileNotFoundError:
+                        settled_count = 0
+                    if settled_count >= settled_target:
+                        read_ready(master_fd, output, 0.02, process)
+                        break
+                    remaining = deadline - time.monotonic()
+                    if remaining <= 0:
+                        raise HarnessFailure(
+                            "timed out waiting for agent-settled side-channel event "
+                            f"{settled_target}"
+                        )
+                    read_ready(
+                        master_fd,
+                        output,
+                        min(0.05, remaining),
+                        process,
+                    )
             elif "checkpoint" in action:
                 read_ready(master_fd, output, 0.02, process)
             else:
@@ -945,12 +1584,13 @@ def capture_side(
     sandbox: Path,
     timeout: float,
     cadr_cache: Path | None = None,
+    visible_sites: bool = False,
 ) -> tuple[bytes, list[dict[str, Any]]]:
     side_root = sandbox / ("pi00" if side == "pi" else "cadr")
     home = side_root / "home"
     cwd = side_root / "workspace"
     agent_dir = home / (".pi/agent" if side == "pi" else ".cadr")
-    session_dir = side_root / ("x/render-sessions" if side == "pi" else "render-sessions")
+    session_dir = render_side_session_directory(sandbox, side)
     home.mkdir(parents=True)
     cwd.mkdir(parents=True)
     agent_dir.mkdir(parents=True)
@@ -976,6 +1616,10 @@ def capture_side(
         environment = fixed_environment(
             home, dimension["columns"], dimension["rows"], ready_path
         )
+        if visible_sites:
+            if side != "pi":
+                raise HarnessFailure("visible-site instrumentation is baseline-only")
+            environment["RENDER_DIFF_VISIBLE_SITES"] = "1"
         if side == "cadr":
             environment["RENDER_DIFF_REFERENCE_CHANGELOG"] = str(
                 baseline / "packages/coding-agent/CHANGELOG.md"
@@ -997,7 +1641,14 @@ def capture_side(
         os.close(slave_fd)
         slave_fd = -1
         run_actions(
-            side, scenario["actions"], master_fd, output, process, timeout, checkpoints
+            side,
+            scenario["actions"],
+            master_fd,
+            output,
+            process,
+            timeout,
+            checkpoints,
+            ready_path,
         )
         status = wait_exit(master_fd, output, process, timeout)
         expected_exit = scenario.get("expectedExit", 0)
@@ -1059,8 +1710,18 @@ def normalize_fixed_values(data: bytes) -> bytes:
             b"To resume this session:\x1b[39m cadr ",
             b"To resume this session:\x1b[39m <PRODUCT> ",
         ),
+        (
+            b"\x1b[2mTo resume this session:\x1b[22m pi ",
+            b"\x1b[2mTo resume this session:\x1b[22m <PRODUCT> ",
+        ),
+        (
+            b"\x1b[2mTo resume this session:\x1b[22m cadr ",
+            b"\x1b[2mTo resume this session:\x1b[22m <PRODUCT> ",
+        ),
         (b" pi --session ", b" <PRODUCT> --session "),
         (b" cadr --session ", b" <PRODUCT> --session "),
+        (b" pi --session-dir ", b" <PRODUCT> --session-dir "),
+        (b" cadr --session-dir ", b" <PRODUCT> --session-dir "),
         (
             b"pi-session-2023-11-14T22-13-20-000Z_render-session.html",
             b"<PRODUCT>-session-<FIXED_TIME>_<SESSION_ID>.html",
@@ -1082,15 +1743,41 @@ def normalize_fixed_values(data: bytes) -> bytes:
         result,
     )
     result = re.sub(
+        rb"(?<=\x1b\[38;2;181;189;104m)"
+        rb"\xe2[\xa0-\xa3][\x80-\xbf]"
+        rb"(?=\x1b\[39m \x1b\[38;2;128;128;128m"
+        rb"Running\.\.\. \(escape/ctrl\+c to cancel\))",
+        "⠋".encode("utf-8"),
+        result,
+    )
+    result = re.sub(
         rb"(?<=cadr-crash-)[0-9]+-[0-9]+-[0-9]+(?=\.log)",
         b"<CRASH_ID>",
         result,
     )
-    result = re.sub(
-        rb"(?<=--session )[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}",
-        b"<SESSION_ID>",
-        result,
+    resume_prefixes = (
+        b"To resume this session: <PRODUCT> ",
+        b"To resume this session:\x1b[0m <PRODUCT> ",
+        b"To resume this session:\x1b[39m <PRODUCT> ",
+        b"\x1b[2mTo resume this session:\x1b[22m <PRODUCT> ",
     )
+    session_uuid = (
+        rb"[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}"
+    )
+    for prefix in resume_prefixes:
+        for command_prefix in (
+            b"--session ",
+            b"--session-dir <SESSION_DIR> --session ",
+        ):
+            bounded_resume = (
+                screen_wrapped_literal_pattern(prefix)
+                + screen_wrapped_literal_pattern(command_prefix)
+            )
+            result = re.sub(
+                b"(" + bounded_resume + b")" + session_uuid,
+                rb"\1<SESSION_ID>",
+                result,
+            )
     result = re.sub(
         rb"/tmp/(?:pi|cadr)-bash-[0-9a-f-]+\.log",
         b"/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log",
@@ -1099,13 +1786,19 @@ def normalize_fixed_values(data: bytes) -> bytes:
     return result
 
 
+def render_side_session_directory(sandbox: Path, side: str) -> Path:
+    if side not in {"pi", "cadr"}:
+        raise HarnessFailure(f"unknown render side: {side}")
+    return sandbox / ("pi00" if side == "pi" else "cadr") / "render-sessions"
+
+
 def normalized(data: bytes, side: str, sandbox: Path) -> bytes:
     """Apply only adjudication-candidate value substitutions; preserve layout and ANSI."""
     result = data
     side_root = sandbox / ("pi00" if side == "pi" else "cadr")
     for old, new in (
         (
-            str(side_root / ("x/render-sessions" if side == "pi" else "render-sessions")).encode(),
+            str(render_side_session_directory(sandbox, side)).encode(),
             b"<SESSION_DIR>",
         ),
         (str(side_root / "home").encode(), b"<HOME>"),
@@ -1116,12 +1809,70 @@ def normalized(data: bytes, side: str, sandbox: Path) -> bytes:
     return normalize_fixed_values(result)
 
 
+def screen_wrapped_literal_pattern(value: bytes) -> bytes:
+    """Match one fixed terminal string with optional hard wraps between bytes."""
+    separator = rb"(?:\r?\n)?"
+    return separator.join(re.escape(value[index : index + 1]) for index in range(len(value)))
+
+
 def normalized_screen(data: bytes, side: str) -> bytes:
     """Normalize a terminal-emulated screen without changing replay geometry."""
     escaped_side = re.escape(("pi00" if side == "pi" else "cadr").encode())
     prefix = rb"/tmp/cadr-render-diff-[^/\r\n]+/" + escaped_side
-    session_suffix = rb"/x/render-sessions" if side == "pi" else rb"/render-sessions"
-    result = re.sub(prefix + session_suffix, b"<SESSION_DIR>", data)
+    separator = rb"(?:\r?\n)?"
+    temporary_suffix = rb"[a-z0-9_]" + (separator + rb"[a-z0-9_]") * 7
+    wrapped_session_directory = (
+        screen_wrapped_literal_pattern(b"/tmp/cadr-render-diff-")
+        + separator
+        + temporary_suffix
+        + separator
+        + screen_wrapped_literal_pattern(
+            b"/" + (b"pi00" if side == "pi" else b"cadr") + b"/render-sessions"
+        )
+    )
+    result = re.sub(wrapped_session_directory, b"<SESSION_DIR>", data)
+    if side == "cadr":
+        wrapped_digits = rb"[0-9](?:(?:\r?\n)?[0-9])*"
+        wrapped_crash_path = (
+            screen_wrapped_literal_pattern(b"/tmp/cadr-render-diff-")
+            + separator
+            + temporary_suffix
+            + separator
+            + screen_wrapped_literal_pattern(
+                b"/cadr/home/.cadr/crash/cadr-crash-"
+            )
+            + wrapped_digits
+            + separator
+            + screen_wrapped_literal_pattern(b"-")
+            + wrapped_digits
+            + separator
+            + screen_wrapped_literal_pattern(b"-")
+            + wrapped_digits
+            + separator
+            + screen_wrapped_literal_pattern(b".log")
+        )
+        result = re.sub(
+            wrapped_crash_path,
+            b"<HOME>/<PRODUCT_CONFIG>/crash/cadr-crash-<CRASH_ID>.log",
+            result,
+        )
+    else:
+        wrapped_driver_location = (
+            screen_wrapped_literal_pattern(
+                b"/tmp/cadr-render-diff-pi-74caa2649/"
+                b"packages/coding-agent/test/goal15-render-driver.ts:"
+            )
+            + rb"[0-9](?:(?:\r?\n)?[0-9])*"
+            + separator
+            + screen_wrapped_literal_pattern(b":")
+            + rb"[0-9](?:(?:\r?\n)?[0-9])*"
+        )
+        result = re.sub(
+            wrapped_driver_location,
+            b"<PI_BASELINE>/packages/coding-agent/test/"
+            b"goal15-render-driver.ts:<DRIVER_LINE>:<DRIVER_COLUMN>",
+            result,
+        )
     result = re.sub(prefix + rb"/home", b"<HOME>", result)
     result = re.sub(prefix + rb"/workspace", b"<CWD>", result)
     result = re.sub(prefix, b"<SANDBOX>", result)
@@ -1165,9 +1916,15 @@ def capture(args: argparse.Namespace) -> int:
     commit = manifest["baselineCommit"]
     with tempfile.TemporaryDirectory(prefix="cadr-render-diff-") as temporary:
         sandbox = Path(temporary)
-        baseline = ensure_baseline(
-            args.pi_repo.resolve(), commit, args.baseline_cache.resolve()
+        baseline_override = getattr(args, "baseline_override", None)
+        baseline = (
+            Path(baseline_override).resolve()
+            if baseline_override is not None
+            else ensure_baseline(
+                args.pi_repo.resolve(), commit, args.baseline_cache.resolve()
+            )
         )
+        visible_sites = bool(getattr(args, "visible_sites", False))
         captures: dict[str, bytes] = {}
         sides = ("pi", "cadr") if args.side == "both" else (args.side,)
         for side in sides:
@@ -1180,15 +1937,20 @@ def capture(args: argparse.Namespace) -> int:
                 sandbox,
                 args.timeout,
                 getattr(args, "cadr_cache", None),
+                visible_sites,
             )
             captures[side] = raw
             annotate_normalized_offsets(checkpoints, raw, side, sandbox)
-            write_capture(args.output.resolve(), scenario["id"], args.dimension, side, raw)
+            artifact_side = "pi.visible" if visible_sites and side == "pi" else side
+            write_capture(
+                args.output.resolve(), scenario["id"], args.dimension, artifact_side, raw
+            )
             write_checkpoints(
-                args.output.resolve(), scenario["id"], args.dimension, side, checkpoints
+                args.output.resolve(), scenario["id"], args.dimension, artifact_side, checkpoints
             )
             write_capture(
-                args.output.resolve(), scenario["id"], args.dimension, f"{side}.normalized",
+                args.output.resolve(), scenario["id"], args.dimension,
+                f"{artifact_side}.normalized",
                 normalized(raw, side, sandbox),
             )
         if args.side == "both":
@@ -1234,7 +1996,9 @@ def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
     input_path = temporary / "terminal.raw"
     input_path.write_bytes(data)
     socket = f"cadr-rd-{os.getpid()}-{time.monotonic_ns()}"
-    tmux = ["tmux", "-L", socket]
+    # User tmux hooks/plugins are outside the fixed render contract and can
+    # both alter the screen and keep the client capture pipe open indefinitely.
+    tmux = ["tmux", "-L", socket, "-f", "/dev/null"]
     command = (
         "stty -echo; exec tail -c +1 -f -- "
         + shlex.quote(str(input_path))
@@ -1300,19 +2064,85 @@ def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
         )
 
 
+def validate_result_adjudications(results: list[dict[str, Any]]) -> None:
+    for result in results:
+        adjudication = result.get("adjudication")
+        if not adjudication:
+            continue
+        if "cadr-defect" in adjudication.get("kinds", []):
+            raise HarnessFailure(
+                "cadr-defect disposition remains a gate failure: " + result["key"]
+            )
+        classes = set(adjudication.get("classes", []))
+        screen_classes = classes - {"I01"}
+        if result.get("screenEqual"):
+            if screen_classes:
+                raise HarnessFailure(
+                    "screen-equal result carries a stale semantic disposition: "
+                    + result["key"]
+                )
+            continue
+        if not screen_classes:
+            raise HarnessFailure(
+                "terminal-protocol-only disposition cannot admit screen differences: "
+                + result["key"]
+            )
+        expected = adjudication.get("screenSha256")
+        if not isinstance(expected, dict) or set(expected) != {"pi", "cadr"}:
+            raise HarnessFailure(
+                "screen-difference disposition lacks an exact semantic screen pair: "
+                + result["key"]
+            )
+        actual = {
+            "pi": result.get("piScreenSha256"),
+            "cadr": result.get("cadrScreenSha256"),
+        }
+        if actual != expected:
+            class_label = "/".join(sorted(screen_classes))
+            raise HarnessFailure(
+                "semantic screen pair drifted outside the exact "
+                f"{class_label} disposition: {result['key']}"
+            )
+
+
 def analyze(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest.resolve())
+    baseline = ensure_baseline(
+        args.pi_repo.resolve(),
+        manifest["baselineCommit"],
+        args.baseline_cache.resolve(),
+    )
+    visible_inventory = validate_checked_visible_string_inventory(
+        baseline,
+        manifest["baselineCommit"],
+        args.visible_string_inventory.resolve(),
+    )
     disposition_data = load_dispositions(
         args.dispositions.resolve(), manifest["baselineCommit"]
     )
-    dispositions = expand_dispositions(disposition_data, manifest)
+    scenario_ids = {
+        scenario["id"]
+        for scenario in manifest["scenarios"]
+        if args.tier == "full" or scenario.get("tier", "core") == "core"
+    }
+    scenarios = [
+        scenario for scenario in manifest["scenarios"]
+        if scenario["id"] in scenario_ids
+    ]
+    dispositions = {
+        key: value
+        for key, value in expand_dispositions(disposition_data, manifest).items()
+        if key.split("/", 1)[0] in scenario_ids
+    }
     capture_root = args.output.resolve()
     analysis_root = args.analysis_output.resolve()
     analysis_root.mkdir(parents=True, exist_ok=True)
     results: list[dict[str, Any]] = []
+    pi_screens: dict[str, bytes] = {}
+    visible_marker_streams: dict[str, bytes] = {}
     for dimension in manifest["dimensions"]:
         dimension_id = dimension["id"]
-        for scenario in manifest["scenarios"]:
+        for scenario in scenarios:
             scenario_id = scenario["id"]
             raw_streams: dict[str, bytes] = {}
             normalized_streams: dict[str, bytes] = {}
@@ -1340,6 +2170,28 @@ def analyze(args: argparse.Namespace) -> int:
                     f"checkpoint mismatch for {scenario_id}/{dimension_id}: "
                     f"pi={pi_ids!r} cadr={cadr_ids!r}"
                 )
+            if args.tier == "full":
+                visible_stem = f"{scenario_id}.{dimension_id}.pi.visible"
+                visible_raw_path = capture_root / f"{visible_stem}.raw"
+                visible_checkpoint_path = (
+                    capture_root / f"{visible_stem}.checkpoints.json"
+                )
+                if not visible_raw_path.is_file() or not visible_checkpoint_path.is_file():
+                    raise HarnessFailure(
+                        f"missing instrumented visible-site capture: {visible_stem}"
+                    )
+                visible_raw = visible_raw_path.read_bytes()
+                visible_checkpoints = json.loads(
+                    visible_checkpoint_path.read_text(encoding="utf-8")
+                )
+                if [record["id"] for record in visible_checkpoints] != pi_ids:
+                    raise HarnessFailure(
+                        f"instrumented checkpoint mismatch for {scenario_id}/{dimension_id}"
+                    )
+                # A render call can begin before a checkpoint byte offset and finish
+                # after it, so marker pairing is only sound over the complete PTY
+                # stream. The scenario still identifies the exercised state family.
+                visible_marker_streams[f"{scenario_id}/{dimension_id}"] = visible_raw
             previous = {"pi": 0, "cadr": 0}
             for index, checkpoint_id in enumerate(pi_ids):
                 records = {
@@ -1372,11 +2224,16 @@ def analyze(args: argparse.Namespace) -> int:
                         for side in ("pi", "cadr")
                     }
                 key = f"{scenario_id}/{dimension_id}/{checkpoint_id}"
+                pi_screens[key] = screens["pi"]
                 for side in ("pi", "cadr"):
                     path = analysis_root / f"{scenario_id}.{dimension_id}.{checkpoint_id}.{side}.screen"
                     path.write_bytes(screens[side])
                 raw_summary = raw_difference_summary(segments["pi"], segments["cadr"])
                 screen_equal = screens["pi"] == screens["cadr"]
+                text_geometry_equal = (
+                    screen_text_and_geometry(screens["pi"])
+                    == screen_text_and_geometry(screens["cadr"])
+                )
                 if raw_summary["equal"]:
                     automatic_disposition = "aligned"
                 elif screen_equal:
@@ -1393,11 +2250,13 @@ def analyze(args: argparse.Namespace) -> int:
                         "piScreenSha256": hashlib.sha256(screens["pi"]).hexdigest(),
                         "cadrScreenSha256": hashlib.sha256(screens["cadr"]).hexdigest(),
                         "screenEqual": screen_equal,
+                        "textGeometryEqual": text_geometry_equal,
                         "automaticDisposition": automatic_disposition,
                         "adjudication": dispositions.get(key),
                     }
                 )
                 previous = offsets
+    validate_result_adjudications(results)
     required_keys = {
         result["key"]
         for result in results
@@ -1427,6 +2286,21 @@ def analyze(args: argparse.Namespace) -> int:
         + f" adjudicated={len(dispositions)}"
         + f" summary={summary_path}"
     )
+    if args.tier == "full":
+        coverage_manifest = dict(manifest)
+        coverage_manifest["scenarios"] = scenarios
+        analyze_visible_string_coverage(
+            visible_inventory,
+            coverage_manifest,
+            visible_marker_streams,
+            args.visible_string_exemptions.resolve(),
+            analysis_root,
+        )
+    else:
+        print(
+            "visible-string coverage: deferred to --tier full "
+            f"inventory={len(visible_inventory['entries'])}"
+        )
     return 0
 
 
@@ -1435,25 +2309,59 @@ def gate(args: argparse.Namespace) -> int:
     manifest = load_manifest(args.manifest.resolve())
     cadr_cache = args.output.resolve() / ".cadr-cache"
     captures = 0
-    for dimension in manifest["dimensions"]:
-        for scenario in manifest["scenarios"]:
-            capture_arguments = argparse.Namespace(
-                manifest=args.manifest,
-                pi_repo=args.pi_repo,
-                output=args.output,
-                baseline_cache=args.baseline_cache,
-                timeout=args.timeout,
-                scenario=scenario["id"],
-                dimension=dimension["id"],
-                side="both",
-                cadr_cache=cadr_cache,
+    scenarios = [
+        scenario for scenario in manifest["scenarios"]
+        if args.tier == "full" or scenario.get("tier", "core") == "core"
+    ]
+    instrumented_temporary: tempfile.TemporaryDirectory[str] | None = None
+    instrumented_baseline: Path | None = None
+    try:
+        if args.tier == "full":
+            baseline = ensure_baseline(
+                args.pi_repo.resolve(),
+                manifest["baselineCommit"],
+                args.baseline_cache.resolve(),
             )
-            capture(capture_arguments)
-            captures += 1
+            instrumented_temporary = tempfile.TemporaryDirectory(
+                prefix="cadr-render-visible-baseline-"
+            )
+            instrumented_baseline = prepare_instrumented_baseline(
+                baseline,
+                manifest["baselineCommit"],
+                Path(instrumented_temporary.name) / "baseline",
+            )
+        for dimension in manifest["dimensions"]:
+            for scenario in scenarios:
+                capture_arguments = argparse.Namespace(
+                    manifest=args.manifest,
+                    pi_repo=args.pi_repo,
+                    output=args.output,
+                    baseline_cache=args.baseline_cache,
+                    timeout=args.timeout,
+                    scenario=scenario["id"],
+                    dimension=dimension["id"],
+                    side="both",
+                    cadr_cache=cadr_cache,
+                )
+                capture(capture_arguments)
+                if instrumented_baseline is not None:
+                    visible_values = dict(vars(capture_arguments))
+                    visible_values.update(
+                        side="pi",
+                        visible_sites=True,
+                        baseline_override=instrumented_baseline,
+                    )
+                    visible_arguments = argparse.Namespace(**visible_values)
+                    capture(visible_arguments)
+                captures += 1
+    finally:
+        if instrumented_temporary is not None:
+            instrumented_temporary.cleanup()
     print(
         "render-diff gate: "
-        f"captured={captures}/{len(manifest['scenarios']) * len(manifest['dimensions'])} "
-        f"scenarios={len(manifest['scenarios'])} dimensions={len(manifest['dimensions'])}"
+        f"tier={args.tier} "
+        f"captured={captures}/{len(scenarios) * len(manifest['dimensions'])} "
+        f"scenarios={len(scenarios)} dimensions={len(manifest['dimensions'])}"
     )
     return analyze(args)
 
@@ -1493,6 +2401,9 @@ def self_test(args: argparse.Namespace) -> int:
         resume_id = b"To resume this session: cadr --session 019fcc98-34ce-7166-84e3-ee03d1bfb3b2"
         if not normalize_fixed_values(resume_id).endswith(b"--session <SESSION_ID>"):
             raise HarnessFailure("resume-session UUID normalization drifted")
+        wrapped_resume_id = b"To resume this session: cadr --ses\nsion 019fcc98-34ce-7166-84e3-ee03d1bfb3b2"
+        if not normalize_fixed_values(wrapped_resume_id).endswith(b"sion <SESSION_ID>"):
+            raise HarnessFailure("wrapped resume-session UUID normalization drifted")
         baseline_output = b"Full output: /tmp/pi-bash-2ccded83dc83b1f8.log"
         cadr_output = b"Full output: /tmp/cadr-bash-3994869173-466576989544909805.log"
         if normalize_fixed_values(baseline_output) != normalize_fixed_values(cadr_output):
@@ -1644,10 +2555,33 @@ def replay_check(args: argparse.Namespace) -> int:
     return 0
 
 
+def inventory(args: argparse.Namespace) -> int:
+    manifest = load_manifest(args.manifest.resolve())
+    baseline = ensure_baseline(
+        args.pi_repo.resolve(),
+        manifest["baselineCommit"],
+        args.baseline_cache.resolve(),
+    )
+    data = generate_visible_string_inventory(baseline, manifest["baselineCommit"])
+    validate_visible_string_inventory(data, manifest["baselineCommit"])
+    output = args.visible_string_inventory.resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(
+        json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    print(
+        "visible-string inventory: "
+        f"sites={len(data['entries'])} "
+        f"branches={sum(len(entry['branches']) for entry in data['entries'])} "
+        f"output={output}"
+    )
+    return 0
+
+
 def parser() -> argparse.ArgumentParser:
     result = argparse.ArgumentParser(description=__doc__)
     subparsers = result.add_subparsers(dest="command", required=True)
-    for name in ("capture", "self-test", "analyze", "replay-check", "gate"):
+    for name in ("capture", "self-test", "analyze", "replay-check", "gate", "inventory"):
         command = subparsers.add_parser(name)
         command.add_argument("--manifest", type=Path, default=DEFAULT_MANIFEST)
         command.add_argument("--pi-repo", type=Path, default=ROOT)
@@ -1658,6 +2592,16 @@ def parser() -> argparse.ArgumentParser:
             default=Path("/tmp/cadr-render-diff-pi-74caa2649"),
         )
         command.add_argument("--timeout", type=float, default=60.0)
+        command.add_argument(
+            "--visible-string-inventory",
+            type=Path,
+            default=DEFAULT_VISIBLE_STRING_INVENTORY,
+        )
+        command.add_argument(
+            "--visible-string-exemptions",
+            type=Path,
+            default=DEFAULT_VISIBLE_STRING_EXEMPTIONS,
+        )
         if name == "capture":
             command.add_argument("--scenario", required=True)
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
@@ -1666,6 +2610,9 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--scenario", required=True)
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
         if name in {"analyze", "gate"}:
+            command.add_argument(
+                "--tier", choices=("core", "full"), default="core"
+            )
             command.add_argument(
                 "--dispositions",
                 type=Path,
@@ -1689,6 +2636,8 @@ def main() -> int:
         return gate(args)
     if args.command == "replay-check":
         return replay_check(args)
+    if args.command == "inventory":
+        return inventory(args)
     return self_test(args)
 
 

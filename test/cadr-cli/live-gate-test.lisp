@@ -96,32 +96,35 @@
            report)))))
 
 (test deterministic-systems-exclude-network-live-files
-  (labels ((component-pathnames (component)
-             (let ((children
-                     (ignore-errors
-                       (asdf:component-children component))))
-               (if children
-                   (mapcan #'component-pathnames children)
-                   (let ((pathname
-                           (asdf:component-pathname component)))
-                     (and pathname
-                          (list (namestring pathname))))))))
-    (dolist (case
-              '(("cadr-ai/tests" "live-provider-test.lisp")
-                ("cadr-cli/tests" "live-test.lisp")
-                ("cadr-evals/tests" "live-evals-test.lisp")))
-      (destructuring-bind (system forbidden-suffix) case
-        (is (notany
-             (lambda (pathname)
-               (uiop:string-suffix-p
-                forbidden-suffix pathname))
-             (component-pathnames
-              (asdf:find-system system))))))
-    (dolist (system
-              '("cadr-ai/live-tests"
-                "cadr-cli/live-tests"
-                "cadr-evals/live-tests"))
-      (is (not (null (asdf:find-system system nil)))))))
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (dolist (asd '("cadr-ai.asd" "cadr-cli.asd" "cadr-evals.asd"))
+      (asdf:load-asd (merge-pathnames asd root)))
+    (labels ((component-pathnames (component)
+               (let ((children
+                       (ignore-errors
+                         (asdf:component-children component))))
+                 (if children
+                     (mapcan #'component-pathnames children)
+                     (let ((pathname
+                             (asdf:component-pathname component)))
+                       (and pathname
+                            (list (namestring pathname))))))))
+      (dolist (case
+                '(("cadr-ai/tests" "live-provider-test.lisp")
+                  ("cadr-cli/tests" "live-test.lisp")
+                  ("cadr-evals/tests" "live-evals-test.lisp")))
+        (destructuring-bind (system forbidden-suffix) case
+          (is (notany
+               (lambda (pathname)
+                 (uiop:string-suffix-p
+                  forbidden-suffix pathname))
+               (component-pathnames
+                (asdf:find-system system))))))
+      (dolist (system
+                '("cadr-ai/live-tests"
+                  "cadr-cli/live-tests"
+                  "cadr-evals/live-tests"))
+        (is (not (null (asdf:find-system system nil))))))))
 
 (test goal9-part-d-verify-entrypoint-has-approved-stage-contract
   (let* ((root (asdf:system-source-directory "cadr-cli"))
@@ -210,7 +213,7 @@
       (is (zerop status)
           "Render-diff gate orchestration regressions failed:~%~A~A"
           output error-output)
-      (is (search "Ran 7 tests" error-output))
+      (is (search "Ran 39 tests" error-output))
       (is (search "OK" error-output)))))
 
 (test goal11-continuous-alt-input-benchmarks-are-release-gated

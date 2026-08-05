@@ -16,11 +16,20 @@ type Branch = {
 	segments: Segment[];
 };
 
+type PresentationChannel = "printable-visible" | "terminal-protocol";
+
+type CandidateMetadata =
+	| { commandName: string; field: "name" | "description" | "argumentHint" }
+	| { surface: "extension-selector"; field: "title" | "item" };
+
 type Candidate = {
 	source: ts.SourceFile;
 	expression: ts.Expression;
 	kind: string;
+	channel: PresentationChannel;
 	priority: number;
+	metadata?: CandidateMetadata;
+	opaqueRuntime?: boolean;
 };
 
 type Entry = {
@@ -35,9 +44,15 @@ type Entry = {
 		end: number;
 		kind: string;
 		nodeSha256: string;
+		metadata?: CandidateMetadata;
 	};
-	sink: { kind: string };
+	sink: { kind: string; channel: PresentationChannel };
 	branches: Branch[];
+};
+
+type SinkContract = {
+	argumentPositions: readonly number[];
+	channel: PresentationChannel;
 };
 
 const argv = process.argv.slice(2);
@@ -82,27 +97,40 @@ const exactAssetRules = new Map<string, { kind: string; reason: string }>([
 		kind: "excluded-third-party-html-export-asset", reason: "Vendored third-party browser script embedded only in exported HTML; the export-file gate owns its bytes and license assertions.",
 	}],
 ]);
-const visiblePropertyNames = new Set([
-	"description", "help", "hint", "instructions", "label", "message", "placeholder",
-	"prompt", "subtitle", "text", "title", "warning",
+const slashCommandPropertyNames = new Set(["name", "description", "argumentHint"]);
+const callSinkContracts = new Map<string, SinkContract>([
+	["appendStatus", { argumentPositions: [1], channel: "printable-visible" }],
+	["setMessage", { argumentPositions: [0], channel: "printable-visible" }],
+	["setText", { argumentPositions: [0], channel: "printable-visible" }],
+	["setTextInternal", { argumentPositions: [0], channel: "printable-visible" }],
+	["setTitle", { argumentPositions: [0], channel: "printable-visible" }],
+	["showAuth", { argumentPositions: [0, 1], channel: "printable-visible" }],
+	["showDetails", { argumentPositions: [0], channel: "printable-visible" }],
+	["showError", { argumentPositions: [0], channel: "printable-visible" }],
+	["showExtensionConfirm", { argumentPositions: [0, 1], channel: "printable-visible" }],
+	["showExtensionEditor", { argumentPositions: [0, 1], channel: "printable-visible" }],
+	["showExtensionInput", { argumentPositions: [0, 1], channel: "printable-visible" }],
+	["showExtensionNotify", { argumentPositions: [0], channel: "printable-visible" }],
+	["showExtensionSelector", { argumentPositions: [0, 1], channel: "printable-visible" }],
+	["showInfo", { argumentPositions: [0], channel: "printable-visible" }],
+	["showManualInput", { argumentPositions: [0], channel: "printable-visible" }],
+	["showProgress", { argumentPositions: [0], channel: "printable-visible" }],
+	["showPrompt", { argumentPositions: [0, 1], channel: "printable-visible" }],
+	["showStatus", { argumentPositions: [0], channel: "printable-visible" }],
+	["showWaiting", { argumentPositions: [0], channel: "printable-visible" }],
+	["showWarning", { argumentPositions: [0], channel: "printable-visible" }],
+	["writeRawStdout", { argumentPositions: [0], channel: "printable-visible" }],
 ]);
-const visibleCallPattern = /^(?:add|append|display|notify|render|report|set|show|update|write)(?:Error|Help|Hint|Instructions|Label|Message|Notice|Prompt|Status|Text|Title|Warning)/;
-const exactVisibleCalls = new Set([
-	"showAuth", "showDetails", "showExtensionConfirm", "showExtensionEditor", "showExtensionInput",
-	"showExtensionNotify", "showExtensionSelector", "showInfo", "showManualInput", "showProgress",
-	"showPrompt", "showWaiting",
-]);
-const visibleVariablePattern = /(?:DESCRIPTION|ERROR|HELP|HINT|INSTRUCTIONS|LABEL|MESSAGE|PLACEHOLDER|PROMPT|STATUS|TEXT|TITLE|WARNING)$/;
-const visibleRenderPattern = /(?:display|format|render|status|summary|text|title)/i;
-const nonVisibleReturnFunctions = new Set([
-	"getModelSearchText",
-	"getModelSelectorSearchText",
-]);
-const visibleCallArgumentPositions = new Map<string, readonly number[]>([
-	["setTextInternal", [0]],
-]);
-const directOutputs = new Set([
+const directPrintableOutputs = new Set([
 	"process.stdout.write", "process.stderr.write", "console.log", "console.error", "console.warn", "this.output.write",
+]);
+const textConstructors = new Set([
+	"Text", "Markdown", "ExpandableText", "TruncatedText", "Loader", "CancellableLoader", "BorderedLoader",
+]);
+const tuiThemeValueCalls = new Set([
+	"bold", "code", "codeBlock", "codeBlockBorder", "description", "fallbackColor", "hint", "italic",
+	"label", "link", "linkUrl", "listBullet", "noMatch", "quote", "quoteBorder", "scrollInfo",
+	"selectedPrefix", "selectedText", "strikethrough", "underline", "value",
 ]);
 const styleCalls = new Set(["bold", "dim", "italic", "strikethrough", "underline"]);
 const candidates: Candidate[] = [];
@@ -122,15 +150,30 @@ function walkFiles(directory: string): string[] {
 	return files;
 }
 
-function addVisibleArgument(source: ts.SourceFile, expression: ts.Expression | undefined, kind: string, priority: number): void {
+function addVisibleArgument(
+	source: ts.SourceFile,
+	expression: ts.Expression | undefined,
+	kind: string,
+	channel: PresentationChannel,
+	priority: number,
+	opaqueRuntime = false,
+): void {
 	if (!expression) return;
+	if (ts.isSpreadElement(expression)) {
+		addCandidate(source, expression.expression, kind, channel, priority, undefined, opaqueRuntime);
+		return;
+	}
 	if (ts.isArrayLiteralExpression(expression)) {
 		for (const element of expression.elements) {
-			if (ts.isExpression(element)) addCandidate(source, element, kind, priority);
+			if (ts.isSpreadElement(element)) {
+				addCandidate(source, element.expression, kind, channel, priority, undefined, opaqueRuntime);
+			} else if (ts.isExpression(element)) {
+				addCandidate(source, element, kind, channel, priority, undefined, opaqueRuntime);
+			}
 		}
 		return;
 	}
-	addCandidate(source, expression, kind, priority);
+	addCandidate(source, expression, kind, channel, priority, undefined, opaqueRuntime);
 }
 
 function calledName(expression: ts.Expression): string | undefined {
@@ -139,67 +182,240 @@ function calledName(expression: ts.Expression): string | undefined {
 	return undefined;
 }
 
-function enclosingFunctionName(node: ts.Node): string {
+function enclosingFunction(node: ts.Node): ts.FunctionLikeDeclaration | undefined {
 	let current: ts.Node | undefined = node.parent;
 	while (current) {
-		if (ts.isMethodDeclaration(current) || ts.isFunctionDeclaration(current) || ts.isGetAccessorDeclaration(current)) {
-			return current.name?.getText() ?? "";
-		}
+		if (
+			ts.isArrowFunction(current) || ts.isConstructorDeclaration(current) ||
+			ts.isFunctionDeclaration(current) || ts.isFunctionExpression(current) ||
+			ts.isGetAccessorDeclaration(current) || ts.isMethodDeclaration(current) ||
+			ts.isSetAccessorDeclaration(current)
+		) return current;
 		current = current.parent;
 	}
-	return "";
 }
 
-function addCandidate(source: ts.SourceFile, expression: ts.Expression | undefined, kind: string, priority: number): void {
-	if (expression) candidates.push({ source, expression, kind, priority });
+function enclosingFunctionName(node: ts.Node, source: ts.SourceFile): string | undefined {
+	const functionLike = enclosingFunction(node);
+	return functionLike?.name?.getText(source);
+}
+
+function addCandidate(
+	source: ts.SourceFile,
+	expression: ts.Expression | undefined,
+	kind: string,
+	channel: PresentationChannel,
+	priority: number,
+	metadata?: CandidateMetadata,
+	opaqueRuntime = false,
+): void {
+	if (expression) candidates.push({ source, expression, kind, channel, priority, metadata, opaqueRuntime });
+}
+
+function terminalWriteTarget(target: string): boolean {
+	return target === "this.terminal.write" || target === "terminal.write";
+}
+
+const exactTerminalProtocolIdentifiers = new Set([
+	"packages/tui/src/TuiMainScreen.ts:positionHardwareCursor:buffer",
+	"packages/tui/src/terminal.ts:queryAndEnableKittyProtocol:KITTY_KEYBOARD_PROTOCOL_QUERY",
+]);
+
+function terminalWriteChannel(
+	source: ts.SourceFile,
+	expression: ts.Expression | undefined,
+): PresentationChannel {
+	if (!expression) return "printable-visible";
+	if (ts.isParenthesizedExpression(expression)) return terminalWriteChannel(source, expression.expression);
+	if (ts.isConditionalExpression(expression)) {
+		return terminalWriteChannel(source, expression.whenTrue) === "terminal-protocol" &&
+			terminalWriteChannel(source, expression.whenFalse) === "terminal-protocol"
+			? "terminal-protocol"
+			: "printable-visible";
+	}
+	if (ts.isStringLiteralLike(expression)) {
+		return /^\x1b(?:\[|\]|_|P)/.test(expression.text) ? "terminal-protocol" : "printable-visible";
+	}
+	if (ts.isTemplateExpression(expression)) {
+		return /^\x1b(?:\[|\]|_|P)/.test(expression.head.text) ? "terminal-protocol" : "printable-visible";
+	}
+	if (ts.isIdentifier(expression)) {
+		const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
+		const contract = `${relativePath}:${enclosingFunctionName(expression, source) ?? ""}:${expression.text}`;
+		if (exactTerminalProtocolIdentifiers.has(contract)) return "terminal-protocol";
+	}
+	return "printable-visible";
+}
+
+function builtinSlashCommandMetadata(source: ts.SourceFile, node: ts.PropertyAssignment): Candidate["metadata"] | undefined {
+	const field = node.name.getText(source).replace(/^['"]|['"]$/g, "");
+	if (!slashCommandPropertyNames.has(field)) return undefined;
+	let object: ts.ObjectLiteralExpression | undefined;
+	for (let current: ts.Node | undefined = node.parent; current; current = current.parent) {
+		if (ts.isObjectLiteralExpression(current)) {
+			object = current;
+			break;
+		}
+	}
+	if (!object) return undefined;
+	const nameProperty = object.properties.find((property): property is ts.PropertyAssignment =>
+		ts.isPropertyAssignment(property) && property.name.getText(source).replace(/^['"]|['"]$/g, "") === "name"
+	);
+	if (!nameProperty || !ts.isStringLiteralLike(nameProperty.initializer)) return undefined;
+	for (let current: ts.Node | undefined = node.parent; current; current = current.parent) {
+		if (
+			ts.isVariableDeclaration(current) && ts.isIdentifier(current.name) &&
+			current.name.text === "BUILTIN_SLASH_COMMANDS"
+		) return {
+			commandName: nameProperty.initializer.text,
+			field: field as "name" | "description" | "argumentHint",
+		};
+		if (ts.isFunctionLike(current)) return undefined;
+	}
+	return undefined;
+}
+
+function stringTypeKind(type: ts.TypeNode | undefined): "string" | "string-array" | undefined {
+	const returnType = type?.getText().replaceAll(" ", "");
+	if (returnType === "string") return "string";
+	if (returnType === "string[]" || returnType === "readonlystring[]" || returnType === "ReadonlyArray<string>") {
+		return "string-array";
+	}
+	return undefined;
+}
+
+function explicitStringReturn(functionLike: ts.FunctionLikeDeclaration | undefined): "string" | "string-array" | undefined {
+	return stringTypeKind(functionLike?.type);
+}
+
+function inTuiPresentationFunction(relativePath: string, node: ts.Node): boolean {
+	if (!relativePath.startsWith("packages/tui/src/components/")) return false;
+	return explicitStringReturn(enclosingFunction(node)) === "string-array";
+}
+
+function isTypedStringArrayIdentifier(source: ts.SourceFile, node: ts.Identifier): boolean {
+	const functionLike = enclosingFunction(node);
+	if (!functionLike) return false;
+	let typed = false;
+	const visit = (current: ts.Node): void => {
+		if (typed || current.getStart(source) >= node.getStart(source)) return;
+		if (current !== functionLike && ts.isFunctionLike(current)) return;
+		if (
+			(ts.isVariableDeclaration(current) || ts.isParameter(current)) &&
+			ts.isIdentifier(current.name) && current.name.text === node.text &&
+			stringTypeKind(current.type) === "string-array"
+		) typed = true;
+		ts.forEachChild(current, visit);
+	};
+	visit(functionLike);
+	return typed;
 }
 
 function inspect(source: ts.SourceFile, node: ts.Node): void {
 	const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
-	const interactiveSource = relativePath.includes("/modes/interactive/");
-	const tuiSource = relativePath.startsWith("packages/tui/src/");
-	const visibleCoreReturnSource =
-		relativePath.includes("/core/tools/") ||
-		relativePath.endsWith("/core/auth-guidance.ts") ||
-		relativePath.endsWith("/core/session-cwd.ts") ||
-		relativePath.includes("/utils/image-");
 	if (ts.isCallExpression(node)) {
 		const name = calledName(node.expression);
 		const target = node.expression.getText(source);
 		if (name === "fg" || name === "bg") {
-			addCandidate(source, node, `theme.${name}`, 10);
-		} else if (directOutputs.has(target)) {
-			for (const argument of node.arguments) addVisibleArgument(source, argument, `output:${target}`, 100);
-		} else if (name && (visibleCallPattern.test(name) || exactVisibleCalls.has(name))) {
-			const positions = visibleCallArgumentPositions.get(name) ?? node.arguments.map((_argument, index) => index);
-			for (const position of positions) addVisibleArgument(source, node.arguments[position], `call:${name}`, 100);
+			// Style wrappers are decoded only inside a typed presentation sink.
+		} else if (terminalWriteTarget(target)) {
+			const channel = terminalWriteChannel(source, node.arguments[0]);
+			addVisibleArgument(
+				source, node.arguments[0], `output:${target}`, channel, 100,
+				channel === "printable-visible" && Boolean(node.arguments[0] && !ts.isStringLiteralLike(node.arguments[0]) && !ts.isTemplateExpression(node.arguments[0])),
+			);
+		} else if (directPrintableOutputs.has(target)) {
+			const channel = relativePath === "packages/tui/src/terminal.ts" && target === "process.stdout.write"
+				? terminalWriteChannel(source, node.arguments[0])
+				: "printable-visible";
+			for (const argument of node.arguments) addVisibleArgument(source, argument, `output:${target}`, channel, 100);
+		} else if (name && callSinkContracts.has(name)) {
+			const contract = callSinkContracts.get(name)!;
+			for (const position of contract.argumentPositions) {
+				addVisibleArgument(source, node.arguments[position], `call:${name}`, contract.channel, 100);
+			}
+		} else if (
+			name === "push" && ts.isPropertyAccessExpression(node.expression) &&
+			ts.isIdentifier(node.expression.expression) &&
+			inTuiPresentationFunction(relativePath, node) &&
+			isTypedStringArrayIdentifier(source, node.expression.expression)
+		) {
+			for (const argument of node.arguments) {
+				addVisibleArgument(source, argument, "typed-render-array-push", "printable-visible", 95);
+			}
 		}
 	} else if (ts.isNewExpression(node)) {
 		const name = calledName(node.expression);
-		if (name === "Text" || name === "Markdown" || name === "ExpandableText" || name?.endsWith("Status") || name?.endsWith("Loader")) {
-			addCandidate(source, node.arguments?.[0], `new:${name}`, 100);
+		if (name && textConstructors.has(name)) {
+			addCandidate(source, node.arguments?.[0], `new:${name}`, "printable-visible", 100);
 		}
 	} else if (ts.isPropertyAssignment(node)) {
 		const name = node.name.getText(source).replace(/^['"]|['"]$/g, "");
-		if (interactiveSource && visiblePropertyNames.has(name)) {
-			addCandidate(source, node.initializer, `property:${name}`, 80);
-		}
-	} else if (ts.isVariableDeclaration(node) && ts.isIdentifier(node.name)) {
-		if (interactiveSource && visibleVariablePattern.test(node.name.text)) {
-			addCandidate(source, node.initializer, `variable:${node.name.text}`, 80);
+		const slashMetadata = relativePath.endsWith("/core/slash-commands.ts")
+			? builtinSlashCommandMetadata(source, node)
+			: undefined;
+		if (slashMetadata) {
+			addCandidate(source, node.initializer, `slash-command:${name}`, "printable-visible", 90, slashMetadata);
 		}
 	} else if (
-		ts.isReturnStatement(node) &&
-		(interactiveSource || tuiSource || visibleCoreReturnSource) &&
-		visibleRenderPattern.test(enclosingFunctionName(node)) &&
-		!nonVisibleReturnFunctions.has(enclosingFunctionName(node))
+		ts.isVariableDeclaration(node) && ts.isIdentifier(node.name) && node.initializer &&
+		relativePath.endsWith("/interactive-mode.ts") &&
+		enclosingFunctionName(node, source) === "showLoginAuthTypeSelector"
 	) {
-		addCandidate(source, node.expression, "render-return", 80);
+		const field = node.name.text === "title" ? "title"
+			: node.name.text === "subscriptionLabel" || node.name.text === "apiKeyLabel" ? "item"
+				: undefined;
+		if (field) {
+			addCandidate(
+				source, node.initializer, `selector-metadata:${node.name.text}`, "printable-visible", 90,
+				{ surface: "extension-selector", field },
+			);
+		}
+	} else if (ts.isReturnStatement(node) && inTuiPresentationFunction(relativePath, node)) {
+		const returnKind = explicitStringReturn(enclosingFunction(node));
+		if (!(returnKind === "string-array" && node.expression && ts.isIdentifier(node.expression))) {
+			addVisibleArgument(source, node.expression, "typed-render-return", "printable-visible", 80);
+		}
 	}
 	ts.forEachChild(node, (child) => inspect(source, child));
 }
 
 type BranchBuild = { conditions: string[]; runtimeChoices: string[]; segments: Segment[] };
+
+type FlowState = BranchBuild & { decisions: Map<string, boolean> };
+
+type ControlGuard = {
+	id: string;
+	condition: string;
+	selected: boolean;
+	conditionExpression?: ts.Expression;
+};
+
+type StringMutation = {
+	node: ts.BinaryExpression;
+	right: ts.Expression;
+	operator: "=" | "+=";
+	guards: ControlGuard[];
+};
+
+type ArrayPushMutation = {
+	right: ts.Expression;
+	guards: ControlGuard[];
+};
+
+type ChoiceInstrumentation = {
+	source: ts.SourceFile;
+	expression: ts.Expression;
+	choices?: string[];
+	conditionChoiceId?: string;
+};
+
+const mutationChoiceInstrumentations = new Map<string, ChoiceInstrumentation>();
+const unresolvedDataflow = new Map<string, Record<string, unknown>>();
+const reachableTypedProducers = new Map<string, {
+	source: ts.SourceFile;
+	declaration: ts.FunctionLikeDeclaration;
+}>();
 
 function styleName(prefix: string, expression: ts.Expression | undefined, source: ts.SourceFile): string {
 	if (!expression) return prefix;
@@ -239,19 +455,26 @@ function literalSegments(text: string, stylePath: StylePath): Segment[] {
 }
 
 function combine(left: BranchBuild[], right: BranchBuild[]): BranchBuild[] {
-	const result: BranchBuild[] = [];
+	const result = new Map<string, BranchBuild>();
 	for (const lhs of left) for (const rhs of right) {
-		result.push({
+		const branch = {
 			conditions: [...lhs.conditions, ...rhs.conditions],
 			runtimeChoices: [...lhs.runtimeChoices, ...rhs.runtimeChoices],
 			segments: [...lhs.segments, ...rhs.segments],
+		};
+		const observable = JSON.stringify({
+			runtimeChoices: branch.runtimeChoices,
+			segments: branch.segments.map((segment) => segment.kind === "literal"
+				? segment
+				: { kind: "slot", stylePath: segment.stylePath }),
 		});
-		if (result.length > 256) throw new Error("visible-string expression has more than 256 static branches");
+		if (!result.has(observable)) result.set(observable, branch);
+		if (result.size > 4096) throw new Error("visible-string expression has more than 4096 observable static branches");
 	}
-	return result;
+	return [...result.values()];
 }
 
-function localInitializer(source: ts.SourceFile, node: ts.Node, name: string): ts.Expression | undefined {
+function flowScope(source: ts.SourceFile, node: ts.Node): ts.Node {
 	let scope: ts.Node = source;
 	for (let current: ts.Node | undefined = node.parent; current; current = current.parent) {
 		if (ts.isFunctionLike(current)) {
@@ -259,18 +482,456 @@ function localInitializer(source: ts.SourceFile, node: ts.Node, name: string): t
 			break;
 		}
 	}
+	return scope;
+}
+
+function localDeclaration(source: ts.SourceFile, node: ts.Node, name: string): ts.VariableDeclaration | undefined {
+	const scope = flowScope(source, node);
 	let best: ts.VariableDeclaration | undefined;
-	const visit = (current: ts.Node): void => {
-		if (current !== scope && ts.isFunctionLike(current)) return;
+	const pending: ts.Node[] = [scope];
+	while (pending.length > 0) {
+		const current = pending.pop()!;
+		if (current !== scope && ts.isFunctionLike(current)) continue;
 		if (
 			ts.isVariableDeclaration(current) && ts.isIdentifier(current.name) &&
 			current.name.text === name && current.initializer && current.getStart(source) < node.getStart(source) &&
 			(!best || current.getStart(source) > best.getStart(source))
 		) best = current;
-		ts.forEachChild(current, visit);
+		ts.forEachChild(current, (child) => { pending.push(child); });
+	}
+	return best;
+}
+
+function choiceId(source: ts.SourceFile, node: ts.Node): string {
+	return `C-${digest(`${path.relative(baselineRoot, source.fileName)}\0${node.getStart(source)}\0${node.getEnd()}`).slice(0, 12)}`;
+}
+
+function controlGuards(source: ts.SourceFile, node: ts.Node, scope: ts.Node): ControlGuard[] {
+	const guards: ControlGuard[] = [];
+	let child: ts.Node = node;
+	for (let current = node.parent; current && current !== scope; child = current, current = current.parent) {
+		if (ts.isIfStatement(current)) {
+			const inThen = child.getStart(source) >= current.thenStatement.getStart(source) && child.getEnd() <= current.thenStatement.getEnd();
+			const inElse = current.elseStatement && child.getStart(source) >= current.elseStatement.getStart(source) && child.getEnd() <= current.elseStatement.getEnd();
+			if (inThen || inElse) {
+				guards.push({
+					id: choiceId(source, current),
+					condition: current.expression.getText(source),
+					selected: Boolean(inThen),
+					conditionExpression: current.expression,
+				});
+			}
+		} else if (
+			ts.isForStatement(current) || ts.isForInStatement(current) || ts.isForOfStatement(current) ||
+			ts.isWhileStatement(current) || ts.isDoStatement(current)
+		) {
+			guards.push({
+				id: choiceId(source, current),
+				condition: `loop:${current.getStart(source)}`,
+				selected: true,
+			});
+		}
+	}
+	return guards.reverse();
+}
+
+function localStringMutations(
+	source: ts.SourceFile,
+	use: ts.Node,
+	name: string,
+	declaration: ts.VariableDeclaration,
+): StringMutation[] {
+	const scope = flowScope(source, use);
+	const result: StringMutation[] = [];
+	const pending: ts.Node[] = [scope];
+	while (pending.length > 0) {
+		const current = pending.pop()!;
+		if (current !== scope && ts.isFunctionLike(current)) continue;
+		if (current.getStart(source) >= use.getStart(source)) continue;
+		if (
+			ts.isBinaryExpression(current) && ts.isIdentifier(current.left) && current.left.text === name &&
+			current.getStart(source) > declaration.getStart(source) &&
+			(current.operatorToken.kind === ts.SyntaxKind.EqualsToken || current.operatorToken.kind === ts.SyntaxKind.PlusEqualsToken)
+		) {
+			result.push({
+				node: current,
+				right: current.right,
+				operator: current.operatorToken.kind === ts.SyntaxKind.EqualsToken ? "=" : "+=",
+				guards: controlGuards(source, current, scope),
+			});
+		}
+		ts.forEachChild(current, (child) => { pending.push(child); });
+	}
+	return result.sort((left, right) => left.node.getStart(source) - right.node.getStart(source));
+}
+
+function uniqueChoices(values: readonly string[]): string[] {
+	return values.filter((value, index) => values.indexOf(value) === index);
+}
+
+function branchDecisions(runtimeChoices: readonly string[]): Map<string, boolean> {
+	return new Map(runtimeChoices.map((choice) => {
+		const separator = choice.lastIndexOf(":");
+		return [choice.slice(0, separator), choice.slice(separator + 1) === "true"];
+	}));
+}
+
+function trimSegments(segments: Segment[]): Segment[] {
+	const result = segments.map((segment) => ({ ...segment, stylePath: [...segment.stylePath] }));
+	for (const segment of result) {
+		if (segment.kind === "slot") break;
+		segment.text = segment.text.trimStart();
+		if (segment.text !== "") break;
+	}
+	for (const segment of [...result].reverse()) {
+		if (segment.kind === "slot") break;
+		segment.text = segment.text.trimEnd();
+		if (segment.text !== "") break;
+	}
+	return result.filter((segment) => segment.kind === "slot" || segment.text !== "");
+}
+
+function registerMutationInstrumentation(source: ts.SourceFile, mutation: StringMutation): void {
+	if (mutation.guards.length === 0) return;
+	const rhsChoices: string[] = [];
+	for (const guard of mutation.guards) {
+		if (guard.conditionExpression) {
+			const key = `${source.fileName}:${guard.conditionExpression.getStart(source)}:${guard.conditionExpression.getEnd()}:condition`;
+			mutationChoiceInstrumentations.set(key, {
+				source,
+				expression: guard.conditionExpression,
+				conditionChoiceId: guard.id,
+			});
+		} else rhsChoices.push(`${guard.id}:${guard.selected}`);
+	}
+	if (rhsChoices.length > 0) {
+		const key = `${source.fileName}:${mutation.right.getStart(source)}:${mutation.right.getEnd()}:value`;
+		mutationChoiceInstrumentations.set(key, {
+			source,
+			expression: mutation.right,
+			choices: rhsChoices,
+		});
+	}
+}
+
+function parseLocalString(
+	source: ts.SourceFile,
+	use: ts.Identifier,
+	stylePath: StylePath,
+	resolving: ReadonlySet<string>,
+	resolveInRoot: boolean,
+): BranchBuild[] | undefined {
+	const declaration = localDeclaration(source, use, use.text);
+	if (!declaration?.initializer) return undefined;
+	const key = `${use.text}:${declaration.getStart(source)}`;
+	if (resolving.has(key)) return undefined;
+	const nestedResolving = new Set([...resolving, key]);
+	let states: FlowState[] = parseExpression(
+		source, declaration.initializer, stylePath, nestedResolving, resolveInRoot,
+	).map((branch) => ({
+		...branch,
+		decisions: branchDecisions(branch.runtimeChoices),
+	}));
+	const mutations = localStringMutations(source, use, use.text, declaration);
+	for (const mutation of mutations) {
+		const next: FlowState[] = [];
+		for (const state of states) {
+			let applicable: FlowState[] = [state];
+			const skipped: FlowState[] = [];
+			for (const guard of mutation.guards) {
+				const guarded: FlowState[] = [];
+				for (const candidate of applicable) {
+					const known = candidate.decisions.get(guard.id);
+					if (known === guard.selected) {
+						guarded.push(candidate);
+					} else if (known !== undefined) {
+						skipped.push(candidate);
+					} else {
+						const applies = { ...candidate, decisions: new Map(candidate.decisions) };
+						applies.decisions.set(guard.id, guard.selected);
+						applies.conditions = [
+							...applies.conditions,
+							guard.selected ? guard.condition : `!(${guard.condition})`,
+						];
+						guarded.push(applies);
+						const misses = { ...candidate, decisions: new Map(candidate.decisions) };
+						misses.decisions.set(guard.id, !guard.selected);
+						misses.conditions = [
+							...misses.conditions,
+							guard.selected ? `!(${guard.condition})` : guard.condition,
+						];
+						skipped.push(misses);
+					}
+				}
+				applicable = guarded;
+			}
+			next.push(...skipped);
+			for (const candidate of applicable) {
+				const guardChoices: string[] = [];
+				for (const rhs of parseExpression(
+					source, mutation.right, stylePath, nestedResolving, resolveInRoot,
+				)) {
+					const combined = mutation.operator === "+="
+						? combine([candidate], [rhs])[0]!
+						: {
+							conditions: [...candidate.conditions, ...rhs.conditions],
+							runtimeChoices: rhs.runtimeChoices,
+							segments: rhs.segments,
+						};
+					next.push({
+						...combined,
+						runtimeChoices: uniqueChoices([
+							...(mutation.operator === "+=" ? candidate.runtimeChoices : []),
+							...guardChoices,
+							...rhs.runtimeChoices,
+						]),
+						decisions: new Map([
+							...candidate.decisions,
+							...branchDecisions(rhs.runtimeChoices),
+						]),
+					});
+				}
+			}
+		}
+		states = next;
+		if (states.length > 4096) {
+			const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
+			const position = source.getLineAndCharacterOfPosition(use.getStart(source));
+			unresolvedDataflow.set(`${relativePath}:${use.getStart(source)}:${use.text}`, {
+				path: relativePath,
+				line: position.line + 1,
+				column: position.character + 1,
+				expression: use.text,
+				reason: "same-function branch product exceeds the explicit 4096-branch static bound; retained as an opaque runtime slot",
+			});
+			return undefined;
+		}
+	}
+	return states.map(({ decisions: _decisions, ...branch }) => branch);
+}
+
+function localStringArrayPushes(
+	source: ts.SourceFile,
+	use: ts.Node,
+	name: string,
+	declaration: ts.VariableDeclaration,
+): ArrayPushMutation[] {
+	const scope = flowScope(source, use);
+	const result: ArrayPushMutation[] = [];
+	const pending: ts.Node[] = [scope];
+	while (pending.length > 0) {
+		const current = pending.pop()!;
+		if (current !== scope && ts.isFunctionLike(current)) continue;
+		if (current.getStart(source) >= use.getStart(source)) continue;
+		if (
+			ts.isCallExpression(current) && ts.isPropertyAccessExpression(current.expression) &&
+			current.expression.name.text === "push" && ts.isIdentifier(current.expression.expression) &&
+			current.expression.expression.text === name && current.getStart(source) > declaration.getStart(source)
+		) {
+			for (const argument of current.arguments) {
+				result.push({ right: argument, guards: controlGuards(source, current, scope) });
+			}
+		}
+		ts.forEachChild(current, (child) => { pending.push(child); });
+	}
+	return result.sort((left, right) => left.right.getStart(source) - right.right.getStart(source));
+}
+
+function parseLocalStringArray(
+	source: ts.SourceFile,
+	use: ts.Identifier,
+	delimiter: BranchBuild[],
+	stylePath: StylePath,
+	resolving: ReadonlySet<string>,
+	resolveInRoot: boolean,
+): BranchBuild[] | undefined {
+	const declaration = localDeclaration(source, use, use.text);
+	if (!declaration?.initializer) return undefined;
+	if (stringTypeKind(declaration.type) !== "string-array" && !ts.isArrayLiteralExpression(declaration.initializer)) {
+		return undefined;
+	}
+	const key = `array:${use.text}:${declaration.getStart(source)}`;
+	if (resolving.has(key)) return undefined;
+	const nestedResolving = new Set([...resolving, key]);
+	let states: FlowState[] = [{ conditions: [], runtimeChoices: [], segments: [], decisions: new Map() }];
+	if (ts.isArrayLiteralExpression(declaration.initializer)) {
+		for (const element of declaration.initializer.elements) {
+			if (!ts.isExpression(element)) continue;
+			const value = parseExpression(source, element, stylePath, nestedResolving, resolveInRoot);
+			states = combine(states, states.some((state) => state.segments.length > 0) ? combine(delimiter, value) : value)
+				.map((branch) => ({ ...branch, decisions: branchDecisions(branch.runtimeChoices) }));
+		}
+	}
+	for (const mutation of localStringArrayPushes(source, use, use.text, declaration)) {
+		const next: FlowState[] = [];
+		for (const state of states) {
+			const choices: string[] = [];
+			const conflicting = mutation.guards.some((guard) => {
+				const known = state.decisions.get(guard.id);
+				return known !== undefined && known !== guard.selected;
+			});
+			if (conflicting) {
+				next.push(state);
+				continue;
+			}
+			const unknownGuards = mutation.guards.filter((guard) => !state.decisions.has(guard.id));
+			{
+				const appliedDecisions = new Map(state.decisions);
+				for (const guard of mutation.guards) appliedDecisions.set(guard.id, guard.selected);
+				const values = parseExpression(source, mutation.right, stylePath, nestedResolving, resolveInRoot);
+				const appended = state.segments.length > 0 ? combine(delimiter, values) : values;
+				for (const branch of combine([state], appended)) {
+					next.push({
+						...branch,
+						conditions: [
+							...state.conditions,
+							...unknownGuards.map((guard) => guard.selected ? guard.condition : `!(${guard.condition})`),
+							...branch.conditions.slice(state.conditions.length),
+						],
+						runtimeChoices: uniqueChoices([...state.runtimeChoices, ...choices, ...branch.runtimeChoices]),
+						decisions: appliedDecisions,
+					});
+				}
+			}
+			if (unknownGuards.length > 0) {
+				const skippedDecisions = new Map(state.decisions);
+				const guard = unknownGuards[0]!;
+				skippedDecisions.set(guard.id, !guard.selected);
+				next.push({
+					...state,
+					conditions: [...state.conditions, guard.selected ? `!(${guard.condition})` : guard.condition],
+				runtimeChoices: state.runtimeChoices,
+					decisions: skippedDecisions,
+				});
+			}
+		}
+		states = next;
+		if (states.length > 4096) {
+			recordUnresolvedProducer(source, use, use.text, "string-array branch product exceeds 4096");
+			return undefined;
+		}
+	}
+	return states.map(({ decisions: _decisions, ...branch }) => branch);
+}
+
+function sourceFileForModule(source: ts.SourceFile, specifier: string): ts.SourceFile | undefined {
+	if (!specifier.startsWith(".")) return undefined;
+	const base = path.resolve(path.dirname(source.fileName), specifier);
+	const candidates = [base, `${base}.ts`, `${base}.tsx`, `${base}.mts`, `${base}.cts`, path.join(base, "index.ts")];
+	return sourceFiles.find((candidate) => candidates.includes(path.resolve(candidate.fileName)));
+}
+
+function topLevelCallable(source: ts.SourceFile, name: string): ts.FunctionLikeDeclaration | undefined {
+	for (const statement of source.statements) {
+		if (ts.isFunctionDeclaration(statement) && statement.name?.text === name) return statement;
+		if (ts.isVariableStatement(statement)) {
+			for (const declaration of statement.declarationList.declarations) {
+				if (
+					ts.isIdentifier(declaration.name) && declaration.name.text === name && declaration.initializer &&
+					(ts.isArrowFunction(declaration.initializer) || ts.isFunctionExpression(declaration.initializer))
+				) return declaration.initializer;
+			}
+		}
+	}
+}
+
+function resolveCallable(source: ts.SourceFile, call: ts.CallExpression): { source: ts.SourceFile; declaration: ts.FunctionLikeDeclaration } | undefined {
+	const callee = call.expression;
+	if (ts.isIdentifier(callee)) {
+		const local = topLevelCallable(source, callee.text);
+		if (local) return { source, declaration: local };
+		for (const statement of source.statements) {
+			if (!ts.isImportDeclaration(statement) || !ts.isStringLiteral(statement.moduleSpecifier)) continue;
+			const target = sourceFileForModule(source, statement.moduleSpecifier.text);
+			if (!target) continue;
+			const clause = statement.importClause;
+			if (clause?.name?.text === callee.text) {
+				const declaration = topLevelCallable(target, "default");
+				if (declaration) return { source: target, declaration };
+			}
+			if (clause?.namedBindings && ts.isNamedImports(clause.namedBindings)) {
+				const binding = clause.namedBindings.elements.find((element) => element.name.text === callee.text);
+				if (binding) {
+					const declaration = topLevelCallable(target, binding.propertyName?.text ?? binding.name.text);
+					if (declaration) return { source: target, declaration };
+				}
+			}
+		}
+	}
+	if (ts.isPropertyAccessExpression(call.expression) && call.expression.expression.kind === ts.SyntaxKind.ThisKeyword) {
+		const name = call.expression.name.text;
+		for (let current: ts.Node | undefined = call.parent; current; current = current.parent) {
+			if (ts.isClassDeclaration(current)) {
+				const member = current.members.find((value): value is ts.MethodDeclaration =>
+					ts.isMethodDeclaration(value) && value.name.getText(source) === name
+				);
+				if (member) return { source, declaration: member };
+				break;
+			}
+		}
+	}
+}
+
+function callableReturnExpressions(declaration: ts.FunctionLikeDeclaration): ts.Expression[] {
+	if (ts.isArrowFunction(declaration) && !ts.isBlock(declaration.body)) return [declaration.body];
+	if (!declaration.body || !ts.isBlock(declaration.body)) return [];
+	const result: ts.Expression[] = [];
+	const visit = (node: ts.Node): void => {
+		if (node !== declaration.body && ts.isFunctionLike(node)) return;
+		if (ts.isReturnStatement(node) && node.expression) result.push(node.expression);
+		ts.forEachChild(node, visit);
 	};
-	visit(scope);
-	return best?.initializer;
+	visit(declaration.body);
+	return result;
+}
+
+function recordUnresolvedProducer(source: ts.SourceFile, node: ts.Node, expression: string, reason: string): void {
+	const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
+	const position = source.getLineAndCharacterOfPosition(node.getStart(source));
+	unresolvedDataflow.set(`${relativePath}:${node.getStart(source)}:${expression}:${reason}`, {
+		path: relativePath,
+		line: position.line + 1,
+		column: position.character + 1,
+		expression,
+		reason,
+	});
+}
+
+function parseClassPropertyString(
+	source: ts.SourceFile,
+	use: ts.PropertyAccessExpression,
+	stylePath: StylePath,
+	resolving: ReadonlySet<string>,
+	resolveInRoot: boolean,
+): BranchBuild[] | undefined {
+	if (use.expression.kind !== ts.SyntaxKind.ThisKeyword) return undefined;
+	let classDeclaration: ts.ClassDeclaration | undefined;
+	for (let current: ts.Node | undefined = use.parent; current; current = current.parent) {
+		if (ts.isClassDeclaration(current)) {
+			classDeclaration = current;
+			break;
+		}
+	}
+	if (!classDeclaration) return undefined;
+	const values: ts.Expression[] = [];
+	for (const member of classDeclaration.members) {
+		if (
+			ts.isPropertyDeclaration(member) && member.name.getText(source) === use.name.text &&
+			member.initializer
+		) values.push(member.initializer);
+	}
+	const visit = (node: ts.Node): void => {
+		if (node !== classDeclaration && ts.isClassLike(node)) return;
+		if (
+			ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsToken &&
+			ts.isPropertyAccessExpression(node.left) && node.left.expression.kind === ts.SyntaxKind.ThisKeyword &&
+			node.left.name.text === use.name.text && node.getStart(source) < use.getStart(source)
+		) values.push(node.right);
+		ts.forEachChild(node, visit);
+	};
+	visit(classDeclaration);
+	if (values.length === 0) return undefined;
+	return values.flatMap((value) => parseExpression(source, value, stylePath, resolving, resolveInRoot));
 }
 
 function parseExpression(
@@ -278,6 +939,7 @@ function parseExpression(
 	node: ts.Expression,
 	stylePath: StylePath = [],
 	resolving: ReadonlySet<string> = new Set(),
+	resolveInRoot = true,
 ): BranchBuild[] {
 	if (ts.isStringLiteralLike(node)) {
 		return [{ conditions: [], runtimeChoices: [], segments: literalSegments(node.text, stylePath) }];
@@ -285,32 +947,47 @@ function parseExpression(
 	if (ts.isTemplateExpression(node)) {
 		let result: BranchBuild[] = [{ conditions: [], runtimeChoices: [], segments: literalSegments(node.head.text, stylePath) }];
 		for (const span of node.templateSpans) {
-			result = combine(result, parseExpression(source, span.expression, stylePath));
+			result = combine(result, parseExpression(source, span.expression, stylePath, resolving, false));
 			result = combine(result, [{ conditions: [], runtimeChoices: [], segments: literalSegments(span.literal.text, stylePath) }]);
 		}
 		return result;
 	}
 	if (ts.isParenthesizedExpression(node) || ts.isAsExpression(node) || ts.isSatisfiesExpression(node)) {
-		return parseExpression(source, node.expression, stylePath, resolving);
+		return parseExpression(source, node.expression, stylePath, resolving, resolveInRoot);
 	}
 	if (ts.isIdentifier(node)) {
-		const key = `${node.text}:${node.getStart(source)}`;
-		const initializer = resolving.has(key) ? undefined : localInitializer(source, node, node.text);
-		if (initializer) return parseExpression(source, initializer, stylePath, new Set([...resolving, key]));
+		const local = parseLocalString(source, node, stylePath, resolving, resolveInRoot);
+		if (local) return local;
+	}
+	if (ts.isPropertyAccessExpression(node)) {
+		const property = parseClassPropertyString(source, node, stylePath, resolving, resolveInRoot);
+		if (property) return property;
 	}
 	if (ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.PlusToken) {
-		return combine(parseExpression(source, node.left, stylePath, resolving), parseExpression(source, node.right, stylePath, resolving));
+		return combine(
+			parseExpression(source, node.left, stylePath, resolving, resolveInRoot),
+			parseExpression(source, node.right, stylePath, resolving, resolveInRoot),
+		);
+	}
+	if (
+		ts.isBinaryExpression(node) &&
+		(node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || node.operatorToken.kind === ts.SyntaxKind.BarBarToken)
+	) {
+		return [
+			...parseExpression(source, node.left, stylePath, resolving, resolveInRoot),
+			...parseExpression(source, node.right, stylePath, resolving, resolveInRoot),
+		];
 	}
 	if (ts.isConditionalExpression(node)) {
 		const condition = node.condition.getText(source);
-		const choice = `C-${digest(`${path.relative(baselineRoot, source.fileName)}\0${node.getStart(source)}\0${node.getEnd()}`).slice(0, 12)}`;
+		const choice = choiceId(source, node);
 		return [
-			...parseExpression(source, node.whenTrue, stylePath, resolving).map((branch) => ({
+			...parseExpression(source, node.whenTrue, stylePath, resolving, resolveInRoot).map((branch) => ({
 				...branch,
 				conditions: [condition, ...branch.conditions],
 				runtimeChoices: [`${choice}:true`, ...branch.runtimeChoices],
 			})),
-			...parseExpression(source, node.whenFalse, stylePath, resolving).map((branch) => ({
+			...parseExpression(source, node.whenFalse, stylePath, resolving, resolveInRoot).map((branch) => ({
 				...branch,
 				conditions: [`!(${condition})`, ...branch.conditions],
 				runtimeChoices: [`${choice}:false`, ...branch.runtimeChoices],
@@ -320,32 +997,94 @@ function parseExpression(
 	if (ts.isCallExpression(node)) {
 		const name = calledName(node.expression);
 		if (
+			name === "join" && ts.isPropertyAccessExpression(node.expression) &&
+			ts.isIdentifier(node.expression.expression)
+		) {
+			const delimiter = node.arguments[0]
+				? parseExpression(source, node.arguments[0], stylePath, resolving, resolveInRoot)
+				: [{ conditions: [], runtimeChoices: [], segments: literalSegments(",", stylePath) }];
+			const joined = parseLocalStringArray(
+				source, node.expression.expression, delimiter, stylePath, resolving, resolveInRoot,
+			);
+			if (joined) return joined;
+		}
+		if (
 			name === "trim" && ts.isPropertyAccessExpression(node.expression) &&
 			node.arguments.length === 0
-		) return parseExpression(source, node.expression.expression, stylePath, resolving);
+		) return parseExpression(
+			source, node.expression.expression, stylePath, resolving, resolveInRoot,
+		).map((branch) => ({
+			...branch,
+			segments: trimSegments(branch.segments),
+		}));
 		if ((name === "fg" || name === "bg") && node.arguments[1]) {
-			return parseExpression(source, node.arguments[1], [...stylePath, styleName(name, node.arguments[0], source)], resolving);
+			return parseExpression(
+				source, node.arguments[1], [...stylePath, styleName(name, node.arguments[0], source)], resolving, resolveInRoot,
+			);
 		}
 		if (name && styleCalls.has(name) && node.arguments[0]) {
-			return parseExpression(source, node.arguments[0], [...stylePath, name], resolving);
+			return parseExpression(source, node.arguments[0], [...stylePath, name], resolving, resolveInRoot);
+		}
+		if (name && tuiThemeValueCalls.has(name) && node.arguments[0]) {
+			return parseExpression(
+				source, node.arguments[0], [...stylePath, `theme:${name}`], resolving, resolveInRoot,
+			);
 		}
 		if (name === "keyHint" && node.arguments[1]) {
 			return combine(
 				[{ conditions: [], runtimeChoices: [], segments: [{ kind: "slot", expression: `keyText(${node.arguments[0]?.getText(source) ?? ""})`, stylePath: [...stylePath, "fg:dim"] }] }],
 				combine(
 					[{ conditions: [], runtimeChoices: [], segments: [{ kind: "literal", text: " ", stylePath: [...stylePath, "fg:muted"] }] }],
-					parseExpression(source, node.arguments[1], [...stylePath, "fg:muted"], resolving),
+					parseExpression(
+						source, node.arguments[1], [...stylePath, "fg:muted"], resolving, resolveInRoot,
+					),
 				),
 			);
 		}
 		if (name === "rawKeyHint" && node.arguments[0] && node.arguments[1]) {
 			return combine(
-				parseExpression(source, node.arguments[0], [...stylePath, "fg:dim"], resolving),
+				parseExpression(source, node.arguments[0], [...stylePath, "fg:dim"], resolving, resolveInRoot),
 				combine(
 					[{ conditions: [], runtimeChoices: [], segments: [{ kind: "literal", text: " ", stylePath: [...stylePath, "fg:muted"] }] }],
-					parseExpression(source, node.arguments[1], [...stylePath, "fg:muted"], resolving),
+					parseExpression(
+						source, node.arguments[1], [...stylePath, "fg:muted"], resolving, resolveInRoot,
+					),
 				),
 			);
+		}
+		const resolved = resolveInRoot ? resolveCallable(source, node) : undefined;
+		if (resolved) {
+			const key = `call:${resolved.source.fileName}:${resolved.declaration.getStart(resolved.source)}`;
+			const returnContract = explicitStringReturn(resolved.declaration);
+			if (returnContract) {
+				reachableTypedProducers.set(key, resolved);
+				return [{
+					conditions: [],
+					runtimeChoices: [],
+					segments: [{
+						kind: "slot",
+						expression: `typed-producer:${node.getText(source)}`,
+						stylePath,
+					}],
+				}];
+			}
+			if (resolving.has(key)) {
+				recordUnresolvedProducer(
+					source, node, node.getText(source),
+					"recursive in-root producer lacks an explicit string or string[] return contract",
+				);
+			} else {
+				const returns = callableReturnExpressions(resolved.declaration);
+				if (returns.length > 0) {
+					return returns.flatMap((value) => parseExpression(
+						resolved.source, value, stylePath, new Set([...resolving, key]),
+					));
+				}
+				recordUnresolvedProducer(
+					source, node, node.getText(source),
+					"in-root string producer has no return expression",
+				);
+			}
 		}
 	}
 	return [{ conditions: [], runtimeChoices: [], segments: [{ kind: "slot", expression: node.getText(source), stylePath }] }];
@@ -367,6 +1106,23 @@ function normalizeSegments(segments: Segment[]): Segment[] {
 
 function meaningful(branches: BranchBuild[]): boolean {
 	return branches.some((branch) => branch.segments.length > 0);
+}
+
+function candidateBranches(candidate: Candidate): BranchBuild[] {
+	if (candidate.opaqueRuntime) {
+		return [{
+			conditions: [],
+			runtimeChoices: [],
+			segments: [{ kind: "slot", expression: candidate.expression.getText(candidate.source), stylePath: [] }],
+		}];
+	}
+	try {
+		return parseExpression(candidate.source, candidate.expression);
+	} catch (error) {
+		throw new Error(
+			`visible-string candidate failed at ${path.relative(baselineRoot, candidate.source.fileName)}:${candidate.expression.getStart(candidate.source)}:${candidate.kind}: ${error instanceof Error ? error.message : String(error)}`
+		);
+	}
 }
 
 const sourceFiles: ts.SourceFile[] = [];
@@ -400,28 +1156,51 @@ for (const sourceRoot of sourceRoots) {
 	}
 }
 
-const selected: Candidate[] = [];
-for (const source of sourceFiles) {
-	const fileCandidates = candidates.filter((candidate) => candidate.source === source);
-	const exact = new Map<string, Candidate>();
-	for (const candidate of fileCandidates) {
-		const key = `${candidate.expression.getStart(source)}:${candidate.expression.getEnd()}`;
-		const previous = exact.get(key);
-		if (!previous || candidate.priority > previous.priority) exact.set(key, candidate);
+function selectCandidates(): Candidate[] {
+	const selected: Candidate[] = [];
+	for (const source of sourceFiles) {
+		const fileCandidates = candidates.filter((candidate) => candidate.source === source);
+		const exact = new Map<string, Candidate>();
+		for (const candidate of fileCandidates) {
+			const key = `${candidate.expression.getStart(source)}:${candidate.expression.getEnd()}`;
+			const previous = exact.get(key);
+			if (!previous || candidate.priority > previous.priority) exact.set(key, candidate);
+		}
+		const unique = [...exact.values()];
+		for (const candidate of unique) {
+			const start = candidate.expression.getStart(source);
+			const end = candidate.expression.getEnd();
+			if (unique.some((other) => {
+				if (other === candidate) return false;
+				const otherStart = other.expression.getStart(source);
+				const otherEnd = other.expression.getEnd();
+				return otherStart <= start && otherEnd >= end && (otherStart < start || otherEnd > end);
+			})) continue;
+			const branches = candidateBranches(candidate);
+			if (meaningful(branches)) selected.push(candidate);
+		}
 	}
-	const unique = [...exact.values()];
-	for (const candidate of unique) {
-		const start = candidate.expression.getStart(source);
-		const end = candidate.expression.getEnd();
-		if (unique.some((other) => {
-			if (other === candidate) return false;
-			const otherStart = other.expression.getStart(source);
-			const otherEnd = other.expression.getEnd();
-			return otherStart <= start && otherEnd >= end && (otherStart < start || otherEnd > end);
-		})) continue;
-		const branches = parseExpression(source, candidate.expression);
-		if (meaningful(branches)) selected.push(candidate);
+	return selected;
+}
+
+const registeredTypedProducers = new Set<string>();
+let selected = selectCandidates();
+for (;;) {
+	const pending = [...reachableTypedProducers.entries()].filter(([key]) => !registeredTypedProducers.has(key));
+	if (pending.length === 0) break;
+	for (const [key, producer] of pending) {
+		registeredTypedProducers.add(key);
+		for (const expression of callableReturnExpressions(producer.declaration)) {
+			addCandidate(
+				producer.source,
+				expression,
+				"typed-string-producer-return",
+				"printable-visible",
+				75,
+			);
+		}
 	}
+	selected = selectCandidates();
 }
 
 const entries: Entry[] = selected
@@ -436,9 +1215,20 @@ const entries: Entry[] = selected
 		const begin = source.getLineAndCharacterOfPosition(start);
 		const finish = source.getLineAndCharacterOfPosition(end);
 		const id = `VS-${digest(`${relativePath}\0${start}\0${end}\0${candidate.kind}\0${nodeSha256}`).slice(0, 16)}`;
-		const branches = parseExpression(source, candidate.expression)
+		const normalizedBranches = candidateBranches(candidate)
 			.map((branch) => ({ ...branch, segments: normalizeSegments(branch.segments) }))
-			.filter((branch) => branch.segments.length > 0)
+			.filter((branch) => branch.segments.length > 0);
+		const observableBranches = new Map<string, BranchBuild>();
+		for (const branch of normalizedBranches) {
+			const observable = JSON.stringify({
+				runtimeChoices: branch.runtimeChoices,
+				segments: branch.segments.map((segment) => segment.kind === "literal"
+					? segment
+					: { kind: "slot", stylePath: segment.stylePath }),
+			});
+			if (!observableBranches.has(observable)) observableBranches.set(observable, branch);
+		}
+		const branches = [...observableBranches.values()]
 			.map((branch) => ({
 				id: `B-${digest(JSON.stringify(branch)).slice(0, 12)}`,
 				conditions: branch.conditions,
@@ -457,15 +1247,16 @@ const entries: Entry[] = selected
 				end,
 				kind: candidate.kind,
 				nodeSha256,
+				...(candidate.metadata && { metadata: candidate.metadata }),
 			},
-			sink: { kind: candidate.kind },
+			sink: { kind: candidate.kind, channel: candidate.channel },
 			branches,
 		};
 	});
 
 if (instrumentRoot) {
 	function conditionalChoiceId(source: ts.SourceFile, node: ts.ConditionalExpression): string {
-		return `C-${digest(`${path.relative(baselineRoot, source.fileName)}\0${node.getStart(source)}\0${node.getEnd()}`).slice(0, 12)}`;
+		return choiceId(source, node);
 	}
 
 	type Insertion = { text: string; kind: "open" | "close"; span: number };
@@ -522,6 +1313,34 @@ if (instrumentRoot) {
 		values.push(entry);
 		byPath.set(entry.site.path, values);
 	}
+	const slashMetadataRecords = entries.flatMap((entry) => {
+		if (!entry.site.metadata || !("commandName" in entry.site.metadata)) return [];
+		const metadata = entry.site.metadata;
+		return entry.branches.map((branch) => ({
+			commandName: metadata.commandName,
+			field: metadata.field,
+			parts: branch.segments
+				.filter((segment): segment is Extract<Segment, { kind: "literal" }> => segment.kind === "literal" && segment.text !== "")
+				.map((segment) => segment.text),
+			begin: `\x1b]777;cadr-visible-branch;phase=begin;site=${entry.id};branch=${branch.id}\x07`,
+			end: `\x1b]777;cadr-visible-branch;phase=end;site=${entry.id};branch=${branch.id}\x07`,
+		}));
+	});
+	const extensionSelectorMetadataRecords = entries.flatMap((entry) => {
+		if (!entry.site.metadata || !("surface" in entry.site.metadata) || entry.site.metadata.surface !== "extension-selector") {
+			return [];
+		}
+		return entry.branches.map((branch) => ({
+			field: entry.site.metadata!.field,
+			parts: branch.segments
+				.filter((segment): segment is Extract<Segment, { kind: "literal" }> => segment.kind === "literal" && segment.text !== "")
+				.map((segment) => segment.text),
+			begin: `\x1b]777;cadr-visible-branch;phase=begin;site=${entry.id};branch=${branch.id}\x07`,
+			end: `\x1b]777;cadr-visible-branch;phase=end;site=${entry.id};branch=${branch.id}\x07`,
+		}));
+	});
+	const slashMetadataHelper = `__cadrRenderDiffSlashMetadata_${digest("slash-command-metadata").slice(0, 8)}`;
+	const extensionSelectorMetadataHelper = `__cadrRenderDiffExtensionSelectorMetadata_${digest("extension-selector-metadata").slice(0, 8)}`;
 	for (const source of sourceFiles) {
 		const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
 		let text = source.text;
@@ -529,7 +1348,13 @@ if (instrumentRoot) {
 		if (fileEntries.length > 0) {
 			const siteHelper = `__cadrRenderDiffVisibleSite_${digest(relativePath).slice(0, 8)}`;
 			const choiceHelper = `__cadrRenderDiffVisibleChoice_${digest(relativePath).slice(0, 8)}`;
-			for (const entry of [...fileEntries].sort((left, right) => right.site.start - left.site.start)) {
+			const conditionChoiceHelper = `__cadrRenderDiffVisibleCondition_${digest(relativePath).slice(0, 8)}`;
+			const flushHelper = `__cadrRenderDiffFlushVisible_${digest(relativePath).slice(0, 8)}`;
+			const installHelper = `__cadrRenderDiffInstallVisibleStreams_${digest(relativePath).slice(0, 8)}`;
+			type Replacement = { start: number; end: number; text: string; label: string };
+			const replacements: Replacement[] = [];
+			for (const entry of fileEntries) {
+				if (entry.site.metadata) continue;
 				const candidate = selected.find((value) =>
 					value.source === source &&
 					value.expression.getStart(source) === entry.site.start &&
@@ -541,33 +1366,154 @@ if (instrumentRoot) {
 						branch.runtimeChoices.map((choice) => choice.slice(0, choice.lastIndexOf(":")))
 					)
 				);
-				const original = instrumentConditionalChoices(
+				let original = instrumentConditionalChoices(
 					source, candidate.expression, choiceHelper, allowedChoices,
 				);
-				const branchTable = entry.branches.map((branch) => [branch.runtimeChoices.join(","), branch.id]);
-				text = text.slice(0, entry.site.start) +
-					`${siteHelper}(${JSON.stringify(entry.id)}, ${JSON.stringify(branchTable)}, (${original}))` +
-					text.slice(entry.site.end);
+				if (
+					relativePath === "packages/tui/src/components/select-list.ts" &&
+					ts.isCallExpression(candidate.expression) &&
+					candidate.expression.expression.getText(source) === "this.renderItem"
+				) original = `${slashMetadataHelper}(${candidate.expression.arguments[0]?.getText(source) ?? "item"}, (${original}))`;
+				if (relativePath.endsWith("/components/extension-selector.ts")) {
+					if (original.includes("title") && entry.site.kind === "new:Text") {
+						original = `${extensionSelectorMetadataHelper}("title", (${original}))`;
+					} else if (original === "text" && entry.site.kind === "new:Text") {
+						original = `${extensionSelectorMetadataHelper}("item", (${original}))`;
+					}
+				}
+				const branchTable = entry.branches.map((branch) => [
+					branch.runtimeChoices.join(","),
+					branch.id,
+					branch.segments.filter((segment) => segment.kind === "literal" && segment.text !== "").map((segment) => (segment as Extract<Segment, { kind: "literal" }>).text),
+				]);
+				const instrumented = `${siteHelper}(${JSON.stringify(entry.id)}, ${JSON.stringify(branchTable)}, (${original}))`;
+				replacements.push({
+					start: entry.site.start,
+					end: entry.site.end,
+					text: candidate.kind.startsWith("output:")
+						? `${flushHelper}(${instrumented})`
+						: instrumented,
+					label: entry.id,
+				});
+			}
+			for (const instrumentation of mutationChoiceInstrumentations.values()) {
+				if (instrumentation.source !== source) continue;
+				let wrapped = instrumentation.expression.getText(source);
+				if (instrumentation.conditionChoiceId) {
+					wrapped = `${conditionChoiceHelper}(${JSON.stringify(instrumentation.conditionChoiceId)}, (${wrapped}))`;
+				} else for (const choice of instrumentation.choices ?? []) {
+					wrapped = `${choiceHelper}(${JSON.stringify(choice)}, (${wrapped}))`;
+				}
+				replacements.push({
+					start: instrumentation.expression.getStart(source),
+					end: instrumentation.expression.getEnd(),
+					text: wrapped,
+					label: instrumentation.conditionChoiceId ?? instrumentation.choices?.join(",") ?? "choice",
+				});
+			}
+			for (let index = 0; index < replacements.length; index++) {
+				for (let otherIndex = index + 1; otherIndex < replacements.length; otherIndex++) {
+					const left = replacements[index]!;
+					const right = replacements[otherIndex]!;
+					if (left.start < right.end && right.start < left.end) {
+						throw new Error(`overlapping visible-string instrumentation: ${left.label} and ${right.label}`);
+					}
+				}
+			}
+			for (const replacement of replacements.sort((left, right) => right.start - left.start)) {
+				text = text.slice(0, replacement.start) + replacement.text + text.slice(replacement.end);
 			}
 			text += `\nfunction ${choiceHelper}<T>(choice: string, value: T): T {\n` +
 				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\") return value;\n` +
-				`\tconst marker = \`\\x1b]777;cadr-visible-choice=\${choice}\\x07\`;\n` +
-				`\tif (typeof value === \"string\") return (\`\${marker}\${value}\` as unknown as T);\n` +
-				`\tif (Array.isArray(value) && value.every((item) => typeof item === \"string\") && value.length > 0) return ([marker + value[0], ...value.slice(1)] as unknown as T);\n` +
+				`\t(__cadrRenderDiffVisibleChoices ??= []).push(choice);\n` +
 				`\treturn value;\n` +
 				`}\n` +
-				`function ${siteHelper}<T>(siteId: string, branches: ReadonlyArray<readonly [string, string]>, value: T): T {\n` +
+				`function ${conditionChoiceHelper}<T>(choiceId: string, value: T): T {\n` +
+				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES === \"1\") (__cadrRenderDiffVisibleChoices ??= []).push(\`\${choiceId}:\${Boolean(value)}\`);\n` +
+				`\treturn value;\n` +
+				`}\n` +
+				`var __cadrRenderDiffVisibleChoices: string[] | undefined;\n` +
+				`function ${flushHelper}<T>(value: T): T {\n` +
+				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\" || typeof value !== \"string\") return value;\n` +
+				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffPendingVisibleSpans?: Array<{ key: string; begin: string; end: string; candidates: string[] }>; __cadrRenderDiffPendingVisibleKeys?: Set<string> };\n` +
+				`\tconst pending = state.__cadrRenderDiffPendingVisibleSpans ?? [];\n` +
+				`\tconst matched: Array<{ begin: string; end: string; start: number; finish: number }> = [];\n` +
+				`\tconst remaining: typeof pending = [];\n` +
+				`\tfor (const record of pending) {\n` +
+				`\t\tconst candidate = record.candidates.find((item) => item !== \"\" && value.includes(item));\n` +
+				`\t\tif (!candidate) { remaining.push(record); continue; }\n` +
+				`\t\tconst start = value.indexOf(candidate);\n` +
+				`\t\tmatched.push({ begin: record.begin, end: record.end, start, finish: start + candidate.length });\n` +
+				`\t}\n` +
+				`\tconst points = [...new Set(matched.flatMap((record) => [record.start, record.finish]))].sort((left, right) => left - right);\n` +
+				`\tlet marked = \"\";\n` +
+				`\tlet offset = 0;\n` +
+				`\tfor (const point of points) {\n` +
+				`\t\tmarked += value.slice(offset, point);\n` +
+				`\t\tfor (const record of matched.filter((item) => item.finish === point).sort((left, right) => right.start - left.start)) marked += record.end;\n` +
+				`\t\tfor (const record of matched.filter((item) => item.start === point).sort((left, right) => right.finish - left.finish)) marked += record.begin;\n` +
+				`\t\toffset = point;\n` +
+				`\t}\n` +
+				`\tmarked += value.slice(offset);\n` +
+				`\tif (value.includes(\"\\x1b[?2026l\")) { state.__cadrRenderDiffPendingVisibleSpans = []; state.__cadrRenderDiffPendingVisibleKeys = new Set(); }\n` +
+				`\telse { state.__cadrRenderDiffPendingVisibleSpans = remaining; state.__cadrRenderDiffPendingVisibleKeys = new Set(remaining.map((record) => record.key)); }\n` +
+				`\treturn marked as T;\n` +
+				`}\n` +
+				`function ${installHelper}(): void {\n` +
+				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffVisibleStreamsInstalled?: boolean };\n` +
+				`\tif (state.__cadrRenderDiffVisibleStreamsInstalled) return;\n` +
+				`\tstate.__cadrRenderDiffVisibleStreamsInstalled = true;\n` +
+				`\tfor (const stream of [process.stdout, process.stderr]) {\n` +
+				`\t\tconst original = stream.write.bind(stream);\n` +
+				`\t\tstream.write = ((chunk: string | Uint8Array, ...args: unknown[]) => original((typeof chunk === \"string\" ? ${flushHelper}(chunk) : chunk) as never, ...(args as []))) as typeof stream.write;\n` +
+				`\t}\n` +
+				`}\n` +
+				`function ${siteHelper}<T>(siteId: string, branches: ReadonlyArray<readonly [string, string, readonly string[]]>, value: T): T {\n` +
 				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\") return value;\n` +
 				`\tconst values = typeof value === \"string\" ? [value] : Array.isArray(value) && value.every((item) => typeof item === \"string\") ? value : undefined;\n` +
 				`\tif (!values || values.length === 0) return value;\n` +
-				`\tconst choices: string[] = [];\n` +
-				`\tconst clean = values.map((item) => item.replace(/\\x1b\\]777;cadr-visible-choice=(C-[0-9a-f]{12}:(?:true|false))\\x07/g, (_marker, choice: string) => { choices.push(choice); return \"\"; }));\n` +
-				`\tconst signature = choices.join(\",\");\n` +
-				`\tconst branchId = branches.find(([expected]) => expected === signature)?.[1];\n` +
-				`\tif (!branchId) return ((typeof value === \"string\" ? clean[0] : clean) as unknown as T);\n` +
-				`\tclean[0] = \`\\x1b]777;cadr-visible-branch;site=\${siteId};branch=\${branchId}\\x07\${clean[0]}\`;\n` +
-				`\treturn ((typeof value === \"string\" ? clean[0] : clean) as unknown as T);\n` +
+				`\tconst choiceIds = new Set(branches.flatMap(([expected]) => expected ? expected.split(\",\").map((choice) => choice.slice(0, choice.lastIndexOf(\":\"))) : []));\n` +
+				`\tconst pendingChoices = __cadrRenderDiffVisibleChoices ?? [];\n` +
+				`\tconst choices = pendingChoices.filter((choice) => choiceIds.has(choice.slice(0, choice.lastIndexOf(\":\"))));\n` +
+				`\tfor (let index = pendingChoices.length - 1; index >= 0; index--) if (choiceIds.has(pendingChoices[index]!.slice(0, pendingChoices[index]!.lastIndexOf(\":\")))) pendingChoices.splice(index, 1);\n` +
+				`\tconst signature = choices.filter((choice, index) => choices.indexOf(choice) === index).join(\",\");\n` +
+				`\tconst visibleValue = values.join(\"\\n\");\n` +
+				`\tconst branch = branches.find(([expected, _id, parts]) => { if (expected !== signature) return false; let offset = 0; return parts.every((part) => { const found = visibleValue.indexOf(part, offset); if (found < 0) return false; offset = found + part.length; return true; }); });\n` +
+				`\tif (!branch) return value;\n` +
+				`\tconst [, branchId, parts] = branch;\n` +
+				`\tconst begin = \`\\x1b]777;cadr-visible-branch;phase=begin;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
+				`\tconst end = \`\\x1b]777;cadr-visible-branch;phase=end;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
+				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffPendingVisibleSpans?: Array<{ key: string; begin: string; end: string; candidates: string[] }>; __cadrRenderDiffPendingVisibleKeys?: Set<string> };\n` +
+				`\tconst key = \`\${siteId}/\${branchId}\`;\n` +
+				`\tconst keys = (state.__cadrRenderDiffPendingVisibleKeys ??= new Set());\n` +
+				`\tif (!keys.has(key)) {\n` +
+				`\t\tkeys.add(key);\n` +
+				`\t\t(state.__cadrRenderDiffPendingVisibleSpans ??= []).push({ key, begin, end, candidates: [visibleValue, ...values, ...parts].filter((item, index, all) => item !== \"\" && all.indexOf(item) === index).sort((left, right) => right.length - left.length) });\n` +
+				`\t}\n` +
+				`\t${installHelper}();\n` +
+				`\treturn value;\n` +
 				`}\n`;
+			if (relativePath === "packages/tui/src/components/select-list.ts") {
+				text += `\nconst __cadrRenderDiffSlashMetadataRecords = ${JSON.stringify(slashMetadataRecords)} as const;\n` +
+					`function ${slashMetadataHelper}(item: SelectItem, value: string): string {\n` +
+					`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\") return value;\n` +
+					`\tconst matched: Array<{ begin: string; end: string }> = [];\n` +
+					`\tfor (const record of __cadrRenderDiffSlashMetadataRecords) {\n` +
+					`\t\tif (item.label !== record.commandName) continue;\n` +
+					`\t\tconst fieldValue = record.field === \"name\" ? item.label : (item.description ?? \"\");\n` +
+					`\t\tif (record.parts.every((part) => fieldValue.includes(part))) matched.push(record);\n` +
+					`\t}\n` +
+					`\treturn matched.reduceRight((result, record) => record.begin + result + record.end, value);\n` +
+					`}\n`;
+			}
+			if (relativePath.endsWith("/components/extension-selector.ts")) {
+				text += `\nconst __cadrRenderDiffExtensionSelectorMetadataRecords = ${JSON.stringify(extensionSelectorMetadataRecords)} as const;\n` +
+					`function ${extensionSelectorMetadataHelper}(field: "title" | "item", value: string): string {\n` +
+					`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== "1") return value;\n` +
+					`\tconst matched = __cadrRenderDiffExtensionSelectorMetadataRecords.filter((record) => record.field === field && record.parts.every((part) => value.includes(part)));\n` +
+					`\treturn matched.reduceRight((result, record) => record.begin + result + record.end, value);\n` +
+					`}\n`;
+			}
 		}
 		const destination = path.join(instrumentRoot, relativePath);
 		fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -578,16 +1524,21 @@ if (instrumentRoot) {
 }
 
 process.stdout.write(`${JSON.stringify({
-	schemaVersion: 2,
+	schemaVersion: 3,
 	baselineCommit,
 		extractionRules: {
 			sourceRoots,
 			parsedSourceExtensions: [...parsedSourceExtensions].sort(),
-			unit: "one statically enumerated branch of one presentation sink expression",
-			composition: "template, binary concatenation, conditional branches, nested styles, and key hints",
-			instrumentation: "per-file branch-aware OSC 777 provenance prefixes travel with the value to the terminal only when RENDER_DIFF_VISIBLE_SITES=1",
-			soundnessBoundary: "heuristic closure over the declared source roots and syntactic sink rules; this is not a proof over arbitrary data flow or dynamically computed output sinks",
+			unit: "one statically enumerated branch of one explicitly contracted presentation sink or reachable typed string-producer return",
+			composition: "template, binary concatenation, same-function string =/+= flow, conditional branches, trim, typed render-array push, recursively discovered typed producer returns, nested styles, and key hints",
+			channels: {
+				"printable-visible": "text whose contract reaches a user-visible terminal, stdout, or stderr presentation sink",
+				"terminal-protocol": "terminal control traffic; inventoried separately and not claimed as printable screen content",
+			},
+			instrumentation: "per-file branch-aware obligations retain the original application value, register pending provenance out of band, and add paired OSC 777 begin/end spans only at stdout/stderr emission when RENDER_DIFF_VISIBLE_SITES=1; printable coverage requires a terminal cell or geometry effect inside the correctly nested span",
+			soundnessBoundary: "closed over declared explicit sink contracts, same-function flow, and recursively discovered in-root producers with explicit string/string[] return contracts; their dynamic values remain typed slots while every reachable return is a separately instrumented obligation; any in-root producer without that contract is unresolved dataflow and fails validation; external and dynamically dispatched producers remain typed opaque runtime slots",
 		},
 	sourceInventory,
+	unresolvedDataflow: [...unresolvedDataflow.values()],
 	entries,
 }, null, 2)}\n`);

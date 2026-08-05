@@ -6,6 +6,7 @@ SBCL_COMMAND="${SBCL:-sbcl}"
 QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 VERIFY_ROOT="$(mktemp -d)"
 ISOLATED_PROJECT="$VERIFY_ROOT/project"
+PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-74caa2649"
 OVERALL_FAILURE=0
 
 DETERMINISTIC_NAMES=()
@@ -147,9 +148,25 @@ run_render_diff_gate() {
       --pi-repo "$PROJECT_DIRECTORY" \
       --manifest "$PROJECT_DIRECTORY/test/fixtures/render-diff/scenarios.json" \
       --dispositions "$PROJECT_DIRECTORY/test/fixtures/render-diff/dispositions.json" \
+      --tier core \
+      --baseline-cache "$PI_BASELINE_CACHE" \
       --timeout 60 \
       --output "$VERIFY_ROOT/render-diff" \
       --analysis-output "$VERIFY_ROOT/render-diff-analysis"
+}
+
+run_tool_result_diff_gate() {
+  python3 "$PROJECT_DIRECTORY/test/tool-result-diff-gate-test.py" &&
+    python3 "$PROJECT_DIRECTORY/scripts/tool-result-diff.py" \
+      --baseline "$PI_BASELINE_CACHE" \
+      --artifacts "$VERIFY_ROOT/tool-result-diff"
+}
+
+run_event_diff_gate() {
+  python3 "$PROJECT_DIRECTORY/test/event-diff-gate-test.py" &&
+    python3 "$PROJECT_DIRECTORY/scripts/event-diff.py" \
+      --baseline-repo "$PI_BASELINE_CACHE" \
+      --artifacts "$VERIFY_ROOT/event-diff"
 }
 
 print_summary() {
@@ -225,18 +242,32 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
-  run_deterministic "summarization choke point" \
+  run_deterministic "summarization choke point adversarial self-test" \
     "$PROJECT_DIRECTORY/scripts/test-summarization-choke-point.sh" ||
     DETERMINISTIC_READY=0
 else
-  skip_deterministic "summarization choke point" "source parity ledger prerequisite failed"
+  skip_deterministic \
+    "summarization choke point adversarial self-test" \
+    "source parity ledger prerequisite failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "summarization choke point real source" \
+    "$PROJECT_DIRECTORY/scripts/check-summarization-choke-point.sh" ||
+    DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "summarization choke point real source" \
+    "summarization choke point adversarial self-test failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "deterministic FiveAM" \
     "$PROJECT_DIRECTORY/scripts/test-cl.sh" || DETERMINISTIC_READY=0
 else
-  skip_deterministic "deterministic FiveAM" "summarization choke point failed"
+  skip_deterministic \
+    "deterministic FiveAM" \
+    "summarization choke point real source failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ] && copy_isolated_tree; then
@@ -295,6 +326,24 @@ else
   skip_deterministic \
     "fixed-baseline render differential" \
     "deterministic harness prerequisite failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "fixed-baseline tool-result differential" \
+    run_tool_result_diff_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "fixed-baseline tool-result differential" \
+    "render differential prerequisite failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "fixed-baseline event differential" \
+    run_event_diff_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "fixed-baseline event differential" \
+    "tool-result differential prerequisite failed"
 fi
 
 LIVE_PROJECT="$PROJECT_DIRECTORY"

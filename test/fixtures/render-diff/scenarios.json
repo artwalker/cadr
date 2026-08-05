@@ -50,7 +50,7 @@
     {
       "id": "startup-untrusted",
       "group": "startup",
-      "coverage": ["startup-untrusted"],
+      "coverage": ["startup-untrusted", "overlay-trust-untrusted", "trust-save-untrusted"],
       "description": "Project resources exist while the current project is untrusted.",
       "setup": { "projectTrusted": false },
       "responses": [],
@@ -58,6 +58,14 @@
         { "waitForHex": "1b5b3f323032366c" },
         { "pauseMs": 750 },
         { "checkpoint": "untrusted-startup" },
+        { "sendText": "/trust" },
+        { "send": "enter" },
+        { "waitFor": "Project trust" },
+        { "checkpoint": "trust-untrusted" },
+        { "sendRepeated": { "key": "down", "count": 2 } },
+        { "send": "enter" },
+        { "waitFor": "Saved trust decision: untrusted" },
+        { "checkpoint": "trust-untrusted-saved" },
         { "send": "ctrl+d" }
       ]
     },
@@ -105,7 +113,7 @@
     {
       "id": "tools-success",
       "group": "tools",
-      "coverage": ["bash-multiline", "read-range", "write", "edit", "grep", "find", "ls"],
+      "coverage": ["bash-multiline", "read-range", "read-offset-without-limit", "write", "edit", "grep", "grep-default-path", "find", "find-default-path", "ls", "bash-long-command-tree", "overlay-tree-rich-tools"],
       "description": "Every built-in coding tool succeeds, including a multiline bash header.",
       "responses": [
         { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash", "arguments": { "command": "printf 'line-one\\n\\nline-three\\n'" } }], "stopReason": "toolUse" },
@@ -121,7 +129,15 @@
         { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find", "arguments": { "pattern": "*.txt", "path": "notes" } }], "stopReason": "toolUse" },
         { "content": [{ "type": "text", "text": "find done." }], "stopReason": "stop" },
         { "content": [{ "type": "toolCall", "name": "ls", "id": "tool-ls", "arguments": { "path": "notes" } }], "stopReason": "toolUse" },
-        { "content": [{ "type": "text", "text": "ls done." }], "stopReason": "stop" }
+        { "content": [{ "type": "text", "text": "ls done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-offset-only", "arguments": { "path": "sample.txt", "offset": 2 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "offset-only read done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "grep", "id": "tool-grep-default", "arguments": { "pattern": "needle", "glob": "alpha.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "default grep done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find-default", "arguments": { "pattern": "*.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "default find done." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-long-command", "arguments": { "command": "printf 'long command done\\n' # this command description intentionally exceeds fifty characters for tree truncation" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "long command tree done." }], "stopReason": "stop" }
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
@@ -132,6 +148,11 @@
         { "sendText": "run grep" }, { "send": "enter" }, { "waitFor": "grep done." }, { "checkpoint": "grep" },
         { "sendText": "run find" }, { "send": "enter" }, { "waitFor": "find done." }, { "checkpoint": "find" },
         { "sendText": "run ls" }, { "send": "enter" }, { "waitFor": "ls done." }, { "pauseMs": 40 }, { "checkpoint": "ls" },
+        { "sendText": "run offset-only read" }, { "send": "enter" }, { "waitFor": "offset-only read done." }, { "checkpoint": "read-offset-without-limit" },
+        { "sendText": "run grep default path" }, { "send": "enter" }, { "waitFor": "default grep done." }, { "checkpoint": "grep-default-path" },
+        { "sendText": "run find default path" }, { "send": "enter" }, { "waitFor": "default find done." }, { "checkpoint": "find-default-path" },
+        { "sendText": "run long command" }, { "send": "enter" }, { "waitFor": "long command tree done." }, { "checkpoint": "bash-long-command" },
+        { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" }, { "send": "ctrl+a" }, { "sendRepeated": { "key": "down", "count": 30 } }, { "checkpoint": "tree-rich-tools" }, { "send": "escape" }, { "pauseMs": 80 },
         { "send": "ctrl+d" }
       ]
     },
@@ -159,7 +180,7 @@
     {
       "id": "tools-significant-states",
       "group": "tools",
-      "coverage": ["bash-truncation-lines", "bash-truncation-bytes", "bash-truncation-overlong-line", "bash-empty-output", "parallel-tool-calls"],
+      "coverage": ["bash-truncation-lines", "bash-truncation-bytes", "bash-truncation-overlong-line", "bash-empty-output", "parallel-tool-calls", "tool-invalid-arguments", "grep-invalid-arguments", "find-invalid-arguments"],
       "description": "Deterministic captures for every registered output-volume and tool-batch state not covered by the ordinary success/failure scenarios.",
       "responses": [
         { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-line-limit", "arguments": { "command": "for i in $(seq 1 2001); do printf 'line-%04d\\n' \"$i\"; done" } }], "stopReason": "toolUse" },
@@ -170,6 +191,12 @@
         { "content": [{ "type": "text", "text": "overlong line observed." }], "stopReason": "stop" },
         { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-empty", "arguments": { "command": "true" } }], "stopReason": "toolUse" },
         { "content": [{ "type": "text", "text": "empty output observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-invalid-arguments", "arguments": { "path": 42 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "invalid arguments observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "grep", "id": "tool-grep-invalid-arguments", "arguments": { "pattern": 42, "path": 42 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "invalid grep arguments observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find-invalid-arguments", "arguments": { "pattern": 42, "path": 42 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "invalid find arguments observed." }], "stopReason": "stop" },
         {
           "content": [
             { "type": "toolCall", "name": "read", "id": "tool-parallel-a", "arguments": { "path": "sample.txt" } },
@@ -181,19 +208,334 @@
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "sendText": "line limit" }, { "send": "enter" }, { "waitFor": "line limit observed." }, { "checkpoint": "bash-line-limit" },
-        { "sendText": "byte limit" }, { "send": "enter" }, { "waitFor": "byte limit observed." }, { "checkpoint": "bash-byte-limit" },
-        { "sendText": "overlong line" }, { "send": "enter" }, { "waitFor": "overlong line observed." }, { "checkpoint": "bash-overlong-line" },
-        { "sendText": "empty output" }, { "send": "enter" }, { "waitFor": "empty output observed." }, { "checkpoint": "bash-empty" },
-        { "sendText": "parallel calls" }, { "send": "enter" }, { "waitFor": "parallel calls observed." }, { "checkpoint": "parallel-tool-calls" },
+        { "sendText": "line limit" }, { "send": "enter" }, { "waitFor": "line limit observed." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-line-limit" },
+        { "sendText": "byte limit" }, { "send": "enter" }, { "waitFor": "byte limit observed." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-byte-limit" },
+        { "sendText": "overlong line" }, { "send": "enter" }, { "waitFor": "overlong line observed." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-overlong-line" },
+        { "sendText": "empty output" }, { "send": "enter" }, { "waitFor": "empty output observed." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-empty" },
+        { "sendText": "invalid tool arguments" }, { "send": "enter" }, { "waitFor": "invalid arguments observed." }, { "waitForAgentSettled": true }, { "checkpoint": "tool-invalid-arguments" },
+        { "sendText": "invalid grep arguments" }, { "send": "enter" }, { "waitFor": "invalid grep arguments observed." }, { "waitForAgentSettled": true }, { "checkpoint": "grep-invalid-arguments" },
+        { "sendText": "invalid find arguments" }, { "send": "enter" }, { "waitFor": "invalid find arguments observed." }, { "waitForAgentSettled": true }, { "checkpoint": "find-invalid-arguments" },
+        { "sendText": "parallel calls" }, { "send": "enter" }, { "waitFor": "parallel calls observed." }, { "waitForAgentSettled": true }, { "checkpoint": "parallel-tool-calls" },
         { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "tools-render-branch-sweep",
+      "tier": "full",
+      "group": "tools",
+      "coverage": ["tool-call-empty-values", "read-compact-resource", "read-compact-skill", "read-truncation-lines", "read-truncation-bytes", "read-first-line-too-long", "read-error-preview-limit", "grep-render-limits", "find-render-limits", "ls-render-limits", "write-render-invalid-and-preview", "edit-multiline-diff"],
+      "description": "Real built-in tool calls mechanically exercise compact titles, truncation warnings, preview limits, invalid values, and multi-line diff rendering.",
+      "responses": [
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-branch-fixture-setup", "arguments": { "command": "mkdir -p branch-fixtures/skill branch-fixtures/find branch-fixtures/ls; printf 'resource fixture\\n' > branch-fixtures/AGENTS.md; printf 'skill fixture\\n' > branch-fixtures/skill/SKILL.md; seq 1 2001 | sed 's/^/line-/' > branch-fixtures/read-lines.txt; for i in $(seq 1 1000); do printf '%0100d\\n' \"$i\"; done > branch-fixtures/read-bytes.txt; head -c 61440 /dev/zero | tr '\\0' x > branch-fixtures/read-long-line.txt; for i in $(seq 1 30); do printf 'needle-%02d\\n' \"$i\"; printf -v n 'item-%02d.txt' \"$i\"; printf 'file-%02d\\n' \"$i\" > \"branch-fixtures/find/$n\"; printf 'entry-%02d\\n' \"$i\" > \"branch-fixtures/ls/$n\"; done > branch-fixtures/grep-many.txt; printf 'head\\nold-a\\nold-b\\ntail\\n' > branch-fixtures/diff.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "branch fixtures ready." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-empty-path", "arguments": { "path": "" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "empty read observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-empty-command", "arguments": { "command": "" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "empty bash observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-resource", "arguments": { "path": "branch-fixtures/AGENTS.md" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "resource read observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-skill", "arguments": { "path": "branch-fixtures/skill/SKILL.md" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "skill read observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-line-truncation", "arguments": { "path": "branch-fixtures/read-lines.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "line-truncated read observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-byte-truncation", "arguments": { "path": "branch-fixtures/read-bytes.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "byte-truncated read observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-first-line-truncation", "arguments": { "path": "branch-fixtures/read-long-line.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "first-line-truncated read observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "read", "id": "tool-read-multiline-error", "arguments": { "path": "missing-01\nmissing-02\nmissing-03\nmissing-04\nmissing-05\nmissing-06\nmissing-07\nmissing-08\nmissing-09\nmissing-10\nmissing-11\nmissing-12" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "multiline read error observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "grep", "id": "tool-grep-render-limit", "arguments": { "pattern": "needle", "path": "branch-fixtures", "glob": "*.txt", "limit": 2 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "limited grep observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "grep", "id": "tool-grep-render-preview", "arguments": { "pattern": "needle", "path": "branch-fixtures/grep-many.txt" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "grep preview observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find-render-limit", "arguments": { "pattern": "*.txt", "path": "branch-fixtures/find", "limit": 2 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "limited find observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find-render-preview", "arguments": { "pattern": "*.txt", "path": "branch-fixtures/find" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "find preview observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "ls", "id": "tool-ls-render-limit", "arguments": { "path": "branch-fixtures/ls", "limit": 2 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "limited ls observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "ls", "id": "tool-ls-render-preview", "arguments": { "path": "branch-fixtures/ls" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "ls preview observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "write", "id": "tool-write-invalid-content", "arguments": { "path": "branch-fixtures/invalid.txt", "content": 42 } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "invalid write observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "write", "id": "tool-write-preview", "arguments": { "path": "branch-fixtures/write-preview.txt", "content": "write-01\nwrite-02\nwrite-03\nwrite-04\nwrite-05\nwrite-06\nwrite-07\nwrite-08\nwrite-09\nwrite-10\nwrite-11\nwrite-12\n" } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "write preview observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "edit", "id": "tool-edit-multiline-diff", "arguments": { "path": "branch-fixtures/diff.txt", "edits": [{ "oldText": "old-a\nold-b", "newText": "new-a\nnew-b\nnew-c" }] } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "multiline diff observed." }], "stopReason": "stop" },
+        { "content": [{ "type": "toolCall", "name": "edit", "id": "tool-edit-insertion-diff", "arguments": { "path": "branch-fixtures/diff.txt", "edits": [{ "oldText": "tail", "newText": "tail\ninserted" }] } }], "stopReason": "toolUse" },
+        { "content": [{ "type": "text", "text": "insertion diff observed." }], "stopReason": "stop" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "prepare render branch fixtures" }, { "send": "enter" }, { "waitFor": "branch fixtures ready." },
+        { "sendText": "read empty path" }, { "send": "enter" }, { "waitFor": "empty read observed." },
+        { "sendText": "run empty bash" }, { "send": "enter" }, { "waitFor": "empty bash observed." },
+        { "sendText": "read resource" }, { "send": "enter" }, { "waitFor": "resource read observed." },
+        { "sendText": "read skill" }, { "send": "enter" }, { "waitFor": "skill read observed." },
+        { "sendText": "read line truncation" }, { "send": "enter" }, { "waitFor": "line-truncated read observed." }, { "send": "ctrl+o" }, { "pauseMs": 80 }, { "send": "ctrl+o" },
+        { "sendText": "read byte truncation" }, { "send": "enter" }, { "waitFor": "byte-truncated read observed." }, { "send": "ctrl+o" }, { "pauseMs": 80 }, { "send": "ctrl+o" },
+        { "sendText": "read first line truncation" }, { "send": "enter" }, { "waitFor": "first-line-truncated read observed." }, { "send": "ctrl+o" }, { "pauseMs": 80 }, { "send": "ctrl+o" },
+        { "sendText": "read multiline error" }, { "send": "enter" }, { "waitFor": "multiline read error observed." },
+        { "sendText": "grep with limit" }, { "send": "enter" }, { "waitFor": "limited grep observed." },
+        { "sendText": "grep preview" }, { "send": "enter" }, { "waitFor": "grep preview observed." },
+        { "sendText": "find with limit" }, { "send": "enter" }, { "waitFor": "limited find observed." },
+        { "sendText": "find preview" }, { "send": "enter" }, { "waitFor": "find preview observed." },
+        { "sendText": "ls with limit" }, { "send": "enter" }, { "waitFor": "limited ls observed." },
+        { "sendText": "ls preview" }, { "send": "enter" }, { "waitFor": "ls preview observed." },
+        { "sendText": "write invalid content" }, { "send": "enter" }, { "waitFor": "invalid write observed." },
+        { "sendText": "write preview" }, { "send": "enter" }, { "waitFor": "write preview observed." },
+        { "sendText": "edit multiline diff" }, { "send": "enter" }, { "waitFor": "multiline diff observed." },
+        { "sendText": "edit insertion diff" }, { "send": "enter" }, { "waitFor": "insertion diff observed." },
+        { "checkpoint": "tool-render-branches" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "tool-bash-abort",
+      "tier": "full",
+      "group": "tools",
+      "coverage": ["bash-tool-abort"],
+      "description": "A real model-requested bash tool is interrupted through the ordinary Escape path.",
+      "responses": [
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-abort", "arguments": { "command": "sleep 5" } }], "stopReason": "toolUse" }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "run interruptible bash tool" }, { "send": "enter" }, { "waitFor": "sleep 5" }, { "pauseMs": 100 }, { "send": "escape" },
+        { "waitFor": "Command aborted" }, { "checkpoint": "bash-tool-aborted" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "tree-entry-state-sweep",
+      "tier": "full",
+      "group": "tree-transcript-states",
+      "coverage": ["tree-entry-kinds", "transcript-entry-kinds"],
+      "description": "Seeds every public session entry kind, then traverses the production transcript and /tree filters.",
+      "setup": {
+        "persistentSession": true,
+        "seedEntries": [
+          { "type": "user", "key": "root-user", "text": "seed root request" },
+          { "type": "assistant", "key": "text-assistant", "text": "seed ordinary answer", "stopReason": "stop" },
+          { "type": "user", "key": "aborted-user", "text": "seed aborted request" },
+          { "type": "assistant", "key": "aborted-assistant", "text": "partial before abort", "stopReason": "aborted", "errorMessage": "cancelled" },
+          { "type": "user", "key": "error-user", "text": "seed error request" },
+          { "type": "assistant", "key": "error-assistant", "stopReason": "error", "errorMessage": "seed provider error" },
+          { "type": "user", "key": "empty-user", "text": "seed empty request" },
+          { "type": "assistant", "key": "empty-assistant", "stopReason": "stop" },
+          { "type": "user", "key": "tool-user", "text": "seed tool request" },
+          {
+            "type": "assistant",
+            "key": "bash-call",
+            "stopReason": "toolUse",
+            "content": [
+              { "type": "toolCall", "name": "bash", "id": "seed-bash-call", "arguments": { "command": "printf seeded" } }
+            ]
+          },
+          { "type": "toolResult", "key": "bash-result", "toolCallId": "seed-bash-call", "toolName": "bash", "text": "seeded", "isError": false },
+          {
+            "type": "assistant",
+            "key": "custom-call",
+            "stopReason": "toolUse",
+            "content": [
+              { "type": "toolCall", "name": "custom_seed_tool", "id": "seed-custom-call", "arguments": { "description": "a deliberately long custom tool argument that exceeds forty characters" } }
+            ]
+          },
+          { "type": "toolResult", "key": "custom-result", "toolCallId": "seed-custom-call", "toolName": "custom_seed_tool", "text": "custom seeded result", "isError": true },
+          { "type": "customMessage", "key": "custom-message", "customType": "seed-notice", "content": "seed custom display message", "display": true, "details": { "source": "render-diff" } },
+          { "type": "custom", "key": "custom-entry", "customType": "seed-data", "data": { "value": 7 } },
+          { "type": "compaction", "key": "compaction", "summary": "seed compaction summary", "firstKept": "tool-user", "tokensBefore": 321, "details": { "reason": "threshold" }, "fromHook": false },
+          { "type": "branchSummary", "key": "branch-summary", "from": "root-user", "summary": "seed branch summary", "details": { "reason": "branch" }, "fromHook": false },
+          { "type": "modelChange", "key": "model-change", "provider": "faux", "modelId": "faux-1" },
+          { "type": "thinkingLevelChange", "key": "thinking-change", "thinkingLevel": "high" },
+          { "type": "label", "key": "label-change", "target": "root-user", "label": "seed label" },
+          { "type": "title", "key": "title-change", "name": "Seeded render session" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "pauseMs": 500 },
+        { "checkpoint": "seeded-transcript" },
+        { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" },
+        { "send": "ctrl+a" },
+        { "sendRepeated": { "key": "down", "count": 40 } },
+        { "send": "ctrl+d" }, { "sendRepeated": { "key": "down", "count": 20 } },
+        { "send": "ctrl+t" }, { "sendRepeated": { "key": "down", "count": 20 } },
+        { "send": "ctrl+u" }, { "sendRepeated": { "key": "down", "count": 20 } },
+        { "send": "ctrl+l" },
+        { "send": "ctrl+a" }, { "sendRepeated": { "key": "down", "count": 40 } },
+        { "checkpoint": "tree-entry-states" },
+        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "config-selector-state-sweep",
+      "group": "overlays",
+      "coverage": ["config-selector-public-cli", "config-selector-global-project-states", "config-selector-scroll"],
+      "description": "The public config CLI traverses global and project resource modes, checkbox overrides, inherited resources, and a list larger than both terminal viewports.",
+      "setup": {
+        "entrypoint": "config",
+        "fixtureFiles": [
+          { "root": "agent", "path": "prompts/global-01.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-02.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-03.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-04.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-05.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-06.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-07.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-08.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-09.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-10.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-11.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-12.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-13.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-14.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-15.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-16.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-17.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-18.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-19.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-20.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-21.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-22.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-23.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-24.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-25.md", "content": "export default function () {}\n" },
+          { "root": "agent", "path": "prompts/global-26.md", "content": "export default function () {}\n" },
+          { "root": "projectConfig", "path": "prompts/project-01.md", "content": "export default function () {}\n" },
+          { "root": "projectConfig", "path": "prompts/project-02.md", "content": "export default function () {}\n" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Global Resources" },
+        { "send": "space" },
+        { "waitFor": "[ ]" },
+        { "send": "tab" },
+        { "waitFor": "Project Local Resources" },
+        { "send": "space" },
+        { "waitFor": "project unload" },
+        { "send": "space" },
+        { "waitFor": "project load" },
+        { "send": "escape" }
+      ]
+    },
+    {
+      "id": "update-notifications",
+      "group": "local-status",
+      "coverage": ["public-version-update-notification", "public-package-update-notification"],
+      "description": "The real interactive startup surfaces render version and package update notifications returned through the public controller APIs.",
+      "setup": { "updateNotifications": true, "hyperlinks": true },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Update Available" },
+        { "waitFor": "Package Updates Available" },
+        { "pauseMs": 100 },
+        { "checkpoint": "version-and-package-updates" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "update-notifications-no-hyperlinks",
+      "group": "local-status",
+      "coverage": ["public-version-update-notification-without-hyperlinks", "public-package-update-notification"],
+      "description": "The same public update surfaces render a plain-text changelog URL when terminal hyperlink capability is disabled.",
+      "setup": { "updateNotifications": true, "hyperlinks": false },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Update Available" },
+        { "waitFor": "Package Updates Available" },
+        { "pauseMs": 100 },
+        { "checkpoint": "version-and-package-updates-no-hyperlinks" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "config-selector-empty",
+      "group": "overlays",
+      "coverage": ["config-selector-empty-public-cli"],
+      "description": "The public config CLI renders its empty resource state without private component construction.",
+      "setup": { "entrypoint": "config" },
+      "responses": [],
+      "actions": [
+        { "waitFor": "No resources found" },
+        { "send": "escape" }
+      ]
+    },
+    {
+      "id": "selector-state-sweep",
+      "group": "overlays",
+      "coverage": ["overlay-model-scroll", "overlay-session-age-buckets", "overlay-settings-image-capability", "overlay-trust-saved-direct"],
+      "description": "Public selector commands traverse a long model list, every relative session-age bucket, image-capable settings, and a directly saved trust decision.",
+      "setup": {
+        "persistentSession": true,
+        "comparisonProviders": true,
+        "comparisonModelCount": 12,
+        "supportsImages": true,
+        "trustSavedDecision": { "scope": "current", "decision": true },
+        "extraSessions": [
+          { "id": "age-now", "ageSeconds": 10, "messages": [{ "role": "user", "text": "age now" }] },
+          { "id": "age-minutes", "ageSeconds": 300, "messages": [{ "role": "user", "text": "age minutes" }] },
+          { "id": "age-hours", "ageSeconds": 7200, "messages": [{ "role": "user", "text": "age hours" }] },
+          { "id": "age-days", "ageSeconds": 172800, "messages": [{ "role": "user", "text": "age days" }] },
+          { "id": "age-weeks", "ageSeconds": 1209600, "messages": [{ "role": "user", "text": "age weeks" }] },
+          { "id": "age-months", "ageSeconds": 5184000, "messages": [{ "role": "user", "text": "age months" }] }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" },
+        { "send": "tab" }, { "pauseMs": 80 }, { "sendRepeated": { "key": "down", "count": 12 } }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" },
+        { "sendRepeated": { "key": "down", "count": 7 } }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Show images" },
+        { "send": "down" }, { "pauseMs": 80 }, { "send": "down" }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "Current session: trusted" }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "selector-scoped-state-sweep",
+      "group": "overlays",
+      "coverage": ["overlay-scoped-models-unavailable-and-scroll"],
+      "description": "The public /scoped-models selector traverses a long list and selects a configured model ID that is unavailable in the live catalog.",
+      "setup": {
+        "comparisonProviders": true,
+        "comparisonModelCount": 12,
+        "enabledModelIds": ["faux/faux-1", "other/other-1", "missing/unavailable-model"]
+      },
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" },
+        { "sendRepeated": { "key": "down", "count": 2 } }, { "pauseMs": 80 },
+        { "sendRepeated": { "key": "down", "count": 10 } }, { "pauseMs": 80 },
+        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "selector-trust-inherited",
+      "group": "overlays",
+      "coverage": ["overlay-trust-saved-inherited"],
+      "description": "The public /trust selector renders an inherited parent-folder decision and its saved checkmark.",
+      "setup": {
+        "projectTrusted": true,
+        "trustSavedDecision": { "scope": "parent", "decision": true }
+      },
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "inherited from" }, { "pauseMs": 80 },
+        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
       ]
     },
     {
       "id": "overlays-core",
       "group": "overlays",
-      "coverage": ["overlay-model", "overlay-scoped-models", "overlay-session", "overlay-session-rename", "overlay-session-delete", "overlay-fork", "overlay-tree", "overlay-tree-label", "overlay-settings", "overlay-trust"],
-      "description": "Every non-auth built-in overlay opened over a nonempty transcript.",
+      "coverage": ["overlay-model", "overlay-model-scope-and-empty-filter", "overlay-scoped-models", "overlay-scoped-models-dirty-disabled-and-empty-filter", "overlay-session", "overlay-session-scope", "overlay-session-rename", "overlay-session-delete", "overlay-fork", "overlay-tree", "overlay-tree-label", "overlay-settings", "overlay-trust"],
+      "description": "Every non-auth built-in overlay opened over a nonempty transcript, including live selector scope, dirty, disabled, and empty-filter branches.",
       "setup": {
         "persistentSession": true,
         "seedMessages": [
@@ -204,9 +546,12 @@
       "responses": [],
       "actions": [
         { "waitFor": "overlay answer" },
-        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" }, { "checkpoint": "overlay-model" }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" }, { "checkpoint": "overlay-scoped-models" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" }, { "checkpoint": "overlay-model" },
+        { "send": "down" }, { "pauseMs": 50 }, { "send": "tab" }, { "pauseMs": 50 }, { "sendText": "no-model-matches-this-query" }, { "waitFor": "No matching models" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" }, { "checkpoint": "overlay-scoped-models" },
+        { "send": "enter" }, { "pauseMs": 50 }, { "send": "down" }, { "pauseMs": 50 }, { "sendText": "no-scoped-model-matches-this-query" }, { "waitFor": "No matching models" }, { "send": "escape" }, { "pauseMs": 80 },
         { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" }, { "checkpoint": "overlay-session" },
+        { "send": "tab" }, { "pauseMs": 300 }, { "send": "tab" }, { "pauseMs": 100 },
         { "send": "ctrl+r" }, { "waitFor": "Rename Session" }, { "checkpoint": "overlay-session-rename" }, { "send": "escape" }, { "pauseMs": 100 },
         { "send": "ctrl+d" }, { "waitFor": "Delete session?" }, { "checkpoint": "overlay-session-delete" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
         { "sendText": "/fork" }, { "send": "enter" }, { "waitFor": "Fork from Message" }, { "checkpoint": "overlay-fork" }, { "send": "escape" }, { "pauseMs": 80 },
@@ -220,14 +565,17 @@
     {
       "id": "overlays-auth",
       "group": "overlays",
-      "coverage": ["overlay-auth-method", "overlay-login-provider", "slash-login"],
-      "description": "Generic authentication-method and provider selector chain.",
+      "coverage": ["overlay-auth-method", "overlay-login-provider", "overlay-login-provider-mixed-types", "overlay-login-provider-scroll", "slash-login"],
+      "description": "Generic authentication-method and provider selector chain, including mixed auth-type/status rows and scrolling.",
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login" }, { "send": "enter" }, { "waitFor": "Select authentication method:" }, { "checkpoint": "auth-method-generic" },
         { "send": "enter" }, { "waitFor": "Select provider to configure:" }, { "checkpoint": "login-provider" },
-        { "send": "escape" }, { "waitForNext": "Select authentication method:" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+        { "send": "escape" }, { "waitForNext": "Select authentication method:" }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "/login render" }, { "send": "escape" }, { "send": "enter" }, { "waitForNext": "Select provider to configure:" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "/login a" }, { "send": "escape" }, { "send": "enter" }, { "waitForNext": "Select provider to configure:" }, { "sendRepeated": { "key": "down", "count": 12 } }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -409,7 +757,7 @@
       "responses": [],
       "actions": [
         { "waitFor": "third cost answer" },
-        { "sendText": "/session" }, { "send": "enter" }, { "waitFor": "Cache Re-billed:" }, { "checkpoint": "slash-session" },
+        { "sendText": "/session" }, { "send": "enter" }, { "waitFor": "Cache Re-billed:" }, { "pauseMs": 80 }, { "checkpoint": "slash-session" },
         { "sendText": "/name render name" }, { "send": "enter" }, { "waitFor": "Session name set:" }, { "checkpoint": "slash-name" },
         { "sendText": "/changelog" }, { "send": "enter" }, { "waitFor": "What's New" }, { "pauseMs": 80 }, { "checkpoint": "slash-changelog" },
         { "sendText": "/hotkeys" }, { "send": "enter" }, { "waitForNext": "Keyboard Shortcuts" }, { "pauseMs": 80 }, { "checkpoint": "slash-hotkeys" },
@@ -431,6 +779,101 @@
         { "sendText": "/import" }, { "send": "enter" }, { "waitFor": "Usage: /import" }, { "checkpoint": "slash-import" },
         { "sendText": "/new" }, { "send": "enter" }, { "waitFor": "New session started" }, { "checkpoint": "slash-new" },
         { "sendText": "/quit" }, { "send": "enter" }
+      ]
+    },
+    {
+      "id": "user-bash-state-sweep",
+      "tier": "full",
+      "group": "full-state-sweep",
+      "coverage": ["user-bash-truncation", "user-bash-expanded", "user-bash-nonzero", "user-bash-running", "user-bash-cancel"],
+      "description": "Exercises the direct user-bash component, which is distinct from model tool rendering.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "!for i in $(seq 1 400); do printf '%0200d\\n' \"$i\"; done" }, { "send": "enter" }, { "waitFor": "Output truncated. Full output:" }, { "pauseMs": 100 }, { "checkpoint": "user-bash-truncated" }, { "send": "ctrl+o" }, { "waitForNext": "Tool output: expanded" }, { "checkpoint": "user-bash-expanded" }, { "send": "ctrl+o" }, { "waitForNext": "Tool output: collapsed" },
+        { "sendText": "!printf 'before exit\\n'; exit 7" }, { "send": "enter" }, { "waitFor": "(exit 7)" }, { "pauseMs": 100 }, { "checkpoint": "user-bash-nonzero" },
+        { "sendText": "!sleep 5" }, { "send": "enter" }, { "waitFor": "Running..." }, { "pauseMs": 80 }, { "checkpoint": "user-bash-running" }, { "send": "escape" }, { "waitFor": "(cancelled)" }, { "pauseMs": 100 }, { "checkpoint": "user-bash-cancelled" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "local-status-sweep",
+      "tier": "full",
+      "group": "full-state-sweep",
+      "coverage": ["local-status-sweep"],
+      "description": "Exercises locally reachable status branches through their real keybindings and slash-command handlers.",
+      "setup": {
+        "persistentSession": true,
+        "seedMessages": [
+          { "role": "user", "text": "status question" },
+          { "role": "assistant", "text": "status answer" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "status answer" },
+        { "send": "alt+up" }, { "waitFor": "No queued messages to restore" },
+        { "send": "ctrl+p" }, { "waitFor": "Switched to" },
+        { "send": "ctrl+o" }, { "pauseMs": 120 },
+        { "send": "ctrl+o" }, { "pauseMs": 120 },
+        { "sendText": "/name" }, { "send": "enter" }, { "waitFor": "Usage: /name <name>" },
+        { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "Project trust" }, { "send": "enter" }, { "waitFor": "Saved trust decision:" },
+        { "checkpoint": "local-statuses" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "settings-state-sweep",
+      "tier": "full",
+      "group": "full-state-sweep",
+      "coverage": ["settings-state-sweep"],
+      "description": "Visits every settings row so each row label and selected-row description is rendered by the production selector.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" },
+        { "sendRepeated": { "key": "down", "count": 32, "checkpointPrefix": "settings-row" } },
+        { "checkpoint": "settings-all-rows" },
+        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "compaction-status-manual",
+      "group": "agent-states",
+      "coverage": ["compaction-manual"],
+      "description": "Fault-injects the baseline manual compaction-start event into the real interactive event consumer.",
+      "setup": { "injectedCompactionReason": "manual" },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Compacting context..." },
+        { "checkpoint": "compaction-manual" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "compaction-status-threshold",
+      "group": "agent-states",
+      "coverage": ["compaction-threshold"],
+      "description": "Fault-injects the baseline threshold compaction-start event into the real interactive event consumer.",
+      "setup": { "injectedCompactionReason": "threshold" },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Auto-compacting..." },
+        { "checkpoint": "compaction-threshold" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "compaction-status-overflow",
+      "group": "agent-states",
+      "coverage": ["compaction-overflow"],
+      "description": "Fault-injects the baseline overflow compaction-start event into the real interactive event consumer.",
+      "setup": { "injectedCompactionReason": "overflow" },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Context overflow detected," },
+        { "checkpoint": "compaction-overflow" },
+        { "send": "ctrl+d" }
       ]
     },
     {

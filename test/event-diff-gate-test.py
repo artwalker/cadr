@@ -142,6 +142,7 @@ class EventDiffGateTest(unittest.TestCase):
                 "deterministic-error",
                 "abort",
                 "manual-compaction",
+                "summarization-transient-retry",
                 "threshold-compaction",
                 "overflow-compaction",
                 "tool-failure",
@@ -162,13 +163,43 @@ class EventDiffGateTest(unittest.TestCase):
         self.assertIn("cadr-cli::run-print-mode", cadr_driver)
         self.assertIn("cadr-cli::run-rpc-mode", cadr_driver)
         self.assertIn("cadr-cli::make-json-event-renderer", cadr_driver)
+        self.assertRegex(cadr_driver, r"\(apply\s+#'cadr-ai:faux-stream")
+        self.assertNotIn("(defun aligned-faux-stream", cadr_driver)
+
+    def test_normalization_rules_reject_unknown_matrix_coordinates_globally(self):
+        fixture_dir = ROOT / "test" / "fixtures" / "event-diff"
+        manifest = json.loads((fixture_dir / "scenarios.json").read_text())
+        valid = {
+            "rules": [
+                {
+                    "scenario": "normal",
+                    "mode": "json",
+                    "side": "pi",
+                    "pointer": "/0/timestamp",
+                    "replacement": "<TIMESTAMP>",
+                    "reason": "fixed test rule",
+                }
+            ]
+        }
+        self.event_diff.validate_normalization_rules(valid, manifest)
+
+        for field, value in (
+            ("scenario", "does-not-exist"),
+            ("mode", "screen"),
+            ("side", "other"),
+        ):
+            invalid = json.loads(json.dumps(valid))
+            invalid["rules"][0][field] = value
+            with self.subTest(field=field):
+                with self.assertRaisesRegex(ValueError, field):
+                    self.event_diff.validate_normalization_rules(invalid, manifest)
 
     def test_checked_in_normalizers_are_exact_volatile_fields_only(self):
         fixture_dir = ROOT / "test" / "fixtures" / "event-diff"
         rules = json.loads((fixture_dir / "normalization-rules.json").read_text())["rules"]
         dispositions = json.loads((fixture_dir / "dispositions.json").read_text())
 
-        self.assertEqual(len(rules), 32)
+        self.assertEqual(len(rules), 40)
         self.assertEqual(dispositions["entries"], [])
         for rule in rules:
             self.assertIn(
@@ -178,6 +209,9 @@ class EventDiffGateTest(unittest.TestCase):
                     "/1/result/firstKeptEntryId",
                     "/2/result/firstKeptEntryId",
                     "/2/data/firstKeptEntryId",
+                    "/4/result/firstKeptEntryId",
+                    "/5/result/firstKeptEntryId",
+                    "/5/data/firstKeptEntryId",
                     "/10/result/firstKeptEntryId",
                     "/13/result/firstKeptEntryId",
                 },

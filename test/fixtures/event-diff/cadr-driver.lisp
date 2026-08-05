@@ -137,137 +137,6 @@
      (declare (ignore call-id arguments))
      (error "fixture tool failure"))))
 
-(defun split-faux-text (text token-size)
-  (loop for start from 0 below (length text) by (* 4 token-size)
-        collect (subseq text start
-                        (min (length text) (+ start (* 4 token-size))))))
-
-(defun aligned-faux-stream
-    (handle agent mode action token-size model context on-event options)
-  (let* ((empty-queue-p
-           (zerop (cadr-ai:faux-pending-response-count handle)))
-         (effective-options
-           (append options (list :session-id "event-diff-session")))
-         (message (cadr-ai::faux-resolve
-                   handle model context effective-options)))
-    ;; The fixed-baseline faux provider estimates usage even for its synthesized
-    ;; empty-queue error, and emits that finalized error without a preceding
-    ;; pending start event.  The production Cadr faux provider intentionally has
-    ;; a smaller test-only contract, so align that one terminal fixture here.
-    (when empty-queue-p
-      (cadr-ai::faux-with-usage
-       handle message context "event-diff-session"
-       (getf effective-options :cache-retention))
-      (cadr-ai::faux-emit on-event :error message :reason :error)
-      (return-from aligned-faux-stream message))
-    (when (member (cadr-ai:assistant-message-stop-reason message)
-                  '(:error :aborted))
-      (cadr-ai::faux-emit
-       on-event :start
-       (cadr-ai:make-assistant-message
-        :api (cadr-ai:assistant-message-api message)
-        :provider (cadr-ai:assistant-message-provider message)
-        :model (cadr-ai:assistant-message-model message)
-        :content (copy-list (cadr-ai:assistant-message-content message))
-        :usage (cadr-ai:assistant-message-usage message)
-        :stop-reason :pending
-        :error-message (cadr-ai:assistant-message-error-message message)
-        :response-id (cadr-ai:assistant-message-response-id message)
-        :timestamp (cadr-ai:assistant-message-timestamp message)))
-      (cadr-ai::faux-emit
-       on-event :error message
-       :reason (cadr-ai:assistant-message-stop-reason message))
-      (return-from aligned-faux-stream message))
-    (let ((partial
-            (cadr-ai:make-assistant-message
-             :api (cadr-ai:assistant-message-api message)
-             :provider (cadr-ai:assistant-message-provider message)
-             :model (cadr-ai:assistant-message-model message)
-             :content nil
-             :usage (cadr-ai:assistant-message-usage message)
-             :stop-reason :pending
-             :response-id (cadr-ai:assistant-message-response-id message)
-             :timestamp (cadr-ai:assistant-message-timestamp message))))
-      (cadr-ai::faux-emit on-event :start partial)
-      (loop for block in (cadr-ai:assistant-message-content message)
-            for index from 0
-            do
-            (cond
-              ((typep block 'cadr-ai:text-content)
-               (let ((partial-block
-                       (cadr-ai:make-text-content
-                        :text
-                        (if (string= action "abort")
-                            ""
-                            (cadr-ai:text-content-text block)))))
-                 (setf (cadr-ai:assistant-message-content partial)
-                       (append (cadr-ai:assistant-message-content partial)
-                               (list partial-block)))
-                 (cadr-ai::faux-emit
-                  on-event :text-start partial :content-index index)
-                 (setf (cadr-ai:text-content-text partial-block) "")
-                 (dolist (chunk
-                          (split-faux-text
-                           (cadr-ai:text-content-text block) token-size))
-                   (setf (cadr-ai:text-content-text partial-block)
-                         (concatenate
-                          'string
-                          (cadr-ai:text-content-text partial-block)
-                          chunk))
-                   (cadr-ai::faux-emit
-                    on-event :text-delta partial
-                    :content-index index :delta chunk)
-                   (when (string= action "abort")
-                     (if (eq mode :json)
-                         (cadr-agent:agent-abort agent)
-                         (loop repeat 500
-                               until (cadr-agent::agent-aborted-p agent)
-                               do (sleep 0.002)))
-                     (when (cadr-agent::agent-aborted-p agent)
-                       (let ((aborted
-                               (cadr-ai:make-assistant-message
-                                :api (cadr-ai:assistant-message-api partial)
-                                :provider (cadr-ai:assistant-message-provider partial)
-                                :model (cadr-ai:assistant-message-model partial)
-                                :content (copy-list
-                                          (cadr-ai:assistant-message-content partial))
-                                :usage (cadr-ai:assistant-message-usage partial)
-                                :stop-reason :aborted
-                                :error-message "Request was aborted"
-                                :response-id
-                                (cadr-ai:assistant-message-response-id partial)
-                                :timestamp +fixed-timestamp+)))
-                         (cadr-ai::faux-emit
-                          on-event :error aborted :reason :aborted)
-                         (return-from aligned-faux-stream aborted)))))
-                 (cadr-ai::faux-emit
-                  on-event :text-end partial :content-index index
-                  :content (cadr-ai:text-content-text block))))
-              ((typep block 'cadr-ai:tool-call)
-               (setf (cadr-ai:assistant-message-content partial)
-                     (append
-                      (cadr-ai:assistant-message-content partial)
-                      (list
-                       (cadr-ai:make-tool-call
-                        :id (cadr-ai:tool-call-id block)
-                        :name (cadr-ai:tool-call-name block)
-                        :arguments (cadr-ai:tool-call-arguments block)))))
-               (cadr-ai::faux-emit
-                on-event :tool-call-start partial :content-index index)
-               (cadr-ai::faux-emit
-                on-event :tool-call-delta partial :content-index index
-                :delta (cadr-ai::stringify-json
-                        (cadr-ai:tool-call-arguments block)))
-               (cadr-ai::faux-emit
-                on-event :tool-call-end partial :content-index index
-                :tool-call block))
-              (t
-               (error "Unsupported aligned faux content block: ~S" block))))
-      (cadr-ai::faux-emit
-       on-event :done message
-       :reason (cadr-ai:assistant-message-stop-reason message))
-      message)))
-
 (defun make-session (directory cwd scenario)
   (let ((session
           (cadr-agent:create-session
@@ -300,7 +169,9 @@
                    :context-window context-window
                    :max-tokens 16384))
             :token-min (json-get (json-get scenario "stream") "tokenSize" 4096)
-            :token-max (json-get (json-get scenario "stream") "tokenSize" 4096)))
+            :token-max (json-get (json-get scenario "stream") "tokenSize" 4096)
+            :tokens-per-second
+            (json-get (json-get scenario "stream") "tokensPerSecond" 0)))
          (session (make-session session-directory cwd scenario))
          (manager
            (cadr-cli::make-cli-extension-manager
@@ -311,16 +182,29 @@
             :mode mode))
          (host nil)
          (agent nil)
-         (token-size
-           (json-get (json-get scenario "stream") "tokenSize" 4096))
+         (stream-function nil)
          (base-stream
            (lambda (provider model context on-event &rest options)
              (declare (ignore provider))
-             (aligned-faux-stream
-              handle agent mode
-              (json-get scenario "action")
-              token-size model context on-event options))))
-    (setf host (cadr-cli::cli-extension-manager-host manager))
+             (apply
+              #'cadr-ai:faux-stream
+              handle model context
+              (lambda (event)
+                (funcall on-event event)
+                (when
+                    (and
+                     (eq mode :json)
+                     (string= (json-get scenario "action") "abort")
+                     (eq :text-delta
+                         (cadr-ai:stream-event-type event)))
+                  (cadr-agent:agent-abort agent)))
+              options))))
+    (setf host (cadr-cli::cli-extension-manager-host manager)
+          stream-function
+          (cadr-cli::make-extension-aware-stream-function
+           host
+           :stream-function base-stream
+           :session-id (cadr-agent:session-id session)))
     (configure-event-extension-host host scenario sidecar)
     (cadr-ai:faux-set-responses
      handle
@@ -342,7 +226,7 @@
       (not (null (search "compaction" (json-get scenario "action"))))
       :compaction-reserve-tokens reserve
       :compaction-keep-recent-tokens keep-recent
-      :stream-function base-stream))
+      :stream-function stream-function))
     (setf
      (cadr-agent::agent-auto-retry-p agent)
      (not (null (json-get retry "enabled" nil)))

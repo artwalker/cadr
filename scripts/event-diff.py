@@ -27,6 +27,7 @@ REQUIRED_SCENARIOS = {
     "deterministic-error",
     "abort",
     "manual-compaction",
+    "summarization-transient-retry",
     "threshold-compaction",
     "overflow-compaction",
     "tool-failure",
@@ -283,6 +284,52 @@ def validate_scenario_matrix(manifest: dict[str, Any]) -> None:
             raise ValueError(f"scenario {scenario.get('name')} must cover json and rpc")
         if not isinstance(scenario.get("prompt"), str):
             raise ValueError(f"scenario {scenario.get('name')} is missing a prompt")
+
+
+def validate_normalization_rules(
+    rules_document: dict[str, Any], manifest: dict[str, Any]
+) -> None:
+    rules = rules_document.get("rules")
+    if not isinstance(rules, list):
+        raise ValueError("normalization rules must contain a rules array")
+    matrix = {
+        scenario["name"]: set(scenario.get("modes", []))
+        for scenario in manifest["scenarios"]
+    }
+    seen: set[tuple[str, str, str, str]] = set()
+    for index, rule in enumerate(rules):
+        if not isinstance(rule, dict):
+            raise ValueError(f"normalization rule {index} must be an object")
+        scenario = rule.get("scenario")
+        mode = rule.get("mode")
+        side = rule.get("side")
+        pointer = rule.get("pointer")
+        if scenario not in matrix:
+            raise ValueError(
+                f"normalization rule {index} has unknown scenario: {scenario!r}"
+            )
+        if mode not in matrix[scenario]:
+            raise ValueError(
+                f"normalization rule {index} has unknown mode for {scenario}: {mode!r}"
+            )
+        if side not in {"pi", "cadr"}:
+            raise ValueError(
+                f"normalization rule {index} has unknown side: {side!r}"
+            )
+        if not isinstance(pointer, str) or not pointer.startswith("/"):
+            raise ValueError(
+                f"normalization rule {index} has invalid pointer: {pointer!r}"
+            )
+        if "*" in pointer or "?" in pointer:
+            raise ValueError(
+                f"normalization rule {index} pointer contains wildcard: {pointer!r}"
+            )
+        if not isinstance(rule.get("reason"), str) or not rule["reason"].strip():
+            raise ValueError(f"normalization rule {index} reason must be non-empty")
+        key = (scenario, mode, side, pointer)
+        if key in seen:
+            raise ValueError(f"duplicate normalization rule coordinate: {key}")
+        seen.add(key)
 
 
 def disposition_key(entry: dict[str, Any]) -> tuple[Any, ...]:
@@ -549,6 +596,7 @@ def execute_gate(arguments: argparse.Namespace) -> int:
     manifest = json.loads(manifest_path.read_text())
     validate_scenario_matrix(manifest)
     rules = json.loads(arguments.normalization_rules.read_text())
+    validate_normalization_rules(rules, manifest)
     dispositions = json.loads(arguments.dispositions.read_text())
     baseline_repo = arguments.baseline_repo.resolve()
     marker = baseline_repo / ".goal15-render-baseline"

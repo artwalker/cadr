@@ -34,6 +34,10 @@
         (if present-p value default))
       default))
 
+(defun json-key-present-p (object key)
+  (and (hash-table-p object)
+       (nth-value 1 (gethash key object))))
+
 (defun json-vector-list (value)
   (if (vectorp value) (coerce value 'list) nil))
 
@@ -47,6 +51,154 @@
          :test #'string=
          :key (lambda (candidate) (json-get candidate "id")))
    (error "Unknown render-diff scenario: ~A" scenario-id)))
+
+(defun fixture-root
+    (name cwd agent-directory session-directory)
+  (cond
+    ((string= name "workspace") cwd)
+    ((string= name "agent") agent-directory)
+    ((string= name "sessions") session-directory)
+    ((string= name "projectConfig")
+     (merge-pathnames ".cadr/" cwd))
+    (t (error "Unsupported render fixture root: ~A" name))))
+
+(defun safe-fixture-relative-pathname (value)
+  (let* ((path (pathname value))
+         (directory (pathname-directory path)))
+    (when
+        (or (uiop:absolute-pathname-p path)
+            (null (pathname-name path))
+            (member :up directory)
+            (member :back directory))
+      (error "Render fixture path must be a safe relative file: ~A"
+             value))
+    path))
+
+(defun materialize-fixture-files
+    (scenario cwd agent-directory session-directory)
+  (dolist
+      (spec
+       (json-vector-list
+        (json-get (json-get scenario "setup")
+                  "fixtureFiles")))
+    (let* ((root
+             (fixture-root
+              (json-get spec "root")
+              cwd agent-directory session-directory))
+           (path
+             (merge-pathnames
+              (safe-fixture-relative-pathname
+               (json-get spec "path"))
+              root)))
+      (ensure-directories-exist path)
+      (with-open-file
+          (stream path :direction :output
+                       :if-exists :supersede
+                       :if-does-not-exist :create
+                       :external-format :utf-8)
+        (write-string (json-get spec "content" "") stream))))
+  nil)
+
+(defun render-resource-snapshot
+    (scenario cwd agent-directory)
+  (let* ((setup (json-get scenario "setup"))
+         (options (json-get setup "resources")))
+    (if options
+        (cadr-cli::reload-resources
+         (cadr-cli::make-default-resource-loader
+          :cwd cwd
+          :agent-directory agent-directory
+          :project-trusted-p
+          (not (null (json-get setup "projectTrusted" t)))
+          :no-context-files-p
+          (null (json-get options "contextFiles"))
+          :no-skills-p
+          (null (json-get options "skills"))
+          :no-prompts-p
+          (null (json-get options "promptTemplates"))
+          :no-themes-p
+          (null (json-get options "themes"))))
+        (cadr-cli::make-resource-snapshot))))
+
+(defun render-initial-notices (scenario)
+  (let* ((startup
+           (json-get (json-get scenario "setup") "startup"))
+         (providers
+           (json-vector-list
+            (json-get startup "migratedProviders")))
+         (fallback (json-get startup "modelFallbackMessage"))
+         (notices nil))
+    (when providers
+      (push
+       (format nil "Migrated credentials to auth.json: ~{~A~^, ~}"
+               providers)
+       notices))
+    (when fallback
+      (push fallback notices))
+    (nreverse notices)))
+
+(defun comparison-providers-enabled-p (scenario)
+  (or
+   (not
+    (null
+     (json-get (json-get scenario "setup")
+               "comparisonProviders")))
+   (member
+    (json-get scenario "id")
+    '("overlays-core" "overlays-secondary" "local-status-sweep")
+    :test #'string=)))
+
+(defun auth-provider-enabled-p (scenario)
+  (or
+   (not
+    (null
+     (json-get (json-get scenario "setup")
+               "authProvider")))
+   (uiop:string-prefix-p
+    "overlays-auth" (json-get scenario "id"))
+   (string= "overlays-logout" (json-get scenario "id"))))
+
+(defun run-runtime-actions (agent actions)
+  (dolist (action actions)
+    (let ((type (json-get action "type")))
+      (cond
+        ((string= type "pause")
+         (sleep (/ (json-get action "milliseconds" 0) 1000d0)))
+        ((string= type "prompt")
+         (if (json-get action "background")
+             (sb-thread:make-thread
+              (lambda ()
+                (cadr-agent:agent-prompt
+                 agent (json-get action "text" "")
+                 :source :interactive))
+              :name "render-diff-runtime-prompt")
+             (cadr-agent:agent-prompt
+              agent (json-get action "text" "")
+              :source :interactive)))
+        ((string= type "steer")
+         (cadr-agent:agent-steer
+          agent (json-get action "text" "")))
+        ((string= type "followUp")
+         (cadr-agent:agent-follow-up
+          agent (json-get action "text" "")))
+        ((string= type "compact")
+         (let ((run
+                 (lambda ()
+                   (cadr-agent:compact-agent
+                    agent :force-p t
+                    :custom-instructions
+                    (json-get action "customInstructions")))))
+           (if (json-get action "background")
+               (sb-thread:make-thread
+                run :name "render-diff-runtime-compaction")
+               (funcall run))))
+        ((string= type "abort")
+         (cadr-agent:agent-abort agent))
+        ((string= type "waitForIdle")
+         (cadr-agent:agent-wait-for-idle agent))
+        (t
+         (error "Unsupported render runtime action: ~A" type)))))
+  nil)
 
 (defun stop-reason (value)
   (cond
@@ -89,10 +241,22 @@
         (write-line "ready" stream)
         (finish-output stream)))))
 
-(defun seed-message (spec index)
+(defun append-ready-marker (marker)
+  (let ((path (uiop:getenv "RENDER_DIFF_READY_PATH")))
+    (when (and path (plusp (length path)))
+      (with-open-file (stream path :direction :output
+                                  :if-exists :append
+                                  :if-does-not-exist :create)
+        (write-line marker stream)
+        (finish-output stream)))))
+
+(defun seed-message (spec index
+                     &optional
+                       (base-timestamp
+                         +fixed-timestamp+))
   (let ((role (json-get spec "role"))
         (text (json-get spec "text" ""))
-        (timestamp (+ +fixed-timestamp+ index)))
+        (timestamp (+ base-timestamp index)))
     (cond
       ((string= role "user")
        (cadr-ai:make-user-message
@@ -126,12 +290,151 @@
         :timestamp timestamp)))
       (t (error "Unsupported seed role: ~A" role)))))
 
-(defun append-seed-messages (session setup)
+(defun append-seed-messages
+    (session setup
+     &optional
+       (base-timestamp +fixed-timestamp+))
   (loop for spec in
           (json-vector-list (json-get setup "seedMessages"))
         for index from 0
         do (cadr-agent:session-append-message
-            session (seed-message spec index)))
+            session
+            (seed-message spec index base-timestamp)))
+  session)
+
+(defun seed-entry-assistant-message (spec index)
+  (let ((content
+          (cond
+            ((json-key-present-p spec "content")
+             (mapcar
+              #'response-block
+              (json-vector-list (json-get spec "content"))))
+            ((json-key-present-p spec "text")
+             (list
+              (cadr-ai:make-text-content
+               :text (json-get spec "text" ""))))
+            (t nil))))
+    (cadr-ai:make-assistant-message
+     :content content
+     :api :faux
+     :provider
+     (intern (string-upcase (json-get spec "provider" "faux"))
+             :keyword)
+     :model (json-get spec "model" "faux-1")
+     :response-model (json-get spec "responseModel")
+     :response-id (format nil "render-seed-entry-~D" index)
+     :usage (cadr-ai:make-usage)
+     :stop-reason (stop-reason (json-get spec "stopReason"))
+     :error-message (json-get spec "errorMessage")
+     :timestamp (+ +fixed-timestamp+ 100000 index))))
+
+(defun seed-entry-tool-result-message (spec index)
+  (cadr-ai:make-tool-result-message
+   :tool-call-id (json-get spec "toolCallId" "")
+   :tool-name (json-get spec "toolName" "")
+   :content
+   (list
+    (cadr-ai:make-text-content
+     :text (json-get spec "text" "")))
+   :details (json-get spec "details")
+   :added-tool-names
+   (json-vector-list (json-get spec "addedToolNames"))
+   :is-error (not (null (json-get spec "isError")))
+   :timestamp (+ +fixed-timestamp+ 100000 index)))
+
+(defun seed-entry-reference (references key)
+  (or (gethash key references)
+      (error "Unknown seed entry reference: ~A" key)))
+
+(defun append-seed-entries (session setup)
+  (let ((references (make-hash-table :test #'equal)))
+    (loop for spec in
+            (json-vector-list (json-get setup "seedEntries"))
+          for index from 0
+          for type = (json-get spec "type")
+          for key = (json-get spec "key")
+          do
+          (when key
+            (unless (and (stringp key) (plusp (length key)))
+              (error "Seed entry key must be a non-empty string"))
+            (when (gethash key references)
+              (error "Duplicate seed entry key: ~A" key)))
+          (let
+              ((id
+                 (cond
+                   ((string= type "user")
+                    (cadr-agent:session-append-message
+                     session
+                     (cadr-ai:make-user-message
+                      :content (json-get spec "text" "")
+                      :timestamp
+                      (+ +fixed-timestamp+ 100000 index))))
+                   ((string= type "assistant")
+                    (cadr-agent:session-append-message
+                     session
+                     (seed-entry-assistant-message spec index)))
+                   ((string= type "toolResult")
+                    (cadr-agent:session-append-message
+                     session
+                     (seed-entry-tool-result-message spec index)))
+                   ((string= type "compaction")
+                    (cadr-agent:session-append-compaction
+                     session
+                     (json-get spec "summary" "")
+                     nil
+                     (seed-entry-reference
+                      references (json-get spec "firstKept"))
+                     (json-get spec "tokensBefore" 0)
+                     :details (json-get spec "details")
+                     :from-hook-p
+                     (not (null (json-get spec "fromHook")))))
+                   ((string= type "branchSummary")
+                    (let
+                        ((from-id
+                           (seed-entry-reference
+                            references (json-get spec "from"))))
+                      (cadr-agent:session-branch session from-id)
+                      (cadr-agent:session-append-branch-summary
+                       session from-id
+                       (json-get spec "summary" "")
+                       :details (json-get spec "details")
+                       :from-hook-p
+                       (not (null (json-get spec "fromHook"))))))
+                   ((string= type "modelChange")
+                    (cadr-agent:session-append-model-change
+                     session
+                     (json-get spec "provider" "")
+                     (json-get spec "modelId" "")))
+                   ((string= type "thinkingLevelChange")
+                    (cadr-agent:session-append-thinking-level-change
+                     session
+                     (json-get spec "thinkingLevel" "")))
+                   ((string= type "custom")
+                    (cadr-agent:session-append-custom
+                     session
+                     (json-get spec "customType" "")
+                     (json-get spec "data")))
+                   ((string= type "customMessage")
+                    (cadr-agent:session-append-custom-message
+                     session
+                     (json-get spec "customType" "")
+                     (json-get spec "content" "")
+                     :details (json-get spec "details")
+                     :display-p
+                     (not (null (json-get spec "display")))))
+                   ((string= type "label")
+                    (cadr-agent:session-set-label
+                     session
+                     (seed-entry-reference
+                      references (json-get spec "target"))
+                     (json-get spec "label")))
+                   ((string= type "title")
+                    (cadr-agent:session-set-name
+                     session (json-get spec "name" "")))
+                   (t
+                    (error "Unsupported seed entry type: ~A" type)))))
+            (when key
+              (setf (gethash key references) id)))))
   session)
 
 (defun make-render-session (cwd session-directory scenario)
@@ -151,7 +454,23 @@
           (merge-pathnames
            "2023-11-14T22-13-20-000Z_render-session.jsonl"
            directory))
+    ;; Pi's persistent render fixture opens the current session file before
+    ;; any messages are appended.  Mirror that public state so an otherwise
+    ;; empty session still has a resumable session id at process exit.
+    (when persistent-p
+      (ensure-directories-exist (cadr-agent:session-path session))
+      (with-open-file
+          (stream (cadr-agent:session-path session)
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (cadr-agent::write-jsonl-object
+         stream
+         (cadr-agent::session-header-to-json session)))
+      (setf (cadr-agent::session-persisted-p session) t))
     (append-seed-messages session setup)
+    (append-seed-entries session setup)
     (when persistent-p
       (let ((other
               (cadr-agent:create-session
@@ -176,6 +495,59 @@
                :timestamp (1+ +fixed-timestamp+))))
           (cadr-agent:session-append-message other message))
         (setf sessions (append sessions (list other)))))
+    (loop for spec in
+            (json-vector-list
+             (json-get setup "extraSessions"))
+          for index from 0
+          for id = (json-get spec "id")
+          do
+          (unless
+              (and
+               (stringp id)
+               (plusp (length id))
+               (every
+                (lambda (character)
+                  (or (alphanumericp character)
+                      (char= character #\-)
+                      (char= character #\_)))
+                id))
+            (error "Invalid render session fixture id: ~A" id))
+          (let* ((extra-cwd
+                   (or (json-get spec "cwd")
+                       (namestring cwd)))
+                 (age-seconds
+                   (json-get spec "ageSeconds"))
+                 (timestamp
+                   (if age-seconds
+                       (- (cadr-ai::unix-milliseconds)
+                          (* age-seconds 1000))
+                       (+ +fixed-timestamp+ index 1)))
+                 (extra
+                   (cadr-agent:create-session
+                    :directory directory
+                    :cwd extra-cwd
+                    :id id
+                    :timestamp timestamp)))
+            (setf
+             (cadr-agent:session-path extra)
+             (merge-pathnames
+              (format nil
+                      "2023-11-14T22-13-20-000Z_extra-~2,'0D-~A.jsonl"
+                      index id)
+              directory))
+            (loop for message in
+                    (json-vector-list
+                     (json-get spec "messages"))
+                  for message-index from 0
+                  do
+                  (cadr-agent:session-append-message
+                   extra
+                   (seed-message
+                    message message-index timestamp)))
+            (let ((name (json-get spec "name")))
+              (when name
+                (cadr-agent:session-set-name extra name)))
+            (setf sessions (append sessions (list extra)))))
     (values session directory persistent-p sessions)))
 
 (defun stream-aborted-p (options)
@@ -269,19 +641,62 @@
      :reason (cadr-ai:assistant-message-stop-reason message))
     message))
 
-(defun render-models ()
-  (list
-   (cadr-ai:make-model
-    :id "faux-1" :name "Faux Model"
-    :provider :faux :api :faux
-    :base-url "http://localhost:0"
-    :reasoning-p t :context-window 128000
-    :max-tokens 16384)
-   (cadr-ai:make-model
-    :id "other-1" :name "Other Model"
-    :provider :other :api :openai-completions
-    :base-url "https://render.invalid/v1"
-    :context-window 64000 :max-tokens 8192)))
+(defun render-comparison-model-count (scenario)
+  (let ((count
+          (json-get
+           (json-get scenario "setup")
+           "comparisonModelCount" 1)))
+    (unless (and (integerp count) (plusp count))
+      (error "comparisonModelCount must be a positive integer: ~A"
+             count))
+    count))
+
+(defun render-models (&optional scenario)
+  (let ((count
+          (if scenario
+              (render-comparison-model-count scenario)
+              1)))
+    (cons
+     (cadr-ai:make-model
+      :id "faux-1" :name "Faux Model"
+      :provider :faux :api :faux
+      :base-url "http://localhost:0"
+      :reasoning-p t :context-window 128000
+      :max-tokens 16384)
+     (loop for ordinal from 1 to count
+           collect
+           (cadr-ai:make-model
+            :id (format nil "other-~D" ordinal)
+            :name
+            (if (= count 1)
+                "Other Model"
+                (format nil "Other Model ~D" ordinal))
+            :provider :other :api :openai-completions
+            :base-url "https://render.invalid/v1"
+            :context-window 64000 :max-tokens 8192)))))
+
+(defun render-enabled-model-ids (scenario)
+  (let ((setup (json-get scenario "setup")))
+    (if (json-key-present-p setup "enabledModelIds")
+        (json-vector-list
+         (json-get setup "enabledModelIds"))
+        '("faux/faux-1" "other/other-1"))))
+
+(defun render-trust-saved-entry (scenario cwd)
+  (let ((spec
+          (json-get
+           (json-get scenario "setup")
+           "trustSavedDecision")))
+    (when spec
+      (let* ((scope (json-get spec "scope"))
+             (path
+               (if (string= scope "parent")
+                   (cadr-cli::parent-directory cwd)
+                   cwd)))
+        (list
+         :path (cadr-cli::canonical-directory-name path)
+         :decision
+         (not (null (json-get spec "decision"))))))))
 
 (defun render-auth-options ()
   (stable-sort
@@ -520,6 +935,25 @@
              (values nil nil)))))))
 
 (defun run-scenario (scenario cwd agent-dir session-directory)
+  (materialize-fixture-files
+   scenario cwd agent-dir session-directory)
+  (when
+      (string=
+       (json-get (json-get scenario "setup")
+                 "entrypoint" "interactive")
+       "config")
+    (multiple-value-bind (handled-p status)
+        (cadr-cli::handle-package-command
+         '("config" "--approve")
+         :cwd cwd
+         :agent-directory agent-dir
+         :output *standard-output*
+         :error-output *error-output*)
+      (unless handled-p
+        (error "Cadr config entrypoint was not handled"))
+      (finish-output *standard-output*)
+      (finish-output *error-output*)
+      (uiop:quit status)))
   (multiple-value-bind
         (session session-directory persistent-p sessions)
       (make-render-session cwd session-directory scenario)
@@ -531,9 +965,13 @@
            (handle
              (cadr-ai:make-faux-provider
               :model-definitions
-              '((:id "faux-1" :name "Faux Model"
-                 :reasoning-p nil :context-window 128000
-                 :max-tokens 16384))
+              (list
+               (list :id "faux-1" :name "Faux Model"
+                     :reasoning-p
+                     (string= (json-get scenario "id")
+                              "local-status-sweep")
+                     :context-window 128000
+                     :max-tokens 16384))
               :token-min 4096 :token-max 4096))
            (event-consumer nil)
            (auth-url-consumer nil)
@@ -541,10 +979,16 @@
            (status-consumer nil)
            (extension-ui-consumer nil)
            (extension-ui-worker nil)
+           (injected-event-worker nil)
+           (runtime-action-worker nil)
            (abort-requested-p nil)
            (settings-manager
-             (cadr-cli::make-memory-settings-manager))
-           (resources (cadr-cli::make-resource-snapshot))
+             (cadr-cli::make-memory-settings-manager
+              (cadr-ai::json-object
+               "collapseChangelog" t)))
+           (resources
+             (render-resource-snapshot
+              scenario cwd agent-dir))
            (tools (render-tools cwd))
            (base-stream-function
              (lambda (provider model context on-event &rest options)
@@ -576,7 +1020,26 @@
               :on-event
               (lambda (event)
                 (when event-consumer
-                  (funcall event-consumer event))))))
+                  (funcall event-consumer event))
+                (when (eq (cadr-agent:agent-event-type event)
+                          :agent-settled)
+                  (append-ready-marker "agent-settled"))))))
+      ;; pi@74caa2649 sdk.ts:362-374 records model/thinking only for a new
+      ;; session.  Existing sessions restore their graph and append thinking
+      ;; only when the active branch has no thinking-level entry.
+      (if (cadr-agent:agent-messages agent)
+          (unless
+              (find
+               :thinking-level-change
+               (cadr-agent::session-path-entries session)
+               :key #'cadr-agent:session-entry-type)
+            (cadr-agent:session-append-thinking-level-change
+             session "high"))
+          (progn
+            (cadr-agent:session-append-model-change
+             session "faux" "faux-1")
+            (cadr-agent:session-append-thinking-level-change
+             session "high")))
       (cadr-ai:faux-set-responses
        handle
        (mapcar #'response-message
@@ -594,15 +1057,12 @@
                           "crashAfterMs"))
               (scope-line
                 (and
-                 (member
-                  (json-get scenario "id")
-                  '("overlays-core" "overlays-secondary")
-                  :test #'string=)
+                 (comparison-providers-enabled-p scenario)
                  (cadr-cli::model-scope-startup-line
                   (mapcar
                    (lambda (model)
                      (list :model model :thinking nil))
-                   (render-models))
+                   (render-models scenario))
                   (cadr-tui:get-keybindings)
                   :verbose-p nil :quiet-startup-p nil))))
           (write-ready-marker)
@@ -618,6 +1078,18 @@
                 (lambda ()
                   (error "render-diff crash sentinel"))))
              :name "render-diff-crash-trigger"))
+          (let ((setup (json-get scenario "setup")))
+            (when (json-key-present-p setup "hyperlinks")
+              (let ((capabilities
+                      (cadr-tui:get-terminal-capabilities)))
+                (cadr-tui:set-terminal-capabilities
+                 (cadr-tui:make-terminal-capabilities
+                  :images
+                  (cadr-tui:terminal-capabilities-images capabilities)
+                  :true-color-p
+                  (cadr-tui:terminal-capabilities-true-color-p capabilities)
+                  :hyperlinks-p
+                  (not (null (json-get setup "hyperlinks"))))))))
           (cadr-cli:run-tui
            (lambda (line)
              (cadr-agent:agent-prompt
@@ -629,14 +1101,69 @@
                agent cwd session-directory settings-manager
                auth-prompt-consumer status-consumer)
               line))
+           :bash-function
+           (lambda (command exclude-p)
+             (cadr-cli::record-user-bash-result
+              agent
+              (cadr-cli::execute-user-bash-for-tui
+               nil cwd command
+               :exclude-from-context-p exclude-p
+               :abort-p (lambda () abort-requested-p))))
            :set-event-consumer
-           (lambda (consumer) (setf event-consumer consumer))
+           (lambda (consumer)
+             (setf event-consumer consumer)
+             (let ((reason
+                     (json-get
+                      (json-get scenario "setup")
+                      "injectedCompactionReason")))
+               (when (and consumer reason
+                          (not injected-event-worker))
+                 (setf
+                  injected-event-worker
+                  (sb-thread:make-thread
+                   (lambda ()
+                     (sleep 0.1)
+                     (funcall
+                      consumer
+                      (cadr-agent::make-agent-event
+                       :type :compaction-start
+                       :reason (intern (string-upcase reason) :keyword))))
+                   :name "render-diff-injected-event"))))
+             (let ((actions
+                     (json-vector-list
+                      (json-get
+                       (json-get scenario "setup")
+                       "runtimeActions"))))
+               (when (and consumer actions
+                          (not runtime-action-worker))
+                 (setf
+                  runtime-action-worker
+                  (sb-thread:make-thread
+                   (lambda ()
+                     (run-runtime-actions agent actions))
+                   :name "render-diff-runtime-actions")))))
            :set-auth-url-consumer
            (lambda (consumer) (setf auth-url-consumer consumer))
            :set-auth-prompt-consumer
            (lambda (consumer) (setf auth-prompt-consumer consumer))
            :set-status-consumer
            (lambda (consumer) (setf status-consumer consumer))
+           :version-update-check-function
+           (when
+               (json-get
+                (json-get scenario "setup")
+                "updateNotifications")
+             (lambda ()
+               (let ((release (make-hash-table :test #'equal)))
+                 (cadr-ai::json-put release "version" "9.9.9")
+                 (cadr-ai::json-put release "note" "Release note")
+                 release)))
+           :package-update-check-function
+           (when
+               (json-get
+                (json-get scenario "setup")
+                "updateNotifications")
+             (lambda () '("alpha" "beta")))
            :set-extension-ui-function
            (lambda (consumer)
              (setf extension-ui-consumer consumer)
@@ -683,14 +1210,52 @@
                   (cadr-ai::content-text
                    (cadr-ai:user-message-content message)))
                 (append steering follow-up))))
-           :model-items-function #'render-models
+           :cycle-model-function
+           (lambda (direction)
+             (let* ((models (render-models scenario))
+                    (current
+                      (cadr-agent:agent-model agent))
+                    (current-index
+                      (or
+                       (position
+                        current models
+                        :test #'cadr-ai:models-equal-p)
+                       0))
+                    (offset
+                      (if (eq direction :backward)
+                          -1 1))
+                    (next
+                      (nth
+                       (mod (+ current-index offset)
+                            (length models))
+                       models)))
+               (cadr-agent:agent-set-model agent next)
+               (cadr-agent:agent-set-thinking-level
+                agent
+                (if (cadr-ai:model-reasoning-p next)
+                    :high :off))
+               (format
+                nil "Switched to ~A~A"
+                (or (cadr-ai::model-name next)
+                    (cadr-ai:model-id next))
+                (if (cadr-ai:model-reasoning-p next)
+                    " (thinking: high)"
+                    ""))))
+           :model-items-function
+           (lambda () (render-models scenario))
            :model-selector-function
            (lambda (&optional query)
-             (let ((state
+             (let* ((models (render-models scenario))
+                    (setup (json-get scenario "setup"))
+                    (state
                      (cadr-cli::make-model-selector-state
-                      :all-models (render-models)
-                      :scoped-models (render-models)
-                      :current-model (first (render-models))
+                      :all-models models
+                      :scoped-models
+                      (unless
+                          (json-key-present-p
+                           setup "enabledModelIds")
+                        models)
+                      :current-model (first models)
                       :refresh-status-message
                       "Model catalogs refreshed.")))
                (cadr-cli::model-selector-set-query
@@ -698,23 +1263,41 @@
            :scoped-models-selector-function
            (lambda ()
              (cadr-cli::make-scoped-models-selector-state
-              :all-models (render-models)
-              :enabled-ids '("faux/faux-1" "other/other-1")))
+              :all-models (render-models scenario)
+              :enabled-ids
+              (render-enabled-model-ids scenario)))
            :settings-selector-function
            (lambda ()
              (cadr-cli::make-cli-settings-selector-state
               settings-manager agent resources
-              :supports-images-p nil))
+              :supports-images-p
+              (not
+               (null
+                (json-get
+                 (json-get scenario "setup")
+                 "supportsImages")))))
            :trust-selector-function
            (lambda ()
              (cadr-cli::make-trust-selector-state
               :cwd (namestring cwd)
+              :saved-entry
+              (render-trust-saved-entry scenario cwd)
               :project-trusted-p
               (not
                (null
                 (json-get
                  (json-get scenario "setup")
                  "projectTrusted" t)))))
+           :on-trust-selected
+           (lambda (selection)
+             (when status-consumer
+               (funcall
+                status-consumer
+                (format nil
+                        "Saved trust decision: ~A. Restart cadr for this to take effect."
+                        (if (getf selection :trusted-p)
+                            "trusted"
+                            "untrusted")))))
            :fork-items-function
            (lambda ()
              (list
@@ -769,12 +1352,33 @@
            (lambda ()
              (let* ((current
                       (cadr-agent:agent-session agent))
+                    (current-model
+                      (cadr-agent:agent-model agent))
                     (empty-p
                       (null
                        (and current
-                            (cadr-agent:session-messages current)))))
+                            (cadr-agent:session-messages current))))
+                    (context-percent
+                      (* 100d0
+                         (/
+                          (cadr-agent::context-estimated-tokens
+                           (cadr-agent:agent-messages agent))
+                          (cadr-ai:model-context-window
+                           current-model)))))
                (append
                 (list
+                 :model
+                 (cadr-ai:model-id current-model)
+                 :provider
+                 (string-downcase
+                  (symbol-name
+                   (cadr-ai:model-provider current-model)))
+                 :thinking
+                 (cadr-cli::model-footer-thinking-level
+                  current-model :high)
+                 :context-window
+                 (cadr-ai:model-context-window current-model)
+                 :context-percent context-percent
                  :session-name
                  (and current
                       (cadr-agent:session-name current)))
@@ -791,20 +1395,13 @@
             (namestring (user-homedir-pathname)))
            :footer-cwd (namestring cwd)
            :available-provider-count
-           (if (or (member (json-get scenario "id")
-                           '("overlays-core" "overlays-secondary")
-                           :test #'string=)
-                   (uiop:string-prefix-p
-                    "overlays-auth"
-                    (json-get scenario "id"))
-                   (string=
-                    "overlays-logout"
-                    (json-get scenario "id")))
+           (if (or (comparison-providers-enabled-p scenario)
+                   (auth-provider-enabled-p scenario))
                2
                1)
            :context-window 128000
            :session session
-           :messages (cadr-agent:agent-messages agent)
+           :messages (cadr-cli::session-display-messages session)
            :project-trust-warning
            (cadr-cli::project-trust-warning-text
             (not
@@ -821,6 +1418,12 @@
                 (namestring (cadr-agent:session-path session)))
            :startup-compact-lines compact
            :startup-expanded-lines expanded
+           :initial-notices
+           (render-initial-notices scenario)
+           :initial-statuses
+           (let ((status
+                   (cadr-cli::session-compaction-status session)))
+             (and status (list status)))
            :alt-p nil
            :show-hardware-cursor-p nil))
         (when persistent-p

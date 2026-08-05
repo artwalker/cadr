@@ -124,6 +124,14 @@
     ],
     "tool-batch": [
       "parallel-tool-calls"
+    ],
+    "tool-validation": [
+      "tool-invalid-arguments"
+    ],
+    "agent-compaction": [
+      "compaction-manual",
+      "compaction-threshold",
+      "compaction-overflow"
     ]
   },
   "significantStates": [
@@ -189,6 +197,42 @@
       },
       "trigger": "One assistant response returns two independent read calls in the same tool batch.",
       "capture": { "scenario": "tools-significant-states", "checkpoint": "parallel-tool-calls" }
+    },
+    {
+      "id": "tool-invalid-arguments",
+      "baselineEvidence": {
+        "path": "packages/ai/src/utils/validation.ts",
+        "token": "Validation failed for tool"
+      },
+      "trigger": "A read tool call supplies a numeric path, violating the declared string schema before execution.",
+      "capture": { "scenario": "tools-significant-states", "checkpoint": "tool-invalid-arguments" }
+    },
+    {
+      "id": "compaction-manual",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/status-indicator.ts",
+        "token": "reason === \"manual\""
+      },
+      "trigger": "The deterministic event fault injector sends compaction_start with reason manual through the production interactive event consumer.",
+      "capture": { "scenario": "compaction-status-manual", "checkpoint": "compaction-manual" }
+    },
+    {
+      "id": "compaction-threshold",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/status-indicator.ts",
+        "token": "CompactionStatusReason"
+      },
+      "trigger": "The deterministic event fault injector sends compaction_start with reason threshold through the production interactive event consumer.",
+      "capture": { "scenario": "compaction-status-threshold", "checkpoint": "compaction-threshold" }
+    },
+    {
+      "id": "compaction-overflow",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/status-indicator.ts",
+        "token": "Context overflow detected, "
+      },
+      "trigger": "The deterministic event fault injector sends compaction_start with reason overflow through the production interactive event consumer.",
+      "capture": { "scenario": "compaction-status-overflow", "checkpoint": "compaction-overflow" }
     }
   ]
 }
