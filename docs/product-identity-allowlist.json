@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 350,
+  "expected_findings": 349,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -807,14 +807,6 @@
       "kind": "legacy-env",
       "token": "PI_OFFLINE",
       "line": "            \"PI_OFFLINE\": \"1\",",
-      "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "Pi",
-      "line": "                            # Pi's subscriber runs after its synchronous",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
