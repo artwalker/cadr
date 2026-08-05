@@ -1,6 +1,38 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(defclass goal17-scripted-terminal
+    (cadr-tui::virtual-terminal)
+  ((inputs :initarg :inputs
+           :accessor goal17-scripted-terminal-inputs)))
+
+(defmethod cadr-tui:terminal-read-input
+    ((terminal goal17-scripted-terminal))
+  (or (pop (goal17-scripted-terminal-inputs terminal)) ""))
+
+(test goal17-user-bash-result-is-rendered-through-the-tui
+  (let ((terminal
+          (make-instance
+           'goal17-scripted-terminal
+           :columns 80 :rows 16
+           :inputs
+           (list
+            (format nil "!render~C" #\Return)
+            (format nil "/quit~C" #\Return)))))
+    (cadr-cli::run-tui
+     (constantly nil)
+     :bash-function
+     (lambda (command exclude-p)
+       (declare (ignore command exclude-p))
+       "Output truncated. Full output: /tmp/fixed.log")
+     :model "faux"
+     :terminal terminal)
+    (is
+     (search
+      "Output truncated. Full output: /tmp/fixed.log"
+      (format nil "~{~A~^~%~}"
+              (cadr-tui:virtual-terminal-snapshot terminal))))))
+
 (test goal17-compaction-status-distinguishes-reason-and-configured-interrupt-key
   (let ((previous (cadr-tui:get-keybindings)))
     (unwind-protect

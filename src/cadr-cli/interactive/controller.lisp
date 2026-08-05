@@ -1316,7 +1316,7 @@
                               "Unknown command"))
                            (when
                                (and
-                                (eq kind :command)
+                                (member kind '(:command :bash))
                                 (stringp result)
                                 (plusp
                                  (length result)))
