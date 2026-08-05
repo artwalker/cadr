@@ -33,12 +33,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6908e6a2e6229922ea3e898eecdf3c4e54a091324d411eded57476d7a1993aef",
-          "cadr": "44e4eeea47345eb187a38e0a436bae388b72aa8cb8b734ed8594d27ebb3fbd19"
+          "pi": "b7fb8dfe4061619716195c4fd94ac10aea660a524d1c11546eff143ca71acf65",
+          "cadr": "9f847af00228963debd3a0a1b4dafe81d785777ca0c5c64a046b6e820188e0e4"
         },
         "narrow": {
-          "pi": "8f40900fdd3c26cd68a6f46bb32f2b4f7a3b6a09927c01d289e36eb142c87e0c",
-          "cadr": "959588201c6ba0793cb828e5759fb982a6d02b269361e0d3d99109613ac645fa"
+          "pi": "967da3f7d2755f4fed00e22376d385c5b0bdbe92b805b63d374b73b8a3f8d7a8",
+          "cadr": "ee612db238360be96d75fa29b469109b18a59fbc2ffcedbe60e5e5857c7c3015"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -56,12 +56,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b405eccb27cd50cdd5bd26996f54a60fe1e6d5578f17110de708b71e64ef5f4f",
-          "cadr": "c8cd53c4fd0b0b8723785fe6149411f0e93a99d4991ba92f2e1ecd100c025f34"
+          "pi": "6885c7881d8bbc0dba045fa803bd349bc6a71cc6540410a1bdc4592dff652218",
+          "cadr": "c677da41e319b6eef103929b704698cb3320fd59a18222ba9f83b48e8d7b91dc"
         },
         "narrow": {
-          "pi": "dd25d6ab6231c120ef42c2f8ab50994cf870b90c5cf21e6241eff68d5eff9306",
-          "cadr": "24d3fabe16861be534a96ac2cafabcd1156edfc463578028f8583a3620b4f0a0"
+          "pi": "eb6b2dd040532c96938ba31ba2ab4571da7d66e06637bc6edb83222de2a11c4d",
+          "cadr": "113090d6cb233c08dafbddae453dc95465bcdd481a3c7903880c3bf68a462beb"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -125,12 +125,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e640a3a95242081a1b5c9d9ccdbc9fe43469d9547357c7da3c3fa8080fc6b59f",
-          "cadr": "da8ae999daf2c7e28c2e14a06fe2e912947cf5b61659c2f75aee4baf30e16e9a"
+          "pi": "84d78cf5acf6c7eef407acfbec5e052d58c70bcb17b6a2cdf01ac085ff33ace3",
+          "cadr": "80e782c5d0cce8cfcf06fac81d80ec55c27c5f0ae9041b21499950d5a2ce5478"
         },
         "narrow": {
-          "pi": "99e2a2829b1ba3882cd041cc4d39baf241e798834c0bc6e5680eba788090eaa4",
-          "cadr": "6584229a85f04853d82ba3b8b4c004f1eedf80dd89ff267eb73c1c1cc3a6c9dc"
+          "pi": "2a558206c01552e959600997d66778549272dab9f7d438a6d57e6e1681a9dc28",
+          "cadr": "b00824fc79bafab7f0560aabe5e1b22e81def837e47bd8086c1b5b9cd37109c0"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -148,12 +148,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a9a6162669fd6246c2ee6eedb1d54c607bbbdd3e9e862b96c77bd6b69d9a2058",
-          "cadr": "b1b821e7203f1e10e0ec739d4dc4a18712f3cd5ee383c950dee2b1202feb40de"
+          "pi": "2eedcbb6a00757dae74296bec4afa4217937687ec8ad3477ec5bfc14db0871a5",
+          "cadr": "9503e5e300830e9a0b7c838ef43578f02070a9deb1ce3c8536350cf2f9d99f71"
         },
         "narrow": {
-          "pi": "cf510068f5665320e9f9f5c5b1cd48842fddfadaa8b8ac5a55988eae3fea2f93",
-          "cadr": "6f7d42a4e233a9577604c9b002232c3e3ea1d7b52478d2edbd7ba0eaf1839d97"
+          "pi": "fea877ede16c484070c18777fdf72c84bc4b3150ea674096eee5ea374fa9ff55",
+          "cadr": "79831afabe91286f5ae8c867ea993078728957d7b23c9ab62a4e317da02cfe5d"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -199,12 +199,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "30206353e0cd1ec100191b9330b97a1fee21eac8cbe314bab3f6f044b456168e",
-          "cadr": "42b9acef80e3ab6a0894b0222296167981dbfba841045d5b4247da0438830932"
+          "pi": "5d0b1a5a982d5214fae090e04c705c4cd57422e6c2c8c46cf7be30638f2b7584",
+          "cadr": "3e28f086c792e35a959dc9dbbe3b7d18bf5bc815b82a75b9384ed35125f51d1d"
         },
         "narrow": {
-          "pi": "3606d4f68c909db4730020505b6547aa188d21d9680ecfa74a31f85bf21455c1",
-          "cadr": "fbd396e6fd9089171f4e06fa6d20bc0cfde4aa721d627f7c21cfe9acdcb2d8dc"
+          "pi": "d0c698903de7d6bd867154dec116ff56fe306d84bbb55dce6b7029322d53aa58",
+          "cadr": "a2a39ff4d0beaa7ad71e71c851e22068827971c944b4b8a28edf6908327867fe"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -222,12 +222,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "43e68759f96b17c24e7c4b077a2820a766301c9c16e8ce2a5e22fec56ecfbda0",
-          "cadr": "d4ecc1c925d658c5402845b6c8d27566573ade584bf08bb9e8e71bbb2a9ec2eb"
+          "pi": "b3e77513cc65953ae886d569303bb33ecdff6d23c9f0ab76051eea65a67c58f5",
+          "cadr": "69000326429b83dbc113c5f5464559b3f2aaa9fa7b9be337963c7b29f75296bb"
         },
         "narrow": {
-          "pi": "681e5e952495e120fe93834055f10cb0b936c1799a4f07353b3fbd904624c4e3",
-          "cadr": "995d644b8dd5f22769bfa0950e55b74000dc51dbabeb8f02f1d5944f78e889f8"
+          "pi": "daf4d4b0cd8d796a5acb3b94d3dd8fd218c44d6686e455abdb7f700aa13ff6a0",
+          "cadr": "944c420d9443cd66a4486c96e502914b1bc487e59a254def2f20b2a6935c846c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -245,12 +245,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2f9bb085d918bbd7cecff5db9e2aed904ec1dc69329dbaa55e8dfbd22bc21943",
-          "cadr": "c236f466dd835bcffc31cc66cfaff13f99c21f14bce58ab60ae68cd8f801286f"
+          "pi": "7e1ce93b48be6118c662f98cad25c4dbb23a3cfce1b5b8ede46af392fa893d0f",
+          "cadr": "514432a1df696fc90a1463c987bc2594eae655a6b6ada7d0855a8627d1ed8bec"
         },
         "narrow": {
-          "pi": "dbcb3ccdacf90f22012d23e71ed1a683ef2038afda80e0c36066da3d0da5d61b",
-          "cadr": "73b955009ee2047584766cc78adc073ed0a90cd834da12146df9f2694bc05e55"
+          "pi": "85d4de59bee9d8d0e5eff7e8551e8f6fc0042d49f154026f9831daa0d345034c",
+          "cadr": "70e8ba4263c0f3df18ab82b2f3f53d3927933195dd7bcc3ceb1df484c76c07e5"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -277,8 +277,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "60325f11b4d0d4ff6eb53fa7e54437fa92b0ad8d6a73e770dc13a1158f56d0a2",
-          "cadr": "e7e36a9a4dad9c2dc987df8a39cfb524489bfbdc5be5ef5f5fa61290d509177b"
+          "pi": "e9196a0021cebe0ffb1bd48e39e3eb7ef0c2dff6c8978e1dc0850055967a2197",
+          "cadr": "aff1c0a66cd8e2cee253c5bfde9c7cc641676c79c7ead277d64c6d3715b2964d"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -319,12 +319,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cf8349b23cc15e6e5715004028850453cb55306b625a04025e7ec71ab3652ce5",
-          "cadr": "7b61208a746ce54179b3783939ab0c6e8b026bbb3c644ab034c5461e21518b9b"
+          "pi": "ae68320e6ded046730cb6caac962536cf533977fd17d68d2c23b23d2b1152220",
+          "cadr": "d30ee688ea51dbeee9e49b8f7700b8d17a55aa86f69c164222481d4ea5dd723a"
         },
         "narrow": {
-          "pi": "99758f8868819769533eb2272ff2ae41aeab348446c8858ea1fc58d18fbbc70b",
-          "cadr": "9a77bcb52d8b08111ff7643820850c1bb7a9f194ff1737b18df1eb677efa3631"
+          "pi": "bbdbed1f7b81b4cdeebdebe44e2bc1d2ec8ff22b6a2e020f49633989eeb4291d",
+          "cadr": "c8bba378b089ef54c15d20a0de50c0b3c0b07723638fb90397dc15745ebda476"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -351,8 +351,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "badeae3f965e415bd54748d949d6c1b32fa8ec6f394bc968afdd68788639898b",
-          "cadr": "d2d9969e961a8b820bfdba3c1cd08e7b65880de609a2b900bcd30420d59aab9a"
+          "pi": "e943561b227b31a2a3270e1a322fcbf228c152b248f90006c9080d74f249227a",
+          "cadr": "6f23d4f1bb3df5a299002a208e743f96dd5cb095832ec4a932cecba613f85028"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -413,12 +413,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8bf271cffc2c5e050097ecaee4b75c198f0aef55b2bafaee36e9def306ae891c",
-          "cadr": "a656e841370cd8cc8f65adea9e636aeb973f512fe3bf69b6d89400f247611a29"
+          "pi": "8d6ce0baff7ba57551320355d7d6316539b18369b8a91a98c90dddfa372ab598",
+          "cadr": "0cea4d4864f2989f7950afe2a1e98b83319d486192e23d7ece49c60a6d61a6d7"
         },
         "narrow": {
-          "pi": "b1dbcebb3d0a86cb5a61e62b51e28aedc2f0ece5a8fc49a6ab6e391e28baa7f3",
-          "cadr": "d15619469002c75bbc9563f04784914185fae55accb9c51ff526405135b9beea"
+          "pi": "d736181750808d48061c95ac6ad4c554eabb920c158a6c28925e5141860b3e6f",
+          "cadr": "892f4be88b71508166447946dc6e7251eb48f128bd3e49bfe78af81f48d0fd9b"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -436,12 +436,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5316599b57264881d495e391948954a25f789c1f7fc7631b8bf0a27627dee4b0",
-          "cadr": "a200405b0d8e5c129f9a2bcec120f38978fc920406f3889a67cb493b74785c8a"
+          "pi": "a00a1b0ac9cdc6a884a39e452e0418860875aad92fe353fd82b1462ee64af210",
+          "cadr": "8d9e3ad4d1096fdadfd6e9d0ef488f438d0d2e0cb5b91601e7478e0d28dfb7c0"
         },
         "narrow": {
-          "pi": "ff4c3d9eb66cc6594eef930a5fbd67dce331b74b6a437bb4040c2d06bd84204d",
-          "cadr": "ce45e572e97d653a77e3bb695ed67dc64cb765b77d2e45568c3b2f2c151fcb43"
+          "pi": "555543c5de6fdd733ce25d5521fb59d269d52c0a056a10448b02a42074ea26df",
+          "cadr": "550a0426a0c4f775686f300ddaaa00c8c242d04aa7e9e8fad8e99dc6341ebee5"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -463,7 +463,7 @@
           "cadr": "76e3eb6753890051d0d5c38092bd79ad32b2b410108bc170b74c5fed53f0a5ce"
         },
         "narrow": {
-          "pi": "9833079f8960c7372e83f4434c552c6cb608342ceae154cbf7e787f6f202e4da",
+          "pi": "12a4b2fb5502c47545a3dac53c72e05812a67bc7ff7d287164893efa2b001fa4",
           "cadr": "fac346c5d0f2ad50206f69b5e09aa2ba6f3305738fe363f1686fa4da8bbc61dc"
         }
       },
@@ -482,12 +482,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "be628c0217dacf416eec0a6d49a93bf72a60deac687875d0a6c6172938d49189",
-          "cadr": "19be39745c7c89f66eb0831d426a652bb7ac6703173b9e1c03b019b97afc9353"
+          "pi": "f2a3fcfb61ac1e0f7ab79e57b673e6b3c2eff749b4e115fbccd7b3e47a2a3526",
+          "cadr": "6cf20a012e4f6864b112ae32bb3fbeede7cc2933d72739577f10bc22ef76fd89"
         },
         "narrow": {
-          "pi": "0199730de210f0ec454bb72bcad567cbfc37280f353db91ae49f09ef766ce28e",
-          "cadr": "c6b080cf92bc44313ac1b3860b6565ce8578d59f5f60ae511652c336e03c3429"
+          "pi": "5f76dd12b042e2958ba626cccd3c77bc45f09e7696dc5005639746aeff5f6e40",
+          "cadr": "9ae358fbbd0229a4422679b79e61f0003c003521f0ef90fac3e7a0e2d7ac3c92"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -528,12 +528,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d729bcc4bd4b59d64d6e68993946f68a28fd5ea6ed08d44ab3c7dbdbee1d89f3",
-          "cadr": "88116d1120bb0d841030851a16bdf1f1d4ce42d72cb1ff1d8eea15f32ba5f9ff"
+          "pi": "1f8f1ee0c9ba41a0151d9c63bbcc9fd0971536dadb69bb61136937b79aa76ea4",
+          "cadr": "f1fb76897d9c0beb25244bd976794bb62410eb6346e8e8d059a5f9e330de8e7c"
         },
         "narrow": {
-          "pi": "112eb7334438b675a9ad0530e99b90e75ba04d03830145c7d7eabe7bbaea57d6",
-          "cadr": "440a56e07d11c8c185c5d3490fa22c28f56fafe1806c2f3253dc856bbd9ea125"
+          "pi": "b01a830da507a81a026f4914020693174509e4a490943a02f8b592b0f311e44c",
+          "cadr": "dbead14d9620e547ced9652fa7f54968d7fdbc87ec74cc9e69877288fda08694"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -640,8 +640,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6ccd3701bf38c018aca3f7a79786bbae63ecbdd8d0be09be5aaafc2ff232b336",
-          "cadr": "36e4226aaa1a58c780176e7cb6fbc4232d9eaed0bb1eedc0b9559d500b85b9e7"
+          "pi": "35f2244ba30f571ed40d9398df442fccf902cb6e5be2e523c06711c297b50841",
+          "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -659,12 +659,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "94387fc76f5bceb33cd44f0b81d66cd1440ed2d0a01124b10a756f7e003913d1",
-          "cadr": "04e7ab7a1ef8132cbded8f53027ff400ab9c542ff82d7bb7aa641a4d193eba5e"
+          "pi": "86da90e267d3eca5fe92f0af1ac4d7378768bb04a767d68f35d49b43005522c5",
+          "cadr": "734e7dce94e46553c2535ada1f59be081d8d3e478b9e3df3ee2b1564d268b594"
         },
         "narrow": {
-          "pi": "0a5ae1558ea589d92eac5e1e37ea9e6838138de5bc86b9cbc69123bd4cfa2b1f",
-          "cadr": "f9013c68b70dce182017eca7fb29fedf9da0ec226944f884a91c7222d079e2b3"
+          "pi": "5a49dd49d3ea1d96c4442f16fbba1fe68d44a2270de060fbcbbdd8bec54ee675",
+          "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -693,12 +693,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f74f4190b5907111a911af44e378632e24fd6fc9d66ef7ebf3bc0d9712181786",
-          "cadr": "67a408bd7ada202a5348b3a7f7c2793dc3f1bd9c31f58d89e07fedaf166519ce"
+          "pi": "cd73f18f18e857cf33dafc65eaa308bb524c92f1ff5bd62f99267167978823b8",
+          "cadr": "fd7f3e65112ef239877ba66275f0b9bdd8f5c8d39df1bcfba40a84eeee09f50a"
         },
         "narrow": {
-          "pi": "e1b4947112be7f0836a762c3f0c5c31499e50845f0b741610b8d60c37bfae8a7",
-          "cadr": "aa0aee4774b77073200d6cd8d1de96a06ab5705e860c336ce51e0414931b8cc4"
+          "pi": "f804149beaa44023a563a548dced28cd47c33fe90b951a84c1fb9d79378bc8d1",
+          "cadr": "82e2082d6f6e0a168ced2afb69003054ef90b9953ea8f72c275039ab43d55996"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -716,12 +716,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6cb1aa1676ee189ae8acac509aa7a7e0c1a565a5725d047a8a6ff2faa01fa479",
-          "cadr": "085d3539fed226be1d6d5d9a0b42b7fc65fcc146f23730eade46f9458f894b34"
+          "pi": "b0da6bc260953cadbd3bb141b593dfe9fd3cf6bc34c2354d5ae26278925ca921",
+          "cadr": "b71bc90d71e7fa8c0b4751a5b65427c50c1b08d7995ad2c9d1780db21a620414"
         },
         "narrow": {
-          "pi": "110046c6b43b5aeb58dd55b46c2cb7337f2157df855a1b751c31460ce62e488b",
-          "cadr": "e5539fec7495fe0055091cc92d577288003056de1bdeab113705a073d4c6d538"
+          "pi": "47bfdc9804a150443f9df3ecf595a79395fbd01e733667258ba6146d183eeecc",
+          "cadr": "2655a3c8d5e76a74ef2f122c9b6a67fc9ff70a33583e400064219f69a6f624d3"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -739,12 +739,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "48c79f8fcb6e3cc4f24a39b8a2ffa77ab5e4472189b83af742827799db2df895",
-          "cadr": "2b61e9b77a00e442502cb5789ebf78ec740ccfed283cc0f094666a11019693ca"
+          "pi": "857eca45e754f6b03a7a9034130947fc6440b490445f9c8a73451c5d5a57c06d",
+          "cadr": "86346062b2c7586095c1c177d5bf5098e6eff120324c5f9909220642dfc60691"
         },
         "narrow": {
-          "pi": "e1e043905e73beb8b08ede71269d05f40d1a72df4e888b33640335782ba62218",
-          "cadr": "f6aac3c285f5fceb48768cb55df13d7aaedf983c919a3c5e4d68930affc4ee7d"
+          "pi": "034716920ae783a6ba3f30bf5ecf57df0bb5f9fd8179a0fb187df679ddd00344",
+          "cadr": "79ae7c33447c06db072cc3717ea828cf4ec33609ca67534d27457f8a124dee17"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -809,12 +809,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d7acb5c6df0d4444842897d321d83a7b95502f4dee553858a60c038174cecb36",
-          "cadr": "3530e8078ff1a9e393d94009dcc56289eb9e0a365a6516310a66fb885d466031"
+          "pi": "ea9902277f22fc0351e9c9f4f513884c62994a2cb8ec698b3456c7f476a0e2cb",
+          "cadr": "f96081ae1d0697e9d33d776ca4354e6060f90bc07a4b266de7ac3fedbbbca22a"
         },
         "narrow": {
-          "pi": "4bbe3d7b924e747da52173213000f49e76cf21efc04c3b72051bde56605d9534",
-          "cadr": "962a120148d3caad8957b4e769ca1f1d51223e80f69fa887cb4e6c738d9bf630"
+          "pi": "3dce84410632ef1d5dd7d379af1092cea3170ec5afa4baf44836eeb3765fcf52",
+          "cadr": "4f416bd9d79c8f287b3fc3382f6cda7446fd40b577b6088a8adee7ded6f4b9ce"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -855,12 +855,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8e5f20f929c6c9191ebd64ce26db1587211fc8358fae3c1f0d08a1235b2d61e7",
-          "cadr": "ad934418accd22e8f06937a7a6ddc29baccdcf7062a3ca135b757ec69fa80d3d"
+          "pi": "43f1cbb1516f77db5160d4c59728a0f7ffa2380d9ff947a46fb8bb438dd90b9b",
+          "cadr": "0a89ecc446c89e4485901327d4c3d769f619fba3c33efef627d9bd0eb54602db"
         },
         "narrow": {
-          "pi": "38aa30daaca1c8d2cf2b6ceba4c75978069aa4fe4b868177f512dc3844372f2a",
-          "cadr": "1e378996c460ce5a959a2119f9b96d9b2fb5c9f2a9f97ddc21fffd3686d4d2e9"
+          "pi": "ad8f57d0fa756bae8187d29ea00af65a1f415efd53cfe9571520d0f2395bbc33",
+          "cadr": "ac77c0f0fd42a341c22d7f2dab03376fedb5d16ddf2018416251193762162620"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -887,8 +887,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "366c0472554a01c1a47618751e0b3baa7a6bcae4adf3ea44eb94130cfff2f02d",
-          "cadr": "7a066f9ff74097a53a6c4437a90b59ce3e38f71a718dad511136bb88c8f80d77"
+          "pi": "9caaf9b260f8402ac62611979f1dd7cc682f108bb697e47ba1154d0c781f711c",
+          "cadr": "facd1c516410ae3e3a421e023a531edc344b37257c0a39ede4a93e35b3cecef5"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -934,12 +934,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "967ae01136ae1f6597672e916b0826aaa7592be6a8be421c31fe7ee67c177572",
-          "cadr": "d7c1e25de67d2dbfc1d5dab12242b2a6be12eb088c286bf4eb9bc6d14f2a3b02"
+          "pi": "73f160c53d6a3d2df56130b6de30ce9d99fc9eee1f92a470b4235a122e98d91e",
+          "cadr": "2eb008773bc51ca5593dd83d5f49cbaefdd726111be8b2b52d4811b2fb7e5d3b"
         },
         "narrow": {
-          "pi": "74d03d8b50d2706b4b5d6bdd98089f1049498911f3bee4d2ca7ff17e11cff652",
-          "cadr": "4b59d9ad7ed41d78f125796f45560b07c843831b74db379a8d3c40748641fbf3"
+          "pi": "c3d749d9e7e6c1b7d755e8d62533bfd056cc4e0eeee187e2f774246121b99b43",
+          "cadr": "8a12bb772505388aba95cf34267023be6f1d1474e8d4d33223522ca836f03f93"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -980,12 +980,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "29ccce6dc854a2c05d15774420f8bf278c2630037f738ccfd6a0aac771af9298",
-          "cadr": "a81aac87b53fa9556ff525429c1dcf57bd04c1cb0749d3ac4e71fffb07cc4381"
+          "pi": "df6571213addcfa2d8c02382647f27426013a5dfe611cbc65df7504ea79ba613",
+          "cadr": "b8651ef1770f130a3fd8cd1b2827aa6a80cdaff472538e25baa38cfe15a85a8d"
         },
         "narrow": {
-          "pi": "89faa68aaecfef483047052c641f1a93482f6495bfe22f7d66807d7fdf5fa9b8",
-          "cadr": "a02eecb0b523d454275e5dc2797fdf1ff5e74b4b9a2b510c4ea81d88af9087a0"
+          "pi": "366f8f7827641c92ab0a87c75b217313a4b62f5168d9e3fc2b9b1fc508020cd8",
+          "cadr": "2425366b556c64358220c55ec0c0d422c9a82243d357ec53b24db3f7dc5183ff"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1003,12 +1003,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "57aa6cc003afea48e6454e3ca80958f8677e40f9dde64496fc7a0a6881a7e136",
-          "cadr": "e36e66c71c89f81f559ce66b8fb70643447e5e50a705f9331da255e404022ca2"
+          "pi": "34474bef0f42482f45a66b89d8472ade5089fa9289cd526e95b06294869addda",
+          "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         },
         "narrow": {
-          "pi": "f6af16c19d974c8da74cd23e7364d54d8708d85265194fabc4eb8b4448d89813",
-          "cadr": "441769affcb880bf8502033e714189c1e734d22cb353da7d85d7a4149f858a52"
+          "pi": "398fa1091cd88df1c2844aef7d2f865a42d461b5a7d7bd8876401a2b9cc017e8",
+          "cadr": "6c0dd094b964b5b6bb123590ec6d334fc9431f1573af0f01cb7e1e51615d8000"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1026,12 +1026,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "69a918ce25db25e95c2b1b86da362cbace417ad74abbca3b8afd80acf5cb1f68",
-          "cadr": "6b93ef2eb34b8d997413fdecae3bd93c873f521031af5c7a9a579041b438c36b"
+          "pi": "d412c943df5ed99bd02acfc2e0e6506a034347e7ca3992ae6e27c69edc98c550",
+          "cadr": "f4c3181b134f3dd732dfb9ac2b5bff53fc4aa5abe3bfbffcd1abaffce677cc90"
         },
         "narrow": {
-          "pi": "ad31dbafafc9c7d497ca72cd4bcc805995391f7e59bf293a8b28655316dc1a30",
-          "cadr": "333c1185b407ef3dc77af78440abe0c158d82cdf5aa37ded1c55043eff526637"
+          "pi": "3e5e215eb84f826964c17e43e8b1edcdd0604060d4abf0fd965778e65c02a933",
+          "cadr": "3211762d92614aeffe763380d81ec3b913bd372017a078f10fd663c50907ac63"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1081,8 +1081,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1a256b987bed61f5a549586416cb8b595d764c3c3618831cf6e60f3a174a5797",
-          "cadr": "11cb77091184d2266d257e60b40b0006248901ab5b951310b6a4dc84d6b11ed7"
+          "pi": "9f34acf7e6293fb3c138501f7aa153306f7ed4f617b0f36dccccc8cf810ed972",
+          "cadr": "45ab225cedec1f76534a2909386c2fd36705b55809e5de7d96a6ebc0e52a8395"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1109,8 +1109,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a27b681b6d7d730891ddeca2f9856df1036d24896601505f8f8786d5381a5f7c",
-          "cadr": "593469f0586180b025fcd5e1e16eb5376b7ec5b6be0935dc9ab008258ce5d7d5"
+          "pi": "96fda6a08b13057022530aed20cde070b8d527eea61fcb229600d7a105dfff9b",
+          "cadr": "186ea539c3ad5b07a55c73a3c05b8aa0ec048dbb9d960f7e378a43d1ddb51de8"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1137,8 +1137,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1a3718f32100aabd7a0fb10b2dc6bb8981e74abf2bbf919405d4ce0a2c297269",
-          "cadr": "c2e8fe5225a00b68e5803c7b4e62cad4701fd20bfd913673baa4fffc3d4b9416"
+          "pi": "eab3f491aee7bb33454783f27a5600f0a649054e9aeab1367345bb3026f18478",
+          "cadr": "d483cce9a8310e2223ab257ef902559998949225ea9e0d6e5d2b9e4a21e4829b"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1165,8 +1165,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "63db3549c8c4701a1acb7e9ec1576a581145e3b127b415762be421c5d41cf725",
-          "cadr": "34905ae91c6a80a4154c87fea6d62a9059eac4510155afa2ec97df6936cbe520"
+          "pi": "6f2bebde747eccbf6464e0b94f7b6c4255fe9a13115fef251b6ed3998e95151f",
+          "cadr": "1defc1d250ba2c3cdf500a9c576263eb2a7f88e742b7806e8334990db85add0a"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1193,8 +1193,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9ae46cf56fe77260687d33dcf3207b5283953a0855b9015fa926d036edc7aa42",
-          "cadr": "2c31badc6e292b36b0950b78a6bacf19aaefcbfbb8aede6c949e5d7ca6e6fd2f"
+          "pi": "ec93f570c74a1cc7d63e51fa19285adcf497bb7721fb3349549f9daa18b0ac3a",
+          "cadr": "0b297a968be1293c102270bfc8ff87a95fa8ab572e622cd4d666f156c1132aa8"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1221,8 +1221,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3bc10c8beda922d0d3947f817ead2e57bb0c38619b41177ab46ffae806a547ea",
-          "cadr": "d89d4c84f288068d4ec8ca51adde00e6fea93184ea229391fd4883800d8eb05a"
+          "pi": "e56709e42adbce49578ba671f8d1552713bfe1b4e6928d1c1a7a09b5406c9d39",
+          "cadr": "bfcf8569b741d313c628b86694e420202e1b236fa994935b2253f5da5134d020"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1249,8 +1249,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9c78aa44a4a6b9c355a800938fef86a050c156bdc9a50085c1cf7ec21bed3f50",
-          "cadr": "1c62e77fa570a7bbf0f22ba63fdd8685175503c9cc89678e8623552e9e569ac3"
+          "pi": "e50aaa63b2fa22d54aa8eb5f129ee2164c2b6dd4543ced3a9694878bffb786e1",
+          "cadr": "77f1f59e65eacfafa01867d946ff9d4db24f5027060f50dbb30edd4cb3f47696"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1277,8 +1277,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "89f44673dd20b158072a632966ac0e1ddb4cca0db1100e6ae35c0e25b676bf95",
-          "cadr": "03bc090462d1b2fef9eca9035b45036ad0ec8f60ab3045ef78a1db0a207bbba3"
+          "pi": "960ae31ede812d960659c753a7a38b246e77784f8157939fd9416678678c4c7e",
+          "cadr": "8d62c77775cbf8946f8c3269242cca6729111bed964e9da2fc03fdde4f7a38e6"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1305,8 +1305,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b106d55e7f12a9ae31a9e53b2cec9c15c9a90237e5b9fb2e37f52c378fd58259",
-          "cadr": "99f809cbd31ddb320450b7e3b73be6d661cd69da2c0935e45da5c6047dca658a"
+          "pi": "38239cd34f05fc4c7d867400224af76aac26619d7f0bd56467638fdbda0cc90a",
+          "cadr": "e15661bf791f5c7bb513015ad7999cd5196e41798a007be2696cd338f0ffa696"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1333,8 +1333,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "aa70393fb97389d50d62d58c35b94a9d7f00838e154e327eb65de6adcf69e8ac",
-          "cadr": "a0170a80763a63e4e21030606794dd684c1749d56d86b84a7c911dca856f1fda"
+          "pi": "7fd918bf286bb1465c3127c105e05d5c2fb409ff4c67c661d811dc13d4887c69",
+          "cadr": "6fa530e19a92dc9b49f8b919d257b860d0ef17a0a1e1deabf9fc2de1592684e1"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1375,12 +1375,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1275837d2a88790e004fb0de8b0b9bec41e84702c4dac4988d52df870f9e3c8c",
-          "cadr": "ac5f89e4ce12756df57a591f9e2b2c74993d174bb9f23f92cc4bdc1b62b7227e"
+          "pi": "0cc354587688d52ba8dd1df940d57345f0fc23d1c7a5ca6fe80a47a0f0b55356",
+          "cadr": "0f33a3ee5711d417e031881d23c142d6554e0fe05dd85830ad6d8041475db577"
         },
         "narrow": {
-          "pi": "5dea3f00405422d0b02e20be8936e66708e4fe0b58107d380d7ed7ddc7f0a349",
-          "cadr": "c93d285f3a27832359212c9b5069d966ef94dd3ce3cd16ad42ece4bf3b40f821"
+          "pi": "8e73627ec18f4a6c3844743d1b31da6d17bebfa3b97cac197b4fcbbe92d503d2",
+          "cadr": "5adbea3cba5916a30819c964d013fbb397385703753aed90a945867024dd4719"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1430,8 +1430,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c8485998665bfaa232d9490a531dee6ba756a16c2b656c48e12596421a6c9b7e",
-          "cadr": "7ada8d44c41dcb300f7aef06cf7801dd3fc82fd3da4fd20c0cb8530cb9205241"
+          "pi": "9eee41ebb31decb3dd88a852e55504038df52e46b1715f535ed33b4617ff0479",
+          "cadr": "ae729e0b4428d0fa2251005ad97031e18411d2f295b74a0d17664db855a2b9ef"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1477,12 +1477,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "031190712b99c1aeeb1beb00e1fb38ed4c5c78daed3ade2cc077e04b9693147b",
-          "cadr": "e2826e7e2f9a7d5126ca03ffb228a4381a867edc39dcb94e425c52700f6824ec"
+          "pi": "16bb3981851b6f6c85b608c4c39d0480489f66fb88316e9524c26f4bc824c05c",
+          "cadr": "3070c718906abadabd32fea0196344dae3fdb525cb784c2ade570ff50e27ec58"
         },
         "narrow": {
-          "pi": "7d7b88f3bd414deb247e1357faafa94efad158286c79a4e07c99f93cc8717b5a",
-          "cadr": "0c27ec4f51ddd347250213b19ef64916c6b35ddc23ea8019c320a256ef561816"
+          "pi": "ee805e5c80973f8d442ed312961c17580a2b9530ede51bda784dd51db67f9c3e",
+          "cadr": "d2e97ef90ae108a93c7fa423ba9fc2f96a92ae24f50aebd31f793636067f0af0"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1509,8 +1509,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a92561f6cf0100158f2a28d0d3f2a00a7d62600eaa157e5be39955b4541d2f6b",
-          "cadr": "657d4a8e0f37a175114002767ae35dd5abb988fed40b6e99c54ab27299a94422"
+          "pi": "0888d4c3c42d0522f42e41dddb53d7f129f59ef2254a7c8b4b83dfd75e0b4b58",
+          "cadr": "d2eb4dc5065b58336bce22823e2f50065a8d7d7d0536cd993fc8168e5cdb6664"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1537,8 +1537,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "db7433a6ff0bc9959083dfe4adfbd1a6f71ef8b9027e25888e180e7d0151e591",
-          "cadr": "b62011de328391c63e737e2daadff791decd9045da0b98c4100a19911ee45507"
+          "pi": "39010d875451233e4260d50bc253392a3abb391e0b0ee8f28184880d45e1b3b0",
+          "cadr": "b041019cf4f53fa524a0abcb3c52732f544036c3223b12959124bf1f8efb0d88"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1565,8 +1565,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d3ed2cb0dc5ac9fa61a1fc2fb4be8349971de7a9f3a30971ac26484aada5601c",
-          "cadr": "47b12af3e53915d04e454ac934330417438003585266129f8517f28649ed7aa1"
+          "pi": "0be7220ec00a99f8a0f9848dd16bdc9a55da774ba4506263516e74e17cf25e4e",
+          "cadr": "8e9d04d05c723a51ab93582b4625b0242768b51526e844b2a2545122919fb3d0"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1584,12 +1584,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "250b052b579c20bb16f3703dd0bab2c6a65b156bc78a629215d44ad59c8ed43e",
-          "cadr": "63f75742cf610337a98edad15a46f910613528a027f378d832280083d92c405a"
+          "pi": "f58cc4b9c6136afb3272a7e67ce367f504bf9d327132fb3cca9d198786cc501c",
+          "cadr": "99a55ad2fa85c790d915b26312c939b3f456db92418f9981fe06fbc388714f70"
         },
         "narrow": {
-          "pi": "c481517e77dcd35469f558e4f59f557504e364ad805b105fd5a41cfb9cb7ea7c",
-          "cadr": "b8a2a272cad0bb8aee3fa02ddee666bc1f68f764cf69beaeec56aad8ca6bcfa8"
+          "pi": "29afe5c907eff17dc5aba610eb0197c6143cbbdf003d838f60cb903a668d35b3",
+          "cadr": "1802f1edf093ba2f6e830dce668fa52b85030efa29e4e10b53703345662d69cf"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1607,12 +1607,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "769342dfb42695c3159cb72677b4f82f00e67d1acb80a720af50827858417449",
-          "cadr": "8ae5974b1e8bf0d3753ae62bbdb06a4504fe0f15ae1497f651c61e4e860b277c"
+          "pi": "51de3880de8629b7101fe85701409c34d19cdbe7c3cfd5cba1aeaa56d5e8201d",
+          "cadr": "7ba013fd0faf71c7894af8be8a4c831257b914996debd24e385289926ea4c83e"
         },
         "narrow": {
-          "pi": "75b733fc17c5c94fddeef081d15c802ca6570016292b9f9b8f8410835f69c1cf",
-          "cadr": "2ec3ea918527d0955ceae1bb10901de4b4d7a3283566affe718df3d343858101"
+          "pi": "86016d2c8e026bc6291e6adde97c0c678ed048c1784464cb71ee32b74cdd92d3",
+          "cadr": "8f06e5dcfa986d74d4e483ea4a2e351512f17182f85e24eb044ded6073c74f27"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1653,12 +1653,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2f3261da9bea9459d748c81a46c40307681cdfd1f7e5d26a349a1ae660994b29",
-          "cadr": "d716f169af85eb6b08dc3f53ea3ccfe64acb739932d3b877a3132f259a6b98b6"
+          "pi": "12084d9f24b8c581f1e58f8622597bde6a8f5ece27f64e0e1804d036976be4a5",
+          "cadr": "570c21f50a0215fffcdc963455d77c855fe66ccc92fe21b11b2e8c1958efe27a"
         },
         "narrow": {
-          "pi": "0242d08e100880d81024aab7b163a676f377438e9a5b7bdab52575676bc51c7c",
-          "cadr": "8c42a1632219fd03d6281ac0b5e063e597e5b6be164952a261ff4f4c01742128"
+          "pi": "42ecb64c67728d4105889e11aebb16738f3859d79949c1b58655e15687794479",
+          "cadr": "316904de4cd869412ca2458059d1a7c8f3c642b2e99aae04c036a326cf84e201"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1782,8 +1782,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f1adf8c0d69e5b4f57943844692462d3c0056c265e4d0cfc30df7d15dc8bcad4",
-          "cadr": "3d835b46f25b5cb65fe39550abef4da2003907822866b05107aa03eeb1443e65"
+          "pi": "fe9e8bd05066eb7a18947f90ebe9a474b4a09313ca819d3059112537d3be35e2",
+          "cadr": "e36d7570768e7c3e1cbee5b5dc74f2349f7a374933521867f1247ee8955b1b13"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1810,8 +1810,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "95b5349425bf114b3344ea15cc7e3beb46f566d6cb52f56f4d5bb0d2c4465006",
-          "cadr": "1ad9ae9099f906c3fa6e1cc9c6ef1895968a3b94c113208ac25c25840a95bb49"
+          "pi": "6e80b19e0629bd00c6bee8730d4b1fefc35e69cf660ab71c209435061e950e29",
+          "cadr": "aaf82255bada988838ca33db2395fbad5f55733d4f1a4350c0e884d2e60da673"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1838,8 +1838,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c212364b224ceecdaee5cf68b7a0391b2678677d2424e2ef89f47eb8a8a5f874",
-          "cadr": "83b94743dd6cb8d36f2ef3a4ed44057edc30c4d86aa6f59dadd12894bea4fcdc"
+          "pi": "e942dfebb2cacac33361df3f82b2da07b57266930e71f58a57976038ab9c043e",
+          "cadr": "2252e14844f83d8d7c5824aacf3c7423b8a1a87c9ba1a33dc1bf1024207221c1"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1866,8 +1866,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c29ce07a0072ab87888312e66008e4f320e9f70900672b20ba30d676e05644e5",
-          "cadr": "951da62c4abb147fbc9dd6e0ce054074a7f3ad8823166051929c723352556979"
+          "pi": "f8154a3d703c40309fec67d46e0c1f3e72c6b6d5e6ad20ddd870756456df0adc",
+          "cadr": "bbb5d0d409f2f5cf57b054d1a982f598de14b67cad68f3f5d7319ad462aade47"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1894,8 +1894,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3ce60187fc514c7c6abd8e721c9bdd807dcf680ad9198d3d9ebd42ea038f3297",
-          "cadr": "9c3e84d99e39ad69b4510aa40c3dd89d6f1fb045342970cf04cfeec61ca68913"
+          "pi": "1a2bac3555979744e487bef9fcebdb48dda62a45ac0dbd4c5d1588dd879257b1",
+          "cadr": "0b762a5b0d92913b6a1d18cd09005745ef15a251aec680c2a7b04cbb9e56c1a3"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1922,8 +1922,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c5f46f4268332990574ecc09fc70bc29727187858eee8a0d00def34ae7266e52",
-          "cadr": "fe21120601bdce4733cdd3dbd4899ffbd54b79f5207d75dbd50f84d5f45c0bab"
+          "pi": "8b8e81daaf83d4891ea3d2b24c078a521bf15f673aff52ba21ab08cdcbc7aefd",
+          "cadr": "cb98312f02eb45b895b43538a1c66296985eed7d6391eca836cf46317e2ff34c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1950,8 +1950,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f751db0835a6642f235c875396521ab80209719108cd7c1aa8a2e6fa8b8743a1",
-          "cadr": "489e7fde57af261fe6d03794571daf62656e8fe67b75aa61d5d7354f0a6bab27"
+          "pi": "3b64e74c017c0095b48cef018fc88f006c4187caeca7b0e5847c6439076f452e",
+          "cadr": "1ff4a8644688c7e9df97e16b49edef9987d10123c98abbc07ba2d10a2ed47c0b"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -1978,8 +1978,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "59b1109b6fbddae3a07253a79179136c5362c6aa15e15c66aa6c6aab9592e466",
-          "cadr": "c3c575ce8748cb312577891190436132fb69c639fb3ad56fe4e8b76bdf19066c"
+          "pi": "8d3215971a70a2d839f0986a105e74dc91a3ecba5dfda18506f35a0c4bf3c097",
+          "cadr": "0b58869f5260868be56154894f598868bbeeff94956b1ec10c3653846d640774"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2006,8 +2006,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a87e1b944138339f997de09018200fae7b70c07a0a1d117a966838a07aeb54a1",
-          "cadr": "34271bde2db79c011ad6bb64e4e8a8f78a237a50d47ef5370b21e23d834812b4"
+          "pi": "c2deb664e80417337e5010f974fb33d00c3ae074848f1006cdb1016f672afac7",
+          "cadr": "73fdb24a30f962e12dff4c3474485e09da2dcdd781264ed7182d0953a78e4aa9"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2034,8 +2034,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b34c1f362bcfe267a927ef230f2557eee4859cc226bf0c1116f82d926df3df50",
-          "cadr": "621ff25b9c31837ae7b69ecf5b70e9ec72017919f208168bd678cf291b39ee2e"
+          "pi": "150e14fc8bebd0563c48665f5dbca09e5a4c26432f20a206dcfaaf184d714c4e",
+          "cadr": "e64c4f78d1ed1eb9f1a6318a1dfef50c0e7cfbdda9b8a74438bcd354dd89e4c2"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2062,8 +2062,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ec58eb08cb4755429ca9090280b8bd6317a228e151e7de3363233ce1020971ab",
-          "cadr": "656b2afb6391b4c21848d87ca205b66986acf0d8e4369d9c5b9c5800bd0c580f"
+          "pi": "e4f983ccb413e50379f0e4f597f1c543457cd66ed05193c1b2a2f857bf50ca11",
+          "cadr": "0492c009b00bea5626857634bce5a5456b98920b49dc8d3227bea0affee61439"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2090,8 +2090,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9de515ffd9fd975c6af03f9dc418b6171bf363cd4fb5455d74a6051eb866b5ee",
-          "cadr": "46dbf0358c8883ed419b9afc9bda287e0e7caef1b61a7d2d57be49cce6b3a627"
+          "pi": "98dd32f2e8b83ce82579e93ff6d6e709e305941a7b4239957bf1dfeb7e9c909b",
+          "cadr": "d655c9d471f15d60cb330498ff295db4900e0aba0555bb3958b921dfc37c36d4"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2118,8 +2118,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5045e0599bc6e480bc76669456302cf91526b4ddfa681a2be46d205a8945a3d7",
-          "cadr": "4bbdfb1b306da4b289d6cddcbc7d4132c5f4bde83dc10041662e657fb3ed1c38"
+          "pi": "83f6fa0fb39931041c1ba755f56c0134f41a3b3c31ca460ad620b57603f914a7",
+          "cadr": "8757cfb8a0282d8b247bf6766a99cc5db0a5fa8c6e73a21774947029488b440b"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2146,8 +2146,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ac2bdff88b926f54fe4ae14375182db07f6925eccdd3091f306286b9932086e8",
-          "cadr": "f65937767e8bad87de6c7e9afe834ef4962eaa28200c6d208f0c1356015a4168"
+          "pi": "5e0064767f674b0a50c653a47ea50f491dd5ce891519a1af8d30644f312a0d5c",
+          "cadr": "76634cf294e9038a6246021f4880413588ee18a3396998d25c34f3014ffd8ecf"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2174,8 +2174,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f0a19bf475af405f3bc0c9a97df80895ba87cc17d9b88ffc40a112ceae9ea9a0",
-          "cadr": "e80d8e060ca841feb0e26046611839d9e205abc98de2b152511a8284007a5f27"
+          "pi": "50a90a75cd43d84dd357817bb73405e50dd3051be6f606652e6e5786a2d51fe9",
+          "cadr": "37169af3500a383bf05204c4e6baeda0fb1d7d83c78525d2f764eef92b61e563"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2202,8 +2202,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5739cfd5b378bdefe3873981d53f4e6c8a0b1ba2d4977f50da2f710afd02e7ba",
-          "cadr": "509de509c57c7c6995772b0ec0b45ed0300a084ad620e5b1fbef121a4398010c"
+          "pi": "f3efd688390785c57b4a799fd1b402a8c5bc68bfc73b9634ab6f562d814e888c",
+          "cadr": "9c22bf54d39019b856201016c51021145a414159524d0fcfc0c2aa02e8120502"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2230,8 +2230,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c62c4b1a08e00f44478a25cb942b110837b98ddbb87ea2d5c708a3c19571c9a3",
-          "cadr": "26bfd6989305a9022c9657e8460d259a628e5e277a2997be06a03b5af4ad0bea"
+          "pi": "29e19945eff1a10693ee2b8ec02f80b17da07c4cbe9716140126d3666dd1ad65",
+          "cadr": "86f19f3e26d27305c3f5a3c576c76901f1ad48ca16fa7141464f18a85be8d06f"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2258,8 +2258,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "021dc0d4dd3ae234b3eb2b4ebfe63504235ac42753eee1c3109f7c32939f1c9b",
-          "cadr": "6fd94c9b5077c3d98fb9dba35d93b6f57691b9b959d98cca220a34e5f7b5037d"
+          "pi": "197ca2536961b23f6e08ea5314856a8b45dc0a6bc1ecab975410c7dc57e27e24",
+          "cadr": "45860177822bf1b4c2ec159bdf6e2d7a9f54582ac521d3ab478ca9446463c7fc"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2286,8 +2286,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ee6f78b010e73c8f8db56e624c60825d530d8327cad5905c8049ea3c66e6e5c9",
-          "cadr": "9126700065406b5ddfeca243d268cb10bf618dcc98abbfda4c4cb50443c12c42"
+          "pi": "57960f7e673e98b9fa8ab71f225184566ccd2875d89f86c70182dd08ef3194af",
+          "cadr": "0e5c75093066f169ac5f74ffb63af438de5575022bbb7c16dbc39dd3d0c1ef86"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2314,8 +2314,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "76d806411260d862b9ae0b0cb19498b6a7d967763452f927c23815ed107a50bd",
-          "cadr": "b2b4d3f81872566313695e006c044c5cc13471a287bd3d07453203e625865281"
+          "pi": "fca6ee79baf58755bd3479db54619a8bc4ef039624793ae2e8f273c270703139",
+          "cadr": "09c66e5813cf8f704c26e2b13156547174077fc2bf347fa0a8ba897c46b8614d"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2342,8 +2342,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "4a6723f657070386666ae838f9539fd737ff2920a3729a99b2d25f91f4b4de5f",
-          "cadr": "7612b76b963552a1afa0f232a9083b218dfb84bda2b958e36fb9eec79efb1d6d"
+          "pi": "1a04ec7ad3f3dcee9fccc397cb435800d6b50fa46082344691404cfe59c4d4c2",
+          "cadr": "510437681c8ad7b5bd9163ee5b308addea6688bcfd41a893ec610b884d979dd1"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2370,8 +2370,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "657b8895890cc98d14525b88072b3164c4b6d09fde2cbee7a3410f7cbce5b986",
-          "cadr": "277999717a729f859f05b27019eac442c5dfdfa39d7ca17269dde86d88934b3f"
+          "pi": "39e716b9abde7989711f0dbb8bd91e3211001fea8d20d0d3be3197b84cb1f15b",
+          "cadr": "917e0d248a3433dc76fd2b0559afeeb07477a4c158cc2fc8e28d2f13747e892c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2398,8 +2398,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ebfe3a8293b97892a052977476358ce33bb57bb914f0387f612d4bec0bdba4c3",
-          "cadr": "880771bc44e0ae2188c833d3b0ae3a9d67519c02c775b49dd3d485ebfe7a131b"
+          "pi": "75f37f6c360ea24b7125a43985cc142f47aac69a0eab9edfa2338c1dddc8423f",
+          "cadr": "4264d693506936bf697ddd48efcc7f28ac2f9660c0d211a0c8b9502433bb575d"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2426,8 +2426,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e316270fa70965327d06980d71e3bf78a894e874b994f27816d325047f2edda4",
-          "cadr": "badaa0c9a4bf10a0021b558f2ed2b07b2ae70a51a241695175bf63cda3d74407"
+          "pi": "b937af567f04da32a088d85faab27fb2b1120a906d9b0806344a5d281e3717e5",
+          "cadr": "39dcd8388c78d552088498ff0e5590c313882ffc1c57264161bb7cd5ac74c1ef"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2454,8 +2454,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f05d7422647c357f3bdd09965a8421e642190585a2b2c39e4ed4a28014201f25",
-          "cadr": "06cacd5f269d9c93d6ca5fff5719a60adbef4de7bbb64c8ed6a42a3b85b54a6a"
+          "pi": "de9f82d54abe9ff426d5ed0b4a7f16e508088c9c52417b5b755769bd04940f72",
+          "cadr": "b0d5bc107f89d92a5d7c991ab1231b5c51a0130e1963ef616c178ee1cae747a8"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2482,8 +2482,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f1adf8c0d69e5b4f57943844692462d3c0056c265e4d0cfc30df7d15dc8bcad4",
-          "cadr": "3d835b46f25b5cb65fe39550abef4da2003907822866b05107aa03eeb1443e65"
+          "pi": "fe9e8bd05066eb7a18947f90ebe9a474b4a09313ca819d3059112537d3be35e2",
+          "cadr": "e36d7570768e7c3e1cbee5b5dc74f2349f7a374933521867f1247ee8955b1b13"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2510,8 +2510,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "95b5349425bf114b3344ea15cc7e3beb46f566d6cb52f56f4d5bb0d2c4465006",
-          "cadr": "1ad9ae9099f906c3fa6e1cc9c6ef1895968a3b94c113208ac25c25840a95bb49"
+          "pi": "6e80b19e0629bd00c6bee8730d4b1fefc35e69cf660ab71c209435061e950e29",
+          "cadr": "aaf82255bada988838ca33db2395fbad5f55733d4f1a4350c0e884d2e60da673"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2538,8 +2538,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c212364b224ceecdaee5cf68b7a0391b2678677d2424e2ef89f47eb8a8a5f874",
-          "cadr": "83b94743dd6cb8d36f2ef3a4ed44057edc30c4d86aa6f59dadd12894bea4fcdc"
+          "pi": "e942dfebb2cacac33361df3f82b2da07b57266930e71f58a57976038ab9c043e",
+          "cadr": "2252e14844f83d8d7c5824aacf3c7423b8a1a87c9ba1a33dc1bf1024207221c1"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2566,8 +2566,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c29ce07a0072ab87888312e66008e4f320e9f70900672b20ba30d676e05644e5",
-          "cadr": "951da62c4abb147fbc9dd6e0ce054074a7f3ad8823166051929c723352556979"
+          "pi": "f8154a3d703c40309fec67d46e0c1f3e72c6b6d5e6ad20ddd870756456df0adc",
+          "cadr": "bbb5d0d409f2f5cf57b054d1a982f598de14b67cad68f3f5d7319ad462aade47"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2594,8 +2594,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3ce60187fc514c7c6abd8e721c9bdd807dcf680ad9198d3d9ebd42ea038f3297",
-          "cadr": "9c3e84d99e39ad69b4510aa40c3dd89d6f1fb045342970cf04cfeec61ca68913"
+          "pi": "1a2bac3555979744e487bef9fcebdb48dda62a45ac0dbd4c5d1588dd879257b1",
+          "cadr": "0b762a5b0d92913b6a1d18cd09005745ef15a251aec680c2a7b04cbb9e56c1a3"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2622,8 +2622,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c5f46f4268332990574ecc09fc70bc29727187858eee8a0d00def34ae7266e52",
-          "cadr": "fe21120601bdce4733cdd3dbd4899ffbd54b79f5207d75dbd50f84d5f45c0bab"
+          "pi": "8b8e81daaf83d4891ea3d2b24c078a521bf15f673aff52ba21ab08cdcbc7aefd",
+          "cadr": "cb98312f02eb45b895b43538a1c66296985eed7d6391eca836cf46317e2ff34c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2650,8 +2650,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f751db0835a6642f235c875396521ab80209719108cd7c1aa8a2e6fa8b8743a1",
-          "cadr": "489e7fde57af261fe6d03794571daf62656e8fe67b75aa61d5d7354f0a6bab27"
+          "pi": "3b64e74c017c0095b48cef018fc88f006c4187caeca7b0e5847c6439076f452e",
+          "cadr": "1ff4a8644688c7e9df97e16b49edef9987d10123c98abbc07ba2d10a2ed47c0b"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2669,12 +2669,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "566372e70224015811539ce7d7bf6d01fbd90aefac6386a8d760402e6d0034a2",
-          "cadr": "88cef79f654a4f9574cc0d299c940e1746c03bb645f1fd26566c556e9d529b12"
+          "pi": "4e0754819cb04669e5ec16c71ec73a256dbd2d97d56880d8a1e2fff87a89ccf8",
+          "cadr": "ef54ada47d200bc29e3c0cab515908cd70e6b0b915d6b824ec6f83acbf99a3e9"
         },
         "narrow": {
-          "pi": "f6358753477a7f5ad0ee47572cc36f19bf9e8222a1ff2f480afa4d5a0d5be918",
-          "cadr": "8750ee4447248a74252c0edfaa6c79b31f0c0dca69658d31f01716469e095829"
+          "pi": "1bdca2b72e67988e8342c9a7d82f46508c1826aa59af2c4834c8a685167c8ba5",
+          "cadr": "b78b051fbcb7b68f2a8825f7c01e6d5e7f5c4b378cdae52ccac93a18685b30b1"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2738,12 +2738,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "594ca3d392479b51cf6bb8e3c8a6ea1b17ffed80657d1f23018da7767b811913",
-          "cadr": "d3cc299057a55739e80b95e4a1f437a62edef2559cb8c22e3af5c4eed1574b77"
+          "pi": "926bf6e6368c4549d4209ac845e411c5dbb2ed06a36ba482c97b54d8e9684e87",
+          "cadr": "befb9ebee157c68f1ae67cefbc7f0e45b336710a9dbf375d093655e4cd1d637a"
         },
         "narrow": {
-          "pi": "1a4df16bc8ac69b391ed58423554e2d6e62fb9a1b7006360d847b8e19d81563a",
-          "cadr": "4c4a94c6595ae9cfbe5b56a227a29eb4b0b1e7a8b4ccc4452f2db09d4dbc0806"
+          "pi": "b6f479a5a1edc5c6c3361826d7e64d633d18b56923747cff4b01d986c35cf88b",
+          "cadr": "5a996bd2e7cbb719646df5d271ecd7c09bb6e2cef260adc6792353f70b1bc853"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2784,12 +2784,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "68ecf9eaefec0b7008741e6f9d559cf04558e00a4d51aa20e9ecb0ab55584667",
-          "cadr": "98d5932d442113a28e9ece5f997a95a5cf3333822a95a8eb8accbd396b70436a"
+          "pi": "e018983d7d430ae73456ed50765ac62dbab16032cd66f97a8f502593bfce44bc",
+          "cadr": "f6c0786964dd18b98f1c7caf451bd0b47ba0bf3f8639ddd7c9fe26a51d1177a6"
         },
         "narrow": {
-          "pi": "8ed82098726b052fd9d6d2f5f2bee609deb72e350ce2dd7b9402ebc5b304e4a3",
-          "cadr": "486cedbbf5465cc7113cd994d54f45a6bf532871621a786b37956fa2b853aeb0"
+          "pi": "f08f699d936795eb16228441f00c1dde1cc933fc37b9f3f460e324426dc69493",
+          "cadr": "cc397dbda65c784f763bd041dbe9136047866fd1cebb0133d1e524bb094ef946"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2807,12 +2807,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "628ff0754da1f96726ae249e2d9b855b11af7aee644dae1ca3ec9cacdc29a724",
-          "cadr": "932d8c0c36cddd73ead766cb3ff4df58416eef5ba36b7553bc87a4f513b309f4"
+          "pi": "f76f9be1c7f0c72ccba0439deb2bf0da57026a7fdc7818d10caf27daea723e0b",
+          "cadr": "41dd44f23f28b8d0ee972da12f23d4855675873f6b2269406ea8e5b642ec8a59"
         },
         "narrow": {
-          "pi": "8fa4af8a0636bbd826b05479ce1c3851e625314cd2f43df79040ed51f476450d",
-          "cadr": "369f53d5bf3d303c0fca35b56da77c118257c737a0fbf6f2d1de930fcba45fb3"
+          "pi": "c39002f1f8016683b2033d8287f210175b8a40f65028f46ff9cd9e19e5ed8e80",
+          "cadr": "9f05aa4567f01914721add5d9273de4261564a1e49eb9be38d67c6d0ea06b929"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2830,12 +2830,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "88025e0e13c1b75f1b753513dd9024af25913b856e0fc9236d9cc836bb8236c8",
-          "cadr": "572962a3f140f54048bbf0d9e06f08cf91f0473024860d6442272acea0965790"
+          "pi": "bef8480e655ec40e60b085a28d96e55325bd9a9d6908243ce3cdae18b21eba98",
+          "cadr": "314f9630978ba54884a8e6b0f6b67213d3fd4031a0a8fa9c012374620fa5520f"
         },
         "narrow": {
-          "pi": "c68a7091508c5b3c71ead412d601503d76d43f21cf3fe4b0e417a12bd2e7c965",
-          "cadr": "7d73a2df6c6ec94771270a8b450b7cb355fe5e74fff6d359a4fdf0e14ec1bf30"
+          "pi": "5de28f71c45e4fa8640576f1a1ce42eb63406f2c31301b51b52f9d41d99da19c",
+          "cadr": "b3db865eeab7a72f9af8b966e4bab74e2e2f9460d92f8fd42d94a26d983446ae"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2853,12 +2853,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "31a25e6f805c48cc6e9bb1088a82ccd0e2dc80f5dccc3ecd24351ea6c704283f",
-          "cadr": "d7f4044b7d26bc04f80e83a2a52f720cce611bddc04af154353b1f1920f5e6c3"
+          "pi": "ee78ba7a0ca529be2a8fe78dab369e6254da9f15cd6f401c31080373bd9d81f5",
+          "cadr": "cf76a8347e102626195d7a285bf5d9d2186822eba916254dcdf1ab8fcb132779"
         },
         "narrow": {
-          "pi": "43d631b736fd71daa2718c18199f3c0ee719b30a8a46c33a3c04a909444ab992",
-          "cadr": "03bff111a951e8273714b68c34a43ecdafc58f6d3bf01a1243186a100326d98c"
+          "pi": "e4eadeddf9c6acf7c27e1381f1d4ee5f855f4020031da06395ffa416d3c3c2c9",
+          "cadr": "b8c56e6cbc2d8bcc352fdbff5c4c8792d68274bdaac0eedd32ae71e8f81cc922"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2899,12 +2899,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7cfa0a4692527bc3fd8fdf2c504b55b7d925e190987b4f4136374b86518c1c11",
-          "cadr": "03c0ec6d0b8984d69949e9464961971f194120aca78d798c0ebb0651ca7369d1"
+          "pi": "c380899449ace2f29ab3c06b8aa2eb33f8a9202718e5fe158f18341f8eeac920",
+          "cadr": "952c1a4418e3b4e5306355d1ea248486e1c797031ae534b962d8982ebc9a0d21"
         },
         "narrow": {
-          "pi": "6430bda826774452563dd83c0f09ba11232b998d2c3952ebe488b1ec7797894a",
-          "cadr": "b2dce4a87fec8da9663a5bea853e9e93e4ede51f0e961b05212f99dd24365b3e"
+          "pi": "412b2f7c788363c5c240987dda892fe49efbc79bc9804a2720b02e07c6a6d911",
+          "cadr": "bb749ec49824fecbe63d93e967703e15ef0ae649f3884ceee49cfeb2628b444d"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -2931,8 +2931,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e4c0d83ecdd81c3dd3c0a43c84fd92afc5604b4d89e7510d8f56fd15f00de92b",
-          "cadr": "b599e01d5ca236e9bfed1c55d8bb147accc6378045372b3c450995ccdb94c09d"
+          "pi": "c0618eda179992c1d183270a02cde378f7e99589675b261d2681c330925bb878",
+          "cadr": "0d98737d79026419500ece0eeea277d9b9635333306837e762ab63c3b7f011f4"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3020,8 +3020,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f0e8e58d4a4eca93a2d161c43c6c102a1675874fa2df3e55b159d42f3496ea95",
-          "cadr": "0f4484b405b70dc973ab34dfb6e34f5c124048e80ea32fbfe096f901900477bc"
+          "pi": "27cf91c5b28abe4cb127a5e5e2192a59c41633afaf14e7cfb0024f63cd6dc3c1",
+          "cadr": "346fc45d377dd77e940c568e5a8351eec27fd20d7bc2cfead42f04b9e026f29c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3061,12 +3061,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a07319e524b17ce9e28c50000b3486920644f3cdf581c648d795f15a84d4fad5",
-          "cadr": "d8d06cc17173319edcb74b5e2622e2621a670cf609e5959e79d0e3da73bc25ba"
+          "pi": "bc1406f618e9132d1d0bac4adc3b4a9e352e317a7673fa7e7eaf92c998b4c3e4",
+          "cadr": "8dd2348a4515147df5632a022fad2ac3988a55f6832f461dc11ad7742ad008ff"
         },
         "narrow": {
-          "pi": "0e04c0aaf082bdd3e67f948c94ae38b1eb6b07dfbeb8b9461b2e914e5ba360db",
-          "cadr": "fc3f011661d3867942edb9331eeac4d7f4b81fefdc8e9fd6e43e9479898132bc"
+          "pi": "2aca861ac3450e316454a411f60b81ff802a491edf7538b5bec7f571a404f371",
+          "cadr": "1a9c1b3cc2570c205f617e92dedbcc824c0da21588fb4fc05587128383071d40"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3093,8 +3093,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b544499d3f6ba242900e9ae93b37c86eae55789d3344839790c3ea859a45ccfc",
-          "cadr": "b11d24f2e148f088fc6741db03a9a32de763dbcde9c80dd93812f82862c08d5a"
+          "pi": "f3f853784de1f38950b4ea4676eaf870201d0d7627392eeb518dfe0f3a8cbcd7",
+          "cadr": "a28ff4f8f5cc94d14a2c265e0cfbf6fce8d4f2fb9d2340cd7156e84d2a4ab4a4"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3112,12 +3112,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c5017ca7248d06378b5fae3c044e32f8a9fdc86d902244ab67a1d951fc5894e9",
-          "cadr": "40d2f8be6c59feb12822e68cc5051da945899a7d90f1069efa43a727c6defc65"
+          "pi": "a6004ac8006d9b2eb104dbeec89ed2c0a9fd4c78ecbe41d4e9e41f5ffbf981f7",
+          "cadr": "16f2db151ae1b831c8965767fb4a67eaee9d101b587bdad88c2376a6ddde8815"
         },
         "narrow": {
-          "pi": "4553aa62e0004702735ba87815f666b05b4ed950fb8080bf2db710b95e99b131",
-          "cadr": "1a9397d525a5ba9fdcc30b7ca21431afd7a689af6d405620573b0410ddc58d47"
+          "pi": "1293ceeaa2427ae7aeada4a4740d6c25944b1bece497f66a53c8567d84e6b992",
+          "cadr": "305271c547935b0e3c05b1e61eabbece5684eea7cf05ef3caba7b1ff26ecbb70"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3135,12 +3135,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c14096ec9d10290d259fe5c2419d5116e987aad0fc4ea47b725277f4d5cf1e7e",
-          "cadr": "4aadf409ef2723d5b9c82b9a3780b7043c9b8750647ba4cbb76d20c3ecbc8038"
+          "pi": "bc4033f67484b8d081fe6a8ba12ea5c5379f41be75d96b3d75b705a3b51ab5a1",
+          "cadr": "cbe1e6efbee181b673632fc3b0e9d5ada03b736f8a07db96321837ccb597d2bc"
         },
         "narrow": {
-          "pi": "28d3fc1b4da44c090a213e52f28e4529a91c4fb98a8e36cb2f92e39f0246d88e",
-          "cadr": "8b11ef82f7e8812eb5e68acf5e3903f59213480d7ea84631e383aa8cae45bad7"
+          "pi": "c8548bca0a49808e319709c0a56abaefd2f72039a1f3f3309194cc4e3642fc5b",
+          "cadr": "0c4fd46f2184f608a3e10946ab48d19555cd33459a34afb9c73198664b311181"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3163,8 +3163,16 @@
         "wide"
       ],
       "classes": [
-        "I01"
-      ]
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "37bd714cb79fa6c4c31f9d0053117ec4d5870fe2b6914c205112b3e4bf266caa",
+          "cadr": "40c4eb8b616a8ce61aa54d08805392e6833365681d1f855ad7773c03f53481da"
+        }
+      },
+      "note": "The earlier full-output rows in this cumulative state sweep carry the approved Cadr product prefix; their physical cell history shifts the later wide viewport by two rows. The grep result itself is byte-equivalent."
     },
     {
       "scenario": "tools-significant-states",
@@ -3173,16 +3181,8 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
-      ],
-      "screenSha256": {
-        "narrow": {
-          "pi": "52bc3b7013b0b1deb2374256a8b09717818c975d42a4aa3bca6c59e282da220b",
-          "cadr": "44e97d22074d092ca19baf20a456a0b5ad63c015645ab6198c9e88153e9cf621"
-        }
-      },
-      "note": "The approved Cadr bash-log product prefix wraps one row earlier in the preceding narrow truncation checkpoints, shifting the later viewport by two rows; the current grep result itself is byte-equivalent."
+        "I01"
+      ]
     },
     {
       "scenario": "tools-significant-states",
@@ -3250,8 +3250,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6857bc030329b1555880ac30e4aec3d8387c9b73ba319eac1e0afce8dbbcacb5",
-          "cadr": "8ad19ac58e848274839e5e8e02473d0af0c10baad989a449d168eebc8fc5be6a"
+          "pi": "0f83405ed0da74aecbccd2c5e72fec28a0ff0f191a16feb9302445808e29cfb0",
+          "cadr": "f8707ea8392c22ef9620a1969512b80517634f0fb1cc109b2e02195ade13f80d"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3413,12 +3413,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bcb3a205359510ec7b557984a296d7fa7daf0649be1d79089d9ba33ade3d60da",
-          "cadr": "c16b3b569c6e3c806495c4008e6053a92549f406c356f7f62ecf767090a03be2"
+          "pi": "2cf3a7b276018ebee7027ec6f8b7f77bcc316a37a0a832e6f68dcb2d2413e19d",
+          "cadr": "fd7a9870c349cbc6f4ed9a67ac48816a2b3fd8f47a28da4b3d2a3626c77ef6a0"
         },
         "narrow": {
-          "pi": "b9c6065e2ffb37865c354dc45fc4f743d465473f90c6d45ab5ae20c451f11cf4",
-          "cadr": "600b8fc9b9c31349e853c904b59cd6f48535a5fe0bd94ddf7d954c123d0181e7"
+          "pi": "4eddcb5b52624f3d0075383e069b2e728dbe59f35ba1408c3d71eb62dd2836ad",
+          "cadr": "c176bd9912bdb469fd095894c4c7eab77d07c928e006da76d86edf28c2877e3c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3470,12 +3470,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ab12fd118899fa64cb6cffddcd49cca38849628e6b7fa69d781401ff055c2fb7",
-          "cadr": "48943959f769c2f7e1a1d1ef6810fd5937fa89e780e093e78669e1c2b269298e"
+          "pi": "e0ab830082f2f9fa3e4236c0e68fde4e06e9b8d4eeb3dc554dc3dc63091cc587",
+          "cadr": "c4ea01b85658650ec8789793d367d5a9f519217712ea417e6ebdfaca22ef1c06"
         },
         "narrow": {
-          "pi": "90de416c04e51264220684b827d869742400fdb66a8c3afcab8a3aa40835b2ec",
-          "cadr": "f0daeb37e6d4706ebd903fd43c0170e2a78804fa34667b2725be361113ff3ff0"
+          "pi": "881d95fe31eff1f7febb19b93067531351da2338aafa0c7c12bcd36a53811717",
+          "cadr": "55427a6a90ad30ab8670e3d6fb2c71349904ee8eb2c786771a0dbf6d5248514c"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3516,12 +3516,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "627445ec864aaa69836f619fd5d6d7c6cd39e236a2907b20e27ddcd5f749d54f",
-          "cadr": "fcaaa1a9a3dc3aef180c0f5fe59d1c1b0c676c7ce88e784c21f6060801e564e5"
+          "pi": "c9eaf54cc79beaa51055fe20d06f17403936a73fd250b4db162b4ba6e8778d75",
+          "cadr": "891898003aa1b7de1c42acffeae4be60edd8ca3d81edded00ee0f892b512b55d"
         },
         "narrow": {
-          "pi": "68126e5bf17bcee86b1cb6338ddac39eba59053db2a85265f95cb76c4493adbc",
-          "cadr": "efff065e3c0cb202d5831f59189dd0814d47d8aceafeb28ab155f1403d94f5f4"
+          "pi": "ecac62a2fdf8228fa88cba35ada6663b1ae40c38cd79cb550ed4488a15113056",
+          "cadr": "b7b77535fec50809c6a3ed1efd846d2dea2d8bb9b66f77cdc1f1dcb93cd6b2e3"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3576,8 +3576,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c8fecb89a307080da326b925bc627921a6dff262cd818baf1be526cb5fa3d585",
-          "cadr": "831a306e9c5a979bd5a99173cbd96098f15529be023e0758c55ee9e698890d38"
+          "pi": "a32dad9a1f152280afe6c28ce930be7626ced4e20eb084602583d06b70d156e1",
+          "cadr": "344336e946440291bcda90230c7b8738d7a3f55221a9471fadd64d027c184577"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3595,12 +3595,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "f497f4a7a92dfd12cd0832a92b742c554e7f95b1898359e5ebf65962236293a6",
-          "cadr": "351faeca73e100b9cff8f2a9c729f55bc94703bb1a0798a3d5a8a3a438ff83ee"
+          "pi": "8421a2e5d03ab3973fc375b7fa75c4968c7845c9816749068ce555865d61abd5",
+          "cadr": "dec5c8c8a5d75f86271f177a4fe9b75d71a042df5e400bcfdac852d7f06a734a"
         },
         "narrow": {
-          "pi": "23d26d07a0507b6953263a0c5124ad74986ad01c80834374ae7bf28561f175cc",
-          "cadr": "afb270603d211f54630352cda39a80431dc64513927a44877a36ab44a03fd048"
+          "pi": "17e4f2983303055c1d2ffce8183aa27e727a6691976f4cd6c33b2aa5e8c1ae9d",
+          "cadr": "5958b30f92fc3c252f5433d72dc1b45148583420996a0b410ab49a1b056bc972"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3618,12 +3618,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e1a58dcc8903e834cb55594e6de75109e043f936b22eefedf11fd1903511c842",
-          "cadr": "75bc3f4ad5cd693c86501f45cd8bf4d01af00ba94f589ef9dc69337d5e8a11bc"
+          "pi": "aa66682d0a0f1458d2efb165674a02fd4970a4eb871100bd33b47c69f134fa5d",
+          "cadr": "3426f1ff881698ad3f4f5c857e9188d19dc31b86fb2333472e0e9eb1bb2ed658"
         },
         "narrow": {
-          "pi": "9abe0bfaf3dd76bf091ec5f05525fe87f16cb47df2c4ab1174ec762276a9766f",
-          "cadr": "7261a057d25318685b347a92f467a840264b0bde8531bf15eadf8afdaeee308e"
+          "pi": "d7b15daab4fcbe1879954be1a20c4d00ecca447910a3d849a0f4d8f49b8855dd",
+          "cadr": "907660ce8134ade11db725df5cf5db01d9dda601d046f5880b3f07c5a94a3964"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3650,8 +3650,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "440f298491e5896ab8ffbc2937f4c2b5b8a735f743ee598907bc6b8df3625c2c",
-          "cadr": "fcfee5ee30889ddeef2c31064df4200fb879d317f30c16e44c1583d75ff5cb6a"
+          "pi": "8ca81c03d0fa78746e4b3f1d6b1f8e65c58f0a5f0a2094895773a85b905d3322",
+          "cadr": "298c3ac649f2644123a6b44a294700aaacb62e1818f1c018968da293c9843aaf"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."
@@ -3669,12 +3669,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5aee665483cd9634f08acee1c21c228f349bea4cfa412918836eca6885a1c8c6",
-          "cadr": "2a7fa56dc9efd20f8cafa9eb42473620211f6c54836f77b68c7bbfd53fa03c4b"
+          "pi": "9269f5b79e50ccd16d8b44831514a4dd338a4b3694c196787ab6239baf2f4b8d",
+          "cadr": "6cf90d839600ab10d6bd89a40923cdb43e1199b0f3aa4ee77b07deeaec0fdbd1"
         },
         "narrow": {
-          "pi": "c4a296fd10013547a52c2480cd606c7ae9c9fba35a8a085a49dbcc9983a4a021",
-          "cadr": "a0832e3e76160fbd0753b789a2a7da9761ba1295ac0884340f773474a72fe8c4"
+          "pi": "2a4c0319d1d6673807e5283420a86b4ad4fb577df32f26ad88eb6afa84ffa6a6",
+          "cadr": "89672928f1c53a2d04ea70fd244a671ea2a62b14afdcc7c6a39b93c1ed536242"
         }
       },
       "note": "Exact approved semantic screen pair; no product defect is admitted."

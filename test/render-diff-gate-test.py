@@ -10,6 +10,7 @@ import os
 from pathlib import Path
 import subprocess
 import tempfile
+import threading
 import unittest
 from unittest import mock
 
@@ -75,6 +76,49 @@ class RenderDiffGateTest(unittest.TestCase):
                 mock.Mock(),
             )
 
+    def test_checkpoint_waits_for_the_open_synchronized_render_frame(self) -> None:
+        read_fd, write_fd = os.pipe()
+        output = bytearray(b"\x1b[?2026hframe text")
+        entered = threading.Event()
+        completed = threading.Event()
+
+        class LiveProcess:
+            @staticmethod
+            def poll() -> None:
+                return None
+
+        def wait_for_frame() -> None:
+            entered.set()
+            RENDER_DIFF.wait_for_complete_render(
+                read_fd, output, 1.0, LiveProcess()
+            )
+            completed.set()
+
+        worker = threading.Thread(target=wait_for_frame)
+        try:
+            worker.start()
+            self.assertTrue(entered.wait(1.0))
+            self.assertFalse(completed.is_set())
+            os.write(write_fd, b"\x1b[?2026l")
+            worker.join(1.0)
+            self.assertFalse(worker.is_alive())
+            self.assertTrue(completed.is_set())
+            self.assertTrue(output.endswith(b"\x1b[?2026l"))
+        finally:
+            os.close(write_fd)
+            os.close(read_fd)
+
+    def test_agent_settled_wait_requires_the_following_render_end(self) -> None:
+        source = (ROOT / "scripts/render-diff.py").read_text(encoding="utf-8")
+        branch = source.split('elif "waitForAgentSettled" in action:', 1)[1].split(
+            'elif "checkpoint" in action:', 1
+        )[0]
+
+        self.assertIn("render_end_target = output.count(render_end) + 1", branch)
+        self.assertIn("wait_for_count(", branch)
+        self.assertIn("render_end_target", branch)
+        self.assertIn("wait_for_complete_render(", branch)
+
     def test_pause_action_never_passes_a_negative_select_timeout(self) -> None:
         observed: list[float] = []
 
@@ -104,11 +148,21 @@ class RenderDiffGateTest(unittest.TestCase):
             ready = Path(temporary) / "ready"
             ready.write_text("ready\nagent-settled\n", encoding="utf-8")
             observed: list[float] = []
+
+            def finish_render(
+                _fd: int,
+                output: bytearray,
+                timeout: float,
+                _process: object,
+            ) -> None:
+                observed.append(timeout)
+                output.extend(b"\x1b[?2026hsettled\x1b[?2026l")
+
             with mock.patch.object(
                 RENDER_DIFF,
                 "read_ready",
-                side_effect=lambda _fd, _output, timeout, _process: observed.append(timeout),
-            ):
+                side_effect=finish_render,
+            ), mock.patch.object(RENDER_DIFF, "drain"):
                 RENDER_DIFF.run_actions(
                     "cadr",
                     [{"waitForAgentSettled": True}],
@@ -190,6 +244,22 @@ class RenderDiffGateTest(unittest.TestCase):
                 actions[checkpoint - 1],
                 actions[checkpoint]["checkpoint"],
             )
+
+    def test_stream_abort_capture_waits_for_the_agent_end_frame(self) -> None:
+        manifest = RENDER_DIFF.load_manifest(
+            ROOT / "test/fixtures/render-diff/scenarios.json"
+        )
+        scenario = next(
+            item for item in manifest["scenarios"]
+            if item["id"] == "stream-interrupt-queue"
+        )
+        actions = scenario["actions"]
+        checkpoint = next(
+            index for index, action in enumerate(actions)
+            if action.get("checkpoint") == "stream-aborted"
+        )
+        self.assertEqual(actions[checkpoint - 1], {"waitForAgentSettled": True})
+        self.assertEqual(actions[checkpoint - 2], {"waitFor": "Operation aborted"})
 
     def test_user_bash_running_capture_waits_for_a_complete_frame(self) -> None:
         manifest = RENDER_DIFF.load_manifest(
@@ -474,6 +544,23 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         self.assertEqual(RENDER_DIFF.normalize_fixed_values(unrelated), unrelated)
 
+    def test_compaction_spinner_normalization_is_exact_and_bounded(self) -> None:
+        prefix = b"\x1b[38;2;138;190;183m"
+        suffixes = (
+            b"Compacting context...",
+            b"Auto-compacting... (escape to cancel)",
+            b"Context overflow detected, Auto-compacting... (escape to cancel)",
+        )
+        for suffix in suffixes:
+            pi = prefix + b"\xe2\xa0\x99\x1b[39m \x1b[38;2;128;128;128m" + suffix
+            cadr = prefix + b"\xe2\xa0\x8b\x1b[39m \x1b[38;2;128;128;128m" + suffix
+            self.assertEqual(
+                RENDER_DIFF.normalize_fixed_values(pi),
+                RENDER_DIFF.normalize_fixed_values(cadr),
+            )
+        unrelated = prefix + b"\xe2\xa0\x99\x1b[39m Model said: Auto-compacting..."
+        self.assertEqual(RENDER_DIFF.normalize_fixed_values(unrelated), unrelated)
+
     def test_wrapped_session_directory_screen_normalization_is_exact_and_bounded(self) -> None:
         pi = (
             b"To resume this session: <PRODUCT> --session-dir /tmp/ca\n"
@@ -582,12 +669,31 @@ class RenderDiffGateTest(unittest.TestCase):
                 RENDER_DIFF.subprocess,
                 "run",
                 side_effect=lambda command, **_kwargs: completed(command),
-            ) as run:
+            ) as run, mock.patch.object(RENDER_DIFF, "wait_for_path") as wait_for_path:
                 RENDER_DIFF.tmux_screen(b"hello", 80, 24, Path(temporary))
+                replay = (Path(temporary) / "replay.py").read_text(encoding="utf-8")
+
+        wait_for_path.assert_called_once()
+        self.assertIn("os.write(1, b'\\x1b[6n')", replay)
+        self.assertIn("response.endswith(b'R')", replay)
 
         for call in run.call_args_list:
             command = call.args[0]
             self.assertEqual(["-f", "/dev/null"], command[3:5])
+
+    def test_semantic_screen_discards_only_hidden_cursor_coordinates(self) -> None:
+        hidden_pi = b"screen\n<CURSOR 48,19,0>\n"
+        hidden_cadr = b"screen\n<CURSOR 0,16,0>\n"
+        visible = b"screen\n<CURSOR 3,4,1>\n"
+
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(hidden_pi, "pi"),
+            RENDER_DIFF.normalized_screen(hidden_cadr, "cadr"),
+        )
+        self.assertIn(
+            b"<CURSOR 3,4,1>",
+            RENDER_DIFF.normalized_screen(visible, "cadr"),
+        )
 
     def test_full_tier_captures_core_and_full_scenarios(self) -> None:
         manifest = RENDER_DIFF.load_manifest(

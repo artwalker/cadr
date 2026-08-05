@@ -1327,6 +1327,33 @@ def wait_for_count(
         read_ready(fd, output, min(0.1, remaining), process)
 
 
+def wait_for_complete_render(
+    fd: int,
+    output: bytearray,
+    timeout: float,
+    process: subprocess.Popen[bytes],
+) -> None:
+    render_begin = b"\x1b[?2026h"
+    render_end = b"\x1b[?2026l"
+    deadline = time.monotonic() + timeout
+    while True:
+        drain(fd, output)
+        open_frames = output.count(render_begin) - output.count(render_end)
+        if open_frames <= 0:
+            return
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            raise HarnessFailure("timed out waiting for synchronized render frame end")
+        wait_for_count(
+            fd,
+            output,
+            render_end,
+            output.count(render_end) + open_frames,
+            remaining,
+            process,
+        )
+
+
 def wait_exit(fd: int, output: bytearray, process: subprocess.Popen[bytes], timeout: float) -> int:
     deadline = time.monotonic() + timeout
     while process.poll() is None:
@@ -1546,7 +1573,35 @@ def run_actions(
                     except FileNotFoundError:
                         settled_count = 0
                     if settled_count >= settled_target:
-                        read_ready(master_fd, output, 0.02, process)
+                        drain(master_fd, output)
+                        remaining = deadline - time.monotonic()
+                        if remaining <= 0:
+                            raise HarnessFailure(
+                                "timed out waiting for settled render frame"
+                            )
+                        if side == "cadr":
+                            # Pi's subscriber runs after its synchronous
+                            # interactive renderer. Cadr's marker is emitted
+                            # from the agent worker before the controller's
+                            # guaranteed cleanup render, so wait for that
+                            # subsequent frame instead of accepting an earlier
+                            # spinner frame that happened while polling.
+                            render_end = b"\x1b[?2026l"
+                            render_end_target = output.count(render_end) + 1
+                            wait_for_count(
+                                master_fd,
+                                output,
+                                render_end,
+                                render_end_target,
+                                remaining,
+                                process,
+                            )
+                        wait_for_complete_render(
+                            master_fd,
+                            output,
+                            max(0.0, deadline - time.monotonic()),
+                            process,
+                        )
                         break
                     remaining = deadline - time.monotonic()
                     if remaining <= 0:
@@ -1561,7 +1616,7 @@ def run_actions(
                         process,
                     )
             elif "checkpoint" in action:
-                read_ready(master_fd, output, 0.02, process)
+                wait_for_complete_render(master_fd, output, timeout, process)
             else:
                 raise HarnessFailure(f"unknown action: {action}")
         except (HarnessFailure, OSError) as error:
@@ -1743,6 +1798,17 @@ def normalize_fixed_values(data: bytes) -> bytes:
         result,
     )
     result = re.sub(
+        rb"(?<=\x1b\[38;2;138;190;183m)"
+        rb"\xe2[\xa0-\xa3][\x80-\xbf]"
+        rb"(?=\x1b\[39m \x1b\[38;2;128;128;128m(?:"
+        rb"Compacting context\.\.\.|"
+        rb"Auto-compacting\.\.\. \(escape to cancel\)|"
+        rb"Context overflow detected, Auto-compacting\.\.\. \(escape to cancel\)"
+        rb"))",
+        "⠋".encode("utf-8"),
+        result,
+    )
+    result = re.sub(
         rb"(?<=\x1b\[38;2;181;189;104m)"
         rb"\xe2[\xa0-\xa3][\x80-\xbf]"
         rb"(?=\x1b\[39m \x1b\[38;2;128;128;128m"
@@ -1876,7 +1942,17 @@ def normalized_screen(data: bytes, side: str) -> bytes:
     result = re.sub(prefix + rb"/home", b"<HOME>", result)
     result = re.sub(prefix + rb"/workspace", b"<CWD>", result)
     result = re.sub(prefix, b"<SANDBOX>", result)
-    return normalize_fixed_values(result)
+    result = normalize_fixed_values(result)
+    # Cadr and Pi both hide the hardware cursor while drawing their own editor
+    # cell.  tmux retains the hidden cursor's last internal coordinates, but
+    # those coordinates are not terminal-visible state.  Preserve every
+    # visible cursor coordinate and reduce only an explicitly hidden cursor to
+    # its observable state.
+    return re.sub(
+        rb"<CURSOR [0-9]+,[0-9]+,0>",
+        b"<CURSOR hidden>",
+        result,
+    )
 
 
 def write_capture(output_dir: Path, scenario_id: str, dimension_id: str, side: str, data: bytes) -> None:
@@ -1989,19 +2065,41 @@ def raw_difference_summary(left: bytes, right: bytes) -> dict[str, Any]:
     }
 
 
+def wait_for_path(path: Path, timeout: float) -> None:
+    deadline = time.monotonic() + timeout
+    while not path.is_file():
+        if time.monotonic() >= deadline:
+            raise HarnessFailure(f"terminal replay handshake timed out: {path}")
+        time.sleep(0.01)
+
+
 def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
     if shutil.which("tmux") is None:
         raise HarnessFailure("tmux is required for semantic render-diff analysis")
     temporary.mkdir(parents=True, exist_ok=True)
     input_path = temporary / "terminal.raw"
     input_path.write_bytes(data)
+    done_path = temporary / "terminal.done"
+    replay_path = temporary / "replay.py"
+    replay_path.write_text(
+        "import os, pathlib, signal, sys, tty\n"
+        "tty.setraw(0)\n"
+        "os.write(1, pathlib.Path(sys.argv[1]).read_bytes())\n"
+        "os.write(1, b'\\x1b[6n')\n"
+        "response = b''\n"
+        "while not response.endswith(b'R'):\n"
+        "    response += os.read(0, 64)\n"
+        "pathlib.Path(sys.argv[2]).touch()\n"
+        "while True:\n"
+        "    signal.pause()\n",
+        encoding="utf-8",
+    )
     socket = f"cadr-rd-{os.getpid()}-{time.monotonic_ns()}"
     # User tmux hooks/plugins are outside the fixed render contract and can
     # both alter the screen and keep the client capture pipe open indefinitely.
     tmux = ["tmux", "-L", socket, "-f", "/dev/null"]
-    command = (
-        "stty -echo; exec tail -c +1 -f -- "
-        + shlex.quote(str(input_path))
+    command = shlex.join(
+        (sys.executable, str(replay_path), str(input_path), str(done_path))
     )
     environment = os.environ.copy()
     environment.update({"TERM": "xterm-256color", "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8"})
@@ -2024,6 +2122,7 @@ def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
             stderr=subprocess.PIPE,
             env=environment,
         )
+        wait_for_path(done_path, 5.0)
         previous: bytes | None = None
         current = b""
         for _ in range(100):

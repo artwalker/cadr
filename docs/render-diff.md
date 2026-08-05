@@ -160,9 +160,9 @@ preserve intermediate frames instead of judging only the final screen.
 
 Agent-backed significant-state checkpoints wait on an out-of-band
 `agent_settled` marker published by both real drivers after their interactive
-event consumer has handled the event. They do not use a millisecond pause as a
-proxy for a completed frame; the PTY is drained after the marker before the
-checkpoint offset is recorded.
+event consumer has handled the event, then wait for the synchronized frame
+requested by that event to end. The marker alone is insufficient because render
+ownership is asynchronous. No millisecond pause stands in for a completed frame.
 
 The `/share` checkpoint is an approved intentional product-identity difference:
 the fixed baseline displays `https://pi.dev/session/#...`, while Cadr displays
@@ -188,11 +188,12 @@ the authority.
 | Product prose/config/commands | Exact onboarding sentences, `.pi/agent` / `.cadr`, untrusted-resource tokens, restart tokens, and styled/plain resume-command product tokens | These are direct consequences of the approved product rename; arbitrary substrings are not replaced. |
 | Export filename | Exact fixed-clock `pi-session-2023-11-14T22-13-20-000Z_render-session.html` / Cadr counterpart to `<PRODUCT>-session-<FIXED_TIME>_<SESSION_ID>.html` | Prefix and ID spellings differ only by the approved brand and fixed driver identity. |
 | Tool elapsed time | Digits only between the exact `Took ` and `s` delimiters to `<ELAPSED>` | Process scheduling makes wall time nondeterministic; wording, unit, placement, styling, and all other numbers remain checked. |
-| Working spinner frame | One UTF-8 braille code point only between the exact accent SGR and exact dim `Working...` suffix to `⠋` | Frame phase is scheduler-dependent; color and surrounding text remain checked. |
+| Agent status spinner frame | One UTF-8 braille code point only between the exact accent SGR and the exact dim `Working...`, `Compacting context...`, `Auto-compacting... (escape to cancel)`, or `Context overflow detected, Auto-compacting... (escape to cancel)` suffix to `⠋` | Frame phase is scheduler-dependent; color and surrounding text remain checked. |
+| Hidden hardware cursor | Exact tmux cursor record `<CURSOR X,Y,0>` to `<CURSOR hidden>` | Both products hide the hardware cursor and draw the editor cursor as a screen cell. Its retained internal coordinates are not observable; coordinates remain exact whenever `cursor_flag=1`. |
 | Crash-log ID | Digits only between exact `cadr-crash-` and `.log` delimiters to `<CRASH_ID>` | PID/time/counter identity is intentionally unique; directory, filename grammar, and mode are tested elsewhere. |
 | Bash full-output file | Exact `/tmp/pi-bash-<hex>.log` or `/tmp/cadr-bash-<decimal>-<decimal>.log` grammar to `/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log` | The suffix is process-generated; the full warning copy, punctuation, color and replay geometry remain checked. |
 
-No rule removes or folds whitespace, ANSI sequences, colors, cursor positions,
+No rule removes or folds whitespace, ANSI sequences, colors, visible cursor positions,
 line endings, punctuation, ordering, whole lines, UUID-shaped arbitrary text, or
 unscoped numbers.  The raw `.raw` and SHA-256 files remain the authority.
 
@@ -201,6 +202,20 @@ unscoped numbers.  The raw `.raw` and SHA-256 files remain the authority.
 The harness fixes model output and terminal inputs, not scheduler write
 boundaries. Even a non-stream faux response crosses worker and TUI render
 threads, so an intermediate editor/spinner frame may be coalesced differently.
+A checkpoint first drains the PTY and waits for any open synchronized-output
+frame (`CSI ? 2026 h` through `CSI ? 2026 l`) to close; it never records a
+half-written frame merely because the awaited text arrived first.
+Semantic replay writes the finite raw stream, sends a cursor-position query,
+and waits for the terminal reply before capturing the pane, so two temporarily
+identical pre-replay panes cannot be mistaken for a completed replay.
+An aborted stream additionally waits for the driver-side `agent_settled`
+handshake; seeing `Operation aborted` alone is not proof that the worker has
+removed its final `Working...` frame.
+Replacing the old partial replay with that completion protocol changed stored
+semantic SHA values without changing a product frame. The disposition ledger
+was regenerated only from the now-complete screens: protocol-only rows lost
+stale semantic classes, semantic rows retained their already-approved classes,
+and every remaining pair stays exact and fail-closed.
 A self-replay check is therefore required before any raw byte difference is
 attributed to Cadr. `replay-check` requires every checkpoint's
 terminal-emulated screen (including cursor) to be identical and reports

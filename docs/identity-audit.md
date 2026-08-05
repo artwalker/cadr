@@ -164,6 +164,6 @@ Goal 17 将呈现、tool result 与 event 对拍扩展为三个真实固定基�
 字样是对拍输入，不是 Cadr 自我标识或运行时兼容入口。
 
 组织拆分同时移动了 config selector、direct user bash 与 package update 的基线
-出处注释，但没有改变产品身份。真实树重新生成后为 **348 个命中、311 条精确
+出处注释，但没有改变产品身份。真实树重新生成后为 **350 个命中、313 条精确
 disposition、1 个 digest 锁定 opaque 文件**。allowlist 仍逐行锁定完整文本与出现
 次数；任何新增、删除、移动或数量变化都会 fail-closed，不存在目录级豁免。

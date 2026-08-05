@@ -654,7 +654,7 @@
         { "sendText": "steer now" }, { "send": "enter" }, { "waitFor": "Steering: steer now" },
         { "sendText": "follow later" }, { "send": "alt+enter" }, { "waitFor": "Follow-up: follow later" },
         { "checkpoint": "busy-queue" },
-        { "send": "escape" }, { "waitFor": "Operation aborted" }, { "checkpoint": "stream-aborted" },
+        { "send": "escape" }, { "waitFor": "Operation aborted" }, { "waitForAgentSettled": true }, { "checkpoint": "stream-aborted" },
         { "send": "ctrl+c" }, { "pauseMs": 80 }, { "send": "ctrl+c" }
       ]
     },
