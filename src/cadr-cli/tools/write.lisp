@@ -1,7 +1,19 @@
 (in-package #:cadr-cli)
 
+(defun ensure-write-parent-directories (path)
+  (let ((parent
+          (make-pathname :name nil :type nil :defaults path)))
+    (when (and (probe-file parent)
+               (not (uiop:directory-exists-p parent)))
+      (let ((name (directory-namestring parent)))
+        (error "EEXIST: file already exists, mkdir '~A'"
+               (if (> (length name) 1)
+                   (string-right-trim "/" name)
+                   name))))
+    (ensure-directories-exist path)))
+
 (defun write-utf8-file (path content)
-  (ensure-directories-exist path)
+  (ensure-write-parent-directories path)
   (with-open-file (stream path
                           :direction :output
                           :if-exists :supersede

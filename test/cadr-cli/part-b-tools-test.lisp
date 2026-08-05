@@ -268,7 +268,8 @@
                          (merge-pathnames "missing" directory))))
           (list (cadr-cli::make-find-tool directory)
                 (args "pattern" "*" "path" "missing")
-                (format nil "Path not found: ~A"
+                (format nil
+                        "[fd error]: Search path '~A' is not a directory.~%[fd error]: No valid search paths given."
                         (namestring
                          (merge-pathnames "missing" directory))))
           (list (cadr-cli::make-grep-tool directory)

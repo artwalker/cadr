@@ -1,0 +1,132 @@
+{
+  "baselineCommit": "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
+  "builtinTools": ["read", "bash", "edit", "write", "grep", "find", "ls"],
+  "scenarios": [
+    {
+      "id": "read-success",
+      "tool": "read",
+      "outcome": "success",
+      "arguments": {"path": "input.txt", "limit": 2},
+      "setup": {"files": [{"path": "input.txt", "text": "alpha\nbeta\ngamma"}]}
+    },
+    {
+      "id": "read-failure",
+      "tool": "read",
+      "outcome": "failure",
+      "arguments": {"path": "missing.txt"}
+    },
+    {
+      "id": "bash-success",
+      "tool": "bash",
+      "outcome": "success",
+      "arguments": {"command": "printf 'alpha\\nbeta\\n'"}
+    },
+    {
+      "id": "bash-failure",
+      "tool": "bash",
+      "outcome": "failure",
+      "arguments": {"command": "printf 'oops\\n'; exit 7"}
+    },
+    {
+      "id": "bash-broken-pipe",
+      "tool": "bash",
+      "outcome": "success",
+      "contract": "broken-pipe",
+      "arguments": {
+        "command": "/usr/bin/yes line | /usr/bin/head -n 5"
+      }
+    },
+    {
+      "id": "bash-full-output-path",
+      "tool": "bash",
+      "outcome": "success",
+      "arguments": {"command": "/usr/bin/head -c 61440 /dev/zero | /usr/bin/tr '\\0' x"}
+    },
+    {
+      "id": "edit-success",
+      "tool": "edit",
+      "outcome": "success",
+      "arguments": {
+        "path": "edit.txt",
+        "edits": [{"oldText": "alpha", "newText": "ALPHA"}, {"oldText": "gamma", "newText": "GAMMA"}]
+      },
+      "setup": {"files": [{"path": "edit.txt", "text": "alpha beta gamma"}]}
+    },
+    {
+      "id": "edit-failure",
+      "tool": "edit",
+      "outcome": "failure",
+      "arguments": {
+        "path": "edit.txt",
+        "edits": [{"oldText": "same", "newText": "changed"}]
+      },
+      "setup": {"files": [{"path": "edit.txt", "text": "same same"}]}
+    },
+    {
+      "id": "write-success",
+      "tool": "write",
+      "outcome": "success",
+      "arguments": {"path": "unicode.txt", "content": "中🙂"}
+    },
+    {
+      "id": "write-failure",
+      "tool": "write",
+      "outcome": "failure",
+      "arguments": {"path": "parent-file/child.txt", "content": "blocked"},
+      "setup": {"files": [{"path": "parent-file", "text": "not a directory"}]}
+    },
+    {
+      "id": "grep-success",
+      "tool": "grep",
+      "outcome": "success",
+      "arguments": {"pattern": "needle", "path": ".", "limit": 2},
+      "setup": {
+        "files": [
+          {"path": "a.txt", "text": "before\nneedle one\nafter"},
+          {"path": "b.txt", "text": "needle two"}
+        ]
+      }
+    },
+    {
+      "id": "grep-failure",
+      "tool": "grep",
+      "outcome": "failure",
+      "arguments": {"pattern": "needle", "path": "missing"}
+    },
+    {
+      "id": "find-success",
+      "tool": "find",
+      "outcome": "success",
+      "arguments": {"pattern": "*.txt"},
+      "setup": {
+        "files": [
+          {"path": "a.txt", "text": "a"},
+          {"path": "nested/b.txt", "text": "b"},
+          {"path": "skip.md", "text": "skip"}
+        ]
+      }
+    },
+    {
+      "id": "find-failure",
+      "tool": "find",
+      "outcome": "failure",
+      "arguments": {"pattern": "*.txt", "path": "missing"}
+    },
+    {
+      "id": "ls-success",
+      "tool": "ls",
+      "outcome": "success",
+      "arguments": {"path": "."},
+      "setup": {
+        "directories": [{"path": "nested"}],
+        "files": [{"path": "a.txt", "text": "a"}, {"path": ".hidden", "text": "h"}]
+      }
+    },
+    {
+      "id": "ls-failure",
+      "tool": "ls",
+      "outcome": "failure",
+      "arguments": {"path": "missing"}
+    }
+  ]
+}

@@ -153,7 +153,7 @@
             (list
              "/usr/bin/setsid" "--fork" "--wait"
              "/bin/sh" "-c"
-             "printf '%s' \"$$\" > \"$1\"; exec /bin/bash -lc \"$2\" 2>&1"
+             "printf '%s' \"$$\" > \"$1\"; exec /usr/bin/env --default-signal=PIPE /bin/bash -lc \"$2\" 2>&1"
              "cadr-bash-wrapper"
              (namestring group-path)
              command)
