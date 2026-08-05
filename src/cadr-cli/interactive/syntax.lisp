@@ -870,7 +870,8 @@
         (previous-word nil)
         (parameter-depth 0)
         (pending-function-p nil)
-        (expect-type-p nil))
+        (expect-type-p nil)
+        (lisp-form-name-p nil))
     (with-output-to-string (output)
       (labels
           ((emit (start end &optional scope)
@@ -941,6 +942,7 @@
                    (setf previous-word nil
                          pending-function-p nil
                          expect-type-p nil
+                         lisp-form-name-p nil
                          index end)))
                 ((and
                   (string= language "python")
@@ -982,6 +984,29 @@
                          pending-function-p nil
                          expect-type-p nil
                          index end)))
+                ((and
+                  lisp-form-name-p
+                  (string= language "lisp")
+                  (not
+                   (member character
+                           '(#\Space #\Tab #\Newline #\Return
+                             #\( #\) #\" #\' #\;))))
+                 (let ((end (1+ index)))
+                   (loop while
+                         (and
+                          (< end (length code))
+                          (not
+                           (member
+                            (char code end)
+                            '(#\Space #\Tab #\Newline #\Return
+                              #\( #\) #\" #\' #\;))))
+                         do (incf end))
+                   (emit index end "keyword")
+                   (setf previous-word nil
+                         pending-function-p nil
+                         expect-type-p nil
+                         lisp-form-name-p nil
+                         index end)))
                 ((simple-syntax-identifier-start-p
                   character)
                  (let ((end (1+ index)))
@@ -1012,8 +1037,9 @@
                         (simple-syntax-next-character
                          code end)
                         #\())
-                      expect-type-p nil)
-                     (setf previous-word lower
+                     expect-type-p nil)
+                     (setf lisp-form-name-p nil
+                           previous-word lower
                            index end))))
                 ((digit-char-p character)
                  (let ((end (1+ index)))
@@ -1031,16 +1057,20 @@
                    (setf previous-word nil
                          pending-function-p nil
                          expect-type-p nil
+                         lisp-form-name-p nil
                          index end)))
                 ((char= character #\()
-                 (if
-                     (or pending-function-p
-                         (plusp parameter-depth))
-                     (progn
-                       (emit index (1+ index)
-                             "function")
-                       (incf parameter-depth))
-                     (write-char character output))
+                 (cond
+                   ((string= language "lisp")
+                    (write-char character output)
+                    (setf lisp-form-name-p t))
+                   ((or pending-function-p
+                        (plusp parameter-depth))
+                    (emit index (1+ index)
+                          "function")
+                    (incf parameter-depth))
+                   (t
+                    (write-char character output)))
                  (setf pending-function-p nil)
                  (setf previous-word nil)
                  (incf index))
@@ -1071,6 +1101,6 @@
                              '(#\Space #\Tab))
                    (setf previous-word nil
                          pending-function-p nil
-                         expect-type-p nil))
+                         expect-type-p nil
+                         lisp-form-name-p nil))
                  (incf index))))))))
-

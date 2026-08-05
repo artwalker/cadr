@@ -23,6 +23,13 @@ second" (cadr-ai:content-text content)))
     (is (string= "firstsecond" (cadr-ai:content-text content "")))
     (is (string= "hello" (cadr-ai:content-text "hello")))))
 
+(test token-estimation-counts-javascript-utf16-code-units
+  ;; The fixed TypeScript baseline estimates tokens with text.length / 4.
+  ;; JavaScript length counts non-BMP characters as two UTF-16 code units.
+  (is (= 2 (cadr-ai:estimate-text-tokens "abc🙂")))
+  (is (= 3 (cadr-ai:estimate-text-tokens "🙂🙂🙂🙂🙂")))
+  (is (= 1 (cadr-ai:estimate-text-tokens "中文"))))
+
 (test assistant-retry-classification-and-bounded-loop
   (dolist
       (text

@@ -8,8 +8,12 @@
 
 (defconstant +estimated-image-characters+ 4800)
 
+(defun utf16-code-unit-length (text)
+  (loop for character across text
+        sum (if (> (char-code character) #xffff) 2 1)))
+
 (defun estimate-text-tokens (text)
-  (ceiling (length text) 4))
+  (ceiling (utf16-code-unit-length text) 4))
 
 (defun estimated-content-characters (content)
   (if (stringp content)
@@ -18,7 +22,8 @@
             sum
             (cond
               ((typep block 'text-content)
-               (length (text-content-text block)))
+               (utf16-code-unit-length
+                (text-content-text block)))
               ((typep block 'image-content)
                +estimated-image-characters+)
               (t 0)))))
@@ -43,12 +48,15 @@
             sum
             (cond
               ((typep block 'text-content)
-               (length (text-content-text block)))
+               (utf16-code-unit-length
+                (text-content-text block)))
               ((typep block 'thinking-content)
-               (length (thinking-content-thinking block)))
+               (utf16-code-unit-length
+                (thinking-content-thinking block)))
               ((typep block 'tool-call)
-               (+ (length (tool-call-name block))
-                  (length
+               (+ (utf16-code-unit-length
+                   (tool-call-name block))
+                  (utf16-code-unit-length
                    (safely-stringify
                     (tool-call-arguments block)))))
               (t 0)))

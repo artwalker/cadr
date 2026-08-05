@@ -784,9 +784,9 @@
               (make-string indent
                            :initial-element #\Space)
               (theme-foreground
-               :md-list-bullet marker
-               :enabled-p ansi-theme-p)
-              " "))
+               :md-list-bullet
+               (concatenate 'string marker " ")
+               :enabled-p ansi-theme-p)))
            (continuation
              (make-string
               (visible-width plain-prefix)

@@ -782,12 +782,12 @@
            (is (find "- [ ] todo" plain :test #'string=))
            (is (search
                 (format nil
-                        "~C[38;2;138;190;183m3.~C[39m"
+                        "~C[38;2;138;190;183m3. ~C[39m"
                         #\Escape #\Escape)
                 rendered))
            (is (search
                 (format nil
-                        "~C[38;2;138;190;183m- [x]~C[39m"
+                        "~C[38;2;138;190;183m- [x] ~C[39m"
                         #\Escape #\Escape)
                 rendered)))
       (cadr-tui:reset-current-theme))))
@@ -963,7 +963,25 @@
     (is (find-if
          (lambda (line)
            (uiop:string-prefix-p "    7) " line))
-         plain))))
+         plain)))
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t
+           :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let ((rendered
+                 (first
+                  (cadr-tui:render-markdown
+                   "- alpha" 18
+                   :ansi-theme-p t
+                   :capabilities caps))))
+           (is
+            (search
+             (cadr-tui:theme-foreground
+              :md-list-bullet "- " :enabled-p t)
+             rendered)))
+      (cadr-tui:reset-current-theme))))
 
 (test goal9-markdown-quote-restores-outer-style-after-inline-reset
   (let ((caps
@@ -991,4 +1009,28 @@
                 "│ before code after"
                 (cadr-tui:strip-terminal-sequences
                  rendered))))
+      (cadr-tui:reset-current-theme))))
+
+(test goal17-footer-low-context-keeps-the-baseline-single-dim-run
+  ;; footer.ts:210-215 dims statsLeft as one span when context usage is below
+  ;; the warning threshold; it does not restyle the context substring alone.
+  (let ((caps
+          (cadr-tui:make-terminal-capabilities
+           :images nil :true-color-p t :hyperlinks-p nil)))
+    (cadr-tui:set-current-theme :dark :capabilities caps)
+    (unwind-protect
+         (let* ((line
+                  (second
+                   (cadr-tui:render-footer
+                    72 :model "faux-1" :input 3 :output 4
+                    :context-percent 2d0 :context-window 128000
+                    :auto-compact-p t :ansi-theme-p t)))
+                (whole
+                  (cadr-tui:theme-foreground
+                   :dim "↑3 ↓4 2.0%/128k (auto)" :enabled-p t))
+                (context-only
+                  (cadr-tui:theme-foreground
+                   :dim "2.0%/128k (auto)" :enabled-p t)))
+           (is (search whole line))
+           (is (null (search context-only line))))
       (cadr-tui:reset-current-theme))))

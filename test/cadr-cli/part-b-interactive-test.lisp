@@ -2219,7 +2219,13 @@
                    "~C[38;2;86;156;214mdiv~C[39m"
                    #\Escape #\Escape)
            (cadr-cli::tui-syntax-highlight
-            "html" "<div></div>"))))))
+            "html" "<div></div>")))
+      (is (search
+           (format nil
+                   "~C[38;2;86;156;214m+~C[39m"
+                   #\Escape #\Escape)
+           (cadr-cli::tui-syntax-highlight
+            "lisp" "(+ 1 2)"))))))
 
 (test goal9-session-and-tree-selectors-match-baseline-selected-backgrounds
   (with-selector-truecolor-theme

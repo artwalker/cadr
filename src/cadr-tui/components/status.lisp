@@ -49,10 +49,12 @@
              ((and (numberp percent)
                    (> percent 70))
               :warning)
-             (t :dim))))
-    (theme-foreground
-     token display
-     :enabled-p ansi-theme-p)))
+             (t nil))))
+    (if token
+        (theme-foreground
+         token display
+         :enabled-p ansi-theme-p)
+        display)))
 
 (defun sanitize-footer-status (text)
   (string-trim
@@ -126,14 +128,12 @@
              (footer-context-text
               context-percent context-window
               auto-compact-p ansi-theme-p))
-           (left
+           (stats-left
              (if (plusp
                   (length plain-left))
                  (concatenate
                   'string
-                  (theme-foreground
-                   :dim plain-left
-                   :enabled-p ansi-theme-p)
+                  plain-left
                   " " context)
                  context))
            (thinking-name
@@ -161,14 +161,14 @@
                          provider
                          right-without-provider)
                  right-without-provider))
-           (left-width (visible-width left))
+           (left-width (visible-width stats-left))
            (right-width (visible-width right)))
       (when (> left-width width)
-        (setf left
+        (setf stats-left
               (truncate-to-width
-               left width "...")
+               stats-left width "...")
               left-width
-              (visible-width left)))
+              (visible-width stats-left)))
       (when
           (and
            multiple-providers-p
@@ -177,30 +177,29 @@
         (setf right right-without-provider
               right-width
               (visible-width right)))
-      (let* ((available
-               (- width left-width 2))
+      (let* ((available (- width left-width 2))
              (visible-right
                (if (plusp available)
-                   (truncate-to-width
-                    right available "" nil)
+                   (truncate-to-width right available "" nil)
                    ""))
-             (visible-right-width
-               (visible-width visible-right))
-             (second-line
+             (visible-right-width (visible-width visible-right))
+             (stats-line
                (if (plusp visible-right-width)
                    (concatenate
-                    'string left
+                    'string stats-left
                     (make-string
-                     (max
-                      2
-                      (- width left-width
-                         visible-right-width))
+                     (max 2 (- width left-width visible-right-width))
                      :initial-element #\Space)
-                    (theme-foreground
-                     :dim visible-right
-                     :enabled-p
-                     ansi-theme-p))
-                   left))
+                    visible-right)
+                   stats-left))
+             (second-line
+               (concatenate
+                'string
+                (theme-foreground
+                 :dim stats-left :enabled-p ansi-theme-p)
+                (theme-foreground
+                 :dim (subseq stats-line (length stats-left))
+                 :enabled-p ansi-theme-p)))
              (lines
                (list
                 (truncate-to-width
