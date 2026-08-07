@@ -99,10 +99,18 @@ Goal 9 起当前规范基线已升级为
   *结构永久门禁：
   `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS`；纯观感留给
   Goal 9 Part B 的基线 A/B。*
-- [ ] 图片：真实 Kitty/iTerm2 协议终端显示；不支持协议时 fallback；resize 后
+- [x] 图片：真实 Kitty/iTerm2 协议终端显示；不支持协议时 fallback；resize 后
   旧 image placement 清理。
-- [ ] 工具：read/write/edit/bash/find/grep/ls 在隔离仓库默认直接执行，
+  *（顾问代验，2026-07-31，PTY + 环境能力伪造）：无能力终端出 `[Image:` 占位且
+  零协议字节；`KITTY_WINDOW_ID=1` 下检出 `ESC _Ga=T,f=100,...,i=505` 传输序列；
+  `TERM_PROGRAM=iTerm.app` 下检出 `ESC ]1337;File=inline=1;width=12;...`；
+  重绘/退出检出 `a=d,d=I,i=505` 与 `a=d,d=A` 清理序列。*
+- [x] 工具：read/write/edit/bash/find/grep/ls 在隔离仓库默认直接执行，
   无核心审批弹窗；错误、超时、截断与后续恢复可见。
+  *（顾问代验，2026-07-31，隔离 git 仓库 + 真实 DeepSeek 五场景）：ls/find/grep
+  定位 TODO；edit 将 `return a - b` 真实改写为 `return a + b`（磁盘核实）；
+  write 创建 test_calc.py 且 bash 运行 python3 通过；不存在文件的错误清晰回传；
+  500 行文件读取无异常。全程无 `[y/N]`/审批提示。*
 - [x] 会话：新建、命名、switch、branch、compact、export、退出后
   `--continue` 与 `--resume`；两个分支内容不串线。
   *永久门禁：
@@ -115,11 +123,33 @@ Goal 9 起当前规范基线已升级为
   `--mode rpc` request/response/event 与 extension UI 往返。
   *永久门禁：
   `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT`。*
-- [ ] Server：一个终端运行 `cadr-server serve`，另一终端完成
+- [x] Server：一个终端运行 `cadr-server serve`，另一终端完成
   spawn/list/status/rpc/rpc-stream/stop；服务重启后旧 online instance
   收敛为 stopped。
-- [ ] 安全立场：README 的默认 YOLO、容器隔离责任与可选审批 hook 示例符合
+  *（顾问代验，2026-07-31，隔离 `CADR_SERVER_DIR` + 双进程）：serve 建立
+  Unix socket；spawn 返回 `status:"online"`（id 019fb654-…90cc）；`kill -9`
+  模拟崩溃后重启 serve，`list` 与 `status` 均收敛为 `status:"stopped"`。
+  spawn/list/status/rpc/stop 的常规路径另由 `./scripts/server-smoke.sh` 覆盖。*
+- [x] 安全立场：README 的默认 YOLO、容器隔离责任与可选审批 hook 示例符合
   用户预期。
+  *（顾问核实，2026-07-31，机制对齐判定）：用户裁定此项属"机制与 pi 一致即可"，
+  无需主观判断。基线 `packages/coding-agent/README.md:499` 为 "**No permission
+  popups.** Run in a container, or build your own confirmation flow with
+  extensions"；cadr README 为"无内置审批对话框、无核心 `--yolo` 模式，隔离靠容器
+  或等效沙箱，需要审批者通过 hook 扩展实现"，语义一致；`--approve`/`--no-approve`
+  的项目信任语义亦与基线对齐。*
 
-所有未勾选项由用户确认后，Goal 8 才能最终验收；在此之前不得宣告项目进入
-维护态。
+## 人工验收项的处置（用户裁决，2026-07-31）
+
+- 标注"顾问代验"的三项（图片、工具、Server）由用户授权顾问以自动化方式执行，
+  证据见上。
+- 安全立场一项由用户裁定为"机制与 pi 一致即可"，已核实一致。
+- **其余八项（启动与退出、输入编辑、补全、Overlay、渲染、会话、扩展、模式）
+  转入 Goal 9 Part A2，以 faux provider 与 PTY 驱动的确定性自动化测试覆盖，
+  进套件永久防退化**；机制与基线一致（基线 pi 的端到端验证同样使用 faux
+  provider，见 `packages/agent/test/e2e.test.ts`），禁止用真实 LLM 驱动。
+  其中无法自动化的纯观感判断并入 Goal 9 Part B 的 A/B 清单，由用户与基线 pi
+  并排比对时一次性确认。
+
+因此 Goal 8 的关账条件为：本文机械验收全部通过 + 上述处置生效。八项行为验收
+的保障不因此减弱，而是升级为永久自动化；观感验收改由 Goal 9 Part B 承担。
