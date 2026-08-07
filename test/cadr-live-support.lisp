@@ -17,6 +17,7 @@
    #:live-test-spec-policy
    #:make-live-test-result
    #:make-live-test-spec
+   #:prepare-kimi-coding-credential
    #:prepare-openai-codex-credential
    #:write-live-test-report))
 
@@ -118,6 +119,19 @@
 (defun credential-expiring-p (credential)
   (<= (cadr-ai:oauth-credential-expires credential)
       (+ (cadr-ai::unix-milliseconds) 300000)))
+
+(defun prepare-kimi-coding-credential
+    (&optional
+       (path (cadr-cli:default-auth-path)))
+  (unless (probe-file path)
+    (return-from prepare-kimi-coding-credential nil))
+  (let ((credential
+          (cadr-ai:read-auth-credential
+           path :kimi-coding)))
+    (and
+     (typep credential
+            'cadr-ai:api-key-credential)
+     credential)))
 
 (defun prepare-openai-codex-credential
     (&optional

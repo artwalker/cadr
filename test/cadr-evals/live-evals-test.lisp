@@ -27,33 +27,24 @@
               model-object
               #'cadr-ai:stream-chat))))
 
-(defun make-live-openai-codex-eval-resolver
+(defun make-live-kimi-coding-eval-resolver
     (credential)
   (lambda (provider model)
-    (unless (string= provider "openai-codex")
+    (unless (string= provider "kimi-coding")
       (error
-       "Unexpected live OpenAI Codex provider: ~A"
+       "Unexpected live Kimi For Coding provider: ~A"
        provider))
     (multiple-value-bind
           (provider-object model-object)
         (cadr-ai:instantiate-provider
-         :openai-codex
-         :oauth-access-token
-         (cadr-ai:oauth-credential-access
-          credential)
-         :oauth-account-id
-         (cadr-ai:oauth-credential-account-id
+         :kimi-coding
+         :api-key
+         (cadr-ai:api-key-credential-key
           credential)
          :model-id model)
       (values provider-object
               model-object
-              (lambda (resolved-provider resolved-model context on-event
-                       &rest options &key &allow-other-keys)
-                (remf options :reasoning)
-                (apply #'cadr-ai:stream-chat
-                       resolved-provider resolved-model context on-event
-                       :reasoning :max
-                       options))))))
+              #'cadr-ai:stream-chat))))
 
 (defmacro with-live-deepseek (&body body)
   `(let ((api-key
@@ -66,18 +57,18 @@
            ,@body)
          (skip "DEEPSEEK_API_KEY is not set"))))
 
-(defmacro with-live-openai-codex
+(defmacro with-live-kimi-coding
     (&body body)
   `(let ((credential
-           (cadr-live-test-support:prepare-openai-codex-credential)))
+           (cadr-live-test-support:prepare-kimi-coding-credential)))
      (if
          (typep credential
-                'cadr-ai:oauth-credential)
+                'cadr-ai:api-key-credential)
          (let ((cadr-evals::*eval-model-resolver*
-                  (make-live-openai-codex-eval-resolver
+                  (make-live-kimi-coding-eval-resolver
                    credential)))
            ,@body)
-         (skip "OpenAI Codex OAuth is not configured"))))
+         (skip "Kimi For Coding API key is not configured"))))
 
 (defun assert-live-smoke-eval
     (result expected-provider)
@@ -110,13 +101,13 @@
       :model "deepseek-v4-flash")
      "deepseek")))
 
-(test live-openai-codex-eval-smoke-uses-explicit-model-and-real-oauth
-  (with-live-openai-codex
+(test live-kimi-coding-eval-smoke-uses-explicit-model-and-api-key
+  (with-live-kimi-coding
     (assert-live-smoke-eval
      (cadr-evals:run-smoke-eval
-      :provider "openai-codex"
-      :model "gpt-5.6-luna")
-     "openai-codex")))
+      :provider "kimi-coding"
+      :model "kimi-for-coding")
+     "kimi-coding")))
 
 (test live-deepseek-self-extension-write-reload-and-invoke
   (with-live-deepseek

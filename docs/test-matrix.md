@@ -159,7 +159,7 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Radius presence | heartbeat retry suite | Credential gating, exponential transient backoff, three-404 re-registration threshold and dormant no-credential behavior |
 | Eval harness | `CADR-EVALS-SUITE` | Goal 8 harness plus Goal 9 artifact/table/summary expansion; explicit provider/model, isolated cleanup and normalized transcript/usage |
 | Self-extension eval | `SELF-EXTENSION-EVAL-WRITES-RELOADS-AND-INVOKES-HELLO-TOOL` | Isolated extension write, reload, registration and invocation |
-| Live evals | `scripts/test-live.sh` → `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and real Codex OAuth credential run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
+| Live evals | `scripts/test-live.sh` → `test/cadr-evals/live-evals-test.lisp` | DeepSeek key and Kimi For Coding API key run explicit provider/model Paris/usage checks through isolated resolvers and the public harness |
 | Native server image | `build-server.sh`, `cadr-server --version` | SBCL compression-feature fallback and separate native executable |
 | Single local release gate | `scripts/verify-release.sh`, `scripts/verify.sh`, `scripts/check-root-binary.sh`, release-wrapper contract tests, `GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT`, `DELIVERY-BINARY-FRESHNESS-CHECK-REJECTS-MISSING-STALE-AND-DIRTY-IMAGES` | Existing root image freshness → deterministic FiveAM → isolated dual build → retained process/PTY harnesses → core render/tool/event differentials → availability-gated live checks → full 74-capture render inventory; the pre-tag wrapper short-circuits on either verifier failure and never tags or pushes |
 

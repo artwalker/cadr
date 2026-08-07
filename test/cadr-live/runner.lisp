@@ -16,15 +16,15 @@
     :markers '("DEEPSEEK_PRINT_OK"))
    (cadr-live-test-support:make-live-test-spec
     :name
-    'cadr-cli/live-tests::live-openai-codex-explicit-model-uses-oauth-credential
-    :markers '("OAUTH_EXPLICIT_OK"))
+    'cadr-cli/live-tests::live-kimi-coding-explicit-model-uses-api-key-credential
+    :markers '("KIMI_EXPLICIT_OK"))
    (cadr-live-test-support:make-live-test-spec
     :name
     'cadr-evals/live-tests::live-deepseek-eval-smoke
     :markers '("Paris"))
    (cadr-live-test-support:make-live-test-spec
     :name
-    'cadr-evals/live-tests::live-openai-codex-eval-smoke-uses-explicit-model-and-real-oauth
+    'cadr-evals/live-tests::live-kimi-coding-eval-smoke-uses-explicit-model-and-api-key
     :markers '("Paris"))
    (cadr-live-test-support:make-live-test-spec
     :name

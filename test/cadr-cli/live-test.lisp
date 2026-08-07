@@ -26,7 +26,7 @@
        (get-output-stream-string errors)))))
 
 (defun run-isolated-live-cli
-    (directory arguments &key oauth-credential)
+    (directory arguments &key credential)
   (let* ((home
            (merge-pathnames "home/" directory))
          (workspace
@@ -40,10 +40,10 @@
      (merge-pathnames "anchor" home))
     (ensure-directories-exist
      (merge-pathnames "anchor" workspace))
-    (when oauth-credential
+    (when credential
       (ensure-directories-exist isolated-auth)
       (cadr-ai:write-auth-credential
-       isolated-auth oauth-credential))
+       isolated-auth credential))
     (unwind-protect
          (progn
            (setf (uiop:getenv "HOME")
@@ -85,17 +85,17 @@
                 output)))
           (is (string= "" errors))))))
 
-(test live-openai-codex-explicit-model-uses-oauth-credential
+(test live-kimi-coding-explicit-model-uses-api-key-credential
   (let* ((auth-path
            (cadr-cli:default-auth-path))
          (credential
-           (cadr-live-test-support:prepare-openai-codex-credential
+           (cadr-live-test-support:prepare-kimi-coding-credential
             auth-path)))
     (if
         (not
          (typep credential
-                'cadr-ai:oauth-credential))
-        (skip "OpenAI Codex OAuth is not configured")
+                'cadr-ai:api-key-credential))
+        (skip "Kimi For Coding API key is not configured")
         (with-test-directory (directory)
           (let ((auth-contents
                   (uiop:read-file-string
@@ -104,9 +104,8 @@
                   (status output errors)
                 (run-isolated-live-cli
                  directory
-                 '("--provider" "openai-codex"
-                   "--model" "gpt-5.6-luna"
-                   "--thinking" "max"
+                 '("--provider" "kimi-coding"
+                   "--model" "kimi-for-coding"
                    "--print"
                    "--no-session"
                    "--no-tools"
@@ -116,12 +115,12 @@
                    "--no-context-files"
                    "--system-prompt"
                    "Follow the requested output format exactly and do not call tools."
-                   "Reply with exactly OAUTH_EXPLICIT_OK and nothing else.")
-                 :oauth-credential credential)
+                   "Reply with exactly KIMI_EXPLICIT_OK and nothing else.")
+                 :credential credential)
               (is (= 0 status)
                   "CLI stderr: ~A" errors)
               (is (string=
-                   "OAUTH_EXPLICIT_OK"
+                   "KIMI_EXPLICIT_OK"
                    (string-trim
                     '(#\Space #\Tab #\Newline #\Return)
                     output)))
