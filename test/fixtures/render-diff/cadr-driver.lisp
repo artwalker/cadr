@@ -941,6 +941,27 @@
       (string=
        (json-get (json-get scenario "setup")
                  "entrypoint" "interactive")
+       "cli-help")
+    (cadr-cli::print-cli-usage *standard-output*)
+    (dolist (command '("install" "remove" "update" "list" "config"))
+      (multiple-value-bind (handled-p status)
+          (cadr-cli::handle-package-command
+           (list command "--help")
+           :cwd cwd
+           :agent-directory agent-dir
+           :output *standard-output*
+           :error-output *error-output*)
+        (unless handled-p
+          (error "Cadr help entrypoint did not handle ~A" command))
+        (unless (zerop status)
+          (error "Cadr help entrypoint failed for ~A: ~A" command status))))
+    (finish-output *standard-output*)
+    (finish-output *error-output*)
+    (uiop:quit 0))
+  (when
+      (string=
+       (json-get (json-get scenario "setup")
+                 "entrypoint" "interactive")
        "config")
     (multiple-value-bind (handled-p status)
         (cadr-cli::handle-package-command

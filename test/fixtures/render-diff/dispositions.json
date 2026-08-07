@@ -21,6 +21,28 @@
   },
   "entries": [
     {
+      "scenario": "cli-help-sweep",
+      "checkpoint": "cli-help-all",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2785ddf0a0fc3c41064f0418c3683ff018bc0b41da3104049ba4cf32d61b94b8",
+          "cadr": "622678dc1a92001d55354b75a1d362ab25470ab0592ff360c1f3a1c8a341b395"
+        },
+        "narrow": {
+          "pi": "a85cbc8a10fe8808b271d346cfea4a8e8e4908230993af5ea4cd0fca1adca483",
+          "cadr": "e3acacab1d4beb8f4f2eaade8917dfe68df87666f1be796bee09754238288270"
+        }
+      },
+      "note": "Exact product-identity screen pair; package and config help preserve the fixed baseline contract."
+    },
+    {
       "scenario": "autocomplete-surfaces",
       "checkpoint": "autocomplete-path",
       "dimensions": [

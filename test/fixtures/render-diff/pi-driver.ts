@@ -16,7 +16,8 @@ import { SettingsManager } from "../src/core/settings-manager.ts";
 import { ProjectTrustStore } from "../src/core/trust-manager.ts";
 import { InteractiveMode } from "../src/modes/interactive/interactive-mode.ts";
 import { initTheme } from "../src/modes/interactive/theme/theme.ts";
-import { handleConfigCommand } from "../src/package-manager-cli.ts";
+import { printHelp } from "../src/cli/args.ts";
+import { handleConfigCommand, handlePackageCommand } from "../src/package-manager-cli.ts";
 
 type JsonObject = Record<string, unknown>;
 
@@ -173,7 +174,7 @@ interface ScenarioSetup {
 	hyperlinks?: boolean;
 	trustSavedDecision?: { scope: "current" | "parent"; decision: boolean };
 	authProvider?: boolean;
-	entrypoint?: "interactive" | "config";
+	entrypoint?: "interactive" | "config" | "cli-help";
 	updateNotifications?: boolean;
 }
 
@@ -617,6 +618,15 @@ async function main(): Promise<void> {
 	process.env.PI_OFFLINE = "1";
 	const scenario = loadScenario(manifestPath, scenarioId);
 	materializeFixtureFiles(scenario.setup?.fixtureFiles ?? [], cwd, agentDir, sessionDir);
+	if (scenario.setup?.entrypoint === "cli-help") {
+		process.chdir(cwd);
+		printHelp([{ name: "render-flag", type: "string", description: "Render differential extension flag", extensionPath: "render-diff" }]);
+		for (const command of ["install", "remove", "update", "list"] as const) {
+			await handlePackageCommand([command, "--help"]);
+		}
+		await handleConfigCommand(["config", "--help"]);
+		return;
+	}
 	if (scenario.setup?.entrypoint === "config") {
 		process.chdir(cwd);
 		await handleConfigCommand(["config", "--approve"]);

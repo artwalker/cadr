@@ -48,6 +48,19 @@
       ]
     },
     {
+      "id": "cli-help-sweep",
+      "tier": "full",
+      "group": "full-state-sweep",
+      "coverage": ["cli-help", "package-command-help", "config-command-help", "extension-flag-help"],
+      "description": "Runs every production CLI help formatter so source-derived non-TUI presentation strings are captured through their real stdout sinks.",
+      "setup": { "entrypoint": "cli-help" },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Ignore project-local files for this command with -l" },
+        { "checkpoint": "cli-help-all" }
+      ]
+    },
+    {
       "id": "startup-untrusted",
       "group": "startup",
       "coverage": ["startup-untrusted", "overlay-trust-untrusted", "trust-save-untrusted"],
