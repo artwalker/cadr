@@ -165,6 +165,7 @@ Goal 17 将呈现、tool result 与 event 对拍扩展为三个真实固定基�
 
 组织拆分同时移动了 config selector、direct user bash 与 package update 的基线
 出处注释，但没有改变产品身份。Goal 17 收尾删除了已失效的 Pi 侧调度启发式
-注释及对应 disposition；真实树重新生成后为 **349 个命中、312 条精确
+注释及对应 disposition；Goal 17 新增固定基线 construction 驱动后，真实树为
+**353 个命中、316 条精确
 disposition、1 个 digest 锁定 opaque 文件**。allowlist 仍逐行锁定完整文本与出现
 次数；任何新增、删除、移动或数量变化都会 fail-closed，不存在目录级豁免。

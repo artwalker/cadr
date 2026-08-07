@@ -783,13 +783,47 @@ class RenderDiffGateTest(unittest.TestCase):
                 RENDER_DIFF,
                 "prepare_instrumented_baseline",
                 return_value=Path(temporary) / "instrumented",
-            ), mock.patch.object(RENDER_DIFF, "analyze", return_value=0):
+            ), mock.patch.object(
+                RENDER_DIFF,
+                "run_visible_string_construction_suite",
+                return_value=Path(temporary) / "construction.raw",
+            ) as construct, mock.patch.object(RENDER_DIFF, "analyze", return_value=0):
                 self.assertEqual(RENDER_DIFF.gate(arguments), 0)
         self.assertEqual(
             len(calls), 2 * len(manifest["scenarios"]) * len(manifest["dimensions"])
         )
         self.assertEqual(sum(call.endswith(":both") for call in calls), len(calls) // 2)
         self.assertEqual(sum(call.endswith(":pi") for call in calls), len(calls) // 2)
+        construct.assert_called_once_with(
+            Path(temporary) / "instrumented",
+            arguments.output.resolve(),
+            arguments.timeout,
+        )
+
+    def test_construction_suite_enables_timing_and_rejects_missing_markers(self) -> None:
+        with tempfile.TemporaryDirectory(prefix="cadr-visible-construction-") as temporary:
+            root = Path(temporary)
+            baseline = root / "baseline"
+            (baseline / "node_modules/.bin").mkdir(parents=True)
+            output = root / "output"
+            output.mkdir()
+            observed: dict[str, str] = {}
+
+            def run_without_marker(*_args: object, **kwargs: object) -> subprocess.CompletedProcess[bytes]:
+                observed.update(kwargs["env"])
+                return subprocess.CompletedProcess([], 0, b"", b"")
+
+            with mock.patch.object(RENDER_DIFF.subprocess, "run", side_effect=run_without_marker):
+                with self.assertRaisesRegex(
+                    RENDER_DIFF.HarnessFailure,
+                    "emitted no sink markers",
+                ):
+                    RENDER_DIFF.run_visible_string_construction_suite(
+                        baseline, output, 1.0
+                    )
+
+        self.assertEqual(observed["RENDER_DIFF_VISIBLE_CONSTRUCTS"], "1")
+        self.assertEqual(observed["PI_TIMING"], "1")
 
     def test_visible_string_coverage_fails_closed_for_uncaptured_text(self) -> None:
         inventory = {
@@ -839,13 +873,13 @@ class RenderDiffGateTest(unittest.TestCase):
         RENDER_DIFF.validate_visible_string_inventory(
             inventory, manifest["baselineCommit"]
         )
-        self.assertEqual(707, len(inventory["entries"]))
+        self.assertEqual(423, len(inventory["entries"]))
         self.assertEqual(
-            1228,
+            974,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1200,
+            924,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -853,7 +887,7 @@ class RenderDiffGateTest(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            28,
+            50,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -862,7 +896,7 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         self.assertEqual(219, len(inventory["sourceInventory"]))
         self.assertEqual(
-            143,
+            60,
             sum(
                 entry["site"]["path"].startswith("packages/tui/")
                 for entry in inventory["entries"]
@@ -896,7 +930,7 @@ class RenderDiffGateTest(unittest.TestCase):
             "each fixed runtime UI string must map to an independent obligation",
         )
 
-    def test_visible_inventory_accepts_whitespace_and_slot_only_render_branches(self) -> None:
+    def test_visible_inventory_accepts_whitespace_but_rejects_slot_only_obligations(self) -> None:
         def site(start: int) -> dict[str, object]:
             return {
                 "path": "packages/tui/src/render.ts",
@@ -950,7 +984,14 @@ class RenderDiffGateTest(unittest.TestCase):
             ],
         }
 
+        slot_only = inventory["entries"].pop()
         RENDER_DIFF.validate_visible_string_inventory(inventory, "fixed")
+        inventory["entries"].append(slot_only)
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure,
+            "invalid visible-string fixed-fragment obligation",
+        ):
+            RENDER_DIFF.validate_visible_string_inventory(inventory, "fixed")
 
     def test_visible_inventory_rejects_any_unresolved_in_root_dataflow(self) -> None:
         inventory = json.loads(
@@ -1176,7 +1217,47 @@ class RenderDiffGateTest(unittest.TestCase):
             report = json.loads(
                 (analysis / "visible-string-coverage.json").read_text(encoding="utf-8")
             )
-            self.assertEqual("terminal-protocol", report[0]["sink"]["channel"])
+            self.assertEqual(
+                "terminal-protocol",
+                report[0]["sources"][0]["sink"]["channel"],
+            )
+
+    def test_sink_construction_marker_is_a_real_non_terminal_capture(self) -> None:
+        inventory = {
+            "entries": [
+                {
+                    "id": "VS-0000000000000001",
+                    "site": {"path": "visible.ts", "line": 7, "kind": "new:Markdown"},
+                    "sink": {"kind": "new:Markdown", "channel": "printable-visible"},
+                    "branches": [{"id": "B-000000000001"}],
+                }
+            ]
+        }
+        marker = (
+            b"\x1b]777;cadr-visible-branch;phase=construct;"
+            b"site=VS-0000000000000001;branch=B-000000000001\x07"
+        )
+        with tempfile.TemporaryDirectory(prefix="cadr-visible-construct-") as temporary:
+            root = Path(temporary)
+            exemptions = root / "exemptions.json"
+            exemptions.write_text(
+                '{"schemaVersion":3,"baselineCommit":"fixed","entries":[]}\n',
+                encoding="utf-8",
+            )
+            analysis = root / "analysis"
+            analysis.mkdir()
+            RENDER_DIFF.analyze_visible_string_coverage(
+                inventory,
+                {"baselineCommit": "fixed"},
+                {"state/wide": marker},
+                exemptions,
+                analysis,
+            )
+            report = json.loads(
+                (analysis / "visible-string-coverage.json").read_text(encoding="utf-8")
+            )
+            self.assertEqual(["state/wide"], report[0]["constructedCaptures"])
+            self.assertEqual([], report[0]["terminalCaptures"])
 
     def test_printable_marker_requires_a_terminal_cell_effect(self) -> None:
         inventory = {

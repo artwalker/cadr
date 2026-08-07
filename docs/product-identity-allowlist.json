@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 349,
+  "expected_findings": 353,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -781,6 +781,14 @@
     {
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
+      "token": "PI_CODING_AGENT_SESSION_DIR",
+      "line": "            abort_environment[\"PI_CODING_AGENT_SESSION_DIR\"] = str(",
+      "occurrences": 1,
+      "reason": "Goal 17 fixed-baseline construction drives the immutable Pi CLI through its native session-directory environment contract; Cadr never reads this name."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
       "token": "PI_DRIVER",
       "line": "        shutil.copy2(PI_DRIVER, cache / \"packages/coding-agent/test/goal15-render-driver.ts\")",
       "occurrences": 1,
@@ -809,6 +817,30 @@
       "line": "            \"PI_OFFLINE\": \"1\",",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_TIMING",
+      "line": "        environment[\"PI_TIMING\"] = \"1\"",
+      "occurrences": 1,
+      "reason": "Goal 17 fixed-baseline construction enables the immutable Pi timing surface so its production status branches execute; Cadr never reads this name."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        construction_path = capture_root / \"baseline-construction.pi.visible.raw\"",
+      "occurrences": 1,
+      "reason": "Goal 17 names the immutable Pi-side raw construction artifact explicitly so coverage provenance cannot be confused with Cadr output."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    marker_path = output / \"baseline-construction.pi.visible.raw\"",
+      "occurrences": 1,
+      "reason": "Goal 17 names the immutable Pi-side raw construction artifact explicitly so coverage provenance cannot be confused with Cadr output."
     },
     {
       "path": "scripts/render-diff.py",

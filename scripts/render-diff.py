@@ -36,6 +36,10 @@ DEFAULT_DISPOSITIONS = ROOT / "test/fixtures/render-diff/dispositions.json"
 PI_DRIVER = ROOT / "test/fixtures/render-diff/pi-driver.ts"
 CADR_DRIVER = ROOT / "test/fixtures/render-diff/cadr-driver.lisp"
 VISIBLE_STRING_EXTRACTOR = ROOT / "test/fixtures/render-diff/baseline-visible-strings.ts"
+VISIBLE_STRING_CONSTRUCTION_DRIVER = ROOT / "test/fixtures/render-diff/baseline-visible-construction.ts"
+VISIBLE_STRING_ENVIRONMENT_CONSTRUCTION_DRIVER = (
+    ROOT / "test/fixtures/render-diff/baseline-visible-environment-construction.ts"
+)
 PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.83.0"
 PI_AI_MODEL_DATA_SHA256 = "f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4"
 KEYS = {
@@ -667,6 +671,8 @@ def extract_baseline(pi_repo: Path, commit: str, destination: Path) -> None:
     shutil.copy2(PI_DRIVER, target)
     visible_target = destination / "packages/coding-agent/test/goal17-visible-strings.ts"
     shutil.copy2(VISIBLE_STRING_EXTRACTOR, visible_target)
+    construction_target = destination / "packages/coding-agent/test/goal17-visible-construction.ts"
+    shutil.copy2(VISIBLE_STRING_CONSTRUCTION_DRIVER, construction_target)
 
 
 def hydrate_baseline_model_data(baseline: Path) -> None:
@@ -721,6 +727,10 @@ def ensure_baseline(pi_repo: Path, commit: str, cache: Path) -> Path:
         shutil.copy2(
             VISIBLE_STRING_EXTRACTOR,
             cache / "packages/coding-agent/test/goal17-visible-strings.ts",
+        )
+        shutil.copy2(
+            VISIBLE_STRING_CONSTRUCTION_DRIVER,
+            cache / "packages/coding-agent/test/goal17-visible-construction.ts",
         )
         return cache
     if cache.exists():
@@ -777,7 +787,149 @@ def prepare_instrumented_baseline(
     (destination / ".goal17-visible-baseline").write_text(
         commit + "\n", encoding="ascii"
     )
+    shutil.copy2(
+        VISIBLE_STRING_CONSTRUCTION_DRIVER,
+        destination / "packages/coding-agent/test/goal17-visible-construction.ts",
+    )
+    shutil.copy2(
+        VISIBLE_STRING_ENVIRONMENT_CONSTRUCTION_DRIVER,
+        destination
+        / "packages/coding-agent/test/goal17-visible-environment-construction.ts",
+    )
     return destination
+
+
+def run_visible_string_construction_suite(
+    baseline: Path, output: Path, timeout: float
+) -> Path:
+    marker_path = output / "baseline-construction.pi.visible.raw"
+    marker_path.unlink(missing_ok=True)
+    with tempfile.TemporaryDirectory(
+        prefix="cadr-render-visible-construction-home-"
+    ) as temporary:
+        root = Path(temporary)
+        environment = fixed_environment(root, 100, 32, root / "ready")
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH"] = str(marker_path)
+        environment["PI_TIMING"] = "1"
+        result = subprocess.run(
+            [
+                str(baseline / "node_modules/.bin/tsx"),
+                "packages/coding-agent/test/goal17-visible-construction.ts",
+            ],
+            cwd=baseline,
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            timeout=timeout,
+        )
+        if result.returncode == 0:
+            forced_environment = environment.copy()
+            forced_environment["RENDER_DIFF_FORCE_BUN_BINARY"] = "1"
+            forced_environment["RENDER_DIFF_FORCE_GH_PROBE_THROW"] = "1"
+            result = subprocess.run(
+                [
+                    str(baseline / "node_modules/.bin/tsx"),
+                    "packages/coding-agent/test/goal17-visible-environment-construction.ts",
+                ],
+                cwd=baseline,
+                env=forced_environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout,
+            )
+        if result.returncode == 0:
+            session_file = root / "export-session.jsonl"
+            session_file.write_text(
+                json.dumps(
+                    {
+                        "type": "session",
+                        "version": 3,
+                        "id": "goal17-export",
+                        "timestamp": "2026-01-01T00:00:00.000Z",
+                        "cwd": str(root),
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            result = subprocess.run(
+                [
+                    str(baseline / "node_modules/.bin/tsx"),
+                    "packages/coding-agent/src/cli.ts",
+                    "--export",
+                    str(session_file),
+                    str(root / "export.html"),
+                ],
+                cwd=baseline,
+                env=environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout,
+            )
+        if result.returncode == 0:
+            no_session_environment = environment.copy()
+            no_session_environment["RENDER_DIFF_FORCE_NO_SESSION"] = "1"
+            result = subprocess.run(
+                [
+                    str(baseline / "node_modules/.bin/tsx"),
+                    "packages/coding-agent/src/cli.ts",
+                    "--resume",
+                    "--offline",
+                ],
+                cwd=baseline,
+                env=no_session_environment,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout,
+            )
+        if result.returncode == 0:
+            session_directory = root / "sessions"
+            session_directory.mkdir()
+            foreign_session = session_directory / "foreign.jsonl"
+            foreign_session.write_text(
+                json.dumps(
+                    {
+                        "type": "session",
+                        "version": 3,
+                        "id": "goal17-foreign",
+                        "timestamp": "2026-01-01T00:00:00.000Z",
+                        "cwd": str(root / "foreign-project"),
+                    }
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            abort_environment = environment.copy()
+            abort_environment["PI_CODING_AGENT_SESSION_DIR"] = str(
+                session_directory
+            )
+            result = subprocess.run(
+                [
+                    str(baseline / "node_modules/.bin/tsx"),
+                    "packages/coding-agent/src/cli.ts",
+                    "--session",
+                    "goal17-foreign",
+                    "--offline",
+                ],
+                cwd=baseline,
+                env=abort_environment,
+                input=b"n\n",
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=timeout,
+            )
+    if result.returncode != 0:
+        raise HarnessFailure(
+            "baseline visible-string construction suite failed: "
+            + result.stderr.decode("utf-8", errors="backslashreplace")[-4000:]
+        )
+    if not marker_path.is_file() or not marker_path.read_bytes():
+        raise HarnessFailure(
+            "baseline visible-string construction suite emitted no sink markers"
+        )
+    visible_branch_effects(marker_path.read_bytes(), str(marker_path))
+    return marker_path
 
 
 def generate_visible_string_inventory(baseline: Path, commit: str) -> dict[str, Any]:
@@ -876,10 +1028,21 @@ def validate_visible_string_inventory(data: dict[str, Any], commit: str) -> None
                 )
                 or len(runtime_choices) != len(set(runtime_choices))
                 or not isinstance(segments, list)
-                or not segments
-                or not all(isinstance(segment, dict) for segment in segments)
+                or len(segments) != 1
+                or not isinstance(segments[0], dict)
+                or segments[0].get("kind") != "literal"
+                or not isinstance(segments[0].get("text"), str)
+                or segments[0]["text"] == ""
+                or not isinstance(segments[0].get("stylePath"), list)
+                or not all(
+                    isinstance(value, str) for value in segments[0]["stylePath"]
+                )
+                or conditions
+                or runtime_choices
             ):
-                raise HarnessFailure(f"invalid visible-string branch for {entry_id}")
+                raise HarnessFailure(
+                    f"invalid visible-string fixed-fragment obligation for {entry_id}"
+                )
             visible_fingerprint = tuple(
                 (
                     str(segment.get("text", "")) if segment.get("kind") == "literal" else "<slot>",
@@ -1000,7 +1163,7 @@ def screen_text_and_geometry(data: bytes) -> bytes:
 
 
 VISIBLE_SITE_MARKER = re.compile(
-    rb"\x1b\]777;cadr-visible-branch;phase=(begin|end);"
+    rb"\x1b\]777;cadr-visible-branch;phase=(begin|end|construct);"
     rb"site=(VS-[0-9a-f]{16});"
     rb"branch=(B-[0-9a-f]{12})\x07"
 )
@@ -1015,7 +1178,7 @@ def visible_branch_ids(data: bytes, label: str) -> list[tuple[str, str]]:
 
 def visible_branch_effects(
     data: bytes, label: str
-) -> list[tuple[tuple[str, str], bool]]:
+) -> list[tuple[tuple[str, str], bool | None]]:
     markers = list(VISIBLE_SITE_MARKER.finditer(data))
     if data.count(b"\x1b]777;cadr-visible-branch;") != len(markers):
         raise HarnessFailure(f"malformed visible-site branch marker in {label}")
@@ -1063,7 +1226,9 @@ def visible_branch_effects(
             value.decode("ascii") for value in marker.groups()
         )
         obligation = (site_id, branch_id)
-        if phase == "begin":
+        if phase == "construct":
+            result.append((obligation, None))
+        elif phase == "begin":
             active.append({"obligation": obligation, "effect": False})
         else:
             matching_index = next(
@@ -1104,18 +1269,27 @@ def analyze_visible_string_coverage(
     exemptions = load_visible_string_exemptions(
         exemptions_path, manifest["baselineCommit"]
     )
-    all_inventory_branches = {
+    all_inventory_site_branches = {
         (entry["id"], branch["id"])
         for entry in inventory["entries"]
         for branch in entry["branches"]
     }
     inventory_branches = {
-        (entry["id"], branch["id"])
+        branch["id"]
         for entry in inventory["entries"]
         if entry["sink"]["channel"] == "printable-visible"
         for branch in entry["branches"]
     }
-    unknown_exemptions = sorted(set(exemptions) - inventory_branches)
+    exempted_branches = {branch_id for _entry_id, branch_id in exemptions}
+    if len(exempted_branches) != len(exemptions):
+        raise HarnessFailure(
+            "duplicate global visible-string fragment exemptions"
+        )
+    unknown_exemptions = sorted(
+        obligation for obligation in exemptions
+        if obligation not in all_inventory_site_branches
+        or obligation[1] not in inventory_branches
+    )
     if unknown_exemptions:
         raise HarnessFailure(
             "stale visible-string exemptions: "
@@ -1126,23 +1300,31 @@ def analyze_visible_string_coverage(
         for entry in inventory["entries"]
         for branch in entry["branches"]
     }
-    captures: dict[tuple[str, str], list[str]] = {}
+    captures: dict[str, list[str]] = {}
+    terminal_captures: dict[str, list[str]] = {}
+    constructed_captures: dict[str, list[str]] = {}
     effectless_printable_markers: dict[tuple[str, str], list[str]] = {}
     for key, stream in marker_streams.items():
         for obligation, has_effect in visible_branch_effects(stream, key):
-            if obligation not in all_inventory_branches:
+            if obligation not in all_inventory_site_branches:
                 raise HarnessFailure(
                     "instrumented capture emitted unknown site/branch: "
                     + "/".join(obligation)
                 )
+            branch_id = obligation[1]
+            if has_effect is None:
+                constructed_captures.setdefault(branch_id, []).append(key)
+                captures.setdefault(branch_id, []).append(key)
+                continue
             if channels[obligation] == "printable-visible" and not has_effect:
                 effectless_printable_markers.setdefault(obligation, []).append(key)
                 continue
-            captures.setdefault(obligation, []).append(key)
+            terminal_captures.setdefault(branch_id, []).append(key)
+            captures.setdefault(branch_id, []).append(key)
     effectless_only = {
         obligation: keys
         for obligation, keys in effectless_printable_markers.items()
-        if obligation not in captures
+        if obligation[1] not in captures
     }
     if effectless_only:
         raise HarnessFailure(
@@ -1155,7 +1337,7 @@ def analyze_visible_string_coverage(
             )
         )
     covered_exemptions = sorted(
-        obligation for obligation in exemptions if obligation in captures
+        obligation for obligation in exemptions if obligation[1] in captures
     )
     if covered_exemptions:
         raise HarnessFailure(
@@ -1165,28 +1347,33 @@ def analyze_visible_string_coverage(
             )
         )
     missing = sorted(
-        obligation for obligation in inventory_branches
-        if obligation not in captures and obligation not in exemptions
+        branch_id for branch_id in inventory_branches
+        if branch_id not in captures and branch_id not in exempted_branches
     )
     report = []
-    by_id = {entry["id"]: entry for entry in inventory["entries"]}
-    branches_by_id = {
-        (entry["id"], branch["id"]): branch
-        for entry in inventory["entries"]
-        for branch in entry["branches"]
+    branches_by_id: dict[str, dict[str, Any]] = {}
+    sources_by_branch: dict[str, list[dict[str, Any]]] = {}
+    for entry in inventory["entries"]:
+        for branch in entry["branches"]:
+            branches_by_id.setdefault(branch["id"], branch)
+            sources_by_branch.setdefault(branch["id"], []).append(
+                {"id": entry["id"], "site": entry["site"], "sink": entry["sink"]}
+            )
+    exemptions_by_branch = {
+        branch_id: exemptions[(entry_id, branch_id)]
+        for entry_id, branch_id in exemptions
     }
-    for obligation in sorted(all_inventory_branches):
-        entry_id, branch_id = obligation
-        observed = sorted(set(captures.get(obligation, [])))
+    for branch_id in sorted(branches_by_id):
+        observed = sorted(set(captures.get(branch_id, [])))
         report.append(
             {
-                "id": entry_id,
                 "branchId": branch_id,
-                "site": by_id[entry_id]["site"],
-                "sink": by_id[entry_id]["sink"],
-                "branch": branches_by_id[obligation],
+                "branch": branches_by_id[branch_id],
+                "sources": sources_by_branch[branch_id],
                 "captures": observed,
-                "exemption": exemptions.get(obligation),
+                "terminalCaptures": sorted(set(terminal_captures.get(branch_id, []))),
+                "constructedCaptures": sorted(set(constructed_captures.get(branch_id, []))),
+                "exemption": exemptions_by_branch.get(branch_id),
             }
         )
     report_path = analysis_root / "visible-string-coverage.json"
@@ -1194,11 +1381,12 @@ def analyze_visible_string_coverage(
         json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     if missing:
-        previews = [
-            f"{entry_id}/{branch_id}="
-            f"{by_id[entry_id]['site']['path']}:{by_id[entry_id]['site']['line']}"
-            for entry_id, branch_id in missing[:20]
-        ]
+        previews = []
+        for branch_id in missing[:20]:
+            source = sources_by_branch[branch_id][0]
+            previews.append(
+                f"{branch_id}={source['site']['path']}:{source['site']['line']}"
+            )
         raise HarnessFailure(
             "uncaptured baseline visible-string branches "
             f"({len(missing)} of {len(inventory_branches)}; "
@@ -1206,18 +1394,19 @@ def analyze_visible_string_coverage(
             + ", ".join(previews)
             + f"; report={report_path}"
         )
-    printable_captures = sum(
-        obligation in captures for obligation in inventory_branches
-    )
-    protocol_branches = all_inventory_branches - inventory_branches
-    protocol_captures = sum(
-        obligation in captures for obligation in protocol_branches
-    )
+    printable_captures = sum(branch_id in captures for branch_id in inventory_branches)
+    protocol_branches = {
+        branch["id"]
+        for entry in inventory["entries"]
+        if entry["sink"]["channel"] == "terminal-protocol"
+        for branch in entry["branches"]
+    }
+    protocol_captures = sum(branch_id in captures for branch_id in protocol_branches)
     print(
         "visible-string coverage: "
         f"printable_sites={sum(entry['sink']['channel'] == 'printable-visible' for entry in inventory['entries'])} "
         f"printable_branches={len(inventory_branches)} "
-        f"printable_cell_effect_captures={printable_captures} "
+        f"printable_terminal_or_sink_captures={printable_captures} "
         f"structured_exemptions={len(exemptions)} "
         f"protocol_sites={sum(entry['sink']['channel'] == 'terminal-protocol' for entry in inventory['entries'])} "
         f"protocol_branches={len(protocol_branches)} "
@@ -1658,6 +1847,7 @@ def capture_side(
             if side != "pi":
                 raise HarnessFailure("visible-site instrumentation is baseline-only")
             environment["RENDER_DIFF_VISIBLE_SITES"] = "1"
+            environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
         if side == "cadr":
             environment["RENDER_DIFF_REFERENCE_CHANGELOG"] = str(
                 baseline / "packages/coding-agent/CHANGELOG.md"
@@ -2222,6 +2412,14 @@ def analyze(args: argparse.Namespace) -> int:
     results: list[dict[str, Any]] = []
     pi_screens: dict[str, bytes] = {}
     visible_marker_streams: dict[str, bytes] = {}
+    if args.tier == "full":
+        construction_path = capture_root / "baseline-construction.pi.visible.raw"
+        if not construction_path.is_file():
+            raise HarnessFailure(
+                "missing baseline visible-string construction artifact: "
+                + str(construction_path)
+            )
+        visible_marker_streams["production-sink-construction"] = construction_path.read_bytes()
     for dimension in manifest["dimensions"]:
         dimension_id = dimension["id"]
         for scenario in scenarios:
@@ -2436,6 +2634,12 @@ def gate(args: argparse.Namespace) -> int:
                     visible_arguments = argparse.Namespace(**visible_values)
                     capture(visible_arguments)
                 captures += 1
+        if instrumented_baseline is not None:
+            run_visible_string_construction_suite(
+                instrumented_baseline,
+                args.output.resolve(),
+                args.timeout,
+            )
     finally:
         if instrumented_temporary is not None:
             instrumented_temporary.cleanup()

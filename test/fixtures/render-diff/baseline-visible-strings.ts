@@ -220,12 +220,20 @@ const exactTerminalProtocolIdentifiers = new Set([
 	"packages/tui/src/TuiMainScreen.ts:positionHardwareCursor:buffer",
 	"packages/tui/src/terminal.ts:queryAndEnableKittyProtocol:KITTY_KEYBOARD_PROTOCOL_QUERY",
 ]);
+const exactTerminalProtocolFunctions = new Set([
+	"packages/tui/src/TuiAltScreen.ts:beforeTerminalStart",
+	"packages/tui/src/TuiAltScreen.ts:beforeTerminalStop",
+]);
 
 function terminalWriteChannel(
 	source: ts.SourceFile,
 	expression: ts.Expression | undefined,
 ): PresentationChannel {
 	if (!expression) return "printable-visible";
+	const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
+	if (exactTerminalProtocolFunctions.has(`${relativePath}:${enclosingFunctionName(expression, source) ?? ""}`)) {
+		return "terminal-protocol";
+	}
 	if (ts.isParenthesizedExpression(expression)) return terminalWriteChannel(source, expression.expression);
 	if (ts.isConditionalExpression(expression)) {
 		return terminalWriteChannel(source, expression.whenTrue) === "terminal-protocol" &&
@@ -239,10 +247,24 @@ function terminalWriteChannel(
 	if (ts.isTemplateExpression(expression)) {
 		return /^\x1b(?:\[|\]|_|P)/.test(expression.head.text) ? "terminal-protocol" : "printable-visible";
 	}
+	if (
+		ts.isCallExpression(expression) && ts.isPropertyAccessExpression(expression.expression) &&
+		expression.expression.name.text === "join" && ts.isArrayLiteralExpression(expression.expression.expression)
+	) {
+		return expression.expression.expression.elements.every(
+			(element) => ts.isExpression(element) && terminalWriteChannel(source, element) === "terminal-protocol",
+		)
+			? "terminal-protocol"
+			: "printable-visible";
+	}
 	if (ts.isIdentifier(expression)) {
-		const relativePath = path.relative(baselineRoot, source.fileName).replaceAll(path.sep, "/");
 		const contract = `${relativePath}:${enclosingFunctionName(expression, source) ?? ""}:${expression.text}`;
 		if (exactTerminalProtocolIdentifiers.has(contract)) return "terminal-protocol";
+		const declaration = localDeclaration(source, expression, expression.text);
+		if (
+			declaration?.initializer && ts.isVariableDeclarationList(declaration.parent) &&
+			(declaration.parent.flags & ts.NodeFlags.Const) !== 0
+		) return terminalWriteChannel(source, declaration.initializer);
 	}
 	return "printable-visible";
 }
@@ -325,9 +347,7 @@ function inspect(source: ts.SourceFile, node: ts.Node): void {
 				channel === "printable-visible" && Boolean(node.arguments[0] && !ts.isStringLiteralLike(node.arguments[0]) && !ts.isTemplateExpression(node.arguments[0])),
 			);
 		} else if (directPrintableOutputs.has(target)) {
-			const channel = relativePath === "packages/tui/src/terminal.ts" && target === "process.stdout.write"
-				? terminalWriteChannel(source, node.arguments[0])
-				: "printable-visible";
+			const channel = terminalWriteChannel(source, node.arguments[0]);
 			for (const argument of node.arguments) addVisibleArgument(source, argument, `output:${target}`, channel, 100);
 		} else if (name && callSinkContracts.has(name)) {
 			const contract = callSinkContracts.get(name)!;
@@ -408,6 +428,8 @@ type ChoiceInstrumentation = {
 	expression: ts.Expression;
 	choices?: string[];
 	conditionChoiceId?: string;
+	nestedChoiceIds?: string[];
+	persistent?: boolean;
 };
 
 const mutationChoiceInstrumentations = new Map<string, ChoiceInstrumentation>();
@@ -488,17 +510,21 @@ function flowScope(source: ts.SourceFile, node: ts.Node): ts.Node {
 function localDeclaration(source: ts.SourceFile, node: ts.Node, name: string): ts.VariableDeclaration | undefined {
 	const scope = flowScope(source, node);
 	let best: ts.VariableDeclaration | undefined;
-	const pending: ts.Node[] = [scope];
-	while (pending.length > 0) {
-		const current = pending.pop()!;
-		if (current !== scope && ts.isFunctionLike(current)) continue;
-		if (
-			ts.isVariableDeclaration(current) && ts.isIdentifier(current.name) &&
-			current.name.text === name && current.initializer && current.getStart(source) < node.getStart(source) &&
-			(!best || current.getStart(source) > best.getStart(source))
-		) best = current;
-		ts.forEachChild(current, (child) => { pending.push(child); });
-	}
+	const search = (root: ts.Node): void => {
+		const pending: ts.Node[] = [root];
+		while (pending.length > 0) {
+			const current = pending.pop()!;
+			if (current !== root && ts.isFunctionLike(current)) continue;
+			if (
+				ts.isVariableDeclaration(current) && ts.isIdentifier(current.name) &&
+				current.name.text === name && current.getStart(source) < node.getStart(source) &&
+				(!best || current.getStart(source) > best.getStart(source))
+			) best = current;
+			ts.forEachChild(current, (child) => { pending.push(child); });
+		}
+	};
+	search(scope);
+	if (!best && scope !== source) search(source);
 	return best;
 }
 
@@ -591,7 +617,10 @@ function trimSegments(segments: Segment[]): Segment[] {
 	return result.filter((segment) => segment.kind === "slot" || segment.text !== "");
 }
 
-function registerMutationInstrumentation(source: ts.SourceFile, mutation: StringMutation): void {
+function registerMutationInstrumentation(
+	source: ts.SourceFile,
+	mutation: Pick<StringMutation, "right" | "guards">,
+): void {
 	if (mutation.guards.length === 0) return;
 	const rhsChoices: string[] = [];
 	for (const guard of mutation.guards) {
@@ -614,6 +643,27 @@ function registerMutationInstrumentation(source: ts.SourceFile, mutation: String
 	}
 }
 
+function registerPersistentExpressionChoices(source: ts.SourceFile, expression: ts.Expression): void {
+	const choiceIds: string[] = [];
+	const visit = (node: ts.Node): void => {
+		if (
+			ts.isConditionalExpression(node) ||
+			ts.isBinaryExpression(node) &&
+			(node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || node.operatorToken.kind === ts.SyntaxKind.BarBarToken)
+		) choiceIds.push(choiceId(source, node));
+		ts.forEachChild(node, visit);
+	};
+	visit(expression);
+	if (choiceIds.length === 0) return;
+	const key = `${source.fileName}:${expression.getStart(source)}:${expression.getEnd()}:persistent`;
+	mutationChoiceInstrumentations.set(key, {
+		source,
+		expression,
+		nestedChoiceIds: uniqueChoices(choiceIds),
+		persistent: true,
+	});
+}
+
 function parseLocalString(
 	source: ts.SourceFile,
 	use: ts.Identifier,
@@ -626,6 +676,7 @@ function parseLocalString(
 	const key = `${use.text}:${declaration.getStart(source)}`;
 	if (resolving.has(key)) return undefined;
 	const nestedResolving = new Set([...resolving, key]);
+	registerPersistentExpressionChoices(source, declaration.initializer);
 	let states: FlowState[] = parseExpression(
 		source, declaration.initializer, stylePath, nestedResolving, resolveInRoot,
 	).map((branch) => ({
@@ -634,6 +685,7 @@ function parseLocalString(
 	}));
 	const mutations = localStringMutations(source, use, use.text, declaration);
 	for (const mutation of mutations) {
+		registerMutationInstrumentation(source, mutation);
 		const next: FlowState[] = [];
 		for (const state of states) {
 			let applicable: FlowState[] = [state];
@@ -649,6 +701,12 @@ function parseLocalString(
 					} else {
 						const applies = { ...candidate, decisions: new Map(candidate.decisions) };
 						applies.decisions.set(guard.id, guard.selected);
+						if (guard.conditionExpression || guard.selected) {
+							applies.runtimeChoices = uniqueChoices([
+								...applies.runtimeChoices,
+								`${guard.id}:${guard.selected}`,
+							]);
+						}
 						applies.conditions = [
 							...applies.conditions,
 							guard.selected ? guard.condition : `!(${guard.condition})`,
@@ -656,6 +714,12 @@ function parseLocalString(
 						guarded.push(applies);
 						const misses = { ...candidate, decisions: new Map(candidate.decisions) };
 						misses.decisions.set(guard.id, !guard.selected);
+						if (guard.conditionExpression) {
+							misses.runtimeChoices = uniqueChoices([
+								...misses.runtimeChoices,
+								`${guard.id}:${!guard.selected}`,
+							]);
+						}
 						misses.conditions = [
 							...misses.conditions,
 							guard.selected ? `!(${guard.condition})` : guard.condition,
@@ -667,7 +731,10 @@ function parseLocalString(
 			}
 			next.push(...skipped);
 			for (const candidate of applicable) {
-				const guardChoices: string[] = [];
+				const guardIds = new Set(mutation.guards.map((guard) => guard.id));
+				const guardChoices = candidate.runtimeChoices.filter((choice) =>
+					guardIds.has(choice.slice(0, choice.lastIndexOf(":")))
+				);
 				for (const rhs of parseExpression(
 					source, mutation.right, stylePath, nestedResolving, resolveInRoot,
 				)) {
@@ -753,6 +820,7 @@ function parseLocalStringArray(
 	const key = `array:${use.text}:${declaration.getStart(source)}`;
 	if (resolving.has(key)) return undefined;
 	const nestedResolving = new Set([...resolving, key]);
+	registerPersistentExpressionChoices(source, declaration.initializer);
 	let states: FlowState[] = [{ conditions: [], runtimeChoices: [], segments: [], decisions: new Map() }];
 	if (ts.isArrayLiteralExpression(declaration.initializer)) {
 		for (const element of declaration.initializer.elements) {
@@ -763,9 +831,9 @@ function parseLocalStringArray(
 		}
 	}
 	for (const mutation of localStringArrayPushes(source, use, use.text, declaration)) {
+		registerMutationInstrumentation(source, mutation);
 		const next: FlowState[] = [];
 		for (const state of states) {
-			const choices: string[] = [];
 			const conflicting = mutation.guards.some((guard) => {
 				const known = state.decisions.get(guard.id);
 				return known !== undefined && known !== guard.selected;
@@ -778,6 +846,9 @@ function parseLocalStringArray(
 			{
 				const appliedDecisions = new Map(state.decisions);
 				for (const guard of mutation.guards) appliedDecisions.set(guard.id, guard.selected);
+				const choices = mutation.guards
+					.filter((guard) => guard.conditionExpression || guard.selected)
+					.map((guard) => `${guard.id}:${guard.selected}`);
 				const values = parseExpression(source, mutation.right, stylePath, nestedResolving, resolveInRoot);
 				const appended = state.segments.length > 0 ? combine(delimiter, values) : values;
 				for (const branch of combine([state], appended)) {
@@ -800,7 +871,9 @@ function parseLocalStringArray(
 				next.push({
 					...state,
 					conditions: [...state.conditions, guard.selected ? `!(${guard.condition})` : guard.condition],
-				runtimeChoices: state.runtimeChoices,
+					runtimeChoices: guard.conditionExpression
+						? uniqueChoices([...state.runtimeChoices, `${guard.id}:${!guard.selected}`])
+						: state.runtimeChoices,
 					decisions: skippedDecisions,
 				});
 			}
@@ -973,9 +1046,22 @@ function parseExpression(
 		ts.isBinaryExpression(node) &&
 		(node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || node.operatorToken.kind === ts.SyntaxKind.BarBarToken)
 	) {
+		const condition = node.left.getText(source);
+		const choice = choiceId(source, node);
+		const selectedCondition = node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken
+			? `${condition} !== null && ${condition} !== undefined`
+			: `Boolean(${condition})`;
 		return [
-			...parseExpression(source, node.left, stylePath, resolving, resolveInRoot),
-			...parseExpression(source, node.right, stylePath, resolving, resolveInRoot),
+			...parseExpression(source, node.left, stylePath, resolving, resolveInRoot).map((branch) => ({
+				...branch,
+				conditions: [selectedCondition, ...branch.conditions],
+				runtimeChoices: [`${choice}:true`, ...branch.runtimeChoices],
+			})),
+			...parseExpression(source, node.right, stylePath, resolving, resolveInRoot).map((branch) => ({
+				...branch,
+				conditions: [`!(${selectedCondition})`, ...branch.conditions],
+				runtimeChoices: [`${choice}:false`, ...branch.runtimeChoices],
+			})),
 		];
 	}
 	if (ts.isConditionalExpression(node)) {
@@ -1105,7 +1191,7 @@ function normalizeSegments(segments: Segment[]): Segment[] {
 }
 
 function meaningful(branches: BranchBuild[]): boolean {
-	return branches.some((branch) => branch.segments.length > 0);
+	return branches.some((branch) => branch.segments.some((segment) => segment.kind === "literal" && segment.text !== ""));
 }
 
 function candidateBranches(candidate: Candidate): BranchBuild[] {
@@ -1205,7 +1291,7 @@ for (;;) {
 
 const entries: Entry[] = selected
 	.sort((left, right) => left.source.fileName.localeCompare(right.source.fileName) || left.expression.getStart(left.source) - right.expression.getStart(right.source))
-	.map((candidate) => {
+	.flatMap((candidate): Entry[] => {
 		const source = candidate.source;
 		const start = candidate.expression.getStart(source);
 		const end = candidate.expression.getEnd();
@@ -1215,27 +1301,23 @@ const entries: Entry[] = selected
 		const begin = source.getLineAndCharacterOfPosition(start);
 		const finish = source.getLineAndCharacterOfPosition(end);
 		const id = `VS-${digest(`${relativePath}\0${start}\0${end}\0${candidate.kind}\0${nodeSha256}`).slice(0, 16)}`;
-		const normalizedBranches = candidateBranches(candidate)
-			.map((branch) => ({ ...branch, segments: normalizeSegments(branch.segments) }))
-			.filter((branch) => branch.segments.length > 0);
-		const observableBranches = new Map<string, BranchBuild>();
-		for (const branch of normalizedBranches) {
-			const observable = JSON.stringify({
-				runtimeChoices: branch.runtimeChoices,
-				segments: branch.segments.map((segment) => segment.kind === "literal"
-					? segment
-					: { kind: "slot", stylePath: segment.stylePath }),
-			});
-			if (!observableBranches.has(observable)) observableBranches.set(observable, branch);
+		const fixedFragments = new Map<string, Extract<Segment, { kind: "literal" }>>();
+		for (const branch of candidateBranches(candidate)) {
+			for (const segment of branch.segments) {
+				if (segment.kind !== "literal" || segment.text === "") continue;
+				const key = JSON.stringify({ text: segment.text, stylePath: segment.stylePath });
+				if (!fixedFragments.has(key)) fixedFragments.set(key, segment);
+			}
 		}
-		const branches = [...observableBranches.values()]
-			.map((branch) => ({
-				id: `B-${digest(JSON.stringify(branch)).slice(0, 12)}`,
-				conditions: branch.conditions,
-				runtimeChoices: branch.runtimeChoices,
-				segments: branch.segments,
-			}));
-		return {
+		const branches = [...fixedFragments.values()].map((segment) => {
+			const obligation = { conditions: [], runtimeChoices: [], segments: [segment] };
+			return {
+				id: `B-${digest(JSON.stringify(obligation)).slice(0, 12)}`,
+				...obligation,
+			};
+		});
+		if (branches.length === 0) return [];
+		return [{
 			id,
 			site: {
 				path: relativePath,
@@ -1251,8 +1333,12 @@ const entries: Entry[] = selected
 			},
 			sink: { kind: candidate.kind, channel: candidate.channel },
 			branches,
-		};
+		}];
 	});
+
+// Coverage is defined over fixed source fragments, not the Cartesian product
+// of every condition that can surround one eventual presentation sink.
+mutationChoiceInstrumentations.clear();
 
 if (instrumentRoot) {
 	function conditionalChoiceId(source: ts.SourceFile, node: ts.ConditionalExpression): string {
@@ -1265,7 +1351,9 @@ if (instrumentRoot) {
 		source: ts.SourceFile,
 		expression: ts.Expression,
 		choiceHelper: string,
+		logicalChoiceHelper: string,
 		allowedChoices: ReadonlySet<string>,
+		persistent = false,
 	): string {
 		const expressionStart = expression.getStart(source);
 		const expressionEnd = expression.getEnd();
@@ -1288,8 +1376,25 @@ if (instrumentRoot) {
 							kind: "open",
 							span,
 						});
-						addInsertion(end, { text: "))", kind: "close", span });
+						addInsertion(end, { text: `), ${persistent})`, kind: "close", span });
 					}
+				}
+			} else if (
+				ts.isBinaryExpression(node) &&
+				(node.operatorToken.kind === ts.SyntaxKind.QuestionQuestionToken || node.operatorToken.kind === ts.SyntaxKind.BarBarToken)
+			) {
+				const choice = choiceId(source, node);
+				if (allowedChoices.has(choice)) {
+					const span = node.getEnd() - node.getStart(source);
+					addInsertion(node.left.getStart(source), {
+						text: `${logicalChoiceHelper}(${JSON.stringify(choice)}, ${JSON.stringify(node.operatorToken.getText(source))}, () => (`,
+						kind: "open",
+						span,
+					});
+					addInsertion(node.left.getEnd(), { text: "), () => (", kind: "close", span });
+					addInsertion(node.operatorToken.getStart(source), { text: "/*", kind: "open", span: 0 });
+					addInsertion(node.operatorToken.getEnd(), { text: "*/", kind: "close", span: 0 });
+					addInsertion(node.right.getEnd(), { text: `), ${persistent})`, kind: "close", span });
 				}
 			}
 			ts.forEachChild(node, visit);
@@ -1348,6 +1453,7 @@ if (instrumentRoot) {
 		if (fileEntries.length > 0) {
 			const siteHelper = `__cadrRenderDiffVisibleSite_${digest(relativePath).slice(0, 8)}`;
 			const choiceHelper = `__cadrRenderDiffVisibleChoice_${digest(relativePath).slice(0, 8)}`;
+			const logicalChoiceHelper = `__cadrRenderDiffVisibleLogicalChoice_${digest(relativePath).slice(0, 8)}`;
 			const conditionChoiceHelper = `__cadrRenderDiffVisibleCondition_${digest(relativePath).slice(0, 8)}`;
 			const flushHelper = `__cadrRenderDiffFlushVisible_${digest(relativePath).slice(0, 8)}`;
 			const installHelper = `__cadrRenderDiffInstallVisibleStreams_${digest(relativePath).slice(0, 8)}`;
@@ -1367,14 +1473,14 @@ if (instrumentRoot) {
 					)
 				);
 				let original = instrumentConditionalChoices(
-					source, candidate.expression, choiceHelper, allowedChoices,
+					source, candidate.expression, choiceHelper, logicalChoiceHelper, allowedChoices,
 				);
 				if (
 					relativePath === "packages/tui/src/components/select-list.ts" &&
 					ts.isCallExpression(candidate.expression) &&
 					candidate.expression.expression.getText(source) === "this.renderItem"
 				) original = `${slashMetadataHelper}(${candidate.expression.arguments[0]?.getText(source) ?? "item"}, (${original}))`;
-				if (relativePath.endsWith("/components/extension-selector.ts")) {
+		if (relativePath.endsWith("/components/extension-selector.ts")) {
 					if (original.includes("title") && entry.site.kind === "new:Text") {
 						original = `${extensionSelectorMetadataHelper}("title", (${original}))`;
 					} else if (original === "text" && entry.site.kind === "new:Text") {
@@ -1396,10 +1502,64 @@ if (instrumentRoot) {
 					label: entry.id,
 				});
 			}
+			if (relativePath === "packages/tui/src/components/select-list.ts") {
+				const visitRenderItem = (node: ts.Node): void => {
+					if (
+						ts.isCallExpression(node) &&
+						node.expression.getText(source) === "this.renderItem" &&
+						node.arguments[0]
+					) replacements.push({
+						start: node.getStart(source),
+						end: node.getEnd(),
+						text: `${slashMetadataHelper}(${node.arguments[0].getText(source)}, (${node.getText(source)}))`,
+						label: "slash-command-metadata-render-seam",
+					});
+					ts.forEachChild(node, visitRenderItem);
+				};
+				visitRenderItem(source);
+			}
+			if (relativePath.endsWith("/components/extension-selector.ts")) {
+				const visitExtensionText = (node: ts.Node): void => {
+					if (ts.isNewExpression(node) && calledName(node.expression) === "Text") {
+						const value = node.arguments?.[0];
+						let field: "title" | "item" | undefined;
+						if (value && ts.isIdentifier(value) && value.text === "text") field = "item";
+						if (value) {
+							const visitValue = (current: ts.Node): void => {
+								if (ts.isIdentifier(current) && current.text === "title") field = "title";
+								ts.forEachChild(current, visitValue);
+							};
+							visitValue(value);
+						}
+						if (value && field) {
+							if (replacements.some((replacement) =>
+								replacement.start <= value.getStart(source) && replacement.end >= value.getEnd()
+							)) return;
+							replacements.push({
+								start: value.getStart(source),
+								end: value.getEnd(),
+								text: `${extensionSelectorMetadataHelper}(${JSON.stringify(field)}, (${value.getText(source)}))`,
+								label: `extension-selector-${field}-render-seam`,
+							});
+						}
+					}
+					ts.forEachChild(node, visitExtensionText);
+				};
+				visitExtensionText(source);
+			}
 			for (const instrumentation of mutationChoiceInstrumentations.values()) {
 				if (instrumentation.source !== source) continue;
 				let wrapped = instrumentation.expression.getText(source);
-				if (instrumentation.conditionChoiceId) {
+				if (instrumentation.nestedChoiceIds) {
+					wrapped = instrumentConditionalChoices(
+						source,
+						instrumentation.expression,
+						choiceHelper,
+						logicalChoiceHelper,
+						new Set(instrumentation.nestedChoiceIds),
+						instrumentation.persistent,
+					);
+				} else if (instrumentation.conditionChoiceId) {
 					wrapped = `${conditionChoiceHelper}(${JSON.stringify(instrumentation.conditionChoiceId)}, (${wrapped}))`;
 				} else for (const choice of instrumentation.choices ?? []) {
 					wrapped = `${choiceHelper}(${JSON.stringify(choice)}, (${wrapped}))`;
@@ -1408,7 +1568,7 @@ if (instrumentRoot) {
 					start: instrumentation.expression.getStart(source),
 					end: instrumentation.expression.getEnd(),
 					text: wrapped,
-					label: instrumentation.conditionChoiceId ?? instrumentation.choices?.join(",") ?? "choice",
+					label: instrumentation.conditionChoiceId ?? instrumentation.nestedChoiceIds?.join(",") ?? instrumentation.choices?.join(",") ?? "choice",
 				});
 			}
 			for (let index = 0; index < replacements.length; index++) {
@@ -1423,16 +1583,24 @@ if (instrumentRoot) {
 			for (const replacement of replacements.sort((left, right) => right.start - left.start)) {
 				text = text.slice(0, replacement.start) + replacement.text + text.slice(replacement.end);
 			}
-			text += `\nfunction ${choiceHelper}<T>(choice: string, value: T): T {\n` +
+			text += `\nfunction ${choiceHelper}<T>(choice: string, value: T, persistent = false): T {\n` +
 				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\") return value;\n` +
-				`\t(__cadrRenderDiffVisibleChoices ??= []).push(choice);\n` +
+				`\tif (persistent) { const separator = choice.lastIndexOf(\":\"); (__cadrRenderDiffPersistentVisibleChoices ??= new Map()).set(choice.slice(0, separator), choice.slice(separator + 1) === \"true\"); }\n` +
+				`\telse (__cadrRenderDiffVisibleChoices ??= []).push(choice);\n` +
 				`\treturn value;\n` +
+				`}\n` +
+				`function ${logicalChoiceHelper}<T>(choiceId: string, operator: "||" | "??", left: () => T, right: () => T, persistent = false): T {\n` +
+				`\tconst value = left();\n` +
+				`\tconst selected = operator === "??" ? value !== null && value !== undefined : Boolean(value);\n` +
+				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES === "1") { if (persistent) (__cadrRenderDiffPersistentVisibleChoices ??= new Map()).set(choiceId, selected); else (__cadrRenderDiffVisibleChoices ??= []).push(\`\${choiceId}:\${selected}\`); }\n` +
+				`\treturn selected ? value : right();\n` +
 				`}\n` +
 				`function ${conditionChoiceHelper}<T>(choiceId: string, value: T): T {\n` +
 				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES === \"1\") (__cadrRenderDiffVisibleChoices ??= []).push(\`\${choiceId}:\${Boolean(value)}\`);\n` +
 				`\treturn value;\n` +
 				`}\n` +
 				`var __cadrRenderDiffVisibleChoices: string[] | undefined;\n` +
+				`var __cadrRenderDiffPersistentVisibleChoices: Map<string, boolean> | undefined;\n` +
 				`function ${flushHelper}<T>(value: T): T {\n` +
 				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\" || typeof value !== \"string\") return value;\n` +
 				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffPendingVisibleSpans?: Array<{ key: string; begin: string; end: string; candidates: string[] }>; __cadrRenderDiffPendingVisibleKeys?: Set<string> };\n` +
@@ -1460,60 +1628,132 @@ if (instrumentRoot) {
 				`\treturn marked as T;\n` +
 				`}\n` +
 				`function ${installHelper}(): void {\n` +
-				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffVisibleStreamsInstalled?: boolean };\n` +
+				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffVisibleStreamsInstalled?: boolean; __cadrRenderDiffRawStderrWrite?: (chunk: string) => unknown };\n` +
 				`\tif (state.__cadrRenderDiffVisibleStreamsInstalled) return;\n` +
 				`\tstate.__cadrRenderDiffVisibleStreamsInstalled = true;\n` +
 				`\tfor (const stream of [process.stdout, process.stderr]) {\n` +
 				`\t\tconst original = stream.write.bind(stream);\n` +
+				`\t\tif (stream === process.stderr) state.__cadrRenderDiffRawStderrWrite = (chunk: string) => original(chunk);\n` +
 				`\t\tstream.write = ((chunk: string | Uint8Array, ...args: unknown[]) => original((typeof chunk === \"string\" ? ${flushHelper}(chunk) : chunk) as never, ...(args as []))) as typeof stream.write;\n` +
 				`\t}\n` +
 				`}\n` +
 				`function ${siteHelper}<T>(siteId: string, branches: ReadonlyArray<readonly [string, string, readonly string[]]>, value: T): T {\n` +
-				`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\") return value;\n` +
+				`\tconst visibleSites = process.env.RENDER_DIFF_VISIBLE_SITES === \"1\";\n` +
+				`\tconst visibleConstructs = process.env.RENDER_DIFF_VISIBLE_CONSTRUCTS === \"1\";\n` +
+				`\tif (!visibleSites && !visibleConstructs) return value;\n` +
 				`\tconst values = typeof value === \"string\" ? [value] : Array.isArray(value) && value.every((item) => typeof item === \"string\") ? value : undefined;\n` +
 				`\tif (!values || values.length === 0) return value;\n` +
-				`\tconst choiceIds = new Set(branches.flatMap(([expected]) => expected ? expected.split(\",\").map((choice) => choice.slice(0, choice.lastIndexOf(\":\"))) : []));\n` +
-				`\tconst pendingChoices = __cadrRenderDiffVisibleChoices ?? [];\n` +
-				`\tconst choices = pendingChoices.filter((choice) => choiceIds.has(choice.slice(0, choice.lastIndexOf(\":\"))));\n` +
-				`\tfor (let index = pendingChoices.length - 1; index >= 0; index--) if (choiceIds.has(pendingChoices[index]!.slice(0, pendingChoices[index]!.lastIndexOf(\":\")))) pendingChoices.splice(index, 1);\n` +
-				`\tconst signature = choices.filter((choice, index) => choices.indexOf(choice) === index).join(\",\");\n` +
 				`\tconst visibleValue = values.join(\"\\n\");\n` +
-				`\tconst branch = branches.find(([expected, _id, parts]) => { if (expected !== signature) return false; let offset = 0; return parts.every((part) => { const found = visibleValue.indexOf(part, offset); if (found < 0) return false; offset = found + part.length; return true; }); });\n` +
-				`\tif (!branch) return value;\n` +
-				`\tconst [, branchId, parts] = branch;\n` +
-				`\tconst begin = \`\\x1b]777;cadr-visible-branch;phase=begin;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
-				`\tconst end = \`\\x1b]777;cadr-visible-branch;phase=end;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
-				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffPendingVisibleSpans?: Array<{ key: string; begin: string; end: string; candidates: string[] }>; __cadrRenderDiffPendingVisibleKeys?: Set<string> };\n` +
-				`\tconst key = \`\${siteId}/\${branchId}\`;\n` +
+				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffPendingVisibleSpans?: Array<{ key: string; begin: string; end: string; candidates: string[] }>; __cadrRenderDiffPendingVisibleKeys?: Set<string>; __cadrRenderDiffRawStderrWrite?: (chunk: string) => unknown; __cadrRenderDiffConstructMarkers?: Set<string>; __cadrRenderDiffConstructFlushInstalled?: boolean };\n` +
 				`\tconst keys = (state.__cadrRenderDiffPendingVisibleKeys ??= new Set());\n` +
-				`\tif (!keys.has(key)) {\n` +
+				`\tfor (const [, branchId, parts] of branches) {\n` +
+				`\t\tlet offset = 0;\n` +
+				`\t\tif (!parts.every((part) => { const found = visibleValue.indexOf(part, offset); if (found < 0) return false; offset = found + part.length; return true; })) continue;\n` +
+				`\t\tconst key = \`\${siteId}/\${branchId}\`;\n` +
+				`\t\tif (keys.has(key)) continue;\n` +
 				`\t\tkeys.add(key);\n` +
-				`\t\t(state.__cadrRenderDiffPendingVisibleSpans ??= []).push({ key, begin, end, candidates: [visibleValue, ...values, ...parts].filter((item, index, all) => item !== \"\" && all.indexOf(item) === index).sort((left, right) => right.length - left.length) });\n` +
+				`\t\tconst begin = \`\\x1b]777;cadr-visible-branch;phase=begin;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
+				`\t\tconst end = \`\\x1b]777;cadr-visible-branch;phase=end;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
+				`\t\tif (visibleConstructs) {\n` +
+				`\t\t\tconst marker = \`\\x1b]777;cadr-visible-branch;phase=construct;site=\${siteId};branch=\${branchId}\\x07\`;\n` +
+				`\t\t\tconst constructPath = process.env.RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH;\n` +
+				`\t\t\tif (constructPath) {\n` +
+				`\t\t\t\tconst fs = process.getBuiltinModule(\"node:fs\") as { appendFileSync(path: string, data: string): void };\n` +
+				`\t\t\t\tfs.appendFileSync(constructPath, marker);\n` +
+				`\t\t\t} else (state.__cadrRenderDiffConstructMarkers ??= new Set()).add(marker);\n` +
+				`\t\t\tif (!constructPath && !state.__cadrRenderDiffConstructFlushInstalled) {\n` +
+				`\t\t\t\tstate.__cadrRenderDiffConstructFlushInstalled = true;\n` +
+				`\t\t\t\tconst markers = state.__cadrRenderDiffConstructMarkers!;\n` +
+				`\t\t\t\tprocess.once(\"exit\", () => { const write = state.__cadrRenderDiffRawStderrWrite ?? process.stderr.write.bind(process.stderr); for (const marker of markers) write(marker); });\n` +
+				`\t\t\t}\n` +
+				`\t\t}\n` +
+				`\t\tif (visibleSites) (state.__cadrRenderDiffPendingVisibleSpans ??= []).push({ key, begin, end, candidates: [visibleValue, ...values, ...parts].filter((item, index, all) => item !== \"\" && all.indexOf(item) === index).sort((left, right) => right.length - left.length) });\n` +
 				`\t}\n` +
-				`\t${installHelper}();\n` +
+				`\tif (visibleSites) ${installHelper}();\n` +
 				`\treturn value;\n` +
 				`}\n`;
 			if (relativePath === "packages/tui/src/components/select-list.ts") {
 				text += `\nconst __cadrRenderDiffSlashMetadataRecords = ${JSON.stringify(slashMetadataRecords)} as const;\n` +
 					`function ${slashMetadataHelper}(item: SelectItem, value: string): string {\n` +
-					`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== \"1\") return value;\n` +
+					`\tconst visibleSites = process.env.RENDER_DIFF_VISIBLE_SITES === \"1\";\n` +
+					`\tconst visibleConstructs = process.env.RENDER_DIFF_VISIBLE_CONSTRUCTS === \"1\";\n` +
+					`\tif (!visibleSites && !visibleConstructs) return value;\n` +
 					`\tconst matched: Array<{ begin: string; end: string }> = [];\n` +
 					`\tfor (const record of __cadrRenderDiffSlashMetadataRecords) {\n` +
 					`\t\tif (item.label !== record.commandName) continue;\n` +
 					`\t\tconst fieldValue = record.field === \"name\" ? item.label : (item.description ?? \"\");\n` +
 					`\t\tif (record.parts.every((part) => fieldValue.includes(part))) matched.push(record);\n` +
 					`\t}\n` +
-					`\treturn matched.reduceRight((result, record) => record.begin + result + record.end, value);\n` +
+					`\tif (visibleConstructs) {\n` +
+					`\t\tconst constructPath = process.env.RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH;\n` +
+					`\t\tif (constructPath) {\n` +
+					`\t\t\tconst fs = process.getBuiltinModule(\"node:fs\") as { appendFileSync(path: string, data: string): void };\n` +
+					`\t\t\tfor (const record of matched) fs.appendFileSync(constructPath, record.begin.replace(\"phase=begin\", \"phase=construct\"));\n` +
+					`\t\t} else {\n` +
+					`\t\t\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffConstructMarkers?: Set<string>; __cadrRenderDiffConstructFlushInstalled?: boolean; __cadrRenderDiffRawStderrWrite?: (chunk: string) => unknown };\n` +
+					`\t\t\tconst markers = (state.__cadrRenderDiffConstructMarkers ??= new Set());\n` +
+					`\t\t\tfor (const record of matched) markers.add(record.begin.replace(\"phase=begin\", \"phase=construct\"));\n` +
+					`\t\t\tif (!state.__cadrRenderDiffConstructFlushInstalled) {\n` +
+					`\t\t\t\tstate.__cadrRenderDiffConstructFlushInstalled = true;\n` +
+					`\t\t\t\tprocess.once(\"exit\", () => { const write = state.__cadrRenderDiffRawStderrWrite ?? process.stderr.write.bind(process.stderr); for (const marker of markers) write(marker); });\n` +
+					`\t\t\t}\n` +
+					`\t\t}\n` +
+					`\t}\n` +
+					`\treturn visibleSites ? matched.reduceRight((result, record) => record.begin + result + record.end, value) : value;\n` +
 					`}\n`;
 			}
 			if (relativePath.endsWith("/components/extension-selector.ts")) {
 				text += `\nconst __cadrRenderDiffExtensionSelectorMetadataRecords = ${JSON.stringify(extensionSelectorMetadataRecords)} as const;\n` +
 					`function ${extensionSelectorMetadataHelper}(field: "title" | "item", value: string): string {\n` +
-					`\tif (process.env.RENDER_DIFF_VISIBLE_SITES !== "1") return value;\n` +
+					`\tconst visibleSites = process.env.RENDER_DIFF_VISIBLE_SITES === "1";\n` +
+					`\tconst visibleConstructs = process.env.RENDER_DIFF_VISIBLE_CONSTRUCTS === "1";\n` +
+					`\tif (!visibleSites && !visibleConstructs) return value;\n` +
 					`\tconst matched = __cadrRenderDiffExtensionSelectorMetadataRecords.filter((record) => record.field === field && record.parts.every((part) => value.includes(part)));\n` +
-					`\treturn matched.reduceRight((result, record) => record.begin + result + record.end, value);\n` +
+					`\tif (visibleConstructs) {\n` +
+					`\t\tconst constructPath = process.env.RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH;\n` +
+					`\t\tif (constructPath) {\n` +
+					`\t\t\tconst fs = process.getBuiltinModule("node:fs") as { appendFileSync(path: string, data: string): void };\n` +
+					`\t\t\tfor (const record of matched) fs.appendFileSync(constructPath, record.begin.replace("phase=begin", "phase=construct"));\n` +
+					`\t\t} else {\n` +
+					`\t\t\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffConstructMarkers?: Set<string>; __cadrRenderDiffConstructFlushInstalled?: boolean; __cadrRenderDiffRawStderrWrite?: (chunk: string) => unknown };\n` +
+					`\t\t\tconst markers = (state.__cadrRenderDiffConstructMarkers ??= new Set());\n` +
+					`\t\t\tfor (const record of matched) markers.add(record.begin.replace("phase=begin", "phase=construct"));\n` +
+					`\t\t\tif (!state.__cadrRenderDiffConstructFlushInstalled) {\n` +
+					`\t\t\t\tstate.__cadrRenderDiffConstructFlushInstalled = true;\n` +
+					`\t\t\t\tprocess.once("exit", () => { const write = state.__cadrRenderDiffRawStderrWrite ?? process.stderr.write.bind(process.stderr); for (const marker of markers) write(marker); });\n` +
+					`\t\t\t}\n` +
+					`\t\t}\n` +
+					`\t}\n` +
+					`\treturn visibleSites ? matched.reduceRight((result, record) => record.begin + result + record.end, value) : value;\n` +
 					`}\n`;
 			}
+		}
+		if (relativePath === "packages/coding-agent/src/config.ts") {
+			const declaration = "export const isBunBinary =\n";
+			if (!text.includes(declaration)) throw new Error("fixed-baseline isBunBinary declaration changed");
+			text = text.replace(
+				declaration,
+				`${declaration}\tprocess.env.RENDER_DIFF_FORCE_BUN_BINARY === "1" ||\n`,
+			);
+		}
+		if (relativePath === "packages/coding-agent/src/cli/session-picker.ts") {
+			const signature = "): Promise<string | null> {\n";
+			if (!text.includes(signature)) throw new Error("fixed-baseline session picker signature changed");
+			text = text.replace(
+				signature,
+				`${signature}\tif (process.env.RENDER_DIFF_FORCE_NO_SESSION === "1") return null;\n`,
+			);
+		}
+		if (
+			relativePath === "packages/coding-agent/src/modes/interactive/interactive-mode.ts" &&
+			text.includes("handleShareCommand")
+		) {
+			const ghProbe = `\t\ttry {\n\t\t\tconst authResult = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });`;
+			if (!text.includes(ghProbe)) throw new Error("fixed-baseline share gh probe changed");
+			text = text.replace(
+				ghProbe,
+				`\t\ttry {\n\t\t\tif (process.env.RENDER_DIFF_FORCE_GH_PROBE_THROW === "1") throw new Error("forced missing gh");\n\t\t\tconst authResult = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });`,
+			);
 		}
 		const destination = path.join(instrumentRoot, relativePath);
 		fs.mkdirSync(path.dirname(destination), { recursive: true });
@@ -1529,14 +1769,14 @@ process.stdout.write(`${JSON.stringify({
 		extractionRules: {
 			sourceRoots,
 			parsedSourceExtensions: [...parsedSourceExtensions].sort(),
-			unit: "one statically enumerated branch of one explicitly contracted presentation sink or reachable typed string-producer return",
-			composition: "template, binary concatenation, same-function string =/+= flow, conditional branches, trim, typed render-array push, recursively discovered typed producer returns, nested styles, and key hints",
+			unit: "one non-empty fixed string fragment, including whitespace-only geometry, from one explicitly contracted presentation sink or reachable typed string-producer return; runtime slots and Cartesian condition combinations are not fixed source strings",
+			composition: "template, binary concatenation, same-function string =/+= flow, conditional alternatives, trim, typed render-array push, recursively discovered typed producer returns, module constants, nested styles, and key hints",
 			channels: {
 				"printable-visible": "text whose contract reaches a user-visible terminal, stdout, or stderr presentation sink",
 				"terminal-protocol": "terminal control traffic; inventoried separately and not claimed as printable screen content",
 			},
-			instrumentation: "per-file branch-aware obligations retain the original application value, register pending provenance out of band, and add paired OSC 777 begin/end spans only at stdout/stderr emission when RENDER_DIFF_VISIBLE_SITES=1; printable coverage requires a terminal cell or geometry effect inside the correctly nested span",
-			soundnessBoundary: "closed over declared explicit sink contracts, same-function flow, and recursively discovered in-root producers with explicit string/string[] return contracts; their dynamic values remain typed slots while every reachable return is a separately instrumented obligation; any in-root producer without that contract is unresolved dataflow and fails validation; external and dynamically dispatched producers remain typed opaque runtime slots",
+			instrumentation: "per-file fixed-fragment obligations retain the original application value, register pending provenance out of band when that exact fragment is present, and add paired OSC 777 begin/end spans only at stdout/stderr emission when RENDER_DIFF_VISIBLE_SITES=1; printable coverage requires a terminal cell or geometry effect inside the span",
+			soundnessBoundary: "closed over declared explicit sink contracts, same-function flow, module constants, and recursively discovered in-root producers with explicit string/string[] return contracts; dynamic slots are not source strings, while any in-root producer without a contract is unresolved dataflow and fails validation; external and dynamically dispatched producers remain opaque runtime values",
 		},
 	sourceInventory,
 	unresolvedDataflow: [...unresolvedDataflow.values()],

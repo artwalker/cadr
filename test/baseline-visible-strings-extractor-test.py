@@ -111,31 +111,22 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             self.assertEqual("printable-visible", entry["sink"]["channel"])
 
         text_entry = entries[0]
-        self.assertEqual(4, len(text_entry["branches"]))
-        choices = [branch["runtimeChoices"] for branch in text_entry["branches"]]
-        self.assertTrue(all(len(choice) == 1 for choice in choices))
-        self.assertRegex(choices[0][0], r"^C-[0-9a-f]{12}:true$")
-        self.assertRegex(choices[1][0], r"^C-[0-9a-f]{12}:false$")
-        self.assertEqual(choices[0][0].split(":")[0], choices[1][0].split(":")[0])
-        branch_literals = [
-            "".join(segment.get("text", "") for segment in branch["segments"])
+        fixed_fragments = {
+            segment["text"]
             for branch in text_entry["branches"]
-        ]
-        self.assertEqual(
-            {
-                "Hello  friend  continue",
-                "Hello  stranger  continue",
-                "Hello Ada friend  continue",
-                "Hello Ada stranger  continue",
-            },
-            set(branch_literals),
+            for segment in branch["segments"]
+        }
+        self.assertTrue({"Hello ", "Ada", "friend", "stranger", "continue"} <= fixed_fragments)
+        self.assertTrue(
+            all(
+                branch["runtimeChoices"] == []
+                and len(branch["segments"]) == 1
+                and branch["segments"][0]["kind"] == "literal"
+                and "stylePath" in branch["segments"][0]
+                for branch in text_entry["branches"]
+            ),
+            "the fail-closed unit is one fixed visible fragment, not a Cartesian runtime path",
         )
-        for branch in text_entry["branches"]:
-            self.assertIn(
-                sum(segment["kind"] == "slot" for segment in branch["segments"]),
-                {1, 2},
-            )
-            self.assertTrue(all("stylePath" in segment for segment in branch["segments"]))
 
         same_entries = [
             entry
@@ -192,6 +183,22 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             ).lstrip(),
             encoding="utf-8",
         )
+        alt_screen = self.root / "packages/tui/src/TuiAltScreen.ts"
+        alt_screen.write_text(
+            'const terminal = { write: (_value: string) => undefined };\n'
+            'class TuiAltScreen { beforeTerminalStart(): void {\n'
+            '  terminal.write(`${"\\x1b[?1049h"}${"\\x1b[?7l"}\\x1b[2J\\x1b[H\\x1b[?25l`);\n'
+            '} }\n'
+            'new TuiAltScreen().beforeTerminalStart();\n',
+            encoding="utf-8",
+        )
+        clipboard = self.root / "packages/coding-agent/src/utils/clipboard.ts"
+        clipboard.parent.mkdir(parents=True, exist_ok=True)
+        clipboard.write_text(
+            'const encoded = "payload";\n'
+            'process.stdout.write(`\\x1b]52;c;${encoded}\\x07`);\n',
+            encoding="utf-8",
+        )
 
         inventory = self.run_extractor()
         protocol_paths = {
@@ -199,8 +206,146 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             for entry in inventory["entries"]
             if entry["sink"]["channel"] == "terminal-protocol"
         }
-        self.assertIn("packages/tui/src/terminal.ts", protocol_paths)
+        self.assertIn("packages/tui/src/terminal.ts", protocol_paths, json.dumps(inventory, indent=2))
         self.assertIn("packages/tui/src/TuiMainScreen.ts", protocol_paths)
+        self.assertIn("packages/tui/src/TuiAltScreen.ts", protocol_paths)
+        self.assertIn("packages/coding-agent/src/utils/clipboard.ts", protocol_paths)
+
+    def test_block_scoped_loop_binding_does_not_inherit_an_earlier_same_name(self) -> None:
+        source = self.root / "packages/coding-agent/src/modes/interactive/shadowed.ts"
+        source.write_text(
+            textwrap.dedent(
+                """
+                class Text { constructor(_value: string) {} }
+                function render(errors: string[]): void {
+                  let line = "";
+                  line = `prefix [provider] ✓ → `;
+                  new Text(line);
+                  for (const line of errors) new Text(line);
+                }
+                render(["runtime error"]);
+                """
+            ).lstrip(),
+            encoding="utf-8",
+        )
+
+        inventory = self.run_extractor()
+        sites = [
+            entry
+            for entry in inventory["entries"]
+            if entry["site"]["path"].endswith("shadowed.ts")
+        ]
+        self.assertEqual(
+            1,
+            len(sites),
+            "the loop value is an opaque runtime slot and must not inherit the earlier source obligation",
+        )
+        literals = {
+            segment["text"]
+            for branch in sites[0]["branches"]
+            for segment in branch["segments"]
+            if segment["kind"] == "literal"
+        }
+        self.assertEqual({"prefix [provider] ✓ → "}, literals)
+
+    def test_selector_metadata_construction_is_recorded_only_at_the_real_component_sink(self) -> None:
+        interactive = self.root / "packages/coding-agent/src/modes/interactive/interactive-mode.ts"
+        interactive.write_text(
+            textwrap.dedent(
+                """
+                import { ExtensionSelectorComponent } from "./components/extension-selector.ts";
+                function showLoginAuthTypeSelector(providerName?: string): void {
+                  const title = providerName
+                    ? `Select authentication method for ${providerName}:`
+                    : "Select authentication method:";
+                  new ExtensionSelectorComponent(title);
+                }
+                showLoginAuthTypeSelector();
+                showLoginAuthTypeSelector("Provider");
+                """
+            ).lstrip(),
+            encoding="utf-8",
+        )
+        component = interactive.parent / "components/extension-selector.ts"
+        component.parent.mkdir(parents=True, exist_ok=True)
+        component.write_text(
+            "class Text { constructor(_value: string) {} }\n"
+            "export class ExtensionSelectorComponent {\n"
+            "  constructor(title: string) { new Text(title); new Text(\"frame\"); }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        destination = self.root / "instrumented-selector"
+        inventory = self.run_extractor("--instrument", str(destination))
+        expected = {
+            branch["id"]
+            for entry in inventory["entries"]
+            if entry["site"].get("metadata", {}).get("surface") == "extension-selector"
+            for branch in entry["branches"]
+        }
+        self.assertEqual(3, len(expected))
+        markers = self.root / "selector-constructs.raw"
+        environment = os.environ.copy()
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH"] = str(markers)
+        subprocess.run(
+            [
+                str(self.root / "node_modules/.bin/tsx"),
+                str(destination / "packages/coding-agent/src/modes/interactive/interactive-mode.ts"),
+            ],
+            check=True,
+            env=environment,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        observed = set(re.findall(rb"branch=(B-[0-9a-f]+)", markers.read_bytes()))
+        self.assertTrue({value.encode() for value in expected} <= observed)
+
+    def test_instrumented_baseline_has_exact_environment_forcing_seams(self) -> None:
+        config = self.root / "packages/coding-agent/src/config.ts"
+        config.parent.mkdir(parents=True, exist_ok=True)
+        config.write_text(
+            'export const isBunBinary =\n\timport.meta.url.includes("$bunfs");\n',
+            encoding="utf-8",
+        )
+        picker = self.root / "packages/coding-agent/src/cli/session-picker.ts"
+        picker.parent.mkdir(parents=True, exist_ok=True)
+        picker.write_text(
+            "export async function selectSession(\n"
+            "  _current: unknown,\n"
+            "): Promise<string | null> {\n"
+            "  return \"session\";\n"
+            "}\n",
+            encoding="utf-8",
+        )
+        interactive = self.root / "packages/coding-agent/src/modes/interactive/interactive-mode.ts"
+        interactive.write_text(
+            "const spawnSync = (..._args: unknown[]) => ({ status: 0 });\n"
+            "class InteractiveMode {\n"
+            "\tprivate handleShareCommand(): void {\n"
+            "\t\ttry {\n"
+            '\t\t\tconst authResult = spawnSync("gh", ["auth", "status"], { encoding: "utf-8" });\n'
+            "\t\t\tvoid authResult;\n"
+            "\t\t} catch {}\n"
+            "  }\n"
+            "}\n",
+            encoding="utf-8",
+        )
+
+        destination = self.root / "instrumented-forcing-seams"
+        self.run_extractor("--instrument", str(destination))
+        self.assertIn(
+            'process.env.RENDER_DIFF_FORCE_BUN_BINARY === "1" ||',
+            (destination / config.relative_to(self.root)).read_text(encoding="utf-8"),
+        )
+        self.assertIn(
+            'process.env.RENDER_DIFF_FORCE_NO_SESSION === "1"',
+            (destination / picker.relative_to(self.root)).read_text(encoding="utf-8"),
+        )
+        self.assertIn(
+            'process.env.RENDER_DIFF_FORCE_GH_PROBE_THROW === "1"',
+            (destination / interactive.relative_to(self.root)).read_text(encoding="utf-8"),
+        )
 
     def test_instrumentation_is_local_zero_width_and_opt_in(self) -> None:
         destination = self.root / "instrumented"
@@ -209,7 +354,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         source = instrumented.read_text(encoding="utf-8")
         self.assertEqual(1, source.count("function __cadrRenderDiffVisibleSite_"))
         self.assertEqual(1, source.count("function __cadrRenderDiffVisibleChoice_"))
-        self.assertEqual(2, source.count("cadr-visible-branch;phase="))
+        self.assertEqual(3, source.count("cadr-visible-branch;phase="))
         self.assertNotIn("cadr-visible-choice=", source)
         self.assertIn("__cadrRenderDiffVisibleChoices ??= []).push", source)
         self.assertIn('process.env.RENDER_DIFF_VISIBLE_SITES !== "1"', source)
@@ -226,8 +371,9 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         )
         command = [str(self.root / "node_modules/.bin/tsx"), str(runner)]
         disabled_result = subprocess.run(
-            command, check=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+            command, stdout=subprocess.PIPE, stderr=subprocess.PIPE
         )
+        self.assertEqual(0, disabled_result.returncode, disabled_result.stderr.decode() + "\n" + source)
         disabled = disabled_result.stdout
         self.assertNotIn(b"\x1b]777", disabled)
         self.assertNotIn(b"\x1b]777", disabled_result.stderr)
@@ -254,22 +400,17 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         enabled_stream = enabled_result.stdout.decode("ascii")
         self.assertEqual(b"", enabled_result.stderr)
         for entry in inventory["entries"]:
-            selected_branch = next(
-                branch
-                for branch in entry["branches"]
-                if not branch["runtimeChoices"]
-                or branch["runtimeChoices"][0].endswith(":true")
-            )
-            marker = (
-                f"\x1b]777;cadr-visible-branch;phase=begin;site={entry['id']};"
-                f"branch={selected_branch['id']}\x07"
-            )
-            self.assertIn(marker, enabled_stream)
-            self.assertIn(marker.replace("phase=begin", "phase=end"), enabled_stream)
             for branch in entry["branches"]:
-                if branch is selected_branch:
-                    continue
-                self.assertNotIn(f"branch={branch['id']}", enabled_stream)
+                fragment = branch["segments"][0]["text"]
+                marker = (
+                    f"\x1b]777;cadr-visible-branch;phase=begin;site={entry['id']};"
+                    f"branch={branch['id']}\x07"
+                )
+                if entry is inventory["entries"][0] and fragment == "stranger":
+                    self.assertNotIn(marker, enabled_stream)
+                else:
+                    self.assertIn(marker, enabled_stream)
+                    self.assertIn(marker.replace("phase=begin", "phase=end"), enabled_stream)
 
         clean_enabled = re.sub(
             r"\x1b\]777;cadr-visible-branch;phase=(?:begin|end);site=VS-[0-9a-f]{16};branch=B-[0-9a-f]{12}\x07",
@@ -290,12 +431,12 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         alternate_stream = alternate_result.stdout.decode("ascii")
         self.assertEqual(b"", alternate_result.stderr)
         text_entry = inventory["entries"][0]
-        false_branch = next(
+        stranger_fragment = next(
             branch
             for branch in text_entry["branches"]
-            if branch["runtimeChoices"][0].endswith(":false")
+            if branch["segments"][0]["text"] == "stranger"
         )
-        self.assertIn(f"branch={false_branch['id']}", alternate_stream)
+        self.assertIn(f"branch={stranger_fragment['id']}", alternate_stream)
         clean_alternate = re.sub(
             r"\x1b\]777;cadr-visible-branch;phase=(?:begin|end);site=VS-[0-9a-f]{16};branch=B-[0-9a-f]{12}\x07",
             "",
@@ -314,6 +455,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         )
         environment = os.environ.copy()
         environment["RENDER_DIFF_VISIBLE_SITES"] = "1"
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
         result = subprocess.run(
             [str(self.root / "node_modules/.bin/tsx"), str(runner)],
             stdout=subprocess.PIPE,
@@ -322,10 +464,95 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode, result.stderr.decode())
         stream = result.stdout.decode("ascii")
-        self.assertEqual(b"", result.stderr)
+        self.assertIn(b"phase=construct", result.stderr)
         self.assertIn(f"site={inventory['entries'][0]['id']}", stream)
         for entry in inventory["entries"][1:]:
             self.assertNotIn(f"site={entry['id']}", stream)
+            self.assertIn(f"site={entry['id']}".encode(), result.stderr)
+
+    def test_construct_markers_bypass_pending_terminal_span_rewrites(self) -> None:
+        source = self.root / "packages/coding-agent/src/modes/interactive/construct-collision.ts"
+        source.write_text(
+            'class Text { constructor(_value: string) {} }\n'
+            'new Text("branch=");\n'
+            'new Text("later");\n',
+            encoding="utf-8",
+        )
+        destination = self.root / "instrumented-construct-collision"
+        inventory = self.run_extractor("--instrument", str(destination))
+        collision_entries = [
+            entry
+            for entry in inventory["entries"]
+            if entry["site"]["path"].endswith("construct-collision.ts")
+        ]
+        self.assertEqual(2, len(collision_entries))
+        runner = destination / "construct-collision-runner.ts"
+        runner.write_text(
+            'import "./packages/coding-agent/src/modes/interactive/construct-collision.ts";\n',
+            encoding="utf-8",
+        )
+        environment = os.environ.copy()
+        environment["RENDER_DIFF_VISIBLE_SITES"] = "1"
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
+        result = subprocess.run(
+            [str(self.root / "node_modules/.bin/tsx"), str(runner)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environment,
+        )
+        marker_prefix = b"\x1b]777;cadr-visible-branch;"
+        well_formed = re.findall(
+            rb"\x1b\]777;cadr-visible-branch;phase=construct;"
+            rb"site=VS-[0-9a-f]{16};branch=B-[0-9a-f]{12}\x07",
+            result.stderr,
+        )
+        self.assertEqual(2, result.stderr.count(marker_prefix))
+        self.assertEqual(2, len(well_formed), result.stderr)
+
+    def test_construct_markers_can_be_written_immediately_to_a_shared_artifact(self) -> None:
+        source = self.root / "packages/coding-agent/src/modes/interactive/construct-artifact.ts"
+        source.write_text(
+            'class Text { constructor(_value: string) {} }\n'
+            'new Text("artifact one");\n'
+            'new Text("artifact two");\n',
+            encoding="utf-8",
+        )
+        destination = self.root / "instrumented-construct-artifact"
+        inventory = self.run_extractor("--instrument", str(destination))
+        artifact_entries = [
+            entry
+            for entry in inventory["entries"]
+            if entry["site"]["path"].endswith("construct-artifact.ts")
+        ]
+        self.assertEqual(2, len(artifact_entries))
+        runner = destination / "construct-artifact-runner.ts"
+        runner.write_text(
+            'import "./packages/coding-agent/src/modes/interactive/construct-artifact.ts";\n',
+            encoding="utf-8",
+        )
+        marker_path = self.root / "construct-markers.raw"
+        environment = os.environ.copy()
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH"] = str(marker_path)
+        result = subprocess.run(
+            [str(self.root / "node_modules/.bin/tsx"), str(runner)],
+            check=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environment,
+        )
+        self.assertEqual(b"", result.stdout)
+        self.assertEqual(b"", result.stderr)
+        markers = marker_path.read_bytes()
+        well_formed = re.findall(
+            rb"\x1b\]777;cadr-visible-branch;phase=construct;"
+            rb"site=VS-[0-9a-f]{16};branch=B-[0-9a-f]{12}\x07",
+            markers,
+        )
+        self.assertEqual(2, len(well_formed), markers)
+        for entry in artifact_entries:
+            self.assertIn(f"site={entry['id']}".encode(), markers)
 
     def test_tui_string_array_provenance_reaches_terminal_emission(self) -> None:
         source = self.root / "packages/tui/src/components/rows.ts"
@@ -444,14 +671,12 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             self.assertIn(visible, inventory_text)
         tui_entries = [entry for entry in entries if entry["site"]["path"].startswith("packages/tui/src/")]
         self.assertGreaterEqual(len(tui_entries), 2)
-        conditional_entries = [entry for entry in tui_entries if len(entry["branches"]) == 2]
-        self.assertGreaterEqual(len(conditional_entries), 2)
         self.assertTrue(
             any(
                 "enter toggle" in "".join(
                     segment.get("text", "") for segment in branch["segments"]
                 )
-                for entry in conditional_entries
+                for entry in tui_entries
                 for branch in entry["branches"]
             ),
             "array join must preserve its fixed runtime text",
@@ -462,7 +687,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
                     segment["kind"] != "literal" or not segment["text"].strip()
                     for segment in branch["segments"]
                 )
-                for entry in conditional_entries
+                for entry in tui_entries
                 for branch in entry["branches"]
             ),
             "whitespace-only presentation branch must remain an obligation",
@@ -628,6 +853,88 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         for entry in metadata_entries:
             self.assertIn(f"site={entry['id']}", payload["rendered"])
 
+    def test_construct_markers_flush_without_construction_path(self) -> None:
+        # Full-tier scenario captures set RENDER_DIFF_VISIBLE_CONSTRUCTS=1
+        # without RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH; the metadata helpers
+        # must buffer markers and flush them at exit instead of throwing.
+        slash = self.root / "packages/coding-agent/src/core/slash-commands.ts"
+        slash.parent.mkdir(parents=True, exist_ok=True)
+        slash.write_text(
+            textwrap.dedent(
+                """
+                interface BuiltinSlashCommand { name: string; description: string; argumentHint?: string }
+                export const BUILTIN_SLASH_COMMANDS: ReadonlyArray<BuiltinSlashCommand> = [
+                  { name: "model", description: "Select model", argumentHint: "<provider/model>" },
+                ];
+                """
+            ).lstrip(),
+            encoding="utf-8",
+        )
+        select_list = self.root / "packages/tui/src/components/select-list.ts"
+        select_list.parent.mkdir(parents=True, exist_ok=True)
+        select_list.write_text(
+            textwrap.dedent(
+                """
+                export interface SelectItem { value: string; label: string; description?: string }
+                const theme = { noMatch: (value: string) => value };
+                export class SelectList {
+                  private readonly item: SelectItem;
+                  constructor(item: SelectItem) { this.item = item; }
+                  render(_width: number): string[] {
+                    const lines: string[] = [];
+                    lines.push(theme.noMatch("  No matching commands"));
+                    lines.push(this.renderItem(this.item));
+                    return lines;
+                  }
+                  private renderItem(item: SelectItem): string { return `${item.label} ${item.description ?? ""}`; }
+                }
+                """
+            ).lstrip(),
+            encoding="utf-8",
+        )
+
+        destination = self.root / "instrumented-construct-flush"
+        instrumented_inventory = self.run_extractor("--instrument", str(destination))
+        metadata_entries = [
+            entry
+            for entry in instrumented_inventory["entries"]
+            if entry["site"]["path"].endswith("slash-commands.ts")
+        ]
+        self.assertEqual(3, len(metadata_entries))
+        runner = destination / "slash-runner.ts"
+        runner.write_text(
+            'import { BUILTIN_SLASH_COMMANDS } from "./packages/coding-agent/src/core/slash-commands.ts";\n'
+            'import { SelectList } from "./packages/tui/src/components/select-list.ts";\n'
+            'const command = BUILTIN_SLASH_COMMANDS.find((item) => item.name === "model");\n'
+            'if (!command) throw new Error("command lookup changed");\n'
+            'const description = `${command.argumentHint} — ${command.description}`;\n'
+            'new SelectList({ value: command.name, label: command.name, description }).render(80);\n',
+            encoding="utf-8",
+        )
+        environment = os.environ.copy()
+        environment["RENDER_DIFF_VISIBLE_SITES"] = "1"
+        environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
+        environment.pop("RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH", None)
+        result = subprocess.run(
+            [str(self.root / "node_modules/.bin/tsx"), str(runner)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            env=environment,
+        )
+        self.assertEqual(
+            0,
+            result.returncode,
+            "construct markers without a sink path must buffer and flush, never throw: "
+            + result.stderr.decode(errors="backslashreplace"),
+        )
+        flushed = result.stdout + result.stderr
+        for entry in metadata_entries:
+            for branch in entry["branches"]:
+                self.assertIn(
+                    f"phase=construct;site={entry['id']};branch={branch['id']}".encode(),
+                    flushed,
+                )
+
     def test_local_assignment_append_trim_and_array_items_preserve_runtime_bytes(self) -> None:
         source = self.root / "packages/coding-agent/src/modes/interactive/dataflow.ts"
         source.write_text(
@@ -670,14 +977,16 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             for entry in inventory["entries"]
             if entry["site"]["path"].endswith("dataflow.ts")
         )
-        self.assertEqual(2, len(dataflow_entry["branches"]))
-        branch_text = [
-            "".join(segment.get("text", "") for segment in branch["segments"])
+        branch_by_text = {
+            branch["segments"][0]["text"]: branch
             for branch in dataflow_entry["branches"]
-        ]
-        self.assertIn("**Navigation**", branch_text)
-        self.assertIn("**Navigation**\n\n**Extensions**", branch_text)
-        self.assertTrue(all(not value.startswith("\n") and not value.endswith("\n") for value in branch_text))
+        }
+        navigation_branch = next(
+            branch for text, branch in branch_by_text.items() if "**Navigation**" in text
+        )
+        extension_branch = next(
+            branch for text, branch in branch_by_text.items() if "**Extensions**" in text
+        )
 
         row_entries = [
             entry
@@ -715,7 +1024,17 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
                 result.stdout,
             ).decode()
             self.assertEqual(expected, clean)
-            self.assertIn(f"site={dataflow_entry['id']}".encode(), result.stdout)
+            self.assertIn(
+                f"site={dataflow_entry['id']};branch={navigation_branch['id']}".encode(),
+                result.stdout,
+            )
+            extension_marker = (
+                f"site={dataflow_entry['id']};branch={extension_branch['id']}".encode()
+            )
+            if enabled:
+                self.assertIn(extension_marker, result.stdout)
+            else:
+                self.assertNotIn(extension_marker, result.stdout)
 
     def test_array_join_and_spread_are_closed_without_invalid_instrumentation(self) -> None:
         dataflow = self.root / "packages/coding-agent/src/modes/interactive/array-join.ts"
@@ -729,7 +1048,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
                 if (process.env.TRUNCATED === "1") {
                   statusParts.push(theme.fg("warning", `Output truncated. Full output: ${process.env.OUTPUT_PATH}`));
                 }
-                new Text(statusParts.join("\n"));
+                new Text(statusParts.join("\\n"));
                 export { captured };
                 """
             ).lstrip(),
@@ -763,6 +1082,46 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
             )
         ]
         self.assertTrue(obligations, "array push -> conditional -> join must retain the warning text")
+        dataflow_entry = next(
+            entry
+            for entry in inventory["entries"]
+            if entry["site"]["path"].endswith("array-join.ts")
+        )
+        warning_branch = next(
+            branch
+            for branch in dataflow_entry["branches"]
+            if any("Output truncated" in segment.get("text", "") for segment in branch["segments"])
+        )
+        dataflow_runner = destination / "array-join-runner.ts"
+        dataflow_runner.write_text(
+            'import { captured } from "./packages/coding-agent/src/modes/interactive/array-join.ts";\n'
+            'process.stdout.write(captured[0] ?? "");\n',
+            encoding="utf-8",
+        )
+        for enabled in (False, True):
+            dataflow_environment = os.environ.copy()
+            dataflow_environment["RENDER_DIFF_VISIBLE_SITES"] = "1"
+            if enabled:
+                dataflow_environment["TRUNCATED"] = "1"
+                dataflow_environment["OUTPUT_PATH"] = "/tmp/output.log"
+            dataflow_result = subprocess.run(
+                [str(self.root / "node_modules/.bin/tsx"), str(dataflow_runner)],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                env=dataflow_environment,
+            )
+            self.assertEqual(
+                0,
+                dataflow_result.returncode,
+                dataflow_result.stderr.decode()
+                + "\n"
+                + (destination / "packages/coding-agent/src/modes/interactive/array-join.ts").read_text(encoding="utf-8"),
+            )
+            marker = f"site={dataflow_entry['id']};branch={warning_branch['id']}".encode()
+            if enabled:
+                self.assertIn(marker, dataflow_result.stdout)
+            else:
+                self.assertNotIn(marker, dataflow_result.stdout)
         runner = destination / "spread-runner.ts"
         runner.write_text(
             'import { renderRows } from "./packages/tui/src/components/spread-rows.ts";\n'
@@ -804,10 +1163,12 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         )
         destination = self.root / "instrumented-editor-state"
         inventory = self.run_extractor("--instrument", str(destination))
-        state_entry = next(
-            entry
-            for entry in inventory["entries"]
-            if entry["site"]["path"].endswith("editor-state.ts")
+        self.assertFalse(
+            any(
+                entry["site"]["path"].endswith("editor-state.ts")
+                for entry in inventory["entries"]
+            ),
+            "an empty dynamic state setter has no fixed baseline string obligation",
         )
         runner = destination / "editor-state-runner.ts"
         runner.write_text(
@@ -826,7 +1187,7 @@ class BaselineVisibleStringsExtractorTest(unittest.TestCase):
         )
         self.assertEqual(0, result.returncode, result.stderr.decode())
         self.assertEqual(b"EMPTY:0:false", result.stdout)
-        self.assertNotIn(f"site={state_entry['id']}".encode(), result.stdout)
+        self.assertNotIn(b"cadr-visible-branch", result.stdout)
 
     def test_source_asset_inventory_is_fail_closed_and_locks_theme_roles(self) -> None:
         theme = self.root / "packages/coding-agent/src/modes/interactive/theme/dark.json"
