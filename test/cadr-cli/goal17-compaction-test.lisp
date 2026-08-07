@@ -1182,3 +1182,62 @@
         (when (and agent
                    (not (cadr-agent::agent-shutdown-p agent)))
           (cadr-agent:agent-shutdown agent)))))
+
+(test goal17-package-command-help-preserves-baseline-contract
+  ;; Fixed pi@74caa2649 package-manager-cli.ts:66-155 owns the complete
+  ;; foreground help contract.  Cadr changes only product identity and the
+  ;; approved Lisp package/build examples; shared options and explanations
+  ;; remain visible rather than collapsing to one summary sentence.
+  (flet ((help (command)
+           (with-output-to-string (stream)
+             (cadr-cli::print-package-command-help command stream))))
+    (let ((install (help :install))
+          (remove (help :remove))
+          (update (help :update))
+          (list (help :list))
+          (config (help :config)))
+      (dolist (fragment
+               '("Install a package and add it to settings."
+                 "-l, --local       Install project-locally (.cadr/settings.json)"
+                 "-a, --approve     Trust project-local files for this command"
+                 "-na, --no-approve Ignore project-local files for this command"
+                 "cadr install git:github.com/user/repo"
+                 "cadr install ./local/path"))
+        (is (search fragment install)))
+      (dolist (fragment
+               '("Remove a package and its source from settings."
+                 "Alias: cadr uninstall <source> [-l]"
+                 "cadr remove git:github.com/user/repo"
+                 "cadr uninstall ./local/path"))
+        (is (search fragment remove)))
+      (dolist (fragment
+               '("cadr update [source|self|cadr]"
+                 "Update cadr, installed packages, or model catalogs."
+                 "--extensions            Update installed packages only"
+                 "--models                Refresh model catalogs only"
+                 "--extension <source>    Update one package only"
+                 "--force                 Reinstall cadr even if the current version is latest"
+                 "cadr update cadr           Update cadr only (self works as alias to cadr)"))
+        (is (search fragment update)))
+      (dolist (fragment
+               '("List installed packages from user and project settings."
+                 "-a, --approve      Trust project-local files for this command"
+                 "-na, --no-approve  Ignore project-local files for this command"))
+        (is (search fragment list)))
+      (dolist (fragment
+               '("Open the resource configuration TUI to enable or disable package resources."
+                 "Without -l, starts in global settings (~/.cadr/agent/settings.json)."
+                 "Press Tab in the TUI to switch between global and project-local modes."
+                 "-l, --local       Edit project overrides (.cadr/settings.json)"))
+        (is (search fragment config))))))
+
+(test goal17-update-cadr-and-self-select-the-product-update-target
+  ;; The fixed baseline reserves both `self` and the product slug as aliases
+  ;; for the self-update target.  Product identity changes pi -> cadr only.
+  (dolist (source '("self" "cadr"))
+    (let ((options
+            (cadr-cli::parse-package-command
+             (list "update" source))))
+      (is (equal '(:self)
+                 (cadr-cli::package-command-options-update-target options)))
+      (is (null (cadr-cli::package-command-options-source options))))))

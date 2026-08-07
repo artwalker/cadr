@@ -175,6 +175,17 @@
       (when
           (and
            (eq command :update)
+           (member
+            (package-command-options-source options)
+            (list "self" (cadr-ai::cadr-product-slug))
+            :test #'string=))
+        (setf
+         (package-command-options-source options) nil
+         (package-command-options-update-target options)
+         '(:self)))
+      (when
+          (and
+           (eq command :update)
            (null
             (package-command-options-update-target
              options)))
@@ -191,40 +202,61 @@
 
 (defun package-command-usage
     (command)
-  (ecase command
-    (:install
-     "cadr install <source> [-l] [--approve|--no-approve]")
-    (:remove
-     "cadr remove <source> [-l] [--approve|--no-approve]")
-    (:update
-     "cadr update [source] [--self|--extensions|--models|--all] [--extension <source>] [--force]")
-    (:list
-     "cadr list [--approve|--no-approve]")
-    (:config
-     "cadr config [-l] [--approve|--no-approve]")))
+  (let ((slug (cadr-ai::cadr-product-slug)))
+    (ecase command
+      (:install
+       (format nil "~A install <source> [-l] [--approve|--no-approve]"
+               slug))
+      (:remove
+       (format nil "~A remove <source> [-l] [--approve|--no-approve]"
+               slug))
+      (:update
+       (format
+        nil
+        "~A update [source|self|~A] [--self|--extensions|--models|--all] [--extension <source>] [--approve|--no-approve] [--force]"
+        slug slug))
+      (:list
+       (format nil "~A list [--approve|--no-approve]" slug))
+      (:config
+       (format nil "~A config [-l] [--approve|--no-approve]" slug)))))
 
 (defun print-package-command-help
     (command &optional
                (stream *standard-output*))
-  (format stream "Usage:~%  ~A~%~%"
+  (let ((slug (cadr-ai::cadr-product-slug)))
+    (format stream "~A~%  ~A~%~%"
+          (cadr-tui:theme-bold
+           "Usage:"
+           :enabled-p (interactive-stream-p stream))
           (package-command-usage command))
-  (ecase command
-    (:install
-     (format stream
-             "Install a Common Lisp extension/resource package and add it to settings.~%"))
-    (:remove
-     (format stream
-             "Remove a configured package. Alias: cadr uninstall.~%"))
-    (:update
-     (format stream
-             "Update installed Git packages. Self updates follow the Lisp build/install method.~%"))
-    (:list
-     (format stream
-             "List configured user and project packages.~%"))
-    (:config
-     (format stream
-             "Show the active resource configuration paths.~%")))
-  (finish-output stream))
+    (ecase command
+      (:install
+       (format
+        stream
+        "Install a package and add it to settings.~%~%Options:~%  -l, --local       Install project-locally (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command~%  -na, --no-approve Ignore project-local files for this command~%~%Examples:~%  ~A install git:github.com/user/repo~%  ~A install git:git@github.com:user/repo~%  ~A install https://github.com/user/repo~%  ~A install ssh://git@github.com/user/repo~%  ~A install ./local/path~%"
+        slug slug slug slug slug slug))
+      (:remove
+       (format
+        stream
+        "Remove a package and its source from settings.~%Alias: ~A uninstall <source> [-l]~%~%Options:~%  -l, --local       Remove from project settings (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command~%  -na, --no-approve Ignore project-local files for this command~%~%Examples:~%  ~A remove git:github.com/user/repo~%  ~A uninstall ./local/path~%"
+        slug slug slug slug))
+      (:update
+       (format
+        stream
+        "Update ~A, installed packages, or model catalogs.~%~%Options:~%  --self                  Update ~A only (default when no target is given)~%  --extensions            Update installed packages only~%  --models                Refresh model catalogs only~%  --all                   Update ~A and installed packages~%  --extension <source>    Update one package only~%  -a, --approve           Trust project-local files for this command~%  -na, --no-approve       Ignore project-local files for this command~%  --force                 Reinstall ~A even if the current version is latest~%~%Short forms:~%  ~A update                Update ~A only~%  ~A update --all          Update ~A and all extensions~%  ~A update --models       Refresh model catalogs only~%  ~A update <source>       Update one package~%  ~A update ~A           Update ~A only (self works as alias to ~A)~%"
+        slug slug slug slug
+        slug slug slug slug slug slug slug slug slug slug))
+      (:list
+       (format
+        stream
+        "List installed packages from user and project settings.~%~%Options:~%  -a, --approve      Trust project-local files for this command~%  -na, --no-approve  Ignore project-local files for this command~%"))
+      (:config
+       (format
+        stream
+        "Open the resource configuration TUI to enable or disable package resources.~%Without -l, starts in global settings (~~/.~A/agent/settings.json).~%Press Tab in the TUI to switch between global and project-local modes.~%~%Options:~%  -l, --local       Edit project overrides (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command with -l~%  -na, --no-approve Ignore project-local files for this command with -l~%"
+        slug slug)))
+    (terpri stream)
+    (finish-output stream)))
 
 (defun package-root-has-resources-p (root)
   (let ((directory
