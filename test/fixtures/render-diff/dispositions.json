@@ -809,14 +809,14 @@
       "screenSha256": {
         "wide": {
           "pi": "072d2ab95414916bb91eb33f717ec0099de0719ab7d8699a9aa4ca6c60604e38",
-          "cadr": "9eaec86807166acad192e1f995751544a775b336064034655f614073cc3e015a"
+          "cadr": "6a30964d5b70aa700ebdf555075d53d631eb5b7e3edffe6b63dd8223109bc388"
         },
         "narrow": {
           "pi": "8997e9bca4780711d7a5b2ff69b027894f74c734da9cf95d19fa5284f7a552b3",
-          "cadr": "ff2cb2326541cd7ea74f6ea20fa5109142c30228bf0c5d8164108587e65b93de"
+          "cadr": "f2da9813cd8318efba019ec880400a52fc591d9db26039ac10b8e5a21b940acd"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Exact approved semantic screen pair; no product defect is admitted. Cadr SHA refreshed 2026-08-08: 36f181c11 aligned faux zero-delay event scheduling with Pi, so the captured footer now shows settled usage (0.0%/128k) and model exactly like Pi; the crash section remains the adjudicated I02 sanitized summary plus 0600 crash log. Two independent gate runs produced byte-identical captures."
     },
     {
       "scenario": "local-status-sweep",
