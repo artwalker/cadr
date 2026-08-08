@@ -605,7 +605,7 @@
         { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
         { "sendSide": { "pi": "enter" } },
         { "waitFor": "Select authentication method for Render Auth:" }, { "checkpoint": "auth-method-provider" },
-        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "waitFor": "Paste the authorization code" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
+        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "waitFor": "Paste the authorization code" }, { "waitFor": "to cancel" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
         { "pauseMs": 100 }, { "checkpoint": "login-cancelled" },
         { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
       ]
@@ -623,7 +623,7 @@
         { "waitFor": "authentication method for Render" },
         { "send": "enter" },
         { "waitFor": "Login to Render Device" },
-        { "waitFor": "Enter code: RENDER-42" }, { "waitFor": "Waiting for authentication..." }, { "checkpoint": "login-device-code" },
+        { "waitFor": "Enter code: RENDER-42" }, { "waitFor": "Waiting for authentication..." }, { "waitFor": "to cancel" }, { "checkpoint": "login-device-code" },
         { "send": "escape" }, { "pauseMs": 100 }, { "checkpoint": "login-device-cancelled" },
         { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
       ]
