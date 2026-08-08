@@ -913,6 +913,20 @@
       ]
     },
     {
+      "id": "slash-debug",
+      "group": "commands",
+      "coverage": ["slash-debug"],
+      "description": "Hidden /debug command writes the debug log and confirms with the accent check line and muted path.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/debug" }, { "send": "enter" },
+        { "waitFor": "Debug log written" }, { "pauseMs": 100 },
+        { "checkpoint": "debug-written" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
       "id": "commands-informational",
       "group": "commands",
       "coverage": ["slash-session", "slash-name", "slash-changelog", "slash-hotkeys", "slash-share", "slash-clone"],

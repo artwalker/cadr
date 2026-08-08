@@ -1984,6 +1984,12 @@
                             name)))))
            :session-state-function
            #'current-session-display-state
+           :debug-messages-function
+           (lambda ()
+             (with-output-to-string (out)
+               (dolist (message (cadr-agent:agent-messages agent))
+                 (write-line
+                  (cadr-agent::message-to-json message) out))))
            :busy-input-function
            (lambda (text)
              (multiple-value-bind

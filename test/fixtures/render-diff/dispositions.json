@@ -324,6 +324,52 @@
       "note": "At commands-empty-lifecycle/slash-new [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
+      "scenario": "slash-debug",
+      "checkpoint": "debug-written",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "e29b80905caad2b35e14d5994cadedae489ad352d0b9e7ebf2ec7a00986b7b69",
+          "cadr": "96c19fc63cbb85ee695d407879e01562b8a49f8ceef5bff376cf12e6dc627d3c"
+        },
+        "narrow": {
+          "pi": "4cb26cd1bac47c0af16dc17fe4e9c6e59da6dbeee73ebf756b5368e71818c7b7",
+          "cadr": "feba35d6b2d083a509ae688247286aece75030a66acd5c25d823354a16ea1240"
+        }
+      },
+      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '\u2713 Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "slash-debug",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8f83fc1474cc76a95fdddd2675dabbb6cff6a981917da91a47f888bf6e234446",
+          "cadr": "7873e26fb4254d42ef65ae256163239c87b29de46e99aa0ecc1518c4880f4907"
+        },
+        "narrow": {
+          "pi": "6f0f5c9758801361c8e31aa6a3c40e7f9fb5ab311348fc9638adad0579aed0c1",
+          "cadr": "e5752f13b21962401a5476da2b0d2658a97e527a8b43ea44b1ba2091fc6b4fe0"
+        }
+      },
+      "note": "At slash-debug/process-exit [wide+narrow] the retained transcript after ctrl+d matches pi line-for-line except the same debug-log filename pi-debug.log -> cadr-debug.log in ~/.cadr/agent/ (I04 product identity; in narrow the longer path also shifts the wrap); the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
       "scenario": "commands-informational",
       "checkpoint": "process-exit",
       "dimensions": [
@@ -596,7 +642,7 @@
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
-      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (⠋ vs ⠙, I01 timing); text and layout identical."
+      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (\u280b vs \u2819, I01 timing); text and layout identical."
     },
     {
       "scenario": "compaction-status-threshold",

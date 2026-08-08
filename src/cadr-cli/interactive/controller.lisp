@@ -235,6 +235,7 @@
        set-theme-function
        preview-theme-function
        session-state-function
+       debug-messages-function
        busy-input-function
        follow-up-input-function
        dequeue-function
@@ -1909,6 +1910,8 @@
                        "New session started")))))
                ((string= trimmed "/quit")
                 (setf done-p t))
+               ((string= trimmed "/debug")
+                (handle-debug-command))
                ((string= trimmed "/trust")
                 (open-trust-selector))
                ((string= trimmed "/settings")
@@ -1947,6 +1950,51 @@
                  line busy-p
                  busy-input-function
                  #'start-work)))))
+         (handle-debug-command ()
+           ;; Baseline handleDebugCommand
+           ;; (interactive-mode.ts:5923-5953): dump every rendered line
+           ;; with its visible width plus the session messages as JSONL,
+           ;; then confirm with an accent check line and the muted path.
+           (let* ((width (cadr-tui:terminal-columns terminal))
+                  (height (cadr-tui:terminal-rows terminal))
+                  (lines
+                    (render-tui-state
+                     state (current-editor) width height
+                     :overlay overlay
+                     :busy-p (tui-state-agent-working-p state)
+                     :extension-host extension-host
+                     :full-document-p t
+                     :now (funcall clock-function)
+                     :spinner-frame
+                     (tui-status-animation-frame status-animation)))
+                  (debug-path
+                    (cadr-core:agent-debug-log-path))
+                  (messages-jsonl
+                    (and debug-messages-function
+                         (funcall debug-messages-function))))
+             (ensure-directories-exist debug-path)
+             (cadr-core:atomic-write-string
+              debug-path
+              (with-output-to-string (out)
+                (format out "Debug output at ~A~%"
+                        (cadr-core:current-utc-iso8601))
+                (format out "Terminal: ~Dx~D~%" width height)
+                (format out "Total lines: ~D~2%" (length lines))
+                (format out "=== All rendered lines with visible widths ===~%")
+                (loop for line in lines
+                      for index from 0
+                      do
+                      (format out "[~D] (w=~D) " index
+                              (cadr-tui:visible-width line))
+                      (cadr-ai::write-json-string line out)
+                      (terpri out))
+                (format out "~%=== Agent messages (JSONL) ===~%")
+                (when messages-jsonl
+                  (write-string messages-jsonl out))
+                (terpri out)))
+             (add-tui-debug-written
+              state (namestring debug-path))
+             (request-render)))
          (submit-follow-up ()
            (let ((text
                    (string-trim
@@ -2367,6 +2415,8 @@
                         (tui-state-tools-expanded-p state)
                         "expanded"
                         "collapsed"))))
+                 (:debug
+                  (handle-debug-command))
                  (:follow-up
                   (submit-follow-up))
                  (:dequeue

@@ -146,6 +146,7 @@
   '(("app.interrupt" . :interrupt)
     ("app.clear" . :clear)
     ("app.exit" . :eof)
+    ("app.debug" . :debug)
     ("app.message.followUp" . :follow-up)
     ("app.message.dequeue" . :dequeue)
     ("app.model.cycleForward" . :model-cycle-forward)

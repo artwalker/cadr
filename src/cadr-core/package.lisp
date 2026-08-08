@@ -36,6 +36,7 @@
    #:agent-bin-directory
    #:agent-extensions-directory
    #:agent-crash-directory
+   #:agent-debug-log-path
    #:+project-config-directory-name+
    #:project-config-directory))
 

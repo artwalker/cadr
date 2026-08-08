@@ -926,6 +926,20 @@
         :enabled-p t)
        width :padding-x 1)
       (list (make-string width :initial-element #\Space))))
+    (:debug-written
+     ;; Baseline /debug block: Spacer(1), then accent "✓ Debug log
+     ;; written" and the muted path, both with one-cell padding.
+     (append
+      (list "" (make-string width :initial-element #\Space))
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :accent "✓ Debug log written" :enabled-p t)
+       width :padding-x 1)
+      (component-text-lines
+       (cadr-tui:theme-foreground
+        :muted (tui-entry-text entry) :enabled-p t)
+       width :padding-x 1)
+      (list (make-string width :initial-element #\Space))))
     (:command-markdown
      (append
       (list

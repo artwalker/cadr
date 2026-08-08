@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Added
 
+- Implemented the baseline `/debug` command and its `shift+ctrl+d` binding:
+  the terminal's rendered lines (with visible widths) and the agent messages
+  (JSONL) are written to `~/.cadr/agent/cadr-debug.log` (I04 filename), and
+  the chat confirms with the baseline accent "✓ Debug log written" + muted
+  path block.  Recorded that the baseline's `getToolsDir` is dead code (zero
+  callers) and is deliberately not implemented.
+
 - Completed the login dialog's baseline surface: auth selects now borrow the
   screen and restore the dialog (the Radius/OpenAI method choice no longer
   strands later auth events into the transcript), text/secret prompts render

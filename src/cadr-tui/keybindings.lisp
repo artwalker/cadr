@@ -5,6 +5,7 @@
     ("app.clear" . ("ctrl+c"))
     ("app.exit" . ("ctrl+d"))
     ("app.suspend" . ("ctrl+z"))
+    ("app.debug" . ("shift+ctrl+d"))
     ("app.thinking.cycle" . ("shift+tab"))
     ("app.message.followUp" . ("alt+enter"))
     ("app.message.dequeue" . ("alt+up"))

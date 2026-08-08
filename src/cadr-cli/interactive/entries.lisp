@@ -146,6 +146,15 @@
 (defun add-tui-success (state text)
   (add-tui-message-entry state :success text))
 
+(defun add-tui-debug-written (state path)
+  ;; Baseline /debug confirmation: accent check line + muted path block.
+  (append-tui-entry
+   state
+   (make-tui-entry
+    :type :debug-written
+    :text path))
+  state)
+
 (defun add-tui-rich-command (state title markdown)
   (append-tui-entry
    state

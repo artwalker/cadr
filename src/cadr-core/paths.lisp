@@ -79,6 +79,10 @@ when set, otherwise ~/.cadr/agent/.  Baseline getAgentDir
   ;; with the agent data rather than at the home root.
   (merge-pathnames "crash/" (coding-agent-directory)))
 
+(defun agent-debug-log-path ()
+  ;; Baseline getDebugLogPath: agent/<APP_NAME>-debug.log (I04 name).
+  (merge-pathnames "cadr-debug.log" (coding-agent-directory)))
+
 (defparameter +project-config-directory-name+ ".cadr/"
   "The project-level config directory name (cwd/.cadr/).  The name is
 decided once here; project code derives from PROJECT-CONFIG-DIRECTORY
