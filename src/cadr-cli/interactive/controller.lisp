@@ -213,6 +213,7 @@
        set-status-consumer
        set-warning-consumer
        set-auth-url-consumer
+       set-auth-event-consumer
        set-auth-prompt-consumer
        set-model-consumer
        set-extension-ui-function
@@ -700,6 +701,44 @@
            (sb-thread:with-mutex (lock)
              (add-tui-auth-url state url))
            (request-render))
+         (handle-auth-event (event)
+           ;; When the login dialog is open it owns every OAuth event, like
+           ;; the baseline notifyAuthDialog.  Without the dialog, keep the
+           ;; legacy transcript/status rendering.
+           (if (and (eq overlay-kind :login-dialog)
+                    (typep overlay 'login-dialog-state))
+               (progn
+                 (case (getf event :type)
+                   (:auth-url
+                    (login-dialog-show-auth
+                     overlay
+                     (getf event :url)
+                     (getf event :instructions)))
+                   (:device-code
+                    (login-dialog-show-device-code
+                     overlay
+                     (getf event :verification-uri)
+                     (getf event :user-code))
+                    (login-dialog-show-waiting
+                     overlay "Waiting for authentication..."))
+                   ((:info :progress)
+                    (when (getf event :message)
+                      (login-dialog-show-progress
+                       overlay (getf event :message)))))
+                 (request-render))
+               (case (getf event :type)
+                 (:auth-url
+                  (show-auth-url (getf event :url))
+                  (when (getf event :instructions)
+                    (status (getf event :instructions))))
+                 (:device-code
+                  (show-auth-url (getf event :verification-uri))
+                  (status
+                   (format nil "Device code: ~A"
+                           (getf event :user-code))))
+                 ((:info :progress)
+                  (when (getf event :message)
+                    (status (getf event :message)))))))
          (show-model
              (model-id &optional provider
                        context-window
@@ -1005,12 +1044,34 @@
              ((:text :secret :manual-code)
               (let ((cancelled-p-function
                       (getf prompt :cancelled-p-function)))
-                (show-extension-overlay
-                 (make-runtime-auth-input-state prompt)
-                 :signal
-                 (and cancelled-p-function
-                      (cadr-agent:make-extension-cancellation-signal
-                       :aborted-function cancelled-p-function)))))
+                (if (and (eq (getf prompt :type) :manual-code)
+                         (eq overlay-kind :login-dialog)
+                         (typep overlay 'login-dialog-state))
+                    (progn
+                      (sb-thread:with-mutex (custom-ui-lock)
+                        (setf custom-ui-done-p nil
+                              custom-ui-result nil))
+                      (login-dialog-show-manual-input
+                       overlay
+                       (getf prompt :message)
+                       (getf prompt :cancel-function))
+                      (request-render)
+                      ;; Same blocking contract as SHOW-EXTENSION-OVERLAY:
+                      ;; the worker-thread prompt function resumes when the
+                      ;; dialog submit/cancel calls FINISH-CUSTOM-UI.
+                      (sb-thread:with-mutex (custom-ui-lock)
+                        (loop until custom-ui-done-p
+                              do
+                              (sb-thread:condition-wait
+                               custom-ui-condition
+                               custom-ui-lock))
+                        custom-ui-result))
+                    (show-extension-overlay
+                     (make-runtime-auth-input-state prompt)
+                     :signal
+                     (and cancelled-p-function
+                          (cadr-agent:make-extension-cancellation-signal
+                           :aborted-function cancelled-p-function))))))
              (otherwise nil)))
          (add-extension-autocomplete-provider
              (factory)
@@ -1399,6 +1460,9 @@
                                  (tui-entry-custom-options live-bash-entry)
                                  :running-p))
                          (stop-tui-user-bash-entry live-bash-entry))
+                       (when (eq overlay-kind :login-dialog)
+                         (setf overlay nil
+                               overlay-kind nil))
                        (setf busy-p nil
                              abort-requested-p nil)
                        (when (typep (current-editor)
@@ -1546,9 +1610,14 @@
            (setf login-provider-auth-type nil)
            (if (eq :oauth
                    (oauth-selector-option-auth-type option))
-               (start-work
-                (format nil "/login ~(~A~)"
-                        (oauth-selector-option-id option)))
+               (progn
+                 (setf overlay-kind :login-dialog
+                       overlay
+                       (make-login-dialog-state
+                        (oauth-selector-option-name option)))
+                 (start-work
+                  (format nil "/login ~(~A~)"
+                          (oauth-selector-option-id option))))
                (open-api-key-input option)))
          (open-login-method-selector
              (&optional (provider-options nil provider-options-p))
@@ -2017,10 +2086,15 @@
          (handle-overlay-action (action value)
            (case action
              (:select
-              (accept-selection value))
+              (if (eq overlay-kind :login-dialog)
+                  (progn
+                    (login-dialog-complete-input overlay value)
+                    (finish-custom-ui value)
+                    (request-render))
+                  (accept-selection value)))
              (:cancel
               (let ((cancelled-kind overlay-kind)
-                    (return-to-login-method-p
+                     (return-to-login-method-p
                       (and
                        (eq overlay-kind :login-provider)
                        login-provider-auth-type)))
@@ -2035,6 +2109,13 @@
                         :extension-custom)
                   (finish-custom-ui nil))
                 (cond
+                  ((eq cancelled-kind :login-dialog)
+                   (unless abort-requested-p
+                     (setf abort-requested-p t)
+                     (when abort-function
+                       (funcall abort-function)))
+                   (finish-custom-ui nil)
+                   (request-render))
                   (return-to-login-method-p
                    (open-login-method-selector))
                   ((eq cancelled-kind
@@ -2148,6 +2229,9 @@
                              ((runtime-auth-input-state-p overlay)
                               (runtime-auth-input-state-handle-event
                                overlay event))
+                             ((login-dialog-state-p overlay)
+                              (login-dialog-state-handle-event
+                               overlay event))
                              ((oauth-selector-state-p overlay)
                               (oauth-selector-handle-event
                                overlay event))
@@ -2251,6 +2335,9 @@
       (when set-auth-url-consumer
         (funcall set-auth-url-consumer
                  #'show-auth-url))
+      (when set-auth-event-consumer
+        (funcall set-auth-event-consumer
+                 #'handle-auth-event))
       (when set-auth-prompt-consumer
         (funcall set-auth-prompt-consumer
                  #'show-runtime-auth-prompt))
@@ -2492,6 +2579,8 @@
           (funcall set-status-consumer nil))
         (when set-auth-url-consumer
           (funcall set-auth-url-consumer nil))
+        (when set-auth-event-consumer
+          (funcall set-auth-event-consumer nil))
         (when set-auth-prompt-consumer
           (funcall set-auth-prompt-consumer nil))
         (when set-model-consumer

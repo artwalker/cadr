@@ -207,6 +207,7 @@
          (warning-consumer nil)
          (auth-url-consumer nil)
          (auth-prompt-consumer nil)
+         (auth-event-consumer nil)
          (model-consumer nil)
          (abort-requested-p nil)
          (startup-scope-line nil)
@@ -864,28 +865,30 @@
            (model-registry-login-options
             model-registry #'authentication-status))
          (runtime-auth-notify (event)
-           (case (getf event :type)
-             (:auth-url
-              (when auth-url-consumer
-                (funcall auth-url-consumer
-                         (getf event :url)))
-              (when (and status-consumer
-                         (getf event :instructions))
-                (funcall status-consumer
-                         (getf event :instructions))))
-             (:device-code
-              (when auth-url-consumer
-                (funcall auth-url-consumer
-                         (getf event :verification-uri)))
-              (when status-consumer
-                (funcall
-                 status-consumer
-                 (format nil "Device code: ~A"
-                         (getf event :user-code)))))
-             ((:info :progress)
-              (when status-consumer
-                (funcall status-consumer
-                         (getf event :message)))))
+           (if auth-event-consumer
+               (funcall auth-event-consumer event)
+               (case (getf event :type)
+                 (:auth-url
+                  (when auth-url-consumer
+                    (funcall auth-url-consumer
+                             (getf event :url)))
+                  (when (and status-consumer
+                             (getf event :instructions))
+                    (funcall status-consumer
+                             (getf event :instructions))))
+                 (:device-code
+                  (when auth-url-consumer
+                    (funcall auth-url-consumer
+                             (getf event :verification-uri)))
+                  (when status-consumer
+                    (funcall
+                     status-consumer
+                     (format nil "Device code: ~A"
+                             (getf event :user-code)))))
+                 ((:info :progress)
+                  (when status-consumer
+                    (funcall status-consumer
+                             (getf event :message))))))
            nil)
          (runtime-auth-interaction (&key supplied-value)
            (cadr-ai:make-runtime-auth-interaction
@@ -1806,6 +1809,9 @@
            :set-auth-url-consumer
            (lambda (consumer)
              (setf auth-url-consumer consumer))
+           :set-auth-event-consumer
+           (lambda (consumer)
+             (setf auth-event-consumer consumer))
            :set-auth-prompt-consumer
            (lambda (consumer)
              (setf auth-prompt-consumer consumer))

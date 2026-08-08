@@ -28,6 +28,8 @@
      (render-api-key-input-state overlay width))
     ((runtime-auth-input-state-p overlay)
      (render-runtime-auth-input-state overlay width))
+    ((login-dialog-state-p overlay)
+     (render-login-dialog-state overlay width))
     ((oauth-selector-state-p overlay)
      (render-oauth-selector overlay width))
     ((extension-custom-ui-state-p overlay)

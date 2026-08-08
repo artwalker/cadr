@@ -8,9 +8,9 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=275 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=276 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 275 Lisp files and 106,580 physical lines.  The form
+The audited tree contains 276 Lisp files and 106,779 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
@@ -18,7 +18,7 @@ inventory below is syntactic evidence, not a quality score:
 | `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
 | `cadr-ai` | 61 | 24,833 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
 | `cadr-agent` | 36 | 15,962 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 110 | 43,077 | 66 | 18 | 6 | 28 | 0 | 85 | 2 | 0 |
+| `cadr-cli` | 111 | 43,276 | 67 | 18 | 6 | 28 | 0 | 85 | 2 | 0 |
 | `cadr-tui` | 36 | 15,092 | 32 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `cadr-server` | 11 | 2,768 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
@@ -140,7 +140,7 @@ as permanent:
 | `src/cadr-ai/{auth,oauth,providers}/*.lisp` | give every provider protocol, authentication mechanism, OAuth flow, declaration table, registry, and runtime projection one exact owner | keep external wire/tag dispatch explicit; B11 centralizes all static provider fields and callback identities in one validated declaration while leaving protocol implementations as cohesive native functions |
 | `src/cadr-cli/crash.lisp` | apply the shared boundary to CLI entrypoints | keep as a thin boundary adapter; no owned polymorphic protocol exists |
 | `src/cadr-cli/interactive/{transcript,status,footer,theme,images,clipboard,syntax,tool-render-session}.lisp` | give each interactive leaf service one exact output or data owner before selector convergence | keep the plain closed state/value functions; the extraction adds no polymorphic protocol and leaves selectors together until `selector-frame` owns their shared behavior |
-| `src/cadr-cli/interactive/selectors/{common,sessions,tree,settings,auth,models,trust,fork}.lisp` | give selector framing and each selector family one exact owner | keep `selector-frame` as composition plus plain closed domain state; do not introduce an open hierarchy for fixed overlays |
+| `src/cadr-cli/interactive/selectors/{common,sessions,tree,settings,auth,login-dialog,models,trust,fork}.lisp` | give selector framing and each selector family one exact owner | keep `selector-frame` as composition plus plain closed domain state; do not introduce an open hierarchy for fixed overlays |
 | `src/cadr-cli/{support,settings,models,packages,extensions,sdk}/*.lisp` | replace eight mixed service files with 38 named domain owners, including the standalone config selector | keep the cohesive plain functions/classes in their existing package; the split changes ownership, not dispatch semantics |
 | `src/cadr-cli/bootstrap/{tools,sessions,settings,auth,commands,main}.lisp` | separate tool construction, session lifecycle, settings/runtime, authentication, command dispatch, and the process entrypoint | keep command-domain functions explicit; `bootstrap/commands.lisp` is the sole mode-output injection owner and `bootstrap/main.lisp` stays a thin entrypoint |
 | `src/cadr-cli/modes/rpc/{models,prompt-bash,sessions,commands,mode}.lisp` | separate RPC command domains from the JSONL loop | keep the closed RPC command handlers explicit; every domain emits only through the shared `rpc-write-object` wire sink |
