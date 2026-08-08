@@ -203,6 +203,87 @@ arbitrary-cwd resolution, and the core/full split.
 
 ## Final closeout evidence
 
+### Adjudication mechanism rework (2026-08-08, after user rejection)
+
+The first closeout was rejected on two grounds: a real defect the gates
+missed, and an adjudication mechanism that could not have caught it.
+
+**Defects found and fixed.**
+
+1. cadr never rendered the baseline `LoginDialogComponent` for OAuth
+   flows: device-code events became a transcript URL entry plus a
+   self-invented `Device code:` status line, with no bordered
+   `Login to <provider>` frame, no warning-colored `Enter code:` line,
+   no `Waiting for authentication...` line, and no cancel hint.  Worse,
+   the render-diff driver synthesized the entire dialog in the fixture,
+   so the `login-dialog` checkpoint was green while production lacked
+   the feature.  The TUI now opens a real login dialog on OAuth start
+   and routes the raw runtime auth events into it
+   (`74fe2c0b8`), the driver drives production flows only
+   (`9ef3a07a9`), and a new `overlays-auth-device-code` scenario
+   captures the xAI-style screen on both sides.
+2. The config help text pointed at `~/.cadr/agent/settings.json`,
+   mechanically inheriting pi's `/agent/` layout segment; cadr's real
+   flattened path is `~/.cadr/settings.json` (`97ca0187c`).  The
+   previous regression assertion had been written from the
+   implementation, locking the wrong value.
+
+**Mechanism failure.**  223 of 224 dispositions cited I01 ("ANSI update
+segmentation differs"), 131 carried the same boilerplate note asserting
+a conclusion without stating a difference, and 92 had neither
+screenSha256 nor note.  A byte-segmentation rationale cannot describe
+223 different checkpoints, and nobody (human or gate) could verify the
+claim.
+
+**Mechanism fixes** (`3d71d27b9`):
+
+1. Every disposition now binds each dimension to the exact pi/cadr
+   semantic screen SHA-256 pair, including I01-only entries whose
+   semantic screens are byte-identical; the pair is the evidence.
+2. Every note states the actual difference at that checkpoint; the
+   boilerplate sentence is rejected by the gate.
+3. Text rule: a checkpoint whose normalized visible text or geometry
+   differs cannot close under I01 alone — it must cite a `textCovering`
+   class (declared per class in the registry: I02 crash, I03 share URL,
+   I04 identity) or be fixed as a defect.
+
+**Re-adjudication result.**  All 227 entries were rebuilt from fresh
+full-tier captures.  Of 336 checkpoint-dimensions: 10 aligned, 118
+intentional-terminal-protocol, 208 require and hold dispositions.  326
+of 336 (97%) differ from pi at the byte level and pass only through
+adjudication — the rigor of those notes is the entire strength of this
+gate, which is why they are now evidence-backed.  Breakdown: 271
+text-identical, 24 identity-wrap shifts, 12 identity text, 2 crash
+redaction, 17 viewport-slice cases with hand-written notes naming the
+scrolled line and its cause.
+
+**Breadth warning (policy §4.3).**  I01 is cited on 324 of 326
+adjudicated keys (99.4%).  Unlike the rejected ledger, this dominance is
+now machine-checked rather than asserted: the text rule proves no
+visible-text difference hides under an I01-only disposition, every
+I01-only entry's semantic screens are byte-identical under the recorded
+SHA pair, and each note names its checkpoint.  The remaining classes:
+I04 on 208 keys (identity), I03 on 2 (share viewer), I02 on 2 (crash
+boundary).
+
+**Honest framing of the coverage number.**  The 672/672 visible-string
+figure measures how completely the scenario plus construction set
+*drives the fixed baseline's render branches* — it is a property of the
+harness, not of cadr's conformance, and structurally cannot detect a
+string cadr fails to render.  Cadr-side correctness comes from the
+byte-exact screen differential plus the text rule above, not from the
+branch inventory.
+
+**Pending adjudication.**  The visible-string obligation unit changed
+from Cartesian runtime paths to fixed literal fragments during the first
+closeout (branch instances 1228 → 974, unique printable obligations
+672).  Under the 2026-08-08 development-policy ruling, a gate's
+obligation-unit change requires prior written adjudication and numbers
+produced under the new unit do not count as acceptance evidence until
+ruled.  This change is therefore presented for retroactive adjudication;
+the unit is documented in `test/fixtures/render-diff/baseline-visible-strings.ts`
+and locked by the extractor self-tests.
+
 ### Closeout findings resolved on 2026-08-08
 
 1. **fatal-crash disposition drift.** `36f181c11` aligned the faux zero-delay
@@ -239,15 +320,15 @@ changes are committed:
 
 | Evidence | Final value |
 |---|---|
-| `./scripts/test-cl.sh` | `systems=9 checks=15371 pass=15371 skip=0 fail=0` (2026-08-08) |
+| `./scripts/test-cl.sh` | `systems=9 checks=15391 pass=15391 skip=0 fail=0` (2026-08-08, post-rework) |
 | render extractor self-test | `Ran 17 tests OK` (2026-08-08) |
-| core render differential | `tier=core captured=62/62 scenarios=31 dimensions=2; aligned=6 intentional-terminal-protocol=75 requires-disposition=147 adjudicated=222` |
-| full render differential | `tier=full captured=76/76 scenarios=38 dimensions=2; aligned=10 intentional-terminal-protocol=118 requires-disposition=202 adjudicated=320; visible-string coverage 672/672 printable branches, structured_exemptions=0, protocol_observed=13/34` |
+| core render differential | `tier=core captured=64/64 scenarios=32 dimensions=2` (post-rework) |
+| full render differential | `tier=full captured=78/78 scenarios=39 dimensions=2; aligned=10 intentional-terminal-protocol=118 requires-disposition=208 adjudicated=326; visible-string coverage 672/672 printable branches, structured_exemptions=0, protocol_observed=13/34` (post-rework) |
 | tool-result differential | `19 scenarios, 19 pass, 0 fail; baseline 74caa2649f` |
 | JSON/RPC event differential | `40 raw artifacts, 0 differences, 0 resolved, 0 unresolved, 0 stale dispositions, 0 blocking dispositions` |
 | Kimi live gates (`./scripts/test-live.sh`) | `Items: 8, run: 7, pass: 7, skip: 1 (Anthropic key unset), fail: 0; Checks: 32, pass: 31, skip: 1, fail: 0` |
-| `./scripts/verify.sh` | exit 0 — all 20 deterministic stages PASS (binary freshness, code organization, product identity, source parity ledger + drift self-test, summarization choke point adversarial + real source, deterministic FiveAM, isolated cadr + cadr-server builds, Goal 11 performance gate, native acceptance smoke, native process modes, migration PTY, Unix socket server, terminal lifecycle PTY, deterministic TUI harness, fixed-baseline render/tool-result/event differentials); live stages PASS (credential-gated FiveAM, DeepSeek live TUI) |
-| `./scripts/verify-release.sh` | exit 0 — full verifier first (same 20 deterministic + 2 live stages PASS), then the complete render inventory: `tier=full captured=76/76 scenarios=38 dimensions=2; aligned=10 intentional-terminal-protocol=118 requires-disposition=202 adjudicated=320; visible-string coverage 672/672 printable branches, structured_exemptions=0` |
-| Goal 17 commits | `0112d2abc` package help contract; `a10b2f078` visible-string construction coverage; `afef19b0b` CLI help captures; `ae697faf2` fatal-crash disposition refresh; `709fdddc2` Kimi live gates; `df59d71f6` goal 8 advisor items; acceptance doc commit recorded below |
-| root `cadr` mtime vs latest `src/` commit/mtime | binary 2026-08-08 04:36:20 > latest `src/` commit `0112d2abc` 2026-08-08 04:27:07 (fresh; verify.sh stage PASS) |
+| `./scripts/verify.sh` | exit 0 (post-rework run) — all 20 deterministic stages PASS (binary freshness, code organization, product identity, source parity ledger + drift self-test, summarization choke point adversarial + real source, deterministic FiveAM, isolated cadr + cadr-server builds, Goal 11 performance gate, native acceptance smoke, native process modes, migration PTY, Unix socket server, terminal lifecycle PTY, deterministic TUI harness, fixed-baseline render/tool-result/event differentials); live stages PASS (credential-gated FiveAM, DeepSeek live TUI) |
+| `./scripts/verify-release.sh` | exit 0 (post-rework run) — full verifier first (same 20 deterministic + 2 live stages PASS), then the complete render inventory: `tier=full captured=78/78 scenarios=39 dimensions=2; aligned=10 intentional-terminal-protocol=118 requires-disposition=208 adjudicated=326; visible-string coverage 672/672 printable branches, structured_exemptions=0` |
+| Goal 17 commits | first closeout: `0112d2abc` `a10b2f078` `afef19b0b` `ae697faf2` `709fdddc2` `df59d71f6` `7cd1d6faf`; rework after rejection: `74fe2c0b8` login dialog, `9ef3a07a9` production auth fixtures, `97ca0187c` settings path, `3d71d27b9` text-gate + re-adjudication; docs commits recorded below |
+| root `cadr` mtime vs latest `src/` commit/mtime | binary rebuilt 2026-08-08 after the last `src/` commit (`97ca0187c`); verify.sh binary-freshness stage PASS |
 | `./cadr --version` | `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)` |
