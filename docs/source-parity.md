@@ -44,6 +44,46 @@ Shipped runnable examples count as source capabilities; a lower-level extension 
 make the example itself implemented. The deterministic image fixture generator follows the
 same strict rule: embedded fixtures do not replace the baseline regeneration command.
 
+## 1a. Package boundary map (routing upstream changes into cadr)
+
+This section is a snapshot of the current state, not a structural mandate;
+when a boundary moves in a Lisp-natural direction, change the code and update
+this map. (Advisor-authored 2026-08-08; verify against the code before
+relying on it during an upgrade.)
+
+The baseline splits its two main packages at the **library/product** line:
+`packages/agent` is the generic agent library, `packages/coding-agent` is the
+whole product. Cadr splits the same functionality at the **headless/terminal**
+line instead, because `cadr-server` and `cadr-evals` need sessions, compaction,
+and extensions without any UI:
+
+| Baseline | Cadr system |
+|---|---|
+| `packages/agent` (agent loop, tool protocol, messages) | `cadr-agent` |
+| `packages/coding-agent/src/core/` session, compaction, extensions, export | `cadr-agent` |
+| `packages/coding-agent/src/core/tools/` (concrete bash/edit/…) | `cadr-cli/tools/` |
+| `packages/coding-agent` modes, bootstrap, resource loading, settings UI | `cadr-cli` |
+| `packages/ai` | `cadr-ai` |
+| `packages/tui` | `cadr-tui` |
+| `packages/server` | `cadr-server` |
+| `packages/storage` | `cadr-storage` (shell) + `cadr-agent` sqlite/session backends |
+| `packages/protocol` | `cadr-protocol` |
+| `packages/evals` | `cadr-evals` |
+| — (no baseline counterpart) | `cadr-core` (failure-safety primitives, goal 14) |
+
+One placement is deliberately isomorphic to the baseline: the tool *protocol*
+lives in the agent package (`cadr-agent/tool.lisp` ↔ `packages/agent`'s
+`AgentTool`) while *concrete* tools live in the product package
+(`cadr-cli/tools/` ↔ `coding-agent/src/core/tools/`).
+
+**Routing rule for upstream diffs**: a change under `packages/coding-agent`
+goes to `cadr-agent` when it touches core/session/compaction/extensions/export,
+and to `cadr-cli` when it touches modes/bootstrap/resources/settings or a
+concrete tool. Per-file ground truth is the `:baseline-source` annotation on
+each ledger row below; this rule is the first-pass router, the ledger is the
+authority. (The v0.84 upgrade carries 74 changed `coding-agent` files that
+will be routed with this rule.)
+
 ## 2. Summary
 
 | Package | Files | 已实现 | 有意差异 | 缺失 |
