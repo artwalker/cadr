@@ -1184,7 +1184,7 @@
         "B10 runtime model cancellation bypasses the B3 owner")
     (is (and package-source
              (string=
-              "e722e49fd70592edcd28da93acc97051d4a0b22bc016e4b7da314a65c4acfb4f"
+              "3106335e0d5bb55d53e1ad8b466df6c1bf47c2cec5e0959168a947136da93233"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

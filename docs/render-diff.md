@@ -139,9 +139,9 @@ whole-branch proof, but it cannot change or waive its inventory.
 | `wide` | 100 x 32 | Normal development terminal with room to expose spacing and footer placement. |
 | `narrow` | 48 x 20 | Forces wrapping, compact help, overlay clipping, and wide-character accounting. |
 
-The manifest contains 37 scripted scenarios. The 31-scenario core tier has 86
-named checkpoints and 104 coverage labels; the six full-only branch sweeps
-raise the full tier to 96 checkpoints and 125 coverage labels:
+The manifest contains 42 scripted scenarios. The 35-scenario core tier has 97
+named checkpoints and 110 coverage labels; the seven full-only branch sweeps
+raise the full tier to 109 checkpoints and 136 coverage labels:
 fresh/existing/untrusted startup; plain/Markdown/code/CJK/emoji conversation;
 all seven tools; missing-read/nonzero/timeout errors; every required core and
 authentication overlay; streaming abort and both busy queues; provider and
@@ -149,7 +149,7 @@ fatal errors; all 22 slash commands; bash truncation by lines, bytes and within
 a single line; empty/nonzero/timeout bash results; parallel tool calls; generic and provider-specific auth layers;
 settings secondary/tertiary layers; extension select/input/editor;
 autocomplete; and post-TUI resume output. Every selected scenario runs in both
-dimensions, producing 62 core captures or 74 full captures. Checkpoints
+dimensions, producing 70 core captures or 84 full captures. Checkpoints
 preserve intermediate frames instead of judging only the final screen.
 
 | Significant state | Deterministic trigger | Capture point |

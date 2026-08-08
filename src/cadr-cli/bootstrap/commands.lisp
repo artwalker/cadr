@@ -946,20 +946,21 @@
                                provider
                                (cadr-ai:provider-definition-default-model
                                 definition)))))
-                   (unless
+                   (if
                        (and model
                             (find
                              model available-models
                              :test
                              #'cadr-ai:models-equal-p))
-                     (error
-                      'cadr-ai:configuration-error
-                      :message
-                      (format
-                       nil
-                       "No default model is available for provider ~A"
-                       provider)))
-                   (select-model model))
+                       (progn
+                         (select-model model)
+                         ;; Report the selection so the login completion
+                         ;; message can carry the baseline "Selected <id>."
+                         (cadr-ai:model-id model))
+                       ;; The login handler turns this marker into the
+                       ;; baseline "no default model is configured"
+                       ;; caveat; the login itself already succeeded.
+                       :no-default-model))
                  (let ((updated
                          (resolve-provider-config
                           :provider
@@ -2046,7 +2047,17 @@
                   :auth-type :api-key)
                  (model-registry-login-api-key
                   model-registry provider key))
-             (refresh-auth provider :login))
+             ;; Report the selection outcome and the credential path so
+             ;; the caller can render the baseline completion text.
+             (values
+              (refresh-auth provider :login)
+              (namestring
+               (if (typep
+                    (model-registry-credentials model-registry)
+                    'file-auth-storage)
+                   (file-auth-storage-path
+                    (model-registry-credentials model-registry))
+                   (default-auth-path)))))
            :auth-status-function #'authentication-status
            :logout-options-function #'stored-logout-options
            :on-model-selected #'select-model

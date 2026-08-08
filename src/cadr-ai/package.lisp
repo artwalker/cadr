@@ -204,6 +204,7 @@
    #:provider-definition-supports-tools-p
    #:provider-definition-reasoning-p
    #:provider-definition-oauth-metadata
+   #:provider-definition-structured-api-key-login-p
    #:oauth-provider-metadata
    #:oauth-provider-metadata-provider-name
    #:oauth-provider-metadata-method-name

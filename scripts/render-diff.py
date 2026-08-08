@@ -23,6 +23,7 @@ import tarfile
 import tempfile
 import termios
 import time
+import urllib.request
 from typing import Any
 
 
@@ -1765,6 +1766,17 @@ def run_actions(
                         max(0.0, min(0.01, deadline - time.monotonic())),
                         process,
                     )
+            elif "fetchUrl" in action:
+                # Deliver an HTTP request on behalf of the scenario (e.g. the
+                # browser callback in a loopback OAuth login flow).
+                url = action["fetchUrl"]
+                try:
+                    with urllib.request.urlopen(url, timeout=10) as response:
+                        response.read()
+                except Exception as error:
+                    raise HarnessFailure(
+                        f"fetchUrl failed for {url}: {error}"
+                    ) from error
             elif "triggerCrash" in action:
                 if action["triggerCrash"] is not True or ready_path is None:
                     raise HarnessFailure(

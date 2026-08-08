@@ -1,4 +1,5 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { createServer } from "node:http";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { ToolResultMessage } from "@earendil-works/pi-ai";
 import { fauxAssistantMessage, fauxThinking, fauxToolCall, registerFauxProvider } from "@earendil-works/pi-ai/compat";
@@ -629,6 +630,71 @@ async function registerComparisonProviders(modelRuntime: ModelRuntime, scenario:
 						{
 							id: "render-device-1",
 							name: "Render Device Model",
+							reasoning: false,
+							input: ["text"],
+							cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+							contextWindow: 64_000,
+							maxTokens: 8_192,
+						},
+					],
+				});
+			}
+
+			if (authProviderEnabled(scenario)) {
+				modelRuntime.registerProvider("render-loopback", {
+					name: "Render Loopback",
+					baseUrl: "https://render.invalid/v1",
+					apiKey: "render-api-key",
+					api: "openai-completions",
+					oauth: {
+						name: "Render Loopback account",
+						login: async (callbacks) => {
+							// Browser-callback flow: listen on a fixed loopback
+							// port and complete when the harness delivers it.
+							let resolveCode!: () => void;
+							let rejectLogin!: (error: Error) => void;
+							const done = new Promise<void>((resolve, reject) => {
+								resolveCode = resolve;
+								rejectLogin = reject;
+							});
+							const server = createServer((request, response) => {
+								response.writeHead(200, { "content-type": "text/plain" });
+								response.end("render loopback login received\n");
+								resolveCode();
+							});
+							server.on("error", (error) => rejectLogin(error as Error));
+							await new Promise<void>((resolveListen) => {
+								server.listen(1459, "127.0.0.1", resolveListen);
+							});
+							callbacks.onProgress?.("Listening for OAuth callback on http://127.0.0.1:1459/callback");
+							callbacks.onAuth({
+								url: "https://auth.invalid/authorize?state=render-loopback",
+								instructions: "Continue in your browser.",
+							});
+							try {
+								if (callbacks.signal?.aborted) throw new Error("Login cancelled");
+								callbacks.signal?.addEventListener(
+									"abort",
+									() => rejectLogin(new Error("Login cancelled")),
+									{ once: true },
+								);
+								await done;
+								return {
+									access: "render-access",
+									refresh: "render-refresh",
+									expires: 1_800_000_000_000,
+								};
+							} finally {
+								server.close();
+							}
+						},
+						refreshToken: async (credential) => credential,
+						getApiKey: (credential) => credential.access,
+					},
+					models: [
+						{
+							id: "render-loopback-1",
+							name: "Render Loopback Model",
 							reasoning: false,
 							input: ["text"],
 							cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },

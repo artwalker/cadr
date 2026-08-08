@@ -721,7 +721,14 @@
                      (getf event :user-code))
                     (login-dialog-show-waiting
                      overlay "Waiting for authentication..."))
-                   ((:info :progress)
+                   (:info
+                    (when (getf event :message)
+                      (login-dialog-show-info
+                       overlay
+                       (getf event :message)
+                       (getf event :links)
+                       nil)))
+                   (:progress
                     (when (getf event :message)
                       (login-dialog-show-progress
                        overlay (getf event :message)))))
@@ -1021,40 +1028,62 @@
            (case (getf prompt :type)
              (:select
               (let ((options (getf prompt :options)))
-                (show-extension-overlay
-                 (make-framed-select-state
-                  (getf prompt :message)
-                  (mapcar
-                   (lambda (option)
-                     (let ((description
-                             (getf option :description)))
-                       (if description
-                           (format nil "~A · ~A"
-                                   (getf option :label)
-                                   description)
-                           (getf option :label))))
-                   options)
-                  (mapcar
-                   (lambda (option) (getf option :id))
-                   options)
-                  :message (getf prompt :placeholder)
-                  :toggle-tools-function
-                  (lambda ()
-                    (toggle-last-tool-block state))))))
+                (flet ((run-select ()
+                         (show-extension-overlay
+                          (make-framed-select-state
+                           (getf prompt :message)
+                           (mapcar
+                            (lambda (option)
+                              (let ((description
+                                      (getf option :description)))
+                                (if description
+                                    (format nil "~A · ~A"
+                                            (getf option :label)
+                                            description)
+                                    (getf option :label))))
+                            options)
+                           (mapcar
+                            (lambda (option) (getf option :id))
+                            options)
+                           :message (getf prompt :placeholder)
+                           :toggle-tools-function
+                           (lambda ()
+                             (toggle-last-tool-block state))))))
+                  (if (and (eq overlay-kind :login-dialog)
+                           (typep overlay 'login-dialog-state))
+                      ;; Baseline showAuthSelect: the selector borrows the
+                      ;; screen while the login dialog persists; resolving
+                      ;; or cancelling the select restores the dialog so
+                      ;; later auth events render inside it again.
+                      (let ((dialog overlay))
+                        (prog1 (run-select)
+                          (sb-thread:with-mutex (lock)
+                            (setf overlay-kind :login-dialog
+                                  overlay dialog))
+                          (request-render)))
+                      (run-select)))))
              ((:text :secret :manual-code)
               (let ((cancelled-p-function
                       (getf prompt :cancelled-p-function)))
-                (if (and (eq (getf prompt :type) :manual-code)
-                         (eq overlay-kind :login-dialog)
+                (if (and (eq overlay-kind :login-dialog)
                          (typep overlay 'login-dialog-state))
                     (progn
                       (sb-thread:with-mutex (custom-ui-lock)
                         (setf custom-ui-done-p nil
                               custom-ui-result nil))
-                      (login-dialog-show-manual-input
-                       overlay
-                       (getf prompt :message)
-                       (getf prompt :cancel-function))
+                      (if (eq (getf prompt :type) :manual-code)
+                          (login-dialog-show-manual-input
+                           overlay
+                           (getf prompt :message)
+                           (getf prompt :cancel-function))
+                          ;; Baseline showPrompt: text and secret prompts
+                          ;; append the message, an optional dim "e.g., ..."
+                          ;; placeholder line, and the input to the dialog.
+                          (login-dialog-show-prompt
+                           overlay
+                           (getf prompt :message)
+                           (getf prompt :placeholder)
+                           (getf prompt :cancel-function)))
                       (request-render)
                       ;; Same blocking contract as SHOW-EXTENSION-OVERLAY:
                       ;; the worker-thread prompt function resumes when the
@@ -1608,17 +1637,44 @@
                 :status-function auth-status-function)))
          (start-login-option (option)
            (setf login-provider-auth-type nil)
-           (if (eq :oauth
-                   (oauth-selector-option-auth-type option))
-               (progn
-                 (setf overlay-kind :login-dialog
-                       overlay
-                       (make-login-dialog-state
-                        (oauth-selector-option-name option)))
-                 (start-work
-                  (format nil "/login ~(~A~)"
-                          (oauth-selector-option-id option))))
-               (open-api-key-input option)))
+           (cond
+             ((eq :oauth
+                  (oauth-selector-option-auth-type option))
+              (setf overlay-kind :login-dialog
+                    overlay
+                    (make-login-dialog-state
+                     (oauth-selector-option-name option)))
+              (start-work
+               (format nil "/login ~(~A~)"
+                       (oauth-selector-option-id option))))
+             ((oauth-selector-option-structured-login-p option)
+              ;; Baseline showApiKeyLoginDialog: structured API key flows
+              ;; (Bedrock, Vertex) run inside the login dialog through the
+              ;; auth interaction; Bedrock opens with its details block.
+              (setf overlay-kind :login-dialog
+                    overlay
+                    (make-login-dialog-state
+                     (oauth-selector-option-name option)))
+              (when (eq :amazon-bedrock
+                        (oauth-selector-option-id option))
+                (login-dialog-show-details
+                 overlay
+                 (list
+                  (list :text
+                        "You can also use an AWS profile, IAM keys, or role-based credentials.")
+                  (list :muted "See:")
+                  (list :accent
+                        (format
+                         nil "  ~A"
+                         (namestring
+                          (merge-pathnames
+                           "providers.md"
+                           (docs-directory))))))))
+              (start-work
+               (format nil "/login ~(~A~)"
+                       (oauth-selector-option-id option))))
+             (t
+              (open-api-key-input option))))
          (open-login-method-selector
              (&optional (provider-options nil provider-options-p))
            (multiple-value-bind (action value)
@@ -1988,15 +2044,30 @@
                          'cadr-ai:configuration-error
                          :message
                          "API key login is unavailable"))
-                      (funcall
-                       api-key-login-function
-                       provider
-                       (getf value :key))
-                      (status
-                       (format
-                        nil "Saved API key for ~A"
-                        (oauth-selector-option-name
-                         option)))))
+                      (multiple-value-bind (selection auth-path)
+                          (funcall
+                           api-key-login-function
+                           provider
+                           (getf value :key))
+                        ;; Baseline completeProviderAuthentication text.
+                        (status
+                         (format
+                          nil
+                          "Saved API key for ~A.~@[ Selected ~A.~] Credentials saved to ~A"
+                          (oauth-selector-option-name
+                           option)
+                          (and (stringp selection) selection)
+                          auth-path))
+                        (when (eq selection :no-default-model)
+                          (error
+                           'cadr-ai:configuration-error
+                           :message
+                           (format
+                            nil
+                            "Saved API key for ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
+                            (oauth-selector-option-name
+                             option)
+                            provider))))))
                    (:trust
                     (when on-trust-selected
                       (funcall

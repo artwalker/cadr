@@ -212,6 +212,7 @@
                              (:file "goal17-login-dialog-test")
                              (:file "goal18-login-cancel-test")
                              (:file "goal18-migration-test")
+                             (:file "goal18-login-forms-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

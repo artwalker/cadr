@@ -430,7 +430,7 @@
            :notify-function (constantly nil))
           :output output))
         (let ((visible (get-output-stream-string output)))
-          (is (search "extension-oauth login stored in" visible))
+          (is (search "Logged in to Extension OAuth. Credentials saved to " visible))
           (dolist (secret '("callback-code"
                             "oauth-access-secret"
                             "oauth-refresh-secret"))

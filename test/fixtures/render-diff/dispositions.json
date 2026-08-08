@@ -988,11 +988,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "65e3eb72f0ee69c0de1cf17aa8f25b628731af654dcc3935ba2968ad120dba01",
-          "cadr": "65e3eb72f0ee69c0de1cf17aa8f25b628731af654dcc3935ba2968ad120dba01"
+          "pi": "001948cbd788c428ba2240b45128226a5ef7ebb509aaa7854ba2246bfe6a0343",
+          "cadr": "001948cbd788c428ba2240b45128226a5ef7ebb509aaa7854ba2246bfe6a0343"
         }
       },
-      "note": "At overlays-auth/login-provider [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At overlays-auth/login-provider [narrow] the provider list (now including the Render Loopback fixture) is byte-identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -1006,11 +1006,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "909e67401d8f43889224763f24602a48ca9173666823f09ef9905e7dd28abd6b",
-          "cadr": "84a59cdbc9d6c853a66cbc80310f2985bc797bd139fd5c78caecbcd73215a1ae"
+          "pi": "ad27efa1bbec302f3e216bfa16253f926b29875c270729b893c26315e12d51c3",
+          "cadr": "11a934ea4a5e2d15fc219e7f23de1d3022b519d7ed14383c3bd8d4a329e0119b"
         }
       },
-      "note": "At overlays-auth/login-provider [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At overlays-auth/login-provider [wide] the provider list (now including the Render Loopback fixture) is text-identical to pi; the cadr identity padding differs (I04) and the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -1813,6 +1813,423 @@
         }
       },
       "note": "At overlays-logout/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-dialog",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "d412c943df5ed99bd02acfc2e0e6506a034347e7ca3992ae6e27c69edc98c550",
+          "cadr": "f4c3181b134f3dd732dfb9ac2b5bff53fc4aa5abe3bfbffcd1abaffce677cc90"
+        },
+        "narrow": {
+          "pi": "3e5e215eb84f826964c17e43e8b1edcdd0604060d4abf0fd965778e65c02a933",
+          "cadr": "3211762d92614aeffe763380d81ec3b913bd372017a078f10fd663c50907ac63"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-dialog [wide+narrow] the manual-code dialog (bordered Login to Render Auth frame, accent URL, dim hint, Paste the authorization code input) is text-identical to pi; wide screens differ only in product-identity padding (I04) and ANSI segmentation (I01); in narrow the longer cadr identity shifts wrap points (I04)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-completed",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f4ccbf51c0e0b4b4964f24cc9862a9d89c5d188e1a00ff6000695288da9cf421",
+          "cadr": "770a8d55439a82e7a055fa3a01b06be7d5fc670b8742c68073ebbc7232c3ba14"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-completed [wide] the completed login renders the baseline status line 'Logged in to Render Auth. Credentials saved to <path>' identically on both sides; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-completed",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d24a0a43510516cf0734f4de6e7686e7bec66e71953cd325f5e75b1be785b39a",
+          "cadr": "c9d054f305391cb40fd57d664562522f8221e519f083080810d10ad73c0a2f7b"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-completed [narrow] the completion status wraps differently because <HOME>/.cadr/agent/auth.json is longer than <HOME>/.pi/agent/auth.json (I04); the status text is otherwise identical; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-post-complete",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3dee3c9072de925e063860a892ad9272c4083831d422ab21079dd264d0803b69",
+          "cadr": "7426a038ca1b966255922a3967279076516d1c830f0bc1139d6dbfb1ecccf083"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-post-complete [wide] the post-completion probe turn renders identically to pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "login-manual-post-complete",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "50458d2e4b882694d5d4723efa45ccdddd51b9862178bc086880df25ff29d58d",
+          "cadr": "468135f2d3c1c8627bd8c2f902bb20630129a0198143cab7dcb4b7c10adf1ee6"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/login-manual-post-complete [narrow] the probe turn is identical; the longer cadr auth-path wrap above it (I04) shifts rows; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4ad3fbcd5c0be151ffc974a69faa46a01c8a79abb65b40ec326b61eb85e2095f",
+          "cadr": "f984a0c119448f65fdc3d6a8b272589ad701aeea6dfa36cb3713f465e3430485"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/process-exit [wide] teardown and the resume hint match pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-manual-code-complete",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "aaa7c3c0a7dc1f76b73ace34141d5ad3402327f1bacbbca6a4913f2d30dbd124",
+          "cadr": "75a4803d7930fd11c44dab6257f39837b5a6205cd624db67a6e2c8bd20d835f3"
+        }
+      },
+      "note": "At overlays-auth-manual-code-complete/process-exit [narrow] teardown matches pi; the longer cadr auth-path wrap (I04) shifts the resume hint row; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-dialog",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "957aa86c543b48c11e1da5456fab881f18f494320f72ef4c0e5295899ae67792",
+          "cadr": "5ed1d061ccaa67bbbe41307e29a8b13282fb8e8f41eac4e4fba17fc22f5cee48"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-dialog [wide] the browser-callback dialog (Login to Render Loopback frame, accent URL, dim hint, warning Continue in your browser.) is text-identical to pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-dialog",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "89b75b784c21a07b8f26af74eaaefa24b0262c31be0d28f36542dde88034477b",
+          "cadr": "8839d9731c81e36f51241bbb6b1f1b021008e093ddf56a6b47f534dad8c3c46f"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-dialog [narrow] the dialog content is identical to pi; the two-cell-longer Cadr banner (I04) wraps one row taller above the frame; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-cancelled",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "34474bef0f42482f45a66b89d8472ade5089fa9289cd526e95b06294869addda",
+          "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] escape closes the dialog and restores the editor exactly as pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-cancelled",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f6cd5cb0569277635ad79582d0d8a47340c6a314d906c45fbf6dcbf84eb6fe1d",
+          "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] escape restores the editor as pi; the same banner wrap consequence (I04) keeps one more startup line visible; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-post-cancel",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] three post-cancel probe turns dispatch and render exactly as pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "login-loopback-post-cancel",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [narrow] the probe turns scrolled both grids past the banner, so the screens are byte-identical; only raw ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/process-exit [wide] teardown matches pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
+        }
+      },
+      "note": "At overlays-auth-browser-callback/process-exit [narrow] the teardown screen is byte-identical to pi; only raw ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-dialog",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "957aa86c543b48c11e1da5456fab881f18f494320f72ef4c0e5295899ae67792",
+          "cadr": "5ed1d061ccaa67bbbe41307e29a8b13282fb8e8f41eac4e4fba17fc22f5cee48"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-dialog [wide] the browser-callback dialog is text-identical to pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-dialog",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "89b75b784c21a07b8f26af74eaaefa24b0262c31be0d28f36542dde88034477b",
+          "cadr": "8839d9731c81e36f51241bbb6b1f1b021008e093ddf56a6b47f534dad8c3c46f"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-dialog [narrow] the dialog content is identical to pi; the two-cell-longer Cadr banner (I04) wraps one row taller above the frame; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-completed",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5d34442ead0d76f5b41c347552267d6387443f48abf4baa930ba2fcc3a58d2d8",
+          "cadr": "3df25d03fab45b8b51454a7c611b623a16610ef1a3cb94d1ec332265360309e6"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-completed [wide] the delivered loopback callback completes the login and both sides render 'Logged in to Render Loopback. Credentials saved to <path>' identically; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-completed",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "41765f51c97513b8ec0cfb8eeb3fe8a2a740e573fbdae17e01de5de0b320bdf3",
+          "cadr": "ed284a1d9bd4e42b6ed52d26c9bebf74378e2835e3ff1f05ab54f069acf6e60c"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-completed [narrow] the completion status wraps differently because <HOME>/.cadr/agent/auth.json is longer than <HOME>/.pi/agent/auth.json (I04); text otherwise identical; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-post-complete",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "fd360271c646038238e41af9f7f4bbbd7a71e6fb44ab712e0d5831ebffd0dcf4",
+          "cadr": "7a1ade2b2de148e01aa877628158de387115e3c829cd15481c4cfcf1860cbc73"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-post-complete [wide] the post-completion probe turn renders identically to pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "login-loopback-post-complete",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "e47f26c2049e3b31efc1db5a317bc799fb9a221e9b068b863d4482c9ab1fcc9c",
+          "cadr": "aa89379b82738907a7663538c7c9befb08c9d3e8f32d31907f0652135bf352e0"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/login-loopback-post-complete [narrow] the probe turn is identical; the longer cadr auth-path wrap above it (I04) shifts rows; ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5c8c0f8e9bc1ccb9d2b49cc0241449fc88ef74d274fff4b7a1642db946cb53ce",
+          "cadr": "02733b854de6027dc56215ce377fe9790c7471cc6a08305176e38112c8cdb344"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/process-exit [wide] teardown and the resume hint match pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+    },
+    {
+      "scenario": "overlays-auth-browser-callback-complete",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "28d8d55112fa302683e276387b3c638cb0a32792c9ea786d69f1bc3a133fba0f",
+          "cadr": "aade313f21dc03eac09519af556509565bdf3bc2f8ccbc229bcc7660a4707b7f"
+        }
+      },
+      "note": "At overlays-auth-browser-callback-complete/process-exit [narrow] teardown matches pi; the longer cadr auth-path wrap (I04) shifts the resume hint row; ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-secondary",

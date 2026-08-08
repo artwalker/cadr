@@ -724,6 +724,17 @@
       :id :render-device :name "Render Device"
       :auth-type :api-key
       :method-name "Render Device API key"
+      :status '(:type :api-key :source "configured provider")))
+    (list
+     (cadr-cli::make-oauth-selector-option
+      :id :render-loopback :name "Render Loopback"
+      :auth-type :oauth
+      :method-name "Render Loopback account"
+      :status '(:type :api-key :source "configured provider"))
+     (cadr-cli::make-oauth-selector-option
+      :id :render-loopback :name "Render Loopback"
+      :auth-type :api-key
+      :method-name "Render Loopback API key"
       :status '(:type :api-key :source "configured provider"))))
    #'string-lessp
    :key #'cadr-cli::oauth-selector-option-name))
@@ -910,71 +921,147 @@
   ;; Fixture OAuth flows matching the pi-driver's registered render
   ;; providers: authorization-code-with-paste and device-code.  Both emit
   ;; real runtime auth events so the production login dialog renders them.
-  (if (eq provider-id :render-device)
-      (progn
-        (cadr-ai:runtime-auth-interaction-notify
-         interaction
-         (list :type :device-code
-               :user-code "RENDER-42"
-               :verification-uri "https://auth.invalid/device"))
-        (loop
-          (when (cadr-ai:runtime-auth-interaction-aborted-p interaction)
-            (error 'cadr-ai:authentication-cancelled
-                   :message "Login cancelled"))
-          (sleep 0.05)))
-      (progn
-        (cadr-ai:runtime-auth-interaction-notify
-         interaction
-         (list :type :auth-url
-               :url "https://auth.invalid/authorize?state=render-fixed"
-               :instructions
-               "A browser window should open. Complete login to finish."))
-        (let ((code
-                (cadr-ai:runtime-auth-interaction-prompt
-                 interaction
-                 (list :type :manual-code
-                       :message "Paste the authorization code"))))
-          (unless (cadr-ai::non-empty-string-p code)
-            (error 'cadr-ai:authentication-cancelled
-                   :message "Login cancelled"))
-          (cadr-ai:make-oauth-credential
-           :provider provider-id
-           :access "render-access"
-           :refresh "render-refresh"
-           :expires 1800000000000
-           :account-id "render-account")))))
+  (cond
+    ((eq provider-id :render-loopback)
+     ;; Browser-callback flow: listen on the fixed loopback port and
+     ;; complete when the harness delivers the callback.
+     (let ((socket
+             (make-instance 'sb-bsd-sockets:inet-socket
+                            :type :stream :protocol :tcp)))
+       (unwind-protect
+            (progn
+              (setf (sb-bsd-sockets:sockopt-reuse-address socket) t)
+              (sb-bsd-sockets:socket-bind socket #(127 0 0 1) 1459)
+              (sb-bsd-sockets:socket-listen socket 1)
+              (cadr-ai:runtime-auth-interaction-notify
+               interaction
+               (list :type :progress
+                     :message "Listening for OAuth callback on http://127.0.0.1:1459/callback"))
+              (cadr-ai:runtime-auth-interaction-notify
+               interaction
+               (list :type :auth-url
+                     :url "https://auth.invalid/authorize?state=render-loopback"
+                     :instructions "Continue in your browser."))
+              (loop
+                (when (cadr-ai:runtime-auth-interaction-aborted-p interaction)
+                  (error 'cadr-ai:authentication-cancelled
+                         :message "Login cancelled"))
+                (when (sb-sys:wait-until-fd-usable
+                       (sb-bsd-sockets:socket-file-descriptor socket)
+                       :input 0.05)
+                  (return)))
+              (let ((client (sb-bsd-sockets:socket-accept socket)))
+                (unwind-protect
+                     (let ((stream
+                             (sb-bsd-sockets:socket-make-stream
+                              client :input t :output t
+                              :element-type 'character
+                              :external-format :utf-8
+                              :buffering :none)))
+                       (read-line stream nil "")
+                       (loop for header = (read-line stream nil "")
+                           until (zerop
+                                  (length
+                                   (string-trim '(#\Return) header))))
+                       (write-string
+                        "HTTP/1.1 200 OK
+content-type: text/plain
+connection: close
+
+render loopback login received
+" stream)
+                       (finish-output stream))
+                  (ignore-errors
+                    (sb-bsd-sockets:socket-close client))))
+              (cadr-ai:make-oauth-credential
+               :provider provider-id
+               :access "render-access"
+               :refresh "render-refresh"
+               :expires 1800000000000
+               :account-id "render-account"))
+         (ignore-errors
+           (sb-bsd-sockets:socket-close socket)))))
+    ((eq provider-id :render-device)
+     (cadr-ai:runtime-auth-interaction-notify
+      interaction
+      (list :type :device-code
+            :user-code "RENDER-42"
+            :verification-uri "https://auth.invalid/device"))
+     (loop
+       (when (cadr-ai:runtime-auth-interaction-aborted-p interaction)
+         (error 'cadr-ai:authentication-cancelled
+                :message "Login cancelled"))
+       (sleep 0.05)))
+    (t
+     (cadr-ai:runtime-auth-interaction-notify
+      interaction
+      (list :type :auth-url
+            :url "https://auth.invalid/authorize?state=render-fixed"
+            :instructions
+            "A browser window should open. Complete login to finish."))
+     (let ((code
+             (cadr-ai:runtime-auth-interaction-prompt
+              interaction
+              (list :type :manual-code
+                    :message "Paste the authorization code"))))
+       (unless (cadr-ai::non-empty-string-p code)
+         (error 'cadr-ai:authentication-cancelled
+                :message "Login cancelled"))
+       (cadr-ai:make-oauth-credential
+        :provider provider-id
+        :access "render-access"
+        :refresh "render-refresh"
+        :expires 1800000000000
+        :account-id "render-account")))))
 
 (defun command-dispatcher
-    (agent cwd session-directory settings-manager
+    (agent cwd agent-directory session-directory settings-manager
      auth-prompt-consumer auth-event-consumer status-consumer
      abort-predicate)
   (lambda (line)
     (cond
       ((member line
-               '("/login render-auth" "/login render-device")
+               '("/login render-auth" "/login render-device"
+                 "/login render-loopback")
                :test #'string=)
        ;; Drive the production OAuth event surface: the controller routes
        ;; these events into the login dialog overlay, exactly as a real
        ;; provider login would.  Nothing here synthesizes dialog content.
-       (render-fixture-login
-        (if (string= line "/login render-device")
-            :render-device
-            :render-auth)
-        (cadr-ai:make-runtime-auth-interaction
-         :prompt-function
-         (lambda (prompt)
-           (if auth-prompt-consumer
-               (funcall auth-prompt-consumer prompt)
-               (error
-                'cadr-ai:configuration-error
-                :message
-                "Interactive authentication prompt is unavailable")))
-         :notify-function
-         (lambda (event)
-           (when auth-event-consumer
-             (funcall auth-event-consumer event)))
-         :abort-p abort-predicate))
-       (values t nil))
+       (let ((provider-id
+               (cond
+                 ((string= line "/login render-device") :render-device)
+                 ((string= line "/login render-loopback") :render-loopback)
+                 (t :render-auth))))
+         (render-fixture-login
+          provider-id
+          (cadr-ai:make-runtime-auth-interaction
+           :prompt-function
+           (lambda (prompt)
+             (if auth-prompt-consumer
+                 (funcall auth-prompt-consumer prompt)
+                 (error
+                  'cadr-ai:configuration-error
+                  :message
+                  "Interactive authentication prompt is unavailable")))
+           :notify-function
+           (lambda (event)
+             (when auth-event-consumer
+               (funcall auth-event-consumer event)))
+           :abort-p abort-predicate))
+         ;; A completed fixture login prints the baseline status line.
+         ;; (The harness starts with a known model selected, so the
+         ;; baseline's no-default-model caveat does not fire here.)
+         (let ((display-name
+                 (cadr-cli::oauth-selector-option-name
+                  (find provider-id (render-auth-options)
+                        :key #'cadr-cli::oauth-selector-option-id))))
+           (when status-consumer
+             (funcall
+              status-consumer
+              (format nil "Logged in to ~A. Credentials saved to ~A"
+                      display-name
+                      (merge-pathnames "auth.json" agent-directory)))))
+       (values t nil)))
       ((string= line "/reload")
        (cadr-cli::reload-cli-runtime
         agent settings-manager
@@ -1194,7 +1281,7 @@
            (lambda (line)
              (funcall
               (command-dispatcher
-               agent cwd session-directory settings-manager
+               agent cwd agent-dir session-directory settings-manager
                auth-prompt-consumer auth-event-consumer status-consumer
                (lambda () abort-requested-p))
               line))

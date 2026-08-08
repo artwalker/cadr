@@ -90,6 +90,40 @@
                        '(:kind :hint-cancel-submit)))))
   state)
 
+(defun login-dialog-show-info (state message links show-close-hint-p)
+  ;; Baseline showInfo: Spacer, text-colored message, one accent hyperlink
+  ;; per link ("label: url" or the bare URL), and an optional Spacer +
+  ;; close hint.
+  (setf (login-dialog-state-sections state)
+        (append (login-dialog-state-sections state)
+                (list '(:kind :blank)
+                      (list :kind :text :text message))
+                (mapcar
+                 (lambda (link)
+                   (list :kind :link
+                         :text (let ((label (getf link :label))
+                                     (url (getf link :url)))
+                                 (if (and label (plusp (length label)))
+                                     (format nil "~A: ~A" label url)
+                                     url))
+                         :url (getf link :url)))
+                 links)
+                (when show-close-hint-p
+                  (list '(:kind :blank)
+                        '(:kind :hint-close)))))
+  state)
+
+(defun login-dialog-show-details (state lines)
+  ;; Baseline showDetails: clear, Spacer, then one caller-styled line per
+  ;; entry.  LINES are (kind text) pairs using the section style keywords.
+  (setf (login-dialog-state-sections state)
+        (append (list '(:kind :blank))
+                (mapcar
+                 (lambda (line)
+                   (list :kind (first line) :text (second line)))
+                 lines)))
+  state)
+
 (defun login-dialog-complete-input (state value)
   ;; Baseline replaceInputWithSubmittedText: the input line becomes a plain
   ;; "> <value>" line and the dialog stays open until the flow settles.
@@ -148,6 +182,41 @@
                       (getf section :text)
                       :enabled-p t)
                      width))))
+                 (:muted
+                  (list
+                   (list
+                    :lines
+                    (component-text-lines
+                     (cadr-tui:theme-foreground
+                      :muted
+                      (getf section :text)
+                      :enabled-p t)
+                     width))))
+                 (:accent
+                  (list
+                   (list
+                    :lines
+                    (component-text-lines
+                     (cadr-tui:theme-foreground
+                      :accent
+                      (getf section :text)
+                      :enabled-p t)
+                     width))))
+                 (:link
+                  (list
+                   (list
+                    :lines
+                    (mapcar
+                     (lambda (line)
+                       (selector-component-text-line line width))
+                     (cadr-tui:wrap-text
+                      (cadr-tui:theme-foreground
+                       :accent
+                       (terminal-hyperlink
+                        (getf section :url)
+                        (getf section :text))
+                       :enabled-p t)
+                      (max 1 (- width 2)))))))
                  (:submitted
                   (list
                    (list
@@ -173,14 +242,25 @@
                   (list
                    (list
                     :lines
+                     (list
+                      (selector-component-text-line
+                       (format
+                        nil "(~A ~A)"
+                        (selector-keybinding-hint
+                         keybindings "tui.select.cancel" "to cancel,")
+                        (selector-keybinding-hint
+                         keybindings "tui.select.confirm" "to submit"))
+                      width)))))
+                 (:hint-close
+                  (list
+                   (list
+                    :lines
                     (list
                      (selector-component-text-line
                       (format
-                       nil "(~A ~A)"
+                       nil "(~A)"
                        (selector-keybinding-hint
-                         keybindings "tui.select.cancel" "to cancel,")
-                       (selector-keybinding-hint
-                         keybindings "tui.select.confirm" "to submit"))
+                         keybindings "tui.select.cancel" "to close"))
                       width))))))))
         (render-selector-frame
          (make-selector-frame

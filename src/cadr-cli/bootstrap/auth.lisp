@@ -73,51 +73,75 @@
                 (cadr-ai:models-runtime-provider
                  runtime provider)))
          (built-in-definition
-           (and provider
+          (and provider
                 (ignore-errors
                   (cadr-ai:find-provider-definition provider)))))
-    (cond
-      ((and definition
-            (string= command "/login")
-            (cadr-ai:runtime-provider-oauth-login-function
-             definition))
-       (model-registry-login-native-provider
-        registry provider interaction :auth-type :oauth)
-       (format output "~(~A~) login stored in ~A~%"
-               provider
-               (namestring
-                (if
-                    (typep
-                     (model-registry-credentials registry)
-                     'file-auth-storage)
-                    (file-auth-storage-path
-                     (model-registry-credentials registry))
-                    (default-auth-path))))
-       (when on-change
-         (funcall on-change provider :login))
-       (finish-output output)
-       t)
-      ((and built-in-definition
-            (string= command "/login")
-            (member :oauth
-                    (cadr-ai:provider-definition-auth-types
-                     built-in-definition)))
-       (model-registry-login-built-in-provider
-        registry provider interaction)
-       (format output "~(~A~) login stored in ~A~%"
-               provider
-               (namestring
-                (if
-                    (typep
-                     (model-registry-credentials registry)
-                     'file-auth-storage)
-                    (file-auth-storage-path
-                     (model-registry-credentials registry))
-                    (default-auth-path))))
-       (when on-change
-         (funcall on-change provider :login))
-       (finish-output output)
-       t)
+    (labels
+        ((auth-file-path ()
+           (if (typep
+                (model-registry-credentials registry)
+                'file-auth-storage)
+               (file-auth-storage-path
+                (model-registry-credentials registry))
+               (default-auth-path)))
+         (provider-display-name ()
+           (or
+            (and definition
+                 (cadr-ai::non-empty-string-p
+                  (cadr-ai:runtime-provider-name definition))
+                 (cadr-ai:runtime-provider-name definition))
+            (and built-in-definition
+                 (cadr-ai:provider-definition-name built-in-definition))
+            (string-downcase (symbol-name provider))))
+         (report-login (action-label)
+           ;; Baseline completeProviderAuthentication: the status line
+           ;; carries the selection outcome; a provider without a
+           ;; default model adds the caveat as an error.
+           (let ((selection
+                   (and on-change
+                        (funcall on-change provider :login))))
+             (format output "~A.~@[ Selected ~A.~] Credentials saved to ~A~%"
+                     (format nil "~A ~A" action-label
+                             (provider-display-name))
+                     (and (stringp selection) selection)
+                     (namestring (auth-file-path)))
+             (when (eq selection :no-default-model)
+               (error
+                'cadr-ai:configuration-error
+                :message
+                (format
+                 nil
+                 "~A ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
+                 action-label
+                 (provider-display-name)
+                 provider)))
+             (finish-output output)
+             t)))
+      (cond
+        ((and definition
+              (string= command "/login")
+              (cadr-ai:runtime-provider-oauth-login-function
+               definition))
+         (model-registry-login-native-provider
+          registry provider interaction :auth-type :oauth)
+         (report-login "Logged in to"))
+        ((and built-in-definition
+              (string= command "/login")
+              (member :oauth
+                      (cadr-ai:provider-definition-auth-types
+                       built-in-definition)))
+         (model-registry-login-built-in-provider
+          registry provider interaction)
+         (report-login "Logged in to"))
+        ((and definition
+              (string= command "/login")
+              (cadr-ai:runtime-provider-api-key-login-function
+               definition))
+         ;; Structured API key flows (Bedrock, Vertex) run through the
+         ;; auth interaction like the baseline ApiKeyAuth.login.
+         (model-registry-login-native-provider
+          registry provider interaction :auth-type :api-key)
+         (report-login "Saved API key for"))
       ((and definition
             (string= command "/logout"))
        (auth-storage-delete
@@ -127,4 +151,4 @@
          (funcall on-change provider :logout))
        (finish-output output)
        t)
-      (t nil))))
+       (t nil)))))

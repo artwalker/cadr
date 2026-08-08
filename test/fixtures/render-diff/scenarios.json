@@ -705,6 +705,102 @@
       ]
     },
     {
+      "id": "overlays-auth-browser-callback",
+      "group": "overlays",
+      "coverage": ["overlay-login-dialog-browser-callback"],
+      "description": "Browser-callback OAuth login dialog: auth URL with instructions, cancel path with post-cancel probes, then a completed callback login.",
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-cancel message delivered." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Second post-cancel reply." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Third post-cancel reply." }],
+          "stopReason": "stop"
+        }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/login render-loopback" }, { "send": "enter" }, { "pauseMs": 300 },
+        { "sendSide": { "pi": "enter" } },
+        { "waitFor": "authentication method for Render" },
+        { "send": "enter" },
+        { "waitFor": "Login to Render Loopback" },
+        { "waitFor": "Continue in your browser." },
+        { "checkpoint": "login-loopback-dialog" },
+        { "send": "escape" }, { "pauseMs": 100 }, { "checkpoint": "login-loopback-cancelled" },
+        { "sendText": "post-cancel probe" }, { "send": "enter" },
+        { "waitFor": "Post-cancel message delivered." },
+        { "sendText": "second probe" }, { "send": "enter" },
+        { "waitFor": "Second post-cancel reply." },
+        { "sendText": "third probe" }, { "send": "enter" },
+        { "waitFor": "Third post-cancel reply." }, { "waitForAgentSettled": true },
+        { "checkpoint": "login-loopback-post-cancel" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-auth-manual-code-complete",
+      "group": "overlays",
+      "coverage": ["overlay-login-dialog-manual-complete"],
+      "description": "Manual-code OAuth login completed by pasting a code, followed by a post-completion message.",
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-completion reply delivered." }],
+          "stopReason": "stop"
+        }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
+        { "sendSide": { "pi": "enter" } },
+        { "waitFor": "Select authentication method for Render Auth:" }, { "send": "enter" },
+        { "waitFor": "Login to Render Auth" },
+        { "waitFor": "Paste the authorization code" }, { "checkpoint": "login-manual-dialog" },
+        { "sendText": "render-code" }, { "send": "enter" },
+        { "waitFor": "Logged in to Render Auth" },
+        { "waitFor": "Credentials saved to" }, { "pauseMs": 100 },
+        { "checkpoint": "login-manual-completed" },
+        { "sendText": "post-completion probe" }, { "send": "enter" },
+        { "waitFor": "Post-completion reply delivered." }, { "waitForAgentSettled": true },
+        { "checkpoint": "login-manual-post-complete" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
+      "id": "overlays-auth-browser-callback-complete",
+      "group": "overlays",
+      "coverage": ["overlay-login-dialog-browser-callback-complete"],
+      "description": "Browser-callback OAuth login completed by delivering the loopback callback, followed by a post-completion message.",
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-completion reply delivered." }],
+          "stopReason": "stop"
+        }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/login render-loopback" }, { "send": "enter" }, { "pauseMs": 300 },
+        { "sendSide": { "pi": "enter" } },
+        { "waitFor": "authentication method for Render" },
+        { "send": "enter" },
+        { "waitFor": "Login to Render Loopback" },
+        { "waitFor": "Continue in your browser." }, { "checkpoint": "login-loopback-dialog" },
+        { "fetchUrl": "http://127.0.0.1:1459/callback?code=render&state=render-loopback" },
+        { "waitFor": "Logged in to Render Loopback" },
+        { "waitFor": "auth.json" }, { "pauseMs": 100 },
+        { "checkpoint": "login-loopback-completed" },
+        { "sendText": "post-completion probe" }, { "send": "enter" },
+        { "waitFor": "Post-completion reply delivered." }, { "waitForAgentSettled": true },
+        { "checkpoint": "login-loopback-post-complete" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
       "id": "overlays-logout",
       "group": "overlays",
       "coverage": ["overlay-logout", "slash-logout"],

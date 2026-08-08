@@ -21,6 +21,17 @@ tag/Release step.
 
 ### Added
 
+- Completed the login dialog's baseline surface: auth selects now borrow the
+  screen and restore the dialog (the Radius/OpenAI method choice no longer
+  strands later auth events into the transcript), text/secret prompts render
+  through the dialog's prompt form, and the info (message + links) and
+  details forms exist.  Bedrock and Vertex API key logins run their baseline
+  structured flows (method select, per-method prompts, info notice with
+  links) through the dialog, and the login completion messages follow the
+  baseline "Logged in to … Credentials saved to …" text.  New render-diff
+  scenarios cover the manual-code and browser-callback flows end to end —
+  cancel with post-cancel probes and a completion path each.
+
 - Added the fourth parity ledger for visible presentation semantics, including
   production probes for all 55 theme tokens and machine-checked ledger totals.
 - Added a self-contained baseline-compatible session HTML exporter with the

@@ -6,6 +6,71 @@
     ".config/gcloud/application_default_credentials.json"
     (user-homedir-pathname))))
 
+(defun login-vertex-api-key (interaction)
+  ;; Baseline packages/ai/src/providers/google-vertex.ts:13-63 vertexAuth
+  ;; .login: a method select, then project/location (and optional service
+  ;; account path) prompts with an ADC info notice carrying its link.
+  (let ((method
+          (runtime-auth-interaction-prompt
+           interaction
+           '(:type :select
+             :message "Select Google Vertex AI authentication method:"
+             :options
+             ((:id "api-key" :label "Google Cloud API key")
+              (:id "adc" :label "Application Default Credentials")
+              (:id "service-account"
+               :label "Service account credentials file"))))))
+    (cond
+      ((string= method "api-key")
+       (make-api-key-credential
+        :key
+        (runtime-auth-interaction-prompt
+         interaction
+         '(:type :secret
+           :message "Enter Google Cloud API key"))))
+      ((member method '("adc" "service-account") :test #'string=)
+       (runtime-auth-interaction-notify
+        interaction
+        (list :type :info
+              :message
+              (if (string= method "adc")
+                  "Run `gcloud auth application-default login`, then provide the project and location."
+                  "Provide a service account credentials file, project, and location.")
+              :links
+              '((:label "Application Default Credentials"
+                 :url "https://cloud.google.com/docs/authentication/provide-credentials-adc"))))
+       (let ((project
+               (runtime-auth-interaction-prompt
+                interaction
+                '(:type :text
+                  :message "Enter Google Cloud project ID")))
+             (location
+               (runtime-auth-interaction-prompt
+                interaction
+                '(:type :text
+                  :message "Enter Google Cloud location")))
+             (credentials-path
+               (and (string= method "service-account")
+                    (runtime-auth-interaction-prompt
+                     interaction
+                     '(:type :text
+                       :message "Enter service account credentials file path")))))
+         (make-api-key-credential
+          :environment
+          (append
+           (list (cons "GOOGLE_CLOUD_PROJECT" project)
+                 (cons "GOOGLE_CLOUD_LOCATION" location))
+           (when (and credentials-path (plusp (length credentials-path)))
+             (list
+              (cons "GOOGLE_APPLICATION_CREDENTIALS"
+                    credentials-path)))))))
+      (t
+       (error 'authentication-error
+              :message
+              (format nil
+                      "Unknown Google Vertex AI auth method: ~A"
+                      method))))))
+
 (defun resolve-vertex-auth
     (environment &key api-key
                    (file-exists-p #'probe-file))

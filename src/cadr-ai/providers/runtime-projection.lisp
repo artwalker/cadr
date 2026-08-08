@@ -18,6 +18,22 @@
   (mapcar #'model-from-metadata
           (list-model-metadata provider-id)))
 
+(defun provider-definition-structured-api-key-login-p (definition)
+  "Whether the provider's API key login is a multi-step interaction flow
+(baseline ApiKeyAuth.login with select/secret/text prompts and info
+notices) rather than a single key entry.  This is the single owner of
+which auth strategies are structured."
+  (and
+   (member (provider-definition-api-key-auth-strategy definition)
+           '(:bedrock :vertex))
+   t))
+
+(defun built-in-api-key-login-function (definition)
+  (case (provider-definition-api-key-auth-strategy definition)
+    (:bedrock #'login-bedrock-api-key)
+    (:vertex #'login-vertex-api-key)
+    (otherwise nil)))
+
 (defun built-in-api-key-auth
     (definition credential environment overrides)
   (let* ((explicit-key (getf overrides :api-key))
@@ -225,6 +241,8 @@
       (null
        (member :api-key
                (provider-definition-auth-types definition))))
+     :api-key-login-function
+     (built-in-api-key-login-function definition)
      :oauth-auth-p
      (not
       (null

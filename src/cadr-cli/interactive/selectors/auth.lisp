@@ -6,7 +6,8 @@
   auth-type
   method-name
   login-label
-  status)
+  status
+  structured-login-p)
 
 (defstruct (login-method-selector-state
             (:constructor
@@ -292,7 +293,12 @@
                (funcall
                 status-function
                 (cadr-ai:provider-definition-id
-                 definition))))))
+                 definition)))
+          :structured-login-p
+          (and
+           (eq candidate :api-key)
+           (cadr-ai:provider-definition-structured-api-key-login-p
+            definition)))))
    #'string-lessp
    :key #'oauth-selector-option-name))
 

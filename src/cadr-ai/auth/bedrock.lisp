@@ -7,6 +7,59 @@
   (member value '("<authenticated>" "gcp-vertex-credentials")
           :test #'string=))
 
+(defun login-bedrock-api-key (interaction)
+  ;; Baseline packages/ai/src/providers/amazon-bedrock.ts:12-54 bedrockAuth
+  ;; .login: a method select followed by per-method prompts and an info
+  ;; notice with the AWS credential-chain link.
+  (let ((method
+          (runtime-auth-interaction-prompt
+           interaction
+           '(:type :select
+             :message "Select Amazon Bedrock authentication method:"
+             :options
+             ((:id "bearer-token" :label "Bearer token")
+              (:id "aws-profile" :label "AWS profile")
+              (:id "credential-chain"
+               :label "Existing AWS credential chain"))))))
+    (cond
+      ((string= method "bearer-token")
+       (make-api-key-credential
+        :key
+        (runtime-auth-interaction-prompt
+         interaction
+         '(:type :secret
+           :message "Enter Amazon Bedrock bearer token"))))
+      (t
+       (runtime-auth-interaction-notify
+        interaction
+        '(:type :info
+          :message "Amazon Bedrock supports AWS profiles, IAM credentials, and role-based credentials."
+          :links
+          ((:label "AWS credential provider chain"
+            :url "https://docs.aws.amazon.com/sdkref/latest/guide/standardized-credentials.html"))))
+       (cond
+         ((string= method "aws-profile")
+          (make-api-key-credential
+           :environment
+           (list
+            (cons "AWS_PROFILE"
+                  (runtime-auth-interaction-prompt
+                   interaction
+                   '(:type :text
+                     :message "Enter AWS profile name"))))))
+         ((string= method "credential-chain")
+          (runtime-auth-interaction-prompt
+           interaction
+           '(:type :text
+             :message "Configure AWS credentials, then press Enter to continue"))
+          (make-api-key-credential))
+         (t
+          (error 'authentication-error
+                 :message
+                 (format nil
+                         "Unknown Amazon Bedrock auth method: ~A"
+                         method))))))))
+
 (defun resolve-bedrock-credentials
     (environment &key profile bearer-token)
   (let ((resolved-profile
