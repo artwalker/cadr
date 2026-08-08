@@ -586,6 +586,7 @@ def expand_dispositions(
         for scenario in manifest["scenarios"]
     }
     expanded: dict[str, dict[str, Any]] = {}
+    seen_notes: dict[str, str] = {}
     for entry in data.get("entries", []):
         scenario = entry.get("scenario")
         checkpoint = entry.get("checkpoint")
@@ -613,6 +614,17 @@ def expand_dispositions(
             raise HarnessFailure(
                 f"invalid render-diff disposition classes: {scenario}/{checkpoint}"
             )
+        note_text = entry.get("note", "")
+        if isinstance(note_text, str) and note_text.strip():
+            note_key = note_text.strip()
+            prior = seen_notes.get(note_key)
+            if prior is not None:
+                raise HarnessFailure(
+                    "duplicate disposition note text between "
+                    f"{prior} and {scenario}/{checkpoint}: notes must record "
+                    "per-entry judgement"
+                )
+            seen_notes[note_key] = f"{scenario}/{checkpoint}"
         screen_pairs = entry.get("screenSha256")
         screen_classes = set(entry_classes) - {"I01"}
         if (

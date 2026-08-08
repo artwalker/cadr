@@ -846,7 +846,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "Pi",
-      "line": "                    f\"an exact Pi/Cadr SHA-256 pair: {scenario}/{checkpoint}\"",
+      "line": "                f\"an exact Pi/Cadr SHA-256 pair: {scenario}/{checkpoint}\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -918,7 +918,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                    or set(pair) != {\"pi\", \"cadr\"}",
+      "line": "                or set(pair) != {\"pi\", \"cadr\"}",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
@@ -1382,7 +1382,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        if not isinstance(expected, dict) or set(expected) != {\"pi\", \"cadr\"}:",
+      "line": "        if not isinstance(expected_pair, dict) or set(expected_pair) != {\"pi\", \"cadr\"}:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
