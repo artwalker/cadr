@@ -561,7 +561,19 @@ def load_dispositions(path: Path, baseline_commit: str) -> dict[str, Any]:
             raise HarnessFailure(f"invalid disposition kind for {class_id}")
         if not isinstance(definition.get("summary"), str) or not definition["summary"]:
             raise HarnessFailure(f"missing disposition summary for {class_id}")
+        if not isinstance(definition.get("textCovering"), bool):
+            raise HarnessFailure(
+                f"disposition class {class_id} must declare textCovering"
+            )
     return data
+
+
+def text_covering_disposition_classes(data: dict[str, Any]) -> frozenset[str]:
+    return frozenset(
+        class_id
+        for class_id, definition in data["classes"].items()
+        if definition.get("textCovering")
+    )
 
 
 def expand_dispositions(
@@ -603,29 +615,23 @@ def expand_dispositions(
             )
         screen_pairs = entry.get("screenSha256")
         screen_classes = set(entry_classes) - {"I01"}
-        if screen_classes:
-            if (
-                not isinstance(screen_pairs, dict)
-                or set(screen_pairs) != set(entry_dimensions)
+        if (
+            not isinstance(screen_pairs, dict)
+            or set(screen_pairs) != set(entry_dimensions)
+            or any(
+                not isinstance(pair, dict)
+                or set(pair) != {"pi", "cadr"}
                 or any(
-                    not isinstance(pair, dict)
-                    or set(pair) != {"pi", "cadr"}
-                    or any(
-                        not isinstance(value, str)
-                        or not re.fullmatch(r"[0-9a-f]{64}", value)
-                        for value in pair.values()
-                    )
-                    for pair in screen_pairs.values()
+                    not isinstance(value, str)
+                    or not re.fullmatch(r"[0-9a-f]{64}", value)
+                    for value in pair.values()
                 )
-            ):
-                raise HarnessFailure(
-                    "screen disposition must bind every declared dimension to "
-                    f"an exact Pi/Cadr SHA-256 pair: {scenario}/{checkpoint}"
-                )
-        elif screen_pairs not in (None, {}):
+                for pair in screen_pairs.values()
+            )
+        ):
             raise HarnessFailure(
-                "terminal-protocol-only disposition must not declare screen hashes: "
-                f"{scenario}/{checkpoint}"
+                "screen disposition must bind every declared dimension to "
+                f"an exact Pi/Cadr SHA-256 pair: {scenario}/{checkpoint}"
             )
         for dimension in entry_dimensions:
             key = f"{scenario}/{dimension}/{checkpoint}"
@@ -2336,7 +2342,17 @@ def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
         )
 
 
-def validate_result_adjudications(results: list[dict[str, Any]]) -> None:
+BOILERPLATE_DISPOSITION_NOTES = frozenset(
+    {
+        "Exact approved semantic screen pair; no product defect is admitted.",
+    }
+)
+
+
+def validate_result_adjudications(
+    results: list[dict[str, Any]],
+    text_covering_classes: frozenset[str] = frozenset(),
+) -> None:
     for result in results:
         adjudication = result.get("adjudication")
         if not adjudication:
@@ -2346,6 +2362,30 @@ def validate_result_adjudications(results: list[dict[str, Any]]) -> None:
                 "cadr-defect disposition remains a gate failure: " + result["key"]
             )
         classes = set(adjudication.get("classes", []))
+        note = adjudication.get("note")
+        if (
+            not isinstance(note, str)
+            or not note.strip()
+            or note.strip() in BOILERPLATE_DISPOSITION_NOTES
+        ):
+            raise HarnessFailure(
+                "disposition lacks a specific difference note: " + result["key"]
+            )
+        expected_pair = adjudication.get("screenSha256")
+        if not isinstance(expected_pair, dict) or set(expected_pair) != {"pi", "cadr"}:
+            raise HarnessFailure(
+                "disposition lacks an exact semantic screen pair: " + result["key"]
+            )
+        actual_pair = {
+            "pi": result.get("piScreenSha256"),
+            "cadr": result.get("cadrScreenSha256"),
+        }
+        if actual_pair != expected_pair:
+            class_label = "/".join(sorted(classes - {"I01"})) or "I01"
+            raise HarnessFailure(
+                "semantic screen pair drifted outside the exact "
+                f"{class_label} disposition: {result['key']}"
+            )
         screen_classes = classes - {"I01"}
         if result.get("screenEqual"):
             if screen_classes:
@@ -2359,21 +2399,12 @@ def validate_result_adjudications(results: list[dict[str, Any]]) -> None:
                 "terminal-protocol-only disposition cannot admit screen differences: "
                 + result["key"]
             )
-        expected = adjudication.get("screenSha256")
-        if not isinstance(expected, dict) or set(expected) != {"pi", "cadr"}:
+        if not result.get("textGeometryEqual", True) and not (
+            classes & text_covering_classes
+        ):
             raise HarnessFailure(
-                "screen-difference disposition lacks an exact semantic screen pair: "
-                + result["key"]
-            )
-        actual = {
-            "pi": result.get("piScreenSha256"),
-            "cadr": result.get("cadrScreenSha256"),
-        }
-        if actual != expected:
-            class_label = "/".join(sorted(screen_classes))
-            raise HarnessFailure(
-                "semantic screen pair drifted outside the exact "
-                f"{class_label} disposition: {result['key']}"
+                "visible text/geometry difference admitted by a non-text "
+                "disposition class: " + result["key"]
             )
 
 
@@ -2536,7 +2567,9 @@ def analyze(args: argparse.Namespace) -> int:
                     }
                 )
                 previous = offsets
-    validate_result_adjudications(results)
+    validate_result_adjudications(
+        results, text_covering_disposition_classes(disposition_data)
+    )
     required_keys = {
         result["key"]
         for result in results

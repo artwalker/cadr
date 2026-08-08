@@ -1342,6 +1342,45 @@ class RenderDiffGateTest(unittest.TestCase):
 
         with self.assertRaisesRegex(
             RENDER_DIFF.HarnessFailure,
+            "disposition lacks a specific difference note",
+        ):
+            RENDER_DIFF.validate_result_adjudications(
+                [
+                    {
+                        "key": "tree/wide/state",
+                        "screenEqual": False,
+                        "textGeometryEqual": True,
+                        "adjudication": {
+                            "classes": ["I01"],
+                            "kinds": ["intentional-difference"],
+                        },
+                    }
+                ]
+            )
+
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure,
+            "disposition lacks a specific difference note",
+        ):
+            RENDER_DIFF.validate_result_adjudications(
+                [
+                    {
+                        "key": "tree/wide/state",
+                        "screenEqual": True,
+                        "textGeometryEqual": True,
+                        "piScreenSha256": "same",
+                        "cadrScreenSha256": "same",
+                        "adjudication": {
+                            "classes": ["I01"],
+                            "kinds": ["intentional-difference"],
+                            "note": "Exact approved semantic screen pair; no product defect is admitted.",
+                        },
+                    }
+                ]
+            )
+
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure,
             "terminal-protocol-only disposition cannot admit screen differences",
         ):
             RENDER_DIFF.validate_result_adjudications(
@@ -1350,9 +1389,13 @@ class RenderDiffGateTest(unittest.TestCase):
                         "key": "tree/wide/state",
                         "screenEqual": False,
                         "textGeometryEqual": False,
+                        "piScreenSha256": "pi-a",
+                        "cadrScreenSha256": "cadr-a",
                         "adjudication": {
                             "classes": ["I01"],
                             "kinds": ["intentional-difference"],
+                            "note": "raw ANSI segmentation differs",
+                            "screenSha256": {"pi": "pi-a", "cadr": "cadr-a"},
                         },
                     }
                 ]
@@ -1367,9 +1410,13 @@ class RenderDiffGateTest(unittest.TestCase):
                     {
                         "key": "stale/wide/state",
                         "screenEqual": True,
+                        "piScreenSha256": "same",
+                        "cadrScreenSha256": "same",
                         "adjudication": {
                             "classes": ["I01", "I02"],
                             "kinds": ["intentional-difference"],
+                            "note": "raw ANSI teardown differs",
+                            "screenSha256": {"pi": "same", "cadr": "same"},
                         },
                     }
                 ]
@@ -1385,9 +1432,13 @@ class RenderDiffGateTest(unittest.TestCase):
                         "key": "screen/wide/state",
                         "screenEqual": False,
                         "textGeometryEqual": True,
+                        "piScreenSha256": "pi-b",
+                        "cadrScreenSha256": "cadr-b",
                         "adjudication": {
                             "classes": ["I01"],
                             "kinds": ["intentional-difference"],
+                            "note": "styling-only screen difference",
+                            "screenSha256": {"pi": "pi-b", "cadr": "cadr-b"},
                         },
                     }
                 ]
@@ -1402,11 +1453,12 @@ class RenderDiffGateTest(unittest.TestCase):
             "adjudication": {
                 "classes": ["I01", "I02"],
                 "kinds": ["intentional-difference"],
+                "note": "crash boundary redacts the backtrace text",
             },
         }
         with self.assertRaisesRegex(
             RENDER_DIFF.HarnessFailure,
-            "screen-difference disposition lacks an exact semantic screen pair",
+            "disposition lacks an exact semantic screen pair",
         ):
             RENDER_DIFF.validate_result_adjudications([crash_result])
 
@@ -1414,12 +1466,23 @@ class RenderDiffGateTest(unittest.TestCase):
             "pi": "pi-exact",
             "cadr": "cadr-exact",
         }
-        RENDER_DIFF.validate_result_adjudications([crash_result])
+        RENDER_DIFF.validate_result_adjudications(
+            [crash_result], frozenset({"I02"})
+        )
 
         crash_result["cadrScreenSha256"] = "unrelated-new-drift"
         with self.assertRaisesRegex(
             RENDER_DIFF.HarnessFailure,
             "semantic screen pair drifted outside the exact I02 disposition",
+        ):
+            RENDER_DIFF.validate_result_adjudications(
+                [crash_result], frozenset({"I02"})
+            )
+
+        crash_result["cadrScreenSha256"] = "cadr-exact"
+        with self.assertRaisesRegex(
+            RENDER_DIFF.HarnessFailure,
+            "visible text/geometry difference admitted by a non-text disposition class",
         ):
             RENDER_DIFF.validate_result_adjudications([crash_result])
 
@@ -1432,8 +1495,8 @@ class RenderDiffGateTest(unittest.TestCase):
         }
         data = {
             "classes": {
-                "I01": {"kind": "intentional-difference", "summary": "wire"},
-                "I02": {"kind": "intentional-difference", "summary": "crash"},
+                "I01": {"kind": "intentional-difference", "summary": "wire", "textCovering": False},
+                "I02": {"kind": "intentional-difference", "summary": "crash", "textCovering": True},
             },
             "entries": [
                 {

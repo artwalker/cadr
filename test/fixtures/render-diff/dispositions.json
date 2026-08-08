@@ -4,18 +4,22 @@
   "classes": {
     "I01": {
       "kind": "intentional-difference",
+      "textCovering": false,
       "summary": "The SBCL terminal emitter uses different ANSI update segmentation and teardown sequences while preserving terminal-state semantics."
     },
     "I02": {
       "kind": "intentional-difference",
+      "textCovering": true,
       "summary": "The approved Goal 13 fatal boundary redacts the backtrace and writes a private crash log instead of dumping pi's uncaught-exception stack to the terminal."
     },
     "I03": {
       "kind": "intentional-difference",
+      "textCovering": true,
       "summary": "Cadr shares through its own cadr.dev session viewer while the fixed pi baseline links to pi.dev; gist storage and the visible Share URL/Gist contract remain unchanged."
     },
     "I04": {
       "kind": "intentional-difference",
+      "textCovering": true,
       "summary": "The user-approved Goal 16 product identity replaces pi names, commands, configuration paths, and repository links with their Cadr counterparts."
     }
   },
@@ -33,14 +37,14 @@
       "screenSha256": {
         "wide": {
           "pi": "2785ddf0a0fc3c41064f0418c3683ff018bc0b41da3104049ba4cf32d61b94b8",
-          "cadr": "622678dc1a92001d55354b75a1d362ab25470ab0592ff360c1f3a1c8a341b395"
+          "cadr": "5c6642f7234a30ecca1569033ce3eea081f4992e89bfc80dd19ceaa61534962a"
         },
         "narrow": {
           "pi": "a85cbc8a10fe8808b271d346cfea4a8e8e4908230993af5ea4cd0fca1adca483",
-          "cadr": "e3acacab1d4beb8f4f2eaade8917dfe68df87666f1be796bee09754238288270"
+          "cadr": "18cabd024ad0fa2f570f727b419210b2a7816cedbec5c0af7a50556cb787c563"
         }
       },
-      "note": "Exact product-identity screen pair; package and config help preserve the fixed baseline contract."
+      "note": "Package and config help preserve the baseline contract with cadr identity: the flattened global settings path ~/.cadr/settings.json replaces pi's ~/.pi/agent/settings.json and the cadr name replaces pi throughout (I04); in narrow the different path lengths shift wrap points; raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -63,7 +67,7 @@
           "cadr": "ee612db238360be96d75fa29b469109b18a59fbc2ffcedbe60e5e5857c7c3015"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -86,7 +90,7 @@
           "cadr": "113090d6cb233c08dafbddae453dc95465bcdd481a3c7903880c3bf68a462beb"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -109,7 +113,7 @@
           "cadr": "45fef5ee3ff05c48aeff29423a057a1e10a9cf6b11107e4df85e17f359d51e14"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-and-exit",
@@ -132,7 +136,7 @@
           "cadr": "9dcbf5674daf393af9b1147d8adfbf94961d14025f001551f3236e5fadf13fb1"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The session-resume hint wraps at a different column because the cadr binary name is two cells longer (I04); the exit cursor row shifts by the wrap. Text identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "commands-and-exit",
@@ -155,7 +159,7 @@
           "cadr": "b00824fc79bafab7f0560aabe5e1b22e81def837e47bd8086c1b5b9cd37109c0"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "commands-and-exit",
@@ -178,7 +182,7 @@
           "cadr": "79831afabe91286f5ae8c867ea993078728957d7b23c9ab62a4e317da02cfe5d"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "In narrow, cadr's startup banner wraps one row taller than pi's because 'Cadr' is two cells longer than 'Pi' twice over (I04), so the captured viewport starts one row later and the banner tail 'its docs. Ask it how to use or extend <PRODUCT_TITLE>.' sits above the frame; the reload output itself is identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -188,7 +192,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "be7d0e0d4e3bbb0a1b78c387e351fef4816fd640f796df064100a6b044922c45",
+          "cadr": "be7d0e0d4e3bbb0a1b78c387e351fef4816fd640f796df064100a6b044922c45"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -206,7 +217,7 @@
           "cadr": "1d32d9f64f2eef117bd20c4ae48a823957608d2b42abeb2525662d44f6ee050e"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -229,7 +240,7 @@
           "cadr": "a2a39ff4d0beaa7ad71e71c851e22068827971c944b4b8a28edf6908327867fe"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -252,7 +263,7 @@
           "cadr": "944c420d9443cd66a4486c96e502914b1bc487e59a254def2f20b2a6935c846c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -275,7 +286,7 @@
           "cadr": "70e8ba4263c0f3df18ab82b2f3f53d3927933195dd7bcc3ceb1df484c76c07e5"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -285,7 +296,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "9f6fa73a4e169fc41e6a869af950a6ec6e31d6bf8e4bd16e167b551b4b8d5bd2",
+          "cadr": "9f6fa73a4e169fc41e6a869af950a6ec6e31d6bf8e4bd16e167b551b4b8d5bd2"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-empty-lifecycle",
@@ -303,7 +321,7 @@
           "cadr": "aff1c0a66cd8e2cee253c5bfde9c7cc641676c79c7ead277d64c6d3715b2964d"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -326,7 +344,7 @@
           "cadr": "0fc7d6d8b15468b5fea6825a8e0c33ed660e79045012a85fbac399c077de30b7"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -349,7 +367,7 @@
           "cadr": "c8bba378b089ef54c15d20a0de50c0b3c0b07723638fb90397dc15745ebda476"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "cadr's CHANGELOG links point at github.com/artwalker/cadr (I04), one cell shorter per URL than earendil-works/pi, so markdown lines reflow and the viewport shows a one-entry-earlier slice of the same changelog; all visible text is otherwise identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -359,7 +377,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "2d3a6e0c2290afa7e7ea524b3c6e1d374113a9548f8c7a3bd22ce6b0e3b62dc4",
+          "cadr": "2d3a6e0c2290afa7e7ea524b3c6e1d374113a9548f8c7a3bd22ce6b0e3b62dc4"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -377,7 +402,7 @@
           "cadr": "6f23d4f1bb3df5a299002a208e743f96dd5cb095832ec4a932cecba613f85028"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -388,7 +413,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "30e35c6ac83f7d628e9c120a0b55dec30f625ab7ec8f49d2fc9cee9870062dd1",
+          "cadr": "30e35c6ac83f7d628e9c120a0b55dec30f625ab7ec8f49d2fc9cee9870062dd1"
+        },
+        "narrow": {
+          "pi": "13755e91601d50c0e5c4b54456176d868bf83a02f70b3cd57a254fe1cf2cc01b",
+          "cadr": "13755e91601d50c0e5c4b54456176d868bf83a02f70b3cd57a254fe1cf2cc01b"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -399,7 +435,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "58106761e587cb5dba068020518cec1472d142a3dcc120c5da47c94d1e5ec935",
+          "cadr": "58106761e587cb5dba068020518cec1472d142a3dcc120c5da47c94d1e5ec935"
+        },
+        "narrow": {
+          "pi": "be2de5a80d3ff649798a08176a8ae29c5425b6af0dce16f493ed9c1c4799b54b",
+          "cadr": "be2de5a80d3ff649798a08176a8ae29c5425b6af0dce16f493ed9c1c4799b54b"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -409,7 +456,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "946fd56f305b61aae2d2983a459ff45a056081c96ceb1ac5ec9e08091c2b96c2",
+          "cadr": "946fd56f305b61aae2d2983a459ff45a056081c96ceb1ac5ec9e08091c2b96c2"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -419,7 +473,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "53e2ea279d7b716b40bf51e05852cc668aaab625a50dfcf801c07eafbaf84c42",
+          "cadr": "53e2ea279d7b716b40bf51e05852cc668aaab625a50dfcf801c07eafbaf84c42"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "commands-informational",
@@ -443,7 +504,7 @@
           "cadr": "892f4be88b71508166447946dc6e7251eb48f128bd3e49bfe78af81f48d0fd9b"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Product-identity text differs exactly at 'pi.dev/session/' (I04); layout is identical and the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "compaction-status-manual",
@@ -466,7 +527,7 @@
           "cadr": "550a0426a0c4f775686f300ddaaa00c8c242d04aa7e9e8fad8e99dc6341ebee5"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "compaction-status-manual",
@@ -489,7 +550,7 @@
           "cadr": "fac346c5d0f2ad50206f69b5e09aa2ba6f3305738fe363f1686fa4da8bbc61dc"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "compaction-status-overflow",
@@ -512,7 +573,7 @@
           "cadr": "9ae358fbbd0229a4422679b79e61f0003c003521f0ef90fac3e7a0e2d7ac3c92"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "compaction-status-overflow",
@@ -535,7 +596,7 @@
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (⠋ vs ⠙, I01 timing); text and layout identical."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -558,7 +619,7 @@
           "cadr": "dbead14d9620e547ced9652fa7f54968d7fdbc87ec74cc9e69877288fda08694"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -581,7 +642,7 @@
           "cadr": "9f615f32cea67934c86fe59733a6e3365e77d5477489a893203ab55f33dbd28e"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "config-selector-empty",
@@ -604,7 +665,7 @@
           "cadr": "16ef3aafaf1aaa9211d88fee77d448783997727e6a9c6212e6f9c98701717d1b"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Product-identity text differs exactly at '.pi', '.pi/settings.json', '~/.pi/agent/', '~/.pi/agent/settings.json' (I04); layout is identical and the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "config-selector-state-sweep",
@@ -627,7 +688,7 @@
           "cadr": "26809b247e1c7d3777ba98ed120e9d2d0eb983e9e8ecaf39e603360398a6a175"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The config path label .cadr/settings.json (I04) is two cells longer than .pi/settings.json, so 'inherited global resources are dimmed' wraps after 'resources' on pi and one word earlier on cadr; the resume hint cursor row shifts accordingly. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -638,7 +699,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0ec1bd224d6e9427e01c15420d2fcb85913a3c6aa8fed073d3afbcda029bae6c",
+          "cadr": "0ec1bd224d6e9427e01c15420d2fcb85913a3c6aa8fed073d3afbcda029bae6c"
+        },
+        "narrow": {
+          "pi": "b9f3f6109479871248e39e1e9f51ed58ec453151347d770e6a09079d75775243",
+          "cadr": "b9f3f6109479871248e39e1e9f51ed58ec453151347d770e6a09079d75775243"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -648,7 +720,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984",
+          "cadr": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -666,7 +745,7 @@
           "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -689,7 +768,7 @@
           "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -700,7 +779,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "90a32ccb0b52468f05f45a7e82f5dcaf52ffd52387ddc0f016bd32c061224657",
+          "cadr": "90a32ccb0b52468f05f45a7e82f5dcaf52ffd52387ddc0f016bd32c061224657"
+        },
+        "narrow": {
+          "pi": "a496d36e88c02e8db81474828dd12b82dda7be8bb814a39a4e1af98272c77fc5",
+          "cadr": "a496d36e88c02e8db81474828dd12b82dda7be8bb814a39a4e1af98272c77fc5"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "extension-surfaces",
@@ -723,7 +813,7 @@
           "cadr": "82e2082d6f6e0a168ced2afb69003054ef90b9953ea8f72c275039ab43d55996"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "extension-surfaces",
@@ -746,7 +836,7 @@
           "cadr": "2655a3c8d5e76a74ef2f122c9b6a67fc9ff70a33583e400064219f69a6f624d3"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "extension-surfaces",
@@ -769,7 +859,7 @@
           "cadr": "79ae7c33447c06db072cc3717ea828cf4ec33609ca67534d27457f8a124dee17"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "extension-surfaces",
@@ -792,7 +882,7 @@
           "cadr": "f03e25904ead492705ee2931dca12115c291416f711ec62783a51ead1f02d784"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "fatal-crash",
@@ -816,7 +906,7 @@
           "cadr": "f2da9813cd8318efba019ec880400a52fc591d9db26039ac10b8e5a21b940acd"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted. Cadr SHA refreshed 2026-08-08: 36f181c11 aligned faux zero-delay event scheduling with Pi, so the captured footer now shows settled usage (0.0%/128k) and model exactly like Pi; the crash section remains the adjudicated I02 sanitized summary plus 0600 crash log. Two independent gate runs produced byte-identical captures."
+      "note": "cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump with its driver frame lines (I02); the settled footer shows usage and model exactly like pi after the faux scheduling alignment; banner identity follows I04 and ANSI segmentation differs (I01)."
     },
     {
       "scenario": "local-status-sweep",
@@ -839,7 +929,7 @@
           "cadr": "4f416bd9d79c8f287b3fc3382f6cda7446fd40b577b6088a8adee7ded6f4b9ce"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "'Restart cadr for this to take effect.' wraps after 'cadr' where pi's shorter name lets 'for' fit on the first line (I04 length); text content identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "local-status-sweep",
@@ -862,7 +952,7 @@
           "cadr": "b642dda4f2d5ec0cc4d680bd44d1ed12611e716521c47d3f8b767d898054388e"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Same I04 wrap shift on the trust-decision line plus the session-resume hint wrap; content identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -885,7 +975,7 @@
           "cadr": "ac77c0f0fd42a341c22d7f2dab03376fedb5d16ddf2018416251193762162620"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -895,7 +985,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "65e3eb72f0ee69c0de1cf17aa8f25b628731af654dcc3935ba2968ad120dba01",
+          "cadr": "65e3eb72f0ee69c0de1cf17aa8f25b628731af654dcc3935ba2968ad120dba01"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -909,11 +1006,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9caaf9b260f8402ac62611979f1dd7cc682f108bb697e47ba1154d0c781f711c",
-          "cadr": "facd1c516410ae3e3a421e023a531edc344b37257c0a39ede4a93e35b3cecef5"
+          "pi": "909e67401d8f43889224763f24602a48ca9173666823f09ef9905e7dd28abd6b",
+          "cadr": "84a59cdbc9d6c853a66cbc80310f2985bc797bd139fd5c78caecbcd73215a1ae"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -923,7 +1020,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "a9500015cc65ab259bacb3cd648f1382808a3c96820d5f86e728c1f5293cc462",
+          "cadr": "a9500015cc65ab259bacb3cd648f1382808a3c96820d5f86e728c1f5293cc462"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth",
@@ -941,7 +1045,7 @@
           "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -964,7 +1068,7 @@
           "cadr": "8a12bb772505388aba95cf34267023be6f1d1474e8d4d33223522ca836f03f93"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -987,7 +1091,7 @@
           "cadr": "bef2fc5a9980165b95cd04c1cbb2b70c63ec84e4791ff4c50121b1f3049a3db5"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1010,7 +1114,7 @@
           "cadr": "2425366b556c64358220c55ec0c0d422c9a82243d357ec53b24db3f7dc5183ff"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1033,7 +1137,7 @@
           "cadr": "6c0dd094b964b5b6bb123590ec6d334fc9431f1573af0f01cb7e1e51615d8000"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1056,7 +1160,7 @@
           "cadr": "3211762d92614aeffe763380d81ec3b913bd372017a078f10fd663c50907ac63"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1079,7 +1183,76 @@
           "cadr": "28595cecb2e431781c9c785112e47889298955a6f646751381d29e12973c8108"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-device-code",
+      "checkpoint": "login-device-code",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0126620e0de856b3799ecc8ade5a6642006b3509800257fcd8e4b0b7cf0f0d7f",
+          "cadr": "060ab25195bc88b8bcfd57e41728096e7f7f2c4b09769c6b2db4035e115679ff"
+        },
+        "narrow": {
+          "pi": "6363d81aefcd236141db2455ee2f6c6b9af27733b12847733f3d31e9b99dfc4c",
+          "cadr": "2e23e45b44b49207c664a1b61ce399f63a98d5436548d1acf91a62a2cb582cc9"
+        }
+      },
+      "note": "Device-code dialog content is text- and style-identical to pi (bordered Login to Render Device frame, accent URL hyperlink, dim click hint, warning Enter code: RENDER-42, dim Waiting for authentication..., cancel hint); in narrow the two-cell-longer 'Cadr' banner (I04) wraps one row taller so one more startup-help line stays visible above the frame. ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-device-code",
+      "checkpoint": "login-device-cancelled",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "34474bef0f42482f45a66b89d8472ade5089fa9289cd526e95b06294869addda",
+          "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
+        },
+        "narrow": {
+          "pi": "f6cd5cb0569277635ad79582d0d8a47340c6a314d906c45fbf6dcbf84eb6fe1d",
+          "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
+        }
+      },
+      "note": "Escape closes the dialog and restores the editor exactly as pi; same narrow banner wrap consequence (I04) and ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-device-code",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
+          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+        },
+        "narrow": {
+          "pi": "9c5e1a2c6bdfd6f04c1e4dd68e54f6467da28d2e9b758ad2700b6c8cb8050ffd",
+          "cadr": "bef2fc5a9980165b95cd04c1cbb2b70c63ec84e4791ff4c50121b1f3049a3db5"
+        }
+      },
+      "note": "Post-cancel exit leaves the same teardown state; in narrow the two-cell-longer cadr banner (I04) wraps one row taller, keeping the 'Press ctrl+o' startup-help line visible and shifting the exit cursor one row. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1089,7 +1262,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "ab495f58eac8d2c7f4b40511b51c036752d62fdc6522b8ffe57da9cf5ffbc83a",
+          "cadr": "ab495f58eac8d2c7f4b40511b51c036752d62fdc6522b8ffe57da9cf5ffbc83a"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1107,7 +1287,7 @@
           "cadr": "45ab225cedec1f76534a2909386c2fd36705b55809e5de7d96a6ebc0e52a8395"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1117,7 +1297,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "035cda1f63a65e56a3ad3a5c0e3e2e211c1c12e206452558eab099cad805487a",
+          "cadr": "035cda1f63a65e56a3ad3a5c0e3e2e211c1c12e206452558eab099cad805487a"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1135,7 +1322,7 @@
           "cadr": "186ea539c3ad5b07a55c73a3c05b8aa0ec048dbb9d960f7e378a43d1ddb51de8"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1145,7 +1332,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "9ea7ff49011d3b31fce190bbc0d0fb39995a9798f4da2261c58faa9c61e230d4",
+          "cadr": "9ea7ff49011d3b31fce190bbc0d0fb39995a9798f4da2261c58faa9c61e230d4"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1163,7 +1357,7 @@
           "cadr": "d483cce9a8310e2223ab257ef902559998949225ea9e0d6e5d2b9e4a21e4829b"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1173,7 +1367,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "afbc5f0042b747416c5bf8c7dc57c7f5c4232409765c54ebe4e268af375d67d3",
+          "cadr": "afbc5f0042b747416c5bf8c7dc57c7f5c4232409765c54ebe4e268af375d67d3"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1191,7 +1392,7 @@
           "cadr": "1defc1d250ba2c3cdf500a9c576263eb2a7f88e742b7806e8334990db85add0a"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1201,7 +1402,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d49e6ec544d6d2e160df5d114269bab633c30520eb99d730af547bd8dabfc816",
+          "cadr": "d49e6ec544d6d2e160df5d114269bab633c30520eb99d730af547bd8dabfc816"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1219,7 +1427,7 @@
           "cadr": "0b297a968be1293c102270bfc8ff87a95fa8ab572e622cd4d666f156c1132aa8"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1229,7 +1437,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "ef24643d7c0e3b817825cabcc54bc7a0cd4f0ebde1f0109ef4892fd413e3fbb0",
+          "cadr": "ef24643d7c0e3b817825cabcc54bc7a0cd4f0ebde1f0109ef4892fd413e3fbb0"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1247,7 +1462,7 @@
           "cadr": "bfcf8569b741d313c628b86694e420202e1b236fa994935b2253f5da5134d020"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1257,7 +1472,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "976981a4db9c7294a3bf991cd77936f5d1408dd4a29769d3afc07604f944f29f",
+          "cadr": "976981a4db9c7294a3bf991cd77936f5d1408dd4a29769d3afc07604f944f29f"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1275,7 +1497,7 @@
           "cadr": "77f1f59e65eacfafa01867d946ff9d4db24f5027060f50dbb30edd4cb3f47696"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1285,7 +1507,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "14970ae6126a2ca0d08a54d25f94cd23399fb8bb8d2d25b329e7025290b88611",
+          "cadr": "14970ae6126a2ca0d08a54d25f94cd23399fb8bb8d2d25b329e7025290b88611"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1303,7 +1532,7 @@
           "cadr": "8d62c77775cbf8946f8c3269242cca6729111bed964e9da2fc03fdde4f7a38e6"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1313,7 +1542,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "536f9ea1c6060994dbb5059f3aae27e2bd6e34c346518585a52a37a8e1b7b583",
+          "cadr": "536f9ea1c6060994dbb5059f3aae27e2bd6e34c346518585a52a37a8e1b7b583"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1331,7 +1567,7 @@
           "cadr": "e15661bf791f5c7bb513015ad7999cd5196e41798a007be2696cd338f0ffa696"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1341,7 +1577,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "681a58eb6a488dc2a56a681a7fa101195201605972b881cef038efeab6340521",
+          "cadr": "681a58eb6a488dc2a56a681a7fa101195201605972b881cef038efeab6340521"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1359,7 +1602,7 @@
           "cadr": "6fa530e19a92dc9b49f8b919d257b860d0ef17a0a1e1deabf9fc2de1592684e1"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-core",
@@ -1382,7 +1625,7 @@
           "cadr": "336d040f817d0188b55d17cd407eb7b73e6a8a7cde614aadb3ed862ebf1ac616"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-logout",
@@ -1405,7 +1648,7 @@
           "cadr": "5adbea3cba5916a30819c964d013fbb397385703753aed90a945867024dd4719"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-logout",
@@ -1428,7 +1671,7 @@
           "cadr": "7ba453d726ab494c0b768b95150c66737b2751246b3ac6ba0632b1ce667048d9"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1438,7 +1681,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "edfdde52f6e1081c64b0b5ffb7e171719fd492acaa97f30258c625e72f1ec2f0",
+          "cadr": "edfdde52f6e1081c64b0b5ffb7e171719fd492acaa97f30258c625e72f1ec2f0"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1456,7 +1706,7 @@
           "cadr": "ae729e0b4428d0fa2251005ad97031e18411d2f295b74a0d17664db855a2b9ef"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1466,7 +1716,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "0fb624442f2ca565aedfb373c62c4c449f928af2fa2f12cc6ac51ebcab400a4f",
+          "cadr": "0fb624442f2ca565aedfb373c62c4c449f928af2fa2f12cc6ac51ebcab400a4f"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1484,7 +1741,7 @@
           "cadr": "a54b1917ef473ed24e3fef8738b764ad55ef47204e036e0d8a45c5133d03d309"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1507,7 +1764,7 @@
           "cadr": "d2e97ef90ae108a93c7fa423ba9fc2f96a92ae24f50aebd31f793636067f0af0"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1517,7 +1774,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "0825e3ce0bad31d1d69edeada746f227090526f29ac320324ee6ee1d2bdaae13",
+          "cadr": "0825e3ce0bad31d1d69edeada746f227090526f29ac320324ee6ee1d2bdaae13"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1535,7 +1799,7 @@
           "cadr": "d2eb4dc5065b58336bce22823e2f50065a8d7d7d0536cd993fc8168e5cdb6664"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1545,7 +1809,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "24a85b1a2aa0d205b8b1d55ed0264611c49fae0c07d14200a0c05b629dd4e94e",
+          "cadr": "24a85b1a2aa0d205b8b1d55ed0264611c49fae0c07d14200a0c05b629dd4e94e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1563,7 +1834,7 @@
           "cadr": "b041019cf4f53fa524a0abcb3c52732f544036c3223b12959124bf1f8efb0d88"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1573,7 +1844,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "8e7f69a87ee2ec4367f5ea78b572635a03ad0aab87294ab1f98d6762edb2fe44",
+          "cadr": "8e7f69a87ee2ec4367f5ea78b572635a03ad0aab87294ab1f98d6762edb2fe44"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1591,7 +1869,7 @@
           "cadr": "8e9d04d05c723a51ab93582b4625b0242768b51526e844b2a2545122919fb3d0"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1614,7 +1892,7 @@
           "cadr": "1802f1edf093ba2f6e830dce668fa52b85030efa29e4e10b53703345662d69cf"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "overlays-secondary",
@@ -1637,7 +1915,7 @@
           "cadr": "8f06e5dcfa986d74d4e483ea4a2e351512f17182f85e24eb044ded6073c74f27"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "provider-error",
@@ -1660,7 +1938,7 @@
           "cadr": "5b13680a8ce656a1207f329b38e7d664d446347594ebddeeeceee88a04e8d10c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "provider-error",
@@ -1683,7 +1961,7 @@
           "cadr": "316904de4cd869412ca2458059d1a7c8f3c642b2e99aae04c036a326cf84e201"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "selector-scoped-state-sweep",
@@ -1706,7 +1984,7 @@
           "cadr": "49e2a0d3447d7b62634d0fec5a9bd8919b9f5684c181e968b885f9c473abea14"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -1729,7 +2007,7 @@
           "cadr": "a7f917ad841f374a019a7a0841741e7303c1eb932d8080bc121294411206ffbf"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "selector-trust-inherited",
@@ -1739,7 +2017,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "75ca605824b21effd55f05d2d6c476e44d39daec37fc20b340962866910ab9c5",
+          "cadr": "75ca605824b21effd55f05d2d6c476e44d39daec37fc20b340962866910ab9c5"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "selector-trust-inherited",
@@ -1757,7 +2042,7 @@
           "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1780,7 +2065,7 @@
           "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1790,7 +2075,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "e4eb8295d2b661d02aa512cae47e26d4131c61aea9d20e6441e1a724198b20a3",
+          "cadr": "e4eb8295d2b661d02aa512cae47e26d4131c61aea9d20e6441e1a724198b20a3"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1808,7 +2100,7 @@
           "cadr": "e36d7570768e7c3e1cbee5b5dc74f2349f7a374933521867f1247ee8955b1b13"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1818,7 +2110,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "3487747fdf1927b49dc8373149f96df40258fe67a2dfb335e15554d494d73d5d",
+          "cadr": "3487747fdf1927b49dc8373149f96df40258fe67a2dfb335e15554d494d73d5d"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1836,7 +2135,7 @@
           "cadr": "aaf82255bada988838ca33db2395fbad5f55733d4f1a4350c0e884d2e60da673"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1846,7 +2145,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "4d58848062d9d324181cdead499c0cd4ae4e2173317bf1fa80908aecd3edb783",
+          "cadr": "4d58848062d9d324181cdead499c0cd4ae4e2173317bf1fa80908aecd3edb783"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1864,7 +2170,7 @@
           "cadr": "2252e14844f83d8d7c5824aacf3c7423b8a1a87c9ba1a33dc1bf1024207221c1"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1874,7 +2180,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "bbb0f66f81eec273eb9131a510698ead7230c74ee33088e0088a5ff5d98ca984",
+          "cadr": "bbb0f66f81eec273eb9131a510698ead7230c74ee33088e0088a5ff5d98ca984"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1892,7 +2205,7 @@
           "cadr": "bbb5d0d409f2f5cf57b054d1a982f598de14b67cad68f3f5d7319ad462aade47"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1902,7 +2215,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "ae4093646d7da7cd563bc3298c916ef6edea3633bcea9fb319da38c380b036b0",
+          "cadr": "ae4093646d7da7cd563bc3298c916ef6edea3633bcea9fb319da38c380b036b0"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1920,7 +2240,7 @@
           "cadr": "0b762a5b0d92913b6a1d18cd09005745ef15a251aec680c2a7b04cbb9e56c1a3"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1930,7 +2250,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "17f26a1e35f140068fa5223ee1ae8e1b519db71c913b129fc7cf2d718b8cbe4b",
+          "cadr": "17f26a1e35f140068fa5223ee1ae8e1b519db71c913b129fc7cf2d718b8cbe4b"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1948,7 +2275,7 @@
           "cadr": "cb98312f02eb45b895b43538a1c66296985eed7d6391eca836cf46317e2ff34c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1958,7 +2285,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d84de004ccc6f9c82a81364aef832be2fbdf8b76a3ab48748c4afcd6ced74089",
+          "cadr": "d84de004ccc6f9c82a81364aef832be2fbdf8b76a3ab48748c4afcd6ced74089"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1976,7 +2310,7 @@
           "cadr": "1ff4a8644688c7e9df97e16b49edef9987d10123c98abbc07ba2d10a2ed47c0b"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -1986,7 +2320,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "c5f196305a64ce5b45da0a44dd62e572c0c97795b4713d6103fd375f34be4cb1",
+          "cadr": "c5f196305a64ce5b45da0a44dd62e572c0c97795b4713d6103fd375f34be4cb1"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2004,7 +2345,7 @@
           "cadr": "0b58869f5260868be56154894f598868bbeeff94956b1ec10c3653846d640774"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2014,7 +2355,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "331cf04cfd3c3beda0e7ab55159d1a9778e6b6cfdaed78764e2a5a57a7aca602",
+          "cadr": "331cf04cfd3c3beda0e7ab55159d1a9778e6b6cfdaed78764e2a5a57a7aca602"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2032,7 +2380,7 @@
           "cadr": "73fdb24a30f962e12dff4c3474485e09da2dcdd781264ed7182d0953a78e4aa9"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2042,7 +2390,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "ab42fc63ebfc691a87d4e5b68516446ee975db02f168182f29f8b6b304f66ddc",
+          "cadr": "ab42fc63ebfc691a87d4e5b68516446ee975db02f168182f29f8b6b304f66ddc"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2060,7 +2415,7 @@
           "cadr": "e64c4f78d1ed1eb9f1a6318a1dfef50c0e7cfbdda9b8a74438bcd354dd89e4c2"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2070,7 +2425,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d294c67d94efd20033f54a867d1c9406e706db722af0a70709d8acd4ac728ddd",
+          "cadr": "d294c67d94efd20033f54a867d1c9406e706db722af0a70709d8acd4ac728ddd"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2088,7 +2450,7 @@
           "cadr": "0492c009b00bea5626857634bce5a5456b98920b49dc8d3227bea0affee61439"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2098,7 +2460,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "8122e0f83dc3110fa4f19e6eb3e8a00462e725a2907ffc9725e100f46668f23e",
+          "cadr": "8122e0f83dc3110fa4f19e6eb3e8a00462e725a2907ffc9725e100f46668f23e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2116,7 +2485,7 @@
           "cadr": "d655c9d471f15d60cb330498ff295db4900e0aba0555bb3958b921dfc37c36d4"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2126,7 +2495,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "51f19c898dd4e13831de14daba0b69e16a5b7556dc1cfdd7f360a7dc4ed7fb32",
+          "cadr": "51f19c898dd4e13831de14daba0b69e16a5b7556dc1cfdd7f360a7dc4ed7fb32"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2144,7 +2520,7 @@
           "cadr": "8757cfb8a0282d8b247bf6766a99cc5db0a5fa8c6e73a21774947029488b440b"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2154,7 +2530,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "a969ae9f26d6e9710cb0a370f1ed2bee09c080b879e2d368d746ee259a5dd0d1",
+          "cadr": "a969ae9f26d6e9710cb0a370f1ed2bee09c080b879e2d368d746ee259a5dd0d1"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2172,7 +2555,7 @@
           "cadr": "76634cf294e9038a6246021f4880413588ee18a3396998d25c34f3014ffd8ecf"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2182,7 +2565,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "4570e75df4ebedbf57ff845cc13d2e779d134fac048cb675610033dd924d5ccb",
+          "cadr": "4570e75df4ebedbf57ff845cc13d2e779d134fac048cb675610033dd924d5ccb"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2200,7 +2590,7 @@
           "cadr": "37169af3500a383bf05204c4e6baeda0fb1d7d83c78525d2f764eef92b61e563"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2210,7 +2600,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "8caf4d070cb49805665021d0f2e95aafcebafd2b319b4a9a939733a2225dbdba",
+          "cadr": "8caf4d070cb49805665021d0f2e95aafcebafd2b319b4a9a939733a2225dbdba"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2228,7 +2625,7 @@
           "cadr": "9c22bf54d39019b856201016c51021145a414159524d0fcfc0c2aa02e8120502"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2238,7 +2635,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f702f54f647c90d9f24aff360f344b196a45844d1985acedca9e47bcaecfeba1",
+          "cadr": "f702f54f647c90d9f24aff360f344b196a45844d1985acedca9e47bcaecfeba1"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2256,7 +2660,7 @@
           "cadr": "86f19f3e26d27305c3f5a3c576c76901f1ad48ca16fa7141464f18a85be8d06f"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2266,7 +2670,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "5c66079f7badaf0eb6a286d79c459ce9345e2d5e1edb75b4e668f7a3e5cf094e",
+          "cadr": "5c66079f7badaf0eb6a286d79c459ce9345e2d5e1edb75b4e668f7a3e5cf094e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2284,7 +2695,7 @@
           "cadr": "45860177822bf1b4c2ec159bdf6e2d7a9f54582ac521d3ab478ca9446463c7fc"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2294,7 +2705,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "76daaa5a14df36b2198584f321f818fef7cbc3854cc9ddfccfe3c8c7a3908231",
+          "cadr": "76daaa5a14df36b2198584f321f818fef7cbc3854cc9ddfccfe3c8c7a3908231"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2312,7 +2730,7 @@
           "cadr": "0e5c75093066f169ac5f74ffb63af438de5575022bbb7c16dbc39dd3d0c1ef86"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2322,7 +2740,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "146b22099b53eebc80fcbbc63ccaf91f31bfbac21213c7ef1b23bd469dfc30b8",
+          "cadr": "146b22099b53eebc80fcbbc63ccaf91f31bfbac21213c7ef1b23bd469dfc30b8"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2340,7 +2765,7 @@
           "cadr": "09c66e5813cf8f704c26e2b13156547174077fc2bf347fa0a8ba897c46b8614d"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2350,7 +2775,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f8ac659fc5ed9f46066b120f1a5ed91079c4f09541707223b3f2f446f6bf946f",
+          "cadr": "f8ac659fc5ed9f46066b120f1a5ed91079c4f09541707223b3f2f446f6bf946f"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2368,7 +2800,7 @@
           "cadr": "510437681c8ad7b5bd9163ee5b308addea6688bcfd41a893ec610b884d979dd1"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2378,7 +2810,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "838bb53f85ea1fffa0e13bf892a831970cda0ae3d694269cee65c1a18d6ca017",
+          "cadr": "838bb53f85ea1fffa0e13bf892a831970cda0ae3d694269cee65c1a18d6ca017"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2396,7 +2835,7 @@
           "cadr": "917e0d248a3433dc76fd2b0559afeeb07477a4c158cc2fc8e28d2f13747e892c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2406,7 +2845,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "dc352c61e193c04f422683d287511596b8d489fadadef54f9b66abf2ec458be6",
+          "cadr": "dc352c61e193c04f422683d287511596b8d489fadadef54f9b66abf2ec458be6"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2424,7 +2870,7 @@
           "cadr": "4264d693506936bf697ddd48efcc7f28ac2f9660c0d211a0c8b9502433bb575d"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2434,7 +2880,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "20413b5ac04f00c26a83af820e043e8c226dfead3b3c440be985b7bdae0e927c",
+          "cadr": "20413b5ac04f00c26a83af820e043e8c226dfead3b3c440be985b7bdae0e927c"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2452,7 +2905,7 @@
           "cadr": "39dcd8388c78d552088498ff0e5590c313882ffc1c57264161bb7cd5ac74c1ef"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2462,7 +2915,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "c717300e5d9b2df55feb4d0d8ac803db5042de9b10420f4321f5783bb80f7a00",
+          "cadr": "c717300e5d9b2df55feb4d0d8ac803db5042de9b10420f4321f5783bb80f7a00"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2480,7 +2940,7 @@
           "cadr": "b0d5bc107f89d92a5d7c991ab1231b5c51a0130e1963ef616c178ee1cae747a8"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2490,7 +2950,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "a572bee906daf043087c0860dcf22e740e8e10e98b6212f1c1f77eeb9e980449",
+          "cadr": "a572bee906daf043087c0860dcf22e740e8e10e98b6212f1c1f77eeb9e980449"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2508,7 +2975,7 @@
           "cadr": "e36d7570768e7c3e1cbee5b5dc74f2349f7a374933521867f1247ee8955b1b13"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2518,7 +2985,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "cd1199c2d6451a0011549aee5c8d509dbf271aca9bca3f006eb679e0ad74758e",
+          "cadr": "cd1199c2d6451a0011549aee5c8d509dbf271aca9bca3f006eb679e0ad74758e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2536,7 +3010,7 @@
           "cadr": "aaf82255bada988838ca33db2395fbad5f55733d4f1a4350c0e884d2e60da673"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2546,7 +3020,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "73a9edf379ff062aff55f248173b0bd08d3321b69a4667ba9ecfc1dba424502e",
+          "cadr": "73a9edf379ff062aff55f248173b0bd08d3321b69a4667ba9ecfc1dba424502e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2564,7 +3045,7 @@
           "cadr": "2252e14844f83d8d7c5824aacf3c7423b8a1a87c9ba1a33dc1bf1024207221c1"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2574,7 +3055,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d879be43f68111736fe9e88ac30de666b3281a6f8699a17e0def39005fdf957c",
+          "cadr": "d879be43f68111736fe9e88ac30de666b3281a6f8699a17e0def39005fdf957c"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2592,7 +3080,7 @@
           "cadr": "bbb5d0d409f2f5cf57b054d1a982f598de14b67cad68f3f5d7319ad462aade47"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2602,7 +3090,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "b66ee7a828b2756e052a801f9f60c2d2884d35e404899ce40891d263d9af63c6",
+          "cadr": "b66ee7a828b2756e052a801f9f60c2d2884d35e404899ce40891d263d9af63c6"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2620,7 +3115,7 @@
           "cadr": "0b762a5b0d92913b6a1d18cd09005745ef15a251aec680c2a7b04cbb9e56c1a3"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2630,7 +3125,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "b8f579dea2b75a35fb9a4eb825dcf8ececfd331226866e18b07a805fe9d75e5d",
+          "cadr": "b8f579dea2b75a35fb9a4eb825dcf8ececfd331226866e18b07a805fe9d75e5d"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2648,7 +3150,7 @@
           "cadr": "cb98312f02eb45b895b43538a1c66296985eed7d6391eca836cf46317e2ff34c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2658,7 +3160,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "5f2ded1e4cdbd8a726587102d9ba31f827810da2c03d94cd8ae1ba42443ba35c",
+          "cadr": "5f2ded1e4cdbd8a726587102d9ba31f827810da2c03d94cd8ae1ba42443ba35c"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "settings-state-sweep",
@@ -2676,7 +3185,7 @@
           "cadr": "1ff4a8644688c7e9df97e16b49edef9987d10123c98abbc07ba2d10a2ed47c0b"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "startup-existing",
@@ -2699,7 +3208,7 @@
           "cadr": "b78b051fbcb7b68f2a8825f7c01e6d5e7f5c4b378cdae52ccac93a18685b30b1"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "startup-existing",
@@ -2722,7 +3231,7 @@
           "cadr": "d6a4898d255f90e0b550d48f6b2e8fddb2da5a9c426426c0307e2ea19fada45d"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "startup-first",
@@ -2745,7 +3254,7 @@
           "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "startup-first",
@@ -2768,7 +3277,7 @@
           "cadr": "5a996bd2e7cbb719646df5d271ecd7c09bb6e2cef260adc6792353f70b1bc853"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "startup-untrusted",
@@ -2791,7 +3300,7 @@
           "cadr": "b02d6447fb57fb6727a0cba6a4def76679cdc2d1f0d86d53d8305f034455188f"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The trust warning wraps one word earlier because .cadr is longer than .pi (I04), leaving the cursor one row lower at exit; text identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "startup-untrusted",
@@ -2814,7 +3323,7 @@
           "cadr": "cc397dbda65c784f763bd041dbe9136047866fd1cebb0133d1e524bb094ef946"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The trust warning wrap point shifts with the .pi/.cadr length difference (I04); text identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "startup-untrusted",
@@ -2837,7 +3346,7 @@
           "cadr": "9f05aa4567f01914721add5d9273de4261564a1e49eb9be38d67c6d0ea06b929"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Same I04 wrap shift on the trust warning plus 'Restart cadr for this to take effect.'; text identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "startup-untrusted",
@@ -2860,7 +3369,7 @@
           "cadr": "b3db865eeab7a72f9af8b966e4bab74e2e2f9460d92f8fd42d94a26d983446ae"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The trust warning wrap point shifts with the .pi/.cadr length difference (I04); text identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "stream-interrupt-queue",
@@ -2883,7 +3392,7 @@
           "cadr": "b8c56e6cbc2d8bcc352fdbff5c4c8792d68274bdaac0eedd32ae71e8f81cc922"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "stream-interrupt-queue",
@@ -2906,7 +3415,7 @@
           "cadr": "1b9156db8a8f47a7448eeda31cce07c5f13e9bf2c1756b27376a7782774a0efe"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Same narrow banner wrap consequence (I04) with the cursor one row lower at exit; content identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "stream-interrupt-queue",
@@ -2929,7 +3438,7 @@
           "cadr": "cbaad341202f1b8617e9244c9b769ca38f3d755d459ce0f1b552b64f3a43d07c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "In narrow, cadr's two-cell-longer banner identity (I04) wraps one row taller, so the viewport keeps the 'loaded resources.' banner tail visible; the abort flow lines are identical. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2939,7 +3448,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "077e1c8dee59d059be4e25312a2ccc5bfa05e50c9a86e5279cfe4aa99673c872",
+          "cadr": "077e1c8dee59d059be4e25312a2ccc5bfa05e50c9a86e5279cfe4aa99673c872"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2957,7 +3473,7 @@
           "cadr": "0d98737d79026419500ece0eeea277d9b9635333306837e762ab63c3b7f011f4"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2967,7 +3483,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "b314270a7f0c6331a64e00186a88f920fbd67e0727aeb029a429fb9074b9589a",
+          "cadr": "b314270a7f0c6331a64e00186a88f920fbd67e0727aeb029a429fb9074b9589a"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -2985,7 +3508,7 @@
           "cadr": "69cde42239c744b656e45983337394fbc4f170940ed5bdaa565e1fcd8754d120"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -2996,7 +3519,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c27bef0a7c485f87964c57012bf0bdca4b26c7f1f68ef13604eaf467d669a3f3",
+          "cadr": "c27bef0a7c485f87964c57012bf0bdca4b26c7f1f68ef13604eaf467d669a3f3"
+        },
+        "narrow": {
+          "pi": "912d22ad05dfa3ccde28f8b1be0669f54f4ff0e364482d26840a2f5f4da3e20f",
+          "cadr": "912d22ad05dfa3ccde28f8b1be0669f54f4ff0e364482d26840a2f5f4da3e20f"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -3007,7 +3541,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2f05770a493d11bcb022f5386681f8e746d465d14104a5872c6b2f013f5f5aca",
+          "cadr": "2f05770a493d11bcb022f5386681f8e746d465d14104a5872c6b2f013f5f5aca"
+        },
+        "narrow": {
+          "pi": "5b2c325051ced188146e3a247c987788f720ac0f923d4029a1a79d003b25275d",
+          "cadr": "5b2c325051ced188146e3a247c987788f720ac0f923d4029a1a79d003b25275d"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -3018,7 +3563,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5159a5bef41282e416821ce2167d7f88409d8ed5b5fdb0ba0cbc5a8506f7b4b3",
+          "cadr": "5159a5bef41282e416821ce2167d7f88409d8ed5b5fdb0ba0cbc5a8506f7b4b3"
+        },
+        "narrow": {
+          "pi": "9b931bb8653d2c47de67e719b52a7a6477c9936a5b0e82defea80823c54a445b",
+          "cadr": "9b931bb8653d2c47de67e719b52a7a6477c9936a5b0e82defea80823c54a445b"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -3028,7 +3584,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "f378e9c3ab1159acc0b2b5ccb33f4c9d73c300a83a1f59d8b1ff41c3da68b30c",
+          "cadr": "f378e9c3ab1159acc0b2b5ccb33f4c9d73c300a83a1f59d8b1ff41c3da68b30c"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -3046,7 +3609,7 @@
           "cadr": "346fc45d377dd77e940c568e5a8351eec27fd20d7bc2cfead42f04b9e026f29c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-render-branch-sweep",
@@ -3057,7 +3620,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2dd8d32b0022c7d287c4f47f0344662f243554d1034f587e56ef8285057959fc",
+          "cadr": "2dd8d32b0022c7d287c4f47f0344662f243554d1034f587e56ef8285057959fc"
+        },
+        "narrow": {
+          "pi": "8827ec925fe5d2464dfd2f7a0f289e77db364c8c8eeb51d3aa885c756a283f9d",
+          "cadr": "8827ec925fe5d2464dfd2f7a0f289e77db364c8c8eeb51d3aa885c756a283f9d"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-render-branch-sweep",
@@ -3068,7 +3642,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0797d193ec712a1da0bc07dfc12d5e7debf25b1d4dcda52b9f4e0375c913b98e",
+          "cadr": "0797d193ec712a1da0bc07dfc12d5e7debf25b1d4dcda52b9f4e0375c913b98e"
+        },
+        "narrow": {
+          "pi": "ac5dbe44a49391425fae69492e8c989eb9c8f03b2a2a3e616d7ef6eea5173d8f",
+          "cadr": "ac5dbe44a49391425fae69492e8c989eb9c8f03b2a2a3e616d7ef6eea5173d8f"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3091,7 +3676,7 @@
           "cadr": "1a9c1b3cc2570c205f617e92dedbcc824c0da21588fb4fc05587128383071d40"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3101,7 +3686,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "26e76f1c34f5a3e7b8cc42c68649f9225b4c565f885591c4ce28570dff388c42",
+          "cadr": "26e76f1c34f5a3e7b8cc42c68649f9225b4c565f885591c4ce28570dff388c42"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3119,7 +3711,7 @@
           "cadr": "a28ff4f8f5cc94d14a2c265e0cfbf6fce8d4f2fb9d2340cd7156e84d2a4ab4a4"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3142,7 +3734,7 @@
           "cadr": "05e198e797c016d22f3d5b273e74ae4e83b0509702d36a8277efc0ecae3d5533"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3165,7 +3757,7 @@
           "cadr": "0c4fd46f2184f608a3e10946ab48d19555cd33459a34afb9c73198664b311181"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3176,7 +3768,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "17a9fa52dda437a28c0a57750db207edd70c8a13aa6ccffcb7a0d4e96a0ff192",
+          "cadr": "17a9fa52dda437a28c0a57750db207edd70c8a13aa6ccffcb7a0d4e96a0ff192"
+        },
+        "narrow": {
+          "pi": "e36568b8e5fe3aa44dc2f1616843f907d2e721de463af62a2697a8a74484ce87",
+          "cadr": "e36568b8e5fe3aa44dc2f1616843f907d2e721de463af62a2697a8a74484ce87"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3186,7 +3789,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "37bd714cb79fa6c4c31f9d0053117ec4d5870fe2b6914c205112b3e4bf266caa",
+          "cadr": "37bd714cb79fa6c4c31f9d0053117ec4d5870fe2b6914c205112b3e4bf266caa"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3196,7 +3806,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "cca2cfbd6c9f8c89bb3906bfd2e9c736c00c2cf0fb02bec656abd84a5c233f68",
+          "cadr": "cca2cfbd6c9f8c89bb3906bfd2e9c736c00c2cf0fb02bec656abd84a5c233f68"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3207,7 +3824,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0608c103326a2bedf0acb72f5ddbd51ecd32165f7b9581a6ba8f96384948aab6",
+          "cadr": "0608c103326a2bedf0acb72f5ddbd51ecd32165f7b9581a6ba8f96384948aab6"
+        },
+        "narrow": {
+          "pi": "af7c5ffe070e2eda03a231843dea3d8af34396eba6c3815c581bf71f1aa0fff4",
+          "cadr": "af7c5ffe070e2eda03a231843dea3d8af34396eba6c3815c581bf71f1aa0fff4"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3218,7 +3846,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a6b05544ece7beee662615b80412adfecf7d98e154153c29cc0c54a07c4fa8db",
+          "cadr": "a6b05544ece7beee662615b80412adfecf7d98e154153c29cc0c54a07c4fa8db"
+        },
+        "narrow": {
+          "pi": "623fb8f592d88896c865c233a61181794f6bcb3e3e7d0501923a30c2c7db106b",
+          "cadr": "623fb8f592d88896c865c233a61181794f6bcb3e3e7d0501923a30c2c7db106b"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-significant-states",
@@ -3229,7 +3868,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "782b0faa24ea4d1d89b4ccbe4de758afa1997155c82c3cb8abac7f5041026cb9",
+          "cadr": "782b0faa24ea4d1d89b4ccbe4de758afa1997155c82c3cb8abac7f5041026cb9"
+        },
+        "narrow": {
+          "pi": "5e669d8b477ac32fd38f237dde5242adb1893cbea3675333b2339de4193929c7",
+          "cadr": "5e669d8b477ac32fd38f237dde5242adb1893cbea3675333b2339de4193929c7"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3240,7 +3890,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "43db59559ba6822d074dcd6c6f3d9572b0a0a260410612e64b334fe296669722",
+          "cadr": "43db59559ba6822d074dcd6c6f3d9572b0a0a260410612e64b334fe296669722"
+        },
+        "narrow": {
+          "pi": "4647a868217d900e898f80d3aeb77d5e691bd2e40d1d2e6ffa08d21879c4865c",
+          "cadr": "4647a868217d900e898f80d3aeb77d5e691bd2e40d1d2e6ffa08d21879c4865c"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3250,7 +3911,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "5c2cd4e148f9b4c6401db341a7f0d1da0daf6c99a8d62f381694a2af2bf2499e",
+          "cadr": "5c2cd4e148f9b4c6401db341a7f0d1da0daf6c99a8d62f381694a2af2bf2499e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3268,7 +3936,7 @@
           "cadr": "f8707ea8392c22ef9620a1969512b80517634f0fb1cc109b2e02195ade13f80d"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3279,7 +3947,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0db711c36cc663bb5cc479b5a4f830db9493637937baaa9fb3e964fcd2e1d78b",
+          "cadr": "0db711c36cc663bb5cc479b5a4f830db9493637937baaa9fb3e964fcd2e1d78b"
+        },
+        "narrow": {
+          "pi": "96733e837bb6e6dc8130563b3b2eef09004bd8a19ab690f7e08cd69cf5b00aa4",
+          "cadr": "96733e837bb6e6dc8130563b3b2eef09004bd8a19ab690f7e08cd69cf5b00aa4"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3290,7 +3969,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "087efd049d6be10370d3825c69f63ff0648ed59558b1f6892f493eca9ff32b0d",
+          "cadr": "087efd049d6be10370d3825c69f63ff0648ed59558b1f6892f493eca9ff32b0d"
+        },
+        "narrow": {
+          "pi": "a83e379f37dfde4d3a222746bc1f243697e4cc59001782e99368b35738d503eb",
+          "cadr": "a83e379f37dfde4d3a222746bc1f243697e4cc59001782e99368b35738d503eb"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3301,7 +3991,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4877c78531e658216596b403ccf42040c8f936c443fa573ce7c8e50b35f907ed",
+          "cadr": "4877c78531e658216596b403ccf42040c8f936c443fa573ce7c8e50b35f907ed"
+        },
+        "narrow": {
+          "pi": "eef5442b65c60a93f2b4e38591d0f3f2d683892b1aa02ec2b2c42bfa54f064e4",
+          "cadr": "eef5442b65c60a93f2b4e38591d0f3f2d683892b1aa02ec2b2c42bfa54f064e4"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3312,7 +4013,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "052d0584f6dc7fe9aad0fbe8fe0e266a00ddaae9c344991ae780e4c58829e34e",
+          "cadr": "052d0584f6dc7fe9aad0fbe8fe0e266a00ddaae9c344991ae780e4c58829e34e"
+        },
+        "narrow": {
+          "pi": "b121114eaec817f573ae05bed4f028082cf6abae8c95c76ec9bdf274346741a5",
+          "cadr": "b121114eaec817f573ae05bed4f028082cf6abae8c95c76ec9bdf274346741a5"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3323,7 +4035,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "df898a3166bc5dfc99b32137a8ec1526b3ccf9a953e2c33ce52c8c787c77976d",
+          "cadr": "df898a3166bc5dfc99b32137a8ec1526b3ccf9a953e2c33ce52c8c787c77976d"
+        },
+        "narrow": {
+          "pi": "7f87c9bd068226fc4f7a506234c3d21aacac47ea9da704d4a3939c04ec4bf81a",
+          "cadr": "7f87c9bd068226fc4f7a506234c3d21aacac47ea9da704d4a3939c04ec4bf81a"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3334,7 +4057,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c",
+          "cadr": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c"
+        },
+        "narrow": {
+          "pi": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8",
+          "cadr": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3345,7 +4079,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4acc0a6aeb1e462a29e41e63d693ac917c58cbce87b458620db96d0aaa73cd15",
+          "cadr": "4acc0a6aeb1e462a29e41e63d693ac917c58cbce87b458620db96d0aaa73cd15"
+        },
+        "narrow": {
+          "pi": "4c0bfa6b0bb4c4c64c8e9839c9002d65ab438183ce178315e35159483bec8ef2",
+          "cadr": "4c0bfa6b0bb4c4c64c8e9839c9002d65ab438183ce178315e35159483bec8ef2"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3356,7 +4101,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "33d1fb9b179dc5870633ced12b935c74993139756dc0f55c1010cb9f8117e6d6",
+          "cadr": "33d1fb9b179dc5870633ced12b935c74993139756dc0f55c1010cb9f8117e6d6"
+        },
+        "narrow": {
+          "pi": "678d35544a1a98aa5120c69b600dc9a8c5fdbd942e1ddd3c6e3c26cfd5f68ca7",
+          "cadr": "678d35544a1a98aa5120c69b600dc9a8c5fdbd942e1ddd3c6e3c26cfd5f68ca7"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3367,7 +4123,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "bbcb83d6da265833b8209ff037863d5ebdd4c5f3cd1b128d4aa133daa4702232",
+          "cadr": "bbcb83d6da265833b8209ff037863d5ebdd4c5f3cd1b128d4aa133daa4702232"
+        },
+        "narrow": {
+          "pi": "2898194532829f0550aa7d28f044ddb7dffcb7dfa155e41e8a78789bd3e2a27f",
+          "cadr": "2898194532829f0550aa7d28f044ddb7dffcb7dfa155e41e8a78789bd3e2a27f"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3378,7 +4145,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8",
+          "cadr": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8"
+        },
+        "narrow": {
+          "pi": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d",
+          "cadr": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -3389,7 +4167,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "614d344d9da1805c6ff96bf7eec7c7a5f02d6f4d0769a09fbb01475ec87082f5",
+          "cadr": "614d344d9da1805c6ff96bf7eec7c7a5f02d6f4d0769a09fbb01475ec87082f5"
+        },
+        "narrow": {
+          "pi": "d7418b165aa27d0b8a3fbb0698658ee4c24d3d50209d781cda5c253ebd4aa0eb",
+          "cadr": "d7418b165aa27d0b8a3fbb0698658ee4c24d3d50209d781cda5c253ebd4aa0eb"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tree-entry-state-sweep",
@@ -3412,7 +4201,7 @@
           "cadr": "0d207950aa9bd816c821c0a17115e3da29fc339aee4bbe74a07b01ae4c7ed03c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tree-entry-state-sweep",
@@ -3435,7 +4224,7 @@
           "cadr": "c176bd9912bdb469fd095894c4c7eab77d07c928e006da76d86edf28c2877e3c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tree-entry-state-sweep",
@@ -3446,7 +4235,18 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a9386dc2b6739c71208f2461ef4142b5b8e5d3c2d317aa29be2d23103e8e2a3c",
+          "cadr": "a9386dc2b6739c71208f2461ef4142b5b8e5d3c2d317aa29be2d23103e8e2a3c"
+        },
+        "narrow": {
+          "pi": "3bc6851aae0287686acc90abc309e33350c3be3119089bc5be394ac9c4cc6fc5",
+          "cadr": "3bc6851aae0287686acc90abc309e33350c3be3119089bc5be394ac9c4cc6fc5"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "update-notifications",
@@ -3469,7 +4269,7 @@
           "cadr": "3894bd9801a01585e24f900ddb3aa86cc0d750554ef39c03e2dd6e2e961c009f"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "cadr's approved changelog URL (github.com/artwalker/cadr/blob/main/CHANGELOG.md, I04) wraps to two rows in the narrow dimension where pi.dev/changelog fits on one, so the 'Release note' line scrolls above the captured viewport; every visible line is otherwise identical modulo the I04 identity tokens (Run cadr update, cadr links). Raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "update-notifications",
@@ -3492,7 +4292,7 @@
           "cadr": "55427a6a90ad30ab8670e3d6fb2c71349904ee8eb2c786771a0dbf6d5248514c"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "cadr's approved changelog URL (github.com/artwalker/cadr/blob/main/CHANGELOG.md, I04) wraps to two rows in the narrow dimension where pi.dev/changelog fits on one, so the 'Release note' line scrolls above the captured viewport; every visible line is otherwise identical modulo the I04 identity tokens (Run cadr update, cadr links). Raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "update-notifications-no-hyperlinks",
@@ -3515,7 +4315,7 @@
           "cadr": "06ebd733560d7f62369567faa0b1d9f5233cb1cb50005605aef3b731961f05ab"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Same as update-notifications: the longer approved cadr changelog URL (I04) wraps in narrow and pushes the 'Release note' line above the viewport; no hyperlink escape sequences in this variant. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "update-notifications-no-hyperlinks",
@@ -3538,7 +4338,7 @@
           "cadr": "b7b77535fec50809c6a3ed1efd846d2dea2d8bb9b66f77cdc1f1dcb93cd6b2e3"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Same as update-notifications: the longer approved cadr changelog URL (I04) wraps in narrow and pushes the 'Release note' line above the viewport; no hyperlink escape sequences in this variant. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3548,7 +4348,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6b14ae840d6f743f2644acee60cc6318a3fb2e11dbb94250de38006c308aa829",
+          "cadr": "6b14ae840d6f743f2644acee60cc6318a3fb2e11dbb94250de38006c308aa829"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3566,7 +4373,7 @@
           "cadr": "24e9aac09bb6bfb49885e31e18f95fb46f6aeb2afba7195385206724be9af736"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3576,7 +4383,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "9a40d89d7aeffd3ee78b9155ba82e4dea735197612c1fc21f33cf72e3824bc3e",
+          "cadr": "9a40d89d7aeffd3ee78b9155ba82e4dea735197612c1fc21f33cf72e3824bc3e"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3594,7 +4408,7 @@
           "cadr": "344336e946440291bcda90230c7b8738d7a3f55221a9471fadd64d027c184577"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3617,7 +4431,7 @@
           "cadr": "5958b30f92fc3c252f5433d72dc1b45148583420996a0b410ab49a1b056bc972"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3640,7 +4454,7 @@
           "cadr": "907660ce8134ade11db725df5cf5db01d9dda601d046f5880b3f07c5a94a3964"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3650,7 +4464,14 @@
       ],
       "classes": [
         "I01"
-      ]
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d191e78753a0a6c093da8904066cb9b6a3565bbf96f3ddfe4d07e35c01088442",
+          "cadr": "d191e78753a0a6c093da8904066cb9b6a3565bbf96f3ddfe4d07e35c01088442"
+        }
+      },
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3668,7 +4489,7 @@
           "cadr": "298c3ac649f2644123a6b44a294700aaacb62e1818f1c018968da293c9843aaf"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3691,7 +4512,7 @@
           "cadr": "89672928f1c53a2d04ea70fd244a671ea2a62b14afdcc7c6a39b93c1ed536242"
         }
       },
-      "note": "Exact approved semantic screen pair; no product defect is admitted."
+      "note": "Visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     }
   ]
 }
