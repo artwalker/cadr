@@ -54,8 +54,7 @@
     (&key
        (arguments (uiop:command-line-arguments))
        (auth-path
-         (merge-pathnames ".cadr/auth.json"
-                          (user-homedir-pathname)))
+         (cadr-core:agent-auth-path))
        extra-secrets)
   (remove-duplicates
    (remove-if-not
@@ -73,8 +72,7 @@
    :test #'string=))
 
 (defun default-crash-directory ()
-  (merge-pathnames ".cadr/crash/"
-                   (user-homedir-pathname)))
+  (cadr-core:agent-crash-directory))
 
 (defun crash-log-path (directory program-name nonce)
   (merge-pathnames

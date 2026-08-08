@@ -1,9 +1,9 @@
 (in-package #:cadr-cli)
 
 (defun default-agent-directory ()
-  (merge-pathnames
-   ".cadr/"
-   (user-homedir-pathname)))
+  ;; Thin forwarder: cadr-core owns the layout decision (including the
+  ;; CADR_CODING_AGENT_DIR override); this name stays for CLI callers.
+  (cadr-core:coding-agent-directory))
 
 (defun prompt-project-trust
     (directory

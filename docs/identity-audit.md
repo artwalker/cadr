@@ -42,7 +42,7 @@ git remote -v
 | `src/cadr-ai/oauth/page.lisp:3-4` | Cadr 自有 cons-cell SVG；用户浏览器 | `已合规` | 不再使用 pi 品牌资产。 |
 | `src/cadr-cli/bootstrap/sessions.lisp:1341` | `cadr-session-<ISO>_<uuid>.html`；用户文件 | `已合规` | 产品前缀正确。 |
 | `src/cadr-cli/support/resume-version-git.lisp:4-47` | `cadr --session ...`；退出后 stdout | `已合规` | CLI 名正确。 |
-| `src/cadr-cli/config.lisp:19-24`、`src/cadr-agent/session/codec.lisp:58`、`src/cadr-cli/extensions/discovery.lisp:38` | `~/.cadr/`；用户磁盘 | `已合规` | 配置、会话、扩展目录已统一。 |
+| `src/cadr-core/paths.lisp`（owner）、`src/cadr-cli/migration.lisp`（迁移） | `~/.cadr/agent/`；用户磁盘 | `已合规` | Goal 18 起布局对齐基线 `~/.pi/agent/`；全部路径经 cadr-core owner 单一派生。 |
 | Git remote `backup` | `https://github.com/artwalker/cadr.git`；维护者 | `已合规` | 规范仓库。`origin=git@github.com:badlogic/pi-mono.git` 是上游同步 remote，按规格不改。 |
 
 这些锚点目前仍散在多个包中；Part C 必须让可复用的产品 slug、显示名和规范

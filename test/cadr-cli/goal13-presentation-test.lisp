@@ -1243,7 +1243,7 @@
            (uiop:read-file-string
             (merge-pathnames "docs/lisp-idiom-audit.md" root)))
          (systems
-           '(("cadr-core" 6)
+           '(("cadr-core" 7)
              ("cadr-ai" 61)
              ("cadr-agent" 36)
              ("cadr-cli" 111)
@@ -1255,7 +1255,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=276 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=277 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1273,7 +1273,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 276 total))
+    (is (= 277 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1302,7 +1302,7 @@
            "src/cadr-agent/{session,storage,loop}/*.lisp"
            "src/cadr-agent/extensions/*.lisp"
            "src/cadr-tui/threads.lisp"
-           "src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time}.lisp"))
+           "src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time,paths}.lisp"))
       (is (search path audit)
           "Post-audit source addition has no disposition: ~A"
           path))))

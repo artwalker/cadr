@@ -247,3 +247,45 @@
         (is (not (null core)) "~A omits cadr-core" relative)
         (is (not (null tui)) "~A omits cadr-tui" relative)
         (is (< core tui) "~A loads cadr-core after cadr-tui" relative)))))
+
+(test goal18-agent-directory-defaults-to-the-home-agent-layer
+  (let ((cadr-core::*path-environment-function* (constantly nil)))
+    (is (equal (merge-pathnames ".cadr/agent/" (user-homedir-pathname))
+               (cadr-core:coding-agent-directory)))))
+
+(test goal18-agent-directory-honors-the-env-override
+  (dolist (case '(("/var/lib/cadr-agent" #P"/var/lib/cadr-agent/")
+                  ("relative-agent" #P"relative-agent/")))
+    (destructuring-bind (value expected) case
+      (let ((cadr-core::*path-environment-function*
+              (lambda (name)
+                (and (string= name "CADR_CODING_AGENT_DIR") value))))
+        (is (equal expected (cadr-core:coding-agent-directory)))))))
+
+(test goal18-agent-directory-env-override-expands-a-leading-tilde
+  (let ((cadr-core::*path-environment-function*
+          (lambda (name)
+            (and (string= name "CADR_CODING_AGENT_DIR") "~/custom-agent"))))
+    (is (equal (merge-pathnames "custom-agent/" (user-homedir-pathname))
+               (cadr-core:coding-agent-directory)))))
+
+(test goal18-every-agent-resident-derives-from-the-owner
+  (let ((cadr-core::*path-environment-function* (constantly nil)))
+    (let ((agent (cadr-core:coding-agent-directory)))
+      (dolist (pair
+               (list
+                (list "settings.json" (cadr-core:agent-settings-path))
+                (list "auth.json" (cadr-core:agent-auth-path))
+                (list "models.json" (cadr-core:agent-models-path))
+                (list "config.json" (cadr-core:agent-config-path))
+                (list "trust.json" (cadr-core:agent-trust-path))
+                (list "sessions/" (cadr-core:agent-sessions-directory))
+                (list "themes/" (cadr-core:agent-themes-directory))
+                (list "prompts/" (cadr-core:agent-prompts-directory))
+                (list "tools/" (cadr-core:agent-tools-directory))
+                (list "bin/" (cadr-core:agent-bin-directory))
+                (list "extensions/" (cadr-core:agent-extensions-directory))
+                (list "crash/" (cadr-core:agent-crash-directory))))
+        (destructuring-bind (name derived) pair
+          (is (equal (merge-pathnames name agent) derived)
+              "~A does not derive from the coding-agent-directory owner" name))))))

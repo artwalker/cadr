@@ -129,7 +129,7 @@
          (home
            (uiop:ensure-directory-pathname
             (pathname (canonical-directory-name home-directory))))
-         (config-root (merge-pathnames ".cadr/" root)))
+         (config-root (cadr-core:project-config-directory root)))
     (or
      (some
       (lambda (resource)

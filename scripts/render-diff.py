@@ -1846,7 +1846,7 @@ def capture_side(
     side_root = sandbox / ("pi00" if side == "pi" else "cadr")
     home = side_root / "home"
     cwd = side_root / "workspace"
-    agent_dir = home / (".pi/agent" if side == "pi" else ".cadr")
+    agent_dir = home / (".pi/agent" if side == "pi" else ".cadr/agent")
     session_dir = render_side_session_directory(sandbox, side)
     home.mkdir(parents=True)
     cwd.mkdir(parents=True)
@@ -1957,6 +1957,7 @@ def normalize_fixed_values(data: bytes) -> bytes:
         (b"restart pi.", b"restart <PRODUCT>."),
         (b"restart cadr.", b"restart <PRODUCT>."),
         (b"<HOME>/.pi/agent/", b"<HOME>/<PRODUCT_CONFIG>/"),
+        (b"<HOME>/.cadr/agent/", b"<HOME>/<PRODUCT_CONFIG>/"),
         (b"<HOME>/.cadr/", b"<HOME>/<PRODUCT_CONFIG>/"),
         (b"To resume this session: pi ", b"To resume this session: <PRODUCT> "),
         (b"To resume this session: cadr ", b"To resume this session: <PRODUCT> "),
@@ -2102,20 +2103,23 @@ def normalized_screen(data: bytes, side: str) -> bytes:
     result = re.sub(wrapped_session_directory, b"<SESSION_DIR>", data)
     if side == "cadr":
         wrapped_digits = rb"[0-9](?:(?:\r?\n)?[0-9])*"
+        # A hard wrap can land between a dash and a digit ("-\n0"), so each
+        # dash tolerates a wrap on both sides.
+        wrapped_dash = (
+            separator + screen_wrapped_literal_pattern(b"-") + separator
+        )
         wrapped_crash_path = (
             screen_wrapped_literal_pattern(b"/tmp/cadr-render-diff-")
             + separator
             + temporary_suffix
             + separator
             + screen_wrapped_literal_pattern(
-                b"/cadr/home/.cadr/crash/cadr-crash-"
+                b"/cadr/home/.cadr/agent/crash/cadr-crash-"
             )
             + wrapped_digits
-            + separator
-            + screen_wrapped_literal_pattern(b"-")
+            + wrapped_dash
             + wrapped_digits
-            + separator
-            + screen_wrapped_literal_pattern(b"-")
+            + wrapped_dash
             + wrapped_digits
             + separator
             + screen_wrapped_literal_pattern(b".log")

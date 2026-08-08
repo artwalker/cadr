@@ -54,7 +54,11 @@ BASE_URL="http://127.0.0.1:$PORT"
     "$CADR" --provider openai --model gpt-4o-mini \
     --base-url "$BASE_URL" --print "seed" >/dev/null
 )
-mv -- "$NEW_DIRECTORY" "$OLD_DIRECTORY"
+# Rebuild a pure pre-agent-layer legacy tree: the seeded session moves to
+# the flat layout, and the seeded (current-layout) directory is discarded.
+mkdir -p "$OLD_DIRECTORY"
+mv -- "$NEW_DIRECTORY/agent/sessions" "$OLD_DIRECTORY/sessions"
+rm -rf -- "$NEW_DIRECTORY"
 mkdir -p "$OLD_DIRECTORY/extensions/example"
 printf '%s\n' \
   '(define-command "legacy" (lambda (context) (declare (ignore context)) "ok"))' \
@@ -92,18 +96,18 @@ if [ -e "$OLD_DIRECTORY" ] || [ ! -d "$NEW_DIRECTORY" ]; then
   exit 1
 fi
 
-if [ ! -f "$NEW_DIRECTORY/extensions/example/extension.lisp" ]; then
-  echo "migration smoke: extension was not migrated" >&2
+if [ ! -f "$NEW_DIRECTORY/agent/extensions/example/extension.lisp" ]; then
+  echo "migration smoke: extension did not land in the agent layer" >&2
   exit 1
 fi
 
-if [ "$(stat -c '%a' "$NEW_DIRECTORY/auth.json")" != "600" ]; then
+if [ "$(stat -c '%a' "$NEW_DIRECTORY/agent/auth.json")" != "600" ]; then
   echo "migration smoke: migrated auth.json is not mode 0600" >&2
   exit 1
 fi
 
 SESSION_COUNT="$(
-  find "$NEW_DIRECTORY/sessions" \
+  find "$NEW_DIRECTORY/agent/sessions" \
     -maxdepth 1 -type f -name '*.jsonl' | wc -l
 )"
 

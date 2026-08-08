@@ -54,9 +54,7 @@
    (truename (uiop:ensure-directory-pathname cwd))))
 
 (defun default-session-directory ()
-  (merge-pathnames
-   ".cadr/sessions/"
-   (user-homedir-pathname)))
+  (cadr-core:agent-sessions-directory))
 
 (defun make-session-id ()
   (cadr-ai:uuid-v7))

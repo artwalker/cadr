@@ -595,7 +595,7 @@ header：
 
 约束：
 
-- 默认目录：`~/.cadr/sessions/`
+- 默认目录：`~/.cadr/agent/sessions/`
 - API key、Authorization 和环境变量绝不写入 session
 - 每个最终 user/assistant/tool-result message 追加后立即 flush
 - 允许崩溃留下一个不完整的最后一行；只忽略这个尾行
@@ -850,7 +850,7 @@ protocol adapter 构建；注册表只负责选择 adapter、认证和默认值�
 base URL 解析顺序固定为：
 
 1. CLI `--base-url`
-2. `~/.cadr/config.json` 中对应 provider 的 `base-url`
+2. `~/.cadr/agent/config.json` 中对应 provider 的 `base-url`
 3. 注册表默认值
 
 模型解析同理为 CLI `--model`、环境/配置覆盖、注册表默认值。Ollama 是无
@@ -897,7 +897,7 @@ provider/model 未声明图片能力时，在发请求前抛出明确
 
 provider 的请求认证统一解析为 `api-key-credential` 或
 `oauth-credential`。adapter 只接收最终请求头，不参与登录和刷新。
-`~/.cadr/auth.json` 是唯一持久凭据文件，写入采用临时文件加原子替换，
+`~/.cadr/agent/auth.json` 是唯一持久凭据文件，写入采用临时文件加原子替换，
 创建后强制 `0600`。所有 condition、会话和诊断输出先经过 secret
 redaction。
 
@@ -938,7 +938,7 @@ provider/model 参数即可对话。TUI 按基线显示 OSC 8 可点击的原始
 所有发行入口（`cadr`、`cadr-server`、`cadr-evals`）外层还有一个不参与
 业务恢复的 fatal condition boundary。它在栈展开前捕获未处理的
 `serious-condition`，用户通道只得到 condition 类型、受限文案和本地日志路径；
-完整 backtrace 经已知秘密精确替换后写入 `~/.cadr/crash/` 的 `0600` 文件，
+完整 backtrace 经已知秘密精确替换后写入 `~/.cadr/agent/crash/` 的 `0600` 文件，
 CLI 再对 Authorization、Bearer、token/key/secret 形态做二次模式脱敏。
 provider、credential、request、config、auth input 与外部服务 client 等持密
 对象都定义了不递归显示秘密槽位的 `print-object`，作为绕过 fatal boundary 时的
@@ -1075,7 +1075,7 @@ package 只 `:use` `CL` 与 `CADR-AGENT`；需要 `CADR-AI` 时使用显式包�
 
 1. `--extension <path>`，最高优先级；参数可重复，后出现者优先；
 2. `./.cadr/extensions/`，项目级；
-3. `~/.cadr/extensions/`，全局级。
+3. `~/.cadr/agent/extensions/`，全局级。
 
 同 id 的低优先级入口在加载前即被遮蔽，所以项目项明确覆盖全局同名项，
 CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定性的第一项；
@@ -1285,7 +1285,7 @@ README 必须明确：
 实现通过 argv 列表调用 `git clone -- <url> <staging>`，绝不拼 shell
 字符串。
 
-clone 目标先放在 `~/.cadr/extensions/.staging-<random>/`。成功后验证：
+clone 目标先放在 `~/.cadr/agent/extensions/.staging-<random>/`。成功后验证：
 
 1. 顶层存在 `extension.lisp`；
 2. 推导出的目录名只含安全字符；
@@ -1499,7 +1499,13 @@ ASDF production/test system、目录、CL package 和 native image 均使用该
 获批 context/event accessor 从 `CADR-AGENT` 导出；此次迁移后命名空间冻结，
 不再提供旧 nickname 或别名。
 
-用户数据根目录为 `~/.cadr/`。启动时只有在旧目录存在且新目录不存在时
+用户数据根目录为 `~/.cadr/`，其中 agent 数据位于 `~/.cadr/agent/`
+（settings、auth、models、sessions、themes、prompts、tools、bin、
+extensions、crash 日志），与基线 `~/.pi/agent/` 布局同构；
+`~/.cadr/server/` 留在根上。`CADR_CODING_AGENT_DIR` 覆盖 agent 目录；
+goal 18 之前的平铺安装由启动时的第二道迁移自动把根上住户 rename 进
+`agent/`（保留 `0600` auth 权限；两种布局并存时拒绝二选一并报错；
+设置覆盖变量时跳过）。启动时只有在旧目录存在且新目录不存在时
 进入迁移门：
 
 1. stdin 必须是 TTY，且原始 argv 不得含 `--yolo`；
@@ -1704,7 +1710,7 @@ Goal 8 当时宣告的 extension export SHA
 native/process/PTY harness、完整固定基线 render differential、凭据可用性门控的
 live FiveAM、可用时的 DeepSeek 真实 TUI。隔离副本排除 Git metadata、现有
 二进制、凭据/测试 HOME、环境文件与编辑器缓存；真实 OAuth refresh 仍由
-canonical `~/.cadr/auth.json` 的既有锁与原子写路径负责。
+canonical `~/.cadr/agent/auth.json` 的既有锁与原子写路径负责。
 
 脚本分别汇总 deterministic 与 live，不把真实 LLM 结果冒充确定性证据。任何
 已运行项失败最终返回非零，但 live FiveAM 的逐项报告和后续可运行 live harness

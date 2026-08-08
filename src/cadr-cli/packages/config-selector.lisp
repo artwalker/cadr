@@ -287,8 +287,7 @@
 (defun config-package-setting-records
     (manager cwd agent-directory include-project-p)
   (let* ((project-base
-           (merge-pathnames
-            ".cadr/" (uiop:ensure-directory-pathname cwd)))
+           (cadr-core:project-config-directory cwd))
          (global-base
            (uiop:ensure-directory-pathname agent-directory))
          (global-root (merge-pathnames "packages/" global-base))
@@ -519,9 +518,7 @@
            (and include-project-p
                 (config-top-level-items-for-scope
                  (settings-manager-project manager)
-                 (merge-pathnames
-                  ".cadr/"
-                  (uiop:ensure-directory-pathname cwd))
+                 (cadr-core:project-config-directory cwd)
                  :project)))
          (seen (make-hash-table :test #'equal))
          (result nil))
@@ -587,7 +584,7 @@
           (cadr-tui:shortened-home-path
            (namestring
             (config-selector-state-agent-directory state)))))
-        (t "Project (.cadr/)"))))
+        (t (format nil "Project (~A)" cadr-core:+project-config-directory-name+)))))
 
 (defun config-resource-group-less-p (left right)
   (let ((left-item (getf left :item))
@@ -675,9 +672,7 @@
   (let* ((manager
            (config-selector-state-settings-manager state))
          (project-base
-           (merge-pathnames
-            ".cadr/"
-            (config-selector-state-cwd state)))
+           (cadr-core:project-config-directory (config-selector-state-cwd state)))
          (source-base
            (if (eq :project
                    (config-resource-item-scope item))
@@ -747,9 +742,7 @@
   (let* ((manager
            (config-selector-state-settings-manager state))
          (project-base
-           (merge-pathnames
-            ".cadr/"
-            (config-selector-state-cwd state)))
+           (cadr-core:project-config-directory (config-selector-state-cwd state)))
          (entries
            (config-selector-settings-values
             manager :project
@@ -935,8 +928,7 @@
     (:global
      (config-selector-state-agent-directory state))
     (:project
-     (merge-pathnames
-      ".cadr/" (config-selector-state-cwd state)))))
+     (cadr-core:project-config-directory (config-selector-state-cwd state)))))
 
 (defun config-selector-item-source-base (state item)
   (config-selector-scope-base
@@ -1266,7 +1258,7 @@
                (cadr-tui:visible-width hint))))
          (scope-hint
            (if project-p
-               ".cadr/settings.json · inherited global resources are dimmed"
+               (format nil "~Asettings.json · inherited global resources are dimmed" cadr-core:+project-config-directory-name+)
                (format
                 nil "~Asettings.json"
                 (cadr-tui:shortened-home-path

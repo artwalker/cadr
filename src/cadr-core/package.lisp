@@ -21,6 +21,22 @@
    #:unix-milliseconds
    #:milliseconds-to-utc-iso8601
    #:iso8601-to-milliseconds
-   #:current-utc-iso8601))
+   #:current-utc-iso8601
+   #:config-home-directory
+   #:coding-agent-directory
+   #:agent-settings-path
+   #:agent-auth-path
+   #:agent-models-path
+   #:agent-config-path
+   #:agent-trust-path
+   #:agent-sessions-directory
+   #:agent-themes-directory
+   #:agent-prompts-directory
+   #:agent-tools-directory
+   #:agent-bin-directory
+   #:agent-extensions-directory
+   #:agent-crash-directory
+   #:+project-config-directory-name+
+   #:project-config-directory))
 
 (in-package #:cadr-core)

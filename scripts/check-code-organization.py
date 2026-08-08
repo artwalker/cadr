@@ -77,11 +77,45 @@ def scan_sources(root: Path) -> dict[str, int]:
     return result
 
 
+# The user-level path layout is decided once in cadr-core/paths.lisp and
+# migrated once in cadr-cli/migration.lisp; no other production file may
+# re-decide it with a ".cadr/ literal.
+PATH_LITERAL_ALLOWED = frozenset(
+    {
+        "src/cadr-core/paths.lisp",
+        "src/cadr-cli/migration.lisp",
+    }
+)
+
+
+def scan_path_literals(root: Path) -> list[str]:
+    violations: list[str] = []
+    for path in sorted((root / "src").rglob("*.lisp")):
+        relative = path.relative_to(root).as_posix()
+        if relative in PATH_LITERAL_ALLOWED:
+            continue
+        for line_number, line in enumerate(
+            path.read_text(encoding="utf-8").splitlines(), start=1
+        ):
+            if '".cadr/' in line:
+                violations.append(f"{relative}:{line_number}")
+    return violations
+
+
 def run(root: Path, manifest: Path) -> int:
     root = root.resolve()
     manifest = manifest.resolve()
     threshold, _basis, exemptions = load_manifest(manifest)
     sources = scan_sources(root)
+    literal_violations = scan_path_literals(root)
+    if literal_violations:
+        for violation in literal_violations:
+            print(
+                "code organization gate: "
+                f'path literal outside the owner: {violation} contains ".cadr/"',
+                file=sys.stderr,
+            )
+        return 1
     oversized = {
         path: lines for path, lines in sources.items() if lines >= threshold
     }

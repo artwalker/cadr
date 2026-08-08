@@ -16,12 +16,10 @@
 (defparameter *anthropic-login-function* #'cadr-ai:login-anthropic-oauth)
 
 (defun default-config-path ()
-  (merge-pathnames ".cadr/config.json"
-                   (user-homedir-pathname)))
+  (cadr-core:agent-config-path))
 
 (defun default-auth-path ()
-  (merge-pathnames ".cadr/auth.json"
-                   (user-homedir-pathname)))
+  (cadr-core:agent-auth-path))
 
 (defun environment-value (name)
   (funcall *environment-function* name))

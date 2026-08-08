@@ -129,9 +129,7 @@
   nil)
 
 (defun radius-auth-path ()
-  (merge-pathnames
-   ".cadr/auth.json"
-   (user-homedir-pathname)))
+  (cadr-core:agent-auth-path))
 
 (defun stored-radius-token ()
   (let ((path (radius-auth-path)))

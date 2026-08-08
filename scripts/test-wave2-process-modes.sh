@@ -129,7 +129,7 @@ REQUESTS_BEFORE="$(wc -l <"$REQUEST_MARKER")"
 ) >"$TEST_ROOT/signal.out" 2>"$TEST_ROOT/signal.err" &
 SIGNAL_PID="$!"
 tries=0
-while [ ! -d "$TEST_ROOT/signal-home/.cadr/sessions" ]; do
+while [ ! -d "$TEST_ROOT/signal-home/.cadr/agent/sessions" ]; do
   tries=$((tries + 1))
   if [ "$tries" -ge 100 ]; then
     echo "wave2 process modes: signal test did not initialize" >&2

@@ -40,6 +40,7 @@
   (handler-case
       (progn
         (ensure-user-data-migrated :argv argv)
+        (ensure-agent-layout-migrated)
         (multiple-value-bind
               (handled-p status)
             (handle-package-command

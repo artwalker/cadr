@@ -45,7 +45,7 @@
 (defun project-config-directories (cwd)
   (loop for ancestor in (ancestor-directories cwd)
         for config =
-        (merge-pathnames ".cadr/" ancestor)
+        (cadr-core:project-config-directory ancestor)
         when (uiop:directory-exists-p config)
           collect config))
 

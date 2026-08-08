@@ -695,7 +695,7 @@ class RenderDiffGateTest(unittest.TestCase):
         cadr = (
             b"Fatal error: forced render crash\n"
             b"Crash log: /tmp/cadr-render-diff-abcdefgh/cadr/h\n"
-            b"ome/.cadr/crash/cadr-crash-3994918403-1601836-0.\nlog"
+            b"ome/.cadr/agent/crash/cadr-crash-3994918403-1601836-0.\nlog"
         )
         pi = (
             b"    at Object.crash (/tmp/cadr-render-diff-pi-74caa2649/"
@@ -704,9 +704,18 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         unrelated = (
             b"User text: /tmp/cadr-render-other-abcdefgh/cadr/h\n"
-            b"ome/.cadr/crash/cadr-crash-3994918403-1601836-0.\nlog"
+            b"ome/.cadr/agent/crash/cadr-crash-3994918403-1601836-0.\nlog"
+        )
+        dash_wrapped = (
+            b"Crash log: /tmp/cadr-render-diff-abcdefgh/cadr/home/.cadr/\n"
+            b"agent/crash/cadr-crash-3994918403-1601836-\n0.log"
         )
 
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(dash_wrapped, "cadr"),
+            b"Crash log: <HOME>/<PRODUCT_CONFIG>/crash/"
+            b"cadr-crash-<CRASH_ID>.log",
+        )
         self.assertEqual(
             RENDER_DIFF.normalized_screen(cadr, "cadr"),
             b"Fatal error: forced render crash\n"

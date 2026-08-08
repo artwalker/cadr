@@ -7,6 +7,18 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Changed
+
+- Aligned the user-level layout with the baseline: agent data (settings,
+  auth, models, sessions, themes, prompts, tools, bin, extensions, and
+  crash logs) now lives in `~/.cadr/agent/` instead of flat `~/.cadr/`,
+  with `CADR_CODING_AGENT_DIR` as the override; `~/.cadr/server/` stays at
+  the home root.  Startup automatically migrates a pre-agent-layer flat
+  layout by renaming the residents (preserving the `0600` auth mode),
+  refuses to choose when both layouts hold data, and skips when the
+  override is set.  All path decisions now derive from a single owner in
+  `cadr-core`, enforced by the code-organization gate.
+
 ### Added
 
 - Added the fourth parity ledger for visible presentation semantics, including

@@ -37,14 +37,14 @@
       "screenSha256": {
         "wide": {
           "pi": "2785ddf0a0fc3c41064f0418c3683ff018bc0b41da3104049ba4cf32d61b94b8",
-          "cadr": "5c6642f7234a30ecca1569033ce3eea081f4992e89bfc80dd19ceaa61534962a"
+          "cadr": "622678dc1a92001d55354b75a1d362ab25470ab0592ff360c1f3a1c8a341b395"
         },
         "narrow": {
           "pi": "a85cbc8a10fe8808b271d346cfea4a8e8e4908230993af5ea4cd0fca1adca483",
-          "cadr": "18cabd024ad0fa2f570f727b419210b2a7816cedbec5c0af7a50556cb787c563"
+          "cadr": "e3acacab1d4beb8f4f2eaade8917dfe68df87666f1be796bee09754238288270"
         }
       },
-      "note": "Package and config help preserve the baseline contract with cadr identity: the flattened global settings path ~/.cadr/settings.json replaces pi's ~/.pi/agent/settings.json and the cadr name replaces pi throughout (I04); in narrow the different path lengths shift wrap points; raw ANSI segmentation differs (I01)."
+      "note": "Package and config help preserve the baseline contract with cadr identity: the global settings path ~/.cadr/agent/settings.json replaces pi's ~/.pi/agent/settings.json with the same agent/ layer (Goal 18 layout alignment) and the cadr name replaces pi throughout (I04); the capture is plain stdout, so the only differences are those identity substitutions and the wrap points they shift in narrow."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -658,14 +658,14 @@
       "screenSha256": {
         "wide": {
           "pi": "9b9146c56e81efb8b328dd014332316f49aa23445b6f56070ce872d3461f3fd5",
-          "cadr": "c25ad42ceb2d34cbb3c7662c56fac50aab48ed45c53ffd10025a3e5734db8c04"
+          "cadr": "6de8d39be1d7f9828245c7073b6822c3a8a8bd703319155bf524d88f272ef633"
         },
         "narrow": {
           "pi": "403e76793037def1591c075ea97fa3ceb49115bc08ad95aa30c3fc1605529bd2",
-          "cadr": "16ef3aafaf1aaa9211d88fee77d448783997727e6a9c6212e6f9c98701717d1b"
+          "cadr": "b35b2ab453f343d1b5cbfb9a62b6f9736d3464ec351a0d292c6eec6ae94fdd33"
         }
       },
-      "note": "At config-selector-empty/process-exit [wide+narrow] Product-identity text differs exactly at '.pi', '.pi/settings.json', '~/.pi/agent/', '~/.pi/agent/settings.json' (I04); layout is identical and the raw ANSI update segmentation differs (I01)."
+      "note": "At config-selector-empty/process-exit [wide+narrow] product-identity text differs exactly at '.pi', '.pi/settings.json', and '~/.pi/agent/settings.json' -> '~/.cadr/agent/settings.json' (I04); both sides share the agent/ layer (Goal 18 layout alignment), the layout is otherwise identical, and the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "config-selector-state-sweep",
@@ -681,14 +681,14 @@
       "screenSha256": {
         "wide": {
           "pi": "fdaecd150eba9f2e3c9b1ae5ee0f54a6f73ecacdf30ea536e0f511c7dd64f858",
-          "cadr": "c07eea81d8a0ca4ee99e212b9621d77ea2877aec455ace255cde120c396195a4"
+          "cadr": "1d69c6b14db9116b7f2a69ef93a70e5b59d85dbc9200770f532091bd3912db25"
         },
         "narrow": {
           "pi": "b021d2a97174abc51d28d4a5089bec1e89da7e185c1c4712dd5674a823060b1c",
-          "cadr": "26809b247e1c7d3777ba98ed120e9d2d0eb983e9e8ecaf39e603360398a6a175"
+          "cadr": "a6a9c87b312cd5cc2d74bbf81fe0b709acc2a415dbe869b83d125cebe0bd28a7"
         }
       },
-      "note": "The config path label .cadr/settings.json (I04) is two cells longer than .pi/settings.json, so 'inherited global resources are dimmed' wraps after 'resources' on pi and one word earlier on cadr; the resume hint cursor row shifts accordingly. ANSI segmentation differs (I01)."
+      "note": "The config path label .cadr/settings.json (I04) is two cells longer than .pi/settings.json, so 'inherited global resources are dimmed' wraps one word earlier on cadr; the user scope line now shows ~/.cadr/agent/ matching pi's ~/.pi/agent/ shape (Goal 18 layout alignment, I04 name substitution); the resume hint cursor row shifts accordingly. ANSI segmentation differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -899,14 +899,14 @@
       "screenSha256": {
         "wide": {
           "pi": "b1feba317089d376d46a9155ee560ddb5431baea641a3eed41daf29062a234f2",
-          "cadr": "9eaec86807166acad192e1f995751544a775b336064034655f614073cc3e015a"
+          "cadr": "fbaf463fc203de3c1d1b9f479ca1c74711c965e4e03da798ceac5e173c2e38b7"
         },
         "narrow": {
           "pi": "4784059b1598366202c630a018afd1d7ba6e4de0d3d1f02ec28bda181abe2887",
-          "cadr": "ff2cb2326541cd7ea74f6ea20fa5109142c30228bf0c5d8164108587e65b93de"
+          "cadr": "20c631df1c451b29031c9d61c0a49ea71a618d8ab07124b4137ae157801ac286"
         }
       },
-      "note": "At fatal-crash/fatal-crash [wide+narrow] the crash fires from a driver-file trigger after the settled footer sync, so the capture is deterministic across runs; cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump (I02); the settled footer shows usage and model exactly like pi; banner identity follows I04 and ANSI segmentation differs (I01)."
+      "note": "At fatal-crash/fatal-crash [wide+narrow] the crash fires from a driver-file trigger after the settled footer sync, so the capture is deterministic across runs; cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump (I02); the settled footer shows usage and model exactly like pi; banner identity follows I04 and ANSI segmentation differs (I01). The crash log now lands under the agent layer (~/.cadr/agent/crash/), which the fixed normalization maps to the same <PRODUCT_CONFIG> placeholder."
     },
     {
       "scenario": "local-status-sweep",

@@ -253,7 +253,7 @@
       (:config
        (format
         stream
-        "Open the resource configuration TUI to enable or disable package resources.~%Without -l, starts in global settings (~~/.~A/settings.json).~%Press Tab in the TUI to switch between global and project-local modes.~%~%Options:~%  -l, --local       Edit project overrides (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command with -l~%  -na, --no-approve Ignore project-local files for this command with -l~%"
+        "Open the resource configuration TUI to enable or disable package resources.~%Without -l, starts in global settings (~~/.~A/agent/settings.json).~%Press Tab in the TUI to switch between global and project-local modes.~%~%Options:~%  -l, --local       Edit project overrides (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command with -l~%  -na, --no-approve Ignore project-local files for this command with -l~%"
         slug slug)))
     (terpri stream)
     (finish-output stream)))
@@ -681,7 +681,7 @@
              (uiop:ensure-directory-pathname
               agent-directory))
            (project-config
-             (merge-pathnames ".cadr/" cwd))
+             (cadr-core:project-config-directory cwd))
            (global-settings
              (merge-pathnames
               "settings.json" agent))

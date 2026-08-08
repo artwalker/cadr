@@ -11,7 +11,8 @@
                              (:file "cancellation")
                              (:file "atomic-file")
                              (:file "redacted-print")
-                             (:file "time"))))
+                             (:file "time")
+                             (:file "paths"))))
   :in-order-to ((test-op (test-op "cadr-core/tests"))))
 
 (asdf:defsystem "cadr-core/tests"

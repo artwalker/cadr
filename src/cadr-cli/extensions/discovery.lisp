@@ -34,9 +34,7 @@
   (package-names nil :type list))
 
 (defun default-extension-directory ()
-  (merge-pathnames
-   ".cadr/extensions/"
-   (user-homedir-pathname)))
+  (cadr-core:agent-extensions-directory))
 
 (defun extension-directory-id (directory)
   (let ((parts
@@ -195,8 +193,9 @@
              (nreverse package-project)
              (discover-extensions-in-directory
               (merge-pathnames
-               ".cadr/extensions/"
-               (cli-extension-manager-cwd manager))
+               "extensions/"
+               (cadr-core:project-config-directory
+                (cli-extension-manager-cwd manager)))
               :project 1)))
           (unless
               (cli-extension-manager-no-discovery-p

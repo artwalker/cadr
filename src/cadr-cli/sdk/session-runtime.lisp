@@ -24,8 +24,7 @@
     (&key
        (cwd (uiop:getcwd))
        (agent-directory
-         (merge-pathnames
-          ".cadr/" (user-homedir-pathname)))
+         (cadr-core:coding-agent-directory))
        model-runtime settings-manager resource-loader)
   (let* ((resolved-cwd
            (uiop:ensure-directory-pathname
@@ -42,8 +41,8 @@
                  "settings.json" resolved-agent)
                 :project-path
                 (merge-pathnames
-                 ".cadr/settings.json"
-                 resolved-cwd))))
+                 "settings.json"
+                 (cadr-core:project-config-directory resolved-cwd)))))
          (runtime
            (or model-runtime
                (make-sdk-model-runtime
@@ -215,8 +214,7 @@
     (factory &key
        (cwd (uiop:getcwd))
        (agent-directory
-         (merge-pathnames
-          ".cadr/" (user-homedir-pathname)))
+         (cadr-core:coding-agent-directory))
        session-manager session-start-event)
   (let* ((resolved-cwd
            (uiop:ensure-directory-pathname

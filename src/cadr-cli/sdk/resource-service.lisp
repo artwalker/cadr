@@ -80,8 +80,7 @@
     (&key
        (cwd (uiop:getcwd))
        (agent-directory
-         (merge-pathnames
-          ".cadr/" (user-homedir-pathname)))
+         (cadr-core:coding-agent-directory))
        settings-manager
        additional-extension-paths
        extension-factories
@@ -113,8 +112,8 @@
                  "settings.json" resolved-agent)
                 :project-path
                 (merge-pathnames
-                 ".cadr/settings.json"
-                 resolved-cwd)
+                 "settings.json"
+                 (cadr-core:project-config-directory resolved-cwd))
                 :project-trusted-p
                 project-trusted-p)))
          (extension-manager

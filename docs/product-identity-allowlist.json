@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 353,
+  "expected_findings": 354,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -113,6 +113,14 @@
       "line": "| `PI_CACHE_RETENTION` | `CADR_CACHE_RETENTION` |",
       "occurrences": 1,
       "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "matching the baseline `~/.pi/agent/` layout; `~/.cadr/server/` stays at",
+      "occurrences": 1,
+      "reason": "Documents the baseline layout Cadr now matches; reference to the immutable pi path is the parity statement, not Cadr identity."
     },
     {
       "path": "README.md",
@@ -1414,7 +1422,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "    agent_dir = home / (\".pi/agent\" if side == \"pi\" else \".cadr\")",
+      "line": "    agent_dir = home / (\".pi/agent\" if side == \"pi\" else \".cadr/agent\")",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },

@@ -312,7 +312,8 @@
              "settings.json" agent-directory)
             :project-path
             (merge-pathnames
-             ".cadr/settings.json" cwd)
+             "settings.json"
+             (cadr-core:project-config-directory cwd))
             :project-trusted-p project-trusted-p))
          (model-registry
            (make-model-registry
@@ -462,14 +463,15 @@
             "packages/" agent-directory))
          (package-project-root
            (merge-pathnames
-            ".cadr/packages/" cwd))
+            "packages/"
+            (cadr-core:project-config-directory cwd)))
          (package-records
            (materialize-package-records
             (configured-package-records
              settings-manager
              :global-base agent-directory
              :project-base
-             (merge-pathnames ".cadr/" cwd))
+             (cadr-core:project-config-directory cwd))
             package-global-root
             package-project-root))
          (package-resources
@@ -1025,7 +1027,7 @@
               settings-manager
               :global-base agent-directory
               :project-base
-              (merge-pathnames ".cadr/" cwd))
+              (cadr-core:project-config-directory cwd))
              package-global-root
              package-project-root)
             package-resources

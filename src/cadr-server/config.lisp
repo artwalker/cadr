@@ -14,9 +14,7 @@
         "server/"
         (or (environment-pathname
              "CADR_CONFIG_DIR")
-            (merge-pathnames
-             ".cadr/"
-             (user-homedir-pathname)))))))
+            (cadr-core:config-home-directory))))))
 
 (defun server-auth-path
     (&optional (directory (server-directory)))

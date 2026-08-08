@@ -169,7 +169,7 @@ Service behavior is explicit:
 
 Equivalent command-line options are `--provider`, `--model`, and
 `--base-url`. Per-provider settings may also be stored in
-`~/.cadr/config.json`:
+`~/.cadr/agent/config.json`:
 
 ```json
 {
@@ -183,7 +183,7 @@ Equivalent command-line options are `--provider`, `--model`, and
 ```
 
 Interactive keybindings can be overridden in the `keybindings` object of
-`~/.cadr/settings.json`; a trusted project's `.cadr/settings.json` can override
+`~/.cadr/agent/settings.json`; a trusted project's `.cadr/settings.json` can override
 the same action ids. A value may be one key or an array of keys, and `/reload`
 applies edits without restarting the session. For example, when Windows
 Terminal owns `Alt+Enter`, move follow-up queueing to `Ctrl+G` while retaining
@@ -224,7 +224,7 @@ the line REPL. `--print`/`--mode text` prints only the final answer,
 original pi command/response/event JSONL protocol. Without an explicit mode,
 non-TTY input or output selects one-shot text mode.
 
-Sessions are parent-linked JSONL trees under `~/.cadr/sessions/`. Interactive
+Sessions are parent-linked JSONL trees under `~/.cadr/agent/sessions/`. Interactive
 session navigation uses `/resume`, `/fork`, and `/tree`; the remaining slash
 command surface follows the original pi command list. `--session` accepts a
 session file or full/partial ID. After a normal interactive exit, Cadr prints
@@ -292,7 +292,7 @@ headless device-code methods; the device flow displays the verification URL
 and code while polling.
 
 The PKCE callback listens once on `127.0.0.1:1455`. Credentials are stored in
-`~/.cadr/auth.json` under the baseline `openai-codex` provider identity with
+`~/.cadr/agent/auth.json` under the baseline `openai-codex` provider identity with
 mode `0600`. A successful login selects and persists that provider's default
 model when the previous route had no usable auth or belonged to another
 provider, so the same session and the next plain `./cadr` invocation can
@@ -331,6 +331,15 @@ Non-interactive startup refuses automatic migration and prints an exact
 manual `mv` command. `--yolo` never authorizes migration and remains
 unsupported by the core CLI.
 
+Agent data lives one level down in `~/.cadr/agent/` (settings, auth,
+models, sessions, themes, prompts, tools, bin, extensions, crash logs),
+matching the baseline `~/.pi/agent/` layout; `~/.cadr/server/` stays at
+the home root. `CADR_CODING_AGENT_DIR` overrides the agent directory.
+Installations from before the `agent/` layer are migrated automatically:
+startup moves the flat `~/.cadr/` residents into `~/.cadr/agent/` (a
+rename, preserving the `0600` auth mode), refuses to choose when both
+layouts hold data, and skips entirely when the override is set.
+
 Legacy `PI_CL_PROVIDER`, `PI_CL_MODEL`, and `PI_CL_BASE_URL` were readable only
 through the `0.1.x` transition release. Support is removed in `0.2.0`; new
 configuration must use `CADR_PROVIDER`, `CADR_MODEL`, and `CADR_BASE_URL`.
@@ -362,7 +371,7 @@ Discovery order is:
 
 1. repeatable `--extension <path>` entries, last entry winning;
 2. `./.cadr/extensions/`;
-3. `~/.cadr/extensions/`.
+3. `~/.cadr/agent/extensions/`.
 
 The stable extension interface is frozen in `CADR-AGENT`. Its registration
 macros are:
@@ -452,7 +461,7 @@ accidental name collisions; it is not a security boundary.
 
 An otherwise unhandled runtime condition is caught before stack unwinding.
 The terminal receives only the condition type, a bounded message, and the path
-to a diagnostic under `~/.cadr/crash/`; it never receives a Lisp backtrace or
+to a diagnostic under `~/.cadr/agent/crash/`; it never receives a Lisp backtrace or
 an object dump. Crash logs are created with mode `0600` and redact API keys,
 OAuth access/refresh tokens, authorization headers, and other recognized
 credential fields. Credential-bearing runtime objects also have redacted

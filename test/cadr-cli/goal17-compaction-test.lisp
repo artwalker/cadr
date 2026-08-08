@@ -1226,7 +1226,7 @@
         (is (search fragment list)))
       (dolist (fragment
                '("Open the resource configuration TUI to enable or disable package resources."
-                 "Without -l, starts in global settings (~/.cadr/settings.json)."
+                 "Without -l, starts in global settings (~/.cadr/agent/settings.json)."
                  "Press Tab in the TUI to switch between global and project-local modes."
                  "-l, --local       Edit project overrides (.cadr/settings.json)"))
         (is (search fragment config))))))

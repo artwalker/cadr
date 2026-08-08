@@ -33,7 +33,7 @@
            (merge-pathnames "workspace/" directory))
          (isolated-auth
            (merge-pathnames
-            ".cadr/auth.json" home))
+            ".cadr/agent/auth.json" home))
          (original-home
            (uiop:getenv "HOME")))
     (ensure-directories-exist

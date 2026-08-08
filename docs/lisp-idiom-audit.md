@@ -8,14 +8,14 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=276 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=277 systems=9 axes=6 rewrite=1 keep=8 -->
 
 The audited tree contains 276 Lisp files and 106,779 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `cadr-core` | 6 | 359 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
+| `cadr-core` | 7 | 466 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
 | `cadr-ai` | 61 | 24,833 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
 | `cadr-agent` | 36 | 15,962 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
 | `cadr-cli` | 111 | 43,276 | 67 | 18 | 6 | 28 | 0 | 85 | 2 | 0 |
@@ -153,7 +153,7 @@ as permanent:
 | `src/cadr-agent/summarization.lisp` | one non-bypassable owner for retry classification, abort-aware backoff, cache isolation, and fresh routing identity across every summary request | keep as a plain function over the closed agent/request protocol; `check-summarization-choke-point.sh` proves all compaction, split-turn, and branch call sites pass through it, so a macro or class would add syntax without another invariant |
 | `src/cadr-agent/extensions/*.lisp` | separate context/UI contracts, API copying/events, registration, snapshots, rendering, provider projection, commands/templates, and lifecycle dispatch | keep the frozen macro/event surface explicit; preserve B3 cancellation and injected output ownership rather than introducing a second host abstraction |
 | `src/cadr-tui/threads.lisp` | bounded join/forced-stop cleanup for terminal workers | keep as one function over SBCL's closed thread primitive; wrapping threads in a new class would not remove another invariant |
-| `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time}.lisp` | one bottom-layer owner for five repeated failure-safety decisions | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |
+| `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time,paths}.lisp` | one bottom-layer owner for the repeated failure-safety decisions and the user-level path layout | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |
 
 The module rows above apply to every Lisp file below each listed `src/`
 system, not a sampled subset.  The executable gate recounts that source set,

@@ -1,7 +1,7 @@
 (in-package #:cadr-cli)
 
 (defun cadr-bin-directory ()
-  (merge-pathnames ".cadr/bin/" (user-homedir-pathname)))
+  (cadr-core:agent-bin-directory))
 
 (defun tool-binary-name (tool)
   (ecase tool (:fd "fd") (:rg "rg")))

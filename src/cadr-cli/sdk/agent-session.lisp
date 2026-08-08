@@ -297,8 +297,7 @@
     (&key
        (cwd (uiop:getcwd))
        (agent-directory
-         (merge-pathnames
-          ".cadr/" (user-homedir-pathname)))
+         (cadr-core:coding-agent-directory))
        model-runtime model provider thinking-level
        scoped-models
        no-tools tools exclude-tools custom-tools
@@ -321,8 +320,8 @@
                  "settings.json" resolved-agent)
                 :project-path
                 (merge-pathnames
-                 ".cadr/settings.json"
-                 resolved-cwd))))
+                 "settings.json"
+                 (cadr-core:project-config-directory resolved-cwd)))))
          (runtime
            (or model-runtime
                (make-sdk-model-runtime

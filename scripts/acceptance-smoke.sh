@@ -22,7 +22,7 @@ HOME="$SMOKE_ROOT/home" "$CADR" --help >/dev/null
 )
 
 SESSION_COUNT="$(
-  find "$SMOKE_ROOT/home/.cadr/sessions" \
+  find "$SMOKE_ROOT/home/.cadr/agent/sessions" \
     -maxdepth 1 -type f -name '*.jsonl' | wc -l
 )"
 
@@ -32,7 +32,7 @@ if [ "$SESSION_COUNT" -ne 0 ]; then
 fi
 
 SESSION_ID="acceptance-seed"
-SESSION_PATH="$SMOKE_ROOT/home/.cadr/sessions/$SESSION_ID.jsonl"
+SESSION_PATH="$SMOKE_ROOT/home/.cadr/agent/sessions/$SESSION_ID.jsonl"
 PROJECT_CWD="$SMOKE_ROOT/project/"
 printf '%s\n' \
   "{\"type\":\"session\",\"version\":3,\"id\":\"$SESSION_ID\",\"timestamp\":\"2026-07-30T00:00:00.000Z\",\"cwd\":\"$PROJECT_CWD\"}" \
@@ -46,7 +46,7 @@ printf '%s\n' \
 )
 
 CONTINUE_SESSION_COUNT="$(
-  find "$SMOKE_ROOT/home/.cadr/sessions" \
+  find "$SMOKE_ROOT/home/.cadr/agent/sessions" \
     -maxdepth 1 -type f -name '*.jsonl' | wc -l
 )"
 
@@ -63,7 +63,7 @@ fi
 )
 
 RESUME_SESSION_COUNT="$(
-  find "$SMOKE_ROOT/home/.cadr/sessions" \
+  find "$SMOKE_ROOT/home/.cadr/agent/sessions" \
     -maxdepth 1 -type f -name '*.jsonl' | wc -l
 )"
 
