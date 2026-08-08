@@ -1,4 +1,4 @@
-import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 import type { ToolResultMessage } from "@earendil-works/pi-ai";
 import { fauxAssistantMessage, fauxThinking, fauxToolCall, registerFauxProvider } from "@earendil-works/pi-ai/compat";
@@ -804,6 +804,15 @@ async function main(): Promise<void> {
 			setTimeout(() => {
 				throw new Error("render-diff crash sentinel");
 			}, scenario.setup.crashAfterMs);
+		}
+		if (readyPath) {
+			const crashTrigger = `${readyPath}.crash`;
+			const crashPoll = setInterval(() => {
+				if (existsSync(crashTrigger)) {
+					clearInterval(crashPoll);
+					throw new Error("render-diff crash sentinel");
+				}
+			}, 20);
 		}
 		if (scenario.setup?.extensionSurfaces) {
 			const extensionUi = mode as unknown as {

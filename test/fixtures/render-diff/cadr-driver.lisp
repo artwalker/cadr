@@ -1158,6 +1158,22 @@
                 (lambda ()
                   (error "render-diff crash sentinel"))))
              :name "render-diff-crash-trigger"))
+         (let ((crash-trigger
+                 (concatenate
+                  'string
+                  (uiop:getenv "RENDER_DIFF_READY_PATH")
+                  ".crash")))
+           (sb-thread:make-thread
+            (lambda ()
+              (loop
+                (when (probe-file crash-trigger)
+                  (sb-thread:interrupt-thread
+                   main-thread
+                   (lambda ()
+                     (error "render-diff crash sentinel")))
+                  (return))
+                (sleep 0.02)))
+            :name "render-diff-crash-watch"))
           (let ((setup (json-get scenario "setup")))
             (when (json-key-present-p setup "hyperlinks")
               (let ((capabilities

@@ -898,15 +898,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "072d2ab95414916bb91eb33f717ec0099de0719ab7d8699a9aa4ca6c60604e38",
-          "cadr": "6a30964d5b70aa700ebdf555075d53d631eb5b7e3edffe6b63dd8223109bc388"
+          "pi": "b1feba317089d376d46a9155ee560ddb5431baea641a3eed41daf29062a234f2",
+          "cadr": "9eaec86807166acad192e1f995751544a775b336064034655f614073cc3e015a"
         },
         "narrow": {
-          "pi": "8997e9bca4780711d7a5b2ff69b027894f74c734da9cf95d19fa5284f7a552b3",
-          "cadr": "f2da9813cd8318efba019ec880400a52fc591d9db26039ac10b8e5a21b940acd"
+          "pi": "4784059b1598366202c630a018afd1d7ba6e4de0d3d1f02ec28bda181abe2887",
+          "cadr": "ff2cb2326541cd7ea74f6ea20fa5109142c30228bf0c5d8164108587e65b93de"
         }
       },
-      "note": "cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump with its driver frame lines (I02); the settled footer shows usage and model exactly like pi after the faux scheduling alignment; banner identity follows I04 and ANSI segmentation differs (I01)."
+      "note": "At fatal-crash/fatal-crash [wide+narrow] the crash fires from a driver-file trigger after the settled footer sync, so the capture is deterministic across runs; cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump (I02); the settled footer shows usage and model exactly like pi; banner identity follows I04 and ANSI segmentation differs (I01)."
     },
     {
       "scenario": "local-status-sweep",

@@ -914,12 +914,13 @@
       "id": "fatal-crash",
       "group": "errors",
       "coverage": ["fatal-crash"],
-      "description": "Product fatal boundary after the terminal has entered interactive mode.",
-      "setup": { "crashAfterMs": 900 },
+      "description": "Product fatal boundary after the terminal has entered interactive mode and settled.",
       "expectedExit": 1,
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
+        { "waitFor": "0.0%/128k" },
+        { "triggerCrash": true },
         { "waitForSide": { "pi": "render-diff crash sentinel", "cadr": "cadr exiting due to uncaught SIMPLE-ERROR" } },
         { "checkpoint": "fatal-crash" }
       ]

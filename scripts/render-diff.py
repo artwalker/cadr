@@ -1765,6 +1765,18 @@ def run_actions(
                         max(0.0, min(0.01, deadline - time.monotonic())),
                         process,
                     )
+            elif "triggerCrash" in action:
+                if action["triggerCrash"] is not True or ready_path is None:
+                    raise HarnessFailure(
+                        "triggerCrash requires the driver ready channel"
+                    )
+                # Both drivers poll for this file and raise the sentinel on
+                # their own main thread; a signal cannot reach the real
+                # process through the tsx launcher, and SBCL reserves the
+                # user signals for its own runtime.
+                Path(str(ready_path) + ".crash").write_text(
+                    "crash\n", encoding="ascii"
+                )
             elif "waitForAgentSettled" in action:
                 if action["waitForAgentSettled"] is not True or ready_path is None:
                     raise HarnessFailure(
