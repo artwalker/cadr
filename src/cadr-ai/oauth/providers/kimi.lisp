@@ -40,7 +40,8 @@
                ("grant_type" . "urn:ietf:params:oauth:grant-type:device_code"))))
           device
           '("authorization_pending") '("slow_down")
-          '("access_denied") '("expired_token")))))))
+          '("access_denied") '("expired_token")
+          :interaction interaction))))))
 
 (defun refresh-kimi-oauth-credential (credential &optional environment)
   (multiple-value-bind (response status)

@@ -114,7 +114,8 @@
                          ("grant_type" . "urn:ietf:params:oauth:grant-type:device_code"))))
                     device
                     '("authorization_pending") '("slow_down")
-                    '("access_denied") '("expired_token")))
+                    '("access_denied") '("expired_token")
+                    :interaction interaction))
                  (github-token
                    (required-oauth-string token-response "access_token" "GitHub")))
             (runtime-auth-interaction-notify

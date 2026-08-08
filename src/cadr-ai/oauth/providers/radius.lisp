@@ -55,7 +55,8 @@
              ("device_code" . ,(getf device :device-code)))))
         device
         '("authorization_pending") '("slow_down")
-        '("access_denied") '("expired_token"))
+        '("access_denied") '("expired_token")
+        :interaction interaction)
        :expiry-skew-milliseconds 60000))))
 
 (defun login-radius-browser-oauth (gateway interaction)
@@ -88,8 +89,15 @@
          `(("grant_type" . "authorization_code")
            ("client_id" . ,+radius-oauth-client-id+)
            ("redirect_uri" . "http://127.0.0.1:1456/oauth/callback")
-           ("code" . ,(wait-for-oauth-code
-                        state 1456 "/oauth/callback" "Radius"))
+           ("code" . ,(let ((code
+                              (wait-for-oauth-code
+                               state 1456 "/oauth/callback" "Radius"
+                               (lambda ()
+                                 (runtime-auth-interaction-aborted-p
+                                  interaction)))))
+                        (unless code
+                          (signal-device-authorization-cancelled))
+                        code))
            ("code_verifier" . ,verifier)))))))
 
 (defun login-radius-oauth (gateway interaction)

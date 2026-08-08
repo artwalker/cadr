@@ -111,6 +111,14 @@ zero such exclusions. This includes secondary and tertiary states such as auth t
 -> provider -> OAuth/API-key dialogs, session rename/delete, tree label,
 settings submenus, and extension custom UI.
 
+Every scenario that exercises a cancel path must end with one post-cancel
+interaction: after the cancel checkpoint, send a message and assert the faux
+provider's response renders (both sides). A screen checkpoint alone cannot see
+a corrupted state machine — the goal 18 login deadlock left the screen exact
+while the agent never consumed input again; only the follow-up message exposed
+it. The three authentication cancel scenarios (`overlays-auth-oauth`,
+`overlays-auth-device-code`, `overlays-auth-api-key`) set the pattern.
+
 The complete tier also has a source-derived presentation-branch gate. The
 checked fixed-baseline inventory contains 707 sink sites and 1,228 reachable
 branches from 210 parsed TypeScript files plus nine terminal assets. It
@@ -131,9 +139,9 @@ whole-branch proof, but it cannot change or waive its inventory.
 | `wide` | 100 x 32 | Normal development terminal with room to expose spacing and footer placement. |
 | `narrow` | 48 x 20 | Forces wrapping, compact help, overlay clipping, and wide-character accounting. |
 
-The manifest contains 37 scripted scenarios. The 31-scenario core tier has 83
-named checkpoints and 101 coverage labels; the six full-only branch sweeps
-raise the full tier to 93 checkpoints and 122 coverage labels:
+The manifest contains 37 scripted scenarios. The 31-scenario core tier has 86
+named checkpoints and 104 coverage labels; the six full-only branch sweeps
+raise the full tier to 96 checkpoints and 125 coverage labels:
 fresh/existing/untrusted startup; plain/Markdown/code/CJK/emoji conversation;
 all seven tools; missing-read/nonzero/timeout errors; every required core and
 authentication overlay; streaming abort and both busy queues; provider and

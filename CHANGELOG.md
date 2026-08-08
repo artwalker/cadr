@@ -27,6 +27,12 @@ tag/Release step.
 
 ### Fixed
 
+- Fixed ESC-cancelling an xAI, Kimi, GitHub Copilot, or Radius device-code
+  login never reaching the shared device poller's cancellation flag, so the
+  login worker ran until token expiry and every later message stalled in the
+  Steering queue; the flows now poll through `poll-device-authorization`'s
+  `cancelled-p` like the OpenAI Codex route, and each cancel-path render-diff
+  scenario ends with a post-cancel message exchange.
 - Cancelling OpenAI or Anthropic login now stops the loopback/manual workers,
   releases the listener, clears the working state, and returns to the editor.
 - Interactive cleanup now bounds every background-thread join and forcibly

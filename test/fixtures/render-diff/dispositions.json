@@ -1072,10 +1072,9 @@
     },
     {
       "scenario": "overlays-auth-api-key",
-      "checkpoint": "process-exit",
+      "checkpoint": "api-key-post-cancel",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -1083,15 +1082,63 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
-          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
-        },
-        "narrow": {
-          "pi": "6ac598b14ebae25c5c011ab69526cdc21ec7dea86e6a09ffbd97b0810f207fd6",
-          "cadr": "bef2fc5a9980165b95cd04c1cbb2b70c63ec84e4791ff4c50121b1f3049a3db5"
+          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-api-key/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] the API-key login dialog cancel is followed by three probe turns that all dispatch and render exactly as pi (probe lines, replies, editor, and footer match); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-api-key",
+      "checkpoint": "api-key-post-cancel",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
+        }
+      },
+      "note": "At overlays-auth-api-key/api-key-post-cancel [narrow] the API-key login dialog cancel is followed by three probe turns that all dispatch and render exactly as pi; both grids have scrolled past the startup banner, so the screens are byte-identical and only the raw ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-api-key",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
+        }
+      },
+      "note": "At overlays-auth-api-key/process-exit [wide] the teardown after the post-cancel conversation matches pi (resume hint and exit state identical); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-api-key",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
+        }
+      },
+      "note": "At overlays-auth-api-key/process-exit [narrow] the teardown after the post-cancel conversation is byte-identical to pi (banner scrolled out of both viewports, resume hint and exit state match); only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1164,10 +1211,9 @@
     },
     {
       "scenario": "overlays-auth-oauth",
-      "checkpoint": "process-exit",
+      "checkpoint": "login-post-cancel",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -1175,15 +1221,63 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
-          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
-        },
-        "narrow": {
-          "pi": "9277b4f1b8164d7457e29a82263bb8120b3d6ca5dcad9764aaf6de1148fcd866",
-          "cadr": "28595cecb2e431781c9c785112e47889298955a6f646751381d29e12973c8108"
+          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-oauth/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At overlays-auth-oauth/login-post-cancel [wide] the PKCE OAuth login cancel is followed by three probe turns that all dispatch and render exactly as pi (probe lines, replies, editor, and footer match); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "login-post-cancel",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
+        }
+      },
+      "note": "At overlays-auth-oauth/login-post-cancel [narrow] the PKCE OAuth login cancel is followed by three probe turns that all dispatch and render exactly as pi; both grids have scrolled past the startup banner, so the screens are byte-identical and only the raw ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
+        }
+      },
+      "note": "At overlays-auth-oauth/process-exit [wide] the teardown after the post-cancel conversation matches pi (resume hint and exit state identical); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-oauth",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
+        }
+      },
+      "note": "At overlays-auth-oauth/process-exit [narrow] the teardown after the post-cancel conversation is byte-identical to pi (banner scrolled out of both viewports, resume hint and exit state match); only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -1233,10 +1327,9 @@
     },
     {
       "scenario": "overlays-auth-device-code",
-      "checkpoint": "process-exit",
+      "checkpoint": "login-device-post-cancel",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -1244,15 +1337,63 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
-          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
-        },
-        "narrow": {
-          "pi": "9c5e1a2c6bdfd6f04c1e4dd68e54f6467da28d2e9b758ad2700b6c8cb8050ffd",
-          "cadr": "bef2fc5a9980165b95cd04c1cbb2b70c63ec84e4791ff4c50121b1f3049a3db5"
+          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-device-code/process-exit [wide+narrow] the post-cancel teardown matches pi; in narrow the two-cell-longer cadr banner identity (I04) wraps one row taller, so the 'Press ctrl+o to show full startup help and' line stays visible and the exit cursor sits one row lower. ANSI segmentation differs (I01)."
+      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] the device-code login cancel is followed by three probe turns that all dispatch and render exactly as pi (probe lines, replies, editor, and footer match); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-device-code",
+      "checkpoint": "login-device-post-cancel",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c",
+          "cadr": "26b6d95537b829a2f8dc61817151d17365abc83dcad4d41ca4f465d4b107ab4c"
+        }
+      },
+      "note": "At overlays-auth-device-code/login-device-post-cancel [narrow] the device-code login cancel is followed by three probe turns that all dispatch and render exactly as pi; both grids have scrolled past the startup banner, so the screens are byte-identical and only the raw ANSI segmentation differs (I01)."
+    },
+    {
+      "scenario": "overlays-auth-device-code",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
+        }
+      },
+      "note": "At overlays-auth-device-code/process-exit [wide] the teardown after the post-cancel conversation matches pi (resume hint and exit state identical); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "overlays-auth-device-code",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa",
+          "cadr": "94752ddab514976fdaf92312acd1cf7db25a8de497e783fc6201bfe024c37dfa"
+        }
+      },
+      "note": "At overlays-auth-device-code/process-exit [narrow] the teardown after the post-cancel conversation is byte-identical to pi (banner scrolled out of both viewports, resume hint and exit state match); only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "overlays-core",

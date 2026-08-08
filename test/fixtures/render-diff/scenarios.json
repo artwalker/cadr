@@ -597,9 +597,22 @@
     {
       "id": "overlays-auth-oauth",
       "group": "overlays",
-      "coverage": ["overlay-login-provider-method", "overlay-login-dialog"],
+      "coverage": ["overlay-login-provider-method", "overlay-login-dialog", "overlay-login-dialog-post-cancel"],
       "description": "Provider-specific authentication method followed by its OAuth dialog.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-cancel message delivered." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Second post-cancel reply." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Third post-cancel reply." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
@@ -607,15 +620,36 @@
         { "waitFor": "Select authentication method for Render Auth:" }, { "checkpoint": "auth-method-provider" },
         { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "waitFor": "Paste the authorization code" }, { "waitFor": "to cancel" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
         { "pauseMs": 100 }, { "checkpoint": "login-cancelled" },
-        { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+        { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "post-cancel probe" }, { "send": "enter" },
+        { "waitFor": "Post-cancel message delivered." },
+        { "sendText": "second probe" }, { "send": "enter" },
+        { "waitFor": "Second post-cancel reply." },
+        { "sendText": "third probe" }, { "send": "enter" },
+        { "waitFor": "Third post-cancel reply." }, { "waitForAgentSettled": true },
+        { "checkpoint": "login-post-cancel" },
+        { "send": "ctrl+d" }
       ]
     },
     {
       "id": "overlays-auth-device-code",
       "group": "overlays",
-      "coverage": ["overlay-login-dialog-device-code", "overlay-login-dialog-device-code-cancel"],
+      "coverage": ["overlay-login-dialog-device-code", "overlay-login-dialog-device-code-cancel", "overlay-login-dialog-device-code-post-cancel"],
       "description": "Device-code OAuth login dialog: title, URL, Enter code in warning, waiting line, cancel hint, then escape cancellation.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-cancel message delivered." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Second post-cancel reply." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Third post-cancel reply." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login render-device" }, { "send": "enter" }, { "pauseMs": 300 },
@@ -625,21 +659,49 @@
         { "waitFor": "Login to Render Device" },
         { "waitFor": "Enter code: RENDER-42" }, { "waitFor": "Waiting for authentication..." }, { "waitFor": "to cancel" }, { "checkpoint": "login-device-code" },
         { "send": "escape" }, { "pauseMs": 100 }, { "checkpoint": "login-device-cancelled" },
+        { "sendText": "post-cancel probe" }, { "send": "enter" },
+        { "waitFor": "Post-cancel message delivered." },
+        { "sendText": "second probe" }, { "send": "enter" },
+        { "waitFor": "Second post-cancel reply." },
+        { "sendText": "third probe" }, { "send": "enter" },
+        { "waitFor": "Third post-cancel reply." }, { "waitForAgentSettled": true },
+        { "checkpoint": "login-device-post-cancel" },
         { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
       ]
     },
     {
       "id": "overlays-auth-api-key",
       "group": "overlays",
-      "coverage": ["overlay-login-api-key"],
+      "coverage": ["overlay-login-api-key", "overlay-login-api-key-post-cancel"],
       "description": "Provider-specific API-key entry dialog.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-cancel message delivered." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Second post-cancel reply." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Third post-cancel reply." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
         { "sendSide": { "pi": "enter" } },
         { "waitFor": "Select authentication method for Render Auth:" }, { "send": "down" }, { "pauseMs": 50 }, { "send": "enter" }, { "waitFor": "Enter API key" }, { "checkpoint": "api-key-input" },
-        { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+        { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "post-cancel probe" }, { "send": "enter" },
+        { "waitFor": "Post-cancel message delivered." },
+        { "sendText": "second probe" }, { "send": "enter" },
+        { "waitFor": "Second post-cancel reply." },
+        { "sendText": "third probe" }, { "send": "enter" },
+        { "waitFor": "Third post-cancel reply." }, { "waitForAgentSettled": true },
+        { "checkpoint": "api-key-post-cancel" },
+        { "send": "ctrl+d" }
       ]
     },
     {

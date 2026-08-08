@@ -89,39 +89,51 @@
 
 (defun oauth-poll-token
     (poll device pending-errors slow-down-errors denied-errors expired-errors
-     &key (complete-field "access_token"))
-  (poll-device-authorization
-   (lambda ()
-     (multiple-value-bind (object status) (funcall poll)
-       (if (and (<= 200 status 299)
-                (non-empty-string-p
-                 (json-get object complete-field)))
-           (list :status :complete :value object)
-           (let ((code (json-get object "error")))
-             (cond
-               ((member code pending-errors :test #'string=)
-                (list :status :pending))
-               ((member code slow-down-errors :test #'string=)
-                (list :status :slow-down
-                      :interval (json-get object "interval")))
-               ((member code denied-errors :test #'string=)
-                (list :status :denied))
-               ((member code expired-errors :test #'string=)
-                (list :status :expired))
-               (t
-                (error 'authentication-error
-                       :message
-                       (format nil "OAuth device token request failed (HTTP ~D)~A"
-                               status
-                               (let ((detail
-                                       (oauth-response-error-detail object)))
-                                 (if detail
-                                     (format nil ": ~A" detail)
-                                     ""))))))))))
-   :interval (or (getf device :interval) 5)
-   :expires-in (getf device :expires-in)
-   :wait-before-first-poll-p t
-   :sleep-function *oauth-flow-sleep-function*))
+     &key (complete-field "access_token") interaction)
+  ;; The interaction owns the cancellation signal; every device flow polls
+  ;; through the shared poller's cancelled-p mechanism, and the same flag
+  ;; aborts an in-flight HTTP read so a cancel cannot strand the worker.
+  (let ((cancelled-p
+          (and interaction
+               (lambda ()
+                 (runtime-auth-interaction-aborted-p interaction)))))
+    (handler-case
+        (let ((*native-http-abort-p* cancelled-p))
+          (poll-device-authorization
+           (lambda ()
+             (multiple-value-bind (object status) (funcall poll)
+               (if (and (<= 200 status 299)
+                        (non-empty-string-p
+                         (json-get object complete-field)))
+                   (list :status :complete :value object)
+                   (let ((code (json-get object "error")))
+                     (cond
+                       ((member code pending-errors :test #'string=)
+                        (list :status :pending))
+                       ((member code slow-down-errors :test #'string=)
+                        (list :status :slow-down
+                              :interval (json-get object "interval")))
+                       ((member code denied-errors :test #'string=)
+                        (list :status :denied))
+                       ((member code expired-errors :test #'string=)
+                        (list :status :expired))
+                       (t
+                        (error 'authentication-error
+                               :message
+                               (format nil "OAuth device token request failed (HTTP ~D)~A"
+                                       status
+                                       (let ((detail
+                                               (oauth-response-error-detail object)))
+                                         (if detail
+                                             (format nil ": ~A" detail)
+                                             ""))))))))))
+           :interval (or (getf device :interval) 5)
+           :expires-in (getf device :expires-in)
+           :wait-before-first-poll-p t
+           :cancelled-p cancelled-p
+           :sleep-function *oauth-flow-sleep-function*))
+      (request-aborted ()
+        (signal-device-authorization-cancelled)))))
 (defparameter +xai-oauth-client-id+
   "b1a00492-073a-47ea-816f-4c329264a828")
 (defparameter +xai-oauth-scope+
@@ -153,7 +165,8 @@
              ("device_code" . ,(getf device :device-code)))))
         device
         '("authorization_pending") '("slow_down")
-        '("access_denied" "authorization_denied") '("expired_token"))
+        '("access_denied" "authorization_denied") '("expired_token")
+        :interaction interaction)
        :expiry-skew-milliseconds 300000))))
 
 (defun refresh-xai-oauth-credential (credential)
