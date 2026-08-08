@@ -605,7 +605,7 @@
         { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
         { "sendSide": { "pi": "enter" } },
         { "waitFor": "Select authentication method for Render Auth:" }, { "checkpoint": "auth-method-provider" },
-        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
+        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "waitFor": "Paste the authorization code" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
         { "pauseMs": 100 }, { "checkpoint": "login-cancelled" },
         { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
       ]
