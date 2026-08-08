@@ -713,6 +713,17 @@
       :id :render-auth :name "Render Auth"
       :auth-type :api-key
       :method-name "Render Auth API key"
+      :status '(:type :api-key :source "configured provider")))
+    (list
+     (cadr-cli::make-oauth-selector-option
+      :id :render-device :name "Render Device"
+      :auth-type :oauth
+      :method-name "Render Device account"
+      :status '(:type :api-key :source "configured provider"))
+     (cadr-cli::make-oauth-selector-option
+      :id :render-device :name "Render Device"
+      :auth-type :api-key
+      :method-name "Render Device API key"
       :status '(:type :api-key :source "configured provider"))))
    #'string-lessp
    :key #'cadr-cli::oauth-selector-option-name))
@@ -895,24 +906,74 @@
      (subseq value 0 position)
      "/pi00/workspace")))
 
+(defun render-fixture-login (provider-id interaction)
+  ;; Fixture OAuth flows matching the pi-driver's registered render
+  ;; providers: authorization-code-with-paste and device-code.  Both emit
+  ;; real runtime auth events so the production login dialog renders them.
+  (if (eq provider-id :render-device)
+      (progn
+        (cadr-ai:runtime-auth-interaction-notify
+         interaction
+         (list :type :device-code
+               :user-code "RENDER-42"
+               :verification-uri "https://auth.invalid/device"))
+        (loop
+          (when (cadr-ai:runtime-auth-interaction-aborted-p interaction)
+            (error 'cadr-ai:authentication-cancelled
+                   :message "Login cancelled"))
+          (sleep 0.05)))
+      (progn
+        (cadr-ai:runtime-auth-interaction-notify
+         interaction
+         (list :type :auth-url
+               :url "https://auth.invalid/authorize?state=render-fixed"
+               :instructions
+               "A browser window should open. Complete login to finish."))
+        (let ((code
+                (cadr-ai:runtime-auth-interaction-prompt
+                 interaction
+                 (list :type :manual-code
+                       :message "Paste the authorization code"))))
+          (unless (cadr-ai::non-empty-string-p code)
+            (error 'cadr-ai:authentication-cancelled
+                   :message "Login cancelled"))
+          (cadr-ai:make-oauth-credential
+           :provider provider-id
+           :access "render-access"
+           :refresh "render-refresh"
+           :expires 1800000000000
+           :account-id "render-account")))))
+
 (defun command-dispatcher
     (agent cwd session-directory settings-manager
-     auth-prompt-consumer status-consumer)
+     auth-prompt-consumer auth-event-consumer status-consumer
+     abort-predicate)
   (lambda (line)
     (cond
-      ((string= line "/login render-auth")
-       (when auth-prompt-consumer
-         (funcall
-          auth-prompt-consumer
-          (list
-           :type :manual-code
-           :title "Login to Render Auth"
-           :url "https://auth.invalid/authorize?state=render-fixed"
-           :instructions
-           "A browser window should open. Complete login to finish."
-           :message
-           "Paste the authorization code"
-           :cancel-function (constantly nil))))
+      ((member line
+               '("/login render-auth" "/login render-device")
+               :test #'string=)
+       ;; Drive the production OAuth event surface: the controller routes
+       ;; these events into the login dialog overlay, exactly as a real
+       ;; provider login would.  Nothing here synthesizes dialog content.
+       (render-fixture-login
+        (if (string= line "/login render-device")
+            :render-device
+            :render-auth)
+        (cadr-ai:make-runtime-auth-interaction
+         :prompt-function
+         (lambda (prompt)
+           (if auth-prompt-consumer
+               (funcall auth-prompt-consumer prompt)
+               (error
+                'cadr-ai:configuration-error
+                :message
+                "Interactive authentication prompt is unavailable")))
+         :notify-function
+         (lambda (event)
+           (when auth-event-consumer
+             (funcall auth-event-consumer event)))
+         :abort-p abort-predicate))
        (values t nil))
       ((string= line "/reload")
        (cadr-cli::reload-cli-runtime
@@ -996,6 +1057,7 @@
               :token-min 4096 :token-max 4096))
            (event-consumer nil)
            (auth-url-consumer nil)
+           (auth-event-consumer nil)
            (auth-prompt-consumer nil)
            (status-consumer nil)
            (extension-ui-consumer nil)
@@ -1117,7 +1179,8 @@
              (funcall
               (command-dispatcher
                agent cwd session-directory settings-manager
-               auth-prompt-consumer status-consumer)
+               auth-prompt-consumer auth-event-consumer status-consumer
+               (lambda () abort-requested-p))
               line))
            :bash-function
            (lambda (command exclude-p)
@@ -1165,6 +1228,8 @@
              (append-ready-marker "agent-settled"))
            :set-auth-url-consumer
            (lambda (consumer) (setf auth-url-consumer consumer))
+           :set-auth-event-consumer
+           (lambda (consumer) (setf auth-event-consumer consumer))
            :set-auth-prompt-consumer
            (lambda (consumer) (setf auth-prompt-consumer consumer))
            :set-status-consumer

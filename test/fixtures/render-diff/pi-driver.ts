@@ -592,19 +592,52 @@ async function registerComparisonProviders(modelRuntime: ModelRuntime, scenario:
 				refreshToken: async (credential) => credential,
 				getApiKey: (credential) => credential.access,
 			},
-			models: [
-				{
-					id: "render-auth-1",
-					name: "Render Auth Model",
-					reasoning: false,
-					input: ["text"],
-					cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-					contextWindow: 64_000,
-					maxTokens: 8_192,
-				},
-			],
-		});
-	}
+					models: [
+						{
+							id: "render-auth-1",
+							name: "Render Auth Model",
+							reasoning: false,
+							input: ["text"],
+							cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+							contextWindow: 64_000,
+							maxTokens: 8_192,
+						},
+					],
+				});
+				modelRuntime.registerProvider("render-device", {
+					name: "Render Device",
+					baseUrl: "https://render.invalid/v1",
+					apiKey: "render-api-key",
+					api: "openai-completions",
+					oauth: {
+						name: "Render Device account",
+						login: async (callbacks) => {
+							callbacks.onDeviceCode({
+								userCode: "RENDER-42",
+								verificationUri: "https://auth.invalid/device",
+							});
+							await new Promise((_resolve, reject) => {
+								if (callbacks.signal?.aborted) reject(new Error("Login cancelled"));
+								callbacks.signal?.addEventListener("abort", () => reject(new Error("Login cancelled")), { once: true });
+							});
+							throw new Error("render device login never completes in the fixture");
+						},
+						refreshToken: async (credential) => credential,
+						getApiKey: (credential) => credential.access,
+					},
+					models: [
+						{
+							id: "render-device-1",
+							name: "Render Device Model",
+							reasoning: false,
+							input: ["text"],
+							cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+							contextWindow: 64_000,
+							maxTokens: 8_192,
+						},
+					],
+				});
+			}
 
 	await modelRuntime.refresh({ allowNetwork: false });
 }

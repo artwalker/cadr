@@ -611,6 +611,24 @@
       ]
     },
     {
+      "id": "overlays-auth-device-code",
+      "group": "overlays",
+      "coverage": ["overlay-login-dialog-device-code", "overlay-login-dialog-device-code-cancel"],
+      "description": "Device-code OAuth login dialog: title, URL, Enter code in warning, waiting line, cancel hint, then escape cancellation.",
+      "responses": [],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "/login render-device" }, { "send": "enter" }, { "pauseMs": 300 },
+        { "sendSide": { "pi": "enter" } },
+        { "waitFor": "authentication method for Render" },
+        { "send": "enter" },
+        { "waitFor": "Login to Render Device" },
+        { "waitFor": "Enter code: RENDER-42" }, { "waitFor": "Waiting for authentication..." }, { "checkpoint": "login-device-code" },
+        { "send": "escape" }, { "pauseMs": 100 }, { "checkpoint": "login-device-cancelled" },
+        { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+      ]
+    },
+    {
       "id": "overlays-auth-api-key",
       "group": "overlays",
       "coverage": ["overlay-login-api-key"],

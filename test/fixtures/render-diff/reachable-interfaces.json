@@ -102,6 +102,7 @@
     "fork": ["fork-selector"],
     "import-confirmation": ["import-confirmation"],
     "login-method": ["login-auth-type-generic", "login-auth-type-provider"],
+    "login-dialog": ["login-dialog"],
     "login-provider": ["login-provider-selector"],
     "logout-provider": ["logout-provider-selector"],
     "model": ["model-selector"],
