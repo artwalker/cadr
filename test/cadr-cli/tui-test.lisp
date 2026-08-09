@@ -1190,12 +1190,19 @@
               nil
               :terminal-p-function #'not-terminal-p)))))
 
-(test cli-advertises-tui-renderer-selection
+(test cli-help-matches-the-baseline-printhelp-contract
+  ;; Baseline cli/args.ts printHelp: the help text is the baseline's own
+  ;; with cadr identity; cadr-only flags (--slynk, --no-tui) are
+  ;; documented in the README, not in the baseline-derived help.
   (let ((usage
           (with-output-to-string (stream)
             (cadr-cli::print-cli-usage stream))))
-    (is (search "--no-tui" usage))
+    (is (search "cadr - AI coding assistant with read, bash, edit, write tools"
+                usage))
     (is (search "--alt" usage))
+    (is (search "Select a session to resume" usage))
+    (is (search "Built-in Tool Names:" usage))
+    (is (search "CADR_CODING_AGENT_DIR" usage))
     (is (null (search "--yolo" usage)))))
 
 (test native-cli-parser-handles-values-flags-and-repeats

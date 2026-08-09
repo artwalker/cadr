@@ -233,12 +233,12 @@
       (:install
        (format
         stream
-        "Install a package and add it to settings.~%~%Options:~%  -l, --local       Install project-locally (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command~%  -na, --no-approve Ignore project-local files for this command~%~%Examples:~%  ~A install git:github.com/user/repo~%  ~A install git:git@github.com:user/repo~%  ~A install https://github.com/user/repo~%  ~A install ssh://git@github.com/user/repo~%  ~A install ./local/path~%"
-        slug slug slug slug slug slug))
+        "Install a package and add it to settings.~%~%Options:~%  -l, --local       Install project-locally (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command~%  -na, --no-approve Ignore project-local files for this command~%~%Examples:~%  ~A install npm:@foo/bar~%  ~A install git:github.com/user/repo~%  ~A install git:git@github.com:user/repo~%  ~A install https://github.com/user/repo~%  ~A install ssh://git@github.com/user/repo~%  ~A install ./local/path~%"
+        slug slug slug slug slug slug slug))
       (:remove
        (format
         stream
-        "Remove a package and its source from settings.~%Alias: ~A uninstall <source> [-l]~%~%Options:~%  -l, --local       Remove from project settings (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command~%  -na, --no-approve Ignore project-local files for this command~%~%Examples:~%  ~A remove git:github.com/user/repo~%  ~A uninstall ./local/path~%"
+        "Remove a package and its source from settings.~%Alias: ~A uninstall <source> [-l]~%~%Options:~%  -l, --local       Remove from project settings (.~A/settings.json)~%  -a, --approve     Trust project-local files for this command~%  -na, --no-approve Ignore project-local files for this command~%~%Examples:~%  ~A remove npm:@foo/bar~%  ~A uninstall npm:@foo/bar~%"
         slug slug slug slug))
       (:update
        (format

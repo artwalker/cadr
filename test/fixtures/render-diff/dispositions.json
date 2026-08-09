@@ -44,7 +44,7 @@
           "cadr": "e3acacab1d4beb8f4f2eaade8917dfe68df87666f1be796bee09754238288270"
         }
       },
-      "note": "Package and config help preserve the baseline contract with cadr identity: the global settings path ~/.cadr/agent/settings.json replaces pi's ~/.pi/agent/settings.json with the same agent/ layer (Goal 18 layout alignment) and the cadr name replaces pi throughout (I04); the capture is plain stdout, so the only differences are those identity substitutions and the wrap points they shift in narrow."
+      "note": "At cli-help-sweep/cli-help-all [wide+narrow] the main help, package-command helps, and config help now print the full baseline text (Goal 18 I7: the previous short help diverged from printHelp while this disposition claimed identity-only differences); the remaining differences are the adjudicated identity substitutions (cadr name, ~/.cadr/agent/, CADR_* environment names, cadr.dev viewer) and the two-cell column shifts they cause in name-bearing help rows (I04)."
     },
     {
       "scenario": "autocomplete-surfaces",

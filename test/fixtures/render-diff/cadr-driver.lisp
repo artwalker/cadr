@@ -1101,7 +1101,12 @@ render loopback login received
        (json-get (json-get scenario "setup")
                  "entrypoint" "interactive")
        "cli-help")
-    (cadr-cli::print-cli-usage *standard-output*)
+    (cadr-cli::print-cli-usage
+     *standard-output*
+     (list
+      (list :name "render-flag" :type :string
+            :description "Render differential extension flag"
+            :extension-path "render-diff")))
     (dolist (command '("install" "remove" "update" "list" "config"))
       (multiple-value-bind (handled-p status)
           (cadr-cli::handle-package-command

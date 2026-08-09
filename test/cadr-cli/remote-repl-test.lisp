@@ -166,9 +166,11 @@
      (remote-repl-condition-message
       (lambda ()
         (cadr-cli::parse-cli-arguments case)))))
-  (let ((output (make-string-output-stream)))
-    (cadr-cli::print-cli-usage output)
-    (is (search "--slynk <port>" (get-output-stream-string output)))))
+  ;; --slynk remains a cadr-only flag and is parsed as before; the
+  ;; baseline-aligned help text no longer advertises it (README does).
+  (is-true
+   (cadr-cli::cli-arguments-slynk-port
+    (cadr-cli::parse-cli-arguments '("--slynk" "4005")))))
 
 (test goal10-slynk-runtime-is-loopback-scoped-and-cleans-up
   ;; Let the kernel allocate the listening port inside Slynk's bind call.

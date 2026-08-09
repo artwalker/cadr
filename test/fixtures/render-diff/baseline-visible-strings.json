@@ -1929,6 +1929,122 @@
       ]
     },
     {
+      "id": "VS-b4d625426d720498",
+      "site": {
+        "path": "packages/coding-agent/src/cli/file-processor.ts",
+        "line": 37,
+        "column": 18,
+        "endLine": 37,
+        "endColumn": 69,
+        "start": 1264,
+        "end": 1315,
+        "kind": "output:console.error",
+        "nodeSha256": "1f67a62d13c0d181b21a28a4dd02e30166ef35773168e1c1cd57325e649655b9"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-e0ae97b81cec",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: File not found: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-a82e6cc335d3e727",
+      "site": {
+        "path": "packages/coding-agent/src/cli/file-processor.ts",
+        "line": 80,
+        "column": 19,
+        "endLine": 80,
+        "endColumn": 86,
+        "start": 2552,
+        "end": 2619,
+        "kind": "output:console.error",
+        "nodeSha256": "9e4cc20ae5dbb8a8650ac3259ac55faf9067b0e28e7334922ee492c1d9555e1c"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-a329842f84c5",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: Could not read file ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-c1b8a22b174c",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ": ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-7044b51d8de8b5fa",
+      "site": {
+        "path": "packages/coding-agent/src/cli/list-models.ts",
+        "line": 32,
+        "column": 17,
+        "endLine": 32,
+        "endColumn": 83,
+        "start": 1036,
+        "end": 1102,
+        "kind": "output:console.error",
+        "nodeSha256": "eae22d040cda48afc17a7772ac45e61f3606f15375aaf4ebad30a37bfc0a94bb"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-139d740d3cc4",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: errors loading models.json:\n",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-e61a9b81bb1d5006",
       "site": {
         "path": "packages/coding-agent/src/cli/list-models.ts",
@@ -2213,6 +2329,256 @@
       ]
     },
     {
+      "id": "VS-4b9c2cf71f49c3d9",
+      "site": {
+        "path": "packages/coding-agent/src/core/extensions/runner.ts",
+        "line": 513,
+        "column": 7,
+        "endLine": 513,
+        "endColumn": 111,
+        "start": 17208,
+        "end": 17312,
+        "kind": "call:addDiagnostic",
+        "nodeSha256": "74c1b0982467f9cc172f1dc30dd079f84710c4e4bdf51d241dfcf3ccb6bed5c1"
+      },
+      "sink": {
+        "kind": "call:addDiagnostic",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-a7810aa93e7d",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Extension shortcut '",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-3e3536c8feb6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "' from ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-bf03f5e48a9a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " conflicts with built-in shortcut. Skipping.",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-a70ceadebba92ee1",
+      "site": {
+        "path": "packages/coding-agent/src/core/extensions/runner.ts",
+        "line": 521,
+        "column": 7,
+        "endLine": 521,
+        "endColumn": 167,
+        "start": 17457,
+        "end": 17617,
+        "kind": "call:addDiagnostic",
+        "nodeSha256": "f7ed40fcea2f92c4dfa78e9223e96a05c34dd377df2e9cc1586bd7541e0f2f76"
+      },
+      "sink": {
+        "kind": "call:addDiagnostic",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-fed719c86ce6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Extension shortcut conflict: '",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-5a3fc68a247b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "' is built-in shortcut for ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-692d8f6cd044",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " and ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-898daea48f83",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ". Using ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-e7c7c7d73c19",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ".",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-eb87b38f38a9cb1e",
+      "site": {
+        "path": "packages/coding-agent/src/core/extensions/runner.ts",
+        "line": 529,
+        "column": 7,
+        "endLine": 529,
+        "endColumn": 172,
+        "start": 17804,
+        "end": 17969,
+        "kind": "call:addDiagnostic",
+        "nodeSha256": "a8d9fde73650430379e2e11fb2bb32c408f4341cf9975bfbb2ee3619137dfe0d"
+      },
+      "sink": {
+        "kind": "call:addDiagnostic",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-fed719c86ce6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Extension shortcut conflict: '",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-b6864092bbf4",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "' registered by both ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-692d8f6cd044",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " and ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-898daea48f83",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ". Using ",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-e7c7c7d73c19",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ".",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-406b32e40ceea839",
+      "site": {
+        "path": "packages/coding-agent/src/core/model-resolver.ts",
+        "line": 358,
+        "column": 16,
+        "endLine": 358,
+        "endColumn": 62,
+        "start": 11709,
+        "end": 11755,
+        "kind": "output:console.warn",
+        "nodeSha256": "4fa1f20cac4046a8667c5378a462611004e3b3f0c984e47ee0f3d96fd440e5fd"
+      },
+      "sink": {
+        "kind": "output:console.warn",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-c6cb3163ff0a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-8114f04047fdc3f9",
       "site": {
         "path": "packages/coding-agent/src/core/model-resolver.ts",
@@ -2254,6 +2620,110 @@
               "text": "/",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-90c2030bde039c98",
+      "site": {
+        "path": "packages/coding-agent/src/core/model-resolver.ts",
+        "line": 680,
+        "column": 17,
+        "endLine": 680,
+        "endColumn": 111,
+        "start": 22860,
+        "end": 22954,
+        "kind": "output:console.error",
+        "nodeSha256": "22d7e777a4b322df2cb291d2a283e5fba55451938b9272e1a8d7b96967c556f0"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-fc9a993a533b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: Could not restore model ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-da54ada53787",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "/",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-9a0966b083ab",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " (",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-7c7f88aefd85",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "model no longer exists",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-00534db70aa8",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ").",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-d9ffaf720fe1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "no auth configured",
+              "stylePath": [
+                "yellow"
               ]
             }
           ]
@@ -2350,6 +2820,116 @@
               "text": "/",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-822b00686ef0ccba",
+      "site": {
+        "path": "packages/coding-agent/src/core/resource-loader.ts",
+        "line": 62,
+        "column": 18,
+        "endLine": 62,
+        "endColumn": 96,
+        "start": 2693,
+        "end": 2771,
+        "kind": "output:console.error",
+        "nodeSha256": "7bbecd0417c881d11a4ec8726c3d9365fc9bec7c757ddee3d8214b29986d3129"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-930909157d4d",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: Could not read ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-d85c01349cbb",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " file ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-454075ef7ff3",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ": ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-dcef4a900ea566b3",
+      "site": {
+        "path": "packages/coding-agent/src/core/resource-loader.ts",
+        "line": 84,
+        "column": 19,
+        "endLine": 84,
+        "endColumn": 80,
+        "start": 3285,
+        "end": 3346,
+        "kind": "output:console.error",
+        "nodeSha256": "22b891d30d2b5963d69b89ad6ba7875213d8388b90ad19d76955519d7b060708"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-930909157d4d",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: Could not read ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-454075ef7ff3",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ": ",
+              "stylePath": [
+                "yellow"
               ]
             }
           ]
@@ -6712,6 +7292,88 @@
       ]
     },
     {
+      "id": "VS-6b659c19db59c10a",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 141,
+        "column": 17,
+        "endLine": 141,
+        "endColumn": 47,
+        "start": 5624,
+        "end": 5654,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-fd13d93a29bf",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Failed to parse auth command",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-4437d6465f94b54e",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 150,
+        "column": 18,
+        "endLine": 150,
+        "endColumn": 59,
+        "start": 5874,
+        "end": 5915,
+        "kind": "output:console.error",
+        "nodeSha256": "f682b486020e0ff3c35eb55449115b1b7e2d032be9b91de097edaa5b20fafa56"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-b146755eae853faa",
       "site": {
         "path": "packages/coding-agent/src/main.ts",
@@ -6738,6 +7400,354 @@
               "kind": "literal",
               "text": "\n",
               "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-867b46594ee3c2a5",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 163,
+        "column": 17,
+        "endLine": 163,
+        "endColumn": 47,
+        "start": 6386,
+        "end": 6416,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-3f0215f4a9d2",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Failed to resolve credential",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-670113f9e4fcb7ef",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 264,
+        "column": 17,
+        "endLine": 264,
+        "endColumn": 98,
+        "start": 9652,
+        "end": 9733,
+        "kind": "output:console.error",
+        "nodeSha256": "f09e3e405e3229ebc24b85c1b0de994a251b91d702b3345ec79fe854974a0197"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-827953194353",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: --fork cannot be combined with ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-32a6ba6a4027a2b9",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 279,
+        "column": 17,
+        "endLine": 279,
+        "endColumn": 104,
+        "start": 10131,
+        "end": 10218,
+        "kind": "output:console.error",
+        "nodeSha256": "034b65fde82cd21d08fb8ba985bf5ca2ae6da0e60385b20f63289364ea10f44a"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-69625f0cc409",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: --session-id cannot be combined with ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-a6e0c3d3e519435c",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 287,
+        "column": 17,
+        "endLine": 287,
+        "endColumn": 47,
+        "start": 10411,
+        "end": 10441,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-91c4d22f1f60b148",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 297,
+        "column": 17,
+        "endLine": 297,
+        "endColumn": 47,
+        "start": 10722,
+        "end": 10752,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-5af27e45f0e2e70e",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 307,
+        "column": 17,
+        "endLine": 307,
+        "endColumn": 47,
+        "start": 11106,
+        "end": 11136,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-518451265eb11e13",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 326,
+        "column": 19,
+        "endLine": 326,
+        "endColumn": 84,
+        "start": 11699,
+        "end": 11764,
+        "kind": "output:console.error",
+        "nodeSha256": "e3e20c82f30e2cce606739827b7f09e48c74951742fd1206933e09a3c1cf097b"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-fc241834735e",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Session already exists with id '",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-7da983aeedc1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "'",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-788339abc450aaee",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 340,
+        "column": 19,
+        "endLine": 340,
+        "endColumn": 75,
+        "start": 12072,
+        "end": 12128,
+        "kind": "output:console.error",
+        "nodeSha256": "c0ab6b4fd42bca763c43baf31ce06d81e0f7ac594e19875cccb2b6d112bbb941"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-5386dcfea937",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "No session found matching '",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-7da983aeedc1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "'",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-0cc397656e00d0e8",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 354,
+        "column": 17,
+        "endLine": 354,
+        "endColumn": 84,
+        "start": 12416,
+        "end": 12483,
+        "kind": "output:console.log",
+        "nodeSha256": "53c877abaffc1bbc682b6c668e6c6511e3b2e01bda83887e85d18106bd093582"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-dfd11976ba3a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Session found in different project: ",
+              "stylePath": [
+                "yellow"
+              ]
             }
           ]
         }
@@ -6771,6 +7781,54 @@
               "text": "Aborted.",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-88166fd275873f98",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 364,
+        "column": 19,
+        "endLine": 364,
+        "endColumn": 75,
+        "start": 12774,
+        "end": 12830,
+        "kind": "output:console.error",
+        "nodeSha256": "c0ab6b4fd42bca763c43baf31ce06d81e0f7ac594e19875cccb2b6d112bbb941"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-5386dcfea937",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "No session found matching '",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-7da983aeedc1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "'",
+              "stylePath": [
+                "red"
               ]
             }
           ]
@@ -6812,6 +7870,102 @@
       ]
     },
     {
+      "id": "VS-8f8e8da59ebf7e01",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 396,
+        "column": 4,
+        "endLine": 398,
+        "endColumn": 5,
+        "start": 13623,
+        "end": 13750,
+        "kind": "output:console.error",
+        "nodeSha256": "14c6ea2b16ee83fd6612909d2f1296c7152daa2ce67fbbb96b05a7bc37212699"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-e293f089dc07",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: No project session found with id '",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-44104d458784",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "'; creating a new session with that id.",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-75df44f507d7ae52",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 585,
+        "column": 18,
+        "endLine": 585,
+        "endColumn": 48,
+        "start": 19841,
+        "end": 19871,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-fa0be7fade22",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Failed to export session",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-28b6315fab845902",
       "site": {
         "path": "packages/coding-agent/src/main.ts",
@@ -6838,6 +7992,436 @@
               "kind": "literal",
               "text": "Exported to: ",
               "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-3d422ccb48c574b5",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 599,
+        "column": 17,
+        "endLine": 599,
+        "endColumn": 82,
+        "start": 20272,
+        "end": 20337,
+        "kind": "output:console.error",
+        "nodeSha256": "211459022dedfd1c9cb32b9163a8aacfc37f92c3e300472b338ea644086998da"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-22ef9cafff41",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: @file arguments are not supported in RPC mode",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-ee3223febfb2b110",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 647,
+        "column": 18,
+        "endLine": 647,
+        "endColumn": 71,
+        "start": 22500,
+        "end": 22553,
+        "kind": "output:console.error",
+        "nodeSha256": "e91bf188eb4394bf9ad578819a2ba8c8e12d288c73e71388a3f9ed20257337c9"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-794d37d6206d",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: --name requires a non-empty value",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-c9980cda1a55c184",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 846,
+        "column": 18,
+        "endLine": 846,
+        "endColumn": 59,
+        "start": 29743,
+        "end": 29784,
+        "kind": "output:console.error",
+        "nodeSha256": "8e111c6b7e4b5c25f193cb1dc8c7b566a69c3f97823997ca9478bed2545adacf"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-338f040e1f24",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Hint: Start without extensions using \"pi -ne\".",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-855c89bcabeac5dc",
+      "site": {
+        "path": "packages/coding-agent/src/main.ts",
+        "line": 859,
+        "column": 17,
+        "endLine": 859,
+        "endColumn": 88,
+        "start": 30127,
+        "end": 30198,
+        "kind": "output:console.error",
+        "nodeSha256": "24081c23d80fe2a8b5706ae53ffad32a418e39e2c3265b2eb3b9a03d5cbeca45"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-d785069a4dd6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: PI_STARTUP_BENCHMARK only supports interactive mode",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-b826246bd89fc65d",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 144,
+        "column": 16,
+        "endLine": 144,
+        "endColumn": 69,
+        "start": 4428,
+        "end": 4481,
+        "kind": "output:console.log",
+        "nodeSha256": "4a91a9377078ed72f70534c1eeda217dd094a2b785b91b5b61e686b681c87e90"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-cfa43c2f82f3",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Migrated ",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-baefbe299d78",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " commands/ → prompts/",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-330e0b10cc765a60",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 148,
+        "column": 5,
+        "endLine": 150,
+        "endColumn": 6,
+        "start": 4538,
+        "end": 4668,
+        "kind": "output:console.log",
+        "nodeSha256": "2d6fe3605d2150a9f3fc9a8c41c3c2572a2f56db0e2ad2ccedd3478f619839bd"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-d987d23f73bb",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: Could not migrate ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-4b479e0533e6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " commands/ to prompts/: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-b50e6abad4670bde",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 214,
+        "column": 15,
+        "endLine": 214,
+        "endColumn": 69,
+        "start": 6149,
+        "end": 6203,
+        "kind": "output:console.log",
+        "nodeSha256": "51425e62ab0311fe7d1301e98fb89a7f8a979470a84ffea9579f524c45ca7260"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-2b4f4aca0469",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Migrated managed binaries tools/ → bin/",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-f0603b393ac1cff1",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 281,
+        "column": 15,
+        "endLine": 281,
+        "endColumn": 50,
+        "start": 8166,
+        "end": 8201,
+        "kind": "output:console.log",
+        "nodeSha256": "e6d9d92a3f460777c72e8cee3ed60024fae9de36e01b976613e1e3536e3da5f5"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-c6cb3163ff0a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-fa8791f5d29655a8",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 283,
+        "column": 14,
+        "endLine": 283,
+        "endColumn": 82,
+        "start": 8220,
+        "end": 8288,
+        "kind": "output:console.log",
+        "nodeSha256": "e40b0b4e6ce6bc09b2e7ed843afe3f2a8a8083fc748ae2f4b4d2d43f4f940874"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-09322945874c",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\nMove your extensions to the extensions/ directory.",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-45c811ea0bc8eb87",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 284,
+        "column": 14,
+        "endLine": 284,
+        "endColumn": 69,
+        "start": 8304,
+        "end": 8359,
+        "kind": "output:console.log",
+        "nodeSha256": "88ec2740759a9fd23e83fb3100f6f62e905bdc3ec62f3f7d2da7e10756e8076b"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-c37fe0ad549a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Migration guide: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-b36c53549762",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-ff58695f57a1a905",
+      "site": {
+        "path": "packages/coding-agent/src/migrations.ts",
+        "line": 285,
+        "column": 14,
+        "endLine": 285,
+        "endColumn": 66,
+        "start": 8375,
+        "end": 8427,
+        "kind": "output:console.log",
+        "nodeSha256": "274954150fcf76763f4ea271a6cda8286d97d10c22665385f462c79fecee534c"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-b191b5a79b73",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Documentation: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-71b85dad2781",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md",
+              "stylePath": [
+                "yellow"
+              ]
             }
           ]
         }
@@ -12291,6 +13875,166 @@
       ]
     },
     {
+      "id": "VS-0b622c4c6eda5d03",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 1537,
+        "column": 22,
+        "endLine": 1537,
+        "endColumn": 31,
+        "start": 54712,
+        "end": 54721,
+        "kind": "call:addLoadedSection",
+        "nodeSha256": "045c2341d1c0fec237488ff711e7463038fef020998ef9fe5e973aa0158894cd"
+      },
+      "sink": {
+        "kind": "call:addLoadedSection",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-06a4d766b225",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Context",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-fbc7eca0eb6ceb1c",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 1550,
+        "column": 22,
+        "endLine": 1550,
+        "endColumn": 30,
+        "start": 55275,
+        "end": 55283,
+        "kind": "call:addLoadedSection",
+        "nodeSha256": "9ef55360356880caebb49be5ba400713dd0eeac2508bc992f99f869a3a07255d"
+      },
+      "sink": {
+        "kind": "call:addLoadedSection",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-c40c1361cec5",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Skills",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-d0c20fb7089e7a8e",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 1570,
+        "column": 22,
+        "endLine": 1570,
+        "endColumn": 31,
+        "start": 56162,
+        "end": 56171,
+        "kind": "call:addLoadedSection",
+        "nodeSha256": "1e7282414cd2d2db3bd83babc62e10dc07e55ad813e7e67ea101e0179ec0acf3"
+      },
+      "sink": {
+        "kind": "call:addLoadedSection",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-5bf503b4d9ff",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Prompts",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-46de09adf7db6937",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 1581,
+        "column": 22,
+        "endLine": 1581,
+        "endColumn": 34,
+        "start": 56668,
+        "end": 56680,
+        "kind": "call:addLoadedSection",
+        "nodeSha256": "e2053fc07ecfd03162a4a046094f3cd2afbaf2a4633ebfc828099f474e7dc856"
+      },
+      "sink": {
+        "kind": "call:addLoadedSection",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-a030fc9c4eae",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Extensions",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-4a9c49cf6ef3a933",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 1604,
+        "column": 22,
+        "endLine": 1604,
+        "endColumn": 30,
+        "start": 57542,
+        "end": 57550,
+        "kind": "call:addLoadedSection",
+        "nodeSha256": "d7972c9e7dd0e731debb0332c47f84df67625e88f77f68c564e51c51afe7161c"
+      },
+      "sink": {
+        "kind": "call:addLoadedSection",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-a1dd3a850360",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Themes",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-4da7811c984bc4b8",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
@@ -15681,6 +17425,38 @@
       ]
     },
     {
+      "id": "VS-f04d8095945b4b2d",
+      "site": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "line": 5198,
+        "column": 4,
+        "endLine": 5198,
+        "endColumn": 34,
+        "start": 175482,
+        "end": 175512,
+        "kind": "new:LoginDialogComponent",
+        "nodeSha256": "00870a9a2bb2c0b5c9c2a16c942511be88652b3163a35208f72dd88778c3c4b7"
+      },
+      "sink": {
+        "kind": "new:LoginDialogComponent",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-9f7ed5529400",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " setup",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-43c896ca76bc85b1",
       "site": {
         "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
@@ -18617,6 +20393,68 @@
       ]
     },
     {
+      "id": "VS-d03ac15e82de9633",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 72,
+        "column": 17,
+        "endLine": 72,
+        "endColumn": 90,
+        "start": 2632,
+        "end": 2705,
+        "kind": "output:console.error",
+        "nodeSha256": "1c9b7751229b2620735b65d3b22aa8ad1b72dc5ae4874f4829feda5d89a1f37f"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-94e9897f091f",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning (",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-49aac44ae3ec",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ", ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-a135f93ae8e9",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " settings): ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-9efb7f97616bafe4",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19135,6 +20973,40 @@
       ]
     },
     {
+      "id": "VS-f76ee5fcbe3d7fc1",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 421,
+        "column": 14,
+        "endLine": 421,
+        "endColumn": 53,
+        "start": 12740,
+        "end": 12779,
+        "kind": "output:console.log",
+        "nodeSha256": "ab908b2794b8940ceafcce2f71f250c49161080553b2025a81eced06423f9cad"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-2c261cbe69da",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Model catalogs refreshed",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-e4d69f6ec7d96ae3",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19245,6 +21117,171 @@
       ]
     },
     {
+      "id": "VS-80f57dd2b43eaf4e",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 443,
+        "column": 16,
+        "endLine": 443,
+        "endColumn": 116,
+        "start": 13476,
+        "end": 13576,
+        "kind": "output:console.error",
+        "nodeSha256": "b44f1c8bb834e7d4beb56ab75ab3f86a8015ada3a0003bb166c3f3c8f3996c98"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-f968fbe29285",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "If pnpm reports missing package versions, its cached registry metadata may be stale.",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-c118b13f8c9f6d4e",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 444,
+        "column": 16,
+        "endLine": 444,
+        "endColumn": 97,
+        "start": 13594,
+        "end": 13675,
+        "kind": "output:console.error",
+        "nodeSha256": "1143e574967c3c1c6c108f1649b99721431adf1dc63ab31c1d29bcc6150eaf9b"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-3865ce683490",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Run `pnpm store prune` and retry `",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-e1036d9e6a51",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " update --self`.",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-a714f55dd3ab8cbd",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 454,
+        "column": 14,
+        "endLine": 454,
+        "endColumn": 53,
+        "start": 13830,
+        "end": 13869,
+        "kind": "output:console.log",
+        "nodeSha256": "c8500fe23c45fa035722fe113bf6bd961a50fdeb9caaba0c8cdb5f1b94d30187"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-012496f92956",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Update note",
+              "stylePath": [
+                "bold",
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-e33a91b12619c020",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 499,
+        "column": 14,
+        "endLine": 499,
+        "endColumn": 76,
+        "start": 15214,
+        "end": 15276,
+        "kind": "output:console.log",
+        "nodeSha256": "a22407a09510ddb80de49cfac5d64bb45a88348a270f92158487b037148b942b"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-b601c56a287a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " is already up to date (v",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-856c021bfee1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ")",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-20898d0f6bf40837",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19300,6 +21337,88 @@
               "text": "...",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-9ec3b52e82b29447",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 551,
+        "column": 17,
+        "endLine": 551,
+        "endColumn": 52,
+        "start": 16742,
+        "end": 16777,
+        "kind": "output:console.error",
+        "nodeSha256": "e6d9d92a3f460777c72e8cee3ed60024fae9de36e01b976613e1e3536e3da5f5"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-c6cb3163ff0a",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Warning: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-42cc2a2c5432da6a",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 627,
+        "column": 18,
+        "endLine": 627,
+        "endColumn": 66,
+        "start": 19271,
+        "end": 19319,
+        "kind": "output:console.error",
+        "nodeSha256": "e64f167a7ac6317695cb662b9129207bc98753b9e82f143554a1e77e77964e16"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-e1911e4bf999",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unknown option ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-01b231ba87ce",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " for \"config\".",
+              "stylePath": [
+                "red"
               ]
             }
           ]
@@ -19383,6 +21502,54 @@
       ]
     },
     {
+      "id": "VS-4b10240026abcbbf",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 632,
+        "column": 18,
+        "endLine": 632,
+        "endColumn": 58,
+        "start": 19478,
+        "end": 19518,
+        "kind": "output:console.error",
+        "nodeSha256": "50e7ab7691ba68ab829bbeb5b23f1f4a3e66e48032283446b7d704dcd061118e"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-1ca3046dbbac",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unexpected argument ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-9b14b6513025",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ".",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-8e0cc1d1452ceb6f",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19424,6 +21591,102 @@
               "text": " config [-l] [--approve|--no-approve]",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-772ce37c4841f366",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 649,
+        "column": 17,
+        "endLine": 649,
+        "endColumn": 100,
+        "start": 20007,
+        "end": 20090,
+        "kind": "output:console.error",
+        "nodeSha256": "30b6ab25e06f0543ca3870574c4a67b01b026aca0c459070164af1216e76eae2"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-8cfce614ae1b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Project is not trusted. Use --approve to modify local resource config.",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-999d708fdf8b5f3f",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 691,
+        "column": 17,
+        "endLine": 691,
+        "endColumn": 95,
+        "start": 21220,
+        "end": 21298,
+        "kind": "output:console.error",
+        "nodeSha256": "cfb435787d70211b5ebc65791839cf1b0d128d4fd5bc19051402878938624856"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-e1911e4bf999",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unknown option ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-85059469322b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " for \"",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-0f486cd7acdf",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\".",
+              "stylePath": [
+                "red"
               ]
             }
           ]
@@ -19493,6 +21756,54 @@
       ]
     },
     {
+      "id": "VS-a3b2344353205562",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 698,
+        "column": 17,
+        "endLine": 698,
+        "endColumn": 78,
+        "start": 21500,
+        "end": 21561,
+        "kind": "output:console.error",
+        "nodeSha256": "52f717ee9289a9eb9ce3ab2d976ceb9eda997397b3ebde469e7212d8f00ee8c2"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-486d92359a96",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Missing value for ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-9b14b6513025",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ".",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-e9574edbfa8d683b",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19520,6 +21831,54 @@
               "text": "Usage: ",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-64a95b75dade2c6b",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 705,
+        "column": 17,
+        "endLine": 705,
+        "endColumn": 77,
+        "start": 21736,
+        "end": 21796,
+        "kind": "output:console.error",
+        "nodeSha256": "604db6251a1d8bf9b1223a5609b35950edaa8a26e28cb56088a3832efbf67229"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-1ca3046dbbac",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unexpected argument ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-9b14b6513025",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ".",
+              "stylePath": [
+                "red"
               ]
             }
           ]
@@ -19595,6 +21954,54 @@
       ]
     },
     {
+      "id": "VS-e1d18f2d0c2cd857",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 720,
+        "column": 17,
+        "endLine": 720,
+        "endColumn": 64,
+        "start": 22269,
+        "end": 22316,
+        "kind": "output:console.error",
+        "nodeSha256": "c681d56579a829aa88837b4add435cd4fdad7fbef1a23b668afcb8a4f4024e3a"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-b639e3c9776e",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Missing ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-3727faa53e84",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " source.",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-ad1b533ad410afde",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19629,6 +22036,88 @@
       ]
     },
     {
+      "id": "VS-63a1b139d835caa3",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 731,
+        "column": 18,
+        "endLine": 731,
+        "endColumn": 48,
+        "start": 22722,
+        "end": 22752,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-85d3c79ec77b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unknown model catalog refresh error",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-480bb2ded2ad2df5",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 749,
+        "column": 17,
+        "endLine": 749,
+        "endColumn": 99,
+        "start": 23404,
+        "end": 23486,
+        "kind": "output:console.error",
+        "nodeSha256": "e7b8f26378cd6d27cc537466ff3deea8e2121bb7b65acc0ebf5a50e6c1db49f4"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-99eb8bdb4ae6",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Project is not trusted. Use --approve to modify local package config.",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-4599907698e10421",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19656,6 +22145,108 @@
               "text": "\n",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-d5604bd8d6d43960",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 768,
+        "column": 17,
+        "endLine": 768,
+        "endColumn": 51,
+        "start": 24056,
+        "end": 24090,
+        "kind": "output:console.log",
+        "nodeSha256": "fa88f6f2d924c8cbd588c80f4e55c4b212691831809c7bafd5560b78bb97b9f9"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-8d8c113c1ca1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Installed ",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-bfbc7d6e7dc10a0b",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 774,
+        "column": 20,
+        "endLine": 774,
+        "endColumn": 72,
+        "start": 24264,
+        "end": 24316,
+        "kind": "output:console.error",
+        "nodeSha256": "e09e2d07fc97b09b05eeda63914d89ed1c88fac6c028a698c25e63eed4efbc41"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-60a7a20aa8e1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "No matching package found for ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-293d5ff83fae0117",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 778,
+        "column": 17,
+        "endLine": 778,
+        "endColumn": 49,
+        "start": 24386,
+        "end": 24418,
+        "kind": "output:console.log",
+        "nodeSha256": "53520ce22e1348afa09c2ce0774da8d1701ab014c1883b11e213de82b509fe94"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-dd25089d1538",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Removed ",
+              "stylePath": [
+                "green"
               ]
             }
           ]
@@ -19891,6 +22482,108 @@
       ]
     },
     {
+      "id": "VS-52139b8b5abc7b12",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 829,
+        "column": 19,
+        "endLine": 829,
+        "endColumn": 57,
+        "start": 26008,
+        "end": 26046,
+        "kind": "output:console.log",
+        "nodeSha256": "db4e8bc5394d6c85f674c6f95dd69853a4c2e0d7701e41b27308248da7af67ad"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-257d6555aaef",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Updated ",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-b5272d230514d690",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 831,
+        "column": 19,
+        "endLine": 831,
+        "endColumn": 50,
+        "start": 26081,
+        "end": 26112,
+        "kind": "output:console.log",
+        "nodeSha256": "6209ffaf82147c86791988e68b8bd07f2b1ef9e37a5ad161da7f536ef82c8383"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-c6472b7bde51",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Updated packages",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-af6bf2dd401c0fc6",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 842,
+        "column": 8,
+        "endLine": 842,
+        "endColumn": 100,
+        "start": 26478,
+        "end": 26570,
+        "kind": "output:console.error",
+        "nodeSha256": "f564c8c3758ea71ef2fbefc6189c921ed8bbd61f257e3a754d593477d7588439"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-9ac0d154cea7",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " self-update on Windows is only supported for npm and pnpm installs.",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-51907e001d4968e0",
       "site": {
         "path": "packages/coding-agent/src/package-manager-cli.ts",
@@ -19946,6 +22639,164 @@
               "text": " manually.",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-a31a525dafea1936",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 868,
+        "column": 21,
+        "endLine": 868,
+        "endColumn": 51,
+        "start": 27517,
+        "end": 27547,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-c5a60ab5ff3b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unknown package command error",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-7868599a5c6fcc59",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 876,
+        "column": 18,
+        "endLine": 876,
+        "endColumn": 97,
+        "start": 27759,
+        "end": 27838,
+        "kind": "output:console.log",
+        "nodeSha256": "def5b6e7dd2e5b8f00093f8ace6bb1a59f96d1b77069dd856aba901c1f738ecb"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-257d6555aaef",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Updated ",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-9099f23cbfbe",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " from ",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-70020567fdee",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " to ",
+              "stylePath": [
+                "green"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-104c1a7068f5f8c2",
+      "site": {
+        "path": "packages/coding-agent/src/package-manager-cli.ts",
+        "line": 883,
+        "column": 17,
+        "endLine": 883,
+        "endColumn": 47,
+        "start": 28009,
+        "end": 28039,
+        "kind": "output:console.error",
+        "nodeSha256": "8e93d818cb0771eae5ce193c723d9cb3eafe85d502ed564b038779e10d586f5d"
+      },
+      "sink": {
+        "kind": "output:console.error",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-0edb568f2453",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Error: ",
+              "stylePath": [
+                "red"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-c5a60ab5ff3b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Unknown package command error",
+              "stylePath": [
+                "red"
               ]
             }
           ]
@@ -20029,6 +22880,108 @@
       ]
     },
     {
+      "id": "VS-3ddd59bdcaf23b34",
+      "site": {
+        "path": "packages/coding-agent/src/utils/deprecation.ts",
+        "line": 8,
+        "column": 15,
+        "endLine": 8,
+        "endColumn": 62,
+        "start": 250,
+        "end": 297,
+        "kind": "output:console.warn",
+        "nodeSha256": "856cc912808a64a876b812634b68454db068c10fa7c79f66daddfee39d3aa43c"
+      },
+      "sink": {
+        "kind": "output:console.warn",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-45f2e82ebdb1",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Deprecation warning: ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-d33533d5b3615c8c",
+      "site": {
+        "path": "packages/coding-agent/src/utils/tools-manager.ts",
+        "line": 337,
+        "column": 16,
+        "endLine": 337,
+        "endColumn": 98,
+        "start": 10778,
+        "end": 10860,
+        "kind": "output:console.log",
+        "nodeSha256": "e2daac1ac2c7d482f6d7982c60f5f81c0e1351e63d162a044b72a760e9f4a9c5"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-e180a33bb579",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " not found. Offline mode enabled, skipping download.",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-1e093cab30afb0c4",
+      "site": {
+        "path": "packages/coding-agent/src/utils/tools-manager.ts",
+        "line": 347,
+        "column": 16,
+        "endLine": 347,
+        "endColumn": 94,
+        "start": 11122,
+        "end": 11200,
+        "kind": "output:console.log",
+        "nodeSha256": "10b3a2cdb3c523ed66fbe4e6f50e3e1986f889ea03850ccfe341aa61fff8b30f"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-6e91fc06717b",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": " not found. Install with: pkg install ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
       "id": "VS-11d8e22b8661ab70",
       "site": {
         "path": "packages/coding-agent/src/utils/tools-manager.ts",
@@ -20090,6 +23043,54 @@
               "text": " installed to ",
               "stylePath": [
                 "dim"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-77d068e7fda24649",
+      "site": {
+        "path": "packages/coding-agent/src/utils/tools-manager.ts",
+        "line": 365,
+        "column": 16,
+        "endLine": 365,
+        "endColumn": 104,
+        "start": 11551,
+        "end": 11639,
+        "kind": "output:console.log",
+        "nodeSha256": "8bb908eb06273c2d810fbafa3ccbb632be7e76d6a53f3b21689974df27e5edcb"
+      },
+      "sink": {
+        "kind": "output:console.log",
+        "channel": "printable-visible"
+      },
+      "branches": [
+        {
+          "id": "B-61aa1bdee93c",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "Failed to download ",
+              "stylePath": [
+                "yellow"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "B-454075ef7ff3",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": ": ",
+              "stylePath": [
+                "yellow"
               ]
             }
           ]

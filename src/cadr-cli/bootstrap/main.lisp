@@ -85,7 +85,9 @@
             (return-from main 1))
           (cond
             ((cli-arguments-help-p arguments)
-             (print-cli-usage)
+             (print-cli-usage
+              *standard-output*
+              (cli-help-extension-flags arguments))
              0)
             ((cli-arguments-version-p arguments)
              (format t "~A~%"

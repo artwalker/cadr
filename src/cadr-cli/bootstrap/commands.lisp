@@ -187,6 +187,79 @@
       (check-for-new-cadr-version
        (cadr-ai::cadr-version))))
 
+(defun cli-help-extension-flags (command)
+  ;; Baseline main.ts builds the runtime — loading discovered, explicit,
+  ;; and package-configured extensions — before printHelp, so --help lists
+  ;; every registered extension flag (main.ts:804-809).
+  (let* ((cwd (uiop:getcwd))
+         (agent-directory (default-agent-directory))
+         (manager
+           (make-cli-extension-manager
+            :cwd cwd
+            :output (make-broadcast-stream)
+            :mode :repl
+            :explicit-paths
+            (cli-arguments-extensions command)
+            :no-discovery-p
+            (cli-arguments-no-extensions-p command))))
+    (unless (cli-arguments-no-extensions-p command)
+      (let* ((trust-store
+               (make-project-trust-store
+                (merge-pathnames "trust.json" agent-directory)))
+             (trusted-p
+               (resolve-project-trusted
+                trust-store cwd
+                :override
+                (cli-arguments-project-trust-override command)
+                :override-supplied-p
+                (cli-arguments-project-trust-override-supplied-p
+                 command)
+                :has-ui-p nil))
+             (settings-manager
+               (make-settings-manager
+                :global-path
+                (merge-pathnames "settings.json" agent-directory)
+                :project-path
+                (merge-pathnames
+                 "settings.json"
+                 (cadr-core:project-config-directory cwd))
+                :project-trusted-p trusted-p))
+             (package-records
+               (package-resource-paths
+                (materialize-package-records
+                 (configured-package-records
+                  settings-manager
+                  :global-base agent-directory
+                  :project-base
+                  (cadr-core:project-config-directory cwd))
+                 (merge-pathnames "packages/" agent-directory)
+                 (merge-pathnames
+                  "packages/"
+                  (cadr-core:project-config-directory cwd))))))
+        (setf
+         (cli-extension-manager-configured-package-paths manager)
+         (append
+          (mapcar
+           (lambda (path) (cons :project path))
+           (getf package-records :project-extensions))
+          (mapcar
+           (lambda (path) (cons :global path))
+           (getf package-records :global-extensions))))))
+    (reload-cli-extensions manager)
+    (mapcar
+     (lambda (flag)
+       (list
+        :name (cadr-agent::extension-flag-definition-name flag)
+        :type (cadr-agent::extension-flag-definition-type flag)
+        :description
+        (cadr-agent::extension-flag-definition-description flag)
+        :extension-path
+        (cadr-agent::extension-bundle-path
+         (cadr-agent::extension-flag-definition-bundle flag))))
+     (cadr-agent::extension-snapshot-flags
+      (cadr-agent::extension-host-snapshot
+       (cli-extension-manager-host manager))))))
+
 (defun cli-handler (command)
   (let* ((input-terminal-p
            (cadr-tui:terminal-stream-p

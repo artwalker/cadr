@@ -99,6 +99,8 @@ const exactAssetRules = new Map<string, { kind: string; reason: string }>([
 ]);
 const slashCommandPropertyNames = new Set(["name", "description", "argumentHint"]);
 const callSinkContracts = new Map<string, SinkContract>([
+	["addDiagnostic", { argumentPositions: [0], channel: "printable-visible" }],
+	["addLoadedSection", { argumentPositions: [0], channel: "printable-visible" }],
 	["appendStatus", { argumentPositions: [1], channel: "printable-visible" }],
 	["setMessage", { argumentPositions: [0], channel: "printable-visible" }],
 	["setText", { argumentPositions: [0], channel: "printable-visible" }],
@@ -127,12 +129,28 @@ const directPrintableOutputs = new Set([
 const textConstructors = new Set([
 	"Text", "Markdown", "ExpandableText", "TruncatedText", "Loader", "CancellableLoader", "BorderedLoader",
 ]);
+// Component constructors whose visible string arguments sit at non-zero
+// positions.  LoginDialogComponent takes its dialog title as the fifth
+// parameter (titleOverride, login-dialog.ts:35); the ambient-auth flow passes
+// the fixed " setup" suffix through it (interactive-mode.ts:5198).
+const constructorArgumentPositions = new Map<string, number[]>([
+	["LoginDialogComponent", [4]],
+]);
 const tuiThemeValueCalls = new Set([
 	"bold", "code", "codeBlock", "codeBlockBorder", "description", "fallbackColor", "hint", "italic",
 	"label", "link", "linkUrl", "listBullet", "noMatch", "quote", "quoteBorder", "scrollInfo",
 	"selectedPrefix", "selectedText", "strikethrough", "underline", "value",
 ]);
-const styleCalls = new Set(["bold", "dim", "italic", "strikethrough", "underline"]);
+// Style wrappers are transparent to the fixed string fragments inside them.
+// The color entries cover chalk's color API: the extractor keys on the
+// property name only, so theme.fg-style calls were already resolved while
+// chalk.red/chalk.yellow/chalk.green wrappers silently collapsed the whole
+// call into an opaque runtime slot and dropped the literal (Goal 18 I7).
+const styleCalls = new Set([
+	"bold", "dim", "italic", "strikethrough", "underline",
+	"red", "green", "yellow", "cyan", "blue", "magenta", "white", "black", "gray", "grey", "inverse",
+	"bgRed", "bgGreen", "bgYellow", "bgBlue", "bgCyan", "bgMagenta", "bgWhite", "bgBlack",
+]);
 const candidates: Candidate[] = [];
 
 function digest(value: string): string {
@@ -368,6 +386,10 @@ function inspect(source: ts.SourceFile, node: ts.Node): void {
 		const name = calledName(node.expression);
 		if (name && textConstructors.has(name)) {
 			addCandidate(source, node.arguments?.[0], `new:${name}`, "printable-visible", 100);
+		} else if (name && constructorArgumentPositions.has(name)) {
+			for (const position of constructorArgumentPositions.get(name)!) {
+				addVisibleArgument(source, node.arguments?.[position], `new:${name}`, "printable-visible", 100);
+			}
 		}
 	} else if (ts.isPropertyAssignment(node)) {
 		const name = node.name.getText(source).replace(/^['"]|['"]$/g, "");
