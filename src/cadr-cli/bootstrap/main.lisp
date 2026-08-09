@@ -69,11 +69,20 @@
               (diagnostic
                (cli-arguments-diagnostics
                 arguments))
-            (format
-             *error-output*
-             "~:(~A~): ~A~%"
-             (getf diagnostic :type)
-             (getf diagnostic :message)))
+            ;; Baseline main.ts:563-566 — diagnostics print to stderr,
+            ;; red for errors and yellow for warnings.
+            (let ((error-p (eq (getf diagnostic :type) :error)))
+              (format
+               *error-output*
+               "~A~%"
+               (funcall
+                (if error-p #'cli-error-text #'cli-warning-text)
+                *error-output*
+                (format
+                 nil
+                 "~A: ~A"
+                 (if error-p "Error" "Warning")
+                 (getf diagnostic :message))))))
           (when
               (find
                :error
@@ -102,10 +111,30 @@
                      value)))
              0)
             ((cli-arguments-export arguments)
-             (let* ((session
+             (let* ((source
+                      (merge-pathnames
+                       (pathname
+                        (cli-arguments-export arguments))
+                       (uiop:ensure-directory-pathname
+                        (uiop:getcwd)))))
+               ;; Baseline main.ts:578-590 + export-html/index.ts:292-294 —
+               ;; --export reads a session FILE; a missing file is a hard
+               ;; red error, never a raw condition report.
+               (unless (probe-file source)
+                 (format
+                  *error-output*
+                  "~A~%"
+                  (cli-error-text
+                   *error-output*
+                   (format
+                    nil
+                    "Error: File not found: ~A"
+                    (namestring source))))
+                 (finish-output *error-output*)
+                 (return-from main 1))
+               (let* ((session
                       (cadr-agent:load-session
-                       (cli-arguments-export
-                        arguments)))
+                       source))
                     (target
                       (pathname
                        (or
@@ -120,7 +149,7 @@
                 session target)
                (format t "Exported to: ~A~%"
                        (namestring target))
-               0))
+               0)))
             ((and
               (eq
                (cli-arguments-mode arguments)
@@ -129,12 +158,23 @@
                arguments))
              (format
               *error-output*
-              "cadr: @file arguments are not supported in RPC mode~%")
+              "~A~%"
+              (cli-error-text
+               *error-output*
+               "Error: @file arguments are not supported in RPC mode"))
              1)
             (t
              (cli-handler arguments)))))
+    (cli-session-abort (condition)
+      ;; Clean early exit (baseline process.exit(0) paths such as the
+      ;; declined cross-project session fork).
+      (cli-session-abort-status condition))
     (cadr-ai:cadr-error (condition)
-      (format *error-output* "cadr: ~A~%" condition)
+      ;; Baseline prints expected CLI failures as chalk.red(message) with
+      ;; no product prefix; messages carry their own "Error: " prefix when
+      ;; the baseline site has one (main.ts).
+      (format *error-output* "~A~%"
+              (cli-error-text *error-output* (princ-to-string condition)))
       (finish-output *error-output*)
       1)
     (error (condition)

@@ -1,5 +1,12 @@
 (in-package #:cadr-cli)
 
+(define-condition cli-session-abort (condition)
+  ((status
+    :initarg :status :initform 0
+    :reader cli-session-abort-status))
+  (:documentation
+   "Signals a clean CLI exit with a status code (baseline process.exit(0))."))
+
 (defun session-argument-path-p (argument)
   (or
    (position #\/ argument)
@@ -22,6 +29,8 @@
 
 (defun resolve-session-reference
     (argument directory cwd)
+  ;; Baseline main.ts resolveSessionPath: path, local, then global;
+  ;; NIL when nothing matches (callers own the not-found message).
   (if (session-argument-path-p argument)
       (cadr-agent:load-session
        (merge-pathnames
@@ -35,13 +44,34 @@
        (find-session-by-id-or-prefix
         argument
         (cadr-agent:list-sessions
-         :directory directory))
-       (cadr-agent:resume-session
-        argument :directory directory))))
+         :directory directory)))))
 
 (defun resolve-fork-source-session
     (argument directory cwd)
-  (resolve-session-reference argument directory cwd))
+  (or
+   (resolve-session-reference argument directory cwd)
+   (error
+    'cadr-ai:configuration-error
+    :message
+    (format nil "No session found matching '~A'" argument))))
+
+(defun fork-cli-session-into
+    (source directory cwd session-id)
+  ;; Baseline SessionManager.forkFrom: a new session in the target
+  ;; project with the full source history.
+  (let ((target
+          (cadr-agent:create-session
+           :directory directory
+           :cwd cwd
+           :id session-id
+           :parent-session
+           (cadr-agent:session-id source))))
+    (dolist
+        (message
+         (cadr-agent:session-messages source))
+      (cadr-agent:session-append-message
+       target message))
+    target))
 
 (defun resolve-cli-session
     (&key
@@ -55,75 +85,144 @@
        cwd
        (directory (cadr-agent:default-session-directory))
        (output *error-output*))
-  (let ((selectors
-          (remove
-           nil
-           (list
-            (and continue-p "--continue")
-            (and resume-id "--resume")
-            (and resume-selector-p "--resume")
-            (and session-path "--session")
-            (and fork-source "--fork")))))
-    (when (> (length selectors) 1)
-      (error
-       'cadr-ai:configuration-error
-       :message
-       (format nil "~{~A~^ and ~} are mutually exclusive"
-               selectors))))
-  (when (and session-id
-             (or continue-p resume-id
-                 resume-selector-p session-path))
-    (error
-     'cadr-ai:configuration-error
-     :message
-     "--session-id cannot be combined with --session, --continue, or --resume"))
-  (when (and fork-source no-session-p)
-    (error
-     'cadr-ai:configuration-error
-     :message "--fork cannot be combined with --no-session"))
+  ;; Baseline main.ts:253-284 — validateForkFlags/validateSessionIdFlags
+  ;; are the only selector conflict checks; each lists the flags actually
+  ;; present, in baseline order.
+  (when fork-source
+    (let ((conflicts
+            (remove
+             nil
+             (list
+              (and session-path "--session")
+              (and continue-p "--continue")
+              (and (or resume-id resume-selector-p) "--resume")
+              (and no-session-p "--no-session")))))
+      (when conflicts
+        (error
+         'cadr-ai:configuration-error
+         :message
+         (format
+          nil
+          "Error: --fork cannot be combined with ~{~A~^, ~}"
+          conflicts)))))
   (when session-id
+    (let ((conflicts
+            (remove
+             nil
+             (list
+              (and session-path "--session")
+              (and continue-p "--continue")
+              (and (or resume-id resume-selector-p) "--resume")))))
+      (when conflicts
+        (error
+         'cadr-ai:configuration-error
+         :message
+         (format
+          nil
+          "Error: --session-id cannot be combined with ~{~A~^, ~}"
+          conflicts)))))
+  (when session-id
+    ;; Baseline session-manager.ts:212-218 — alphanumeric at both ends,
+    ;; '-', '_', and '.' inside, no length cap.
     (unless
         (and
          (plusp (length session-id))
-         (<= (length session-id) 128)
+         (alphanumericp (char session-id 0))
+         (alphanumericp
+          (char session-id (1- (length session-id))))
          (every
           (lambda (character)
             (or
              (alphanumericp character)
              (member character
                      '(#\- #\_ #\.))))
-          session-id)
-         (not (member session-id
-                      '("." "..")
-                      :test #'string=)))
+          session-id))
       (error
        'cadr-ai:configuration-error
        :message
-       (format nil "Invalid session id: ~S"
-               session-id))))
+       "Error: Session id must be non-empty, contain only alphanumeric characters, '-', '_', and '.', and start and end with an alphanumeric character")))
   (when no-session-p
     (return-from resolve-cli-session nil))
   (cond
     (fork-source
-     (let* ((source
-              (resolve-fork-source-session
-               fork-source directory cwd))
-            (target
-              (cadr-agent:create-session
-               :directory directory
-               :cwd cwd
-               :id session-id
-               :parent-session
-               (cadr-agent:session-id source))))
-       (dolist
-           (message
-            (cadr-agent:session-messages source))
-         (cadr-agent:session-append-message
-          target message))
-       target))
+     (progn
+       ;; Baseline main.ts:324-330 — forking onto an existing local
+       ;; session id is a hard error.
+       (when
+           (and
+            session-id
+            (find
+             session-id
+             (cadr-agent:list-sessions
+              :directory directory :cwd cwd)
+             :key #'cadr-agent:session-id
+             :test #'string=))
+         (error
+          'cadr-ai:configuration-error
+          :message
+          (format
+           nil
+           "Session already exists with id '~A'"
+           session-id)))
+       (fork-cli-session-into
+        (resolve-fork-source-session
+         fork-source directory cwd)
+        directory cwd session-id)))
     (session-path
-     (resolve-session-reference
-      session-path directory cwd))
+     (let ((session
+             (resolve-session-reference
+              session-path directory cwd)))
+       (cond
+         ((null session)
+          (error
+           'cadr-ai:configuration-error
+           :message
+           (format
+            nil
+            "No session found matching '~A'"
+            session-path)))
+         ((and
+           (cadr-agent:session-cwd session)
+           (not
+            (string=
+             (cadr-agent:session-cwd session)
+             (cadr-agent::canonical-session-cwd cwd))))
+          ;; Baseline main.ts:349-359 — a session from another project
+          ;; requires an explicit fork confirmation.
+          (format
+           *standard-output*
+           "~A~%"
+           (cli-warning-text
+            *standard-output*
+            (format
+             nil
+             "Session found in different project: ~A"
+             (cadr-agent:session-cwd session))))
+          (format
+           *standard-output*
+           "Fork this session into current directory? [y/N] ")
+          (finish-output *standard-output*)
+          (let ((answer
+                  (read-line *standard-input* nil nil)))
+            (if (and
+                 answer
+                 (member
+                  (string-downcase
+                   (string-trim
+                    '(#\Space #\Tab #\Newline #\Return)
+                    answer))
+                  '("y" "yes")
+                  :test #'string=))
+                (fork-cli-session-into
+                 session directory cwd session-id)
+                (progn
+                  (format
+                   *standard-output*
+                   "~A~%"
+                   (cli-dim-text *standard-output* "Aborted."))
+                  (finish-output *standard-output*)
+                  (error 'cli-session-abort :status 0)))))
+         (t session))))
     (resume-id
      (let ((session
              (cadr-agent:resume-session
@@ -146,18 +245,13 @@
       (cadr-agent:list-sessions
        :directory directory :cwd cwd)))
     (continue-p
+     ;; Baseline SessionManager.continueRecent falls back to a fresh
+     ;; session silently.
      (or
       (cadr-agent:continue-session
        :directory directory :cwd cwd)
-      (progn
-        (format output
-                "cadr: no previous session for ~A; starting a new session~%"
-                (namestring
-                 (truename
-                  (uiop:ensure-directory-pathname cwd))))
-        (finish-output output)
-        (cadr-agent:create-session
-         :directory directory :cwd cwd))))
+      (cadr-agent:create-session
+       :directory directory :cwd cwd)))
     (session-id
      (or
       (find
@@ -167,10 +261,16 @@
        :key #'cadr-agent:session-id
        :test #'string=)
       (progn
+        ;; Baseline main.ts:393-399 — yellow warning on stderr.
         (format
          output
-         "cadr: no project session with id ~A; creating it~%"
-         session-id)
+         "~A~%"
+         (cli-warning-text
+          output
+          (format
+           nil
+           "Warning: No project session found with id '~A'; creating a new session with that id."
+           session-id)))
         (finish-output output)
         (cadr-agent:create-session
          :directory directory :cwd cwd

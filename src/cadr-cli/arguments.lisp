@@ -494,6 +494,24 @@
       (format nil "~C[1m~A~C[22m" #\Escape text #\Escape)
       text))
 
+(defun cli-error-text (stream text)
+  ;; Baseline console.error(chalk.red(text)).
+  (if (cli-stream-color-p stream)
+      (format nil "~C[31m~A~C[39m" #\Escape text #\Escape)
+      text))
+
+(defun cli-warning-text (stream text)
+  ;; Baseline chalk.yellow(text).
+  (if (cli-stream-color-p stream)
+      (format nil "~C[33m~A~C[39m" #\Escape text #\Escape)
+      text))
+
+(defun cli-dim-text (stream text)
+  ;; Baseline chalk.dim(text).
+  (if (cli-stream-color-p stream)
+      (format nil "~C[2m~A~C[22m" #\Escape text #\Escape)
+      text))
+
 (defun cli-pad-right (text width)
   (let ((length (length text)))
     (if (>= length width)

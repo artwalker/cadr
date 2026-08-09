@@ -733,7 +733,7 @@
         (when (zerop (length name))
           (error
            'cadr-ai:configuration-error
-           :message "--name requires a non-empty value"))
+           :message "Error: --name requires a non-empty value"))
         (when session
           (cadr-agent:session-set-name
            session name))))

@@ -16,7 +16,7 @@
     (unless match
       (error 'credential-print-error
              :message
-             (format nil "Invalid duration: ~A" value)))
+             "--min-expiry must use a duration such as 30m or 1h"))
     (* (parse-integer (aref groups 0))
        (cond
          ((string= (aref groups 1) "h") 3600000)
@@ -50,7 +50,7 @@
        (error 'credential-print-error
               :message
               (format nil
-                      "Unknown auth command: ~A"
+                      "Unknown auth command \"~A\". Use \"cadr auth print-api-key\" or \"cadr auth print-bearer-token\"."
                       command))))
     (loop while rest
           for argument = (pop rest)
@@ -142,18 +142,38 @@
      &key
        (auth-path (default-auth-path))
        (output *standard-output*))
+  ;; Baseline main.ts:139-142 — credential-print failures print
+  ;; chalk.red("Error: " + message) to stderr and exit 1.
+  (handler-case
+      (run-credential-print-command-1
+       arguments auth-path output)
+    (credential-print-error (condition)
+      (format
+       *error-output*
+       "~A~%"
+       (cli-error-text
+        *error-output*
+        (format
+         nil
+         "Error: ~A"
+         (credential-print-error-message condition))))
+      (finish-output *error-output*)
+      (values t 1))))
+
+(defun run-credential-print-command-1
+    (arguments auth-path output)
   (let ((parsed
           (parse-credential-print-command
            arguments)))
     (unless parsed
       (return-from
-          run-credential-print-command
+          run-credential-print-command-1
         (values nil nil)))
     (when (getf parsed :help-p)
       (print-credential-command-usage
        output)
       (return-from
-          run-credential-print-command
+          run-credential-print-command-1
         (values t 0)))
     (let* ((cli
              (parse-cli-arguments
@@ -166,7 +186,7 @@
         (error
          'credential-print-error
          :message
-         "Credential printing requires --model"))
+         "Credential printing requires --model <model>"))
       (let* ((model-spec
                (parse-model-spec
                 model
@@ -179,7 +199,7 @@
           (error
            'credential-print-error
            :message
-           "Credential printing requires --provider or a provider-qualified --model"))
+           "Unable to resolve the requested provider/model"))
         (let* ((provider-id
                  (provider-symbol-from-key
                   provider))

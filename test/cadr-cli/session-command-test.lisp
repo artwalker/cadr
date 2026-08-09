@@ -63,13 +63,16 @@
                :output output)))
         (is (string= "wanted"
                      (cadr-agent:session-id session))))
-      (signals cadr-ai:configuration-error
-        (cadr-cli::resolve-cli-session
-         :continue-p t
-         :resume-id "wanted"
-         :cwd cwd
-         :directory sessions
-         :output output))
+      ;; Baseline has no --continue/--resume conflict check; the named
+      ;; session resolution precedes --continue (main.ts:341-377).
+      (is (string= "wanted"
+                   (cadr-agent:session-id
+                    (cadr-cli::resolve-cli-session
+                     :continue-p t
+                     :resume-id "wanted"
+                     :cwd cwd
+                     :directory sessions
+                     :output output))))
       (signals cadr-agent:session-error
         (cadr-cli::resolve-cli-session
          :resume-id "missing"
