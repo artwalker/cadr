@@ -17,6 +17,13 @@
     ("app.thinking.toggle" . ("ctrl+t"))
     ("app.message.copy" . ("ctrl+x"))
     ("app.clipboard.pasteImage" . ("ctrl+v"))
+    ;; Session actions exist in the baseline registry with empty default
+    ;; keys (keybindings.ts:115-118): bindable through settings.json and
+    ;; listed there, but unbound by default.
+    ("app.session.new" . nil)
+    ("app.session.tree" . nil)
+    ("app.session.fork" . nil)
+    ("app.session.resume" . nil)
     ("tui.editor.cursorUp" . ("up"))
     ("tui.editor.cursorDown" . ("down"))
     ("tui.editor.cursorLeft" . ("left" "ctrl+b"))

@@ -59,6 +59,22 @@ run_live() {
   fi
 }
 
+# A live SKIP is acceptable for everyday verification (credentials are not
+# always present) but never for the release gate: CADR_RELEASE_GATE=1 turns
+# any live skip into a failure so a release can never exit 0 with live
+# verification unrun.
+skip_live() {
+  local name="$1" reason="$2"
+  if [ "${CADR_RELEASE_GATE:-0}" = "1" ]; then
+    record_live \
+      "$name" \
+      "FAIL ($reason; the release gate requires live verification)"
+    OVERALL_FAILURE=1
+  else
+    record_live "$name" "SKIP ($reason)"
+  fi
+}
+
 skip_deterministic() {
   record_deterministic "$1" "NOT RUN ($2)"
   OVERALL_FAILURE=1
@@ -363,7 +379,7 @@ if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
     OVERALL_FAILURE=1
   fi
 else
-  record_live "DeepSeek live TUI" "SKIP (DEEPSEEK_API_KEY is not set)"
+  skip_live "DeepSeek live TUI" "DEEPSEEK_API_KEY is not set"
 fi
 
 print_summary

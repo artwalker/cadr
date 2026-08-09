@@ -894,6 +894,8 @@
            (let ((component
                    (funcall factory
                             #'finish-custom-ui)))
+             (note-component-render-channel
+              component #'request-render)
              (if custom-ui-done-p
                  custom-ui-result
                  (let ((state
@@ -924,6 +926,8 @@
                     (extension-theme-runtime)
                     (cadr-tui:get-keybindings)
                     #'finish-custom-ui)))
+             (note-component-render-channel
+              component #'request-render)
              (unless (tui-component-protocol-p component)
                (error
                 'cadr-agent:extension-execution-error
@@ -1895,19 +1899,7 @@
                     (status
                      "Cloned to new session"))))
                ((string= trimmed "/new")
-                (when on-new-session
-                  (multiple-value-bind
-                        (selected-session
-                         selected-messages
-                         selected-path)
-                      (funcall on-new-session)
-                    (when selected-session
-                      (replace-session-state
-                       selected-session
-                       selected-messages
-                       selected-path)
-                      (success
-                       "New session started")))))
+                (start-new-session))
                ((string= trimmed "/quit")
                 (setf done-p t))
                ((string= trimmed "/debug")
@@ -1950,6 +1942,22 @@
                  line busy-p
                  busy-input-function
                  #'start-work)))))
+         (start-new-session ()
+           ;; Baseline handleClearCommand: shared by /new and the
+           ;; app.session.new keybinding action.
+           (when on-new-session
+             (multiple-value-bind
+                   (selected-session
+                    selected-messages
+                    selected-path)
+                 (funcall on-new-session)
+               (when selected-session
+                 (replace-session-state
+                  selected-session
+                  selected-messages
+                  selected-path)
+                 (success
+                  "New session started")))))
          (handle-debug-command ()
            ;; Baseline handleDebugCommand
            ;; (interactive-mode.ts:5923-5953): dump every rendered line
@@ -2417,6 +2425,19 @@
                         "collapsed"))))
                  (:debug
                   (handle-debug-command))
+                 (:session-new
+                  (start-new-session))
+                 (:session-tree
+                  (open-tree-selector))
+                 (:session-fork
+                  (open-fork-selector))
+                 (:session-resume
+                  (open-selector
+                   :session
+                   (if session-items-function
+                       (funcall
+                        session-items-function)
+                       nil)))
                  (:follow-up
                   (submit-follow-up))
                  (:dequeue

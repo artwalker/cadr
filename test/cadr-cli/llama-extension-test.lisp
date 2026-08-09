@@ -2,6 +2,63 @@
 
 (in-suite cadr-cli-suite)
 
+(test goal18-llama-context-label-matches-the-baseline
+  ;; Baseline ui.ts:35-39 contextLabel: meta n_ctx ?? n_ctx_train, then
+  ;; the --ctx-size/-c/-ctx status arg; >=1000 renders as Nk.
+  (flet ((model (&key context-window training-context-window args)
+           (cadr-cli::make-llama-model-info
+            :id "m"
+            :status :loaded
+            :context-window context-window
+            :training-context-window training-context-window
+            :arguments args)))
+    (is (string= "8k" (cadr-cli::llama-context-label (model :context-window 8192))))
+    (is (string= "8k" (cadr-cli::llama-context-label (model :training-context-window 8192))))
+    (is (string= "66k" (cadr-cli::llama-context-label (model :context-window 65536))))
+    (is (string= "512" (cadr-cli::llama-context-label (model :context-window 512))))
+    (is (string= "1k" (cadr-cli::llama-context-label (model :context-window 1000))))
+    (is (string= "8k" (cadr-cli::llama-context-label (model :context-window 8499))))
+    (is (string= "9k" (cadr-cli::llama-context-label (model :context-window 8500))))
+    (is (string= "4k" (cadr-cli::llama-context-label (model :args '("--ctx-size" "4096")))))
+    (is (string= "4k" (cadr-cli::llama-context-label (model :args '("-c" "4096")))))
+    (is (string= "4k" (cadr-cli::llama-context-label (model :args '("-ctx" "4096")))))
+    (is (null (cadr-cli::llama-context-label (model :args '("--ctx-size"))))
+        "a flag without a value has no label")
+    (is (null (cadr-cli::llama-context-label (model :args '("--ctx-size" "junk"))))
+        "a non-numeric value has no label")
+    (is (null (cadr-cli::llama-context-label (model :args '("--ctx-size" "0"))))
+        "a non-positive value has no label")
+    (is (null (cadr-cli::llama-context-label (model))))))
+
+(test goal18-llama-model-description-matches-the-baseline
+  ;; Baseline ui.ts:41-52 modelDescription.
+  (flet ((model (status &key context-window)
+           (cadr-cli::make-llama-model-info
+            :id "m"
+            :status status
+            :context-window context-window)))
+    (is (string= "loaded" (cadr-cli::llama-model-description (model :loaded))))
+    (is (string= "loaded · 8k context" (cadr-cli::llama-model-description (model :loaded :context-window 8192))))
+    (is (string= "loaded · 8k context" (cadr-cli::llama-model-description (model :sleeping :context-window 8192))))
+    (is (string= "" (cadr-cli::llama-model-description (model :unloaded))))
+    (is (string= "loading" (cadr-cli::llama-model-description (model :loading))))
+    (is (string= "loading" (cadr-cli::llama-model-description (model :loading :context-window 8192)))
+        "the context label only shows for loaded models")))
+
+(test goal18-llama-compact-count-matches-the-baseline
+  ;; Baseline ui.ts:102-106 compactCount.
+  (is (string= "0" (cadr-cli::llama-compact-count 0)))
+  (is (string= "999" (cadr-cli::llama-compact-count 999)))
+  (is (string= "1.0k" (cadr-cli::llama-compact-count 1000)))
+  (is (string= "1.2k" (cadr-cli::llama-compact-count 1234)))
+  (is (string= "99.9k" (cadr-cli::llama-compact-count 99949)))
+  (is (string= "100k" (cadr-cli::llama-compact-count 100000)))
+  (is (string= "999k" (cadr-cli::llama-compact-count 999499)))
+  (is (string= "1.0M" (cadr-cli::llama-compact-count 1000000)))
+  (is (string= "3.4M" (cadr-cli::llama-compact-count 3400000)))
+  (is (string= "10M" (cadr-cli::llama-compact-count 10000000)))
+  (is (string= "250M" (cadr-cli::llama-compact-count 250000000))))
+
 (defun llama-json-response (value)
   (values
    (cadr-ai::stringify-json value)

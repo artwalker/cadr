@@ -1617,6 +1617,57 @@ class RenderResourceSweepTest(unittest.TestCase):
         self.assertEqual(new_session[0][1:3], kill_server[0][1:3])
 
 
+class BaselineCacheIntegrityTest(unittest.TestCase):
+    def make_repo(self, root: Path) -> str:
+        package_dir = root / "packages" / "demo"
+        package_dir.mkdir(parents=True)
+        (package_dir / "source.ts").write_text(
+            "export const answer = 42;\n", encoding="utf-8"
+        )
+        subprocess.run(
+            ["git", "init"], cwd=root, check=True, stdout=subprocess.DEVNULL
+        )
+        subprocess.run(
+            ["git", "add", "packages/demo/source.ts"], cwd=root, check=True
+        )
+        subprocess.run(
+            [
+                "git", "-c", "user.name=t", "-c", "user.email=t@t",
+                "commit", "-m", "seed",
+            ],
+            cwd=root,
+            check=True,
+            stdout=subprocess.DEVNULL,
+        )
+        return subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=root,
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        ).stdout.strip()
+
+    def test_baseline_cache_verification_catches_drift_and_loss(self) -> None:
+        with tempfile.TemporaryDirectory() as sandbox:
+            repo = Path(sandbox) / "repo"
+            repo.mkdir()
+            commit = self.make_repo(repo)
+            cache = Path(sandbox) / "cache"
+            target = cache / "packages" / "demo" / "source.ts"
+            target.parent.mkdir(parents=True)
+            target.write_text("export const answer = 42;\n", encoding="utf-8")
+
+            RENDER_DIFF.verify_baseline_cache_contents(repo, commit, cache)
+
+            target.write_text("export const answer = 43;\n", encoding="utf-8")
+            with self.assertRaises(RENDER_DIFF.HarnessFailure):
+                RENDER_DIFF.verify_baseline_cache_contents(repo, commit, cache)
+
+            target.unlink()
+            with self.assertRaises(RENDER_DIFF.HarnessFailure):
+                RENDER_DIFF.verify_baseline_cache_contents(repo, commit, cache)
+
+
 class ReleaseVerificationContractTest(unittest.TestCase):
     def run_wrapper(
         self,
@@ -1695,6 +1746,37 @@ class ReleaseVerificationContractTest(unittest.TestCase):
         )
         self.assertNotIn('git tag', release_verify)
         self.assertNotIn('git push', release_verify)
+
+    def test_release_gate_fails_when_live_verification_is_skipped(self) -> None:
+        default_verify = (ROOT / "scripts/verify.sh").read_text(encoding="utf-8")
+        release_verify = (ROOT / "scripts/verify-release.sh").read_text(encoding="utf-8")
+        self.assertIn("export CADR_RELEASE_GATE=1", release_verify)
+        self.assertLess(
+            release_verify.index("export CADR_RELEASE_GATE=1"),
+            release_verify.index("scripts/verify.sh"),
+        )
+        self.assertIn('skip_live "DeepSeek live TUI"', default_verify)
+        helper_start = default_verify.index("skip_live() {")
+        helper = default_verify[helper_start:]
+        helper = helper[: helper.index("}\n") + 2]
+        script = (
+            'record_live() { :; }\n'
+            "OVERALL_FAILURE=0\n"
+            + helper
+            + 'skip_live "demo" "no creds"\n'
+            + 'printf "daily:%s\\n" "$OVERALL_FAILURE"\n'
+            + "CADR_RELEASE_GATE=1\n"
+            + 'skip_live "demo" "no creds"\n'
+            + 'printf "release:%s\\n" "$OVERALL_FAILURE"\n'
+        )
+        result = subprocess.run(
+            ["bash", "-c", script],
+            check=True,
+            stdout=subprocess.PIPE,
+            text=True,
+        )
+        self.assertIn("daily:0", result.stdout)
+        self.assertIn("release:1", result.stdout)
 
 
 if __name__ == "__main__":

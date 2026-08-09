@@ -477,6 +477,22 @@
       (typep value 'cadr-tui:multiline-editor)
       (typep value 'cadr-tui:single-line-input)))
 
+(defclass render-aware-component ()
+  ((render-request-function
+    :initform nil
+    :accessor component-render-request-function))
+  (:documentation
+   "Mixin for extension custom components that mutate state from a
+non-TUI thread (the baseline tui.requestRender() channel).  The host
+injects the TUI render request when the component is shown."))
+
+(defun note-component-render-channel (component request-render)
+  (when (typep component 'render-aware-component)
+    (setf
+     (component-render-request-function component)
+     request-render))
+  component)
+
 (defun render-extension-custom-ui
     (state width)
   (let ((component

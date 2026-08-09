@@ -1,6 +1,54 @@
 (in-package #:cadr-tui/tests)
 (in-suite cadr-tui-suite)
 
+(test goal18-session-actions-registered-unbound-bindable-and-decoding
+  ;; Goal 18 I7: the baseline keybindings.ts:115-118 registry carries
+  ;; app.session.{new,tree,fork,resume} with empty defaultKeys; cadr
+  ;; must register them unbound, resolve user settings.json bindings for
+  ;; them, and decode those keys to dispatch keywords.
+  (dolist (action
+           '("app.session.new" "app.session.tree" "app.session.fork"
+             "app.session.resume"))
+    (let ((definition
+            (assoc
+             action
+             cadr-tui::+tui-keybinding-definitions+
+             :test #'string=)))
+      (is (not (null definition)) "~A is missing from the registry" action)
+      (is (null (cdr definition))
+          "~A must default to no keys (baseline defaultKeys: [])"
+          action))
+    (is
+     (not
+      (null
+       (assoc
+        action
+        cadr-tui::+logical-key-events+
+        :test #'string=)))
+     "~A has no dispatch keyword" action))
+  (let ((manager
+          (cadr-tui:make-keybindings-manager
+           :user-bindings '(("app.session.tree" . ("ctrl+alt+t"))))))
+    (is
+     (equal
+      '("ctrl+alt+t")
+      (cadr-tui:keybinding-keys manager "app.session.tree"))
+     "a settings.json binding for app.session.tree must resolve"))
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+           (cadr-tui:set-keybindings
+            (cadr-tui:make-keybindings-manager
+             :user-bindings '(("app.session.tree" . ("ctrl+alt+t")))))
+           (is
+            (eq
+             :session-tree
+             (cadr-tui::event-kind-for-raw-key
+              ;; Kitty CSI-u: t (116) with ctrl+alt (modifier 7).
+              (format nil "~C[116;7u" #\Escape)))
+            "ctrl+alt+t must decode to :session-tree"))
+      (cadr-tui:set-keybindings previous))))
+
 (test keybindings-defaults-overrides-and-conflicts
   (let ((manager
           (cadr-tui:make-keybindings-manager)))

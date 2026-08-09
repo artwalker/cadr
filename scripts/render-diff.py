@@ -738,9 +738,59 @@ def hydrate_baseline_model_data(baseline: Path) -> None:
                 (destination / relative).write_bytes(source.read())
 
 
+def verify_baseline_cache_contents(pi_repo: Path, commit: str, cache: Path) -> None:
+    """Require the reused baseline cache to match the immutable git blobs.
+
+    The marker alone only records a commit string; it cannot prove the
+    /tmp cache still contains that commit (the directory is not a git
+    checkout and the harness writes into it).  The expected content comes
+    from the repository's own object store — never from the cache — so a
+    modified or partially damaged cache fails closed.  Only git-tracked
+    files under packages/ are checked; node_modules is `npm ci`-derived
+    from the verified lockfile, and the harness-written driver copies and
+    hydrated model data are untracked by the baseline commit.
+    """
+    listing = subprocess.run(
+        ["git", "-C", str(pi_repo), "ls-tree", "-r", commit, "--", "packages"],
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    ).stdout
+    expected: list[tuple[str, str, str]] = []
+    for line in listing.splitlines():
+        meta, _, path = line.partition("\t")
+        parts = meta.split()
+        if len(parts) == 3 and parts[1] == "blob" and path:
+            expected.append((parts[0], parts[2], path))
+    if not expected:
+        raise HarnessFailure(
+            f"baseline commit {commit} lists no tracked files under packages/"
+        )
+    for mode, blob, path in expected:
+        target = cache / path
+        if mode == "120000":
+            if not target.is_symlink():
+                raise HarnessFailure(
+                    f"baseline cache lost a tracked symlink: {path}"
+                )
+            actual = os.readlink(target).encode()
+        else:
+            if not target.is_file() or target.is_symlink():
+                raise HarnessFailure(
+                    f"baseline cache is missing a tracked file: {path}"
+                )
+            actual = target.read_bytes()
+        digest = hashlib.sha1(b"blob %d\0" % len(actual) + actual).hexdigest()
+        if digest != blob:
+            raise HarnessFailure(
+                f"baseline cache content no longer matches {commit}: {path}"
+            )
+
+
 def ensure_baseline(pi_repo: Path, commit: str, cache: Path) -> Path:
     marker = cache / ".goal15-render-baseline"
     if marker.is_file() and marker.read_text(encoding="ascii").strip() == commit:
+        verify_baseline_cache_contents(pi_repo, commit, cache)
         hydrate_baseline_model_data(cache)
         shutil.copy2(PI_DRIVER, cache / "packages/coding-agent/test/goal15-render-driver.ts")
         shutil.copy2(

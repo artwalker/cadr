@@ -44,6 +44,22 @@ tag/Release step.
 
 ### Added
 
+- Goal 18 Part I gate hardening and capability completion: the reused
+  pi baseline checkout is now verified blob-for-blob against the
+  repository's immutable object store before any differential run (I5);
+  `verify-release.sh` can no longer exit 0 with live stages skipped —
+  `CADR_RELEASE_GATE=1` turns a live SKIP into a named failure while
+  everyday `verify.sh` keeps the skip behavior (I6); the presentation
+  ledger's scale numbers are machine-reconciled by a FiveAM gate that
+  recomputes them from the real artifacts (I4); the four baseline
+  session keybinding actions `app.session.{new,tree,fork,resume}` are
+  registered unbound, bindable via settings.json, and dispatch to the
+  same handlers as their slash commands (I7); and the bundled llama
+  extension gained the full baseline `ui.ts` surface — context-size
+  labels, model descriptions, compact counts, the framed model selector,
+  live Hugging Face search with debounce, and the cancellable progress
+  view over a persistent custom component with a render channel (I8).
+
 - Goal 18 Part E/F audit deliverables: the intentional-difference ledger grew
   from 72 to 77 rows after recasting five component-export rows
   (extension/show-images/skill-invocation/theme/thinking selectors) with

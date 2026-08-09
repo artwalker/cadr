@@ -77,6 +77,17 @@
                    downloads
                    0))))))
 
+(defun parse-llama-hugging-face-model (value)
+  "Baseline parseHuggingFaceModel (extensions/llama/index.ts): the
+quantization splits at the first colon after the first slash."
+  (let* ((slash (position #\/ value))
+         (colon (position #\: value :start (1+ (or slash -1)))))
+    (if colon
+        (values
+         (subseq value 0 colon)
+         (subseq value (1+ colon)))
+        (values value nil))))
+
 (defun encode-hugging-face-id (id)
   (format nil "~{~A~^/~}"
           (mapcar

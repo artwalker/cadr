@@ -95,6 +95,7 @@
                                 ((:file "client")
                                  (:file "huggingface")
                                  (:file "provider")
+                                 (:file "ui")
                                  (:file "extension")))))
                              (:module "extensions"
                               :serial t
@@ -220,6 +221,7 @@
                              (:file "goal9-b3-p2-regressions-test")
                              (:file "goal9-b3-overlay-contract-test")
                              (:file "goal9-b3-base-screen-contract-test")
+                             (:file "goal18-presentation-numbers-test")
                              (:file "goal9-a2-interactive-test")
                              (:file "goal9-a2-workflows-test")
                              (:file "goal9-a2-process-faux-test")

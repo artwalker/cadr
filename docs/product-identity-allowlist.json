@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 354,
+  "expected_findings": 357,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -78,7 +78,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.83.0 (+38, 74caa2649)**",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -326,7 +326,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.83.0 (+38, 74caa2649)**",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -1990,7 +1990,7 @@
       "path": "src/cadr-ai/support/release.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "   \"~A ~A · aligned with pi ~A (+~D, ~A)\"",
+      "line": "   \"~A ~A \u00b7 aligned with pi ~A (+~D, ~A)\"",
       "occurrences": 1,
       "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
     },
@@ -2537,6 +2537,30 @@
       "line": "  (format nil \"~C_pi:c~C\" #\\Escape (code-char 7)))",
       "occurrences": 1,
       "reason": "Private baseline cursor marker is a renderer protocol sentinel, never visible product copy."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def verify_baseline_cache_contents(pi_repo: Path, commit: str, cache: Path) -> None:",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        verify_baseline_cache_contents(pi_repo, commit, cache)",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        [\"git\", \"-C\", str(pi_repo), \"ls-tree\", \"-r\", commit, \"--\", \"packages\"],",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     }
   ],
   "opaque_files": [
