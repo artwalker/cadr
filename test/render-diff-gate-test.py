@@ -898,13 +898,17 @@ class RenderDiffGateTest(unittest.TestCase):
         RENDER_DIFF.validate_visible_string_inventory(
             inventory, manifest["baselineCommit"]
         )
-        self.assertEqual(423, len(inventory["entries"]))
+        # Goal 18 I7 widened the extractor: chalk color wrappers stay
+        # transparent to the literals inside them, and addLoadedSection,
+        # addDiagnostic, and LoginDialogComponent's titleOverride became
+        # contracted sinks.
+        self.assertEqual(493, len(inventory["entries"]))
         self.assertEqual(
-            974,
+            1091,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            924,
+            1041,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]

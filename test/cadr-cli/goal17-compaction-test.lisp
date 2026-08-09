@@ -1185,9 +1185,9 @@
 
 (test goal17-package-command-help-preserves-baseline-contract
   ;; Fixed pi@74caa2649 package-manager-cli.ts:66-155 owns the complete
-  ;; foreground help contract.  Cadr changes only product identity and the
-  ;; approved Lisp package/build examples; shared options and explanations
-  ;; remain visible rather than collapsing to one summary sentence.
+  ;; foreground help contract.  Cadr changes product identity only; the
+  ;; examples match the baseline verbatim (npm:@foo/bar included — the
+  ;; npm install capability gap is reported separately).
   (flet ((help (command)
            (with-output-to-string (stream)
              (cadr-cli::print-package-command-help command stream))))
@@ -1201,14 +1201,15 @@
                  "-l, --local       Install project-locally (.cadr/settings.json)"
                  "-a, --approve     Trust project-local files for this command"
                  "-na, --no-approve Ignore project-local files for this command"
+                 "cadr install npm:@foo/bar"
                  "cadr install git:github.com/user/repo"
                  "cadr install ./local/path"))
         (is (search fragment install)))
       (dolist (fragment
                '("Remove a package and its source from settings."
                  "Alias: cadr uninstall <source> [-l]"
-                 "cadr remove git:github.com/user/repo"
-                 "cadr uninstall ./local/path"))
+                 "cadr remove npm:@foo/bar"
+                 "cadr uninstall npm:@foo/bar"))
         (is (search fragment remove)))
       (dolist (fragment
                '("cadr update [source|self|cadr]"
@@ -1240,4 +1241,7 @@
              (list "update" source))))
       (is (equal '(:self)
                  (cadr-cli::package-command-options-update-target options)))
-      (is (null (cadr-cli::package-command-options-source options))))))
+      ;; Baseline keeps the alias in options.source; only the resolved
+      ;; update-target distinguishes it (package-manager-cli.ts:357-360).
+      (is (string= source
+                   (cadr-cli::package-command-options-source options))))))

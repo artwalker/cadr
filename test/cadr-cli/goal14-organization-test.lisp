@@ -378,7 +378,10 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 110 definition-count)
+    ;; Goal 18 I7 added three definitions inside the B5 owners:
+    ;; cli-session-abort and fork-cli-session-into (bootstrap/sessions.lisp)
+    ;; and cli-help-extension-flags (bootstrap/commands.lisp).
+    (is (= 113 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

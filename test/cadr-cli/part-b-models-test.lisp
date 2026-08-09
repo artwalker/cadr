@@ -792,8 +792,13 @@
              (format nil "print-me~%")
              (get-output-stream-string
               output))))
-      (signals cadr-cli::credential-print-error
-        (cadr-cli::run-credential-print-command
-         '("auth" "print-api-key"
-           "--provider" "openai")
-         :auth-path auth)))))
+      ;; Baseline main.ts:139-142 catches CredentialPrintError at the
+      ;; command boundary and prints red "Error: <message>" to stderr.
+      (multiple-value-bind (handled-p status)
+          (cadr-cli::run-credential-print-command
+           '("auth" "print-api-key"
+             "--provider" "openai")
+           :auth-path auth
+           :output (make-string-output-stream))
+        (is (eq t handled-p))
+        (is (= 1 status))))))

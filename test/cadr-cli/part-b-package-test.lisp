@@ -109,8 +109,7 @@
         (update
           (cadr-cli::parse-package-command
            '("update" "--extension"
-             "git:github.com/user/repo"
-             "--offline"))))
+             "git:github.com/user/repo"))))
     (is (eq :install
             (cadr-cli::package-command-options-command
              install)))
@@ -127,20 +126,31 @@
            "git:github.com/user/repo")
          (cadr-cli::package-command-options-update-target
           update)))
-    (is (cadr-cli::package-command-options-offline-p
-         update)))
-  (is (null
-       (cadr-cli::parse-package-command
-        '("--model" "mock"))))
-  (signals cadr-ai:configuration-error
-    (cadr-cli::parse-package-command
-     '("install")))
-  (signals cadr-ai:configuration-error
-    (cadr-cli::parse-package-command
-     '("install" "./extension" "--bogus")))
-  (signals cadr-ai:configuration-error
-    (cadr-cli::parse-package-command
-     '("update" "--models" "--all"))))
+    ;; Baseline records --offline as an invalid package-command option
+    ;; (package-manager-cli.ts:307-309).
+    (is (null
+         (cadr-cli::parse-package-command
+          '("--model" "mock"))))
+    (let ((offline
+            (cadr-cli::parse-package-command
+             '("update" "--offline"))))
+      (is (string=
+           "--offline"
+           (cadr-cli::package-command-options-invalid-option
+            offline)))))
+  ;; Baseline records parse problems on the options object instead of
+  ;; throwing; first invalid option wins and update-target conflicts use
+  ;; the baseline texts.
+  (is (string=
+       "--bogus"
+       (cadr-cli::package-command-options-invalid-option
+        (cadr-cli::parse-package-command
+         '("install" "./extension" "--bogus")))))
+  (is (string=
+       "--all cannot be combined with --self, --extensions, --models, or --extension"
+       (cadr-cli::package-command-options-conflicting-options
+        (cadr-cli::parse-package-command
+         '("update" "--models" "--all"))))))
 
 (test local-package-settings-persist-dedupe-remove-and-resolve-resources
   (with-test-directory (root)

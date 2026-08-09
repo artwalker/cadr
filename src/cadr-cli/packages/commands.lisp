@@ -5,14 +5,20 @@
   source
   (local-p nil :type boolean)
   (force-p nil :type boolean)
-  (offline-p nil :type boolean)
   project-trust-override
   (project-trust-override-supplied-p
    nil :type boolean)
   update-target
-  (help-p nil :type boolean))
+  (help-p nil :type boolean)
+  invalid-option
+  invalid-argument
+  missing-option-value
+  conflicting-options)
 
 (defun parse-package-command (arguments)
+  ;; Baseline package-manager-cli.ts parsePackageCommand: a recording
+  ;; state machine — invalid input is recorded, not thrown, and the
+  ;; first invalid option/argument wins.
   (let* ((name (first arguments))
          (command
            (cond
@@ -31,33 +37,28 @@
             (make-package-command-options
              :command command))
           (rest (rest arguments))
-          (targets nil))
-      (labels
-          ((invalid (format-control &rest values)
-             (error
-              'cadr-ai:configuration-error
-              :message
-              (apply #'format nil
-                     format-control values)))
-           (set-trust (value)
-             (when
-                 (and
-                  (package-command-options-project-trust-override-supplied-p
-                   options)
-                  (not
-                   (eq
-                    value
-                    (package-command-options-project-trust-override
-                     options))))
-               (invalid
-                "--approve and --no-approve cannot be combined"))
-             (setf
-              (package-command-options-project-trust-override
-               options)
-              value
-              (package-command-options-project-trust-override-supplied-p
-               options)
-              t)))
+          (self-p nil)
+          (extensions-p nil)
+          (models-p nil)
+          (all-p nil)
+          (extension-source nil))
+      (flet
+          ((note-invalid-option (argument)
+             (unless
+                 (package-command-options-invalid-option
+                  options)
+               (setf
+                (package-command-options-invalid-option
+                 options)
+                argument)))
+           (note-conflict (message)
+             (unless
+                 (package-command-options-conflicting-options
+                  options)
+               (setf
+                (package-command-options-conflicting-options
+                 options)
+                message))))
         (loop while rest
               for argument = (pop rest)
               do
@@ -69,137 +70,167 @@
                   t))
                 ((member argument '("-l" "--local")
                          :test #'string=)
-                 (unless
-                     (member command
-                             '(:install :remove :config))
-                   (invalid
-                    "Unknown ~A option: ~A"
-                    (string-downcase
-                     (symbol-name command))
-                    argument))
-                 (setf
-                  (package-command-options-local-p
-                   options)
-                  t))
+                 ;; Baseline: -l is valid for install/remove only.
+                 (if (member command '(:install :remove))
+                     (setf
+                      (package-command-options-local-p
+                       options)
+                      t)
+                     (note-invalid-option argument)))
                 ((member argument '("-a" "--approve")
                          :test #'string=)
-                 (set-trust t))
-                ((member argument '("-na" "--no-approve")
-                         :test #'string=)
-                 (set-trust nil))
-                ((string= argument "--force")
-                 (unless (eq command :update)
-                   (invalid
-                    "Unknown ~A option: --force"
-                    (string-downcase
-                     (symbol-name command))))
                  (setf
-                  (package-command-options-force-p options)
-                  t))
-                ((string= argument "--offline")
-                 (setf
-                  (package-command-options-offline-p
+                  (package-command-options-project-trust-override
+                   options)
+                  t
+                  (package-command-options-project-trust-override-supplied-p
                    options)
                   t))
-                ((and (eq command :update)
-                      (member
-                       argument
-                       '("--self" "--extensions"
-                         "--models" "--all")
-                       :test #'string=))
-                 (push
-                  (intern
-                   (string-upcase
-                    (subseq argument 2))
-                   :keyword)
-                  targets))
-                ((and (eq command :update)
-                      (string= argument
-                               "--extension"))
-                 (unless rest
-                   (invalid
-                    "--extension requires a value"))
-                 (push
-                  (list :extensions
-                        (pop rest))
-                  targets))
+                ((member argument '("-na" "--no-approve")
+                         :test #'string=)
+                 (setf
+                  (package-command-options-project-trust-override
+                   options)
+                  nil
+                  (package-command-options-project-trust-override-supplied-p
+                   options)
+                  t))
+                ((string= argument "--force")
+                 (if (eq command :update)
+                     (setf
+                      (package-command-options-force-p
+                       options)
+                      t)
+                     (note-invalid-option argument)))
+                ((string= argument "--self")
+                 (if (eq command :update)
+                     (setf self-p t)
+                     (note-invalid-option argument)))
+                ((string= argument "--extensions")
+                 (if (eq command :update)
+                     (setf extensions-p t)
+                     (note-invalid-option argument)))
+                ((string= argument "--models")
+                 (if (eq command :update)
+                     (setf models-p t)
+                     (note-invalid-option argument)))
+                ((string= argument "--all")
+                 (if (eq command :update)
+                     (setf all-p t)
+                     (note-invalid-option argument)))
+                ((string= argument "--extension")
+                 (if (not (eq command :update))
+                     (note-invalid-option argument)
+                     (let ((value (first rest)))
+                       (cond
+                         ((or
+                           (null value)
+                           (cli-string-prefix-p "-" value))
+                          (unless
+                              (package-command-options-missing-option-value
+                               options)
+                            (setf
+                             (package-command-options-missing-option-value
+                              options)
+                             argument)))
+                         (extension-source
+                          (note-conflict
+                           "--extension can only be provided once")
+                          (pop rest))
+                         (t
+                          (setf extension-source value)
+                          (pop rest))))))
                 ((cli-string-prefix-p "-" argument)
-                 (invalid
-                  "Unknown ~A option: ~A"
-                  (string-downcase
-                   (symbol-name command))
-                  argument))
-                ((package-command-options-source options)
-                 (invalid
-                  "Unexpected argument ~A"
-                  argument))
-                (t
+                 (note-invalid-option argument))
+                ((null
+                  (package-command-options-source options))
                  (setf
                   (package-command-options-source options)
-                  argument)))))
-      (when (> (length targets) 1)
-        (error
-         'cadr-ai:configuration-error
-         :message
-         "Update target options cannot be combined"))
-      (when targets
-        (let ((target (first targets)))
-          (setf
-           (package-command-options-update-target options)
-           (if (listp target)
-               target
-               (list target)))))
-      (when
-          (and
-           (member command '(:install :remove))
-           (not
-            (package-command-options-help-p options))
-           (null
-            (package-command-options-source options)))
-        (error
-         'cadr-ai:configuration-error
-         :message
-         (format nil
-                 "Missing ~A source"
-                 (string-downcase
-                  (symbol-name command)))))
-      (when
-          (and
-           (eq command :update)
-           (package-command-options-source options)
-           targets)
-        (error
-         'cadr-ai:configuration-error
-         :message
-         "An update source cannot be combined with an update target option"))
-      (when
-          (and
-           (eq command :update)
-           (member
-            (package-command-options-source options)
-            (list "self" (cadr-ai::cadr-product-slug))
-            :test #'string=))
-        (setf
-         (package-command-options-source options) nil
-         (package-command-options-update-target options)
-         '(:self)))
-      (when
-          (and
-           (eq command :update)
-           (null
-            (package-command-options-update-target
-             options)))
-        (setf
-         (package-command-options-update-target options)
-         (if
-             (package-command-options-source options)
-             (list
-              :extensions
-              (package-command-options-source
-               options))
-             '(:self))))
+                  argument))
+                (t
+                 (unless
+                     (package-command-options-invalid-argument
+                      options)
+                   (setf
+                    (package-command-options-invalid-argument
+                     options)
+                    argument)))))
+        ;; Baseline update-target resolution matrix with first-wins
+        ;; conflict texts (package-manager-cli.ts:318-372).
+        (when (eq command :update)
+        (let ((source
+                (package-command-options-source options)))
+          (when
+              (and all-p
+                   (or self-p extensions-p models-p
+                       extension-source))
+            (note-conflict
+             "--all cannot be combined with --self, --extensions, --models, or --extension"))
+          (when (and all-p source)
+            (note-conflict
+             "--all cannot be combined with a positional source"))
+          (cond
+            (models-p
+             (when
+                 (or self-p extensions-p all-p
+                     extension-source)
+               (note-conflict
+                "--models cannot be combined with --self, --extensions, --all, or --extension"))
+             (when source
+               (note-conflict
+                "--models cannot be combined with a positional source"))
+             (setf
+              (package-command-options-update-target options)
+              (list :models)))
+            (extension-source
+             (when (or self-p extensions-p all-p)
+               (note-conflict
+                "--extension cannot be combined with --self, --extensions, or --all"))
+             (when source
+               (note-conflict
+                "--extension cannot be combined with a positional source"))
+             (setf
+              (package-command-options-update-target options)
+              (list :extensions extension-source)))
+            (source
+             (if (member
+                  source
+                  (list "self"
+                        (cadr-ai::cadr-product-slug))
+                  :test #'string=)
+                 (setf
+                  (package-command-options-update-target
+                   options)
+                  (if extensions-p '(:all) '(:self)))
+                 (progn
+                   (when (or extensions-p self-p all-p)
+                     (note-conflict
+                      "positional update targets cannot be combined with --self, --extensions, or --all"))
+                   (setf
+                    (package-command-options-update-target
+                     options)
+                    (list :extensions source)))))
+            (all-p
+             (setf
+              (package-command-options-update-target options)
+              '(:all)))
+            ((and self-p extensions-p)
+             (setf
+              (package-command-options-update-target options)
+              '(:all)))
+            (self-p
+             (setf
+              (package-command-options-update-target options)
+              '(:self)))
+            (extensions-p
+             (setf
+              (package-command-options-update-target options)
+              '(:extensions)))
+            (t
+             (setf
+              (package-command-options-update-target options)
+              '(:self)))))))
       options)))
-
 (defun package-command-usage
     (command)
   (let ((slug (cadr-ai::cadr-product-slug)))
@@ -674,6 +705,96 @@
        output)
       (return-from handle-package-command
         (values t 0)))
+    ;; Baseline handlePackageCommand: recorded parse problems print as
+    ;; a red error plus a dim usage hint, in this order.
+    (labels
+        ((usage-hint (prefix)
+           (format
+            error-output "~A~%"
+            (cli-dim-text
+             error-output
+             (if (string= prefix "Usage:")
+                 (format
+                  nil "~A ~A"
+                  prefix
+                  (package-command-usage
+                   (package-command-options-command
+                    options)))
+                 ;; Baseline wraps the invalid-option usage in quotes
+                 ;; with a trailing period.
+                 (format
+                  nil "~A \"~A\"."
+                  prefix
+                  (package-command-usage
+                   (package-command-options-command
+                    options)))))))
+         (fail (message hint-prefix)
+           (format
+            error-output "~A~%"
+            (cli-error-text error-output message))
+           (usage-hint hint-prefix)
+           (finish-output error-output)
+           (return-from handle-package-command
+             (values t 1))))
+      (when
+          (package-command-options-invalid-option
+           options)
+        (fail
+         (format
+          nil
+          "Unknown option ~A for \"~A\"."
+          (package-command-options-invalid-option
+           options)
+          (string-downcase
+           (symbol-name
+            (package-command-options-command
+             options))))
+         (format
+          nil "Use \"~A --help\" or"
+          (cadr-ai::cadr-product-slug))))
+      (when
+          (package-command-options-missing-option-value
+           options)
+        (fail
+         (format
+          nil
+          "Missing value for ~A."
+          (package-command-options-missing-option-value
+           options))
+         "Usage:"))
+      (when
+          (package-command-options-invalid-argument
+           options)
+        (fail
+         (format
+          nil
+          "Unexpected argument ~A."
+          (package-command-options-invalid-argument
+           options))
+         "Usage:"))
+      (when
+          (package-command-options-conflicting-options
+           options)
+        (fail
+         (package-command-options-conflicting-options
+          options)
+         "Usage:"))
+      (when
+          (and
+           (member
+            (package-command-options-command options)
+            '(:install :remove))
+           (null
+            (package-command-options-source options)))
+        (fail
+         (format
+          nil
+          "Missing ~A source."
+          (string-downcase
+           (symbol-name
+            (package-command-options-command
+             options))))
+         "Usage:")))
     (let* ((cwd
              (uiop:ensure-directory-pathname
               cwd))
@@ -730,11 +851,7 @@
            (project-install-root
              (merge-pathnames
               "packages/" project-config))
-           (offline-p
-             (or
-              offline-p
-              (package-command-options-offline-p
-               options))))
+           (offline-p offline-p))
       (when
           (and
            (eq scope :project)
