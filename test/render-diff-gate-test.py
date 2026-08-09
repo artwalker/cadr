@@ -1565,6 +1565,58 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertEqual(len(inventory["entries"]), len({entry["id"] for entry in inventory["entries"]}))
 
 
+class RenderResourceSweepTest(unittest.TestCase):
+    def socket_dir(self) -> Path:
+        return Path(tempfile.gettempdir()) / f"tmux-{os.getuid()}"
+
+    def test_sweep_removes_only_crashed_leftovers(self) -> None:
+        socket_dir = self.socket_dir()
+        socket_dir.mkdir(parents=True, exist_ok=True)
+        dead_socket = socket_dir / "cadr-rd-4194303-111"
+        live_socket = socket_dir / f"cadr-rd-{os.getpid()}-222"
+        dead_socket.touch()
+        live_socket.touch()
+        stale_dir = Path(tempfile.mkdtemp(prefix="cadr-render-screen-"))
+        fresh_dir = Path(tempfile.mkdtemp(prefix="cadr-render-screen-"))
+        old = stale_dir.stat().st_mtime - 2 * RENDER_DIFF.STALE_RESOURCE_AGE_SECONDS
+        os.utime(stale_dir, (old, old))
+        try:
+            removed = RENDER_DIFF.sweep_stale_render_resources()
+            self.assertIn(str(dead_socket), removed)
+            self.assertIn(str(stale_dir), removed)
+            self.assertFalse(dead_socket.exists())
+            self.assertFalse(stale_dir.exists())
+            self.assertTrue(live_socket.exists())
+            self.assertTrue(fresh_dir.exists())
+        finally:
+            live_socket.unlink(missing_ok=True)
+            dead_socket.unlink(missing_ok=True)
+            if stale_dir.exists():
+                stale_dir.rmdir()
+            if fresh_dir.exists():
+                fresh_dir.rmdir()
+
+    def test_tmux_screen_failure_branch_kills_its_server(self) -> None:
+        calls: list[list[str]] = []
+        real_run = subprocess.run
+
+        def fake_run(command, *args, **kwargs):
+            calls.append(list(command))
+            if "new-session" in command:
+                raise subprocess.CalledProcessError(1, command)
+            return real_run(command, *args, **kwargs)
+
+        with tempfile.TemporaryDirectory() as sandbox:
+            with mock.patch.object(RENDER_DIFF.subprocess, "run", fake_run):
+                with self.assertRaises(subprocess.CalledProcessError):
+                    RENDER_DIFF.tmux_screen(b"", 12, 4, Path(sandbox))
+        new_session = [call for call in calls if "new-session" in call]
+        kill_server = [call for call in calls if "kill-server" in call]
+        self.assertEqual(len(new_session), 1)
+        self.assertEqual(len(kill_server), 1)
+        self.assertEqual(new_session[0][1:3], kill_server[0][1:3])
+
+
 class ReleaseVerificationContractTest(unittest.TestCase):
     def run_wrapper(
         self,

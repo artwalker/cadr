@@ -19,6 +19,16 @@ tag/Release step.
   override is set.  All path decisions now derive from a single owner in
   `cadr-core`, enforced by the code-organization gate.
 
+### Fixed
+
+- Render-diff harness hygiene (goal 18 Part G): a single-owned sweeper now
+  removes tmux `cadr-rd-*` servers whose owning run died and stale
+  `/tmp/cadr-render-screen-*` replay dirs at every CLI start, and the
+  tmux_screen failure branch is regression-tested to kill its server.
+  The two stray `/export` HTML artifacts at the repository root are covered
+  by the existing `cadr-*.html` gitignore rule (mirroring the baseline's
+  `pi-*.html`).
+
 ### Added
 
 - Goal 18 Part E/F audit deliverables: the intentional-difference ledger grew

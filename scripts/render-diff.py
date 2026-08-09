@@ -2292,6 +2292,67 @@ def wait_for_path(path: Path, timeout: float) -> None:
         time.sleep(0.01)
 
 
+RENDER_TMUX_SOCKET_PREFIX = "cadr-rd-"
+RENDER_SCREEN_TEMP_PREFIX = "cadr-render-screen-"
+# Leftovers younger than this may belong to a live concurrent run; never
+# touch them.  Older entries can only be crashed-run residue.
+STALE_RESOURCE_AGE_SECONDS = 3600
+
+
+def sweep_stale_render_resources(now: float | None = None) -> list[str]:
+    """Remove render-diff tmux servers and replay dirs left by killed runs.
+
+    Live cleanup is owned by ``tmux_screen``'s ``finally`` block; a hard kill
+    (outer timeout, SIGKILL) skips it, so this sweeper is the single owner of
+    stale-resource cleanup and runs once at process start.  A tmux socket is
+    stale when the pid embedded in its name (``cadr-rd-<pid>-<ns>``) is dead;
+    replay dirs are stale after ``STALE_RESOURCE_AGE_SECONDS``.  Returns the
+    removed entries for test visibility.
+    """
+    removed: list[str] = []
+    now = time.time() if now is None else now
+    socket_dir = Path(tempfile.gettempdir()) / f"tmux-{os.getuid()}"
+    if socket_dir.is_dir():
+        for socket in sorted(socket_dir.iterdir()):
+            if not socket.name.startswith(RENDER_TMUX_SOCKET_PREFIX):
+                continue
+            parts = socket.name[len(RENDER_TMUX_SOCKET_PREFIX):].split("-", 1)
+            try:
+                owner_pid = int(parts[0])
+            except (ValueError, IndexError):
+                continue
+            try:
+                os.kill(owner_pid, 0)
+                continue  # owning run is still alive; leave it alone
+            except ProcessLookupError:
+                pass
+            except PermissionError:
+                continue
+            subprocess.run(
+                ["tmux", "-L", socket.name, "kill-server"],
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+            )
+            if socket.exists():
+                try:
+                    socket.unlink()
+                except OSError:
+                    continue
+            removed.append(str(socket))
+    temporary_root = Path(tempfile.gettempdir())
+    for entry in sorted(temporary_root.glob(f"{RENDER_SCREEN_TEMP_PREFIX}*")):
+        try:
+            age = now - entry.stat().st_mtime
+        except OSError:
+            continue
+        if age < STALE_RESOURCE_AGE_SECONDS:
+            continue
+        shutil.rmtree(entry, ignore_errors=True)
+        if not entry.exists():
+            removed.append(str(entry))
+    return removed
+
+
 def tmux_screen(data: bytes, columns: int, rows: int, temporary: Path) -> bytes:
     if shutil.which("tmux") is None:
         raise HarnessFailure("tmux is required for semantic render-diff analysis")
@@ -2987,6 +3048,8 @@ def parser() -> argparse.ArgumentParser:
 
 def main() -> int:
     args = parser().parse_args()
+    if args.command in {"capture", "analyze", "gate", "self-test", "replay-check"}:
+        sweep_stale_render_resources()
     if args.command == "capture":
         return capture(args)
     if args.command == "analyze":
