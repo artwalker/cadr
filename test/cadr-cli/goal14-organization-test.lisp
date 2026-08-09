@@ -520,7 +520,10 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" relative marker)))))
-    (is (= 251 definition-count)
+    ;; 251 = goal 18 Part D (+1 debug command); +11 goal 18 Part H
+    ;; startup-section helpers in entries.lisp (baseline resource block
+    ;; rendering: scope groups, conflict blocks, extension labels).
+    (is (= 262 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

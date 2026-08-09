@@ -1217,7 +1217,17 @@ render loopback login received
         :user-bindings
         (cadr-cli::settings-keybindings settings-manager)))
       (multiple-value-bind (compact expanded)
-          (cadr-cli::make-tui-startup-lines resources)
+          (cadr-cli::make-tui-startup-lines
+           resources
+           :extensions
+           (mapcar
+            (lambda (record)
+              (list
+               :path (cadr-cli::extension-source-record-path record)
+               :scope (cadr-cli::extension-source-record-scope record)))
+            (cadr-cli::discover-extensions-in-directory
+             (merge-pathnames "extensions/" agent-dir)
+             :global 0)))
         (let ((main-thread sb-thread:*current-thread*)
               (crash-after-ms
                 (json-get (json-get scenario "setup")

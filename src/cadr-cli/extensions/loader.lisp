@@ -536,6 +536,12 @@
       (discover-extension-sources manager)
     (let ((bundles nil)
           (errors (copy-list discovery-errors))
+          (startup-issues
+           (nreverse
+            (mapcar
+             (lambda (message)
+               (list :type :error :message message))
+             discovery-errors)))
           (loaded 0)
           (next-last-good
             (make-hash-table :test #'equal)))
@@ -555,6 +561,12 @@
                    (error (condition)
                      (push (princ-to-string condition)
                            errors)
+                     (push
+                      (list
+                       :type :error
+                       :path (extension-source-record-path source)
+                       :message (princ-to-string condition))
+                      startup-issues)
                      (extension-manager-notify
                       manager
                       (princ-to-string condition)
@@ -587,6 +599,11 @@
           (error (condition)
             (push (princ-to-string condition)
                   errors)
+            (push
+             (list
+              :type :error
+              :message (princ-to-string condition))
+             startup-issues)
             (extension-manager-notify
              manager
              (princ-to-string condition)
@@ -603,6 +620,14 @@
         (dolist (conflict conflicts)
           (extension-manager-notify
            manager conflict :warning))
+        (setf
+         (cli-extension-manager-startup-issues manager)
+         (nconc
+          (nreverse startup-issues)
+          (mapcar
+           (lambda (conflict)
+             (list :type :warning :message conflict))
+           conflicts)))
         (dolist (error discovery-errors)
           (extension-manager-notify
            manager error :error))

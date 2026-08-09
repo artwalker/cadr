@@ -214,6 +214,7 @@
                              (:file "goal18-migration-test")
                              (:file "goal18-login-forms-test")
                              (:file "goal18-debug-command-test")
+                             (:file "goal18-startup-resources-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

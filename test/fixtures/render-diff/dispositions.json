@@ -4059,6 +4059,75 @@
       "note": "The trust warning wrap point shifts with the .pi/.cadr length difference (I04); text identical. ANSI segmentation differs (I01)."
     },
     {
+      "scenario": "startup-resources",
+      "checkpoint": "startup-resources-compact",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "af20670050aaf8e5a0ab6cc8e9ccf86c5236378a5f0d59e0b92c31adb02f1fc6",
+          "cadr": "1368bf3946bcd748edca99286c7a58ba6080fbdee710b18fe5ac1ef4a170be49"
+        },
+        "narrow": {
+          "pi": "09af7bbfa22700a41ee67763c6a0421c71323c9e0a7b856760e9f833775e732c",
+          "cadr": "d3ed6edb9c32f793e152db10a30adc485c9a876cddba6f105ded1f2820b7c424"
+        }
+      },
+      "note": "At startup-resources/startup-resources-compact [wide+narrow] the loaded-resource blocks match pi line-for-line: order Context/Skills/Prompts/Extensions/Themes, the [Skill conflicts] warning block with the broken-skill path and 'description is required', compact comma lists, mdHeading headers, and Spacer blanks. The only visible difference is the agent-config home path ~/.pi/agent -> ~/.cadr/agent inside the conflict diagnostic path (I04 product identity); the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "startup-resources",
+      "checkpoint": "startup-resources-expanded",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3138955589630f159174e69573b3d8a95d9df3be63ddac9fabf65e582e4953c2",
+          "cadr": "3a76d5a34064d969022a4aeedee9c6b42dd199d7a132b3dbb6be991aab198278"
+        },
+        "narrow": {
+          "pi": "c4ed2de9b06036a76ac1b91cbaa14844f2c061bb76f63b627d56f07b36be15d1",
+          "cadr": "97636cdefbaf43038af846ccf9007e381b3975a48755127d866a0190d7aa759d"
+        }
+      },
+      "note": "At startup-resources/startup-resources-expanded [wide+narrow] the ctrl+o expanded resource blocks match pi line-for-line: accent scope group labels, per-item dim paths for skills/prompts/extensions/themes, and the [Skill conflicts] block. The only visible differences are the agent-config home path ~/.pi/agent -> ~/.cadr/agent in the skill, extension, theme, and conflict path lines (I04 product identity); the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "startup-resources",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "78c6f99d4cfa7dad93ce1ea4ce619709e6fd0e87414c7dbebd194bf24d149ceb",
+          "cadr": "427bc10f85b372dd933dd1f2e96a6aff14f260661acadf79a8e25e75c8d8f4f2"
+        },
+        "narrow": {
+          "pi": "bbefd4b4de3f1e927e2dfaffdee1ab1246506ef813ba3f78d6ba9bb8c73e4caa",
+          "cadr": "02899a2f6f68ceea1b9c6c6989dd534b5c70cc5bd34df83b5e85adc93d62a385"
+        }
+      },
+      "note": "At startup-resources/process-exit [wide+narrow] the retained transcript after ctrl+d matches pi line-for-line except the same ~/.pi/agent -> ~/.cadr/agent path substitution in the expanded resource path lines (I04 product identity); the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
       "scenario": "stream-interrupt-queue",
       "checkpoint": "busy-queue",
       "dimensions": [

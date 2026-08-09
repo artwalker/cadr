@@ -294,6 +294,7 @@
    #:prompt-template-name
    #:prompt-template-description
    #:prompt-template-content
+   #:prompt-template-file-path
    #:skill
    #:make-skill
    #:skill-name

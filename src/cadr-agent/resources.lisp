@@ -3,7 +3,8 @@
 (defstruct prompt-template
   (name "" :type string)
   description
-  (content "" :type string))
+  (content "" :type string)
+  (file-path "" :type string))
 
 (defstruct skill
   (name "" :type string)
@@ -225,7 +226,8 @@
                (getf metadata :description)
                (resource-first-description body)
                "")
-              :content body)
+              :content body
+              :file-path (resource-absolute-path path))
              nil)))
     (error (cause)
       (values

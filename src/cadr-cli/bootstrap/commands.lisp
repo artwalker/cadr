@@ -1790,7 +1790,13 @@
                       (settings-value
                        settings-manager
                        "quietStartup" nil)))
-                    (make-tui-startup-lines resources)
+                    (make-tui-startup-lines
+                     resources
+                     :extensions
+                     (startup-extension-entries extension-manager)
+                     :extension-issues
+                     (cli-extension-manager-startup-issues
+                      extension-manager))
                     (values nil nil))
               (run-tui
            #'run-prompt

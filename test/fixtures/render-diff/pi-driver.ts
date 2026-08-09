@@ -190,6 +190,7 @@ interface ResourceFixtureOptions {
 	promptTemplates?: boolean;
 	themes?: boolean;
 	contextFiles?: boolean;
+	extensions?: boolean;
 }
 
 interface StartupFixtureOptions {
@@ -794,7 +795,7 @@ async function main(): Promise<void> {
 		model,
 		resourceLoaderOptions: {
 			systemPrompt: "Render differential fixed system prompt.",
-			noExtensions: true,
+			noExtensions: !(scenario.setup?.resources?.extensions ?? false),
 			noSkills: !(scenario.setup?.resources?.skills ?? false),
 			noPromptTemplates: !(scenario.setup?.resources?.promptTemplates ?? false),
 			noThemes: !(scenario.setup?.resources?.themes ?? false),

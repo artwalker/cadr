@@ -7,7 +7,13 @@
   (context-files nil :type list)
   system-prompt-path
   append-system-prompt-path
-  (diagnostics nil :type list))
+  (diagnostics nil :type list)
+  (skill-diagnostics nil :type list)
+  (prompt-diagnostics nil :type list)
+  (skill-collisions nil :type list)
+  (prompt-collisions nil :type list)
+  cwd
+  agent-directory)
 
 (defstruct default-resource-loader
   cwd
@@ -50,23 +56,37 @@
           collect config))
 
 (defun dedupe-resources-by-name
-    (global project name-function)
-  (let ((table (make-hash-table :test #'equal)))
-    (dolist (resource global)
-      (setf (gethash
-             (funcall name-function resource)
-             table)
-            resource))
-    (dolist (resource project)
-      (setf (gethash
-             (funcall name-function resource)
-             table)
-            resource))
-    (sort
-     (loop for resource being the hash-values of table
-           collect resource)
-     #'string<
-     :key name-function)))
+    (global project name-function &optional path-function)
+  "First occurrence wins, matching the baseline: its package-manager
+resolve() adds project resources before user resources and the
+dedupe keeps the first occurrence, so the project resource wins a
+same-name collision (packages/coding-agent/src/core/package-manager.ts
+project-before-user ordering, core/skills.ts first-wins skillMap).
+Returns the deduped list and a list of collision records
+(:name :winner-path :loser-path) for the skipped losers."
+  (let ((table (make-hash-table :test #'equal))
+        (collisions nil))
+    (dolist (resource (append project global))
+      (let ((name (funcall name-function resource)))
+        (multiple-value-bind (winner present-p)
+            (gethash name table)
+          (if present-p
+              (push
+               (list
+                :name name
+                :winner-path
+                (and path-function (funcall path-function winner))
+                :loser-path
+                (and path-function (funcall path-function resource)))
+               collisions)
+              (setf (gethash name table) resource)))))
+    (values
+     (sort
+      (loop for resource being the hash-values of table
+            collect resource)
+      #'string<
+      :key name-function)
+     (nreverse collisions))))
 
 (defun load-skills-at-paths (paths)
   (let ((items nil)
@@ -284,16 +304,20 @@
           (multiple-value-bind
                 (project-prompts project-prompt-warnings)
               (load-prompts-at-paths project-prompt-paths)
+            (multiple-value-bind (skills skill-collisions)
+                (dedupe-resources-by-name
+                 global-skills project-skills
+                 #'cadr-agent::skill-name
+                 #'cadr-agent::skill-file-path)
+              (multiple-value-bind (prompts prompt-collisions)
+                  (dedupe-resources-by-name
+                   global-prompts project-prompts
+                   #'cadr-agent::prompt-template-name
+                   #'cadr-agent::prompt-template-file-path)
             (let ((snapshot
                     (make-resource-snapshot
-                     :skills
-                     (dedupe-resources-by-name
-                      global-skills project-skills
-                      #'cadr-agent::skill-name)
-                     :prompts
-                     (dedupe-resources-by-name
-                      global-prompts project-prompts
-                      #'cadr-agent::prompt-template-name)
+                     :skills skills
+                     :prompts prompts
                      :themes
                      (load-themes-at-paths
                       theme-paths)
@@ -315,8 +339,21 @@
                       global-skill-warnings
                       project-skill-warnings
                       global-prompt-warnings
-                      project-prompt-warnings))))
+                      project-prompt-warnings)
+                     :skill-diagnostics
+                     (nconc
+                      global-skill-warnings
+                      project-skill-warnings)
+                     :prompt-diagnostics
+                     (nconc
+                      global-prompt-warnings
+                      project-prompt-warnings)
+                     :skill-collisions skill-collisions
+                     :prompt-collisions prompt-collisions
+                     :cwd (default-resource-loader-cwd loader)
+                     :agent-directory
+                     (default-resource-loader-agent-directory loader))))
               (setf
                (default-resource-loader-snapshot loader)
                snapshot)
-              snapshot)))))))
+              snapshot)))))))))

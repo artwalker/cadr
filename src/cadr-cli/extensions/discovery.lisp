@@ -31,7 +31,8 @@
   (last-good (make-hash-table :test #'equal)
              :type hash-table)
   (generation 0 :type (integer 0 *))
-  (package-names nil :type list))
+  (package-names nil :type list)
+  (startup-issues nil :type list))
 
 (defun default-extension-directory ()
   (cadr-core:agent-extensions-directory))

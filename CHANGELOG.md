@@ -21,13 +21,26 @@ tag/Release step.
 
 ### Fixed
 
+- Startup loaded-resource blocks now follow the baseline (goal 18 Part H):
+  section order Context -> Skills -> Prompts -> Extensions -> Themes with
+  the baseline labels, locale-compare sorting (Context keeps insertion
+  order), banner/sections split at the baseline padding boundary, and the
+  three warning blocks ([Skill conflicts], [Prompt conflicts],
+  [Extension issues]) with collision groups and severity colors.  Resource
+  name collisions keep the baseline winner (project scope) but now record
+  the collision diagnostic instead of dropping the loser silently.  A new
+  `startup-resources` render-diff scenario captures the populated startup
+  in compact and ctrl+o-expanded form on both terminal sizes while the
+  empty startup scenarios stay pinned, and the state-coverage sweep is
+  documented in `docs/goal18-startup-resources-audit.md`.
+
 - Render-diff harness hygiene (goal 18 Part G): a single-owned sweeper now
   removes tmux `cadr-rd-*` servers whose owning run died and stale
   `/tmp/cadr-render-screen-*` replay dirs at every CLI start, and the
   tmux_screen failure branch is regression-tested to kill its server.
   The two stray `/export` HTML artifacts at the repository root are covered
-  by the existing `cadr-*.html` gitignore rule (mirroring the baseline's
-  `pi-*.html`).
+  by the existing `cadr-*.html` gitignore rule (mirroring the
+  baseline's export-artifact ignore rule).
 
 ### Added
 

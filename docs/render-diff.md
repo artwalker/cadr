@@ -250,6 +250,18 @@ baseline branches; it does not claim to cover non-string subprocess semantics,
 provider payloads, model-visible tool results, or agent-event ordering. Those
 remain separate gates.
 
+The Goal 18 login-form (A5) and startup-resource (H2) defects exposed the same
+law from another angle: **the gate's strength is bounded by the states the
+scenarios create, not by the completeness of the interface inventory.** The
+672/672 branch-coverage number measures whether inventoried branches are
+driven; when no scenario ever creates a state, every branch behind that state
+is neither in the denominator nor failing. The rule for every future scenario
+is therefore: any interface whose rendering branches on the presence of a
+resource or state must have both an empty-state and a populated-state capture
+— one of the two is never enough. The populated startup-resource capture
+(`startup-resources`) and the empty startup captures (`startup-first`,
+`startup-existing`, `startup-untrusted`) are the reference pair.
+
 ## Relationship to the parity ledgers
 
 This is the only permanent gate whose oracle is actual rendered output from the

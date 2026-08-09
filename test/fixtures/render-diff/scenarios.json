@@ -83,6 +83,89 @@
       ]
     },
     {
+      "id": "startup-resources",
+      "group": "startup",
+      "coverage": [
+            "startup-resources"
+      ],
+      "description": "Startup with a populated resource environment: AGENTS.md context, two valid skills and one broken skill (Skill conflicts warning), a prompt template, a directory-style extension, and a custom theme, captured compact and after ctrl+o expansion.",
+      "setup": {
+            "resources": {
+                  "skills": true,
+                  "promptTemplates": true,
+                  "themes": true,
+                  "contextFiles": true,
+                  "extensions": true
+            },
+            "fixtureFiles": [
+                  {
+                        "root": "workspace",
+                        "path": "AGENTS.md",
+                        "content": "# Fixture Project\n\nFixture guidance.\n"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "skills/alpha-skill/SKILL.md",
+                        "content": "---\nname: alpha-skill\ndescription: Alpha fixture skill\n---\nAlpha body.\n"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "skills/zeta-skill/SKILL.md",
+                        "content": "---\nname: zeta-skill\ndescription: Zeta fixture skill\n---\nZeta body.\n"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "skills/broken-skill/SKILL.md",
+                        "content": "---\nname: broken-skill\n---\nBroken body.\n"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "prompts/review.md",
+                        "content": "Review the fixture repository.\n"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "themes/acme.json",
+                        "content": "{\n  \"$schema\": \"https://raw.githubusercontent.com/earendil-works/pi/main/packages/coding-agent/src/modes/interactive/theme/theme-schema.json\",\n  \"name\": \"acme\",\n  \"vars\": {\n    \"cyan\": \"#00d7ff\",\n    \"blue\": \"#5f87ff\",\n    \"green\": \"#b5bd68\",\n    \"red\": \"#cc6666\",\n    \"yellow\": \"#ffff00\",\n    \"text\": \"#d4d4d4\",\n    \"gray\": \"#808080\",\n    \"dimGray\": \"#666666\",\n    \"darkGray\": \"#505050\",\n    \"accent\": \"#8abeb7\",\n    \"selectedBg\": \"#3a3a4a\",\n    \"userMsgBg\": \"#343541\",\n    \"toolPendingBg\": \"#282832\",\n    \"toolSuccessBg\": \"#283228\",\n    \"toolErrorBg\": \"#3c2828\",\n    \"customMsgBg\": \"#2d2838\"\n  },\n  \"colors\": {\n    \"accent\": \"accent\",\n    \"border\": \"blue\",\n    \"borderAccent\": \"cyan\",\n    \"borderMuted\": \"darkGray\",\n    \"success\": \"green\",\n    \"error\": \"red\",\n    \"warning\": \"yellow\",\n    \"muted\": \"gray\",\n    \"dim\": \"dimGray\",\n    \"text\": \"text\",\n    \"thinkingText\": \"gray\",\n    \"selectedBg\": \"selectedBg\",\n    \"userMessageBg\": \"userMsgBg\",\n    \"userMessageText\": \"text\",\n    \"customMessageBg\": \"customMsgBg\",\n    \"customMessageText\": \"text\",\n    \"customMessageLabel\": \"#9575cd\",\n    \"toolPendingBg\": \"toolPendingBg\",\n    \"toolSuccessBg\": \"toolSuccessBg\",\n    \"toolErrorBg\": \"toolErrorBg\",\n    \"toolTitle\": \"text\",\n    \"toolOutput\": \"gray\",\n    \"mdHeading\": \"#f0c674\",\n    \"mdLink\": \"#81a2be\",\n    \"mdLinkUrl\": \"dimGray\",\n    \"mdCode\": \"accent\",\n    \"mdCodeBlock\": \"green\",\n    \"mdCodeBlockBorder\": \"gray\",\n    \"mdQuote\": \"gray\",\n    \"mdQuoteBorder\": \"gray\",\n    \"mdHr\": \"gray\",\n    \"mdListBullet\": \"accent\",\n    \"toolDiffAdded\": \"green\",\n    \"toolDiffRemoved\": \"red\",\n    \"toolDiffContext\": \"gray\",\n    \"syntaxComment\": \"#6A9955\",\n    \"syntaxKeyword\": \"#569CD6\",\n    \"syntaxFunction\": \"#DCDCAA\",\n    \"syntaxVariable\": \"#9CDCFE\",\n    \"syntaxString\": \"#CE9178\",\n    \"syntaxNumber\": \"#B5CEA8\",\n    \"syntaxType\": \"#4EC9B0\",\n    \"syntaxOperator\": \"#D4D4D4\",\n    \"syntaxPunctuation\": \"#D4D4D4\",\n    \"thinkingOff\": \"darkGray\",\n    \"thinkingMinimal\": \"#6e6e6e\",\n    \"thinkingLow\": \"#5f87af\",\n    \"thinkingMedium\": \"#81a2be\",\n    \"thinkingHigh\": \"#b294bb\",\n    \"thinkingXhigh\": \"#d183e8\",\n    \"thinkingMax\": \"#ff5fff\",\n    \"bashMode\": \"green\"\n  },\n  \"export\": {\n    \"pageBg\": \"#18181e\",\n    \"cardBg\": \"#1e1e24\",\n    \"infoBg\": \"#3c3728\"\n  }\n}"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "extensions/demo/index.ts",
+                        "content": "export default function () {}\n"
+                  },
+                  {
+                        "root": "agent",
+                        "path": "extensions/demo/extension.lisp",
+                        "content": ";;; render-diff fixture extension (no registrations)\n"
+                  }
+            ]
+      },
+      "responses": [],
+      "actions": [
+            {
+                  "waitForHex": "1b5b3f323032366c"
+            },
+            {
+                  "pauseMs": 750
+            },
+            {
+                  "checkpoint": "startup-resources-compact"
+            },
+            {
+                  "send": "ctrl+o"
+            },
+            {
+                  "pauseMs": 200
+            },
+            {
+                  "checkpoint": "startup-resources-expanded"
+            },
+            {
+                  "send": "ctrl+d"
+            }
+      ]
+    },
+    {
       "id": "conversation-content",
       "group": "conversation",
       "coverage": ["plain-text", "markdown", "code-block", "cjk-emoji"],
