@@ -1,6 +1,6 @@
 # Performance and stability
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/523/72/0 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/518/77/0 examples=99/99/0 -->
 
 本文是四根独立验收轴中的**非功能账**：行为门禁回答“产出了什么”，源码账
 回答固定基线的能力落在何处，呈现账回答用户看到了什么，本文回答“产出它花了

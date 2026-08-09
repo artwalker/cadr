@@ -21,6 +21,16 @@ tag/Release step.
 
 ### Added
 
+- Goal 18 Part E/F audit deliverables: the intentional-difference ledger grew
+  from 72 to 77 rows after recasting five component-export rows
+  (extension/show-images/skill-invocation/theme/thinking selectors) with
+  baseline-consumption evidence, and the `settings-state-sweep` render-diff
+  scenario now enables terminal image support so the `Show images` and
+  `Image width` rows are captured and pinned on both sides.  The full audit
+  report lives in `docs/goal18-part-e-audit.md`, and the package-boundary map
+  in `docs/source-parity.md` §1a now records the `cadr-core` path-owner and
+  the `agent/src/harness/tools/` routing refinement.
+
 - Implemented the baseline `/debug` command and its `shift+ctrl+d` binding:
   the terminal's rendered lines (with visible widths) and the agent messages
   (JSONL) are written to `~/.cadr/agent/cadr-debug.log` (I04 filename), and

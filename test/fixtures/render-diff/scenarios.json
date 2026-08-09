@@ -1033,12 +1033,13 @@
       "tier": "full",
       "group": "full-state-sweep",
       "coverage": ["settings-state-sweep"],
-      "description": "Visits every settings row so each row label and selected-row description is rendered by the production selector.",
+      "description": "Visits every settings row with terminal image support enabled so each row label and selected-row description is rendered by the production selector, including the Show images and Image width rows that only appear when the terminal supports images.",
+      "setup": { "supportsImages": true },
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" },
-        { "sendRepeated": { "key": "down", "count": 32, "checkpointPrefix": "settings-row" } },
+        { "sendRepeated": { "key": "down", "count": 34, "checkpointPrefix": "settings-row" } },
         { "checkpoint": "settings-all-rows" },
         { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
       ]
