@@ -2335,6 +2335,65 @@
                        (= code 127))))
                label)))))
 
+(test goal18-session-selector-falls-back-to-no-messages
+  ;; Baseline session-manager.ts:759 + session-selector.ts:461 — the
+  ;; row label is name ?? firstMessage, and firstMessage falls back to
+  ;; "(no messages)", never to the session id.
+  (let ((record (session-record "render-session" 1 "")))
+    (is (string= "(no messages)"
+                 (cadr-cli::session-selector-record-label record))))
+  (let ((record (session-record "named" 1 "" :name "My Session")))
+    (is (string= "My Session"
+                 (cadr-cli::session-selector-record-label record)))))
+
+(test goal18-session-search-record-matches-the-baseline-corpus
+  ;; Baseline session-manager.ts:717-734 — the search corpus holds
+  ;; user and assistant texts only; firstMessage is the first user
+  ;; message with text.
+  (with-test-directory (root)
+    (let ((session
+            (cadr-agent:create-session
+             :directory (merge-pathnames "sessions/" root)
+             :cwd root
+             :id "corpus-check")))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai::make-text-content
+                        :text "assistant words"))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-tool-result-message
+        :tool-call-id "t1" :tool-name "bash"
+        :content (list (cadr-ai::make-text-content
+                        :text "tool secret"))))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "user question"))
+      (let ((record
+              (cadr-cli::session-to-search-record session)))
+        (is (string= "user question"
+                     (cadr-cli::session-search-record-first-message
+                      record)))
+        (is (string= "assistant words
+user question"
+                     (cadr-cli::session-search-record-all-messages-text
+                      record)))
+        (is (not (search "tool secret"
+                         (cadr-cli::session-search-record-all-messages-text
+                          record))))))))
+
+(test goal18-session-search-haystack-includes-id-and-cwd
+  ;; Baseline session-selector-search.ts:27 — the haystack is
+  ;; `${id} ${name ?? ""} ${allMessagesText} ${cwd}`.
+  (let* ((record
+           (session-record "abc123session" 1 "some text"
+                           :cwd "/tmp/worktree"))
+         (haystack (cadr-cli::search-record-haystack record)))
+    (is (search "abc123session" haystack))
+    (is (search "some text" haystack))
+    (is (search "/tmp/worktree" haystack))))
+
 (test goal9-model-selector-uses-borders-spacers-and-semantic-row-colors
   (with-selector-truecolor-theme
     (let* ((current

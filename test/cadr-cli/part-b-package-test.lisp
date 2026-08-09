@@ -1039,3 +1039,65 @@
                           rendered))
               (is (search "local.md  project load" rendered))
               (is (search "explicit.md  project load" rendered)))))))))
+
+(test goal18-config-selector-keeps-dimmed-inherited-rows-uniformly-dim
+  ;; Baseline config-selector.ts:431 — the selected row name is bold
+  ;; only when the row is not dimmed; an inherited row in project scope
+  ;; renders uniformly dim even while selected.
+  (cadr-tui:set-current-theme
+   :dark
+   :capabilities
+   (cadr-tui:make-terminal-capabilities :true-color-p t))
+  (unwind-protect
+       (with-test-directory (root)
+    (let* ((agent (merge-pathnames "agent/" root))
+           (project (merge-pathnames "workspace/" root))
+           (project-config (merge-pathnames ".cadr/" project))
+           (global-prompt
+             (merge-pathnames "prompts/global-only.md" agent))
+           (global-settings
+             (merge-pathnames "settings.json" agent))
+           (project-settings
+             (merge-pathnames "settings.json" project-config)))
+      (ensure-directories-exist global-prompt)
+      (write-text global-prompt "global only prompt")
+      (write-text project-settings "{}")
+      (let* ((manager
+               (cadr-cli::make-settings-manager
+                :global-path global-settings
+                :project-path project-settings
+                :project-trusted-p t))
+             (state
+               (cadr-cli::make-config-selector-state
+                manager project agent 40)))
+        (setf
+         (cadr-cli::config-selector-state-write-scope state)
+         :project)
+        (cadr-cli::config-selector-rebuild state)
+        (let* ((flat
+                 (cadr-cli::config-selector-state-flat-items state))
+               (inherited-index
+                 (position-if
+                  (lambda (entry)
+                    (and (eq :item (getf entry :kind))
+                         (search "global-only.md"
+                                 (cadr-cli::config-resource-item-display-name
+                                  (getf entry :item)))))
+                  flat)))
+          (is (not (null inherited-index)))
+          (setf
+           (cadr-cli::config-selector-state-selected state)
+           inherited-index)
+          (let ((row
+                  (cadr-cli::config-selector-render-entry
+                   state (nth inherited-index flat)
+                   inherited-index 120)))
+            (is (not (null (search "global-only.md" row))))
+            ;; Uniformly dim: no bold escape anywhere in the row.
+            (is (not (search
+                      (format nil "~C[1m" #\Escape)
+                      row)))
+            (is (search
+                 (format nil "~C[38;2;102;102;102m" #\Escape)
+                 row)))))))
+    (cadr-tui:reset-current-theme)))

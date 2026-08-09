@@ -26,10 +26,21 @@
 
 (defun search-record-haystack (record)
   (normalized-search-text
-   (format nil "~@[~A ~]~A"
+   ;; Baseline session-selector-search.ts: the haystack is
+   ;; `${id} ${name ?? ""} ${allMessagesText} ${cwd}`.
+   (format nil "~A ~@[~A ~]~A ~@[~A~]"
+           (session-search-record-id record)
            (session-search-record-name record)
            (session-search-record-all-messages-text
-            record))))
+            record)
+           (and
+            (session-search-record-cwd record)
+            (etypecase
+                (session-search-record-cwd record)
+              (string (session-search-record-cwd record))
+              (pathname
+               (namestring
+                (session-search-record-cwd record))))))))
 
 (defun search-record-position (record query)
   (let ((haystack
@@ -332,9 +343,19 @@
 (defun session-to-search-record (session)
   (let* ((messages
            (cadr-agent:session-messages session))
-         (texts
-           (mapcar #'session-message-search-text
-                   messages)))
+         ;; Baseline session-manager.ts: the search corpus holds user
+         ;; and assistant texts only (tool results are skipped), and
+         ;; firstMessage is the first user message with text.
+         (user-texts
+           (loop for message in messages
+                 when (typep message 'cadr-ai:user-message)
+                 collect (session-message-search-text message)))
+         (corpus-texts
+           (loop for message in messages
+                 when (typep message
+                             '(or cadr-ai:user-message
+                               cadr-ai:assistant-message))
+                 collect (session-message-search-text message))))
     (make-session-search-record
      :id (cadr-agent:session-id session)
      :path (cadr-agent:session-path session)
@@ -343,14 +364,14 @@
      :name (cadr-agent:session-name session)
      :cwd (cadr-agent:session-cwd session)
      :first-message
-     (find-if
-      (lambda (text)
-        (plusp
-         (length
-          (string-trim
-           '(#\Space #\Tab #\Newline #\Return)
-           text))))
-      texts)
+      (find-if
+       (lambda (text)
+         (plusp
+          (length
+           (string-trim
+            '(#\Space #\Tab #\Newline #\Return)
+            text))))
+       user-texts)
      :message-count (length messages)
      :modified
      (or (cadr-agent::session-modified-timestamp
@@ -358,7 +379,7 @@
          (cadr-agent:session-timestamp session)
          0)
      :all-messages-text
-     (format nil "~{~A~^~%~}" texts)
+      (format nil "~{~A~^~%~}" corpus-texts)
      :payload session)))
 
 (defun session-select-items-to-records (items)
@@ -986,11 +1007,13 @@
              (or
               (session-search-record-first-message
                record)
-              (session-search-record-all-messages-text
-               record)))))
+              ""))))
       (if (plusp (length text))
           text
-          (session-search-record-id record))))))
+          ;; Baseline session-manager.ts: firstMessage falls back to
+          ;; "(no messages)", and the selector shows
+          ;; name ?? firstMessage verbatim.
+          "(no messages)")))))
 
 (defun session-selector-shorten-path (path)
   (let* ((value

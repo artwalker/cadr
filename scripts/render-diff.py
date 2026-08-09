@@ -1663,6 +1663,12 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
             "HOME": str(home),
             "LANG": "C.UTF-8",
             "LC_ALL": "C.UTF-8",
+            # Both products shell out to rg with identical arguments and no
+            # --sort, so result order follows rg's parallel walker, which is
+            # scheduling-dependent and flips under gate load.  Pin every
+            # captured rg invocation to the deterministic single-threaded
+            # walker; the config file applies equally to pi and Cadr.
+            "RIPGREP_CONFIG_PATH": str(DEFAULT_MANIFEST.parent / "ripgrep.conf"),
             "TERM": "xterm-256color",
             "COLORTERM": "truecolor",
             "COLORFGBG": "15;0",

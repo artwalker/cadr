@@ -1359,7 +1359,10 @@
                (eq :inherit
                    (config-selector-project-state state item))))
             (name
-              (if selected-p
+              ;; Baseline config-selector.ts: bold only when the row is
+              ;; selected and not dimmed; dimmed inherited rows stay
+              ;; uniformly dim.
+              (if (and selected-p (not dimmed-p))
                   (cadr-tui:theme-bold
                    (config-resource-item-display-name item))
                   (config-resource-item-display-name item)))

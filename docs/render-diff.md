@@ -10,6 +10,10 @@ The collector fixes terminal size, dark theme, `C.UTF-8`, `TERM=xterm-256color`,
 response timestamps, response IDs, token boundaries, and response order.  It
 installs an isolated fake `gh` executable so `/share` deterministically reaches
 its successful user-visible URL path on both sides without external writes. It
+captures with `RIPGREP_CONFIG_PATH` pinned to a fixture config containing
+`--threads=1`: both products invoke `rg` without `--sort`, so result order
+otherwise follows rg's parallel walker and flips under gate load; the pinned
+single-threaded walker is deterministic and applies equally to pi and Cadr. It
 captures the complete PTY byte stream, including ANSI SGR, cursor movement,
 erase operations, terminal-mode setup/teardown, and post-TUI stdout.
 

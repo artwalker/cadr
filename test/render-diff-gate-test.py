@@ -353,6 +353,22 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertEqual(pi.name, "render-sessions")
         self.assertEqual(cadr.name, "render-sessions")
 
+    def test_captured_processes_pin_ripgrep_to_the_deterministic_walker(self) -> None:
+        # Both products invoke rg without --sort, so result order follows
+        # rg's parallel walker and flips under gate load.  The harness must
+        # pin every captured rg invocation to the single-threaded walker.
+        with tempfile.TemporaryDirectory(prefix="cadr-render-env-") as temporary:
+            env = RENDER_DIFF.fixed_environment(
+                Path(temporary), 100, 32, Path(temporary) / "ready"
+            )
+        config = Path(env["RIPGREP_CONFIG_PATH"])
+        self.assertTrue(config.is_file())
+        self.assertEqual(config.name, "ripgrep.conf")
+        self.assertIn(
+            "--threads=1",
+            config.read_text(encoding="utf-8").splitlines(),
+        )
+
     def test_gate_captures_every_manifest_pair_before_real_analysis(self) -> None:
         manifest = RENDER_DIFF.load_manifest(
             ROOT / "test/fixtures/render-diff/scenarios.json"

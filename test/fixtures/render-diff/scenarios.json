@@ -509,14 +509,22 @@
       "responses": [],
       "actions": [
         { "waitFor": "Global Resources" },
+        { "checkpoint": "config-global-initial" },
         { "send": "space" },
         { "waitFor": "[ ]" },
+        { "checkpoint": "config-global-unchecked" },
+        { "send": "space" },
+        { "waitFor": "Global Resources" },
+        { "checkpoint": "config-global-rechecked" },
         { "send": "tab" },
         { "waitFor": "Project Local Resources" },
+        { "checkpoint": "config-project-initial" },
         { "send": "space" },
         { "waitFor": "project unload" },
+        { "checkpoint": "config-project-unload" },
         { "send": "space" },
         { "waitFor": "project load" },
+        { "checkpoint": "config-project-load" },
         { "send": "escape" }
       ]
     },
@@ -559,6 +567,7 @@
       "responses": [],
       "actions": [
         { "waitFor": "No resources found" },
+        { "checkpoint": "config-empty" },
         { "send": "escape" }
       ]
     },
@@ -585,13 +594,34 @@
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" },
-        { "send": "tab" }, { "pauseMs": 80 }, { "sendRepeated": { "key": "down", "count": 12 } }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" },
-        { "sendRepeated": { "key": "down", "count": 7 } }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Show images" },
-        { "send": "down" }, { "pauseMs": 80 }, { "send": "down" }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "Current session: trusted" }, { "pauseMs": 80 }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/model" }, { "send": "enter" },
+        { "waitFor": "Model Name:" },
+        { "checkpoint": "model-first-screen" },
+        { "send": "tab" }, { "pauseMs": 80 },
+        { "sendRepeated": { "key": "down", "count": 12, "checkpointPrefix": "model-row" } },
+        { "pauseMs": 80 },
+        { "checkpoint": "model-scrolled" },
+        { "send": "escape" }, { "pauseMs": 80 },
+        { "checkpoint": "model-closed" },
+        { "sendText": "/resume" }, { "send": "enter" },
+        { "waitFor": "Current Folder" },
+        { "checkpoint": "resume-first-screen" },
+        { "sendRepeated": { "key": "down", "count": 7, "checkpointPrefix": "resume-row" } },
+        { "pauseMs": 80 },
+        { "checkpoint": "resume-scrolled" },
+        { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/settings" }, { "send": "enter" },
+        { "waitFor": "Show images" },
+        { "checkpoint": "settings-image-rows" },
+        { "send": "down" }, { "pauseMs": 80 },
+        { "checkpoint": "settings-image-width-row" },
+        { "send": "down" }, { "pauseMs": 80 },
+        { "checkpoint": "settings-auto-resize-row" },
+        { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "/trust" }, { "send": "enter" },
+        { "waitFor": "Current session: trusted" },
+        { "checkpoint": "trust-trusted" },
+        { "send": "escape" }, { "pauseMs": 80 },
         { "send": "ctrl+d" }
       ]
     },
@@ -608,10 +638,17 @@
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" },
-        { "sendRepeated": { "key": "down", "count": 2 } }, { "pauseMs": 80 },
-        { "sendRepeated": { "key": "down", "count": 10 } }, { "pauseMs": 80 },
-        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+        { "sendText": "/scoped-models" }, { "send": "enter" },
+        { "waitFor": "Model Configuration" },
+        { "checkpoint": "scoped-first-screen" },
+        { "sendRepeated": { "key": "down", "count": 2, "checkpointPrefix": "scoped-head" } },
+        { "pauseMs": 80 },
+        { "checkpoint": "scoped-after-head" },
+        { "sendRepeated": { "key": "down", "count": 10, "checkpointPrefix": "scoped-tail" } },
+        { "pauseMs": 80 },
+        { "checkpoint": "scoped-last-screen" },
+        { "send": "escape" }, { "pauseMs": 80 },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -626,8 +663,12 @@
       "responses": [],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
-        { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "inherited from" }, { "pauseMs": 80 },
-        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+        { "sendText": "/trust" }, { "send": "enter" },
+        { "waitFor": "inherited from" },
+        { "checkpoint": "trust-inherited-from-parent" },
+        { "pauseMs": 80 },
+        { "send": "escape" }, { "pauseMs": 80 },
+        { "send": "ctrl+d" }
       ]
     },
     {

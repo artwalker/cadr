@@ -682,6 +682,17 @@
          (json-get setup "enabledModelIds"))
         '("faux/faux-1" "other/other-1"))))
 
+(defun render-scoped-models (scenario)
+  ;; Mirrors pi-driver.ts: scopedModels is [faux-1, other-1] exactly
+  ;; when the scenario does not pin enabledModelIds and the comparison
+  ;; providers are registered; otherwise the session has no model
+  ;; scope and the selector shows no scoped tab.
+  (let ((setup (json-get scenario "setup")))
+    (when (and (not (json-key-present-p setup "enabledModelIds"))
+               (comparison-providers-enabled-p scenario))
+      (let ((models (render-models scenario)))
+        (list (first models) (second models))))))
+
 (defun render-trust-saved-entry (scenario cwd)
   (let ((spec
           (json-get
@@ -1239,7 +1250,7 @@ render loopback login received
                   (mapcar
                    (lambda (model)
                      (list :model model :thinking nil))
-                   (render-models scenario))
+                   (render-scoped-models scenario))
                   (cadr-tui:get-keybindings)
                   :verbose-p nil :quiet-startup-p nil))))
           (write-ready-marker)
@@ -1445,15 +1456,11 @@ render loopback login received
            :model-selector-function
            (lambda (&optional query)
              (let* ((models (render-models scenario))
-                    (setup (json-get scenario "setup"))
                     (state
                      (cadr-cli::make-model-selector-state
                       :all-models models
                       :scoped-models
-                      (unless
-                          (json-key-present-p
-                           setup "enabledModelIds")
-                        models)
+                      (render-scoped-models scenario)
                       :current-model (first models)
                       :refresh-status-message
                       "Model catalogs refreshed.")))
