@@ -43,3 +43,13 @@ C 类 Android 1（`tools-manager.ts:347`）。
 标签）：任何场景或标签被删除即失败，覆盖不可回退。它与派生集合的关系：
 派生集合管"基线有什么"，手工全集管"场景声称覆盖什么"，两者都由门禁
 对账。
+
+## 已知覆盖形态说明：启动弃用警告块
+
+`migrations.ts` 的弃用目录警告（hooks//tools/ 提示 + 文档 URL + "Press any
+key to continue..." 暂停）只在基线 `main.ts` 的交互路径发出；render-diff
+的 TUI 场景经 driver 直接构造 InteractiveMode，不经 main()，因此该块目前
+由 construction 驱动（基线侧逐字节）+ cadr 侧 FiveAM
+（`goal18-deprecation-warnings-match-the-baseline-text`，含按键等待与完整
+文案）覆盖，无双侧场景。要补双侧对拍需一个"注册 faux 后走完整 main()"
+的新 driver 入口——收益与驱动复杂度不称，记录在案。
