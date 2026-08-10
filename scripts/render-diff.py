@@ -1569,6 +1569,13 @@ def load_visible_string_exemptions(
                 "unavailable-physical-device",
                 "unavailable-operating-system",
                 "unavailable-terminal-capability",
+                # Goal 18 adjudication USER-2026-08-10: split by evidence
+                # strength — "unreachable-in-baseline" asserts an objective
+                # property of the baseline (every throw carries a message),
+                # "unreachable-in-harness" asserts a limitation of our root
+                # harness environment (EACCES cannot be induced).
+                "unreachable-in-baseline",
+                "unreachable-in-harness",
             }
             or not isinstance(evidence, dict)
             or not isinstance(evidence.get("path"), str)
