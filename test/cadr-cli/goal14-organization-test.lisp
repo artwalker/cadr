@@ -62,10 +62,28 @@
         (let ((source (goal14-b1-source root relative)))
           (is (not (null source)) "missing identity owner ~A" relative)
           (when source
-            (is (search replacement source)
-                "~A omits ~A" relative replacement)
-            (is (not (search retired source))
-                "~A still reads retired ~A" relative retired)))))))
+          (is (search replacement source)
+              "~A omits ~A" relative replacement)
+          (is (not (search retired source))
+              "~A still reads retired ~A" relative retired)))))))
+
+(test goal18-install-telemetry-has-no-egress
+  ;; Adjudicated intentional difference: the baseline reports installs
+  ;; to the pi.dev report-install endpoint
+  ;; (interactive-mode.ts:1045-1062); cadr keeps the
+  ;; enableInstallTelemetry settings surface but no telemetry egress may
+  ;; exist anywhere in the source tree.
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (files
+           (directory
+            (merge-pathnames "src/**/*.lisp" root))))
+    (is (plusp (length files)) "telemetry gate found no sources")
+    (dolist (file files)
+      (let ((source (uiop:read-file-string file)))
+        (is (not (search "report-install" source))
+            "~A references the baseline telemetry endpoint" file)
+        (is (not (search "pi.dev/api" source))
+            "~A references the baseline telemetry host" file)))))
 
 (test goal16-c4-free-identity-values-are-cadr-owned
   (let* ((root (asdf:system-source-directory "cadr-cli"))
@@ -384,7 +402,9 @@
     ;; +3 goal 18 I7 tail: validate-cli-session-flags (sessions.lisp) and
     ;; format-list-models-token-count/no-models-available-message
     ;; (main.lisp, baseline listModels table port).
-    (is (= 116 definition-count)
+    ;; +1 goal 18 adjudicated -r picker: run-resume-session-picker
+    ;; (sessions.lisp, baseline cli/session-picker.ts port).
+    (is (= 117 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -690,7 +710,11 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 294 definition-count)
+    ;; +2 goal 18 I05: renderer-request-canonical-repaint and
+    ;; *canonical-repaint-hook* (lifecycle-input.lisp) — the harness
+    ;; work-rendered acknowledgement repaints in place instead of
+    ;; wiping scrollback.
+    (is (= 296 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -1159,7 +1183,10 @@
     ;; -2 goal 18 L2.1: the three aligned-pi defparameters nested under
     ;; the read-baseline-anchor multiple-value-bind (no longer column-0
     ;; top-level forms), +1 read-baseline-anchor itself.
-    (is (= 251 definition-count)
+    ;; +2 goal 18 sentinel adjudication: no-models-available-message and
+    ;; no-model-selected-message joined no-api-key-found-message in
+    ;; support/release.lisp as the single message owners.
+    (is (= 253 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

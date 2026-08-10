@@ -48,6 +48,108 @@
       ]
     },
     {
+      "id": "startup-resume-picker",
+      "tier": "full",
+      "group": "startup",
+      "coverage": ["startup-resume-picker"],
+      "description": "Pre-TUI resume picker through the real main() path (baseline cli/session-picker.ts): current-folder list, Tab to All scope, escape cancel prints dim No session selected and exits 0.",
+      "setup": {
+        "entrypoint": "main",
+        "mainArgv": ["--resume"],
+        "pickerSessions": [
+          {
+            "id": "picker-alpha",
+            "messages": [
+              { "role": "user", "text": "alpha session question" },
+              { "role": "assistant", "text": "alpha session answer" }
+            ]
+          },
+          {
+            "id": "picker-beta",
+            "name": "Named Beta",
+            "messages": [
+              { "role": "user", "text": "beta session question" },
+              { "role": "assistant", "text": "beta session answer" }
+            ]
+          }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Current Folder" },
+        { "pauseMs": 100 },
+        { "checkpoint": "picker-current" },
+        { "send": "tab" },
+        { "waitFor": "◉ All" },
+        { "pauseMs": 100 },
+        { "checkpoint": "picker-all" },
+        { "send": "escape" },
+        { "waitFor": "No session selected" }
+      ]
+    },
+    {
+      "id": "startup-resume-picker-select",
+      "tier": "full",
+      "group": "startup",
+      "coverage": ["startup-resume-picker-select"],
+      "description": "Pre-TUI resume picker selection opens the chosen session into the interactive TUI (baseline main.ts:368-382).",
+      "setup": {
+        "entrypoint": "main",
+        "mainArgv": ["--resume"],
+        "pickerSessions": [
+          {
+            "id": "picker-alpha",
+            "messages": [
+              { "role": "user", "text": "alpha session question" },
+              { "role": "assistant", "text": "alpha session answer" }
+            ]
+          },
+          {
+            "id": "picker-beta",
+            "messages": [
+              { "role": "user", "text": "beta session question" },
+              { "role": "assistant", "text": "beta session answer" }
+            ]
+          }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "Current Folder" },
+        { "pauseMs": 100 },
+        { "send": "enter" },
+        { "waitFor": "beta session answer" },
+        { "pauseMs": 100 },
+        { "checkpoint": "picker-opened" },
+        { "send": "ctrl+d" },
+        { "waitFor": "To resume this session:" },
+        { "checkpoint": "picker-opened-exit" }
+      ]
+    },
+    {
+      "id": "startup-no-model",
+      "tier": "full",
+      "group": "startup",
+      "coverage": ["startup-no-model"],
+      "description": "Bare-environment startup through the real main() path: no authenticated model keeps the baseline unknown sentinel (agent.ts DEFAULT_MODEL; footer reads unknown), and the first send fails with the NoApiKeyFound(selected model) guidance (baseline agent-session.ts:1181-1192).",
+      "setup": {
+        "entrypoint": "main",
+        "mainArgv": []
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "No models available" },
+        { "pauseMs": 100 },
+        { "checkpoint": "sentinel-footer" },
+        { "sendText": "hello" },
+        { "send": "enter" },
+        { "waitFor": "No API key found" },
+        { "pauseMs": 100 },
+        { "checkpoint": "sentinel-error" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
       "id": "cli-help-sweep",
       "tier": "full",
       "group": "full-state-sweep",
@@ -259,7 +361,11 @@
         { "content": [{ "type": "toolCall", "name": "find", "id": "tool-find-default", "arguments": { "pattern": "*.txt" } }], "stopReason": "toolUse" },
         { "content": [{ "type": "text", "text": "default find done." }], "stopReason": "stop" },
         { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-long-command", "arguments": { "command": "printf 'long command done\\n' # this command description intentionally exceeds fifty characters for tree truncation" } }], "stopReason": "toolUse" },
-        { "content": [{ "type": "text", "text": "long command tree done." }], "stopReason": "stop" }
+        { "content": [{ "type": "text", "text": "long command tree done." }], "stopReason": "stop" },
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
@@ -275,6 +381,9 @@
         { "sendText": "run find default path" }, { "send": "enter" }, { "waitFor": "default find done." }, { "waitForAgentSettled": true }, { "checkpoint": "find-default-path" },
         { "sendText": "run long command" }, { "send": "enter" }, { "waitFor": "long command tree done." }, { "waitForAgentSettled": true }, { "checkpoint": "bash-long-command" },
         { "sendText": "/tree" }, { "send": "enter" }, { "waitFor": "Session Tree" }, { "send": "ctrl+a" }, { "sendRepeated": { "key": "down", "count": 30 } }, { "checkpoint": "tree-rich-tools" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -419,12 +528,23 @@
       "coverage": ["bash-tool-abort"],
       "description": "A real model-requested bash tool is interrupted through the ordinary Escape path.",
       "responses": [
-        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-abort", "arguments": { "command": "sleep 5" } }], "stopReason": "toolUse" }
+        { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-abort", "arguments": { "command": "sleep 5" } }], "stopReason": "toolUse" },
+        {
+          "content": [{ "type": "text", "text": "Abort follow-up acknowledged." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "run interruptible bash tool" }, { "send": "enter" }, { "waitFor": "sleep 5" }, { "pauseMs": 100 }, { "send": "escape" },
         { "waitFor": "Command aborted" }, { "waitForAgentSettled": true }, { "checkpoint": "bash-tool-aborted" },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -474,7 +594,12 @@
           { "type": "title", "key": "title-change", "name": "Seeded render session" }
         ]
       },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "pauseMs": 500 },
@@ -488,7 +613,10 @@
         { "send": "ctrl+l" },
         { "send": "ctrl+a" }, { "sendRepeated": { "key": "down", "count": 40 } },
         { "checkpoint": "tree-entry-states" },
-        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+        { "send": "escape" }, { "pauseMs": 80 }, { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -614,7 +742,12 @@
           { "id": "age-months", "ageSeconds": 5184000, "messages": [{ "role": "user", "text": "age months" }] }
         ]
       },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/model" }, { "send": "enter" },
@@ -645,6 +778,9 @@
         { "waitFor": "Current session: trusted" },
         { "checkpoint": "trust-trusted" },
         { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -658,7 +794,12 @@
         "comparisonModelCount": 12,
         "enabledModelIds": ["faux/faux-1", "other/other-1", "missing/unavailable-model"]
       },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/scoped-models" }, { "send": "enter" },
@@ -671,6 +812,9 @@
         { "pauseMs": 80 },
         { "checkpoint": "scoped-last-screen" },
         { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -683,7 +827,12 @@
         "projectTrusted": true,
         "trustSavedDecision": { "scope": "parent", "decision": true }
       },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/trust" }, { "send": "enter" },
@@ -691,6 +840,9 @@
         { "checkpoint": "trust-inherited-from-parent" },
         { "pauseMs": 80 },
         { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -706,7 +858,12 @@
           { "role": "assistant", "text": "overlay answer" }
         ]
       },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitFor": "overlay answer" },
         { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" }, { "checkpoint": "overlay-model" },
@@ -722,6 +879,9 @@
         { "send": "shift+l" }, { "waitFor": "Label (empty to remove):" }, { "checkpoint": "overlay-tree-label" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 80 },
         { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" }, { "checkpoint": "overlay-settings" }, { "send": "escape" }, { "pauseMs": 80 },
         { "sendText": "/trust" }, { "send": "enter" }, { "waitFor": "Project trust" }, { "checkpoint": "overlay-trust" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -730,7 +890,12 @@
       "group": "overlays",
       "coverage": ["overlay-auth-method", "overlay-login-provider", "overlay-login-provider-mixed-types", "overlay-login-provider-scroll", "slash-login"],
       "description": "Generic authentication-method and provider selector chain, including mixed auth-type/status rows and scrolling.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/login" }, { "send": "enter" }, { "waitFor": "Select authentication method:" }, { "checkpoint": "auth-method-generic" },
@@ -738,6 +903,9 @@
         { "send": "escape" }, { "waitForNext": "Select authentication method:" }, { "send": "escape" }, { "pauseMs": 100 },
         { "sendText": "/login render" }, { "send": "escape" }, { "send": "enter" }, { "waitForNext": "Select provider to configure:" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
         { "sendText": "/login a" }, { "send": "escape" }, { "send": "enter" }, { "waitForNext": "Select provider to configure:" }, { "sendRepeated": { "key": "down", "count": 12 } }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -952,11 +1120,19 @@
       "group": "overlays",
       "coverage": ["overlay-logout", "slash-logout"],
       "description": "Logout provider selector.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/logout" }, { "send": "enter" }, { "waitFor": "Select provider to logout:" }, { "checkpoint": "logout-provider" },
-        { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+d" }
+        { "send": "escape" }, { "pauseMs": 100 }, { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -964,7 +1140,12 @@
       "group": "overlays",
       "coverage": ["overlay-settings-warnings", "overlay-settings-thinking", "overlay-settings-theme", "overlay-settings-theme-automatic", "overlay-settings-theme-light", "overlay-settings-theme-dark", "overlay-import-confirmation"],
       "description": "Every built-in secondary and tertiary settings/import interface.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" }, { "sendText": "Warnings" }, { "send": "enter" }, { "waitFor": "Anthropic extra usage" }, { "checkpoint": "settings-warnings" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
@@ -974,6 +1155,9 @@
         { "send": "enter" }, { "waitFor": "Light Theme" }, { "checkpoint": "settings-theme-light" }, { "send": "escape" }, { "pauseMs": 100 },
         { "send": "down" }, { "pauseMs": 50 }, { "send": "enter" }, { "waitFor": "Dark Theme" }, { "checkpoint": "settings-theme-dark" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },
         { "sendText": "/import missing.jsonl" }, { "send": "enter" }, { "waitFor": "Import session" }, { "checkpoint": "import-confirmation" }, { "send": "escape" }, { "pauseMs": 80 },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -984,7 +1168,11 @@
       "description": "Slow deterministic stream with steering, follow-up, and Escape abort.",
       "stream": { "tokensPerSecond": 1, "chunkCharacters": 4 },
       "responses": [
-        { "content": [{ "type": "text", "text": "streaming alpha beta gamma delta epsilon zeta eta theta" }], "stopReason": "stop" }
+        { "content": [{ "type": "text", "text": "streaming alpha beta gamma delta epsilon zeta eta theta" }], "stopReason": "stop" },
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
       ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
@@ -994,7 +1182,10 @@
         { "sendText": "follow later" }, { "send": "alt+enter" }, { "waitFor": "Follow-up: follow later" },
         { "checkpoint": "busy-queue" },
         { "send": "escape" }, { "waitFor": "Operation aborted" }, { "waitForAgentSettled": true }, { "checkpoint": "stream-aborted" },
-        { "send": "ctrl+c" }, { "pauseMs": 80 }, { "send": "ctrl+c" }
+        { "send": "ctrl+c" }, { "pauseMs": 80 }, { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -1003,12 +1194,20 @@
       "coverage": ["overlay-extension-select", "overlay-extension-input", "overlay-extension-editor"],
       "description": "All three extension-owned modal UI surfaces.",
       "setup": { "extensionSurfaces": true },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitFor": "Extension Select" }, { "checkpoint": "extension-select" }, { "send": "escape" },
         { "waitFor": "Extension Input" }, { "checkpoint": "extension-input" }, { "send": "escape" },
         { "waitFor": "Extension Editor" }, { "checkpoint": "extension-editor" }, { "send": "escape" },
-        { "pauseMs": 80 }, { "send": "ctrl+d" }
+        { "pauseMs": 80 }, { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
+        { "send": "ctrl+d" }
       ]
     },
     {
@@ -1016,11 +1215,18 @@
       "group": "overlays",
       "coverage": ["autocomplete-slash", "autocomplete-path"],
       "description": "Slash-command and file-path autocomplete surfaces.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/" }, { "waitFor": "settings" }, { "checkpoint": "autocomplete-slash" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+c" }, { "pauseMs": 100 },
-        { "sendText": "./" }, { "send": "tab" }, { "waitFor": "sample.txt" }, { "checkpoint": "autocomplete-path" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "ctrl+c" },
+        { "sendText": "./" }, { "send": "tab" }, { "waitFor": "sample.txt" }, { "checkpoint": "autocomplete-path" }, { "send": "escape" }, { "pauseMs": 100 }, { "sendText": " post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -1140,12 +1346,20 @@
       "group": "full-state-sweep",
       "coverage": ["user-bash-truncation", "user-bash-expanded", "user-bash-nonzero", "user-bash-running", "user-bash-cancel"],
       "description": "Exercises the direct user-bash component, which is distinct from model tool rendering.",
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "!for i in $(seq 1 400); do printf '%0200d\\n' \"$i\"; done" }, { "send": "enter" }, { "waitFor": "Output truncated. Full output:" }, { "pauseMs": 100 }, { "checkpoint": "user-bash-truncated" }, { "send": "ctrl+o" }, { "waitForNext": "Tool output: expanded" }, { "checkpoint": "user-bash-expanded" }, { "send": "ctrl+o" }, { "waitForNext": "Tool output: collapsed" },
         { "sendText": "!printf 'before exit\\n'; exit 7" }, { "send": "enter" }, { "waitFor": "(exit 7)" }, { "pauseMs": 100 }, { "checkpoint": "user-bash-nonzero" },
         { "sendText": "!sleep 5" }, { "send": "enter" }, { "waitFor": "Running..." }, { "pauseMs": 80 }, { "checkpoint": "user-bash-running" }, { "send": "escape" }, { "waitFor": "(cancelled)" }, { "pauseMs": 100 }, { "checkpoint": "user-bash-cancelled" },
+        { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
         { "send": "ctrl+d" }
       ]
     },
@@ -1182,13 +1396,21 @@
       "coverage": ["settings-state-sweep"],
       "description": "Visits every settings row with terminal image support enabled so each row label and selected-row description is rendered by the production selector, including the Show images and Image width rows that only appear when the terminal supports images.",
       "setup": { "supportsImages": true },
-      "responses": [],
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
+          "stopReason": "stop"
+        }
+      ],
       "actions": [
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/settings" }, { "send": "enter" }, { "waitFor": "Auto-compact" },
         { "sendRepeated": { "key": "down", "count": 34, "checkpointPrefix": "settings-row" } },
         { "checkpoint": "settings-all-rows" },
-        { "send": "escape" }, { "pauseMs": 80 }, { "send": "ctrl+d" }
+        { "send": "escape" }, { "pauseMs": 80 }, { "sendText": "post-exit probe" },
+        { "send": "enter" },
+        { "waitFor": "Post-exit probe delivered." },
+        { "send": "ctrl+d" }
       ]
     },
     {

@@ -2587,6 +2587,11 @@ def normalized(data: bytes, side: str, sandbox: Path) -> bytes:
     side_root = sandbox / ("pi00" if side == "pi" else "cadr")
     for old, new in (
         (
+            f"/tmp/{_BASELINE_CACHE_NAME}/packages/coding-agent/docs".encode(),
+            b"<DOCS>",
+        ),
+        (str(ROOT / "docs").encode(), b"<DOCS>"),
+        (
             str(render_side_session_directory(sandbox, side)).encode(),
             b"<SESSION_DIR>",
         ),
@@ -2709,9 +2714,41 @@ def normalized_screen(data: bytes, side: str) -> bytes:
         b"extensions/broken/<ENTRY>",
         result,
     )
+    # Product documentation roots are install-location values: the
+    # baseline resolves packages/coding-agent/docs inside the immutable
+    # cache checkout; cadr resolves docs/ beside its source root.  The
+    # pre-normalization path lengths differ, so the grid fill after each
+    # path differs with it; consume the trailing pads like the crash-id
+    # rule does.
+    docs_pattern = (
+        rb"(?:"
+        + screen_wrapped_literal_pattern(
+            f"/tmp/{_BASELINE_CACHE_NAME}/".encode()
+        )
+        + separator
+        + screen_wrapped_literal_pattern(b"packages/coding-agent/docs")
+        + rb"|"
+        + screen_wrapped_literal_pattern(str(ROOT / "docs").encode())
+        + rb")"
+    )
+    result = re.sub(docs_pattern, b"<DOCS>", result)
+    # The grid fill after a docs path varies with the pre-normalization
+    # path length; consume the pads like the crash-id rule does.
+    result = re.sub(
+        rb"(<DOCS>/[^ \r\n]+) +(?=\r?\n)", rb"\1", result
+    )
     result = re.sub(prefix + rb"/home", b"<HOME>", result)
     result = re.sub(prefix + rb"/workspace", b"<CWD>", result)
     result = re.sub(prefix, b"<SANDBOX>", result)
+    # A narrow selector can truncate a sandbox path mid-string; the
+    # full-path rules above cannot match the fragment.  What remains is
+    # the fixed prefix plus the run-random suffix (optionally cut inside
+    # the side directory), so collapse the remnant to one stable token.
+    result = re.sub(
+        rb"/tmp/cadr-render-diff-(?:[a-z0-9_]{8}|[a-z0-9_]{1,7}(?![-a-z0-9_]))(?:/[a-z0-9]*)?",
+        b"<SANDBOX>",
+        result,
+    )
     result = normalize_fixed_values(result)
     # Cadr and Pi both hide the hardware cursor while drawing their own editor
     # cell.  tmux retains the hidden cursor's last internal coordinates, but

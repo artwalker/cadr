@@ -176,7 +176,9 @@ interface ScenarioSetup {
 	hyperlinks?: boolean;
 	trustSavedDecision?: { scope: "current" | "parent"; decision: boolean };
 	authProvider?: boolean;
-	entrypoint?: "interactive" | "config" | "cli-help" | "cli-errors";
+	entrypoint?: "interactive" | "config" | "cli-help" | "cli-errors" | "main";
+	mainArgv?: string[];
+	pickerSessions?: ExtraSessionFixture[];
 	updateNotifications?: boolean;
 }
 
@@ -835,6 +837,34 @@ async function main(): Promise<void> {
 			"export default function () { throw new Error(\"render-drive-broken\"); }\n",
 		);
 		await stubbedExit(["-p", "hi"]);
+		return;
+	}
+	if (scenario.setup?.entrypoint === "main") {
+		// Goal 18 adjudicated main()-path surfaces: the pre-TUI resume
+		// picker (cli/session-picker.ts) and the bare-environment
+		// no-model sentinel (model-resolver.ts:650-651) only exist on the
+		// real main() path, so drive baselineMain directly — no faux
+		// provider, no registered auth, real process.exit.
+		process.chdir(cwd);
+		const pickerSessions = scenario.setup.pickerSessions ?? [];
+		if (pickerSessions.length > 0) {
+			const slug = `--${cwd.replace(/^[/\\]/, "").replace(/[/\\:]/g, "-")}--`;
+			const pickerDir = join(agentDir, "sessions", slug);
+			for (const [index, fixture] of pickerSessions.entries()) {
+				const timestampMs = 1_700_000_000_000 + index * 60_000;
+				const path = createFixedSessionFile(
+					pickerDir,
+					fixture.cwd ?? cwd,
+					fixture.id,
+					`picker-${index.toString().padStart(2, "0")}-${fixture.id}`,
+					timestampMs,
+				);
+				const session = SessionManager.open(path, pickerDir, fixture.cwd ?? cwd);
+				appendSeedMessages(session, fixture.messages ?? [], timestampMs);
+				if (fixture.name) session.appendSessionInfo(fixture.name);
+			}
+		}
+		await baselineMain(scenario.setup.mainArgv ?? []);
 		return;
 	}
 	const chunkCharacters = scenario.stream?.chunkCharacters ?? 4096;

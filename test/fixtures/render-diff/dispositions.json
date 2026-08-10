@@ -105,12 +105,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "78d97cd7f3752d17209196cc97051ceecda69483fe294ccd7c6a8ec2703450d1",
-          "cadr": "916a1bc566322c8b29fdaf7b6ebf63b0005c5995285bd8d16c51007822ebb142"
+          "pi": "ddced3ba556bc9b49f090e020c0ce5baa86d95a804e7b9992cb3d9cb0d312f68",
+          "cadr": "43bd20386bc3ffeb45fe81c18afa9925ffb8a15dfbcef477a96689cada08baab"
         },
         "narrow": {
-          "pi": "54cc4a095b638fc68767ea3a48bb7a98a3c364fc4e4fff2f3cb2568f07a3b240",
-          "cadr": "45fef5ee3ff05c48aeff29423a057a1e10a9cf6b11107e4df85e17f359d51e14"
+          "pi": "a65b94810ecab1028cbf475c79f31d02f210b991c0f106a5e3311ebdbd3bb4c2",
+          "cadr": "143dc5d63e3d8c644f2fa32931b4822f05ff48960280effec41006dce2d5f6b5"
         }
       },
       "note": "At autocomplete-surfaces/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -874,12 +874,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
-          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+          "pi": "4a6fb045d95e41ac506f1f14bc3c20803604b86f6e4a76a628d340715f061e34",
+          "cadr": "4a330c2e63748ee7556909d53f03ade754c495faceb529a4153700f97327a9ff"
         },
         "narrow": {
-          "pi": "e64258dbcd7fbbb645279a602b8a3bbae02a42333c88cce2681923f7a000d5ce",
-          "cadr": "f03e25904ead492705ee2931dca12115c291416f711ec62783a51ead1f02d784"
+          "pi": "795a25f1d1b22a5035a4ed64990b6128ff9a40c4cbbe985799ab7ffc1285e7b2",
+          "cadr": "66c94c5b23c7ed478e84f43dcf5642037fde48780f3b5f03cc0d299ca75a69bf"
         }
       },
       "note": "At extension-surfaces/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -898,11 +898,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b1feba317089d376d46a9155ee560ddb5431baea641a3eed41daf29062a234f2",
+          "pi": "c803741797ebb53662ca36cf1deabce732b12e435af71d14362ef86446d8c783",
           "cadr": "15d83eafe4fc0cc5eb671fb6fbbda5b9c9f0ae0f81f615d113ee727b29e1a28d"
         },
         "narrow": {
-          "pi": "4784059b1598366202c630a018afd1d7ba6e4de0d3d1f02ec28bda181abe2887",
+          "pi": "d7a06e68824755ca35bcb307dde609278ace296074ed228646c8f04e6e5c2759",
           "cadr": "8befc1e641a828b04cba1ae0a4d82ad8851dc0206f2d4c68d1671ca1e017f6f0"
         }
       },
@@ -1023,8 +1023,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a9500015cc65ab259bacb3cd648f1382808a3c96820d5f86e728c1f5293cc462",
-          "cadr": "a9500015cc65ab259bacb3cd648f1382808a3c96820d5f86e728c1f5293cc462"
+          "pi": "4caa3d9a83065c9b2922af3e2241b09ee034beb8b69e14aa52d517389ba9f018",
+          "cadr": "4caa3d9a83065c9b2922af3e2241b09ee034beb8b69e14aa52d517389ba9f018"
         }
       },
       "note": "At overlays-auth/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1041,8 +1041,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
-          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+          "pi": "0a77c59ae0b854ae0c0f26d92d23bbc8c3aeccf72ae42b03c1eed5e2e5815876",
+          "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
         }
       },
       "note": "At overlays-auth/process-exit [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1758,12 +1758,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "10cc452344a07c76d2f6119b1e19da3e04da7efd5fccf05a7b48379345a32672",
-          "cadr": "e5bb14526c2dd3d1ff4f3e918d8b6beb9a93141a7a136da86c534147703697c4"
+          "pi": "a26445d41a1f8648799d826ba18cd05c6ddd686fd41de8e28478d6e85ea93753",
+          "cadr": "5810fa09e5df772be6759798bec8bcc02c7585028eb408257617e41f7ca1c1c6"
         },
         "narrow": {
-          "pi": "b33201a05e0404f71d3ddc82751e0cc92a6bbb79d2b8a715cfb5ed2300b1ba74",
-          "cadr": "336d040f817d0188b55d17cd407eb7b73e6a8a7cde614aadb3ed862ebf1ac616"
+          "pi": "a3b87b968fa64cc1bf5f5d58ba80af85dac919b1c467f65566f887e9c79b57fa",
+          "cadr": "619518596d3ba8db994594fbac151ecc2ec79f8a8fdaa799fa30c125b645cb03"
         }
       },
       "note": "At overlays-core/process-exit [wide+narrow] The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
@@ -1804,12 +1804,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
-          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+          "pi": "0a77c59ae0b854ae0c0f26d92d23bbc8c3aeccf72ae42b03c1eed5e2e5815876",
+          "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
         },
         "narrow": {
-          "pi": "1b3955252266d55da7db6ee304214d3a48aaef992823bed6e993ab84a8725d32",
-          "cadr": "7ba453d726ab494c0b768b95150c66737b2751246b3ac6ba0632b1ce667048d9"
+          "pi": "491f59bb8306560f368e53c8b90c3aaee4469a8583132b59ec04770548a6b6ac",
+          "cadr": "3fafe6cb22ed51e145d95b502b6f8ecaf70e49b45b15216af7bceb77082b66b0"
         }
       },
       "note": "At overlays-logout/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -2277,8 +2277,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0fb624442f2ca565aedfb373c62c4c449f928af2fa2f12cc6ac51ebcab400a4f",
-          "cadr": "0fb624442f2ca565aedfb373c62c4c449f928af2fa2f12cc6ac51ebcab400a4f"
+          "pi": "bd335161a7f883f564dcf7e962ed8d20d97d1954ba69612a5f21a8ffd51d3187",
+          "cadr": "bd335161a7f883f564dcf7e962ed8d20d97d1954ba69612a5f21a8ffd51d3187"
         }
       },
       "note": "At overlays-secondary/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -2295,8 +2295,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3ef4a93a59901125709f787bf3276d0b161fe5c349debb16c6ee60bf1d4d6a8f",
-          "cadr": "a54b1917ef473ed24e3fef8738b764ad55ef47204e036e0d8a45c5133d03d309"
+          "pi": "819c9f58d05944d3243c35ebe82537fd6de4347a3c0c3a03ddee96dd4d705dee",
+          "cadr": "c9e5d3d088905c7461d4dad8e7b6c7183b67f6593d7e08e751c0164df93decdf"
         }
       },
       "note": "At overlays-secondary/process-exit [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -2533,8 +2533,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
-          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+          "pi": "4a6fb045d95e41ac506f1f14bc3c20803604b86f6e4a76a628d340715f061e34",
+          "cadr": "4a330c2e63748ee7556909d53f03ade754c495faceb529a4153700f97327a9ff"
         }
       },
       "note": "At settings-state-sweep/process-exit [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2551,8 +2551,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "bc67742cfe0e7ff4bbf8ee10b609ddf25302259397a84c9116d506572a6c8239",
-          "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
+          "pi": "a10292a11099d893ddb155899564fd7692216f4152b3f8b67c2b982082bfb2d4",
+          "cadr": "267d5cce0b9c28a79cbbcaa3ddf7783d92bb0e4ea06cad0ecb07dc86c5f0b08f"
         }
       },
       "note": "At settings-state-sweep/process-exit [narrow] the retained transcript text is identical to pi after the product-name placeholder substitution; the startup-banner lines keep pi's longer trailing padding (I04 product identity artifact), and the raw ANSI teardown differs (I01)."
@@ -4036,12 +4036,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6ceaea62d6935bb2a1d9b3813a34e95e0ed382dc5914eba1ddec66172af45dca",
-          "cadr": "e886a505cc473548962695338bfa132157177f78354a02d3369a589765502715"
+          "pi": "7d3fcf5f8df2f9f5d5d59bb9d65096395628a7ffdc2251a48c9d95f126caf1c5",
+          "cadr": "7e22923a0a7a7d4f19eb760012e384101ac57eb3f9f7e5476a13b799ab344408"
         },
         "narrow": {
-          "pi": "d8cf3ddd13057a37ec068d7f5a9c5ec454166244505154e42bada5d54b45d8c8",
-          "cadr": "1b9156db8a8f47a7448eeda31cce07c5f13e9bf2c1756b27376a7782774a0efe"
+          "pi": "9e85ae73194c2f3f7313ac08d758b203dba8d978ebdc69ee0619dd2696a5eff8",
+          "cadr": "9e85ae73194c2f3f7313ac08d758b203dba8d978ebdc69ee0619dd2696a5eff8"
         }
       },
       "note": "Same narrow banner wrap consequence (I04) with the cursor one row lower at exit; content identical. ANSI segmentation differs (I01)."
@@ -4064,7 +4064,7 @@
         },
         "narrow": {
           "pi": "412b2f7c788363c5c240987dda892fe49efbc79bc9804a2720b02e07c6a6d911",
-          "cadr": "cbaad341202f1b8617e9244c9b769ca38f3d755d459ce0f1b552b64f3a43d07c"
+          "cadr": "bb749ec49824fecbe63d93e967703e15ef0ae649f3884ceee49cfeb2628b444d"
         }
       },
       "note": "In narrow, cadr's two-cell-longer banner identity (I04) wraps one row taller, so the viewport keeps the 'loaded resources.' banner tail visible; the abort flow lines are identical. ANSI segmentation differs (I01)."
@@ -4080,8 +4080,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "077e1c8dee59d059be4e25312a2ccc5bfa05e50c9a86e5279cfe4aa99673c872",
-          "cadr": "077e1c8dee59d059be4e25312a2ccc5bfa05e50c9a86e5279cfe4aa99673c872"
+          "pi": "d7f30c291f21d64c2244ed362752165182f160d4f44608bb552dddf0c4f84b64",
+          "cadr": "d7f30c291f21d64c2244ed362752165182f160d4f44608bb552dddf0c4f84b64"
         }
       },
       "note": "At tool-bash-abort/bash-tool-aborted [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4098,8 +4098,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c0618eda179992c1d183270a02cde378f7e99589675b261d2681c330925bb878",
-          "cadr": "0d98737d79026419500ece0eeea277d9b9635333306837e762ab63c3b7f011f4"
+          "pi": "fa3566011af0836bf49051f4a76a113c7e44c62404b8d8dd8989ab697daa993a",
+          "cadr": "8e30631cbe6fe0477f6f4512c22511ed6519435bc79c81e87243ea46ef4a0d0c"
         }
       },
       "note": "At tool-bash-abort/bash-tool-aborted [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4115,8 +4115,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "b314270a7f0c6331a64e00186a88f920fbd67e0727aeb029a429fb9074b9589a",
-          "cadr": "b314270a7f0c6331a64e00186a88f920fbd67e0727aeb029a429fb9074b9589a"
+          "pi": "a3323280468cf714c61e0e0907e25b6b8fa72c9cbdc160d2bfc459d4de16f2ad",
+          "cadr": "a3323280468cf714c61e0e0907e25b6b8fa72c9cbdc160d2bfc459d4de16f2ad"
         }
       },
       "note": "At tool-bash-abort/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4133,8 +4133,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b13696c6875047e389a5ac0fac74b29af4fcbb9dc3fddf05475f8e87b9c077e3",
-          "cadr": "69cde42239c744b656e45983337394fbc4f170940ed5bdaa565e1fcd8754d120"
+          "pi": "d8f3f93d38aef675460f39810a4dff547201e1b3d947afaf288ae095f77b76a0",
+          "cadr": "286ce4da3058934b12e66233ba0b435e0dae72238a2dae4495ff5afb116fbca9"
         }
       },
       "note": "At tool-bash-abort/process-exit [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4711,12 +4711,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "4acc0a6aeb1e462a29e41e63d693ac917c58cbce87b458620db96d0aaa73cd15",
-          "cadr": "4acc0a6aeb1e462a29e41e63d693ac917c58cbce87b458620db96d0aaa73cd15"
+          "pi": "787fbd52bc74af253b5dc8033477877780d0e165bd1c2fedb445e4df0661f5ab",
+          "cadr": "787fbd52bc74af253b5dc8033477877780d0e165bd1c2fedb445e4df0661f5ab"
         },
         "narrow": {
-          "pi": "4c0bfa6b0bb4c4c64c8e9839c9002d65ab438183ce178315e35159483bec8ef2",
-          "cadr": "4c0bfa6b0bb4c4c64c8e9839c9002d65ab438183ce178315e35159483bec8ef2"
+          "pi": "0cfc23273636e255872a179619949fddc30d33e52f46ca4a3f9fcc593e265bf5",
+          "cadr": "0cfc23273636e255872a179619949fddc30d33e52f46ca4a3f9fcc593e265bf5"
         }
       },
       "note": "At tools-success/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4822,12 +4822,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "15f123a13264dd4fd8743a3a2f4c1a0759aeabe0618170463a86e69cf32973b3",
-          "cadr": "83c72c53dca1aa72d6293f6f7891bc89ab308eb67dc2659e1388131d35e56490"
+          "pi": "7ed64c74ca23358dd271b96728c0baff45bad72e027ab1d394373437d1bd085b",
+          "cadr": "a156c3307a99550e809f626a64b808edcc4dd501028cf7b17db1782f902a0155"
         },
         "narrow": {
-          "pi": "8d844bfe1102a281f8220adce87a571e74c9335942cc64bb28d3088925a12e28",
-          "cadr": "0d207950aa9bd816c821c0a17115e3da29fc339aee4bbe74a07b01ae4c7ed03c"
+          "pi": "c0010077f13c474c2153243686606c4a0b27982dd9214628fb01bcb53b78881e",
+          "cadr": "8d655e06b23a6633fe50e10ba8b41b0734c0721a07abc86c1eab0e9793951b99"
         }
       },
       "note": "At tree-entry-state-sweep/process-exit [wide+narrow] The cadr product name is two cells longer than pi inside the normalized placeholders (I04), shifting wrap points; the text content is otherwise identical and the raw ANSI segmentation differs (I01)."
@@ -4980,8 +4980,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "6b14ae840d6f743f2644acee60cc6318a3fb2e11dbb94250de38006c308aa829",
-          "cadr": "6b14ae840d6f743f2644acee60cc6318a3fb2e11dbb94250de38006c308aa829"
+          "pi": "c18594908bcb4fab16d24cc15eee35b8e5ad7d4b3ea0f006dc78714621174a73",
+          "cadr": "afe1596be591a9a79d38ae670254d337a20126c59fba55c8c78aae928205e34e"
         }
       },
       "note": "At user-bash-state-sweep/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4998,8 +4998,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "cc2fb18f90d6aca985b4b6aad6c36e78a255930d03660fc0188e67960317a601",
-          "cadr": "24e9aac09bb6bfb49885e31e18f95fb46f6aeb2afba7195385206724be9af736"
+          "pi": "310c885dd1c511f1b3370c095d41b56e7bd0b364318bce4fb615870ed938146a",
+          "cadr": "eb0601604e65847669f5208acefbc35fccde3eebb9ed43b185099e163b85510e"
         }
       },
       "note": "At user-bash-state-sweep/process-exit [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -5340,12 +5340,12 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "885e545001a60e88d0b74407c35d49b25e452997342d5ab0ced9e4d7493214f7",
-          "cadr": "49e2a0d3447d7b62634d0fec5a9bd8919b9f5684c181e968b885f9c473abea14"
+          "pi": "a10292a11099d893ddb155899564fd7692216f4152b3f8b67c2b982082bfb2d4",
+          "cadr": "267d5cce0b9c28a79cbbcaa3ddf7783d92bb0e4ea06cad0ecb07dc86c5f0b08f"
         },
         "wide": {
-          "pi": "54883a80f88b0fcb0ea54a208dc7a26ff142e18c63a80798ca761969e5b46960",
-          "cadr": "1a82fe6d687e784608c925ba359f86d71ad68598f138e0406835458ff38785bf"
+          "pi": "0a77c59ae0b854ae0c0f26d92d23bbc8c3aeccf72ae42b03c1eed5e2e5815876",
+          "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
         }
       },
       "note": "At selector-scoped-state-sweep/process-exit [narrow+wide] the post-exit screen matches pi except product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> and the shifted wrap of the startup hint (I04); the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6283,8 +6283,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "684f80a215b06cbf2093c87daae76222b3f9f301b80c5643b2b64c28ddfde05d",
-          "cadr": "9ba88803dda0ccab83f46f8f66dca9c2af46e501333d70e0a04a85a31c7fc294"
+          "pi": "390b66c82b6a473bf738f078acadf716bdb53b260bf76334a28b133e231d0337",
+          "cadr": "9984f15b6835a2844fe1533272da33f7fdf08b30fcb02c9b1aa84014a58243e7"
         }
       },
       "note": "At selector-state-sweep/process-exit [wide] the post-exit screen matches pi except product-identity padding beside <PRODUCT_TITLE> on the 'can explain' startup hint line and the shifted wrap of the 'To resume this session: <PRODUCT> --session-dir <SESSION_DIR> --session render-session' hint (cadr is two cells longer than pi) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6301,8 +6301,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "2a58b994147e90a7dcb1709d33eef8bc4c55775de0d648e4bd18f79362b61f8d",
-          "cadr": "a7f917ad841f374a019a7a0841741e7303c1eb932d8080bc121294411206ffbf"
+          "pi": "3d848c34a9954c5a70640beb479a7f5df706bcee0b1db8768ade7b24478d48ed",
+          "cadr": "4f678cbfd71db443b1798c28f0fd8d0cb5d4f0808cab6a43cc57981942ea26fa"
         }
       },
       "note": "At selector-state-sweep/process-exit [narrow] the post-exit screen matches pi except the shifted wrap of the 'To resume this session: <PRODUCT> --session-dir <SESSION_DIR> --session render-session' hint (cadr is two cells longer than pi, so the wrap point moves two columns earlier) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6739,8 +6739,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5e5f14e1372087d75b21aca879a53f80270cc4e13a00069b5cf7e4ea98a318c6",
-          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+          "pi": "4a6fb045d95e41ac506f1f14bc3c20803604b86f6e4a76a628d340715f061e34",
+          "cadr": "4a330c2e63748ee7556909d53f03ade754c495faceb529a4153700f97327a9ff"
         }
       },
       "note": "At selector-trust-inherited/process-exit [wide] the post-exit screen (startup banner, hints, editor, footer, resume hint) matches pi; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6756,8 +6756,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "75ca605824b21effd55f05d2d6c476e44d39daec37fc20b340962866910ab9c5",
-          "cadr": "75ca605824b21effd55f05d2d6c476e44d39daec37fc20b340962866910ab9c5"
+          "pi": "4caa3d9a83065c9b2922af3e2241b09ee034beb8b69e14aa52d517389ba9f018",
+          "cadr": "4caa3d9a83065c9b2922af3e2241b09ee034beb8b69e14aa52d517389ba9f018"
         }
       },
       "note": "At selector-trust-inherited/process-exit [narrow] the post-exit screen (startup banner, hints, editor, footer, resume hint) is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6811,12 +6811,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "4fb6b3432b7a3fbaf1ab27721331390db29e30b6693bb6a82fb2f6478e8354bd",
-          "cadr": "dea73998d8fbf23a5503cd66da99978ae4dcd859435ed27535aad67d8cfca460"
+          "pi": "86f368bec6f2936787c685ef04390fdce189dcf6eb3fd5f25cfc482af5308ee5",
+          "cadr": "5fff4eb0e425332d59e68007b2b214444477b23d598a8a470b12d88ce23dee02"
         },
         "narrow": {
-          "pi": "bc2ed20c6d6514c2ae3f43b4663065d03f6748a4ad3121ed81399632ba29cdf6",
-          "cadr": "78169ccc317e8835a5a4eaa1d0d8d13789361a6c158a7ffd9861340048ffe27d"
+          "pi": "9ea5050ffdf33ed5d84e6bc7591199740b2908d63ad9d9ebf6135bbf52386ba3",
+          "cadr": "c431c2c15261f762706e188ac3cdbe0bbc4cb67383a2feec3bb366ad44b5bc04"
         }
       },
       "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01)."
@@ -6834,15 +6834,213 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5dfedc8bdb280ca4d760e26fca977d2c53f0d5bbfc1004d5d4a0a62f7b69444a",
-          "cadr": "f89fefa28481c81656b525f4f16ffc04ec74ea5bad266bc7a1a10b906afac2cd"
+          "pi": "cd56f1111dcdcc604298fa48d5df022a89e4b13e72ba91c876d28c89d2eed3ac",
+          "cadr": "945c93334ca36ec4ec66c485d0b13bfad8c16e09bc9d2a7aa3b252955a0023fe"
         },
         "narrow": {
-          "pi": "14db7d7523cb0693d3694ce7eee0ba02724a99a11ad1bc814fd8a5a5173bc85d",
-          "cadr": "f47753f1ea4822dfe9af8a23435239971e155985ddd2d88f5c230e103350139b"
+          "pi": "3f01ae2415d14b6840743a9ad5fa6c552f771be5b5d193b83dc52d87195e7b3c",
+          "cadr": "e62598c37b13a18f021a7a62968e525abc80c7205e71142ac6e19a6695aa00ff"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-startup-failures [wide+narrow] the corrupt-models.json warning (yellow 'Warning: errors loading models.json:' plus the 'Failed to parse models.json: <detail>' envelope and 'File:' line, with the engine parse detail normalized as <PARSER_DETAIL>), the empty-availability guidance, and the broken-extension fatal path (red 'Error: Failed to load extension \"<path>\": Failed to load extension: render-drive-broken' plus the yellow -ne hint) match the baseline byte-for-byte except: cadr identity in the hint text (I04); the CADR_STARTUP_BENCHMARK variable name (I04); the extension entry filename extension.lisp vs index.ts, each product's own convention (I04); the docs guidance path layout (I04); on narrow the checkpoint wraps the extension path mid-string so the per-side sandbox and .pi/.cadr directory fragments stay visible (I04); and ANSI segmentation (I01)."
+      "note": "At cli-error-sweep/cli-errors-startup-failures [wide+narrow] the corrupt-models.json warning (yellow 'Warning: errors loading models.json:' plus the 'Failed to parse models.json: <detail>' envelope and 'File:' line, with the engine parse detail normalized as <PARSER_DETAIL>), the empty-availability guidance, and the broken-extension fatal path (red 'Error: Failed to load extension \"<path>\": Failed to load extension: render-drive-broken' plus the yellow -ne hint) match the baseline byte-for-byte except: cadr identity in the hint text (I04); the CADR_STARTUP_BENCHMARK variable name (I04); the extension entry filename extension.lisp vs index.ts, each product's own convention (I04); the docs guidance path layout (I04); on narrow the checkpoint wraps the extension path mid-string at per-side column boundaries because the entry filenames differ in length (I04); and ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "startup-resume-picker",
+      "checkpoint": "picker-current",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9172b3bca741631efba10f5805222d794076220c82ee6ed70049288ae98c26f3",
+          "cadr": "9172b3bca741631efba10f5805222d794076220c82ee6ed70049288ae98c26f3"
+        },
+        "narrow": {
+          "pi": "8358b88a3afd356391af7b621e31e6000952765bf9919944158082ec20cf2296",
+          "cadr": "8358b88a3afd356391af7b621e31e6000952765bf9919944158082ec20cf2296"
+        }
+      },
+      "note": "At startup-resume-picker/picker-current [wide+narrow] the semantic screen is byte-identical to pi (current-folder list with Named Beta and alpha session question, 2 2y ages); only the raw ANSI update segmentation differs (I01). cadr loads the current scope before the first paint, so pi's transient empty-list frame does not occur."
+    },
+    {
+      "scenario": "startup-resume-picker",
+      "checkpoint": "picker-all",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "edebb959abc987c41dc49e833ab4d2766a20cbb309343fd2e687fadbed194eaf",
+          "cadr": "edebb959abc987c41dc49e833ab4d2766a20cbb309343fd2e687fadbed194eaf"
+        },
+        "narrow": {
+          "pi": "dc76fb4b42c60dd96078ccb1a84ac7c2009390d3b2d655b04879914caccc3b8b",
+          "cadr": "dc76fb4b42c60dd96078ccb1a84ac7c2009390d3b2d655b04879914caccc3b8b"
+        }
+      },
+      "note": "At startup-resume-picker/picker-all [wide+narrow] the semantic screen is byte-identical to pi (All scope after Tab, cwd column shown, narrow rows truncate with the baseline ... ellipsis); only the raw ANSI update segmentation differs (I01)."
+    },
+    {
+      "scenario": "startup-resume-picker",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "2960779e50bbfb7647825edd088c9d5cfaa1cd798b30ddc6e0ef1ccdc659b6ff",
+          "cadr": "2960779e50bbfb7647825edd088c9d5cfaa1cd798b30ddc6e0ef1ccdc659b6ff"
+        },
+        "narrow": {
+          "pi": "339978bd4b4ac1742fb3c88ffd78527ca9b55fcdae23e224d2608eb8c50744ba",
+          "cadr": "339978bd4b4ac1742fb3c88ffd78527ca9b55fcdae23e224d2608eb8c50744ba"
+        }
+      },
+      "note": "At startup-resume-picker/process-exit [wide+narrow] the semantic screen is byte-identical to pi (picker frame residue plus the dim No session selected line, exit 0); only the raw ANSI update segmentation differs (I01)."
+    },
+    {
+      "scenario": "startup-resume-picker-select",
+      "checkpoint": "picker-opened",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "855b25504fc58f8d45dd207882d8e210e8cc8e95084af7bdc916669f06394ead",
+          "cadr": "64de24c664a990c4d6ed2c08d8619ac3588401fae082aaee75c9bcb9981f287e"
+        },
+        "narrow": {
+          "pi": "4cc66f9f1a150ad1ae31c3ac8ef561f2a0cd8be2c147f7882b05567d1c8a8c00",
+          "cadr": "acec726b24bfaa2b26acec9fd92e9c393b70b28a27f781a1a8a62f82c691a391"
+        }
+      },
+      "note": "At startup-resume-picker-select/picker-opened [wide+narrow] the opened beta session transcript, the No models available warning, and the unknown sentinel footer match pi; the residual differences are the ANSI segmentation (I01), the product banner name/version and its grid fill (I04), and on narrow the baseline docs path wrapping onto extra rows while cadr's shorter docs root does not (I04 install-location path length)."
+    },
+    {
+      "scenario": "startup-resume-picker-select",
+      "checkpoint": "picker-opened-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4b06a1605e925b9ef85cc4eecc919d455ff9a20743ecfc7f0da07169cd403171",
+          "cadr": "48d578edd384e415ef630876c336d9fe6b6f30ce78d289c86e75e9e9dc26dbb4"
+        },
+        "narrow": {
+          "pi": "98051f9ab87734d5a5988a9d9e1fc9442c455cc00c51e4dccf38fe35a50e4c78",
+          "cadr": "a8b087ddba307b0622bbf3337552ed61686b312c99bd2c9df8ff30e730d14a22"
+        }
+      },
+      "note": "At startup-resume-picker-select/picker-opened-exit [wide+narrow] the reopened session and the To resume this session: <product> --session picker-beta hint match pi; the residual differences are the ANSI segmentation (I01), the banner identity fill, the product name inside the resume command and its trailing fill (I04), and the narrow docs-path wrap structure (I04 install-location path length)."
+    },
+    {
+      "scenario": "startup-no-model",
+      "checkpoint": "sentinel-footer",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "63eb55f70cf76312ea7d031cc5227ddf88ce6e4a093a0c02cab8369cb1471d7d",
+          "cadr": "6af4487c598ab0a2fa59b17dbd652f4b929f92d662df604dd9fa594670461a9c"
+        },
+        "narrow": {
+          "pi": "bdd8a1672f47133d3622e5dfdb5a138b3b69eb2b1db7573194821da1d2c550d9",
+          "cadr": "e23dd8f73a518ab2432e1b6ee2c0b9db5b5d70a5586f0a74a3febb4d81f53a80"
+        }
+      },
+      "note": "At startup-no-model/sentinel-footer [wide+narrow] the bare-environment startup matches pi: the No models available warning, the 0.0%/0 context meter, and the unknown sentinel model in the footer; the residual differences are the ANSI segmentation (I01), the banner product identity fill (I04), and on narrow the docs-path wrap structure (I04 install-location path length)."
+    },
+    {
+      "scenario": "startup-no-model",
+      "checkpoint": "sentinel-error",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "ff2448e2a55685ca5a5ada97be9bb675fd1d3b476013be50a7410092f95fe005",
+          "cadr": "d2835be7fc8e87cdd4c150db4be5c3fd307e6a965d60162f334e57357ab20267"
+        },
+        "narrow": {
+          "pi": "9614f13d91f44df21fae23b034403548b3eb3d56594e03ecf063789214d172ac",
+          "cadr": "0ce7ffddbce1023355b883069542556da4a1e285d11437b0f829d7512f32ff5c"
+        }
+      },
+      "note": "At startup-no-model/sentinel-error [wide+narrow] the first send fails exactly like pi with Error: No API key found for the selected model. plus the /login guidance and docs paths; the residual differences are the ANSI segmentation (I01), the banner product identity fill (I04), and on narrow the docs-path wrap structure (I04 install-location path length)."
+    },
+    {
+      "scenario": "startup-no-model",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a5f04fd654a1ff1fefb27988cd7b1fb029df5a73850f218b24871378d6d05e0a",
+          "cadr": "236ec801b7103638d74cb88ec1dda3ba18a76744ecaac50fffc4e377bec455f5"
+        },
+        "narrow": {
+          "pi": "902c2f0b9e43865bd61aca135e4bf83329b3b4136a9501411b28d7a4a86f7050",
+          "cadr": "38f68dd93cf6600b128182e84de800391db95c721cf4c9ff83774067533aa57a"
+        }
+      },
+      "note": "At startup-no-model/process-exit [wide+narrow] the final screen matches pi (warning plus error blocks retained, no resume hint because the never-persisted session has no file); the residual differences are the ANSI teardown segmentation (I01), the banner product identity fill (I04), and the narrow docs-path wrap structure (I04 install-location path length); both sides exit 0."
+    },
+    {
+      "scenario": "selector-scoped-state-sweep",
+      "checkpoint": "scoped-after-head",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "2b8e6b6bbfcebee7984d1f7776f57fb882541f721f045c291f7cee6eb37c5f3b",
+          "cadr": "2b8e6b6bbfcebee7984d1f7776f57fb882541f721f045c291f7cee6eb37c5f3b"
+        }
+      },
+      "note": "At selector-scoped-state-sweep/scoped-after-head [narrow] the semantic screen is byte-identical to pi; the pi renderer emitted one extra cursor-hide (ESC[?25l) between scoped-head-02 and scoped-after-head while cadr emitted none, a raw scheduling segmentation difference only (I01)."
     }
   ]
 }

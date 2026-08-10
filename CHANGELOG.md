@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Aligned `--resume` with the baseline (goal 18 adjudication): the flag
+  no longer consumes a session id (`--session <id>` remains the exact-id
+  path); a following token is a prompt message, matching baseline
+  args.ts.  Bare `--resume`/`-r` now opens the baseline pre-TUI session
+  picker (cli/session-picker.ts) instead of silently resuming the latest
+  session: current-folder scope with Tab to all sessions, lazy all-scope
+  load, search/sort/name/path toggles, delete confirmation, and the
+  baseline cancel (dim "No session selected", exit 0) and interrupt
+  (silent exit 0) paths.
+
+- User keybindings now load from `~/.cadr/agent/keybindings.json`
+  (baseline KeybindingsManager.create), coexisting with the settings.json
+  `keybindings` key with the file taking precedence; legacy names
+  migrate identically, and a malformed file falls back to the settings
+  value like the baseline loadRawConfig.
+
+- Bare-environment startup now keeps the baseline no-model sentinel
+  instead of an openai default: the footer reads "no-model" with a
+  0-token context window, sending fails with the baseline
+  NoModelSelected guidance before any append, manual /compact fails with
+  the baseline compaction event pair, and non-interactive modes exit 1
+  with the red NoModelsAvailable text (baseline main.ts:852-854).
+
 - Aligned the user-level layout with the baseline: agent data (settings,
   auth, models, sessions, themes, prompts, tools, bin, extensions, and
   crash logs) now lives in `~/.cadr/agent/` instead of flat `~/.cadr/`,

@@ -1100,6 +1100,43 @@ render loopback login received
       (string=
        (json-get (json-get scenario "setup")
                  "entrypoint" "interactive")
+       "main")
+    ;; Goal 18 adjudicated main()-path surfaces: the pre-TUI resume
+    ;; picker and the bare-environment no-model sentinel only exist on
+    ;; the real main() path, so drive cadr main directly — no faux
+    ;; provider, no registered auth.
+    (uiop:chdir cwd)
+    (loop for fixture in
+            (json-vector-list
+             (json-get (json-get scenario "setup") "pickerSessions"))
+          for index from 0
+          for timestamp = (+ +fixed-timestamp+ (* index 60000))
+          for session =
+            (cadr-agent:create-session
+             :directory (merge-pathnames "sessions/" agent-dir)
+             :cwd (or (json-get fixture "cwd") cwd)
+             :id (json-get fixture "id")
+             :timestamp timestamp)
+          do (loop for spec in
+                       (json-vector-list
+                        (json-get fixture "messages"))
+                   for m-index from 0
+                   do (cadr-agent:session-append-message
+                       session
+                       (seed-message spec m-index timestamp)))
+             (let ((name (json-get fixture "name")))
+               (when name
+                 (cadr-agent:session-set-name session name))))
+    (finish-output *standard-output*)
+    (finish-output *error-output*)
+    (uiop:quit
+     (cadr-cli::main
+      (json-vector-list
+       (json-get (json-get scenario "setup") "mainArgv")))))
+  (when
+      (string=
+       (json-get (json-get scenario "setup")
+                 "entrypoint" "interactive")
        "cli-help")
     (cadr-cli::print-cli-usage
      *standard-output*
