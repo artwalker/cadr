@@ -44,6 +44,22 @@ tag/Release step.
 
 ### Added
 
+- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner — the
+  `BASELINE` file at the repository root (commit, release tag, distance).
+  The product release identity derives from it at load time, the diff and
+  verify scripts read it instead of embedded literals, a new
+  `baseline anchor consistency` stage in `verify.sh` fails when any
+  operational reference disagrees, and `scripts/set-baseline.sh` performs
+  the mechanical rewrite on upgrade.
+
+- Goal 18 Part L preparation: `scripts/enumerate-baseline-diff.py`
+  mechanically enumerates every named user-observable or contract set
+  between two baseline commits (flags, settings keys, events, providers,
+  env vars, theme tokens, error classes, RPC methods, exit codes, session
+  format, ...).  Its first run caught four classes the hand-maintained
+  list missed; the v0.84.1 enumeration result is recorded in
+  `docs/source-parity-upgrade.md`.
+
 - Goal 18 I7 tail and Part J/K: the startup content migrations are ported
   (oauth.json/settings apiKeys into auth.json with 0600 preserved,
   agent-root sessions into sessions/, managed binaries tools/ -> bin/,
@@ -151,6 +167,11 @@ tag/Release step.
   Steering queue; the flows now poll through `poll-device-authorization`'s
   `cancelled-p` like the OpenAI Codex route, and each cancel-path render-diff
   scenario ends with a post-cancel message exchange.
+  Attribution (goal 18 A4.5): the mechanism — `busy-p` cleared only when the
+  login worker ends, with ESC setting flags but never guaranteeing that end —
+  predates the goal 17 login-dialog rework (74fe2c0b8); the rework exposed it
+  by giving ESC a dialog-closing path that made "cancelled UI, living worker"
+  reachable.  It is not a goal 17 regression.
 - Cancelling OpenAI or Anthropic login now stops the loopback/manual workers,
   releases the listener, clears the working state, and returns to the editor.
 - Interactive cleanup now bounds every background-thread join and forcibly
