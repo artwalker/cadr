@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 374,
+  "expected_findings": 376,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -2689,6 +2689,22 @@
       "line": "- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner \u2014 the",
       "occurrences": 1,
       "reason": "Changelog records the baseline-anchor ownership change; the fixed pi baseline is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_PACKAGE",
+      "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
+      "occurrences": 1,
+      "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_SHA256",
+      "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
+      "occurrences": 1,
+      "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
     }
   ],
   "opaque_files": [
