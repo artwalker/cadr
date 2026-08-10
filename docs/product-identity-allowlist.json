@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 370,
+  "expected_findings": 373,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -614,14 +614,6 @@
       "path": "scripts/event-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        default=Path(\"/tmp/cadr-render-diff-pi-74caa2649\"),",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/event-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "        if side not in {\"pi\", \"cadr\"}:",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
@@ -775,14 +767,6 @@
       "kind": "legacy-env",
       "token": "PI_BASELINE",
       "line": "            b\"<PI_BASELINE>/packages/coding-agent/test/\"",
-      "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE",
-      "line": "        (str(Path(\"/tmp/cadr-render-diff-pi-74caa2649\")).encode(), b\"<PI_BASELINE>\"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -990,14 +974,6 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "                b\"/tmp/cadr-render-diff-pi-74caa2649/\"",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "                f\"pi-ai model-data artifact SHA-256 mismatch: {digest}\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -1166,14 +1142,6 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            default=Path(\"/tmp/cadr-render-diff-pi-74caa2649\"),",
-      "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "            for index, checkpoint_id in enumerate(pi_ids):",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -1295,14 +1263,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "        (b\"restart pi.\", b\"restart <PRODUCT>.\"),",
-      "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        (str(Path(\"/tmp/cadr-render-diff-pi-74caa2649\")).encode(), b\"<PI_BASELINE>\"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1756,14 +1716,6 @@
     },
     {
       "path": "scripts/verify.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-74caa2649\"",
-      "occurrences": 1,
-      "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
-    },
-    {
-      "path": "scripts/verify.sh",
       "kind": "pi-token",
       "token": "pi",
       "line": "      --pi-repo \"$PROJECT_DIRECTORY\" \\",
@@ -1777,14 +1729,6 @@
       "line": "    --exclude=./.pi-cl \\",
       "occurrences": 1,
       "reason": "Migration smoke isolation excludes the retired on-disk namespace so user state cannot enter verification."
-    },
-    {
-      "path": "scripts/verify.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-74caa2649\"",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "src/cadr-agent/export-html/template.js",
@@ -2031,30 +1975,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "   +cadr-aligned-pi-release+",
-      "occurrences": 1,
-      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "(defparameter +cadr-aligned-pi-commit+ \"74caa2649\")",
-      "occurrences": 1,
-      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "(defparameter +cadr-aligned-pi-distance+ 38)",
-      "occurrences": 1,
-      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "(defparameter +cadr-aligned-pi-release+ \"v0.83.0\")",
       "occurrences": 1,
       "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
     },
@@ -2657,6 +2577,110 @@
       "line": "  ;; from pi, so the baseline guide is the accurate documentation for",
       "occurrences": 1,
       "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
+    },
+    {
+      "path": "scripts/baseline-anchor.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"aligned with pi {values['release']} \"",
+      "occurrences": 1,
+      "reason": "Baseline anchor owner names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/baseline-anchor.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\"\"\"Single owner of the fixed pi baseline anchor (goal 18 L2.1).",
+      "occurrences": 1,
+      "reason": "Baseline anchor owner names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        default=Path(f\"/tmp/cadr-render-diff-pi-{_baseline_anchor.read_baseline()['short']}\"),",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE",
+      "line": "        (str(Path(f\"/tmp/{_BASELINE_CACHE_NAME}\")).encode(), b\"<PI_BASELINE>\"),",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "_BASELINE_CACHE_NAME = f\"cadr-render-diff-pi-{_BASELINE_SHORT}\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  echo \"usage: set-baseline.sh <full-40-hex-pi-commit>\" >&2",
+      "occurrences": 1,
+      "reason": "Baseline anchor rewriter names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# Usage: scripts/set-baseline.sh <full-pi-commit>",
+      "occurrences": 1,
+      "reason": "Baseline anchor rewriter names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"Goal 18 L2.1: the single owner of the fixed pi baseline is the",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (defparameter +cadr-aligned-pi-commit+ short-commit))",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (defparameter +cadr-aligned-pi-distance+ distance)",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (defparameter +cadr-aligned-pi-release+ release)",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
     }
   ],
   "opaque_files": [

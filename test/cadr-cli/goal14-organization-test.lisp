@@ -1156,7 +1156,10 @@
     ;; +3 goal 18 I7 tail: baseline auth-guidance helpers in
     ;; support/release.lisp (cadr-docs-directory, provider-login-help-text,
     ;; no-api-key-found-message).
-    (is (= 253 definition-count)
+    ;; -2 goal 18 L2.1: the three aligned-pi defparameters nested under
+    ;; the read-baseline-anchor multiple-value-bind (no longer column-0
+    ;; top-level forms), +1 read-baseline-anchor itself.
+    (is (= 251 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

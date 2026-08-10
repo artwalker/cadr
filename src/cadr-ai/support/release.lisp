@@ -30,9 +30,33 @@
 (defun cadr-version ()
   +cadr-version+)
 
-(defparameter +cadr-aligned-pi-release+ "v0.83.0")
-(defparameter +cadr-aligned-pi-distance+ 38)
-(defparameter +cadr-aligned-pi-commit+ "74caa2649")
+(defun read-baseline-anchor ()
+  "Goal 18 L2.1: the single owner of the fixed pi baseline is the
+BASELINE file at the repository root ('<full-commit> <vX.Y.Z> <distance>');
+the release identity derives from it at load time, so a baseline upgrade
+never hand-edits version strings.  Returns (values release distance
+short-commit)."
+  (let* ((root
+           (uiop:ensure-directory-pathname
+            (asdf:system-source-directory "cadr-ai")))
+         (fields
+           (uiop:split-string
+            (string-trim
+             '(#\Space #\Tab #\Newline #\Return)
+             (uiop:read-file-string
+              (merge-pathnames "BASELINE" root))))))
+    (unless (= 3 (length fields))
+      (error "BASELINE must be '<full-commit> <vX.Y.Z> <distance>'"))
+    (values
+     (second fields)
+     (parse-integer (third fields))
+     (subseq (first fields) 0 9))))
+
+(multiple-value-bind (release distance short-commit)
+    (read-baseline-anchor)
+  (defparameter +cadr-aligned-pi-release+ release)
+  (defparameter +cadr-aligned-pi-distance+ distance)
+  (defparameter +cadr-aligned-pi-commit+ short-commit))
 
 (defun cadr-release-identity ()
   (format

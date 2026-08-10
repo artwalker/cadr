@@ -28,6 +28,15 @@ from typing import Any
 
 
 ROOT = Path(__file__).resolve().parents[1]
+import importlib.util as _baseline_import
+
+_baseline_spec = _baseline_import.spec_from_file_location(
+    "baseline_anchor", ROOT / "scripts" / "baseline-anchor.py"
+)
+_baseline_anchor = _baseline_import.module_from_spec(_baseline_spec)
+_baseline_spec.loader.exec_module(_baseline_anchor)
+_BASELINE_SHORT = _baseline_anchor.read_baseline(ROOT)["short"]
+_BASELINE_CACHE_NAME = f"cadr-render-diff-pi-{_BASELINE_SHORT}"
 DEFAULT_MANIFEST = ROOT / "test/fixtures/render-diff/scenarios.json"
 DEFAULT_INTERFACE_REGISTRY = ROOT / "test/fixtures/render-diff/reachable-interfaces.json"
 DEFAULT_BASELINE_INVENTORY = ROOT / "test/fixtures/render-diff/baseline-interface-inventory.json"
@@ -2393,7 +2402,7 @@ def capture_side(
 
 def normalize_fixed_values(data: bytes) -> bytes:
     replacements = [
-        (str(Path("/tmp/cadr-render-diff-pi-74caa2649")).encode(), b"<PI_BASELINE>"),
+        (str(Path(f"/tmp/{_BASELINE_CACHE_NAME}")).encode(), b"<PI_BASELINE>"),
         # Product documentation directories: pi resolves docs/ inside the
         # baseline package, cadr beside its own source root.
         (b"<PI_BASELINE>/packages/coding-agent/docs/", b"<PRODUCT_DOCS>/"),
@@ -2643,8 +2652,8 @@ def normalized_screen(data: bytes, side: str) -> bytes:
     else:
         wrapped_driver_location = (
             screen_wrapped_literal_pattern(
-                b"/tmp/cadr-render-diff-pi-74caa2649/"
-                b"packages/coding-agent/test/goal15-render-driver.ts:"
+                f"/tmp/{_BASELINE_CACHE_NAME}/".encode()
+                + b"packages/coding-agent/test/goal15-render-driver.ts:"
             )
             + rb"[0-9](?:(?:\r?\n)?[0-9])*"
             + separator
@@ -3556,7 +3565,7 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument(
             "--baseline-cache",
             type=Path,
-            default=Path("/tmp/cadr-render-diff-pi-74caa2649"),
+            default=Path(f"/tmp/{_BASELINE_CACHE_NAME}"),
         )
         command.add_argument("--timeout", type=float, default=60.0)
         command.add_argument(

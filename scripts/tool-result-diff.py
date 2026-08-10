@@ -19,7 +19,13 @@ from typing import Any
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "test/fixtures/tool-result-diff"
-EXPECTED_BASELINE = "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
+import importlib.util as _baseline_import
+_spec = _baseline_import.spec_from_file_location(
+    "baseline_anchor", Path(__file__).resolve().parent / "baseline-anchor.py"
+)
+_baseline_anchor = _baseline_import.module_from_spec(_spec)
+_spec.loader.exec_module(_baseline_anchor)
+EXPECTED_BASELINE = _baseline_anchor.read_baseline()["commit"]
 EXPECTED_TOOLS = ["read", "bash", "edit", "write", "grep", "find", "ls"]
 REQUIRED_FAILURE_CONTRACTS = {
     "path-not-found",
@@ -506,7 +512,7 @@ def parser() -> argparse.ArgumentParser:
     result.add_argument(
         "--baseline",
         type=Path,
-        default=Path("/tmp/cadr-parity-74caa2649"),
+        default=Path(f"/tmp/cadr-parity-{_baseline_anchor.read_baseline()['short']}"),
     )
     result.add_argument("--timeout", type=float, default=180.0)
     result.add_argument("--artifacts", type=Path)

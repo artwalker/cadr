@@ -6,7 +6,7 @@ SBCL_COMMAND="${SBCL:-sbcl}"
 QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 VERIFY_ROOT="$(mktemp -d)"
 ISOLATED_PROJECT="$VERIFY_ROOT/project"
-PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-74caa2649"
+PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
 OVERALL_FAILURE=0
 
 DETERMINISTIC_NAMES=()
@@ -233,6 +233,13 @@ if [ "$DETERMINISTIC_READY" -eq 1 ]; then
     run_code_organization_gate || DETERMINISTIC_READY=0
 else
   skip_deterministic "code organization gate" "root binary is stale"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "baseline anchor consistency" \
+    python3 scripts/baseline-anchor.py check || DETERMINISTIC_READY=0
+else
+  skip_deterministic "baseline anchor consistency" "code organization gate failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

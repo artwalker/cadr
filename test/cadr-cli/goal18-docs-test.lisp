@@ -54,3 +54,25 @@
                  (merge-pathnames
                   (format nil "docs/~A.md" name) root))))
           "docs/~A.md missing" name))))
+
+(test goal18-release-identity-derives-from-the-baseline-anchor
+  ;; Goal 18 L2.1: the BASELINE file is the single owner of the fixed
+  ;; baseline anchor; the product release identity must equal the
+  ;; identity recomputed from that file (the verify.sh consistency gate
+  ;; covers the scripts/fixtures/README side).
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (fields
+           (uiop:split-string
+            (string-trim
+             '(#\Space #\Tab #\Newline #\Return)
+             (uiop:read-file-string
+              (merge-pathnames "BASELINE" root)
+              :external-format :utf-8)))))
+    (is (= 3 (length fields)))
+    (is
+     (string=
+      (format nil "cadr 0.2.0 · aligned with pi ~A (+~A, ~A)"
+              (second fields)
+              (third fields)
+              (subseq (first fields) 0 9))
+      (cadr-ai::cadr-release-identity)))))

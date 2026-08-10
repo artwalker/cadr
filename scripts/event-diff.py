@@ -20,7 +20,13 @@ from typing import Any, Iterable
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "test" / "fixtures" / "event-diff"
-DEFAULT_BASELINE_COMMIT = "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
+import importlib.util as _baseline_import
+_spec = _baseline_import.spec_from_file_location(
+    "baseline_anchor", Path(__file__).resolve().parent / "baseline-anchor.py"
+)
+_baseline_anchor = _baseline_import.module_from_spec(_spec)
+_spec.loader.exec_module(_baseline_anchor)
+DEFAULT_BASELINE_COMMIT = _baseline_anchor.read_baseline()["commit"]
 REQUIRED_SCENARIOS = {
     "normal",
     "transient-retry",
@@ -733,7 +739,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--baseline-repo",
         type=Path,
-        default=Path("/tmp/cadr-render-diff-pi-74caa2649"),
+        default=Path(f"/tmp/cadr-render-diff-pi-{_baseline_anchor.read_baseline()['short']}"),
     )
     parser.add_argument("--manifest", type=Path, default=FIXTURES / "scenarios.json")
     parser.add_argument(

@@ -9,7 +9,13 @@ from pathlib import Path
 from statistics import median
 
 
-FIXED_BASELINE_REVISION = "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5"
+import importlib.util as _baseline_import
+_spec = _baseline_import.spec_from_file_location(
+    "baseline_anchor", Path(__file__).resolve().parent / "baseline-anchor.py"
+)
+_baseline_anchor = _baseline_import.module_from_spec(_spec)
+_spec.loader.exec_module(_baseline_anchor)
+FIXED_BASELINE_REVISION = _baseline_anchor.read_baseline()["commit"]
 FIXED_CONTINUOUS_TRACE_SHA256 = (
     "2dfea100e8e8825a96ea55795c39e6cea2f265c6aa1a4b98f4edba8b4e5edb61"
 )
@@ -161,7 +167,7 @@ def check_paired_contract(
     check(
         baseline["provenance"]["source_revision"]
         == FIXED_BASELINE_REVISION,
-        "fixed baseline revision is not 74caa2649",
+        f"fixed baseline revision is not {FIXED_BASELINE_REVISION[:9]}",
         failures,
     )
     check(
