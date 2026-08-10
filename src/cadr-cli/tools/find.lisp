@@ -75,13 +75,20 @@
   (cadr-ai:make-tool
    :name "find"
    :description
-   "Search for files by glob pattern, respecting .gitignore."
+   ;; Baseline core/tools/find.ts:117.
+   "Search for files by glob pattern. Returns matching file paths relative to the search directory. Respects .gitignore. Output is truncated to 1000 results or 50KB (whichever is hit first)."
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "pattern" (string-property)
-     "path" (string-property)
-     "limit" (number-property))
+     ;; Baseline core/tools/find.ts:21-26.
+     "pattern"
+     (string-property
+      "Glob pattern to match files, e.g. '*.ts', '**/*.json', or 'src/**/*.spec.ts'")
+     "path"
+     (string-property
+      "Directory to search in (default: current directory)")
+     "limit"
+     (number-property "Maximum number of results (default: 1000)"))
     '("pattern"))
    :execution-mode :parallel
    :executor

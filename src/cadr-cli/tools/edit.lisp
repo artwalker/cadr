@@ -642,16 +642,23 @@
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "path" (string-property)
+     ;; Baseline core/tools/edit.ts — property descriptions included,
+     ;; no minItems (the baseline schema does not declare one).
+     "path"
+     (string-property "Path to the file to edit (relative or absolute)")
      "edits"
      (cadr-ai::json-object
       "type" "array"
-      "minItems" 1
+      "description"
+      "One or more targeted replacements. Each edit is matched against the original file, not incrementally. Do not include overlapping or nested edits. If two changes touch the same block or nearby lines, merge them into one edit instead."
       "items"
       (object-schema
        (cadr-ai::json-object
-        "oldText" (string-property)
-        "newText" (string-property))
+        "oldText"
+        (string-property
+         "Exact text for one targeted replacement. It must be unique in the original file and must not overlap with any other edits[].oldText in the same call.")
+        "newText"
+        (string-property "Replacement text for this targeted edit."))
        '("oldText" "newText"))))
     '("path" "edits"))
    :execution-mode :sequential

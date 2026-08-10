@@ -30,8 +30,11 @@
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "path" (string-property)
-     "content" (string-property))
+     ;; Baseline core/tools/write.ts.
+     "path"
+     (string-property "Path to the file to write (relative or absolute)")
+     "content"
+     (string-property "Content to write to the file"))
     '("path" "content"))
    :execution-mode :sequential
    :executor

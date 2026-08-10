@@ -43,3 +43,24 @@
    +cadr-aligned-pi-release+
    +cadr-aligned-pi-distance+
    +cadr-aligned-pi-commit+))
+
+(defun cadr-docs-directory ()
+  ;; The product docs live in docs/ beside the ASDF source root; the
+  ;; deliverable binary keeps the same relative layout.
+  (merge-pathnames "docs/"
+                   (asdf:system-source-directory "cadr-cli")))
+
+(defun provider-login-help-text ()
+  ;; Baseline core/auth-guidance.ts getProviderLoginHelp.
+  (format nil
+          "Use /login to log into a provider via OAuth or API key. See:~%  ~A~%  ~A"
+          (namestring
+           (merge-pathnames "providers.md" (cadr-docs-directory)))
+          (namestring
+           (merge-pathnames "models.md" (cadr-docs-directory)))))
+
+(defun no-api-key-found-message (provider)
+  ;; Baseline core/auth-guidance.ts formatNoApiKeyFoundMessage.
+  (format nil "No API key found for ~A.~%~%~A"
+          (if (string= provider "unknown") "the selected model" provider)
+          (provider-login-help-text)))

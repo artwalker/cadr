@@ -23,9 +23,12 @@
              for path = (ignore-errors (executable-on-path name))
              when path return name)))))
 
-(defun offline-mode-p ()
-  (member (string-downcase (or (uiop:getenv "CADR_OFFLINE") ""))
+(defun truthy-env-flag-p (name)
+  (member (string-downcase (or (uiop:getenv name) ""))
           '("1" "true" "yes") :test #'string=))
+
+(defun offline-mode-p ()
+  (truthy-env-flag-p "CADR_OFFLINE"))
 
 (defun host-platform-name ()
   (cond ((uiop:os-windows-p) :windows)

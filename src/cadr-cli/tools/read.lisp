@@ -127,9 +127,14 @@
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "path" (string-property)
-     "offset" (number-property)
-     "limit" (number-property))
+     ;; Baseline core/tools/read.ts — every property carries its
+     ;; baseline description.
+     "path"
+     (string-property "Path to the file to read (relative or absolute)")
+     "offset"
+     (number-property "Line number to start reading from (1-indexed)")
+     "limit"
+     (number-property "Maximum number of lines to read"))
     '("path"))
    :execution-mode :parallel
    :executor

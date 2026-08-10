@@ -6,6 +6,10 @@
 (defparameter *migration-interactive-p-function*
   #'cadr-tui:terminal-stream-p)
 
+(defparameter *migration-rename-function* #'rename-file
+  "Rename entry point for the content migrations; rebound by tests to
+exercise the baseline failure arms (migrations.ts:148).")
+
 (defun legacy-product-name ()
   (format nil "~C~C-cl" #\p #\i))
 
@@ -193,3 +197,313 @@ data; does nothing when CADR_CODING_AGENT_DIR points elsewhere."
          (when (probe-file auth-path)
            (sb-posix:chmod auth-path #o600)))
        :migrated))))
+
+;;; ------------------------------------------------------------------
+;;; Baseline content migrations (packages/coding-agent/src/migrations.ts).
+;;; These run on every startup after flag validation and before settings
+;;; or session work (baseline main.ts:605-607).  They migrate pi-format
+;;; legacies that a ~/.cadr/agent/ directory can still carry: pre-auth.json
+;;; credentials, agent-root session files, tools/ binaries, commands/
+;;; prompt directories, and deprecated hooks//tools/ directories.
+
+(defparameter +migration-guide-url+
+  "https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration"
+  ;; Baseline MIGRATION_GUIDE_URL.  The migrated formats are inherited
+  ;; from pi, so the baseline guide is the accurate documentation for
+  ;; them; surfaced to the user as an identity adjudication item.
+  )
+
+(defparameter +extensions-doc-url+
+  "https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md"
+  ;; Baseline EXTENSIONS_DOC_URL; see +MIGRATION-GUIDE-URL+.
+  )
+
+(defun migration-agent-file (name)
+  (merge-pathnames name (cadr-core:coding-agent-directory)))
+
+(defun read-json-file-object (path)
+  "Parse PATH as a JSON object, or NIL when unreadable/not an object.
+Baseline migrations skip on error rather than failing startup."
+  (handler-case
+      (let ((object
+              (cadr-ai::parse-json
+               (uiop:read-file-string path :external-format :utf-8))))
+        (and (hash-table-p object) object))
+    (error () nil)))
+
+(defun write-json-file-object (path object &key (mode nil))
+  (cadr-core:call-with-atomic-output-file
+   path
+   (lambda (stream)
+     (write-string (cadr-ai::stringify-json object) stream)
+     (terpri stream))
+   :mode (or mode #o644)
+   :durability :flush)
+  path)
+
+(defun migrate-auth-to-auth-json ()
+  "Baseline migrateAuthToAuthJson: fold legacy oauth.json and
+settings.json apiKeys into auth.json.  Returns the migrated provider
+names.  Skips entirely when auth.json already exists."
+  (let ((auth-path (migration-agent-file "auth.json"))
+        (oauth-path (migration-agent-file "oauth.json"))
+        (settings-path (migration-agent-file "settings.json")))
+    (when (probe-file auth-path)
+      (return-from migrate-auth-to-auth-json nil))
+    (let ((migrated (cadr-ai::json-object))
+          (providers nil))
+      (when (probe-file oauth-path)
+        (let ((oauth (read-json-file-object oauth-path)))
+          (when oauth
+            (maphash
+             (lambda (provider credential)
+               (when (hash-table-p credential)
+                 (let ((entry (cadr-ai::json-object)))
+                   (setf (gethash "type" entry) "oauth")
+                   (maphash
+                    (lambda (key value)
+                      (setf (gethash key entry) value))
+                    credential)
+                   (setf (gethash provider migrated) entry)
+                   (push provider providers))))
+             oauth)
+            (ignore-errors
+              (rename-file oauth-path
+                           (merge-pathnames "oauth.json.migrated"
+                                            (cadr-core:coding-agent-directory)))))))
+      (when (probe-file settings-path)
+        (let ((settings (read-json-file-object settings-path)))
+          (when settings
+            (let ((api-keys (gethash "apiKeys" settings)))
+              (when (hash-table-p api-keys)
+                (maphash
+                 (lambda (provider key)
+                   (when (and (stringp key)
+                              (not (gethash provider migrated)))
+                     (let ((entry (cadr-ai::json-object)))
+                       (setf (gethash "type" entry) "api_key"
+                             (gethash "key" entry) key)
+                       (setf (gethash provider migrated) entry)
+                       (push provider providers))))
+                 api-keys)
+                (remhash "apiKeys" settings)
+                (ignore-errors
+                  (write-json-file-object settings-path settings)))))))
+      (when (plusp (hash-table-count migrated))
+        (ensure-directories-exist auth-path)
+        (write-json-file-object auth-path migrated :mode #o600))
+      (nreverse providers))))
+
+(defun migrate-sessions-from-agent-root ()
+  "Baseline migrateSessionsFromAgentRoot: v0.30.0 wrote session files
+directly into the agent directory; move them under sessions/.  cadr's
+session root is flat (session/discovery.lisp list-sessions), so the
+target is the flat sessions/ directory rather than the baseline's
+per-cwd encoded subdirectory; the moved files remain discoverable."
+  (let* ((agent-directory
+           (uiop:ensure-directory-pathname
+            (cadr-core:coding-agent-directory)))
+         (files
+           (ignore-errors
+             (directory
+              (merge-pathnames "*.jsonl" agent-directory)))))
+    (dolist (file (or files nil))
+      (handler-case
+          (let ((first-line
+                  (with-open-file
+                      (stream file :external-format :utf-8)
+                    (read-line stream nil nil))))
+            (when (and first-line (plusp (length (string-trim '(#\Space #\Tab) first-line))))
+              (let ((header
+                      (ignore-errors
+                        (cadr-ai::parse-json first-line))))
+                (when (and (hash-table-p header)
+                           (string= "session"
+                                    (cadr-ai::json-get header "type" ""))
+                           (cadr-ai::json-get header "cwd"))
+                  (let* ((sessions-directory
+                           (cadr-core:agent-sessions-directory))
+                         (target
+                           (merge-pathnames
+                            (file-namestring file)
+                            sessions-directory)))
+                    (unless (probe-file target)
+                      (ensure-directories-exist sessions-directory)
+                      (rename-file file target)))))))
+        (error () nil)))))
+
+(defun migrate-tools-to-bin (&key (output *standard-output*))
+  "Baseline migrateToolsToBin: move managed fd/rg binaries from tools/
+to bin/, printing the green baseline line when anything moved."
+  (let ((tools-directory (cadr-core:agent-tools-directory))
+        (bin-directory (cadr-core:agent-bin-directory))
+        (moved-p nil))
+    (when (uiop:directory-exists-p tools-directory)
+      (dolist (name '("fd" "rg" "fd.exe" "rg.exe"))
+        (let ((old (merge-pathnames name tools-directory))
+              (new (merge-pathnames name bin-directory)))
+          (when (probe-file old)
+            (if (probe-file new)
+                (ignore-errors (delete-file old))
+                (handler-case
+                    (progn
+                      (ensure-directories-exist bin-directory)
+                      (rename-file old new)
+                      (setf moved-p t))
+                  (error () nil)))))))
+    (when moved-p
+      (format output "~A~%"
+              (cli-success-text
+               output "Migrated managed binaries tools/ → bin/"))
+      (finish-output output))
+    moved-p))
+
+(defun migrate-commands-to-prompts (base-directory label
+                                    &key (output *standard-output*))
+  "Baseline migrateCommandsToPrompts: rename commands/ to prompts/
+when prompts/ does not exist yet.  BASE-DIRECTORY is the agent or
+project config root; LABEL is \"Global\" or \"Project\"."
+  (let ((base (uiop:ensure-directory-pathname base-directory)))
+    (let ((commands (merge-pathnames "commands/" base))
+          (prompts (merge-pathnames "prompts/" base)))
+      (when (and (uiop:directory-exists-p commands)
+                 (not (probe-file prompts)))
+        (handler-case
+            (progn
+              (funcall *migration-rename-function* commands prompts)
+              (format output "~A~%"
+                      (cli-success-text
+                       output
+                       (format nil "Migrated ~A commands/ → prompts/"
+                               label)))
+              (finish-output output)
+              t)
+          (error (cause)
+            (format output "~A~%"
+                    (cli-warning-text
+                     output
+                     (format
+                      nil
+                      "Warning: Could not migrate ~A commands/ to prompts/: ~A"
+                      label cause)))
+            (finish-output output)
+            nil))))))
+
+(defun check-deprecated-extension-dirs (base-directory label)
+  "Baseline checkDeprecatedExtensionDirs: warn about hooks/ and about
+tools/ entries other than the auto-extracted fd/rg binaries."
+  (let ((base (uiop:ensure-directory-pathname base-directory))
+        (warnings nil))
+    (when (uiop:directory-exists-p (merge-pathnames "hooks/" base))
+      (push (format nil "~A hooks/ directory found. Hooks have been renamed to extensions."
+                    label)
+            warnings))
+    (let ((tools (merge-pathnames "tools/" base)))
+      (when (uiop:directory-exists-p tools)
+        (let ((custom
+                (remove-if
+                 (lambda (name)
+                   (let ((lower (string-downcase name)))
+                     (or (member lower
+                                 '("fd" "rg" "fd.exe" "rg.exe")
+                                 :test #'string=)
+                         (and (plusp (length name))
+                              (char= (char name 0) #\.)))))
+                 (ignore-errors
+                   (mapcar
+                    (lambda (path)
+                      (if (uiop:directory-pathname-p path)
+                          (car (last (pathname-directory path)))
+                          (file-namestring path)))
+                    (append
+                     (uiop:directory-files tools)
+                     (uiop:subdirectories tools)))))))
+          (when custom
+            (push (format nil "~A tools/ directory contains custom tools. Custom tools have been merged into extensions."
+                          label)
+                  warnings)))))
+    (nreverse warnings)))
+
+(defvar *pending-deprecation-warnings* nil
+  "Deprecation warnings collected by RUN-CONTENT-MIGRATIONS at startup;
+shown by the interactive path before the TUI takes over (baseline
+main.ts:837-839).")
+
+(defun run-content-migrations (cwd &key (output *standard-output*))
+  "Baseline runMigrations (migrations.ts:297-307): content migrations
+plus deprecated-directory warnings.  Returns the deprecation warnings;
+the migrated auth providers are currently only informational in the
+baseline as well."
+  (migrate-auth-to-auth-json)
+  (migrate-sessions-from-agent-root)
+  (migrate-tools-to-bin :output output)
+  (migrate-commands-to-prompts
+   (cadr-core:coding-agent-directory) "Global" :output output)
+  (migrate-commands-to-prompts
+   (cadr-core:project-config-directory cwd) "Project" :output output)
+  (let ((warnings
+          (nconc
+           (check-deprecated-extension-dirs
+            (cadr-core:coding-agent-directory) "Global")
+           (check-deprecated-extension-dirs
+            (cadr-core:project-config-directory cwd) "Project"))))
+    (setf *pending-deprecation-warnings* warnings)
+    warnings))
+
+(defun show-deprecation-warnings (warnings
+                                  &key
+                                    (output *standard-output*)
+                                    (input *standard-input*))
+  "Baseline showDeprecationWarnings: print each warning, the move
+guidance and the two documentation URLs, then wait for a single
+keypress in raw mode."
+  (unless warnings
+    (return-from show-deprecation-warnings nil))
+  (dolist (warning warnings)
+    (format output "~A~%"
+            (cli-warning-text output (format nil "Warning: ~A" warning))))
+  (format output "~A~%"
+          (cli-warning-text
+           output
+           (format nil "~%Move your extensions to the extensions/ directory.")))
+  (format output "~A~%"
+          (cli-warning-text
+           output
+           (format nil "Migration guide: ~A" +migration-guide-url+)))
+  (format output "~A~%"
+          (cli-warning-text
+           output
+           (format nil "Documentation: ~A" +extensions-doc-url+)))
+  (format output "~A~%"
+          (cli-dim-text
+           output
+           (format nil "~%Press any key to continue...")))
+  (finish-output output)
+  (read-single-keypress input)
+  (terpri output)
+  (finish-output output)
+  t)
+
+(defun read-single-keypress (input)
+  "Read one keypress, switching the terminal to raw mode when INPUT is
+an interactive terminal (baseline: process.stdin.setRawMode(true))."
+  #+sbcl
+  (let ((fd
+          (and (cadr-tui:terminal-stream-p input :input)
+               (cadr-tui::stream-file-descriptor input :input))))
+    (if (not fd)
+        (read-char input nil nil)
+        (let ((original (sb-posix:tcgetattr fd)))
+          (unwind-protect
+               (progn
+                 (let ((raw (cadr-tui::raw-termios original)))
+                   ;; Block until one byte arrives (baseline waits
+                   ;; indefinitely for the keypress).
+                   (setf
+                    (aref (sb-posix:termios-cc raw) sb-posix:vmin) 1
+                    (aref (sb-posix:termios-cc raw) sb-posix:vtime) 0)
+                   (sb-posix:tcsetattr fd sb-posix:tcsanow raw))
+                 (read-char input nil nil))
+            (sb-posix:tcsetattr fd sb-posix:tcsanow original)))))
+  #-sbcl
+  (read-char input nil nil))

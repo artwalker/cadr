@@ -209,8 +209,13 @@ completed assistant message."))
 (defun require-api-key (provider)
   (let ((key (provider-api-key provider)))
     (unless (non-empty-string-p key)
+      ;; Baseline agent-session.ts _getRequiredRequestAuth surfaces the
+      ;; auth-guidance message, not a bare "key missing" note.
       (error 'configuration-error
-             :message "Provider API key is missing"))
+             :message
+             (no-api-key-found-message
+              (string-downcase
+               (symbol-name (provider-id provider))))))
     key))
 
 (defun provider-bearer-token (provider)
@@ -220,7 +225,10 @@ completed assistant message."))
           ((non-empty-string-p key) key)
           ((provider-authentication-required-p provider)
            (error 'configuration-error
-                  :message "Provider API key is missing"))
+                  :message
+                  (no-api-key-found-message
+                   (string-downcase
+                    (symbol-name (provider-id provider))))))
           (t nil)))))
 
 (defun content-has-images-p (content)

@@ -86,9 +86,9 @@
     (unless credential
       (error 'credential-print-error
              :message
-             (format nil
-                     "No credential configured for ~A"
-                     provider)))
+             (if (eq kind :api-key)
+                 "No usable API key is configured"
+                 "No usable OAuth bearer token is configured")))
     (ecase kind
       (:api-key
        (unless
@@ -97,7 +97,7 @@
          (error 'credential-print-error
                 :message
                 (format nil
-                        "~A is configured with OAuth"
+                        "Provider \"~A\" is configured with OAuth, not an API key"
                         provider)))
        (cadr-ai:api-key-credential-key
         credential))
@@ -108,7 +108,7 @@
          (error 'credential-print-error
                 :message
                 (format nil
-                        "~A is not configured with OAuth"
+                        "Provider \"~A\" is not configured with an OAuth bearer token"
                         provider)))
        (when
            (<=
@@ -119,7 +119,7 @@
          (unless refresh-function
            (error 'credential-print-error
                   :message
-                  "OAuth credential expires too soon"))
+                  "No usable OAuth bearer token is configured"))
          (setf credential
                (auth-storage-modify
                 storage provider
@@ -132,9 +132,10 @@
 (defun print-credential-command-usage
     (&optional
        (stream *standard-output*))
+  ;; Baseline credential-print.ts:24-32 printCredentialPrintHelp.
   (format
    stream
-   "Usage:~%  cadr auth print-api-key --provider <name> --model <id>~%  cadr auth print-bearer-token --provider <name> --model <id> [--min-expiry <duration>]~%")
+   "Usage:~%  cadr auth print-api-key --model <model> [--provider <provider>]~%  cadr auth print-bearer-token --model <model> [--provider <provider>] [--min-expiry <duration>]~%~%Prints the configured credential alone on stdout. Provider inference uses configured credentials; specify --provider to select explicitly. Bearer tokens have a 30-minute minimum expiry by default. --min-expiry accepts ms, s, m, or h (for example, 30m).~%")
   (finish-output stream))
 
 (defun run-credential-print-command
@@ -191,15 +192,71 @@
                (parse-model-spec
                 model
                 (cli-arguments-provider cli)))
+             (registry
+               (make-model-registry
+                :path
+                (merge-pathnames
+                 "models.json"
+                 (default-agent-directory))
+                :credentials
+                (make-file-auth-storage auth-path)))
+             (available
+               (model-registry-all registry))
              (provider
                (or
                 (getf model-spec :provider)
                 (configured-provider-name nil))))
+        ;; Baseline credential-print.ts:92-111 — resolution goes through
+        ;; the model runtime, so unknown providers and unknown models
+        ;; report the baseline errors before any credential lookup.
+        (when (null available)
+          (error
+           'credential-print-error
+           :message
+           "No models available. Check your installation or add models to models.json."))
+        (when
+            (and
+             (cli-arguments-provider cli)
+             (not
+              (find
+               (cli-arguments-provider cli)
+               available
+               :key
+               (lambda (candidate)
+                 (provider-key
+                  (cadr-ai:model-provider candidate)))
+               :test #'string-equal)))
+          (error
+           'credential-print-error
+           :message
+           (format
+            nil
+            "Unknown provider \"~A\". Use --list-models to see available providers/models."
+            (cli-arguments-provider cli))))
         (unless provider
           (error
            'credential-print-error
            :message
            "Unable to resolve the requested provider/model"))
+        (unless
+            (find-if
+             (lambda (candidate)
+               (and
+                (string=
+                 (cadr-ai:model-id candidate)
+                 (getf model-spec :model))
+                (string-equal
+                 (provider-key
+                  (cadr-ai:model-provider candidate))
+                 provider)))
+             available)
+          (error
+           'credential-print-error
+           :message
+           (format
+            nil
+            "Model \"~A\" not found. Use --list-models to see available models."
+            model)))
         (let* ((provider-id
                  (provider-symbol-from-key
                   provider))

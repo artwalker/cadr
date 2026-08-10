@@ -228,12 +228,35 @@
   (if (or (null path)
           (not (probe-file path)))
       (empty-json-object)
-      (let ((root
-              (cadr-ai::parse-json
-               (uiop:read-file-string
-                path :external-format :utf-8))))
+      ;; Baseline core/model-config.ts:245-271 — load, parse, and
+      ;; schema failures carry the message envelope plus the file path.
+      (let* ((text
+              (handler-case
+                   (uiop:read-file-string
+                    path :external-format :utf-8)
+                (error (cause)
+                  (error
+                   'cadr-ai:configuration-error
+                   :message
+                   (format nil "Failed to load models.json: ~A~%~%File: ~A"
+                           cause (namestring path))
+                   :cause cause))))
+            (root
+              (handler-case
+                  (cadr-ai::parse-json text)
+                (error (cause)
+                  (error
+                   'cadr-ai:configuration-error
+                   :message
+                   (format nil "Failed to parse models.json: ~A~%~%File: ~A"
+                           cause (namestring path))
+                   :cause cause)))))
         (unless (hash-table-p root)
-          (error "models.json must contain an object"))
+          (error
+           'cadr-ai:configuration-error
+           :message
+           (format nil "Invalid models.json schema:~%Expected a JSON object at the top level~%~%File: ~A"
+                   (namestring path))))
         root)))
 
 (defun refresh-model-registry (registry)
@@ -251,8 +274,13 @@
            (lambda (provider-name config)
              (unless (hash-table-p config)
                (error
-                "Provider ~A configuration must be an object"
-                provider-name))
+                'cadr-ai:configuration-error
+                :message
+                (format
+                 nil
+                 "Invalid models.json schema:~%Provider ~A configuration must be an object~%~%File: ~A"
+                 provider-name
+                 (namestring (model-registry-path registry)))))
              (let* ((provider
                       (provider-symbol-from-key
                        provider-name))

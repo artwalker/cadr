@@ -1,38 +1,130 @@
 (in-package #:cadr-cli)
 
+(defun format-list-models-token-count (count)
+  ;; Baseline cli/list-models.ts:9-22 formatTokenCount.
+  (cond
+    ((>= count 1000000)
+     (multiple-value-bind (millions remainder)
+         (floor count 1000000)
+       (if (zerop remainder)
+           (format nil "~DM" millions)
+           (format nil "~,1FM" (/ count 1000000d0)))))
+    ((>= count 1000)
+     (multiple-value-bind (thousands remainder)
+         (floor count 1000)
+       (if (zerop remainder)
+           (format nil "~DK" thousands)
+           (format nil "~,1FK" (/ count 1000d0)))))
+    (t
+     (format nil "~D" count))))
+
+(defun no-models-available-message ()
+  ;; Baseline core/auth-guidance.ts formatNoModelsAvailableMessage.
+  (format nil "No models available. ~A"
+          (cadr-ai::provider-login-help-text)))
+
 (defun print-cli-models
     (pattern &optional
                (output *standard-output*))
-  (let ((needle
-          (and
-           (stringp pattern)
-           (string-downcase pattern))))
-    (dolist
-        (metadata
-         (sort
-          (copy-list
-           (cadr-ai:list-model-metadata))
-          #'string<
-          :key
-          (lambda (item)
-            (format nil "~(~A~)/~A"
-                    (cadr-ai:model-metadata-provider
-                     item)
-                    (cadr-ai:model-metadata-id
-                     item)))))
-      (let ((name
-              (format nil "~(~A~)/~A"
-                      (cadr-ai:model-metadata-provider
-                       metadata)
-                      (cadr-ai:model-metadata-id
-                       metadata))))
-        (when
-            (or
-             (null needle)
-             (search needle
-                     (string-downcase name)))
-          (format output "~A~%" name)))))
-  (finish-output output))
+  ;; Baseline cli/list-models.ts listModels: warn about a models.json
+  ;; load failure, list the auth-available models (built-in catalog plus
+  ;; models.json customs), fuzzy-filter on "provider id", and print the
+  ;; padded six-column table.
+  (let* ((registry
+           (make-model-registry
+            :path (cadr-core:agent-models-path)))
+         (load-error
+           (model-registry-error registry)))
+    (when load-error
+      (format
+       *error-output*
+       "~A~%"
+       (cli-warning-text
+        *error-output*
+        (format nil "Warning: errors loading models.json:~%~A"
+                load-error)))
+      (finish-output *error-output*))
+    (let ((models
+            (model-registry-available-models registry)))
+      (when (null models)
+        (format output "~A~%" (no-models-available-message))
+        (finish-output output)
+        (return-from print-cli-models nil))
+      (when (and (stringp pattern)
+                 (plusp (length pattern)))
+        (setf models
+              (cadr-tui:fuzzy-filter
+               models pattern
+               (lambda (model)
+                 (format nil "~(~A~) ~(~A~)"
+                         (symbol-name
+                          (cadr-ai:model-provider model))
+                         (cadr-ai:model-id model))))))
+      (when (null models)
+        (format output "No models matching \"~A\"~%" pattern)
+        (finish-output output)
+        (return-from print-cli-models nil))
+      (setf models
+            (sort
+             models
+             (lambda (left right)
+               (let ((left-provider
+                       (string-downcase
+                        (symbol-name
+                         (cadr-ai:model-provider left))))
+                     (right-provider
+                       (string-downcase
+                        (symbol-name
+                         (cadr-ai:model-provider right)))))
+                 (if (string= left-provider right-provider)
+                     (string<
+                      (cadr-ai:model-id left)
+                      (cadr-ai:model-id right))
+                     (string< left-provider right-provider))))))
+      (let* ((rows
+               (mapcar
+                (lambda (model)
+                  (list
+                   (string-downcase
+                    (symbol-name
+                     (cadr-ai:model-provider model)))
+                   (cadr-ai:model-id model)
+                   (format-list-models-token-count
+                    (cadr-ai:model-context-window model))
+                   (format-list-models-token-count
+                    (cadr-ai:model-max-tokens model))
+                   (if (cadr-ai:model-reasoning-p model)
+                       "yes"
+                       "no")
+                   (if (cadr-ai:model-supports-images-p model)
+                       "yes"
+                       "no")))
+                models))
+             (headers
+               (list "provider" "model" "context"
+                     "max-out" "thinking" "images"))
+             (widths
+               (loop for column from 0 below 6
+                     collect
+                     (reduce
+                      #'max
+                      (mapcar
+                       (lambda (row)
+                         (length (nth column row)))
+                       rows)
+                      :initial-value
+                      (length (nth column headers)))))
+             (print-row
+               (lambda (cells)
+                 (format output "~{~A~^  ~}~%"
+                         (loop for cell in cells
+                               for width in widths
+                               collect
+                               (format nil "~VA" width cell))))))
+        (funcall print-row headers)
+        (dolist (row rows)
+          (funcall print-row row))))
+   (finish-output output)))
 
 (defun main (&optional
                (argv
@@ -93,26 +185,13 @@
                  (getf diagnostic :type)))
             (return-from main 1))
           (cond
-            ((cli-arguments-help-p arguments)
-             (print-cli-usage
-              *standard-output*
-              (cli-help-extension-flags arguments))
-             0)
             ((cli-arguments-version-p arguments)
              (format t "~A~%"
-                     (cadr-ai::cadr-release-identity))
-             0)
-            ((cli-arguments-list-models arguments)
-             (print-cli-models
-              (let ((value
-                      (cli-arguments-list-models
-                       arguments)))
-                (and (stringp value)
-                     value)))
-             0)
+                      (cadr-ai::cadr-release-identity))
+              0)
             ((cli-arguments-export arguments)
-             (let* ((source
-                      (merge-pathnames
+              (let* ((source
+                       (merge-pathnames
                        (pathname
                         (cli-arguments-export arguments))
                        (uiop:ensure-directory-pathname
@@ -158,13 +237,61 @@
                arguments))
              (format
               *error-output*
-              "~A~%"
-              (cli-error-text
-               *error-output*
-               "Error: @file arguments are not supported in RPC mode"))
-             1)
+                 "~A~%"
+                 (cli-error-text
+                  *error-output*
+                  "Error: @file arguments are not supported in RPC mode"))
+              1)
             (t
-             (cli-handler arguments)))))
+             ;; Baseline main.ts:605-607 — flag conflict validation runs
+             ;; before the startup content migrations.
+             (validate-cli-session-flags
+              :continue-p (cli-arguments-continue-p arguments)
+              :resume-id (cli-arguments-resume arguments)
+              :resume-selector-p (cli-arguments-resume-p arguments)
+              :no-session-p (cli-arguments-no-session-p arguments)
+              :session-path (cli-arguments-session arguments)
+              :session-id (cli-arguments-session-id arguments)
+              :fork-source (cli-arguments-fork arguments))
+             (run-content-migrations (uiop:getcwd))
+             (cond
+               ((cli-arguments-help-p arguments)
+                (print-cli-usage
+                 *standard-output*
+                 (cli-help-extension-flags arguments))
+                0)
+               ((cli-arguments-list-models arguments)
+                (print-cli-models
+                 (let ((value
+                         (cli-arguments-list-models
+                          arguments)))
+                   (and (stringp value)
+                        value)))
+                0)
+               (t
+              ;; Baseline main.ts:857-860 — the startup benchmark only
+              ;; supports interactive mode.
+              (when
+                 (and
+                  (truthy-env-flag-p "CADR_STARTUP_BENCHMARK")
+                  (not
+                   (eq
+                    (resolve-cli-mode
+                     arguments
+                     (cadr-tui:terminal-stream-p
+                      *standard-input* :input)
+                     (cadr-tui:terminal-stream-p
+                      *standard-output* :output))
+                    :tui)))
+               (format
+                *error-output*
+                "~A~%"
+                (cli-error-text
+                 *error-output*
+                 "Error: CADR_STARTUP_BENCHMARK only supports interactive mode"))
+                 (finish-output *error-output*)
+                 (return-from main 1))
+               (cli-handler arguments)))))))
     (cli-session-abort (condition)
       ;; Clean early exit (baseline process.exit(0) paths such as the
       ;; declined cross-project session fork).

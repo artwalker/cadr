@@ -23,11 +23,15 @@
        skills cwd custom-prompt
        append-system-prompt
        (readme-path
-         "/usr/local/share/cadr/README.md")
+         (merge-pathnames
+          "README.md"
+          (asdf:system-source-directory "cadr-cli")))
        (docs-directory
-         "/usr/local/share/cadr/docs")
+         (cadr-ai::cadr-docs-directory))
        (examples-directory
-         "/usr/local/share/cadr/examples"))
+         (merge-pathnames
+          "examples/"
+          (asdf:system-source-directory "cadr-cli"))))
   (let* ((selected
            (if selected-tools-p
                selected-tools

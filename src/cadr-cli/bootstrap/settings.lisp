@@ -706,13 +706,14 @@
              (format
               nil "~{~A~^~%~%~}"
               (mapcar
-               #'resolve-system-prompt
+               (lambda (source)
+                 (resolve-system-prompt source "append system prompt"))
                append-sources))))
          (options
-           (list
+            (list
             :custom-prompt
             (and custom-source
-                 (resolve-system-prompt custom-source))
+                 (resolve-system-prompt custom-source "system prompt"))
             :selected-tools
             (mapcar #'cadr-ai:tool-name tools)
             :tool-snippets

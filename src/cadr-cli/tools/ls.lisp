@@ -77,12 +77,17 @@
   (cadr-ai:make-tool
    :name "ls"
    :description
-   "List directory contents sorted alphabetically; directories end in /."
+   ;; Baseline core/tools/ls.ts:103.
+   "List directory contents. Returns entries sorted alphabetically, with '/' suffix for directories. Includes dotfiles. Output is truncated to 500 entries or 50KB (whichever is hit first)."
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "path" (string-property)
-     "limit" (number-property))
+     ;; Baseline core/tools/ls.ts:14-17.
+     "path"
+     (string-property
+      "Directory to list (default: current directory)")
+     "limit"
+     (number-property "Maximum number of entries to return (default: 500)"))
     nil)
    :execution-mode :parallel
    :executor

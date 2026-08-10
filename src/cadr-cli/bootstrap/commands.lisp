@@ -70,6 +70,25 @@
       (let ((path
               (resolve-readable-tool-path
                cwd raw)))
+        ;; Baseline cli/file-processor.ts:33-39 — a missing @file is a
+        ;; stable red error, never a raw file condition.
+        (unless (probe-file path)
+          (error
+           'cadr-ai:configuration-error
+           :message
+           (format nil "Error: File not found: ~A"
+                   (namestring path))))
+        ;; Baseline cli/file-processor.ts:74-82 — an existing but
+        ;; unreadable @file (a directory, a permission failure) is a
+        ;; stable red error with the Node read-error wording, exit 1.
+        (when (uiop:directory-exists-p path)
+          (error
+           'cadr-ai:configuration-error
+           :message
+           (format nil "Error: Could not read file ~A: ~A"
+                   (namestring path)
+                   (node-read-error-message
+                    (namestring path) nil))))
         (unless
             (zerop
              (with-open-file
@@ -98,8 +117,17 @@
                  text
                  "<file name=\"~A\">~%~A~%</file>~%"
                  (namestring path)
-                 (uiop:read-file-string
-                  path :external-format :utf-8)))))))
+                 (handler-case
+                     (uiop:read-file-string
+                      path :external-format :utf-8)
+                   (error (cause)
+                     (error
+                      'cadr-ai:configuration-error
+                      :message
+                      (format nil "Error: Could not read file ~A: ~A"
+                              (namestring path)
+                              (node-read-error-message
+                               (namestring path) cause)))))))))))
     (values
      (coerce text 'string)
      (nreverse images))))
@@ -329,6 +357,19 @@
                 (pathname
                  (cadr-agent:session-cwd session)))
                startup-cwd))
+         ;; Baseline main.ts:644-649 — an empty --name is a hard error
+         ;; before any runtime, trust, or provider work happens.
+         (_name-validation
+           (when (cli-arguments-name command)
+             (let ((name
+                     (string-trim
+                      '(#\Space #\Tab #\Newline #\Return)
+                      (cli-arguments-name command))))
+               (when (zerop (length name))
+                 (error
+                  'cadr-ai:configuration-error
+                  :message
+                  "Error: --name requires a non-empty value")))))
          (config
            (resolve-provider-config
             :provider
@@ -352,7 +393,14 @@
             (lambda ()
               (provider-config-secrets config))))
          (_extension-report
-           (reload-cli-extensions extension-manager))
+           ;; Baseline reports startup extension problems once, in
+           ;; reportDiagnostics form (main.ts:96-101,843-849), not as
+           ;; per-line notify output; the report happens at body start,
+           ;; so the startup reloads stay silent here.
+           (call-with-quiet-extension-manager
+            extension-manager
+            (lambda ()
+              (reload-cli-extensions extension-manager))))
          (agent-directory
            (default-agent-directory))
          (trust-store
@@ -550,12 +598,12 @@
          (package-resources
            (package-resource-paths
             package-records))
-         (_package-extension-report
-           (progn
-             (setf
-              (cli-extension-manager-configured-package-paths
-               extension-manager)
-              (unless
+        (_package-extension-report
+          (progn
+            (setf
+             (cli-extension-manager-configured-package-paths
+              extension-manager)
+             (unless
                   (cli-arguments-no-extensions-p
                    command)
                 (append
@@ -569,8 +617,11 @@
                     (cons :global path))
                   (getf package-resources
                         :global-extensions)))))
-             (reload-cli-extensions
-              extension-manager)))
+             (call-with-quiet-extension-manager
+              extension-manager
+              (lambda ()
+                (reload-cli-extensions
+                 extension-manager)))))
          (resource-loader
            (make-default-resource-loader
             :cwd cwd
@@ -695,6 +746,24 @@
              _package-extension-report
              _startup-model-config
              _scope-diagnostic-report))
+    (when (and tui-p *pending-deprecation-warnings*)
+      ;; Baseline main.ts:837-839 — deprecated-directory warnings are
+      ;; shown before the TUI takes over, interactive mode only.
+      (show-deprecation-warnings *pending-deprecation-warnings*))
+    (multiple-value-bind (startup-error-p load-failure-p)
+        (report-startup-extension-issues extension-manager)
+      (when startup-error-p
+        ;; Baseline main.ts:843-849 — any runtime error diagnostic is
+        ;; fatal; an extension load failure adds the -ne hint.
+        (when load-failure-p
+          (format
+           *error-output*
+           "~A~%"
+           (cli-warning-text
+            *error-output*
+            "Hint: Start without extensions using \"cadr -ne\"."))
+          (finish-output *error-output*))
+        (return-from cli-handler 1)))
     (sync-agent-settings-from-manager
      agent settings-manager)
     (cadr-tui:set-keybindings
@@ -702,6 +771,10 @@
       :user-bindings
       (settings-keybindings
        settings-manager)))
+    (when tui-p
+      ;; Baseline interactive-mode.ts:1825 — shortcut conflicts join the
+      ;; [Extension issues] block; print/rpc never computes them.
+      (refresh-extension-shortcut-diagnostics extension-manager))
     (when (or
            (cli-arguments-thinking command)
            startup-thinking
@@ -725,18 +798,12 @@
             settings-manager
             "defaultThinkingLevel"))
           :keyword)))))
-    (when (cli-arguments-name command)
-      (let ((name
-              (string-trim
-               '(#\Space #\Tab #\Newline #\Return)
-               (cli-arguments-name command))))
-        (when (zerop (length name))
-          (error
-           'cadr-ai:configuration-error
-           :message "Error: --name requires a non-empty value"))
-        (when session
-          (cadr-agent:session-set-name
-           session name))))
+    (when (and session (cli-arguments-name command))
+      (cadr-agent:session-set-name
+       session
+       (string-trim
+        '(#\Space #\Tab #\Newline #\Return)
+        (cli-arguments-name command))))
     (labels
         ((anthropic-warning ()
            (maybe-anthropic-subscription-warning
@@ -1258,6 +1325,11 @@
                           (progn
                             (format frontend-output "~A~%" message)
                             (finish-output frontend-output))))))
+                  (when tui-p
+                    ;; Baseline interactive-mode.ts:5885 — a reload
+                    ;; recomputes the shortcut conflict diagnostics.
+                    (refresh-extension-shortcut-diagnostics
+                     extension-manager))
                   t)
                 (handle-extension-command
                  line extension-manager))))
@@ -2302,6 +2374,27 @@
                  (cli-arguments-file-arguments
                   command)
                  cwd)
+              ;; Baseline sdk.ts:204-224 + agent-session.ts:418 — with
+              ;; no authenticated model the session keeps the unknown
+              ;; sentinel and the first send fails with the auth-guidance
+              ;; text; print mode resolves that failure up front, after
+              ;; @file processing.
+              (when
+                  (and
+                   (null startup-model)
+                   (null (cli-arguments-model command))
+                   ;; An explicit --provider resolves that provider's
+                   ;; default model; a missing key then fails at send
+                   ;; time with the provider-specific guidance instead.
+                   (null (cli-arguments-provider command)))
+                ;; Baseline print-mode.ts:135-137 prints run failures
+                ;; plainly on stderr, never through the red CLI handler.
+                (format
+                 *error-output*
+                 "~A~%"
+                 (cadr-ai::no-api-key-found-message "unknown"))
+                (finish-output *error-output*)
+                (return-from cli-handler 1))
               (multiple-value-bind
                  (initial messages)
                   (build-cli-print-prompts

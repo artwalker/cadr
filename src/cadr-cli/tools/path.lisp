@@ -284,11 +284,17 @@
     value))
 
 (defun object-schema (properties required)
-  (cadr-ai::json-object
-   "type" "object"
-   "properties" properties
-   "required" (coerce required 'vector)
-   "additionalProperties" nil))
+  (let ((schema
+          (cadr-ai::json-object
+           "type" "object"
+           "properties" properties
+           "additionalProperties" nil)))
+    ;; Baseline TypeBox: Type.Object without a required list omits the
+    ;; key entirely (core/tools/ls.ts has no required).
+    (when required
+      (cadr-ai::json-put
+       schema "required" (coerce required 'vector)))
+    schema))
 
 (defun string-property (&optional description)
   (let ((property (cadr-ai::json-object "type" "string")))
@@ -302,8 +308,11 @@
       (cadr-ai::json-put property "description" description))
     property))
 
-(defun boolean-property ()
-  (cadr-ai::json-object "type" "boolean"))
+(defun boolean-property (&optional description)
+  (let ((property (cadr-ai::json-object "type" "boolean")))
+    (when description
+      (cadr-ai::json-put property "description" description))
+    property))
 
 (defun mutation-queue-key (path)
   (cadr-agent::file-mutation-queue-key path))

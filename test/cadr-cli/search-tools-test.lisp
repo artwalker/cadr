@@ -41,7 +41,7 @@
            (args "pattern" "needle [0-9]+"
                  "path" "."
                  "glob" "**/*.txt"
-                 "ignore_case" t
+                 "ignoreCase" t
                  "context" 1
                  "limit" 10))
         (declare (ignore details))

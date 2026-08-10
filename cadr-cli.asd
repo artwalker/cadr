@@ -38,11 +38,12 @@
                                            (:file "trust")))
                              (:module "packages"
                               :serial t
-                              :components ((:file "source")
-                                           (:file "settings")
-                                           (:file "manifest")
-                                           (:file "config-selector")
-                                           (:file "commands")))
+                             :components ((:file "source")
+                                          (:file "settings")
+                                          (:file "manifest")
+                                          (:file "config-selector")
+                                          (:file "update-checks")
+                                          (:file "commands")))
                              (:file "resource-loader")
                              (:module "models"
                               :serial t
@@ -216,6 +217,8 @@
                              (:file "goal18-login-forms-test")
                              (:file "goal18-debug-command-test")
                              (:file "goal18-startup-resources-test")
+                             (:file "goal18-content-migration-test")
+                             (:file "goal18-docs-test")
                              (:file "tui-test")
                              (:file "goal9-b-runtime-parity-test")
                              (:file "goal9-b3-p2-regressions-test")

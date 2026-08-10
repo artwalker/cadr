@@ -271,17 +271,31 @@
   (cadr-ai:make-tool
    :name "grep"
    :description
-   "Search UTF-8 files using regex or literal text with optional context."
+   ;; Baseline core/tools/grep.ts:131.
+   "Search file contents for a pattern. Returns matching lines with file paths and line numbers. Respects .gitignore. Output is truncated to 100 matches or 50KB (whichever is hit first). Long lines are truncated to 500 chars."
    :parameters
    (object-schema
     (cadr-ai::json-object
-     "pattern" (string-property)
-     "path" (string-property)
-     "glob" (string-property)
-     "literal" (boolean-property)
-     "ignore_case" (boolean-property)
-     "context" (number-property)
-     "limit" (number-property))
+     ;; Baseline core/tools/grep.ts:24-36 — camelCase ignoreCase, each
+     ;; property with its baseline description.
+     "pattern"
+     (string-property "Search pattern (regex or literal string)")
+     "path"
+     (string-property
+      "Directory or file to search (default: current directory)")
+     "glob"
+     (string-property
+      "Filter files by glob pattern, e.g. '*.ts' or '**/*.spec.ts'")
+     "ignoreCase"
+     (boolean-property "Case-insensitive search (default: false)")
+     "literal"
+     (boolean-property
+      "Treat pattern as literal string instead of regex (default: false)")
+     "context"
+     (number-property
+      "Number of lines to show before and after each match (default: 0)")
+     "limit"
+     (number-property "Maximum number of matches to return (default: 100)"))
     '("pattern"))
    :execution-mode :parallel
    :executor

@@ -1,22 +1,42 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
-(defparameter +goal9-baseline-tool-descriptions+
-  '(("read"
-     . "Read the contents of a file. Supports text files and images (jpg, png, gif, webp, bmp). Images are sent as attachments. For text files, output is truncated to 2000 lines or 50KB (whichever is hit first). Use offset/limit for large files. When you need the full file, continue with offset until complete.")
-    ("bash"
-     . "Execute a bash command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds.")
-    ("edit"
-     . "Edit a single file using exact text replacement. Every edits[].oldText must match a unique, non-overlapping region of the original file. If two changes affect the same block or nearby lines, merge them into one edit instead of emitting overlapping edits. Do not include large unchanged regions just to connect distant changes.")
-    ("write"
-     . "Write content to a file. Creates the file if it doesn't exist, overwrites if it does. Automatically creates parent directories.")))
+;;; Goal 18 Part K: the model-visible tool contract is locked against
+;;; test/fixtures/render-diff/baseline-tool-definitions.json, which the
+;;; render-diff gate regenerates from the fixed baseline at capture time
+;;; (check_baseline_tool_definitions) — no hand-maintained expectation
+;;; table remains between cadr and the baseline tool definitions.
 
-(defparameter +goal9-baseline-tool-snippets+
-  '(("read" . "Read file contents")
-    ("bash" . "Execute bash commands (ls, grep, find, etc.)")
-    ("edit"
-     . "Make precise file edits with exact text replacement, including multiple disjoint edits in one call")
-    ("write" . "Create or overwrite files")))
+(defun goal9-baseline-tool-definitions ()
+  (coerce
+   (cadr-ai::json-get
+    (cadr-ai::parse-json
+     (uiop:read-file-string
+      (merge-pathnames
+       "test/fixtures/render-diff/baseline-tool-definitions.json"
+       (asdf:system-source-directory "cadr-cli"))
+      :external-format :utf-8))
+    "tools")
+   'list))
+
+(defun goal9-baseline-tool-entry (name)
+  (find name (goal9-baseline-tool-definitions)
+        :key (lambda (entry) (cadr-ai::json-get entry "name"))
+        :test #'string=))
+
+(defun goal9-baseline-tool-descriptions ()
+  (mapcar
+   (lambda (entry)
+     (cons (cadr-ai::json-get entry "name")
+           (cadr-ai::json-get entry "description")))
+   (goal9-baseline-tool-definitions)))
+
+(defun goal9-baseline-tool-snippets ()
+  (mapcar
+   (lambda (entry)
+     (cons (cadr-ai::json-get entry "name")
+           (cadr-ai::json-get entry "promptSnippet")))
+   (goal9-baseline-tool-definitions)))
 
 (defparameter +goal9-baseline-tool-guidelines+
   '("Use read to examine files instead of cat or sed."
@@ -38,6 +58,55 @@
       expected
       (string-trim '(#\Space #\Tab) rendered)))))
 
+(defun goal9-json-deep-equal (left right)
+  (cond
+    ((and (hash-table-p left) (hash-table-p right))
+     (and (= (hash-table-count left) (hash-table-count right))
+          (loop for key being the hash-keys of left
+                  using (hash-value value)
+                always (and (nth-value 1 (gethash key right))
+                            (goal9-json-deep-equal
+                             value (gethash key right))))))
+    ((and (vectorp left) (vectorp right))
+     (and (= (length left) (length right))
+          (loop for index below (length left)
+                always (goal9-json-deep-equal
+                        (aref left index) (aref right index)))))
+    (t (equal left right))))
+
+(defun goal9-strip-cadr-schema-normalization (node)
+  "cadr's wire serializer emits \"additionalProperties\": false on every
+object schema and sorts keys; both are the established wire
+normalization shared by all seven tools.  Strip exactly that key —
+asserting it is false — so the remaining structure must equal the
+baseline byte content."
+  (if (hash-table-p node)
+      (let ((result (cadr-ai::json-object)))
+        (maphash
+         (lambda (key value)
+           (if (string= key "additionalProperties")
+               (assert (member value '(nil :false)) (value)
+                       "additionalProperties must be false, got ~S" value)
+               (setf (gethash key result)
+                     (goal9-strip-cadr-schema-normalization value))))
+         node)
+        result)
+      (if (vectorp node)
+          (map 'vector #'goal9-strip-cadr-schema-normalization node)
+          node)))
+
+(defun goal9-assert-tool-schema-matches (tool baseline-entry)
+  (let* ((actual
+           (goal9-strip-cadr-schema-normalization
+            (cadr-ai::parse-json
+             (cadr-ai::stringify-json
+              (cadr-ai:tool-parameters tool)))))
+         (expected
+           (cadr-ai::json-get baseline-entry "parameters")))
+    (is (goal9-json-deep-equal expected actual)
+        "tool ~A parameter schema drifted from the baseline: ~S vs ~S"
+        (cadr-ai:tool-name tool) actual expected)))
+
 (test goal9-default-tool-and-prompt-contract-matches-audit-baseline
   (with-test-directory (directory)
     (let* ((default-tools
@@ -51,17 +120,21 @@
            '("read" "bash" "edit" "write"
              "grep" "find" "ls")
            (mapcar #'cadr-ai:tool-name all-tools)))
-      (dolist (expected +goal9-baseline-tool-descriptions+)
+      ;; Part K: every one of the seven tools, not just the default
+      ;; four — description, parameter schema, and prompt snippet all
+      ;; come from the gate-verified baseline fixture.
+      (dolist (expected (goal9-baseline-tool-definitions))
         (let ((tool
                 (goal9-tool-named
-                 (car expected) all-tools)))
+                 (cadr-ai::json-get expected "name") all-tools)))
           (is (not (null tool)))
           (is (string=
-               (cdr expected)
-               (cadr-ai:tool-description tool)))))
+               (cadr-ai::json-get expected "description")
+               (cadr-ai:tool-description tool)))
+          (goal9-assert-tool-schema-matches tool expected)))
       (is (equal
-           +goal9-baseline-tool-snippets+
-           (cadr-cli::tool-prompt-snippets default-tools)))
+           (goal9-baseline-tool-snippets)
+           (cadr-cli::tool-prompt-snippets all-tools)))
       (is (equal
            +goal9-baseline-tool-guidelines+
            (cadr-cli::tool-prompt-guidelines default-tools)))

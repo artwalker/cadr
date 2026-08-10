@@ -44,6 +44,45 @@ tag/Release step.
 
 ### Added
 
+- Goal 18 I7 tail and Part J/K: the startup content migrations are ported
+  (oauth.json/settings apiKeys into auth.json with 0600 preserved,
+  agent-root sessions into sessions/, managed binaries tools/ -> bin/,
+  commands/ -> prompts/ for the global and project roots, and the
+  deprecated hooks//tools/ warnings with the interactive any-key pause,
+  in the baseline startup order); `--list-models` prints the baseline
+  auth-filtered six-column table with fuzzy filtering and the corrupt
+  models.json warning envelope; a broken extension is now a fatal
+  startup error with the baseline reportDiagnostics lines and the
+  `cadr -ne` hint; extension shortcut conflicts follow the baseline
+  getShortcuts semantics (reserved keys skip, later registration wins,
+  warnings land in the [Extension issues] block); unreadable
+  --system-prompt/@file paths produce the baseline Node-style error
+  wording instead of raw conditions; the legacy keybinding-name
+  migration covers the full 62-name baseline table; the system prompt's
+  documentation paths now resolve to the real repository docs instead of
+  a hardcoded /usr/local prefix; the twelve user docs the product text
+  references (the eleven system-prompt documents plus providers.md) now
+  exist and every docs//examples/ reference in product text is
+  gate-enforced to resolve (Part J); and the seven coding tools'
+  model-visible contract (description, full parameter schema with
+  per-property descriptions, prompt snippets) is locked against a
+  fixture the gate regenerates from the fixed baseline at capture time
+  (Part K — this also renamed grep's `ignore_case` to the baseline
+  `ignoreCase` and dropped a non-baseline `minItems` from edit).
+
+- Goal 18 I2 mechanically derived coverage: the login dialog's eight
+  `show*` forms and the 33-leaf ExtensionEvent union are extracted from
+  the baseline commit's git objects at analysis time and drift-checked
+  against the interface inventory, with each dialog form mapped to a
+  scenario checkpoint or the construction suite; the unmodeled-sink
+  reverse scan (I7.3) fails the gate on any output call with fixed text
+  that no inventory site covers, with the 14 current candidates under
+  per-site reviewed verdicts; and REQUIRED_COVERAGE now locks the full
+  declared tag set so no scenario or tag can silently disappear.  The
+  diff report is `docs/goal18-i2-derived-coverage.md`; ten defensive or
+  privilege-dependent branches await exemption adjudication in
+  `docs/proposals/goal18-i7-tail-exemptions.md`.
+
 - Goal 18 Part I gate hardening and capability completion: the reused
   pi baseline checkout is now verified blob-for-blob against the
   repository's immutable object store before any differential run (I5);

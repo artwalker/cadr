@@ -61,7 +61,7 @@ mv -- "$NEW_DIRECTORY/agent/sessions" "$OLD_DIRECTORY/sessions"
 rm -rf -- "$NEW_DIRECTORY"
 mkdir -p "$OLD_DIRECTORY/extensions/example"
 printf '%s\n' \
-  '(define-command "legacy" (lambda (context) (declare (ignore context)) "ok"))' \
+  '(cadr-agent:define-command "legacy" :handler (lambda (arguments context) (declare (ignore arguments context)) "ok"))' \
   >"$OLD_DIRECTORY/extensions/example/extension.lisp"
 printf '%s\n' '{}' >"$OLD_DIRECTORY/auth.json"
 chmod 644 "$OLD_DIRECTORY/auth.json"

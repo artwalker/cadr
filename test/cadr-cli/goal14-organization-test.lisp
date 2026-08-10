@@ -381,7 +381,10 @@
     ;; Goal 18 I7 added three definitions inside the B5 owners:
     ;; cli-session-abort and fork-cli-session-into (bootstrap/sessions.lisp)
     ;; and cli-help-extension-flags (bootstrap/commands.lisp).
-    (is (= 113 definition-count)
+    ;; +3 goal 18 I7 tail: validate-cli-session-flags (sessions.lisp) and
+    ;; format-list-models-token-count/no-models-available-message
+    ;; (main.lisp, baseline listModels table port).
+    (is (= 116 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -527,7 +530,11 @@
     ;; startup-section helpers in entries.lisp (baseline resource block
     ;; rendering: scope groups, conflict blocks, extension labels); +2
     ;; goal 18 Part I8 render-aware-component channel in extension-ui.lisp.
-    (is (= 264 definition-count)
+    ;; +4 goal 18 I7 tail: baseline getShortcuts port in
+    ;; interactive/autocomplete.lisp (extension-shortcut-path,
+    ;; builtin-shortcut-key-map, resolve-extension-shortcuts,
+    ;; refresh-extension-shortcut-diagnostics).
+    (is (= 268 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -1146,7 +1153,10 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 250 definition-count)
+    ;; +3 goal 18 I7 tail: baseline auth-guidance helpers in
+    ;; support/release.lisp (cadr-docs-directory, provider-login-help-text,
+    ;; no-api-key-found-message).
+    (is (= 253 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

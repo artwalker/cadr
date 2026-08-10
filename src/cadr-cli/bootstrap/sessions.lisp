@@ -73,7 +73,7 @@
        target message))
     target))
 
-(defun resolve-cli-session
+(defun validate-cli-session-flags
     (&key
        continue-p
        resume-id
@@ -81,13 +81,12 @@
        no-session-p
        session-path
        session-id
-       fork-source
-       cwd
-       (directory (cadr-agent:default-session-directory))
-       (output *error-output*))
+       fork-source)
   ;; Baseline main.ts:253-284 — validateForkFlags/validateSessionIdFlags
   ;; are the only selector conflict checks; each lists the flags actually
-  ;; present, in baseline order.
+  ;; present, in baseline order.  main calls this before running the
+  ;; content migrations (baseline main.ts:605-607 order);
+  ;; resolve-cli-session re-runs it on the session path itself.
   (when fork-source
     (let ((conflicts
             (remove
@@ -120,7 +119,28 @@
          (format
           nil
           "Error: --session-id cannot be combined with ~{~A~^, ~}"
-          conflicts)))))
+          conflicts))))))
+
+(defun resolve-cli-session
+    (&key
+       continue-p
+       resume-id
+       resume-selector-p
+       no-session-p
+       session-path
+       session-id
+       fork-source
+       cwd
+       (directory (cadr-agent:default-session-directory))
+       (output *error-output*))
+  (validate-cli-session-flags
+   :continue-p continue-p
+   :resume-id resume-id
+   :resume-selector-p resume-selector-p
+   :no-session-p no-session-p
+   :session-path session-path
+   :session-id session-id
+   :fork-source fork-source)
   (when session-id
     ;; Baseline session-manager.ts:212-218 — alphanumeric at both ends,
     ;; '-', '_', and '.' inside, no length cap.

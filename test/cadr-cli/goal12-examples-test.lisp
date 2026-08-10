@@ -112,6 +112,42 @@
     (is (search "declared-but-disconnected" audit))
     (is (search ":session-before-compact" audit))))
 
+(test goal18-extension-event-set-matches-the-derived-baseline
+  ;; Goal 18 I2: the baseline ExtensionEvent union is expanded
+  ;; mechanically from types.ts into baseline-interface-inventory.json
+  ;; (git-verified at gate time); cadr's set must equal it modulo the
+  ;; adjudicated tool_call/tool_result three-phase split.
+  (let* ((inventory
+          (cadr-ai::parse-json
+           (goal12-read-project-file
+            "test/fixtures/render-diff/baseline-interface-inventory.json")))
+         (baseline
+          (coerce
+           (cadr-ai::json-get inventory "extensionEvents")
+           'list))
+         (expected
+          (sort
+           (append
+            (remove-if
+             (lambda (name)
+               (member name '("tool-call" "tool-result") :test #'string=))
+             (mapcar
+              (lambda (name)
+                (substitute #\- #\_ name))
+              baseline))
+            '("tool-call-before" "tool-call-after" "tool-call-error"))
+           #'string<))
+         (actual
+          (sort
+           (mapcar
+            (lambda (event)
+              (string-downcase (symbol-name event)))
+            cadr-agent::+extension-hook-events+)
+           #'string<)))
+    (is (= 33 (length baseline)))
+    (is (equal expected actual)
+        "cadr extension events drifted from the derived baseline set")))
+
 (test goal12-source-parity-verdicts-follow-the-current-example-manifest
   (let ((ledger (goal12-read-project-file "docs/source-parity.md"))
         (readme (goal12-read-project-file "README.md"))

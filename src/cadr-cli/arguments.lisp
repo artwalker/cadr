@@ -512,6 +512,12 @@
       (format nil "~C[2m~A~C[22m" #\Escape text #\Escape)
       text))
 
+(defun cli-success-text (stream text)
+  ;; Baseline chalk.green(text).
+  (if (cli-stream-color-p stream)
+      (format nil "~C[32m~A~C[39m" #\Escape text #\Escape)
+      text))
+
 (defun cli-pad-right (text width)
   (let ((length (length text)))
     (if (>= length width)

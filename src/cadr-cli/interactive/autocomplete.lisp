@@ -192,18 +192,134 @@
    :fd-path
    (find-tui-fd-program)))
 
-(defparameter +reserved-extension-shortcut-keys+
-  '("escape" "ctrl+c" "ctrl+d" "ctrl+z"))
+(defparameter +reserved-extension-shortcut-actions+
+  ;; Baseline core/extensions/runner.ts:71-89
+  ;; RESERVED_KEYBINDINGS_FOR_EXTENSION_CONFLICTS.
+  '("app.interrupt" "app.clear" "app.exit" "app.suspend"
+    "app.thinking.cycle" "app.model.cycleForward"
+    "app.model.cycleBackward" "app.model.select" "app.tools.expand"
+    "app.thinking.toggle" "app.editor.external" "app.message.copy"
+    "app.message.followUp" "tui.input.submit" "tui.select.confirm"
+    "tui.select.cancel" "tui.input.copy" "tui.editor.deleteToLineEnd"))
+
+(defun extension-shortcut-path (definition)
+  (let ((bundle
+          (cadr-agent::extension-shortcut-definition-bundle
+           definition)))
+    (if bundle
+        (cadr-agent::extension-bundle-path bundle)
+        "<inline>")))
+
+(defun builtin-shortcut-key-map (keybindings)
+  "Baseline buildBuiltinKeybindings: map each lowercase key to
+(action . restrict-override-p); a reserved action wins key collisions
+regardless of declaration order."
+  (let ((map (make-hash-table :test #'equal)))
+    (dolist (entry (cadr-tui::keybindings-manager-resolved keybindings))
+      (let ((action (car entry))
+            (restrict-p
+              (member (car entry)
+                      +reserved-extension-shortcut-actions+
+                      :test #'string=)))
+        (dolist (key (cdr entry))
+          (let* ((normalized (string-downcase key))
+                 (existing (gethash normalized map)))
+            (unless (and existing (cdr existing) (not restrict-p))
+              (setf (gethash normalized map)
+                    (cons action restrict-p)))))))
+    map))
+
+(defun resolve-extension-shortcuts (host keybindings)
+  "Baseline ExtensionRunner.getShortcuts (runner.ts:493-540): fold
+extension shortcuts over the resolved keybindings.  Reserved built-in
+keys skip the extension shortcut; other built-in collisions and
+extension-extension collisions resolve to the later registration, each
+with a diagnostic.  Returns (values shortcuts diagnostics)."
+  (let ((builtins (builtin-shortcut-key-map keybindings))
+        (resolved nil)
+        (diagnostics nil))
+    (dolist (definition (cadr-agent::extension-host-shortcuts host))
+      (let* ((key
+               (cadr-agent::extension-shortcut-definition-key
+                definition))
+             (normalized (string-downcase key))
+             (path (extension-shortcut-path definition))
+             (builtin (gethash normalized builtins)))
+        (cond
+          ((and builtin (cdr builtin))
+           (push
+            (list :type :warning
+                  :path path
+                  :message
+                  (format
+                   nil
+                   "Extension shortcut '~A' from ~A conflicts with built-in shortcut. Skipping."
+                   key path))
+            diagnostics))
+          (t
+           (when builtin
+             (push
+              (list :type :warning
+                    :path path
+                    :message
+                    (format
+                     nil
+                     "Extension shortcut conflict: '~A' is built-in shortcut for ~A and ~A. Using ~A."
+                     key (car builtin) path path))
+              diagnostics))
+           (let ((existing
+                   (find normalized resolved
+                         :key
+                         (lambda (entry)
+                           (string-downcase
+                            (cadr-agent::extension-shortcut-definition-key
+                             entry))))))
+             (when existing
+               (push
+                (list :type :warning
+                      :path path
+                      :message
+                      (format
+                       nil
+                       "Extension shortcut conflict: '~A' registered by both ~A and ~A. Using ~A."
+                       key
+                       (extension-shortcut-path existing)
+                       path path))
+                diagnostics)
+               (setf resolved (delete existing resolved)))
+             (setf resolved
+                   (nconc resolved (list definition))))))))
+    (values resolved (nreverse diagnostics))))
 
 (defun effective-extension-shortcuts (host)
-  (remove-if
-   (lambda (definition)
-     (member
-      (cadr-agent::extension-shortcut-definition-key
-       definition)
-      +reserved-extension-shortcut-keys+
-      :test #'string-equal))
-   (cadr-agent::extension-host-shortcuts host)))
+  (resolve-extension-shortcuts host (cadr-tui:get-keybindings)))
+
+(defun refresh-extension-shortcut-diagnostics (manager)
+  "Recompute the baseline shortcut-conflict diagnostics for the
+manager's current extension host and fold them into its startup
+issues, replacing any previous shortcut entries.  Interactive mode
+only — baseline print/rpc never calls getShortcuts (runner.ts:493 is
+reached from interactive-mode.ts:1825/5885), so non-interactive
+startup must not report these."
+  (multiple-value-bind (shortcuts diagnostics)
+      (resolve-extension-shortcuts
+       (cli-extension-manager-host manager)
+       (cadr-tui:get-keybindings))
+    (declare (ignore shortcuts))
+    (setf
+     (cli-extension-manager-startup-issues manager)
+     (nconc
+      (remove :shortcut
+              (cli-extension-manager-startup-issues manager)
+              :key (lambda (issue) (getf issue :source)))
+      (mapcar
+       (lambda (issue)
+         (list :type :warning
+               :source :shortcut
+               :path (getf issue :path)
+               :message (getf issue :message)))
+       diagnostics)))
+    diagnostics))
 
 (defun find-extension-shortcut-for-input
     (host input)

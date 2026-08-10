@@ -143,9 +143,13 @@
           allow-missing-auth-p)
   (let* ((name (configured-provider-name provider)))
     (unless name
-      (error 'cadr-ai:configuration-error
-             :message
-             "No provider configured; use --provider or set a provider API key"))
+      (if allow-missing-auth-p
+          ;; Defer to the send path, whose missing-key failure carries
+          ;; the baseline auth-guidance text.
+          (setf name "openai")
+          (error 'cadr-ai:configuration-error
+                 :message
+                 (cadr-ai::no-api-key-found-message "unknown"))))
     (setf name (string-downcase name))
     (let* ((provider-id (provider-symbol name))
            (definition

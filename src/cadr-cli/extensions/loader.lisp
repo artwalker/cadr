@@ -14,6 +14,60 @@
   (finish-output
    (cli-extension-manager-output manager)))
 
+(defun call-with-quiet-extension-manager (manager function)
+  "Run FUNCTION with the manager's notify output silenced; startup
+reloads use this so problems are reported once, in the baseline
+reportDiagnostics form, instead of per-line notify lines."
+  (let ((real-output (cli-extension-manager-output manager)))
+    (setf (cli-extension-manager-output manager)
+          (make-broadcast-stream))
+    (unwind-protect
+         (funcall function)
+      (setf (cli-extension-manager-output manager) real-output))))
+
+(defun report-startup-extension-issues
+    (manager &optional (output *error-output*))
+  "Baseline reportDiagnostics (main.ts:96-101): one colored line per
+startup issue — red \"Error: \", yellow \"Warning: \", dim otherwise.
+Returns (values any-error-p any-extension-load-failure-p)."
+  (let ((any-error-p nil)
+        (load-failure-p nil))
+    (dolist (issue (cli-extension-manager-startup-issues manager))
+      (let ((type (getf issue :type))
+            (message
+              (cadr-ai:redact-secrets
+               (getf issue :message)
+               (funcall
+                (cli-extension-manager-secret-function manager)))))
+        ;; Baseline main.ts:734-738 composes the load-failure
+        ;; diagnostic as `Failed to load extension "PATH": MSG`.
+        (when (and (getf issue :path)
+                   (search "Failed to load extension" message))
+          (setf message
+                (format nil "Failed to load extension \"~A\": ~A"
+                        (getf issue :path) message)))
+        (format
+         output
+         "~A~%"
+         (funcall
+          (case type
+            (:error #'cli-error-text)
+            (:warning #'cli-warning-text)
+            (otherwise #'cli-dim-text))
+          output
+          (format nil "~A~A"
+                  (case type
+                    (:error "Error: ")
+                    (:warning "Warning: ")
+                    (otherwise ""))
+                  message)))
+        (when (eq type :error)
+          (setf any-error-p t)
+          (when (search "Failed to load extension" message)
+            (setf load-failure-p t)))))
+    (finish-output output)
+    (values any-error-p load-failure-p)))
+
 (defun extension-http-timeout-condition-p (condition)
   (or (typep condition 'cadr-ai:timeout-error)
       (typep condition 'cadr-ai::native-http-timeout)
@@ -458,9 +512,11 @@
          :cause condition
          :message
          (format nil
-                 "Failed to load extension ~A from ~A: ~A"
-                 (extension-source-record-id source)
-                 (extension-source-record-path source)
+                 ;; Baseline core/extensions/loader.ts:490 — the load
+                 ;; diagnostic message carries only the engine detail;
+                 ;; the path travels beside it and the outer reporter
+                 ;; composes `Failed to load extension "PATH": MSG`.
+                 "Failed to load extension: ~A"
                  condition))))))
 
 (defun valid-inline-extension-factory-p (input)

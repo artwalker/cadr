@@ -151,11 +151,26 @@
          (cadr-cli::*environment-function*
            (lambda (name)
              (cdr (assoc name values :test #'string=)))))
+    ;; Strict resolution still fails when nothing is configured.
     (signals cadr-ai:configuration-error
       (cadr-cli:resolve-provider-config
        :config-path #P"/definitely/missing/config.json"
-       :auth-path #P"/definitely/missing/auth.json"
-       :allow-missing-auth-p t))))
+       :auth-path #P"/definitely/missing/auth.json"))
+    ;; The deferred (allow-missing-auth) path falls back to the openai
+    ;; default — the legacy PI_CL_* values must contribute nothing.
+    (let ((config
+            (cadr-cli:resolve-provider-config
+             :config-path #P"/definitely/missing/config.json"
+             :auth-path #P"/definitely/missing/auth.json"
+             :allow-missing-auth-p t)))
+      (is (string= "openai"
+                   (cadr-cli:provider-config-name config)))
+      (is (not (string= "legacy-model"
+                        (cadr-ai:model-id
+                         (cadr-cli:provider-config-model config)))))
+      (is (not (string= "https://legacy.example"
+                        (cadr-ai:model-base-url
+                         (cadr-cli:provider-config-model config))))))))
 
 (test cadr-environment-values-resolve-provider-model-and-base-url
   (let* ((values
