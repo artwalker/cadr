@@ -633,6 +633,23 @@ Be concise. Focus on what's needed to understand the kept suffix.")
          (context-window
            (and model
                 (cadr-ai:model-context-window model))))
+    ;; Baseline agent-session.ts:1790-1800,1905-1916 — a manual compact
+    ;; with the unknown sentinel model still emits compaction_start and
+    ;; then fails inside the summarization auth check; the failure
+    ;; wrapper carries "Compaction failed: <NoApiKeyFound text>".
+    (when (and (null model)
+               (or force-p (eq reason :manual)))
+      (emit-agent-event agent :compaction-start :reason reason)
+      (emit-agent-event
+       agent :compaction-end
+       :reason reason
+       :result nil
+       :aborted nil
+       :will-retry nil
+       :error-message
+       (format nil "Compaction failed: ~A"
+               (cadr-ai::no-api-key-found-message "unknown")))
+      (return-from %compact-agent nil))
     (unless (and session
                  context-window
                  (plusp context-window))

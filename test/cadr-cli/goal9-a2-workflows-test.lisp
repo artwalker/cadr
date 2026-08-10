@@ -267,9 +267,12 @@
                  '("--resume" "source"))))
           (is (cadr-cli::cli-arguments-continue-p
                continue-arguments))
-          (is (string= "source"
-                       (cadr-cli::cli-arguments-resume
-                        resume-arguments)))
+          ;; Baseline cli/args.ts:86-87 — --resume is a bare flag; a
+          ;; following token is a message, never a session id.
+          (is (cadr-cli::cli-arguments-resume-p resume-arguments))
+          (is (equal
+               '("source")
+               (cadr-cli::cli-arguments-messages resume-arguments)))
           (is (string=
                "source"
                (cadr-agent:session-id
@@ -282,7 +285,14 @@
                "source"
                (cadr-agent:session-id
                 (cadr-cli::resolve-cli-session
-                 :resume-id "source"
+                 :resume-selector-p t
+                 :picker-function
+                 (lambda (picker-cwd picker-directory)
+                   (declare (ignore picker-cwd picker-directory))
+                   (values
+                    (namestring
+                     (cadr-agent:session-path source))
+                    nil))
                  :cwd cwd
                  :directory sessions
                  :output output)))))

@@ -44,3 +44,24 @@
   单一来源读取该 URL，不改 `origin`。`src/cadr-evals/suites.lisp` 的 legacy TS
   扩展检测与 generated catalog 的 `pi-ai` 来源注释经全树审计确认是基线证据，
   继续进入精确 allowlist，不随产品身份替换。
+
+- `OQ-G18-NPM-PACKAGE-SOURCE`：2026-08-10 已裁决为有意差异。基线
+  `install`/`update` 经 npm 安装 `npm:` 包源；Common Lisp 构建无 npm
+  出口，以固定文案拒绝（"npm packages are unavailable in the Common Lisp
+  build; install a Lisp local or Git package"）。等强度断言：
+  `goal18-npm-package-source-is-a-fixed-intentional-difference`
+  （part-b-package-test.lisp）锁定该固定形状。
+
+- `OQ-G18-UPDATE-MODELS`：2026-08-10 已裁决为有意差异。基线
+  `update --models` 联网刷新模型目录；cadr 模型目录随二进制内置，该命令
+  输出固定离线提示（"Model catalogs are bundled with this cadr build."）。
+  等强度断言：`goal18-update-models-is-a-fixed-intentional-difference`
+  （part-b-package-test.lisp，以 `:offline-p t` 证明无网络参与）。
+
+- `OQ-G18-INSTALL-TELEMETRY`：2026-08-10 已裁决为有意差异。基线在
+  交互启动时向 pi.dev 的 report-install 端点发安装上报
+  （interactive-mode.ts:1045-1062，受 enableInstallTelemetry 与 PI_OFFLINE
+  门控）；cadr 保留 settings 中的 `enableInstallTelemetry` 展示面，但不存在
+  任何上报出口。等强度断言：`goal18-install-telemetry-has-no-egress`
+  （goal14-organization-test.lisp）对全部 src/**/*.lisp 做端点字符串
+  缺席扫描。

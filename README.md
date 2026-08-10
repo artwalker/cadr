@@ -208,7 +208,7 @@ and fullscreen action id; defaults remain `alt+enter` for follow-up and
 ./cadr
 ./cadr --provider deepseek
 ./cadr --continue
-./cadr --resume <session-id>
+./cadr --resume
 ./cadr --session <path-or-id>
 ./cadr --fork <session-id-prefix>
 ./cadr --print "Explain this repository"

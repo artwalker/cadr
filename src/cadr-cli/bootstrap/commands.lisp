@@ -334,13 +334,11 @@
                  startup-cwd))
                (cadr-agent:default-session-directory)))
          (session
-           (resolve-cli-session
-            :continue-p
-            (cli-arguments-continue-p command)
-            :resume-id
-            (cli-arguments-resume command)
-            :resume-selector-p
-            (cli-arguments-resume-p command)
+          (resolve-cli-session
+           :continue-p
+           (cli-arguments-continue-p command)
+           :resume-selector-p
+           (cli-arguments-resume-p command)
             :no-session-p
             (cli-arguments-no-session-p command)
             :session-path
@@ -572,7 +570,18 @@
                 (cli-arguments-base-url
                  command))
                :allow-missing-auth-p t))))
-         (_scope-diagnostic-report
+         ;; Baseline model-resolver.ts:650-651 — with no authenticated
+         ;; model and no explicit --model/--provider the session keeps a
+         ;; NIL model (the footer sentinel "no-model"); sending then
+         ;; fails with formatNoModelSelectedMessage.  An explicit
+         ;; --provider still resolves that provider's default model.
+         (bare-sentinel-p
+           (and
+            (null startup-model)
+            (null (cli-arguments-model command))
+            (null
+             (cli-arguments-provider command))))
+        (_scope-diagnostic-report
            (dolist (diagnostic scope-diagnostics)
              (format
               frontend-output
@@ -707,10 +716,13 @@
             (resolve-cli-system-prompt
              command resources
              selected-baseline-tools cwd)))
-         (agent
-           (cadr-agent:make-agent
-            :provider (provider-config-provider config)
-            :model (provider-config-model config)
+        (agent
+          (cadr-agent:make-agent
+           :provider (provider-config-provider config)
+           :model
+           (and
+            (not bare-sentinel-p)
+            (provider-config-model config))
             :system-prompt
             (first system-prompt-values)
             :system-prompt-options
@@ -769,8 +781,8 @@
     (cadr-tui:set-keybindings
      (cadr-tui:make-keybindings-manager
       :user-bindings
-      (settings-keybindings
-       settings-manager)))
+      (resolve-user-keybindings
+       settings-manager agent-directory)))
     (when tui-p
       ;; Baseline interactive-mode.ts:1825 — shortcut conflicts join the
       ;; [Extension issues] block; print/rpc never computes them.
@@ -806,22 +818,26 @@
         (cli-arguments-name command))))
     (labels
         ((anthropic-warning ()
-           (maybe-anthropic-subscription-warning
-            anthropic-warning-state
-            (cadr-ai:model-provider
-             (provider-config-model config))
-            (settings-effective-object
-             settings-manager)
-            (lambda ()
-              (let ((provider
-                      (provider-config-provider
-                       config)))
-                (if
-                    (cadr-ai::provider-oauth-access-token
-                     provider)
-                    :oauth
-                    (cadr-ai::provider-api-key
-                     provider))))))
+          ;; Baseline maybeWarnAboutAnthropicSubscriptionAuth only runs
+          ;; with a selected model; the sentinel has none.
+          (let ((model (provider-config-model config)))
+            (and
+             model
+             (maybe-anthropic-subscription-warning
+              anthropic-warning-state
+              (cadr-ai:model-provider model)
+              (settings-effective-object
+               settings-manager)
+              (lambda ()
+                (let ((provider
+                        (provider-config-provider
+                         config)))
+                  (if
+                      (cadr-ai::provider-oauth-access-token
+                       provider)
+                      :oauth
+                      (cadr-ai::provider-api-key
+                       provider))))))))
          (config-subscription-p ()
            (let ((provider
                    (provider-config-provider config)))
@@ -855,11 +871,13 @@
                 (cadr-ai:usage-total
                  (cadr-ai:assistant-message-usage
                   message)))))))
-         (current-context-percent ()
-           (let* ((model
-                    (cadr-agent:agent-model agent))
+        (current-context-percent ()
+          (let* ((model
+                   (cadr-agent:agent-model agent))
                   (window
-                    (cadr-ai:model-context-window model))
+                    (and
+                     model
+                     (cadr-ai:model-context-window model)))
                   (current
                     (cadr-agent:agent-session agent))
                   (entries
@@ -877,9 +895,14 @@
                      compaction
                      (position compaction entries
                                :test #'eq))))
-             (when
-                 (and
-                  (plusp window)
+             ;; Baseline footer.ts:109-112 — with no model the context
+             ;; window falls back to 0 and a fresh session still reads
+             ;; 0.0%; only a post-compaction unknown maps to "?".
+             (when (null model)
+               (return-from current-context-percent 0d0))
+            (when
+                (and
+                 (plusp window)
                   (or
                    (null compaction)
                    (find-if
@@ -955,16 +978,19 @@
                      (cadr-agent:session-messages
                       current))))
              (list
-              :model (cadr-ai:model-id model)
+             :model (and model (cadr-ai:model-id model))
               :provider
-              (provider-config-name config)
+             (and model (provider-config-name config))
               :thinking
               (and
+               model
                (cadr-ai:model-reasoning-p model)
                (cadr-agent::agent-thinking-level
                 agent))
               :context-window
-              (cadr-ai:model-context-window model)
+              (if model
+                  (cadr-ai:model-context-window model)
+                  0)
               :context-percent
               (current-context-percent)
               :session-name
@@ -974,7 +1000,11 @@
               :multiple-providers-p
               (> (length providers) 1)
               :subscription-p
-              (not (null (config-subscription-p)))
+              ;; Baseline footer.ts:140-142 — the subscription marker is
+              ;; gated on a selected model.
+              (and
+               model
+               (not (null (config-subscription-p))))
               :auto-compact-p
               (cadr-agent::agent-auto-compact-p agent)
               :input (or (getf stats :input) 0)
@@ -1263,8 +1293,8 @@
                      provider model-id))
                  (cadr-ai:configuration-error () 0d0)))
              :keybindings
-             (settings-keybindings
-              settings-manager)
+             (resolve-user-keybindings
+              settings-manager agent-directory)
              :export-options-function
              (lambda ()
                (let ((theme
@@ -1316,8 +1346,8 @@
                       (cadr-tui:set-keybindings
                        (cadr-tui:make-keybindings-manager
                         :user-bindings
-                        (settings-keybindings
-                         settings-manager))))
+                        (resolve-user-keybindings
+                         settings-manager agent-directory))))
                     :completion-function
                     (lambda (message)
                       (if status-consumer
@@ -1493,8 +1523,8 @@
                      "Model catalogs refreshed.")
                     :keybindings
                     (make-models-selector-keybindings
-                     (settings-keybindings
-                      settings-manager)))))
+                     (resolve-user-keybindings
+                      settings-manager agent-directory)))))
              (when query
                (model-selector-set-query
                 selector query))
@@ -1536,8 +1566,8 @@
               #'persist-model-scope
               :keybindings
               (make-models-selector-keybindings
-               (settings-keybindings
-                settings-manager)))))
+               (resolve-user-keybindings
+                settings-manager agent-directory)))))
          (trust-selector ()
            (make-trust-selector-state
             :cwd cwd
@@ -1549,16 +1579,16 @@
             :keybindings
             (cadr-tui:make-keybindings-manager
              :user-bindings
-             (settings-keybindings
-              settings-manager))))
+             (resolve-user-keybindings
+              settings-manager agent-directory))))
          (settings-selector ()
            (make-cli-settings-selector-state
             settings-manager agent resources
             :keybindings
             (cadr-tui:make-keybindings-manager
              :user-bindings
-             (settings-keybindings
-              settings-manager))))
+             (resolve-user-keybindings
+              settings-manager agent-directory))))
          (select-trust (selection)
            (project-trust-set-many
             trust-store
@@ -1755,11 +1785,15 @@
                     :source (or (getf metadata :source) :builtin)))))
          (extension-context-usage ()
            (let* ((model (cadr-agent:agent-model agent))
-                  (window (cadr-ai:model-context-window model))
+                  (window
+                    (and
+                     model
+                     (cadr-ai:model-context-window model)))
                   (tokens
                     (cadr-agent::context-estimated-tokens
                      (cadr-agent:agent-messages agent))))
              (and
+              window
               (plusp window)
               (list :tokens tokens
                     :context-window window
@@ -2238,13 +2272,13 @@
            :session-selector-keybindings-function
            (lambda ()
              (make-session-selector-keybindings
-              (settings-keybindings
-               settings-manager)))
+              (resolve-user-keybindings
+               settings-manager agent-directory)))
            :tree-selector-keybindings-function
            (lambda ()
              (make-tree-selector-keybindings
-              (settings-keybindings
-               settings-manager)))
+              (resolve-user-keybindings
+               settings-manager agent-directory)))
            :abort-function
            (lambda ()
              (setf abort-requested-p t)
@@ -2253,10 +2287,14 @@
            (lambda ()
              (setf abort-requested-p nil))
            :model
-           (cadr-ai:model-id
-            (cadr-agent:agent-model agent))
+           (let ((model (cadr-agent:agent-model agent)))
+             (and model (cadr-ai:model-id model)))
            :provider
-           (provider-config-name config)
+           ;; Baseline footer.ts:190 — the provider prefix only renders
+           ;; when a model is selected.
+           (and
+            (cadr-agent:agent-model agent)
+            (provider-config-name config))
            :thinking
            (model-footer-thinking-level
             (cadr-agent:agent-model agent)
@@ -2285,8 +2323,10 @@
              (cadr-agent:agent-session
               agent)))
            :context-window
-           (cadr-ai:model-context-window
-            (cadr-agent:agent-model agent))
+           (let ((model (cadr-agent:agent-model agent)))
+             (if model
+                 (cadr-ai:model-context-window model)
+                 0))
            :session
            (and
             (cadr-agent:agent-session agent)
@@ -2320,10 +2360,18 @@
            (settings-clear-on-shrink-p
             settings-manager)
            :initial-notices
-           (let ((warning
+           ;; Baseline interactive-mode.ts:910-911 — the SDK's
+           ;; modelFallbackMessage is a startup warning; with no
+           ;; authenticated model it is formatNoModelsAvailableMessage
+           ;; (sdk.ts:217-219).
+           (let ((fallback
+                   (and bare-sentinel-p
+                        (cadr-ai::no-models-available-message)))
+                 (warning
                    (anthropic-warning)))
-             (and warning
-                  (list warning)))
+             (append
+              (and fallback (list fallback))
+              (and warning (list warning))))
            :initial-statuses
            (let ((status
                    (session-compaction-status
@@ -2387,8 +2435,11 @@
                    ;; default model; a missing key then fails at send
                    ;; time with the provider-specific guidance instead.
                    (null (cli-arguments-provider command)))
-                ;; Baseline print-mode.ts:135-137 prints run failures
-                ;; plainly on stderr, never through the red CLI handler.
+                ;; Baseline print-mode.ts:150-153 prints the thrown
+                ;; failure plainly on stderr, never through the red CLI
+                ;; handler; the sentinel provider is "unknown"
+                ;; (agent.ts DEFAULT_MODEL), which auth-guidance maps to
+                ;; "the selected model".
                 (format
                  *error-output*
                  "~A~%"

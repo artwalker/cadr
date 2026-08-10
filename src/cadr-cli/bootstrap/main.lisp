@@ -20,8 +20,7 @@
 
 (defun no-models-available-message ()
   ;; Baseline core/auth-guidance.ts formatNoModelsAvailableMessage.
-  (format nil "No models available. ~A"
-          (cadr-ai::provider-login-help-text)))
+  (cadr-ai::no-models-available-message))
 
 (defun print-cli-models
     (pattern &optional
@@ -245,10 +244,9 @@
             (t
              ;; Baseline main.ts:605-607 — flag conflict validation runs
              ;; before the startup content migrations.
-             (validate-cli-session-flags
-              :continue-p (cli-arguments-continue-p arguments)
-              :resume-id (cli-arguments-resume arguments)
-              :resume-selector-p (cli-arguments-resume-p arguments)
+            (validate-cli-session-flags
+             :continue-p (cli-arguments-continue-p arguments)
+             :resume-selector-p (cli-arguments-resume-p arguments)
               :no-session-p (cli-arguments-no-session-p arguments)
               :session-path (cli-arguments-session arguments)
               :session-id (cli-arguments-session-id arguments)

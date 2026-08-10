@@ -1511,14 +1511,16 @@
                      ;; The render-diff harness needs a causal acknowledgement
                      ;; after all worker cleanup state has been applied.  The
                      ;; optional callback is absent in production; when set,
-                     ;; invalidate incremental renderer history so the final
-                     ;; checkpoint is a canonical redraw rather than a product
-                     ;; of partial-update scheduling.
+                     ;; repaint the visible region canonically (in place,
+                     ;; scrollback intact) so the final checkpoint is a
+                     ;; canonical redraw rather than a product of
+                     ;; partial-update scheduling.
                      (when (and work-rendered-function
                                 (eq work-kind :prompt))
                        (sb-thread:with-mutex (lock)
                          (setf pending-work-render-p t)
-                         (cadr-tui:invalidate-renderer renderer))
+                         (cadr-tui:renderer-request-canonical-repaint
+                          renderer))
                        (request-render t))))
                  :name "cadr-tui-dispatch")))))
          (open-selector (kind items)

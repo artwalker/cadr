@@ -96,13 +96,17 @@
       (mod (+ selected delta) count)
       0))
 
-(defun selector-fit-line (line width &key (pad-p nil))
+(defun selector-fit-line
+    (line width &key (pad-p nil) (ellipsis ""))
+  "Fit one selector line to WIDTH.  The default hard cut matches the
+baseline's explicit empty-ellipsis call sites; entry rows pass
+:ellipsis \"...\" to match truncateToWidth's default."
   (let* ((available (max 0 width))
          (limited
            (cadr-tui:truncate-to-width
-            line available ""))
+            line available ellipsis))
          (padding
-           (if pad-p
+          (if pad-p
                (max
                 0
                 (- available

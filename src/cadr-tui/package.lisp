@@ -322,6 +322,8 @@
    #:renderer-scroll-to-bottom
    #:renderer-handle-input
    #:invalidate-renderer
+   #:renderer-request-canonical-repaint
+   #:*canonical-repaint-hook*
    #:render-frame
    #:virtual-terminal
    #:make-virtual-terminal

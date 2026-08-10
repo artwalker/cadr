@@ -34,10 +34,11 @@
         'cadr-cli::default-changelog-path)
        original))))
 
-(test resume-option-selects-exact-session-and-conflicts-with-continue
+(test resume-option-opens-the-picker-session
   (with-test-directory (root)
     (let ((sessions (merge-pathnames "sessions/" root))
           (cwd (merge-pathnames "project/" root))
+          (wanted-path nil)
           (output (make-string-output-stream)))
       (ensure-directories-exist
        (merge-pathnames "anchor" sessions))
@@ -46,6 +47,9 @@
       (let ((wanted
               (cadr-agent:create-session
                :directory sessions :cwd cwd :id "wanted")))
+        (setf
+         wanted-path
+         (namestring (cadr-agent:session-path wanted)))
         (cadr-agent:session-append-message
          wanted
          (cadr-ai:make-assistant-message
@@ -57,7 +61,16 @@
           :stop-reason :stop)))
       (let ((session
               (cadr-cli::resolve-cli-session
-               :resume-id "wanted"
+               :resume-selector-p t
+               :picker-function
+               (lambda (picker-cwd picker-directory)
+                 (is (string=
+                      (namestring cwd)
+                      (namestring picker-cwd)))
+               (is (string=
+                      (namestring sessions)
+                      (namestring picker-directory)))
+                (values wanted-path nil))
                :cwd cwd
                :directory sessions
                :output output)))
@@ -69,16 +82,54 @@
                    (cadr-agent:session-id
                     (cadr-cli::resolve-cli-session
                      :continue-p t
-                     :resume-id "wanted"
+                     :resume-selector-p t
+                     :picker-function
+                     (lambda (picker-cwd picker-directory)
+                       (declare (ignore picker-cwd picker-directory))
+                       (values wanted-path nil))
                      :cwd cwd
                      :directory sessions
                      :output output))))
-      (signals cadr-agent:session-error
-        (cadr-cli::resolve-cli-session
-         :resume-id "missing"
-         :cwd cwd
-         :directory sessions
-         :output output)))))
+      ;; Baseline main.ts:376-379 — picker cancel prints dim
+      ;; "No session selected" on stdout and exits 0; interrupt exits 0
+      ;; silently (cli/session-picker.ts onExit).
+      (let ((captured (make-string-output-stream)))
+        (let ((*standard-output* captured))
+          (handler-case
+              (progn
+                (cadr-cli::resolve-cli-session
+                 :resume-selector-p t
+                 :picker-function
+                 (lambda (picker-cwd picker-directory)
+                   (declare (ignore picker-cwd picker-directory))
+                   (values nil nil))
+                 :cwd cwd
+                 :directory sessions
+                 :output output)
+                (is nil "picker cancel did not signal cli-session-abort"))
+            (cadr-cli::cli-session-abort () t)))
+        (is (search
+             "No session selected"
+             (cadr-tui:strip-terminal-sequences
+              (get-output-stream-string captured)))))
+      (let ((captured (make-string-output-stream)))
+        (let ((*standard-output* captured))
+          (handler-case
+              (progn
+                (cadr-cli::resolve-cli-session
+                 :resume-selector-p t
+                 :picker-function
+                 (lambda (picker-cwd picker-directory)
+                   (declare (ignore picker-cwd picker-directory))
+                   (values nil t))
+                 :cwd cwd
+                 :directory sessions
+                 :output output)
+                (is nil "picker interrupt did not signal cli-session-abort"))
+            (cadr-cli::cli-session-abort () t)))
+        (is (string=
+             ""
+             (get-output-stream-string captured)))))))
 
 (test nonbaseline-session-aliases-stay-out-of-slash-surface-and-export-works
   (with-test-directory (root)

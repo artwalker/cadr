@@ -308,6 +308,60 @@
           "app.model.cycleBackward"
           bindings :test #'string=)))))))
 
+(test goal18-keybindings-file-precedes-settings-and-migrates-legacy-names
+  ;; Baseline core/keybindings.ts:349-366 — KeybindingsManager.create
+  ;; reads <agentDir>/keybindings.json (migrating legacy names); per the
+  ;; goal 18 adjudication the file coexists with the settings.json
+  ;; keybindings key and takes precedence when present.
+  (with-test-directory (root)
+    (let* ((agent-dir (merge-pathnames "agent/" root))
+           (manager
+             (cadr-cli::make-memory-settings-manager)))
+      (ensure-directories-exist agent-dir)
+      (cadr-cli::settings-set
+       manager "keybindings"
+       (args "app.model.cycleBackward" "ctrl+shift+g"))
+      ;; No file: the settings value applies.
+      (is
+       (equal
+        '("ctrl+shift+g")
+        (cdr
+         (assoc
+          "app.model.cycleBackward"
+          (cadr-cli::resolve-user-keybindings manager agent-dir)
+          :test #'string=))))
+      ;; File present: it wins, and legacy names migrate.
+      (write-text
+       (merge-pathnames "keybindings.json" agent-dir)
+       "{\"cursorUp\": [\"ctrl+k\"], \"app.tools.expand\": \"ctrl+y\"}")
+      (let ((bindings
+              (cadr-cli::resolve-user-keybindings manager agent-dir)))
+        (is
+         (equal
+          '("ctrl+k")
+          (cdr
+           (assoc "tui.editor.cursorUp" bindings :test #'string=))))
+        (is
+         (equal
+          '("ctrl+y")
+          (cdr
+           (assoc "app.tools.expand" bindings :test #'string=))))
+        (is
+         (null
+          (assoc
+           "app.model.cycleBackward" bindings :test #'string=))))
+      ;; Malformed file: baseline loadRawConfig treats it as absent.
+      (write-text
+       (merge-pathnames "keybindings.json" agent-dir)
+       "{ not json ")
+      (is
+       (equal
+        '("ctrl+shift+g")
+        (cdr
+         (assoc
+          "app.model.cycleBackward"
+          (cadr-cli::resolve-user-keybindings manager agent-dir)
+          :test #'string=)))))))
 (test goal15-clear-on-shrink-setting-precedes-environment-and-defaults-off
   ;; pi@74caa2649 settings-manager.ts:1093-1099: an explicit terminal setting
   ;; wins, the environment is only a fallback, and the default is false.

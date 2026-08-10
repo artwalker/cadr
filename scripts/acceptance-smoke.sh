@@ -58,7 +58,7 @@ fi
 (
   cd "$SMOKE_ROOT/project"
   HOME="$SMOKE_ROOT/home" ANTHROPIC_API_KEY="offline-smoke" \
-    "$CADR" --provider anthropic --resume "$SESSION_ID" \
+    "$CADR" --provider anthropic --session "$SESSION_ID" \
     </dev/null >/dev/null
 )
 
@@ -68,8 +68,8 @@ RESUME_SESSION_COUNT="$(
 )"
 
 if [ "$RESUME_SESSION_COUNT" -ne 1 ]; then
-  echo "acceptance smoke: --resume created a second session" >&2
+  echo "acceptance smoke: --session <id> created a second session" >&2
   exit 1
 fi
 
-echo "acceptance smoke: delayed persistence, --continue, and exact --resume passed"
+echo "acceptance smoke: delayed persistence, --continue, and exact --session passed"

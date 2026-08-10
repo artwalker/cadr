@@ -9,11 +9,10 @@
   (cadr-ai::provider-login-help-text))
 
 (defun format-no-models-available-message ()
-  (format nil "No models available. ~A" (get-provider-login-help)))
+  (cadr-ai::no-models-available-message))
 
 (defun format-no-model-selected-message ()
-  (format nil "No model selected.~%~%~A~%~%Then use /model to select a model."
-          (get-provider-login-help)))
+  (cadr-ai::no-model-selected-message))
 
 (defun format-no-api-key-found-message (provider)
   (cadr-ai::no-api-key-found-message provider))

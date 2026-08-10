@@ -257,7 +257,7 @@
                       (cursor-column 0)
                       overlay-active-p)
   (let* ((terminal
-           (terminal-renderer-terminal renderer))
+          (terminal-renderer-terminal renderer))
          (width
            (max 1 (terminal-columns terminal)))
          (height
@@ -323,10 +323,32 @@
         (render-main-full-frame
          renderer current t
          cursor-row cursor-column)))
-    (multiple-value-bind
-          (first-changed last-changed)
-        (changed-line-range current previous)
-      (unless first-changed
+    (let ((canonical-repaint-p
+            (prog1
+                (terminal-renderer-canonical-repaint-p
+                 renderer)
+              (setf
+               (terminal-renderer-canonical-repaint-p
+                renderer)
+               nil))))
+      (multiple-value-bind
+            (first-changed last-changed)
+          (changed-line-range current previous)
+        ;; A canonical repaint (the render-diff harness's work-rendered
+        ;; acknowledgement) repaints the whole visible region in place:
+        ;; the baseline never clears scrollback on work completion, so
+        ;; the wipe that INVALIDATE-RENDERER would cause is wrong here.
+        (when canonical-repaint-p
+          (setf
+           first-changed
+           (min
+            previous-viewport-top
+            (max 0 (1- (length current))))
+           last-changed
+           (max 0 (1- (length current)))))
+        (when (and canonical-repaint-p *canonical-repaint-hook*)
+          (funcall *canonical-repaint-hook* renderer))
+        (unless first-changed
         (let ((cursor-output
                 (main-renderer-position-cursor
                  renderer cursor-row cursor-column
@@ -396,8 +418,8 @@
                                     #\Escape move-back))))
                       (format stream "~C[?2026l"
                               #\Escape))))
-              (terminal-write terminal output)
-              (setf
+          (terminal-write terminal output)
+          (setf
                (terminal-renderer-cursor-row renderer)
                target-row
                (terminal-renderer-hardware-cursor-row renderer)
@@ -576,4 +598,4 @@
             (main-renderer-store-frame
              renderer current width height)
             (concatenate
-             'string output cursor-output)))))))
+             'string output cursor-output))))))))

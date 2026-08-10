@@ -146,7 +146,12 @@
            (right-without-provider
              (format
               nil "~A~@[ • ~A~]"
-              (or model "no-model")
+              ;; Baseline agent.ts:47-58 DEFAULT_MODEL — the agent state
+              ;; model is the "unknown" sentinel when nothing is
+              ;; authenticated, so the bare-environment footer reads
+              ;; "unknown" (footer.ts:169's "no-model" fallback is not
+              ;; reachable on the standard TUI path).
+              (or model "unknown")
               (and
                thinking-name
                (if (string= thinking-name

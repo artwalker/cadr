@@ -435,13 +435,8 @@
             (remhash old result)))))
     result))
 
-(defun settings-keybindings (manager)
-  (let ((object
-          (migrate-keybindings
-           (settings-value
-            manager "keybindings"
-            (empty-json-object))))
-        (bindings nil))
+(defun keybinding-object-to-bindings (object)
+  (let ((bindings nil))
     (maphash
      (lambda (name value)
        (let ((keys
@@ -463,3 +458,39 @@
             bindings))))
      object)
     (nreverse bindings)))
+
+(defun settings-keybindings (manager)
+  (keybinding-object-to-bindings
+   (migrate-keybindings
+    (settings-value
+     manager "keybindings"
+     (empty-json-object)))))
+
+(defun keybindings-file-bindings (agent-directory)
+  "Baseline core/keybindings.ts:330-338,360-366 — load
+<agentDir>/keybindings.json, migrating legacy names.  Returns NIL when
+the file is absent, unreadable, malformed, or not a JSON object
+(baseline loadRawConfig treats all of those as no bindings)."
+  (let ((path
+          (merge-pathnames
+           "keybindings.json"
+           (uiop:ensure-directory-pathname agent-directory))))
+    (when (probe-file path)
+      (let ((parsed
+              (handler-case
+                  (cadr-ai::parse-json
+                   (uiop:read-file-string path))
+                (condition () nil))))
+        (and (hash-table-p parsed)
+             (keybinding-object-to-bindings
+              (migrate-keybindings parsed)))))))
+
+(defun resolve-user-keybindings
+    (manager agent-directory)
+  "Baseline core/keybindings.ts:349-353 — the user keybinding source is
+<agentDir>/keybindings.json.  Per the goal 18 adjudication the file
+coexists with the settings.json keybindings key and takes precedence
+when present."
+  (or
+   (keybindings-file-bindings agent-directory)
+   (settings-keybindings manager)))

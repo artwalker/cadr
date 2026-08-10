@@ -1,6 +1,28 @@
 (in-package #:cadr-agent/tests)
 (in-suite cadr-agent-suite)
 
+(test goal18-nil-model-prompt-fails-with-baseline-guidance
+  ;; Baseline agent-session.ts:1181-1192 — with the unknown sentinel
+  ;; model the auth check fails before any append, throwing
+  ;; formatNoApiKeyFoundMessage("unknown").
+  (let ((agent
+          (make-agent
+           :provider :mock
+           :model nil)))
+    (handler-case
+        (progn
+          (cadr-agent:agent-prompt agent "hello")
+          (is nil "nil-model prompt did not signal"))
+      (cadr-ai:configuration-error (condition)
+        (is (string=
+             (cadr-ai::no-api-key-found-message "unknown")
+             (cadr-ai:cadr-error-message condition)))
+        (is (search
+             "No API key found for the selected model."
+             (cadr-ai:cadr-error-message condition)))))
+    (is (null (agent-messages agent))
+        "nil-model prompt must not append the user message")))
+
 (test goal11-agent-message-append-maintains-o1-tail-invariant
   (let* ((initial
            (list

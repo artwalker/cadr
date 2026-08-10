@@ -410,10 +410,12 @@
                 (extension-host-base-agent-model host)
                 (agent-model agent)))
              (entry
-               (find
-                (cadr-ai:model-provider baseline)
-                (extension-host-provider-definitions host)
-                :key #'extension-provider-id)))
+               (and
+                baseline
+                (find
+                 (cadr-ai:model-provider baseline)
+                 (extension-host-provider-definitions host)
+                 :key #'extension-provider-id))))
         (setf
          (agent-model agent)
          (if entry

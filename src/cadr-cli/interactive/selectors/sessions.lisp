@@ -362,7 +362,10 @@
      :parent-path
      (cadr-agent:session-parent-session session)
      :name (cadr-agent:session-name session)
-     :cwd (cadr-agent:session-cwd session)
+     ;; Baseline stores cwd without a trailing separator and displays it
+     ;; verbatim; cadr's canonical session cwd carries a trailing slash.
+     :cwd (let ((cwd (cadr-agent:session-cwd session)))
+            (and cwd (string-right-trim "/" cwd)))
      :first-message
       (find-if
        (lambda (text)
@@ -402,8 +405,15 @@
          :payload value))))
 
 (defun session-selector-source-sessions (selector)
-  (if (eq :all
-          (session-selector-state-scope selector))
+  ;; Baseline session-selector.ts:1003-1018 — toggling to All before
+  ;; the load completes keeps the current-folder list on screen; only
+  ;; the header shows "Loading ...".
+  (if (and (eq :all
+               (session-selector-state-scope selector))
+           (or
+            (session-selector-state-all-loaded-p selector)
+            (not
+             (session-selector-state-all-loading-p selector))))
       (session-selector-state-all-sessions selector)
       (session-selector-state-current-sessions selector)))
 
@@ -1382,11 +1392,14 @@
                  (if confirming-delete-p :error :dim)
                  right-part))
              collect
-               (if selected-p
-                   (cadr-tui:theme-background
-                    :selected-bg
-                    (selector-fit-line line width))
-                   (selector-fit-line line width))))
+              (if selected-p
+                  (cadr-tui:theme-background
+                   :selected-bg
+                    ;; Baseline session-selector.ts SessionList render:
+                    ;; entry rows truncate with truncateToWidth's
+                    ;; default "..." ellipsis.
+                    (selector-fit-line line width :ellipsis "..."))
+                   (selector-fit-line line width :ellipsis "..."))))
        (when (or (> start 0)
                  (< end total))
          (list

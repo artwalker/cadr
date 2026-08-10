@@ -35,7 +35,9 @@
 
 (defstruct (tui-state
             (:constructor %make-tui-state))
-  (model "—" :type string)
+  ;; NIL is the baseline unknown-model sentinel (agent.ts DEFAULT_MODEL);
+  ;; the footer renders it as "unknown".
+  (model nil :type (or null string))
   provider
   thinking
   (cwd "" :type string)
@@ -92,7 +94,7 @@
        (context-window 0))
   (let ((state
           (%make-tui-state
-           :model (or model "—")
+           :model model
            :provider provider
            :thinking thinking
            :cwd (or cwd "")
@@ -221,6 +223,7 @@
 
 (defun model-footer-thinking-level (model thinking)
   (and
+   model
    (cadr-ai:model-reasoning-p model)
    thinking))
 

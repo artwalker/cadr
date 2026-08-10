@@ -20,7 +20,6 @@
   (file-arguments nil :type list)
   (continue-p nil :type boolean)
   (resume-p nil :type boolean)
-  resume
   (no-session-p nil :type boolean)
   session
   session-id
@@ -345,17 +344,11 @@
           (cond
             ((or (string= argument "--resume")
                  (string= argument "-r"))
-             ;; cadr historically accepted an exact id here. Preserve that
-             ;; stable surface while also accepting the reference flag form.
-             (if (and argv
-                      (not (cli-option-token-p (first argv)))
-                      (not (cli-string-prefix-p "@" (first argv))))
-                 (setf
-                  (cli-arguments-resume arguments)
-                  (pop argv))
-                 (setf
-                  (cli-arguments-resume-p arguments)
-                  t)))
+             ;; Baseline cli/args.ts:86-87 — a bare flag; a following
+             ;; token is a message, never a session id.
+             (setf
+              (cli-arguments-resume-p arguments)
+              t))
             ((string= argument "--list-models")
              (if (and argv
                       (not (cli-option-token-p (first argv)))

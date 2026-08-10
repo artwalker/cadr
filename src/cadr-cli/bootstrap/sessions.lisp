@@ -76,7 +76,6 @@
 (defun validate-cli-session-flags
     (&key
        continue-p
-       resume-id
        resume-selector-p
        no-session-p
        session-path
@@ -94,7 +93,7 @@
              (list
               (and session-path "--session")
               (and continue-p "--continue")
-              (and (or resume-id resume-selector-p) "--resume")
+              (and resume-selector-p "--resume")
               (and no-session-p "--no-session")))))
       (when conflicts
         (error
@@ -111,7 +110,7 @@
              (list
               (and session-path "--session")
               (and continue-p "--continue")
-              (and (or resume-id resume-selector-p) "--resume")))))
+              (and resume-selector-p "--resume")))))
       (when conflicts
         (error
          'cadr-ai:configuration-error
@@ -124,7 +123,6 @@
 (defun resolve-cli-session
     (&key
        continue-p
-       resume-id
        resume-selector-p
        no-session-p
        session-path
@@ -132,10 +130,10 @@
        fork-source
        cwd
        (directory (cadr-agent:default-session-directory))
-       (output *error-output*))
+       (output *error-output*)
+       picker-function)
   (validate-cli-session-flags
    :continue-p continue-p
-   :resume-id resume-id
    :resume-selector-p resume-selector-p
    :no-session-p no-session-p
    :session-path session-path
@@ -243,27 +241,28 @@
                   (finish-output *standard-output*)
                   (error 'cli-session-abort :status 0)))))
          (t session))))
-    (resume-id
-     (let ((session
-             (cadr-agent:resume-session
-              resume-id :directory directory)))
-       (unless
-           (string=
-            (cadr-agent:session-cwd session)
-            (cadr-agent::canonical-session-cwd cwd))
-         (error
-          'cadr-ai:configuration-error
-          :message
-          (format nil
-                  "Session ~A belongs to ~A, not ~A"
-                  resume-id
-                  (cadr-agent:session-cwd session)
-                  (cadr-agent::canonical-session-cwd cwd))))
-       session))
     (resume-selector-p
-     (first
-      (cadr-agent:list-sessions
-       :directory directory :cwd cwd)))
+     ;; Baseline main.ts:368-382 + cli/session-picker.ts — the pre-TUI
+     ;; selector resolves a session PATH; cancel prints dim
+     ;; "No session selected" on stdout and exits 0, ctrl+c exits 0
+     ;; silently (selectSession onExit).
+     (multiple-value-bind (path exit-p)
+         (funcall
+          (or picker-function #'run-resume-session-picker)
+          cwd directory)
+       (cond
+         (exit-p
+          (error 'cli-session-abort :status 0))
+         ((null path)
+          (format
+           *standard-output*
+           "~A~%"
+           (cli-dim-text
+            *standard-output* "No session selected"))
+          (finish-output *standard-output*)
+          (error 'cli-session-abort :status 0))
+         (t
+          (cadr-agent:load-session path)))))
     (continue-p
      ;; Baseline SessionManager.continueRecent falls back to a fresh
      ;; session silently.
@@ -298,6 +297,133 @@
     (t
      (cadr-agent:create-session
       :directory directory :cwd cwd))))
+
+(defun run-resume-session-picker
+    (cwd directory
+     &key (input *standard-input*) (output *standard-output*)
+          (user-keybindings
+           (keybindings-file-bindings
+            (default-agent-directory))))
+  "Baseline cli/session-picker.ts selectSession: the standalone pre-TUI
+session selector behind the --resume flag.  Returns (values PATH NIL)
+when the user confirms a session, (values NIL NIL) on cancel (baseline
+prints dim \"No session selected\" and exits 0), or (values NIL T) on
+interrupt (baseline selectSession onExit: silent exit 0)."
+  (unless (and (cadr-tui:terminal-stream-p input :input)
+               (cadr-tui:terminal-stream-p output :output))
+    ;; Baseline crashes on a raw-mode failure here; a clean error keeps
+    ;; the crash channel free of a stack dump.
+    (error
+     'cadr-ai:configuration-error
+     :message
+     "Error: --resume requires an interactive terminal"))
+  (let* ((terminal
+           (cadr-tui:make-process-terminal
+            :input input :output output))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p nil :mouse-p nil))
+         (decoder (cadr-tui:make-input-decoder))
+         (state
+           (make-session-selector-state
+            :current-sessions
+            (mapcar
+             #'session-to-search-record
+             (cadr-agent:list-sessions
+              :directory directory :cwd cwd))
+            :all-sessions nil
+            :delete-function #'delete-session-file
+            :keybindings
+            (make-session-selector-keybindings
+             user-keybindings)))
+         (done-p nil)
+         (selected-path nil)
+         (exit-p nil)
+         (loader-thread nil))
+    (labels
+        ((render ()
+           (multiple-value-bind (lines row column)
+               (render-session-selector
+                state (cadr-tui:terminal-columns terminal))
+             (cadr-tui:render-frame
+              renderer lines
+              :cursor-row row :cursor-column column)))
+         (start-all-load (token)
+           (setf
+            loader-thread
+            (sb-thread:make-thread
+             (lambda ()
+               (handler-case
+                   (session-selector-complete-all-load
+                    state token
+                    (mapcar
+                     #'session-to-search-record
+                     (cadr-agent:list-sessions
+                      :directory directory)))
+                 (condition (condition)
+                   (session-selector-fail-all-load
+                    state token condition))))
+             :name "cadr-resume-picker-load")))
+         (handle-action (action value)
+           (case action
+             (:select
+              (setf
+               selected-path
+               (namestring (cadr-agent:session-path value))
+               done-p t))
+             (:cancel
+              (setf done-p t))
+             (:load-all
+              (start-all-load value))))
+         (handle-event (event)
+           (if
+               (eq
+                :interrupt
+                (cadr-tui:input-event-kind event))
+               (setf exit-p t
+                     done-p t)
+               (multiple-value-bind (action value)
+                   (session-selector-handle-event state event)
+                 (handle-action action value)))))
+      (cadr-tui:call-with-terminal
+       terminal
+       (lambda ()
+         (render)
+         (loop until done-p
+               do
+               (when (cadr-tui:terminal-resized-p terminal)
+                 (cadr-tui:invalidate-renderer renderer))
+               (let ((chunk
+                       (cadr-tui:terminal-read-input terminal)))
+                 (if (plusp (length chunk))
+                     (multiple-value-bind
+                           (action value handled-p)
+                         (session-selector-handle-raw-input
+                          state chunk)
+                       (if handled-p
+                           (handle-action action value)
+                           (dolist
+                               (event
+                                (cadr-tui:feed-input
+                                 decoder chunk))
+                             (handle-event event))))
+                     (dolist
+                         (event
+                          (cadr-tui:flush-input decoder))
+                       (handle-event event))))
+               (render)
+               (sleep 0.005d0)))
+       :before-start
+       (lambda () (cadr-tui:renderer-start renderer))
+       :before-stop
+       (lambda () (cadr-tui:renderer-before-stop renderer))
+       :after-stop
+       (lambda () (cadr-tui:renderer-after-stop renderer))))
+    ;; The loader only reads session files; a bounded cleanup wait keeps
+    ;; a slow disk from blocking the picker exit path.
+    (cadr-core:stop-thread-for-cleanup
+     loader-thread :timeout 2 :terminate-p nil)
+    (values selected-path exit-p)))
 
 (defun split-command (line)
   (let* ((trimmed

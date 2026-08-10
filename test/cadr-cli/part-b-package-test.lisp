@@ -152,6 +152,58 @@
         (cadr-cli::parse-package-command
          '("update" "--models" "--all"))))))
 
+(test goal18-npm-package-source-is-a-fixed-intentional-difference
+  ;; Adjudicated intentional difference: the baseline installs npm:
+  ;; package sources through npm; the Common Lisp build has no npm
+  ;; egress and rejects the source with a fixed message before any
+  ;; filesystem or network work.
+  (with-test-directory (root)
+    (let* ((agent (merge-pathnames "agent/" root))
+           (output (make-string-output-stream))
+           (error-output (make-string-output-stream)))
+      (ensure-directories-exist agent)
+      (handler-case
+          (progn
+            (cadr-cli::handle-package-command
+             '("install" "npm:@scope/pkg@1.2.3")
+             :cwd root
+             :agent-directory agent
+             :output output
+             :error-output error-output
+             :offline-p t)
+            (is nil "npm package source did not signal"))
+        (cadr-ai:configuration-error (condition)
+          (is
+           (string=
+            "npm packages are unavailable in the Common Lisp build; install a Lisp local or Git package"
+            (cadr-ai:cadr-error-message condition)))))
+      (is (string= "" (get-output-stream-string output))))))
+
+(test goal18-update-models-is-a-fixed-intentional-difference
+  ;; Adjudicated intentional difference: the baseline refreshes model
+  ;; catalogs over the network; cadr's catalog is bundled with the
+  ;; binary, so update --models is a fixed offline notice.
+  (with-test-directory (root)
+    (let* ((agent (merge-pathnames "agent/" root))
+           (output (make-string-output-stream))
+           (error-output (make-string-output-stream)))
+      (ensure-directories-exist agent)
+      (multiple-value-bind (handled-p status)
+          (cadr-cli::handle-package-command
+           '("update" "--models")
+           :cwd root
+           :agent-directory agent
+           :output output
+           :error-output error-output
+           :offline-p t)
+        (is (not (null handled-p)))
+        (is (zerop status)))
+      (is (string=
+           "Model catalogs are bundled with this cadr build.
+"
+           (get-output-stream-string output)))
+      (is (string= "" (get-output-stream-string error-output))))))
+
 (test local-package-settings-persist-dedupe-remove-and-resolve-resources
   (with-test-directory (root)
     (let* ((agent

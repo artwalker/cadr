@@ -75,7 +75,8 @@
           (sb-thread:make-semaphore :count 0))
         (prompt-line nil)
         (settled-screen nil)
-        (settled-full-redraws 0))
+        (settled-scrollback-wipes 0)
+        (settled-canonical-repaints 0))
     (let ((terminal
             (make-instance
              'goal17-scripted-terminal
@@ -91,31 +92,39 @@
                     ((> (incf attempts) 5000)
                      (error "Work render acknowledgement was never emitted"))
                     (t nil))))))))
-      (cadr-cli::run-tui
-       (lambda (line)
-         (setf prompt-line line))
-       :work-rendered-function
-       (lambda ()
+      (let ((cadr-tui:*canonical-repaint-hook*
+              (lambda (renderer)
+                (declare (ignore renderer))
+                (incf settled-canonical-repaints))))
+        (cadr-cli::run-tui
+         (lambda (line)
+           (setf prompt-line line))
+         :work-rendered-function
+         (lambda ()
          (setf
           settled-screen
          (format
            nil "~{~A~^~%~}"
            (cadr-tui:virtual-terminal-snapshot terminal)))
          (setf
-          settled-full-redraws
+          ;; Goal 18 I05: the acknowledgement repaint is a canonical
+          ;; in-place redraw of the visible region, never the
+          ;; scrollback-wiping 2J/H/3J full clear.
+          settled-scrollback-wipes
           (count-if
            (lambda (write)
              (search
               (format nil "~C[2J~C[H~C[3J"
                       #\Escape #\Escape #\Escape)
               write))
-           (cadr-tui::virtual-writes terminal)))
-         (sb-thread:signal-semaphore work-rendered))
-       :model "faux"
-       :terminal terminal))
+         (cadr-tui::virtual-writes terminal)))
+        (sb-thread:signal-semaphore work-rendered))
+        :model "faux"
+        :terminal terminal)))
     (is (string= "event" prompt-line))
     (is-true settled-screen)
-    (is (= 1 settled-full-redraws))
+    (is (= 0 settled-scrollback-wipes))
+    (is (= 1 settled-canonical-repaints))
     (is (null (search "Working..." settled-screen)))))
 
 (test goal17-work-render-ack-does-not-redraw-local-commands

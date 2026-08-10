@@ -393,7 +393,18 @@
                  (funcall preflight-function))
                (assert-agent-not-shutdown agent)
                nil)
-             (progn
+              (progn
+               ;; Baseline agent-session.ts:1181-1192 — the sentinel
+               ;; model (agent.ts DEFAULT_MODEL, provider "unknown") has
+               ;; no configured auth, so the first send fails with the
+               ;; auth-guidance text after extension/template expansion
+               ;; and before any LLM work; the message is never
+               ;; appended.
+               (unless (agent-model agent)
+                 (error
+                  'cadr-ai:configuration-error
+                  :message
+                  (cadr-ai::no-api-key-found-message "unknown")))
                (when preflight-function
                  (funcall preflight-function))
                (assert-agent-not-shutdown agent)

@@ -1,6 +1,30 @@
 (in-package #:cadr-agent/tests)
 (in-suite cadr-agent-suite)
 
+(test goal18-nil-model-manual-compaction-emits-baseline-failure-events
+  ;; Baseline agent-session.ts:1790-1800,1905-1916 — manual compact
+  ;; with the unknown sentinel model emits compaction_start, then
+  ;; compaction_end with "Compaction failed: <NoApiKeyFound text>".
+  (let* ((events nil)
+         (agent
+           (cadr-agent:make-agent
+            :provider :mock
+            :model nil
+            :on-event (lambda (event) (push event events)))))
+    (is-false (cadr-agent:compact-agent agent :force-p t))
+    (let ((start
+           (find :compaction-start events
+                 :key #'cadr-agent:agent-event-type))
+          (end
+           (find :compaction-end events
+                 :key #'cadr-agent:agent-event-type)))
+      (is (not (null start)))
+      (is (not (null end)))
+      (is (string=
+           (format nil "Compaction failed: ~A"
+                   (cadr-ai::no-api-key-found-message "unknown"))
+           (cadr-agent:agent-event-error-message end))))))
+
 (defun context-contains-text-p (context needle)
   (let ((messages
           (if (typep context 'cadr-ai:context)

@@ -88,3 +88,13 @@ short-commit)."
   (format nil "No API key found for ~A.~%~%~A"
           (if (string= provider "unknown") "the selected model" provider)
           (provider-login-help-text)))
+
+(defun no-models-available-message ()
+  ;; Baseline core/auth-guidance.ts formatNoModelsAvailableMessage.
+  (format nil "No models available. ~A" (provider-login-help-text)))
+
+(defun no-model-selected-message ()
+  ;; Baseline core/auth-guidance.ts formatNoModelSelectedMessage.
+  (format nil
+          "No model selected.~%~%~A~%~%Then use /model to select a model."
+          (provider-login-help-text)))

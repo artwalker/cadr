@@ -117,10 +117,10 @@ v3 and atomically migrates v1/v2 data, as covered in the Wave 2 table below.
 | Threshold compaction | `AUTOMATIC-COMPACTION-USES-CURRENT-MODEL-AND-CONTINUES-THE-PROMPT` | Current stream/model generates summary; original prompt continues against summary plus suffix |
 | Provider overflow recovery | `CONTEXT-OVERFLOW-COMPACTS-ONCE-AND-RETRIES-WITHOUT-THE-ERROR-BRANCH` | Error is retained as a branch; active context compacts and retries exactly once |
 | Traceable originals | automatic-compaction file assertions | JSONL retains original text plus the compaction summary and firstKeptEntryId |
-| Session list and exact resume | `SESSION-LIST-RESUME-*`, CLI resolver tests | Sorted cwd list, exact ID, missing ID failure, continue/resume mutual exclusion |
+| Session list and picker resume | `SESSION-LIST-RESUME-*`, CLI resolver tests | Sorted cwd list, picker-selected path, cancel/interrupt exit paths, continue/resume precedence |
 | In-process switch and branch | `SESSION-COMMANDS-LIST-SWITCH-BRANCH-AND-EXPORT` | Agent session and context change together; next append uses selected parent |
 | Safe full-tree HTML | `SESSION-LIST-RESUME-AND-HTML-EXPORT-COVER-THE-ENTIRE-TREE` | Both branches render; hostile markup is escaped and no template dependency is used |
-| Native process resume | `scripts/acceptance-smoke.sh` | Separate native processes reuse one file through both `--continue` and exact `--resume` |
+| Native process resume | `scripts/acceptance-smoke.sh` | Separate native processes reuse one file through both `--continue` and exact `--session <id>` |
 
 ## Phase 7: Lisp extensions
 

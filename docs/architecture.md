@@ -613,7 +613,7 @@ header：
 - `--base-url <url>`
 - `--system-prompt <text-or-file>`
 - `--continue`
-- `--resume <session-id>`
+- `--resume`（打开启动前会话选择器）
 - `--extension <path>`（可重复）
 - `--help`
 - `--version`
@@ -997,7 +997,8 @@ v1 加载采用一次性原地迁移：
 leaf 沿 parent 链重建活跃上下文，不保留第二份可漂移的消息真相。
 `list-sessions`、`resume-session` 与 CLI 提供：
 
-- `--resume <id>`：按精确 session id 恢复，和 `--continue` 互斥；
+- `--resume`：启动前打开会话选择器（基线 cli/session-picker.ts），选中后按
+  路径打开；精确 id 恢复走 `--session <id>`；
 - `/sessions`：列出可恢复会话并标出当前会话；
 - `/switch <id>`：在同一进程切换 session，同时替换 agent 上下文；
 - `/branch <node-id>`：把下一条消息接到指定历史节点；

@@ -33,7 +33,8 @@
   (max-lines-rendered 0 :type (integer 0 *))
   (previous-viewport-top 0
                          :type (integer 0 *))
-  (invalid-p t :type boolean))
+  (invalid-p t :type boolean)
+  (canonical-repaint-p nil :type boolean))
 
 (defun make-terminal-renderer
     (terminal
@@ -65,6 +66,23 @@
 (defun invalidate-renderer (renderer)
   (setf (terminal-renderer-invalid-p renderer) t)
   renderer)
+
+(defun renderer-request-canonical-repaint (renderer)
+  ;; Ask the next frame to repaint the full visible region in place,
+  ;; without the scrollback-wiping clear that INVALIDATE-RENDERER would
+  ;; produce.  The render-diff harness uses this for its work-rendered
+  ;; acknowledgement: the checkpoint screen becomes a canonical redraw
+  ;; while the terminal's scroll history and viewport stay intact
+  ;; (baseline TuiMainScreen never clears on work completion).
+  (setf
+   (terminal-renderer-canonical-repaint-p renderer)
+   t)
+  renderer)
+
+(defvar *canonical-repaint-hook* nil
+  "Test seam: when non-nil, called with the renderer after a canonical
+in-place repaint executes.  Production leaves this NIL; the harness
+ acknowledgement tests bind it to count repaints.")
 
 (defparameter +alt-screen-enter+
   (format nil "~C[?1049h" #\Escape))

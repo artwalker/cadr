@@ -189,7 +189,8 @@
   '(:off :minimal :low :medium :high :xhigh :max))
 
 (defun supported-thinking-levels (model)
-  (if (not (model-reasoning-p model))
+  (if (or (null model)
+          (not (model-reasoning-p model)))
       '(:off)
       (remove-if-not
        (lambda (level)

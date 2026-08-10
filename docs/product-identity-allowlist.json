@@ -2536,7 +2536,7 @@
       "token": "earendil-works",
       "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
       "occurrences": 1,
-      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical so the deprecation-warning output matches the baseline; the migrated commands/hooks formats are pi-inherited, so the upstream guide is the accurate documentation. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
     },
     {
       "path": "src/cadr-cli/migration.lisp",
@@ -2544,7 +2544,7 @@
       "token": "earendil-works",
       "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
       "occurrences": 1,
-      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical so the deprecation-warning output matches the baseline. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
     },
     {
       "path": "scripts/render-diff.py",
@@ -2560,7 +2560,7 @@
       "token": "pi",
       "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
       "occurrences": 1,
-      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
     },
     {
       "path": "src/cadr-cli/migration.lisp",
@@ -2568,7 +2568,7 @@
       "token": "pi",
       "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
       "occurrences": 1,
-      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
     },
     {
       "path": "src/cadr-cli/migration.lisp",

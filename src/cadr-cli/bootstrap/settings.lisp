@@ -113,8 +113,10 @@
           (symbol-name effective))))
       (when
           (or
-           (cadr-ai:model-reasoning-p
-            (cadr-agent:agent-model agent))
+           (and
+            (cadr-agent:agent-model agent)
+            (cadr-ai:model-reasoning-p
+             (cadr-agent:agent-model agent)))
            (not (eq effective :off)))
         (settings-set
          settings-manager
