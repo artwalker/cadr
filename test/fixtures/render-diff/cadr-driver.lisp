@@ -1126,6 +1126,113 @@ render loopback login received
       (string=
        (json-get (json-get scenario "setup")
                  "entrypoint" "interactive")
+       "cli-errors")
+    ;; Goal 18 I7: the same CLI error/warning argv list as the pi
+    ;; driver's cli-errors entrypoint, through the real cadr main.
+    (uiop:chdir cwd)
+    ;; Persist the scenario's trust decision for the package-command
+    ;; trust checks.
+    (let ((trust-entry
+            (render-trust-saved-entry scenario cwd)))
+      (when trust-entry
+        (cadr-cli::project-trust-set
+         (cadr-cli::make-project-trust-store
+          (merge-pathnames "trust.json" agent-dir))
+         (getf trust-entry :path)
+         (getf trust-entry :decision)
+         :store-negative-p
+         (not (getf trust-entry :decision)))))
+    ;; Seed a local session so --fork onto an existing id reports the
+    ;; baseline "Session already exists" error (main.ts:324-330).
+    ;; cadr lists sessions flat under the session root and filters by
+    ;; the recorded cwd (session/discovery.lisp list-sessions).
+    (let* ((sessions-dir
+             (merge-pathnames "sessions/" agent-dir)))
+      (ensure-directories-exist sessions-dir)
+      (with-open-file
+          (out
+           (merge-pathnames
+            "2023-11-14T22-13-20-000Z_sweep-existing.jsonl"
+            sessions-dir)
+           :direction :output :if-exists :supersede)
+        (write-line
+         (cadr-ai::stringify-json
+          (cadr-ai::json-object
+           "type" "session"
+           "version" 3
+           "id" "sweep-existing"
+           "timestamp" "2023-11-14T22:13:20.000Z"
+           "cwd"
+           (namestring
+            (uiop:ensure-directory-pathname cwd))))
+         out)))
+    (dolist
+        (argv
+         '(;; Startup content migrations (migrations.ts:144,214) run
+           ;; before the metadata commands; this case must stay first.
+           ("--list-models")
+           ("--fork" "x" "--session" "y")
+           ("--fork" "x" "--no-session")
+           ("--fork" "x" "--session" "y" "--continue")
+           ("--session-id" "abc" "--continue")
+           ("--session-id" "BAD ID!")
+           ("--name" "")
+           ("--mode" "rpc" "@foo.txt")
+           ("--fork" "nonexistent-session")
+           ("--session" "nonexistent-session")
+           ("--export" "/nonexistent-session.jsonl")
+           ("auth" "bogus")
+           ("auth" "print-api-key" "--provider" "bogus"
+            "--model" "gpt-5.5")
+           ("install")
+           ("config" "--bogus")
+           ("remove" "nonexistent-package")
+           ("update" "--all" "--self")
+           ("install" "x" "y")
+           ("update" "--extension")
+           ("-p" "@/nonexistent-file.txt")
+           ("install" "--bogus")
+           ("config" "-l")
+           ("install" "-l" "./x")
+           ("--fork" "x" "--session-id" "sweep-existing")
+           ("--session-id" "fresh-sweep-1" "-p" "hi")))
+      (cadr-cli::main argv))
+    (sb-posix:setenv "CADR_STARTUP_BENCHMARK" "1" 1)
+    (cadr-cli::main '("-p" "hi"))
+    (sb-posix:unsetenv "CADR_STARTUP_BENCHMARK")
+    ;; Goal 18 I7: corrupt models.json warns and falls back to the
+    ;; empty availability guidance (list-models.ts:30-33,40-42).
+    (with-open-file
+        (out
+         (merge-pathnames "models.json" agent-dir)
+         :direction :output :if-exists :supersede)
+      (write-string "{ not valid json " out))
+    (cadr-cli::main '("--list-models"))
+    (with-open-file
+        (out
+         (merge-pathnames "models.json" agent-dir)
+         :direction :output :if-exists :supersede)
+      (write-string (cadr-ai::stringify-json
+                     (cadr-ai::json-object "providers" (cadr-ai::json-object)))
+                    out))
+    ;; Goal 18 I7: a broken extension is a fatal startup diagnostic
+    ;; with the -ne hint (main.ts:843-849).
+    (ensure-directories-exist
+     (merge-pathnames "extensions/broken/" agent-dir))
+    (with-open-file
+        (out
+         (merge-pathnames
+          "extensions/broken/extension.lisp" agent-dir)
+         :direction :output :if-exists :supersede)
+      (write-line "(error \"render-drive-broken\")" out))
+    (cadr-cli::main '("-p" "hi"))
+    (finish-output *standard-output*)
+    (finish-output *error-output*)
+    (uiop:quit 0))
+  (when
+      (string=
+       (json-get (json-get scenario "setup")
+                 "entrypoint" "interactive")
        "config")
     (multiple-value-bind (handled-p status)
         (cadr-cli::handle-package-command

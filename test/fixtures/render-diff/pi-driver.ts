@@ -19,6 +19,7 @@ import { InteractiveMode } from "../src/modes/interactive/interactive-mode.ts";
 import { initTheme } from "../src/modes/interactive/theme/theme.ts";
 import { printHelp } from "../src/cli/args.ts";
 import { handleConfigCommand, handlePackageCommand } from "../src/package-manager-cli.ts";
+import { main as baselineMain } from "../src/main.ts";
 
 type JsonObject = Record<string, unknown>;
 
@@ -175,7 +176,7 @@ interface ScenarioSetup {
 	hyperlinks?: boolean;
 	trustSavedDecision?: { scope: "current" | "parent"; decision: boolean };
 	authProvider?: boolean;
-	entrypoint?: "interactive" | "config" | "cli-help";
+	entrypoint?: "interactive" | "config" | "cli-help" | "cli-errors";
 	updateNotifications?: boolean;
 }
 
@@ -718,6 +719,10 @@ async function main(): Promise<void> {
 	process.env.PI_OFFLINE = "1";
 	const scenario = loadScenario(manifestPath, scenarioId);
 	materializeFixtureFiles(scenario.setup?.fixtureFiles ?? [], cwd, agentDir, sessionDir);
+	if (scenario.setup?.trustSavedDecision) {
+		const decision = scenario.setup.trustSavedDecision;
+		new ProjectTrustStore(agentDir).set(decision.scope === "parent" ? dirname(cwd) : cwd, decision.decision);
+	}
 	if (scenario.setup?.entrypoint === "cli-help") {
 		process.chdir(cwd);
 		printHelp([{ name: "render-flag", type: "string", description: "Render differential extension flag", extensionPath: "render-diff" }]);
@@ -732,9 +737,105 @@ async function main(): Promise<void> {
 		await handleConfigCommand(["config", "--approve"]);
 		return;
 	}
-	if (scenario.setup?.trustSavedDecision) {
-		const decision = scenario.setup.trustSavedDecision;
-		new ProjectTrustStore(agentDir).set(decision.scope === "parent" ? dirname(cwd) : cwd, decision.decision);
+	if (scenario.setup?.entrypoint === "cli-errors") {
+		// Goal 18 I7: drive the baseline's CLI error/warning paths through
+		// the real main() so every fixed error literal is exercised with its
+		// production wording, color, stream, and exit status.
+		process.chdir(cwd);
+		// Seed a local session so --fork onto an existing id reports the
+		// baseline "Session already exists" error (main.ts:324-330).
+		createFixedSessionFile(
+			join(agentDir, "sessions", `--${cwd.replace(/^[/\\]/, "").replace(/[/\\:]/g, "-")}--`),
+			cwd,
+			"sweep-existing",
+			"sweep-existing",
+		);
+		const realExit = process.exit;
+		const cases: string[][] = [
+			// Startup content migrations (migrations.ts:144,214) run before
+			// the metadata commands; this case must stay first.
+			["--list-models"],
+			["--fork", "x", "--session", "y"],
+			["--fork", "x", "--no-session"],
+			["--fork", "x", "--session", "y", "--continue"],
+			["--session-id", "abc", "--continue"],
+			["--session-id", "BAD ID!"],
+			["--name", ""],
+			["--mode", "rpc", "@foo.txt"],
+			["--fork", "nonexistent-session"],
+			["--session", "nonexistent-session"],
+			["--export", "/nonexistent-session.jsonl"],
+			["auth", "bogus"],
+			["auth", "print-api-key", "--provider", "bogus", "--model", "gpt-5.5"],
+			["install"],
+			["config", "--bogus"],
+			["remove", "nonexistent-package"],
+			["update", "--all", "--self"],
+			["install", "x", "y"],
+			["update", "--extension"],
+			["-p", "@/nonexistent-file.txt"],
+			["install", "--bogus"],
+			["config", "-l"],
+			["install", "-l", "./x"],
+			["--fork", "x", "--session-id", "sweep-existing"],
+			["--session-id", "fresh-sweep-1", "-p", "hi"],
+		];
+		for (const argv of cases) {
+			process.exitCode = undefined;
+			process.exit = ((code?: number) => {
+				throw new Error(`__render_diff_exit_${code ?? 0}`);
+			}) as never;
+			try {
+				await baselineMain(argv);
+			} catch (error) {
+				if (!(error instanceof Error && error.message.startsWith("__render_diff_exit_"))) throw error;
+			}
+		}
+		process.env.PI_STARTUP_BENCHMARK = "1";
+		process.exitCode = undefined;
+		process.exit = ((code?: number) => {
+			throw new Error(`__render_diff_exit_${code ?? 0}`);
+		}) as never;
+		try {
+			await baselineMain(["-p", "hi"]);
+		} catch (error) {
+			if (!(error instanceof Error && error.message.startsWith("__render_diff_exit_"))) throw error;
+		}
+		delete process.env.PI_STARTUP_BENCHMARK;
+		process.exit = realExit;
+		process.exitCode = undefined;
+		// Goal 18 I7: corrupt models.json warns and falls back to the
+		// empty availability guidance (list-models.ts:30-33,40-42).  Runs
+		// after the benchmark case so the failure modes stay isolated.
+		const stubbedExit = (async (argv: string[]) => {
+			process.exitCode = undefined;
+			process.exit = ((code?: number) => {
+				throw new Error(`__render_diff_exit_${code ?? 0}`);
+			}) as never;
+			try {
+				await baselineMain(argv);
+			} catch (error) {
+				if (!(error instanceof Error && error.message.startsWith("__render_diff_exit_"))) throw error;
+			} finally {
+				process.exit = realExit;
+				process.exitCode = undefined;
+			}
+		});
+		writeFileSync(join(agentDir, "models.json"), "{ not valid json ");
+		await stubbedExit(["--list-models"]);
+		writeFileSync(
+			join(agentDir, "models.json"),
+			JSON.stringify({ providers: {} }, null, 2),
+		);
+		// Goal 18 I7: a broken extension is a fatal startup diagnostic
+		// with the -ne hint (main.ts:843-849).
+		mkdirSync(join(agentDir, "extensions", "broken"), { recursive: true });
+		writeFileSync(
+			join(agentDir, "extensions", "broken", "index.ts"),
+			"export default function () { throw new Error(\"render-drive-broken\"); }\n",
+		);
+		await stubbedExit(["-p", "hi"]);
+		return;
 	}
 	const chunkCharacters = scenario.stream?.chunkCharacters ?? 4096;
 	const faux = registerFauxProvider({

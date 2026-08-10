@@ -109,6 +109,30 @@ OAuth/transport/catalog rows, and both eval lifecycle rows. The Apple Terminal
 path is 实现完成，平台不可实测: fixture parity is green, while this host has
 neither macOS nor Apple Terminal and therefore provides no live claim.
 
+## 2a. User-facing documentation disposition (goal 18 Part J)
+
+The baseline `packages/coding-agent/docs/` tree is website content for pi, not a
+source capability; it has no per-file rows in section 4. cadr's obligation is
+narrower and now closed: every documentation path named by product text must
+exist and describe cadr's real behavior.
+
+**Created (12 files, all describing cadr behavior, not translated pi docs):**
+the eleven documents the system prompt names — `docs/extensions.md`,
+`themes.md`, `skills.md`, `prompt-templates.md`, `tui.md`, `keybindings.md`,
+`sdk.md`, `custom-provider.md`, `models.md`, `packages.md`,
+`environment-variables.md` — plus `docs/providers.md`, which the no-auth and
+no-models guidance prints. Existence is gate-enforced by
+`test/cadr-cli/goal18-docs-test.lisp` (any product-text `docs/`/`examples/`
+reference that does not resolve fails the deterministic FiveAM stage).
+
+**Remaining baseline docs — disposition:**
+
+| Baseline doc | Disposition |
+|---|---|
+| `quickstart.md`, `usage.md`, `index.md`, `docs.json`, `images/` | pi website/quickstart material; cadr's README covers install and first run. Not ported. |
+| `settings.md`, `sessions.md`, `session-format.md`, `json.md`, `rpc.md`, `compaction.md`, `security.md` | Baseline reference docs whose cadr behavior is already covered by README plus the twelve files above (settings keys in `keybindings.md`/`packages.md`, sessions in `tui.md`, wire modes in `sdk.md`). Not separately ported; if a product string ever references them, the reference gate forces a doc. |
+| `development.md`, `containerization.md`, `terminal-setup.md`, `termux.md`, `tmux.md`, `windows.md`, `shell-aliases.md`, `llama-cpp.md` | pi-platform or contributor guides; not applicable to cadr's SBCL build or are covered by README development sections. |
+
 ## 3. Part C execution queue
 
 | Suggested batch | Missing rows | User-visible | Refactor/dependency shape | Risk |

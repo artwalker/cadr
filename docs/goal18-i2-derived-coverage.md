@@ -1,0 +1,45 @@
+# Goal 18 I2/I7 派生覆盖差集报告（2026-08-10）
+
+本报告是 goal18.md I2 第 3 条要求的「派生要求 − 现有场景」机器答案。
+每个类别的**集合**都从固定基线（74caa2649）机械派生；门禁 fail-closed：
+派生集合漂移、映射缺失、注册表陈旧任一发生即失败。
+
+## 已机械派生并对账闭合的类别
+
+| 类别 | 派生源 | 规模 | 对账方式 | 差集 |
+|---|---|---|---:|---|
+| slash 命令 | `core/slash-commands.ts` 注册表（git 提取） | 22 | `reachable-interfaces.json` 注册表逐条有 capture，门禁核对顺序与成员 | 空 |
+| 界面构造器与构造点 | `new *Component(` 全量扫描（git 提取） | 15 构造器 / 22 站点 | `baseline-interface-inventory.json` 字段与 git 重提取比对 | 空 |
+| 登录对话框形态 | `login-dialog.ts` 的 `show*` 公开方法（git 提取，I2 新增） | 8 | `loginDialogCoverage` 映射：5 个经差分场景检查点，3 个（showDetails/showInfo/showPrompt，无登录流在 harness 可达）经 construction 逐字节驱动 | 空 |
+| 扩展事件 | `types.ts` `ExtensionEvent` 联合展开（git 提取，I2 新增） | 33 叶子事件 | FiveAM 断言 cadr 集合 = 派生集合 + 已裁决拆分（`tool_call`/`tool_result` → before/after/error） | 空 |
+| 可见字符串分支 | 219 源文件 × 已建模 sink 提取（既有） | 461 sites / 762 printable 分支 | 逐分支捕获或结构化豁免 | **10 分支待裁决**（见下） |
+| 未建模 sink 候选 | 反向清点：全部 console/process-write/show*/print* 调用中带固定文本且不落任何清单站点者（I7.3 新增） | 14 | `visible-string-unmodeled-review.json` 逐条 verdict + reason，门禁对账 | 空 |
+
+## 差集中唯一未闭合项：10 个待裁决豁免
+
+A 类防御性回退 5（`main.ts:141/163/585`、`package-manager-cli.ts:731/868`）、
+B 类权限依赖失败臂 4（`migrations.ts:148`、`file-processor.ts:80`）、
+C 类 Android 1（`tools-manager.ts:347`）。
+逐条审计依据与所需新 `obstacleKind` 见
+`docs/proposals/goal18-i7-tail-exemptions.md`。**该提案获批前全量门禁在此
+10 分支上保持红灯，这是有意为之的待裁决状态。**
+
+## 选择不机械派生的类别及理由（交裁决）
+
+1. **状态条件渲染点**（`addLoadedSection(...)`、`if (xs.length)` 一类）：
+   派生可得站点清单，但"每站点须有空/非空双态场景"的义务无法机械绑定到
+   具体场景状态——某状态可否在 harness 构造、由哪个场景提供，需要语义
+   判断。现行机制：I3 双态规则写入 `docs/render-diff.md`（新增场景的强制
+   规则）+ 启动资源六区块的空/非空双场景已在位。**若裁决要求更严，需
+   为每个渲染条件点维护人工映射表（又回到手工清单），或接受现状。**
+2. **状态迁移检查点**：I1 已把遍历型场景的滚动位/选中态/切换前后列入
+   显式检查点；"每个动作后是否应设检查点"无机械判据（动作数 × 检查点
+   会爆炸性放大捕获量而无线性收益）。现行规则：遍历型场景必须在被遍历
+   的关键状态上设点（写入 render-diff 文档）。
+
+## 手工清单的现状
+
+`REQUIRED_COVERAGE` 仍是手工集合，但已改为**当前声明全集**（138 个覆盖
+标签）：任何场景或标签被删除即失败，覆盖不可回退。它与派生集合的关系：
+派生集合管"基线有什么"，手工全集管"场景声称覆盖什么"，两者都由门禁
+对账。

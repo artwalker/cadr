@@ -40,6 +40,12 @@ import { handleConfigCommand, handlePackageCommand } from "../src/package-manage
 import { printCredentialPrintHelp } from "../src/cli/credential-print.ts";
 import { createGrepToolDefinition } from "../src/core/tools/grep.ts";
 import { showDeprecationWarnings } from "../src/migrations.ts";
+import { runMigrations } from "../src/migrations.ts";
+import { warnDeprecation } from "../src/utils/deprecation.ts";
+import { processFileArguments } from "../src/cli/file-processor.ts";
+import { ExtensionRunner } from "../src/core/extensions/runner.ts";
+import { DefaultResourceLoader } from "../src/core/resource-loader.ts";
+import { createRequire } from "node:module";
 import { parseChangelog } from "../src/utils/changelog.ts";
 import { ensureTool } from "../src/utils/tools-manager.ts";
 import llamaExtension from "../src/extensions/llama/index.ts";
@@ -99,6 +105,11 @@ login.showManualInput("Paste code");
 login.showInfo("Information", [], true);
 login.showPrompt("Paste the authorization code", "code-from-browser");
 login.showInfo("Complete", [{ label: "Docs", url: "https://example.invalid/docs" }], true);
+login.showDetails([
+	"You can also use an AWS profile, IAM keys, or role-based credentials.",
+	"See:",
+	"  providers.md",
+]);
 if (originalPlatform) Object.defineProperty(process, "platform", originalPlatform);
 
 new OAuthSelectorComponent("login", [], () => {}, () => {});
@@ -298,6 +309,11 @@ await restoreModelFromSession("missing", "missing", undefined, true, {
 	hasConfiguredAuth: () => false,
 	getAvailable: async () => [model],
 });
+await restoreModelFromSession("provider-one", "model-one", undefined, true, {
+	getModel: () => model,
+	hasConfiguredAuth: () => false,
+	getAvailable: async () => [model],
+});
 
 const controller = new InteractiveThemeController(
 	{
@@ -447,6 +463,8 @@ await handleConfigCommand(["config", "--invalid"]);
 process.exitCode = 0;
 await handlePackageCommand(["update", "--self", "--extensions"]);
 process.exitCode = 0;
+await handlePackageCommand(["update", "--models"]);
+process.exitCode = 0;
 
 printCredentialPrintHelp();
 createGrepToolDefinition("/tmp").renderResult(
@@ -462,6 +480,7 @@ createGrepToolDefinition("/tmp").renderResult(
 const migrationPromise = showDeprecationWarnings(["legacy extension directory"]);
 process.stdin.emit("data", Buffer.from("x"));
 await migrationPromise;
+warnDeprecation("render drive");
 
 const invalidChangelog = mkdtempSync(join(tmpdir(), "pi-visible-invalid-changelog-"));
 parseChangelog(invalidChangelog);
@@ -509,6 +528,14 @@ writeFileSync(
 );
 await handlePackageCommand(["list", "--approve"]);
 await handlePackageCommand(["install", "./ext-local", "--no-approve"]);
+process.exitCode = 0;
+await handlePackageCommand(["remove", "./ext-local", "--no-approve"]);
+process.exitCode = 0;
+writeFileSync(packageSettingsPath, "{ corrupt json ");
+await handlePackageCommand(["list", "--no-approve"]);
+process.exitCode = 0;
+writeFileSync(packageSettingsPath, packageSettingsBefore);
+await handlePackageCommand(["install", "x", "--bogus"]);
 process.exitCode = 0;
 
 const originalFetch = globalThis.fetch;
@@ -582,6 +609,77 @@ Object.defineProperty(process, "execPath", { value: originalExecPath, configurab
 if (originalPackageDir === undefined) delete process.env.PI_PACKAGE_DIR;
 else process.env.PI_PACKAGE_DIR = originalPackageDir;
 writeFileSync(packageSettingsPath, packageSettingsBefore);
+
+{
+	// package-manager-cli.ts:454 — a release feed note prints the bold
+	// "Update note" block before the self-update runs.
+	writeFileSync(
+		packageSettingsPath,
+		JSON.stringify({ packages: [], npmCommand: [selfUpdateNpm] }),
+	);
+	Object.defineProperty(process, "execPath", {
+		value: join(selfUpdateNpmDir, "npm", "node"),
+		configurable: true,
+	});
+	process.env.PI_PACKAGE_DIR = selfUpdatePackageDir;
+	globalThis.fetch = async () =>
+		new Response(
+			JSON.stringify({
+				version: "99.0.0",
+				note: "Read the changelog before updating.",
+			}),
+			{ status: 200, headers: { "content-type": "application/json" } },
+		);
+	await handlePackageCommand(["update", "--self", "--force"]);
+	process.exitCode = 0;
+	Object.defineProperty(process, "execPath", { value: originalExecPath, configurable: true });
+	if (originalPackageDir === undefined) delete process.env.PI_PACKAGE_DIR;
+	else process.env.PI_PACKAGE_DIR = originalPackageDir;
+	writeFileSync(packageSettingsPath, packageSettingsBefore);
+}
+
+{
+	// package-manager-cli.ts:443-444 — a failing pnpm install method adds
+	// the registry-metadata hints after the update error.
+	const fakePnpmDir = mkdtempSync(join(tmpdir(), "pi-visible-pnpm-"));
+	const fakePnpm = join(fakePnpmDir, "pnpm");
+	// `pnpm root -g` must succeed so the method resolves as a managed
+	// global pnpm install; the actual update command fails.
+	const fakePnpmRoot = join(fakePnpmDir, "global", "5");
+	writeFileSync(
+		fakePnpm,
+		`#!/bin/sh\ncase " $* " in\n *" root "*) printf '%s\\n' "${fakePnpmRoot}" ;;\n *) exit 1 ;;\nesac\n`,
+	);
+	chmodSync(fakePnpm, 0o755);
+	const fakePnpmPackageDir = join(
+		fakePnpmRoot,
+		".pnpm",
+		"@earendil-works+pi-coding-agent@0.83.0",
+		"node_modules",
+		"@earendil-works",
+		"pi-coding-agent",
+	);
+	mkdirSync(fakePnpmPackageDir, { recursive: true });
+	const savedDrivePath = process.env.PATH;
+	process.env.PATH = fakePnpmDir + ":" + (savedDrivePath ?? "");
+	Object.defineProperty(process, "execPath", {
+		value: join(fakePnpmDir, "pnpm", "node"),
+		configurable: true,
+	});
+	process.env.PI_PACKAGE_DIR = fakePnpmPackageDir;
+	globalThis.fetch = async () =>
+		new Response(JSON.stringify({ version: "99.0.0" }), {
+			status: 200,
+			headers: { "content-type": "application/json" },
+		});
+	await handlePackageCommand(["update", "--self", "--force"]);
+	process.exitCode = 0;
+	if (savedDrivePath === undefined) delete process.env.PATH;
+	else process.env.PATH = savedDrivePath;
+	Object.defineProperty(process, "execPath", { value: originalExecPath, configurable: true });
+	if (originalPackageDir === undefined) delete process.env.PI_PACKAGE_DIR;
+	else process.env.PI_PACKAGE_DIR = originalPackageDir;
+}
 
 const toolFixture = mkdtempSync(join(tmpdir(), "pi-visible-tool-"));
 const archiveRoot = join(toolFixture, "archive");
@@ -1192,4 +1290,187 @@ if (!statuses.length || !warnings.length && !errors.length) {
 // Force render construction on containers whose constructors only register children.
 for (const component of [setup, compaction, branch, skill, new Container(), new Text(theme.fg("text", "done"), 0, 0)]) {
 	component.render(80);
+}
+
+// --- Goal 18 I7 tail: migrations, shortcut conflicts, prompt-file and
+// tool-download failure arms, models.json load warning, unreadable @file.
+
+{
+	// migrations.ts:144 (success, Global and Project) and :214 (tools→bin).
+	const migrationHome = mkdtempSync(join(tmpdir(), "pi-visible-migrations-"));
+	const migrationAgent = join(migrationHome, "agent");
+	mkdirSync(join(migrationAgent, "commands"), { recursive: true });
+	mkdirSync(join(migrationAgent, "tools"), { recursive: true });
+	writeFileSync(join(migrationAgent, "tools", "fd"), "managed-binary");
+	const migrationProject = join(migrationHome, "project");
+	mkdirSync(join(migrationProject, ".pi", "commands"), { recursive: true });
+	const savedAgentDir = process.env.PI_CODING_AGENT_DIR;
+	process.env.PI_CODING_AGENT_DIR = migrationAgent;
+	try {
+		runMigrations(migrationProject);
+	} finally {
+		if (savedAgentDir === undefined) delete process.env.PI_CODING_AGENT_DIR;
+		else process.env.PI_CODING_AGENT_DIR = savedAgentDir;
+	}
+
+	// migrations.ts:148 — the rename failure arm.  tsx transpiles the
+	// baseline to call-time CommonJS lookups, so patching the fs module
+	// object reaches the production import.
+	// Use a fresh agent directory: the success arm above already renamed
+	// commands/ to prompts/, and the migration only fires while prompts/
+	// is absent.
+	const migrationFailAgent = join(migrationHome, "agent-fail");
+	mkdirSync(join(migrationFailAgent, "commands"), { recursive: true });
+	const constructionRequire = createRequire(import.meta.url);
+	const fsModule = constructionRequire("node:fs") as typeof import("node:fs");
+	const realRenameSync = fsModule.renameSync;
+	fsModule.renameSync = (() => {
+		throw new Error("EACCES: permission denied, rename (construction drive)");
+	}) as never;
+	process.env.PI_CODING_AGENT_DIR = migrationFailAgent;
+	try {
+		runMigrations(migrationProject);
+	} finally {
+		fsModule.renameSync = realRenameSync;
+		if (savedAgentDir === undefined) delete process.env.PI_CODING_AGENT_DIR;
+		else process.env.PI_CODING_AGENT_DIR = savedAgentDir;
+	}
+}
+
+{
+	// runner.ts:513/521/529 — extension shortcut conflict diagnostics,
+	// driven without a UI context so they take the console.warn path.
+	const shortcutRunner = new ExtensionRunner(
+		[
+			{
+				shortcuts: new Map([
+					["ctrl+x", { extensionPath: "./ext-one" }],
+					["ctrl+shift+d", { extensionPath: "./ext-one" }],
+					["ctrl+shift+z", { extensionPath: "./ext-one" }],
+				]),
+			},
+			{
+				shortcuts: new Map([
+					["ctrl+shift+z", { extensionPath: "./ext-two" }],
+				]),
+			},
+		] as never,
+		{} as never,
+		process.cwd(),
+		{} as never,
+		{} as never,
+	);
+	shortcutRunner.getShortcuts({
+		"app.interrupt": "ctrl+x",
+		"app.session.delete": "ctrl+shift+d",
+	} as never);
+}
+
+{
+	// resource-loader.ts:62 — an existing but unreadable prompt file (a
+	// directory) warns and falls back to the literal input.
+	const promptHome = mkdtempSync(join(tmpdir(), "pi-visible-prompt-"));
+	const promptAgent = join(promptHome, "agent");
+	const promptCwd = join(promptHome, "project");
+	mkdirSync(promptAgent, { recursive: true });
+	mkdirSync(promptCwd, { recursive: true });
+	const promptDir = join(promptHome, "prompt-dir");
+	mkdirSync(promptDir);
+	const promptLoader = new DefaultResourceLoader({
+		cwd: promptCwd,
+		agentDir: promptAgent,
+		noExtensions: true,
+		noSkills: true,
+		noPromptTemplates: true,
+		noThemes: true,
+		noContextFiles: true,
+		systemPrompt: promptDir,
+		appendSystemPrompt: [promptDir],
+	});
+	await promptLoader.reload();
+}
+
+{
+	// tools-manager.ts:337 (offline) and :365 (download failure).  The
+	// construction environment is offline by default; clear it just for
+	// the failure arm and force fetch to reject.
+	const toolHome = mkdtempSync(join(tmpdir(), "pi-visible-tools-"));
+	mkdirSync(join(toolHome, "bin"), { recursive: true });
+	// The download-fixture drive above installed a fixture fd into the
+	// agent bin directory; remove it so getToolPath misses and both
+	// failure arms run.
+	try {
+		unlinkSync(join(process.env.PI_CODING_AGENT_DIR ?? join(process.env.HOME ?? "", ".pi", "agent"), "bin", "fd"));
+	} catch {
+		// already absent
+	}
+	const savedPath = process.env.PATH;
+	const savedOffline = process.env.PI_OFFLINE;
+	const savedToolAgentDir = process.env.PI_CODING_AGENT_DIR;
+	process.env.PATH = join(toolHome, "bin");
+	process.env.PI_CODING_AGENT_DIR = join(toolHome, "agent");
+	process.env.PI_OFFLINE = "1";
+	try {
+		await ensureTool("fd");
+		delete process.env.PI_OFFLINE;
+		const savedFetch = globalThis.fetch;
+		globalThis.fetch = (async () => {
+			throw new Error("network unreachable (construction drive)");
+		}) as never;
+		try {
+			await ensureTool("fd");
+		} finally {
+			globalThis.fetch = savedFetch;
+		}
+	} finally {
+		if (savedPath === undefined) delete process.env.PATH;
+		else process.env.PATH = savedPath;
+		if (savedOffline === undefined) delete process.env.PI_OFFLINE;
+		else process.env.PI_OFFLINE = savedOffline;
+		if (savedToolAgentDir === undefined) delete process.env.PI_CODING_AGENT_DIR;
+		else process.env.PI_CODING_AGENT_DIR = savedToolAgentDir;
+	}
+}
+
+{
+	// list-models.ts:32 — a models.json load failure warns before the
+	// table prints.
+	await listModels(
+		{
+			getError: () => "models.json is not valid JSON (construction drive)",
+			getAvailable: async () => [model],
+		} as never,
+		undefined,
+	);
+}
+
+{
+	// file-processor.ts:80 — an unreadable @file (a directory) is a red
+	// error and exit 1.
+	// A directory never reaches this branch in the baseline — mime
+	// detection throws EISDIR first — so drive it with a real file whose
+	// readFile fails (tsx resolves the production import through the
+	// CommonJS module object, which this patch replaces).
+	const fileArgHome = mkdtempSync(join(tmpdir(), "pi-visible-file-arg-"));
+	const fileArgFile = join(fileArgHome, "unreadable.txt");
+	writeFileSync(fileArgFile, "content that cannot be read\n");
+	const fileRequire = createRequire(import.meta.url);
+	const fsPromises = fileRequire("node:fs/promises") as typeof import("node:fs/promises");
+	const realReadFile = fsPromises.readFile;
+	fsPromises.readFile = (async () => {
+		throw new Error("EACCES: permission denied, open (construction drive)");
+	}) as never;
+	const realExit = process.exit;
+	process.exit = ((code?: number) => {
+		throw new Error(`__construction_exit_${code ?? 0}`);
+	}) as never;
+	try {
+		await processFileArguments([fileArgFile]);
+	} catch (error) {
+		if (!(error instanceof Error && error.message.startsWith("__construction_exit_"))) throw error;
+	} finally {
+		fsPromises.readFile = realReadFile;
+		process.exit = realExit;
+		process.exitCode = undefined;
+	}
 }

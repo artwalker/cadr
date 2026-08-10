@@ -812,7 +812,11 @@ class RenderDiffGateTest(unittest.TestCase):
                 RENDER_DIFF,
                 "run_visible_string_construction_suite",
                 return_value=Path(temporary) / "construction.raw",
-            ) as construct, mock.patch.object(RENDER_DIFF, "analyze", return_value=0):
+            ) as construct, mock.patch.object(
+                RENDER_DIFF,
+                "check_baseline_tool_definitions",
+                return_value=None,
+            ) as tool_definitions, mock.patch.object(RENDER_DIFF, "analyze", return_value=0):
                 self.assertEqual(RENDER_DIFF.gate(arguments), 0)
         self.assertEqual(
             len(calls), 2 * len(manifest["scenarios"]) * len(manifest["dimensions"])
@@ -822,6 +826,11 @@ class RenderDiffGateTest(unittest.TestCase):
         construct.assert_called_once_with(
             Path(temporary) / "instrumented",
             arguments.output.resolve(),
+            arguments.timeout,
+        )
+        tool_definitions.assert_called_once_with(
+            Path(temporary) / "instrumented",
+            manifest["baselineCommit"],
             arguments.timeout,
         )
 

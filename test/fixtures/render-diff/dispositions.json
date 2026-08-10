@@ -899,11 +899,11 @@
       "screenSha256": {
         "wide": {
           "pi": "b1feba317089d376d46a9155ee560ddb5431baea641a3eed41daf29062a234f2",
-          "cadr": "fbaf463fc203de3c1d1b9f479ca1c74711c965e4e03da798ceac5e173c2e38b7"
+          "cadr": "15d83eafe4fc0cc5eb671fb6fbbda5b9c9f0ae0f81f615d113ee727b29e1a28d"
         },
         "narrow": {
           "pi": "4784059b1598366202c630a018afd1d7ba6e4de0d3d1f02ec28bda181abe2887",
-          "cadr": "20c631df1c451b29031c9d61c0a49ea71a618d8ab07124b4137ae157801ac286"
+          "cadr": "8befc1e641a828b04cba1ae0a4d82ad8851dc0206f2d4c68d1671ca1e017f6f0"
         }
       },
       "note": "At fatal-crash/fatal-crash [wide+narrow] the crash fires from a driver-file trigger after the settled footer sync, so the capture is deterministic across runs; cadr applies the adjudicated Goal 13 fatal boundary: a one-line sanitized summary plus a private 0600 crash log path replaces pi's uncaughtException stack dump (I02); the settled footer shows usage and model exactly like pi; banner identity follows I04 and ANSI segmentation differs (I01). The crash log now lands under the agent layer (~/.cadr/agent/crash/), which the fixed normalization maps to the same <PRODUCT_CONFIG> placeholder."
@@ -6796,6 +6796,53 @@
         }
       },
       "note": "At selector-trust-inherited/trust-inherited-from-parent [narrow] the /trust selector showing the inherited parent decision matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+    }
+    ,
+    {
+      "scenario": "cli-error-sweep",
+      "checkpoint": "cli-errors-all",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4fb6b3432b7a3fbaf1ab27721331390db29e30b6693bb6a82fb2f6478e8354bd",
+          "cadr": "dea73998d8fbf23a5503cd66da99978ae4dcd859435ed27535aad67d8cfca460"
+        },
+        "narrow": {
+          "pi": "bc2ed20c6d6514c2ae3f43b4663065d03f6748a4ad3121ed81399632ba29cdf6",
+          "cadr": "78169ccc317e8835a5a4eaa1d0d8d13789361a6c158a7ffd9861340048ffe27d"
+        }
+      },
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01)."
+    },
+    {
+      "scenario": "cli-error-sweep",
+      "checkpoint": "cli-errors-startup-failures",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "5dfedc8bdb280ca4d760e26fca977d2c53f0d5bbfc1004d5d4a0a62f7b69444a",
+          "cadr": "f89fefa28481c81656b525f4f16ffc04ec74ea5bad266bc7a1a10b906afac2cd"
+        },
+        "narrow": {
+          "pi": "14db7d7523cb0693d3694ce7eee0ba02724a99a11ad1bc814fd8a5a5173bc85d",
+          "cadr": "f47753f1ea4822dfe9af8a23435239971e155985ddd2d88f5c230e103350139b"
+        }
+      },
+      "note": "At cli-error-sweep/cli-errors-startup-failures [wide+narrow] the corrupt-models.json warning (yellow 'Warning: errors loading models.json:' plus the 'Failed to parse models.json: <detail>' envelope and 'File:' line, with the engine parse detail normalized as <PARSER_DETAIL>), the empty-availability guidance, and the broken-extension fatal path (red 'Error: Failed to load extension \"<path>\": Failed to load extension: render-drive-broken' plus the yellow -ne hint) match the baseline byte-for-byte except: cadr identity in the hint text (I04); the CADR_STARTUP_BENCHMARK variable name (I04); the extension entry filename extension.lisp vs index.ts, each product's own convention (I04); the docs guidance path layout (I04); on narrow the checkpoint wraps the extension path mid-string so the per-side sandbox and .pi/.cadr directory fragments stay visible (I04); and ANSI segmentation (I01)."
     }
   ]
 }

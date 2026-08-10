@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 357,
+  "expected_findings": 370,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -1319,7 +1319,23 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "        args.pi_repo.resolve(),",
-      "occurrences": 2,
+      "occurrences": 3,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"/\" + (b\"pi00\" if side == \"pi\" else b\"cadr\")",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            args.pi_repo.resolve(),",
+      "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
@@ -2131,7 +2147,7 @@
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     },
     {
-      "path": "src/cadr-cli/packages/commands.lisp",
+      "path": "src/cadr-cli/packages/update-checks.lisp",
       "kind": "pi-token",
       "token": "Pi",
       "line": "            ;; Match Pi's Git update contract: an unavailable, empty, or",
@@ -2561,6 +2577,86 @@
       "line": "        [\"git\", \"-C\", str(pi_repo), \"ls-tree\", \"-r\", commit, \"--\", \"packages\"],",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  pi baseline checkout is now verified blob-for-blob against the",
+      "occurrences": 1,
+      "reason": "Immutable changelog history records the Goal 18 I5 baseline-verification work; the immutable pi checkout is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE",
+      "line": "        (b\"<PI_BASELINE>/packages/coding-agent/docs/\", b\"<PRODUCT_DOCS>/\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            # walker; the config file applies equally to pi and Cadr.",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; or session work (baseline main.ts:605-607).  They migrate pi-format",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical so the deprecation-warning output matches the baseline; the migrated commands/hooks formats are pi-inherited, so the upstream guide is the accurate documentation. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical so the deprecation-warning output matches the baseline. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        # Product documentation directories: pi resolves docs/ inside the",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Identity treatment flagged for user adjudication in the goal 18 I7-tail report."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; from pi, so the baseline guide is the accurate documentation for",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
     }
   ],
   "opaque_files": [

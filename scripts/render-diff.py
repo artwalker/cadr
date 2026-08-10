@@ -41,6 +41,157 @@ VISIBLE_STRING_CONSTRUCTION_DRIVER = ROOT / "test/fixtures/render-diff/baseline-
 VISIBLE_STRING_ENVIRONMENT_CONSTRUCTION_DRIVER = (
     ROOT / "test/fixtures/render-diff/baseline-visible-environment-construction.ts"
 )
+TOOL_DEFINITIONS_DRIVER = (
+    ROOT / "test/fixtures/render-diff/baseline-tool-definitions.ts"
+)
+TOOL_DEFINITIONS_FIXTURE = (
+    ROOT / "test/fixtures/render-diff/baseline-tool-definitions.json"
+)
+UNMODELED_SITE_REVIEW = (
+    ROOT / "test/fixtures/render-diff/visible-string-unmodeled-review.json"
+)
+
+UNMODELED_SINK_CALL = re.compile(
+    r"\b(console\.(?:log|warn|error|info)|process\.(?:stdout|stderr)\.write"
+    r"|show[A-Z]\w*|print[A-Z]\w*)\s*\("
+)
+
+
+def reverse_scan_unmodeled_sink_candidates(
+    inventory: dict[str, Any], repo: Path, commit: str
+) -> list[str]:
+    """Goal 18 I7.3: reverse-check the extraction's own completeness.
+
+    Every console/process-write/show*/print* call in the extracted source
+    roots whose arguments carry fixed text and whose span intersects no
+    inventory site is an unmodeled-sink candidate.  Each candidate must
+    hold a reviewed registry entry; a new one fails the gate."""
+    spans: dict[str, list[tuple[int, int]]] = {}
+    for entry in inventory["entries"]:
+        site = entry["site"]
+        spans.setdefault(site["path"], []).append((site["line"], site["endLine"]))
+    listing = subprocess.run(
+        ["git", "-C", str(repo), "ls-tree", "-r", "--name-only", commit, "--"]
+        + list(inventory["extractionRules"]["sourceRoots"]),
+        check=True,
+        stdout=subprocess.PIPE,
+        text=True,
+    ).stdout.splitlines()
+    candidates: list[str] = []
+    for path in listing:
+        if not path.endswith((".ts", ".tsx", ".cts", ".mts")):
+            continue
+        source = git_blob(repo, commit, path)
+        lines = source.splitlines()
+        offsets = [0]
+        for line in lines:
+            offsets.append(offsets[-1] + len(line) + 1)
+        for index, line in enumerate(lines):
+            stripped = line.strip()
+            if stripped.startswith(("export ", "interface ", "type ", "//", "*")):
+                continue
+            for match in UNMODELED_SINK_CALL.finditer(line):
+                start = offsets[index] + line.index(match.group(0)) + len(match.group(1))
+                call = extract_balanced_call(source, start)
+                if not call_has_fixed_text(call):
+                    continue
+                call_end_line = index + 1 + call.count("\n")
+                covered = any(
+                    lo <= call_end_line and index + 1 <= hi
+                    for lo, hi in spans.get(path, [])
+                )
+                if not covered:
+                    candidates.append(f"{path}:{index + 1}")
+    return candidates
+
+
+def extract_balanced_call(source: str, open_paren_offset: int) -> str:
+    open_paren_offset = source.index("(", open_paren_offset)
+    depth = 0
+    index = open_paren_offset
+    while index < len(source):
+        char = source[index]
+        if char == "(":
+            depth += 1
+        elif char == ")":
+            depth -= 1
+            if depth == 0:
+                return source[open_paren_offset : index + 1]
+        elif char in "\"'`":
+            quote = char
+            index += 1
+            while index < len(source) and source[index] != quote:
+                if source[index] == "\\":
+                    index += 1
+                index += 1
+        index += 1
+    return source[open_paren_offset:]
+
+
+def call_has_fixed_text(call: str) -> bool:
+    for quoted in re.findall(r'"([^"]+)"|\'([^\']+)\'', call):
+        if quoted[0] or quoted[1]:
+            return True
+    for template in re.findall(r"`([^`]*)`", call):
+        if re.sub(r"\$\{[^}]*\}", "", template).strip():
+            return True
+    return False
+
+
+def validate_unmodeled_site_review(
+    candidates: list[str], repo: Path, commit: str
+) -> None:
+    if not UNMODELED_SITE_REVIEW.is_file():
+        raise HarnessFailure(
+            f"unmodeled-sink review registry is missing: {UNMODELED_SITE_REVIEW}"
+        )
+    data = json.loads(UNMODELED_SITE_REVIEW.read_text(encoding="utf-8"))
+    if data.get("schemaVersion") != 1:
+        raise HarnessFailure("unmodeled-sink review registry schemaVersion must be 1")
+    if data.get("baselineCommit") != commit:
+        raise HarnessFailure(
+            "unmodeled-sink review registry commit does not match manifest"
+        )
+    entries = data.get("entries")
+    if not isinstance(entries, list):
+        raise HarnessFailure("unmodeled-sink review registry entries must be a list")
+    registered: dict[str, str] = {}
+    for entry in entries:
+        site = entry.get("site") if isinstance(entry, dict) else None
+        verdict = entry.get("verdict") if isinstance(entry, dict) else None
+        reason = entry.get("reason") if isinstance(entry, dict) else None
+        if (
+            not isinstance(site, str)
+            or not site
+            or verdict not in {
+                "covered-by-nested-site",
+                "covered-by-producer",
+                "declaration-not-a-call",
+                "control-token-not-presentation",
+                "accepted-geometry-fragment",
+                "accepted-duplicate-of-modeled-text",
+                "accepted-gap",
+            }
+            or not isinstance(reason, str)
+            or not reason.strip()
+        ):
+            raise HarnessFailure(
+                f"invalid unmodeled-sink review entry: {json.dumps(entry)}"
+            )
+        if site in registered:
+            raise HarnessFailure(f"duplicate unmodeled-sink review entry: {site}")
+        registered[site] = verdict
+    unregistered = sorted(set(candidates) - set(registered))
+    stale = sorted(set(registered) - set(candidates))
+    if unregistered:
+        raise HarnessFailure(
+            "unmodeled-sink candidates without a reviewed verdict: "
+            + ", ".join(unregistered)
+        )
+    if stale:
+        raise HarnessFailure(
+            "stale unmodeled-sink review entries: " + ", ".join(stale)
+        )
 PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.83.0"
 PI_AI_MODEL_DATA_SHA256 = "f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4"
 KEYS = {
@@ -69,46 +220,150 @@ KEYS = {
     "shift+l": b"L",
 }
 
+# Goal 18 I2 stopgap: the required set is the full set of coverage tags
+# the scenarios currently declare, so removing a scenario or a tag fails
+# closed.  The mechanical derivation from the baseline (the I2 cure) is
+# tracked separately; until it lands, this floor is regenerated from
+# scenarios.json whenever a scenario is added.
 REQUIRED_COVERAGE = {
-    "startup-first",
-    "startup-existing",
-    "startup-untrusted",
-    "plain-text",
-    "markdown",
-    "code-block",
-    "cjk-emoji",
+    "autocomplete-path",
+    "autocomplete-slash",
+    "bash-empty-output",
+    "bash-long-command-tree",
     "bash-multiline",
-    "read-range",
-    "edit",
-    "write",
-    "grep",
-    "find",
-    "ls",
-    "tool-failure",
     "bash-nonzero",
     "bash-timeout",
-    "overlay-model",
-    "overlay-session",
-    "overlay-fork",
-    "overlay-tree",
-    "overlay-settings",
-    "overlay-trust",
-    "overlay-auth-method",
-    "overlay-login-provider",
-    "overlay-login-dialog",
-    "stream-interrupt",
+    "bash-tool-abort",
+    "bash-truncation-bytes",
+    "bash-truncation-lines",
+    "bash-truncation-overlong-line",
     "busy-queue",
-    "provider-error",
-    "fatal-crash",
-    "tool-invalid-arguments",
+    "cjk-emoji",
+    "cli-error-contract",
+    "cli-help",
+    "code-block",
     "compaction-manual",
-    "compaction-threshold",
     "compaction-overflow",
-    "settings-state-sweep",
-    "slash-export",
-    "slash-login",
-    "slash-reload",
+    "compaction-threshold",
+    "config-command-help",
+    "config-selector-empty-public-cli",
+    "config-selector-global-project-states",
+    "config-selector-public-cli",
+    "config-selector-scroll",
+    "edit",
+    "edit-multiline-diff",
+    "extension-flag-help",
+    "fatal-crash",
+    "find",
+    "find-default-path",
+    "find-invalid-arguments",
+    "find-render-limits",
+    "grep",
+    "grep-default-path",
+    "grep-invalid-arguments",
+    "grep-render-limits",
+    "local-status-sweep",
+    "ls",
+    "ls-render-limits",
+    "markdown",
+    "overlay-auth-method",
+    "overlay-extension-editor",
+    "overlay-extension-input",
+    "overlay-extension-select",
+    "overlay-fork",
+    "overlay-import-confirmation",
+    "overlay-login-api-key",
+    "overlay-login-api-key-post-cancel",
+    "overlay-login-dialog",
+    "overlay-login-dialog-browser-callback",
+    "overlay-login-dialog-browser-callback-complete",
+    "overlay-login-dialog-device-code",
+    "overlay-login-dialog-device-code-cancel",
+    "overlay-login-dialog-device-code-post-cancel",
+    "overlay-login-dialog-manual-complete",
+    "overlay-login-dialog-post-cancel",
+    "overlay-login-provider",
+    "overlay-login-provider-method",
+    "overlay-login-provider-mixed-types",
+    "overlay-login-provider-scroll",
+    "overlay-logout",
+    "overlay-model",
+    "overlay-model-scope-and-empty-filter",
+    "overlay-model-scroll",
+    "overlay-scoped-models",
+    "overlay-scoped-models-dirty-disabled-and-empty-filter",
+    "overlay-scoped-models-unavailable-and-scroll",
+    "overlay-session",
+    "overlay-session-age-buckets",
+    "overlay-session-delete",
+    "overlay-session-rename",
+    "overlay-session-scope",
+    "overlay-settings",
+    "overlay-settings-image-capability",
+    "overlay-settings-theme",
+    "overlay-settings-theme-automatic",
+    "overlay-settings-theme-dark",
+    "overlay-settings-theme-light",
+    "overlay-settings-thinking",
+    "overlay-settings-warnings",
+    "overlay-tree",
+    "overlay-tree-label",
+    "overlay-tree-rich-tools",
+    "overlay-trust",
+    "overlay-trust-saved-direct",
+    "overlay-trust-saved-inherited",
+    "overlay-trust-untrusted",
+    "package-command-help",
+    "parallel-tool-calls",
+    "plain-text",
     "post-exit-resume",
+    "provider-error",
+    "public-package-update-notification",
+    "public-version-update-notification",
+    "public-version-update-notification-without-hyperlinks",
+    "read-compact-resource",
+    "read-compact-skill",
+    "read-error-preview-limit",
+    "read-first-line-too-long",
+    "read-offset-without-limit",
+    "read-range",
+    "read-truncation-bytes",
+    "read-truncation-lines",
+    "settings-state-sweep",
+    "slash-changelog",
+    "slash-clone",
+    "slash-compact",
+    "slash-copy",
+    "slash-debug",
+    "slash-export",
+    "slash-hotkeys",
+    "slash-import",
+    "slash-login",
+    "slash-logout",
+    "slash-name",
+    "slash-new",
+    "slash-quit",
+    "slash-reload",
+    "slash-session",
+    "slash-share",
+    "startup-existing",
+    "startup-first",
+    "startup-resources",
+    "startup-untrusted",
+    "stream-interrupt",
+    "tool-call-empty-values",
+    "tool-failure",
+    "tool-invalid-arguments",
+    "transcript-entry-kinds",
+    "tree-entry-kinds",
+    "trust-save-untrusted",
+    "user-bash-cancel",
+    "user-bash-expanded",
+    "user-bash-nonzero",
+    "user-bash-running",
+    "user-bash-truncation",
+    "write",
+    "write-render-invalid-and-preview",
 }
 
 REQUIRED_SIGNIFICANT_STATE_DOMAINS = {
@@ -230,6 +485,69 @@ def extract_baseline_interface_sites(repo: Path, commit: str) -> list[str]:
     return sorted(sites)
 
 
+def extract_baseline_login_dialog_methods(repo: Path, commit: str) -> list[str]:
+    """Goal 18 I2: the login dialog's public form surface is derived from
+    the baseline component, so a new show* method upstream becomes a new
+    coverage obligation instead of slipping past a hand-written list."""
+    source = git_blob(
+        repo,
+        commit,
+        "packages/coding-agent/src/modes/interactive/components/login-dialog.ts",
+    )
+    methods = re.findall(r"^\t(public )?(show[A-Z]\w*)\(", source, re.MULTILINE)
+    result = sorted({name for _visibility, name in methods})
+    if not result:
+        raise HarnessFailure("cannot locate fixed-baseline login dialog forms")
+    return result
+
+
+def extract_baseline_extension_events(repo: Path, commit: str) -> list[str]:
+    """Goal 18 I2: expand the baseline ExtensionEvent union to its leaf
+    event names, resolving type aliases to their interface `type` literals."""
+    source = git_blob(
+        repo, commit, "packages/coding-agent/src/core/extensions/types.ts"
+    )
+    aliases: dict[str, list[str]] = {}
+    interface_events: dict[str, str] = {}
+    interface_extends: dict[str, str] = {}
+    for match in re.finditer(
+        r"export type (\w+)\s*=\s*\n((?:\s*\|\s*\w+\s*\n?)+);", source
+    ):
+        aliases[match.group(1)] = re.findall(r"\|\s*(\w+)", match.group(2))
+    for match in re.finditer(
+        r"(?:export )?interface (\w+)(?:\s+extends\s+(\w+))?\s*\{([^}]*?)\n\}",
+        source,
+        re.DOTALL,
+    ):
+        literal = re.search(r'\ttype:\s*"([a-z_]+)";', match.group(3))
+        if literal:
+            interface_events[match.group(1)] = literal.group(1)
+        elif match.group(2):
+            interface_extends[match.group(1)] = match.group(2)
+    union = aliases.get("ExtensionEvent")
+    if not union:
+        raise HarnessFailure("cannot locate fixed-baseline ExtensionEvent union")
+    leaves: set[str] = set()
+    pending = list(union)
+    while pending:
+        name = pending.pop()
+        if name in aliases:
+            pending.extend(aliases[name])
+        elif name in interface_events:
+            leaves.add(interface_events[name])
+        elif name in interface_extends and interface_extends[name] in interface_events:
+            leaves.add(interface_events[interface_extends[name]])
+        else:
+            raise HarnessFailure(
+                f"ExtensionEvent member {name} resolves to neither alias nor event interface"
+            )
+    if len(leaves) < 30:
+        raise HarnessFailure(
+            f"fixed-baseline ExtensionEvent expansion suspiciously small: {len(leaves)}"
+        )
+    return sorted(leaves)
+
+
 def load_baseline_interface_inventory(
     path: Path, repo: Path, commit: str
 ) -> dict[str, Any]:
@@ -240,7 +558,14 @@ def load_baseline_interface_inventory(
         raise HarnessFailure("fixed-baseline interface inventory schemaVersion must be 1")
     if data.get("baselineCommit") != commit:
         raise HarnessFailure("fixed-baseline interface inventory commit does not match manifest")
-    for field in ("slashCommands", "interfaceIds", "constructors", "constructorSites"):
+    for field in (
+        "slashCommands",
+        "interfaceIds",
+        "constructors",
+        "constructorSites",
+        "loginDialogMethods",
+        "extensionEvents",
+    ):
         values = data.get(field)
         if (
             not isinstance(values, list)
@@ -249,6 +574,20 @@ def load_baseline_interface_inventory(
             or len(values) != len(set(values))
         ):
             raise HarnessFailure(f"invalid fixed-baseline interface inventory field: {field}")
+    login_dialog_coverage = data.get("loginDialogCoverage")
+    if (
+        not isinstance(login_dialog_coverage, dict)
+        or not login_dialog_coverage
+        or sorted(login_dialog_coverage) != data["loginDialogMethods"]
+        or not all(
+            isinstance(value, str) and value
+            for value in login_dialog_coverage.values()
+        )
+    ):
+        raise HarnessFailure(
+            "fixed-baseline interface inventory loginDialogCoverage must map "
+            "every derived login dialog method to a capture checkpoint"
+        )
 
     verified_from_git = git_repository_has_commit(repo, commit)
     if verified_from_git:
@@ -256,6 +595,8 @@ def load_baseline_interface_inventory(
             "slashCommands": extract_baseline_slash_commands(repo, commit),
             "constructors": extract_baseline_interface_constructors(repo, commit),
             "constructorSites": extract_baseline_interface_sites(repo, commit),
+            "loginDialogMethods": extract_baseline_login_dialog_methods(repo, commit),
+            "extensionEvents": extract_baseline_extension_events(repo, commit),
         }
         for field, values in extracted.items():
             if data[field] != values:
@@ -298,6 +639,18 @@ def validate_interface_registry(
         DEFAULT_BASELINE_INVENTORY, repo, commit
     )
     captures = manifest_checkpoints(manifest)
+    for method, checkpoint in baseline_inventory["loginDialogCoverage"].items():
+        scenario, _, checkpoint_id = checkpoint.partition("/")
+        # "production-sink-construction" names the baseline construction
+        # suite: the form is driven there byte-exactly when no login flow
+        # reaches it in the harness (see docs/render-diff.md).
+        if scenario != "production-sink-construction" and (
+            scenario,
+            checkpoint_id,
+        ) not in captures:
+            raise HarnessFailure(
+                f"login dialog form {method} maps to uncaptured checkpoint: {checkpoint}"
+            )
 
     commands = data.get("slashCommands")
     if not isinstance(commands, list):
@@ -692,6 +1045,10 @@ def extract_baseline(pi_repo: Path, commit: str, destination: Path) -> None:
     shutil.copy2(VISIBLE_STRING_EXTRACTOR, visible_target)
     construction_target = destination / "packages/coding-agent/test/goal17-visible-construction.ts"
     shutil.copy2(VISIBLE_STRING_CONSTRUCTION_DRIVER, construction_target)
+    shutil.copy2(
+        TOOL_DEFINITIONS_DRIVER,
+        destination / "packages/coding-agent/test/goal18-tool-definitions.ts",
+    )
 
 
 def hydrate_baseline_model_data(baseline: Path) -> None:
@@ -801,6 +1158,10 @@ def ensure_baseline(pi_repo: Path, commit: str, cache: Path) -> Path:
             VISIBLE_STRING_CONSTRUCTION_DRIVER,
             cache / "packages/coding-agent/test/goal17-visible-construction.ts",
         )
+        shutil.copy2(
+            TOOL_DEFINITIONS_DRIVER,
+            cache / "packages/coding-agent/test/goal18-tool-definitions.ts",
+        )
         return cache
     if cache.exists():
         raise HarnessFailure(
@@ -865,7 +1226,41 @@ def prepare_instrumented_baseline(
         destination
         / "packages/coding-agent/test/goal17-visible-environment-construction.ts",
     )
+    shutil.copy2(
+        TOOL_DEFINITIONS_DRIVER,
+        destination / "packages/coding-agent/test/goal18-tool-definitions.ts",
+    )
     return destination
+
+
+def check_baseline_tool_definitions(baseline: Path, commit: str, timeout: float) -> None:
+    """Goal 18 Part K: the model-visible tool contract (description,
+    parameter schema, prompt snippet) is derived from the fixed baseline
+    at gate time and compared against the committed fixture, so an
+    upstream change or a stale fixture fails closed."""
+    result = subprocess.run(
+        [
+            str(baseline / "node_modules/.bin/tsx"),
+            "packages/coding-agent/test/goal18-tool-definitions.ts",
+            commit,
+        ],
+        cwd=baseline,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        timeout=timeout,
+    )
+    if result.returncode != 0:
+        raise HarnessFailure(
+            "baseline tool-definition dump failed: "
+            + result.stderr.decode("utf-8", errors="backslashreplace")[-2000:]
+        )
+    expected = TOOL_DEFINITIONS_FIXTURE.read_bytes()
+    if result.stdout != expected:
+        raise HarnessFailure(
+            "fixed-baseline tool-definition fixture drift; regenerate "
+            "test/fixtures/render-diff/baseline-tool-definitions.json from "
+            "the baseline checkout and review the change"
+        )
 
 
 def run_visible_string_construction_suite(
@@ -1999,6 +2394,14 @@ def capture_side(
 def normalize_fixed_values(data: bytes) -> bytes:
     replacements = [
         (str(Path("/tmp/cadr-render-diff-pi-74caa2649")).encode(), b"<PI_BASELINE>"),
+        # Product documentation directories: pi resolves docs/ inside the
+        # baseline package, cadr beside its own source root.
+        (b"<PI_BASELINE>/packages/coding-agent/docs/", b"<PRODUCT_DOCS>/"),
+        ((str(ROOT / "docs") + "/").encode(), b"<PRODUCT_DOCS>/"),
+        # The broken-extension fixture's entry file carries each product's
+        # own extension entry convention (index.ts vs extension.lisp).
+        (b"extensions/broken/index.ts", b"extensions/broken/<ENTRY>"),
+        (b"extensions/broken/extension.lisp", b"extensions/broken/<ENTRY>"),
         (
             b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v0.83.0",
             b"<PRODUCT>\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v<VERSION>",
@@ -2061,6 +2464,24 @@ def normalize_fixed_values(data: bytes) -> bytes:
     result = data
     for old, new in replacements:
         result = result.replace(old, new)
+    # The models.json parse detail is the engine's own JSON parser
+    # diagnostic (V8 position text vs the Lisp reader's); only the
+    # envelope and file path are contractual.
+    result = re.sub(
+        rb"(?<=Failed to parse models\.json: )[^\r\n]+?"
+        rb"(?=(?:\x1b\[[0-9;]*m)*\r?\n(?:\x1b\[[0-9;]*m)*\r?\n(?:\x1b\[[0-9;]*m)*File:)",
+        b"<PARSER_DETAIL>",
+        result,
+    )
+    # On the semantic screen the detail may be wrapped mid-word by the
+    # terminal width; the wrapped form keeps the reset/blank/File tail.
+    result = re.sub(
+        rb"(?<=Failed to parse models\.json: ).+?"
+        rb"(?=(?:\x1b\[[0-9;]*m)* *\r?\n(?:\x1b\[[0-9;]*m)* *\r?\n(?:\x1b\[[0-9;]*m)*File:)",
+        b"<PARSER_DETAIL>",
+        result,
+        flags=re.DOTALL,
+    )
     result = re.sub(rb"(?<=Took )[0-9]+(?:\.[0-9]+)?(?=s)", b"<ELAPSED>", result)
     result = re.sub(
         rb"(?<=\x1b\[38;2;138;190;183m)"
@@ -2078,6 +2499,20 @@ def normalize_fixed_values(data: bytes) -> bytes:
         rb"Context overflow detected, Auto-compacting\.\.\. \(escape to cancel\)"
         rb"))",
         "⠋".encode("utf-8"),
+        result,
+    )
+    # Narrow screens truncate the status phrase right after the spinner
+    # glyph (the row wraps mid-phrase), which defeats the full-phrase
+    # lookaheads above.  The accent-colored braille glyph followed by a
+    # muted status prefix is already a unique spinner signature, so match
+    # the prefix only.
+    result = re.sub(
+        rb"(?<=\x1b\[38;2;138;190;183m)"
+        rb"\xe2[\xa0-\xa3][\x80-\xbf]"
+        rb"(?=\x1b\[39m \x1b\[38;2;128;128;128m(?:"
+        rb"Working|Compacting context|Auto-compacting|"
+        rb"Context overflow detected,))",
+        "\u280b".encode("utf-8"),
         result,
     )
     result = re.sub(
@@ -2192,6 +2627,14 @@ def normalized_screen(data: bytes, side: str) -> bytes:
             + separator
             + screen_wrapped_literal_pattern(b".log")
         )
+        # The random middle component of the crash id varies in length, so
+        # the grid-fill pads after the path vary with it; consume them to
+        # keep the normalized row stable across runs.
+        result = re.sub(
+            wrapped_crash_path + rb" +(?=\r?\n)",
+            b"<HOME>/<PRODUCT_CONFIG>/crash/cadr-crash-<CRASH_ID>.log",
+            result,
+        )
         result = re.sub(
             wrapped_crash_path,
             b"<HOME>/<PRODUCT_CONFIG>/crash/cadr-crash-<CRASH_ID>.log",
@@ -2214,6 +2657,42 @@ def normalized_screen(data: bytes, side: str) -> bytes:
             b"goal15-render-driver.ts:<DRIVER_LINE>:<DRIVER_COLUMN>",
             result,
         )
+    # Wrap-tolerant variants: on narrow screens a long sandbox path wraps
+    # mid-string and the single-line prefix rules above cannot match,
+    # leaving per-run temp suffixes in the semantic screen.  The wrapped
+    # form consumes the hard-wrap newlines inside the match; the suffix
+    # length is fixed, so the normalized result is run-independent.
+    wrapped_sandbox_prefix = (
+        screen_wrapped_literal_pattern(b"/tmp/cadr-render-diff-")
+        + separator
+        + temporary_suffix
+        + separator
+        + screen_wrapped_literal_pattern(
+            b"/" + (b"pi00" if side == "pi" else b"cadr")
+        )
+    )
+    result = re.sub(
+        wrapped_sandbox_prefix + screen_wrapped_literal_pattern(b"/home"),
+        b"<HOME>",
+        result,
+    )
+    result = re.sub(
+        wrapped_sandbox_prefix + screen_wrapped_literal_pattern(b"/workspace"),
+        b"<CWD>",
+        result,
+    )
+    # The broken-extension fixture's entry path also wraps on narrow
+    # screens; normalize each product's entry convention across wraps.
+    result = re.sub(
+        screen_wrapped_literal_pattern(b"extensions/broken/index.ts"),
+        b"extensions/broken/<ENTRY>",
+        result,
+    )
+    result = re.sub(
+        screen_wrapped_literal_pattern(b"extensions/broken/extension.lisp"),
+        b"extensions/broken/<ENTRY>",
+        result,
+    )
     result = re.sub(prefix + rb"/home", b"<HOME>", result)
     result = re.sub(prefix + rb"/workspace", b"<CWD>", result)
     result = re.sub(prefix, b"<SANDBOX>", result)
@@ -2577,6 +3056,15 @@ def analyze(args: argparse.Namespace) -> int:
         manifest["baselineCommit"],
         args.visible_string_inventory.resolve(),
     )
+    validate_unmodeled_site_review(
+        reverse_scan_unmodeled_sink_candidates(
+            visible_inventory,
+            args.pi_repo.resolve(),
+            manifest["baselineCommit"],
+        ),
+        args.pi_repo.resolve(),
+        manifest["baselineCommit"],
+    )
     disposition_data = load_dispositions(
         args.dispositions.resolve(), manifest["baselineCommit"]
     )
@@ -2825,6 +3313,9 @@ def gate(args: argparse.Namespace) -> int:
                     capture(visible_arguments)
                 captures += 1
         if instrumented_baseline is not None:
+            check_baseline_tool_definitions(
+                instrumented_baseline, manifest["baselineCommit"], args.timeout
+            )
             run_visible_string_construction_suite(
                 instrumented_baseline,
                 args.output.resolve(),

@@ -95,6 +95,21 @@ normalized streams are used only for per-checkpoint raw-byte segmentation.
 `test/fixtures/render-diff/dispositions.json` is fail-closed: missing, stale,
 duplicate, or unknown dispositions make analysis fail.
 
+Value normalization is confined to exact delimiters and each rule maps a
+known engine/product difference, never a behavior difference.  The current
+rule set covers: fixture temp paths, the product name/version/title strings
+and the `PI_*`/`CADR_*` environment prefix (I04), the spinner glyph (frame
+timing), elapsed seconds, the startup-benchmark variable name, and — added
+for the Goal 18 I7 tail — three more: the product documentation directory
+(`<PI_BASELINE>/packages/coding-agent/docs/` vs `<repo>/docs/`, both mapped
+to `<PRODUCT_DOCS>/`), the broken-extension fixture's entry filename
+(`index.ts` vs `extension.lisp`, each product's own extension entry
+convention, mapped to `<ENTRY>`), and the models.json parse-failure detail
+(`<PARSER_DETAIL>`: the text between `Failed to parse models.json: ` and
+the `File:` line is V8's position diagnostic vs the Lisp reader's — engine
+property, not product behavior; the surrounding envelope, stream, color,
+and file path remain byte-compared).
+
 The scenario domain is fail-closed too. `reachable-interfaces.json` records all
 22 fixed-baseline slash commands, 28 reachable interface states, 15 component
 constructors at 22 source construction sites, all 13 Cadr overlay kinds, and
@@ -265,6 +280,39 @@ resource or state must have both an empty-state and a populated-state capture
 — one of the two is never enough. The populated startup-resource capture
 (`startup-resources`) and the empty startup captures (`startup-first`,
 `startup-existing`, `startup-untrusted`) are the reference pair.
+
+## Derived coverage obligations (Goal 18 I2/I7)
+
+Hand-picked obligation lists can only name what someone already thought of.
+The gate therefore derives its required-coverage sets from the fixed baseline
+at analysis time and fails closed on any drift:
+
+- **Slash commands, interface constructors, construction sites** are
+  re-extracted from the baseline commit's git objects and compared against
+  `baseline-interface-inventory.json`.
+- **Login dialog forms** (the eight `show*` methods of `login-dialog.ts`)
+  are extracted the same way; `loginDialogCoverage` maps every method to a
+  scenario checkpoint, or to `production-sink-construction` when no login
+  flow in the harness reaches the form (the construction suite then drives
+  it byte-exactly).
+- **Extension events** are the mechanical expansion of the `ExtensionEvent`
+  union in `types.ts`; a FiveAM test asserts Cadr's event set equals the
+  derived set modulo the adjudicated `tool_call`/`tool_result` split.
+- **Unmodeled-sink reverse scan (I7.3)**: every `console.*`, process-write,
+  `show*`, or `print*` call in the extracted source roots whose arguments
+  carry fixed text and whose span touches no inventory site is an unmodeled
+  candidate.  Each candidate must hold a verdict in
+  `visible-string-unmodeled-review.json`; an unregistered candidate or a
+  stale verdict fails the gate.  This is the check that would have caught
+  the keybinding-description and login-form sink gaps on the day they were
+  introduced.
+- **Required coverage floor**: `REQUIRED_COVERAGE` is the full set of
+  coverage tags the scenarios currently declare, so removing a scenario or
+  a tag fails the gate; it is regenerated from `scenarios.json` whenever a
+  scenario is added.
+
+The current diff report for these derived sets is
+`docs/goal18-i2-derived-coverage.md`.
 
 ## Relationship to the parity ledgers
 

@@ -61,6 +61,29 @@
       ]
     },
     {
+      "id": "cli-error-sweep",
+      "tier": "full",
+      "group": "full-state-sweep",
+      "coverage": ["cli-error-contract"],
+      "description": "Drives the CLI argument, session-resolution, export, auth, and package-command error paths through each product's real entrypoint with production wording, color, stream, and exit status.",
+      "setup": {
+        "entrypoint": "cli-errors",
+        "trustSavedDecision": { "scope": "current", "decision": false },
+        "fixtureFiles": [
+          { "root": "projectConfig", "path": "skills/placeholder.txt", "content": "trust anchor\n" },
+          { "root": "agent", "path": "commands/review.md", "content": "Review the fixture.\n" },
+          { "root": "agent", "path": "tools/fd", "content": "fixture-fd\n" }
+        ]
+      },
+      "responses": [],
+      "actions": [
+        { "waitFor": "only supports interactive mode" },
+        { "checkpoint": "cli-errors-all" },
+        { "waitFor": "Start without extensions using" },
+        { "checkpoint": "cli-errors-startup-failures" }
+      ]
+    },
+    {
       "id": "startup-untrusted",
       "group": "startup",
       "coverage": ["startup-untrusted", "overlay-trust-untrusted", "trust-save-untrusted"],
@@ -742,7 +765,7 @@
         { "sendText": "/login render-auth" }, { "send": "enter" }, { "pauseMs": 300 },
         { "sendSide": { "pi": "enter" } },
         { "waitFor": "Select authentication method for Render Auth:" }, { "checkpoint": "auth-method-provider" },
-        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "waitFor": "Paste the authorization code" }, { "waitFor": "to cancel" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
+        { "send": "enter" }, { "waitFor": "Login to Render Auth" }, { "waitFor": "Paste the authorization code" }, { "waitFor": "to cancel" }, { "waitFor": "\u001b[2K> \u001b[7m" }, { "checkpoint": "login-dialog" }, { "send": "escape" },
         { "pauseMs": 100 }, { "checkpoint": "login-cancelled" },
         { "send": "escape" }, { "pauseMs": 100 },
         { "sendText": "post-cancel probe" }, { "send": "enter" },
