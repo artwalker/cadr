@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 373,
+  "expected_findings": 374,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -2681,6 +2681,14 @@
       "line": "  (defparameter +cadr-aligned-pi-release+ release)",
       "occurrences": 1,
       "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner \u2014 the",
+      "occurrences": 1,
+      "reason": "Changelog records the baseline-anchor ownership change; the fixed pi baseline is reference input, not Cadr identity."
     }
   ],
   "opaque_files": [
