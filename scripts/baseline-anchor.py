@@ -49,6 +49,9 @@ def describe(commit: str, root: Path = ROOT) -> tuple[str, str]:
     ).stdout.strip()
     match = re.fullmatch(r"(v\d+\.\d+\.\d+)-(\d+)-g[0-9a-f]+", result)
     if not match:
+        if re.fullmatch(r"v\d+\.\d+\.\d+", result):
+            # Exact tag: zero commits ahead.
+            return result, "0"
         raise SystemExit(f"baseline anchor: cannot describe {commit}: {result}")
     return match.group(1), match.group(2)
 

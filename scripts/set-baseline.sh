@@ -24,11 +24,21 @@ git -C "$PROJECT_DIRECTORY" cat-file -e "$NEW_COMMIT^{commit}" || {
 }
 
 OLD_COMMIT="$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE")"
+cp "$PROJECT_DIRECTORY/BASELINE" "$PROJECT_DIRECTORY/.baseline-prev"
 OLD_SHORT="${OLD_COMMIT:0:9}"
 NEW_SHORT="${NEW_COMMIT:0:9}"
 DESCRIBE="$(git -C "$PROJECT_DIRECTORY" describe --tags "$NEW_COMMIT")"
-NEW_RELEASE="$(printf '%s' "$DESCRIBE" | sed -E 's/^(v[0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)-g[0-9a-f]+$/\1/')"
-NEW_DISTANCE="$(printf '%s' "$DESCRIBE" | sed -E 's/^(v[0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)-g[0-9a-f]+$/\2/')"
+if printf '%s' "$DESCRIBE" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+-[0-9]+-g[0-9a-f]+$'; then
+  NEW_RELEASE="$(printf '%s' "$DESCRIBE" | sed -E 's/^(v[0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)-g[0-9a-f]+$/\1/')"
+  NEW_DISTANCE="$(printf '%s' "$DESCRIBE" | sed -E 's/^(v[0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)-g[0-9a-f]+$/\2/')"
+elif printf '%s' "$DESCRIBE" | grep -qE '^v[0-9]+\.[0-9]+\.[0-9]+$'; then
+  # Exact tag: zero commits ahead.
+  NEW_RELEASE="$DESCRIBE"
+  NEW_DISTANCE="0"
+else
+  echo "set-baseline: cannot parse git describe output: $DESCRIBE" >&2
+  exit 1
+fi
 
 printf '%s %s %s\n' "$NEW_COMMIT" "$NEW_RELEASE" "$NEW_DISTANCE" \
   > "$PROJECT_DIRECTORY/BASELINE"
@@ -47,11 +57,22 @@ targets="$(
     | grep -v -E '\.tmp|node_modules'
 )"
 
+OLD_RELEASE="$(cut -d' ' -f2 "$PROJECT_DIRECTORY/.baseline-prev")"
+OLD_DISTANCE="$(cut -d' ' -f3 "$PROJECT_DIRECTORY/.baseline-prev")"
 for file in $targets; do
-  sed -i -e "s/$OLD_COMMIT/$NEW_COMMIT/g" -e "s/$OLD_SHORT/$NEW_SHORT/g" "$file"
+  sed -i \
+    -e "s/$OLD_COMMIT/$NEW_COMMIT/g" \
+    -e "s/$OLD_SHORT/$NEW_SHORT/g" \
+    -e "s/$OLD_RELEASE/$NEW_RELEASE/g" \
+    -e "s/(+$OLD_DISTANCE,/(+$NEW_DISTANCE,/g" \
+    "$file"
 done
 
 echo "set-baseline: $OLD_SHORT -> $NEW_SHORT ($NEW_RELEASE +$NEW_DISTANCE)"
 echo "rewritten files:"
 printf '%s\n' $targets
+rm -f "$PROJECT_DIRECTORY/.baseline-prev"
 echo "next: python3 scripts/baseline-anchor.py check && ./scripts/verify.sh"
+echo "note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in"
+echo "      scripts/render-diff.py pin the model-data artifact; update them"
+echo "      from the new baseline's package metadata during the upgrade."
