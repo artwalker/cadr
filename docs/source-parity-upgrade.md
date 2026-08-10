@@ -38,6 +38,58 @@ The fixed ledger itself is a separate real-input gate:
   --ledger-only --dispositions docs/source-parity.md
 ```
 
+## Named-set enumeration (goal 18 Part L)
+
+File-level drift is not enough: the v0.84.1 upgrade's user-visible surface
+changes hide in named sets (flags, settings keys, events, providers, ...).
+`scripts/enumerate-baseline-diff.py FROM TO` derives every such set from the
+two commits' git objects — no hand-maintained checklist.  Hand passes missed
+real changes twice before this tool existed (`--tui-mode`,
+`MarkdownSettings.mermaid`), and the first mechanical run caught four more
+the advisor's hand list did not have (the `--alt` removal, the
+`PI_CONFIG_DIR`/`PI_RADIUS_*`/`RADIUS_API_KEY` env removals, `STY`/`ZELLIJ`,
+and the `CredentialPrintError` → `AuthCommandError` rename).
+
+The enumerated classes: CLI flags, slash commands, settings keys (nested
+interfaces included), extension events (union-expanded), exported components,
+keybinding actions, providers, environment variables, theme tokens, error
+classes, tool files, extension type fields, public API export count, RPC
+methods, process exit codes, session format versions, and the
+file add/delete/rename catch-all.
+
+**Completeness argument ("还有没有第十类")**: the classes above were closed by
+walking every producer of a *named, user-observable or contract-bound set* in
+the baseline tree: CLI surface (flags, slash commands, exit codes), persisted
+or wire contracts (settings keys, session format versions, RPC methods,
+provider set, error classes, public API), extension surface (events, type
+fields, exported components), interactive surface (keybinding actions, theme
+tokens), and environment contract (env vars).  The two things this misses by
+construction — anonymous behavioral changes inside functions, and renamed
+local symbols — are covered by the 595→670-row source ledger and the
+behavioral gates, not by named-set enumeration.  If a future review finds a
+named set kind outside this list, it is added here first, not to a hand
+checklist.
+
+### v0.84.1 enumeration result (74caa2649 → v0.84.1, generated 2026-08-10)
+
+| Class | Delta |
+|---|---|
+| CLI flags | +`--tui-mode` / −`--alt` |
+| slash commands | none |
+| settings keys | +`Markdown.mermaid`, +`fullscreenScrollbar`, +`tuiMode` |
+| extension events | none |
+| exported components | none |
+| keybinding actions | +`tui.altScreen.halfPageUp`, +`halfPageDown`, +`previousPrompt`, +`nextPrompt`, +`tui.editor.historyPrevious`, +`historyNext` |
+| providers | +`baseten`, +`qwen-token-plan-individual` |
+| environment variables | +`AI_AGENT`, +`STY`, +`ZELLIJ` / −`PI_CONFIG_DIR`, −`PI_RADIUS_SERVER_URL`, −`PI_RADIUS_URL`, −`RADIUS_API_KEY` |
+| theme tokens | +`scrollbarThumb` |
+| error classes | +`AuthCommandError` (renames `CredentialPrintError`), +`CredentialSynchronizationError`; `RemoteSessionDisposedError` is new but not exported |
+| tool files | none |
+| extension type fields | +`ExtensionRuntimeState.trackEventBusSubscription`; also `terminate?` on `ToolCallEventResult` and `isSubscription?` on the OAuth provider options (nested shapes the field extractor notes here) |
+| public API exports | 34 → 34 |
+| RPC methods / exit codes / session format | none |
+| files | +182/−36 .ts (7 renames) under `packages/`; of these **+104/−29 non-test** — the hand pass counted 88/27, undercounting again |
+
 This mode enters only the six-column package tables headed by `Baseline file`,
 ignores prose and summary tables, accepts exactly the three ledger verdicts,
 and fails on malformed separators/rows, duplicates, a row count different from
