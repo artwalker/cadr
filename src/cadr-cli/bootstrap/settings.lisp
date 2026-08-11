@@ -53,7 +53,7 @@
          nil)))))
 
 (defun settings-clear-on-shrink-p (manager)
-  ;; pi@74caa2649 settings-manager.ts:1093-1099 gives an explicit setting
+  ;; pi@53fa77ccd settings-manager.ts:1093-1099 gives an explicit setting
   ;; precedence over the environment and defaults to false.
   (settings-boolean-value
    manager "terminal"

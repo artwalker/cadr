@@ -30,8 +30,8 @@ if (!globalThis.gc) {
 const revision = execFileSync("git", ["-C", baselineDirectory, "rev-parse", "HEAD"], {
 	encoding: "utf8",
 }).trim();
-if (revision !== "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5") {
-	throw new Error(`expected baseline 74caa2649, got ${revision}`);
+if (revision !== "53fa77ccd8a279eb87e92294ef3687b03ff80112") {
+	throw new Error(`expected baseline 53fa77ccd, got ${revision}`);
 }
 const trackedStatus = execFileSync(
 	"git",

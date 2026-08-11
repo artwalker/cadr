@@ -1,6 +1,6 @@
 # Source parity ledger
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/518/77/0 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=595/518/77/0 examples=99/99/0 -->
 
 ## 1. Scope and counting rules
 
@@ -10,8 +10,8 @@ presentation equivalence; those independent axes live in `docs/parity-map.md`,
 `docs/performance.md`, and `docs/presentation-parity.md`. The runnable-example
 `examples/manifest.sexp` is an auxiliary inventory, not another ledger.
 
-Source baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-(`v0.83.0-38-g74caa2649`), read from `/tmp/cadr-parity-74caa2649`.
+Source baseline: `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`
+(`v0.84.1-38-g53fa77ccd`), read from `/tmp/cadr-parity-53fa77ccd`.
 The denominator is every tracked `*.ts` file below `packages/` except paths
 ending in `*.test.ts`. This includes TypeScript configs, executable examples,
 and non-`.test.ts` helpers under `test/`; it excludes generated/untracked files.
@@ -25,7 +25,7 @@ The initial Cadr-side audit was made at
 only after their implementation and regression commits land.
 
 ```sh
-git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only 74caa2649 -- packages \
+git -C /tmp/cadr-parity-53fa77ccd ls-tree -r --name-only 53fa77ccd -- packages \
   | awk '$0 !~ /\.test\.ts$/ && $0 ~ /\.ts$/' | LC_ALL=C sort
 ```
 

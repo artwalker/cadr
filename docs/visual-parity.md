@@ -1,6 +1,6 @@
 # Goal 9 Part B visual parity ledger
 
-基线固定为 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+基线固定为 `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`。
 本文记录可机械验证的视觉与交互合约；最终观感仍由 B3 双终端 A/B 门禁裁决。
 
 ## B2 方法论：视觉合约包含运行时状态
@@ -62,9 +62,9 @@ B2 不再把静态常量、单次组件 render 或最终字符串相等视为充
 
 ```bash
 git -C /root/projects/pi-mono worktree add --detach \
-  /tmp/cadr-parity-74caa2649 \
-  74caa2649f10ed71b4378ce69f5d9fbfd2466ca5
-cd /tmp/cadr-parity-74caa2649
+  /tmp/cadr-parity-53fa77ccd \
+  53fa77ccd8a279eb87e92294ef3687b03ff80112
+cd /tmp/cadr-parity-53fa77ccd
 npm ci --ignore-scripts
 npm run hydrate:model-data
 npm run build:offline
@@ -76,7 +76,7 @@ npm run build:offline
 
 ```text
 git rev-parse HEAD
-74caa2649f10ed71b4378ce69f5d9fbfd2466ca5
+53fa77ccd8a279eb87e92294ef3687b03ff80112
 
 ./node_modules/.bin/tsx packages/coding-agent/src/cli.ts --version
 0.83.0
@@ -307,7 +307,7 @@ remains visible. The real-controller regressions are
 用户 A/B 先后发现最后一行 transcript 与 editor 上边框过近，以及短会话整体被锚在
 viewport 底部。两者都不是 `Output padding` 或 `Editor padding` 的数值问题。基线构成如下：
 
-| 区域 | 基线 `74caa2649` 证据 | Cadr 结论 |
+| 区域 | 基线 `53fa77ccd` 证据 | Cadr 结论 |
 |---|---|---|
 | transcript 顶部 | `interactive-mode.ts:758-817`：header 自带前后各一个 `Spacer(1)`；无 header/chat 时没有额外固定顶部 margin。 | `render-tui-state` 的 startup 前后各一空行；冷启动、单轮、三轮整屏快照锁定。已核实一致。 |
 | transcript 条目间 | `interactive-mode.ts:3318-3369`：已有 chat 后的新 user 前加一个 spacer，assistant 直接追加；`assistant-message.ts:100-114` 仅在可见 assistant 内容前加一个 spacer。 | `src/cadr-cli/tui.lisp:1983-1999` 同构；单轮、多轮、thinking 快照锁定。已核实一致。 |
@@ -537,7 +537,7 @@ Alt 键测试只喂了合成的 legacy `ESC p`，没有真实 CSI/Kitty/modifyOt
 Terminal A，基线：
 
 ```bash
-cd /tmp/cadr-parity-74caa2649
+cd /tmp/cadr-parity-53fa77ccd
 PI_CODING_AGENT_DIR=/tmp/cadr-goal9-ab-pi-agent \
 PI_OFFLINE=1 \
 ./node_modules/.bin/tsx packages/coding-agent/src/cli.ts \

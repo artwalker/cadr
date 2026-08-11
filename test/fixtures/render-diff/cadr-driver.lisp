@@ -1351,7 +1351,7 @@ render loopback login received
               (lambda (event)
                 (when event-consumer
                   (funcall event-consumer event))))))
-      ;; pi@74caa2649 sdk.ts:362-374 records model/thinking only for a new
+      ;; pi@53fa77ccd sdk.ts:362-374 records model/thinking only for a new
       ;; session.  Existing sessions restore their graph and append thinking
       ;; only when the active branch has no thinking-level entry.
       (if (cadr-agent:agent-messages agent)

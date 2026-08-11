@@ -18,7 +18,7 @@
      (make-string padding :initial-element #\Space))))
 
 (defun goal9-b3-overlay-text-line (value width)
-  ;; pi@74caa2649 Text/TruncatedText owns the complete row.  This oracle is
+  ;; pi@53fa77ccd Text/TruncatedText owns the complete row.  This oracle is
   ;; intentionally implemented from the baseline width contract instead of
   ;; calling Cadr's selector helpers.
   (let* ((limited
@@ -164,13 +164,13 @@
             :done-function (constantly nil))))))
 
 (test goal15-overlay-cursor-contract-follows-the-focused-input-component
-  ;; Fixed pi@74caa2649 input components own the cursor.  Selectors without an
+  ;; Fixed pi@53fa77ccd input components own the cursor.  Selectors without an
   ;; Input/Focusable component return no cursor metadata at all; they do not
   ;; invent a (0, 0) cursor that the terminal renderer can accidentally show.
   (let ((expected
           '(("model" 4 2)
             ("model-scoped" 5 2)
-            ;; pi@74caa2649 focuses SettingsList, which does not implement
+            ;; pi@53fa77ccd focuses SettingsList, which does not implement
             ;; Focusable.  Its private Input therefore never emits the
             ;; hardware-cursor marker.
             ("settings" nil nil)
@@ -197,7 +197,7 @@
           (is (eql expected-column column)))))))
 
 (test goal15-overlay-viewport-crops-the-natural-document-and-hides-offscreen-cursor
-  ;; pi@74caa2649 Tui.ts:1076-1151 lays components out at natural height,
+  ;; pi@53fa77ccd Tui.ts:1076-1151 lays components out at natural height,
   ;; then the terminal viewport selects the visible rows.  A focused Input
   ;; above that viewport does not leak a synthetic cursor onto the screen.
   (let* ((models
@@ -243,7 +243,7 @@
            (cadr-tui:virtual-terminal-snapshot terminal))))))))
 
 (defparameter +goal9-b3-overlay-baseline-semantic-oracles+
-  ;; Each row is copied from the fixed pi@74caa2649 component contract named
+  ;; Each row is copied from the fixed pi@53fa77ccd component contract named
   ;; in its second field.  The ordered strings are intentionally independent
   ;; of Cadr's SHA fixtures and rendering implementation.
   '(("model"

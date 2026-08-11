@@ -1,7 +1,7 @@
 # Test matrix
 
 Behavior baseline:
-`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+`earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`.
 The former `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` baseline is historical only.
 The v1 matrix remains below as historical evidence; later tables supersede its
 intermediate provider, session, extension, and test-count claims.

@@ -1085,7 +1085,7 @@
             "Obsolete ledger count remains: ~A" obsolete)))
     (is
      (search
-      "GOAL13_PRESENTATION_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
+      "GOAL13_PRESENTATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 b1=55 b2=52 b3=10 b4=6 total=123 aligned=119 pending=0 intentional=4"
       presentation))
     (is
      (search

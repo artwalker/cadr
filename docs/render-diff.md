@@ -3,7 +3,7 @@
 ## Contract
 
 The render differential drives fixed pi baseline
-`74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` and Cadr with the same scenario
+`53fa77ccd8a279eb87e92294ef3687b03ff80112` and Cadr with the same scenario
 manifest and their native faux providers.  Each side runs under a real PTY.
 The collector fixes terminal size, dark theme, `C.UTF-8`, `TERM=xterm-256color`,
 `COLORTERM=truecolor`, isolated home/config/cwd directories, offline mode, faux
@@ -225,8 +225,8 @@ the authority.
 | Isolated cwd | Exact per-side temporary workspace prefix to `<CWD>` | The programs must use different workspaces; punctuation and suffixes remain checked. |
 | Isolated sandbox | Exact per-side temporary sandbox prefix to `<SANDBOX>` | Parent-directory text otherwise contains the random `mkdtemp` name. |
 | Isolated session directory | Exact per-side temporary session directory to `<SESSION_DIR>` | Both drivers persist the same fixture state outside their product-specific config roots; suffixes and command syntax remain checked. |
-| Fixed baseline cache | Exact `/tmp/cadr-render-diff-pi-74caa2649` to `<PI_BASELINE>` | The pi crash stack necessarily names the materialized immutable baseline. |
-| Product/version header | Exact plain and observed styled `pi v0.83.0` / `cadr v0.2.0` forms to `<PRODUCT> v<VERSION>` | Product rename and release version are approved; surrounding SGR remains checked. |
+| Fixed baseline cache | Exact `/tmp/cadr-render-diff-pi-53fa77ccd` to `<PI_BASELINE>` | The pi crash stack necessarily names the materialized immutable baseline. |
+| Product/version header | Exact plain and observed styled `pi v0.84.1` / `cadr v0.2.0` forms to `<PRODUCT> v<VERSION>` | Product rename and release version are approved; surrounding SGR remains checked. |
 | Terminal-title product | Exact OSC title prefix `π - ` to `<PRODUCT> - ` | Only the brand glyph is replaced; title existence, workspace suffix, framing, and BEL remain checked. |
 | Product prose/config/commands | Exact onboarding sentences, `.pi/agent` / `.cadr`, untrusted-resource tokens, restart tokens, and styled/plain resume-command product tokens | These are direct consequences of the approved product rename; arbitrary substrings are not replaced. |
 | Export filename | Exact fixed-clock `pi-session-2023-11-14T22-13-20-000Z_render-session.html` / Cadr counterpart to `<PRODUCT>-session-<FIXED_TIME>_<SESSION_ID>.html` | Prefix and ID spellings differ only by the approved brand and fixed driver identity. |

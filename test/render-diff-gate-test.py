@@ -714,7 +714,7 @@ class RenderDiffGateTest(unittest.TestCase):
             b"ome/.cadr/agent/crash/cadr-crash-3994918403-1601836-0.\nlog"
         )
         pi = (
-            b"    at Object.crash (/tmp/cadr-render-diff-pi-74caa2649/"
+            b"    at Object.crash (/tmp/cadr-render-diff-pi-53fa77ccd/"
             b"packages/coding-agent/test/goal15-rend\n"
             b"er-driver.ts:756:11)"
         )

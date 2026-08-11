@@ -4,7 +4,7 @@
 harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
 冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
 命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
-Goal 9 已将行为基线重锁到 `74caa2649`，完成 Part A–E；Goal 11 已建立非功能
+Goal 9 已将行为基线重锁到 `53fa77ccd`，完成 Part A–E；Goal 11 已建立非功能
 属性第二验收轴并完成性能、内存与长时稳定性门禁；Goal 10 Part D 的获批
 condition/restart 与 opt-in Slynk 已实施并重新冻结；Goal 14 已完成全仓职责
 拆分与重复政策收敛，并建立常设组织度门禁**
@@ -28,8 +28,8 @@ Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF 
 ### 1.1 参考源码
 
 - 行为参考仓库：`https://github.com/earendil-works/pi`
-- 固定审计提交：`74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-  （`pi v0.83.0 + 38 commits`，2026-07-30）
+- 固定审计提交：`53fa77ccd8a279eb87e92294ef3687b03ff80112`
+  （`pi v0.84.1 + 38 commits`，2026-07-30）
 - 历史审计锚点：
   `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`；仅用于 Goal 4–8 的
   历史对照，不再参与当前 parity 判定
@@ -40,7 +40,7 @@ Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF 
   目录现跟踪上游 `main`
 - 当前 cadr tracked tree 不再包含上游 TypeScript 实现；下列参考路径均
   指固定审计提交中的路径。重新生成对拍 fixture 时必须 checkout
-  `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` 并将其路径作为
+  `53fa77ccd8a279eb87e92294ef3687b03ff80112` 并将其路径作为
   `scripts/export-ts-payloads.ts --reference`，不得改用移动中的
   upstream 或 legacy 分支 tip。
 
@@ -1724,7 +1724,7 @@ canonical `~/.cadr/agent/auth.json` 的既有锁与原子写路径负责。
 CLI、server CLI、TUI banner、HTTP User-Agent 与 Radius registration 分发同一
 值。不新增公开 export，也不复制版本常量。当前发布候选版本为 `0.2.0`；
 `cadr-release-identity` 从该版本源组合已冻结的上游关系，CLI 输出
-`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。README、CHANGELOG
+`cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd)`。README、CHANGELOG
 与 Release 草案逐字锁定同一标识。tag 与 GitHub Release 仍等待用户确认。
 
 仓库根目录只保留当前构建与用户入口；空的 TypeScript 时代 `packages/` 目录已

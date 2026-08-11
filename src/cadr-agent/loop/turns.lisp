@@ -47,7 +47,7 @@
            (run-agent-lifecycle
             agent :context
             (list :messages messages)))
-         ;; pi@74caa2649 agent-loop.ts:295 converts agent-level
+         ;; pi@53fa77ccd agent-loop.ts:295 converts agent-level
          ;; messages to LLM messages when building the provider
          ;; context (config.convertToLlm).  Without the conversion,
          ;; bash-execution/custom/branch-summary/compaction-summary

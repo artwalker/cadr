@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "74caa2649f10ed71b4378ce69f5d9fbfd2466ca5",
+  "baselineCommit": "53fa77ccd8a279eb87e92294ef3687b03ff80112",
   "entries": [
     {
       "site": "packages/coding-agent/src/cli/project-trust.ts:39",

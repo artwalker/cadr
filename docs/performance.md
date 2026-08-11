@@ -1,6 +1,6 @@
 # Performance and stability
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/518/77/0 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=595/518/77/0 examples=99/99/0 -->
 
 本文是四根独立验收轴中的**非功能账**：行为门禁回答“产出了什么”，源码账
 回答固定基线的能力落在何处，呈现账回答用户看到了什么，本文回答“产出它花了
@@ -102,7 +102,7 @@ MAD 4,518µs（五个样本 156–175ms）。
 
 ## Fixed TS baseline strategy
 
-审计对象固定为 `74caa2649`，不是持续移动的上游 `main`。结论很明确：pi
+审计对象固定为 `53fa77ccd`，不是持续移动的上游 `main`。结论很明确：pi
 同样每帧遍历完整组件树，并没有 viewport-before-render、虚拟滚动或持久化的
 历史前缀帧；它的优势来自组件级缓存、O(1) 追加、render request 合并，以及
 只向终端写变化行。
@@ -114,7 +114,7 @@ MAD 4,518µs（五个样本 156–175ms）。
 TUI 初始化、首帧渲染、配置发现或交互组件构造**，只能作为进程启动成本的下限
 对照，不能替代本文其余真实 PTY 冷启动数字。
 
-| `--version` process time | cadr | pi `74caa2649` |
+| `--version` process time | cadr | pi `53fa77ccd` |
 |---|---:|---:|
 | stable | 0.01s | 0.83s |
 | first | 0.05s | 1.72s |
@@ -141,11 +141,11 @@ rendered-line cache，并把 Lisp list 尾插改为维护尾指针的 O(1) 追�
 
 ```sh
 node --expose-gc scripts/goal11-pi-baseline-bench.mjs \
-  /tmp/cadr-parity-74caa2649 \
+  /tmp/cadr-parity-53fa77ccd \
   > /tmp/cadr-goal11-pi-baseline.json
 ```
 
-脚本拒绝任何不是 `74caa2649f10…` 的 worktree。归档对象先以空构建缓存执行
+脚本拒绝任何不是 `53fa77ccdf10…` 的 worktree。归档对象先以空构建缓存执行
 `tui`、`ai build:offline`、`agent`、`coding-agent` 的 clean build，再加载 production
 `TuiMainScreen`、`TuiAltScreen`、`Editor`、user/assistant、read tool 与 bash tool
 component。归档同时锁定 source object ID、四棵 loaded `dist/` tree SHA-256、
@@ -155,7 +155,7 @@ component。归档同时锁定 source object ID、四棵 loaded `dist/` tree SHA
 warm-up、5 次样本，fixture 构建不计时。完整数据见
 [`benchmarks/goal-v11-pi-baseline.json`](benchmarks/goal-v11-pi-baseline.json)。
 
-| metric at N=5000 | cadr before | pi `74caa2649` | ratio |
+| metric at N=5000 | cadr before | pi `53fa77ccd` | ratio |
 |---|---:|---:|---:|
 | frame | 488.0ms | 16.43ms | 29.7× |
 | key→frame | 480.0ms | 16.61ms | 28.9× |
@@ -313,7 +313,7 @@ Goal 14 B6 只移动 interactive forms；性能 harness 的兼容字段
 `tui_object_id` 现在记录 `interactive/controller.lisp` 的 Git object，完整
 呈现行为仍由 controller、frame、transcript 与 renderer 的确定性门禁共同锁定。
 
-| paired N=5000 metric | pi `74caa2649` | cadr `82db71b8c` | cadr / pi |
+| paired N=5000 metric | pi `53fa77ccd` | cadr `82db71b8c` | cadr / pi |
 |---|---:|---:|---:|
 | mouse event→frame median | 276.150ms | 32.000ms | 0.12× |
 | wheel event→frame median | 297.999ms | 36.000ms | 0.12× |

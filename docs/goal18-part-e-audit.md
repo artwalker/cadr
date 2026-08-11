@@ -64,7 +64,7 @@
 ### 关于核查项 (c)（断言锁基线而非反推）
 
 差分类指针（render-diff、tool-result、event、payload 对拍）的期望值全部
-由固定基线 checkout `74caa2649` 驱动生成，cadr 实现不参与期望值构造；
+由固定基线 checkout `53fa77ccd` 驱动生成，cadr 实现不参与期望值构造；
 FiveAM 指针中锁定文案/行为的断言均在注记或测试注释中给出基线
 file:line 出处。本 Part 改判的 5 行均先查基线调用点再下结论（§4）。
 

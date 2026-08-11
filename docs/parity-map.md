@@ -1,6 +1,6 @@
 # Parity map
 
-<!-- GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/518/77/0 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=595/518/77/0 examples=99/99/0 -->
 
 ## 1. Scope and counting rules
 
@@ -11,10 +11,10 @@ dispositions in `docs/source-parity.md`, the non-functional budgets in
 `docs/presentation-parity.md`. `examples/manifest.sexp` is an auxiliary
 runnable-example inventory, not another ledger.
 
-Behavioral baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-(`v0.83.0-38-g74caa2649`). No release tag leads this commit, so Goal 10 Part B
+Behavioral baseline: `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`
+(`v0.84.1-38-g53fa77ccd`). No release tag leads this commit, so Goal 10 Part B
 is a user-adjudicated no-op; the fixed baseline remains unchanged.
-The audit uses the detached worktree `/tmp/cadr-parity-74caa2649`. The former
+The audit uses the detached worktree `/tmp/cadr-parity-53fa77ccd`. The former
 baseline `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` and its checkout are retained
 only as a historical delta anchor; neither is a current parity source of truth.
 
@@ -460,7 +460,7 @@ build-ecosystem exception. Whole-file classification is
 `362 C / 0 U / 0 M / 1 N/A`.
 
 The baseline delta modified 26 previously classified `C` files. Each was
-re-read against `71efc6f0..74caa2649` and revalidated rather than carried
+re-read against `71efc6f0..53fa77ccd` and revalidated rather than carried
 forward by status alone:
 
 | Package | Revalidated existing baseline files | Goal 9 evidence |
@@ -864,35 +864,35 @@ runtime rather than a temporary parallel harness.
 ## 6. Reproduction commands
 
 ```bash
-git cat-file -e 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5^{commit}
-git worktree add --detach /tmp/cadr-parity-74caa2649 \
-  74caa2649f10ed71b4378ce69f5d9fbfd2466ca5
-git -C /tmp/cadr-parity-74caa2649 rev-parse HEAD
+git cat-file -e 53fa77ccd8a279eb87e92294ef3687b03ff80112^{commit}
+git worktree add --detach /tmp/cadr-parity-53fa77ccd \
+  53fa77ccd8a279eb87e92294ef3687b03ff80112
+git -C /tmp/cadr-parity-53fa77ccd rev-parse HEAD
 
-find /tmp/cadr-parity-74caa2649/packages -type f -name '*.test.ts' |
-  sed 's#^/tmp/cadr-parity-74caa2649/##' | sort
+find /tmp/cadr-parity-53fa77ccd/packages -type f -name '*.test.ts' |
+  sed 's#^/tmp/cadr-parity-53fa77ccd/##' | sort
 for p in ai agent coding-agent tui storage server evals protocol; do
   printf '%s files=' "$p"
-  git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only HEAD -- \
+  git -C /tmp/cadr-parity-53fa77ccd ls-tree -r --name-only HEAD -- \
     "packages/$p" | wc -l
   printf '%s tests=' "$p"
-  find "/tmp/cadr-parity-74caa2649/packages/$p" \
+  find "/tmp/cadr-parity-53fa77ccd/packages/$p" \
     -type f -name '*.test.ts' | wc -l
 done
 
-find /tmp/cadr-parity-74caa2649/packages/ai/src/providers \
+find /tmp/cadr-parity-53fa77ccd/packages/ai/src/providers \
   -maxdepth 1 -type f | wc -l
-find /tmp/cadr-parity-74caa2649/packages/ai/src/providers \
+find /tmp/cadr-parity-53fa77ccd/packages/ai/src/providers \
   -maxdepth 1 -type f -name '*.models.ts' | wc -l
 sed -n '/export function builtinProviders/,/^}/p' \
-  /tmp/cadr-parity-74caa2649/packages/ai/src/providers/all.ts
+  /tmp/cadr-parity-53fa77ccd/packages/ai/src/providers/all.ts
 
 awk '/^<!-- TEST-MANIFEST-BEGIN -->/{flag=1;next}
      /^<!-- TEST-MANIFEST-END -->/{exit}
      flag' docs/parity-map.md |
   rg -o 'packages/[^` ]+\.test\.ts' | sort > /tmp/cadr-map-tests
-find /tmp/cadr-parity-74caa2649/packages -type f -name '*.test.ts' |
-  sed 's#^/tmp/cadr-parity-74caa2649/##' | sort > /tmp/cadr-baseline-tests
+find /tmp/cadr-parity-53fa77ccd/packages -type f -name '*.test.ts' |
+  sed 's#^/tmp/cadr-parity-53fa77ccd/##' | sort > /tmp/cadr-baseline-tests
 test "$(wc -l < /tmp/cadr-map-tests)" -eq 363
 test "$(sort -u /tmp/cadr-map-tests | wc -l)" -eq 363
 diff -u /tmp/cadr-baseline-tests /tmp/cadr-map-tests
@@ -904,14 +904,14 @@ git status --short
 Spot checks:
 
 ```bash
-git -C /tmp/cadr-parity-74caa2649 show HEAD:packages/ai/src/providers/all.ts |
+git -C /tmp/cadr-parity-53fa77ccd show HEAD:packages/ai/src/providers/all.ts |
   sed -n '/export function builtinProviders/,/^}/p'
-git -C /tmp/cadr-parity-74caa2649 show \
+git -C /tmp/cadr-parity-53fa77ccd show \
   HEAD:packages/coding-agent/src/core/session-manager.ts | sed -n '1,170p'
-git -C /tmp/cadr-parity-74caa2649 show \
+git -C /tmp/cadr-parity-53fa77ccd show \
   HEAD:packages/server/src/ipc/protocol.ts | sed -n '1,170p'
-git -C /tmp/cadr-parity-74caa2649 show \
+git -C /tmp/cadr-parity-53fa77ccd show \
   HEAD:packages/storage/sqlite-node/src/sqlite/migrations/001_initial.sql
-git -C /tmp/cadr-parity-74caa2649 show \
+git -C /tmp/cadr-parity-53fa77ccd show \
   HEAD:packages/protocol/src/schemas.ts | sed -n '1,220p'
 ```

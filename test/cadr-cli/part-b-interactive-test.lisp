@@ -2834,7 +2834,7 @@ user question"
       (is (null value)))))
 
 (test goal17-settings-selector-does-not-position-an-unfocused-search-cursor
-  ;; pi@74caa2649 settings-selector.ts:860 returns SettingsList as the focus
+  ;; pi@53fa77ccd settings-selector.ts:860 returns SettingsList as the focus
   ;; target, but SettingsList is not Focusable and its private Input therefore
   ;; emits no CURSOR_MARKER.  Moving the hardware cursor to a clipped search
   ;; row corrupts the next differential frame on narrow terminals.
@@ -2921,7 +2921,7 @@ user question"
       terminal "Package updates are available."))))
 
 (test goal17-update-notifications-use-the-baseline-controller-surface
-  ;; pi@74caa2649 interactive-mode.ts:3928-3973 exposes both notification
+  ;; pi@53fa77ccd interactive-mode.ts:3928-3973 exposes both notification
   ;; methods publicly after INIT.  These assertions come from that component
   ;; composition, not from Cadr's current rendering.
   (cadr-tui:set-current-theme :dark)
@@ -2967,7 +2967,7 @@ user question"
            package-lines))))))
 
 (test goal17-version-update-changelog-link-honors-terminal-capabilities
-  ;; pi@74caa2649 terminal-image.ts:526-528 and interactive-mode.ts:3932-3935
+  ;; pi@53fa77ccd terminal-image.ts:526-528 and interactive-mode.ts:3932-3935
   ;; style the visible URL inside an OSC 8 link terminated with ST.  Compare
   ;; the complete rendered line so BEL termination or reversed ANSI nesting
   ;; cannot hide behind SEARCH or STRIP-ANSI.
@@ -3022,7 +3022,7 @@ user question"
       (cadr-tui:set-terminal-capabilities original))))
 
 (test goal17-update-title-and-border-ansi-nesting-matches-pi
-  ;; pi@74caa2649 interactive-mode.ts:3941-3944 composes
+  ;; pi@53fa77ccd interactive-mode.ts:3941-3944 composes
   ;; bold(fg(warning, title)); DynamicBorder applies only fg(warning, border).
   ;; Lock the complete raw lines so reversed reset ordering cannot pass.
   (let* ((width 80)

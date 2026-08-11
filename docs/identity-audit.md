@@ -126,7 +126,7 @@ viewer 代码处理仍是外部信任边界，不能用“fragment 不上服务�
 | `src/cadr-cli/packages/manifest.lisp:9-29,128` | package.json 的 `"pi"` manifest key | `功能约束保留` | 基线扩展生态的外部 manifest schema；改名会让现有 package 的 extensions/skills/prompts/themes 全部不可发现。函数名 `read-package-pi-manifest` 准确描述该外部 schema。 |
 | `src/cadr-evals/suites.lisp:239-246` | `@earendil-works/pi-coding-agent` | `正当保留` | 只用于检测生成扩展是否仍引用 legacy TypeScript API；是审计输入，不是身份。 |
 | `src/cadr-ai/models.generated.lisp:1`、`src/cadr-ai/image-models.generated.lisp:1` 及对应 refresh scripts | `pi-ai 0.83.0` 来源注释 | `正当保留` | 固定 catalog 的可审计溯源。 |
-| `src/cadr-ai/support/release.lisp:10-21` | `aligned with pi v0.83.0 (+38, 74caa2649)` | `正当保留` | 版本关系声明，规格明确要求保留。 |
+| `src/cadr-ai/support/release.lisp:10-21` | `aligned with pi v0.84.1 (+0, 53fa77ccd)` | `正当保留` | 版本关系声明，规格明确要求保留。 |
 | `src/cadr-cli/interactive/components/announcement.lisp:3-40` | `pi has joined Earendil` 与原博客 URL | `正当保留` | 这是移植的历史 announcement 组件，描述 2026-04-08 已发生的上游事件；改成 Cadr 会制造假历史，且默认界面不启用。 |
 | `src/cadr-cli/interactive/selectors/common.lisp:118,128` | `Pi Text component` docstring | `正当保留` | 仅内部说明其对拍来源和布局语义。 |
 | `scripts/render-diff.py`、`scripts/goal11-pi-baseline-bench.mjs`、`scripts/export-ts-payloads.ts`、`cadr-evals.asd:30` | pi baseline 名、固定 commit/package | `正当保留` | 对拍与溯源输入；替换会让门禁失去对象。 |

@@ -155,7 +155,7 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=74caa2649f10ed71b4378ce69f5d9fbfd2466ca5 source=595/518/77/0 examples=99/99/0"))
+          "GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=595/518/77/0 examples=99/99/0"))
     (is (search "| `coding-agent` | 289 | 257 | 32 | 0 |" ledger))
     (is (search "| `tui` | 37 | 36 | 1 | 0 |" ledger))
     (is (search "| **Total** | **595** | **518** | **77** | **0** |" ledger))

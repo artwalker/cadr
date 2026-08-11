@@ -478,7 +478,7 @@ collapse the process boundary without removing code and is rejected.
 
 The draft's `82 files / 2,111 lines` excludes baseline `providers/all.ts` and,
 more importantly, excludes all 31 API implementation files.  At fixed baseline
-`74caa2649` the actual comparison is:
+`53fa77ccd` the actual comparison is:
 
 | Surface | Files | Lines | Meaning |
 |---|---:|---:|---|
@@ -716,7 +716,7 @@ provider declarations, protocol construction, and runtime projection now have
 predictable files loaded in dependency order.
 
 Convergence preceded extraction. The committed fixture generated from pi
-baseline `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` records all 38 providers and
+baseline `53fa77ccd8a279eb87e92294ef3687b03ff80112` records all 38 providers and
 every declaration field with `file:line` provenance. The validated declaration
 is now the only owner of static provider identity/auth fields and callback
 strategy identities; the ambient environment list is derived from those rows.

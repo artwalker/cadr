@@ -38,7 +38,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, automated the",
+      "line": "  `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`, automated the",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -70,7 +70,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  the CLI identity also records alignment with pi `v0.83.0` plus 38 commits at",
+      "line": "  the CLI identity also records alignment with pi `v0.84.1` plus 38 commits at",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -78,7 +78,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.84.1 (+0, 53fa77ccd)**",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -102,7 +102,7 @@
       "path": "CHANGELOG.md",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "  `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, automated the",
+      "line": "  `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`, automated the",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -326,7 +326,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.83.0 (+38, 74caa2649)**",
+      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.84.1 (+0, 53fa77ccd)**",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -366,7 +366,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "[`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`](https://github.com/earendil-works/pi/tree/74caa2649f10ed71b4378ce69f5d9fbfd2466ca5).",
+      "line": "[`earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`](https://github.com/earendil-works/pi/tree/53fa77ccd8a279eb87e92294ef3687b03ff80112).",
       "occurrences": 2,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -478,7 +478,7 @@
       "path": "README.md",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "[`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`](https://github.com/earendil-works/pi/tree/74caa2649f10ed71b4378ce69f5d9fbfd2466ca5).",
+      "line": "[`earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`](https://github.com/earendil-works/pi/tree/53fa77ccd8a279eb87e92294ef3687b03ff80112).",
       "occurrences": 2,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -638,7 +638,7 @@
       "path": "scripts/export-ts-payloads.ts",
       "kind": "pi-token",
       "token": "pi",
-      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5\",",
+      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 53fa77ccd8a279eb87e92294ef3687b03ff80112\",",
       "occurrences": 1,
       "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
     },
@@ -646,7 +646,7 @@
       "path": "scripts/export-ts-payloads.ts",
       "kind": "upstream-org",
       "token": "earendil-works",
-      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 74caa2649f10ed71b4378ce69f5d9fbfd2466ca5\",",
+      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 53fa77ccd8a279eb87e92294ef3687b03ff80112\",",
       "occurrences": 1,
       "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
     },
@@ -1118,7 +1118,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.83.0\",",
+      "line": "            b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.1\",",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1126,7 +1126,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            b\"pi\\x1b[39m\\x1b[22m\\x1b[38;2;102;102;102m v0.83.0\",",
+      "line": "            b\"pi\\x1b[39m\\x1b[22m\\x1b[38;2;102;102;102m v0.84.1\",",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1254,7 +1254,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        (b\"pi v0.83.0\", b\"<PRODUCT> v<VERSION>\"),",
+      "line": "        (b\"pi v0.84.1\", b\"<PRODUCT> v<VERSION>\"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1374,7 +1374,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.83.0\"",
+      "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.1\"",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1982,7 +1982,7 @@
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@74caa2649 settings-manager.ts:1093-1099 gives an explicit setting",
+      "line": "  ;; pi@53fa77ccd settings-manager.ts:1093-1099 gives an explicit setting",
       "occurrences": 1,
       "reason": "Source comment pins the baseline file and lines that define the copied setting contract."
     },
@@ -2014,7 +2014,7 @@
       "path": "src/cadr-cli/interactive/user-bash.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; Fixed pi@74caa2649 BashExecutionComponent is deliberately separate from",
+      "line": "  ;; Fixed pi@53fa77ccd BashExecutionComponent is deliberately separate from",
       "occurrences": 1,
       "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
@@ -2150,7 +2150,7 @@
       "path": "src/cadr-cli/tools/bash.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; Fixed pi@74caa2649 agent-session.ts:2803-2824 records the direct shell",
+      "line": "  ;; Fixed pi@53fa77ccd agent-session.ts:2803-2824 records the direct shell",
       "occurrences": 1,
       "reason": "Source comment identifies the fixed pi baseline component whose observable direct-bash behavior is implemented here."
     },
@@ -2710,7 +2710,7 @@
       "path": "src/cadr-agent/loop/turns.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@74caa2649 agent-loop.ts:295 converts agent-level",
+      "line": "         ;; pi@53fa77ccd agent-loop.ts:295 converts agent-level",
       "occurrences": 1,
       "reason": "Source comment pins the baseline file and line whose convertToLlm contract the provider-context conversion copies."
     }

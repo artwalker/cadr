@@ -211,6 +211,36 @@ for command in "$SBCL_COMMAND" git node npm python3 tmux script stty jq tar sha2
   fi
 done
 
+# Goal 18 Part G5: the render/tool-result/event differential gates run
+# both node and npm inside the baseline checkout; they must come from
+# the same WSL-side Node installation.  A Windows npm reached through
+# WSL interop happens to probe linux today, but that is luck, not a
+# guarantee (a win32 esbuild under node_modules would break the gates
+# opaquely).
+NODE_EXEC_PATH="$(node -p 'process.execPath')"
+NPM_GLOBAL_ROOT="$(npm root -g)"
+case "$NODE_EXEC_PATH" in
+  /mnt/* | *\\* | *[A-Za-z]:[\\/]*)
+    echo "verify: node resolves to a Windows installation ($NODE_EXEC_PATH); use the WSL-side Node toolchain (goal18.md Part G5)." >&2
+    exit 2
+    ;;
+esac
+case "$NPM_GLOBAL_ROOT" in
+  /mnt/* | *\\* | *[A-Za-z]:[\\/]*)
+    echo "verify: npm resolves to a Windows installation ($NPM_GLOBAL_ROOT); use the WSL-side Node toolchain (goal18.md Part G5)." >&2
+    exit 2
+    ;;
+esac
+NODE_INSTALL_PREFIX="$(cd "$(dirname "$NODE_EXEC_PATH")/.." && pwd)"
+case "$NPM_GLOBAL_ROOT" in
+  "$NODE_INSTALL_PREFIX"/*)
+    ;;
+  *)
+    echo "verify: node ($NODE_EXEC_PATH) and npm (global root $NPM_GLOBAL_ROOT) come from different Node installations; use one WSL-side Node installation (goal18.md Part G5)." >&2
+    exit 2
+    ;;
+esac
+
 if [ ! -f "$QUICKLISP_SETUP" ]; then
   echo "verify: Quicklisp setup not found at $QUICKLISP_SETUP" >&2
   exit 2
