@@ -4027,8 +4027,7 @@
       "scenario": "stream-interrupt-queue",
       "checkpoint": "process-exit",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -4038,13 +4037,26 @@
         "wide": {
           "pi": "7d3fcf5f8df2f9f5d5d59bb9d65096395628a7ffdc2251a48c9d95f126caf1c5",
           "cadr": "7e22923a0a7a7d4f19eb760012e384101ac57eb3f9f7e5476a13b799ab344408"
-        },
+        }
+      },
+      "note": "At stream-interrupt-queue/process-exit [wide] the post-exit screen matches pi except the two-cell product-identity shift: the '<PRODUCT> v<VERSION>' banner row and the '<PRODUCT_TITLE> can explain its own features' startup hint row each carry two cells less trailing padding (I04); the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "stream-interrupt-queue",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
         "narrow": {
           "pi": "9e85ae73194c2f3f7313ac08d758b203dba8d978ebdc69ee0619dd2696a5eff8",
           "cadr": "9e85ae73194c2f3f7313ac08d758b203dba8d978ebdc69ee0619dd2696a5eff8"
         }
       },
-      "note": "Same narrow banner wrap consequence (I04) with the cursor one row lower at exit; content identical. ANSI segmentation differs (I01)."
+      "note": "At stream-interrupt-queue/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "stream-interrupt-queue",
@@ -4981,7 +4993,7 @@
       "screenSha256": {
         "narrow": {
           "pi": "c18594908bcb4fab16d24cc15eee35b8e5ad7d4b3ea0f006dc78714621174a73",
-          "cadr": "afe1596be591a9a79d38ae670254d337a20126c59fba55c8c78aae928205e34e"
+          "cadr": "c18594908bcb4fab16d24cc15eee35b8e5ad7d4b3ea0f006dc78714621174a73"
         }
       },
       "note": "At user-bash-state-sweep/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4999,10 +5011,10 @@
       "screenSha256": {
         "wide": {
           "pi": "310c885dd1c511f1b3370c095d41b56e7bd0b364318bce4fb615870ed938146a",
-          "cadr": "eb0601604e65847669f5208acefbc35fccde3eebb9ed43b185099e163b85510e"
+          "cadr": "1f3ebab2ccdb741ca9735a285966ab4e2a3fd20f852bed1546668ca69da66492"
         }
       },
-      "note": "At user-bash-state-sweep/process-exit [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At user-bash-state-sweep/process-exit [wide] the post-exit screen matches pi except the 'Output truncated. Full output: /tmp/<PRODUCT>-bash-<OUTPUT_ID>.log' warning row, whose trailing padding shifts with the two-cell-longer product name (I04); the raw ANSI update segmentation/teardown differs (I01). The footer usage now matches pi after the provider-context conversion fix (agent-loop convertToLlm parity): user-bash outputs reach the request context."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -6302,10 +6314,10 @@
       "screenSha256": {
         "narrow": {
           "pi": "3d848c34a9954c5a70640beb479a7f5df706bcee0b1db8768ade7b24478d48ed",
-          "cadr": "4f678cbfd71db443b1798c28f0fd8d0cb5d4f0808cab6a43cc57981942ea26fa"
+          "cadr": "217906ddf1c0754483d62a483ad4af5abe47ab4adde0af23f50e22aa223f9ee0"
         }
       },
-      "note": "At selector-state-sweep/process-exit [narrow] the post-exit screen matches pi except the shifted wrap of the 'To resume this session: <PRODUCT> --session-dir <SESSION_DIR> --session render-session' hint (cadr is two cells longer than pi, so the wrap point moves two columns earlier) (I04); the raw ANSI update segmentation differs (I01)."
+      "note": "At selector-state-sweep/process-exit [narrow] the post-exit screen matches pi except the '<PRODUCT_TITLE> can explain its own features and look up its docs' startup hint, whose wrap point moves with the two-cell-longer product title (I04), and the shifted wrap of the 'To resume this session: <PRODUCT> --session-dir <SESSION_DIR> --session render-session' hint (same two-cell identity shift) (I04); the raw ANSI update segmentation differs (I01). The in-place settle repaint (goal 18 I05 exit-teardown defect fix) leaves pi's natural scroll geometry in the residue, so the startup hint is visible in this window; the pinned cadr SHA moved for that geometry alone."
     },
     {
       "scenario": "selector-state-sweep",
@@ -7024,23 +7036,6 @@
         }
       },
       "note": "At startup-no-model/process-exit [wide+narrow] the final screen matches pi (warning plus error blocks retained, no resume hint because the never-persisted session has no file); the residual differences are the ANSI teardown segmentation (I01), the banner product identity fill (I04), and the narrow docs-path wrap structure (I04 install-location path length); both sides exit 0."
-    },
-    {
-      "scenario": "selector-scoped-state-sweep",
-      "checkpoint": "scoped-after-head",
-      "dimensions": [
-        "narrow"
-      ],
-      "classes": [
-        "I01"
-      ],
-      "screenSha256": {
-        "narrow": {
-          "pi": "2b8e6b6bbfcebee7984d1f7776f57fb882541f721f045c291f7cee6eb37c5f3b",
-          "cadr": "2b8e6b6bbfcebee7984d1f7776f57fb882541f721f045c291f7cee6eb37c5f3b"
-        }
-      },
-      "note": "At selector-scoped-state-sweep/scoped-after-head [narrow] the semantic screen is byte-identical to pi; the pi renderer emitted one extra cursor-hide (ESC[?25l) between scoped-head-02 and scoped-after-head while cadr emitted none, a raw scheduling segmentation difference only (I01)."
     }
   ]
 }

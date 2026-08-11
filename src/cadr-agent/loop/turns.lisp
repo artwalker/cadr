@@ -47,10 +47,17 @@
            (run-agent-lifecycle
             agent :context
             (list :messages messages)))
+         ;; pi@74caa2649 agent-loop.ts:295 converts agent-level
+         ;; messages to LLM messages when building the provider
+         ;; context (config.convertToLlm).  Without the conversion,
+         ;; bash-execution/custom/branch-summary/compaction-summary
+         ;; records never reach the provider: their content is
+         ;; invisible to the model and to faux usage accounting.
          (request-messages
-           (or
-            (getf context-result :messages)
-            messages)))
+           (convert-agent-messages-to-llm
+            (or
+             (getf context-result :messages)
+             messages))))
     (let* ((callback
              (lambda (event)
                (case (cadr-ai:stream-event-type event)

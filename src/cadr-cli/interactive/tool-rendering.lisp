@@ -554,6 +554,8 @@
         (tui-state-agent-working-p state)
         t
         (tui-state-status-message state)
+        nil
+        (tui-state-settle-window-p state)
         nil))
       (:auto-retry-start
        (setf
@@ -572,12 +574,16 @@
            (cadr-agent:agent-event-delay-ms
             event)
            0)
-          1000))))
+          1000))
+        (tui-state-settle-window-p state)
+        nil))
       ((:agent-end :agent-settled)
        (setf
         (tui-state-agent-working-p state)
         nil
         (tui-state-status-message state)
+        nil
+        (tui-state-settle-window-p state)
         nil))
       (:queue-update
        (setf
@@ -588,6 +594,7 @@
         (copy-list
          (cadr-agent:agent-event-follow-up event))))
       (:message-start
+       (setf (tui-state-settle-window-p state) nil)
        (typecase message
          (cadr-ai:user-message
           (append-tui-user-message
@@ -621,6 +628,18 @@
          (cadr-agent:compaction-summary-agent-message
           (seed-tui-message state message))))
       (:message-update
+       ;; Block boundaries open and close the settle window just like
+       ;; message-end does: once a block ends, the remaining chain to
+       ;; the resolution event is synchronous and unobservable to the
+       ;; baseline's renderer (see :message-end below).
+       (when stream-event
+         (case (cadr-ai:stream-event-type stream-event)
+           ((:text-end :thinking-end :tool-call-end)
+            (setf (tui-state-settle-window-p state) t))
+           ((:text-start :text-delta
+             :thinking-start :thinking-delta
+             :tool-call-start :tool-call-delta)
+            (setf (tui-state-settle-window-p state) nil))))
        (when
            (and
             (tui-state-current-assistant state)
@@ -670,6 +689,25 @@
                             delta))))))))))
       (:message-end
        (when (typep message 'cadr-ai:assistant-message)
+         ;; Mark the settle window: the baseline finalizes the
+         ;; streaming component at message_end and removes the working
+         ;; indicator at agent_end
+         ;; (interactive-mode.ts:3001-3042,3088-3102), one synchronous
+         ;; event chain its timer-driven renderer can never observe.
+         ;; Cadr renders from a wall-clock main loop over
+         ;; millisecond-scale persistence work in this window, so a
+         ;; flush here would paint "complete final text + loader", a
+         ;; frame two rows taller than the settle frame; the terminal
+         ;; viewport only ratchets downward, so the overscroll
+         ;; survives as trailing blank rows the baseline never shows
+         ;; (render-diff tools-significant-states drift).  The window
+         ;; opens at the last stream block-end (text-end /
+         ;; thinking-end / tool-call-end, handled at :message-update)
+         ;; and at message-end, and closes at agent-end /
+         ;; agent-settled / auto-retry-start / tool-execution-start /
+         ;; message-start / compaction-start or any new block.  While
+         ;; the flag is set, frames omit the working indicator.
+         (setf (tui-state-settle-window-p state) t)
          (let ((entry
                  (tui-state-current-assistant state)))
            (when entry
@@ -700,6 +738,7 @@
           (tui-state-current-assistant state)
           nil)))
       (:tool-execution-start
+       (setf (tui-state-settle-window-p state) nil)
        (let ((call
                (cadr-agent:agent-event-tool-call event)))
          (let ((cwd
@@ -858,7 +897,9 @@
         (tui-state-status-message state)
         (summarization-status-message
          :compaction
-         (cadr-agent:agent-event-reason event))))
+         (cadr-agent:agent-event-reason event))
+        (tui-state-settle-window-p state)
+        nil))
       (:summarization-retry-scheduled
        (add-tui-error
         state

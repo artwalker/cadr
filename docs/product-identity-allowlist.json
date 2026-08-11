@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 376,
+  "expected_findings": 377,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -2705,6 +2705,14 @@
       "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
       "occurrences": 1,
       "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-agent/loop/turns.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "         ;; pi@74caa2649 agent-loop.ts:295 converts agent-level",
+      "occurrences": 1,
+      "reason": "Source comment pins the baseline file and line whose convertToLlm contract the provider-context conversion copies."
     }
   ],
   "opaque_files": [

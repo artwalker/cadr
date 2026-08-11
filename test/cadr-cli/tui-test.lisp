@@ -4777,6 +4777,87 @@
      (cadr-agent::make-agent-event :type :agent-settled))
     (is (null (cadr-cli::tui-state-agent-working-p state)))))
 
+(test goal18-message-end-render-suppression-covers-the-settle-window
+  ;; pi@74caa2649 interactive-mode.ts:3001-3042 finalizes the streaming
+  ;; component at message_end and :3088-3102 removes the working
+  ;; indicator at agent_end — one synchronous event chain its
+  ;; timer-driven renderer cannot observe.  Cadr renders from a
+  ;; wall-clock main loop over millisecond-scale persistence work in
+  ;; that window, so a flush could land inside it and paint "complete
+  ;; final text + loader", two rows taller than the settle frame; the
+  ;; viewport only ratchets downward, so the overscroll survived as
+  ;; trailing blanks (render-diff tools-significant-states drift).
+  ;; While the flag is set the frame omits the working indicator, so a
+  ;; window render is identical to the settle frame.
+  (let ((state (cadr-cli::make-tui-state)))
+    (flet ((event (type &key message tool-call)
+             (cadr-cli::tui-handle-agent-event
+              state
+              (cadr-agent::make-agent-event
+               :type type :message message :tool-call tool-call)))
+           (render-busy-frame ()
+             (multiple-value-bind (lines row column)
+                 (cadr-cli::render-tui-state
+                  state (cadr-tui:make-multiline-editor) 80 12
+                  :busy-p
+                  (and
+                   (cadr-cli::tui-state-agent-working-p state)
+                   (not (cadr-cli::tui-state-settle-window-p state))))
+               (declare (ignore row column))
+               (format nil "~{~A~^~%~}" lines))))
+      (event :agent-start)
+      (is (null (cadr-cli::tui-state-settle-window-p state)))
+      (is (search "Working..." (render-busy-frame)))
+      (let ((message
+              (cadr-ai:make-assistant-message
+               :api :faux :provider :faux :model "faux-1"
+               :content
+               (list (cadr-ai:make-text-content :text "done"))
+               :stop-reason :stop)))
+        (event :message-start :message message)
+        (is (null (cadr-cli::tui-state-settle-window-p state)))
+        (event :message-end :message message)
+        (is (cadr-cli::tui-state-settle-window-p state))
+        ;; The agent is still marked busy, but the settle-window frame
+        ;; already omits the loader and shows the completed text.
+        (is (cadr-cli::tui-state-agent-working-p state))
+        (let ((frame (render-busy-frame)))
+          (is (null (search "Working..." frame)))
+          (is (search "done" frame)))
+        (event :agent-end)
+        (is (null (cadr-cli::tui-state-settle-window-p state))))
+      ;; A following tool execution lifts suppression again.
+      (event :agent-start)
+      (let ((message
+              (cadr-ai:make-assistant-message
+               :api :faux :provider :faux :model "faux-1"
+               :content
+               (list
+                (cadr-ai:make-tool-call
+                 :id "call-1" :name "read"
+                 :arguments (args "path" "x")))
+               :stop-reason :stop)))
+        (event :message-end :message message)
+        (is (cadr-cli::tui-state-settle-window-p state))
+        (event :tool-execution-start
+               :tool-call
+               (cadr-ai:make-tool-call
+                :id "call-1" :name "read"
+                :arguments (args "path" "x")))
+        (is (null (cadr-cli::tui-state-settle-window-p state))))
+      ;; agent-settled also lifts it (unwind path).
+      (event :agent-start)
+      (let ((message
+              (cadr-ai:make-assistant-message
+               :api :faux :provider :faux :model "faux-1"
+               :content
+               (list (cadr-ai:make-text-content :text "done"))
+               :stop-reason :stop)))
+        (event :message-end :message message)
+        (is (cadr-cli::tui-state-settle-window-p state))
+        (event :agent-settled)
+        (is (null (cadr-cli::tui-state-settle-window-p state)))))))
+
 (test goal13-provider-specific-login-method-selector-uses-baseline-cardinality-and-labels
   (let* ((openrouter
            (cadr-cli::login-provider-options

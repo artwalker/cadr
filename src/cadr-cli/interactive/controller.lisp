@@ -461,7 +461,12 @@
                     (cadr-tui:terminal-rows terminal)
                     :overlay overlay
                     :busy-p
-                    (tui-state-agent-working-p state)
+                    (and
+                     (tui-state-agent-working-p state)
+                     ;; The settle window keeps the agent marked busy
+                     ;; until agent_end, but the baseline never paints
+                     ;; the loader there; omit it from these frames.
+                     (not (tui-state-settle-window-p state)))
                     :extension-host extension-host
                     :full-document-p alt-p
                     :now (funcall clock-function)

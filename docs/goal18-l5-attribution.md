@@ -50,3 +50,39 @@
   均不符。按规则须新类别（建议 I05：退出残影范围差异，alt-frame vs
   scrollback 模型的拆除残留）或按缺陷修 cadr 的退出拆除（向基线的紧凑
   尾部对齐）。**两者都须用户裁决；探针补丁验证可重现后已**回退**，裁决前不落地。
+
+## L5.2 裁决落地与收尾（2026-08-11）
+
+用户裁决：I05 按缺陷修 cadr 的退出拆除路径，不新开裁定类（"只有'超过
+启动区、未超视口'的中等高度带分歧"说明这是可修的实现差异而非语义分岔）。
+落地与连带发现：
+
+1. **原地重绘（bbbfed52a）**：harness ack 不再整屏 wipe，改为基线语义内
+   的原地 canonical repaint（pi 的 viewportTop 只增不减、缩小留空行），
+   退出残影与 pi 逐字节一致（tools-success 等）。
+2. **settle 窗口竞态（本轮修复）**：重绘暴露瞬时帧高差——cadr 的主循环
+   按墙钟轮询渲染，可能在 [最后 text-delta/message-end .. agent-end] 窗口
+   拍到"完整正文 + Working 指示器"的帧（比 settle 帧高 2 行），视口只增
+   不减，过冲以尾部空行残留，基线从不如此（其 message_end→agent_end 是
+   一条同步事件链，定时器渲染器观测不到）。修复：settle-window-p 标志
+   在块结束/message-end 置位、turn 解决事件清除，窗口内渲染帧省略工作
+   指示器（tool-rendering.lisp / controller.lisp render-now）。竞态窗口
+   从毫秒级（持久化 I/O）收窄到亚微秒级（流尾簿记）。证据：首版
+   （message-end 置位）经四次窄屏×九检查点复跑全对 pin；加入块结束置位
+   后全量门禁 gate11/gate12 连绿，verify.sh 21 确定性 + 2 live 阶段全绿。
+3. **provider 上下文转换缺失（真缺陷，PIN 曾掩盖）**：排查
+   user-bash-state-sweep/process-exit 的 I01-only 条目时发现其 pin 两侧
+   SHA 本就不同（页脚 ↑14k vs ↑1.3k）却登记为"文本一致"——真实原因是
+   cadr 构建 provider 上下文时从未做 convertToLlm 转换（基线
+   agent-loop.ts:295），bash-execution/custom/branch-summary/
+   compaction-summary 消息被静默丢弃，模型看不到 `!` 命令输出，真实
+   provider 同受影响。修复：stream-assistant 构建请求上下文前经
+   convert-agent-messages-to-llm 转换（turns.lisp）。修复后该检查点窄屏
+   与 pi 完全一致。
+
+被掩盖条目的机制教训：stream-interrupt-queue/process-exit 窄屏 pin 两侧
+相等却挂 I04（stale）、user-bash-state-sweep/process-exit 窄屏 pin 两侧
+不等却挂 I01-only（漏类）——两者均在 L5.2 探针提交中引入，且因全量门禁
+在更早的漂移处先行失败而从未被绿色全量运行检验过。本轮已拆分/更正并
+补足断言：stale 检查（屏等值不得挂语义类）与反向检查（I01-only 不得
+收容屏差异）均为 fail-closed。
