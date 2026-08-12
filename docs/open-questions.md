@@ -3,9 +3,28 @@
 本文件只记录相对固定 TS 基线拟新增的机制。未获人工明确裁决前，条目不得
 进入实现。
 
-当前无待裁决项。
+待裁决项：
+
+（当前无待裁决项。）
+
+已裁决待办 goal：
+
+- `OQ-G18-L1A-MERMAID`：2026-08-12 已裁决路线 1（纯 Lisp 移植
+  grok-mermaid + 差分金样），**拆为 goal 19 执行**，不在 goal 18 内做。
+  `docs/source-parity.md` 中 `mermaid.ts` 行记 `缺失`（非"有意差异"）。
+  goal 19 关账前 Mermaid 块按基线回退语义渲染为源码框；账本如实记为
+  未实现能力。
 
 已裁决并实施：
+
+- `OQ-G18-AUTH-CANCEL-14`：2026-08-12 已裁决路线 A 并落地。v0.84.1 起
+  基线 pi 在 14 个 auth-cancel 整屏键上渲染红色
+  `Error: ... This operation was aborted`（回归：abort.ts:3 抛
+  `"The operation was aborted"`，interactive-mode.ts:5666 仅压制
+  `"Login cancelled"`）；cadr 按 goal 13 既定裁决继续压制，14 键记为
+  intentional-difference `I05`（textCovering，仅限登录取消，note 如实
+  描述）。上游修复该回归后 I05 退役，14 键转回逐字对齐。处置记录见
+  `docs/proposals/goal18-auth-cancel-regression.md`。
 
 - `OQ-G15-I02-FATAL-REDACTION`：2026-08-04 已确认维持 Goal 13 实施的
   崩溃脱敏机制。固定基线在终端直接 dump 栈

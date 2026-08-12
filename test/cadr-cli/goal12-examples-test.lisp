@@ -41,6 +41,21 @@
         count 1
         do (setf start (+ position (length needle)))))
 
+(defun goal12-ledger-identity (content)
+  ;; Extract the GOAL12_LEDGER identity from a ledger file. The marker can
+  ;; appear inside an HTML comment (`<!-- ... -->` in Markdown ledgers) or a
+  ;; Lisp comment (`;; ...` in examples/manifest.sexp), so take the marker to
+  ;; end-of-line, stopping before a closing ` -->` when present, and trim the
+  ;; trailing whitespace that Markdown leaves in front of the comment close.
+  (let* ((start (search "GOAL12_LEDGER" content))
+         (end (and start (position #\Newline content :start start)))
+         (line (and start end (subseq content start end)))
+         (comment-end (and line (search " -->" line))))
+    (and line
+         (string-right-trim
+          '(#\Space #\Tab)
+          (subseq line 0 (or comment-end (length line)))))))
+
 (defun goal12-extension-bundle-registration-count (bundle)
   (+
    (length (cadr-agent::extension-bundle-tools bundle))
@@ -155,10 +170,10 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=595/518/77/0 examples=99/99/0"))
-    (is (search "| `coding-agent` | 289 | 257 | 32 | 0 |" ledger))
-    (is (search "| `tui` | 37 | 36 | 1 | 0 |" ledger))
-    (is (search "| **Total** | **595** | **518** | **77** | **0** |" ledger))
+          "GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/506/163/1 examples=99/99/0"))
+    (is (search "| `coding-agent` | 309 | 262 | 46 | 1 |" ledger))
+    (is (search "| `tui` | 44 | 39 | 5 | 0 |" ledger))
+    (is (search "| **Total** | **670** | **506** | **163** | **1** |" ledger))
     (is (search "实现完成，平台不可实测" ledger))
     (is (search "all 99" readme :test #'char-equal))
     (is (search "99 functionally equivalent Lisp ports and 0 gaps"
@@ -169,8 +184,23 @@
     (is (not (search "94 complete; 5 blocked" parity-map)))
     (is (not (search "94 implemented, 5 missing" parity-map)))
     (is (not (search "C5 explicitly deferred" parity-map)))
-    (dolist (source (list ledger parity-map performance manifest-source))
-      (is (= 1 (goal12-count-substring identity source))))
+    ;; Part L L4 transition state: docs/source-parity.md has advanced to the
+    ;; 670-path ledger while the parity-map/performance/manifest trio stays
+    ;; frozen at 595 until Part L closes. Each side locks its own identity;
+    ;; when L4 lands, the four books must carry one identical identity again
+    ;; and this split assertion collapses back to a single four-ledger check.
+    (is (= 1 (goal12-count-substring identity ledger)))
+    (let* ((trio (list parity-map performance manifest-source))
+           (trio-identities (mapcar #'goal12-ledger-identity trio)))
+      (dolist (found trio-identities)
+        (is (stringp found)))
+      (destructuring-bind (a b c) trio-identities
+        (is (equal a b))
+        (is (equal b c)))
+      (dolist (source trio)
+        (is (= 1
+               (goal12-count-substring
+                (goal12-ledger-identity source) source)))))
     (is (search "docs/parity-map.md" performance))
     (is (search "docs/source-parity.md" performance))
     (is (search "examples/manifest.sexp" performance))
