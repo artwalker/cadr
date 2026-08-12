@@ -151,6 +151,17 @@ run_code_organization_gate() {
       --manifest "$PROJECT_DIRECTORY/docs/code-organization-exemptions.json"
 }
 
+run_mermaid_golden_data_gate() {
+  # goal 19: test/cadr-tui/mermaid-golden-data.lisp must be byte-identical
+  # to what scripts/gen-mermaid-golden-data.py produces from the checked-in
+  # grok-mermaid@0.2.2 reference.json.  The generator is fail-closed (rejects
+  # structural drift, count changes, and unrepresentable characters), so this
+  # gate prevents a hand-edit of the Lisp data from silently diverging from
+  # the golden.
+  python3 "$PROJECT_DIRECTORY/scripts/gen-mermaid-golden-data.py" --check &&
+    python3 "$PROJECT_DIRECTORY/scripts/gen-mermaid-width-data.py" --check
+}
+
 run_product_identity_gate() {
   python3 "$PROJECT_DIRECTORY/test/product-identity-gate-test.py" &&
     python3 "$PROJECT_DIRECTORY/scripts/check-product-identity.py" \
@@ -266,10 +277,17 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "mermaid golden data consistency" \
+    run_mermaid_golden_data_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic "mermaid golden data consistency" "code organization gate failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "baseline anchor consistency" \
     python3 scripts/baseline-anchor.py check || DETERMINISTIC_READY=0
 else
-  skip_deterministic "baseline anchor consistency" "code organization gate failed"
+  skip_deterministic "baseline anchor consistency" "mermaid golden data consistency failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

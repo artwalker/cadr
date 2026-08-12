@@ -1,0 +1,32 @@
+Third-party notices
+===================
+
+The cadr source tree and release binary embed or port the following
+third-party works.  This file is part of the release preparation required
+by goal 19 Part B; the complete notice set ships with release binaries.
+
+grok-mermaid@0.2.2
+------------------
+
+Source: https://registry.npmjs.org/grok-mermaid/-/grok-mermaid-0.2.2.tgz
+License: Apache License, Version 2.0
+Full license text: docs/third-party/grok-mermaid-LICENSE.txt
+
+Copyright 2023-2026 SpaceXAI
+Copyright 2026 Alexey Zaytsev
+
+Source chain: xai-org/grok-build
+crates/codegen/xai-grok-markdown/src/mermaid.rs (Rust original) ->
+TypeScript port by Alexey Zaytsev (grok-mermaid) -> Common Lisp port by
+the cadr authors.
+
+The Common Lisp files under src/cadr-tui/mermaid/ are a modified version
+of the original work: the algorithms and data tables were ported from
+the distributed TypeScript and mechanically converted where noted, so the
+module boundaries and expression style differ from the original while the
+rendered output contract is preserved.  Unmodified portions retain their
+original copyright above; the port itself is made available under the
+Apache License, Version 2.0.
+
+This product includes software developed by SpaceXAI and Alexey Zaytsev,
+ported to Common Lisp for cadr.

@@ -28,6 +28,19 @@
                              (:file "autocomplete")
                              (:file "editor")
                              (:file "input-component")
+                             (:module "mermaid"
+                              :serial t
+                              :components ((:file "canvas")
+                                           (:file "width-data")
+                                           (:file "width")
+                                           (:file "labels")
+                                           (:file "graph")
+                                           (:file "parse")
+                                           (:file "layout")
+                                           (:file "layout-seq")
+                                           (:file "ansi")
+                                           (:file "source-box")
+                                           (:file "index")))
                              (:module "components"
                               :serial t
                               :components ((:file "markdown")
@@ -85,6 +98,9 @@
                              (:file "alt-screen-test")
                              (:file "latex-reference-cases")
                              (:file "latex-test")
+                             (:file "mermaid-reference-cases")
+                             (:file "mermaid-golden-data")
+                             (:file "mermaid-golden-test")
                              (:file "terminal-test")
                              (:file "terminal-parity-test")
                              (:file "manual-acceptance-test"))))

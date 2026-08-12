@@ -129,6 +129,15 @@ external resource load and initiates no network request; the scripts execute
 only in the browser that opens the file and never enter Cadr's ASDF runtime
 closure.
 
+The separately authorized **ported source** category is
+`grok-mermaid@0.2.2` (Apache-2.0), the baseline Mermaid renderer. Goal 19
+ports it to Common Lisp under `src/cadr-tui/mermaid/`; it is a source port,
+not a dependency — the artifact adds no ASDF system, FFI binding, subprocess,
+or network fetch, and does not enter the release binary. The retained
+artifact and golden fixtures lock the renderer to the audited version; the
+Apache-2.0 text and full source chain are in `docs/third-party/` and
+`docs/dependency-audit.md`, and release binaries ship `THIRD-PARTY-NOTICES`.
+
 The exact production and transitive audit is in
 [`docs/dependency-audit.md`](docs/dependency-audit.md).
 
