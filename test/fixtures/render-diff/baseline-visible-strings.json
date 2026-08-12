@@ -25891,7 +25891,7 @@
       },
       "sink": {
         "kind": "output:this.terminal.write",
-        "channel": "printable-visible"
+        "channel": "terminal-protocol"
       },
       "branches": [
         {
@@ -25938,6 +25938,122 @@
             {
               "kind": "literal",
               "text": "\u001b[?2026l",
+              "stylePath": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "VS-6c9d8f2c62b46158",
+      "site": {
+        "path": "packages/tui/src/tui-alt-screen.ts",
+        "line": 282,
+        "column": 24,
+        "endLine": 282,
+        "endColumn": 30,
+        "start": 9433,
+        "end": 9439,
+        "kind": "output:this.terminal.write",
+        "nodeSha256": "d0ca8c2ac0dab879bf27bfb58227b301db17f5ca716d065e7c884253d3ab99e4"
+      },
+      "sink": {
+        "kind": "output:this.terminal.write",
+        "channel": "terminal-protocol"
+      },
+      "branches": [
+        {
+          "id": "B-fee0480782bf",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\u001b[?2026h",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-ba2b29dda3e4",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\u001b[?1049l",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-b696838dd366",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\u001b[?7l",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-e02a6ca4b3f7",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\u001b[?7h",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-59b39f4707e7",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\r\n\u001b[?25h",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-b8e95bc18df3",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\u001b[?2026l",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-01576394bc85",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\r\u001b[2K",
+              "stylePath": []
+            }
+          ]
+        },
+        {
+          "id": "B-2156a909c1df",
+          "conditions": [],
+          "runtimeChoices": [],
+          "segments": [
+            {
+              "kind": "literal",
+              "text": "\r\n",
               "stylePath": []
             }
           ]

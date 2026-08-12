@@ -241,6 +241,7 @@ const exactTerminalProtocolIdentifiers = new Set([
 const exactTerminalProtocolFunctions = new Set([
 	"packages/tui/src/tui-alt-screen.ts:beforeTerminalStart",
 	"packages/tui/src/tui-alt-screen.ts:beforeTerminalStop",
+	"packages/tui/src/tui-alt-screen.ts:afterTerminalStop",
 ]);
 
 function terminalWriteChannel(
