@@ -86,5 +86,18 @@
      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
      "reason": "Single terminal lifecycle/input renderer whose scrollbar, mouse multi-click selection, wheel scrolling, and alt-screen flash state machines share the terminal-renderer struct."
    }
+   ,
+   {
+     "path": "src/cadr-tui/mermaid/layout.lisp",
+     "reason": "Direct port of baseline grok-mermaid layout modules kept as one file so the per-file diff against the upstream dist boundary stays auditable."
+   },
+   {
+     "path": "src/cadr-tui/mermaid/parse.lisp",
+     "reason": "Direct port of baseline grok-mermaid parser kept as one file so the per-file diff against the upstream dist boundary stays auditable."
+   },
+   {
+     "path": "src/cadr-tui/mermaid/width-data.lisp",
+     "reason": "Generated code-point width table owned by scripts/gen-mermaid-width-data.py; manual splitting would corrupt regeneration ownership."
+   }
  ]
 }

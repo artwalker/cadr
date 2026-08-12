@@ -19,11 +19,11 @@ owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 285 current files.
+goal is supposed to police, so this ledger covers all 296 current files.
 
-- 280 Lisp files, 115,621 lines, 4,727 top-level definitions.
+- 291 Lisp files, 120,242 lines, 4,928 top-level definitions.
 - 5 static export assets, 4,276 lines.
-- 285 production files and 119,897 physical lines in total.
+- 296 production files and 124,518 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -335,6 +335,17 @@ files with unrelated facilities fail.
 | `src/cadr-tui/keybindings.lisp` | 176 | 11 | Store configurable keybinding definitions and resolve conflicts/actions. | 合格 |
 | `src/cadr-tui/keys.lisp` | 595 | 32 | Parse and canonicalize Kitty, xterm, modified, and legacy key encodings. | 合格·大体量 |
 | `src/cadr-tui/kill-ring.lisp` | 38 | 5 | Implement kill-ring push/peek/rotate operations. | 合格 |
+| `src/cadr-tui/mermaid/ansi.lisp` | 37 | 2 | Render ANSI-colored Mermaid source lines with terminal-safe styles. | 合格 |
+| `src/cadr-tui/mermaid/canvas.lisp` | 336 | 34 | Implement the edge-mask raster grid that clips labels and box borders during layout. | 合格 |
+| `src/cadr-tui/mermaid/graph.lisp` | 106 | 18 | Define the shared graph model shared by all Mermaid diagram kinds. | 合格 |
+| `src/cadr-tui/mermaid/index.lisp` | 111 | 3 | Render the five supported diagram kinds from the shared graph model. | 合格 |
+| `src/cadr-tui/mermaid/labels.lisp` | 334 | 28 | Normalize Mermaid edge/node labels before measurement and drawing. | 合格 |
+| `src/cadr-tui/mermaid/layout.lisp` | 1,090 | 36 | Implement the Sugiyama layered-graph layout used by flow diagrams. | 合格·大体量 |
+| `src/cadr-tui/mermaid/layout-seq.lisp` | 254 | 9 | Implement the sequence-diagram layout and lane projection. | 合格 |
+| `src/cadr-tui/mermaid/parse.lisp` | 1,180 | 60 | Parse Mermaid source into the shared graph model for all diagram kinds. | 合格·大体量 |
+| `src/cadr-tui/mermaid/source-box.lisp` | 93 | 3 | Fall back to rendering raw Mermaid source in a box when parsing fails. | 合格 |
+| `src/cadr-tui/mermaid/width-data.lisp` | 1,008 | 1 | Provide the generated code-point width table consumed by the width engine. | 合格·大体量 |
+| `src/cadr-tui/mermaid/width.lisp` | 72 | 7 | Compute grapheme display width for Mermaid layout and truncation. | 合格 |
 | `src/cadr-tui/native-modifiers.lisp` | 78 | 11 | Query Apple Terminal modifier flags through CoreGraphics when supported. | 合格 |
 | `src/cadr-tui/overlay.lisp` | 481 | 30 | Resolve overlay geometry, composite frames, and manage overlay focus/stack state. | 合格·大体量 |
 | `src/cadr-tui/package.lisp` | 350 | 1 | Declare the public `cadr-tui` package surface. | 合格 |
@@ -378,8 +389,8 @@ files with unrelated facilities fail.
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
-| `cadr-tui` | 21 | 16 | 0 | 0 | 37 |
-| **Total** | **203** | **82** | **0** | **0** | **285** |
+| `cadr-tui` | 29 | 19 | 0 | 0 | 48 |
+| **Total** | **211** | **85** | **0** | **0** | **296** |
 
 No production file remains in `应拆分` or `应合并`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This
@@ -394,10 +405,10 @@ the tests reject a missing owner or a surviving mixed file.
 | `cadr-tui` | 0 | 0 | +0 |
 | **Total** | **0** | **0** | **+0** |
 
-At current boundaries the physical distribution is 159 files below 300 lines,
-78 at 300–699, 28 at 700–999, and 20 at or above 1,000;
+At current boundaries the physical distribution is 165 files below 300 lines,
+80 at 300–699, 28 at 700–999, and 23 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000. Average file
-size is now 421 lines and the under-300 share is about 55.8%. The modest
+size is now 420.7 lines and the under-300 share is about 55.7%. The modest
 percentage is honest:
 cohesive files such as the multiline
 editor, Unicode engine, image codec, protocol codecs, and vendored assets are
@@ -845,7 +856,7 @@ judgment; it is a candidate for a future B-batch convergence).
 ## 7. Permanent organization gate
 
 `scripts/check-code-organization.py` scans every regular production file below
-`src/`.  Part A's complete histogram placed 20 of 285 files in a distinct
+`src/`.  Part A's complete histogram placed 23 of 296 files in a distinct
 `>=1000`-line band above the 700--999 band, so that audited band is the review
 boundary.  The number is not a target: a cohesive 999-line file is not thereby
 good, and a justified 1000-line file is not thereby bad.
@@ -854,7 +865,7 @@ Every file at or above that boundary must have a non-empty, path-specific
 reason in `docs/code-organization-exemptions.json`.  The gate rejects an
 unreviewed large file, a missing or duplicate reason, and a stale exemption for
 a file that moved, disappeared, or fell below the boundary.  The checked-in
-manifest currently contains the exact 20 files at or above the boundary, including generated
+manifest currently contains the exact 23 files at or above the boundary, including generated
 and vendored assets.  `scripts/verify.sh` drives both synthetic regressions and
 the real repository/manifest pair before the parity and build stages.
 

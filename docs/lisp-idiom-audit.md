@@ -8,20 +8,20 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=280 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=291 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 280 Lisp files and 112,486 physical lines.  The form
+The audited tree contains 291 Lisp files and 120,242 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| `cadr-core` | 7 | 466 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 61 | 24,833 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
-| `cadr-agent` | 36 | 15,962 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 113 | 46,745 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
-| `cadr-tui` | 37 | 17,016 | 37 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
+| `cadr-core` | 7 | 471 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
+| `cadr-ai` | 61 | 25,818 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
+| `cadr-agent` | 36 | 16,085 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
+| `cadr-cli` | 113 | 48,020 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
+| `cadr-tui` | 48 | 22,595 | 40 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `cadr-server` | 11 | 2,768 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
+| `cadr-server` | 11 | 2,764 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
 | `cadr-protocol` | 5 | 1,427 | 4 | 0 | 0 | 0 | 0 | 5 | 0 | 0 |
 | `cadr-evals` | 8 | 3,031 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
 
