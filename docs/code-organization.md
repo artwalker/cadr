@@ -19,11 +19,11 @@ owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 280 current files.
+goal is supposed to police, so this ledger covers all 285 current files.
 
-- 275 Lisp files, 106,580 lines, 4,470 top-level definitions.
-- 5 static export assets, 4,275 lines.
-- 280 production files and 110,855 physical lines in total.
+- 280 Lisp files, 115,621 lines, 4,727 top-level definitions.
+- 5 static export assets, 4,276 lines.
+- 285 production files and 119,897 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -36,58 +36,57 @@ large protocol codecs and generated/assets files remain intact, while smaller
 files with unrelated facilities fail.
 
 ## 2. Per-file ledger
-
 ### 2.1 `cadr-agent`
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
-| `src/cadr-agent/branch-summarization.lisp` | 185 | 11 | Prepare a session branch and ask the model for its branch summary. | 合格 |
+| `src/cadr-agent/branch-summarization.lisp` | 187 | 11 | Prepare a session branch and ask the model for its branch summary. | 合格 |
 | `src/cadr-agent/summarization.lisp` | 86 | 4 | Own the shared conversation-summary prompt, request, and retry contract. | 合格 |
-| `src/cadr-agent/compaction.lisp` | 513 | 23 | Estimate context, choose a cut point, and execute the compaction lifecycle. | 合格·大体量 |
+| `src/cadr-agent/compaction.lisp` | 860 | 33 | Estimate context, choose a cut point, and execute the compaction lifecycle. | 合格·大体量 |
 | `src/cadr-agent/conditions.lisp` | 43 | 9 | Define agent-layer condition types. | 合格 |
 | `src/cadr-agent/execution-env.lisp` | 884 | 55 | Implement the replaceable filesystem/process execution environment used by tools and harnesses. | 合格·大体量 |
 | `src/cadr-agent/export-html/template.css` | 1,066 | 0 | Provide the exact vendored baseline stylesheet embedded in offline session exports. | 合格·大体量 |
 | `src/cadr-agent/export-html/template.html` | 55 | 0 | Provide the exact HTML shell embedded in offline session exports. | 合格 |
 | `src/cadr-agent/export-html/template.js` | 1,864 | 0 | Provide the exact vendored baseline browser renderer embedded in session exports. | 合格·大体量 |
-| `src/cadr-agent/export-html/vendor/highlight.min.js` | 1,212 | 0 | Vendor the approved Highlight.js browser asset byte-for-byte. | 合格·大体量 |
+| `src/cadr-agent/export-html/vendor/highlight.min.js` | 1,213 | 0 | Vendor the approved Highlight.js browser asset byte-for-byte. | 合格·大体量 |
 | `src/cadr-agent/export-html/vendor/marked.min.js` | 78 | 0 | Vendor the approved Marked browser asset byte-for-byte. | 合格 |
 | `src/cadr-agent/extensions/api.lisp` | 373 | 31 | Validate active APIs, copy extension values, and project event payloads/results. | 合格 |
 | `src/cadr-agent/extensions/commands.lisp` | 296 | 11 | Invoke extension commands and expand registered prompt templates. | 合格 |
 | `src/cadr-agent/extensions/context.lisp` | 705 | 76 | Define extension host/context state, cancellation, and all context/UI actions. | 合格·大体量 |
-| `src/cadr-agent/extensions/lifecycle.lisp` | 772 | 18 | Validate, merge, and dispatch the complete frozen extension lifecycle. | 合格·大体量 |
-| `src/cadr-agent/extensions/providers.lisp` | 521 | 21 | Project extension tools, messages, and session-local provider overlays into an agent. | 合格 |
+| `src/cadr-agent/extensions/lifecycle.lisp` | 779 | 18 | Validate, merge, and dispatch the complete frozen extension lifecycle. | 合格·大体量 |
+| `src/cadr-agent/extensions/providers.lisp` | 523 | 21 | Project extension tools, messages, and session-local provider overlays into an agent. | 合格 |
 | `src/cadr-agent/extensions/registration.lisp` | 812 | 53 | Define bundles, registries, frozen events, and extension authoring macros. | 合格·大体量 |
 | `src/cadr-agent/extensions/rendering.lisp` | 257 | 17 | Own extension failure notices, Markdown/message/tool rendering, and shortcuts. | 合格 |
-| `src/cadr-agent/extensions/snapshot.lisp` | 379 | 12 | Build immutable extension snapshots and replace active bundles safely. | 合格 |
+| `src/cadr-agent/extensions/snapshot.lisp` | 405 | 12 | Build immutable extension snapshots and replace active bundles safely. | 合格 |
 | `src/cadr-agent/file-mutation-queue.lisp` | 84 | 10 | Serialize mutations to the same resolved file. | 合格 |
-| `src/cadr-agent/loop/agent-loop.lisp` | 464 | 8 | Own the public prompt/steer/follow-up entrypoints and outer agent lifecycle. | 合格 |
-| `src/cadr-agent/loop/events.lisp` | 166 | 16 | Emit and normalize agent lifecycle, stream, queue, and tool events. | 合格 |
-| `src/cadr-agent/loop/tool-execution.lisp` | 459 | 18 | Execute tool batches with hooks, restarts, termination, updates, and abort state. | 合格 |
-| `src/cadr-agent/loop/turns.lisp` | 278 | 14 | Prepare, stream, retry, compact, and finalize one agent turn. | 合格 |
+| `src/cadr-agent/loop/agent-loop.lisp` | 444 | 8 | Own the public prompt/steer/follow-up entrypoints and outer agent lifecycle. | 合格 |
+| `src/cadr-agent/loop/events.lisp` | 169 | 17 | Emit and normalize agent lifecycle, stream, queue, and tool events. | 合格 |
+| `src/cadr-agent/loop/tool-execution.lisp` | 481 | 19 | Execute tool batches with hooks, restarts, termination, updates, and abort state. | 合格 |
+| `src/cadr-agent/loop/turns.lisp` | 392 | 15 | Prepare, stream, retry, compact, and finalize one agent turn. | 合格 |
 | `src/cadr-agent/messages.lisp` | 243 | 24 | Convert agent-specific message envelopes and file-operation summaries to model-facing messages. | 合格 |
-| `src/cadr-agent/package.lisp` | 442 | 1 | Declare the public `cadr-agent` package surface. | 合格 |
+| `src/cadr-agent/package.lisp` | 447 | 1 | Declare the public `cadr-agent` package surface. | 合格 |
 | `src/cadr-agent/proxy.lisp` | 229 | 9 | Translate proxy-provider events into native agent stream events. | 合格 |
-| `src/cadr-agent/resources.lisp` | 739 | 30 | Load, validate, substitute, and format prompts and skills as agent resources. | 合格·大体量 |
-| `src/cadr-agent/runtime.lisp` | 423 | 28 | Own agent event emission, queued steering/follow-up input, mutation state, abort, and shutdown. | 合格·大体量 |
-| `src/cadr-agent/schema.lisp` | 702 | 14 | Validate JSON Schema definitions and tool arguments with local reference support. | 合格·大体量 |
-| `src/cadr-agent/session/codec.lisp` | 526 | 30 | Encode, decode, validate, and identify session entries and metadata. | 合格 |
-| `src/cadr-agent/session/discovery.lisp` | 146 | 5 | Discover, list, continue, and resolve session files. | 合格 |
+| `src/cadr-agent/resources.lisp` | 741 | 30 | Load, validate, substitute, and format prompts and skills as agent resources. | 合格·大体量 |
+| `src/cadr-agent/runtime.lisp` | 435 | 28 | Own agent event emission, queued steering/follow-up input, mutation state, abort, and shutdown. | 合格·大体量 |
+| `src/cadr-agent/schema.lisp` | 833 | 18 | Validate JSON Schema definitions and tool arguments with local reference support. | 合格·大体量 |
+| `src/cadr-agent/session/codec.lisp` | 571 | 30 | Encode, decode, validate, and identify session entries and metadata. | 合格 |
+| `src/cadr-agent/session/discovery.lisp` | 154 | 5 | Discover, list, continue, and resolve session files. | 合格 |
 | `src/cadr-agent/session/export-html.lisp` | 455 | 24 | Embed assets and export a session as baseline-compatible offline HTML. | 合格 |
-| `src/cadr-agent/session/journal.lisp` | 646 | 29 | Create, append, branch, label, and inspect the live JSONL session journal. | 合格 |
-| `src/cadr-agent/session/migration.lisp` | 565 | 11 | Validate and migrate v1/v2/v3 session logs with atomic replacement. | 合格 |
+| `src/cadr-agent/session/journal.lisp` | 648 | 29 | Create, append, branch, label, and inspect the live JSONL session journal. | 合格 |
+| `src/cadr-agent/session/migration.lisp` | 563 | 11 | Validate and migrate v1/v2/v3 session logs with atomic replacement. | 合格 |
 | `src/cadr-agent/sqlite-storage.lisp` | 860 | 33 | Implement the SQLite session-storage and repository backend. | 合格·大体量 |
 | `src/cadr-agent/storage/harness.lisp` | 495 | 31 | Adapt session-storage backends to harness session lifecycle operations. | 合格 |
-| `src/cadr-agent/storage/jsonl.lisp` | 536 | 19 | Implement JSONL session storage and repository backends. | 合格 |
-| `src/cadr-agent/storage/memory.lisp` | 372 | 19 | Implement in-memory session storage and repository backends. | 合格 |
+| `src/cadr-agent/storage/jsonl.lisp` | 536 | 21 | Implement JSONL session storage and repository backends. | 合格 |
+| `src/cadr-agent/storage/memory.lisp` | 372 | 20 | Implement in-memory session storage and repository backends. | 合格 |
 | `src/cadr-agent/storage/protocol.lisp` | 122 | 24 | Define storage/repository metadata, generic protocols, and shared errors. | 合格 |
-| `src/cadr-agent/tool.lisp` | 309 | 23 | Define tool registry, execution bindings, validation, and prepared outcomes. | 合格·大体量 |
+| `src/cadr-agent/tool.lisp` | 318 | 23 | Define tool registry, execution bindings, validation, and prepared outcomes. | 合格·大体量 |
 | `src/cadr-agent/truncate.lisp` | 283 | 31 | Implement baseline-compatible bounded head/tail/line truncation and its result contract. | 合格 |
 
 ### 2.2 `cadr-ai`
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
-| `src/cadr-ai/auth.lisp` | 225 | 19 | Serialize, atomically persist, redact, and refresh provider credentials. | 合格 |
+| `src/cadr-ai/auth.lisp` | 204 | 16 | Serialize, atomically persist, redact, and refresh provider credentials. | 合格 |
 | `src/cadr-ai/capabilities/event-stream.lisp` | 61 | 6 | Implement the producer/consumer event stream and terminal-result protocol. | 合格 |
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 133 | 10 | Resolve deferred tools and strict/grammar constrained-sampling metadata. | 合格 |
 | `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | 18 | Register image APIs and own the mutable image provider/model runtime. | 合格 |
@@ -95,81 +94,81 @@ files with unrelated facilities fail.
 | `src/cadr-ai/capabilities/session-resources.lisp` | 34 | 5 | Register and clean session-owned provider transport resources. | 合格 |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | 11 | Provide stable JavaScript-compatible hashes and repair partial streaming JSON. | 合格 |
 | `src/cadr-ai/conditions.lisp` | 44 | 12 | Define provider-layer condition types. | 合格 |
-| `src/cadr-ai/crash.lisp` | 218 | 13 | Redact secrets and report fatal conditions through a private crash-log boundary. | 合格 |
+| `src/cadr-ai/crash.lisp` | 269 | 16 | Redact secrets and report fatal conditions through a private crash-log boundary. | 合格 |
 | `src/cadr-ai/crypto.lisp` | 367 | 14 | Implement SigV4 canonicalization/signing and service-account JWT signing. | 合格·大体量 |
 | `src/cadr-ai/image-models.generated.lisp` | 173 | 1 | Hold generated image-model catalog data. | 合格·大体量 |
 | `src/cadr-ai/images.lisp` | 222 | 8 | Build OpenRouter image requests and normalize generated-image results. | 合格 |
 | `src/cadr-ai/json.lisp` | 551 | 27 | Parse and serialize bounded JSON plus common content/data-URL helpers. | 合格·大体量 |
 | `src/cadr-ai/model-data.lisp` | 398 | 26 | Validate model-data artifacts/manifests and generate deterministic catalog fixtures. | 合格·大体量 |
-| `src/cadr-ai/models.generated.lisp` | 8,114 | 1 | Hold the generated model metadata catalog; the generator is its owner. | 合格·大体量 |
-| `src/cadr-ai/models.lisp` | 287 | 23 | Define model metadata/catalog operations, thinking-level resolution, and cost calculation. | 合格 |
+| `src/cadr-ai/models.generated.lisp` | 8,711 | 1 | Hold the generated model metadata catalog; the generator is its owner. | 合格·大体量 |
+| `src/cadr-ai/models.lisp` | 288 | 22 | Define model metadata/catalog operations, thinking-level resolution, and cost calculation. | 合格 |
 | `src/cadr-ai/oauth/callback.lisp` | 316 | 11 | Parse manual/callback authorization input and own the loopback callback lifecycle. | 合格 |
 | `src/cadr-ai/oauth/openai-anthropic.lisp` | 288 | 12 | Exchange, refresh, and orchestrate the browser OAuth flows shared by OpenAI Codex and Anthropic. | 合格 |
 | `src/cadr-ai/oauth/page.lisp` | 149 | 6 | Render the branded OAuth callback success and error pages. | 合格 |
-| `src/cadr-ai/oauth/pkce.lisp` | 317 | 36 | Own OAuth metadata plus the SHA-256, Base64URL, PKCE, state, and authorization-URL primitives. | 合格 |
+| `src/cadr-ai/oauth/pkce.lisp` | 322 | 36 | Own OAuth metadata plus the SHA-256, Base64URL, PKCE, state, and authorization-URL primitives. | 合格 |
 | `src/cadr-ai/oauth/providers/anthropic.lisp` | 16 | 1 | Project the Anthropic browser OAuth flow into the runtime callback contract. | 合格 |
-| `src/cadr-ai/oauth/providers/github-copilot.lisp` | 136 | 13 | Implement GitHub Copilot device login, token exchange, refresh, and model filtering. | 合格 |
-| `src/cadr-ai/oauth/providers/kimi.lisp` | 56 | 6 | Implement Kimi Coding device login and credential refresh. | 合格 |
+| `src/cadr-ai/oauth/providers/github-copilot.lisp` | 138 | 13 | Implement GitHub Copilot device login, token exchange, refresh, and model filtering. | 合格 |
+| `src/cadr-ai/oauth/providers/kimi.lisp` | 58 | 6 | Implement Kimi Coding device login and credential refresh. | 合格 |
 | `src/cadr-ai/oauth/providers/openai-device.lisp` | 199 | 7 | Implement OpenAI Codex device authorization, polling, and runtime login selection. | 合格 |
 | `src/cadr-ai/oauth/providers/openrouter.lisp` | 89 | 7 | Implement OpenRouter PKCE login, key exchange, and refresh. | 合格 |
-| `src/cadr-ai/oauth/providers/radius.lisp` | 118 | 9 | Implement Radius browser/device login and gateway-scoped credential refresh. | 合格 |
-| `src/cadr-ai/oauth/providers/xai.lisp` | 170 | 17 | Implement xAI device authorization, polling, and refresh over the shared OAuth request boundary. | 合格 |
-| `src/cadr-ai/package.lisp` | 473 | 2 | Declare the public `cadr-ai` package surface and HTTP injection seam. | 合格 |
-| `src/cadr-ai/auth/bedrock.lisp` | 163 | 11 | Resolve Bedrock credentials, profiles, regions, and ARN-derived configuration. | 合格 |
+| `src/cadr-ai/oauth/providers/radius.lisp` | 126 | 9 | Implement Radius browser/device login and gateway-scoped credential refresh. | 合格 |
+| `src/cadr-ai/oauth/providers/xai.lisp` | 184 | 17 | Implement xAI device authorization, polling, and refresh over the shared OAuth request boundary. | 合格 |
+| `src/cadr-ai/package.lisp` | 475 | 2 | Declare the public `cadr-ai` package surface and HTTP injection seam. | 合格 |
+| `src/cadr-ai/auth/bedrock.lisp` | 216 | 12 | Resolve Bedrock credentials, profiles, regions, and ARN-derived configuration. | 合格 |
 | `src/cadr-ai/auth/device-code.lisp` | 211 | 10 | Own generic cancellable device-code polling, validation, and credential parsing. | 合格 |
 | `src/cadr-ai/auth/github-copilot.lisp` | 66 | 3 | Parse GitHub device authorization and resolve Copilot endpoint/model metadata. | 合格 |
 | `src/cadr-ai/auth/radius-cloudflare.lisp` | 115 | 4 | Validate Radius configuration and materialize Radius/Cloudflare endpoints. | 合格 |
-| `src/cadr-ai/auth/vertex.lisp` | 147 | 7 | Resolve Google Vertex credentials and exchange service-account access tokens. | 合格 |
-| `src/cadr-ai/provider.lisp` | 760 | 75 | Define provider protocol classes plus common request, retry, history, stream, and error machinery. | 合格·大体量 |
+| `src/cadr-ai/auth/vertex.lisp` | 212 | 8 | Resolve Google Vertex credentials and exchange service-account access tokens. | 合格 |
+| `src/cadr-ai/provider.lisp` | 767 | 74 | Define provider protocol classes plus common request, retry, history, stream, and error machinery. | 合格·大体量 |
 | `src/cadr-ai/providers/anthropic.lisp` | 618 | 16 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/providers/google.lisp` | 408 | 17 | Implement Google Generative AI request, thinking, response, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/providers/azure-openai.lisp` | 241 | 12 | Adapt Azure, Copilot, and Cloudflare OpenAI-compatible endpoints and headers. | 合格 |
 | `src/cadr-ai/providers/bedrock.lisp` | 929 | 32 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | 合格·大体量 |
-| `src/cadr-ai/providers/codex.lisp` | 31 | 1 | Adapt the OpenAI Codex Responses request contract. | 合格 |
+| `src/cadr-ai/providers/codex.lisp` | 35 | 1 | Adapt the OpenAI Codex Responses request contract. | 合格 |
 | `src/cadr-ai/providers/mistral.lisp` | 98 | 4 | Adapt Mistral Conversations reasoning and tool-call identifiers. | 合格 |
 | `src/cadr-ai/providers/pi-messages.lisp` | 251 | 6 | Implement pi Messages request rewriting and event/response reduction. | 合格 |
 | `src/cadr-ai/providers/vertex.lisp` | 130 | 2 | Adapt Google Vertex endpoints and signed request construction. | 合格 |
-| `src/cadr-ai/providers/openai-completions.lisp` | 775 | 30 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | 合格·大体量 |
+| `src/cadr-ai/providers/openai-completions.lisp` | 859 | 31 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | 合格·大体量 |
 | `src/cadr-ai/providers/openai.lisp` | 772 | 17 | Implement OpenAI Responses request, response, tool, reasoning, and stream semantics. | 合格·大体量 |
-| `src/cadr-ai/providers/definitions.lisp` | 963 | 10 | Validate and own the complete 38-provider declaration matrix and environment inputs. | 合格·大体量 |
+| `src/cadr-ai/providers/definitions.lisp` | 1,020 | 11 | Validate and own the complete 38-provider declaration matrix and environment inputs. | 合格·大体量 |
 | `src/cadr-ai/providers/registry.lisp` | 157 | 2 | Instantiate declared providers through the appropriate native protocol class. | 合格 |
-| `src/cadr-ai/providers/runtime-projection.lisp` | 270 | 13 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | 合格 |
-| `src/cadr-ai/runtime/faux-provider.lisp` | 426 | 25 | Implement the deterministic faux provider, queued responses, and transcript serializer. | 合格 |
+| `src/cadr-ai/providers/runtime-projection.lisp` | 288 | 15 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | 合格 |
+| `src/cadr-ai/runtime/faux-provider.lisp` | 604 | 33 | Implement the deterministic faux provider, queued responses, and transcript serializer. | 合格 |
 | `src/cadr-ai/runtime/models.lisp` | 834 | 50 | Own mutable provider/model/auth state, refresh, lookup, and request dispatch. | 合格·大体量 |
 | `src/cadr-ai/sse.lisp` | 101 | 5 | Parse Server-Sent Events from text or binary streams. | 合格 |
 | `src/cadr-ai/support/grammar-coercion.lisp` | 227 | 13 | Coerce and validate grammar-tool JSON values against schemas. | 合格 |
 | `src/cadr-ai/support/overflow.lisp` | 78 | 5 | Classify context-overflow errors from status and usage evidence. | 合格 |
-| `src/cadr-ai/support/release.lisp` | 21 | 6 | Read the single version source and format the aligned release identity. | 合格 |
-| `src/cadr-ai/support/retry.lisp` | 129 | 6 | Classify retryable assistant failures and execute the bounded retry policy. | 合格 |
+| `src/cadr-ai/support/release.lisp` | 100 | 18 | Read the single version source and format the aligned release identity. | 合格 |
+| `src/cadr-ai/support/retry.lisp` | 177 | 9 | Classify retryable assistant failures and execute the bounded retry policy. | 合格 |
 | `src/cadr-ai/support/threads.lisp` | 6 | 1 | Delegate bounded thread cleanup to the B3 core policy owner. | 合格 |
-| `src/cadr-ai/support/token-estimation.lisp` | 154 | 13 | Estimate message, tool, image, and context token usage. | 合格 |
+| `src/cadr-ai/support/token-estimation.lisp` | 170 | 14 | Estimate message, tool, image, and context token usage. | 合格 |
 | `src/cadr-ai/support/uuid.lisp` | 65 | 4 | Generate monotonic UUIDv7 identifiers from random octets. | 合格 |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | 10 | Decode AWS event-stream frames and issue Bedrock event requests. | 合格 |
 | `src/cadr-ai/transport/http.lisp` | 858 | 41 | Implement abortable native HTTP/TLS transport, framing, and normalized errors. | 合格·大体量 |
-| `src/cadr-ai/types.lisp` | 239 | 24 | Define provider/model/message/content/tool/event value types and safe printers. | 合格 |
+| `src/cadr-ai/types.lisp` | 230 | 22 | Define provider/model/message/content/tool/event value types and safe printers. | 合格 |
 | `src/cadr-ai/websocket.lisp` | 582 | 41 | Implement OpenAI Codex WebSocket framing, pooling, continuation, and provider dispatch. | 合格·大体量 |
 
 ### 2.3 `cadr-cli`
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
-| `src/cadr-cli/arguments.lisp` | 586 | 17 | Parse, validate, resolve, and document the CLI argument contract. | 合格·大体量 |
-| `src/cadr-cli/bootstrap/auth.lisp` | 130 | 2 | Project provider-owned authentication options into the native CLI login command. | 合格 |
-| `src/cadr-cli/bootstrap/commands.lisp` | 2,058 | 4 | Construct the agent controller and dispatch CLI modes and slash-command output through one frontend sink. | 合格·大体量 |
-| `src/cadr-cli/bootstrap/main.lisp` | 140 | 2 | Handle package/credential preflight, parse arguments, and enter the selected CLI path. | 合格 |
-| `src/cadr-cli/bootstrap/sessions.lisp` | 1,367 | 35 | Resolve, create, switch, fork, export, and mutate CLI sessions and their tree lifecycle. | 合格·大体量 |
-| `src/cadr-cli/bootstrap/settings.lisp` | 725 | 13 | Resolve agent directories, trust, settings, resources, runtime reload, and the effective system prompt. | 合格·大体量 |
+| `src/cadr-cli/arguments.lisp` | 734 | 23 | Parse, validate, resolve, and document the CLI argument contract. | 合格·大体量 |
+| `src/cadr-cli/bootstrap/auth.lisp` | 166 | 2 | Project provider-owned authentication options into the native CLI login command. | 合格 |
+| `src/cadr-cli/bootstrap/commands.lisp` | 2,579 | 8 | Construct the agent controller and dispatch CLI modes and slash-command output through one frontend sink. | 合格·大体量 |
+| `src/cadr-cli/bootstrap/main.lisp` | 313 | 4 | Handle package/credential preflight, parse arguments, and enter the selected CLI path. | 合格 |
+| `src/cadr-cli/bootstrap/sessions.lisp` | 1,942 | 45 | Resolve, create, switch, fork, export, and mutate CLI sessions and their tree lifecycle. | 合格·大体量 |
+| `src/cadr-cli/bootstrap/settings.lisp` | 808 | 17 | Resolve agent directories, trust, settings, resources, runtime reload, and the effective system prompt. | 合格·大体量 |
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | 8 | Construct the baseline tool set and its prompt metadata. | 合格 |
 | `src/cadr-cli/build-support.lisp` | 14 | 2 | Supply the native-image save arguments and executable entry point. | 合格 |
-| `src/cadr-cli/config.lisp` | 287 | 21 | Resolve legacy CLI provider configuration and auth commands. | 合格 |
+| `src/cadr-cli/config.lisp` | 288 | 20 | Resolve legacy CLI provider configuration and auth commands. | 合格 |
 | `src/cadr-cli/support/atomic-write.lisp` | 5 | 1 | Retain the CLI compatibility entry point while delegating atomic replacement to `cadr-core`. | 合格 |
-| `src/cadr-cli/support/changelog-share.lisp` | 347 | 10 | Strip terminal styling, parse changelogs, and publish the resulting session share. | 合格 |
+| `src/cadr-cli/support/changelog-share.lisp` | 342 | 10 | Strip terminal styling, parse changelogs, and publish the resulting session share. | 合格 |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | 5 | Own the process-local event bus and its error sink. | 合格 |
 | `src/cadr-cli/support/external-editor.lisp` | 20 | 1 | Round-trip text through the configured external editor. | 合格 |
 | `src/cadr-cli/support/file-watcher.lisp` | 69 | 6 | Poll one file signature and close its worker through bounded cleanup. | 合格 |
-| `src/cadr-cli/support/headers.lisp` | 75 | 4 | Merge provider attribution and request header sources. | 合格 |
-| `src/cadr-cli/support/html.lisp` | 64 | 5 | Escape and validate HTML-facing strings and shell quoting. | 合格 |
-| `src/cadr-cli/support/model-help.lisp` | 24 | 6 | Construct provider/model login help and missing-model diagnostics. | 合格 |
+| `src/cadr-cli/support/headers.lisp` | 81 | 4 | Merge provider attribution and request header sources. | 合格 |
+| `src/cadr-cli/support/html.lisp` | 63 | 5 | Escape and validate HTML-facing strings and shell quoting. | 合格 |
+| `src/cadr-cli/support/model-help.lisp` | 18 | 6 | Construct provider/model login help and missing-model diagnostics. | 合格 |
 | `src/cadr-cli/support/paths.lisp` | 119 | 6 | Parse file URLs and normalize user path input without changing caller display policy. | 合格 |
 | `src/cadr-cli/support/resume-version-git.lisp` | 227 | 9 | Format resume commands and parse versioned Git sources. | 合格 |
 | `src/cadr-cli/support/shell-process.lisp` | 132 | 12 | Discover shell configuration and manage detached process trees. | 合格 |
@@ -179,101 +178,104 @@ files with unrelated facilities fail.
 | `src/cadr-cli/extensions/commands.lisp` | 56 | 3 | Dispatch extension commands and prompt-template expansion. | 合格 |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | 11 | Define extension source/manager records and discover precedence-ordered sources. | 合格 |
 | `src/cadr-cli/extensions/installer.lisp` | 211 | 9 | Validate, stage, clone, and install opt-in extension packages. | 合格 |
-| `src/cadr-cli/extensions/loader.lisp` | 621 | 18 | Own extension/infrastructure output sinks, local dependency loading, UI wiring, and reload lifecycle. | 合格 |
-| `src/cadr-cli/extensions/llama/client.lisp` | 473 | 26 | Implement llama-server HTTP operations and progress polling. | 合格·大体量 |
-| `src/cadr-cli/extensions/llama/extension.lisp` | 316 | 11 | Bind llama commands and catalog refresh into the extension API. | 合格·大体量 |
-| `src/cadr-cli/extensions/llama/huggingface.lisp` | 279 | 14 | Search and inspect Hugging Face GGUF artifacts. | 合格 |
+| `src/cadr-cli/extensions/loader.lisp` | 702 | 20 | Own extension/infrastructure output sinks, local dependency loading, UI wiring, and reload lifecycle. | 合格 |
+| `src/cadr-cli/extensions/llama/client.lisp` | 472 | 25 | Implement llama-server HTTP operations and progress polling. | 合格·大体量 |
+| `src/cadr-cli/extensions/llama/extension.lisp` | 464 | 17 | Bind llama commands and catalog refresh into the extension API. | 合格·大体量 |
+| `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | 14 | Search and inspect Hugging Face GGUF artifacts. | 合格 |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 322 | 11 | Project llama-server as a session-local native provider. | 合格·大体量 |
-| `src/cadr-cli/interactive/components/loaders.lisp` | 151 | 14 | Own dynamic-border and bordered-loader component primitives. | 合格 |
-| `src/cadr-cli/interactive/components/countdown.lisp` | 91 | 7 | Own deterministic countdown timer state, rendering, and ticking. | 合格 |
-| `src/cadr-cli/interactive/components/armin.lisp` | 270 | 16 | Own the Armin animated component and its frame lifecycle. | 合格 |
-| `src/cadr-cli/interactive/components/daxnuts.lisp` | 169 | 14 | Own the Daxnuts animated component and its frame lifecycle. | 合格 |
+| `src/cadr-cli/interactive/components/loaders.lisp` | 150 | 14 | Own dynamic-border and bordered-loader component primitives. | 合格 |
+| `src/cadr-cli/interactive/components/countdown.lisp` | 90 | 7 | Own deterministic countdown timer state, rendering, and ticking. | 合格 |
+| `src/cadr-cli/interactive/components/armin.lisp` | 269 | 16 | Own the Armin animated component and its frame lifecycle. | 合格 |
+| `src/cadr-cli/interactive/components/daxnuts.lisp` | 168 | 14 | Own the Daxnuts animated component and its frame lifecycle. | 合格 |
 | `src/cadr-cli/interactive/components/announcement.lisp` | 41 | 2 | Compose the Earendil announcement component. | 合格 |
-| `src/cadr-cli/interactive/clipboard.lisp` | 450 | 22 | Own platform clipboard text/image discovery, reading, and writes. | 合格·大体量 |
-| `src/cadr-cli/interactive/footer.lisp` | 537 | 23 | Own footer path/usage/status projection and asynchronous Git branch data. | 合格·大体量 |
-| `src/cadr-cli/interactive/images.lisp` | 229 | 8 | Inspect and process interactive image bytes under model limits. | 合格 |
-| `src/cadr-cli/interactive/state.lisp` | 281 | 11 | Own mutable TUI entry, overlay, status, theme, and root-state records. | 合格 |
-| `src/cadr-cli/interactive/status.lisp` | 464 | 26 | Own startup input, status projection, render coordination, spinners, and account warnings. | 合格 |
-| `src/cadr-cli/interactive/syntax.lisp` | 1,076 | 33 | Implement baseline-compatible deterministic syntax highlighting. | 合格·大体量 |
+| `src/cadr-cli/interactive/clipboard.lisp` | 449 | 22 | Own platform clipboard text/image discovery, reading, and writes. | 合格·大体量 |
+| `src/cadr-cli/interactive/footer.lisp` | 536 | 23 | Own footer path/usage/status projection and asynchronous Git branch data. | 合格·大体量 |
+| `src/cadr-cli/interactive/images.lisp` | 290 | 9 | Inspect and process interactive image bytes under model limits. | 合格 |
+| `src/cadr-cli/interactive/state.lisp` | 293 | 12 | Own mutable TUI entry, overlay, status, theme, and root-state records. | 合格 |
+| `src/cadr-cli/interactive/status.lisp` | 456 | 26 | Own startup input, status projection, render coordination, spinners, and account warnings. | 合格 |
+| `src/cadr-cli/interactive/syntax.lisp` | 1,106 | 33 | Implement baseline-compatible deterministic syntax highlighting. | 合格·大体量 |
 | `src/cadr-cli/interactive/theme.lisp` | 215 | 11 | Detect, resolve, export, and discover interactive themes. | 合格 |
-| `src/cadr-cli/interactive/themes.lisp` | 374 | 12 | Watch, validate, and apply live TUI theme files and terminal theme changes. | 合格 |
+| `src/cadr-cli/interactive/themes.lisp` | 388 | 12 | Watch, validate, and apply live TUI theme files and terminal theme changes. | 合格 |
 | `src/cadr-cli/interactive/tool-render-session.lisp` | 61 | 3 | Own incremental tool-render session state and projection. | 合格 |
 | `src/cadr-cli/interactive/user-bash.lisp` | 213 | 9 | Render and update direct user bash executions independently of agent tool calls. | 合格 |
-| `src/cadr-cli/interactive/transcript.lisp` | 1,045 | 29 | Project every session entry and assistant/user/custom transcript component. | 合格·大体量 |
-| `src/cadr-cli/interactive/tool-rendering.lisp` | 955 | 23 | Project agent tool calls/results and reduce agent events into TUI state. | 合格·大体量 |
-| `src/cadr-cli/interactive/entries.lisp` | 270 | 18 | Own append, replacement, invalidation, and status-entry mutation. | 合格 |
-| `src/cadr-cli/interactive/pending-messages.lisp` | 68 | 3 | Render and restore queued steering and follow-up input. | 合格 |
-| `src/cadr-cli/interactive/frame.lisp` | 368 | 7 | Compose transcript, status, widgets, overlays, editor, and footer into one frame. | 合格 |
-| `src/cadr-cli/interactive/extension-ui.lisp` | 503 | 21 | Bridge extension UI requests and custom components into the live TUI. | 合格 |
-| `src/cadr-cli/interactive/autocomplete.lisp` | 217 | 11 | Construct command/path autocomplete and extension shortcut routing. | 合格 |
-| `src/cadr-cli/interactive/controller.lisp` | 2,239 | 14 | Own the interactive lifecycle, slash-command routing, input loop, and cleanup. | 合格·大体量 |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 346 | 21 | Own composable selector chrome, viewport/count, input, fuzzy matching, and wrap navigation. | 合格 |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,342 | 47 | Search, mutate, navigate, and render resumable session trees. | 合格·大体量 |
-| `src/cadr-cli/interactive/selectors/tree.lisp` | 1,747 | 57 | Filter, navigate, edit, and render the branching session tree overlay. | 合格·大体量 |
-| `src/cadr-cli/interactive/selectors/settings.lisp` | 848 | 27 | Edit settings and theme submenus through the shared selector frame. | 合格·大体量 |
-| `src/cadr-cli/interactive/selectors/auth.lisp` | 576 | 25 | Select authentication methods/providers and collect API keys. | 合格·大体量 |
-| `src/cadr-cli/interactive/selectors/models.lisp` | 1,190 | 58 | Search, choose, scope, enable, and order models. | 合格·大体量 |
-| `src/cadr-cli/interactive/selectors/trust.lisp` | 269 | 10 | Choose and persist project trust decisions. | 合格 |
+| `src/cadr-cli/interactive/transcript.lisp` | 1,064 | 29 | Project every session entry and assistant/user/custom transcript component. | 合格·大体量 |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 996 | 23 | Project agent tool calls/results and reduce agent events into TUI state. | 合格·大体量 |
+| `src/cadr-cli/interactive/entries.lisp` | 915 | 34 | Own append, replacement, invalidation, and status-entry mutation. | 合格 |
+| `src/cadr-cli/interactive/pending-messages.lisp` | 63 | 3 | Render and restore queued steering and follow-up input. | 合格 |
+| `src/cadr-cli/interactive/frame.lisp` | 236 | 4 | Compose transcript, status, widgets, overlays, editor, and footer into one frame. | 合格 |
+| `src/cadr-cli/interactive/extension-ui.lisp` | 690 | 30 | Bridge extension UI requests and custom components into the live TUI. | 合格 |
+| `src/cadr-cli/interactive/autocomplete.lisp` | 332 | 15 | Construct command/path autocomplete and extension shortcut routing. | 合格 |
+| `src/cadr-cli/interactive/controller.lisp` | 2,850 | 20 | Own the interactive lifecycle, slash-command routing, input loop, and cleanup. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 392 | 27 | Own composable selector chrome, viewport/count, input, fuzzy matching, and wrap navigation. | 合格 |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,462 | 48 | Search, mutate, navigate, and render resumable session trees. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/tree.lisp` | 1,812 | 57 | Filter, navigate, edit, and render the branching session tree overlay. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 936 | 27 | Edit settings and theme submenus through the shared selector frame. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/auth.lisp` | 624 | 25 | Select authentication methods/providers and collect API keys. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/models.lisp` | 1,305 | 61 | Search, choose, scope, enable, and order models. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/trust.lisp` | 293 | 10 | Choose and persist project trust decisions. | 合格 |
 | `src/cadr-cli/interactive/selectors/fork.lisp` | 147 | 7 | Choose the user-message boundary for a forked session. | 合格 |
-| `src/cadr-cli/media.lisp` | 1,236 | 55 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | 合格·大体量 |
-| `src/cadr-cli/migration.lisp` | 127 | 10 | Safely migrate the legacy user-data directory with explicit consent. | 合格 |
+| `src/cadr-cli/media.lisp` | 1,277 | 56 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | 合格·大体量 |
+| `src/cadr-cli/migration.lisp` | 509 | 29 | Safely migrate the legacy user-data directory with explicit consent. | 合格 |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | 24 | Serialize locked auth-store updates and runtime credential overrides. | 合格 |
-| `src/cadr-cli/models/credential-print.lisp` | 208 | 6 | Parse and execute the one-shot credential-print command without exposing secrets. | 合格 |
+| `src/cadr-cli/models/credential-print.lisp` | 634 | 20 | Parse and execute the one-shot credential-print command without exposing secrets. | 合格 |
 | `src/cadr-cli/models/matching.lisp` | 413 | 17 | Resolve exact, partial, scoped, and globbed model selections. | 合格 |
-| `src/cadr-cli/models/registry.lisp` | 771 | 34 | Build, refresh, authenticate, and project the cohesive runtime model registry. | 合格·大体量 |
+| `src/cadr-cli/models/registry.lisp` | 799 | 34 | Build, refresh, authenticate, and project the cohesive runtime model registry. | 合格·大体量 |
 | `src/cadr-cli/models/store.lisp` | 165 | 8 | Read and mutate provider-scoped `models.json` entries. | 合格 |
-| `src/cadr-cli/modes/print.lisp` | 264 | 8 | Render agent events for print and JSON command-line modes. | 合格 |
+| `src/cadr-cli/modes/print.lisp` | 590 | 17 | Render agent events for print and JSON command-line modes. | 合格 |
 | `src/cadr-cli/modes/rpc/commands.lisp` | 478 | 3 | Validate and dispatch the closed RPC command set through the shared response sink. | 合格 |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | 16 | Read/write and validate the RPC JSONL envelope. | 合格 |
-| `src/cadr-cli/modes/rpc/mode.lisp` | 95 | 3 | Own RPC line dispatch, event subscription, stream lifetime, and shutdown. | 合格 |
+| `src/cadr-cli/modes/rpc/mode.lisp` | 96 | 3 | Own RPC line dispatch, event subscription, stream lifetime, and shutdown. | 合格 |
 | `src/cadr-cli/modes/rpc/models.lisp` | 221 | 13 | Project, select, and cycle RPC models and thinking levels. | 合格 |
 | `src/cadr-cli/modes/rpc/prompt-bash.lisp` | 225 | 7 | Start, steer, abort, and observe RPC prompt and bash work. | 合格 |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | 10 | Create, switch, fork, compact, and inspect RPC sessions and trees. | 合格 |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 301 | 11 | Bridge extension UI requests to RPC dialogs with cancellation and timeout. | 合格·大体量 |
 | `src/cadr-cli/output-accumulator.lisp` | 199 | 17 | Accumulate split UTF-8 process output into a bounded tail and spill file. | 合格 |
-| `src/cadr-cli/packages/config-selector.lisp` | 1,529 | 70 | Own the standalone config selector, resource projection, and scoped persistence interaction. | 合格·大体量 |
-| `src/cadr-cli/packages/commands.lisp` | 863 | 23 | Parse package commands and execute help/list/install/update/remove workflows. | 合格 |
+| `src/cadr-cli/packages/config-selector.lisp` | 1,524 | 70 | Own the standalone config selector, resource projection, and scoped persistence interaction. | 合格·大体量 |
+| `src/cadr-cli/packages/commands.lisp` | 764 | 9 | Parse package commands and execute help/list/install/update/remove workflows. | 合格 |
 | `src/cadr-cli/packages/manifest.lisp` | 186 | 5 | Parse package manifests and project resource paths. | 合格 |
 | `src/cadr-cli/packages/settings.lisp` | 214 | 10 | Persist, remove, deduplicate, and materialize configured package records. | 合格 |
 | `src/cadr-cli/packages/source.lisp` | 348 | 13 | Parse and canonicalize npm, Git, SSH, and local package sources. | 合格 |
 | `src/cadr-cli/package.lisp` | 285 | 1 | Declare the public `cadr-cli` package surface. | 合格 |
 | `src/cadr-cli/remote-repl.lisp` | 67 | 8 | Manage the opt-in Slynk server and active-agent binding. | 合格 |
-| `src/cadr-cli/repl.lisp` | 102 | 3 | Run the basic line-oriented REPL mode. | 合格 |
-| `src/cadr-cli/resource-loader.lisp` | 322 | 13 | Discover and reload scoped prompts, skills, themes, context, and extensions. | 合格·大体量 |
-| `src/cadr-cli/sdk/agent-session.lisp` | 475 | 16 | Construct and expose the in-process agent-session facade. | 合格 |
-| `src/cadr-cli/sdk/cache-version.lisp` | 441 | 25 | Detect cache anomalies, restore proxy state, and perform release/version checks. | 合格 |
+| `src/cadr-cli/repl.lisp` | 112 | 4 | Run the basic line-oriented REPL mode. | 合格 |
+| `src/cadr-cli/resource-loader.lisp` | 365 | 13 | Discover and reload scoped prompts, skills, themes, context, and extensions. | 合格·大体量 |
+| `src/cadr-cli/sdk/agent-session.lisp` | 474 | 16 | Construct and expose the in-process agent-session facade. | 合格 |
+| `src/cadr-cli/sdk/cache-version.lisp` | 490 | 27 | Detect cache anomalies, restore proxy state, and perform release/version checks. | 合格 |
 | `src/cadr-cli/sdk/model-service.lisp` | 355 | 19 | Implement the SDK model runtime and shared atomic credential path. | 合格 |
-| `src/cadr-cli/sdk/resource-service.lisp` | 368 | 13 | Implement reloadable SDK resource discovery and overrides. | 合格 |
+| `src/cadr-cli/sdk/resource-service.lisp` | 367 | 13 | Implement reloadable SDK resource discovery and overrides. | 合格 |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | 8 | Resolve, create, continue, open, and list SDK sessions. | 合格 |
-| `src/cadr-cli/sdk/session-runtime.lisp` | 279 | 15 | Own replaceable SDK session services and runtime disposal. | 合格 |
+| `src/cadr-cli/sdk/session-runtime.lisp` | 277 | 15 | Own replaceable SDK session services and runtime disposal. | 合格 |
 | `src/cadr-cli/sdk/settings-service.lisp` | 181 | 20 | Adapt persistent and in-memory settings to the SDK contract. | 合格 |
-| `src/cadr-cli/sdk/system-prompt.lisp` | 204 | 5 | Build the SDK system prompt and extension-aware provider stream. | 合格 |
+| `src/cadr-cli/sdk/system-prompt.lisp` | 213 | 5 | Build the SDK system prompt and extension-aware provider stream. | 合格 |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | 15 | Resolve environment and command-backed configuration values and JSON merges. | 合格 |
-| `src/cadr-cli/settings/manager.lisp` | 407 | 24 | Own layered settings reload, mutation, defaults, and keybindings. | 合格 |
-| `src/cadr-cli/settings/trust.lisp` | 172 | 10 | Persist and resolve inherited project-trust decisions. | 合格 |
-| `src/cadr-cli/system-prompt.lisp` | 23 | 3 | Resolve the default, replacement, and appended system prompt. | 合格 |
-| `src/cadr-cli/tool-manager.lisp` | 283 | 24 | Locate, download, extract, and quarantine optional host tools. | 合格 |
-| `src/cadr-cli/tools/bash.lisp` | 438 | 16 | Execute bash with live output, process-group abort/timeout, truncation, and tool wrapping. | 合格·大体量 |
-| `src/cadr-cli/tools/edit.lisp` | 693 | 30 | Match replacements and produce/apply exact edit diffs. | 合格·大体量 |
-| `src/cadr-cli/tools/find.lisp` | 93 | 3 | Implement the bounded find tool. | 合格 |
+| `src/cadr-cli/settings/manager.lisp` | 496 | 27 | Own layered settings reload, mutation, defaults, and keybindings. | 合格 |
+| `src/cadr-cli/settings/trust.lisp` | 216 | 13 | Persist and resolve inherited project-trust decisions. | 合格 |
+| `src/cadr-cli/system-prompt.lisp` | 53 | 4 | Resolve the default, replacement, and appended system prompt. | 合格 |
+| `src/cadr-cli/tool-manager.lisp` | 286 | 25 | Locate, download, extract, and quarantine optional host tools. | 合格 |
+| `src/cadr-cli/tools/bash.lisp` | 590 | 23 | Execute bash with live output, process-group abort/timeout, truncation, and tool wrapping. | 合格·大体量 |
+| `src/cadr-cli/tools/edit.lisp` | 753 | 31 | Match replacements and produce/apply exact edit diffs. | 合格·大体量 |
+| `src/cadr-cli/tools/find.lisp` | 101 | 3 | Implement the bounded find tool. | 合格 |
 | `src/cadr-cli/tools/glob.lisp` | 213 | 13 | Implement recursive globbing with parseable gitignore rules. | 合格 |
-| `src/cadr-cli/tools/grep.lisp` | 162 | 3 | Implement bounded regex/literal grep with context. | 合格 |
-| `src/cadr-cli/tools/ls.lisp` | 94 | 3 | Implement the bounded directory-listing tool. | 合格 |
-| `src/cadr-cli/tools/path.lisp` | 308 | 31 | Normalize tool paths/arguments/errors and serialize file mutations. | 合格·大体量 |
-| `src/cadr-cli/tools/read.lisp` | 141 | 2 | Implement the bounded line-oriented read tool. | 合格 |
-| `src/cadr-cli/tools/write.lisp` | 56 | 2 | Implement the UTF-8 write tool and baseline result count. | 合格 |
-| `src/cadr-cli/truncation.lisp` | 80 | 12 | Adapt agent truncation results to the CLI tool-result detail contract. | 合格 |
+| `src/cadr-cli/tools/grep.lisp` | 308 | 6 | Implement bounded regex/literal grep with context. | 合格 |
+| `src/cadr-cli/tools/ls.lisp` | 100 | 3 | Implement the bounded directory-listing tool. | 合格 |
+| `src/cadr-cli/tools/path.lisp` | 324 | 31 | Normalize tool paths/arguments/errors and serialize file mutations. | 合格·大体量 |
+| `src/cadr-cli/tools/read.lisp` | 152 | 2 | Implement the bounded line-oriented read tool. | 合格 |
+| `src/cadr-cli/tools/write.lisp` | 71 | 3 | Implement the UTF-8 write tool and baseline result count. | 合格 |
+| `src/cadr-cli/truncation.lisp` | 79 | 12 | Adapt agent truncation results to the CLI tool-result detail contract. | 合格 |
+| `src/cadr-cli/extensions/llama/ui.lisp` | 759 | 35 | Render the interactive llama.cpp manager surface: context labels, model descriptions, compact counts, the framed selector, live Hugging Face search, and cancellable progress. | 合格·大体量 |
+| `src/cadr-cli/interactive/selectors/login-dialog.lisp` | 279 | 13 | Own the login dialog frame, OAuth/device-code sections, and manual authorization input. | 合格 |
+| `src/cadr-cli/packages/update-checks.lisp` | 293 | 14 | Run background package update checks with process-group isolation and the candidate scan. | 合格 |
 
 ### 2.4 `cadr-evals`
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
-| `src/cadr-evals/artifacts.lisp` | 176 | 11 | Validate, hash, persist, and reference eval artifacts. | 合格 |
+| `src/cadr-evals/artifacts.lisp` | 168 | 11 | Validate, hash, persist, and reference eval artifacts. | 合格 |
 | `src/cadr-evals/harness-table.lisp` | 359 | 17 | Define eval harness rows/tables, canonical group keys, and iteration wrappers. | 合格·大体量 |
-| `src/cadr-evals/harness.lisp` | 736 | 29 | Run a coding-agent eval lifecycle and normalize transcript, usage, and cleanup. | 合格·大体量 |
+| `src/cadr-evals/harness.lisp` | 730 | 29 | Run a coding-agent eval lifecycle and normalize transcript, usage, and cleanup. | 合格·大体量 |
 | `src/cadr-evals/main.lisp` | 154 | 5 | Parse eval CLI arguments, dispatch suites, and validate result shape. | 合格 |
 | `src/cadr-evals/package.lisp` | 100 | 2 | Declare the public eval package and session snapshot artifact name. | 合格 |
-| `src/cadr-evals/reporter.lisp` | 315 | 14 | Persist eval case records and finish a harness report. | 合格·大体量 |
+| `src/cadr-evals/reporter.lisp` | 308 | 14 | Persist eval case records and finish a harness report. | 合格·大体量 |
 | `src/cadr-evals/suites.lisp` | 479 | 21 | Define the smoke and extension-authoring eval suites and judges. | 合格·大体量 |
 | `src/cadr-evals/summary.lisp` | 733 | 31 | Pair observations, compute correctness/efficiency summaries, and render comparison reports. | 合格·大体量 |
 
@@ -291,17 +293,17 @@ files with unrelated facilities fail.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
-| `src/cadr-server/config.lisp` | 51 | 6 | Resolve server state, auth, instance, and socket paths. | 合格 |
+| `src/cadr-server/config.lisp` | 45 | 6 | Resolve server state, auth, instance, and socket paths. | 合格 |
 | `src/cadr-server/handler.lisp` | 101 | 1 | Dispatch one local server request to supervisor operations. | 合格 |
-| `src/cadr-server/ipc.lisp` | 329 | 14 | Serve and call the framed Unix-socket server transport. | 合格·大体量 |
+| `src/cadr-server/ipc.lisp` | 317 | 14 | Serve and call the framed Unix-socket server transport. | 合格·大体量 |
 | `src/cadr-server/main.lisp` | 211 | 10 | Parse server CLI operations and run server or stream-client entry points. | 合格 |
 | `src/cadr-server/package.lisp` | 59 | 1 | Declare the public `cadr-server` package surface. | 合格 |
 | `src/cadr-server/protocol.lisp` | 49 | 5 | Encode/decode the server control-plane JSON messages. | 合格 |
-| `src/cadr-server/radius.lisp` | 744 | 44 | Manage opt-in Radius registration, heartbeat, recovery, and redacted token use. | 合格·大体量 |
-| `src/cadr-server/rpc-process.lisp` | 419 | 26 | Own one child `cadr --mode rpc` process, pending calls, event/UI callbacks, and teardown. | 合格·大体量 |
-| `src/cadr-server/storage.lisp` | 197 | 15 | Persist server machine and instance records. | 合格 |
+| `src/cadr-server/radius.lisp` | 737 | 43 | Manage opt-in Radius registration, heartbeat, recovery, and redacted token use. | 合格·大体量 |
+| `src/cadr-server/rpc-process.lisp` | 417 | 26 | Own one child `cadr --mode rpc` process, pending calls, event/UI callbacks, and teardown. | 合格·大体量 |
+| `src/cadr-server/storage.lisp` | 195 | 15 | Persist server machine and instance records. | 合格 |
 | `src/cadr-server/supervisor.lisp` | 609 | 27 | Supervise live RPC child instances, streams, persistence, and recovery. | 合格·大体量 |
-| `src/cadr-server/types.lisp` | 30 | 4 | Define machine/instance record values and timestamps. | 合格 |
+| `src/cadr-server/types.lisp` | 24 | 4 | Define machine/instance record values and timestamps. | 合格 |
 
 ### 2.7 `cadr-storage`
 
@@ -314,57 +316,70 @@ files with unrelated facilities fail.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict |
 |---|---:|---:|---|---|
-| `src/cadr-tui/autocomplete.lisp` | 595 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | 合格·大体量 |
+| `src/cadr-tui/autocomplete.lisp` | 592 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | 合格·大体量 |
 | `src/cadr-tui/components/image.lisp` | 45 | 1 | Render image bytes or the baseline text fallback. | 合格 |
-| `src/cadr-tui/components/markdown.lisp` | 1,110 | 32 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | 合格·大体量 |
+| `src/cadr-tui/components/markdown.lisp` | 1,475 | 43 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | 合格·大体量 |
 | `src/cadr-tui/components/select-list.lisp` | 308 | 8 | Own filterable two-column selection state, navigation, and rendering. | 合格 |
-| `src/cadr-tui/components/status.lisp` | 246 | 6 | Render footer and status-bar projections. | 合格 |
-| `src/cadr-tui/components/tool-block.lisp` | 609 | 21 | Render tool titles, previews, diffs, elapsed time, and result states. | 合格·大体量 |
+| `src/cadr-tui/components/status.lisp` | 253 | 6 | Render footer and status-bar projections. | 合格 |
+| `src/cadr-tui/components/tool-block.lisp` | 626 | 23 | Render tool titles, previews, diffs, elapsed time, and result states. | 合格·大体量 |
 | `src/cadr-tui/composition/loaders.lisp` | 238 | 20 | Own animated and cancellable loader components using the shared cleanup policy. | 合格 |
-| `src/cadr-tui/composition/protocol.lisp` | 128 | 30 | Define the component, focus, container, render, event, and disposal protocols. | 合格 |
+| `src/cadr-tui/composition/protocol.lisp` | 127 | 30 | Define the component, focus, container, render, event, and disposal protocols. | 合格 |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | 10 | Compose cached Markdown and image components. | 合格 |
 | `src/cadr-tui/composition/root.lisp` | 317 | 23 | Own the TUI root, focus routing, render scheduling, and overlay stack. | 合格 |
 | `src/cadr-tui/composition/settings-list.lisp` | 459 | 30 | Implement settings-list behavior and the shared editor-component adapters. | 合格·大体量 |
 | `src/cadr-tui/composition/text-box.lisp` | 275 | 23 | Implement text, spacer, box, and truncated-text components. | 合格 |
-| `src/cadr-tui/editor.lisp` | 1,978 | 87 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | 合格·大体量 |
+| `src/cadr-tui/editor.lisp` | 1,989 | 87 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | 合格·大体量 |
 | `src/cadr-tui/fuzzy.lisp` | 117 | 6 | Score and filter fuzzy text matches. | 合格 |
 | `src/cadr-tui/input-component.lisp` | 419 | 19 | Implement the grapheme-aware single-line Input component and software cursor. | 合格·大体量 |
-| `src/cadr-tui/input.lisp` | 367 | 17 | Incrementally decode terminal bytes, bracketed paste, and control sequences into input events. | 合格·大体量 |
-| `src/cadr-tui/keybindings.lisp` | 144 | 11 | Store configurable keybinding definitions and resolve conflicts/actions. | 合格 |
-| `src/cadr-tui/keys.lisp` | 588 | 32 | Parse and canonicalize Kitty, xterm, modified, and legacy key encodings. | 合格·大体量 |
+| `src/cadr-tui/input.lisp` | 376 | 17 | Incrementally decode terminal bytes, bracketed paste, and control sequences into input events. | 合格·大体量 |
+| `src/cadr-tui/keybindings.lisp` | 176 | 11 | Store configurable keybinding definitions and resolve conflicts/actions. | 合格 |
+| `src/cadr-tui/keys.lisp` | 595 | 32 | Parse and canonicalize Kitty, xterm, modified, and legacy key encodings. | 合格·大体量 |
 | `src/cadr-tui/kill-ring.lisp` | 38 | 5 | Implement kill-ring push/peek/rotate operations. | 合格 |
 | `src/cadr-tui/native-modifiers.lisp` | 78 | 11 | Query Apple Terminal modifier flags through CoreGraphics when supported. | 合格 |
 | `src/cadr-tui/overlay.lisp` | 481 | 30 | Resolve overlay geometry, composite frames, and manage overlay focus/stack state. | 合格·大体量 |
-| `src/cadr-tui/package.lisp` | 343 | 1 | Declare the public `cadr-tui` package surface. | 合格 |
-| `src/cadr-tui/renderer/alt-screen.lisp` | 293 | 7 | Prepare, crop, render, and restore alternate-screen documents. | 合格 |
-| `src/cadr-tui/renderer/lifecycle-input.lisp` | 737 | 27 | Own renderer state, lifecycle, viewport, selection, mouse, and input dispatch. | 合格·大体量 |
-| `src/cadr-tui/renderer/main-screen.lisp` | 448 | 15 | Render incremental main-screen frames and manage terminal images. | 合格·大体量 |
-| `src/cadr-tui/renderer/terminal-protocol.lisp` | 74 | 23 | Define the terminal output, cursor, lifecycle, query, and capability protocol. | 合格 |
-| `src/cadr-tui/renderer/virtual-terminal.lisp` | 167 | 12 | Implement the deterministic in-memory terminal and screen snapshot. | 合格 |
+| `src/cadr-tui/package.lisp` | 350 | 1 | Declare the public `cadr-tui` package surface. | 合格 |
+| `src/cadr-tui/renderer/alt-screen.lisp` | 424 | 10 | Prepare, crop, render, and restore alternate-screen documents. | 合格 |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,234 | 44 | Own renderer state, lifecycle, viewport, selection, mouse, and input dispatch. | 合格·大体量 |
+| `src/cadr-tui/renderer/main-screen.lisp` | 614 | 16 | Render incremental main-screen frames and manage terminal images. | 合格·大体量 |
+| `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | 23 | Define the terminal output, cursor, lifecycle, query, and capability protocol. | 合格 |
+| `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | 13 | Implement the deterministic in-memory terminal and screen snapshot. | 合格 |
 | `src/cadr-tui/stdin-buffer.lisp` | 229 | 11 | Buffer terminal bytes until complete atomic control/key sequences can be emitted. | 合格 |
 | `src/cadr-tui/terminal-colors.lisp` | 191 | 15 | Parse terminal background/color-scheme/cell-size responses. | 合格 |
 | `src/cadr-tui/terminal-image.lisp` | 677 | 43 | Detect image capabilities, encode Kitty/iTerm images, inspect dimensions, crop, link, and fall back. | 合格·大体量 |
 | `src/cadr-tui/terminal.lisp` | 882 | 45 | Own the real process terminal lifecycle, raw mode, keyboard protocol, Apple normalization, queries, and progress. | 合格·大体量 |
-| `src/cadr-tui/theme.lisp` | 560 | 37 | Resolve semantic theme colors/styles and terminal color downgrades. | 合格·大体量 |
-| `src/cadr-tui/threads.lisp` | 35 | 1 | Provide bounded cleanup of one SBCL thread. | 合格 |
+| `src/cadr-tui/theme.lisp` | 563 | 37 | Resolve semantic theme colors/styles and terminal color downgrades. | 合格·大体量 |
+| `src/cadr-tui/threads.lisp` | 6 | 1 | Provide bounded cleanup of one SBCL thread. | 合格 |
 | `src/cadr-tui/undo-stack.lisp` | 20 | 5 | Implement undo-stack push/pop/clear operations. | 合格 |
 | `src/cadr-tui/unicode.lisp` | 1,213 | 49 | Implement terminal Unicode/grapheme/ANSI width, slicing, truncation, and wrapping semantics. | 合格·大体量 |
 | `src/cadr-tui/word-navigation.lisp` | 141 | 8 | Move over whitespace, punctuation, CJK, and editor-atomic word segments. | 合格 |
+| `src/cadr-tui/latex.lisp` | 1,913 | 62 | Render basic LaTeX math to terminal-friendly Unicode, ported from the fixed baseline LatexParser. | 合格·大体量 |
+
+### 2.9 `cadr-core`
+
+| Path | Lines | Definitions | One-sentence responsibility | Verdict |
+|---|---:|---:|---|---|
+| `src/cadr-core/atomic-file.lisp` | 106 | 8 | Atomically replace files with durability policy and private-mode enforcement. | 合格 |
+| `src/cadr-core/cancellation.lisp` | 70 | 7 | Own the shared cancellable-state primitive and its thread-safe propagation. | 合格 |
+| `src/cadr-core/package.lisp` | 43 | 1 | Declare the public `cadr-core` package surface. | 合格 |
+| `src/cadr-core/paths.lisp` | 95 | 19 | Own the single user-level path layout consumed by every cadr system. | 合格 |
+| `src/cadr-core/redacted-print.lisp` | 44 | 6 | Provide the secret-safe print-object registry that keeps credentials opaque everywhere. | 合格 |
+| `src/cadr-core/threads.lisp` | 47 | 2 | Bound cleanup waits and terminate unresponsive workers instead of hanging exit paths. | 合格 |
+| `src/cadr-core/time.lisp` | 66 | 5 | Own UTC/ISO time and ID formatting primitives. | 合格 |
 
 ## 3. Verdict summary and expected distribution
 
 | System | 合格 | 合格·大体量 | 应拆分 | 应合并 | Total |
 |---|---:|---:|---:|---:|---:|
-| `cadr-agent` | 27 | 13 | 0 | 0 | 40 |
+| `cadr-agent` | 28 | 13 | 0 | 0 | 41 |
 | `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
-| `cadr-cli` | 83 | 25 | 0 | 0 | 108 |
-| `cadr-core` | 6 | 0 | 0 | 0 | 6 |
+| `cadr-cli` | 86 | 27 | 0 | 0 | 113 |
+| `cadr-core` | 7 | 0 | 0 | 0 | 7 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
-| `cadr-tui` | 26 | 10 | 0 | 0 | 36 |
-| **Total** | **203** | **74** | **0** | **0** | **277** |
+| `cadr-tui` | 21 | 16 | 0 | 0 | 37 |
+| **Total** | **203** | **82** | **0** | **0** | **285** |
 
 No production file remains in `应拆分` or `应合并`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This
@@ -379,10 +394,10 @@ the tests reject a missing owner or a surviving mixed file.
 | `cadr-tui` | 0 | 0 | +0 |
 | **Total** | **0** | **0** | **+0** |
 
-At current boundaries the physical distribution is 162 files below 300 lines,
-76 at 300–699, 24 at 700–999, and 15 at or above 1,000;
+At current boundaries the physical distribution is 159 files below 300 lines,
+78 at 300–699, 28 at 700–999, and 20 at or above 1,000;
 only generated `models.generated.lisp` remains at or above 3,000. Average file
-size is now 380 lines and the under-300 share is about 58%. The modest
+size is now 421 lines and the under-300 share is about 55.8%. The modest
 percentage is honest:
 cohesive files such as the multiline
 editor, Unicode engine, image codec, protocol codecs, and vendored assets are
@@ -830,7 +845,7 @@ judgment; it is a candidate for a future B-batch convergence).
 ## 7. Permanent organization gate
 
 `scripts/check-code-organization.py` scans every regular production file below
-`src/`.  Part A's complete histogram placed 15 of 277 files in a distinct
+`src/`.  Part A's complete histogram placed 20 of 285 files in a distinct
 `>=1000`-line band above the 700--999 band, so that audited band is the review
 boundary.  The number is not a target: a cohesive 999-line file is not thereby
 good, and a justified 1000-line file is not thereby bad.
@@ -839,7 +854,7 @@ Every file at or above that boundary must have a non-empty, path-specific
 reason in `docs/code-organization-exemptions.json`.  The gate rejects an
 unreviewed large file, a missing or duplicate reason, and a stale exemption for
 a file that moved, disappeared, or fell below the boundary.  The checked-in
-manifest currently contains the exact 15 Part A outliers, including generated
+manifest currently contains the exact 20 files at or above the boundary, including generated
 and vendored assets.  `scripts/verify.sh` drives both synthetic regressions and
 the real repository/manifest pair before the parity and build stages.
 
