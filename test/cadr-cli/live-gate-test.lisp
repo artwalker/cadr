@@ -95,6 +95,52 @@
            "Items: 3, run: 2, pass: 1, skip: 1, fail: 1"
            report)))))
 
+(test live-quota-exhaustion-is-classified-as-environmental-skip
+  (let ((kimi-message
+          "You've reached your usage limit for this billing cycle. Your
+quota will be refreshed in the next cycle. To continue now, purchase extra
+usage or upgrade your plan: https://www.kimi.com/code/#pricing")
+        (product-defect-message
+          "Unexpected SSL failure on stream #<FLEXI-STREAM ...>"))
+    (is
+     (cadr-live-test-support:provider-quota-exhausted-p
+      kimi-message))
+    (is
+     (cadr-live-test-support:provider-quota-exhausted-p
+      "insufficient_quota"))
+    (is
+     (cadr-live-test-support:provider-quota-exhausted-p
+      "Monthly usage limit reached"))
+    (is
+     (not
+      (cadr-live-test-support:provider-quota-exhausted-p
+       product-defect-message)))
+    (is
+     (not
+      (cadr-live-test-support:provider-quota-exhausted-p
+       nil)))
+    (let* ((result
+             (cadr-live-test-support:make-live-test-result
+              :name 'quota-blocked-live-item
+              :status :skip
+              :checks 3
+              :passes 0
+              :skips 3
+              :skip-reason
+              "Provider account quota/usage limit reached; live verification cannot run"))
+           (stream (make-string-output-stream)))
+      (cadr-live-test-support:write-live-test-report
+       (list result) stream)
+      (let ((report (get-output-stream-string stream)))
+        (is
+         (search
+          "SKIP QUOTA-BLOCKED-LIVE-ITEM: Provider account quota/usage limit reached; live verification cannot run"
+          report))
+        (is
+         (search
+          "Checks: 3, pass: 0, skip: 3, fail: 0"
+          report))))))
+
 (test deterministic-systems-exclude-network-live-files
   (let ((root (asdf:system-source-directory "cadr-cli")))
     (dolist (asd '("cadr-ai.asd" "cadr-cli.asd" "cadr-evals.asd"))

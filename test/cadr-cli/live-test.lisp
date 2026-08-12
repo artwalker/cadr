@@ -85,17 +85,17 @@
                 output)))
           (is (string= "" errors))))))
 
-(test live-kimi-coding-explicit-model-uses-api-key-credential
+(test live-opencode-go-explicit-model-uses-api-key-credential
   (let* ((auth-path
            (cadr-cli:default-auth-path))
          (credential
-           (cadr-live-test-support:prepare-kimi-coding-credential
+           (cadr-live-test-support:prepare-opencode-go-credential
             auth-path)))
     (if
         (not
          (typep credential
                 'cadr-ai:api-key-credential))
-        (skip "Kimi For Coding API key is not configured")
+        (skip "OpenCode Go API key is not configured")
         (with-test-directory (directory)
           (let ((auth-contents
                   (uiop:read-file-string
@@ -104,8 +104,8 @@
                   (status output errors)
                 (run-isolated-live-cli
                  directory
-                 '("--provider" "kimi-coding"
-                   "--model" "kimi-for-coding"
+                 '("--provider" "opencode-go"
+                   "--model" "deepseek-v4-flash"
                    "--print"
                    "--no-session"
                    "--no-tools"
@@ -115,12 +115,12 @@
                    "--no-context-files"
                    "--system-prompt"
                    "Follow the requested output format exactly and do not call tools."
-                   "Reply with exactly KIMI_EXPLICIT_OK and nothing else.")
+                   "Reply with exactly OPENCODE_GO_EXPLICIT_OK and nothing else.")
                  :credential credential)
               (is (= 0 status)
                   "CLI stderr: ~A" errors)
               (is (string=
-                   "KIMI_EXPLICIT_OK"
+                   "OPENCODE_GO_EXPLICIT_OK"
                    (string-trim
                     '(#\Space #\Tab #\Newline #\Return)
                     output)))

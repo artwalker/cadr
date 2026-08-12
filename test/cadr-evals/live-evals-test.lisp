@@ -27,17 +27,17 @@
               model-object
               #'cadr-ai:stream-chat))))
 
-(defun make-live-kimi-coding-eval-resolver
+(defun make-live-opencode-go-eval-resolver
     (credential)
   (lambda (provider model)
-    (unless (string= provider "kimi-coding")
+    (unless (string= provider "opencode-go")
       (error
-       "Unexpected live Kimi For Coding provider: ~A"
+       "Unexpected live OpenCode Go provider: ~A"
        provider))
     (multiple-value-bind
           (provider-object model-object)
         (cadr-ai:instantiate-provider
-         :kimi-coding
+         :opencode-go
          :api-key
          (cadr-ai:api-key-credential-key
           credential)
@@ -57,18 +57,18 @@
            ,@body)
          (skip "DEEPSEEK_API_KEY is not set"))))
 
-(defmacro with-live-kimi-coding
+(defmacro with-live-opencode-go
     (&body body)
   `(let ((credential
-           (cadr-live-test-support:prepare-kimi-coding-credential)))
+           (cadr-live-test-support:prepare-opencode-go-credential)))
      (if
          (typep credential
                 'cadr-ai:api-key-credential)
          (let ((cadr-evals::*eval-model-resolver*
-                  (make-live-kimi-coding-eval-resolver
+                  (make-live-opencode-go-eval-resolver
                    credential)))
            ,@body)
-         (skip "Kimi For Coding API key is not configured"))))
+         (skip "OpenCode Go API key is not configured"))))
 
 (defun assert-live-smoke-eval
     (result expected-provider)
@@ -101,13 +101,13 @@
       :model "deepseek-v4-flash")
      "deepseek")))
 
-(test live-kimi-coding-eval-smoke-uses-explicit-model-and-api-key
-  (with-live-kimi-coding
+(test live-opencode-go-eval-smoke-uses-explicit-model-and-api-key
+  (with-live-opencode-go
     (assert-live-smoke-eval
      (cadr-evals:run-smoke-eval
-      :provider "kimi-coding"
-      :model "kimi-for-coding")
-     "kimi-coding")))
+      :provider "opencode-go"
+      :model "deepseek-v4-flash")
+     "opencode-go")))
 
 (test live-deepseek-self-extension-write-reload-and-invoke
   (with-live-deepseek

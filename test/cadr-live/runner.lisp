@@ -16,15 +16,15 @@
     :markers '("DEEPSEEK_PRINT_OK"))
    (cadr-live-test-support:make-live-test-spec
     :name
-    'cadr-cli/live-tests::live-kimi-coding-explicit-model-uses-api-key-credential
-    :markers '("KIMI_EXPLICIT_OK"))
+    'cadr-cli/live-tests::live-opencode-go-explicit-model-uses-api-key-credential
+    :markers '("OPENCODE_GO_EXPLICIT_OK"))
    (cadr-live-test-support:make-live-test-spec
     :name
     'cadr-evals/live-tests::live-deepseek-eval-smoke
     :markers '("Paris"))
    (cadr-live-test-support:make-live-test-spec
     :name
-    'cadr-evals/live-tests::live-kimi-coding-eval-smoke-uses-explicit-model-and-api-key
+    'cadr-evals/live-tests::live-opencode-go-eval-smoke-uses-explicit-model-and-api-key
     :markers '("Paris"))
    (cadr-live-test-support:make-live-test-spec
     :name
@@ -80,6 +80,46 @@
       :suspected-product-defect
       "A deterministic provider, transport, usage, status, or state-integrity assertion failed."))))
 
+(defun quota-exhausted-failures-p (failures)
+  "True when a provider-side quota/usage-limit signal explains the failures.
+
+An account that is out of quota cannot exercise the product contract; the
+item is then reported as an explicit SKIP naming the quota signal instead of
+as a product-defect failure. Missing-credential skips already follow the same
+environmental classification path. Any failure carrying the signal suffices:
+the remaining assertion failures (empty output, non-zero status) are
+downstream consequences of the account-level refusal."
+  (and failures
+       (some
+        (lambda (failure)
+          (cadr-live-test-support:provider-quota-exhausted-p
+           (result-description failure)))
+        failures)))
+
+(defun quota-exhausted-skip-reason (failures)
+  (let ((signal
+          (some
+           (lambda (needle)
+             (and
+              (some
+               (lambda (failure)
+                 (search
+                  needle
+                  (result-description failure)
+                  :test #'char-equal))
+               failures)
+              needle))
+           '("usage limit"
+             "insufficient_quota"
+             "quota exceeded"
+             "monthly usage limit reached"
+             "available balance"
+             "out of budget"))))
+    (format
+     nil
+     "Provider account quota/usage limit reached (~A); live verification cannot run"
+     signal)))
+
 (defun failure-output (failures captured-output)
   (with-output-to-string (stream)
     (loop for failure in failures
@@ -113,21 +153,30 @@
            (checks (length results)))
       (cond
         (failures
-         (multiple-value-bind (nature basis)
-             (classify-failures spec failures)
-           (cadr-live-test-support:make-live-test-result
-            :name (cadr-live-test-support:live-test-spec-name spec)
-            :status :fail
-            :checks checks
-            :passes passes
-            :skips (length skips)
-            :failures (length failures)
-            :failure-output
-            (failure-output
-             failures
-             (get-output-stream-string captured))
-            :nature nature
-            :basis basis)))
+         (if (quota-exhausted-failures-p failures)
+             (cadr-live-test-support:make-live-test-result
+              :name (cadr-live-test-support:live-test-spec-name spec)
+              :status :skip
+              :checks checks
+              :passes passes
+              :skips (+ (length skips) (length failures))
+              :skip-reason
+              (quota-exhausted-skip-reason failures))
+             (multiple-value-bind (nature basis)
+                 (classify-failures spec failures)
+               (cadr-live-test-support:make-live-test-result
+                :name (cadr-live-test-support:live-test-spec-name spec)
+                :status :fail
+                :checks checks
+                :passes passes
+                :skips (length skips)
+                :failures (length failures)
+                :failure-output
+                (failure-output
+                 failures
+                 (get-output-stream-string captured))
+                :nature nature
+                :basis basis))))
         (skips
          (cadr-live-test-support:make-live-test-result
           :name (cadr-live-test-support:live-test-spec-name spec)

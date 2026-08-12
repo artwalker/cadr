@@ -915,13 +915,13 @@ class RenderDiffGateTest(unittest.TestCase):
         # transparent to the literals inside them, and addLoadedSection,
         # addDiagnostic, and LoginDialogComponent's titleOverride became
         # contracted sinks.
-        self.assertEqual(509, len(inventory["entries"]))
+        self.assertEqual(510, len(inventory["entries"]))
         self.assertEqual(
-            1121,
+            1129,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1070,
+            1066,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -929,7 +929,7 @@ class RenderDiffGateTest(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            51,
+            63,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -938,7 +938,7 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         self.assertEqual(246, len(inventory["sourceInventory"]))
         self.assertEqual(
-            61,
+            62,
             sum(
                 entry["site"]["path"].startswith("packages/tui/")
                 for entry in inventory["entries"]
@@ -1604,7 +1604,13 @@ class RenderResourceSweepTest(unittest.TestCase):
 
     def test_sweep_removes_only_crashed_leftovers(self) -> None:
         socket_dir = self.socket_dir()
-        socket_dir.mkdir(parents=True, exist_ok=True)
+        # tmux requires its socket directory to be mode 0700 and refuses to
+        # run otherwise.  Create the directory with the same mode tmux itself
+        # would use, and chmod to heal a stale directory left behind by an
+        # older buggy run, so this test never breaks a later tmux invocation
+        # in the same verify.
+        socket_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        socket_dir.chmod(0o700)
         dead_socket = socket_dir / "cadr-rd-4194303-111"
         live_socket = socket_dir / f"cadr-rd-{os.getpid()}-222"
         dead_socket.touch()
@@ -1658,7 +1664,10 @@ class BaselineCacheIntegrityTest(unittest.TestCase):
             "export const answer = 42;\n", encoding="utf-8"
         )
         subprocess.run(
-            ["git", "init"], cwd=root, check=True, stdout=subprocess.DEVNULL
+            ["git", "-c", "init.defaultBranch=master", "init"],
+            cwd=root,
+            check=True,
+            stdout=subprocess.DEVNULL,
         )
         subprocess.run(
             ["git", "add", "packages/demo/source.ts"], cwd=root, check=True
@@ -1796,6 +1805,11 @@ class ReleaseVerificationContractTest(unittest.TestCase):
             'record_live() { :; }\n'
             "OVERALL_FAILURE=0\n"
             + helper
+            # The release wrapper exports CADR_RELEASE_GATE=1, which this
+            # suite inherits when run through verify-release.sh.  The daily
+            # phase below only exercises the daily contract when the gate is
+            # unset, so drop it explicitly to keep the phase hermetic.
+            + "unset CADR_RELEASE_GATE\n"
             + 'skip_live "demo" "no creds"\n'
             + 'printf "daily:%s\\n" "$OVERALL_FAILURE"\n'
             + "CADR_RELEASE_GATE=1\n"

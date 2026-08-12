@@ -17,8 +17,10 @@
    #:live-test-spec-policy
    #:make-live-test-result
    #:make-live-test-spec
+   #:prepare-opencode-go-credential
    #:prepare-kimi-coding-credential
    #:prepare-openai-codex-credential
+   #:provider-quota-exhausted-p
    #:write-live-test-report))
 
 (in-package #:cadr-live-test-support)
@@ -39,6 +41,25 @@
   failure-output
   nature
   basis)
+
+(defun provider-quota-exhausted-p (text)
+  "True when TEXT carries a provider-side quota/usage-limit message.
+
+The matched phrases mirror the canonical quota signals already used by
+src/cadr-ai/support/retry.lisp and src/cadr-agent/loop/events.lisp. A live
+item that only fails because the account is out of quota cannot exercise the
+product contract, so it is reported as an explicit SKIP with this reason
+instead of a suspected product defect."
+  (and text
+       (some
+        (lambda (needle)
+          (search needle text :test #'char-equal))
+        '("usage limit"
+          "insufficient_quota"
+          "quota exceeded"
+          "monthly usage limit reached"
+          "available balance"
+          "out of budget"))))
 
 (defun execute-live-test-specs (specs executor)
   (mapcar
@@ -128,6 +149,19 @@
   (let ((credential
           (cadr-ai:read-auth-credential
            path :kimi-coding)))
+    (and
+     (typep credential
+            'cadr-ai:api-key-credential)
+     credential)))
+
+(defun prepare-opencode-go-credential
+    (&optional
+       (path (cadr-cli:default-auth-path)))
+  (unless (probe-file path)
+    (return-from prepare-opencode-go-credential nil))
+  (let ((credential
+          (cadr-ai:read-auth-credential
+           path :opencode-go)))
     (and
      (typep credential
             'cadr-ai:api-key-credential)
