@@ -300,6 +300,71 @@ const openAICompletionsQwen = await capturePayload<Record<string, unknown>, Simp
 		toolChoice: "required",
 	},
 );
+const openAICompletionsBasetenModel = model(
+	"openai-completions",
+	"baseten",
+	"zai-org/GLM-5.2",
+	"https://inference.baseten.co/v1",
+	{
+		reasoning: true,
+		thinkingLevelMap: {
+			off: "none",
+			high: "high",
+			max: "max",
+		},
+		compat: {
+			thinkingFormat: "baseten",
+			chatTemplateArgs: { enable_thinking: { $var: "thinking.enabled" } },
+			supportsDeveloperRole: false,
+			supportsStore: false,
+			supportsReasoningEffort: true,
+			supportsUsageInStreaming: true,
+			maxTokensField: "max_tokens",
+			supportsStrictMode: true,
+			supportsLongCacheRetention: false,
+		},
+	},
+);
+const openAICompletionsBaseten = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamOpenAICompletionsSimple(openAICompletionsBasetenModel, context, options),
+	{
+		cacheRetention: "none",
+		maxTokens: 4096,
+		reasoning: "high",
+		toolChoice: "required",
+	},
+);
+const openAICompletionsThinkingBudgetModel = model(
+	"openai-completions",
+	"vllm",
+	"vllm-reasoning-model",
+	"https://vllm.invalid/v1",
+	{
+		reasoning: true,
+		maxTokens: 4096,
+		compat: {
+			supportsReasoningEffort: true,
+			supportsThinkingTokenBudget: true,
+			maxTokensField: "max_tokens",
+		},
+	},
+);
+const openAICompletionsThinkingBudgetHigh = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamOpenAICompletionsSimple(openAICompletionsThinkingBudgetModel, context, options),
+	{
+		cacheRetention: "none",
+		maxTokens: 4096,
+		reasoning: "high",
+	},
+);
+const openAICompletionsThinkingBudgetLow = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
+	(options) => streamOpenAICompletionsSimple(openAICompletionsThinkingBudgetModel, context, options),
+	{
+		cacheRetention: "none",
+		maxTokens: 4096,
+		reasoning: "low",
+	},
+);
 const openAIResponsesReasoning = await capturePayload<Record<string, unknown>, SimpleStreamOptions>(
 	(options) => streamOpenAISimple(openAIReasoningModel, strictContext, options),
 	{
@@ -327,6 +392,7 @@ const completionProviders: ReadonlyArray<{
 	defaultModel: string;
 }> = [
 	{ id: "ant-ling", models: readCatalog<"openai-completions">("ant-ling"), defaultModel: "Ring-2.6-1T" },
+	{ id: "baseten", models: readCatalog<"openai-completions">("baseten"), defaultModel: "zai-org/GLM-5.2" },
 	{ id: "cerebras", models: readCatalog<"openai-completions">("cerebras"), defaultModel: "zai-glm-4.7" },
 	{ id: "groq", models: readCatalog<"openai-completions">("groq"), defaultModel: "openai/gpt-oss-120b" },
 	{ id: "huggingface", models: readCatalog<"openai-completions">("huggingface"), defaultModel: "moonshotai/Kimi-K2.6" },
@@ -334,6 +400,7 @@ const completionProviders: ReadonlyArray<{
 	{ id: "moonshotai-cn", models: readCatalog<"openai-completions">("moonshotai-cn"), defaultModel: "kimi-k2.6" },
 	{ id: "qwen-token-plan", models: readCatalog<"openai-completions">("qwen-token-plan"), defaultModel: "qwen3.7-max" },
 	{ id: "qwen-token-plan-cn", models: readCatalog<"openai-completions">("qwen-token-plan-cn"), defaultModel: "qwen3.7-max" },
+	{ id: "qwen-token-plan-individual", models: readCatalog<"openai-completions">("qwen-token-plan-individual"), defaultModel: "qwen3.8-max" },
 	{ id: "together", models: readCatalog<"openai-completions">("together"), defaultModel: "moonshotai/Kimi-K2.6" },
 	{ id: "xiaomi", models: readCatalog<"openai-completions">("xiaomi"), defaultModel: "mimo-v2.5-pro" },
 ];
@@ -384,6 +451,9 @@ writeFixture("google-complete.json", google);
 writeFixture("anthropic-adaptive-long-cache.json", anthropicAdaptive);
 writeFixture("anthropic-thinking-disabled.json", anthropicDisabled);
 writeFixture("openai-completions-qwen-reasoning.json", openAICompletionsQwen);
+writeFixture("openai-completions-baseten-reasoning.json", openAICompletionsBaseten);
+writeFixture("openai-completions-thinking-budget-high.json", openAICompletionsThinkingBudgetHigh);
+writeFixture("openai-completions-thinking-budget-low.json", openAICompletionsThinkingBudgetLow);
 writeFixture("openai-responses-reasoning-cache.json", openAIResponsesReasoning);
 writeFixture("google-thinking-high.json", googleWireBody(googleThinking));
 writeFixture("google-thinking-disabled.json", googleWireBody(googleThinkingDisabled));

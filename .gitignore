@@ -9,7 +9,11 @@
 .env
 *.log
 cadr-*.html
+*-session-*.html
 out.html
+
+# Local render-diff scratch (845 MB of untracked replay/analysis output)
+/.tmp/
 
 # Local agent, test-home, and editor state
 /.codex

@@ -143,7 +143,7 @@
       (let ((message (format nil "~A" condition)))
         (if (or (string= message "Command aborted")
                 (uiop:string-suffix-p
-                 (format nil "~%Command aborted") message))
+                 message (format nil "~%Command aborted")))
             (make-user-bash-result
              :command command
              :output

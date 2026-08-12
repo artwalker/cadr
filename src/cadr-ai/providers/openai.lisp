@@ -399,13 +399,13 @@
      (let ((base (strip-trailing-slash (model-base-url model))))
        (if oauth-token
            (cond
-             ((uiop:string-suffix-p "/codex/responses" base)
+             ((uiop:string-suffix-p base "/codex/responses")
               base)
-             ((uiop:string-suffix-p "/codex" base)
+             ((uiop:string-suffix-p base "/codex")
               (concatenate 'string base "/responses"))
              (t
               (concatenate 'string base "/codex/responses")))
-           (if (uiop:string-suffix-p "/v1" base)
+           (if (uiop:string-suffix-p base "/v1")
                (concatenate 'string base "/responses")
                (concatenate 'string base "/v1/responses"))))
      :headers

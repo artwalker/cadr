@@ -41,7 +41,7 @@
    #:resolve-scoped-models
    #:resolve-model
    #:parse-model-spec
-   #:parse-credential-print-command
+   #:parse-auth-command
    #:credential-for-print
    #:render-user-message-lines
    #:render-assistant-message-lines

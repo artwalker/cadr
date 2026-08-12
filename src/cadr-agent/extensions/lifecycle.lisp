@@ -175,10 +175,17 @@
                                 (stringp result-reason))
                              (error
                               "Hook block reason must be a string or NIL")))
+                         ;; pi@53fa77ccd extensions/types.ts:1075-1079 — the
+                         ;; before hook may set terminate on a block;
+                         ;; agent-loop.ts:638-639 applies it to the blocked
+                         ;; result.  Without a block it is ignored.
                          (when result-terminate-supplied-p
-                           (unless (eq event-type :tool-call-after)
+                           (unless
+                               (member event-type
+                                       '(:tool-call-before
+                                         :tool-call-after))
                              (error
-                              "Only :tool-call-after hooks may override terminate")))
+                              "Only :tool-call-before and :tool-call-after hooks may override terminate")))
                          ;; Commit only after the entire hook result validates.
                          (setf primary replacement
                                 appended

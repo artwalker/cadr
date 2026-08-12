@@ -220,6 +220,17 @@ class EventDiffGateTest(unittest.TestCase):
             self.assertNotIn("?", rule["pointer"])
             self.assertIn(rule["side"], {"pi", "cadr"})
 
+    def test_message_update_wire_projection_strips_snapshot(self):
+        """Baseline modes/json-event.ts toJsonEvent emits only
+        assistantMessageEvent on message_update; a cumulative `message`
+        snapshot on every delta diverges from the wire contract."""
+        print_source = (ROOT / "src" / "cadr-cli" / "modes" / "print.lisp").read_text()
+        message_update_branch = print_source.split("(:message-update")[1].split("(:turn-end")[0]
+
+        self.assertIn("assistantMessageEvent", message_update_branch)
+        self.assertNotIn('"message"', message_update_branch)
+        self.assertIn("remhash", message_update_branch)
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -442,6 +442,26 @@
             :credentials
             (make-file-auth-storage
              (default-auth-path))))
+         (image-normalizer
+           ;; pi@53fa77ccd utils/tool-result-images.ts via
+           ;; agent-session.ts:517-520.
+           (progn
+             (setf
+              cadr-agent::*tool-result-image-normalize-function*
+              (lambda (content)
+                (normalize-tool-result-images
+                 content
+                 :auto-resize-p
+                 (let ((images
+                         (settings-value
+                          settings-manager "images"
+                          (empty-json-object))))
+                   (if (hash-table-p images)
+                       (eq t
+                           (cadr-ai::json-get
+                            images "autoResize" t))
+                       t)))))
+             t))
          (available-models
            (model-registry-available-models
             model-registry
@@ -842,14 +862,21 @@
            (let ((provider
                    (provider-config-provider config)))
              (or
-              (and
-               provider
-               (cadr-ai::provider-oauth-access-token
-                provider))
+              ;; pi@53fa77ccd footer.ts:139-141 — Kimi Coding is
+              ;; subscription-backed despite API-key authentication.
               (string-equal
                (provider-key
                 (provider-config-name config))
-               "kimi-coding"))))
+               "kimi-coding")
+              (and
+               provider
+               (cadr-ai::provider-oauth-access-token
+                provider)
+               ;; isUsingSubscription: OAuth and subscription-backed.
+               (cadr-ai:provider-oauth-subscription-p
+                (provider-symbol-from-key
+                 (provider-key
+                  (provider-config-name config))))))))
          (valid-context-assistant-entry-p (entry)
            (and
             (eq
@@ -1154,7 +1181,12 @@
             (model-registry-credentials model-registry)
             provider)
            (refresh-auth provider :logout)
-           provider)
+           (values
+            provider
+            ;; pi@53fa77ccd model-runtime.ts:532 — non-nil when the
+            ;; credential was removed but the local snapshot did not
+            ;; sync.
+            (model-registry-error model-registry)))
          (run-prompt (prompt)
            (let ((*bash-live-output*
                    (bash-live-output-for-mode
@@ -1387,6 +1419,73 @@
              :api-key
              (cli-arguments-api-key command)))
            available-models)
+         (refresh-model-catalogs ()
+           ;; Worker side of the selector-open catalog refresh: re-read
+           ;; the registry without holding the TUI lock.
+           (refresh-available-models))
+         (apply-model-catalog-refresh (selector failure)
+           ;; Lock side of the selector-open catalog refresh: apply the
+           ;; baseline terminal refresh state to SELECTOR.  FAILURE is
+           ;; NIL when the registry re-read completed, else the error
+           ;; text (the baseline catch-path message).
+           (cond
+             ((model-selector-state-p selector)
+             (let ((error
+                      (or failure
+                          (model-registry-error model-registry))))
+                (model-selector-finish-refresh
+                 selector available-models
+                 :status-message
+                 (and (null error) "Model catalogs refreshed.")
+                 :status-kind :success
+                 :error-message
+                  (if failure
+                      (format
+                       nil "Could not refresh model catalogs: ~A"
+                       failure)
+                      error))))
+             ((scoped-models-selector-state-p selector)
+              (if failure
+                  (scoped-models-selector-finish-refresh
+                   selector available-models
+                   :status-message
+                   (format
+                    nil "Could not refresh model catalogs: ~A"
+                    failure)
+                   :status-kind :warning)
+                  (let ((recompute-p
+                          (and
+                           (not
+                            (scoped-models-selector-state-dirty-p
+                             selector))
+                           (null scoped-model-entries))))
+                    (when recompute-p
+                      (setf
+                       current-enabled-model-ids
+                       (if scope-patterns
+                           (multiple-value-bind (entries diagnostics)
+                               (resolve-scoped-models-with-diagnostics
+                                (%make-model-registry
+                                 :models available-models)
+                                scope-patterns)
+                             (enabled-model-ids-for-patterns
+                              entries diagnostics))
+                           :all)))
+                    (if recompute-p
+                        (scoped-models-selector-finish-refresh
+                         selector available-models
+                         :enabled-ids current-enabled-model-ids
+                         :status-message "Model catalogs refreshed."
+                         :status-kind :success)
+                        (scoped-models-selector-finish-refresh
+                         selector available-models
+                         :status-message "Model catalogs refreshed."
+                         :status-kind :success))
+                    (when
+                        (and scope-patterns
+                             (listp current-enabled-model-ids))
+                      (update-session-scope
+                       current-enabled-model-ids)))))))
          (select-model
              (model &key (source :interactive)
                          (thinking-level nil thinking-level-p))
@@ -1504,7 +1603,6 @@
                  scoped-model-entries)
                 available-models)))
          (model-selector (&optional query)
-           (refresh-available-models)
            (let ((selector
                    (make-model-selector-state
                     :all-models available-models
@@ -1516,14 +1614,10 @@
                     :current-model
                     (cadr-agent:agent-model agent)
                     :refresh-status-message
-                    (and
-                     (null
-                      (model-registry-error
-                       model-registry))
-                     "Model catalogs refreshed.")
+                     "Refreshing model catalogs…"
                     :keybindings
-                    (make-models-selector-keybindings
-                     (resolve-user-keybindings
+                     (make-models-selector-keybindings
+                      (resolve-user-keybindings
                       settings-manager agent-directory)))))
              (when query
                (model-selector-set-query
@@ -1550,24 +1644,22 @@
               status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
-           (refresh-available-models)
-           (when
-               (or available-models
-                   (and
-                    (listp current-enabled-model-ids)
-                    current-enabled-model-ids))
-             (make-scoped-models-selector-state
-              :all-models available-models
-              :enabled-ids
-              current-enabled-model-ids
-              :change-callback
-              #'update-session-scope
-              :persist-callback
-              #'persist-model-scope
-              :keybindings
-              (make-models-selector-keybindings
-               (resolve-user-keybindings
-                settings-manager agent-directory)))))
+           ;; v0.84.1: the selector opens even with an empty catalog; the
+           ;; baseline dropped the "No models available" early exit.
+           (make-scoped-models-selector-state
+            :all-models available-models
+            :enabled-ids
+            current-enabled-model-ids
+            :refresh-status-message
+            "Refreshing model catalogs…"
+            :change-callback
+            #'update-session-scope
+            :persist-callback
+            #'persist-model-scope
+            :keybindings
+            (make-models-selector-keybindings
+             (resolve-user-keybindings
+              settings-manager agent-directory))))
          (trust-selector ()
            (make-trust-selector-state
             :cwd cwd
@@ -1677,11 +1769,12 @@
                        (cadr-agent:session-messages
                         candidate)))
               :value candidate)))
-         (all-session-items ()
+         (all-session-items (&optional progress-function)
            (loop
              for candidate in
              (cadr-agent:list-sessions
-              :directory session-directory)
+              :directory session-directory
+              :progress-function progress-function)
              collect
              (cadr-tui:make-select-item
               :label
@@ -2213,6 +2306,10 @@
            #'model-selector
            :scoped-models-selector-function
            #'scoped-models-selector
+           :model-catalog-refresh-function
+           #'refresh-model-catalogs
+           :apply-model-catalog-refresh-function
+           #'apply-model-catalog-refresh
            :trust-selector-function
            #'trust-selector
            :settings-selector-function
@@ -2248,7 +2345,10 @@
                     'file-auth-storage)
                    (file-auth-storage-path
                     (model-registry-credentials model-registry))
-                   (default-auth-path)))))
+                   (default-auth-path)))
+              ;; pi@53fa77ccd model-runtime.ts:532 — non-nil when the
+              ;; credential saved but the local snapshot did not sync.
+              (model-registry-error model-registry)))
            :auth-status-function #'authentication-status
            :logout-options-function #'stored-logout-options
            :on-model-selected #'select-model
@@ -2344,7 +2444,11 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           (cli-arguments-alt-p command)
+           ;; pi@53fa77ccd interactive-mode.ts:530-531 — the CLI flag
+           ;; wins over the tuiMode setting; default regular.
+           (eq :fullscreen
+               (or (cli-arguments-tui-mode command)
+                   (settings-tui-mode settings-manager)))
            :show-hardware-cursor-p
            (or
             (settings-value
@@ -2359,6 +2463,11 @@
            :clear-on-shrink-p
            (settings-clear-on-shrink-p
             settings-manager)
+           :scrollbar-mode
+           (intern
+            (string-upcase
+             (settings-fullscreen-scrollbar settings-manager))
+            :keyword)
            :initial-notices
            ;; Baseline interactive-mode.ts:910-911 — the SDK's
            ;; modelFallbackMessage is a startup warning; with no

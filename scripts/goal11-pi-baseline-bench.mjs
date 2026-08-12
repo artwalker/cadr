@@ -71,8 +71,8 @@ const moduleUrl = (relativePath) =>
 	pathToFileURL(path.join(baselineDirectory, relativePath)).href;
 
 const { Container, Editor } = await import(moduleUrl("packages/tui/dist/index.js"));
-const { TuiAltScreen } = await import(moduleUrl("packages/tui/dist/TuiAltScreen.js"));
-const { TuiMainScreen } = await import(moduleUrl("packages/tui/dist/TuiMainScreen.js"));
+const { TuiAltScreen } = await import(moduleUrl("packages/tui/dist/tui-alt-screen.js"));
+const { TuiMainScreen } = await import(moduleUrl("packages/tui/dist/tui-main-screen.js"));
 const { AssistantMessageComponent } = await import(
 	moduleUrl("packages/coding-agent/dist/modes/interactive/components/assistant-message.js")
 );
@@ -260,8 +260,12 @@ function makeAltFixture(count) {
 	ui.addChild(editor);
 	ui.start();
 	renderAltFixture({ ui });
-	ui.scrollToTop();
-	ui.scrollBy(Math.floor(Math.max(0, ui.contentLineCount - height) / 2));
+	// v0.84.1 moved the viewport into ScrollView: TuiAltScreen no longer
+	// exposes contentLineCount.  Derive the middle from the clamped
+	// bottom position instead.
+	ui.scrollToBottom();
+	renderAltFixture({ ui });
+	ui.scrollBy(-Math.floor(ui.viewportTop / 2));
 	renderAltFixture({ ui });
 	terminal.emitInput(sgrMouseInput(0, 10, 10));
 	renderAltFixture({ ui });
@@ -687,7 +691,7 @@ const result = {
 		).trim(),
 		alt_screen_object_id: execFileSync(
 			"git",
-			["-C", baselineDirectory, "rev-parse", `${revision}:packages/tui/src/TuiAltScreen.ts`],
+			["-C", baselineDirectory, "rev-parse", `${revision}:packages/tui/src/tui-alt-screen.ts`],
 			{ encoding: "utf8" },
 		).trim(),
 	},

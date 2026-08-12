@@ -70,9 +70,21 @@
       "path": "src/cadr-tui/editor.lisp",
       "reason": "Single grapheme-aware editor state machine; cursor, history, undo, wrapping, autocomplete, and rendering must preserve shared mutation invariants."
     },
-    {
-      "path": "src/cadr-tui/unicode.lisp",
-      "reason": "Single Unicode terminal-semantics engine whose grapheme segmentation, ANSI parsing, width, slicing, wrapping, and truncation share tables and invariants."
-    }
-  ]
+   {
+     "path": "src/cadr-tui/unicode.lisp",
+     "reason": "Single Unicode terminal-semantics engine whose grapheme segmentation, ANSI parsing, width, slicing, wrapping, and truncation share tables and invariants."
+   },
+   {
+     "path": "src/cadr-ai/providers/definitions.lisp",
+     "reason": "Single provider-definitions registry whose per-provider data tables are transcribed from the baseline packages/ai/src/providers/*.ts catalog (now including baseten and qwen-token-plan-individual)."
+   },
+   {
+     "path": "src/cadr-tui/latex.lisp",
+     "reason": "Direct port of baseline packages/tui/src/latex.ts: verbatim symbol/width data tables and the LatexParser port share one rendering owner."
+   },
+   {
+     "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+     "reason": "Single terminal lifecycle/input renderer whose scrollbar, mouse multi-click selection, wheel scrolling, and alt-screen flash state machines share the terminal-renderer struct."
+   }
+ ]
 }

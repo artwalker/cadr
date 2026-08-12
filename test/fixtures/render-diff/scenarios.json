@@ -76,7 +76,7 @@
       },
       "responses": [],
       "actions": [
-        { "waitFor": "Current Folder" },
+        { "waitFor": "◉ Current Folder" },
         { "pauseMs": 100 },
         { "checkpoint": "picker-current" },
         { "send": "tab" },
@@ -115,7 +115,7 @@
       },
       "responses": [],
       "actions": [
-        { "waitFor": "Current Folder" },
+        { "waitFor": "◉ Current Folder" },
         { "pauseMs": 100 },
         { "send": "enter" },
         { "waitFor": "beta session answer" },
@@ -526,15 +526,11 @@
       "tier": "full",
       "group": "tools",
       "coverage": ["bash-tool-abort"],
-      "description": "A real model-requested bash tool is interrupted through the ordinary Escape path.",
+      "description": "A real model-requested bash tool is interrupted through the ordinary Escape path. Under pi v0.84.1 the abort ends the turn without a provider round-trip, so the post-exit probe consumes the single follow-up response.",
       "responses": [
         { "content": [{ "type": "toolCall", "name": "bash", "id": "tool-bash-abort", "arguments": { "command": "sleep 5" } }], "stopReason": "toolUse" },
         {
           "content": [{ "type": "text", "text": "Abort follow-up acknowledged." }],
-          "stopReason": "stop"
-        },
-        {
-          "content": [{ "type": "text", "text": "Post-exit probe delivered." }],
           "stopReason": "stop"
         }
       ],
@@ -544,7 +540,7 @@
         { "waitFor": "Command aborted" }, { "waitForAgentSettled": true }, { "checkpoint": "bash-tool-aborted" },
         { "sendText": "post-exit probe" },
         { "send": "enter" },
-        { "waitFor": "Post-exit probe delivered." },
+        { "waitFor": "Abort follow-up acknowledged." },
         { "send": "ctrl+d" }
       ]
     },
@@ -752,6 +748,7 @@
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/model" }, { "send": "enter" },
         { "waitFor": "Model Name:" },
+        { "waitFor": "Model catalogs refreshed." },
         { "checkpoint": "model-first-screen" },
         { "send": "tab" }, { "pauseMs": 80 },
         { "sendRepeated": { "key": "down", "count": 12, "checkpointPrefix": "model-row" } },
@@ -760,7 +757,7 @@
         { "send": "escape" }, { "pauseMs": 80 },
         { "checkpoint": "model-closed" },
         { "sendText": "/resume" }, { "send": "enter" },
-        { "waitFor": "Current Folder" },
+        { "waitFor": "◉ Current Folder" },
         { "checkpoint": "resume-first-screen" },
         { "sendRepeated": { "key": "down", "count": 7, "checkpointPrefix": "resume-row" } },
         { "pauseMs": 80 },
@@ -804,6 +801,7 @@
         { "waitForHex": "1b5b3f323032366c" },
         { "sendText": "/scoped-models" }, { "send": "enter" },
         { "waitFor": "Model Configuration" },
+        { "waitFor": "Model catalogs refreshed." },
         { "checkpoint": "scoped-first-screen" },
         { "sendRepeated": { "key": "down", "count": 2, "checkpointPrefix": "scoped-head" } },
         { "pauseMs": 80 },
@@ -866,11 +864,13 @@
       ],
       "actions": [
         { "waitFor": "overlay answer" },
-        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" }, { "checkpoint": "overlay-model" },
+        { "sendText": "/model" }, { "send": "enter" }, { "waitFor": "Model Name:" },
+        { "waitFor": "Model catalogs refreshed." }, { "checkpoint": "overlay-model" },
         { "send": "down" }, { "pauseMs": 50 }, { "send": "tab" }, { "pauseMs": 50 }, { "sendText": "no-model-matches-this-query" }, { "waitFor": "No matching models" }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" }, { "checkpoint": "overlay-scoped-models" },
+        { "sendText": "/scoped-models" }, { "send": "enter" }, { "waitFor": "Model Configuration" },
+        { "waitForNext": "Model catalogs refreshed." }, { "checkpoint": "overlay-scoped-models" },
         { "send": "enter" }, { "pauseMs": 50 }, { "send": "down" }, { "pauseMs": 50 }, { "sendText": "no-scoped-model-matches-this-query" }, { "waitFor": "No matching models" }, { "send": "escape" }, { "pauseMs": 80 },
-        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "Current Folder" }, { "checkpoint": "overlay-session" },
+        { "sendText": "/resume" }, { "send": "enter" }, { "waitFor": "◉ Current Folder" }, { "checkpoint": "overlay-session" },
         { "send": "tab" }, { "pauseMs": 300 }, { "send": "tab" }, { "pauseMs": 100 },
         { "send": "ctrl+r" }, { "waitFor": "Rename Session" }, { "checkpoint": "overlay-session-rename" }, { "send": "escape" }, { "pauseMs": 100 },
         { "send": "ctrl+d" }, { "waitFor": "Delete session?" }, { "checkpoint": "overlay-session-delete" }, { "send": "escape" }, { "pauseMs": 100 }, { "send": "escape" }, { "pauseMs": 100 },

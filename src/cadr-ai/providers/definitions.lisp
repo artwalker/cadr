@@ -116,6 +116,28 @@
      :oauth-refresh-strategy nil
      :oauth-to-auth-strategy nil
      :model-filter-strategy nil)
+    (:id :baseten
+     :baseline-source "packages/ai/src/providers/baseten.ts:7"
+     :name "Baseten"
+     :protocol :openai-completions
+     :protocols (:openai-completions)
+     :base-url "https://inference.baseten.co/v1"
+     :auth-types (:api-key)
+     :default-model "zai-org/GLM-5.2"
+     :key-environment "BASETEN_API_KEY"
+     :required-environment nil
+     :dynamic-models-p nil
+     :supports-images-p nil
+     :supports-tools-p t
+     :reasoning-p nil
+     :oauth-metadata nil
+     :api-key-name "Baseten API key"
+     :environment-names ("BASETEN_API_KEY")
+     :api-key-auth-strategy :environment
+     :oauth-login-strategy nil
+     :oauth-refresh-strategy nil
+     :oauth-to-auth-strategy nil
+     :model-filter-strategy nil)
     (:id :cerebras
      :baseline-source "packages/ai/src/providers/cerebras.ts:7"
      :name "Cerebras"
@@ -644,6 +666,30 @@
      :oauth-refresh-strategy nil
      :oauth-to-auth-strategy nil
      :model-filter-strategy nil)
+    (:id :qwen-token-plan-individual
+     :baseline-source
+     "packages/ai/src/providers/qwen-token-plan-individual.ts:7"
+     :name "Qwen Token Plan Individual"
+     :protocol :openai-completions
+     :protocols (:openai-completions)
+     :base-url
+     "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
+     :auth-types (:api-key)
+     :default-model "qwen3.8-max"
+     :key-environment "QWEN_TOKEN_PLAN_API_KEY"
+     :required-environment nil
+     :dynamic-models-p nil
+     :supports-images-p nil
+     :supports-tools-p t
+     :reasoning-p nil
+     :oauth-metadata nil
+     :api-key-name "Qwen Token Plan Individual API key"
+     :environment-names ("QWEN_TOKEN_PLAN_API_KEY")
+     :api-key-auth-strategy :environment
+     :oauth-login-strategy nil
+     :oauth-refresh-strategy nil
+     :oauth-to-auth-strategy nil
+     :model-filter-strategy nil)
     (:id :radius
      :baseline-source "packages/ai/src/providers/radius.ts:28"
      :name "Radius"
@@ -930,6 +976,17 @@
   (or (gethash id *provider-definitions*)
       (error 'configuration-error
              :message (format nil "Unknown provider: ~A" id))))
+
+(defun provider-oauth-subscription-p (id)
+  ;; pi@53fa77ccd core/model-runtime.ts:462-464 isUsingSubscription:
+  ;; true when the provider's OAuth registration is subscription-backed.
+  (let ((definition (gethash id *provider-definitions*)))
+    (and definition
+         (let ((metadata
+                 (provider-definition-oauth-metadata definition)))
+           (and metadata
+                (oauth-provider-metadata-is-subscription-p metadata)
+                t)))))
 
 (defun list-provider-definitions ()
   (sort

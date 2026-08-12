@@ -223,8 +223,8 @@
                      :kind :docs :label relative))))
                 ((member
                   filename
-                  '("AGENTS.md" "AGENTS.MD"
-                    "CLAUDE.md" "CLAUDE.MD")
+                  '("AGENTS.override.md" "AGENTS.md"
+                    "AGENTS.MD" "CLAUDE.md" "CLAUDE.MD")
                   :test #'string=)
                  (list
                   :kind :resource

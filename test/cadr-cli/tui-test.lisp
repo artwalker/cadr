@@ -1199,7 +1199,8 @@
             (cadr-cli::print-cli-usage stream))))
     (is (search "cadr - AI coding assistant with read, bash, edit, write tools"
                 usage))
-    (is (search "--alt" usage))
+    (is (search "--tui-mode" usage))
+    (is (null (search "--alt" usage)))
     (is (search "Select a session to resume" usage))
     (is (search "Built-in Tool Names:" usage))
     (is (search "CADR_CODING_AGENT_DIR" usage))
@@ -1213,7 +1214,7 @@
              "--extension" "one.lisp"
              "--extension=two.lisp"
              "--continue"
-             "--alt"
+             "--tui-mode" "fullscreen"
              "--no-tui"))))
     (is (string=
          "deepseek"
@@ -1229,13 +1230,41 @@
           arguments)))
     (is (cadr-cli::cli-arguments-continue-p
          arguments))
-    (is (cadr-cli::cli-arguments-alt-p
-         arguments))
+    (is (eq :fullscreen
+            (cadr-cli::cli-arguments-tui-mode arguments)))
     (is (cadr-cli::cli-arguments-no-tui-p
          arguments)))
   (signals cadr-ai:configuration-error
     (cadr-cli::parse-cli-arguments
      '("--model" "--continue"))))
+
+(test tui-mode-flag-matches-the-baseline-diagnostics
+  ;; pi@53fa77ccd cli/args.ts:180-191: valid values are consumed; a
+  ;; missing or dash-prefixed value errors without consuming; anything
+  ;; else is consumed and rejected by name.
+  (let ((arguments
+          (cadr-cli::parse-cli-arguments
+           '("--tui-mode" "regular"))))
+    (is (eq :regular
+            (cadr-cli::cli-arguments-tui-mode arguments)))
+    (is (null (cadr-cli::cli-arguments-diagnostics arguments))))
+  (let ((arguments
+          (cadr-cli::parse-cli-arguments
+           '("--tui-mode"))))
+    (is (null (cadr-cli::cli-arguments-tui-mode arguments)))
+    (is (equal
+         '((:type :error
+            :message "--tui-mode requires regular or fullscreen"))
+         (cadr-cli::cli-arguments-diagnostics arguments))))
+  (let ((arguments
+          (cadr-cli::parse-cli-arguments
+           '("--tui-mode" "wide"))))
+    (is (null (cadr-cli::cli-arguments-tui-mode arguments)))
+    (is (equal
+         '((:type :error
+            :message
+            "Invalid TUI mode \"wide\". Valid values: regular, fullscreen"))
+         (cadr-cli::cli-arguments-diagnostics arguments)))))
 
 (test alt-screen-tui-state-preserves-full-document
   (let ((state
@@ -2471,7 +2500,7 @@
         (declare (ignore row column))
         (is
          (search
-          "maximum output token limit"
+          "Response was truncated before completion."
           (format nil "~{~A~^~%~}" lines))))))
   (dolist
       (case

@@ -80,7 +80,8 @@
 (defun list-sessions (&key
                             (directory
                               (default-session-directory))
-                            cwd)
+                            cwd
+                            progress-function)
   (let* ((session-directory
            (uiop:ensure-directory-pathname directory))
          (canonical-cwd
@@ -88,13 +89,20 @@
     (unless (probe-file session-directory)
       (return-from list-sessions nil))
     (sort
-     (loop for path in
+     (loop with paths =
              (directory
               (merge-pathnames
                "*.jsonl" session-directory))
+           with total = (length paths)
+           for path in paths
+           for loaded from 1
            for header =
              (read-session-header-for-discovery
               path)
+           ;; pi@53fa77ccd SessionManager.list onProgress: invoked per
+           ;; scanned session file with 1-based loaded and total counts.
+           do (when progress-function
+                (funcall progress-function loaded total))
            when
              (and
               header

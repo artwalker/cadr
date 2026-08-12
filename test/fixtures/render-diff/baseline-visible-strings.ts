@@ -235,12 +235,12 @@ function terminalWriteTarget(target: string): boolean {
 }
 
 const exactTerminalProtocolIdentifiers = new Set([
-	"packages/tui/src/TuiMainScreen.ts:positionHardwareCursor:buffer",
+	"packages/tui/src/tui-main-screen.ts:positionHardwareCursor:buffer",
 	"packages/tui/src/terminal.ts:queryAndEnableKittyProtocol:KITTY_KEYBOARD_PROTOCOL_QUERY",
 ]);
 const exactTerminalProtocolFunctions = new Set([
-	"packages/tui/src/TuiAltScreen.ts:beforeTerminalStart",
-	"packages/tui/src/TuiAltScreen.ts:beforeTerminalStop",
+	"packages/tui/src/tui-alt-screen.ts:beforeTerminalStart",
+	"packages/tui/src/tui-alt-screen.ts:beforeTerminalStop",
 ]);
 
 function terminalWriteChannel(

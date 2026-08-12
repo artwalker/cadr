@@ -12,6 +12,31 @@
                      :supports-tools-p t
                      :reasoning-p t)))
 
+(test chat-completions-url-keeps-single-v1-segment
+  ;; Regression: uiop:string-suffix-p argument order was reversed, so
+  ;; bases already ending in /v1 (e.g. opencode-go) got /v1 appended a
+  ;; second time and the provider hit a 404.
+  (is (string=
+       "https://opencode.ai/zen/go/v1/chat/completions"
+       (cadr-ai::chat-completions-url
+        "https://opencode.ai/zen/go/v1")))
+  (is (string=
+       "https://api.deepseek.com/v1/chat/completions"
+       (cadr-ai::chat-completions-url
+        "https://api.deepseek.com")))
+  (is (string=
+       "https://api.deepseek.com/v1/chat/completions"
+       (cadr-ai::chat-completions-url
+        "https://api.deepseek.com/v1")))
+  (is (string=
+       "https://api.deepseek.com/chat/completions"
+       (cadr-ai::chat-completions-url
+        "https://api.deepseek.com/chat/completions")))
+  (is (string=
+       "https://api.deepseek.com/v1/chat/completions"
+       (cadr-ai::chat-completions-url
+        "https://api.deepseek.com/v1/chat/completions"))))
+
 (defun stream-completions-text-deltas (provider model deltas)
   (let ((events nil)
         (*http-request-function*

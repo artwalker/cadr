@@ -243,10 +243,10 @@
           (cadr-ai:make-built-in-models-runtime
            :environment
            '(("DEEPSEEK_API_KEY" . "test-deepseek")))))
-    (is (= 38
+    (is (= 40
            (length
             (cadr-ai:models-runtime-providers runtime))))
-    (is (= 1153
+    (is (= 1220
            (length
             (cadr-ai:models-runtime-models runtime))))
     (is (eq :api-key

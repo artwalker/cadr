@@ -201,7 +201,7 @@
                        (format nil "https://~A"
                                repository)))))
             (setf path
-                  (if (uiop:string-suffix-p ".git" path)
+                  (if (uiop:string-suffix-p path ".git")
                       (subseq path 0 (- (length path) 4))
                       path))
             (when

@@ -33,7 +33,7 @@
     (is (some
          (lambda (line)
            (search
-            "maximum output token limit"
+            "Response was truncated before completion."
             line))
          assistant)))
   (let ((with-tool
@@ -3224,6 +3224,68 @@ user question"
                    :options (list option))
                   120))))
           (is (search expected rendered)))))))
+
+(test tool-result-images-normalize-once-entering-history
+  ;; pi@53fa77ccd utils/tool-result-images.ts — a BMP tool-result
+  ;; block becomes PNG with a hints text block; a clean PNG passes
+  ;; through with the content array identity preserved.
+  (let* ((bmp
+           (make-array
+            58 :element-type '(unsigned-byte 8)
+            :initial-element 0)))
+    (setf
+     (aref bmp 0) (char-code #\B)
+     (aref bmp 1) (char-code #\M)
+     (aref bmp 2) 58
+     (aref bmp 10) 54
+     (aref bmp 14) 40
+     (aref bmp 18) 1
+     (aref bmp 22) 1
+     (aref bmp 26) 1
+     (aref bmp 28) 24
+     (aref bmp 56) 255)
+    (let* ((image-block
+             (cadr-ai:make-image-content
+              :data (cadr-cli::encode-base64-bytes bmp)
+              :mime-type "image/bmp"))
+           (text-block
+             (cadr-ai:make-text-content :text "done"))
+           (content (list image-block text-block))
+           (normalized
+             (cadr-cli::normalize-tool-result-images content)))
+      (is (= 3 (length normalized)))
+      (is (typep (first normalized) 'cadr-ai:image-content))
+      (is (string=
+           "image/png"
+           (cadr-ai:image-content-mime-type
+            (first normalized))))
+      (is (typep (second normalized) 'cadr-ai:text-content))
+      (is (search
+           "converted"
+           (string-downcase
+            (cadr-ai:text-content-text
+             (second normalized)))))
+      (is (eq text-block (third normalized))))
+    ;; no image blocks: the same array returns unchanged
+    (let ((content
+            (list (cadr-ai:make-text-content :text "plain"))))
+      (is (eq content
+              (cadr-cli::normalize-tool-result-images content))))
+    ;; an already-fine PNG keeps its block (no hints, same bytes)
+    (let* ((png
+             (cadr-cli::encode-rgba-png
+              (make-array 4 :element-type '(unsigned-byte 8)
+                          :initial-element 255)
+              1 1))
+           (block
+             (cadr-ai:make-image-content
+              :data (cadr-cli::encode-base64-bytes png)
+              :mime-type "image/png"))
+           (content (list block))
+           (normalized
+             (cadr-cli::normalize-tool-result-images content)))
+      (is (= 1 (length normalized)))
+      (is (eq block (first normalized))))))
 
 (test tool-render-session-shares-state-and-keeps-pending-result-hidden
   (let ((session

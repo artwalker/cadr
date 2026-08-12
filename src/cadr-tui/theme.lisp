@@ -13,6 +13,7 @@
     (:text . "#d4d4d4")
     (:thinking-text . "#808080")
     (:selected-bg . "#3a3a4a")
+    (:scrollbar-thumb . "#3a3a4a")
     (:user-message-bg . "#343541")
     (:user-message-text . "#d4d4d4")
     (:custom-message-bg . "#2d2838")
@@ -70,6 +71,7 @@
     (:text . "#1f2328")
     (:thinking-text . "#6c6c6c")
     (:selected-bg . "#d0d0e0")
+    (:scrollbar-thumb . "#d0d0e0")
     (:user-message-bg . "#e8e8e8")
     (:user-message-text . "#1f2328")
     (:custom-message-bg . "#ede7f6")
@@ -116,6 +118,7 @@
 
 (defparameter +background-theme-color-keys+
   '(:selected-bg
+    :scrollbar-thumb
     :user-message-bg
     :custom-message-bg
     :tool-pending-bg

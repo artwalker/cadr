@@ -18,6 +18,7 @@
 
 (defparameter +xai-oauth-metadata+
   (make-oauth-provider-metadata
+   :is-subscription-p t
    :provider-name "xAI"
    :method-name "xAI (Grok/X subscription)"
    :login-label "Sign in with SuperGrok or X Premium"))

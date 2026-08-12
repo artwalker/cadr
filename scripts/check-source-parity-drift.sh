@@ -108,7 +108,8 @@ if grep -q '^| Baseline file | Exported/top-level function, class, constant, and
       path = trim($2)
       verdict = trim($6)
       if (path !~ /^`packages\/.*\.ts`$/ || path ~ /\.test\.ts`$/ ||
-          (verdict != "`已实现`" && verdict != "`有意差异`" && verdict != "`缺失`")) {
+          (verdict != "`已实现`" && verdict != "`有意差异`" &&
+           verdict != "`待裁决`" && verdict != "`缺失`")) {
         print "source parity drift: invalid source ledger row: " $0 > "/dev/stderr"
         invalid = 1
         next

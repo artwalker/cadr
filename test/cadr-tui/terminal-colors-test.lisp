@@ -229,7 +229,7 @@
            (format nil "~C]9;4;3~C"
                    #\Escape (code-char 7)))
          (clear
-           (format nil "~C]9;4;0;~C"
+           (format nil "~C]9;4;0~C"
                    #\Escape (code-char 7))))
     (cadr-tui:terminal-set-progress terminal t)
     (is (string= active

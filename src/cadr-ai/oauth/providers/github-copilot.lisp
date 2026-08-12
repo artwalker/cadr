@@ -2,6 +2,7 @@
 
 (defparameter +github-copilot-oauth-metadata+
   (make-oauth-provider-metadata
+   :is-subscription-p t
    :provider-name "GitHub Copilot"
    :method-name "GitHub Copilot"))
 

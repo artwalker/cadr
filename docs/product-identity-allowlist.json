@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 377,
+  "expected_findings": 447,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -38,7 +38,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`, automated the",
+      "line": "  `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, automated the",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -54,9 +54,25 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
+      "line": "  cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd).  `--alt` is replaced",
+      "occurrences": 1,
+      "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "  package, session-tree, compaction, and RPC compatibility with original pi.",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  pi baseline checkout is now verified blob-for-blob against the",
+      "occurrences": 1,
+      "reason": "Immutable changelog history records the Goal 18 I5 baseline-verification work; the immutable pi checkout is reference input, not Cadr identity."
     },
     {
       "path": "CHANGELOG.md",
@@ -70,7 +86,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  the CLI identity also records alignment with pi `v0.84.1` plus 38 commits at",
+      "line": "  the CLI identity also records alignment with pi `v0.83.0` plus 38 commits at",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -78,7 +94,7 @@
       "path": "CHANGELOG.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.84.1 (+0, 53fa77ccd)**",
+      "line": "**cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)**",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
     },
@@ -100,11 +116,27 @@
     },
     {
       "path": "CHANGELOG.md",
-      "kind": "upstream-org",
-      "token": "earendil-works",
-      "line": "  `earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`, automated the",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner — the",
+      "occurrences": 1,
+      "reason": "Changelog records the baseline-anchor ownership change; the fixed pi baseline is reference input, not Cadr identity."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Goal 18 Part L: re-anchored the fixed pi baseline to v0.84.1.",
       "occurrences": 1,
       "reason": "Release history or alignment provenance explicitly describes the fixed pi baseline and past identity defect."
+    },
+    {
+      "path": "CHANGELOG.md",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "  `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, automated the",
+      "occurrences": 1,
+      "reason": "Upstream repository identity retained for provenance of the fixed baseline."
     },
     {
       "path": "README.md",
@@ -113,14 +145,6 @@
       "line": "| `PI_CACHE_RETENTION` | `CADR_CACHE_RETENTION` |",
       "occurrences": 1,
       "reason": "Published legacy-to-Cadr migration mapping; documentation only and never read as runtime configuration."
-    },
-    {
-      "path": "README.md",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "matching the baseline `~/.pi/agent/` layout; `~/.cadr/server/` stays at",
-      "occurrences": 1,
-      "reason": "Documents the baseline layout Cadr now matches; reference to the immutable pi path is the parity statement, not Cadr identity."
     },
     {
       "path": "README.md",
@@ -326,7 +350,7 @@
       "path": "README.md",
       "kind": "pi-token",
       "token": "pi",
-      "line": "**cadr 0.2.0 \u00b7 aligned with pi v0.84.1 (+0, 53fa77ccd)**",
+      "line": "**cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd)**",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
     },
@@ -385,6 +409,14 @@
       "line": "introduced. Proposed mechanisms beyond original pi belong in",
       "occurrences": 1,
       "reason": "Published fixed-baseline relationship, provenance, or approved difference; explicitly describes pi rather than presenting Cadr as pi."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "matching the baseline `~/.pi/agent/` layout; `~/.cadr/server/` stays at",
+      "occurrences": 1,
+      "reason": "Documents the baseline layout Cadr now matches; reference to the immutable pi path is the parity statement, not Cadr identity."
     },
     {
       "path": "README.md",
@@ -523,6 +555,22 @@
       "reason": "Fixed-baseline DOOM example adapter filename is an internal pinned build input and produces no Cadr identity output."
     },
     {
+      "path": "scripts/baseline-anchor.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"aligned with pi {values['release']} \"",
+      "occurrences": 1,
+      "reason": "Baseline anchor owner names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/baseline-anchor.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\"\"\"Single owner of the fixed pi baseline anchor (goal 18 L2.1).",
+      "occurrences": 1,
+      "reason": "Baseline anchor owner names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
       "path": "scripts/check-product-identity.py",
       "kind": "pi-token",
       "token": "PI",
@@ -608,6 +656,14 @@
       "token": "pi",
       "line": "                for side in (\"pi\", \"cadr\"):",
       "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/event-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        default=Path(f\"/tmp/cadr-render-diff-pi-{_baseline_anchor.read_baseline()['short']}\"),",
+      "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
@@ -726,9 +782,9 @@
       "path": "scripts/refresh-model-catalog.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "     \";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.83.0 catalog snapshot.\"",
+      "line": "     \";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.84.1 catalog snapshot.\"",
       "occurrences": 1,
-      "reason": "Catalog refresh script preserves the immutable pi-ai source provenance in generated output."
+      "reason": "Generated-file provenance header names the fixed pi-ai 0.84.1 catalog snapshot."
     },
     {
       "path": "scripts/render-diff.py",
@@ -742,9 +798,9 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_PACKAGE",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.83.0\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.84.1\"",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Published fixed-baseline model-data artifact identity pinned for the deterministic differential."
     },
     {
       "path": "scripts/render-diff.py",
@@ -758,9 +814,9 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_SHA256",
-      "line": "PI_AI_MODEL_DATA_SHA256 = \"f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4\"",
+      "line": "PI_AI_MODEL_DATA_SHA256 = \"6ab689189e7cb3de5cdb126312a3e60e8ac35fe5ee5f1b63d00f711c8a430c73\"",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Published fixed-baseline model-data artifact identity pinned for the deterministic differential."
     },
     {
       "path": "scripts/render-diff.py",
@@ -769,6 +825,22 @@
       "line": "            b\"<PI_BASELINE>/packages/coding-agent/test/\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE",
+      "line": "        (b\"<PI_BASELINE>/packages/coding-agent/docs/\", b\"<PRODUCT_DOCS>/\"),",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE",
+      "line": "        (str(Path(f\"/tmp/{_BASELINE_CACHE_NAME}\")).encode(), b\"<PI_BASELINE>\"),",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -817,22 +889,6 @@
       "line": "        environment[\"PI_TIMING\"] = \"1\"",
       "occurrences": 1,
       "reason": "Goal 17 fixed-baseline construction enables the immutable Pi timing surface so its production status branches execute; Cadr never reads this name."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        construction_path = capture_root / \"baseline-construction.pi.visible.raw\"",
-      "occurrences": 1,
-      "reason": "Goal 17 names the immutable Pi-side raw construction artifact explicitly so coverage provenance cannot be confused with Cadr output."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "    marker_path = output / \"baseline-construction.pi.visible.raw\"",
-      "occurrences": 1,
-      "reason": "Goal 17 names the immutable Pi-side raw construction artifact explicitly so coverage provenance cannot be confused with Cadr output."
     },
     {
       "path": "scripts/render-diff.py",
@@ -905,14 +961,6 @@
       "line": "                    for side in (\"pi\", \"cadr\")",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "                or set(pair) != {\"pi\", \"cadr\"}",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1006,6 +1054,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "                or set(pair) != {\"pi\", \"cadr\"}",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "                pi_screens[key] = screens[\"pi\"]",
       "occurrences": 2,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
@@ -1078,8 +1134,32 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "            # walker; the config file applies equally to pi and Cadr.",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            args.pi_repo.resolve(),",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "            artifact_side = \"pi.visible\" if visible_sites and side == \"pi\" else side",
       "occurrences": 2,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"/\" + (b\"pi00\" if side == \"pi\" else b\"cadr\")",
+      "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
@@ -1120,7 +1200,7 @@
       "token": "pi",
       "line": "            b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.1\",",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must recognize the upstream pi banner for normalization."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1128,7 +1208,7 @@
       "token": "pi",
       "line": "            b\"pi\\x1b[39m\\x1b[22m\\x1b[38;2;102;102;102m v0.84.1\",",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must recognize the upstream pi banner for normalization."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1214,6 +1294,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "        # Product documentation directories: pi resolves docs/ inside the",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "        (b\" pi --session \", b\" <PRODUCT> --session \"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
@@ -1256,7 +1344,7 @@
       "token": "pi",
       "line": "        (b\"pi v0.84.1\", b\"<PRODUCT> v<VERSION>\"),",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must recognize the upstream pi banner for normalization."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1278,24 +1366,16 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "        [\"git\", \"-C\", str(pi_repo), \"ls-tree\", \"-r\", commit, \"--\", \"packages\"],",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "        args.pi_repo.resolve(),",
       "occurrences": 3,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "            b\"/\" + (b\"pi00\" if side == \"pi\" else b\"cadr\")",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "            args.pi_repo.resolve(),",
-      "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
@@ -1321,6 +1401,14 @@
       "line": "        config_dir = cwd / (\".pi\" if side == \"pi\" else \".cadr\")",
       "occurrences": 2,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        construction_path = capture_root / \"baseline-construction.pi.visible.raw\"",
+      "occurrences": 1,
+      "reason": "Goal 17 names the immutable Pi-side raw construction artifact explicitly so coverage provenance cannot be confused with Cadr output."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1376,7 +1464,7 @@
       "token": "pi",
       "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.1\"",
       "occurrences": 2,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must recognize the upstream pi banner for normalization."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1391,6 +1479,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "        sides = (\"pi\", \"cadr\") if args.side == \"both\" else (args.side,)",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        verify_baseline_cache_contents(pi_repo, commit, cache)",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
@@ -1438,6 +1534,14 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
+      "line": "    marker_path = output / \"baseline-construction.pi.visible.raw\"",
+      "occurrences": 1,
+      "reason": "Goal 17 names the immutable Pi-side raw construction artifact explicitly so coverage provenance cannot be confused with Cadr output."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "    pi_screens: dict[str, bytes] = {}",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
@@ -1470,9 +1574,9 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.83.0\"",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.84.1\"",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Fixed-baseline differential harness must recognize the upstream pi banner for normalization."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1481,6 +1585,14 @@
       "line": "PI_DRIVER = ROOT / \"test/fixtures/render-diff/pi-driver.ts\"",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "_BASELINE_CACHE_NAME = f\"cadr-render-diff-pi-{_BASELINE_SHORT}\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -1500,11 +1612,51 @@
     },
     {
       "path": "scripts/render-diff.py",
-      "kind": "upstream-org",
-      "token": "earendil-works",
-      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.83.0\"",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def verify_baseline_cache_contents(pi_repo: Path, commit: str, cache: Path) -> None:",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "PI_AI_MODEL_DATA_PACKAGE = \"@earendil-works/pi-ai@0.84.1\"",
+      "occurrences": 1,
+      "reason": "Upstream repository identity retained for provenance of the fixed baseline."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_PACKAGE",
+      "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
+      "occurrences": 1,
+      "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_SHA256",
+      "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
+      "occurrences": 1,
+      "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  echo \"usage: set-baseline.sh <full-40-hex-pi-commit>\" >&2",
+      "occurrences": 1,
+      "reason": "Baseline anchor rewriter names the fixed pi baseline; reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/set-baseline.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# Usage: scripts/set-baseline.sh <full-pi-commit>",
+      "occurrences": 1,
+      "reason": "Baseline anchor rewriter names the fixed pi baseline; reference input, not Cadr identity."
     },
     {
       "path": "scripts/test-render-diff-full.sh",
@@ -1716,6 +1868,14 @@
     },
     {
       "path": "scripts/verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/verify.sh",
       "kind": "pi-token",
       "token": "pi",
       "line": "      --pi-repo \"$PROJECT_DIRECTORY\" \\",
@@ -1729,6 +1889,14 @@
       "line": "    --exclude=./.pi-cl \\",
       "occurrences": 1,
       "reason": "Migration smoke isolation excludes the retired on-disk namespace so user state cannot enter verification."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
     },
     {
       "path": "src/cadr-agent/export-html/template.js",
@@ -1745,6 +1913,62 @@
       "line": "      const injectedParams = document.querySelector('meta[name=\"pi-url-params\"]');",
       "occurrences": 1,
       "reason": "Approved browser integration meta name is an existing viewer contract; both ends must migrate atomically in a future viewer goal."
+    },
+    {
+      "path": "src/cadr-agent/extensions/lifecycle.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                         ;; pi@53fa77ccd extensions/types.ts:1075-1079 — the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/extensions/snapshot.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@53fa77ccd extensions/loader.ts:205-218,410-424 — invalidating",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/loop/tool-execution.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "normalize image blocks entering session history (pi@53fa77ccd",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/loop/turns.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                 ;; pi@53fa77ccd — an abort already pending when the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/loop/turns.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "         ;; pi@53fa77ccd agent-loop.ts:295 converts agent-level",
+      "occurrences": 1,
+      "reason": "Source comment pins the baseline file and line whose convertToLlm contract the provider-context conversion copies."
+    },
+    {
+      "path": "src/cadr-agent/session/discovery.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@53fa77ccd SessionManager.list onProgress: invoked per",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-agent/tool.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              ;; pi@53fa77ccd agent-loop.ts:637-640 — a before-hook",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-ai/auth/radius-cloudflare.lisp",
@@ -1782,9 +2006,17 @@
       "path": "src/cadr-ai/models.generated.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.83.0 catalog snapshot.",
+      "line": ";; Generated by scripts/refresh-model-catalog.lisp from the fixed pi-ai 0.84.1 catalog snapshot.",
       "occurrences": 1,
-      "reason": "Generated catalog comment preserves the exact fixed pi-ai artifact provenance."
+      "reason": "Generated-file provenance header names the fixed pi-ai 0.84.1 catalog snapshot."
+    },
+    {
+      "path": "src/cadr-ai/oauth/pkce.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd packages/ai/src/auth/oauth/*.ts — subscription-backed",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-ai/oauth/providers/radius.lisp",
@@ -1857,6 +2089,38 @@
       "line": "     :protocols (:pi-messages)",
       "occurrences": 1,
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
+    },
+    {
+      "path": "src/cadr-ai/providers/definitions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd core/model-runtime.ts:462-464 isUsingSubscription:",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       ;; pi@53fa77ccd api/openai-completions.ts:779-793 — chat",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    ;; pi@53fa77ccd api/openai-completions.ts:847-866 — vLLM caps",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-ai/providers/openai-completions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd api/openai-completions.ts:892-940 — each entry",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-ai/providers/pi-messages.lisp",
@@ -1950,7 +2214,7 @@
       "path": "src/cadr-ai/support/release.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "   \"~A ~A \u00b7 aligned with pi ~A (+~D, ~A)\"",
+      "line": "   \"~A ~A · aligned with pi ~A (+~D, ~A)\"",
       "occurrences": 1,
       "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
     },
@@ -1979,6 +2243,142 @@
       "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
     },
     {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"Goal 18 L2.1: the single owner of the fixed pi baseline is the",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (defparameter +cadr-aligned-pi-commit+ short-commit))",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (defparameter +cadr-aligned-pi-distance+ distance)",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  (defparameter +cadr-aligned-pi-release+ release)",
+      "occurrences": 1,
+      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/arguments.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             ;; pi@53fa77ccd cli/args.ts:180-191 — space form only;",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/arguments.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd cli/args.ts:180-186: --tui-mode replaces --alt;",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/auth.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             ;; pi@53fa77ccd interactive-mode.ts:5548,5662 — when the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              ;; pi@53fa77ccd footer.ts:139-141 — Kimi Coding is",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              ;; pi@53fa77ccd model-runtime.ts:532 — non-nil when the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            ;; pi@53fa77ccd model-runtime.ts:532 — non-nil when the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@53fa77ccd interactive-mode.ts:530-531 — the CLI flag",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/commands.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@53fa77ccd utils/tool-result-images.ts via",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/main.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd cli.ts:13-15 — the running agent publishes its",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/sessions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                   ;; pi@53fa77ccd interactive-mode.ts:5956-5960 —",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@53fa77ccd settings-selector.ts:539-546",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@53fa77ccd settings-selector.ts:634-646",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "          ;; pi@53fa77ccd interactive-mode.ts:4557-4567: switch the",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
       "path": "src/cadr-cli/bootstrap/settings.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -1987,12 +2387,84 @@
       "reason": "Source comment pins the baseline file and lines that define the copied setting contract."
     },
     {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd settings-manager.ts:1128-1130 — only the exact string",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd settings-manager.ts:1138-1141 — \"always\"/\"hidden\" pass",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/bootstrap/settings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd settings-manager.ts:1252-1255 — markdown.mermaid is",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
       "path": "src/cadr-cli/interactive/components/announcement.lisp",
       "kind": "pi-token",
       "token": "pi",
       "line": "        :accent \"pi has joined Earendil\"))",
       "occurrences": 1,
       "reason": "Historical upstream announcement quotes the real pi event; changing it would fabricate history."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                            ;; pi@53fa77ccd interactive-mode.ts:5399 —",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                            ;; pi@53fa77ccd interactive-mode.ts:5548 —",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "           ;; pi@53fa77ccd interactive-mode.ts:788-832 switchTuiMode +",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "fullscreen flash instead of a status line (pi@53fa77ccd",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/controller.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "happened.  pi@53fa77ccd interactive-mode.ts:4557-4567",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/images.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd utils/tool-result-images.ts — normalize image blocks",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-cli/interactive/selectors/common.lisp",
@@ -2009,6 +2481,30 @@
       "line": "  \"Render one already-styled line with Pi Text component margins.\"",
       "occurrences": 1,
       "reason": "Internal docstring identifies the fixed Pi Text layout semantics being reproduced."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd session-selector.ts onProgress: progress is applied",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd session-selector.ts:140-143 — incremental load",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/themes.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "       ;; pi@53fa77ccd theme.ts:326-332 — optional scrollbarThumb",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-cli/interactive/user-bash.lisp",
@@ -2051,6 +2547,54 @@
       "reason": "Common Lisp mathematical PI constant used by the Lanczos image-resampling formula."
     },
     {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; from pi, so the baseline guide is the accurate documentation for",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; or session work (baseline main.ts:605-607).  They migrate pi-format",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
+    },
+    {
+      "path": "src/cadr-cli/migration.lisp",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
+      "occurrences": 1,
+      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
+    },
+    {
       "path": "src/cadr-cli/models/registry.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -2067,12 +2611,12 @@
       "reason": "Provider symbol names implement the Radius pi-messages external wire dialect."
     },
     {
-      "path": "src/cadr-cli/packages/update-checks.lisp",
+      "path": "src/cadr-cli/modes/print.lisp",
       "kind": "pi-token",
-      "token": "Pi",
-      "line": "            ;; Match Pi's Git update contract: an unavailable, empty, or",
+      "token": "pi",
+      "line": "        ;; pi@53fa77ccd modes/json-event.ts toJsonEvent: wire events",
       "occurrences": 1,
-      "reason": "Source comment identifies the upstream pi package-update contract used for behavioral alignment."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-cli/packages/config-selector.lisp",
@@ -2121,6 +2665,22 @@
       "line": "(defun read-package-pi-manifest (root)",
       "occurrences": 1,
       "reason": "External extension ecosystem schema uses the package.json pi key; renaming would break existing packages."
+    },
+    {
+      "path": "src/cadr-cli/packages/update-checks.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "            ;; Match Pi's Git update contract: an unavailable, empty, or",
+      "occurrences": 1,
+      "reason": "Source comment identifies the upstream pi package-update contract used for behavioral alignment."
+    },
+    {
+      "path": "src/cadr-cli/resource-loader.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd core/resource-loader.ts:70-88: the first existing",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
       "path": "src/cadr-cli/support/changelog-share.lisp",
@@ -2467,6 +3027,22 @@
       "reason": "Radius external API, persisted wire field, and client lifecycle use the service-defined Pi resource identity."
     },
     {
+      "path": "src/cadr-tui/components/markdown.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                 ;; pi@53fa77ccd components/markdown.ts:102-119,505-514",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/components/markdown.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; pi@53fa77ccd components/markdown.ts:25-122 — inline and block",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
       "path": "src/cadr-tui/composition/protocol.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -2475,244 +3051,228 @@
       "reason": "Private baseline cursor marker is a renderer protocol sentinel, never visible product copy."
     },
     {
-      "path": "scripts/render-diff.py",
+      "path": "src/cadr-tui/editor.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "def verify_baseline_cache_contents(pi_repo: Path, commit: str, cache: Path) -> None:",
+      "line": "      ;; pi@53fa77ccd components/editor.ts:768-777 — the dedicated",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/render-diff.py",
+      "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        verify_baseline_cache_contents(pi_repo, commit, cache)",
+      "line": "    ;; pi@53fa77ccd tui/keybindings.ts:154-178 — the alt-screen",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/render-diff.py",
+      "path": "src/cadr-tui/keybindings.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        [\"git\", \"-C\", str(pi_repo), \"ls-tree\", \"-r\", commit, \"--\", \"packages\"],",
+      "line": "    ;; pi@53fa77ccd tui/keybindings.ts:68-75 — prompt history",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "CHANGELOG.md",
+      "path": "src/cadr-tui/keys.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  pi baseline checkout is now verified blob-for-blob against the",
+      "line": "    ;; pi@53fa77ccd tui/keybindings.ts:170-175 — the prompt-jump",
       "occurrences": 1,
-      "reason": "Immutable changelog history records the Goal 18 I5 baseline-verification work; the immutable pi checkout is reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/render-diff.py",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE",
-      "line": "        (b\"<PI_BASELINE>/packages/coding-agent/docs/\", b\"<PRODUCT_DOCS>/\"),",
+      "path": "src/cadr-tui/latex.lisp",
+      "kind": "pi-token",
+      "token": "Pi",
+      "line": "   (cons \"Pi\" \"Π\")",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
     {
-      "path": "scripts/render-diff.py",
+      "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            # walker; the config file applies equally to pi and Cadr.",
+      "line": "   (cons \"pi\" \"π\")",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "LaTeX math symbols pi/Pi transcribed verbatim from baseline latex.ts data tables; not a product reference."
     },
     {
-      "path": "src/cadr-cli/migration.lisp",
+      "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": ";;; or session work (baseline main.ts:605-607).  They migrate pi-format",
+      "line": ";; generated from pi@53fa77ccd packages/tui/src/latex.ts data tables",
       "occurrences": 1,
-      "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-cli/migration.lisp",
-      "kind": "upstream-org",
-      "token": "earendil-works",
-      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
-      "occurrences": 1,
-      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
-    },
-    {
-      "path": "src/cadr-cli/migration.lisp",
-      "kind": "upstream-org",
-      "token": "earendil-works",
-      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
-      "occurrences": 1,
-      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
-    },
-    {
-      "path": "scripts/render-diff.py",
+      "path": "src/cadr-tui/latex.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        # Product documentation directories: pi resolves docs/ inside the",
+      "line": ";;; pi@53fa77ccd packages/tui/src/latex.ts — terminal-friendly Unicode",
       "occurrences": 1,
-      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-cli/migration.lisp",
+      "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration\"",
+      "line": "             ;; pi@53fa77ccd tui-alt-screen.ts:969-981",
       "occurrences": 1,
-      "reason": "Baseline migrations.ts MIGRATION_GUIDE_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-cli/migration.lisp",
+      "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  \"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md\"",
+      "line": "  ;; pi@53fa77ccd components/scroll-view.ts:62-70 — \"always\" whenever a",
       "occurrences": 1,
-      "reason": "Baseline migrations.ts EXTENSIONS_DOC_URL retained byte-identical for output parity; the pi-mono substring is part of that fixed URL. Adjudicated 2026-08-10: keep byte-identical (output alignment wins; external contract class)."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-cli/migration.lisp",
+      "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; from pi, so the baseline guide is the accurate documentation for",
+      "line": "  ;; pi@53fa77ccd layout.ts:242-267 — the last-column cell keeps its",
       "occurrences": 1,
-      "reason": "Source comment identifies the upstream pi data formats the content migrations read; reference, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/baseline-anchor.py",
+      "path": "src/cadr-tui/renderer/alt-screen.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        f\"aligned with pi {values['release']} \"",
+      "line": "  ;; pi@53fa77ccd layout.ts:268-303 — thumb height is the",
       "occurrences": 1,
-      "reason": "Baseline anchor owner names the fixed pi baseline; reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/baseline-anchor.py",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "\"\"\"Single owner of the fixed pi baseline anchor (goal 18 L2.1).",
+      "line": "           ;; pi@53fa77ccd tui-alt-screen.ts:665-684",
       "occurrences": 1,
-      "reason": "Baseline anchor owner names the fixed pi baseline; reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/event-diff.py",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        default=Path(f\"/tmp/cadr-render-diff-pi-{_baseline_anchor.read_baseline()['short']}\"),",
+      "line": "          ;; pi@53fa77ccd tui-alt-screen.ts:896 — the fullscreen copy",
       "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/render-diff.py",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE",
-      "line": "        (str(Path(f\"/tmp/{_BASELINE_CACHE_NAME}\")).encode(), b\"<PI_BASELINE>\"),",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/render-diff.py",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "_BASELINE_CACHE_NAME = f\"cadr-render-diff-pi-{_BASELINE_SHORT}\"",
+      "line": "         ;; pi@53fa77ccd tui-alt-screen.ts:813-833 — word/line ranges",
       "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/set-baseline.sh",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  echo \"usage: set-baseline.sh <full-40-hex-pi-commit>\" >&2",
+      "line": "       ;; pi@53fa77ccd tui-alt-screen.ts:435-441",
       "occurrences": 1,
-      "reason": "Baseline anchor rewriter names the fixed pi baseline; reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/set-baseline.sh",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "# Usage: scripts/set-baseline.sh <full-pi-commit>",
+      "line": "  ;; (pi@53fa77ccd interactive-mode.ts:788-832 switchTuiMode).",
       "occurrences": 1,
-      "reason": "Baseline anchor rewriter names the fixed pi baseline; reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/verify.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/verify.sh",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "line": "  ;; pi@53fa77ccd components/alt-screen-flash.ts — transient",
       "occurrences": 1,
-      "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-ai/support/release.lisp",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  \"Goal 18 L2.1: the single owner of the fixed pi baseline is the",
+      "line": "  ;; pi@53fa77ccd components/alt-screen-flash.ts:20-38 — transient",
       "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-ai/support/release.lisp",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  (defparameter +cadr-aligned-pi-commit+ short-commit))",
+      "line": "  ;; pi@53fa77ccd components/scroll-view.ts:140-150 — scroll activity",
       "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-ai/support/release.lisp",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  (defparameter +cadr-aligned-pi-distance+ distance)",
+      "line": "  ;; pi@53fa77ccd components/scroll-view.ts:62-70 — :auto shows the",
       "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "src/cadr-ai/support/release.lisp",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  (defparameter +cadr-aligned-pi-release+ release)",
+      "line": "  ;; pi@53fa77ccd tui-alt-screen.ts:147-149 — multi-click selection",
       "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "CHANGELOG.md",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "- Goal 18 L2.1: the fixed pi baseline anchor now has a single owner \u2014 the",
+      "line": "  ;; pi@53fa77ccd tui-alt-screen.ts:236-247 — multiplexers lag when",
       "occurrences": 1,
-      "reason": "Changelog records the baseline-anchor ownership change; the fixed pi baseline is reference input, not Cadr identity."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     },
     {
-      "path": "scripts/set-baseline.sh",
-      "kind": "legacy-env",
-      "token": "PI_AI_MODEL_DATA_PACKAGE",
-      "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
-      "occurrences": 1,
-      "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
-    },
-    {
-      "path": "scripts/set-baseline.sh",
-      "kind": "legacy-env",
-      "token": "PI_AI_MODEL_DATA_SHA256",
-      "line": "echo \"note: PI_AI_MODEL_DATA_PACKAGE / PI_AI_MODEL_DATA_SHA256 in\"",
-      "occurrences": 1,
-      "reason": "The upgrade rewriter names the pinned pi model-data artifact constants that must be refreshed from the new baseline; reference, not Cadr identity."
-    },
-    {
-      "path": "src/cadr-agent/loop/turns.lisp",
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "         ;; pi@53fa77ccd agent-loop.ts:295 converts agent-level",
+      "line": "  ;; pi@53fa77ccd tui-alt-screen.ts:366-378 — scan the scroll content",
       "occurrences": 1,
-      "reason": "Source comment pins the baseline file and line whose convertToLlm contract the provider-context conversion copies."
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd tui-alt-screen.ts:56 — /^\\x1b\\]133;A(?:\\x07|\\x1b\\\\)/.",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd tui-alt-screen.ts:687-713 getClickCount: the count",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; pi@53fa77ccd tui-alt-screen.ts:855-869 — a boundary end (word or",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "single CJK characters, and word runs (pi@53fa77ccd",
+      "occurrences": 1,
+      "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
     }
   ],
   "opaque_files": [

@@ -15,53 +15,56 @@
 (defparameter *baseline-provider-counts*
   '((:amazon-bedrock . 114)
     (:ant-ling . 3)
-    (:anthropic . 15)
+    (:anthropic . 13)
     (:azure-openai-responses . 38)
+    (:baseten . 16)
     (:cerebras . 3)
     (:cloudflare-ai-gateway . 43)
     (:cloudflare-workers-ai . 13)
     (:deepseek . 2)
-    (:fireworks . 16)
-    (:github-copilot . 29)
+    (:fireworks . 17)
+    (:github-copilot . 30)
     (:google . 24)
     (:google-vertex . 12)
-    (:groq . 7)
-    (:huggingface . 51)
+    (:groq . 6)
+    (:huggingface . 58)
     (:kimi-coding . 4)
     (:minimax . 3)
     (:minimax-cn . 3)
-    (:mistral . 30)
+    (:mistral . 31)
     (:moonshotai . 10)
     (:moonshotai-cn . 10)
     (:nvidia . 30)
     (:openai . 38)
     (:openai-codex . 7)
     (:opencode . 59)
-    (:opencode-go . 16)
-    (:openrouter . 303)
-    (:qwen-token-plan . 15)
-    (:qwen-token-plan-cn . 15)
-    (:together . 17)
-    (:vercel-ai-gateway . 193)
+    (:opencode-go . 18)
+    (:openrouter . 335)
+    (:qwen-token-plan . 16)
+    (:qwen-token-plan-cn . 16)
+    (:qwen-token-plan-individual . 7)
+    (:together . 18)
+    (:vercel-ai-gateway . 197)
     (:xai . 3)
     (:xiaomi . 6)
     (:xiaomi-token-plan-ams . 3)
     (:xiaomi-token-plan-cn . 3)
     (:xiaomi-token-plan-sgp . 3)
-    (:zai . 6)
-    (:zai-coding-cn . 6)))
+    (:zai . 4)
+    (:zai-coding-cn . 4)))
 
 (test wave3-provider-registry-is-baseline-exact
   (is
    (equal
     '(:amazon-bedrock :ant-ling :anthropic
-      :azure-openai-responses :cerebras
+      :azure-openai-responses :baseten :cerebras
       :cloudflare-ai-gateway :cloudflare-workers-ai :deepseek
       :fireworks :github-copilot :google :google-vertex :groq
       :huggingface :kimi-coding :minimax :minimax-cn :mistral
       :moonshotai :moonshotai-cn :nvidia :openai :openai-codex
       :opencode :opencode-go :openrouter :qwen-token-plan
-      :qwen-token-plan-cn :radius :together :vercel-ai-gateway
+      :qwen-token-plan-cn :qwen-token-plan-individual :radius
+      :together :vercel-ai-gateway
       :xai :xiaomi :xiaomi-token-plan-ams :xiaomi-token-plan-cn
       :xiaomi-token-plan-sgp :zai :zai-coding-cn)
     (mapcar #'cadr-ai:provider-definition-id
@@ -70,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1153 (length (cadr-ai:list-model-metadata))))
+  (is (= 1220 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))

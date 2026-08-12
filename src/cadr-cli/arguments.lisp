@@ -42,7 +42,9 @@
   (no-context-files-p nil :type boolean)
   list-models
   (offline-p nil :type boolean)
-  (alt-p nil :type boolean)
+  ;; pi@53fa77ccd cli/args.ts:180-186: --tui-mode replaces --alt;
+  ;; NIL means the settings manager's tuiMode decides.
+  tui-mode
   (verbose-p nil :type boolean)
   project-trust-override
   (project-trust-override-supplied-p nil :type boolean)
@@ -107,7 +109,6 @@
     ("--no-context-files" . :no-context-files)
     ("-nc" . :no-context-files)
     ("--offline" . :offline)
-    ("--alt" . :alt)
     ("--verbose" . :verbose)
     ("--approve" . :approve)
     ("-a" . :approve)
@@ -290,8 +291,6 @@
       t))
     (:offline
      (setf (cli-arguments-offline-p arguments) t))
-    (:alt
-     (setf (cli-arguments-alt-p arguments) t))
     (:verbose
      (setf (cli-arguments-verbose-p arguments) t))
     (:approve
@@ -359,6 +358,30 @@
                  (setf
                   (cli-arguments-list-models arguments)
                   t)))
+            ((string= argument "--tui-mode")
+             ;; pi@53fa77ccd cli/args.ts:180-191 — space form only;
+             ;; a missing or dash-prefixed value is not consumed.
+             (let ((mode (first argv)))
+               (cond
+                 ((member mode '("regular" "fullscreen")
+                          :test #'string=)
+                  (setf
+                   (cli-arguments-tui-mode arguments)
+                   (intern (string-upcase mode) :keyword))
+                  (pop argv))
+                 ((or (null mode)
+                      (cli-string-prefix-p "-" mode))
+                  (add-cli-diagnostic
+                   arguments :error
+                   "--tui-mode requires regular or fullscreen"))
+                 (t
+                  (pop argv)
+                  (add-cli-diagnostic
+                   arguments :error
+                   (format
+                    nil
+                    "Invalid TUI mode ~S. Valid values: regular, fullscreen"
+                    mode))))))
             ((or (string= argument "--print")
                  (string= argument "-p"))
              (set-cli-flag arguments :print)
@@ -526,7 +549,7 @@
   (flet ((bold (text) (cli-bold-text stream text)))
     (format
      stream
-     "~A - AI coding assistant with read, bash, edit, write tools~%~%~A~%  cadr [options] [@files...] [messages...]~%~%~A~%  cadr install <source> [-l]     Install extension source and add to settings~%  cadr remove <source> [-l]      Remove extension source from settings~%  cadr uninstall <source> [-l]   Alias for remove~%  cadr update [source|self|cadr]   Update cadr, extensions, or model catalogs~%  cadr list                      List installed extensions from settings~%  cadr config [-l]               Open TUI to enable/disable package resources (Tab switches scope)~%  cadr auth <command>            Print credentials for external clients~%  cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth~%~%~A~%"
+     "~A - AI coding assistant with read, bash, edit, write tools~%~%~A~%  cadr [options] [@files...] [messages...]~%~%~A~%  cadr install <source> [-l]     Install extension source and add to settings~%  cadr remove <source> [-l]      Remove extension source from settings~%  cadr uninstall <source> [-l]   Alias for remove~%  cadr update [source|self|cadr]   Update cadr, extensions, or model catalogs~%  cadr list                      List installed extensions from settings~%  cadr config [-l]               Open TUI to enable/disable package resources (Tab switches scope)~%  cadr auth <command>            Print credentials or check provider readiness~%  cadr <command> --help          Show help for install/remove/uninstall/update/list/config/auth~%~%~A~%"
      (bold "cadr")
      (bold "Usage:")
      (bold "Commands:")
@@ -569,7 +592,7 @@
            "  --export <file>                Export session file to HTML and exit"
            "  --list-models [search]         List available models (with optional fuzzy search)"
            "  --verbose                      Force verbose startup (overrides quietStartup setting)"
-           "  --alt                          Use the alternate-screen TUI in interactive mode"
+           "  --tui-mode <mode>              TUI mode: regular (default) or fullscreen"
            "  --approve, -a                  Trust project-local files for this run"
            "  --no-approve, -na              Ignore project-local files for this run"
            "  --offline                      Disable startup network operations (same as CADR_OFFLINE=1)"
@@ -599,7 +622,7 @@
       (format stream "~%"))
     (format
      stream
-     "~%~A~%  # Print a provider API key for an external client~%  cadr auth print-api-key --provider openai --model gpt-5.5~%~%  # Print an OAuth bearer token for an external client (refreshes if expired)~%  cadr auth print-bearer-token --provider openai-codex --model gpt-5.5~%~%  # Interactive mode~%  cadr~%~%  # Interactive mode with initial prompt~%  cadr \"List all .ts files in src/\"~%~%  # Include files in initial message~%  cadr @prompt.md @image.png \"What color is the sky?\"~%~%  # Non-interactive mode (process and exit)~%  cadr -p \"List all .ts files in src/\"~%~%  # Multiple messages (interactive)~%  cadr \"Read package.json\" \"What dependencies do we have?\"~%~%  # Continue previous session~%  cadr --continue \"What did we discuss?\"~%~%  # Start a named session~%  cadr --name \"Refactor auth module\"~%~%  # Use different model~%  cadr --provider openai --model gpt-4o-mini \"Help me refactor this code\"~%~%  # Use model with provider prefix (no --provider needed)~%  cadr --model openai/gpt-4o \"Help me refactor this code\"~%~%  # Use model with thinking level shorthand~%  cadr --model sonnet:high \"Solve this complex problem\"~%~%  # Limit model cycling to specific models~%  cadr --models claude-sonnet,claude-haiku,gpt-4o~%~%  # Limit to a specific provider with glob pattern~%  cadr --models \"github-copilot/*\"~%~%  # Cycle models with fixed thinking levels~%  cadr --models sonnet:high,haiku:low~%~%  # Start with a specific thinking level~%  cadr --thinking high \"Solve this complex problem\"~%~%  # Read-only mode (no file modifications possible)~%  cadr --tools read,grep,find,ls -p \"Review the code in src/\"~%~%  # Disable one tool while keeping the rest available~%  cadr --exclude-tools ask_question~%~%  # Export a session file to HTML~%  cadr --export ~~/.cadr/agent/sessions/--path--/session.jsonl~%  cadr --export session.jsonl output.html~%~%"
+     "~%~A~%  # Print a provider API key for an external client~%  cadr auth print-api-key --provider openai~%~%  # Print an OAuth bearer token for an external client (refreshes if expired)~%  cadr auth print-bearer-token --provider openai-codex~%~%  # Interactive mode~%  cadr~%~%  # Interactive mode with initial prompt~%  cadr \"List all .ts files in src/\"~%~%  # Include files in initial message~%  cadr @prompt.md @image.png \"What color is the sky?\"~%~%  # Non-interactive mode (process and exit)~%  cadr -p \"List all .ts files in src/\"~%~%  # Multiple messages (interactive)~%  cadr \"Read package.json\" \"What dependencies do we have?\"~%~%  # Continue previous session~%  cadr --continue \"What did we discuss?\"~%~%  # Start a named session~%  cadr --name \"Refactor auth module\"~%~%  # Use different model~%  cadr --provider openai --model gpt-4o-mini \"Help me refactor this code\"~%~%  # Use model with provider prefix (no --provider needed)~%  cadr --model openai/gpt-4o \"Help me refactor this code\"~%~%  # Use model with thinking level shorthand~%  cadr --model sonnet:high \"Solve this complex problem\"~%~%  # Limit model cycling to specific models~%  cadr --models claude-sonnet,claude-haiku,gpt-4o~%~%  # Limit to a specific provider with glob pattern~%  cadr --models \"github-copilot/*\"~%~%  # Cycle models with fixed thinking levels~%  cadr --models sonnet:high,haiku:low~%~%  # Start with a specific thinking level~%  cadr --thinking high \"Solve this complex problem\"~%~%  # Read-only mode (no file modifications possible)~%  cadr --tools read,grep,find,ls -p \"Review the code in src/\"~%~%  # Disable one tool while keeping the rest available~%  cadr --exclude-tools ask_question~%~%  # Export a session file to HTML~%  cadr --export ~~/.cadr/agent/sessions/--path--/session.jsonl~%  cadr --export session.jsonl output.html~%~%"
      (bold "Examples:"))
     (format stream "~A~%" (bold "Environment Variables:"))
     (dolist

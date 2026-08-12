@@ -52,6 +52,7 @@ targets="$(
     "$PROJECT_DIRECTORY/test" \
     "$PROJECT_DIRECTORY/README.md" \
     "$PROJECT_DIRECTORY/docs" \
+    "$PROJECT_DIRECTORY/examples" \
     2>/dev/null \
     | grep -v -E 'docs/(proposals|progress|acceptance)/' \
     | grep -v -E '\.tmp|node_modules'

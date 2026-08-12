@@ -37,7 +37,7 @@
 
 (defun alias-model-id-p (id)
   (or
-   (uiop:string-suffix-p "-latest" id)
+   (uiop:string-suffix-p id "-latest")
    (not
     (cl-ppcre:scan "-[0-9]{8}$" id))))
 

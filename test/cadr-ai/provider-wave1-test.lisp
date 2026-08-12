@@ -46,6 +46,11 @@
     :ant-ling :openai-completions
     "https://api.ant-ling.com/v1"
     "ANT_LING_API_KEY" "Ring-2.6-1T" 3)
+(define-wave1-provider-test
+    baseten-provider-matches-fixed-catalog
+    :baseten :openai-completions
+    "https://inference.baseten.co/v1"
+    "BASETEN_API_KEY" "zai-org/GLM-5.2" 16)
 
 (define-wave1-provider-test
     cerebras-provider-matches-fixed-catalog
@@ -57,13 +62,13 @@
     groq-provider-matches-fixed-catalog
     :groq :openai-completions
     "https://api.groq.com/openai/v1"
-    "GROQ_API_KEY" "openai/gpt-oss-120b" 7)
+    "GROQ_API_KEY" "openai/gpt-oss-120b" 6)
 
 (define-wave1-provider-test
     huggingface-provider-matches-fixed-catalog
     :huggingface :openai-completions
     "https://router.huggingface.co/v1"
-    "HF_TOKEN" "moonshotai/Kimi-K2.6" 51)
+    "HF_TOKEN" "moonshotai/Kimi-K2.6" 58)
 
 (define-wave1-provider-test
     minimax-provider-matches-fixed-catalog
@@ -93,19 +98,24 @@
     qwen-token-plan-provider-matches-fixed-catalog
     :qwen-token-plan :openai-completions
     "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
-    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.7-max" 15)
+    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.7-max" 16)
 
 (define-wave1-provider-test
     qwen-token-plan-cn-provider-matches-fixed-catalog
     :qwen-token-plan-cn :openai-completions
     "https://token-plan.cn-beijing.maas.aliyuncs.com/compatible-mode/v1"
-    "QWEN_TOKEN_PLAN_CN_API_KEY" "qwen3.7-max" 15)
+    "QWEN_TOKEN_PLAN_CN_API_KEY" "qwen3.7-max" 16)
+(define-wave1-provider-test
+    qwen-token-plan-individual-provider-matches-fixed-catalog
+    :qwen-token-plan-individual :openai-completions
+    "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
+    "QWEN_TOKEN_PLAN_API_KEY" "qwen3.8-max" 7)
 
 (define-wave1-provider-test
     together-provider-matches-fixed-catalog
     :together :openai-completions
     "https://api.together.ai/v1"
-    "TOGETHER_API_KEY" "moonshotai/Kimi-K2.6" 17)
+    "TOGETHER_API_KEY" "moonshotai/Kimi-K2.6" 18)
 
 (define-wave1-provider-test
     xiaomi-provider-matches-fixed-catalog

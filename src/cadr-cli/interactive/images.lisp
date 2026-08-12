@@ -224,6 +224,67 @@
                      "[Image omitted: could not be converted to a supported inline image format.]"
                      "[Image omitted: could not be resized below the inline image size limit.]"))))))))
 
+(defun normalize-tool-result-images
+    (content &key (auto-resize-p t))
+  ;; pi@53fa77ccd utils/tool-result-images.ts — normalize image blocks
+  ;; once as tool results enter history.  Processing failures keep the
+  ;; original block (the tool produced it; a missing backend must not
+  ;; delete tool output), and untouched images return the original
+  ;; content array unchanged.
+  (unless (find-if
+           (lambda (block)
+             (typep block 'cadr-ai:image-content))
+           content)
+    (return-from normalize-tool-result-images content))
+  (let ((normalized nil)
+        (changed nil))
+    (dolist (block content)
+      (if (not (typep block 'cadr-ai:image-content))
+          (push block normalized)
+          (let* ((bytes
+                   (decode-base64-bytes
+                    (cadr-ai:image-content-data block)))
+                 (processed
+                   (and bytes
+                        (handler-case
+                            (process-image-bytes
+                             bytes
+                             (cadr-ai:image-content-mime-type
+                              block)
+                             :auto-resize-p auto-resize-p)
+                          (condition () nil)))))
+            (if (or (null bytes) (null processed))
+                (push block normalized)
+                (let ((new-bytes
+                        (image-process-result-bytes processed))
+                      (new-mime
+                        (image-process-result-mime-type processed))
+                      (hints
+                        (image-process-result-hints processed)))
+                  (if (and (null hints)
+                           (string= new-mime
+                                    (cadr-ai:image-content-mime-type
+                                     block))
+                           (equalp new-bytes bytes))
+                      (push block normalized)
+                      (progn
+                        (push
+                         (cadr-ai:make-image-content
+                          :data
+                          (encode-base64-bytes new-bytes)
+                          :mime-type new-mime)
+                         normalized)
+                        (when hints
+                          (push
+                           (cadr-ai:make-text-content
+                            :text
+                            (format nil "~{~A~^~%~}" hints))
+                           normalized))
+                        (setf changed t))))))))
+    (if changed
+        (nreverse normalized)
+        content)))
+
 (defun process-image-file (path)
   (process-image-data (read-binary-file path)))
 

@@ -2,6 +2,7 @@
 
 (defparameter +kimi-coding-oauth-metadata+
   (make-oauth-provider-metadata
+   :is-subscription-p t
    :provider-name "Kimi For Coding"
    :method-name "Kimi Code (subscription)"
    :login-label "Sign in with Kimi Code"))

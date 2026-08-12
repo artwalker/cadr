@@ -1,6 +1,7 @@
-# Goal 18 I7 收尾：十个基线分支的覆盖豁免提案（待裁决）
+# Goal 18 I7 收尾：十个基线分支的覆盖豁免提案（已裁决）
 
-状态：**待用户裁决。** 本提案只申请豁免判定，不改任何产品行为。
+状态：**已裁决（`USER-2026-08-10-001`，落账提交 `b435ef522`）。** 本提案只申请豁免判定，
+不改任何产品行为。
 
 ## 背景
 
@@ -13,8 +14,9 @@ goal18.md I7 要求基线可见字符串清单的每个 printable 分支被捕�
 
 豁免机制：`test/fixtures/render-diff/visible-string-exemptions.json`（schema
 3，fail-closed：未知、陈旧、重复或已有真实捕获的豁免条目都会使门禁失败）。
-现有 `obstacleKind` 枚举不含"防御性回退/权限依赖失败臂"，**需新增一个
-kind**（建议 `unreachable-in-harness`），这本身也在本次裁决范围内。
+现有 `obstacleKind` 枚举不含"防御性回退/权限依赖失败臂"，故随本案新增
+`unreachable-in-harness` kind（同时为防御性回退分支引入
+`unreachable-in-baseline`），二者均已随裁决落账。
 
 ## A 类：防御性回退分支（非 Error 抛值才触达，用户输入不可达）——5 分支
 
@@ -23,11 +25,11 @@ kind**（建议 `unreachable-in-harness`），这本身也在本次裁决范围�
 
 | 分支 | 位置 | 审计依据 |
 |---|---|---|
-| `B-fd13d93a29bf` | `main.ts:141` "Failed to parse auth command" | `credential-print.ts` 全部 12 个抛点均为 `CredentialPrintError`（:38,51,56,68,71,74,99,111,140,143,145,149）；`parseArgs` 只记录 diagnostics 不抛 |
-| `B-3f0215f4a9d2` | `main.ts:163` "Failed to resolve credential" | `resolveCredentialForPrint` 只抛 `CredentialPrintError`；`ModelRuntime.create({allowModelNetwork:false})` 的 models.json 加载错误经 `model-config.ts:251,261,271` 以返回值传达而非抛出 |
-| `B-fa0be7fade22` | `main.ts:585` "Failed to export session" | `exportFromFile` 全部抛点带 message（`export-html/index.ts:245,248,293`） |
-| `B-85d3c79ec77b` | `package-manager-cli.ts:731` "Unknown model catalog refresh error" | `refreshModelCatalogs` 的网络与解析失败均带 message |
-| `B-c5a60ab5ff3b` | `package-manager-cli.ts:868` "Unknown package command error" | 两处 catch-all 包裹的操作失败均带 message |
+| `B-fd13d93a29bf` | `main.ts:150` "Failed to parse auth command" | `credential-print.ts` 全部 12 个抛点均为 `CredentialPrintError`（:38,51,56,68,71,74,99,111,140,143,145,149）；`parseArgs` 只记录 diagnostics 不抛 |
+| `B-3f0215f4a9d2` | `main.ts:211` "Failed to resolve credential" | `resolveCredentialForPrint` 只抛 `CredentialPrintError`；`ModelRuntime.create({allowModelNetwork:false})` 的 models.json 加载错误经 `model-config.ts:251,261,271` 以返回值传达而非抛出 |
+| `B-fa0be7fade22` | `main.ts:633` "Failed to export session" | `exportFromFile` 全部抛点带 message（`export-html/index.ts:245,248,293`） |
+| `B-85d3c79ec77b` | `package-manager-cli.ts:733` "Unknown model catalog refresh error" | `refreshModelCatalogs` 的网络与解析失败均带 message |
+| `B-c5a60ab5ff3b` | `package-manager-cli.ts:870` "Unknown package command error" | 两处 catch-all 包裹的操作失败均带 message |
 
 cadr 侧对应路径已实现同形回退文案（非凭据错误走各自 fallback 消息）。
 
@@ -47,7 +49,7 @@ cadr 侧：迁移失败臂经 `*migration-rename-function*` 注入缝配 FiveAM
 
 | 分支 | 位置 | 说明 |
 |---|---|---|
-| `B-6e91fc06717b` | `tools-manager.ts:347` "not found. Install with: pkg install " | 仅 `platform() === "android"`（Termux）触达；适用既有 `unavailable-operating-system` kind |
+| `B-6e91fc06717b` | `tools-manager.ts:349` "not found. Install with: pkg install " | 仅 `platform() === "android"`（Termux）触达；适用既有 `unavailable-operating-system` kind |
 
 ## 随本案一并请求裁决的既有挂起项
 
@@ -67,6 +69,7 @@ cadr 侧：迁移失败臂经 `*migration-rename-function*` 注入缝配 FiveAM
 
 ## 裁决后的落账动作
 
-用户批准后：A/B 类 9 分支以新 kind（`unreachable-in-harness`）入豁免注册表，
-C 类 1 分支以 `unavailable-operating-system` 入册，每条附
-`userDecisionId`、`baselineEvidence` 与 probe；全量门禁转绿。
+已落账（`b435ef522`）：A 类 5 分支以 `unreachable-in-baseline`、B 类 4 分支以
+`unreachable-in-harness`、C 类 1 分支以 `unavailable-operating-system` 全部
+写入豁免注册表，每条附 `userDecisionId: USER-2026-08-10-001`、
+`baselineEvidence` 与 probe；全量门禁在该 10 分支上转绿。

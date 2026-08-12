@@ -12,17 +12,21 @@
 | 界面构造器与构造点 | `new *Component(` 全量扫描（git 提取） | 15 构造器 / 22 站点 | `baseline-interface-inventory.json` 字段与 git 重提取比对 | 空 |
 | 登录对话框形态 | `login-dialog.ts` 的 `show*` 公开方法（git 提取，I2 新增） | 8 | `loginDialogCoverage` 映射：5 个经差分场景检查点，3 个（showDetails/showInfo/showPrompt，无登录流在 harness 可达）经 construction 逐字节驱动 | 空 |
 | 扩展事件 | `types.ts` `ExtensionEvent` 联合展开（git 提取，I2 新增） | 33 叶子事件 | FiveAM 断言 cadr 集合 = 派生集合 + 已裁决拆分（`tool_call`/`tool_result` → before/after/error） | 空 |
-| 可见字符串分支 | 219 源文件 × 已建模 sink 提取（既有） | 461 sites / 762 printable 分支 | 逐分支捕获或结构化豁免 | **10 分支待裁决**（见下） |
+| 可见字符串分支 | 246 源文件 × 已建模 sink 提取（既有，71 个产出条目） | 508 sites / 1117 分支条目；其中 printable 义务 479 sites / 787 分支 | 逐分支捕获或结构化豁免 | 空（10 分支已裁决豁免，见下） |
 | 未建模 sink 候选 | 反向清点：全部 console/process-write/show*/print* 调用中带固定文本且不落任何清单站点者（I7.3 新增） | 14 | `visible-string-unmodeled-review.json` 逐条 verdict + reason，门禁对账 | 空 |
 
-## 差集中唯一未闭合项：10 个待裁决豁免
+## 差集的豁免闭合：10 分支已裁决（USER-2026-08-10-001）
 
-A 类防御性回退 5（`main.ts:141/163/585`、`package-manager-cli.ts:731/868`）、
-B 类权限依赖失败臂 4（`migrations.ts:148`、`file-processor.ts:80`）、
-C 类 Android 1（`tools-manager.ts:347`）。
-逐条审计依据与所需新 `obstacleKind` 见
-`docs/proposals/goal18-i7-tail-exemptions.md`。**该提案获批前全量门禁在此
-10 分支上保持红灯，这是有意为之的待裁决状态。**
+A 类防御性回退 5（`main.ts:150/211/633`、`package-manager-cli.ts:733/870`）、
+B 类权限依赖失败臂 4（`migrations.ts:148`、`file-processor.ts:80`）、C 类
+Android 1（`tools-manager.ts:349`），逐条审计依据见
+`docs/proposals/goal18-i7-tail-exemptions.md`。2026-08-10 用户已裁决
+（`userDecisionId: USER-2026-08-10-001`，落账提交 `b435ef522`）：A 类 5 分支
+以 `unreachable-in-baseline`、B 类 4 分支以新增的 `unreachable-in-harness`
+、C 类 1 分支以既有 `unavailable-operating-system` 全部入豁免注册表
+（`test/fixtures/render-diff/visible-string-exemptions.json` schema 3，每条
+附 `baselineEvidence` 与 probe）。注册表 fail-closed 语义不变：未知、陈旧、
+重复或已有真实捕获的豁免条目仍会使门禁失败；该 10 分支不再属于未闭合项。
 
 ## 选择不机械派生的类别及理由（交裁决）
 

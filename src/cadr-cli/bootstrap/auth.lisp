@@ -100,23 +100,35 @@
            (let ((selection
                    (and on-change
                         (funcall on-change provider :login))))
-             (format output "~A.~@[ Selected ~A.~] Credentials saved to ~A~%"
-                     (format nil "~A ~A" action-label
-                             (provider-display-name))
-                     (and (stringp selection) selection)
-                     (namestring (auth-file-path)))
-             (when (eq selection :no-default-model)
-               (error
-                'cadr-ai:configuration-error
-                :message
-                (format
-                 nil
-                 "~A ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
-                 action-label
-                 (provider-display-name)
-                 provider)))
+             ;; pi@53fa77ccd interactive-mode.ts:5548,5662 — when the
+             ;; credential saved but the local model/auth snapshot could
+             ;; not be synchronized, the synchronization error replaces
+             ;; the success status.
+             (let ((sync-error
+                     (model-registry-error registry)))
+               (if sync-error
+                   (format output "~A ~A, but local model state could not be synchronized: ~A~%"
+                           action-label
+                           (provider-display-name)
+                           sync-error)
+                   (progn
+                     (format output "~A.~@[ Selected ~A.~] Credentials saved to ~A~%"
+                             (format nil "~A ~A" action-label
+                                     (provider-display-name))
+                             (and (stringp selection) selection)
+                             (namestring (auth-file-path)))
+                     (when (eq selection :no-default-model)
+                       (error
+                        'cadr-ai:configuration-error
+                        :message
+                        (format
+                         nil
+                         "~A ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
+                         action-label
+                         (provider-display-name)
+                         provider)))))
              (finish-output output)
-             t)))
+             t))))
       (cond
         ((and definition
               (string= command "/login")

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 PROJECT_DIRECTORY=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
-EXPECTED_SOURCE_LEDGER_ENTRIES=595
+EXPECTED_SOURCE_LEDGER_ENTRIES=670
 FIXTURE=$(mktemp -d /tmp/cadr-source-drift-test.XXXXXX)
 cleanup() {
   rm -rf -- "$FIXTURE"
@@ -115,7 +115,7 @@ if [ -n "$NON_C_UTF8_LOCALE" ]; then
     "Source parity ledger entries: $EXPECTED_SOURCE_LEDGER_ENTRIES" \
     "$FIXTURE/non-c-locale-ledger.out"
   grep -Fq \
-    "Source parity ledger path SHA-256: 242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d" \
+    "Source parity ledger path SHA-256: 44d074219e3a808f91653dc0366b562fa1d3629965879e319dfb31ae253912ea" \
     "$FIXTURE/non-c-locale-ledger.out"
 fi
 
@@ -177,7 +177,7 @@ awk '
 ' "$SOURCE_LEDGER" >"$BAD_SHA_LEDGER"
 expect_ledger_failure \
   bad-sha "$BAD_SHA_LEDGER" \
-  "does not match recorded 242d90e03ae708b9ea30d71747052af80f6d19e62eec3990a5863c62a614965d"
+  "does not match recorded 44d074219e3a808f91653dc0366b562fa1d3629965879e319dfb31ae253912ea"
 
 BAD_TOTAL_LEDGER="$FIXTURE/bad-total-ledger.md"
 awk '

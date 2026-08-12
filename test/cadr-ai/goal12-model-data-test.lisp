@@ -10,7 +10,7 @@
             (uiop:read-file-string
              (merge-pathnames ".manifest.json" directory)
              :external-format :utf-8))))
-    (is (= 37 (hash-table-count structure)))
+    (is (= 39 (hash-table-count structure)))
     (is (string=
          (cadr-ai::json-get manifest "structureHash")
          (cadr-ai::model-data-structure-hash structure)))
@@ -48,7 +48,7 @@
   (is (null
        (cadr-ai::models-dev-effort-thinking-level-map
         '((:type :budget-tokens :min 128 :max 8192)))))
-  (is (string= "2026-07-29T22:27:21.904Z"
+  (is (string= "2026-08-07T05:53:06.539Z"
                (cadr-ai::get-builtin-model-data-generated-at))))
 
 (test goal12-test-image-generator-writes-a-self-contained-png

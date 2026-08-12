@@ -37,7 +37,7 @@ import { InteractiveThemeController } from "../src/modes/interactive/theme/theme
 import { runPrintMode } from "../src/modes/print-mode.ts";
 import { showLlamaUi } from "../src/extensions/llama/ui.ts";
 import { handleConfigCommand, handlePackageCommand } from "../src/package-manager-cli.ts";
-import { printCredentialPrintHelp } from "../src/cli/credential-print.ts";
+import { printAuthCommandHelp } from "../src/cli/auth-command.ts";
 import { createGrepToolDefinition } from "../src/core/tools/grep.ts";
 import { showDeprecationWarnings } from "../src/migrations.ts";
 import { runMigrations } from "../src/migrations.ts";
@@ -297,22 +297,22 @@ getSelfUpdateUnavailableInstruction("@earendil-works/pi-coding-agent");
 await restoreModelFromSession("provider-one", "model-one", undefined, true, {
 	getModel: () => model,
 	hasConfiguredAuth: () => true,
-	getAvailable: async () => [model],
+	getAvailableSnapshot: () => [model],
 });
 await restoreModelFromSession("missing", "missing", model, true, {
 	getModel: () => undefined,
 	hasConfiguredAuth: () => false,
-	getAvailable: async () => [model],
+	getAvailableSnapshot: () => [model],
 });
 await restoreModelFromSession("missing", "missing", undefined, true, {
 	getModel: () => undefined,
 	hasConfiguredAuth: () => false,
-	getAvailable: async () => [model],
+	getAvailableSnapshot: () => [model],
 });
 await restoreModelFromSession("provider-one", "model-one", undefined, true, {
 	getModel: () => model,
 	hasConfiguredAuth: () => false,
-	getAvailable: async () => [model],
+	getAvailableSnapshot: () => [model],
 });
 
 const controller = new InteractiveThemeController(
@@ -406,13 +406,13 @@ const waitForLlamaState = async (predicate: () => boolean): Promise<void> => {
 };
 await llamaCommand.handler("", {
 	mode: "tui",
-	modelRegistry: {
-		getProviderAuth: async () => ({
-			auth: { baseUrl: "http://llama.test/v1" },
-			env: { LLAMA_BASE_URL: "http://llama.test" },
-		}),
-		refresh: async () => {},
-	},
+		modelRegistry: {
+			getProviderAuth: async () => ({
+				auth: { baseUrl: "http://llama.test/v1" },
+				env: { LLAMA_BASE_URL: "http://llama.test" },
+			}),
+			refresh: async () => ({ aborted: false, errors: new Map() }),
+		},
 	ui: {
 		notify() {},
 		custom: async (factory: any) => new Promise<void>((resolve, reject) => {
@@ -466,7 +466,7 @@ process.exitCode = 0;
 await handlePackageCommand(["update", "--models"]);
 process.exitCode = 0;
 
-printCredentialPrintHelp();
+printAuthCommandHelp();
 createGrepToolDefinition("/tmp").renderResult(
 	{
 		content: [{ type: "text", text: "long line" }],

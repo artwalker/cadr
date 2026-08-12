@@ -9,6 +9,11 @@
   (mouse-p t :type boolean)
   (show-hardware-cursor-p nil :type boolean)
   (clear-on-shrink-p nil :type boolean)
+  ;; pi@53fa77ccd components/scroll-view.ts:62-70 — :auto shows the
+  ;; thumb transiently after scroll activity, :always reserves a
+  ;; column, :hidden never paints.
+  (scrollbar-mode :auto :type symbol)
+  (scrollbar-activity-at nil :type (or null double-float))
   open-url-function
   (last-document nil :type list)
   (prepared-source-lines nil :type list)
@@ -22,8 +27,25 @@
   selection-focus
   pressed-url
   (selection-dragged-p nil :type boolean)
+  ;; pi@53fa77ccd tui-alt-screen.ts:147-149 — multi-click selection
+  ;; state: double click selects the word, triple click the line, and
+  ;; drags extend by the same granularity.
+  (selection-granularity :character :type symbol)
+  selection-initial-range
+  (last-click-at nil :type (or null double-float))
+  (last-click-count 0 :type (integer 0 *))
+  (last-click-row -1 :type integer)
+  (last-click-word-start -1 :type integer)
+  (last-click-word-end -1 :type integer)
+  ;; pi@53fa77ccd components/alt-screen-flash.ts — transient
+  ;; reverse-video messages composited top-right in fullscreen mode.
+  (flash-entries nil :type list)
+  (flash-next-id 0 :type integer)
   image-protocol
   saved-capabilities
+  ;; Stashed main-screen render state for live TUI-mode round-trips
+  ;; (pi@53fa77ccd interactive-mode.ts:788-832 switchTuiMode).
+  saved-main-screen-state
   (previous-lines nil :type list)
   (previous-image-ids nil :type list)
   (previous-width 0 :type (integer 0 *))
@@ -43,6 +65,7 @@
        (mouse-p t)
        (show-hardware-cursor-p nil)
        (clear-on-shrink-p nil)
+      (scrollbar-mode :auto)
        open-url-function)
   (%make-terminal-renderer
    :terminal terminal
@@ -54,7 +77,54 @@
    (not (null show-hardware-cursor-p))
    :clear-on-shrink-p
    (not (null clear-on-shrink-p))
+   :scrollbar-mode
+   (if (member scrollbar-mode '(:auto :always :hidden))
+       scrollbar-mode
+       :auto)
    :open-url-function open-url-function))
+
+(defun renderer-flash (renderer message &optional (duration-ms 1000))
+  ;; pi@53fa77ccd components/alt-screen-flash.ts:20-38 — transient
+  ;; message, expiring DURATION-MS after it is shown.
+  (incf (terminal-renderer-flash-next-id renderer))
+  (push
+   (list
+    (terminal-renderer-flash-next-id renderer)
+    message
+    (+ (/ (get-internal-real-time)
+          (coerce internal-time-units-per-second 'double-float))
+       (/ (max 0 duration-ms) 1000.0d0)))
+   (terminal-renderer-flash-entries renderer))
+  renderer)
+
+(defun renderer-live-flash-lines (renderer width)
+  ;; Expire elapsed entries and return the surviving flash lines,
+  ;; oldest first: reverse-video, space-padded, truncated to WIDTH.
+  (let ((now
+          (/ (get-internal-real-time)
+             (coerce internal-time-units-per-second 'double-float))))
+    (setf
+     (terminal-renderer-flash-entries renderer)
+     (remove-if
+      (lambda (entry) (<= (third entry) now))
+      (terminal-renderer-flash-entries renderer)))
+    (mapcar
+     (lambda (entry)
+       (let ((message
+               (truncate-to-width
+                (format nil " ~A " (second entry))
+                width "")))
+         (format nil "~C[7m~A~C[27m"
+                 #\Escape message #\Escape)))
+     ;; entries accumulate newest-first; render oldest first
+     (reverse (terminal-renderer-flash-entries renderer)))))
+
+(defun renderer-note-scrollbar-activity (renderer)
+  (setf
+   (terminal-renderer-scrollbar-activity-at renderer)
+   (/ (get-internal-real-time)
+      (coerce internal-time-units-per-second 'double-float)))
+  renderer)
 
 (defun renderer-set-clear-on-shrink
     (renderer enabled-p)
@@ -92,12 +162,28 @@ in-place repaint executes.  Production leaves this NIL; the harness
   (format nil "~C[?7l" #\Escape))
 (defparameter +autowrap-enable+
   (format nil "~C[?7h" #\Escape))
-(defparameter +mouse-enable+
-  (format nil "~C[?1000h~C[?1002h~C[?1006h"
-          #\Escape #\Escape #\Escape))
+(defun multiplexer-mouse-environment-p ()
+  ;; pi@53fa77ccd tui-alt-screen.ts:236-247 — multiplexers lag when
+  ;; every pointer movement is forwarded, so they get button-motion
+  ;; tracking (1002) while other terminals get all-motion (1003).
+  (let ((term
+          (string-downcase (or (uiop:getenv "TERM") ""))))
+    (or (uiop:getenv "TMUX")
+        (uiop:getenv "ZELLIJ")
+        (uiop:getenv "STY")
+        (uiop:string-prefix-p "tmux" term)
+        (uiop:string-prefix-p "screen" term))))
+
+(defun mouse-enable-sequence ()
+  (if (multiplexer-mouse-environment-p)
+      (format nil "~C[?1000h~C[?1002h~C[?1004h~C[?1006h"
+              #\Escape #\Escape #\Escape #\Escape)
+      (format nil "~C[?1000h~C[?1002h~C[?1003h~C[?1004h~C[?1006h"
+              #\Escape #\Escape #\Escape #\Escape #\Escape)))
+
 (defparameter +mouse-disable+
-  (format nil "~C[?1006l~C[?1002l~C[?1000l"
-          #\Escape #\Escape #\Escape))
+  (format nil "~C[?1006l~C[?1004l~C[?1003l~C[?1002l~C[?1000l"
+          #\Escape #\Escape #\Escape #\Escape #\Escape))
 
 (defun alt-screen-renderer-p (renderer)
   (terminal-renderer-alt-screen-p renderer))
@@ -145,6 +231,14 @@ in-place repaint executes.  Production leaves this NIL; the harness
      (terminal-renderer-selection-dragged-p
       renderer)
      nil
+     (terminal-renderer-selection-granularity
+      renderer)
+     :character
+     (terminal-renderer-selection-initial-range
+      renderer)
+     nil
+     (terminal-renderer-last-click-at renderer)
+     nil
      (terminal-renderer-previous-lines renderer)
      nil
      (terminal-renderer-previous-width renderer)
@@ -178,7 +272,7 @@ in-place repaint executes.  Production leaves this NIL; the harness
              (if
                  (terminal-renderer-mouse-p
                   renderer)
-                 +mouse-enable+
+                 (mouse-enable-sequence)
                  "")
              #\Escape #\Escape #\Escape)))
   renderer)
@@ -218,6 +312,9 @@ in-place repaint executes.  Production leaves this NIL; the harness
         renderer)
        (terminal-renderer-alt-screen-active-p
         renderer))
+    (setf
+     (terminal-renderer-flash-entries renderer)
+     nil)
     (terminal-write
      (terminal-renderer-terminal renderer)
      (format
@@ -284,10 +381,110 @@ in-place repaint executes.  Production leaves this NIL; the harness
        nil)))
   renderer)
 
+(defun renderer-enter-alt-screen-live (renderer)
+  "Switch RENDERER from regular to fullscreen mode while running.
+Stashes the main-screen render state, flips ALT-SCREEN-P, and emits
+the alternate-screen entry sequence.  Callers switch the controlling
+mode flag and force a full repaint afterwards."
+  (setf
+   (terminal-renderer-saved-main-screen-state renderer)
+   (list
+    :previous-lines
+    (terminal-renderer-previous-lines renderer)
+    :previous-width
+    (terminal-renderer-previous-width renderer)
+    :previous-height
+    (terminal-renderer-previous-height renderer)
+    :cursor-row
+    (terminal-renderer-cursor-row renderer)
+    :hardware-cursor-row
+    (terminal-renderer-hardware-cursor-row renderer)
+    :max-lines-rendered
+    (terminal-renderer-max-lines-rendered renderer)
+    :previous-viewport-top
+    (terminal-renderer-previous-viewport-top renderer)))
+  (setf
+   (terminal-renderer-alt-screen-p renderer) t)
+  (renderer-start renderer)
+  renderer)
+
+(defun renderer-exit-alt-screen-live (renderer)
+  "Switch RENDERER from fullscreen back to regular mode while running.
+Emits the alternate-screen exit sequence without replaying the
+document (the baseline's preserveScreen stop), restores the stashed
+main-screen render state, and clears ALT-SCREEN-P.  Callers switch the
+controlling mode flag and repaint afterwards."
+  (when
+      (terminal-renderer-alt-screen-active-p renderer)
+    (terminal-write
+     (terminal-renderer-terminal renderer)
+     (format
+      nil "~C[?2026h~A~A~A~C[?2026l"
+      #\Escape
+      (if
+          (eq :kitty
+              (terminal-renderer-image-protocol
+               renderer))
+          (delete-all-kitty-images)
+          "")
+      (if
+          (terminal-renderer-mouse-p renderer)
+          +mouse-disable+
+          "")
+      +autowrap-enable+
+      #\Escape))
+    (terminal-write
+     (terminal-renderer-terminal renderer)
+     (format
+      nil "~C[?2026h~A~C[?25h~C[?2026l"
+      #\Escape +alt-screen-exit+
+      #\Escape #\Escape))
+    (setf
+     (terminal-renderer-alt-screen-active-p renderer)
+     nil))
+  (when
+      (and
+       (terminal-renderer-saved-capabilities renderer)
+       (not
+        (consp
+         (terminal-renderer-saved-capabilities renderer))))
+    (set-terminal-capabilities
+     (terminal-renderer-saved-capabilities renderer))
+    (setf
+     (terminal-renderer-saved-capabilities renderer)
+     nil))
+  (setf
+   (terminal-renderer-alt-screen-p renderer) nil)
+  (let ((main-state
+          (terminal-renderer-saved-main-screen-state renderer)))
+    (when main-state
+      (setf
+       (terminal-renderer-previous-lines renderer)
+       (getf main-state :previous-lines)
+       (terminal-renderer-previous-width renderer)
+       (getf main-state :previous-width)
+       (terminal-renderer-previous-height renderer)
+       (getf main-state :previous-height)
+       (terminal-renderer-cursor-row renderer)
+       (getf main-state :cursor-row)
+       (terminal-renderer-hardware-cursor-row renderer)
+       (getf main-state :hardware-cursor-row)
+       (terminal-renderer-max-lines-rendered renderer)
+       (getf main-state :max-lines-rendered)
+       (terminal-renderer-previous-viewport-top renderer)
+       (getf main-state :previous-viewport-top))))
+  (setf
+   (terminal-renderer-saved-main-screen-state renderer)
+   nil)
+  (setf
+   (terminal-renderer-invalid-p renderer) t)
+  renderer)
+
 (defun renderer-scroll-by (renderer lines)
   (when (zerop lines)
     (return-from renderer-scroll-by
       renderer))
+  (renderer-note-scrollbar-activity renderer)
   (let* ((terminal
            (terminal-renderer-terminal renderer))
          (height
@@ -319,30 +516,89 @@ in-place repaint executes.  Production leaves this NIL; the harness
   renderer)
 
 (defun renderer-scroll-to-top (renderer)
-  (setf
-   (terminal-renderer-scroll-top renderer) 0
-   (terminal-renderer-stick-to-bottom-p
-    renderer)
-   (<=
-    (terminal-renderer-content-line-count
-     renderer)
-    (terminal-rows
-     (terminal-renderer-terminal renderer))))
+  ;; pi@53fa77ccd components/scroll-view.ts:140-150 — scroll activity
+  ;; is marked only when the position or the follow-end state actually
+  ;; changes.
+  (let* ((new-sticky-p
+           (<=
+            (terminal-renderer-content-line-count
+             renderer)
+            (terminal-rows
+             (terminal-renderer-terminal renderer))))
+         (changed-p
+           (or (plusp (terminal-renderer-scroll-top renderer))
+               (not
+                (eq new-sticky-p
+                    (terminal-renderer-stick-to-bottom-p
+                     renderer))))))
+    (setf
+     (terminal-renderer-scroll-top renderer) 0
+     (terminal-renderer-stick-to-bottom-p
+      renderer)
+     new-sticky-p)
+    (when changed-p
+      (renderer-note-scrollbar-activity renderer)))
   renderer)
 
 (defun renderer-scroll-to-bottom (renderer)
   (let ((terminal
           (terminal-renderer-terminal renderer)))
-    (setf
-     (terminal-renderer-stick-to-bottom-p
-      renderer)
-     t
-     (terminal-renderer-scroll-top renderer)
-     (max
-      0
-      (- (terminal-renderer-content-line-count
-          renderer)
-         (terminal-rows terminal)))))
+    (let ((next
+            (max
+             0
+             (- (terminal-renderer-content-line-count
+                 renderer)
+                (terminal-rows terminal))))
+          (was-sticky-p
+            (terminal-renderer-stick-to-bottom-p renderer)))
+      (when (or (not was-sticky-p)
+                (/= (terminal-renderer-scroll-top renderer) next))
+        (renderer-note-scrollbar-activity renderer))
+      (setf
+       (terminal-renderer-stick-to-bottom-p renderer) t
+       (terminal-renderer-scroll-top renderer) next)))
+  renderer)
+
+(defun osc133-prompt-start-line-p (line)
+  ;; pi@53fa77ccd tui-alt-screen.ts:56 — /^\x1b\]133;A(?:\x07|\x1b\\)/.
+  (and (>= (length line) 8)
+       (char= (char line 0) #\Escape)
+       (string= "]133;A" line :start2 1 :end2 7)
+       (let ((terminator (char line 7)))
+         (or (char= terminator (code-char 7))
+             (and (char= terminator #\Escape)
+                  (>= (length line) 9)
+                  (char= (char line 8) #\\))))))
+
+(defun renderer-scroll-to-prompt (renderer direction)
+  ;; pi@53fa77ccd tui-alt-screen.ts:366-378 — scan the scroll content
+  ;; from the current viewport edge for the next OSC 133 prompt-start
+  ;; marker and land the viewport on it.
+  (let* ((terminal
+           (terminal-renderer-terminal renderer))
+         (height
+           (max 1 (terminal-rows terminal)))
+         (count
+           (terminal-renderer-content-line-count renderer))
+         (maximum
+           (max 0 (- count height)))
+         (current
+           (if (terminal-renderer-stick-to-bottom-p renderer)
+               maximum
+               (terminal-renderer-scroll-top renderer)))
+         (lines
+           (or (terminal-renderer-prepared-source-lines renderer)
+               (terminal-renderer-last-document renderer))))
+    (loop for row = (+ current direction) then (+ row direction)
+          while (and (<= 0 row) (< row (min count (length lines))))
+          when (osc133-prompt-start-line-p (nth row lines))
+            do (when (/= row current)
+                 (setf
+                  (terminal-renderer-scroll-top renderer) row
+                  (terminal-renderer-stick-to-bottom-p renderer)
+                  (= row maximum))
+                 (renderer-note-scrollbar-activity renderer))
+               (return-from renderer-scroll-to-prompt renderer)))
   renderer)
 
 (defun strip-osc133-zone-prefix (line)
@@ -423,7 +679,11 @@ in-place repaint executes.  Production leaves this NIL; the harness
           (cons anchor focus)
           (cons focus anchor)))))
 
-(defun selection-columns (line row bounds)
+(defun selection-columns (line row bounds
+                          &key boundary-end-p)
+  ;; pi@53fa77ccd tui-alt-screen.ts:855-869 — a boundary end (word or
+  ;; line range edge) is used as-is; a character-drag end extends to
+  ;; the grapheme covering it.
   (let* ((start-point (car bounds))
          (end-point (cdr bounds))
          (line-width (visible-width line))
@@ -440,14 +700,16 @@ in-place repaint executes.  Production leaves this NIL; the harness
                0))
          (end
            (if (= row (car end-point))
-               (let ((range
-                       (grapheme-cell-range
-                        line (cdr end-point))))
-                 (if range
-                     (cdr range)
-                     (min
-                      (1+ (cdr end-point))
-                      line-width)))
+               (if boundary-end-p
+                   (min (cdr end-point) line-width)
+                   (let ((range
+                           (grapheme-cell-range
+                            line (cdr end-point))))
+                     (if range
+                         (cdr range)
+                         (min
+                          (1+ (cdr end-point))
+                          line-width))))
                line-width)))
     (cons start end)))
 
@@ -501,6 +763,99 @@ in-place repaint executes.  Production leaves this NIL; the harness
                  #\=)
              output)))))
 
+(defun selection-word-character-class (character)
+  (cond
+    ((navigation-whitespace-p character) :space)
+    ((navigation-cjk-p character) :cjk)
+    ((navigation-punctuation-p character) :punct)
+    (t :word)))
+
+(defun selection-word-range (line column)
+  "The (start . end) cell range of the word segment covering COLUMN in
+LINE, or NIL when no segment covers it.  Segments follow cadr's
+word-navigation character classes: whitespace runs, punctuation runs,
+single CJK characters, and word runs (pi@53fa77ccd
+tui-alt-screen.ts:644-658 uses Intl.Segmenter; cadr's editor word
+model is the port's segmentation source)."
+  (let ((segments nil)
+        (start 0)
+        (class nil))
+    (loop with cells = 0
+          for character across line
+          for width = (visible-width (string character))
+          for next = (selection-word-character-class character)
+          do (when (or (null class)
+                       (not (eq next class))
+                       (eq next :cjk)
+                       (eq class :cjk))
+               (when class
+                 (push (cons start cells) segments))
+               (setf start cells
+                     class next))
+             (incf cells width)
+          finally
+             (when class
+               (push (cons start cells) segments)))
+    (find-if
+     (lambda (segment)
+       (and (>= column (car segment))
+            (< column (cdr segment))))
+     (nreverse segments))))
+
+(defun renderer-note-click (renderer row word)
+  ;; pi@53fa77ccd tui-alt-screen.ts:687-713 getClickCount: the count
+  ;; advances only for clicks on the same word of the same row within
+  ;; 500ms, cycling 1-2-3; a click outside any word resets the streak.
+  (let* ((now
+           (/ (get-internal-real-time)
+              (coerce internal-time-units-per-second 'double-float)))
+         (previous-at
+           (terminal-renderer-last-click-at renderer))
+         (count
+           (if (and word previous-at
+                    (<= (- now previous-at) 0.5d0)
+                    (eql row
+                         (terminal-renderer-last-click-row renderer))
+                    (eql (car word)
+                         (terminal-renderer-last-click-word-start
+                          renderer))
+                    (eql (cdr word)
+                         (terminal-renderer-last-click-word-end
+                          renderer)))
+               (1+ (mod
+                    (terminal-renderer-last-click-count renderer)
+                    3))
+               1)))
+    (if word
+        (setf
+         (terminal-renderer-last-click-at renderer) now
+         (terminal-renderer-last-click-count renderer) count
+         (terminal-renderer-last-click-row renderer) row
+         (terminal-renderer-last-click-word-start renderer)
+         (car word)
+         (terminal-renderer-last-click-word-end renderer)
+         (cdr word))
+        (setf
+         (terminal-renderer-last-click-at renderer) nil))
+    count))
+
+(defun renderer-selection-source-line (renderer row)
+  (strip-ansi
+   (or
+    (nth row (terminal-renderer-last-document renderer))
+    "")))
+
+(defun renderer-line-selection-range (renderer row)
+  (cons (cons row 0)
+        (cons row
+              (visible-width
+               (renderer-selection-source-line renderer row)))))
+
+(defun selection-point-before-p (left right)
+  (or (< (car left) (car right))
+      (and (= (car left) (car right))
+           (< (cdr left) (cdr right)))))
+
 (defun renderer-copy-selection (renderer)
   (let ((bounds
           (renderer-selection-bounds
@@ -521,7 +876,12 @@ in-place repaint executes.  Production leaves this NIL; the harness
              "")
             for columns =
             (selection-columns
-             line row bounds)
+             line row bounds
+             :boundary-end-p
+             (member
+              (terminal-renderer-selection-granularity
+               renderer)
+              '(:word :line)))
             do
             (push
              (string-right-trim
@@ -541,6 +901,9 @@ in-place repaint executes.  Production leaves this NIL; the harness
                nil "~{~A~^~%~}"
                (nreverse lines))))
         (when (plusp (length text))
+          ;; pi@53fa77ccd tui-alt-screen.ts:896 — the fullscreen copy
+          ;; confirmation is a flash, not a status.
+          (renderer-flash renderer "Copied!")
           (terminal-write
            (terminal-renderer-terminal
             renderer)
@@ -631,31 +994,108 @@ in-place repaint executes.  Production leaves this NIL; the harness
             (terminal-renderer-pressed-url
              renderer)
             nil
+            ;; A drag breaks the click streak (baseline motion resets
+            ;; lastClick).
+            (terminal-renderer-last-click-at renderer)
+            nil)
+           ;; pi@53fa77ccd tui-alt-screen.ts:665-684
+           ;; updateSelectionFocus: word/line drags extend from the
+           ;; initial range by whole segments.
+           (let ((granularity
+                   (terminal-renderer-selection-granularity
+                    renderer))
+                 (initial
+                   (terminal-renderer-selection-initial-range
+                    renderer)))
+             (if (or (eq granularity :character)
+                     (null initial))
+                 (setf
+                  (terminal-renderer-selection-focus renderer)
+                  point)
+                 (let ((range
+                         (if (eq granularity :word)
+                             (let ((word
+                                     (selection-word-range
+                                      (renderer-selection-source-line
+                                       renderer (car point))
+                                      (cdr point))))
+                               (and word
+                                    (cons
+                                     (cons (car point) (car word))
+                                     (cons (car point) (cdr word)))))
+                             (renderer-line-selection-range
+                              renderer (car point)))))
+                   (when range
+                     (if (selection-point-before-p
+                          (car range) (car initial))
+                         (setf
+                          (terminal-renderer-selection-anchor
+                           renderer)
+                          (cdr initial)
+                          (terminal-renderer-selection-focus
+                           renderer)
+                          (car range))
+                         (setf
+                          (terminal-renderer-selection-anchor
+                           renderer)
+                          (car initial)
+                          (terminal-renderer-selection-focus
+                           renderer)
+                          (cdr range)))))))))
+        (t
+         ;; pi@53fa77ccd tui-alt-screen.ts:813-833 — word/line ranges
+         ;; on double/triple click, character selection otherwise;
+         ;; range presses never arm URL activation.
+         (let* ((word
+                  (selection-word-range
+                   (renderer-selection-source-line
+                    renderer (car point))
+                   (cdr point)))
+                (click-count
+                  (renderer-note-click renderer (car point) word))
+                (range
+                  (cond
+                    ((= click-count 2)
+                     (and word
+                          (cons
+                           (cons (car point) (car word))
+                           (cons (car point) (cdr word)))))
+                    ((= click-count 3)
+                     (renderer-line-selection-range
+                      renderer (car point)))
+                    (t nil))))
+           (setf
+            (terminal-renderer-selection-granularity
+             renderer)
+            (cond
+              ((= click-count 2) :word)
+              ((= click-count 3) :line)
+              (t :character))
+            (terminal-renderer-selection-initial-range
+             renderer)
+            range
+            (terminal-renderer-selection-anchor
+             renderer)
+            (or (car range) point)
             (terminal-renderer-selection-focus
              renderer)
-            point)))
-        (t
-         (setf
-          (terminal-renderer-selection-anchor
-           renderer)
-          point
-          (terminal-renderer-selection-focus
-           renderer)
-          point
-          (terminal-renderer-selection-dragged-p
-           renderer)
-          nil
-          (terminal-renderer-pressed-url
-           renderer)
-          (osc8-link-at-column
-           (or
-            (nth
-             viewport-row
-             (terminal-renderer-previous-lines
-              renderer))
-            "")
-           (cdr point))))))
-    t))
+            (or (cdr range) point)
+            (terminal-renderer-selection-dragged-p
+             renderer)
+            nil
+            (terminal-renderer-pressed-url
+             renderer)
+            (and
+             (null range)
+             (osc8-link-at-column
+              (or
+               (nth
+                viewport-row
+                (terminal-renderer-previous-lines
+                 renderer))
+               "")
+              (cdr point)))))))
+    t)))
 
 (defun renderer-handle-input (renderer data)
   (unless
@@ -710,6 +1150,29 @@ in-place repaint executes.  Production leaves this NIL; the harness
        t)
       ((keybinding-matches-p
         keybindings data
+        "tui.altScreen.halfPageUp")
+       ;; pi@53fa77ccd tui-alt-screen.ts:435-441
+       (renderer-scroll-by
+        renderer (- (max 1 (floor height 2))))
+       t)
+      ((keybinding-matches-p
+        keybindings data
+        "tui.altScreen.halfPageDown")
+       (renderer-scroll-by
+        renderer (max 1 (floor height 2)))
+       t)
+      ((keybinding-matches-p
+        keybindings data
+        "tui.altScreen.previousPrompt")
+       (renderer-scroll-to-prompt renderer -1)
+       t)
+      ((keybinding-matches-p
+        keybindings data
+        "tui.altScreen.nextPrompt")
+       (renderer-scroll-to-prompt renderer 1)
+       t)
+      ((keybinding-matches-p
+        keybindings data
         "tui.altScreen.top")
        (renderer-scroll-to-top renderer)
        t)
@@ -742,7 +1205,12 @@ in-place repaint executes.  Production leaves this NIL; the harness
                   line
                   (let* ((columns
                            (selection-columns
-                            line row bounds))
+                            line row bounds
+                            :boundary-end-p
+                            (member
+                             (terminal-renderer-selection-granularity
+                              renderer)
+                             '(:word :line))))
                          (start (car columns))
                          (end (cdr columns))
                          (width

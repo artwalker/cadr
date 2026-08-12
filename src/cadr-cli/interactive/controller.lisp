@@ -1,5 +1,16 @@
 (in-package #:cadr-cli)
 
+(defvar *tui-mode-switch-hook* nil
+  "When bound, called with the new tuiMode settings value to
+live-switch the running renderer; returns true when the switch
+happened.  pi@53fa77ccd interactive-mode.ts:4557-4567
+onTuiModeChange.")
+
+(defvar *alt-screen-flash-function* nil
+  "When non-nil, called with a message string to show a transient
+fullscreen flash instead of a status line (pi@53fa77ccd
+interactive-mode.ts:5956-5960).")
+
 (defun should-use-tui-p
     (no-tui-p
      &key
@@ -135,13 +146,15 @@
 (defun make-interactive-renderer
     (terminal alt-p
      &key show-hardware-cursor-p
-       clear-on-shrink-p)
+       clear-on-shrink-p
+       (scrollbar-mode :auto))
   (cadr-tui:make-terminal-renderer
    terminal
    :alt-p alt-p
    :show-hardware-cursor-p
    show-hardware-cursor-p
    :clear-on-shrink-p clear-on-shrink-p
+   :scrollbar-mode scrollbar-mode
    :open-url-function
    #'open-tui-url))
 
@@ -244,6 +257,8 @@
        login-options-function
        model-selector-function
        scoped-models-selector-function
+       model-catalog-refresh-function
+       apply-model-catalog-refresh-function
        trust-selector-function
        settings-selector-function
        extension-host
@@ -292,6 +307,7 @@
        alt-p
        show-hardware-cursor-p
        clear-on-shrink-p
+       (scrollbar-mode :auto)
        (clock-function #'tui-monotonic-seconds)
        (sleep-function #'sleep)
        (terminal
@@ -373,7 +389,8 @@
             :show-hardware-cursor-p
             show-hardware-cursor-p
             :clear-on-shrink-p
-            clear-on-shrink-p))
+            clear-on-shrink-p
+            :scrollbar-mode scrollbar-mode))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -1597,7 +1614,8 @@
                        model-selector-function query)
                       (funcall
                        model-selector-function)))
-                 (request-render))
+                 (request-render)
+                 (start-model-catalog-refresh overlay))
                (open-selector
                 :model
                 (if model-items-function
@@ -1611,9 +1629,9 @@
             (and scoped-models-selector-function
                  (funcall
                   scoped-models-selector-function)))
-           (if overlay
-               (request-render)
-               (status "No models available")))
+           (when overlay
+             (request-render)
+             (start-model-catalog-refresh overlay)))
          (open-trust-selector ()
            (setf
             overlay-kind :trust
@@ -2083,19 +2101,31 @@
                     (start-login-option value))
                    (:logout-provider
                     (when on-logout-selected
-                      (funcall
-                       on-logout-selected
-                       (oauth-selector-option-id value))
-                      (status
-                       (if
-                           (eq
-                            (oauth-selector-option-auth-type value)
-                            :oauth)
-                           (format nil "Logged out of ~A"
-                                   (oauth-selector-option-name value))
-                           (format nil
-                                   "Removed stored API key for ~A. Environment variables and models.json config are unchanged."
-                                   (oauth-selector-option-name value))))))
+                      (multiple-value-bind (provider sync-error)
+                          (funcall
+                           on-logout-selected
+                           (oauth-selector-option-id value))
+                        (declare (ignore provider))
+                        (if sync-error
+                            ;; pi@53fa77ccd interactive-mode.ts:5399 —
+                            ;; the synchronization failure replaces the
+                            ;; success status.
+                            (show-error
+                             (format
+                              nil
+                              "Credentials removed for ~A, but local model state could not be synchronized: ~A"
+                              (oauth-selector-option-name value)
+                              sync-error))
+                            (status
+                             (if
+                                 (eq
+                                  (oauth-selector-option-auth-type value)
+                                  :oauth)
+                                 (format nil "Logged out of ~A"
+                                         (oauth-selector-option-name value))
+                                 (format nil
+                                         "Removed stored API key for ~A. Environment variables and models.json config are unchanged."
+                                         (oauth-selector-option-name value))))))))
                    (:api-key-input
                     (let* ((option
                              (getf value :option))
@@ -2107,30 +2137,42 @@
                          'cadr-ai:configuration-error
                          :message
                          "API key login is unavailable"))
-                      (multiple-value-bind (selection auth-path)
+                      (multiple-value-bind (selection auth-path sync-error)
                           (funcall
                            api-key-login-function
                            provider
                            (getf value :key))
-                        ;; Baseline completeProviderAuthentication text.
-                        (status
-                         (format
-                          nil
-                          "Saved API key for ~A.~@[ Selected ~A.~] Credentials saved to ~A"
-                          (oauth-selector-option-name
-                           option)
-                          (and (stringp selection) selection)
-                          auth-path))
-                        (when (eq selection :no-default-model)
-                          (error
-                           'cadr-ai:configuration-error
-                           :message
-                           (format
-                            nil
-                            "Saved API key for ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
-                            (oauth-selector-option-name
-                             option)
-                            provider))))))
+                        (if sync-error
+                            ;; pi@53fa77ccd interactive-mode.ts:5548 —
+                            ;; the synchronization failure replaces the
+                            ;; success status.
+                            (show-error
+                             (format
+                              nil
+                              "Saved API key for ~A, but local model state could not be synchronized: ~A"
+                              (oauth-selector-option-name
+                               option)
+                              sync-error))
+                            (progn
+                              ;; Baseline completeProviderAuthentication text.
+                              (status
+                               (format
+                                nil
+                                "Saved API key for ~A.~@[ Selected ~A.~] Credentials saved to ~A"
+                                (oauth-selector-option-name
+                                 option)
+                                (and (stringp selection) selection)
+                                auth-path))
+                              (when (eq selection :no-default-model)
+                                (error
+                                 'cadr-ai:configuration-error
+                                 :message
+                                 (format
+                                  nil
+                                  "Saved API key for ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
+                                  (oauth-selector-option-name
+                                   option)
+                                  provider))))))))
                    (:trust
                     (when on-trust-selected
                       (funcall
@@ -2195,6 +2237,52 @@
                   state
                   (format nil "~A" condition)))))
            (refresh-footer-state))
+         (switch-tui-mode (mode)
+           ;; pi@53fa77ccd interactive-mode.ts:788-832 switchTuiMode +
+           ;; :4557-4567 onTuiModeChange.  The baseline guard ("Close
+           ;; active overlays before changing TUI mode") requires a
+           ;; stacked overlay above the settings selector; cadr's
+           ;; single-overlay model replaces the selector instead, so
+           ;; the guard state is unreachable here.
+           (let ((fullscreen-p (string= mode "fullscreen")))
+             (cond
+               ((eq fullscreen-p alt-p) t)
+               (fullscreen-p
+                (cadr-tui:renderer-enter-alt-screen-live renderer)
+                (setf alt-p t)
+                (request-render t)
+                (status (format nil "TUI mode: ~A" mode))
+                t)
+               (t
+                (cadr-tui:renderer-exit-alt-screen-live renderer)
+                (setf alt-p nil)
+                (request-render t)
+                (status (format nil "TUI mode: ~A" mode))
+                t))))
+         (start-model-catalog-refresh (selector)
+           ;; Baseline selector-open lifecycle: the selector renders the
+           ;; cached snapshot with a "Refreshing model catalogs…" status
+           ;; row, the registry re-read runs on this worker, and the
+           ;; terminal status is applied only while the same selector is
+           ;; still open (the baseline's disposed flag).
+           (when
+               (and model-catalog-refresh-function
+                    apply-model-catalog-refresh-function
+                    selector)
+             (sb-thread:make-thread
+              (lambda ()
+                (let ((failure nil))
+                  (handler-case
+                      (funcall model-catalog-refresh-function)
+                    (condition (condition)
+                      (setf failure (princ-to-string condition))))
+                  (sb-thread:with-mutex (lock)
+                    (when (eq selector overlay)
+                      (funcall
+                       apply-model-catalog-refresh-function
+                       selector failure)))
+                  (request-render)))
+              :name "cadr-model-catalog-refresh")))
          (start-all-session-load (selector token)
            (if all-session-items-function
                (setf
@@ -2205,7 +2293,12 @@
                        (let ((records
                                (session-select-items-to-records
                                 (funcall
-                                 all-session-items-function))))
+                                 all-session-items-function
+                                 (lambda (loaded total)
+                                   (sb-thread:with-mutex (lock)
+                                     (session-selector-note-load-progress
+                                      selector token loaded total))
+                                   (request-render))))))
                          (sb-thread:with-mutex (lock)
                            (session-selector-complete-all-load
                             selector token records)))
@@ -2518,6 +2611,12 @@
                   package-update-check-function))
               (condition () nil)))
           :name "cadr-package-update-check")))
+      (setf *tui-mode-switch-hook* #'switch-tui-mode
+            *alt-screen-flash-function*
+            (and alt-p
+                 (lambda (message)
+                   (cadr-tui:renderer-flash renderer message)
+                   (request-render))))
       (unwind-protect
            (cadr-tui:call-with-terminal
             terminal
@@ -2695,6 +2794,8 @@
             (lambda ()
               (cadr-tui:renderer-after-stop
                renderer)))
+        (setf *tui-mode-switch-hook* nil
+              *alt-screen-flash-function* nil)
         (finish-custom-ui nil)
         (when terminal-progress-active-p
           (set-terminal-progress-state nil))

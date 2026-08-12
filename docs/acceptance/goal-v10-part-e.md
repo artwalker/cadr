@@ -85,3 +85,13 @@ skip is explicit and credential-equivalent to the baseline mechanism. The
 native image's separate real Slynk protocol probe is recorded in Part D.
 Publication requires a fresh gate if HEAD changes after this docs-only
 closeout.
+
+## Baseline re-anchor addendum (2026-08-11)
+
+Goal 18 Part L moved the fixed pi baseline to v0.84.1; the frozen identity
+above remains the historical record of the 0.2.0 preparation.  The current
+release identity is:
+
+```text
+cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd)
+```

@@ -242,7 +242,7 @@
     (is
      (cadr-tui:renderer-handle-input
       renderer
-      (format nil "~C[5$" #\Escape)))
+      (format nil "~C[5~~" #\Escape)))
     (alt-render renderer lines)
     (is (= 1
            (cadr-tui:renderer-viewport-top
@@ -250,11 +250,107 @@
     (is
      (cadr-tui:renderer-handle-input
       renderer
-      (format nil "~C[1;5F" #\Escape)))
+      (format nil "~C[F" #\Escape)))
     (alt-render renderer lines)
     (is (= 4
            (cadr-tui:renderer-viewport-top
             renderer)))))
+
+(test alt-screen-half-page-and-prompt-jump-follow-the-baseline-rules
+  ;; pi@53fa77ccd tui-alt-screen.ts:435-449 — half-page scrolls by
+  ;; floor(viewport/2); prompt jumps land on the next OSC 133;A row.
+  (let ((previous (cadr-tui:get-keybindings)))
+    (unwind-protect
+         (progn
+          (cadr-tui:set-keybindings
+           (cadr-tui:make-keybindings-manager
+            :user-bindings
+            '(("tui.altScreen.halfPageUp" . ("shift+up"))
+              ("tui.altScreen.halfPageDown" . ("shift+down")))))
+          (let* ((terminal
+                   (make-alt-recording-terminal :rows 4))
+                 (renderer
+                   (cadr-tui:make-terminal-renderer
+                    terminal :alt-p t))
+                 (prompt
+                   (format nil "~C]133;A~C" #\Escape (code-char 7)))
+                 (lines
+                   (list "intro"
+                         (concatenate 'string prompt "first")
+                         "body 1" "body 2"
+                         (concatenate 'string prompt "second")
+                         "body 3" "body 4" "body 5")))
+            (cadr-tui:renderer-start renderer)
+            (alt-render renderer lines)
+            ;; half-page up from the bottom moves floor(4/2) = 2 rows.
+            (is
+             (cadr-tui:renderer-handle-input
+              renderer (format nil "~C[a" #\Escape)))
+            (alt-render renderer lines)
+            (is (= 2 (cadr-tui:renderer-viewport-top renderer)))
+            ;; half-page down returns to the bottom.
+            (is
+             (cadr-tui:renderer-handle-input
+              renderer (format nil "~C[b" #\Escape)))
+            (alt-render renderer lines)
+            (is (= 4 (cadr-tui:renderer-viewport-top renderer)))
+            ;; ctrl+shift+up scans upward from one past the top edge,
+            ;; landing on the first prompt row (index 1).
+            (is
+             (cadr-tui:renderer-handle-input
+              renderer (format nil "~C[1;6A" #\Escape)))
+            (alt-render renderer lines)
+            (is (= 1 (cadr-tui:renderer-viewport-top renderer)))
+            ;; no earlier prompt row exists; the viewport stays.
+            (is
+             (cadr-tui:renderer-handle-input
+              renderer (format nil "~C[1;6A" #\Escape)))
+            (alt-render renderer lines)
+            (is (= 1 (cadr-tui:renderer-viewport-top renderer)))
+            ;; ctrl+shift+down jumps forward to the second prompt.
+            (is
+             (cadr-tui:renderer-handle-input
+              renderer (format nil "~C[1;6B" #\Escape)))
+            (alt-render renderer lines)
+            (is (= 4 (cadr-tui:renderer-viewport-top renderer)))))
+      (cadr-tui:set-keybindings previous))))
+
+(test alt-screen-scrollbar-follows-the-baseline-geometry-and-visibility
+  ;; pi@53fa77ccd layout.ts:268-303 + components/scroll-view.ts:62-70:
+  ;; auto mode paints the thumb only after real scroll activity while
+  ;; the content overflows; thumb height is track²/content clamped to
+  ;; [min(2, track), track]; the offset maps scrollTop onto the free
+  ;; track.  8 lines in a 4x20 viewport: thumb height 2, and at
+  ;; scroll-top 0 the thumb covers rows 0-1 of the last column.
+  (let* ((terminal
+           (make-alt-recording-terminal :columns 20 :rows 4))
+         (renderer
+           (cadr-tui:make-terminal-renderer
+            terminal :alt-p t))
+         (thumb-bg
+           (cadr-tui:theme-background-ansi
+            :scrollbar-thumb :enabled-p t))
+         (lines
+           (loop for index from 1 to 8
+                 collect
+                 (format nil "line ~D" index))))
+    (cadr-tui:renderer-start renderer)
+    (alt-render renderer lines)
+    ;; No scroll activity yet: the auto scrollbar stays hidden.
+    (is (null (alt-write-containing-p terminal thumb-bg)))
+    ;; scroll-to-top from the bottom is a real position change.
+    (cadr-tui:renderer-scroll-to-top renderer)
+    (alt-render renderer lines)
+    (is (alt-write-containing-p terminal thumb-bg))
+    ;; A no-op repeat marks no new activity: scroll-to-top at the top
+    ;; leaves the timestamp alone, so the hide window is not extended.
+    (let ((at
+            (cadr-tui::terminal-renderer-scrollbar-activity-at
+             renderer)))
+      (cadr-tui:renderer-scroll-to-top renderer)
+      (is (eql at
+               (cadr-tui::terminal-renderer-scrollbar-activity-at
+                renderer))))))
 
 (test alt-screen-disables-iterm-images-and-strips-osc133
   (cadr-tui:set-terminal-capabilities
@@ -569,3 +665,113 @@
           (is (search line restore)))
         (is (< (search "first" restore)
                (search "sixth" restore)))))))
+
+(test renderer-live-mode-switch-round-trips-main-screen-state
+  ;; pi@53fa77ccd interactive-mode.ts:788-832 — a live tuiMode switch
+  ;; preserves the main-screen render state across the fullscreen
+  ;; round-trip and emits the preserveScreen exit sequence.
+  (let* ((terminal (make-alt-recording-terminal))
+         (renderer
+           (cadr-tui:make-terminal-renderer terminal :alt-p nil)))
+    ;; Seed a main-screen differential state.
+    (setf
+     (cadr-tui::terminal-renderer-previous-lines renderer)
+     (list "alpha" "beta")
+     (cadr-tui::terminal-renderer-previous-width renderer) 20
+     (cadr-tui::terminal-renderer-previous-height renderer) 4
+     (cadr-tui::terminal-renderer-hardware-cursor-row renderer) 1
+     (cadr-tui::terminal-renderer-max-lines-rendered renderer) 2
+     (cadr-tui::terminal-renderer-previous-viewport-top renderer) 0)
+    (cadr-tui:renderer-enter-alt-screen-live renderer)
+    (is (cadr-tui::terminal-renderer-alt-screen-p renderer))
+    (is (cadr-tui::terminal-renderer-alt-screen-active-p renderer))
+    (is (null (cadr-tui::terminal-renderer-previous-lines renderer)))
+    (is (alt-write-containing-p terminal (format nil "~C[?1049h" #\Escape)))
+    (cadr-tui:renderer-exit-alt-screen-live renderer)
+    (is (not (cadr-tui::terminal-renderer-alt-screen-p renderer)))
+    (is (not (cadr-tui::terminal-renderer-alt-screen-active-p renderer)))
+    ;; preserveScreen exit: 1049l and show-cursor, no document replay.
+    (is (alt-write-containing-p terminal (format nil "~C[?1049l" #\Escape)))
+    (is (alt-write-containing-p terminal (format nil "~C[?25h" #\Escape)))
+    ;; The stashed main-screen state is restored.
+    (is (equal (list "alpha" "beta")
+               (cadr-tui::terminal-renderer-previous-lines renderer)))
+    (is (= 20 (cadr-tui::terminal-renderer-previous-width renderer)))
+    (is (= 1 (cadr-tui::terminal-renderer-hardware-cursor-row renderer)))
+    (is (cadr-tui::terminal-renderer-invalid-p renderer))))
+
+(test renderer-multi-click-selects-word-then-line
+  ;; pi@53fa77ccd tui-alt-screen.ts:644-713 — double click selects the
+  ;; word under the cursor, triple click the line, and the streak
+  ;; cycles back to a character selection on the fourth click.
+  (let ((renderer
+          (cadr-tui:make-terminal-renderer
+           (make-alt-recording-terminal) :alt-p t)))
+    (setf
+     (cadr-tui::terminal-renderer-last-document renderer)
+     (list "hello world, lisp"))
+    (labels ((press (row col)
+               (cadr-tui::renderer-note-click
+                renderer row
+                (cadr-tui::selection-word-range
+                 (cadr-tui::renderer-selection-source-line
+                  renderer row)
+                 col))))
+      ;; segmentation: word run, space run, punctuation run, word run
+      (is (equal '(0 . 5)
+                 (cadr-tui::selection-word-range
+                  "hello world, lisp" 2)))
+      (is (equal '(5 . 6)
+                 (cadr-tui::selection-word-range
+                  "hello world, lisp" 5)))
+      (is (equal '(11 . 12)
+                 (cadr-tui::selection-word-range
+                  "hello world, lisp" 11)))
+      (is (null
+           (cadr-tui::selection-word-range "hello" 5)))
+      ;; streak: same word inside the window cycles 1 2 3 1
+      (is (= 1 (press 0 2)))
+      (is (= 2 (press 0 2)))
+      (is (= 3 (press 0 2)))
+      (is (= 1 (press 0 2)))
+      ;; a click on a different word restarts the streak
+      (is (= 1 (press 0 7)))
+      ;; a click outside any word resets
+      (is (= 1 (press 0 5))))))
+
+(test renderer-word-and-line-ranges-feed-selection
+  (let ((renderer
+          (cadr-tui:make-terminal-renderer
+           (make-alt-recording-terminal) :alt-p t)))
+    (setf
+     (cadr-tui::terminal-renderer-last-document renderer)
+     (list "hello world"))
+    (is (equal (cons 0 11)
+               (cdr
+                (cadr-tui::renderer-line-selection-range
+                 renderer 0))))
+    (is (equal (cons 0 0)
+               (car
+                (cadr-tui::renderer-line-selection-range
+                 renderer 0))))))
+
+(test renderer-flash-composites-and-expires
+  ;; pi@53fa77ccd components/alt-screen-flash.ts — flashes render as
+  ;; reverse-video padded messages and expire after their duration.
+  (let ((renderer
+          (cadr-tui:make-terminal-renderer
+           (make-alt-recording-terminal) :alt-p t)))
+    (cadr-tui:renderer-flash renderer "Copied!")
+    (let ((lines
+            (cadr-tui::renderer-live-flash-lines renderer 40)))
+      (is (= 1 (length lines)))
+      (is (search " Copied! " (first lines)))
+      (is (search (format nil "~C[7m" #\Escape) (first lines))))
+    ;; force expiry by backdating the deadline
+    (setf
+     (third
+      (first
+       (cadr-tui::terminal-renderer-flash-entries renderer)))
+     0.0d0)
+    (is (null
+         (cadr-tui::renderer-live-flash-lines renderer 40)))))

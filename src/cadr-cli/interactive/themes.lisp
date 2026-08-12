@@ -13,6 +13,7 @@
     ("text" . :text)
     ("thinkingText" . :thinking-text)
     ("selectedBg" . :selected-bg)
+    ("scrollbarThumb" . :scrollbar-thumb)
     ("userMessageBg" . :user-message-bg)
     ("userMessageText" . :user-message-text)
     ("customMessageBg" . :custom-message-bg)
@@ -125,6 +126,7 @@
       (unless
           (or
            (string= name "thinkingMax")
+           (string= name "scrollbarThumb")
            (nth-value 1
                       (gethash name colors)))
         (error "Missing required theme color token: ~A"
@@ -218,6 +220,19 @@
              (gethash "thinkingXhigh" colors)
              variables))
            overrides))
+       ;; pi@53fa77ccd theme.ts:326-332 — optional scrollbarThumb
+       ;; falls back to selectedBg.
+       (unless
+           (nth-value 1
+                      (gethash "scrollbarThumb"
+                               colors))
+         (push
+          (cons
+           :scrollbar-thumb
+           (resolve-tui-theme-value
+            (gethash "selectedBg" colors)
+            variables))
+          overrides))
         (collect-values
          export
          +tui-theme-json-export-map+))

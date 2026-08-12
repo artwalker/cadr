@@ -9,6 +9,17 @@ tag/Release step.
 
 ### Changed
 
+- Goal 18 Part L: re-anchored the fixed pi baseline to v0.84.1.
+  cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd).  `--alt` is replaced
+  by `--tui-mode regular|fullscreen` with the baseline diagnostics; the
+  `tuiMode`, `fullscreenScrollbar`, and `markdown.mermaid` settings are
+  honored; alt-screen navigation defaults moved to the baseline's
+  unshifted keys with new half-page and prompt-jump actions plus
+  editor prompt-history actions; `scrollbarThumb` joins the theme
+  tokens; baseten and qwen-token-plan-individual providers registered
+  with the regenerated 0.84.1 model catalog; child processes learn
+  `CADR_CODING_AGENT=true` and `AI_AGENT=cadr`.
+
 - Aligned `--resume` with the baseline (goal 18 adjudication): the flag
   no longer consumes a session id (`--session <id>` remains the exact-id
   path); a following token is a prompt message, matching baseline

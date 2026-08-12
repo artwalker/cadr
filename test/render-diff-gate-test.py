@@ -847,7 +847,11 @@ class RenderDiffGateTest(unittest.TestCase):
                 observed.update(kwargs["env"])
                 return subprocess.CompletedProcess([], 0, b"", b"")
 
-            with mock.patch.object(RENDER_DIFF.subprocess, "run", side_effect=run_without_marker):
+            with mock.patch.object(
+                RENDER_DIFF,
+                "_run_construction_subprocess",
+                side_effect=run_without_marker,
+            ):
                 with self.assertRaisesRegex(
                     RENDER_DIFF.HarnessFailure,
                     "emitted no sink markers",
@@ -911,13 +915,13 @@ class RenderDiffGateTest(unittest.TestCase):
         # transparent to the literals inside them, and addLoadedSection,
         # addDiagnostic, and LoginDialogComponent's titleOverride became
         # contracted sinks.
-        self.assertEqual(493, len(inventory["entries"]))
+        self.assertEqual(509, len(inventory["entries"]))
         self.assertEqual(
-            1091,
+            1121,
             sum(len(entry["branches"]) for entry in inventory["entries"]),
         )
         self.assertEqual(
-            1041,
+            1070,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
@@ -925,16 +929,16 @@ class RenderDiffGateTest(unittest.TestCase):
             ),
         )
         self.assertEqual(
-            50,
+            51,
             sum(
                 len(entry["branches"])
                 for entry in inventory["entries"]
                 if entry["sink"]["channel"] == "terminal-protocol"
             ),
         )
-        self.assertEqual(219, len(inventory["sourceInventory"]))
+        self.assertEqual(246, len(inventory["sourceInventory"]))
         self.assertEqual(
-            60,
+            61,
             sum(
                 entry["site"]["path"].startswith("packages/tui/")
                 for entry in inventory["entries"]

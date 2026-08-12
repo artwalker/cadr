@@ -157,6 +157,8 @@
     ("app.model.cycleBackward" . :model-cycle-backward)
     ("tui.editor.cursorUp" . :up)
     ("tui.editor.cursorDown" . :down)
+    ("tui.editor.historyPrevious" . :history-previous)
+    ("tui.editor.historyNext" . :history-next)
     ("tui.editor.cursorLeft" . :left)
     ("tui.editor.cursorRight" . :right)
     ("tui.editor.cursorWordLeft" . :word-left)

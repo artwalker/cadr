@@ -183,12 +183,186 @@
                          (char text position) output)
                         (incf position)))))))))
 
+;;; pi@53fa77ccd components/markdown.ts:25-122 — inline and block
+;;; LaTeX tokenization with the baseline delimiter and guard rules,
+;;; rendered through the latex.ts port.
+
+(defparameter +latex-placeholder-start+ (code-char #xf010))
+(defparameter +latex-placeholder-end+ (code-char #xf011))
+
+(defun latex-escaped-p (source index)
+  ;; An odd run of backslashes immediately before INDEX escapes it.
+  (let ((backslashes 0))
+    (loop for position from (1- index) downto 0
+          while (char= (char source position) #\Backslash)
+          do (incf backslashes))
+    (oddp backslashes)))
+
+(defun latex-find-closing-delimiter (source closing start)
+  (let ((index (search closing source :start2 start)))
+    (loop while (and index
+                     (latex-escaped-p source index))
+          do (setf index
+                   (search closing source
+                           :start2 (+ index (length closing)))))
+    index))
+
+(defun latex-looks-like-pending-math-p (source)
+  ;; /\\[A-Za-z]+|[_^=+*/<>()[\]|+-...]/ character probe.
+  (or (cl-ppcre:scan "\\[A-Za-z]+" source)
+      (cl-ppcre:scan "[_^=+*/<>()\[\]|\u00b1\u2264\u2265\u2260\u2248\u2208\u2192\u21d2\u221e\u222b\u2211\u221a-]"
+                     source)))
+
+(defun markdown-latex-inline-span
+    (line start)
+  ;; The (values end content rendered) of the inline latex span
+  ;; beginning at START, or NIL when START does not open one.  END is
+  ;; exclusive, covering both delimiters.  Baseline
+  ;; tokenizeInlineLatex (markdown.ts:56-100).
+  (let ((opening nil)
+        (closing nil))
+    (cond
+      ((and (<= (+ start 2) (length line))
+            (string= "$$" line :start2 start :end2 (+ start 2)))
+       (setf opening "$$" closing "$$"))
+      ((and (<= (+ start 2) (length line))
+            (string= "\(" line :start2 start :end2 (+ start 2)))
+       (setf opening "\(" closing "\)"))
+      ((and (<= (+ start 2) (length line))
+            (string= "\[" line :start2 start :end2 (+ start 2)))
+       (setf opening "\[" closing "\]"))
+      ((and (char= (char line start) #\$)
+            (< (1+ start) (length line))
+            (not (js-whitespace-p (char line (1+ start)))))
+       (setf opening "$" closing "$"))
+      (t
+       (return-from markdown-latex-inline-span nil)))
+    (let ((closing-index
+            (latex-find-closing-delimiter
+             line closing (+ start (length opening)))))
+      (when (and closing-index (string= opening "$"))
+        (let ((content
+                (subseq line (+ start (length opening))
+                        closing-index))
+              (after
+                (and (< (1+ closing-index) (length line))
+                     (char line (1+ closing-index)))))
+          (when (or
+                 ;; content ends in whitespace
+                 (and (plusp (length content))
+                      (js-whitespace-p
+                       (char content (1- (length content)))))
+                 ;; a digit immediately after the closing $
+                 (and after (digit-char-p after))
+                 ;; CONSTANTS_CASE content followed by an identifier
+                 (and
+                  (cl-ppcre:scan
+                   "^[A-Z_][A-Z0-9_]*([^A-Za-z0-9_\s])?$"
+                   content)
+                  after
+                  (or (and (char>= after #\a)
+                           (char<= after #\z))
+                      (and (char>= after #\A)
+                           (char<= after #\Z))
+                      (char= after #\_)))
+                 (find #\` content :test #'char=))
+            (return-from markdown-latex-inline-span nil))))
+      (when (null closing-index)
+        ;; Pending spans stay raw; only \(, \[, and plausible
+        ;; dollar-math are protected from further inline styling.
+        (let ((pending
+                (subseq line (+ start (length opening)))))
+          (if (or (char= (char opening 0) #\Backslash)
+                  (latex-looks-like-pending-math-p pending))
+              (return-from markdown-latex-inline-span
+                (values (length line) nil nil))
+              (return-from markdown-latex-inline-span nil))))
+      (let ((content
+              (subseq line (+ start (length opening))
+                      closing-index)))
+        (when (or (zerop (length content))
+                  (find #\Newline content))
+          (return-from markdown-latex-inline-span nil))
+        (values
+         (+ closing-index (length closing))
+         content
+         (render-latex content))))))
+
+(defun markdown-extract-inline-latex (line)
+  ;; Replace inline latex spans with private-use placeholders.
+  ;; Returns (values transformed replacements) where REPLACEMENTS
+  ;; maps placeholder strings to their rendered or raw text.
+  (let ((replacements nil)
+        (count 0))
+    (multiple-value-bind (transformed)
+        (with-output-to-string (stream)
+          (let ((index 0))
+            (loop while (< index (length line))
+                  do (if (member (char line index)
+                                 '(#\$ #\Backslash)
+                                 :test #'char=)
+                         (multiple-value-bind (end content rendered)
+                             (markdown-latex-inline-span line index)
+                           (if end
+                               (let ((placeholder
+                                       (format nil "~C~D~C"
+                                               +latex-placeholder-start+
+                                               count
+                                               +latex-placeholder-end+)))
+                                 (push (cons placeholder
+                                             (or rendered
+                                                 (subseq line
+                                                         index end)))
+                                       replacements)
+                                 (incf count)
+                                 (write-string placeholder stream)
+                                 (setf index end))
+                               (progn
+                                 (write-char
+                                  (char line index) stream)
+                                 (incf index))))
+                         (progn
+                           (write-char (char line index) stream)
+                           (incf index))))))
+      (values transformed (nreverse replacements)))))
+
+(defun markdown-restore-inline-latex (line replacements)
+  (dolist (replacement replacements)
+    (setf line
+          (literal-string-replace-all
+           line (car replacement) (cdr replacement))))
+  line)
+
+(defun markdown-latex-block-opening (line)
+  ;; :dollar or :bracket when LINE opens a block latex region (at most
+  ;; three leading spaces, then $$ or \[).
+  (let ((trimmed (string-left-trim " " line)))
+    (when (<= (- (length line) (length trimmed)) 3)
+      (cond
+        ((and (>= (length trimmed) 2)
+              (char= (char trimmed 0) #\$)
+              (char= (char trimmed 1) #\$))
+         :dollar)
+        ((and (>= (length trimmed) 2)
+              (char= (char trimmed 0) #\Backslash)
+              (char= (char trimmed 1) #\[))
+         :bracket)
+        (t nil)))))
+
+(defun markdown-latex-block-close-index (line kind)
+  ;; Position of the closing delimiter within LINE, or NIL.
+  (if (eq kind :dollar)
+      (search "$$" line)
+      (search "\]" line)))
+
 (defun render-inline-markdown
     (line ansi-theme-p capabilities
      &optional default-style-function)
-  (let ((result
-          (replace-markdown-links
-           line capabilities ansi-theme-p)))
+  (multiple-value-bind (line latex-replacements)
+      (markdown-extract-inline-latex line)
+    (let ((result
+            (replace-markdown-links
+             line capabilities ansi-theme-p)))
     (setf result
           (replace-paired-marker
            result "**" :open-code "1"
@@ -238,10 +412,13 @@
           (theme-italic
            text :enabled-p enabled-p))
         :ansi-theme-p ansi-theme-p)))
-    (if default-style-function
-        (apply-restoring-style
-         result default-style-function)
-        result)))
+      (setf result
+            (markdown-restore-inline-latex
+             result latex-replacements))
+      (if default-style-function
+          (apply-restoring-style
+           result default-style-function)
+          result))))
 
 (defun markdown-table-divider-p (line)
   (let ((trimmed
@@ -997,6 +1174,93 @@
                               "```"
                               :enabled-p ansi-theme-p)
                              available-width)))
+                     (when
+                         (markdown-nonblank-line-p
+                          (first source-lines))
+                       (setf result
+                             (nconc result
+                                    (list "")))))))
+                ((and
+                  (not in-code-p)
+                  (markdown-latex-block-opening line))
+                 ;; pi@53fa77ccd components/markdown.ts:102-119,505-514
+                 ;; — display-mode latex blocks, raw trim fallback.
+                 (setf list-prefix-width nil)
+                 (let* ((kind
+                          (markdown-latex-block-opening line))
+                        (closer
+                          (if (eq kind :dollar) "$$" "\\]"))
+                        (trimmed-line
+                          (string-left-trim " " line))
+                        (after-open
+                          (string-left-trim
+                           '(#\Space #\Tab)
+                           (subseq trimmed-line 2)))
+                        (content-lines nil)
+                        (raw-lines (list line))
+                        (closed-p nil))
+                   (flet ((trailing-blank-p (text position)
+                            (every
+                             (lambda (c)
+                               (member c '(#\Space #\Tab)))
+                             (subseq text position))))
+                     (let ((close-at
+                             (search closer after-open)))
+                       (if (and close-at
+                                (trailing-blank-p
+                                 after-open (+ close-at 2)))
+                           (progn
+                             (push (subseq after-open 0 close-at)
+                                   content-lines)
+                             (setf closed-p t))
+                           (progn
+                             (push after-open content-lines)
+                             (loop while source-lines
+                                   for candidate =
+                                     (pop source-lines)
+                                   for cidx =
+                                     (search closer candidate)
+                                   do (push candidate raw-lines)
+                                      (if (and cidx
+                                               (trailing-blank-p
+                                                candidate
+                                                (+ cidx 2)))
+                                          (progn
+                                            (push
+                                             (subseq candidate 0 cidx)
+                                             content-lines)
+                                            (setf closed-p t)
+                                            (return))
+                                          (push candidate
+                                                content-lines)))))))
+                   (let* ((content
+                            (format nil "~{~A~^~%~}"
+                                    (nreverse content-lines)))
+                          (rendered
+                            (and closed-p
+                                 (render-latex
+                                  (latex-trim content)
+                                  :display-p t)))
+                          (text
+                            (or rendered
+                                (latex-trim
+                                 (if closed-p
+                                     content
+                                     (format nil "~{~A~^~%~}"
+                                             (nreverse
+                                              (copy-list
+                                               raw-lines))))))))
+                     (dolist (rendered-line
+                              (split-lines-preserving-empty text))
+                       (setf result
+                             (nconc
+                              result
+                              (list
+                               (if default-style-function
+                                   (apply-restoring-style
+                                    rendered-line
+                                    default-style-function)
+                                   rendered-line)))))
                      (when
                          (markdown-nonblank-line-p
                           (first source-lines))

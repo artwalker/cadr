@@ -37,6 +37,50 @@
         (is (string= "https://api.openai.com/v1/responses"
                      (first captured))))))))
 
+(test complete-chat-keeps-single-v1-or-codex-base-segment
+  ;; Regression: reversed uiop:string-suffix-p arguments produced
+  ;; /v1/v1/responses and /codex/codex/responses for bases that
+  ;; already carried the suffix.
+  (dolist (case
+           (list
+            (list :key
+                  "https://fixture.invalid/v1"
+                  "https://fixture.invalid/v1/responses")
+            (list :key
+                  "https://fixture.invalid"
+                  "https://fixture.invalid/v1/responses")
+            (list :oauth
+                  "https://fixture.invalid/codex"
+                  "https://fixture.invalid/codex/responses")))
+    (destructuring-bind (auth-kind base expected) case
+      (let* ((provider
+               (cadr-ai:make-openai-provider
+                :api-key (when (eq auth-kind :key) "key")
+                :oauth-access-token
+                (when (eq auth-kind :oauth) "token")
+                :oauth-account-id
+                (when (eq auth-kind :oauth) "account")))
+             (model
+               (cadr-ai:make-model
+                :id "gpt-test"
+                :provider :openai
+                :api :openai-responses
+                :base-url base
+                :max-tokens 4096))
+             (captured nil))
+        (let ((*http-request-function*
+                (lambda (url &rest arguments)
+                  (declare (ignore arguments))
+                  (setf captured url)
+                  (values
+                   (read-fixture
+                    "test/fixtures/responses/openai-complete.json")
+                   200
+                   '(("content-type" . "application/json"))))))
+          (complete-chat provider model (sample-context)
+                         :max-tokens 4096)
+          (is (string= expected captured)))))))
+
 (test complete-chat-normalizes-api-errors
   (multiple-value-bind (provider model)
       (provider-case :google)

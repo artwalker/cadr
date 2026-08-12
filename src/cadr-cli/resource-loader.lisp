@@ -155,15 +155,21 @@ Returns the deduped list and a list of collision records
                  (getf entry :name)))))
 
 (defun load-project-context-files (cwd)
+  ;; pi@53fa77ccd core/resource-loader.ts:70-88: the first existing
+  ;; candidate wins per ancestor directory.
   (let ((files nil))
     (dolist (directory
              (ancestor-directories cwd))
-      (dolist (name '("AGENTS.md" "CLAUDE.md"))
-        (let ((path
-                (existing-file
-                 (merge-pathnames name directory))))
-          (when path
-            (push path files)))))
+      (let ((match
+              (dolist (name '("AGENTS.override.md" "AGENTS.md"
+                              "AGENTS.MD" "CLAUDE.md" "CLAUDE.MD"))
+                (let ((path
+                        (existing-file
+                         (merge-pathnames name directory))))
+                  (when path
+                    (return path))))))
+        (when match
+          (push match files))))
     (nreverse files)))
 
 (defun nearest-config-file (configs name)

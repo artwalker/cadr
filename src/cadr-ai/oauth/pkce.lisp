@@ -5,10 +5,14 @@
   (method-name "" :type string)
   login-label
   auth-url-instructions
-  manual-input-message)
+  manual-input-message
+  ;; pi@53fa77ccd packages/ai/src/auth/oauth/*.ts — subscription-backed
+  ;; OAuth access (footer "(sub)" marker via isUsingSubscription).
+  (is-subscription-p nil :type boolean))
 
 (defparameter +openai-codex-oauth-metadata+
   (make-oauth-provider-metadata
+   :is-subscription-p t
    :provider-name "OpenAI Codex"
    :method-name "OpenAI (ChatGPT Plus/Pro)"
    :auth-url-instructions
@@ -18,6 +22,7 @@
 
 (defparameter +anthropic-oauth-metadata+
   (make-oauth-provider-metadata
+   :is-subscription-p t
    :provider-name "Anthropic"
    :method-name "Anthropic (Claude Pro/Max)"
    :auth-url-instructions

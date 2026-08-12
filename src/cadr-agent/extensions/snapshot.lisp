@@ -303,6 +303,32 @@
              (extension-flag-definition-default flag)))))
       (setf (extension-snapshot-retired-p old) t)
       (maybe-release-extension-snapshot old))
+    ;; pi@53fa77ccd extensions/loader.ts:205-218,410-424 — invalidating
+    ;; stale extension contexts eagerly unsubscribes their event-bus
+    ;; listeners; prune every listener whose bundle left the snapshot.
+    (let ((live-bundles
+            (extension-snapshot-bundles snapshot)))
+      (sb-thread:with-mutex
+          ((extension-host-event-lock host))
+        (loop for name being the hash-keys
+                of (extension-host-event-listeners host)
+              do
+              (setf
+               (gethash name
+                        (extension-host-event-listeners host))
+               (remove-if-not
+                (lambda (listener)
+                  (let ((bundle
+                          (extension-event-listener-bundle
+                           listener)))
+                    (or
+                     (eq bundle
+                         *extension-registration-bundle*)
+                     (member bundle live-bundles
+                             :test #'eq))))
+                (gethash name
+                         (extension-host-event-listeners
+                          host)))))))
     (when (extension-host-agent host)
       (refresh-agent-extension-tools
        (extension-host-agent host))

@@ -21,6 +21,11 @@
       "kind": "intentional-difference",
       "textCovering": true,
       "summary": "The user-approved Goal 16 product identity replaces pi names, commands, configuration paths, and repository links with their Cadr counterparts."
+    },
+    "I05": {
+      "kind": "intentional-difference",
+      "textCovering": true,
+      "summary": "Login-cancel only (textCovering). User-approved goal 13 ruling: cancelling /login is a normal user action and must not produce error-level output. pi v0.84.1 (53fa77ccd) regressed this path: packages/coding-agent/src/utils/abort.ts:3 throws Error('The operation was aborted'), while packages/coding-agent/src/modes/interactive/interactive-mode.ts:5666 only suppresses errorMsg === 'Login cancelled', so Escape-cancel of OAuth/device-code/loopback/API-key login now renders a red 'Error: Failed to login to ... / Failed to save API key for ...: This operation was aborted' line. cadr keeps the approved suppression (docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Retires when the upstream regression is fixed; then reverts to byte-for-byte alignment."
     }
   },
   "entries": [
@@ -405,12 +410,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ae68320e6ded046730cb6caac962536cf533977fd17d68d2c23b23d2b1152220",
-          "cadr": "d30ee688ea51dbeee9e49b8f7700b8d17a55aa86f69c164222481d4ea5dd723a"
+          "pi": "12da0d3c1cb7cbe117ed789fed731ad2ef14bee296a90a6d38e13098dec41071",
+          "cadr": "468f63990fdcdd8d11ba6fc463ff68c258ec8cbc01763aac95eaa210eaee7dce"
         },
         "narrow": {
-          "pi": "bbdbed1f7b81b4cdeebdebe44e2bc1d2ec8ff22b6a2e020f49633989eeb4291d",
-          "cadr": "c8bba378b089ef54c15d20a0de50c0b3c0b07723638fb90397dc15745ebda476"
+          "pi": "40cf091a5ff1b5a51f3cab01638c097c8ddf540beed4a7d034e2046c702ee8fd",
+          "cadr": "63c669b74b52e00218908ecbc03806229176686dab3c5e075731cb8fe5760944"
         }
       },
       "note": "cadr's CHANGELOG links point at github.com/artwalker/cadr (I04), one cell shorter per URL than earendil-works/pi, so markdown lines reflow and the viewport shows a one-entry-earlier slice of the same changelog; all visible text is otherwise identical. ANSI segmentation differs (I01)."
@@ -1078,15 +1083,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "pi": "6cab2b5eaaab426227f981e21ee3bc686f0a55dae604fca27883aa51809379a6",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] the API-key login dialog cancel is followed by three probe turns that all dispatch and render exactly as pi (probe lines, replies, editor, and footer match); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] pi v0.84.1 renders a red 'Error: Failed to save API key for Render Auth: This operation was aborted' line above the three probe turns after cancelling the API-key login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -1113,15 +1119,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "pi": "02129459a51964aa0727cb756f417b08fc951dd801fb7b316ac1127724b39175",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-api-key/process-exit [wide] the teardown after the post-cancel conversation matches pi (resume hint and exit state identical); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At overlays-auth-api-key/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to save API key for Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -1172,19 +1179,20 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "34474bef0f42482f45a66b89d8472ade5089fa9289cd526e95b06294869addda",
+          "pi": "be73e7bc0f54fb9053b682655339ec9c5e66225ab85cbc78ebab261e5f7b13ff",
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         },
         "narrow": {
-          "pi": "398fa1091cd88df1c2844aef7d2f865a42d461b5a7d7bd8876401a2b9cc017e8",
+          "pi": "e13a9f4967d2552f96cff5ab949f50bc56d1353670765a9f0814543f3efe7d98",
           "cadr": "6c0dd094b964b5b6bb123590ec6d334fc9431f1573af0f01cb7e1e51615d8000"
         }
       },
-      "note": "At overlays-auth-oauth/login-cancelled [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At overlays-auth-oauth/login-cancelled [wide+narrow] pi v0.84.1 renders a red 'Error: Failed to login to Render Auth: This operation was aborted' line after Escape cancels the OAuth login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1217,15 +1225,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "pi": "e5d88edfb6cab226e73d89f070ed585d8b8c3abd3d362938f23b9620b91713f5",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-oauth/login-post-cancel [wide] the PKCE OAuth login cancel is followed by three probe turns that all dispatch and render exactly as pi (probe lines, replies, editor, and footer match); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/login-post-cancel [wide] pi v0.84.1 retains the red 'Error: Failed to login to Render Auth: This operation was aborted' line above the three probe turns after cancelling the OAuth login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1252,15 +1261,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "pi": "66c45651b932654c697423cbac2a48e13d11c7ed87b0eecbaeebaf0a1baaea51",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-oauth/process-exit [wide] the teardown after the post-cancel conversation matches pi (resume hint and exit state identical); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to login to Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1311,19 +1321,20 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "34474bef0f42482f45a66b89d8472ade5089fa9289cd526e95b06294869addda",
+          "pi": "c16a148b0db2fbf595b6b8c18209bf93e3e543c43ff56022dad55b1cec6cca07",
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         },
         "narrow": {
-          "pi": "f6cd5cb0569277635ad79582d0d8a47340c6a314d906c45fbf6dcbf84eb6fe1d",
+          "pi": "1dd0f8ad919ce5aa343a4789bcb59ee873fa2b4679a7f273bd2578dc20c21c4f",
           "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
         }
       },
-      "note": "Escape closes the dialog and restores the editor exactly as pi; same narrow banner wrap consequence (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/login-device-cancelled [wide+narrow] pi v0.84.1 renders a red 'Error: Failed to login to Render Device: This operation was aborted' line after Escape cancels the device-code login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -1333,15 +1344,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "pi": "ae49d51d527908064f475e648b30be8424872f6bd0619fac5e96e837ee95daa4",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] the device-code login cancel is followed by three probe turns that all dispatch and render exactly as pi (probe lines, replies, editor, and footer match); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] pi v0.84.1 retains the red 'Error: Failed to login to Render Device: This operation was aborted' line above the three probe turns after cancelling the device-code login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -1368,15 +1380,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "pi": "a5ee1a0f992560288377cd8c43479d5954b4bf6befdc0c8255edca2dc180d5ea",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-device-code/process-exit [wide] the teardown after the post-cancel conversation matches pi (resume hint and exit state identical); the screen differs only in the product-identity padding columns beside <PRODUCT>/<PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to login to Render Device: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -1406,8 +1419,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ab495f58eac8d2c7f4b40511b51c036752d62fdc6522b8ffe57da9cf5ffbc83a",
-          "cadr": "ab495f58eac8d2c7f4b40511b51c036752d62fdc6522b8ffe57da9cf5ffbc83a"
+          "pi": "a732c9bd15b008cf323a4d36485f584b393772d236a9ef2b403313fe185fab95",
+          "cadr": "a732c9bd15b008cf323a4d36485f584b393772d236a9ef2b403313fe185fab95"
         }
       },
       "note": "At overlays-core/overlay-fork [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1476,8 +1489,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "9ea7ff49011d3b31fce190bbc0d0fb39995a9798f4da2261c58faa9c61e230d4",
-          "cadr": "9ea7ff49011d3b31fce190bbc0d0fb39995a9798f4da2261c58faa9c61e230d4"
+          "pi": "e50452a2a263172b67782a96ca96eb4110830a43245a3cc7ce2a91965ff9ac13",
+          "cadr": "e50452a2a263172b67782a96ca96eb4110830a43245a3cc7ce2a91965ff9ac13"
         }
       },
       "note": "At overlays-core/overlay-scoped-models [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1494,8 +1507,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "eab3f491aee7bb33454783f27a5600f0a649054e9aeab1367345bb3026f18478",
-          "cadr": "d483cce9a8310e2223ab257ef902559998949225ea9e0d6e5d2b9e4a21e4829b"
+          "pi": "ff0eae07827080af90c4805aab464777a9d1ad60c9bc98f9d4c5db412fecb959",
+          "cadr": "3ac3fc496286a848604d0451cdbb688dd83041d2f14d046bd986b42c251680a2"
         }
       },
       "note": "At overlays-core/overlay-scoped-models [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1511,8 +1524,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "afbc5f0042b747416c5bf8c7dc57c7f5c4232409765c54ebe4e268af375d67d3",
-          "cadr": "afbc5f0042b747416c5bf8c7dc57c7f5c4232409765c54ebe4e268af375d67d3"
+          "pi": "6a3e79fa9e3dd1c9e13f14ab3d78406542908c602f1b4212ce0dd5d0116a84d7",
+          "cadr": "6a3e79fa9e3dd1c9e13f14ab3d78406542908c602f1b4212ce0dd5d0116a84d7"
         }
       },
       "note": "At overlays-core/overlay-session [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1546,8 +1559,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "d49e6ec544d6d2e160df5d114269bab633c30520eb99d730af547bd8dabfc816",
-          "cadr": "d49e6ec544d6d2e160df5d114269bab633c30520eb99d730af547bd8dabfc816"
+          "pi": "6a04e3423c5bfc5f3d90f8b0f1013dfd89322501f2d9b72298701eec0c7b4d6e",
+          "cadr": "6a04e3423c5bfc5f3d90f8b0f1013dfd89322501f2d9b72298701eec0c7b4d6e"
         }
       },
       "note": "At overlays-core/overlay-session-delete [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1581,8 +1594,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ef24643d7c0e3b817825cabcc54bc7a0cd4f0ebde1f0109ef4892fd413e3fbb0",
-          "cadr": "ef24643d7c0e3b817825cabcc54bc7a0cd4f0ebde1f0109ef4892fd413e3fbb0"
+          "pi": "ead33a0ea1467874d16499876a9350a7e4f0f8d9d762fb51d889aa663da68d01",
+          "cadr": "ead33a0ea1467874d16499876a9350a7e4f0f8d9d762fb51d889aa663da68d01"
         }
       },
       "note": "At overlays-core/overlay-session-rename [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1616,8 +1629,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "976981a4db9c7294a3bf991cd77936f5d1408dd4a29769d3afc07604f944f29f",
-          "cadr": "976981a4db9c7294a3bf991cd77936f5d1408dd4a29769d3afc07604f944f29f"
+          "pi": "af4878738102c4d9ca5174da33491bbbeff24f600348512ea068e13a283856f3",
+          "cadr": "af4878738102c4d9ca5174da33491bbbeff24f600348512ea068e13a283856f3"
         }
       },
       "note": "At overlays-core/overlay-settings [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1634,8 +1647,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e50aaa63b2fa22d54aa8eb5f129ee2164c2b6dd4543ced3a9694878bffb786e1",
-          "cadr": "77f1f59e65eacfafa01867d946ff9d4db24f5027060f50dbb30edd4cb3f47696"
+          "pi": "79252b689013bf4df39160f1df047246593decbb2bc6590c64c0950ed1421f55",
+          "cadr": "a5fbd962653ba942954cd0481d04ec824e692f0e4167b476730d529e08340f76"
         }
       },
       "note": "At overlays-core/overlay-settings [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1651,8 +1664,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "14970ae6126a2ca0d08a54d25f94cd23399fb8bb8d2d25b329e7025290b88611",
-          "cadr": "14970ae6126a2ca0d08a54d25f94cd23399fb8bb8d2d25b329e7025290b88611"
+          "pi": "8c314c29760a6bcca5b87e38ab4b8f27bed31486f00b85aa27f2e3e9b90f94d7",
+          "cadr": "8c314c29760a6bcca5b87e38ab4b8f27bed31486f00b85aa27f2e3e9b90f94d7"
         }
       },
       "note": "At overlays-core/overlay-tree [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1686,8 +1699,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "536f9ea1c6060994dbb5059f3aae27e2bd6e34c346518585a52a37a8e1b7b583",
-          "cadr": "536f9ea1c6060994dbb5059f3aae27e2bd6e34c346518585a52a37a8e1b7b583"
+          "pi": "3dc26741eee80bf3ee6d6ddb9d2c0be2b6659693cb47cff6106b68ef3134ee91",
+          "cadr": "3dc26741eee80bf3ee6d6ddb9d2c0be2b6659693cb47cff6106b68ef3134ee91"
         }
       },
       "note": "At overlays-core/overlay-tree-label [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1989,15 +2002,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "34474bef0f42482f45a66b89d8472ade5089fa9289cd526e95b06294869addda",
+          "pi": "eff8c927a215175c0a113a6efeadf5e5fe685d216f2523ded33590c2f37a9035",
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] escape closes the dialog and restores the editor exactly as pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] pi v0.84.1 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2007,15 +2021,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "f6cd5cb0569277635ad79582d0d8a47340c6a314d906c45fbf6dcbf84eb6fe1d",
+          "pi": "acff9fd73f2dfdcefee31b453b10f8110d13af130f30f6e08a2405c56b739e3d",
           "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] escape restores the editor as pi; the same banner wrap consequence (I04) keeps one more startup line visible; ANSI segmentation differs (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] pi v0.84.1 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2025,15 +2040,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "2118241177c5d335499bff4a2a9087630045d14f5925ba4923b3d26cbfc83c7f",
+          "pi": "627691c0a5e242b964e9fe5b4bb498564b582bcb585645fcc00f5b324314c529",
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] three post-cancel probe turns dispatch and render exactly as pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] pi v0.84.1 retains the red 'Error: Failed to login to Render Loopback: This operation was aborted' line above the three probe turns after cancelling the loopback login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2060,15 +2076,16 @@
       ],
       "classes": [
         "I01",
-        "I04"
+        "I04",
+        "I05"
       ],
       "screenSha256": {
         "wide": {
-          "pi": "591565706d1027839afcdf0ba03cc7a34dc26f1a94208947a2c1ebe26e597b8e",
+          "pi": "118bd255059a344bdfea374bd92cce271dcc32508008afaa062e138c4e22bb80",
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-browser-callback/process-exit [wide] teardown matches pi; only identity padding (I04) and ANSI segmentation (I01) differ."
+      "note": "At overlays-auth-browser-callback/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to login to Render Loopback: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2569,8 +2586,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "47396353e7c8fda5a8f3960b6e3884bbabae1f722218a7ec44e073975d9753f3",
-          "cadr": "b304b9134d9bdf2846442e6a11ea31bde2fca5e7131f73f643bfe5b951aa75e0"
+          "pi": "f2283784bd80f135c51a7a5a2a91148735e8159d4ebe54eb959be734c0d48def",
+          "cadr": "85c29c884f2323b4344c95f78129dfc6e45e9d46a19351a4710916b30076f8af"
         }
       },
       "note": "At settings-state-sweep/settings-row-01 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2586,8 +2603,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a18f4eac33bb608e8da28f4ae72f85aea68dc9e99a6da85253c9acf2efda5101",
-          "cadr": "a18f4eac33bb608e8da28f4ae72f85aea68dc9e99a6da85253c9acf2efda5101"
+          "pi": "98491d4da51c8cfa5e3b53b47b02c3c1637be12e23e5955e31fdbc78a27a41a2",
+          "cadr": "98491d4da51c8cfa5e3b53b47b02c3c1637be12e23e5955e31fdbc78a27a41a2"
         }
       },
       "note": "At settings-state-sweep/settings-row-01 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2604,8 +2621,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fbe85ad7a86c434662bcc540ed3a3a6021b94cc0e67648a4f2f407d16c21d190",
-          "cadr": "1f0337045c8933db25a771515a5feec64416337b953982590d33240d99a27685"
+          "pi": "6c953c9ca62abd45dc75ff0ca607f3f7f66373c25dbf67d81dde565a322f876b",
+          "cadr": "f5b4583b42faedb17ca052d0964cc5977f3d5ac253414e57fc90b6ba32934497"
         }
       },
       "note": "At settings-state-sweep/settings-row-02 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2621,8 +2638,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "6ff7c505f8e24472afecc61b218ad0d7bd43db70a97018584dca1abca51f3000",
-          "cadr": "6ff7c505f8e24472afecc61b218ad0d7bd43db70a97018584dca1abca51f3000"
+          "pi": "502742fc1567343fb066a29dce1460cdde2d77fb5d6e5831547f42ad9e8f1d62",
+          "cadr": "502742fc1567343fb066a29dce1460cdde2d77fb5d6e5831547f42ad9e8f1d62"
         }
       },
       "note": "At settings-state-sweep/settings-row-02 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2639,8 +2656,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8dc7019cbde7a410705db8f12e182a9fc1778c8a9d892687b93008abbc4066b8",
-          "cadr": "169883c95847760fad7fa43d0dd51a5db8663a821a63ed41cc6198b0a28d8944"
+          "pi": "e85b991c573b469c1d9a316020f1f58f843de2ec157c13bc66ec86f70b6ed0ed",
+          "cadr": "a0009fad1b4c22dfb824a2144e6f8cc6e74ecd5f66fdef30061e7c0c9f3bdd55"
         }
       },
       "note": "At settings-state-sweep/settings-row-03 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2656,8 +2673,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "7ef2fac9bd0469612bfc60348206929b7a9e58697373a8881158763ee713536f",
-          "cadr": "7ef2fac9bd0469612bfc60348206929b7a9e58697373a8881158763ee713536f"
+          "pi": "4ec2af0372ef2fcb8be548d031c45c93149af638d533391092ca212f6efff967",
+          "cadr": "4ec2af0372ef2fcb8be548d031c45c93149af638d533391092ca212f6efff967"
         }
       },
       "note": "At settings-state-sweep/settings-row-03 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2674,8 +2691,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9422570255b46925fba79dd81c3c38ca38f864c1e9a8819c5b1c94befeb2219d",
-          "cadr": "de7bbe3a9d343f2e2065394471cf5f663efdd0a49f768e3958c359a63b3937c1"
+          "pi": "4d28751a00194ce811fd367f50ce71d8bb1cecb61b615a52532e82079e2787e5",
+          "cadr": "f7301531dcabf4a75a5e5b8d09fc435c75c5e3424757b43b909c34c31a6b19ad"
         }
       },
       "note": "At settings-state-sweep/settings-row-04 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2691,8 +2708,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "5b7514d36c1e5ad14cf337c104f2161de8d774da1d7caa55b30c9eb6af539839",
-          "cadr": "5b7514d36c1e5ad14cf337c104f2161de8d774da1d7caa55b30c9eb6af539839"
+          "pi": "aa9cbce278b2abac97cc9e7b89cca6f1fd964340754ca5ddb50075a165b118ab",
+          "cadr": "aa9cbce278b2abac97cc9e7b89cca6f1fd964340754ca5ddb50075a165b118ab"
         }
       },
       "note": "At settings-state-sweep/settings-row-04 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2709,8 +2726,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e1beecf8abc8f675d46041d15e9f4801400d2c70895421ec10c136cd25dd101d",
-          "cadr": "8bcf340e0882ecda4a6c78e6b74154f4fe053ba9a4a319605fdac9603033c7cd"
+          "pi": "5e260d0671b47eba99ae1a2ede3f886e819d90980885c70e62878824ccb2ee2c",
+          "cadr": "642be4c932c6d289d47a78eb97777ea8fdaeaac3f0a585435edf05d58d711b53"
         }
       },
       "note": "At settings-state-sweep/settings-row-05 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2726,8 +2743,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "dd39c65e2bf7def2b5ede5a40d8338bed62dad4f9329d7f7a274ef4d94cf09c7",
-          "cadr": "dd39c65e2bf7def2b5ede5a40d8338bed62dad4f9329d7f7a274ef4d94cf09c7"
+          "pi": "9746915125f684655ca9d03c039982ac9813eeecf95dec0df43e58935c081f1c",
+          "cadr": "9746915125f684655ca9d03c039982ac9813eeecf95dec0df43e58935c081f1c"
         }
       },
       "note": "At settings-state-sweep/settings-row-05 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2744,8 +2761,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7c24b472021fc4d42629c1803b6deac36c1a782ee16a76be78387cd4c9db74c0",
-          "cadr": "12efb2fe6a4882545e792cafba1b2e130bd95b859ed5804a2cb1de26ef63f0fb"
+          "pi": "3cbab48ab35c5ec4ff9b09fc917af1d8174e45862499ca57e0ce586cc1c3693b",
+          "cadr": "5472f2b25f81f68d2c05d25d6db14a206b4123c712856a504280b6b3f48e4ea4"
         }
       },
       "note": "At settings-state-sweep/settings-row-06 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2761,8 +2778,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "9e0b83195ffb086223327613ae061131fe2528d67d2d9e5af59b0694a93e9337",
-          "cadr": "9e0b83195ffb086223327613ae061131fe2528d67d2d9e5af59b0694a93e9337"
+          "pi": "8e9171e626625ee1bd955cd573b664f7adf274d0172655a797a0b5bf41d58e73",
+          "cadr": "8e9171e626625ee1bd955cd573b664f7adf274d0172655a797a0b5bf41d58e73"
         }
       },
       "note": "At settings-state-sweep/settings-row-06 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2779,8 +2796,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "63ec906116b0f829ef6641c7bc41384e9ff91881ac43d2fdaed2d9e9fb790a74",
-          "cadr": "7325a6eff7a8caa64ea4f4266993f3d730b5a6c4ef9cc3edba13b8b651e52f53"
+          "pi": "874a2f5c078d01890c1353128a844de9b3a6dc6551b43b831b38029179cbc0a9",
+          "cadr": "07d8914f7737206346d2938fc970fa478cf567247ce78b4a08cb309b325f04d6"
         }
       },
       "note": "At settings-state-sweep/settings-row-07 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2796,8 +2813,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "3a1b523d00cc611ef2e5ffd744262020784d8b97999e356107779b06ef83613f",
-          "cadr": "3a1b523d00cc611ef2e5ffd744262020784d8b97999e356107779b06ef83613f"
+          "pi": "2bc1e7bf4fa8b242626941d8801084c3b78fe3b439a4e678e1a9590c5ecec88c",
+          "cadr": "2bc1e7bf4fa8b242626941d8801084c3b78fe3b439a4e678e1a9590c5ecec88c"
         }
       },
       "note": "At settings-state-sweep/settings-row-07 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2814,8 +2831,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "380625467405d254c4436a6ff7113e8c35c2f884f7181834f39de48a50401be8",
-          "cadr": "07d1647547be230c732bdde66b860a9af39aca90023e5720b3573915b4f12d2a"
+          "pi": "51873e184752f871d88042b2ad4f5cff7dc0acb06c41600db8528008fae23164",
+          "cadr": "12b5e0c5d8d97434641599c7d3c956f91d39ad1896fcf5c4aa1e4348c0fa34bc"
         }
       },
       "note": "At settings-state-sweep/settings-row-08 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2831,8 +2848,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a647b37bd88e8bfd7acceb679ff98e5f61d3e182d9bf7a9fe690018d23648b64",
-          "cadr": "a647b37bd88e8bfd7acceb679ff98e5f61d3e182d9bf7a9fe690018d23648b64"
+          "pi": "acfa16db266bece2822e0fa514c569391b9157a5a6bd5a572b4b2373353ca5bd",
+          "cadr": "acfa16db266bece2822e0fa514c569391b9157a5a6bd5a572b4b2373353ca5bd"
         }
       },
       "note": "At settings-state-sweep/settings-row-08 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2849,8 +2866,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "348f2dd00dcabd72ed08542c6f24d19056d07b10c52f220118769bddfae7721b",
-          "cadr": "55166e4d3ede7606fbf69efb82f2ff004352326a2a1ff4507b1874c30a5f8fe2"
+          "pi": "4c28150bc5ed5110b40e6915e8a6698b8e56574b7a87354c3eb37cd7f2834a2d",
+          "cadr": "43d0db209f721fd8806d2d4e1005a11988a04e0b215b54de9968ca241187eb74"
         }
       },
       "note": "At settings-state-sweep/settings-row-09 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2866,8 +2883,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0d7961eddcafd355a5f786b5c983737f904f899425f27d6a425d3dbfe688bf06",
-          "cadr": "0d7961eddcafd355a5f786b5c983737f904f899425f27d6a425d3dbfe688bf06"
+          "pi": "50fa7f429e29b7b2f0e8449f730571e2b35629d80c2921772cc3ee269405e850",
+          "cadr": "50fa7f429e29b7b2f0e8449f730571e2b35629d80c2921772cc3ee269405e850"
         }
       },
       "note": "At settings-state-sweep/settings-row-09 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2884,8 +2901,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "46a0d1388300fce55aeea2362138a846cb88cd2c5b89a95fbffc6c4e62055461",
-          "cadr": "a2786aa2e318ae60a1f4c0741f8c99790adb23bb66b8d499cb93c82d2f8b6479"
+          "pi": "4bbece73f0f8204aaaa909ec2b1031d49a7e10e5d88ea537cd2b6c7afab7fb0f",
+          "cadr": "8915270828d1a640e12c2da6e3c7a3a51613d2e0c78ca1c5f066e02c5874a16b"
         }
       },
       "note": "At settings-state-sweep/settings-row-10 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2901,8 +2918,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "60c5f52973b8b4248f8cfdd010c7c74f86ec938e36f8a7aae27ce86df8b42499",
-          "cadr": "60c5f52973b8b4248f8cfdd010c7c74f86ec938e36f8a7aae27ce86df8b42499"
+          "pi": "f2b7b357ce22ab4d34c86dea311002e4f870b40319a67776cf83f1d5d7120d5c",
+          "cadr": "f2b7b357ce22ab4d34c86dea311002e4f870b40319a67776cf83f1d5d7120d5c"
         }
       },
       "note": "At settings-state-sweep/settings-row-10 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2919,8 +2936,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b23b127a9faedcb02af85d6a3d1c2d622e959fc8f1ab72d25c584fcaefddaa71",
-          "cadr": "f20e5c93aa160a9c419c85bfc3b7cc47f2819350231929071b856a6d220ae2cf"
+          "pi": "8f3ca8e2d143b72e8e17fb21bbe55ed7801c381d5e8fe90686e40d1a263a42c9",
+          "cadr": "ff3201cf43098310cd29a52298185e894fb42d535e1958b80896e793a0f102d7"
         }
       },
       "note": "At settings-state-sweep/settings-row-11 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2936,8 +2953,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "b460fc610dd7df0ea8c3daee91da8a49f683d89ad910a15445824363ed614842",
-          "cadr": "b460fc610dd7df0ea8c3daee91da8a49f683d89ad910a15445824363ed614842"
+          "pi": "9844a811de6ebff0f3f60bf02d3fa113810a5b9eb7a0c921ba06ad9fdf7adef4",
+          "cadr": "9844a811de6ebff0f3f60bf02d3fa113810a5b9eb7a0c921ba06ad9fdf7adef4"
         }
       },
       "note": "At settings-state-sweep/settings-row-11 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2954,8 +2971,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c782c068f075fc38c0433a43734c83f5ba19673bc49e9cb0bb6400468442db91",
-          "cadr": "62e7350120deef7bfe13047a7175cb82c077d7a33559f3c20c20071d87837e4b"
+          "pi": "48398224d4d4182575e4b4c0c1623bf964889460f16bd3a5df969c1662d0b9a7",
+          "cadr": "85502aae561c7a20fa5dfb31053a71556a6b627b1524bea6a69fcdd02f986068"
         }
       },
       "note": "At settings-state-sweep/settings-row-12 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2971,8 +2988,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "b352893455b8b45d783381bf8896d2e74289ca8bbe5999173f4afeb9ca21a72b",
-          "cadr": "b352893455b8b45d783381bf8896d2e74289ca8bbe5999173f4afeb9ca21a72b"
+          "pi": "2c03454f6b9282221ed585db95505b84886673dbc7563519a1864f0cfab50aa7",
+          "cadr": "2c03454f6b9282221ed585db95505b84886673dbc7563519a1864f0cfab50aa7"
         }
       },
       "note": "At settings-state-sweep/settings-row-12 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -2989,8 +3006,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "50a3bbb719ca749a8538ba7d05429083d7078628c968c601093d4e61cc04cf57",
-          "cadr": "f56f11a7a8113ebb92d76216eba6069a7c1549b0fbcd7282a949c5076646882a"
+          "pi": "fb1fbf1bdd3c42fe0fcbc3a586a02c7724761966a7cdd4f1f40387a4ac80bd59",
+          "cadr": "cdb9a6797f75dcbefcf548991652bb43f699d78977f9624ebe730e59fd313bbf"
         }
       },
       "note": "At settings-state-sweep/settings-row-13 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3006,8 +3023,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "19bfaa667a94dd74dcfb999b1e7fc70bf4fa413ed04260ce25da50419a01235b",
-          "cadr": "19bfaa667a94dd74dcfb999b1e7fc70bf4fa413ed04260ce25da50419a01235b"
+          "pi": "deb4be88ab097f8cfe9865fb4b0aa372d092d9a061cb98617fc61f504b0414d1",
+          "cadr": "deb4be88ab097f8cfe9865fb4b0aa372d092d9a061cb98617fc61f504b0414d1"
         }
       },
       "note": "At settings-state-sweep/settings-row-13 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3024,8 +3041,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1e70082076e8d02def5fed593e0b36b957d3d108a4e10362074c7fbb8ec1af8a",
-          "cadr": "602fe7409ac2066c79ba7774021213d777086aa6d8f3eeff1824c2d94d19eee3"
+          "pi": "bd0cb496f206051d3fd0df62c9d6c72d3ef8331bf3c8ba49fe2c6eb5c45bd46f",
+          "cadr": "2e3fdeb8145187f5e583a8bad8858228cbbb0dc2c3319034d3c1652ebe7144a0"
         }
       },
       "note": "At settings-state-sweep/settings-row-14 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3041,8 +3058,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "3d308ed85a34969c444fc2a66d5686ee8325d19f304abf4f2e5861e5dd08a1aa",
-          "cadr": "3d308ed85a34969c444fc2a66d5686ee8325d19f304abf4f2e5861e5dd08a1aa"
+          "pi": "7562029dd15f5890eb800dcb3941fd24becefe831c2ebd1673cbd9b851c85cac",
+          "cadr": "7562029dd15f5890eb800dcb3941fd24becefe831c2ebd1673cbd9b851c85cac"
         }
       },
       "note": "At settings-state-sweep/settings-row-14 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3059,8 +3076,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1debd519cfe7b1965480203ead2e3ad0865203af318e6b828468d07afca3b130",
-          "cadr": "053cec11b8a983dd5244b2f2b7050792345fa73a06f29dfa1ed53c654788d7e8"
+          "pi": "059eeb134fb820545b3b9587895143251cc7367aa4450110cea8c550e49198f2",
+          "cadr": "393c245192adbd3af26365af7ac26569379521c7fce475a29f06bc08a3c7b652"
         }
       },
       "note": "At settings-state-sweep/settings-row-15 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3076,8 +3093,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4e989373e2885d95745536ab085f53bd66aa9fb2f1a10a1168c4c87a9694f9c1",
-          "cadr": "4e989373e2885d95745536ab085f53bd66aa9fb2f1a10a1168c4c87a9694f9c1"
+          "pi": "dae1493017b9769019f9082a355cf50e4b4973e1f35741a6adf5f98d552d43dc",
+          "cadr": "dae1493017b9769019f9082a355cf50e4b4973e1f35741a6adf5f98d552d43dc"
         }
       },
       "note": "At settings-state-sweep/settings-row-15 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3094,8 +3111,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b55e06235b20e8dd2aced170e36f2c0db8c08aaa35e3d8fced8adeb5caa70e0c",
-          "cadr": "fa12b6a2f8b1fb4be2453b0f32abc04bd1124dd8132a4103e3ac08ec54e6dfae"
+          "pi": "1aa09e40c2243b092b3031ca24ae81a0450e36396dd64dde9b9eec40c4f71729",
+          "cadr": "f20420787f79cb1f379f18bb8eac0cf6957e22feaa85f389f6f7caeac1cca233"
         }
       },
       "note": "At settings-state-sweep/settings-row-16 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3111,8 +3128,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "98df69ecc6ba1b79b76a4d6ea859ec5cd7e058ad6b545557e5c420053b2f001d",
-          "cadr": "98df69ecc6ba1b79b76a4d6ea859ec5cd7e058ad6b545557e5c420053b2f001d"
+          "pi": "77166df44643c87a7cf8ca8f1465f0207e0a3d0589dba390531fc3104aad9f72",
+          "cadr": "77166df44643c87a7cf8ca8f1465f0207e0a3d0589dba390531fc3104aad9f72"
         }
       },
       "note": "At settings-state-sweep/settings-row-16 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3129,8 +3146,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "1fed8ea4f85a2f9ce4f4d8a792135235c5fa09ea6eb435978c7b996e4f08aa76",
-          "cadr": "ff7998450ffdf3208b9655c7b0c094bc6ab6917d325ec5359fcee3d526fe8a21"
+          "pi": "1436925f5f3d9f778c194b3460b1e3b5f6f660d88c69f777bd2044b217ce86ae",
+          "cadr": "0392eba6cedb0b7d5513886e0411a7fee00a0656bf4d0f1122ccff0cb12ad9a2"
         }
       },
       "note": "At settings-state-sweep/settings-row-17 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3146,8 +3163,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "37c4953a61a4af03c5f7fef0fa0b027fe559515b3216ebc9cf074cf417542b0c",
-          "cadr": "37c4953a61a4af03c5f7fef0fa0b027fe559515b3216ebc9cf074cf417542b0c"
+          "pi": "fed29c8724625a9805172bc208d5d98496ddee1e060bec9c69bc057904814bef",
+          "cadr": "fed29c8724625a9805172bc208d5d98496ddee1e060bec9c69bc057904814bef"
         }
       },
       "note": "At settings-state-sweep/settings-row-17 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3164,8 +3181,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c413589347534e4c30e4c45bd0f165159db7e90df07d68b0e99ae25623cfd802",
-          "cadr": "dd42833608e8d30357b4b5db82c8ee06e2c08ecfa49238d4e5f95d9224d8e6ac"
+          "pi": "0be6f0f43e40fe2ee4cefe8902043584163a6f3661c91b51c4e2141e90780a55",
+          "cadr": "e7a20bd3727dc0e1c414e87797b8628e49c41d33caa1153b43e0733f9fa8a0f2"
         }
       },
       "note": "At settings-state-sweep/settings-row-18 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3181,8 +3198,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "d72dc88a8b20073a024015409ccfb50cd948cf4dd1a5479c7ba02a81a9878d24",
-          "cadr": "d72dc88a8b20073a024015409ccfb50cd948cf4dd1a5479c7ba02a81a9878d24"
+          "pi": "b86de51b69aa4a30c3b9bb280deca92fdf9bf25a851f06dc33b9728261baf700",
+          "cadr": "b86de51b69aa4a30c3b9bb280deca92fdf9bf25a851f06dc33b9728261baf700"
         }
       },
       "note": "At settings-state-sweep/settings-row-18 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3199,8 +3216,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6ecb5b9ed9757f061cc7964e2f3bbc07d19246da7dfdde494ae7d7f1110ccc62",
-          "cadr": "70825844850ef0288eee9186d5a7e8adb9208a6ace97d2b3e9dd1f534e6c87ff"
+          "pi": "40bac77cceaaaf0d855f4b5f1546bdff3b1dcf9e9919bf392a7d9a25cc85222c",
+          "cadr": "58044cce02426495d774cb350106c5c120774148995b0c4748eb7f95fa0198b0"
         }
       },
       "note": "At settings-state-sweep/settings-row-19 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3216,8 +3233,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "432762f05a66c255b55cea80bedd2c31bd6593615797a656c30f5c70c6a08020",
-          "cadr": "432762f05a66c255b55cea80bedd2c31bd6593615797a656c30f5c70c6a08020"
+          "pi": "bf9f0fec42548a766d7315eb4631ffae293de3287a0fff95549a9b531d10d13e",
+          "cadr": "bf9f0fec42548a766d7315eb4631ffae293de3287a0fff95549a9b531d10d13e"
         }
       },
       "note": "At settings-state-sweep/settings-row-19 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3234,8 +3251,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "68146568c5f2435a5fd27bd6c36b589f45d8a60bb35c64b2fe7760c131d8b89d",
-          "cadr": "d1aea44c2d364c8b4b40ca6502aa8dee1f32134465b9f8605caf970cbd0a0b89"
+          "pi": "eb6e1b71fe649799bb9d45f63b0dbd9a8b41b54f25ce309062f813f674158a29",
+          "cadr": "be29ce2344eda491e73141630c3e4df165c4d360f93a1c9e1d597c2054efbf19"
         }
       },
       "note": "At settings-state-sweep/settings-row-20 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3251,8 +3268,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "63490268c86421c447efd20d19876ab6830568297af4e8af212c028634159337",
-          "cadr": "63490268c86421c447efd20d19876ab6830568297af4e8af212c028634159337"
+          "pi": "fb6e529b9045448d6d115d4e5f8e9f11a1c9139fda209fbd4e0f71f159bac08f",
+          "cadr": "fb6e529b9045448d6d115d4e5f8e9f11a1c9139fda209fbd4e0f71f159bac08f"
         }
       },
       "note": "At settings-state-sweep/settings-row-20 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3269,8 +3286,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "3a299a538f233de9398ca87e219a8fc38d7ea138f04da4f9071c327e1b52b81b",
-          "cadr": "2b34627f444b074031765121429a23c7f55c9ac609302244c341bb279da09bd7"
+          "pi": "5a30a0d96babd84663ae8ccdbed33e6998eb6d14c04a0490198da10727889618",
+          "cadr": "e2f20e14ac349a2801f6465b2dd0e18a8f1d56440ac3176b5cd8e61e6fae7f8f"
         }
       },
       "note": "At settings-state-sweep/settings-row-21 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3286,8 +3303,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0b7d27c1fb8fb5b1de181033128a34a6e43a4a247644fdc419a06490188af30e",
-          "cadr": "0b7d27c1fb8fb5b1de181033128a34a6e43a4a247644fdc419a06490188af30e"
+          "pi": "ccbaf6587aba102488e918829ebe07e1492b43c424c34df877bfc5084f4fc2a1",
+          "cadr": "ccbaf6587aba102488e918829ebe07e1492b43c424c34df877bfc5084f4fc2a1"
         }
       },
       "note": "At settings-state-sweep/settings-row-21 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3304,8 +3321,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6563bd22471b90b85fa4d77493f9f8cea9fd468cf99a6781894fc6e98c2e8a9e",
-          "cadr": "fdfaad70f9283ccc53dc305672043c0b79976f18fac08133c6366d13847d94a1"
+          "pi": "bd2f9f3cff0fbb46a77daadfd3c5ccefdd54781cc887f692028ec0210342fb39",
+          "cadr": "3b18d829b11468e08210e86ed528f8dafdb134ac6df7c9d124d516aa84d4b9d8"
         }
       },
       "note": "At settings-state-sweep/settings-row-22 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3321,8 +3338,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "8150f6225829872d44e7b75c00124a87e6f59307e45f499e4fd672925a7d3f1e",
-          "cadr": "8150f6225829872d44e7b75c00124a87e6f59307e45f499e4fd672925a7d3f1e"
+          "pi": "a815fd05c1f51147d739de9cec660f0e764c615d7dbdcbaaf36c563958e46379",
+          "cadr": "a815fd05c1f51147d739de9cec660f0e764c615d7dbdcbaaf36c563958e46379"
         }
       },
       "note": "At settings-state-sweep/settings-row-22 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3339,8 +3356,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "adfebe0c8f79e12a68e9789d5764d31ba34f32bcf2a8b3d0a049ef4c2c4af5f7",
-          "cadr": "13ff2175f24b8e5a03644e3f37eef29526e9ec51821ea34a01adf1c9db43a04b"
+          "pi": "ac7b1b9823c7986fe1bacb7e4fc519f670a565349f1b6a27e29fe9921b96e13a",
+          "cadr": "4a2cd3900234c3497e674e3d4e2b5b241789a6b4ffbfe64d20769a789cb29dd2"
         }
       },
       "note": "At settings-state-sweep/settings-row-23 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3356,8 +3373,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ebb0ce735c84a8fd24e0a07ff03a4f84f0c8a4fc12595450e5bd74d19e2067f6",
-          "cadr": "ebb0ce735c84a8fd24e0a07ff03a4f84f0c8a4fc12595450e5bd74d19e2067f6"
+          "pi": "50d4cde95d34632f657fc751f1ae0ec5f072ee6147ce3e715d511c7b0c4eecf4",
+          "cadr": "50d4cde95d34632f657fc751f1ae0ec5f072ee6147ce3e715d511c7b0c4eecf4"
         }
       },
       "note": "At settings-state-sweep/settings-row-23 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3374,8 +3391,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9d033dd14fd456cc831a60ec5357eb7900f81dbcea2b976e4ec990cb27c2844c",
-          "cadr": "c84d788d1a93e97f5f54855ac89a0dfa414008b9a27818c40c83a71896ddd45e"
+          "pi": "d3c641b92ecbf4f20ee847e84ae89c070712eaa6acc08bf1fa86ac0fb01dead1",
+          "cadr": "8f9584997da4a3318322292300e731390329c7912b47a65dbf89b271ba73a589"
         }
       },
       "note": "At settings-state-sweep/settings-row-24 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3391,8 +3408,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ad5c3b889dc911a9f7ddf104891ef9af40395b138bb8fa0123c4d9f0948c3818",
-          "cadr": "ad5c3b889dc911a9f7ddf104891ef9af40395b138bb8fa0123c4d9f0948c3818"
+          "pi": "a1e6d5325fb07ca6984db32f14bce623952ccfe68ab72678fc62b13c8e170130",
+          "cadr": "a1e6d5325fb07ca6984db32f14bce623952ccfe68ab72678fc62b13c8e170130"
         }
       },
       "note": "At settings-state-sweep/settings-row-24 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3409,8 +3426,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6d46e61aa0b282fe7f7c67020980f54f0d47bfcb536524988959d70a15003a8b",
-          "cadr": "a4ad7fc541d8478352c026fbe682ca72519ab6b8ce904161f185ac679ce2065a"
+          "pi": "b869369eefedcc7ad637b312747869d574088217b66fa89c6ad2e0c4d14f6132",
+          "cadr": "0c8f0dd8381d42dcf113972ea438b5ea8f9d2a41acfc4a5db5b63b74059d822b"
         }
       },
       "note": "At settings-state-sweep/settings-row-25 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3426,8 +3443,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "020b035a366f50c57fd9334dc8b57546edfa6885c3309eaac8fc293059eefce4",
-          "cadr": "020b035a366f50c57fd9334dc8b57546edfa6885c3309eaac8fc293059eefce4"
+          "pi": "22c6b288e946e93a91f996b8a58442ae137974351184c31a5b7d3ef50ebfe92f",
+          "cadr": "22c6b288e946e93a91f996b8a58442ae137974351184c31a5b7d3ef50ebfe92f"
         }
       },
       "note": "At settings-state-sweep/settings-row-25 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3444,8 +3461,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "10a02edd03c248757a0be5fde2f50471e4c08e88fd2c6a3c7fd8bae0976451f3",
-          "cadr": "8b91a5cf3c1fc711527cf444224c4c30b2ae88b2f2384a85377377d165f24ffa"
+          "pi": "9ce546b9ae084e41f6bc04cf40c9c02cce84240a487d78e6d2d575b1ae0b4220",
+          "cadr": "506562f40e4a3356c9db905a6041fce5a35e2b500adc04f97551eeabafd95109"
         }
       },
       "note": "At settings-state-sweep/settings-row-26 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3461,8 +3478,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "8a7eced153c04374ba4421bb7cfa3396509c380c1a11a30235588dc548f0de00",
-          "cadr": "8a7eced153c04374ba4421bb7cfa3396509c380c1a11a30235588dc548f0de00"
+          "pi": "cbfcec67cd2fe1c5e5e97b3de6824436c910ac0aadbb112cad9ccc14fa0b47ab",
+          "cadr": "cbfcec67cd2fe1c5e5e97b3de6824436c910ac0aadbb112cad9ccc14fa0b47ab"
         }
       },
       "note": "At settings-state-sweep/settings-row-26 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3479,8 +3496,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b0d3c76b5d4bc121117e00def07d736ff252472723910454978640272e533d5e",
-          "cadr": "60e137aba8cea1d787f7e36d87dcd1ec6ecbbbdfcfd8b2b9a5d1eb2736a3a1d5"
+          "pi": "3783adad952c94cc647f89f4e3cac1752229d9cea697a5e6517268596ef11735",
+          "cadr": "9c123feda97e5b82d37dbb5573170e55903694c3d1b69d50eca9204fba2b1ba6"
         }
       },
       "note": "At settings-state-sweep/settings-row-27 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3496,8 +3513,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "26486208419c0385ca50c8d02f9d4fb229dab2721b17df81725a71ccb17647c6",
-          "cadr": "26486208419c0385ca50c8d02f9d4fb229dab2721b17df81725a71ccb17647c6"
+          "pi": "936c0ed10c5a843297579e370d8c1ca9cb9f573e37b47310725876851a32a9ce",
+          "cadr": "936c0ed10c5a843297579e370d8c1ca9cb9f573e37b47310725876851a32a9ce"
         }
       },
       "note": "At settings-state-sweep/settings-row-27 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3514,8 +3531,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "47396353e7c8fda5a8f3960b6e3884bbabae1f722218a7ec44e073975d9753f3",
-          "cadr": "b304b9134d9bdf2846442e6a11ea31bde2fca5e7131f73f643bfe5b951aa75e0"
+          "pi": "ac203160b7043574d33214031a415398492db7eb4e1bae938ac332d65cb12be2",
+          "cadr": "5ccd7afb74b8f908b0ba7c657b00b4fef066600ef6bc629cdddcdc1bea5a1859"
         }
       },
       "note": "At settings-state-sweep/settings-row-28 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3531,8 +3548,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "06e2cee0b9b833b82c7a8bdc4be86c2c90822940d3829d03b53185ac2c64e00b",
-          "cadr": "06e2cee0b9b833b82c7a8bdc4be86c2c90822940d3829d03b53185ac2c64e00b"
+          "pi": "4c512f681e39f912b80f8e3b102b988836c61d0b93da3eaae29b5b1abf1723fd",
+          "cadr": "4c512f681e39f912b80f8e3b102b988836c61d0b93da3eaae29b5b1abf1723fd"
         }
       },
       "note": "At settings-state-sweep/settings-row-28 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3549,8 +3566,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fbe85ad7a86c434662bcc540ed3a3a6021b94cc0e67648a4f2f407d16c21d190",
-          "cadr": "1f0337045c8933db25a771515a5feec64416337b953982590d33240d99a27685"
+          "pi": "e13a3799b5bf0f226b25ddf4a09e8172df6eaf8c7c6fa949b609cc12f2849a7d",
+          "cadr": "8e036f82713b18b014b0f5ebe7354df93167d0fb12f912cd55e9e08015b4182b"
         }
       },
       "note": "At settings-state-sweep/settings-row-29 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3566,8 +3583,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "694e4703c23fcb171857bd69093852f25d8b0ff4f9ebaf82934d0c805d504e9e",
-          "cadr": "694e4703c23fcb171857bd69093852f25d8b0ff4f9ebaf82934d0c805d504e9e"
+          "pi": "365133ab54d42b61aadb686bc7e4496d8b18f650bc12a5aaa25ec20f51a60911",
+          "cadr": "365133ab54d42b61aadb686bc7e4496d8b18f650bc12a5aaa25ec20f51a60911"
         }
       },
       "note": "At settings-state-sweep/settings-row-29 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3584,8 +3601,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "8dc7019cbde7a410705db8f12e182a9fc1778c8a9d892687b93008abbc4066b8",
-          "cadr": "169883c95847760fad7fa43d0dd51a5db8663a821a63ed41cc6198b0a28d8944"
+          "pi": "4e30cd1145312e97a107b6f45babf93ee62ed2c7e06ec4e8ca59c8a864c4db8d",
+          "cadr": "accc4b4b9a571aa2adcff5953d8966a73df24777fefec98d6b6a13ac877b2e51"
         }
       },
       "note": "At settings-state-sweep/settings-row-30 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3601,8 +3618,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "23f362e7da98e91e0c73229f8b1cad131d3da1ad60620656f6b5f24dccd1f24d",
-          "cadr": "23f362e7da98e91e0c73229f8b1cad131d3da1ad60620656f6b5f24dccd1f24d"
+          "pi": "a55cc8541ca4fa6f24e67e69490a5edea9d7c0b15a986e91332a988e08e52f10",
+          "cadr": "a55cc8541ca4fa6f24e67e69490a5edea9d7c0b15a986e91332a988e08e52f10"
         }
       },
       "note": "At settings-state-sweep/settings-row-30 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3619,8 +3636,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "9422570255b46925fba79dd81c3c38ca38f864c1e9a8819c5b1c94befeb2219d",
-          "cadr": "de7bbe3a9d343f2e2065394471cf5f663efdd0a49f768e3958c359a63b3937c1"
+          "pi": "f2283784bd80f135c51a7a5a2a91148735e8159d4ebe54eb959be734c0d48def",
+          "cadr": "85c29c884f2323b4344c95f78129dfc6e45e9d46a19351a4710916b30076f8af"
         }
       },
       "note": "At settings-state-sweep/settings-row-31 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3636,8 +3653,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "eec048040a7589f244148a2a2449a24976ca66b854e6dad8c7adf9863097bb2d",
-          "cadr": "eec048040a7589f244148a2a2449a24976ca66b854e6dad8c7adf9863097bb2d"
+          "pi": "338015be81711c9b2df5b860da91b97a8d4e628b55fcd886faaac0b46fcab665",
+          "cadr": "338015be81711c9b2df5b860da91b97a8d4e628b55fcd886faaac0b46fcab665"
         }
       },
       "note": "At settings-state-sweep/settings-row-31 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3654,8 +3671,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e1beecf8abc8f675d46041d15e9f4801400d2c70895421ec10c136cd25dd101d",
-          "cadr": "8bcf340e0882ecda4a6c78e6b74154f4fe053ba9a4a319605fdac9603033c7cd"
+          "pi": "6c953c9ca62abd45dc75ff0ca607f3f7f66373c25dbf67d81dde565a322f876b",
+          "cadr": "f5b4583b42faedb17ca052d0964cc5977f3d5ac253414e57fc90b6ba32934497"
         }
       },
       "note": "At settings-state-sweep/settings-row-32 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3671,8 +3688,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ecb3b71b8dfc2d5c1259aa1fd84cf7434e8763457dccb3a5043ece672fa0d133",
-          "cadr": "ecb3b71b8dfc2d5c1259aa1fd84cf7434e8763457dccb3a5043ece672fa0d133"
+          "pi": "8ae821fd60c4ff74cff51886560b0bd587557f4d34981513842d182de45a3658",
+          "cadr": "8ae821fd60c4ff74cff51886560b0bd587557f4d34981513842d182de45a3658"
         }
       },
       "note": "At settings-state-sweep/settings-row-32 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3689,8 +3706,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "7c24b472021fc4d42629c1803b6deac36c1a782ee16a76be78387cd4c9db74c0",
-          "cadr": "12efb2fe6a4882545e792cafba1b2e130bd95b859ed5804a2cb1de26ef63f0fb"
+          "pi": "e85b991c573b469c1d9a316020f1f58f843de2ec157c13bc66ec86f70b6ed0ed",
+          "cadr": "a0009fad1b4c22dfb824a2144e6f8cc6e74ecd5f66fdef30061e7c0c9f3bdd55"
         }
       },
       "note": "At settings-state-sweep/settings-row-33 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3706,8 +3723,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "103c826e8c1d6dd0bbe9b96a1f22a0fcbf910ba236523553587dca172fa6a797",
-          "cadr": "103c826e8c1d6dd0bbe9b96a1f22a0fcbf910ba236523553587dca172fa6a797"
+          "pi": "3369bbfe44fdc33e6ab42639b40792ed2f64ff99972b0fa536bb5dab4e38ebfc",
+          "cadr": "3369bbfe44fdc33e6ab42639b40792ed2f64ff99972b0fa536bb5dab4e38ebfc"
         }
       },
       "note": "At settings-state-sweep/settings-row-33 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3724,8 +3741,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "63ec906116b0f829ef6641c7bc41384e9ff91881ac43d2fdaed2d9e9fb790a74",
-          "cadr": "7325a6eff7a8caa64ea4f4266993f3d730b5a6c4ef9cc3edba13b8b651e52f53"
+          "pi": "4d28751a00194ce811fd367f50ce71d8bb1cecb61b615a52532e82079e2787e5",
+          "cadr": "f7301531dcabf4a75a5e5b8d09fc435c75c5e3424757b43b909c34c31a6b19ad"
         }
       },
       "note": "At settings-state-sweep/settings-row-34 [wide] the visible text is identical to pi after the product-name placeholder substitution; the two startup-banner lines keep pi's longer trailing padding because the fixed <PRODUCT>/<PRODUCT_TITLE> placeholders are longer than the substituted pi names (I04 product identity artifact), and the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -3741,8 +3758,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "383c5a40b7cf26c2c27d13d0f3451863244fe7d941a34a48f87b28fea1709b30",
-          "cadr": "383c5a40b7cf26c2c27d13d0f3451863244fe7d941a34a48f87b28fea1709b30"
+          "pi": "d84c2cc31f79bc3f661009f940359406b41d46f03c1eecb848228f469e6b8f8e",
+          "cadr": "d84c2cc31f79bc3f661009f940359406b41d46f03c1eecb848228f469e6b8f8e"
         }
       },
       "note": "At settings-state-sweep/settings-row-34 [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01). The scenario now enables terminal image support, so the sweep also traverses the Show images and Image width rows."
@@ -4092,11 +4109,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "d7f30c291f21d64c2244ed362752165182f160d4f44608bb552dddf0c4f84b64",
-          "cadr": "d7f30c291f21d64c2244ed362752165182f160d4f44608bb552dddf0c4f84b64"
+          "pi": "3c3afd8605f0cba3804540323a48be95e2c014b719aafd5c21ca588dc1c8ba9e",
+          "cadr": "3c3afd8605f0cba3804540323a48be95e2c014b719aafd5c21ca588dc1c8ba9e"
         }
       },
-      "note": "At tool-bash-abort/bash-tool-aborted [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At tool-bash-abort/bash-tool-aborted [narrow] under pi v0.84.1 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi byte-for-byte including the Error line; only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -4110,11 +4127,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "fa3566011af0836bf49051f4a76a113c7e44c62404b8d8dd8989ab697daa993a",
-          "cadr": "8e30631cbe6fe0477f6f4512c22511ed6519435bc79c81e87243ea46ef4a0d0c"
+          "pi": "18adf8969407292729754039790ceed12e8f91a5ef3ef93fac04aafe740988f9",
+          "cadr": "586865f95c8f86eadc3b1ca19149f4103c8eb4d088d2a78aa23285853c6854ad"
         }
       },
-      "note": "At tool-bash-abort/bash-tool-aborted [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At tool-bash-abort/bash-tool-aborted [wide] under pi v0.84.1 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -4127,11 +4144,11 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a3323280468cf714c61e0e0907e25b6b8fa72c9cbdc160d2bfc459d4de16f2ad",
-          "cadr": "a3323280468cf714c61e0e0907e25b6b8fa72c9cbdc160d2bfc459d4de16f2ad"
+          "pi": "e5ca0cda55297f275cba7e463315ed3308b58d1719cf5b80cdc343e391e24097",
+          "cadr": "e5ca0cda55297f275cba7e463315ed3308b58d1719cf5b80cdc343e391e24097"
         }
       },
-      "note": "At tool-bash-abort/process-exit [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At tool-bash-abort/process-exit [narrow] under pi v0.84.1 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi byte-for-byte through the exit teardown; only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -4145,11 +4162,11 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d8f3f93d38aef675460f39810a4dff547201e1b3d947afaf288ae095f77b76a0",
-          "cadr": "286ce4da3058934b12e66233ba0b435e0dae72238a2dae4495ff5afb116fbca9"
+          "pi": "28cfcd5dc694f3b607a61561df8a3151a33bea41497f3ffeafa68be736785454",
+          "cadr": "d3f3c027fdedd44ca4a49aa097fc3db5b4867360940a72802c5d3f8ac725b1cc"
         }
       },
-      "note": "At tool-bash-abort/process-exit [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At tool-bash-abort/process-exit [wide] under pi v0.84.1 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -5249,6 +5266,29 @@
     },
     {
       "scenario": "config-selector-state-sweep",
+      "checkpoint": "config-global-rechecked",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "382d6aeaa344c9141af934b65a0e86dbf52de9d28e3754f44ff02d1a4029d91c",
+          "cadr": "cdbe7613316ac50e62246fda9353380bfca6542e244ad6e715f552c7ed03a518"
+        },
+        "wide": {
+          "pi": "5d9da047a8353278d5bda0322b0afb3d663b7cf073fec6add38407396ffcd4e0",
+          "cadr": "f3cb31f64acf15b8baf67cf2df5699c89224f269bf39d0841f921c56223ae891"
+        }
+      },
+      "note": "At config-selector-state-sweep/config-global-rechecked [narrow+wide] the re-checked global resource checkbox state matches pi; the visible difference is the settings path line '~/.pi/agent/settings.json -> ~/.cadr/agent/settings.json' and the group header 'User (~/.pi/agent/) -> User (~/.cadr/agent/)' (I04); the raw ANSI update segmentation differs (I01)."
+    },
+    {
+      "scenario": "config-selector-state-sweep",
       "checkpoint": "config-project-initial",
       "dimensions": [
         "narrow",
@@ -5356,8 +5396,8 @@
           "cadr": "267d5cce0b9c28a79cbbcaa3ddf7783d92bb0e4ea06cad0ecb07dc86c5f0b08f"
         },
         "wide": {
-          "pi": "0a77c59ae0b854ae0c0f26d92d23bbc8c3aeccf72ae42b03c1eed5e2e5815876",
-          "cadr": "c25a4770ffa6d16ac934fcc2b61fc9eaeb5db238e947c9e76c8a0d1ca172840b"
+          "pi": "c2800020151f4a72ea9bc6e65d21507bd4fb12de9b304f15f54d101d4f3bf985",
+          "cadr": "3fde791f86a6443be85ff73f362b33f877a0ab82b9194c61f1ada92d6803f148"
         }
       },
       "note": "At selector-scoped-state-sweep/process-exit [narrow+wide] the post-exit screen matches pi except product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> and the shifted wrap of the startup hint (I04); the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5374,8 +5414,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "300b4730f1469e64b51cd6d7260c9624bb8c2a1853ed973f9152a7a63a3fb6e1",
-          "cadr": "e51a7fdb00c5ff956423719e711cb8937c7c99a8300ad8fd24f99902f528d1dc"
+          "pi": "186469eaafb1562d14ba1275ed870acdd9fa10b7e833b1db9e31b0fa1426a2ac",
+          "cadr": "14e9a89745c142fbf8108d7bba491c5d5940ebe653528ed8431144a04e350b77"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-first-screen [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5391,8 +5431,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "c2e6730ab799818ea226f7deb3fd749aa708d27b667b3b0675752a9088f37a23",
-          "cadr": "c2e6730ab799818ea226f7deb3fd749aa708d27b667b3b0675752a9088f37a23"
+          "pi": "fdeb8ad9c2576088fe9db47e2acf76a7f41a8bcfa3b7f7d7abec75acac9c4395",
+          "cadr": "fdeb8ad9c2576088fe9db47e2acf76a7f41a8bcfa3b7f7d7abec75acac9c4395"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-first-screen [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5409,8 +5449,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "259552e4a6419f869ab3e4ab63314d528fd8400661d487526d7759d1623cdea7",
-          "cadr": "88cfd8a00b46493433df0bbf9902349e71248a5ac4ffadb17d7484358ce241ab"
+          "pi": "243ca93e3dc890f138d239f08df52bdf70fd7f0daf06370a184cd7d699b06084",
+          "cadr": "84c3769a7560a1cd4a5bb8cfe9d1300fb396678184d0d536fd634b3186083f90"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-head-01 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5426,8 +5466,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4dd6a1951fe9cf31c24517dd328b64412dcc6f13614f11d02282dfe0d6edaf86",
-          "cadr": "4dd6a1951fe9cf31c24517dd328b64412dcc6f13614f11d02282dfe0d6edaf86"
+          "pi": "a8e1a9927637b0c63eda2ffe4bebad6d836926e1ae67b165c66fb1e20120a08f",
+          "cadr": "a8e1a9927637b0c63eda2ffe4bebad6d836926e1ae67b165c66fb1e20120a08f"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-head-01 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5444,8 +5484,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "ba1e4f92c12681a5f2e7ecd1edf86ffd13a3ecb1e30a20561ef2a993fe77c388",
-          "cadr": "c9828a7b99d85d2355964915c02dbb4093e48334ec3e9613b90aaf66814ed17e"
+          "pi": "6d84682ac6561e6906d8cfc97991d83fb102e8e164112ad158c37fc3310e0d32",
+          "cadr": "2e4e6b7bc9516b761408b399545ac02f1dcab770afb4ee85ce5d5e1fbadab1b4"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-head-02 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5461,8 +5501,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "2b8e6b6bbfcebee7984d1f7776f57fb882541f721f045c291f7cee6eb37c5f3b",
-          "cadr": "2b8e6b6bbfcebee7984d1f7776f57fb882541f721f045c291f7cee6eb37c5f3b"
+          "pi": "c4cd20743d9071c5cb0e761aefee7ec8f7026ee522e69664344d25a5bd3aba55",
+          "cadr": "c4cd20743d9071c5cb0e761aefee7ec8f7026ee522e69664344d25a5bd3aba55"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-head-02 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5479,8 +5519,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "91b47964de2d62be3ec445dad11438b34d5c82127b5da59a04bf37b442fef4cd",
-          "cadr": "888aade5f469507aa6017553b059d713e63aa06b11268440e516cedcf4c6895b"
+          "pi": "79f2226fc8515bfbcfd631fea6c8ec3f074a1cfd805ed3ff11809e095c95dd74",
+          "cadr": "b37eb78a22deeb7d4653ef50b5a19b29cad30225aeb58b00744ced3d409cb37a"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-01 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5496,8 +5536,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "541f0ef14ef6acca2d8aef0c6b31792cb81f831c4488eb2ef03f6a39eaa91707",
-          "cadr": "541f0ef14ef6acca2d8aef0c6b31792cb81f831c4488eb2ef03f6a39eaa91707"
+          "pi": "c77623960a432dbf8a348cbe8deca192d7ca0501e6b97c7823ee579f82fefec1",
+          "cadr": "c77623960a432dbf8a348cbe8deca192d7ca0501e6b97c7823ee579f82fefec1"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-01 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5514,8 +5554,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c593483f4b02f55b9c7ee93c7530fc93dc87561dc58db3f8fef07fdbd82c3f91",
-          "cadr": "ad075f17c222b8c6631fddd2846dd966505dedb3d8fa50e73e79b580f811ccdf"
+          "pi": "7db21e2edebcc98a9aa8829d95d7889e664efecabb6bc1d29db49efc4ad43eb4",
+          "cadr": "3a1aeb6248f7bf22cf5cfeeddcdd756c38741f0341e365d075568d91f537895f"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-02 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5531,8 +5571,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "843f4d2e9cdd05e88031bad9a8ba8563ecbee0bb7c2fe3c42244e35008cd14a2",
-          "cadr": "843f4d2e9cdd05e88031bad9a8ba8563ecbee0bb7c2fe3c42244e35008cd14a2"
+          "pi": "c74c4487b89ba9529ef74bf3b411f8a360741ff0923d2462a782cf5b8ea74d43",
+          "cadr": "c74c4487b89ba9529ef74bf3b411f8a360741ff0923d2462a782cf5b8ea74d43"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-02 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5549,8 +5589,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "660d67b12994e948fea36f1e6fa4f448743194d168b8e82c74bd78c619fc6a32",
-          "cadr": "863ea1352be2317fffa9c533a66b15af21713b2108f19317ea83ad6a8bb7ee6e"
+          "pi": "6169e1e3aa2b85677dd30b015e0fbe83b580ba19a3b99adabd03be82b33087b6",
+          "cadr": "0c05824ea52a3022822ad67d530f173a5913b157dfda5417d116a32cbaa6b5be"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-03 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5566,8 +5606,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "b87382702dd51bcf4afcf28f276bbf9eb90f7c390ca48494f305debaed48110c",
-          "cadr": "b87382702dd51bcf4afcf28f276bbf9eb90f7c390ca48494f305debaed48110c"
+          "pi": "4e94b25d73c001f71969ec47422f5b80b5efae828709d4d4537bae68313c860c",
+          "cadr": "4e94b25d73c001f71969ec47422f5b80b5efae828709d4d4537bae68313c860c"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-03 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5584,8 +5624,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "73e64591fe70323dfb6f0b9cd99fa618061cda0b77679df2a6647cd62528a707",
-          "cadr": "6d56def093a48715ed717741947585a07b04826bae8f12f654872fbcb8e70586"
+          "pi": "9f4da91504c3d65b573f942c7883faa0775886331ed4e909e5abdbf74189339a",
+          "cadr": "945b759566f81582dbbabff2d75e9beb95eb4e3af5c9a3f2c6e89083fb18f4bd"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-04 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5601,8 +5641,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "cd836e8f33c7b84de661a7eeb589fb0598350e1656b5d171f3a5f125edd06f87",
-          "cadr": "cd836e8f33c7b84de661a7eeb589fb0598350e1656b5d171f3a5f125edd06f87"
+          "pi": "455349bb2da745d4c772186a5c315daef9b61919e2e6ea1442f6e2b4068ed498",
+          "cadr": "455349bb2da745d4c772186a5c315daef9b61919e2e6ea1442f6e2b4068ed498"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-04 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5619,8 +5659,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "d29232efe3cb9541a70f8dc436c21d5cb885b37d6eba81dd9a650a151925596d",
-          "cadr": "8afe8dec581d85fa4a0b3aa9361d3dc440fad826d00d516b53f455045c3cdc27"
+          "pi": "d8631b4da8aff71268a80725726d0e5e63f5bd4aff68eed18f1dff6e7ccd4400",
+          "cadr": "6d80d064571afe41678cfe5f815710f6b23bacd636e73b9dd13a98438a0e56e6"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-05 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5636,8 +5676,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "515993f36d5f846a74bfd1e1703f76b3fea6fa615b14cade63cb77415d890fdc",
-          "cadr": "515993f36d5f846a74bfd1e1703f76b3fea6fa615b14cade63cb77415d890fdc"
+          "pi": "1bd9a69ef776cb4aff4bc15cc601b621ff6f8df998185a48532c8287343f0c1f",
+          "cadr": "1bd9a69ef776cb4aff4bc15cc601b621ff6f8df998185a48532c8287343f0c1f"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-05 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5654,8 +5694,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a981a2676668afc1a10b9212fb1bc2ebb5ab21ee13cd3f2a6ceb3425c1fcf6b2",
-          "cadr": "db82291afb9eeef90c7b2ce1c6653a24bd5562268233763c3e90722871646453"
+          "pi": "e6250555db1ed318883ab3a0298d80077a1562008e4ed675a4404c1ff2d24335",
+          "cadr": "0915606bc56317ae2bc1373f65869cef398429855875eba6685d81ae24a093d5"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-06 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5671,8 +5711,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "99d49ea54553f0f0bcba37d2aca75678c67c8ac476bfe9a740794802cb67db47",
-          "cadr": "99d49ea54553f0f0bcba37d2aca75678c67c8ac476bfe9a740794802cb67db47"
+          "pi": "1731d9623ae69cec2ebb66060d29f824a10f6fc186f5e4c77a06e29939d731be",
+          "cadr": "1731d9623ae69cec2ebb66060d29f824a10f6fc186f5e4c77a06e29939d731be"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-06 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5689,8 +5729,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "39dd99893301de6f1f4b2750fbd60227d09bcd12830c91336483f8c3e3eff805",
-          "cadr": "139f5f2d9c1ce7c927411888e85c7c2f63276e7d238e7c59cfd9bc6874b0662b"
+          "pi": "2529d2a1b38343d0388698f5c362d22e86eb01d90bcf9cd64875f2f36549872f",
+          "cadr": "4b6074f8764092b14c106607f5460486720a22c88c81972872edacd7f29e17e7"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-07 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5706,8 +5746,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "1f25cd8d0876a656744a7117cddd9af937cbd0fe970aad3fe273dd1ab2b27e7a",
-          "cadr": "1f25cd8d0876a656744a7117cddd9af937cbd0fe970aad3fe273dd1ab2b27e7a"
+          "pi": "48631f99229f9bd646bfff23e89104d96732060576c70e1edbbac66e79e23f88",
+          "cadr": "48631f99229f9bd646bfff23e89104d96732060576c70e1edbbac66e79e23f88"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-07 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5724,8 +5764,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "60d04b3b1e8297804b57b9cca0bfd1ef2d00054a8e0a129a566a5cec2449f20f",
-          "cadr": "84a4057ff530a128cad85eda750fe6c2f12e82fb83db96c92e5f070ae5b472a9"
+          "pi": "3b5110e92570a620c7a55ebbfaa43130c62d05af0186c0cea48b73530305a5a2",
+          "cadr": "2e6f63eb7e0e2c58695424a65e6e4d3859d03290ecfd013258d9535dd6499045"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-08 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5741,8 +5781,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "cb69eee5c638ee747aa2568a70aff76fb85ff4ae33cb7e016af9e0ab0d80e44e",
-          "cadr": "cb69eee5c638ee747aa2568a70aff76fb85ff4ae33cb7e016af9e0ab0d80e44e"
+          "pi": "5b773d2f6ea9b54c5bb966547d4164e5f32c6a470453210399053a161c7cccdf",
+          "cadr": "5b773d2f6ea9b54c5bb966547d4164e5f32c6a470453210399053a161c7cccdf"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-08 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5759,8 +5799,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a3895c59b6eac7bb77d607ebb58fecbf53d51f09ca633062871c23187c1bab5e",
-          "cadr": "36982416df82c67d633200a6c357c194eff6b4d17646e0cea32b3077664650f8"
+          "pi": "784362e70d5cf08891f8786212f43cbe47d711925d5d8c4b121aa00b06e8a61c",
+          "cadr": "5df09f896c7d515626a835822a1e97eae612a8a6f01e4c6215db68ea4cfc3797"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-09 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5776,8 +5816,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a00a834e8475ed10fcd1c79099aaa2a82239241a3f0e5c39019dcd9090b246e9",
-          "cadr": "a00a834e8475ed10fcd1c79099aaa2a82239241a3f0e5c39019dcd9090b246e9"
+          "pi": "acac648a83089f20f4b07e558f423dfc28815c13903214684b1eab24114a625f",
+          "cadr": "acac648a83089f20f4b07e558f423dfc28815c13903214684b1eab24114a625f"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-09 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -5794,8 +5834,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "b91c2a6c0e41221539c44e36ca52943a80765a5c50dbfe5fcf9c5e94181c021f",
-          "cadr": "c42924c3e54597e6f2b4942f7ec5f28ad9b0767a67a65656b25cb7b8f38a2f3a"
+          "pi": "a7a1ecb2a6756d652a292d02d04076da1b1412995d57da9a74a0bb60fd840056",
+          "cadr": "e18f9193f630c3806c646fd7bb11646eef20fefc4fbfbd5f8e8d6699014744c9"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-10 [wide] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -5811,8 +5851,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "ae118e93be7eae0e4e61d3ad6c150c992e1d86ca4a7cadf179ec08f8d725d2bf",
-          "cadr": "ae118e93be7eae0e4e61d3ad6c150c992e1d86ca4a7cadf179ec08f8d725d2bf"
+          "pi": "9c2b0b2a93178b3e999b1a95db09d3122c15d5f9446e68b2e62327206e917265",
+          "cadr": "9c2b0b2a93178b3e999b1a95db09d3122c15d5f9446e68b2e62327206e917265"
         }
       },
       "note": "At selector-scoped-state-sweep/scoped-tail-10 [narrow] the /scoped-models selector ('Model Configuration', enabled-model rows) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6611,8 +6651,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "976c03162c80e8ba1152ad98e2aed3c795a8b3b990c3f84cc002196e8bc7837b",
-          "cadr": "76e7e1d5ec504eb98634f2261a7d88ecc7f8aed82e34cef5d9a2d5b7b88ff695"
+          "pi": "def027de4267157848618d5405cf38319133e8e6fc6a0df5cea316142ba55511",
+          "cadr": "fe303f966e005f13a401ea4ed5b739a3ff5e1b5474191fc80a4d92e09af72b8f"
         }
       },
       "note": "At selector-state-sweep/settings-auto-resize-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6628,8 +6668,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "43f093ab22c81df9f131859d95200741ccc381701549343ca137ffe1143e5122",
-          "cadr": "43f093ab22c81df9f131859d95200741ccc381701549343ca137ffe1143e5122"
+          "pi": "077361393f23417f79baf3e33c49e4ee7a2dfcc8054469f2f19d34aa872ba6bd",
+          "cadr": "077361393f23417f79baf3e33c49e4ee7a2dfcc8054469f2f19d34aa872ba6bd"
         }
       },
       "note": "At selector-state-sweep/settings-auto-resize-row [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6646,8 +6686,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "e0780ac4f3ed44ee549891ede5cca92d2f7905d0290764ce24a5796f73561e45",
-          "cadr": "4802d5d302ed15a4202b122deca9ead8decc443d1732336d160be907f788844d"
+          "pi": "bb4481a44c61d4a56239053d408412fdd059075e58bfe65cf751e7a9ec7a2ee5",
+          "cadr": "a8b607516d08becd54a1f81a6542e238fa1155027db6c6eefe74a2f4ea8f4d24"
         }
       },
       "note": "At selector-state-sweep/settings-image-rows [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6663,8 +6703,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "89667948cd8f776070e333369c2055f779702347e829826c95ef2b50f6e1fe82",
-          "cadr": "89667948cd8f776070e333369c2055f779702347e829826c95ef2b50f6e1fe82"
+          "pi": "a7e92f81fdd424fd67ca32f76bbf6252ff92ee78686d611adff41543f5933d40",
+          "cadr": "a7e92f81fdd424fd67ca32f76bbf6252ff92ee78686d611adff41543f5933d40"
         }
       },
       "note": "At selector-state-sweep/settings-image-rows [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6681,8 +6721,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "5a13ca819b9559cd8db7a991861eaa7e82e31b2e816bc6cafcd7fc00a714eae9",
-          "cadr": "d29ebb50e1ba3ae7fe4a047ae6def34d51d0c351075b22abbfb93f0c52a3604e"
+          "pi": "572e781130e5f5ccf18e14dabb3edeccc6ac5f8900ec1173cf6875237b405229",
+          "cadr": "2982d199e82595c049f07ef6911f4fbaf33c6ec6713a88247d382e7e07233599"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6698,8 +6738,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4aceef6af568431c7413abdee5bc7bab39429b60fb04c125764b7634cb229a21",
-          "cadr": "4aceef6af568431c7413abdee5bc7bab39429b60fb04c125764b7634cb229a21"
+          "pi": "5437a2497de1589e0fb456c3f7b696aefad70e8cc5c04f8c013864fad6f04fd7",
+          "cadr": "5437a2497de1589e0fb456c3f7b696aefad70e8cc5c04f8c013864fad6f04fd7"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6808,8 +6848,7 @@
         }
       },
       "note": "At selector-trust-inherited/trust-inherited-from-parent [narrow] the /trust selector showing the inherited parent decision matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
-    }
-    ,
+    },
     {
       "scenario": "cli-error-sweep",
       "checkpoint": "cli-errors-all",
@@ -6823,15 +6862,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "86f368bec6f2936787c685ef04390fdce189dcf6eb3fd5f25cfc482af5308ee5",
-          "cadr": "5fff4eb0e425332d59e68007b2b214444477b23d598a8a470b12d88ce23dee02"
+          "pi": "bbeab7c84f6dcd68f07cce0a0714dda88713c0b801e3fe3adaa74bb3bfe59361",
+          "cadr": "945c93334ca36ec4ec66c485d0b13bfad8c16e09bc9d2a7aa3b252955a0023fe"
         },
         "narrow": {
-          "pi": "9ea5050ffdf33ed5d84e6bc7591199740b2908d63ad9d9ebf6135bbf52386ba3",
-          "cadr": "c431c2c15261f762706e188ac3cdbe0bbc4cb67383a2feec3bb366ad44b5bc04"
+          "pi": "ac9fdc5f7c99466bda48dd5fca91023b76c5b9416445d54c499ea87a827c7fd3",
+          "cadr": "e62598c37b13a18f021a7a62968e525abc80c7205e71142ac6e19a6695aa00ff"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01)."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",

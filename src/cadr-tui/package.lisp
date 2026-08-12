@@ -189,6 +189,7 @@
    #:render-single-line-input
    #:render-truncated-text
    #:render-image-component
+   #:render-latex
    #:render-markdown
    #:tool-block
    #:make-tool-block
@@ -315,6 +316,9 @@
    #:renderer-following-output-p
    #:renderer-set-clear-on-shrink
    #:renderer-start
+   #:renderer-enter-alt-screen-live
+   #:renderer-flash
+   #:renderer-exit-alt-screen-live
    #:renderer-before-stop
    #:renderer-after-stop
    #:renderer-scroll-by

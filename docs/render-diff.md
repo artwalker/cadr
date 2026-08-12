@@ -44,7 +44,7 @@ Run the harness self-test:
 ```
 
 The permanent gate has two explicit tiers. `scripts/verify.sh` runs the core
-tier: 31 scenarios in both dimensions, producing 62 fresh captures before the
+tier: 37 scenarios in both dimensions, producing 74 fresh captures before the
 fail-closed analyzer runs:
 
 ```sh
@@ -55,8 +55,13 @@ python3 ./scripts/render-diff.py gate \
   --analysis-output /tmp/cadr-render-gate-analysis
 ```
 
-The full tier adds six branch-sweep scenarios, for 37 scenarios and 74 fresh
-captures. Upstream baseline upgrades invoke it directly:
+The full tier adds the eleven branch-sweep scenarios, for 48 scenarios and 96
+fresh captures. On top of the same real-input path it also requires the
+instrumented visible-site captures and the production-sink construction
+artifact for every scenario, which is what turns the whole printable-branch
+inventory into an observed obligation; the core tier deliberately defers that
+expensive whole-branch proof but cannot change or waive its inventory.
+Upstream baseline upgrades invoke the full tier directly:
 
 ```sh
 ./scripts/test-render-diff-full.sh
@@ -112,7 +117,7 @@ and file path remain byte-compared).
 
 The scenario domain is fail-closed too. `reachable-interfaces.json` records all
 22 fixed-baseline slash commands, 28 reachable interface states, 15 component
-constructors at 22 source construction sites, all 13 Cadr overlay kinds, and
+constructors at 22 source construction sites, all 14 Cadr overlay kinds, and
 the required interface-significant-state domains. The latter currently lock 11
 source-backed states: bash line-limit, byte-limit, overlong-line, empty-output,
 nonzero-exit and timeout; a parallel tool batch; invalid tool arguments; and
@@ -139,17 +144,20 @@ it. The three authentication cancel scenarios (`overlays-auth-oauth`,
 `overlays-auth-device-code`, `overlays-auth-api-key`) set the pattern.
 
 The complete tier also has a source-derived presentation-branch gate. The
-checked fixed-baseline inventory contains 707 sink sites and 1,228 reachable
-branches from 210 parsed TypeScript files plus nine terminal assets. It
-classifies 682 sites/1,200 branches as printable terminal content and 25
-sites/28 branches as terminal-protocol output. Typed in-root producer returns,
+checked fixed-baseline inventory contains 508 sink sites and 1,117 reachable
+branch entries from 237 parsed TypeScript files plus nine terminal assets. It
+classifies 479 sites/787 printable branch obligations (1,079 branch entries)
+as printable terminal content and 29 sites/25 branches (38 branch entries) as
+terminal-protocol output (three branch ids occur in both channels). Typed in-root producer returns,
 render-array pushes, slash-command metadata, authentication metadata, and
 terminal assets are followed to their terminal sink; unresolved in-root
 dataflow is a hard failure and is currently zero. Every printable branch must
 be observed by a full-tier checkpoint or named in
 `visible-string-exemptions.json` with an exact physical obstruction. The
 exemption registry is currently empty. The core tier may defer this expensive
-whole-branch proof, but it cannot change or waive its inventory.
+whole-branch proof, but it cannot change or waive its inventory; ten branches
+were adjudicated exempt in Goal 18 I7 (USER-2026-08-10-001) and are recorded
+in `visible-string-exemptions.json`.
 
 ## Fixed dimensions and scenarios
 
@@ -158,9 +166,9 @@ whole-branch proof, but it cannot change or waive its inventory.
 | `wide` | 100 x 32 | Normal development terminal with room to expose spacing and footer placement. |
 | `narrow` | 48 x 20 | Forces wrapping, compact help, overlay clipping, and wide-character accounting. |
 
-The manifest contains 42 scripted scenarios. The 35-scenario core tier has 97
-named checkpoints and 110 coverage labels; the seven full-only branch sweeps
-raise the full tier to 109 checkpoints and 136 coverage labels:
+The manifest contains 48 scripted scenarios. The 37-scenario core tier has 151
+expanded checkpoints and 112 coverage labels; the eleven full-only branch
+sweeps raise the full tier to 205 expanded checkpoints and 142 coverage labels:
 fresh/existing/untrusted startup; plain/Markdown/code/CJK/emoji conversation;
 all seven tools; missing-read/nonzero/timeout errors; every required core and
 authentication overlay; streaming abort and both busy queues; provider and
@@ -168,7 +176,7 @@ fatal errors; all 22 slash commands; bash truncation by lines, bytes and within
 a single line; empty/nonzero/timeout bash results; parallel tool calls; generic and provider-specific auth layers;
 settings secondary/tertiary layers; extension select/input/editor;
 autocomplete; and post-TUI resume output. Every selected scenario runs in both
-dimensions, producing 70 core captures or 84 full captures. Checkpoints
+dimensions, producing 74 core captures or 96 full captures. Checkpoints
 preserve intermediate frames instead of judging only the final screen.
 
 | Significant state | Deterministic trigger | Capture point |

@@ -76,6 +76,31 @@
         value
         default)))
 
+(defun settings-tui-mode (manager)
+  ;; pi@53fa77ccd settings-manager.ts:1128-1130 — only the exact string
+  ;; "fullscreen" selects fullscreen; everything else is regular.
+  (if (string= (settings-value manager "tuiMode" "") "fullscreen")
+      :fullscreen
+      :regular))
+
+(defun settings-fullscreen-scrollbar (manager)
+  ;; pi@53fa77ccd settings-manager.ts:1138-1141 — "always"/"hidden" pass
+  ;; through; everything else falls back to "auto".  No effect in
+  ;; regular TUI mode.
+  (settings-choice-value
+   manager "fullscreenScrollbar" '("auto" "always" "hidden") "auto"))
+
+(defun settings-mermaid-rendering-mode (manager)
+  ;; pi@53fa77ccd settings-manager.ts:1252-1255 — markdown.mermaid is
+  ;; nested; "off"/"final" pass through, anything else is "streaming".
+  (let ((mode
+          (settings-nested-value
+           manager "markdown" "mermaid" "streaming")))
+    (if (member mode '("off" "final" "streaming")
+                :test #'string=)
+        mode
+        "streaming")))
+
 (defun http-idle-timeout-label (timeout-ms)
   (or
    (cdr
@@ -419,9 +444,18 @@
              (settings-boolean-value
               settings-manager
               "hideThinkingBlock" nil)
-             :values (list t nil))
-            (make-settings-option
-             :id "cache-miss-notices"
+            :values (list t nil))
+           ;; pi@53fa77ccd settings-selector.ts:539-546
+           (make-settings-option
+            :id "mermaid-rendering"
+            :label "Mermaid diagrams"
+            :description
+            "Render Mermaid code blocks as Unicode diagrams"
+            :value
+            (settings-mermaid-rendering-mode settings-manager)
+            :values '("off" "final" "streaming"))
+           (make-settings-option
+            :id "cache-miss-notices"
              :label "Cache miss notices"
              :description
              "Show transcript notices for significant prompt-cache misses"
@@ -525,12 +559,31 @@
              "Reasoning depth for thinking-capable models"
              :value
              (cadr-agent::agent-thinking-level agent)
-             :values
-             (cadr-ai:supported-thinking-levels
-              (cadr-agent:agent-model agent))
-             :submenu :thinking)
-            (make-settings-option
-             :id "theme"
+            :values
+            (cadr-ai:supported-thinking-levels
+             (cadr-agent:agent-model agent))
+            :submenu :thinking)
+           ;; pi@53fa77ccd settings-selector.ts:634-646
+           (make-settings-option
+            :id "tui-mode"
+            :label "TUI mode"
+            :description
+            "Interface layout; fullscreen mode is experimental"
+            :value
+            (string-downcase
+             (symbol-name
+              (settings-tui-mode settings-manager)))
+            :values '("regular" "fullscreen"))
+           (make-settings-option
+            :id "fullscreen-scrollbar"
+            :label "Fullscreen scrollbar"
+            :description
+            "Scrollbar behavior in fullscreen mode; has no effect in regular mode"
+            :value
+            (settings-fullscreen-scrollbar settings-manager)
+            :values '("auto" "always" "hidden"))
+           (make-settings-option
+            :id "theme"
              :label "Theme"
              :description
              "Color theme for the interface"
@@ -622,6 +675,26 @@
            settings-manager
            "warnings" "anthropicExtraUsage"
            value :scope :global))
+         ((string= id "mermaid-rendering")
+          (settings-set-nested
+           settings-manager
+           "markdown" "mermaid" value
+           :scope :global))
+         ((string= id "tui-mode")
+          ;; pi@53fa77ccd interactive-mode.ts:4557-4567: switch the
+          ;; running renderer first, persist only on success.
+          (if *tui-mode-switch-hook*
+              (when (funcall *tui-mode-switch-hook* value)
+                (settings-set
+                 settings-manager "tuiMode" value
+                 :scope :global))
+              (settings-set
+               settings-manager "tuiMode" value
+               :scope :global)))
+         ((string= id "fullscreen-scrollbar")
+          (settings-set
+           settings-manager "fullscreenScrollbar" value
+           :scope :global))
          ((string= id "steering-mode")
           (setf
            (cadr-agent:agent-steering-mode agent)

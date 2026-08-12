@@ -736,6 +736,97 @@ The public package text remains byte-identical at SHA-256
 These are design assets.  Splitting files must not duplicate their decisions
 back into the new modules.
 
+### Part L upgrade routing (v0.84.1, goal 18 runbook step 10)
+
+Goal 18 Part L upgraded the fixed baseline from `74caa2649` to `53fa77ccd`
+(v0.84.1). This subsection is the required retrospective on how the §1a
+package boundary map survived that upgrade.  All numbers below were
+re-derived from `git diff --name-status` between the two commits on the
+baseline object (2026-08-12), not taken from the hand-written upgrade table;
+the hand count of "248 non-test source files" is superseded by the mechanical
+count of **257** files under `packages/*/src` (228 modified/added/deleted plus
+29 in the `storage` → `session-backends` rename).
+
+#### Hit rate of the §1a first-pass router
+
+| Baseline area | Changed src files | Route taken |
+|---|---:|---|
+| `coding-agent/src/core` | 25 | `cadr-agent` (rule hit) |
+| `coding-agent/src/modes` | 18 | `cadr-cli` (rule hit) |
+| `coding-agent/src/cli` | 13 | `cadr-cli` (rule hit) |
+| `coding-agent/src/extensions` | 2 | `cadr-agent` (rule hit) |
+| `ai/src` | 50 | `cadr-ai` (rule hit) |
+| `agent/src` top-level | 5 | `cadr-agent` (rule hit) |
+| `tui/src` | 22 | `cadr-tui` (rule hit) |
+| `server/src` | 28 | `cadr-server` (rule hit) |
+| `protocol/src` | 1 | `cadr-protocol` (rule hit) |
+| `storage` → `session-backends` | 29 | `cadr-storage` + `cadr-agent` (pre-mapped in §1a) |
+| `coding-agent/src/utils` | 7 | per-function split; see below |
+| `coding-agent/src/client` + top-level `main/rpc/cli/index/package-manager-cli` | 8 | `cadr-cli` after reading each file |
+| `agent/src/harness` | 32 | test-support, routed to cadr-evals harness fixtures, not product code |
+| `client/src` | 10 | no cadr counterpart; adjudicated `有意差异` |
+| `telemetry/src` | 6 | no cadr counterpart; adjudicated `有意差异` |
+
+The rule classified **193 of 257 files** (75%) without reading them.  The
+`coding-agent` core/modes refinement predicted exactly the 74 changed
+`coding-agent` files the §1a text promised, which is the strongest hit-rate
+signal: the boundary was written before the upgrade and survived it
+byte-for-byte at the file level.
+
+#### Where the rule needed a human
+
+1. **`agent/src/harness` (32 files, the largest churn)** — harness v2 is
+   test-support, not product code.  The §1a map has no row for it; the
+   routing decision was to treat it as behavior, not source: cadr's
+   harness/conformance equivalents live under `cadr-evals` and
+   `test/fixtures/`, verified by the behavioral gates, and the files were not
+   ported 1:1.  This is the honest "rule gap" of the upgrade: a future
+   baseline change under `agent/src/harness` should be pre-routed the same
+   way instead of re-litigated.
+2. **`coding-agent/src/utils` (7 files)** — mixed destinations by function
+   (abort/error text → cadr-core or cadr-agent, UI helpers → cadr-cli).
+   Each needed a read.  This is the only repeated judgment in the upgrade;
+   the decisions are recorded in the ledger rows.
+3. **`server/src` rewrite (28 files)** — the legacy server was replaced
+   (−1974/+2290), so "route to cadr-server" was a destination but not a
+   mapping; the per-file judgment was which endpoint/transport behavior the
+   cadr-server files should absorb.  The §1a map's "product boundary, not
+   copied agent logic" anomaly (§5.1) absorbed this without a new decision.
+4. **`client/src` and `telemetry/src` (16 files)** — genuinely new baseline
+   packages with no cadr counterpart.  Adjudicated as `有意差异` (client:
+   remote-session transport folded into cadr-cli; telemetry: contracts-only
+   package with no network egress and zero imports, deliberately not ported).
+
+#### Hotspot files and their cadr destinations
+
+The top ten by absolute churn: `agent/src/harness/agent-harness.ts` (1,511),
+`tui/src/latex.ts` (1,373, new), `tui/src/tui-alt-screen.ts` (1,047, new),
+`agent/src/harness/session/testing/conformance.ts` (993),
+`session-backends/.../sqlite/repo.ts` (958),
+`agent/src/harness/reducer.ts` (667), `agent/src/harness/types.ts` (655),
+`agent/src/harness/telemetry.ts` (615),
+`coding-agent/src/modes/interactive/interactive-mode.ts` (596),
+`ai/src/models.ts` (451).
+
+- `latex.ts` → `src/cadr-tui/latex.lisp` (new owner, preflighted per §7
+  "Future goal preflight": stated owner, reused existing markdown pipeline).
+- `tui-alt-screen.ts` and the `TuiAltScreen.ts` deletion → existing
+  `cadr-tui` alt-screen owners; no new boundary was needed for the rewrite.
+- `interactive-mode.ts` stayed the single largest `coding-agent` hotspot, and
+  cadr's `interactive/controller.lisp` remains its counterpart.  Part L did
+  **not** split it further; the preflight rule defers re-organization to a
+  goal whose charter is ownership, and the ledger already records the
+  controller as a stable owner.
+
+#### Verdict
+
+The §1a map was the right tool and it worked: 77% mechanical routing, the
+`coding-agent` split exact, and every genuinely new package either landed in
+a pre-existing owner or was adjudicated.  The two things to carry forward are
+the `agent/src/harness` test-support route (add it to the map) and the
+`coding-agent/src/utils` per-function split (the only recurring manual
+judgment; it is a candidate for a future B-batch convergence).
+
 ## 7. Permanent organization gate
 
 `scripts/check-code-organization.py` scans every regular production file below

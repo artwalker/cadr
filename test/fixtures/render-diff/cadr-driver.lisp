@@ -1612,7 +1612,7 @@ render loopback login received
                       (render-scoped-models scenario)
                       :current-model (first models)
                       :refresh-status-message
-                      "Model catalogs refreshed.")))
+                      "Refreshing model catalogs…")))
                (cadr-cli::model-selector-set-query
                 state (or query ""))))
            :scoped-models-selector-function
@@ -1620,7 +1620,28 @@ render loopback login received
              (cadr-cli::make-scoped-models-selector-state
               :all-models (render-models scenario)
               :enabled-ids
-              (render-enabled-model-ids scenario)))
+              (render-enabled-model-ids scenario)
+              :refresh-status-message
+              "Refreshing model catalogs…"))
+           :model-catalog-refresh-function
+           ;; The sleep keeps the open frame ("Refreshing model
+           ;; catalogs…") ahead of the terminal flip in the byte
+           ;; stream, mirroring the baseline's asynchronous refresh.
+           (lambda () (sleep 0.1))
+           :apply-model-catalog-refresh-function
+           (lambda (selector failure)
+             (declare (ignore failure))
+             (cond
+               ((cadr-cli::model-selector-state-p selector)
+                (cadr-cli::model-selector-finish-refresh
+                 selector (render-models scenario)
+                 :status-message "Model catalogs refreshed."
+                 :status-kind :success))
+               ((cadr-cli::scoped-models-selector-state-p selector)
+                (cadr-cli::scoped-models-selector-finish-refresh
+                 selector (render-models scenario)
+                 :status-message "Model catalogs refreshed."
+                 :status-kind :success))))
            :settings-selector-function
            (lambda ()
              (cadr-cli::make-cli-settings-selector-state

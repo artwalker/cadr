@@ -808,7 +808,7 @@ directory-style extensions."
               (key-hint (second parts) (third parts)))
              ((and
                (plusp (length line))
-               (uiop:string-suffix-p " to cycle models" line))
+               (uiop:string-suffix-p line " to cycle models"))
               (key-hint
                (subseq line 0
                        (- (length line)

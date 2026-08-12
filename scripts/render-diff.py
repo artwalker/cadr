@@ -357,7 +357,10 @@ REQUIRED_COVERAGE = {
     "slash-share",
     "startup-existing",
     "startup-first",
+    "startup-no-model",
     "startup-resources",
+    "startup-resume-picker",
+    "startup-resume-picker-select",
     "startup-untrusted",
     "stream-interrupt",
     "tool-call-empty-values",
@@ -904,6 +907,13 @@ def load_manifest(path: Path) -> dict[str, Any]:
     missing = sorted(REQUIRED_COVERAGE - coverage)
     if missing:
         raise HarnessFailure(f"render-diff manifest misses required coverage: {', '.join(missing)}")
+    stale = sorted(coverage - REQUIRED_COVERAGE)
+    if stale:
+        raise HarnessFailure(
+            "render-diff manifest declares coverage outside the required floor; "
+            "regenerate REQUIRED_COVERAGE from scenarios.json: "
+            + ", ".join(stale)
+        )
     load_interface_registry(DEFAULT_INTERFACE_REGISTRY, data, ROOT)
     return data
 
@@ -1272,7 +1282,7 @@ def check_baseline_tool_definitions(baseline: Path, commit: str, timeout: float)
         )
 
 
-def run_visible_string_construction_suite(
+def _run_visible_string_construction_suite_once(
     baseline: Path, output: Path, timeout: float
 ) -> Path:
     marker_path = output / "baseline-construction.pi.visible.raw"
@@ -1285,30 +1295,26 @@ def run_visible_string_construction_suite(
         environment["RENDER_DIFF_VISIBLE_CONSTRUCTS"] = "1"
         environment["RENDER_DIFF_VISIBLE_CONSTRUCTS_PATH"] = str(marker_path)
         environment["PI_TIMING"] = "1"
-        result = subprocess.run(
+        result = _run_construction_subprocess(
             [
                 str(baseline / "node_modules/.bin/tsx"),
                 "packages/coding-agent/test/goal17-visible-construction.ts",
             ],
             cwd=baseline,
             env=environment,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
             timeout=timeout,
         )
         if result.returncode == 0:
             forced_environment = environment.copy()
             forced_environment["RENDER_DIFF_FORCE_BUN_BINARY"] = "1"
             forced_environment["RENDER_DIFF_FORCE_GH_PROBE_THROW"] = "1"
-            result = subprocess.run(
+            result = _run_construction_subprocess(
                 [
                     str(baseline / "node_modules/.bin/tsx"),
                     "packages/coding-agent/test/goal17-visible-environment-construction.ts",
                 ],
                 cwd=baseline,
                 env=forced_environment,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 timeout=timeout,
             )
         if result.returncode == 0:
@@ -1326,7 +1332,7 @@ def run_visible_string_construction_suite(
                 + "\n",
                 encoding="utf-8",
             )
-            result = subprocess.run(
+            result = _run_construction_subprocess(
                 [
                     str(baseline / "node_modules/.bin/tsx"),
                     "packages/coding-agent/src/cli.ts",
@@ -1336,14 +1342,12 @@ def run_visible_string_construction_suite(
                 ],
                 cwd=baseline,
                 env=environment,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 timeout=timeout,
             )
         if result.returncode == 0:
             no_session_environment = environment.copy()
             no_session_environment["RENDER_DIFF_FORCE_NO_SESSION"] = "1"
-            result = subprocess.run(
+            result = _run_construction_subprocess(
                 [
                     str(baseline / "node_modules/.bin/tsx"),
                     "packages/coding-agent/src/cli.ts",
@@ -1352,8 +1356,6 @@ def run_visible_string_construction_suite(
                 ],
                 cwd=baseline,
                 env=no_session_environment,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 timeout=timeout,
             )
         if result.returncode == 0:
@@ -1377,7 +1379,7 @@ def run_visible_string_construction_suite(
             abort_environment["PI_CODING_AGENT_SESSION_DIR"] = str(
                 session_directory
             )
-            result = subprocess.run(
+            result = _run_construction_subprocess(
                 [
                     str(baseline / "node_modules/.bin/tsx"),
                     "packages/coding-agent/src/cli.ts",
@@ -1388,8 +1390,6 @@ def run_visible_string_construction_suite(
                 cwd=baseline,
                 env=abort_environment,
                 input=b"n\n",
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
                 timeout=timeout,
             )
     if result.returncode != 0:
@@ -1403,6 +1403,68 @@ def run_visible_string_construction_suite(
         )
     visible_branch_effects(marker_path.read_bytes(), str(marker_path))
     return marker_path
+
+
+def _run_construction_subprocess(
+    command: list[str],
+    cwd: Path,
+    env: dict[str, str],
+    timeout: float,
+    input: bytes | None = None,
+) -> subprocess.CompletedProcess[bytes]:
+    """Run one visible-string construction step in its own process group so a
+    timed-out step can be killed wholesale instead of leaving esbuild/tsx
+    service children behind."""
+    process = subprocess.Popen(
+        command,
+        cwd=cwd,
+        env=env,
+        stdin=None if input is None else subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        start_new_session=True,
+    )
+    try:
+        stdout, stderr = process.communicate(input=input, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        process.wait()
+        raise
+    return subprocess.CompletedProcess(
+        command, process.returncode, stdout=stdout, stderr=stderr
+    )
+
+
+def run_visible_string_construction_suite(
+    baseline: Path, output: Path, timeout: float
+) -> Path:
+    """Run the construction suite, retrying on wall-clock timeout.
+
+    The suite itself completes in seconds, but it runs at the very end of a
+    long full-tier gate.  If the host suspends mid-run (observed in WSL as
+    SIGSTOP on the whole process tree), every pending subprocess timeout
+    expires at once on resume even though the child never hung.  A bounded
+    retry re-runs the suite against a fresh temporary HOME and completes
+    quickly once the machine is back; a genuine hang still fails after the
+    same bounded retries.
+    """
+    attempts = int(os.environ.get("RENDER_DIFF_CONSTRUCTION_RETRIES", "3"))
+    last_error: subprocess.TimeoutExpired | None = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return _run_visible_string_construction_suite_once(baseline, output, timeout)
+        except subprocess.TimeoutExpired as error:
+            last_error = error
+            print(
+                f"render-diff: visible-string construction suite timed out after "
+                f"{timeout:.0f}s (attempt {attempt}/{attempts}); retrying",
+                file=sys.stderr,
+            )
+    assert last_error is not None
+    raise last_error
 
 
 def generate_visible_string_inventory(baseline: Path, commit: str) -> dict[str, Any]:
@@ -2023,6 +2085,49 @@ def wait_for_complete_render(
         )
 
 
+def drain_until_quiet(
+    fd: int,
+    output: bytearray,
+    process: subprocess.Popen[bytes],
+    quiet_ms: float = 20.0,
+    max_ms: float = 250.0,
+) -> None:
+    """Drain the pty until a quiet gap of quiet_ms elapses, bounded by max_ms.
+
+    ``wait_for_complete_render`` returns at the synchronized-render end marker,
+    but the app may already be emitting the next repaint's preamble (cursor
+    hide/positioning) into the pty buffer. Recording ``len(output)`` at that
+    instant makes the checkpoint boundary race with the next frame and the
+    racing bytes land in whichever adjacent segment wins the run-to-run race.
+    Waiting for a short quiet gap moves every checkpoint boundary to a
+    deterministic idle point, so the trailing repaint (if any) belongs to the
+    checkpoint's own segment.
+    """
+    deadline = time.monotonic() + max_ms / 1000
+    quiet_seconds = quiet_ms / 1000
+    last_activity = time.monotonic()
+    while time.monotonic() - last_activity < quiet_seconds:
+        remaining = deadline - time.monotonic()
+        if remaining <= 0:
+            return
+        if process.poll() is not None:
+            drain(fd, output)
+            return
+        before = len(output)
+        try:
+            read_ready(fd, output, min(0.01, remaining), process)
+        except HarnessFailure:
+            # The driver may exit right after the final render while a
+            # checkpoint boundary is being settled; that is not a failure
+            # here, the following waitExit action owns the exit path.
+            if process.poll() is not None:
+                drain(fd, output)
+                return
+            raise
+        if len(output) != before:
+            last_activity = time.monotonic()
+
+
 def wait_exit(fd: int, output: bytearray, process: subprocess.Popen[bytes], timeout: float) -> int:
     deadline = time.monotonic() + timeout
     while process.poll() is None:
@@ -2211,6 +2316,7 @@ def run_actions(
                         master_fd, output, render_end, before + 1, timeout, process
                     )
                     if checkpoint_prefix:
+                        drain_until_quiet(master_fd, output, process)
                         checkpoints.append(
                             {
                                 "id": f"{checkpoint_prefix}-{repeated_index:02d}",
@@ -2298,6 +2404,7 @@ def run_actions(
                     )
             elif "checkpoint" in action:
                 wait_for_complete_render(master_fd, output, timeout, process)
+                drain_until_quiet(master_fd, output, process)
             else:
                 raise HarnessFailure(f"unknown action: {action}")
         except (HarnessFailure, OSError) as error:
@@ -2419,11 +2526,11 @@ def normalize_fixed_values(data: bytes) -> bytes:
         (b"extensions/broken/index.ts", b"extensions/broken/<ENTRY>"),
         (b"extensions/broken/extension.lisp", b"extensions/broken/<ENTRY>"),
         (
-            b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v0.83.0",
+            b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v0.84.1",
             b"<PRODUCT>\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (
-            b"pi\x1b[0m\x1b[38;2;102;102;102m v0.83.0",
+            b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.1",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (
@@ -2431,7 +2538,7 @@ def normalize_fixed_values(data: bytes) -> bytes:
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (b"cadr v0.2.0\x1b[22m", b"<PRODUCT> v<VERSION>\x1b[22m"),
-        (b"pi v0.83.0", b"<PRODUCT> v<VERSION>"),
+        (b"pi v0.84.1", b"<PRODUCT> v<VERSION>"),
         (b"cadr v0.2.0", b"<PRODUCT> v<VERSION>"),
         (b"\x1b]0;\xcf\x80 - ", b"\x1b]0;<PRODUCT> - "),
         (b"\x1b]0;cadr - ", b"\x1b]0;<PRODUCT> - "),
@@ -3407,7 +3514,7 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("render-diff fake GitHub CLI contract drifted")
         if normalized(sample, "pi", sandbox) != sample:
             raise HarnessFailure("normalization altered whitespace or ANSI color bytes")
-        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.83.0"
+        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.1"
         cadr_header = b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0"
         expected_header = b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>"
         if normalize_fixed_values(pi_header) != expected_header:

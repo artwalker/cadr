@@ -83,6 +83,8 @@
   (query "" :type string)
   (selected 0 :type (integer 0 *))
   refresh-status-message
+  (refresh-status-kind :muted)
+  error-message
   keybindings)
 
 (defun model-selector-active-models (state)
@@ -131,6 +133,7 @@
 (defun make-model-selector-state
     (&key all-models scoped-models
        current-model refresh-status-message
+       (refresh-status-kind :muted)
        keybindings)
   (let ((state
           (%make-model-selector-state
@@ -142,12 +145,36 @@
            :current-model current-model
            :refresh-status-message
            refresh-status-message
+           :refresh-status-kind refresh-status-kind
            :scope
            (if scoped-models :scoped :all)
            :keybindings
            (or keybindings
                (make-models-selector-keybindings)))))
     (model-selector-select-current state)))
+
+(defun model-selector-finish-refresh
+    (state models &key status-message status-kind error-message)
+  "Apply the terminal state of the asynchronous catalog refresh.
+
+Mirrors the baseline ModelSelectorComponent refresh completion: the
+model list reloads from the refreshed snapshot, the selection returns to
+the current model, and the status row shows the terminal message (or an
+error row replaces the model-name row when ERROR-MESSAGE is set)."
+  (setf
+   (model-selector-state-all-models state)
+   (sort-model-selector-models
+    models
+    (model-selector-state-current-model state))
+   (model-selector-state-refresh-status-message state)
+   status-message
+   (model-selector-state-refresh-status-kind state)
+   (or status-kind :muted)
+   (model-selector-state-error-message state)
+   error-message)
+  (model-selector-select-current state)
+  (model-selector-clamp-selected state)
+  state)
 
 (defun model-selector-selected-model (state)
   (nth
@@ -359,8 +386,18 @@
                    :muted
                    (format nil "  (~D/~D)" (1+ selected) total))
                   width :padding-x 0)))
-              (when (and models
-                         (model-selector-selected-model state))
+              (cond
+               ((model-selector-state-error-message state)
+                (mapcar
+                 (lambda (error-line)
+                   (selector-component-text-line
+                    (cadr-tui:theme-foreground :error error-line)
+                    width :padding-x 0))
+                 (uiop:split-string
+                  (model-selector-state-error-message state)
+                  :separator '(#\Newline))))
+               ((and models
+                     (model-selector-selected-model state))
                 (list
                  ""
                  (selector-component-text-line
@@ -369,14 +406,18 @@
                    (format nil "  Model Name: ~A"
                            (cadr-ai::model-name
                             (model-selector-selected-model state))))
-                  width :padding-x 0)))
+                  width :padding-x 0))))
               (when
                   (model-selector-state-refresh-status-message state)
                 (list
                  ""
                  (selector-component-text-line
                   (cadr-tui:theme-foreground
-                   :success
+                   (if (eq :success
+                           (model-selector-state-refresh-status-kind
+                            state))
+                       :success
+                       :muted)
                    (format nil "  ~A"
                            (model-selector-state-refresh-status-message
                             state)))
@@ -416,6 +457,8 @@
   (query "" :type string)
   (selected 0 :type (integer 0 *))
   (dirty-p nil :type boolean)
+  refresh-status-message
+  (refresh-status-kind :muted)
   change-callback
   persist-callback
   cancel-callback
@@ -514,6 +557,8 @@
 (defun make-scoped-models-selector-state
     (&key all-models
        (enabled-ids :all)
+       refresh-status-message
+       (refresh-status-kind :muted)
        change-callback
        persist-callback
        cancel-callback
@@ -524,12 +569,45 @@
    (mapcar #'qualified-model-id all-models)
    :enabled-ids
    (scoped-models-copy-enabled enabled-ids)
+   :refresh-status-message refresh-status-message
+   :refresh-status-kind refresh-status-kind
    :change-callback change-callback
    :persist-callback persist-callback
    :cancel-callback cancel-callback
    :keybindings
    (or keybindings
        (make-models-selector-keybindings))))
+
+(defun scoped-models-selector-finish-refresh
+    (state models &key (enabled-ids nil enabled-ids-p)
+       status-message status-kind)
+  "Apply the terminal state of the asynchronous catalog refresh.
+
+Mirrors the baseline ScopedModelsSelectorComponent updateModels +
+setRefreshStatus: the model list reloads from the refreshed snapshot
+with the selection preserved by qualified model id, and the status row
+shows the terminal message with the given style."
+  (let ((selected-id
+          (let ((item (scoped-models-selector-selected-item state)))
+            (and item (getf item :id)))))
+    (setf
+     (scoped-models-selector-state-all-models state)
+     (copy-list models)
+     (scoped-models-selector-state-all-ids state)
+     (mapcar #'qualified-model-id models))
+    (when enabled-ids-p
+      (setf
+       (scoped-models-selector-state-enabled-ids state)
+       (scoped-models-copy-enabled enabled-ids)))
+    (setf
+     (scoped-models-selector-state-refresh-status-message state)
+     status-message
+     (scoped-models-selector-state-refresh-status-kind state)
+     (or status-kind :muted))
+    (when selected-id
+      (scoped-models-selector-select-id state selected-id))
+    (scoped-models-selector-clamp-selected state))
+  state)
 
 (defun scoped-models-selector-selected-item
     (state)
@@ -1164,6 +1242,17 @@
              width :padding-x 0))))
        (append
         (list "")
+        (when
+            (scoped-models-selector-state-refresh-status-message state)
+          (list
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             (scoped-models-selector-state-refresh-status-kind state)
+             (format
+              nil "  ~A"
+              (scoped-models-selector-state-refresh-status-message
+               state)))
+            width :padding-x 0)))
         (mapcar
          (lambda (line)
            (selector-fit-line line width :pad-p t))

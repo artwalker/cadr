@@ -28,8 +28,8 @@
 (defparameter +goal13-semantic-theme-keys+
   '(:accent :border :border-accent :border-muted
     :success :error :warning :muted :dim :text
-    :thinking-text
-    :selected-bg :user-message-bg :user-message-text
+   :thinking-text
+   :selected-bg :scrollbar-thumb :user-message-bg :user-message-text
     :custom-message-bg :custom-message-text
     :custom-message-label
     :tool-pending-bg :tool-success-bg :tool-error-bg
@@ -794,6 +794,13 @@
              (goal13-note-semantic-probe
               seen :tool-pending-bg pending
               "Semantic pending command" :background-p t)
+             ;; The fullscreen scrollbar paints its thumb through the
+             ;; production cell painter (layout.ts:242-267).
+             (goal13-note-semantic-probe
+              seen :scrollbar-thumb
+              (cadr-tui::style-alt-scrollbar-cell
+               "semantic-scrollbarXX" 19 20)
+              "X" :background-p t)
              (goal13-note-semantic-probe
               seen :tool-title pending
               "Semantic pending command")
@@ -996,8 +1003,8 @@
              +goal13-semantic-theme-keys+
              (cadr-tui:terminal-theme-color-keys
               (cadr-tui:current-theme))))
-           (is (= 55 (length +goal13-semantic-theme-keys+)))
-           (is (= 55 (hash-table-count seen)))
+           (is (= 56 (length +goal13-semantic-theme-keys+)))
+           (is (= 56 (hash-table-count seen)))
            (is
             (null
              (set-difference
@@ -1247,7 +1254,7 @@
              ("cadr-ai" 61)
              ("cadr-agent" 36)
              ("cadr-cli" 113)
-             ("cadr-tui" 36)
+             ("cadr-tui" 37)
              ("cadr-storage" 2)
              ("cadr-server" 11)
              ("cadr-protocol" 5)
@@ -1255,7 +1262,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=279 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=280 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1273,7 +1280,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 279 total))
+    (is (= 280 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"

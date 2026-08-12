@@ -9,6 +9,17 @@
    :base-url "https://example.invalid"
    :max-tokens 128))
 
+(test session-argument-path-p-matches-jsonl-suffix
+  ;; Regression: reversed uiop:string-suffix-p arguments made real
+  ;; session file paths (".jsonl" suffix) fail the check.
+  (is-true (cadr-cli::session-argument-path-p "session.jsonl"))
+  (is-true (cadr-cli::session-argument-path-p ".jsonl"))
+  (is-true (cadr-cli::session-argument-path-p
+            "/abs/path/session.jsonl"))
+  (is-true (cadr-cli::session-argument-path-p
+            "sub\\dir\\session.jsonl"))
+  (is-false (cadr-cli::session-argument-path-p "019fabc")))
+
 (test non-changelog-commands-never-resolve-the-changelog-path
   (let ((calls 0)
         (output (make-string-output-stream))

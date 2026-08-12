@@ -3,10 +3,10 @@
 (defun chat-completions-url (base-url)
   (let ((base (strip-trailing-slash base-url)))
     (cond
-      ((or (uiop:string-suffix-p "/chat/completions" base)
-           (uiop:string-suffix-p "/v1/chat/completions" base))
+      ((or (uiop:string-suffix-p base "/chat/completions")
+           (uiop:string-suffix-p base "/v1/chat/completions"))
        base)
-      ((uiop:string-suffix-p "/v1" base)
+      ((uiop:string-suffix-p base "/v1")
        (concatenate 'string base "/chat/completions"))
       (t
        (concatenate 'string base "/v1/chat/completions")))))
@@ -274,6 +274,47 @@
       (and reasoning
            (string-downcase (symbol-name reasoning)))))
 
+(defun resolve-chat-template-args (model reasoning values)
+  ;; pi@53fa77ccd api/openai-completions.ts:892-940 — each entry
+  ;; resolves a scalar verbatim or a $var reference to the current
+  ;; thinking state; omitWhenOff drops the entry with no reasoning
+  ;; active; an empty result omits the request field entirely.
+  (let ((resolved (json-object)))
+    (dolist (entry values)
+      (let* ((value (cdr entry))
+             (resolved-value
+               (if (and (consp value) (eq (car value) :var))
+                   (let ((var (getf value :var))
+                         (omit-when-off
+                           (getf value :omit-when-off)))
+                     (cond
+                       ((and (null reasoning) omit-when-off)
+                        :omit)
+                       ((string= var "thinking.enabled")
+                        (not (null reasoning)))
+                       (t
+                        ;; thinking.effort: the level map wins; a
+                        ;; missing map entry falls back to the
+                        ;; requested level name; nothing is sent when
+                        ;; reasoning is off without an off mapping.
+                        (let ((mapped
+                                (if reasoning
+                                    (model-thinking-level-value
+                                     model reasoning)
+                                    (model-thinking-level-value
+                                     model :off))))
+                          (cond
+                            ((stringp mapped) mapped)
+                            (reasoning
+                             (string-downcase
+                              (symbol-name reasoning)))
+                            (t :omit))))))
+                   value)))
+        (unless (eq resolved-value :omit)
+          (json-put resolved (car entry) resolved-value))))
+    (when (plusp (hash-table-count resolved))
+      resolved)))
+
 (defun add-completions-reasoning (payload model reasoning)
   (when (model-reasoning-p model)
     (case (completions-thinking-format model)
@@ -347,6 +388,24 @@
                    (model-thinking-level-value model :off))))
          (when (stringp value)
            (json-put payload "thinking" value))))
+      (:baseten
+       ;; pi@53fa77ccd api/openai-completions.ts:779-793 — chat
+       ;; template args carry the thinking toggle, and reasoning_effort
+       ;; follows only when the model supports it.
+       (let ((args
+               (resolve-chat-template-args
+                model reasoning
+                (model-compat-value
+                 model :chat-template-args nil))))
+         (when args
+           (json-put payload "chat_template_args" args)))
+       (when (completions-supports-reasoning-effort-p model)
+         (let ((effort
+                 (if reasoning
+                     (openai-reasoning-value model reasoning)
+                     (model-thinking-level-value model :off))))
+           (when (stringp effort)
+             (json-put payload "reasoning_effort" effort)))))
       (otherwise
        (cond
          ((and reasoning
@@ -426,6 +485,31 @@
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
+    ;; pi@53fa77ccd api/openai-completions.ts:847-866 — vLLM caps
+    ;; reasoning with a top-level thinking_token_budget, independent of
+    ;; thinkingFormat; reasoning and the answer share max_tokens, so an
+    ;; uncapped reasoning phase can consume the whole response.  The
+    ;; budget always leaves MIN_ANSWER_TOKENS (1024) for the answer.
+    (when (and (model-compat-value
+                model :supports-thinking-token-budget nil)
+               reasoning
+               (model-reasoning-p model))
+      (let* ((level
+               (if (member reasoning '(:xhigh :max))
+                   :high reasoning))
+             (budget
+               (case level
+                 (:minimal 1024)
+                 (:low 2048)
+                 (:medium 8192)
+                 (otherwise 16384)))
+             (ceiling
+               (or max-tokens
+                   (model-max-tokens model)))
+             (capped
+               (min budget (max 0 (- ceiling 1024)))))
+        (when (plusp capped)
+          (json-put payload "thinking_token_budget" capped))))
     (let ((retention
             (normalize-cache-retention cache-retention))
           (supports-long

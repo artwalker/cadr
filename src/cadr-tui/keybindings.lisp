@@ -26,18 +26,25 @@
     ("app.session.resume" . nil)
     ("tui.editor.cursorUp" . ("up"))
     ("tui.editor.cursorDown" . ("down"))
+    ;; pi@53fa77ccd tui/keybindings.ts:68-75 — prompt history
+    ;; navigation is registered with empty defaults (bindable through
+    ;; keybindings.json, unbound by default).
+    ("tui.editor.historyPrevious" . nil)
+    ("tui.editor.historyNext" . nil)
     ("tui.editor.cursorLeft" . ("left" "ctrl+b"))
     ("tui.editor.cursorRight" . ("right" "ctrl+f"))
     ("tui.editor.cursorWordLeft"
      . ("alt+left" "ctrl+left" "alt+b"))
     ("tui.editor.cursorWordRight"
      . ("alt+right" "ctrl+right" "alt+f"))
-    ("tui.editor.cursorLineStart" . ("home" "ctrl+a"))
-    ("tui.editor.cursorLineEnd" . ("end" "ctrl+e"))
+    ("tui.editor.cursorLineStart"
+     . ("home" "ctrl+home" "ctrl+a"))
+    ("tui.editor.cursorLineEnd"
+     . ("end" "ctrl+end" "ctrl+e"))
     ("tui.editor.jumpForward" . ("ctrl+]"))
     ("tui.editor.jumpBackward" . ("ctrl+alt+]"))
-    ("tui.editor.pageUp" . ("pageUp"))
-    ("tui.editor.pageDown" . ("pageDown"))
+    ("tui.editor.pageUp" . ("pageUp" "ctrl+pageUp"))
+    ("tui.editor.pageDown" . ("pageDown" "ctrl+pageDown"))
     ("tui.editor.deleteCharBackward" . ("backspace"))
     ("tui.editor.deleteCharForward" . ("delete" "ctrl+d"))
     ("tui.editor.deleteWordBackward"
@@ -59,10 +66,17 @@
     ("tui.select.pageDown" . ("pageDown"))
     ("tui.select.confirm" . ("enter"))
     ("tui.select.cancel" . ("escape" "ctrl+c"))
-    ("tui.altScreen.pageUp" . ("shift+pageUp"))
-    ("tui.altScreen.pageDown" . ("shift+pageDown"))
-    ("tui.altScreen.top" . ("ctrl+home"))
-    ("tui.altScreen.bottom" . ("ctrl+end"))))
+    ;; pi@53fa77ccd tui/keybindings.ts:154-178 — the alt-screen
+    ;; viewport keys moved off the shift/ctrl modifiers and gained
+    ;; half-page and prompt-jump actions.
+    ("tui.altScreen.pageUp" . ("pageUp"))
+    ("tui.altScreen.pageDown" . ("pageDown"))
+    ("tui.altScreen.halfPageUp" . nil)
+    ("tui.altScreen.halfPageDown" . nil)
+    ("tui.altScreen.previousPrompt" . ("ctrl+shift+up"))
+    ("tui.altScreen.nextPrompt" . ("ctrl+shift+down"))
+    ("tui.altScreen.top" . ("home"))
+    ("tui.altScreen.bottom" . ("end"))))
 
 (defstruct (keybindings-manager
             (:constructor %make-keybindings-manager))

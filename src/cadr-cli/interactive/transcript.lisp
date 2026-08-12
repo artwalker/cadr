@@ -78,9 +78,14 @@
        lines
        (nconc
         lines
-        (cadr-tui:wrap-text
-         "Error: maximum output token limit reached; response may be incomplete."
-         width))))
+        (cons
+         ""
+         (cadr-tui:wrap-text
+          (cadr-tui:theme-foreground
+           :error
+           "Response was truncated before completion."
+           :enabled-p t)
+          width)))))
     (if contains-tool-p
         lines
         (if lines
@@ -434,7 +439,7 @@
   (let ((message
           (case (tui-entry-stop-reason entry)
             (:length
-             "Error: Model stopped because it reached the maximum output token limit. The response may be incomplete.")
+             "Response was truncated before completion.")
             (:aborted
              (let ((error-message
                      (tui-entry-error-message

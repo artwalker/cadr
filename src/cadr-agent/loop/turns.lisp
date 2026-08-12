@@ -85,31 +85,44 @@
               (lambda ()
                 (agent-aborted-p agent))))
            (message
-             (let ((context
-                     (cadr-ai:make-context
-                      :system-prompt
-                      (current-agent-system-prompt agent)
-                      :messages request-messages
-                      :tools
-                      (registry-tools
-                       (agent-tool-registry agent)))))
-               (if
-                   (eq :off
-                       (agent-thinking-level agent))
-                   (funcall
-                    (agent-stream-function agent)
-                    (agent-provider agent)
-                    (agent-model agent)
-                    context callback
-                    :abort-p (getf options :abort-p))
-                   (funcall
-                    (agent-stream-function agent)
-                    (agent-provider agent)
-                    (agent-model agent)
-                    context callback
-                    :reasoning
-                    (agent-thinking-level agent)
-                    :abort-p (getf options :abort-p))))))
+             (if (agent-aborted-p agent)
+                 ;; pi@53fa77ccd — an abort already pending when the
+                 ;; turn reaches the provider call (the escape-during-
+                 ;; tool-execution case) ends the turn with the
+                 ;; AbortError text and never invokes the provider;
+                 ;; v0.83 made the call and let it abort mid-stream.
+                 (cadr-ai:make-assistant-message
+                  :api (cadr-ai:model-api (agent-model agent))
+                  :provider
+                  (cadr-ai:model-provider (agent-model agent))
+                  :model (cadr-ai:model-id (agent-model agent))
+                  :stop-reason :error
+                  :error-message "This operation was aborted")
+                 (let ((context
+                         (cadr-ai:make-context
+                          :system-prompt
+                          (current-agent-system-prompt agent)
+                          :messages request-messages
+                          :tools
+                          (registry-tools
+                           (agent-tool-registry agent)))))
+                   (if
+                       (eq :off
+                           (agent-thinking-level agent))
+                       (funcall
+                        (agent-stream-function agent)
+                        (agent-provider agent)
+                        (agent-model agent)
+                        context callback
+                        :abort-p (getf options :abort-p))
+                       (funcall
+                        (agent-stream-function agent)
+                        (agent-provider agent)
+                        (agent-model agent)
+                        context callback
+                        :reasoning
+                        (agent-thinking-level agent)
+                        :abort-p (getf options :abort-p)))))))
       (let ((final
               (merge-terminal-assistant-partial
                message last-partial)))

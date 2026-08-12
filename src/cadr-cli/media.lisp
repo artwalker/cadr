@@ -138,6 +138,47 @@
 (defparameter +base64-alphabet+
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
+(defun decode-base64-bytes (text)
+  ;; Standard base64 (with padding) into an octet vector; NIL on
+  ;; malformed input.
+  (let ((cleaned
+          (remove-if
+           (lambda (c)
+             (member c '(#\Space #\Tab #\Newline #\Return)))
+           text)))
+    (when (or (zerop (length cleaned))
+              (not (zerop (mod (length cleaned) 4))))
+      (return-from decode-base64-bytes nil))
+    (let ((output
+            (make-array 0 :element-type '(unsigned-byte 8)
+                        :adjustable t :fill-pointer 0)))
+      (loop for position from 0 below (length cleaned) by 4
+            for chars =
+              (subseq cleaned position (+ position 4))
+            do
+            (let ((values
+                    (loop for c across chars
+                          for idx =
+                            (position c +base64-alphabet+)
+                          when (and (null idx)
+                                    (not (char= c #\=)))
+                            do (return-from decode-base64-bytes nil)
+                          collect (or idx 0))))
+              (let ((packed
+                      (logior (ash (first values) 18)
+                              (ash (second values) 12)
+                              (ash (third values) 6)
+                              (fourth values))))
+                (vector-push-extend
+                 (ldb (byte 8 16) packed) output)
+                (when (char/= (char chars 2) #\=)
+                  (vector-push-extend
+                   (ldb (byte 8 8) packed) output))
+                (when (char/= (char chars 3) #\=)
+                  (vector-push-extend
+                   (ldb (byte 8 0) packed) output)))))
+      (coerce output '(simple-array (unsigned-byte 8) (*))))))
+
 (defun encode-base64-bytes (bytes)
   (with-output-to-string (output)
     (loop for position from 0 below (length bytes) by 3

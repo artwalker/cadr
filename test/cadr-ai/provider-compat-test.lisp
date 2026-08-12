@@ -88,22 +88,22 @@
 
 (test openai-completions-qwen-reasoning-matches-reference
   (let* ((model
-           (compat-model
-            :id "qwen3.7-max"
-            :provider :qwen-token-plan
-            :api :openai-completions
-            :base-url
-            "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
-            :max-tokens 4096
-            :reasoning-p t
-            :thinking-level-map
-            '((:high . "high")
-              (:max . "max"))
-            :compat
-            '(:thinking-format :qwen
-              :supports-developer-role nil
-              :supports-store nil
-              :supports-reasoning-effort t)))
+          (compat-model
+           :id "qwen3.7-max"
+           :provider :qwen-token-plan
+           :api :openai-completions
+           :base-url
+           "https://token-plan.ap-southeast-1.maas.aliyuncs.com/compatible-mode/v1"
+           :max-tokens 4096
+           :reasoning-p t
+           :thinking-level-map
+           '((:high . "high")
+             (:max . "max"))
+           :compat
+           '(:thinking-format :qwen
+             :supports-developer-role nil
+             :supports-store nil
+             :supports-reasoning-effort t)))
          (request
            (build-request
             (cadr-ai:make-openai-completions-provider
@@ -120,6 +120,83 @@
       (request-fixture
        "openai-completions-qwen-reasoning")
       (request-spec-payload request)))))
+
+(test openai-completions-baseten-reasoning-matches-reference
+  ;; pi@53fa77ccd api/openai-completions.ts:779-793 — the baseten
+  ;; thinking format sends chat_template_args plus reasoning_effort.
+  (let* ((model
+           (compat-model
+            :id "zai-org/GLM-5.2"
+            :provider :baseten
+            :api :openai-completions
+            :base-url "https://inference.baseten.co/v1"
+            :max-tokens 4096
+            :reasoning-p t
+            :thinking-level-map
+            '((:off . "none")
+              (:high . "high")
+              (:max . "max"))
+            :compat
+            '(:thinking-format :baseten
+              :chat-template-args
+              (("enable_thinking" :var "thinking.enabled"
+                :omit-when-off nil))
+              :supports-usage-in-streaming t
+              :max-tokens-field :max-tokens
+              :supports-strict-mode t
+              :supports-developer-role nil
+              :supports-store nil
+              :supports-reasoning-effort t
+              :supports-long-cache-retention nil)))
+         (request
+           (build-request
+            (cadr-ai:make-openai-completions-provider
+             :api-key "key")
+            model
+            (sample-context)
+            :stream-p t
+            :max-tokens 4096
+            :reasoning :high
+            :cache-retention :none
+            :tool-choice "required")))
+    (is
+     (json-equal-p
+      (request-fixture
+       "openai-completions-baseten-reasoning")
+      (request-spec-payload request)))))
+
+(test openai-completions-thinking-token-budget-matches-reference
+  ;; pi@53fa77ccd api/openai-completions.ts:847-866 — vLLM caps
+  ;; reasoning with a top-level thinking_token_budget; the budget is
+  ;; min(level budget, max_tokens - 1024), so 4096-1024=3072 caps high.
+  (let ((model
+          (compat-model
+           :id "vllm-reasoning-model"
+           :provider :vllm
+           :api :openai-completions
+           :base-url "https://vllm.invalid/v1"
+           :max-tokens 4096
+           :reasoning-p t
+           :compat
+           '(:supports-reasoning-effort t
+             :supports-thinking-token-budget t
+             :max-tokens-field :max-tokens))))
+    (dolist (case '((:high . "openai-completions-thinking-budget-high")
+                    (:low . "openai-completions-thinking-budget-low")))
+      (let ((request
+              (build-request
+               (cadr-ai:make-openai-completions-provider
+                :api-key "key")
+               model
+               (sample-context)
+               :stream-p t
+               :max-tokens 4096
+               :reasoning (car case)
+               :cache-retention :none)))
+        (is
+         (json-equal-p
+          (request-fixture (cdr case))
+          (request-spec-payload request)))))))
 
 (test openai-responses-reasoning-cache-matches-reference
   (let* ((model

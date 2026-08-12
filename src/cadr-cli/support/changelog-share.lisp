@@ -131,7 +131,7 @@
       (unless repository-path
         (return-from changelog-local-target target))
       (let ((directory-p
-              (or (uiop:string-suffix-p "/" path)
+              (or (uiop:string-suffix-p path "/")
                   (not
                    (find #\.
                          (car

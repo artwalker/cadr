@@ -11,7 +11,7 @@
   (or
    (position #\/ argument)
    (position #\\ argument)
-   (uiop:string-suffix-p ".jsonl" argument)))
+   (uiop:string-suffix-p argument ".jsonl")))
 
 (defun find-session-by-id-or-prefix
     (argument sessions)
@@ -1836,9 +1836,14 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
              (handler-case
                  (progn
                    (funcall copy-function text)
-                   (format
-                    output
-                    "Copied last agent message to clipboard~%"))
+                   ;; pi@53fa77ccd interactive-mode.ts:5956-5960 —
+                   ;; fullscreen flashes; regular mode keeps the status.
+                   (if *alt-screen-flash-function*
+                       (funcall *alt-screen-flash-function*
+                                "Copied!")
+                       (format
+                        output
+                        "Copied last agent message to clipboard~%")))
                (condition (condition)
                  (format output "~A~%"
                          condition)))

@@ -289,6 +289,10 @@
   (all-loaded-p nil :type boolean)
   (all-loading-p nil :type boolean)
   (all-load-sequence 0 :type (integer 0 *))
+  ;; pi@53fa77ccd session-selector.ts:140-143 — incremental load
+  ;; progress renders as "Loading <loaded>/<total>".
+  (load-progress-loaded nil :type (or null integer))
+  (load-progress-total nil :type (or null integer))
   (scope :current)
   (sort-mode :threaded)
   (name-filter :all)
@@ -681,6 +685,12 @@
             (setf
              (session-selector-state-all-loading-p selector)
              t
+             (session-selector-state-load-progress-loaded
+              selector)
+             nil
+             (session-selector-state-load-progress-total
+              selector)
+             nil
              started-token
              (incf
               (session-selector-state-all-load-sequence
@@ -703,6 +713,10 @@
      (session-selector-state-all-loaded-p selector)
      t
      (session-selector-state-all-loading-p selector)
+     nil
+     (session-selector-state-load-progress-loaded selector)
+     nil
+     (session-selector-state-load-progress-total selector)
      nil)
     (session-selector-clamp-selected selector))
   selector)
@@ -716,9 +730,28 @@
     (setf
      (session-selector-state-all-loading-p selector)
      nil
+     (session-selector-state-load-progress-loaded selector)
+     nil
+     (session-selector-state-load-progress-total selector)
+     nil
      (session-selector-state-status-message selector)
      (format nil "Failed to load sessions: ~A"
              condition)))
+  selector)
+
+(defun session-selector-note-load-progress
+    (selector token loaded total)
+  ;; pi@53fa77ccd session-selector.ts onProgress: progress is applied
+  ;; only while the same load is current.
+  (when
+      (= token
+         (session-selector-state-all-load-sequence
+          selector))
+    (setf
+     (session-selector-state-load-progress-loaded selector)
+     loaded
+     (session-selector-state-load-progress-total selector)
+     total))
   selector)
 
 (defun delete-last-query-word (query)
@@ -1155,7 +1188,18 @@
                (cadr-tui:theme-foreground
                 :muted "○ Current Folder | ")
                (cadr-tui:theme-foreground
-                :accent "Loading ...")))
+                :accent
+                (if (session-selector-state-load-progress-total
+                     selector)
+                    (format
+                     nil "Loading ~D/~D"
+                     (or
+                      (session-selector-state-load-progress-loaded
+                       selector)
+                      0)
+                     (session-selector-state-load-progress-total
+                      selector))
+                    "Loading ..."))))
              ((eq scope :current)
               (concatenate
                'string

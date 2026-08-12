@@ -213,6 +213,7 @@
    #:oauth-provider-metadata-manual-input-message
    #:register-provider-definition
    #:find-provider-definition
+   #:provider-oauth-subscription-p
    #:list-provider-definitions
    #:instantiate-provider
    #:model-metadata

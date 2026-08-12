@@ -197,7 +197,8 @@
         (appended-messages nil))
     (when (agent-extension-host agent)
       (multiple-value-bind
-            (replacement appended blocked-p reason)
+            (replacement appended blocked-p reason
+             terminate-p terminate-supplied-p)
           (run-extension-hooks
            (agent-extension-host agent)
            :tool-call-before
@@ -207,10 +208,18 @@
               appended-messages appended)
         (when blocked-p
           (return-from prepare-tool-execution
-            (make-error-tool-result
-             effective-call
-             (or reason "Tool execution was blocked")
-             appended-messages)))))
+            (let ((blocked
+                    (make-error-tool-result
+                     effective-call
+                     (or reason "Tool execution was blocked")
+                     appended-messages)))
+              ;; pi@53fa77ccd agent-loop.ts:637-640 — a before-hook
+              ;; terminate on a blocked call marks the result so the
+              ;; batch termination rule can stop the agent.
+              (when (and terminate-supplied-p
+                         (eq terminate-p t))
+                (setf (tool-outcome-terminate-p blocked) t))
+              blocked)))))
     (when on-effective-call
       (funcall
        on-effective-call

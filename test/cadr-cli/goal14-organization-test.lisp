@@ -286,7 +286,7 @@
              ("models/store.lisp" "(defstruct (file-models-store")
              ("models/registry.lisp" "(defstruct (model-registry")
              ("models/matching.lisp" "(defun resolve-scoped-models")
-             ("models/credential-print.lisp" "(define-condition credential-print-error")
+             ("models/credential-print.lisp" "(define-condition auth-command-error")
              ("packages/source.lisp" "(defstruct package-source")
              ("packages/settings.lisp" "(defun settings-package-entries")
              ("packages/manifest.lisp" "(defun read-package-pi-manifest")
@@ -404,7 +404,11 @@
     ;; (main.lisp, baseline listModels table port).
     ;; +1 goal 18 adjudicated -r picker: run-resume-session-picker
     ;; (sessions.lisp, baseline cli/session-picker.ts port).
-    (is (= 117 definition-count)
+    ;; +3 goal 18 Part L: settings-tui-mode,
+    ;; settings-fullscreen-scrollbar, and
+    ;; settings-mermaid-rendering-mode (bootstrap/settings.lisp, the
+    ;; v0.84.1 settings readers).
+    (is (= 120 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -554,7 +558,10 @@
     ;; interactive/autocomplete.lisp (extension-shortcut-path,
     ;; builtin-shortcut-key-map, resolve-extension-shortcuts,
     ;; refresh-extension-shortcut-diagnostics).
-    (is (= 268 definition-count)
+    ;; +2 goal 18 Part L: *tui-mode-switch-hook* and
+    ;; *alt-screen-flash-function* (interactive/controller.lisp, the
+    ;; v0.84.1 alt-screen live-flash and mode-switch seams).
+    (is (= 270 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -714,7 +721,24 @@
     ;; *canonical-repaint-hook* (lifecycle-input.lisp) — the harness
     ;; work-rendered acknowledgement repaints in place instead of
     ;; wiping scrollback.
-    (is (= 296 definition-count)
+    ;; +27 goal 18 Part L2.2 (v0.84.1 alt-screen/LaTeX parity):
+    ;; +10 markdown.lisp LaTeX owners (latex-placeholder delimiters,
+    ;; latex-escaped-p, latex-find-closing-delimiter,
+    ;; latex-looks-like-pending-math-p, markdown-latex-inline-span,
+    ;; markdown-extract-inline-latex, markdown-restore-inline-latex,
+    ;; markdown-latex-block-opening, markdown-latex-block-close-index);
+    ;; +14 lifecycle-input.lisp owners (renderer-flash,
+    ;; renderer-live-flash-lines, renderer-note-scrollbar-activity,
+    ;; multiplexer-mouse-environment-p, mouse-enable-sequence replacing
+    ;; the folded +mouse-enable+, renderer-enter/exit-alt-screen-live,
+    ;; osc133-prompt-start-line-p, renderer-scroll-to-prompt,
+    ;; selection-word-character-class, selection-word-range,
+    ;; renderer-note-click, renderer-selection-source-line,
+    ;; renderer-line-selection-range, selection-point-before-p);
+    ;; +3 renderer/alt-screen.lisp scrollbar owners
+    ;; (alt-scrollbar-visible-p, style-alt-scrollbar-cell,
+    ;; apply-alt-scrollbar).
+    (is (= 323 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
@@ -865,7 +889,10 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 253 definition-count)
+    ;; +1 goal 18 Part L: *tool-result-image-normalize-function*
+    ;; (loop/tool-execution.lisp, the image normalization seam used by
+    ;; the tool-result rendering path).
+    (is (= 254 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1231,7 +1258,10 @@
         "B10 runtime model cancellation bypasses the B3 owner")
     (is (and package-source
              (string=
-              "3106335e0d5bb55d53e1ad8b466df6c1bf47c2cec5e0959168a947136da93233"
+              ;; +1 export #:provider-oauth-subscription-p (goal 18
+              ;; provider metadata: bootstrap/commands.lisp consumes
+              ;; the isUsingSubscription port).
+              "47ac5dd0a816a0b3e72e2652817f10b0127c3c3969dc0053730e53070aaf43e6"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)

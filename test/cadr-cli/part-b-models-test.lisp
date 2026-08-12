@@ -1,6 +1,15 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(test alias-model-id-p-keeps-latest-suffix
+  ;; Regression: reversed uiop:string-suffix-p arguments failed to
+  ;; recognize ids ending in "-latest".
+  (is-true (cadr-cli::alias-model-id-p
+            "deepseek-v4-flash-latest"))
+  (is-true (cadr-cli::alias-model-id-p "deepseek-v4-flash"))
+  (is-false (cadr-cli::alias-model-id-p
+             "deepseek-v4-flash-20260812")))
+
 (test file-auth-storage-resolves-preserves-serializes-and-fails-closed
   (with-test-directory (root)
     (let* ((path (merge-pathnames "agent/auth.json" root))
@@ -713,7 +722,7 @@
     (is (eq :max
             (getf parsed :thinking))))
   (let ((parsed
-          (cadr-cli:parse-credential-print-command
+          (cadr-cli:parse-auth-command
            '("auth" "print-bearer-token"
              "--min-expiry" "30m"
              "--provider" "openai-codex"))))
@@ -725,8 +734,8 @@
     (is (equal
          '("--provider" "openai-codex")
          (getf parsed :arguments))))
-  (signals cadr-cli::credential-print-error
-    (cadr-cli:parse-credential-print-command
+  (signals cadr-cli::auth-command-error
+    (cadr-cli:parse-auth-command
      '("auth" "print-api-key"
        "--min-expiry" "30m")))
   (let ((storage
@@ -780,7 +789,7 @@
         :provider :openai
         :key "print-me"))
       (multiple-value-bind (handled-p status)
-          (cadr-cli::run-credential-print-command
+          (cadr-cli::run-auth-command
            '("auth" "print-api-key"
              "--provider" "openai"
              "--model" "gpt-5.5")
@@ -792,13 +801,93 @@
              (format nil "print-me~%")
              (get-output-stream-string
               output))))
-      ;; Baseline main.ts:139-142 catches CredentialPrintError at the
-      ;; command boundary and prints red "Error: <message>" to stderr.
-      (multiple-value-bind (handled-p status)
-          (cadr-cli::run-credential-print-command
-           '("auth" "print-api-key"
-             "--provider" "openai")
-           :auth-path auth
-           :output (make-string-output-stream))
-        (is (eq t handled-p))
-        (is (= 1 status))))))
+      ;; v0.84.1: provider-only printing is valid; the single
+      ;; configured credential resolves without --model.
+      (let ((stream (make-string-output-stream)))
+        (multiple-value-bind (handled-p status)
+            (cadr-cli::run-auth-command
+             '("auth" "print-api-key"
+               "--provider" "openai")
+             :auth-path auth
+             :output stream)
+          (is (eq t handled-p))
+          (is (= 0 status))
+          (is (string=
+               (format nil "print-me~%")
+               (get-output-stream-string stream))))))))
+
+(test auth-check-command-reports-ready-not-ready-and-invalid
+  (with-test-directory (root)
+    (let ((auth
+            (merge-pathnames "auth.json" root)))
+      (cadr-ai:write-auth-credential
+       auth
+       (cadr-ai:make-api-key-credential
+        :provider :openai
+        :key "check-me"))
+      (flet ((run-check (arguments)
+               (let ((stream (make-string-output-stream)))
+                 (multiple-value-bind (handled-p status)
+                     (cadr-cli::run-auth-command
+                      arguments
+                      :auth-path auth
+                      :output stream)
+                   (list handled-p status
+                         (get-output-stream-string stream))))))
+        ;; ready: stored API key resolves by provider
+        (let ((result
+                (run-check
+                 '("auth" "check" "--provider" "openai"))))
+          (is (equal
+               (list t 0 (format nil "ready~%"))
+               result)))
+        ;; not_ready: unknown provider, exit 1
+        (let ((result
+                (run-check
+                 '("auth" "check" "--provider" "nonexistent-provider"))))
+          (is (equal
+               (list t 1 (format nil "not_ready~%"))
+               result)))
+        ;; json shape: status/provider/reason key order and values
+        (let ((result
+                (run-check
+                 '("auth" "check" "--provider" "nonexistent-provider"
+                   "--json"))))
+          (is (equal
+               (list t 1
+                     (format nil
+                             "{\"status\":\"not_ready\",\"provider\":\"nonexistent-provider\",\"reason\":\"provider_not_found\"}~%"))
+               result)))
+        ;; json ready carries authType
+        (let ((result
+                (run-check
+                 '("auth" "check" "--provider" "openai" "--json"))))
+          (is (equal
+               (list t 0
+                     (format nil
+                             "{\"status\":\"ready\",\"provider\":\"openai\",\"authType\":\"api_key\"}~%"))
+               result)))
+        ;; --credentials emits the credential itself
+        (let ((result
+                (run-check
+                 '("auth" "check" "--provider" "openai"
+                   "--credentials"))))
+          (is (equal
+               (list t 0 (format nil "check-me~%"))
+               result)))
+        ;; missing provider/model is a usage error, exit 2 for check
+        (let ((result
+                (run-check '("auth" "check"))))
+          (is (equal (list t 2 "") result)))
+        ;; check-only flags are rejected for print commands
+        (signals cadr-cli::auth-command-error
+          (cadr-cli:parse-auth-command
+           '("auth" "print-api-key" "--json")))
+        ;; unknown subcommand text enumerates all three commands
+        (signals cadr-cli::auth-command-error
+          (cadr-cli:parse-auth-command '("auth" "bogus")))
+        ;; bare "auth" prints the help and exits 0
+        (let ((result (run-check '("auth"))))
+          (is (eq t (first result)))
+          (is (= 0 (second result)))
+          (is (search "cadr auth check" (third result))))))))

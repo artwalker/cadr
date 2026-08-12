@@ -14,7 +14,7 @@
   (format nil "~C]9;4;3~C" #\Escape (code-char 7)))
 
 (defparameter +terminal-progress-clear-sequence+
-  (format nil "~C]9;4;0;~C" #\Escape (code-char 7)))
+  (format nil "~C]9;4;0~C" #\Escape (code-char 7)))
 
 (defconstant +terminal-progress-keepalive-seconds+ 1.0d0)
 

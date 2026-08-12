@@ -65,10 +65,32 @@
            (eq terminate-p t)))
         outcome)))
 
+(defvar *tool-result-image-normalize-function* nil
+  "When bound, called with a tool result's content blocks to
+normalize image blocks entering session history (pi@53fa77ccd
+core/agent-session.ts:517-520).  Bound by cadr-cli, where the image
+pipeline lives.")
+
 (defun complete-tool-outcome (agent outcome turn-index)
   (let ((final
           (finalize-tool-outcome
            agent outcome turn-index)))
+    ;; Runs after the extension hook so images injected or replaced by
+    ;; extensions are normalized too.
+    (when *tool-result-image-normalize-function*
+      (let* ((result (tool-outcome-result final))
+             (content
+               (cadr-ai:tool-result-message-content result))
+             (normalized
+               (and content
+                    (funcall
+                     *tool-result-image-normalize-function*
+                     content))))
+        (when (and normalized
+                   (not (eq normalized content)))
+          (setf
+           (cadr-ai:tool-result-message-content result)
+           normalized))))
     (emit-tool-outcome agent final)
     final))
 

@@ -267,6 +267,72 @@
       (is (not (null terminate)))
       (is (not (null supplied-p))))))
 
+(test goal12-tool-before-hook-terminate-applies-only-on-block
+  ;; pi@53fa77ccd extensions/types.ts:1075-1079 + agent-loop.ts:637-640 —
+  ;; a before hook may set terminate; it marks the blocked result and is
+  ;; ignored without a block.
+  (let* ((call
+           (cadr-ai:make-tool-call
+            :id "call" :name "tool"
+            :arguments (make-hash-table :test #'equal)))
+         (blocked-bundle
+           (make-test-extension-bundle
+            "terminate-before-block"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :tool-call-before
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 (cadr-agent:make-extension-hook-result
+                  :block-p t
+                  :reason "policy"
+                  :terminate-p t))))))
+         (plain-bundle
+           (make-test-extension-bundle
+            "terminate-before-plain"
+            (lambda ()
+              (cadr-agent:define-event-hook
+               :tool-call-before
+               :handler
+               (lambda (event context)
+                 (declare (ignore event context))
+                 (cadr-agent:make-extension-hook-result
+                  :terminate-p t)))))))
+    (let ((host
+            (make-test-extension-host (list blocked-bundle))))
+      (multiple-value-bind
+            (replacement appended blocked reason terminate supplied-p)
+          (cadr-agent::run-extension-hooks
+           host :tool-call-before :tool-call call)
+        (declare (ignore appended))
+        (is (not (null replacement)))
+        (is (not (null blocked)))
+        (is (string= "policy" reason))
+        (is (not (null terminate)))
+        (is (not (null supplied-p))))
+      (let* ((agent
+               (cadr-agent:make-agent
+                :provider :mock :model nil
+                :extension-host host))
+             (outcome
+               (cadr-agent::prepare-tool-execution
+                agent call :turn-index 0)))
+        (is (typep outcome 'cadr-agent::tool-outcome))
+        (is (cadr-agent::tool-outcome-terminate-p outcome))))
+    ;; terminate without a block is accepted but not applied.
+    (let ((host
+            (make-test-extension-host (list plain-bundle))))
+      (multiple-value-bind
+            (replacement appended blocked reason terminate supplied-p)
+          (cadr-agent::run-extension-hooks
+           host :tool-call-before :tool-call call)
+        (declare (ignore appended reason))
+        (is (not (null replacement)))
+        (is (null blocked))
+        (is (not (null terminate)))
+        (is (not (null supplied-p)))))))
+
 (test goal12-extension-http-request-is-session-local-copied-and-stale-safe
   (let* ((bundle
            (cadr-agent::make-extension-bundle

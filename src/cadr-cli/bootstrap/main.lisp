@@ -128,6 +128,11 @@
 (defun main (&optional
                (argv
                  (uiop:command-line-arguments)))
+  ;; pi@53fa77ccd cli.ts:13-15 — the running agent publishes its
+  ;; identity to child processes (bash tool, hooks, extensions); cadr
+  ;; publishes its own names per the product-identity contract.
+  (sb-posix:setenv "CADR_CODING_AGENT" "true" 1)
+  (sb-posix:setenv "AI_AGENT" "cadr" 1)
   (handler-case
       (progn
         (ensure-user-data-migrated :argv argv)
@@ -150,7 +155,7 @@
             (return-from main status)))
         (multiple-value-bind
               (handled-p status)
-            (run-credential-print-command
+            (run-auth-command
              argv)
           (when handled-p
             (return-from main status)))
