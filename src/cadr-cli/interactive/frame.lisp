@@ -183,7 +183,9 @@
               :hide-thinking-block-p
               (tui-state-hide-thinking-block-p state)
               :hidden-thinking-label
-              (tui-state-hidden-thinking-label state)))
+              (tui-state-hidden-thinking-label state)
+              :mermaid-mode
+              (tui-state-mermaid-mode state)))
            (startup-lines
              (if
                  (tui-state-tools-expanded-p state)

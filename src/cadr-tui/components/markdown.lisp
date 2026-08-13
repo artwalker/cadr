@@ -96,6 +96,82 @@
           (concatenate 'string result
                        (subseq text position)))))
 
+(defun markdown-code-span-run-length (text start)
+  (loop for i from start below (length text)
+        while (char= (char text i) (code-char 96))
+        count 1))
+
+(defun markdown-normalize-code-span-text (text)
+  ;; marked 18 Tokenizer.codespan: newlines become spaces; if both ends
+  ;; are spaces and the body has a non-space, peel one space each side.
+  (let ((normalized
+          (substitute #\Space #\Newline
+                      (substitute #\Space #\Return text))))
+    (if (and (plusp (length normalized))
+             (char= (char normalized 0) #\Space)
+             (char= (char normalized (1- (length normalized))) #\Space)
+             (find-if-not (lambda (c) (char= c #\Space)) normalized))
+        (subseq normalized 1 (1- (length normalized)))
+        normalized)))
+
+(defun replace-markdown-code-spans
+    (text &key style-function ansi-theme-p)
+  ;; marked 18 inlineCode: /^(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)/
+  (with-output-to-string (out)
+    (let ((position 0)
+          (n (length text)))
+      (loop while (< position n)
+            for next = (position (code-char 96) text :start position)
+            do (cond
+                 ((null next)
+                  (write-string (subseq text position) out)
+                  (return))
+                 (t
+                  (write-string (subseq text position next) out)
+                  (let* ((run (markdown-code-span-run-length text next))
+                         (content-start (+ next run))
+                         (found nil))
+                    (when (>= content-start n)
+                      (write-string (subseq text next) out)
+                      (return))
+                    (let ((search-at content-start))
+                      (loop while (< search-at n)
+                            for close = (position (code-char 96) text :start search-at)
+                            do (unless close
+                                 (return))
+                               (let ((close-run
+                                       (markdown-code-span-run-length
+                                        text close)))
+                                 (if (and (= close-run run)
+                                          (or (>= (+ close close-run) n)
+                                              (char/= (char text
+                                                            (+ close close-run))
+                                                      (code-char 96)))
+                                          (and (> close content-start)
+                                               (char/= (char text content-start)
+                                                       (code-char 96))
+                                               (char/= (char text (1- close))
+                                                       (code-char 96))))
+                                     (let* ((raw
+                                              (subseq text content-start close))
+                                            (value
+                                              (markdown-normalize-code-span-text
+                                               raw))
+                                            (styled
+                                              (if style-function
+                                                  (funcall style-function
+                                                           value ansi-theme-p)
+                                                  (ansi-style
+                                                   "36" value ansi-theme-p))))
+                                       (write-string styled out)
+                                       (setf position (+ close close-run)
+                                             found t)
+                                       (return))
+                                     (setf search-at (+ close close-run))))))
+                    (unless found
+                      (write-string (subseq text next (+ next run)) out)
+                      (setf position (+ next run))))))))))
+
 (defun markdown-link-replacement
     (label url image-p capabilities
      ansi-theme-p)
@@ -384,8 +460,8 @@
            result "~~" :open-code "9"
            :ansi-theme-p ansi-theme-p)
           result
-          (replace-paired-marker
-           result "`" :open-code "36"
+          (replace-markdown-code-spans
+           result
            :style-function
            (lambda (text enabled-p)
              (theme-foreground

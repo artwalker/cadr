@@ -261,6 +261,7 @@ interactive-mode.ts:5956-5960).")
        apply-model-catalog-refresh-function
        trust-selector-function
        settings-selector-function
+       mermaid-mode-function
        extension-host
        fork-items-function
        session-items-function
@@ -356,6 +357,10 @@ interactive-mode.ts:5956-5960).")
             startup-expanded-lines
             :context-window context-window
             :hide-thinking-block-p hide-thinking-block-p
+            :mermaid-mode
+            (if mermaid-mode-function
+                (or (funcall mermaid-mode-function) "streaming")
+                "streaming")
             :session session
             :messages messages))
          (editor
@@ -2408,6 +2413,16 @@ interactive-mode.ts:5956-5960).")
                           "clear-on-shrink"))
                   (cadr-tui:renderer-set-clear-on-shrink
                    renderer (getf value :value)))
+                (when
+                    (and value
+                         (string=
+                          (getf value :id)
+                          "mermaid-rendering"))
+                  (setf (tui-state-mermaid-mode state)
+                        (or (getf value :value) "streaming"))
+                  (dolist (entry (tui-state-entries state))
+                    (invalidate-tui-entry-render-cache entry)
+                    (setf (tui-entry-markdown-cache entry) nil)))
                 (synchronize-terminal-progress-setting)
                 (refresh-footer-state))
               (request-render))

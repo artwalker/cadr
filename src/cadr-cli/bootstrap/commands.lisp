@@ -2314,6 +2314,10 @@
            #'trust-selector
            :settings-selector-function
            #'settings-selector
+           :mermaid-mode-function
+           (lambda ()
+             (settings-mermaid-rendering-mode
+              settings-manager))
            :extension-host
            (cli-extension-manager-host
             extension-manager)

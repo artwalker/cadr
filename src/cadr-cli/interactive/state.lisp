@@ -31,6 +31,7 @@
   render-cache-width
   render-cache-theme
   render-cache-extension-snapshot
+  render-cache-mermaid-mode
   (render-cache-lines nil :type list))
 
 (defstruct (tui-state
@@ -83,7 +84,8 @@
   working-indicator-interval-ms
   hidden-thinking-label
   (hide-thinking-block-p nil :type boolean)
-  status-message)
+  status-message
+  (mermaid-mode "streaming" :type string))
 
 (defun make-tui-state
     (&key model provider thinking cwd branch
@@ -96,7 +98,8 @@
        session messages
        hide-thinking-block-p
        (auto-compact-p t)
-       (context-window 0))
+       (context-window 0)
+       (mermaid-mode "streaming"))
   (let ((state
           (%make-tui-state
            :model model
@@ -120,6 +123,8 @@
            (not (null auto-compact-p))
            :hide-thinking-block-p
            (not (null hide-thinking-block-p))
+           :mermaid-mode
+           (or mermaid-mode "streaming")
            :session session)))
     (dolist (message messages)
       (seed-tui-message state message))

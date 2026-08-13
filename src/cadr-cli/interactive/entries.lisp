@@ -92,6 +92,7 @@
    (tui-entry-render-cache-theme entry) nil
    (tui-entry-render-cache-extension-snapshot entry)
    nil
+   (tui-entry-render-cache-mermaid-mode entry) nil
    (tui-entry-render-cache-lines entry) nil)
   entry)
 

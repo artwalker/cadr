@@ -391,48 +391,57 @@
 
 (defun transform-tui-markdown
     (entry source message-type width extension-host
-     &optional (cache-key message-type))
-  (unless extension-host
-    (return-from transform-tui-markdown source))
-  (let* ((snapshot
-           (cadr-agent::extension-host-current-snapshot
-            extension-host))
-         (context
-           (list
-            :message-type message-type
-            :streaming-p
-            (tui-entry-streaming-p entry)
-            :available-width width)))
-    (let ((cached
-            (find-if
-             (lambda (item)
-               (and
-                (equal cache-key (first item))
-                (string= source (second item))
-                (eq
-                 (tui-entry-streaming-p entry)
-                 (third item))
-                (= width (fourth item))
-                (eq snapshot (fifth item))))
-             (tui-entry-markdown-cache entry))))
-      (if cached
-          (sixth cached)
-          (let ((transformed
-                  (cadr-agent::transform-extension-markdown
-                   extension-host source context)))
-            (setf
+     &key (cache-key message-type)
+          (mermaid-mode "streaming"))
+  (let* ((mode (or mermaid-mode "streaming"))
+         (snapshot
+           (and extension-host
+                (cadr-agent::extension-host-current-snapshot
+                 extension-host)))
+         (streaming-p (tui-entry-streaming-p entry))
+         (cached
+           (find-if
+            (lambda (item)
+              (and
+               (equal cache-key (first item))
+               (string= source (second item))
+               (eq streaming-p (third item))
+               (= width (fourth item))
+               (eq snapshot (fifth item))
+               (equal mode (sixth item))))
+            (tui-entry-markdown-cache entry))))
+    (if cached
+        (seventh cached)
+        (let* ((context
+                 (list
+                  :message-type message-type
+                  :streaming-p streaming-p
+                  :available-width width))
+               (with-mermaid
+                 (cadr-tui:transform-mermaid-markdown
+                  source
+                  :mode mode
+                  :message-type message-type
+                  :streaming-p streaming-p
+                  :available-width width
+                  :theme-p t))
+               (transformed
+                 (if extension-host
+                     (cadr-agent::transform-extension-markdown
+                      extension-host with-mermaid context)
+                     with-mermaid)))
+          (setf
+           (tui-entry-markdown-cache entry)
+           (cons
+            (list
+             cache-key source streaming-p
+             width snapshot mode transformed)
+            (remove
+             cache-key
              (tui-entry-markdown-cache entry)
-             (cons
-              (list
-               cache-key source
-               (tui-entry-streaming-p entry)
-               width snapshot transformed)
-              (remove
-               cache-key
-               (tui-entry-markdown-cache entry)
-               :key #'first
-               :test #'equal)))
-            transformed)))))
+             :key #'first
+             :test #'equal)))
+          transformed))))
 
 (defun assistant-stop-error-lines
     (entry width)
@@ -487,7 +496,8 @@
 
 (defun render-assistant-blocks
     (entry width extension-host
-     &key hide-thinking-block-p hidden-thinking-label)
+     &key hide-thinking-block-p hidden-thinking-label
+          (mermaid-mode "streaming"))
   (let ((available-width
           (max 1 (- width 2))))
     (let ((blocks
@@ -520,7 +530,8 @@
               (transform-tui-markdown
                entry display-source message-type
                available-width extension-host
-               (list message-type block-index))
+               :cache-key (list message-type block-index)
+               :mermaid-mode mermaid-mode)
             for lines =
               (cadr-tui:render-markdown
                transformed width
@@ -770,7 +781,8 @@
 (defun render-tui-entry-uncached
     (entry width &key extension-host now
                       hide-thinking-block-p
-                      hidden-thinking-label)
+                      hidden-thinking-label
+                      (mermaid-mode "streaming"))
   (case (tui-entry-type entry)
     (:user
      (let ((lines
@@ -781,7 +793,8 @@
                 (tui-entry-text entry)
                 :user
                 (max 1 (- width 2))
-                extension-host)
+                extension-host
+                :mermaid-mode mermaid-mode)
                width
                :padding-x 1
                :padding-y 1
@@ -810,7 +823,8 @@
              (render-assistant-blocks
               entry width extension-host
               :hide-thinking-block-p hide-thinking-block-p
-              :hidden-thinking-label hidden-thinking-label)))
+              :hidden-thinking-label hidden-thinking-label
+              :mermaid-mode mermaid-mode)))
        (when
            (and
             lines
@@ -995,7 +1009,8 @@
 (defun render-tui-entry
     (entry width &key extension-host now
                       hide-thinking-block-p
-                      hidden-thinking-label)
+                      hidden-thinking-label
+                      (mermaid-mode "streaming"))
   (let* ((cacheable-p
            (tui-entry-render-cacheable-p entry))
          (theme
@@ -1018,7 +1033,10 @@
          (eq
           snapshot
           (tui-entry-render-cache-extension-snapshot
-           entry)))
+           entry))
+         (equal mermaid-mode
+                (tui-entry-render-cache-mermaid-mode
+                 entry)))
         (tui-entry-render-cache-lines entry)
         (let ((lines
                 (render-tui-entry-uncached
@@ -1026,7 +1044,8 @@
                  :extension-host extension-host
                  :now now
                  :hide-thinking-block-p hide-thinking-block-p
-                 :hidden-thinking-label hidden-thinking-label)))
+                 :hidden-thinking-label hidden-thinking-label
+                 :mermaid-mode mermaid-mode)))
           (when cacheable-p
             (setf
              (tui-entry-render-cache-valid-p entry) t
@@ -1035,13 +1054,16 @@
              (tui-entry-render-cache-extension-snapshot
               entry)
              snapshot
+             (tui-entry-render-cache-mermaid-mode entry)
+             mermaid-mode
              (tui-entry-render-cache-lines entry) lines))
           lines))))
 
 (defun render-tui-entries
     (entries width &key extension-host now
                         hide-thinking-block-p
-                        hidden-thinking-label)
+                        hidden-thinking-label
+                        (mermaid-mode "streaming"))
   (loop
     for entry in entries
     for index from 0
@@ -1051,7 +1073,8 @@
        :extension-host extension-host
        :now now
        :hide-thinking-block-p hide-thinking-block-p
-       :hidden-thinking-label hidden-thinking-label)
+       :hidden-thinking-label hidden-thinking-label
+       :mermaid-mode mermaid-mode)
     append
       (if
           (and

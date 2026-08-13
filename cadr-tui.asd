@@ -40,7 +40,8 @@
                                            (:file "layout-seq")
                                            (:file "ansi")
                                            (:file "source-box")
-                                           (:file "index")))
+                                           (:file "index")
+                                           (:file "transform")))
                              (:module "components"
                               :serial t
                               :components ((:file "markdown")
@@ -101,6 +102,8 @@
                              (:file "mermaid-reference-cases")
                              (:file "mermaid-golden-data")
                              (:file "mermaid-golden-test")
+                             (:file "mermaid-transform-data")
+                             (:file "mermaid-transform-test")
                              (:file "terminal-test")
                              (:file "terminal-parity-test")
                              (:file "manual-acceptance-test"))))

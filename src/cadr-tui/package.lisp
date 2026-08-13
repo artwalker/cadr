@@ -191,6 +191,8 @@
    #:render-image-component
    #:render-latex
    #:render-markdown
+   #:transform-mermaid-markdown
+   #:mermaid-code-span
    #:tool-block
    #:make-tool-block
    #:tool-block-name
