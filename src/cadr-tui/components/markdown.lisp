@@ -1174,6 +1174,19 @@
         (list-prefix-width nil))
     (let ((source-lines
             (split-lines-preserving-empty text)))
+      ;; mermaid.ts ends art with `\n` after the last code-span hard-break
+      ;; line.  marked turns that into a space token (spacing only).
+      ;; cadr's line splitter would emit a padded blank row.  Drop exactly
+      ;; one trailing empty line when the previous line is an inline
+      ;; code span — the mermaid row encoding.  Ordinary text that merely
+      ;; ends in a newline is left alone.
+      (let ((previous (second (reverse source-lines))))
+        (when (and (cdr source-lines)
+                   (zerop (length (car (last source-lines))))
+                   previous
+                   (plusp (length previous))
+                   (char= (char previous 0) (code-char 96)))
+          (setf source-lines (butlast source-lines))))
       (loop while source-lines
             for line = (pop source-lines)
             for next = (first source-lines)

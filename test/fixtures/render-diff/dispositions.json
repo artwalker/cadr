@@ -7113,14 +7113,14 @@
       "screenSha256": {
         "wide": {
           "pi": "f948107e86003847f1cdb86f3dd65cc11363f935d96e5d78db338d635f8c6a86",
-          "cadr": "1b082dd3a398ffa033144daa3abdda6bdd88bbd4c20a970d5b216977e84146bb"
+          "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
         },
         "narrow": {
           "pi": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01",
-          "cadr": "f22860447f7bc4725154490173f0c9f8d0d7db30856b115d795a013dc80d3135"
+          "cadr": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01"
         }
       },
-      "note": "At conversation-mermaid/mermaid-rendered the flowchart art (A/B boxes and edge) matches pi. Cadr keeps one extra empty row after the transform's trailing newline; remaining visible wrapping is Goal 16 identity plus I01 ANSI segmentation."
+      "note": "At conversation-mermaid/mermaid-rendered the flowchart art (A/B boxes and edge) matches pi. Remaining visible wrapping is Goal 16 identity plus I01 ANSI segmentation."
     },
     {
       "scenario": "conversation-mermaid",
@@ -7136,11 +7136,11 @@
       "screenSha256": {
         "wide": {
           "pi": "a38e5065449a9637514c095f4a4b23135ef5bf9f5aa3f544a2b78737c9cdd5be",
-          "cadr": "5f3715cfe1f602c6b3189ff485ccd87870332c7a610682e51d17ae2421ae3b41"
+          "cadr": "4374a4308a8a2b31a08bf308c373aaa360baa3a98cb7eeb98f4ed4879d3fe02a"
         },
         "narrow": {
           "pi": "4f1a6f26d339009173aef90b21c74ff12cd004e2a15757569c52c1ce834536d3",
-          "cadr": "038db70704060fc432a4c9f4443835589327b35e32b5ccfdd4369eaf50571315"
+          "cadr": "44c59ac0a894f9278d31995b1279f36fa7514b54c4f1a57136522207754d707f"
         }
       },
       "note": "At conversation-mermaid/mermaid-fallback both sides silently keep the mermaid source fence (no warning line). Remaining visible deltas are startup-help scrolling, Goal 16 identity wrapping, and I01 ANSI segmentation."
@@ -7159,11 +7159,11 @@
       "screenSha256": {
         "wide": {
           "pi": "6469f0e57bfdd656d00548e44613a2594aaca7d56d790048226670fc9db57437",
-          "cadr": "3084fc549ac83187ed408716ea1f8ea77cd7e133eaab51d08ab811792ad0f2e4"
+          "cadr": "13d0b96bb34fb3a5101b2c8d0ae73e1f9988f958806e5a395eb22140ecd5354c"
         },
         "narrow": {
           "pi": "9465a51c5a5414f00a13f1070aecb6024a9ef532072117ac505bd78c92c2ac05",
-          "cadr": "7fdfea655b8884848819f58be3046f4c5906f733b1bf092da4d1cad2222fed1e"
+          "cadr": "8e4620afc0d77bd335b5204aa4cb8566fe37a80d76b778286f33e6ff83c971c2"
         }
       },
       "note": "At conversation-mermaid/process-exit after alt-screen teardown the resume/help residue differs by Goal 16 identity and I01 ANSI segmentation; no mermaid-specific defect."

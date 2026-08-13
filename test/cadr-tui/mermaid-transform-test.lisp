@@ -143,3 +143,42 @@
     (is (search "hel`lo" rendered)
         "marked 18 multi-backtick spans keep an interior backtick")
     (is (null (search "``" rendered)))))
+
+(test mermaid-rendered-markdown-does-not-grow-an-eof-blank
+  (let* ((src (format nil "```mermaid~%flowchart LR~%  A-->B~%```~%"))
+         (transformed (transform-captured src :mode "streaming"))
+         (lines
+           (cadr-tui:render-markdown transformed 80 :padding-y 0 :padding-x 0))
+         (nonblank
+           (remove-if
+            (lambda (line)
+              (zerop (length (string-trim '(#\Space #\Tab) line))))
+            lines)))
+    (is (>= (length nonblank) 3)
+        "flowchart LR A-->B must render at least the three art rows")
+    (is (search "──" (first nonblank)))
+    (is (search "A" (second nonblank)))
+    (is (or (search "└" (car (last nonblank)))
+            (search "┘" (car (last nonblank)))
+            (search "─" (car (last nonblank))))
+        "last non-blank row is the bottom rule, not an extra pad")
+    (is (= (length lines) (length nonblank))
+        "EOF newline must not become a blank markdown row; got ~D lines of which ~D nonblank"
+        (length lines) (length nonblank))))
+
+(test markdown-keeps-internal-blank-paragraphs
+  (let* ((lines
+           (cadr-tui:render-markdown
+            (format nil "alpha~%~%beta")
+            40
+            :padding-y 0
+            :padding-x 0))
+         (trimmed
+           (mapcar
+            (lambda (line)
+              (string-trim '(#\Space #\Tab) line))
+            lines)))
+    (is (find "alpha" trimmed :test #'search))
+    (is (find "beta" trimmed :test #'search))
+    (is (find "" trimmed :test #'string=)
+        "an internal blank paragraph must survive")))

@@ -114,9 +114,15 @@ paired rewrite of writers and goldens.
 
 ## Observed mermaid screen delta
 
-`conversation-mermaid/mermaid-rendered`: flowchart art matches pi;
-cadr keeps one extra empty row after the transform newline.  Recorded
-under existing I01+I04.  No new I-class.
+`conversation-mermaid/mermaid-rendered` had one extra blank row after
+the art.  Cause: mermaid.ts ends with `\n` after the last code-span
+hard break; cadr's line splitter treated that as a padded paragraph.
+Fix: drop exactly one trailing empty source line when the previous
+line is an inline code span (`markdown.lisp` `render-markdown`).
+Independent test: `mermaid-rendered-markdown-does-not-grow-an-eof-blank`.
+After the fix, art is followed by the same empty-then-separator pair
+as pi.  Narrow rendered screens now share one SHA.  Wide still differs
+by I01+I04 only.  `conversation-content` checkpoint screens unchanged.
 
 ## Not claimed
 
