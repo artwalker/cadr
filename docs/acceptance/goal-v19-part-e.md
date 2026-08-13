@@ -1,9 +1,7 @@
 # Goal 19 Part E — residual answers and closeout evidence
 
-Implementation of A–D is on `cadr-migration` through `26fd6124d`.
-This file records the E0/E1 audit against the tree after a compressed
-rebuild of the root image.  It does **not** replace user A/B; policy
-section 3 says closeout requires user confirmation.
+Implementation of A–D is on `cadr-migration` through `f7fb74d34`.
+This file records the E0/E1 audit and the 2026-08-13 user closeout.
 
 ## E0 per-part audit
 
@@ -124,12 +122,11 @@ After the fix, art is followed by the same empty-then-separator pair
 as pi.  Narrow rendered screens now share one SHA.  Wide still differs
 by I01+I04 only.  `conversation-content` checkpoint screens unchanged.
 
-## Not claimed
+## Closeout
 
-User A/B has not run.  Per `docs/development-policy.md` §3, this file
-is evidence for that review, not a self-close.  Goal 18 leftovers
-(quota-exhausted skip gate, `CredentialSynchronizationError` export)
-are outside goal 19.
+User closed goal 19 on 2026-08-13 after A/B.  This file remains the
+residual evidence.  Goal 18 leftovers (quota-exhausted skip gate,
+`CredentialSynchronizationError` export) stay outside goal 19.
 
 ## Commits
 
@@ -137,3 +134,6 @@ are outside goal 19.
 - `fbac6a59d` / `39bfe8d57` Part B port + ledger
 - `b2d1684f5` Part C wiring + goldens
 - `26fd6124d` Part C/D ledgers and render-diff coverage
+- `cae12eeec` mermaid EOF blank
+- `b0d907ac2` FiveAM 16941 lock
+- `f7fb74d34` stale narrow mermaid-rendered I04 dropped
