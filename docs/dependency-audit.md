@@ -130,6 +130,24 @@ fetch.  Release binaries must ship `THIRD-PARTY-NOTICES` with the two
 copyright lines, the Apache-2.0 full text, and the port modification
 statement (goal 19 Part B, merged with goal 18 Part G release preparation).
 
+## Golden fixture: marked@18.0.5 (goal 19 Part C)
+
+The mermaid markdown transformer goldens are produced by
+`scripts/mermaid-transform-golden.mjs` using the same `marked@18.0.5`
+block lexer the baseline transformer imports.  The tarball is a **test
+fixture only**: it is not loaded by ASDF, not linked into the release
+binary, and not executed in the cadr process.
+
+| Field | Value |
+|---|---|
+| Artifact | `marked@18.0.5` |
+| Registry | `https://registry.npmjs.org/marked/-/marked-18.0.5.tgz` |
+| SHA-256 | `7d0ea56f8c29c0e6dec5665e62ad8089136819ca7028612e52301c2ba279dac2` |
+| License | MIT |
+| License copy in repo | `docs/third-party/marked-LICENSE.txt` |
+| Retained artifact | `test/fixtures/mermaid-golden/marked-18.0.5.tgz` |
+| Nature | Offline golden generator input. Distinct from the already-audited `marked.min.js` 18.0.5 browser embed used by `/export`. |
+
 ## Test and exception-transitive systems
 
 - `fiveam`: assertions and ASDF `test-op`.

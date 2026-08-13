@@ -1,6 +1,6 @@
 # Source parity ledger
 
-<!-- GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/506/163/1 examples=99/99/0 -->
+<!-- GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/507/163/0 examples=99/99/0 -->
 
 ## 1. Scope and counting rules
 
@@ -92,7 +92,7 @@ will be routed with this rule.)
 | Package | Files | 已实现 | 有意差异 | 缺失 |
 |---|---:|---:|---:|---:|
 | `ai` | 188 | 158 | 30 | 0 |
-| `coding-agent` | 309 | 262 | 46 | 1 |
+| `coding-agent` | 309 | 263 | 46 | 0 |
 | `agent` | 54 | 26 | 28 | 0 |
 | `tui` | 44 | 39 | 5 | 0 |
 | `server` | 18 | 2 | 16 | 0 |
@@ -101,10 +101,10 @@ will be routed with this rule.)
 | `protocol` | 9 | 8 | 1 | 0 |
 | `client` | 12 | 0 | 12 | 0 |
 | `telemetry` | 6 | 0 | 6 | 0 |
-| **Total** | **670** | **506** | **163** | **1** |
+| **Total** | **670** | **507** | **163** | **0** |
 
-All 670 baseline source files have a disposition: 506 已实现, 163 有意差异,
-1 缺失 (`mermaid.ts`, deferred to goal 19 per the 2026-08-12 adjudication).
+All 670 baseline source files have a disposition: 507 已实现, 163 有意差异,
+0 缺失.
 All 99 fixed-baseline examples have functionally equivalent Lisp sources and
 behavior tests. Parts C1–C5 closed all 19 reusable TUI composition rows, both Apple
 Terminal modifier rows, all 22 agent/session/coding-core rows, all 36 provider
@@ -147,9 +147,8 @@ reference that does not resolve fails the deterministic FiveAM stage).
 | Eval lifecycle integration | 0 (2 completed) | Developer/release evidence rather than normal chat | Native reporter lifecycle over the existing eval primitives | Complete |
 | Shipped runnable examples | 0 (99 completed) | Documentation/developer onboarding | F/G/H close compaction lifecycle dispatch, structured system-prompt options, and the session-local extension HTTP runtime | Complete |
 
-The 163 `有意差异` rows (plus one `缺失` row: `mermaid.ts`, deferred to
-goal 19 per the 2026-08-12 adjudication of `docs/proposals/goal18-l1a-mermaid.md`)
-remain visible in the package tables below. The user accepted them as a class and
+The 163 `有意差异` rows remain visible in the package tables below. The former
+`缺失` row for `mermaid.ts` is now `已实现` (goal 19 Part C). The user accepted them as a class and
 approved the queue order; extension-API gaps found while porting examples still
 require a separate proposal and itemized approval.
 
@@ -583,7 +582,7 @@ require a separate proposal and itemized approval.
 | `packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts` | KeyTextFormatOptions; formatKeyText; keyText; keyDisplayText; keyHint; rawKeyHint | 提供 KeyTextFormatOptions; formatKeyText; keyText; keyDisplayText; keyHint; rawKeyHint | src/cadr-cli/interactive/components/loaders.lisp:3 format-key-part; :16 format-key-text; :29 key-text; :36 key-display-text; :44 raw-key-hint; :51 key-hint | `已实现` | Baseline `packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts:1-48`. Central helpers resolve configured bindings and apply baseline alternative/modifier capitalization plus semantic dim/muted styling. |
 | `packages/coding-agent/src/modes/interactive/components/login-dialog.ts` | LoginDialogComponent | 提供 LoginDialogComponent | src/cadr-cli/interactive-services.lisp:7222 render-login-method-selector | `已实现` | Baseline `packages/coding-agent/src/modes/interactive/components/login-dialog.ts:1-233`. 导出能力由所列 Lisp 符号提供；模块可合并/拆分但能力存在 |
 | `packages/coding-agent/src/modes/interactive/components/markdown-transform.ts` | createMarkdownTransform | 提供 createMarkdownTransform | src/cadr-agent/extensions/rendering.lisp:77 transform-extension-markdown | `已实现` | Baseline `packages/coding-agent/src/modes/interactive/components/markdown-transform.ts:1-29`. 导出能力由所列 Lisp 符号提供；模块可合并/拆分但能力存在 |
-| `packages/coding-agent/src/modes/interactive/components/mermaid.ts` | createMermaidMarkdownTransformer | Mermaid markdown transformer (grok-mermaid render + code-span encoding) | goal 19: pure-Lisp grok-mermaid port (2026-08-12 adjudicated, deferred) | `缺失` | Baseline packages/coding-agent/src/modes/interactive/components/mermaid.ts. 2026-08-12 已裁决路线 1（纯 Lisp 移植 + 差分金样），拆为 goal 19 执行；goal 19 关账前该能力缺失，Mermaid 块按基线回退语义渲染为源码框，账本如实记为 `缺失`（非"有意差异"）。 |
+| `packages/coding-agent/src/modes/interactive/components/mermaid.ts` | createMermaidMarkdownTransformer | Mermaid markdown transformer (grok-mermaid render + code-span encoding) | src/cadr-tui/mermaid/transform.lisp:transform-mermaid-markdown; src/cadr-cli/interactive/transcript.lisp:transform-tui-markdown | `已实现` | Baseline packages/coding-agent/src/modes/interactive/components/mermaid.ts. Goal 19 Part C ports the transformer: off/final/streaming modes, silent parse/width fallback, non-streaming warning line with (+N more), six Span.cls theme mappings, top-level fences only. Evidence: test/cadr-tui/mermaid-transform-test.lisp (23 marked 18.0.5 + grok-mermaid 0.2.2 goldens). |
 | `packages/coding-agent/src/modes/interactive/components/model-selector.ts` | ModelSelectorComponent | 提供 ModelSelectorComponent | src/cadr-cli/interactive-services.lisp:7858 make-model-selector-state; src/cadr-cli/interactive-services.lisp:8043 render-model-selector | `已实现` | Baseline `packages/coding-agent/src/modes/interactive/components/model-selector.ts:1-364`. 导出能力由所列 Lisp 符号提供；模块可合并/拆分但能力存在 |
 | `packages/coding-agent/src/modes/interactive/components/oauth-selector.ts` | AuthSelectorProvider; formatAuthSelectorProviderType; OAuthSelectorComponent | 提供 AuthSelectorProvider; formatAuthSelectorProviderType; OAuthSelectorComponent | src/cadr-cli/interactive-services.lisp:7423 make-oauth-selector-state; src/cadr-cli/interactive-services.lisp:7615 render-oauth-selector | `已实现` | Baseline `packages/coding-agent/src/modes/interactive/components/oauth-selector.ts:1-214`. 导出能力由所列 Lisp 符号提供；模块可合并/拆分但能力存在 |
 | `packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts` | ModelsConfig; ModelsCallbacks; ScopedModelsSelectorComponent | 提供 ModelsConfig; ModelsCallbacks; ScopedModelsSelectorComponent | src/cadr-cli/interactive-services.lisp:8263 make-scoped-models-selector-state; src/cadr-cli/interactive-services.lisp:8776 render-scoped-models-selector | `已实现` | Baseline `packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts:1-375`. 导出能力由所列 Lisp 符号提供；模块可合并/拆分但能力存在 |

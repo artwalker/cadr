@@ -159,7 +159,8 @@ run_mermaid_golden_data_gate() {
   # gate prevents a hand-edit of the Lisp data from silently diverging from
   # the golden.
   python3 "$PROJECT_DIRECTORY/scripts/gen-mermaid-golden-data.py" --check &&
-    python3 "$PROJECT_DIRECTORY/scripts/gen-mermaid-width-data.py" --check
+    python3 "$PROJECT_DIRECTORY/scripts/gen-mermaid-width-data.py" --check &&
+    python3 "$PROJECT_DIRECTORY/scripts/gen-mermaid-transform-data.py" --check
 }
 
 run_product_identity_gate() {

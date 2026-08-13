@@ -9,13 +9,14 @@
 
 已裁决待办 goal：
 
-- `OQ-G18-L1A-MERMAID`：2026-08-12 已裁决路线 1（纯 Lisp 移植
-  grok-mermaid + 差分金样），**拆为 goal 19 执行**，不在 goal 18 内做。
-  `docs/source-parity.md` 中 `mermaid.ts` 行记 `缺失`（非"有意差异"）。
-  goal 19 关账前 Mermaid 块按基线回退语义渲染为源码框；账本如实记为
-  未实现能力。
+（当前无待办 goal。）
 
 已裁决并实施：
+
+- `OQ-G18-L1A-MERMAID`：2026-08-12 已裁决路线 1；goal 19 Part C 落地。
+  `docs/source-parity.md` 中 `mermaid.ts` 行记 `已实现`
+  （`src/cadr-tui/mermaid/transform.lisp:transform-mermaid-markdown`）。
+
 
 - `OQ-G18-AUTH-CANCEL-14`：2026-08-12 已裁决路线 A 并落地。v0.84.1 起
   基线 pi 在 14 个 auth-cancel 整屏键上渲染红色

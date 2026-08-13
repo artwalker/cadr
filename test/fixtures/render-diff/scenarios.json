@@ -335,6 +335,45 @@
       ]
     },
     {
+      "id": "conversation-mermaid",
+      "group": "conversation",
+      "coverage": ["mermaid-absent", "mermaid-rendered", "mermaid-fallback"],
+      "description": "Mermaid empty/non-empty dual state plus silent parse fallback.",
+      "responses": [
+        {
+          "content": [{ "type": "text", "text": "No diagram in this turn." }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "```mermaid\nflowchart LR\n  A-->B\n```" }],
+          "stopReason": "stop"
+        },
+        {
+          "content": [{ "type": "text", "text": "```mermaid\nnot a diagram\n```" }],
+          "stopReason": "stop"
+        }
+      ],
+      "actions": [
+        { "waitForHex": "1b5b3f323032366c" },
+        { "sendText": "plain turn" },
+        { "send": "enter" },
+        { "waitFor": "No diagram in this turn." },
+        { "waitForAgentSettled": true },
+        { "checkpoint": "mermaid-absent" },
+        { "sendText": "draw mermaid" },
+        { "send": "enter" },
+        { "waitFor": "A" },
+        { "waitForAgentSettled": true },
+        { "checkpoint": "mermaid-rendered" },
+        { "sendText": "bad mermaid" },
+        { "send": "enter" },
+        { "waitFor": "not a diagram" },
+        { "waitForAgentSettled": true },
+        { "checkpoint": "mermaid-fallback" },
+        { "send": "ctrl+d" }
+      ]
+    },
+    {
       "id": "tools-success",
       "group": "tools",
       "coverage": ["bash-multiline", "read-range", "read-offset-without-limit", "write", "edit", "grep", "grep-default-path", "find", "find-default-path", "ls", "bash-long-command-tree", "overlay-tree-rich-tools"],

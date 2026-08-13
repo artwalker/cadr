@@ -19,11 +19,11 @@ owners, B9 replaced the extension-host monolith with eight owners, B10
 replaced four mixed AI files with seventeen exact owners, and B11 replaced
 five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
-goal is supposed to police, so this ledger covers all 296 current files.
+goal is supposed to police, so this ledger covers all 297 current files.
 
-- 291 Lisp files, 120,242 lines, 4,928 top-level definitions.
+- 292 Lisp files, 120,740 lines, 4,961 top-level definitions.
 - 5 static export assets, 4,276 lines.
-- 296 production files and 124,518 physical lines in total.
+- 297 production files and 124,518 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `合格` means one predictable responsibility; `合格·大体量` means the same but
@@ -318,7 +318,7 @@ files with unrelated facilities fail.
 |---|---:|---:|---|---|
 | `src/cadr-tui/autocomplete.lisp` | 592 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | 合格·大体量 |
 | `src/cadr-tui/components/image.lisp` | 45 | 1 | Render image bytes or the baseline text fallback. | 合格 |
-| `src/cadr-tui/components/markdown.lisp` | 1,475 | 43 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | 合格·大体量 |
+| `src/cadr-tui/components/markdown.lisp` | 1,551 | 46 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | 合格·大体量 |
 | `src/cadr-tui/components/select-list.lisp` | 308 | 8 | Own filterable two-column selection state, navigation, and rendering. | 合格 |
 | `src/cadr-tui/components/status.lisp` | 253 | 6 | Render footer and status-bar projections. | 合格 |
 | `src/cadr-tui/components/tool-block.lisp` | 626 | 23 | Render tool titles, previews, diffs, elapsed time, and result states. | 合格·大体量 |
@@ -339,6 +339,7 @@ files with unrelated facilities fail.
 | `src/cadr-tui/mermaid/canvas.lisp` | 336 | 34 | Implement the edge-mask raster grid that clips labels and box borders during layout. | 合格 |
 | `src/cadr-tui/mermaid/graph.lisp` | 106 | 18 | Define the shared graph model shared by all Mermaid diagram kinds. | 合格 |
 | `src/cadr-tui/mermaid/index.lisp` | 111 | 3 | Render the five supported diagram kinds from the shared graph model. | 合格 |
+| `src/cadr-tui/mermaid/transform.lisp` | 427 | 30 | Replace top-level mermaid fences using marked 18 fence rules and the Part B renderer. | 合格 |
 | `src/cadr-tui/mermaid/labels.lisp` | 334 | 28 | Normalize Mermaid edge/node labels before measurement and drawing. | 合格 |
 | `src/cadr-tui/mermaid/layout.lisp` | 1,090 | 36 | Implement the Sugiyama layered-graph layout used by flow diagrams. | 合格·大体量 |
 | `src/cadr-tui/mermaid/layout-seq.lisp` | 254 | 9 | Implement the sequence-diagram layout and lane projection. | 合格 |
@@ -389,8 +390,8 @@ files with unrelated facilities fail.
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
-| `cadr-tui` | 29 | 19 | 0 | 0 | 48 |
-| **Total** | **211** | **85** | **0** | **0** | **296** |
+| `cadr-tui` | 29 | 19 | 0 | 0 | 49 |
+| **Total** | **211** | **85** | **0** | **0** | **297** |
 
 No production file remains in `应拆分` or `应合并`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This

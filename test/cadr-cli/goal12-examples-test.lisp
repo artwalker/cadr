@@ -170,10 +170,10 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/506/163/1 examples=99/99/0"))
-    (is (search "| `coding-agent` | 309 | 262 | 46 | 1 |" ledger))
+          "GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/507/163/0 examples=99/99/0"))
+    (is (search "| `coding-agent` | 309 | 263 | 46 | 0 |" ledger))
     (is (search "| `tui` | 44 | 39 | 5 | 0 |" ledger))
-    (is (search "| **Total** | **670** | **506** | **163** | **1** |" ledger))
+    (is (search "| **Total** | **670** | **507** | **163** | **0** |" ledger))
     (is (search "实现完成，平台不可实测" ledger))
     (is (search "all 99" readme :test #'char-equal))
     (is (search "99 functionally equivalent Lisp ports and 0 gaps"

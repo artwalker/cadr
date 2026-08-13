@@ -738,7 +738,10 @@
     ;; +3 renderer/alt-screen.lisp scrollbar owners
     ;; (alt-scrollbar-visible-p, style-alt-scrollbar-cell,
     ;; apply-alt-scrollbar).
-    (is (= 323 definition-count)
+    ;; +3 goal 19 Part C: markdown.lisp marked-18 code-span helpers
+    ;; (markdown-code-span-run-length, markdown-normalize-code-span-text,
+    ;; replace-markdown-code-spans).
+    (is (= 326 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
