@@ -2,6 +2,50 @@
 
 <!-- GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/507/163/0 examples=99/99/0 -->
 
+## 0. Known defect: 108 stale cadr-side mappings (advisor, 2026-08-13)
+
+**This ledger currently misstates where 10.4% of its cadr-side pointers live.**
+108 of the 1,038 `file:line` mappings in the tables below point at files that
+were deleted on 2026-08-03 when the CLI monoliths were split:
+
+```
+38  src/cadr-cli/interactive-services.lisp   (deleted in b63bc80b1)
+26  src/cadr-cli/core-support.lisp           (7939b2b0d)
+13  src/cadr-cli/model-services.lisp         (7939b2b0d)
+10  src/cadr-cli/utilities.lisp              (7939b2b0d)
+ 9  src/cadr-cli/sdk-services.lisp           (7939b2b0d)
+ 8  src/cadr-cli/settings.lisp               (7939b2b0d)
+ 4  src/cadr-cli/package-manager.lisp        (7939b2b0d)
+```
+
+Recompute at any time:
+
+```sh
+python3 - <<'EOF'
+import re,os,collections
+rows=[l for l in open('docs/source-parity.md') if l.startswith('| `packages/')]
+pat=re.compile(r'((?:src|test|examples|scripts)/[a-zA-Z0-9/_.-]+\.(?:lisp|sexp|asd|py|sh)):\d+')
+miss=collections.Counter(p for l in rows for p in pat.findall(l) if not os.path.exists(p))
+tot=sum(len(pat.findall(l)) for l in rows)
+print(f'{sum(miss.values())}/{tot} stale'); [print(' ',n,p) for p,n in miss.most_common()]
+EOF
+```
+
+**Root cause**: `scripts/check-source-parity-drift.sh` compares only the pi-side
+`packages/**.ts` inventory; it never checks whether the cadr-side path in a row
+still exists.  These 108 rows therefore rotted for ten days across the goal
+15/16/17/18/19 closeouts without any gate noticing.
+
+**Status**: the missing existence check is scheduled as goal 20 Part F item 3,
+which is a precondition for the large-scale rewrite in that goal's Part K.
+Until it lands, **any change that touches a cadr-side mapping in this ledger
+must verify path existence by hand**.
+
+**Scope note**: this defect predates and is unrelated to goal 19; it is recorded
+here rather than in a goal document because it is a standing property of this
+ledger, and because closing any goal while silently carrying a known-wrong
+ledger would be the failure this project's discipline exists to prevent.
+
 ## 1. Scope and counting rules
 
 This is the **source ledger**. It disposes every source file in the fixed

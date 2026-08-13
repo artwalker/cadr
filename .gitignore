@@ -21,7 +21,10 @@ out.html
 /.obsidian/
 /docs/.obsidian/
 
-# Local goal inputs; accepted goals live under docs/progress/
+# Local goal inputs (drafts and working specs).  Historical goal reports up to
+# goal 10 live under docs/progress/; from goal 8 onward the accepted evidence
+# lives under docs/acceptance/.  These root files are not tracked and have no
+# durable copy — treat them as working state, not as the record.
 /goal*.md
 
 # Python bytecode
