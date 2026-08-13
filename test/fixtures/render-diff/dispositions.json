@@ -7103,8 +7103,7 @@
       "scenario": "conversation-mermaid",
       "checkpoint": "mermaid-rendered",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -7114,13 +7113,26 @@
         "wide": {
           "pi": "f948107e86003847f1cdb86f3dd65cc11363f935d96e5d78db338d635f8c6a86",
           "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
-        },
+        }
+      },
+      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) matches pi. Remaining visible wrapping is Goal 16 identity plus I01 ANSI segmentation."
+    },
+    {
+      "scenario": "conversation-mermaid",
+      "checkpoint": "mermaid-rendered",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
         "narrow": {
           "pi": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01",
           "cadr": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01"
         }
       },
-      "note": "At conversation-mermaid/mermaid-rendered the flowchart art (A/B boxes and edge) matches pi. Remaining visible wrapping is Goal 16 identity plus I01 ANSI segmentation."
+      "note": "At conversation-mermaid/narrow/mermaid-rendered the flowchart art and screen geometry match pi after the mermaid EOF-blank fix (cae12eeec). Remaining bytes are I01 ANSI update segmentation/teardown only."
     },
     {
       "scenario": "conversation-mermaid",
