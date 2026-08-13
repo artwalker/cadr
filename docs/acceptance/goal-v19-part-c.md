@@ -74,9 +74,10 @@ not a same-host metric.
 
 | image | bytes | mtime |
 |---|---:|---|
-| `/root/projects/cadr/cadr` after last `src/` edit | 20,392,288 (19.45 MiB) | 2026-08-13 15:13:26 +0800 |
-| isolated `verify.sh` image (`build.sh`) | 20,851,288 (19.89 MiB) | 2026-08-13 15:57:00 +0800 |
+| `/root/projects/cadr/cadr` after last `src/` edit (uncompressed, SBCL then lacked the feature) | 20,392,288 (19.45 MiB) | 2026-08-13 15:13:26 +0800 |
+| isolated `verify.sh` image (`build.sh`, uncompressed) | 20,851,288 (19.89 MiB) | 2026-08-13 15:57:00 +0800 |
 | isolated `cadr-server` | 16,293,816 (15.54 MiB) | 2026-08-13 15:59:00 +0800 |
+| `/root/projects/cadr/cadr` rebuilt with `:sb-core-compression` after Part C landed | 20,326,720 (19.39 MiB) | 2026-08-13 16:24:46 +0800 |
 
 A pre-Part-C image was not retained on this host, so a byte-accurate
 before/after of the native image cannot be invented. Part C source added
