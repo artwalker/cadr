@@ -76,12 +76,12 @@ conversation-mermaid is core, two dimensions
 ## E1 overall
 
 1. Grokking goldens 47/47 and transform goldens 23/23 are byte-exact
-   tests.  FiveAM `16933/16933` on the Part C tree.
+   tests.  FiveAM after the EOF-blank fix: `16941/16941` (`./scripts/test-cl.sh`, 2026-08-13).
 2. No diagram kind was stubbed as a source box.  Unsupported *input*
    (parse fail / over-wide) uses the baseline silent fallback; that is
    covered, not used as a port cop-out.
 3. Prior `test-cl.sh` on this host before Part C: `16882/16882`
-   (`/tmp/test-cl-full.log`).  After Part C: `16933/16933`.  Core
+   (`/tmp/test-cl-full.log`).  After Part C+EOF fix: `16941/16941`.  Core
    render-diff stayed 38 scenarios / 76 captures with one added
    scenario.  Goal 11 ran green inside the 15:52–16:19 verify.
 4. Binary size, same host:
