@@ -176,8 +176,14 @@
     (is (search "| **Total** | **670** | **507** | **163** | **0** |" ledger))
     (is (search "实现完成，平台不可实测" ledger))
     (is (search "all 99" readme :test #'char-equal))
-    (is (search "99 functionally equivalent Lisp ports and 0 gaps"
-                parity-map))
+    ;; Goal 20 Part F adjudication (2026-08-14): the load/behavior gap for
+    ;; the 14 gate-less example ports is recorded on the behavior axis as
+    ;; EXAMPLES-LOAD-GAP; the evidence row must carry that qualification
+    ;; instead of an unqualified "0 gaps".
+    (is (search
+         "99 functionally equivalent Lisp ports; 0 source-axis gaps, with load/behavior coverage open for 14 ports"
+         parity-map))
+    (is (search "EXAMPLES-LOAD-GAP" parity-map))
     (is (search
          "| Goal 12 runnable examples | complete | fixed-baseline 99-file extension/SDK example surface |"
          parity-map))
