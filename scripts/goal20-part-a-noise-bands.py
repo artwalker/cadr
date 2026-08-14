@@ -2,14 +2,24 @@
 """Goal 20 Part A: measure the adjudicated self-history drift bands.
 
 Adjudicated shape (goal20-state.md, 2026-08-14): band = max(floor, 6 * MAD),
-the same form scripts/goal20-paired-paths.py already uses.  Per metric:
+the same form scripts/goal20-paired-paths.py already uses.  Corrected
+2026-08-14 (advisor review of cfa06a9fe): the gate compares consecutive
+verify runs, so the population that decides whether cold start may
+fail-close is the BETWEEN-RUN spread of the same-machine history rows,
+not the within-run spread of consecutive samples.  Both are recorded so
+readers can see which one the gate stands on.  Per metric:
 
 - frame_render.5000.median_bytes: floor 4096 bytes (one page).  Allocation
-  is deterministic (historical variance 0), so a sub-page change has no
-  explainable source and a change above one page is a real change.
-- cold_start.median_us: floor 10ms.  MAD is measured here at n >= 20 real
-  PTY cold starts; if 6 * MAD exceeds 20% of the median the metric is
-  recorded informational instead of widening the floor.
+  is deterministic (variance 0 within and between runs), so a sub-page
+  change has no explainable source; stays fail-closed.
+- cold_start.median_us: floor 10ms.  Within-run MAD is measured here at
+  n >= 20 real PTY cold starts; between-run MAD comes from the
+  same-machine rows of docs/benchmarks/performance-history.json.  If
+  6 * between-run MAD exceeds 20% of the between-run median the metric is
+  recorded informational instead of widening the floor.  Re-enable
+  condition: once >= 10 same-condition history rows exist, recompute; if
+  6 * MAD is back under 20% of the median the metric may return to
+  fail-closed.
 - frame_render.5000.median_us: always informational.  The reading is
   quantized at the 4000us timer step (observed sample set
   {0.0, 4000.0, 4001.0}); a band cannot express anything until the
@@ -22,6 +32,7 @@ script on the gate machine instead.
 usage:
   python3 scripts/goal20-part-a-noise-bands.py \
       --bench /tmp/goal20-part-a-bench.json \
+      [--history docs/benchmarks/performance-history.json] \
       [--cold-samples 20] [--cold-warmups 1] \
       [--output docs/benchmarks/goal20-part-a-noise-bands.json]
 """
@@ -43,6 +54,7 @@ COLD_FLOOR_US = 10_000.0
 ALLOCATION_FLOOR_BYTES = 4_096.0
 MAD_MULTIPLIER = 6
 COLD_INFORMATIONAL_FRACTION = 0.20
+COLD_REENABLE_MINIMUM_ROWS = 10
 
 FRAME_TIME_REASON = (
     "reading is quantized at the 4000us timer step (observed sample set "
@@ -108,6 +120,11 @@ def frame_point(bench: dict) -> dict:
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--bench", type=Path, required=True)
+    parser.add_argument(
+        "--history",
+        type=Path,
+        default=PROJECT_DIRECTORY / "docs/benchmarks/performance-history.json",
+    )
     parser.add_argument("--cold-samples", type=int, default=20)
     parser.add_argument("--cold-warmups", type=int, default=1)
     parser.add_argument(
@@ -131,9 +148,27 @@ def main() -> int:
     cold_samples = measure_cold_start(args.cold_samples, args.cold_warmups)
     cold_median = statistics.median(cold_samples)
     cold_mad = mad(cold_samples, cold_median)
-    cold_band = max(COLD_FLOOR_US, MAD_MULTIPLIER * cold_mad)
+
+    # The gate compares consecutive verify runs, so the fail-close decision
+    # stands on the between-run population (2026-08-14 correction).
+    history = json.loads(args.history.read_text(encoding="utf-8"))
+    between_values = [
+        entry["coldStartMedianUs"]
+        for entry in history.get("entries") or []
+        if entry.get("machine") == machine
+        and isinstance(entry.get("coldStartMedianUs"), (int, float))
+    ]
+    if len(between_values) < 2:
+        raise SystemExit(
+            "need at least two same-machine history rows to size the "
+            "between-run population"
+        )
+    between_median = statistics.median(between_values)
+    between_mad = mad(between_values, between_median)
+    cold_band = max(COLD_FLOOR_US, MAD_MULTIPLIER * between_mad)
     cold_informational = (
-        MAD_MULTIPLIER * cold_mad > COLD_INFORMATIONAL_FRACTION * cold_median
+        MAD_MULTIPLIER * between_mad
+        > COLD_INFORMATIONAL_FRACTION * between_median
     )
 
     point = frame_point(bench)
@@ -147,7 +182,10 @@ def main() -> int:
         "adjudication": (
             "2026-08-14 advisor ruling (goal20-state.md): shape "
             "max(floor, 6*MAD); floors 4096 bytes / 10ms; frame time "
-            "informational until the measurement has resolution"
+            "informational until the measurement has resolution. Corrected "
+            "2026-08-14: the cold-start fail-close decision stands on the "
+            "between-run population (the gate compares consecutive verify "
+            "runs), with the within-run spread recorded alongside"
         ),
         "measuredAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "machine": machine,
@@ -159,18 +197,42 @@ def main() -> int:
                 "enforcement": "informational" if cold_informational else "fail-closed",
                 "floor_us": COLD_FLOOR_US,
                 "k": MAD_MULTIPLIER,
-                "n": len(cold_samples),
-                "median_us": cold_median,
-                "mad_us": cold_mad,
+                "gate_population": "between-run",
+                "within_run": {
+                    "n": len(cold_samples),
+                    "median_us": cold_median,
+                    "mad_us": cold_mad,
+                    "samples_us": cold_samples,
+                },
+                "between_run": {
+                    "n": len(between_values),
+                    "median_us": between_median,
+                    "mad_us": between_mad,
+                    "values_us": between_values,
+                    "source": str(
+                        args.history.resolve().relative_to(PROJECT_DIRECTORY)
+                    ),
+                },
+                "n": len(between_values),
+                "median_us": between_median,
+                "mad_us": between_mad,
                 "band_us": cold_band,
-                "samples_us": cold_samples,
+                "reenable_condition": (
+                    f"recompute after >= {COLD_REENABLE_MINIMUM_ROWS} "
+                    "same-condition history rows; return to fail-closed only "
+                    f"if {MAD_MULTIPLIER}*between-run MAD <= "
+                    f"{COLD_INFORMATIONAL_FRACTION:.0%} of the between-run median"
+                ),
                 **(
                     {
                         "reason": (
-                            f"6*MAD ({MAD_MULTIPLIER * cold_mad:.0f}us) exceeds "
-                            f"{COLD_INFORMATIONAL_FRACTION:.0%} of the median "
-                            f"({cold_median:.0f}us); the adjudication forbids "
-                            "widening the floor to keep it fail-closed"
+                            f"between-run {MAD_MULTIPLIER}*MAD "
+                            f"({MAD_MULTIPLIER * between_mad:.0f}us) is "
+                            f"{MAD_MULTIPLIER * between_mad / between_median:.0%} "
+                            "of the between-run median, above the "
+                            f"{COLD_INFORMATIONAL_FRACTION:.0%} fail-close noise "
+                            "cap; the adjudication forbids widening the floor "
+                            "to keep it fail-closed"
                         )
                     }
                     if cold_informational

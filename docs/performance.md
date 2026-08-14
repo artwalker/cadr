@@ -477,7 +477,7 @@ written by `scripts/goal20-part-a-noise-bands.py` to
 `docs/benchmarks/goal20-part-a-noise-bands.json`, enforced by
 `scripts/goal11-performance-gate.py` on machine `Friend-MachineD`):
 
-- `cold_start.median_us`: fail-closed, band 22,612µs (n=20, MAD=3,768.7)
+- `cold_start.median_us`: informational — between-run 6*MAD (118794us) is 43% of the between-run median, above the 20% fail-close noise cap; the adjudication forbids widening the floor to keep it fail-closed
 - `frame_render.5000.median_bytes`: fail-closed, band 4,096B (n=5, MAD=0.0)
 - `frame_render.5000.median_us`: informational — reading is quantized at the 4000us timer step (observed sample set {0.0, 4000.0, 4001.0}); no band can be expressed until the measurement gains resolution
 
@@ -487,7 +487,8 @@ written by `scripts/goal20-part-a-noise-bands.py` to
 | 2026-08-14T01:50:56Z | verify-isolated | Friend-MachineD | `isolated-copy` | 307,103.7 | 0.0 | 360,272 |
 | 2026-08-14T04:11:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 291,287.2 | 0.0 | 360,272 |
 | 2026-08-14T05:23:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 251,607.9 | 0.0 | 360,272 |
+| 2026-08-14T06:39:45Z | verify-isolated | Friend-MachineD | `isolated-copy` | 257,222.4 | 0.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-14T05:23:44Z) versus `verify-isolated` (2026-08-14T04:11:37Z).
+Latest vs previous: `verify-isolated` (2026-08-14T06:39:45Z) versus `verify-isolated` (2026-08-14T05:23:44Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->

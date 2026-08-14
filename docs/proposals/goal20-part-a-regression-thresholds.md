@@ -8,9 +8,18 @@ by `scripts/goal20-paired-paths.py`:
 - `frame_render.5000.median_bytes`: fail-closed, floor 4096 bytes (one
   page; the metric is deterministic, historical variance 0, so +25% would
   never trigger).
-- `cold_start.median_us`: floor 10ms with MAD measured at n >= 20; demoted
-  to informational by the measurement script itself if 6 * MAD exceeds 20%
-  of the median.
+- `cold_start.median_us`: floor 10ms. Corrected 2026-08-14 (advisor review
+  of cfa06a9fe): the gate compares consecutive verify runs, so the
+  fail-close decision stands on the **between-run** spread of the
+  same-machine history rows, not the within-run spread of n >= 20
+  consecutive samples (the first cut used the wrong population — a
+  22.6ms within-run band would have failed two of the three historical
+  verify-to-verify transitions). Currently informational: between-run
+  6 * MAD is 118.8ms = 43% of the between-run median, above the 20%
+  fail-close noise cap; the floor must not be widened to keep it
+  fail-closed. Re-enable: recompute once >= 10 same-condition history
+  rows exist and return to fail-closed only if 6 * MAD <= 20% of the
+  median. Both populations are recorded in the bands file.
 - `frame_render.5000.median_us`: informational — the reading is quantized
   at the 4000us timer step (observed sample set {0.0, 4000.0, 4001.0});
   no percent or band can detect anything until the measurement gains
@@ -58,10 +67,13 @@ Adjudicate: accept / change the percents / pick a different store.
 
 In force since the 2026-08-14 adjudication:
 
-- **Checks:** cadr-vs-previous-same-machine drift on `cold_start.median_us`
-  and `frame_render.5000.median_bytes` (band `max(floor, 6 * MAD)` from the
+- **Checks:** cadr-vs-previous-same-machine drift on
+  `frame_render.5000.median_bytes` (band `max(floor, 6 * MAD)` from the
   bands file), plus the existing absolute ceilings (unchanged).
-- **Does not check:** `frame_render.5000.median_us` (informational: the
+- **Does not check:** `cold_start.median_us` (informational: between-run
+  6 * MAD is 43% of the between-run median, above the 20% fail-close
+  noise cap; re-enable condition in the bands file);
+  `frame_render.5000.median_us` (informational: the
   reading is quantized at the 4000us timer step and no band can detect
   anything until the measurement gains resolution); pi pairing outside the
   three existing ratios (Part H); quality of the screen; Lisp-ification;
