@@ -99,6 +99,9 @@ tag/Release step.
 
 ### Added
 
+- Goal 20: `docs/profiling.md` is the standing `sb-sprof` runbook.
+  `scripts/goal20-profile.sh` is the driver; neither is a gate.
+
 - Goal 20 Part H: `scripts/goal20-unpaired-paths.py` books which
   `src/**/*.lisp` files are paired, unpairable, or still uncovered.
   The report is section 6 of `docs/acceptance/goal-v20-part-h.md`.

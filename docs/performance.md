@@ -623,7 +623,8 @@ Previous: `paired-paths` (2026-08-14T16:48:03Z) on `Friend-MachineD`, git `c2878
 
 The four paired paths still above 1.0× after probes 7a–7d are captured
 in [`benchmarks/goal20-part-o-remaining-sprof.md`](benchmarks/goal20-part-o-remaining-sprof.md)
-by `scripts/goal20-profile.sh`. Diagnostic only; not a gate. N2.9 asked
+by `scripts/goal20-profile.sh`. Diagnostic only; not a gate. The standing
+runbook is [`profiling.md`](profiling.md). N2.9 asked
 for package-level profiles next to the totals; the flat reports live in
 that file so a later ledger rewrite cannot wipe them.
 
