@@ -81,6 +81,33 @@
       "coldStartMedianUs": 270719.96875,
       "frame5000MedianUs": 0.0,
       "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T11:24:46Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 262014.96875,
+      "frame5000MedianUs": 4003.9999999999995,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T13:07:51Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 260851.546875,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T13:08:34Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 268801.375,
+      "frame5000MedianUs": 3993.0,
+      "frame5000MedianBytes": 360272.0
     }
   ]
 }
