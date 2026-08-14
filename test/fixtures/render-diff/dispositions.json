@@ -349,7 +349,7 @@
           "cadr": "feba35d6b2d083a509ae688247286aece75030a66acd5c25d823354a16ea1240"
         }
       },
-      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '\u2713 Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '✓ Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "slash-debug",
@@ -647,7 +647,7 @@
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
-      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (\u280b vs \u2819, I01 timing); text and layout identical."
+      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (⠋ vs ⠙, I01 timing); text and layout identical."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -6870,7 +6870,7 @@
           "cadr": "e62598c37b13a18f021a7a62968e525abc80c7205e71142ac6e19a6695aa00ff"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -7184,8 +7184,7 @@
       "scenario": "example-snake",
       "checkpoint": "snake-initial",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -7194,21 +7193,33 @@
       "screenSha256": {
         "wide": {
           "pi": "3bb7a340633888bda236cac908cac87dd34d20e196ef9548f3186bdaf885a55d",
-          "cadr": "606338841034f831bcaf494fb823a4ba524d22563313c8b0457c536cb27ec00e"
-        },
-        "narrow": {
-          "pi": "3aa840abd46ebe83ee8b3a231cc97721ffa54f742813f37ed98033f636010346",
-          "cadr": "93cde0f32e2690845952a3ffe760860f1f8b1ea945eedb3fe4b068822bbdf8ea"
+          "cadr": "155725ffee00172895412ac09a04a726d0997d03ec362bf14d73f03b41b93dd5"
         }
       },
-      "note": "At example-snake/snake-initial the board, food at (0,0), and green/red SGR now match the baseline snake.ts contract. Remaining visible deltas are startup chrome (pi lists snake.ts under Extensions; cadr shows the product version line) plus I04 identity wrapping and I01 ANSI segmentation."
+      "note": "At example-snake/snake-initial the snake board is now cell-identical and byte-identical inside the box: the stray literal m the old snake-ansi appended before every colored string is gone, SGR composition matches snake.ts:220-224 (dim/bold close 22m, colors close 0m, bold(green(SNAKE))), the header/footer are interior-padded like boxLine, and the footer copy is the baseline's. Remaining deltas, itemized: (a) cadr's startup shows the product banner and key-help lines where pi shows the tagline and an [Extensions] snake.ts block - startup chrome, I04 identity surfaces; (b) one trailing blank row from cadr's taller startup block; (c) I01 ANSI segmentation in the raw stream only."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "snake-initial",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "3aa840abd46ebe83ee8b3a231cc97721ffa54f742813f37ed98033f636010346",
+          "cadr": "3aa840abd46ebe83ee8b3a231cc97721ffa54f742813f37ed98033f636010346"
+        }
+      },
+      "note": "At example-snake/snake-initial in the narrow dimension the semantic screens are identical after the stray-m/SGR/footer-copy fix (the startup [Extensions] block has scrolled off at 20 rows, so no chrome difference remains on screen). Raw streams still differ only by SBCL ANSI segmentation and teardown (I01); no visible-text or geometry difference remains in this dimension."
     },
     {
       "scenario": "example-snake",
       "checkpoint": "snake-moved",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -7217,21 +7228,33 @@
       "screenSha256": {
         "wide": {
           "pi": "58f12763e7ffbd301e2207185c36825a1204c21ff2ce43682e02e86902c44049",
-          "cadr": "e75bbf60ded545fd4c40e0197af2654455627073ee6126747785d1cea30fac41"
-        },
-        "narrow": {
-          "pi": "2dc6682158cf051d701175b437ec57bf14809041e483f54eaa906b99f20ebdbf",
-          "cadr": "0d7e0c83d4b1730473504eb1ae83401850d0eb47e7dca9d17f6c0886eefd3a95"
+          "cadr": "bcd483224e501eca6ed083e17c76224f09b1931336739914fef150842481154b"
         }
       },
-      "note": "At example-snake/snake-moved one harness tick has advanced the snake one cell down from the initial row; coloring remains. Residual deltas are the same startup-chrome / I04 / I01 set as snake-initial."
+      "note": "At example-snake/snake-moved one harness tick has advanced the snake one cell down; the board region is byte-identical after the stray-m/SGR fix. Residuals are exactly the snake-initial set: startup banner vs [Extensions] block (I04 surfaces), one trailing blank row, I01 raw segmentation."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "snake-moved",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "2dc6682158cf051d701175b437ec57bf14809041e483f54eaa906b99f20ebdbf",
+          "cadr": "2dc6682158cf051d701175b437ec57bf14809041e483f54eaa906b99f20ebdbf"
+        }
+      },
+      "note": "At example-snake/snake-moved in the narrow dimension the semantic screens are identical after the stray-m/SGR/footer-copy fix (the startup [Extensions] block has scrolled off at 20 rows, so no chrome difference remains on screen). Raw streams still differ only by SBCL ANSI segmentation and teardown (I01); no visible-text or geometry difference remains in this dimension."
     },
     {
       "scenario": "example-snake",
       "checkpoint": "snake-over",
       "dimensions": [
-        "wide",
-        "narrow"
+        "wide"
       ],
       "classes": [
         "I01",
@@ -7240,14 +7263,27 @@
       "screenSha256": {
         "wide": {
           "pi": "eec307946c10d44cdf4e34bad9fb5796ead3b605d148a2a28a92b12562ef825a",
-          "cadr": "3967d67b8f334063a80c01689a17fcb4619e884245b02aff66f3949c5fa67ceb"
-        },
-        "narrow": {
-          "pi": "3ffc28052a806567700129464ad9c4c05629578ec6822111ae375d85f66a7c94",
-          "cadr": "54867ff05f21aa4fb422806e155b31db8c9190fbff6dfbdaf1e656700672bd0a"
+          "cadr": "1ee2c774c8904dea566ad8b27b1e0fc3f76aff43442af692fceba4d4196dc2d7"
         }
       },
-      "note": "At example-snake/snake-over both sides show GAME OVER after the harness walked the snake into the south wall. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-snake/snake-over both sides show the baseline red-bold GAME OVER! footer with bold R/Q keys (copy now matches snake.ts:276). Residuals are exactly the snake-initial set: startup banner vs [Extensions] block (I04 surfaces), one trailing blank row, I01 raw segmentation."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "snake-over",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "3ffc28052a806567700129464ad9c4c05629578ec6822111ae375d85f66a7c94",
+          "cadr": "3ffc28052a806567700129464ad9c4c05629578ec6822111ae375d85f66a7c94"
+        }
+      },
+      "note": "At example-snake/snake-over in the narrow dimension the semantic screens are identical after the stray-m/SGR/footer-copy fix (the startup [Extensions] block has scrolled off at 20 rows, so no chrome difference remains on screen). Raw streams still differ only by SBCL ANSI segmentation and teardown (I01); no visible-text or geometry difference remains in this dimension."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -7263,14 +7299,14 @@
       "screenSha256": {
         "wide": {
           "pi": "99e205e1c43ac597dcf0c501c6b2fea661fd42354f454471ff2f0400d6fe1a3d",
-          "cadr": "6364df978ae210fc352559339a8df9d94cecf934752caf6473b1c02f81292665"
+          "cadr": "6369842cf731f75a3dec75c7f382cc2551254bb0ca6eef70f29e1233dd8723f2"
         },
         "narrow": {
           "pi": "d3ea5d448c2ca439a38c8558a89372f023b6ba6b2cb263ee975e4ece75a578d2",
-          "cadr": "5a9b1a8da95c1328942e1f0b4bf177e2ded8e1bee36cae9600d22b71dc29f8b7"
+          "cadr": "f42253e6e21289521b8dfbe51e40d03cb9d43b41f79af6339e3a08b377ef2383"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-initial cadr now paints the baseline box-drawing board with a green user-cursor highlight (raw SGR, no new theme token). Remaining deltas are title/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-tic-tac-toe/ttt-initial the overlay is now the baseline's byte for byte: dim rules around the bold blue Tic-Tac-Toe banner, the Turn: X (You) | O (Agent) status line, the board with 22m-closing DIM borders and no stray m, the arrows/ENTER/ESC footer, and the dim width separator (tic-tac-toe.ts:443-500). Remaining deltas, itemized: (a) startup chrome - cadr's product banner and key-help lines vs pi's tagline plus [Extensions] tic-tac-toe.ts block (I04 surfaces); (b) narrow only, the <CWD> footer path truncates with ... on pi because the product paths differ in length (I04); (c) I01 raw segmentation."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -7286,14 +7322,14 @@
       "screenSha256": {
         "wide": {
           "pi": "c5f63674cdc014d188206e16b9a34f8d0ce215a7b722fafb7442fb2eadcee67f",
-          "cadr": "733c52cdc48554b802b01c2ae2260371dede2d6a2509d8815c87c776e4bb3df8"
+          "cadr": "aeaf065c70d51105fc9e9456d073cbdd9527947edfdc78dcd025a08621a50f0a"
         },
         "narrow": {
           "pi": "7c970d7b1cd1ea2a73c31bf6ca2e99c72153e34fd4e85d5422fdbde37983c4e0",
-          "cadr": "d8850adce7c1d13353d153aafa7d9fcc9490e629bc1a4b7410e42968973a31a3"
+          "cadr": "6e7dab706b4a6e7ad006271dcdb980f55d386b49f9c17ccb7bbc2b848a5d949e"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-cursor the user cursor has moved one cell up; cadr highlights that cell's borders. Residual deltas are title/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-tic-tac-toe/ttt-cursor the user cursor has moved one cell up and cadr highlights the same borders with the same 32;1m SGR as the baseline. Residuals are exactly the ttt-initial set: startup chrome (I04 surfaces), narrow <CWD> truncation (I04), I01 raw segmentation."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -7309,14 +7345,14 @@
       "screenSha256": {
         "wide": {
           "pi": "f2b8686c687e7ba9b20d05d955d28d9550e37c153cfa8a44513287555fb69880",
-          "cadr": "fdb05832f7baecc5bec59fa95601d141eeba256ff08c56673d1fb66ee63afbb1"
+          "cadr": "2ece8e29e7fc194895dd1d05c77ba4b39961d3cd426cb964c4d5abd81cabb9ec"
         },
         "narrow": {
           "pi": "144dab0a0479e2d9b33fdcfbebe7d4f7a0f2fb8068c16c82499747845f40bcbd",
-          "cadr": "1f2173b93fdaf70e8f7c50b4fd24f1b2604a5d8ca66f9ab1f5c0017b1d4bcf0a"
+          "cadr": "a3df96584f49b9878fee15d5c2220c46f8448f4da59a746433d11b514b79fd53"
         }
       },
-      "note": "At example-tic-tac-toe/ttt-played Player X occupies the highlighted top-center cell and both sides show the empty-faux-queue error plus Agent turn (O). After Part E's driver fires session-start on UI attach, cadr's footer is 1.5k/1.5k (was 1.4k) and the leftover initial-board border line has scrolled off; two quiet recaptures pinned the same cadr pair. Residual deltas are title/chrome layout, I04 identity wrapping, and I01 ANSI segmentation \u2014 not a missing cursor painter."
+      "note": "At example-tic-tac-toe/ttt-played Player X occupies top-center and the overlay shows the agent-turn status and dim Agent is thinking... footer, matching the baseline. Residuals, itemized: (a) footer counters differ - cadr 1.5k/1.5k CH0.0% vs pi 1.3k/1.3k 0.1%/128k - because cadr's driver fires session-start on UI attach (adjudicated with Part E, unchanged by this fix); (b) wide only, cadr's transcript shows the played-move tool-result board summary rows that have scrolled off on pi (one screen-height layout difference from the startup-block height, I04 surfaces); (c) the empty-faux-queue error line sits on-screen for cadr in narrow while pi's copy has scrolled off - same layout offset; (d) I01 raw segmentation."
     },
     {
       "scenario": "example-space-invaders",
@@ -7357,7 +7393,7 @@
           "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
         }
       },
-      "note": "At example-snake/process-exit both sides have left /snake; remaining deltas are startup chrome / I04 identity wrapping and I01 ANSI teardown, not the board painter."
+      "note": "At example-snake/process-exit both sides have left /snake. Residuals: the same startup banner vs [Extensions] scrollback difference (I04 surfaces), cadr's cursor record differs with its one-row-taller scrollback, and I01 ANSI teardown in the raw stream."
     },
     {
       "scenario": "example-tic-tac-toe",
@@ -7373,14 +7409,14 @@
       "screenSha256": {
         "wide": {
           "pi": "55e471dc9ab6192a435dd9d36e1e543a1b1e4597a1bbf45289637ec545eb813b",
-          "cadr": "7a69b407c3d784318ca366777f310f7aec672f1f846e75dd62208cf0b7279cb9"
+          "cadr": "8a4087e13f41afdeb4a72525393d1e3fa50c0e202a49e4a7881962f8c0a3dd7e"
         },
         "narrow": {
           "pi": "88018b9f7922816e72e1bcb1ee2b259670fe43a975190a543316badc0a2d1871",
-          "cadr": "ce900ca247d48b23ea0c5fbc93bca2175a719107100c0d38f46f212dd8d25abb"
+          "cadr": "11173827acd3c5970670f8de043db7e6b272c70813df96000a0a746e861dc7a4"
         }
       },
-      "note": "At example-tic-tac-toe/process-exit the overlay is gone. The cadr pair moved with ttt-played: session-start now fires on UI attach, so the leftover conversation footer is 1.5k/1.5k and the stale board-border scroll line is gone. Residual deltas are post-game chrome / I04 wrapping and I01 ANSI teardown, not the cursor-highlight painter."
+      "note": "At example-tic-tac-toe/process-exit the overlay is gone. Residuals, itemized: scrollback content differs by the same one-block layout offset - cadr retains the played-move message and text board summary where pi retains the startup help residue and [Extensions] line (I04 surfaces) - plus I01 ANSI teardown."
     },
     {
       "scenario": "example-space-invaders",
@@ -7957,7 +7993,7 @@
           "cadr": "f386742c7c85cafeccc4bfe37198ee54c259f54c57c1767c20a084a6be514cdb"
         }
       },
-      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries \u2022 Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries • Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-dynamic-tools",

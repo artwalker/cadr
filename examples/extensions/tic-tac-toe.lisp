@@ -127,8 +127,15 @@
 (defconstant +tic-tac-toe-cell-height+ 3)
 
 (defun tic-tac-toe-sgr (code text)
-  "Baseline tic-tac-toe.ts paints the cursor and marks with raw SGR, not theme tokens."
-  (format nil "~C[~Am~A~C[0m" #\Escape code text #\Escape))
+  "Baseline tic-tac-toe.ts paints the cursor and marks with raw SGR, not
+theme tokens.  CODE carries its own trailing m (e.g. \"32;1m\"); the format
+string must not add another one - the goal 20 P0 stray-m defect came from
+exactly that duplication."
+  (format nil "~C[~A~A~C[0m" #\Escape code text #\Escape))
+
+(defun tic-tac-toe-dim (text)
+  "Baseline DIM() closes with ESC[22m, not ESC[0m (tic-tac-toe.ts:200)."
+  (format nil "~C[2m~A~C[22m" #\Escape text #\Escape))
 
 (defun tic-tac-toe-cell-fg (value win-p)
   (cond
@@ -175,7 +182,7 @@
   (cond
     (highlighted-p (tic-tac-toe-sgr "32;1m" character))
     (fg (tic-tac-toe-sgr (format nil "~A;1m" fg) character))
-    (t (tic-tac-toe-sgr "2m" character))))
+    (t (tic-tac-toe-dim character))))
 
 (defun tic-tac-toe-cell-at (board win-cells row column)
   (cons (aref board row column)
@@ -245,7 +252,7 @@
            (cond
              (highlighted-p (tic-tac-toe-sgr cursor-code character))
              (fg (tic-tac-toe-sgr (format nil "~A;1m" fg) character))
-             (t (tic-tac-toe-sgr "2m" character))))
+             (t (tic-tac-toe-dim character))))
          (adjacent-cells (pairs)
            (loop for (row column) in pairs
                  when (and (<= 0 row 2) (<= 0 column 2))
@@ -317,22 +324,70 @@
 (defmethod cadr-tui:component-render
     ((component tic-tac-toe-board-component) width &key focused-p)
   (declare (ignore focused-p))
+  ;; Overlay chrome follows tic-tac-toe.ts:443-500 byte for byte.  The
+  ;; overlay-local helpers there all close with ESC[0m (unlike the board's
+  ;; DIM, which closes with ESC[22m), which is exactly what
+  ;; tic-tac-toe-sgr produces: dim rules around a bold blue title banner,
+  ;; a center-padded status line, the board, a center-padded footer, and a
+  ;; dim full-width separator.
   (let* ((state (tic-tac-toe-component-state component))
+         (status (tic-tac-toe-state-status state))
+         (user-turn-p (char= (tic-tac-toe-state-current-turn state) #\X))
+         (title-text " Tic-Tac-Toe ")
+         (border-length
+           (max 0 (- width (cadr-tui:visible-width title-text))))
+         (left-border (floor border-length 2))
          (title
-           (format nil " Tic-Tac-Toe · ~A "
-                   (ecase (tic-tac-toe-state-status state)
-                     (:playing
-                      (if (char= (tic-tac-toe-state-current-turn state) #\X)
-                          "Your turn (X)" "Agent turn (O)"))
-                     (:win-x "Player X wins") (:win-o "Player O wins")
-                     (:draw "Draw")))))
+           (format nil "~A~A~A"
+                   (tic-tac-toe-sgr
+                    "2m" (make-string left-border :initial-element #\─))
+                   (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "34m" title-text))
+                   (tic-tac-toe-sgr
+                    "2m" (make-string (- border-length left-border)
+                                      :initial-element #\─))))
+         (status-line
+           (ecase status
+             (:playing
+              (if user-turn-p
+                  (format nil "Turn: ~A (You)  ~A  ~A (Agent)"
+                          (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "34m" "X"))
+                          (tic-tac-toe-sgr "2m" "|")
+                          (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "33m" "O")))
+                  (format nil "~A (You)  ~A  Turn: ~A (Agent)"
+                          (tic-tac-toe-sgr "34m" "X")
+                          (tic-tac-toe-sgr "2m" "|")
+                          (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "33m" "O")))))
+             (:win-x (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "32m" "X wins!")))
+             (:win-o (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "33m" "O wins!")))
+             (:draw (tic-tac-toe-sgr "1m" (tic-tac-toe-sgr "33m" "Draw!")))))
+         (footer
+           (cond
+             ((not (eq status :playing))
+              (format nil "~A restart  ~A  ~A/~A quit"
+                      (tic-tac-toe-sgr "1m" "R")
+                      (tic-tac-toe-sgr "2m" "|")
+                      (tic-tac-toe-sgr "1m" "Q")
+                      (tic-tac-toe-sgr "1m" "ESC")))
+             ((not user-turn-p)
+              (tic-tac-toe-sgr "2m" "Agent is thinking..."))
+             (t
+              (format nil "~A move  ~A  ~A play  ~A  ~A quit"
+                      (tic-tac-toe-sgr "1m" "←↑↓→")
+                      (tic-tac-toe-sgr "2m" "|")
+                      (tic-tac-toe-sgr "1m" "ENTER")
+                      (tic-tac-toe-sgr "2m" "|")
+                      (tic-tac-toe-sgr "1m" "ESC"))))))
     (append
-     (list title "")
+     (list title "" (tic-tac-toe-center-pad status-line width) "" "")
      (tic-tac-toe-render-visual-board
       state width
       :agent-view-p (tic-tac-toe-component-agent-view-p component))
+     (list "" "")
      (unless (tic-tac-toe-component-agent-view-p component)
-       (list "arrows move · enter plays · escape closes")))))
+       (list (tic-tac-toe-center-pad footer width)))
+     (list ""
+           (tic-tac-toe-sgr
+            "2m" (make-string width :initial-element #\─))))))
 
 (defmethod cadr-tui:component-handle-event
     ((component tic-tac-toe-board-component) event)

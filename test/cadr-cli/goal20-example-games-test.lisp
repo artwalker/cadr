@@ -11,9 +11,22 @@
     (is (null (search "(cadr-agent:session-branch" source)))))
 
 (test goal20-snake-source-has-baseline-sgr
+  ;; Goal 20 P0: the single snake-ansi helper appended its own "m" to codes
+  ;; that already carried one, painting a literal m before every colored
+  ;; string. The port now mirrors snake.ts:220-224 - separate dim/bold
+  ;; helpers closing with ESC[22m and a color helper taking the bare code.
   (let ((source (goal20-example-source "examples/extensions/snake.lisp")))
-    (is (search "32m" source))
-    (is (search "31m" source))
+    (is (search "(snake-color \"32\"" source))
+    (is (search "(snake-color \"31\"" source))
+    (is (search "~C[2m~A~C[22m" source))
+    (is (search "~C[1m~A~C[22m" source))
+    ;; The defect shape: an m-suffixed code handed to a helper that appends
+    ;; its own m. Neither the old helper nor any m-suffixed code literal may
+    ;; come back.
+    (is (null (search "snake-ansi" source)))
+    (is (null (search "\"32m\"" source)))
+    (is (null (search "\"31m\"" source)))
+    (is (null (search "\"1;32m\"" source)))
     (is (search "example-render-diff-harness-p" source))))
 
 (test goal20-tic-tac-toe-source-has-cursor-highlight

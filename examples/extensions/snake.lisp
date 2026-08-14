@@ -146,26 +146,46 @@
   (setf (snake-component-thread component) nil)
   component)
 
-(defun snake-ansi (code text)
-  "Baseline snake.ts uses raw SGR (dim/green/red/yellow/bold), not theme tokens."
+;; Baseline snake.ts SGR helpers, byte for byte (snake.ts:220-224):
+;; dim/bold close with ESC[22m, colors close with ESC[0m.  Color codes are
+;; passed WITHOUT the trailing m - the previous single helper both took
+;; m-suffixed codes and appended its own m, painting a literal m before
+;; every colored string (the goal 20 P0 stray-m defect).
+(defun snake-dim (text)
+  (format nil "~C[2m~A~C[22m" #\Escape text #\Escape))
+
+(defun snake-color (code text)
   (format nil "~C[~Am~A~C[0m" #\Escape code text #\Escape))
+
+(defun snake-bold (text)
+  (format nil "~C[1m~A~C[22m" #\Escape text #\Escape))
+
+(defun snake-box-line (content box-width)
+  "Baseline snake.ts boxLine(): dim borders with the interior padded to the
+box width by visible length (snake.ts:229-233)."
+  (format nil "~A~A~A~A"
+          (snake-dim " │")
+          content
+          (make-string (max 0 (- box-width (cadr-tui:visible-width content)))
+                       :initial-element #\Space)
+          (snake-dim "│")))
 
 (defun snake-board-line (state y effective-width)
   (with-output-to-string (output)
-    (write-string (snake-ansi "2m" " │") output)
+    (write-string (snake-dim " │") output)
     (loop for x below effective-width
           for point = (snake-point x y)
           do (write-string
               (cond
                 ((snake-point= point (first (snake-state-snake state)))
-                 (snake-ansi "32m" "██"))
+                 (snake-color "32" "██"))
                 ((find point (rest (snake-state-snake state)) :test #'snake-point=)
-                 (snake-ansi "32m" "▓▓"))
+                 (snake-color "32" "▓▓"))
                 ((snake-point= point (snake-state-food state))
-                 (snake-ansi "31m" "◆ "))
+                 (snake-color "31" "◆ "))
                 (t "  "))
               output))
-    (write-string (snake-ansi "2m" "│") output)))
+    (write-string (snake-dim "│") output)))
 
 (defmethod cadr-tui:component-render
     ((component snake-component) width &key focused-p)
@@ -174,37 +194,46 @@
     (let* ((state (snake-component-state component))
            (effective-width (max 1 (min +snake-width+ (floor (- width 4) 2))))
            (box-width (* 2 effective-width))
+           ;; Footer copy and SGR composition follow snake.ts:238-241 and
+           ;; :270-279 byte for byte: bold(green(...)) opens 1m then 32m and
+           ;; closes 0m then 22m; yellow(bold(...)) nests the other way.
+           ;; The baseline's "ESC pause" copy describes the same
+           ;; save-and-exit path cadr takes (snake.ts:165 "ESC to pause and
+           ;; save").
            (footer
              (cond
                ((snake-component-paused-p component)
-                (format nil "~A any key resumes · Q quits"
-                        (snake-ansi "33;1m" "PAUSED")))
+                (format nil "~A Press any key to continue, ~A to quit"
+                        (snake-color "33" (snake-bold "PAUSED"))
+                        (snake-bold "Q")))
                ((snake-state-game-over-p state)
-                (format nil "~A · R restarts · Q quits"
-                        (snake-ansi "31;1m" "GAME OVER")))
-               (t "arrows/WASD move · ESC saves · Q quits"))))
+                (format nil "~A Press ~A to restart, ~A to quit"
+                        (snake-color "31" (snake-bold "GAME OVER!"))
+                        (snake-bold "R")
+                        (snake-bold "Q")))
+               (t
+                (format nil "↑↓←→ or WASD to move, ~A pause, ~A quit"
+                        (snake-bold "ESC")
+                        (snake-bold "Q"))))))
       (append
-       (list (snake-ansi "2m" (format nil " ╭~A╮" (make-string box-width :initial-element #\─)))
-             (format nil "~A~A │ ~A │ ~A~A"
-                     (snake-ansi "2m" " │")
-                     (snake-ansi "1;32m" "SNAKE")
-                     (format nil "Score: ~A"
-                             (snake-ansi "1;33m"
-                                         (princ-to-string (snake-state-score state))))
-                     (format nil "High: ~A"
-                             (snake-ansi "1;33m"
-                                         (princ-to-string
-                                          (snake-state-high-score state))))
-                     (snake-ansi "2m" "│"))
-             (snake-ansi "2m" (format nil " ├~A┤" (make-string box-width :initial-element #\─))))
+       (list (snake-dim (format nil " ╭~A╮" (make-string box-width :initial-element #\─)))
+             (snake-box-line
+              (format nil "~A │ Score: ~A │ High: ~A"
+                      (snake-bold (snake-color "32" "SNAKE"))
+                      (snake-bold
+                       (snake-color "33"
+                                    (princ-to-string (snake-state-score state))))
+                      (snake-bold
+                       (snake-color "33"
+                                    (princ-to-string
+                                     (snake-state-high-score state)))))
+              box-width)
+             (snake-dim (format nil " ├~A┤" (make-string box-width :initial-element #\─))))
        (loop for y below +snake-height+
              collect (snake-board-line state y effective-width))
-       (list (snake-ansi "2m" (format nil " ├~A┤" (make-string box-width :initial-element #\─)))
-             (format nil "~A~A~A"
-                     (snake-ansi "2m" " │")
-                     footer
-                     (snake-ansi "2m" "│"))
-             (snake-ansi "2m" (format nil " ╰~A╯" (make-string box-width :initial-element #\─))))))))
+       (list (snake-dim (format nil " ├~A┤" (make-string box-width :initial-element #\─)))
+             (snake-box-line footer box-width)
+             (snake-dim (format nil " ╰~A╯" (make-string box-width :initial-element #\─))))))))
 
 (defun snake-event-direction (event)
   (let ((text (or (cadr-tui:input-event-text event) "")))
