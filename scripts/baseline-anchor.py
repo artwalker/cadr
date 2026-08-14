@@ -56,6 +56,22 @@ def describe(commit: str, root: Path = ROOT) -> tuple[str, str]:
     return match.group(1), match.group(2)
 
 
+HEX_RUN = re.compile(r"[0-9a-f]{7,40}")
+
+
+def commit_referenced(text: str, commit: str) -> bool:
+    """True when text contains the commit or a >=7-hex-char prefix of it.
+
+    A plain substring test only catches the full 40-character form; the
+    short forms (9 characters in cache-directory names, 7+ anywhere else)
+    escaped it.  A maximal hex run inside a longer digest does not start
+    with the commit prefix, so SHA-256 literals do not false-positive.
+    """
+    return any(
+        commit.startswith(match.group(0)) for match in HEX_RUN.finditer(text)
+    )
+
+
 def check(root: Path = ROOT) -> None:
     values = read_baseline(root)
     release, distance = describe(values["commit"], root)
@@ -89,12 +105,27 @@ def check(root: Path = ROOT) -> None:
     )
     if "read-baseline-anchor" not in release_source:
         problems.append("release.lisp no longer derives from BASELINE")
-    for script in (root / "scripts").glob("*.py"):
-        text = script.read_text(encoding="utf-8")
+    # Denominator (expanded 2026-08-14, previously scripts/*.py only): every
+    # file under scripts/ regardless of extension, so a hardcode cannot
+    # escape into .sh/.mjs/.ts or the next new extension.  Comments count:
+    # the match is textual, and a comment telling a human to type the old
+    # hash goes stale exactly the way code does.  Do NOT extend this scan to
+    # src/ or test/: provenance citations of the form "pi@<short-sha>
+    # file.ts:1-2" are mandated there by the development policy; they cite
+    # the baseline, they do not configure it, and scanning them would turn
+    # ~194 legitimate lines red.
+    for script in sorted((root / "scripts").rglob("*")):
+        if not script.is_file() or script.is_symlink():
+            continue
+        if "__pycache__" in script.parts or script.suffix == ".pyc":
+            continue
         if script.name in {"baseline-anchor.py", "check-baseline-anchor.py"}:
             continue
-        if values["commit"] in text:
-            problems.append(f"{script.name} hardcodes the baseline commit")
+        text = script.read_text(encoding="utf-8", errors="replace")
+        if commit_referenced(text, values["commit"]):
+            problems.append(
+                f"{script.relative_to(root).as_posix()} hardcodes the baseline commit"
+            )
     for stale in re.findall(r"[0-9a-f]{40}", readme):
         if stale != values["commit"] and stale not in {
             # git object ids referenced as immutable history

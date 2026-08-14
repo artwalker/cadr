@@ -477,7 +477,8 @@ user adjudicates `docs/proposals/goal20-part-a-regression-thresholds.md`.
 |---|---|---|---|---:|---:|---:|
 | 2026-08-13T13:40:38Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,505.9 | 3,987.0 | 360,272 |
 | 2026-08-14T01:50:56Z | verify-isolated | Friend-MachineD | `isolated-copy` | 307,103.7 | 0.0 | 360,272 |
+| 2026-08-14T04:11:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 291,287.2 | 0.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-14T01:50:56Z) versus `verify-isolated` (2026-08-13T13:40:38Z).
+Latest vs previous: `verify-isolated` (2026-08-14T04:11:37Z) versus `verify-isolated` (2026-08-14T01:50:56Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->

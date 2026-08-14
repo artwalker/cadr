@@ -24,9 +24,11 @@
 //     --warmups N        warmup rounds per metric (default 1)
 //     --quick            1 sample, no warmup, reduced repetitions
 //
-// Run it through the baseline's own tsx so the pi sources load unbuilt:
-//   /tmp/cadr-render-diff-pi-53fa77ccd/node_modules/.bin/tsx \
-//     scripts/goal20-paired-paths.mjs /tmp/cadr-render-diff-pi-53fa77ccd
+// Run it through the baseline's own tsx so the pi sources load unbuilt.
+// BASELINE_WORKTREE is the render-diff cache for the commit pinned in
+// BASELINE (/tmp/cadr-render-diff-pi-<short-sha>):
+//   "$BASELINE_WORKTREE/node_modules/.bin/tsx" \
+//     scripts/goal20-paired-paths.mjs "$BASELINE_WORKTREE"
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
@@ -43,10 +45,14 @@ import { hostname, tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const EXPECTED_REVISION = "53fa77ccd8a279eb87e92294ef3687b03ff80112";
-
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureDirectory = path.join(projectDirectory, "test/fixtures/goal20-paired-paths");
+
+// The BASELINE anchor file owns the pinned pi commit (goal 18 L2.1);
+// scripts/baseline-anchor.py check rejects a literal hash here.
+const EXPECTED_REVISION = readFileSync(path.join(projectDirectory, "BASELINE"), "ascii")
+	.trim()
+	.split(/\s+/)[0];
 
 function parseOptions(argv) {
 	const options = {

@@ -26,7 +26,7 @@ if (
 	)
 ) {
 	throw new Error(
-		"Pass --reference <checkout> for earendil-works/pi commit 53fa77ccd8a279eb87e92294ef3687b03ff80112",
+		"Pass --reference <checkout> for the earendil-works/pi commit pinned in the repository-root BASELINE file",
 	);
 }
 if (!fs.existsSync(path.join(referenceDirectory, "node_modules"))) {

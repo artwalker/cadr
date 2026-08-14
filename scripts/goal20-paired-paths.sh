@@ -11,7 +11,10 @@ set -eu
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 SBCL_COMMAND="${SBCL:-sbcl}"
 QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
-BASELINE_DIRECTORY="${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-53fa77ccd}"
+# Default to the render-diff cache for the commit pinned in BASELINE; the
+# anchor gate (scripts/baseline-anchor.py check) rejects a literal hash here.
+BASELINE_SHORT="$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
+BASELINE_DIRECTORY="${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-$BASELINE_SHORT}"
 OUTPUT_DIRECTORY="${TMPDIR:-/tmp}/goal20-paired-paths"
 BENCH_ARGUMENTS=""
 

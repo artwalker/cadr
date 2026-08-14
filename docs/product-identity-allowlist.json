@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 629,
+  "expected_findings": 634,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -689,22 +689,6 @@
       "line": "    if side == \"pi\":",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
-    },
-    {
-      "path": "scripts/export-ts-payloads.ts",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 53fa77ccd8a279eb87e92294ef3687b03ff80112\",",
-      "occurrences": 1,
-      "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
-    },
-    {
-      "path": "scripts/export-ts-payloads.ts",
-      "kind": "upstream-org",
-      "token": "earendil-works",
-      "line": "\t\t\"Pass --reference <checkout> for earendil-works/pi commit 53fa77ccd8a279eb87e92294ef3687b03ff80112\",",
-      "occurrences": 1,
-      "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
     },
     {
       "path": "scripts/goal11-cold-start.py",
@@ -3339,14 +3323,6 @@
       "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
     },
     {
-      "path": "scripts/goal11-pi-baseline-bench.mjs",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "const gitRepoDir = existsSync(path.join(baselineDirectory, \".git\")) ? baselineDirectory : \"/root/projects/pi-mono\";",
-      "occurrences": 1,
-      "reason": "Goal 11 pi-side driver provenance: when the baseline cache is not a git checkout it falls back to the local pi repository clone to resolve the pinned pi git object ids."
-    },
-    {
       "path": "scripts/goal20-paired-paths.lisp",
       "kind": "pi-token",
       "token": "pi",
@@ -3438,22 +3414,6 @@
       "path": "scripts/goal20-paired-paths.mjs",
       "kind": "pi-token",
       "token": "pi",
-      "line": "//     scripts/goal20-paired-paths.mjs /tmp/cadr-render-diff-pi-53fa77ccd",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.mjs",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "//   /tmp/cadr-render-diff-pi-53fa77ccd/node_modules/.bin/tsx \\",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.mjs",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "// Goal 11 paired cadr against pi on three TUI-input ratios only (mouse",
       "occurrences": 1,
       "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
@@ -3463,14 +3423,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "// Goal 20 Part H: pi side of the non-TUI paired benchmarks.",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.mjs",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "// Run it through the baseline's own tsx so the pi sources load unbuilt:",
       "occurrences": 1,
       "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
     },
@@ -4389,14 +4341,6 @@
     {
       "path": "scripts/goal20-paired-paths.sh",
       "kind": "pi-token",
-      "token": "PI",
-      "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-53fa77ccd}\"",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.sh",
-      "kind": "pi-token",
       "token": "pi",
       "line": "  --pi \"$PI_REPORT\" \\",
       "occurrences": 1,
@@ -4422,14 +4366,6 @@
       "path": "scripts/goal20-paired-paths.sh",
       "kind": "pi-token",
       "token": "pi",
-      "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-53fa77ccd}\"",
-      "occurrences": 1,
-      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
-    },
-    {
-      "path": "scripts/goal20-paired-paths.sh",
-      "kind": "pi-token",
-      "token": "pi",
       "line": "PI_JOURNAL=\"$OUTPUT_DIRECTORY/pi-journal.jsonl\"",
       "occurrences": 1,
       "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
@@ -4439,6 +4375,110 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "PI_REPORT=\"$OUTPUT_DIRECTORY/pi.json\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/baseline-anchor.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    # src/ or test/: provenance citations of the form \"pi@<short-sha>",
+      "occurrences": 1,
+      "reason": "Baseline anchor gate documentation: records that src/ and test/ keep their mandated pi provenance-citation form and therefore stay outside the hardcode-scan denominator."
+    },
+    {
+      "path": "scripts/export-ts-payloads.ts",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\"Pass --reference <checkout> for the earendil-works/pi commit pinned in the repository-root BASELINE file\",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
+    },
+    {
+      "path": "scripts/export-ts-payloads.ts",
+      "kind": "upstream-org",
+      "token": "earendil-works",
+      "line": "\t\t\"Pass --reference <checkout> for the earendil-works/pi commit pinned in the repository-root BASELINE file\",",
+      "occurrences": 1,
+      "reason": "Fixed-baseline payload exporter names the immutable reference repository and commit."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "\t\t\"baseline worktree has no .git; set GOAL11_PI_GIT_REPO to a pi checkout containing the pinned commit\",",
+      "occurrences": 1,
+      "reason": "Goal 11 pi-side driver provenance: derives the pinned pi commit from the BASELINE anchor and names the operator-supplied pi checkout (GOAL11_PI_GIT_REPO) used to resolve git object ids when the baseline cache is not a git checkout."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "\t: process.env.GOAL11_PI_GIT_REPO;",
+      "occurrences": 1,
+      "reason": "Goal 11 pi-side driver provenance: derives the pinned pi commit from the BASELINE anchor and names the operator-supplied pi checkout (GOAL11_PI_GIT_REPO) used to resolve git object ids when the baseline cache is not a git checkout."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\"baseline worktree has no .git; set GOAL11_PI_GIT_REPO to a pi checkout containing the pinned commit\",",
+      "occurrences": 1,
+      "reason": "Goal 11 pi-side driver provenance: derives the pinned pi commit from the BASELINE anchor and names the operator-supplied pi checkout (GOAL11_PI_GIT_REPO) used to resolve git object ids when the baseline cache is not a git checkout."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// The BASELINE anchor file owns the pinned pi commit (goal 18 L2.1);",
+      "occurrences": 1,
+      "reason": "Goal 11 pi-side driver provenance: derives the pinned pi commit from the BASELINE anchor and names the operator-supplied pi checkout (GOAL11_PI_GIT_REPO) used to resolve git object ids when the baseline cache is not a git checkout."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// pinned git object ids below then needs a real pi checkout.  No",
+      "occurrences": 1,
+      "reason": "Goal 11 pi-side driver provenance: derives the pinned pi commit from the BASELINE anchor and names the operator-supplied pi checkout (GOAL11_PI_GIT_REPO) used to resolve git object ids when the baseline cache is not a git checkout."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// BASELINE (/tmp/cadr-render-diff-pi-<short-sha>):",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// Run it through the baseline's own tsx so the pi sources load unbuilt.",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// The BASELINE anchor file owns the pinned pi commit (goal 18 L2.1);",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-$BASELINE_SHORT}\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-$BASELINE_SHORT}\"",
       "occurrences": 1,
       "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
     }

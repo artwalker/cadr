@@ -5,7 +5,7 @@ import { createHash } from "node:crypto";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { Session } from "node:inspector";
 import { arch, hostname, platform } from "node:os";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 const quick = process.argv.includes("--quick");
@@ -46,8 +46,14 @@ try {
 		throw _err;
 	}
 }
-if (revision !== "53fa77ccd8a279eb87e92294ef3687b03ff80112") {
-	throw new Error(`expected baseline 53fa77ccd, got ${revision}`);
+// The BASELINE anchor file owns the pinned pi commit (goal 18 L2.1);
+// scripts/baseline-anchor.py check rejects a literal hash here.
+const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
+const expectedRevision = readFileSync(path.join(projectDirectory, "BASELINE"), "ascii")
+	.trim()
+	.split(/\s+/)[0];
+if (revision !== expectedRevision) {
+	throw new Error(`expected baseline ${expectedRevision.slice(0, 9)}, got ${revision}`);
 }
 if (trackedStatus) throw new Error("fixed baseline has tracked worktree changes");
 let installedDependencyTree = "";
@@ -674,7 +680,18 @@ for (const [kind, points] of [
 	}
 }
 
-const gitRepoDir = existsSync(path.join(baselineDirectory, ".git")) ? baselineDirectory : "/root/projects/pi-mono";
+// The render-diff cache is an extracted tree without .git; resolving the
+// pinned git object ids below then needs a real pi checkout.  No
+// machine-specific default: the operator names one explicitly and the git
+// calls fail loudly if it lacks the pinned commit.
+const gitRepoDir = existsSync(path.join(baselineDirectory, ".git"))
+	? baselineDirectory
+	: process.env.GOAL11_PI_GIT_REPO;
+if (!gitRepoDir) {
+	throw new Error(
+		"baseline worktree has no .git; set GOAL11_PI_GIT_REPO to a pi checkout containing the pinned commit",
+	);
+}
 
 const result = {
 	schema_version: 2,
