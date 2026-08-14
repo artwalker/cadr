@@ -2,6 +2,13 @@
 
 Date: 2026-08-13. Status: implemented; user A/B still required for Goal 20 closeout.
 
+**A/B precondition (added 2026-08-14 after a three-day divergence):** before
+any manual acceptance run, sync `examples/extensions/` into the runtime
+extension directory and verify with
+`./scripts/check-runtime-extension-drift.sh` — otherwise the terminal loads
+`~/.cadr/agent/extensions/` copies the gates never saw, and the A/B judges
+old code.
+
 Part D (snake / tic-tac-toe / space-invaders) was not reopened. Batch 0 inventory stays in
 `docs/acceptance/goal-v20-part-e-batch-0.md`.
 
