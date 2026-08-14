@@ -30,11 +30,185 @@
     (is (search "example-render-diff-harness-p" source))))
 
 (test goal20-tic-tac-toe-source-has-cursor-highlight
+  ;; Goal 20 P0-3 removed the always-true "nil)" assertion this test used
+  ;; to carry; the remaining greps are the defect-shape locks, and the
+  ;; behavior tier lives in
+  ;; goal20-ttt-agent-action-repaints-the-live-overlay below.
   (let ((source (goal20-example-source "examples/extensions/tic-tac-toe.lisp")))
     (is (search "32;1m" source))
     (is (search "TIC-TAC-TOE-RENDER-VISUAL-BOARD" source :test #'char-equal))
-    (is (search "(tic-tac-toe-reconstruct context)" source))
-    (is (search "nil)" source))))
+    (is (search "(tic-tac-toe-reconstruct context)" source))))
+
+(test goal20-snake-behavior-render-reflects-state
+  ;; Goal 20 P0-3 behavior tier: construct the component, advance the game
+  ;; state, and assert the drawn frame changes - not the source text.
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target (merge-pathnames "examples/extensions/snake.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "snake"
+                          (cadr-agent::extension-bundle-commands candidate)
+                          :key #'cadr-agent::extension-command-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (state
+                 (funcall
+                  (find-symbol "MAKE-INITIAL-SNAKE-STATE" package)))
+               (component
+                 (make-instance
+                  (find-symbol "SNAKE-COMPONENT" package)
+                  :state state
+                  :tui (cadr-tui:make-tui-root)
+                  :done (lambda (value) value)
+                  :save (lambda (value) value)
+                  :paused-p t))
+               (before (cadr-tui:component-render component 100)))
+          (is (find-if (lambda (line) (search "SNAKE" line)) before))
+          (is (find-if (lambda (line) (search "██" line)) before))
+          (funcall (find-symbol "SNAKE-TICK" package) state)
+          (let ((after (cadr-tui:component-render component 100)))
+            (is (not (equal before after))
+                "a game tick did not reach the rendered frame")))))))
+
+(test goal20-invaders-behavior-render-reflects-state
+  ;; Goal 20 P0-3 behavior tier for space invaders.
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/space-invaders.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "invaders"
+                          (cadr-agent::extension-bundle-commands candidate)
+                          :key #'cadr-agent::extension-command-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (state
+                 (funcall
+                  (find-symbol "MAKE-INITIAL-INVADERS-STATE" package)))
+               (component
+                 (make-instance
+                  (find-symbol "SPACE-INVADERS-COMPONENT" package)
+                  :state state
+                  :tui (cadr-tui:make-tui-root)
+                  :done (lambda (value) value)
+                  :save (lambda (value) value)
+                  :paused-p t))
+               (frame (cadr-tui:component-render component 100)))
+          (is (find-if (lambda (line) (search "SPACE INVADERS" line)) frame))
+          (is (find-if (lambda (line) (search "Score" line)) frame)))))))
+
+(test goal20-ttt-agent-action-repaints-the-live-overlay
+  ;; Goal 20 P0-2 behavior lock (baseline updateState,
+  ;; tic-tac-toe.ts:389-393): the overlay component must carry the tui
+  ;; handle, and the agent's tool path - which mutates the shared state on
+  ;; an execution path the input loop never repaints - must request a
+  ;; render. Construct -> mutate through the registered tool -> assert the
+  ;; repaint and the rendered frame, not the source text.
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/tic-tac-toe.lisp" root))
+               (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        ;; The game's save path calls a host action; the bare test host has
+        ;; none. Stub the dispatcher so the test isolates the repaint path.
+        (setf (cadr-agent::extension-host-action-function
+               (cadr-cli::cli-extension-manager-host manager))
+              (lambda (action arguments)
+                (declare (ignore action arguments))
+                nil))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "tic_tac_toe"
+                          (cadr-agent::extension-bundle-tools candidate)
+                          :key #'cadr-agent::extension-tool-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (renders 0)
+               (tui
+                 (cadr-tui:make-tui-root
+                  :render-function
+                  (lambda (lines)
+                    (declare (ignore lines))
+                    (incf renders)))))
+          (is (not (null bundle)))
+          (let* ((component-class
+                   (find-symbol "TIC-TAC-TOE-BOARD-COMPONENT" package))
+                 (component-var
+                   (find-symbol "*TIC-TAC-TOE-COMPONENT*" package))
+                 (state-var (find-symbol "*TIC-TAC-TOE-STATE*" package))
+                 (tool
+                   (find "tic_tac_toe"
+                         (cadr-agent::extension-bundle-tools bundle)
+                         :key #'cadr-agent::extension-tool-definition-name
+                         :test #'string=))
+                 (arguments (make-hash-table :test #'equal)))
+            ;; The class must expose the tui slot the factory wires.
+            (is (not (null (find-symbol "TIC-TAC-TOE-COMPONENT-TUI" package))))
+            (setf (symbol-value component-var)
+                  (make-instance component-class
+                                 :state (symbol-value state-var)
+                                 :tui tui))
+            ;; A fresh board is the user's turn; hand the turn to the agent
+            ;; the way a user move does before driving the agent tool.
+            (funcall
+             (fdefinition
+              (list 'setf
+                    (find-symbol "TIC-TAC-TOE-STATE-CURRENT-TURN" package)))
+             #\O (symbol-value state-var))
+            (setf (gethash "action" arguments) "play")
+            (funcall (cadr-agent::extension-tool-definition-handler tool)
+                     "goal20-p0-2-call" arguments nil nil nil)
+            (is (plusp renders)
+                "agent tool action did not request a repaint")
+            ;; Behavior tier for the render itself: the mutated state must
+            ;; reach the drawn frame (banner plus an O mark somewhere).
+            (let ((lines
+                    (cadr-tui:component-render
+                     (symbol-value component-var) 60)))
+              (is (find-if (lambda (line) (search "Tic-Tac-Toe" line)) lines))
+              (is (find-if (lambda (line)
+                             (search (string #\LARGE_CIRCLE) line))
+                           lines)))))))))
 
 (test goal20-hello-matches-baseline-contract
   (let ((source (goal20-example-source "examples/extensions/hello.lisp")))
@@ -81,10 +255,11 @@
     (is (search "Queued /reload-runtime as a follow-up command." source))))
 
 (test goal20-thinking-label-matches-baseline
+  ;; Goal 20 P0-3: the "nil))" grep this test carried was always true for
+  ;; any Lisp source and asserted nothing; removed.
   (let ((source (goal20-example-source "examples/extensions/hidden-thinking-label.lisp")))
     (is (search "Pondering..." source))
-    (is (search "Hidden thinking label set to:" source))
-    (is (search "nil))" source))))
+    (is (search "Hidden thinking label set to:" source))))
 
 (test goal20-message-renderer-uses-level-prefix
   (let ((source (goal20-example-source "examples/extensions/message-renderer.lisp")))
@@ -97,9 +272,12 @@
     (is (search "append-entry" source))))
 
 (test goal20-dynamic-tools-session-start-returns-nil
+  ;; Goal 20 P0-3: the "nil))" grep this test carried was always true for
+  ;; any Lisp source and asserted nothing; removed. The returns-nil
+  ;; behavior itself is exercised by the goal12 registration suite, which
+  ;; runs the session-start hook when it loads the entry.
   (let ((source (goal20-example-source "examples/extensions/dynamic-tools.lisp")))
-    (is (search "Registered dynamic tool: echo_session" source))
-    (is (search "nil))" source))))
+    (is (search "Registered dynamic tool: echo_session" source))))
 
 (test goal20-todo-empty-state-and-add-text
   (let ((source (goal20-example-source "examples/extensions/todo.lisp")))

@@ -352,6 +352,25 @@ contract in pure Lisp without adding a dependency.
 
 ## 3. Gap and evidence index
 
+### What each test layer can answer (goal 20 P0-3)
+
+Three layers cover the example extensions, and their boundaries do not
+overlap — a reader must not take any single count (such as the FiveAM
+check total) as thickness:
+
+| Layer | Sees | Cannot see |
+|---|---|---|
+| Source greps (`goal20-example-games-test.lisp` shape locks) | that a text/defect shape is present or absent in the file | any behavior; a grep passes without executing a line |
+| Loader suites (`goal12-examples-test.lisp` registration/load) | that the entry loads diagnostics-free and registers its surface | rendering, state changes, repaints |
+| Render differential (example scenarios) | the drawn screens on user-driven paths | agent-driven paths ([EXAMPLES-AGENT-DRIVEN-REDRAW-GAP](#examples-agent-driven-redraw-gap)); anything a textCovering class absorbs |
+
+The behavior tier added for the three games (construct → mutate → render
+→ assert: `goal20-snake-behavior-render-reflects-state`,
+`goal20-invaders-behavior-render-reflects-state`,
+`goal20-ttt-agent-action-repaints-the-live-overlay`) closes the
+construct-and-render gap for those files only; the remaining examples
+keep the loader-suite tier as their strongest behavioral evidence.
+
 ### Implemented evidence
 
 | ID | Common Lisp tests |
@@ -416,6 +435,7 @@ contract in pure Lisp without adding a dependency.
 | <a id="diff-lisp-ecosystem"></a>`DIFF-LISP-ECOSYSTEM` | approved Lisp extension/skill/template/package format and implementation/build-language differences; capability gaps inside those systems remain separately missing |
 | <a id="examples-load-gap"></a>`EXAMPLES-LOAD-GAP` | **open** (recorded 2026-08-14, goal 20 Part F): no deterministic gate loads or drives the 14 example ports `examples/rpc-extension-ui.lisp` and `examples/sdk/01`–`13.lisp` — the goal 12 entrypoint-load suite covers `:entry-p` extension rows only, no render-diff scenario drives them, and `goal12-sdk-test.lisp` tests the SDK APIs they demonstrate, not the files. Capability existence is ledgered on the source axis (`docs/source-parity.md` class `SP-F2`); until a load or behavior gate exists, their runnability is unverified |
 | <a id="llama-extension-entry-gap"></a>`LLAMA-EXTENSION-ENTRY-GAP` | **open** (recorded 2026-08-14, goal 20 Part F): no test references any symbol of `src/cadr-cli/extensions/llama/extension.lisp` (the llama extension entry, 464 lines, 17 top-level functions) — `llama-extension-test.lisp` covers the sibling client/provider/huggingface modules only. Capability existence is ledgered on the source axis (`docs/source-parity.md` class `SP-F4`); the entry's registration, auth and command behavior is unverified |
+| <a id="examples-agent-driven-redraw-gap"></a>`EXAMPLES-AGENT-DRIVEN-REDRAW-GAP` | **open** (recorded 2026-08-14, goal 20 P0-2): every render-diff example checkpoint is user-keystroke driven, and the framework repaints after each input event — so the differential can never see a "state changed on the agent's execution path but nothing repainted" defect. The tic-tac-toe instance of that defect (no `tui` handle, zero repaint requests; baseline `tic-tac-toe.ts:389-393`) was found by the user in a real terminal and is fixed with a FiveAM behavior lock (`goal20-ttt-agent-action-repaints-the-live-overlay`), but the differential blind spot itself remains: adding agent-driven scenarios changes the gate's obligation unit and awaits adjudication with the Part F 6.5 proposal |
 
 ### Applicable but uncovered backlog
 
