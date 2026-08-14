@@ -82,6 +82,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part O: `scripts/goal20-profile.sh` captures `sb-sprof` for
+  paired paths that still miss 1.0×; the report is
+  `docs/benchmarks/goal20-part-o-remaining-sprof.md`.
+
 - Goal 20 Part B: paired-path ratios and FiveAM check counts are written by
   scripts into `docs/performance.md` and the `GOAL20_TEST_CHECKS` comment in
   `docs/test-matrix.md`. `scripts/record-paired-paths.py` books a run from
