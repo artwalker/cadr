@@ -1,50 +1,61 @@
 # cadr architecture
 
-状态：**v1 Phase 1–4 与 v2 Phase 5–9 已实现；北极星 Wave 2 的 agent
-harness、session v3、print/JSON 与 RPC 已完成；扩大的稳定扩展 API 已重新
-冻结；原版默认执行安全模型已对齐；Phase 8 TUI、Phase 9 依赖收尾与 cadr
-命名迁移已完成；Goal 8 Wave 5 的 storage/server/evals 已完成并冻结；
-Goal 9 已将行为基线重锁到 `53fa77ccd`，完成 Part A–E；Goal 11 已建立非功能
-属性第二验收轴并完成性能、内存与长时稳定性门禁；Goal 10 Part D 的获批
-condition/restart 与 opt-in Slynk 已实施并重新冻结；Goal 14 已完成全仓职责
-拆分与重复政策收敛，并建立常设组织度门禁**
+Status: **v1 Phase 1–4 and v2 Phase 5–9 are implemented; the north-star Wave 2
+agent harness, session v3, print/JSON and RPC are complete; the widened stable
+extension API has been re-frozen; the baseline's default execution security
+model is aligned; the Phase 8 TUI, the Phase 9 dependency closeout and the cadr
+naming migration are complete; Goal 8 Wave 5 storage/server/evals are complete
+and frozen; Goal 9 re-locked the behavior baseline to `53fa77ccd` and completed
+Parts A–E; Goal 11 established the second, non-functional acceptance axis and
+completed the performance, memory and long-run stability gates; Goal 10 Part D's
+approved conditions/restarts and opt-in Slynk are implemented and re-frozen;
+Goal 14 completed the tree-wide responsibility split and the duplication-policy
+convergence, and established a standing organization gate**
 
-Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF test systems
-只含可重复测试，独立 live systems 由 `scripts/test-live.sh` 完整汇总。
+Goal 9 explicitly separated the deterministic and the provider-live FiveAM
+gates: ordinary ASDF test systems contain repeatable tests only, and the
+separate live systems are reported in full by `scripts/test-live.sh`.
 
-本文是 `docs/progress/goal-v1.md` 要求的第一个交付物，已于 2026-07-30
-获得人工确认。
-后续实现若改变本文中的公开接口、数据格式或行为约束，必须先同步修改本文，
-并在对应阶段报告中说明。
+This document is the first deliverable required by `docs/progress/goal-v1.md`,
+and was confirmed by a human on 2026-07-30.
+If a later implementation changes a public interface, data format or behavioral
+constraint stated here, this document must be updated first, and the change must
+be explained in the corresponding phase report.
 
-2026-07-30 起新增一条全局约束：cadr 对齐固定 TS 基线的设计哲学，不在
-核心增加原版没有的机制。默认执行模型是 YOLO；审批不是核心安全边界，强
-隔离由用户通过容器提供。任何拟新增机制先写入 `docs/open-questions.md`
-等待人工裁决，不得默认实现。v1 工具确认已在 Phase 7 完成后作为独立任务
-移除；核心不再导出确认回调，也没有 `--yolo` 分支。
+A global constraint was added on 2026-07-30: cadr aligns with the fixed TS
+baseline's design philosophy and does not add mechanisms to the core that the
+baseline does not have. The default execution model is YOLO; approval is not a
+core security boundary, and strong isolation is provided by the user through a
+container. Any proposed new mechanism must first be written into
+`docs/open-questions.md` and await human adjudication; it must not be
+implemented by default. The v1 tool confirmation was removed as a separate task
+after Phase 7 completed; the core no longer exports a confirmation callback, and
+there is no `--yolo` branch.
 
-## 1. 参考基线与边界
+## 1. Reference baseline and boundaries
 
-### 1.1 参考源码
+### 1.1 Reference source
 
-- 行为参考仓库：`https://github.com/earendil-works/pi`
-- 固定审计提交：`53fa77ccd8a279eb87e92294ef3687b03ff80112`
-  （`pi v0.84.1 + 38 commits`，2026-07-30）
-- 历史审计锚点：
-  `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`；仅用于 Goal 4–8 的
-  历史对照，不再参与当前 parity 判定
-- 迁移前上游 TypeScript HEAD：
+- Behavior reference repository: `https://github.com/earendil-works/pi`
+- Fixed audit commit: `53fa77ccd8a279eb87e92294ef3687b03ff80112`
+  (`pi v0.84.1 + 38 commits`, 2026-07-30)
+- Historical audit anchor:
+  `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`; used only for the Goal 4–8
+  historical comparison, and no longer participates in current parity verdicts
+- Upstream TypeScript HEAD before the migration:
   `e3f6912d49d14b6e6ffe96bb053644922004ecf3`
-- legacy 状态保存于 `pi-mono-legacy` 分支引用与 patch 归档，基点
-  `48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`；`/root/projects/pi-mono`
-  目录现跟踪上游 `main`
-- 当前 cadr tracked tree 不再包含上游 TypeScript 实现；下列参考路径均
-  指固定审计提交中的路径。重新生成对拍 fixture 时必须 checkout
-  `53fa77ccd8a279eb87e92294ef3687b03ff80112` 并将其路径作为
-  `scripts/export-ts-payloads.ts --reference`，不得改用移动中的
-  upstream 或 legacy 分支 tip。
+- The legacy state is preserved in the `pi-mono-legacy` branch reference and in
+  archived patches, base point
+  `48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`; the `/root/projects/pi-mono`
+  directory now tracks upstream `main`
+- The current cadr tracked tree no longer contains the upstream TypeScript
+  implementation; every reference path below means a path inside the fixed audit
+  commit. Regenerating a cross-implementation fixture must check out
+  `53fa77ccd8a279eb87e92294ef3687b03ff80112` and pass its path as
+  `scripts/export-ts-payloads.ts --reference`; a moving upstream or the tip of
+  the legacy branch must not be used instead.
 
-固定提交的范围内，重点参考：
+Within the scope of the fixed commit, the primary references are:
 
 - `packages/ai/src/types.ts`
 - `packages/ai/src/api/anthropic-messages.ts`
@@ -60,47 +71,56 @@ Goal 9 的确定性与 provider live FiveAM 门禁已显式分离：普通 ASDF 
 - `packages/coding-agent/src/cli/args.ts`
 - `packages/coding-agent/src/main.ts`
 
-### 1.2 第一版包含
+### 1.2 In scope for v1
 
-- Anthropic Messages API
-- OpenAI Responses API
-- Google Gemini Generative Language API，第一版默认模型
+- The Anthropic Messages API
+- The OpenAI Responses API
+- The Google Gemini Generative Language API, with v1 default model
   `gemini-3.6-flash`
-- 三家的真实非流式请求和真实 SSE 流式请求
-- 统一消息、工具、用量、停止原因和错误模型
-- 完整的“模型响应 → 工具调用 → 工具结果 → 再次调用模型”循环
-- JSON Schema 工具参数校验
-- `read`、`write`、`edit`、`bash`、`glob`、`grep`
-- REPL、多轮会话、JSONL 持久化和 `--continue`
-- 与原版一致，全部工具在 schema 校验后默认直接执行
-- Linux x64 / SBCL 2.4+ 单文件可执行程序
+- Real non-streaming requests and real SSE streaming requests for all three
+- A unified message, tool, usage, stop-reason and error model
+- The complete "model response → tool call → tool result → call the model again"
+  loop
+- JSON Schema tool-argument validation
+- `read`, `write`, `edit`, `bash`, `glob`, `grep`
+- REPL, multi-turn sessions, JSONL persistence and `--continue`
+- As in the baseline, every tool executes directly once schema validation passes
+- A Linux x64 / SBCL 2.4+ single-file executable
 
-### 1.3 第一版不包含
+### 1.3 Out of scope for v1
 
-- 全屏 TUI、图片输入和图片工具结果
-- OpenAI Chat Completions 兼容层；OpenAI 第一版只实现 Responses API
-- Anthropic/OpenAI/Google 之外的 provider
-- OAuth、云平台代理、Bedrock、Vertex、WebSocket
-- extension、skill、prompt-template、package 安装系统
-- 会话分支、压缩、HTML 导出、RPC、Web UI、Slack、pods
-- 动态模型目录和价格计算；只统计 provider 返回的 token 用量
+- A full-screen TUI, image input and image tool results
+- An OpenAI Chat Completions compatibility layer; v1 implements the Responses
+  API only for OpenAI
+- Providers other than Anthropic/OpenAI/Google
+- OAuth, cloud-platform proxies, Bedrock, Vertex, WebSocket
+- The extension, skill, prompt-template and package installation systems
+- Session branching, compaction, HTML export, RPC, Web UI, Slack, pods
+- A dynamic model catalog and price computation; only the token usage the
+  provider returns is counted
 
-这些是明确的产品边界，不用空壳或“以后实现”的假接口冒充已支持功能。
+These are explicit product boundaries. Empty shells and fake "to be implemented
+later" interfaces must not be passed off as supported features.
 
-### 1.4 两个明确裁决
+### 1.4 Two explicit adjudications
 
-1. `docs/progress/goal-v1.md` 要求工具名为 `glob`，参考提交中的同类工具名为
-   `find`。
-   第一版公开名采用 `glob`，参数和结果语义对齐参考实现的 `find`：
-   `pattern`、可选 `path`、可选 `limit`、相对路径输出和稳定截断提示。
-2. 参考实现的 `complete()` 可以通过收集流事件得到最终消息，但
-   `docs/progress/goal-v1.md` 明确要求“非流式和流式请求”。因此 CL 层会发送真实的
-   `stream=false` 请求，不用“内部仍然流式，只是不显示增量”偷换概念。
+1. `docs/progress/goal-v1.md` requires the tool to be named `glob`, while the
+   equivalent tool in the reference commit is named `find`.
+   v1 takes `glob` as the public name and aligns the argument and result
+   semantics with the reference implementation's `find`:
+   `pattern`, optional `path`, optional `limit`, relative-path output and a
+   stable truncation notice.
+2. The reference implementation's `complete()` can obtain the final message by
+   collecting stream events, but `docs/progress/goal-v1.md` explicitly requires
+   "non-streaming and streaming requests". The CL layer therefore sends a real
+   `stream=false` request, rather than substituting "still streaming internally,
+   only the increments are not displayed" for the requirement.
 
-## 2. 系统分层
+## 2. System layering
 
-依赖方向固定为；Goal 14 B3 增加的 `cadr-core` 是所有现有 system 只向下
-依赖的内部叶子，不承载产品或 provider 语义：
+The dependency direction is fixed as follows. `cadr-core`, added by Goal 14 B3,
+is an internal leaf that every existing system only depends downward on; it
+carries no product or provider semantics:
 
 ```text
 cadr-cli -> cadr-agent -> cadr-ai -> cadr-core
@@ -112,26 +132,26 @@ cadr-server -> cadr-ai -> cadr-core
 cadr-evals  -> cadr-cli -> ... -> cadr-core
 ```
 
-| TypeScript 责任 | Common Lisp system / package / module | 第一版责任 |
+| TypeScript responsibility | Common Lisp system / package / module | v1 responsibility |
 |---|---|---|
-| `packages/ai/src/types.ts`、model/provider registry | `cadr-ai` / `cadr-ai` / `types.lisp`、`provider.lisp` | 统一模型、消息、内容块、工具、用量、事件 |
-| 跨 system 的失败安全基础设施 | `cadr-core` / `cadr-core` / `threads.lisp`、`cancellation.lisp`、`atomic-file.lisp`、`redacted-print.lisp`、`time.lisp` | 有界清理、取消状态、原子替换、脱敏打印与 UTC 时间；不含产品策略 |
-| `packages/ai/src/api/*` 三家实现 | `cadr-ai` / `cadr-ai` / `providers/*.lisp` | 请求构造、消息转换、非流式响应和 SSE reducer |
-| `packages/ai/src/utils/event-stream.ts` | `cadr-ai` / `cadr-ai` / `types.lisp`、`provider.lisp` | 同步事件回调协议和最终消息收集 |
-| provider SDK / fetch 边界 | `cadr-ai` / `cadr-ai` / `http.lisp`、`sse.lisp` | 自研 HTTP/1.1、OpenSSL TLS、UTF-8 流读取、通用 SSE framing |
-| `packages/agent/src/agent-loop.ts` | `cadr-agent` / `cadr-agent` / `loop.lisp` | turn 循环、工具批次、事件顺序、停止条件 |
-| `packages/agent/src/agent.ts` | `cadr-agent` / `cadr-agent` / `runtime.lisp` | 可变状态、订阅、忙碌状态、取消、提示入口 |
-| `packages/agent/src/harness/types.ts` | `cadr-agent` / `cadr-agent` / `conditions.lisp`、`tool.lisp` | 稳定错误分类、工具协议和执行模式 |
-| harness / coding-agent session | `cadr-agent` / `cadr-agent` / `session.lisp` | 第一版线性 JSONL 保存、加载、最近会话查找 |
-| harness 与 coding-agent 内置工具 | `cadr-cli` / `cadr-cli` / `tools/*.lisp` | 六个本地编码工具和统一截断 |
-| `coding-agent` args/main/system prompt | `cadr-cli` / `cadr-cli` / `config.lisp`、`main.lisp`、`repl.lisp` | 配置、模型选择和 REPL |
+| `packages/ai/src/types.ts`, model/provider registry | `cadr-ai` / `cadr-ai` / `types.lisp`, `provider.lisp` | Unified model, message, content block, tool, usage, event |
+| Cross-system failure-safety infrastructure | `cadr-core` / `cadr-core` / `threads.lisp`, `cancellation.lisp`, `atomic-file.lisp`, `redacted-print.lisp`, `time.lisp` | Bounded cleanup, cancellation state, atomic replacement, redacted printing and UTC time; no product policy |
+| `packages/ai/src/api/*`, the three implementations | `cadr-ai` / `cadr-ai` / `providers/*.lisp` | Request construction, message conversion, non-streaming responses and the SSE reducer |
+| `packages/ai/src/utils/event-stream.ts` | `cadr-ai` / `cadr-ai` / `types.lisp`, `provider.lisp` | The synchronous event-callback protocol and final-message collection |
+| The provider SDK / fetch boundary | `cadr-ai` / `cadr-ai` / `http.lisp`, `sse.lisp` | In-house HTTP/1.1, OpenSSL TLS, UTF-8 stream reading, generic SSE framing |
+| `packages/agent/src/agent-loop.ts` | `cadr-agent` / `cadr-agent` / `loop.lisp` | Turn loop, tool batches, event order, stop conditions |
+| `packages/agent/src/agent.ts` | `cadr-agent` / `cadr-agent` / `runtime.lisp` | Mutable state, subscription, busy state, cancellation, prompt entry point |
+| `packages/agent/src/harness/types.ts` | `cadr-agent` / `cadr-agent` / `conditions.lisp`, `tool.lisp` | Stable error classification, the tool protocol and execution modes |
+| harness / coding-agent session | `cadr-agent` / `cadr-agent` / `session.lisp` | v1 linear JSONL save, load and most-recent-session lookup |
+| harness and coding-agent built-in tools | `cadr-cli` / `cadr-cli` / `tools/*.lisp` | The six local coding tools and unified truncation |
+| `coding-agent` args/main/system prompt | `cadr-cli` / `cadr-cli` / `config.lisp`, `main.lisp`, `repl.lisp` | Configuration, model selection and the REPL |
 
-每个 system 只导出稳定入口；provider 私有 payload 类型、SSE 临时状态和
-文件工具内部辅助函数不导出。
+Each system exports stable entry points only; provider-private payload types,
+transient SSE state and file-tool internal helpers are not exported.
 
-## 3. 目录与 ASDF
+## 3. Directories and ASDF
 
-实现目录：
+Implementation directories:
 
 ```text
 cadr-ai.asd
@@ -261,63 +281,69 @@ docs/
   progress/
 ```
 
-ASDF systems：
+ASDF systems:
 
-- `cadr-core`、`cadr-core/tests`
-- `cadr-ai`、`cadr-ai/tests`
-- `cadr-agent`、`cadr-agent/tests`
-- `cadr-cli`、`cadr-cli/tests`
-- `cadr-tui`、`cadr-tui/tests`
-- `cadr-ai/live-tests`、`cadr-cli/live-tests`、`cadr-evals/live-tests`
-- `cadr-live-tests`（只编排并汇总上述 live systems）
+- `cadr-core`, `cadr-core/tests`
+- `cadr-ai`, `cadr-ai/tests`
+- `cadr-agent`, `cadr-agent/tests`
+- `cadr-cli`, `cadr-cli/tests`
+- `cadr-tui`, `cadr-tui/tests`
+- `cadr-ai/live-tests`, `cadr-cli/live-tests`, `cadr-evals/live-tests`
+- `cadr-live-tests` (only orchestrates and reports on the live systems above)
 
-`cadr-core` 的 export 仅供仓库内 system 使用，不是 Cadr 的发布扩展 API。
-既有 package-local 名称只保留无策略兼容委托；原子替换、凭据安全打印、
-取消和线程清理的政策只能在该叶子定义。`cadr-tui` 仍不依赖 `cadr-ai`，因此
-Goal 14 没有反转任何既有系统边。
+`cadr-core`'s exports are for in-repository systems only; they are not part of
+Cadr's published extension API. Existing package-local names retain only
+policy-free compatibility delegates; the policy for atomic replacement,
+credential-safe printing, cancellation and thread cleanup may be defined in that
+leaf and nowhere else. `cadr-tui` still does not depend on `cadr-ai`, so Goal 14
+reversed no existing system edge.
 
-Phase 9 后的生产依赖：
+Production dependencies after Phase 9:
 
-| 库 | 用途 | 选择理由 |
+| Library | Purpose | Reason for the choice |
 |---|---|---|
-| `cl+ssl` | HTTPS TLS | 第一个在册自研例外；绑定系统 OpenSSL，不自研密码学 |
-| `cl-sqlite`（ASDF `sqlite`） | session storage SQLite adapter | 第二个在册自研例外；经 CFFI 绑定系统 `libsqlite3`，项目自研 storage/repository contract 而不重写数据库引擎 |
-| `cl-ppcre` | `grep`、glob 和 JSON Schema `pattern` | 完整正则引擎按 `docs/progress/goal-v2.md` 明确暂缓；用户 pattern 不交给 shell |
-| `cl-jpeg`、`png-read` | JPEG/PNG 像素 codec | 用户在 Goal 8 Part B 编码前批准的纯 Lisp 可替换类目；不增加系统 ABI 或安全边界 |
-| `slynk/mrepl` | 显式 `--slynk` 运行时 REPL | Goal 10 Part D 单独批准的“显式启用调试服务”；默认关闭，只固定监听 loopback，允许任意进程内求值，绝非安全边界 |
-| `uiop` / ASDF、`sb-thread`、`sb-bsd-sockets`、`sb-posix` | 路径、进程、线程、socket、终端和构建 | SBCL/ASDF 自带设施，不计第三方生产依赖 |
+| `cl+ssl` | HTTPS TLS | The first registered in-house exception; binds the system OpenSSL rather than writing cryptography |
+| `cl-sqlite` (ASDF `sqlite`) | The session storage SQLite adapter | The second registered in-house exception; binds the system `libsqlite3` through CFFI, so the project writes its own storage/repository contract instead of rewriting a database engine |
+| `cl-ppcre` | `grep`, glob and the JSON Schema `pattern` | A full regular-expression engine is explicitly deferred by `docs/progress/goal-v2.md`; user patterns are not handed to a shell |
+| `cl-jpeg`, `png-read` | The JPEG/PNG pixel codecs | A pure-Lisp, replaceable category the user approved before the Goal 8 Part B implementation; adds no system ABI and no security boundary |
+| `slynk/mrepl` | The explicit `--slynk` runtime REPL | The "explicitly enabled debugging service" separately approved in Goal 10 Part D; off by default, bound to loopback only, allows arbitrary in-process evaluation, and is emphatically not a security boundary |
+| `uiop` / ASDF, `sb-thread`, `sb-bsd-sockets`, `sb-posix` | Paths, processes, threads, sockets, terminal and build | Facilities shipped with SBCL/ASDF; not counted as third-party production dependencies |
 
-`fiveam` 只存在于测试 system。`babel`、`bordeaux-threads`、
-`flexi-streams`、`usocket` 和 `trivial-gray-streams` 不被生产源码或
-production system 直接依赖；其中部分仍会作为 `cl+ssl` 或 `cl-sqlite`
-的 Quicklisp 传递依赖进入 image。`cl-sqlite` 直接依赖 `iterate` 与 CFFI；
-Linux/SBCL 下的 CFFI 闭包为 Alexandria、Babel 与 trivial-features。完整
-归属见 `docs/dependency-audit.md`，这些传递项不构成新的独立例外。
-`png-read` 的闭包为 Babel、Chipz、Iterate；其中 Babel/Iterate 已由
-`cl-sqlite` 闭包进入 image，Chipz 是本次唯一新增传递系统。`cl-jpeg` 只有
-ASDF 依赖。
-Slynk 精确闭包为 `slynk/mrepl → slynk → ASDF`；发布构建只预载
-`slynk/mrepl`，不包含其他 contrib。其加载在全新空临时 `HOME` 中完成，避免
-构建用户 `.slynkrc` 或 `.slynk.lisp` 副作用进入 native image。
+`fiveam` exists only in test systems. `babel`, `bordeaux-threads`,
+`flexi-streams`, `usocket` and `trivial-gray-streams` are not depended on
+directly by production source or by a production system; some of them still
+enter the image as Quicklisp transitive dependencies of `cl+ssl` or
+`cl-sqlite`. `cl-sqlite` depends directly on `iterate` and CFFI; the CFFI
+closure under Linux/SBCL is Alexandria, Babel and trivial-features. The full
+attribution is in `docs/dependency-audit.md`, and these transitive items do not
+constitute new independent exceptions.
+`png-read`'s closure is Babel, Chipz, Iterate; Babel/Iterate already enter the
+image through the `cl-sqlite` closure, and Chipz is the only new transitive
+system this time. `cl-jpeg` has ASDF dependencies only.
+Slynk's exact closure is `slynk/mrepl → slynk → ASDF`; the release build
+preloads `slynk/mrepl` only and includes no other contrib. Its load happens in a
+fresh, empty temporary `HOME`, so that a build user's `.slynkrc` or
+`.slynk.lisp` side effects cannot enter the native image.
 
-不使用 Node/Bun，不调用 provider 的 JavaScript SDK。实现直接使用官方 HTTP
-协议，因此 payload 对拍和原始 SSE 回放是硬门槛。
+Node/Bun are not used, and no provider JavaScript SDK is called. The
+implementation uses the official HTTP protocols directly, which makes payload
+cross-implementation comparison and raw SSE replay hard requirements.
 
-## 4. 统一数据模型
+## 4. Unified data model
 
-使用 `defstruct` 表示纯数据，使用 CLOS generic function 表示 provider 和
-tool 的多态行为。
+`defstruct` represents pure data; CLOS generic functions represent the
+polymorphic behavior of providers and tools.
 
-核心对象：
+Core objects:
 
-- `model`：`id`、`provider`、`api`、`base-url`、`max-tokens`
-- `text-content`、`thinking-content`、`tool-call`
-- `user-message`、`assistant-message`、`tool-result-message`
-- `usage`：`input`、`output`、`cache-read`、`cache-write`、`total`
-- `tool`：`name`、`description`、`parameters`、`execution-mode`、`executor`
-- `context`：`system-prompt`、`messages`、`tools`
+- `model`: `id`, `provider`, `api`, `base-url`, `max-tokens`
+- `text-content`, `thinking-content`, `tool-call`
+- `user-message`, `assistant-message`, `tool-result-message`
+- `usage`: `input`, `output`, `cache-read`, `cache-write`, `total`
+- `tool`: `name`, `description`, `parameters`, `execution-mode`, `executor`
+- `context`: `system-prompt`, `messages`, `tools`
 
-统一停止原因：
+Unified stop reasons:
 
 - `:stop`
 - `:length`
@@ -325,57 +351,67 @@ tool 的多态行为。
 - `:error`
 - `:aborted`
 
-统一流事件：
+Unified stream events:
 
 - `:start`
-- `:text-start`、`:text-delta`、`:text-end`
-- `:thinking-start`、`:thinking-delta`、`:thinking-end`
-- `:tool-call-start`、`:tool-call-delta`、`:tool-call-end`
+- `:text-start`, `:text-delta`, `:text-end`
+- `:thinking-start`, `:thinking-delta`, `:thinking-end`
+- `:tool-call-start`, `:tool-call-delta`, `:tool-call-end`
 - `:done`
 - `:error`
 
-每个成功流必须恰好一个 `:start` 和一个终止事件。失败不能让调用方等不到
-终止事件；网络/API/解析失败必须归一化为最终 `assistant-message`，其
-`stop-reason` 为 `:error` 或 `:aborted`。
+Every successful stream must have exactly one `:start` and exactly one
+terminating event. A failure must not leave the caller waiting for a
+terminating event; network, API and parse failures must be normalized into a
+final `assistant-message` whose `stop-reason` is `:error` or `:aborted`.
 
-## 5. HTTP、非流式和 SSE
+## 5. HTTP, non-streaming and SSE
 
-### 5.1 HTTP 抽象
+### 5.1 The HTTP abstraction
 
-`cadr-ai.http` 提供两个可替换入口：
+`cadr-ai.http` provides two replaceable entry points:
 
-- `request-json`：返回 status、headers、已解析 JSON
-- `request-sse`：返回 status、headers，并把响应体流交给 SSE consumer
+- `request-json`: returns status, headers and parsed JSON
+- `request-sse`: returns status and headers, and hands the response body stream
+  to an SSE consumer
 
-默认实现由 `sb-bsd-sockets` 写出 HTTP/1.1 请求并解析 status、headers、
-content-length、connection-close 与 chunked body；HTTPS 只在 socket
-外包一层 `cl+ssl`。测试既可注入录制 fixture，也用真实 loopback socket
-验证流式读取。请求对象在发送前可以被测试捕获，但任何日志和 condition
-report 都不得包含 API key 或 Authorization header。
+The default implementation writes the HTTP/1.1 request through
+`sb-bsd-sockets` and parses status, headers, content-length, connection-close
+and chunked bodies; HTTPS only wraps a layer of `cl+ssl` around the socket.
+Tests can either inject recorded fixtures or verify streaming reads over a real
+loopback socket. Tests may capture the request object before it is sent, but no
+log and no condition report may contain an API key or an Authorization header.
 
-`request-json` 使用有限 connect/read timeout。`request-sse` 仍保留有限
-connect timeout，但必须在原生 HTTP 请求上显式传入无界 read timeout
-（`read-timeout = NIL`），不能继承客户端的短默认值。SSE 长时间没有字节
-可能只是模型处于长思考期，不等同于失联；取消由用户 abort、进程退出或
-provider/agent 上层 deadline 控制。这个差异必须位于 HTTP 抽象层，不能让
-三个 provider 各自碰运气覆盖 timeout。
+`request-json` uses bounded connect/read timeouts. `request-sse` keeps a bounded
+connect timeout, but must pass an explicitly unbounded read timeout
+(`read-timeout = NIL`) on the native HTTP request, and must not inherit the
+client's short default. A long stretch with no SSE bytes may simply mean the
+model is in an extended thinking period; it is not the same as a lost
+connection. Cancellation is driven by a user abort, process exit, or a deadline
+in the provider/agent layer above. This difference must live in the HTTP
+abstraction layer; the three providers must not each override the timeout and
+hope for the best.
 
-### 5.2 通用 SSE framing
+### 5.2 Generic SSE framing
 
-`cadr-ai.sse` 只负责协议，不理解 provider：
+`cadr-ai.sse` is responsible for the protocol only and understands no provider:
 
-1. 以二进制流接收 chunk，经 UTF-8 解码器保留跨 chunk 的未完成字符。
-2. 同时接受 LF 和 CRLF。
-3. 空行提交一个事件。
-4. 忽略 `:` comment；支持 `event:`、`data:`、`id:`。
-5. 多个 `data:` 行按规范用换行连接。
-6. 正确处理 EOF 前没有最终空行的最后一个完整事件。
-7. 不把 `[DONE]` 当 JSON；由 provider reducer 决定是否为终止标记。
-8. JSON 损坏、意外 EOF 和 HTTP body 错误分别产生可区分 condition。
+1. Receive chunks as a binary stream, and keep an incomplete character across
+   chunks in the UTF-8 decoder.
+2. Accept both LF and CRLF.
+3. A blank line commits an event.
+4. Ignore `:` comments; support `event:`, `data:`, `id:`.
+5. Join multiple `data:` lines with newlines, per the specification.
+6. Handle correctly the last complete event when no final blank line precedes
+   EOF.
+7. Do not treat `[DONE]` as JSON; the provider reducer decides whether it is a
+   terminating marker.
+8. Corrupt JSON, unexpected EOF and HTTP body errors each produce a
+   distinguishable condition.
 
-### 5.3 Provider adapter
+### 5.3 Provider adapters
 
-每个 adapter 实现四件事：
+Every adapter implements four things:
 
 - `build-request`
 - `parse-complete-response`
@@ -385,82 +421,91 @@ provider/agent 上层 deadline 控制。这个差异必须位于 HTTP 抽象层�
 #### Anthropic
 
 - `POST {base-url}/v1/messages`
-- `x-api-key`、`anthropic-version`、`content-type`
-- system prompt 独立于 messages
-- assistant tool call 映射为 `tool_use`
-- 连续 tool results 合并进一个 user turn
-- 处理 `message_start`、`content_block_start/delta/stop`、
-  `message_delta`、`message_stop`
-- 从 start/delta usage 汇总 input/output/cache token
+- `x-api-key`, `anthropic-version`, `content-type`
+- The system prompt is separate from messages
+- An assistant tool call maps to `tool_use`
+- Consecutive tool results are merged into one user turn
+- Handles `message_start`, `content_block_start/delta/stop`,
+  `message_delta`, `message_stop`
+- Aggregates input/output/cache tokens from start/delta usage
 
 #### OpenAI
 
 - `POST {base-url}/v1/responses`
 - Bearer auth
-- system prompt 进入 `input` 的 system/developer message
-- tool 定义使用 Responses function tool 结构
-- tool call ID 同时保留 `call_id` 和 item ID，保证后续
-  `function_call_output` 能配对
-- 处理 `response.created`、output item、text delta、function argument
-  delta、`response.completed/failed`
-- cached input 从 input token 中扣除后计入 `cache-read`
+- The system prompt enters `input` as a system/developer message
+- Tool definitions use the Responses function-tool structure
+- A tool call ID keeps both `call_id` and the item ID, so that a later
+  `function_call_output` can be paired
+- Handles `response.created`, output items, text deltas, function-argument
+  deltas, `response.completed/failed`
+- Cached input is deducted from input tokens and counted as `cache-read`
 
 #### Google
 
-- 非流式：
+- Non-streaming:
   `POST .../models/{model}:generateContent`
-- 流式：
+- Streaming:
   `POST .../models/{model}:streamGenerateContent?alt=sse`
-- API key 通过 provider 要求的 header/query 发送，不进入日志
-- system prompt 映射为 `systemInstruction`
-- assistant role 映射为 `model`
-- tool call/result 映射为 `functionCall` / `functionResponse`
-- 从 candidate parts 生成 text/thinking/tool-call 事件
-- 若响应包含工具调用，最终停止原因强制归一化为 `:tool-use`
-- 当前基线和默认模型固定为 Google 官方列出的稳定 ID
-  [`gemini-3.6-flash`](https://ai.google.dev/gemini-api/docs/models/gemini-3.6-flash)。
-  Google 的
+- The API key is sent through the header/query the provider requires, and does
+  not enter logs
+- The system prompt maps to `systemInstruction`
+- The assistant role maps to `model`
+- Tool calls/results map to `functionCall` / `functionResponse`
+- Text/thinking/tool-call events are produced from candidate parts
+- If the response contains a tool call, the final stop reason is forced to
+  `:tool-use`
+- The current baseline and default model are fixed to the stable ID Google lists
+  officially,
+  [`gemini-3.6-flash`](https://ai.google.dev/gemini-api/docs/models/gemini-3.6-flash).
+  Google's
   [2026-07-21 release note](https://ai.google.dev/gemini-api/docs/changelog)
-  同时废弃 `temperature`、`top_p`、`top_k`；对该模型的请求不得发送这些
-  字段，即使调用方提供通用 temperature 选项。旧模型仍保留现有
-  temperature 映射。
+  simultaneously deprecates `temperature`, `top_p` and `top_k`; requests to this
+  model must not send those fields, even when the caller supplies a generic
+  temperature option. Older models keep the existing temperature mapping.
 
-三家 adapter 都必须保留文本和工具调用的出现顺序，并在流中增量解析工具
-参数；只有 `tool-call-end` 后的 JSON 参数才可进入执行阶段。
+All three adapters must preserve the order in which text and tool calls appear,
+and must parse tool arguments incrementally in the stream; only JSON arguments
+after `tool-call-end` may enter the execution phase.
 
-## 6. TS async/Promise 到 CL 的映射
+## 6. Mapping TS async/Promise onto CL
 
-网络和 agent 主循环采用**同步调用 + 增量回调**，而不是给每次请求制造一个
-后台线程：
+The network layer and the agent main loop use **synchronous calls plus
+incremental callbacks**, rather than creating a background thread per request:
 
 ```lisp
 (stream-chat provider context
              :on-event #'handle-event)
-;; 阻塞到 :done / :error，但 delta 到达即回调
+;; Blocks until :done / :error, but calls back as each delta arrives
 ```
 
-这是有意的结构化同步设计：
+This is a deliberate structured-synchronous design:
 
-- REPL 在一次 agent run 中本来就必须等待最终结果；
-- 同一线程回调让消息状态和终端输出顺序确定；
-- 仍然是真流式，不会等待完整 HTTP body；
-- 不需要模拟 JavaScript event loop，也不会留下失控 promise/thread。
+- the REPL must wait for the final result of an agent run anyway;
+- same-thread callbacks make message state and terminal output order
+  deterministic;
+- it is still real streaming, and does not wait for a complete HTTP body;
+- there is no need to simulate a JavaScript event loop, and no runaway
+  promise/thread is left behind.
 
-只有一个 assistant message 内的独立只读工具批次使用 `sb-thread`：
+`sb-thread` is used only for an independent read-only tool batch within one
+assistant message:
 
-- `:tool-call-before` 扩展 hook 和参数校验按固定顺序执行；
-- 全部工具都标记 `:parallel` 时才并发；
-- `tool-execution-end` 可按实际完成顺序发出；
-- tool-result message 必须按 assistant 中的调用顺序写回上下文；
-- 任一工具标记 `:sequential` 时，整个批次顺序执行。
+- the `:tool-call-before` extension hook and argument validation run in a fixed
+  order;
+- concurrency happens only when every tool is marked `:parallel`;
+- `tool-execution-end` may be emitted in actual completion order;
+- tool-result messages must be written back to the context in the call order of
+  the assistant message;
+- when any tool is marked `:sequential`, the whole batch executes sequentially.
 
-`bash`、`write`、`edit` 永远标记为 `:sequential`，避免文件修改竞态。
-事件 sink 由 mutex 串行化；每个线程必须在 run
-结束前 join，不允许 detached worker。
+`bash`, `write` and `edit` are always marked `:sequential`, which avoids
+file-modification races. The event sink is serialized by a mutex; every thread
+must be joined before the run ends, and detached workers are not allowed.
 
-## 7. Condition system 与重试
+## 7. Condition system and retries
 
-Condition 层次：
+Condition hierarchy:
 
 ```text
 cadr-error
@@ -478,284 +523,327 @@ cadr-error
 └── session-error
 ```
 
-共同 slot：
+Shared slots:
 
-- 人类可读 message
-- 原始 cause（若有）
+- a human-readable message
+- the original cause, if any
 - `retryable-p`
 
-额外结构：
+Additional structure:
 
-- `api-error`：provider、HTTP status、provider code、retry-after
-- `schema-validation-error`：tool、JSON pointer、校验原因
-- `tool-execution-error`：tool、tool-call-id；具体错误类别保留在 message/cause
-- `session-error`：文件路径、损坏行号
+- `api-error`: provider, HTTP status, provider code, retry-after
+- `schema-validation-error`: tool, JSON pointer, validation reason
+- `tool-execution-error`: tool, tool-call-id; the specific error category stays
+  in the message/cause
+- `session-error`: file path, corrupt line number
 
-处理边界：
+Handling boundaries:
 
-- 配置和 session header 损坏是 CLI fatal error，退出码非零。
-- provider 失败变成最终 assistant error message。
-- 未知工具、参数校验失败、扩展 hook 拦截和工具自身失败变成
-  `tool-result-message`，`is-error = true`；agent 可读取错误并修正。
-- 日志和 condition printer 统一脱敏 key、Authorization、原始敏感 header。
+- Corrupt configuration and corrupt session headers are CLI fatal errors with a
+  non-zero exit code.
+- A provider failure becomes a final assistant error message.
+- An unknown tool, an argument-validation failure, an extension-hook block and a
+  tool's own failure all become a `tool-result-message` with `is-error = true`;
+  the agent can read the error and correct itself.
+- Logs and condition printers redact keys, Authorization and raw sensitive
+  headers uniformly.
 
-Phase 4 实现有限重试：
+Phase 4 implements bounded retries:
 
-- 网络断开、429、500/502/503/504 可重试；
-- 其他 4xx、schema 和工具错误不重试；
-- 默认最多 2 次重试（共 3 次请求），退避为 0.25s、0.5s；
-- 纯数字秒数格式的 `Retry-After` 优先于指数退避，并封顶 60s；
-- SSE 只允许在收到第一个 provider 事件前重试，且不会重复发出统一
-  `:start`；事件已开始后失败则直接终止，避免重复 delta；
-- 达到上限后必须产出明确 error message，不能无限循环。
+- network disconnects, 429, and 500/502/503/504 are retryable;
+- other 4xx, schema errors and tool errors are not retried;
+- at most 2 retries by default (3 requests in total), with 0.25s and 0.5s
+  backoff;
+- a `Retry-After` in plain numeric-seconds form takes priority over exponential
+  backoff, and is capped at 60s;
+- SSE may only be retried before the first provider event arrives, and does not
+  re-emit the unified `:start`; a failure after events have begun terminates
+  directly, which avoids duplicate deltas;
+- once the limit is reached, an explicit error message must be produced; the
+  loop must not run forever.
 
-## 8. Agent 循环
+## 8. The agent loop
 
-单次 `prompt` 的确定性流程：
+The deterministic flow of a single `prompt`:
 
-1. 拒绝并发的第二个 prompt（`busy`）。
-2. 追加 user message，发出 agent/turn/message 生命周期事件。
-3. 对上下文做 provider message conversion。
-4. 流式调用模型并持续更新当前 assistant message。
-5. 收到终止事件后持久化最终 assistant message。
-6. 若为 `:error` / `:aborted`，结束 run。
-7. 若有工具调用：
-   - `:length` 时一律不执行，因为参数可能被截断；
-   - 查找工具；
-   - JSON Schema 校验；
-   - 运行 `:tool-call-before` 扩展 hook；
-   - 用最终 name 重新解析工具并重校验最终 arguments；
-   - 执行工具并生成 tool result；
-   - 运行 `:tool-call-after` 扩展 hook；
-   - 按调用顺序追加所有 tool results；
-   - 回到第 3 步。
-8. 无工具调用时结束 turn 和 agent run。
+1. Reject a concurrent second prompt (`busy`).
+2. Append the user message and emit the agent/turn/message lifecycle events.
+3. Perform provider message conversion on the context.
+4. Call the model in streaming mode and keep updating the current assistant
+   message.
+5. Persist the final assistant message once the terminating event arrives.
+6. If it is `:error` / `:aborted`, end the run.
+7. If there are tool calls:
+   - never execute on `:length`, because the arguments may be truncated;
+   - look up the tool;
+   - validate against the JSON Schema;
+   - run the `:tool-call-before` extension hooks;
+   - re-resolve the tool by its final name and re-validate the final arguments;
+   - execute the tool and produce a tool result;
+   - run the `:tool-call-after` extension hooks;
+   - append all tool results in call order;
+   - go back to step 3.
+8. With no tool calls, end the turn and the agent run.
 
-默认允许模型连续多轮调用工具。设置一个较高但有限的内部 turn 上限
-（默认 100）防止恶意或失控 provider 永久循环；触发后返回明确错误。
+The model is allowed to call tools over several consecutive turns by default. A
+high but finite internal turn limit (100 by default) prevents a malicious or
+runaway provider from looping forever; hitting it returns an explicit error.
 
-## 9. 工具注册、校验与安全
+## 9. Tool registration, validation and security
 
-### 9.1 注册与校验
+### 9.1 Registration and validation
 
-registry 以 tool name 为唯一键，重复注册直接失败。工具参数是原生 JSON
-parser 生成的 hash-table，执行前由 `schema.lisp` 的原生校验器校验。
-校验器覆盖固定基线工具 schema 使用的 object/array/scalar 约束、本地
-`$ref`、组合关键字、依赖与 `pattern`；错误结果至少包含：
+The registry is keyed uniquely by tool name, and a duplicate registration fails
+outright. Tool arguments are hash tables produced by the native JSON parser, and
+are validated before execution by the native validator in `schema.lisp`. The
+validator covers the object/array/scalar constraints, local `$ref`, combination
+keywords, dependencies and `pattern` used by the fixed baseline's tool schemas;
+an error result contains at least:
 
-- JSON pointer
-- 违反的约束
-- 工具名
+- a JSON pointer
+- the violated constraint
+- the tool name
 
-不做“猜字段”“自动修正类型”或把无效参数传给 shell/filesystem。
+It does not "guess a field", "auto-correct a type", or pass invalid arguments to
+the shell or the filesystem.
 
-### 9.2 默认执行与隔离边界
+### 9.2 Default execution and the isolation boundary
 
-对齐原版 pi：工具在最终参数通过 schema 校验后直接执行。核心不提供确认
-弹窗、信任账本、审批回调或 `--yolo` 开关，也不把 cwd 路径检查伪装成安全
-沙箱。需要强隔离的用户应在容器、虚拟机或受限用户中运行。
+Aligned with baseline pi: a tool executes directly once its final arguments pass
+schema validation. The core provides no confirmation dialog, no trust ledger, no
+approval callback and no `--yolo` switch, and it does not disguise a cwd path
+check as a security sandbox. A user who needs strong isolation should run cadr
+in a container, a virtual machine or a restricted user account.
 
-需要逐工具审批时，用 Phase 7 的 `:tool-call-before` hook 实现。该策略属于
-用户扩展，不进入 agent 或 CLI 核心；README 提供最小示例。
+Per-tool approval is implemented with the Phase 7 `:tool-call-before` hook. That
+policy belongs to a user extension and does not enter the agent or the CLI core;
+the README provides a minimal example.
 
-### 9.3 工具行为
+### 9.3 Tool behavior
 
-| 工具 | 关键行为 |
+| Tool | Key behavior |
 |---|---|
-| `read` | 相对 cwd 或绝对路径；UTF-8；1-based offset/limit；默认 head 截断 2000 行或 50 KiB；越界明确报错 |
-| `write` | 创建父目录；UTF-8；完整覆盖；同一路径文件写入串行化 |
-| `edit` | 一个文件内一个或多个 exact replacement；每个 old text 必须在原文件唯一；所有匹配基于原文件；拒绝重叠；一次写回 |
-| `bash` | `/bin/bash -lc`；cwd 固定；合并并流式显示 stdout/stderr；返回 exit code；tail 截断 2000 行或 50 KiB；超时/终止清理进程组 |
-| `glob` | glob pattern、path、limit；递归；默认忽略 `.git`/`node_modules`，并遵循可解析的 `.gitignore`；相对 POSIX 路径 |
-| `grep` | regex 或 literal、path、glob filter、ignore-case、context、limit；路径和行号；长行、match 数和总字节均有上限 |
+| `read` | Relative to cwd or an absolute path; UTF-8; 1-based offset/limit; head truncation at 2000 lines or 50 KiB by default; an out-of-range request is an explicit error |
+| `write` | Creates parent directories; UTF-8; full overwrite; writes to the same path are serialized |
+| `edit` | One or more exact replacements within one file; every old text must be unique in the original file; all matches are against the original file; overlaps are rejected; a single write-back |
+| `bash` | `/bin/bash -lc`; fixed cwd; merges and streams stdout/stderr; returns the exit code; tail truncation at 2000 lines or 50 KiB; on timeout/termination the process group is cleaned up |
+| `glob` | Glob pattern, path, limit; recursive; ignores `.git`/`node_modules` by default and honours a parseable `.gitignore`; relative POSIX paths |
+| `grep` | Regex or literal, path, glob filter, ignore-case, context, limit; paths and line numbers; long lines, match count and total bytes all have caps |
 
-glob/grep 由 CL 遍历和 `cl-ppcre` 完成，不拼接 shell 命令，因此无需把
-用户 pattern 交给 `/bin/bash`。路径解析以 cwd 为基准，但允许用户明确
-给出绝对路径；第一版不把 cwd 当安全沙箱。
+glob/grep are done by CL traversal and `cl-ppcre` rather than by assembling
+shell commands, so a user pattern never has to be handed to `/bin/bash`. Path
+resolution is relative to cwd, but a user may give an explicit absolute path;
+v1 does not treat cwd as a security sandbox.
 
-`bash` 在 Linux 使用独立进程组；取消时先 TERM，短暂等待后 KILL，避免
-pipeline 或孙进程泄漏。完整输出边读边写入临时文件，只有发生截断时才在
-tool result 中暴露该路径。
+On Linux, `bash` uses a separate process group; on cancellation it sends TERM
+first and KILL after a short wait, which avoids leaking a pipeline or a
+grandchild process. The complete output is written to a temporary file as it is
+read, and that path is exposed in the tool result only when truncation actually
+occurs.
 
-## 10. 会话
+## 10. Sessions
 
-第一版采用线性 append-only JSONL，满足保存/恢复，不实现参考项目的分支树。
+v1 uses a linear append-only JSONL file, which satisfies save/restore and does
+not implement the reference project's branch tree.
 
-header：
+Header:
 
 ```json
 {"type":"session","version":1,"id":"...","timestamp":"...","cwd":"..."}
 ```
 
-后续每行：
+Every subsequent line:
 
 ```json
 {"type":"message","timestamp":"...","message":{...}}
 ```
 
-约束：
+Constraints:
 
-- 默认目录：`~/.cadr/agent/sessions/`
-- API key、Authorization 和环境变量绝不写入 session
-- 每个最终 user/assistant/tool-result message 追加后立即 flush
-- 允许崩溃留下一个不完整的最后一行；只忽略这个尾行
-- 中间行损坏或 header 不合法必须报 `session-error`
-- `--continue` 选择 header.cwd 与当前 canonical cwd 相同的最新有效 session
-- 找不到历史 session 时给出诊断并启动新 session
-- 恢复后重建完整消息上下文，再进入 REPL；不会伪造遗漏的 tool result
+- Default directory: `~/.cadr/agent/sessions/`
+- API keys, Authorization and environment variables are never written to a
+  session
+- Every final user/assistant/tool-result message is flushed immediately after it
+  is appended
+- A crash may leave one incomplete final line; only that trailing line is
+  ignored
+- A corrupt intermediate line or an invalid header must raise `session-error`
+- `--continue` selects the most recent valid session whose header.cwd equals the
+  current canonical cwd
+- When no historical session is found, it reports a diagnostic and starts a new
+  session
+- After a restore, the full message context is rebuilt before entering the REPL;
+  a missing tool result is never fabricated
 
-## 11. CLI 与 REPL
+## 11. CLI and REPL
 
-当前参数：
+Current arguments:
 
 - `--provider anthropic|openai|google|deepseek|ollama`
 - `--model <id>`
 - `--base-url <url>`
 - `--system-prompt <text-or-file>`
 - `--continue`
-- `--resume`（打开启动前会话选择器）
-- `--extension <path>`（可重复）
+- `--resume` (opens the pre-start session picker)
+- `--extension <path>` (repeatable)
 - `--help`
 - `--version`
 
-环境变量：
+Environment variables:
 
 - `ANTHROPIC_API_KEY`
 - `OPENAI_API_KEY`
 - `GEMINI_API_KEY`
-- 可选 `CADR_PROVIDER`、`CADR_MODEL`
+- Optional `CADR_PROVIDER`, `CADR_MODEL`
 
-provider 未指定时，从现有 key 推断，优先级 Anthropic → OpenAI → Google；
-这保证只设置 `ANTHROPIC_API_KEY` 后执行 `./cadr` 能直接工作。每个 provider
-都有固定默认模型：Anthropic `claude-opus-4-8`、OpenAI `gpt-5.5`、
-Google `gemini-3.6-flash`；同时允许 CLI/env 覆盖。三者都记录进 README，
-避免把动态网络模型目录带入第一版。
+When no provider is specified, it is inferred from the keys present, in the
+order Anthropic → OpenAI → Google; this guarantees that running `./cadr` works
+directly with only `ANTHROPIC_API_KEY` set. Every provider has a fixed default
+model: Anthropic `claude-opus-4-8`, OpenAI `gpt-5.5`,
+Google `gemini-3.6-flash`; CLI/env overrides are still allowed. All three are
+recorded in the README, which avoids pulling a dynamic network model catalog
+into v1.
 
-REPL 使用标准输入逐行读取：
+The REPL reads standard input line by line:
 
 ```text
-cadr> 用户输入
-assistant> 流式文本
+cadr> user input
+assistant> streaming text
 ```
 
-- 空行忽略
-- EOF 正常保存并退出
-- 每个输入完成完整 agent loop 后才读取下一行
-- provider/tool 错误打印一次且保留会话可继续
-- Ctrl-C 尽力中止当前 HTTP/进程；空闲时退出
+- Blank lines are ignored
+- EOF saves normally and exits
+- The next line is read only after each input has completed a full agent loop
+- A provider/tool error prints once and leaves the session continuable
+- Ctrl-C aborts the current HTTP request/process on a best-effort basis; when
+  idle it exits
 
-## 12. 测试先行与对拍
+## 12. Tests first, and cross-implementation comparison
 
-每个模块执行固定节奏：
+Every module follows a fixed rhythm:
 
-1. 先移植/新增 FiveAM 测试。
-2. 运行目标 suite，保存预期失败证据。
-3. 实现最小完整行为。
-4. 重跑目标 suite，直到通过。
-5. 运行所有已完成 phase 的回归测试。
+1. Port/add the FiveAM tests first.
+2. Run the target suite and save the evidence of the expected failure.
+3. Implement the minimal complete behavior.
+4. Re-run the target suite until it passes.
+5. Run the regression tests of every completed phase.
 
-普通 `cadr-*/tests` 与 `scripts/test-cl.sh` 只运行离线确定性测试。真实 provider、
-OAuth 与模型行为测试放在 `cadr-*/live-tests`，统一由 `scripts/test-live.sh` 执行；
-它必须先运行全部 live item，再逐项报告 pass、skip 原因或 failure output、初步性质
-判断与依据，任一失败最终 exit `1`。这一显式入口差异与固定基线官方 CI 的实际效果
-同构：基线 CI 不注入 provider 凭据，因此普通 `npm test` 中的 live block 全部 skip。
-发布前 Part D verifier 必须执行本机 available live；解除红灯只能由用户基于完整报告
-显式裁决。
+The ordinary `cadr-*/tests` and `scripts/test-cl.sh` run offline deterministic
+tests only. Real-provider, OAuth and model-behavior tests live in
+`cadr-*/live-tests` and are run uniformly by `scripts/test-live.sh`; that script
+must run every live item first, then report per item the pass, the skip reason
+or the failure output, an initial judgement of the nature of the failure and the
+grounds for it, and must finally exit `1` if any item failed. This explicit
+entry-point difference is isomorphic to the actual effect of the fixed
+baseline's official CI: baseline CI injects no provider credentials, so every
+live block in an ordinary `npm test` is skipped.
+Before a release the Part D verifier must run the live items available on this
+machine; the red light may be cleared only by the user, as an explicit
+adjudication made from the full report.
 
-`docs/test-matrix.md` 会逐项记录：
+`docs/test-matrix.md` records, item by item:
 
-- 原 TS 测试文件和测试名
-- 对应 CL suite/test
-- 是否属于第一版范围
-- fixture 或验证证据
+- the original TS test file and test name
+- the corresponding CL suite/test
+- whether it is in scope for v1
+- the fixture or verification evidence
 
-“所有移植测试通过”以这个矩阵为审计入口，不能用测试数量代替行为覆盖。
+"All ported tests pass" is audited through this matrix; a test count must not
+stand in for behavioral coverage.
 
-### Phase 1：cadr-ai
+### Phase 1: cadr-ai
 
-先移植：
+Ported first:
 
-- 统一 stream event 顺序和最终结果
+- Unified stream-event order and final result
 - abort/error termination
-- token usage/total token
+- token usage/total tokens
 - empty response
-- tool-call without result
-- cross-provider history conversion 的文本/工具子集
-- SSE transport 显式使用无界 read timeout；模拟超过普通 JSON read
-  timeout 的静默期后再发送事件，连接仍能消费并正常终止
+- tool call without result
+- The text/tool subset of cross-provider history conversion
+- SSE transport explicitly using an unbounded read timeout; after a silence
+  longer than an ordinary JSON read timeout is simulated, events are sent and
+  the connection can still consume them and terminate normally
 - Anthropic SSE parsing
 - OpenAI Responses tool call/result
-- Gemini 3.6 Flash tool call/signature 的第一版相关子集；回放 fixture
-  必须来自 `gemini-3.6-flash` 的真实流式响应
+- The v1-relevant subset of Gemini 3.6 Flash tool call/signature; the replay
+  fixture must come from a real `gemini-3.6-flash` streaming response
 
-新增 fixture：
+New fixtures:
 
 - `test/fixtures/requests/{anthropic,openai,google}-*.json`
 - `test/fixtures/responses/{anthropic,openai,google}-complete.json`
 - `test/fixtures/sse/{anthropic,openai,google}-*.sse`
 
-SSE fixture 必须是去敏后的真实响应录制，测试直接回放原始字节流，并覆盖
-故意切在 UTF-8 字符和 JSON token 中间的 chunk 边界。测试不访问在线 API。
+An SSE fixture must be a redacted recording of a real response; tests replay the
+raw byte stream directly and cover chunk boundaries deliberately cut in the
+middle of a UTF-8 character and of a JSON token. Tests do not access an online
+API.
 
-### Phase 2：cadr-agent
+### Phase 2: cadr-agent
 
-优先移植 `packages/agent/test/agent-loop.test.ts` 的范围内语义：
+Port the in-scope semantics of `packages/agent/test/agent-loop.test.ts` first:
 
-- 生命周期事件顺序
-- tool call → result → 下一轮
-- 未知工具和 schema 错误
-- `:length` 响应中的工具绝不执行
-- sequential/parallel 批次规则
-- completion-order 事件与 source-order 结果
-- abort/error 后正常终止
+- lifecycle event order
+- tool call → result → next turn
+- unknown tools and schema errors
+- tools in a `:length` response are never executed
+- sequential/parallel batch rules
+- completion-order events with source-order results
+- normal termination after abort/error
 
-使用 faux provider 和 mock tools，不使用真实 key。
+Uses a faux provider and mock tools, with no real key.
 
-### Phase 3：tools + CLI
+### Phase 3: tools + CLI
 
-优先移植：
+Ported first:
 
-- read offset/limit/UTF-8/截断/越界
-- write 创建父目录和覆盖
-- edit not-found/non-unique/overlap/多替换/原子写回
-- bash stdout+stderr/nonzero/timeout/大输出/进程清理
-- glob/grep limit、忽略规则、路径和无结果
-- 默认直接执行副作用工具（原 v1 确认回归已由对齐测试取代）
-- REPL 多轮和真实工具循环（faux provider）
+- read offset/limit/UTF-8/truncation/out-of-range
+- write creating parent directories and overwriting
+- edit not-found/non-unique/overlap/multiple-replacement/atomic write-back
+- bash stdout+stderr/nonzero/timeout/large output/process cleanup
+- glob/grep limit, ignore rules, paths and no results
+- side-effecting tools executing directly by default (the v1 confirmation
+  regression has been replaced by the alignment tests)
+- multi-turn REPL and a real tool loop (faux provider)
 
-### Phase 4：持久化、重试、构建和验收
+### Phase 4: persistence, retries, build and acceptance
 
-- JSONL round-trip、损坏文件、尾行恢复、cwd 隔离、`--continue`
-- retryable/non-retryable/上限
-- 全量 test-op
+- JSONL round-trip, corrupt file, trailing-line recovery, cwd isolation,
+  `--continue`
+- retryable/non-retryable/limit
+- the full test-op
 - clean build
-- 三家录制回放端到端
-- 小型 fixture repo 的“读 → 改 → 测试失败 → 再修复 → 测试通过”
+- end-to-end recorded replay for all three providers
+- "read → modify → test fails → fix → test passes" on a small fixture repo
 
-### Payload 对拍
+### Payload cross-implementation comparison
 
-`scripts/export-ts-payloads.ts` 在固定参考提交上通过公开 stream API 的
-payload hook 和 fake transport 导出三家请求体。CL 测试用同一份
-context/model/tool 输入生成 payload，递归逐字段比较：
+`scripts/export-ts-payloads.ts` exports the three request bodies at the fixed
+reference commit through the public stream API's payload hook and a fake
+transport. The CL tests generate a payload from the same context/model/tool
+input and compare field by field, recursively:
 
-- key 集合相等
-- array 顺序相等
-- number/string/bool/null 类型和值相等
-- 除测试显式列出的动态字段外不允许忽略字段
+- key sets are equal
+- array order is equal
+- number/string/bool/null types and values are equal
+- no field may be ignored except those the test lists explicitly as dynamic
 
-动态字段白名单只允许 request/session ID 和时间戳；`model`、messages、
-tools、stream、max tokens 等都不能被模糊比较。
+The dynamic-field allowlist admits request/session IDs and timestamps only;
+`model`, messages, tools, stream, max tokens and the like must not be compared
+loosely.
 
-## 13. 构建
+## 13. Build
 
-`build.sh`：
+`build.sh`:
 
-1. 检查 `sbcl` 存在且版本 >= 2.4。
-2. 加载 `QUICKLISP_SETUP` 指定文件，或
-   `~/quicklisp/setup.lisp`。
-3. Quickload `cadr-cli`。
-4. 运行所有 ASDF test-op；测试失败则不产出二进制。
-5. 检查 `*features*` 是否包含 `:sb-core-compression`。支持时调用：
+1. Check that `sbcl` exists and that its version is >= 2.4.
+2. Load the file named by `QUICKLISP_SETUP`, or
+   `~/quicklisp/setup.lisp`.
+3. Quickload `cadr-cli`.
+4. Run every ASDF test-op; if the tests fail, no binary is produced.
+5. Check whether `*features*` contains `:sb-core-compression`. When supported,
+   call:
 
 ```lisp
 (sb-ext:save-lisp-and-die
@@ -766,334 +854,417 @@ tools、stream、max tokens 等都不能被模糊比较。
  :compression t)
 ```
 
-不支持时打印明确降级提示，并调用不含 `:compression` 关键字的
-`save-lisp-and-die`。不能仅传 `:compression nil`，因为不带
-`sb-core-compression` 的 SBCL 可能连该关键字都不接受；无压缩构建仍须成功
-产出 `cadr`。构建测试分别覆盖 feature 存在和不存在时的参数构造，避免只在
-本机 SBCL 变体上碰巧可用。
+When it is not supported, print an explicit degradation notice and call
+`save-lisp-and-die` without the `:compression` keyword. Passing
+`:compression nil` is not sufficient, because an SBCL built without
+`sb-core-compression` may not even accept the keyword; an uncompressed build
+must still succeed in producing `cadr`. The build tests cover argument
+construction both with and without the feature, so that it does not merely
+happen to work on this machine's SBCL variant.
 
-产物位于仓库根目录 `./cadr`。执行时不需要源码或 Quicklisp，但仍依赖
-Linux/glibc 和 HTTPS 所需的系统动态库；“单个可执行文件”不虚假承诺完全
-静态链接。
+The artifact is `./cadr` in the repository root. Running it requires neither the
+source nor Quicklisp, but it still depends on Linux/glibc and the system dynamic
+libraries HTTPS needs; "a single executable" is not a false promise of full
+static linking.
 
-当前审计环境使用 SBCL 2.6.7 和 Quicklisp 2026-01-01。该 SBCL 不含
-`:sb-core-compression`；隔离 HOME 的实际构建已验证降级提示、无压缩
-`cadr` 产物、保存 runtime options 后的 `--help` / `--version`，以及跨
-两个进程的 `--continue`。
+The current audit environment uses SBCL 2.6.7 and Quicklisp 2026-01-01. That
+SBCL does not include `:sb-core-compression`; a real build in an isolated HOME
+verified the degradation notice, the uncompressed `cadr` artifact, `--help` /
+`--version` with saved runtime options, and `--continue` across two processes.
 
-## 14. 验收证据映射
+## 14. Acceptance evidence map
 
-| `docs/progress/goal-v1.md` 验收项 | 最终证据 |
+| `docs/progress/goal-v1.md` acceptance item | Final evidence |
 |---|---|
-| clean Linux 一键产出 `cadr` | 隔离 HOME 的 clean-build 日志、二进制 `file` 输出 |
-| Anthropic 多轮流式对话 | `test/cadr-ai/live-provider-test.lisp` 的凭据门控；本环境无 key 时与基线同构跳过 |
-| 真实 repo 读/改/测/修 | faux provider 确定性 E2E + `test/cadr-evals/live-evals-test.lisp` 的 DeepSeek 凭据门控 |
-| 三家各一 E2E | 三套原始 SSE 回放、请求捕获和最终统一消息断言 |
-| 所有移植测试、文档一致 | `docs/test-matrix.md` 全绿、ASDF 全量 test-op、文档 diff 审计 |
-| 默认执行、无核心审批 | 副作用工具直接执行、`--yolo` 被拒绝、审批 hook 示例 |
-| `--continue` | 两进程 session restore E2E |
-| README 完整 | 构建、配置、provider、工具、安全、差异章节检查 |
+| One command produces `cadr` on a clean Linux | Clean-build log in an isolated HOME, `file` output for the binary |
+| Multi-turn streaming conversation with Anthropic | The credential gate in `test/cadr-ai/live-provider-test.lisp`; with no key in this environment, it skips exactly as the baseline does |
+| Read/modify/test/fix on a real repo | Deterministic faux-provider E2E plus the DeepSeek credential gate in `test/cadr-evals/live-evals-test.lisp` |
+| One E2E per provider | Three raw SSE replays, request capture and final unified-message assertions |
+| All ported tests pass, documentation consistent | `docs/test-matrix.md` fully green, full ASDF test-op, documentation diff audit |
+| Default execution, no approval in the core | Side-effecting tools execute directly, `--yolo` is rejected, an approval-hook example exists |
+| `--continue` | Two-process session restore E2E |
+| README complete | Build, configuration, provider, tools, security and differences sections checked |
 
-## 15. 阶段报告
+## 15. Phase reports
 
-每个 Phase 结束新增 `docs/progress/phase-N.md`，固定包含：
+Each phase ends by adding `docs/progress/phase-N.md`, which always contains:
 
-- 完成内容
-- 执行的精确测试/构建命令和结果
-- 与固定 TS 基线的已知差异
-- 剩余风险和下一阶段
+- what was completed
+- the exact test/build commands run and their results
+- known differences from the fixed TS baseline
+- remaining risks and the next phase
 
-### 15.1 后续 goal 的预审与关账门禁
+### 15.1 Pre-review and closeout gates for later goals
 
-从本次整改后的下一份 goal 起，每份 goal 规格都必须原文包含以下两条全局
-门禁：
+Starting from the goal after this remediation, every goal specification must
+contain the following two global gates verbatim:
 
-1. Part A 必须列出新增第三方依赖及其传递闭包；发现任何未在
-   `docs/dependency-audit.md` 登记的依赖，立即标记 `blocked`，取得用户明确
-   授权并同步审计与 README 后才能实现。先添加、后追认视为违规。
-2. “完成”必须同时满足实现与测试验收、按逻辑分组提交落账、提交后的全量
-   门禁复验，以及工作区干净。未提交改动不得宣告完成；受明确保护的本地文件
-   只能通过仓库本地 ignore 保留，不能混入提交或删除。
+1. Part A must list new third-party dependencies and their transitive closure;
+   if any dependency not registered in `docs/dependency-audit.md` is found, mark
+   it `blocked` immediately, and implement it only after obtaining explicit user
+   authorization and updating both the audit and the README. Adding first and
+   ratifying afterwards is a violation.
+2. "Complete" requires all of: implementation and test acceptance, commits
+   ledgered in logical groups, a full gate re-run after the commit, and a clean
+   working tree. Uncommitted changes must not be declared complete; an
+   explicitly protected local file may be kept only through a repository-local
+   ignore, and must not be mixed into a commit or deleted.
 
-实现过程中没有出现需要源码作者澄清的问题。设计确认时冻结了：
+No question requiring clarification from the source author arose during
+implementation. The design confirmation froze:
 
-- OpenAI 第一版只实现 Responses API；
-- `glob` 采用参考实现 `find` 的语义；
-- session 第一版是线性 JSONL，不实现分支/压缩；
-- 网络主循环同步流式，只对安全的只读工具做受控并行。
+- OpenAI implements the Responses API only in v1;
+- `glob` takes the semantics of the reference implementation's `find`;
+- v1 sessions are linear JSONL, with no branching/compaction;
+- the network main loop streams synchronously, with controlled parallelism only
+  for safe read-only tools.
 
-人工确认后的补充冻结项：
+Additional items frozen after human confirmation:
 
-- SBCL 缺少 `sb-core-compression` 时降级为无压缩 native image，而非构建
-  失败；
-- SSE 请求显式使用无界 read timeout，并以长静默期回归测试保护该行为。
+- when SBCL lacks `sb-core-compression`, degrade to an uncompressed native image
+  rather than failing the build;
+- an SSE request explicitly uses an unbounded read timeout, and that behavior is
+  protected by a long-silence regression test.
 
-## 16. v2 Phase 5：Provider 完备化
+## 16. v2 Phase 5: provider completeness
 
-Phase 5 保留 v1 的统一消息、统一事件流和 protocol adapter 边界，但把
-“provider 名称”和“wire protocol”拆开。DeepSeek、Ollama 等 provider
-复用 OpenAI Chat Completions adapter，不复制传输或流解析逻辑。
+Phase 5 keeps v1's unified messages, unified event stream and protocol-adapter
+boundary, but separates "provider name" from "wire protocol". Providers such as
+DeepSeek and Ollama reuse the OpenAI Chat Completions adapter and do not
+duplicate transport or stream-parsing logic.
 
-### 16.1 Provider 注册表与解析优先级
+### 16.1 The provider registry and resolution priority
 
-`cadr-ai` 新增 `provider-definition` 和显式注册表。每项声明：
+`cadr-ai` adds `provider-definition` and an explicit registry. Each entry
+declares:
 
-- 稳定 provider id
-- wire protocol：`anthropic-messages`、`openai-responses`、
-  `openai-completions` 或 `google-generative-ai`
-- 默认 base URL、默认模型和 API key 环境变量
-- 支持的认证方式：`api-key`、`oauth`
-- 图片、工具和思维链能力
+- a stable provider id
+- the wire protocol: `anthropic-messages`, `openai-responses`,
+  `openai-completions` or `google-generative-ai`
+- the default base URL, default model and API-key environment variable
+- the supported authentication methods: `api-key`, `oauth`
+- image, tool and chain-of-thought capabilities
 
-内置定义为 Anthropic、OpenAI、Google、DeepSeek 和 Ollama。请求对象仍由
-protocol adapter 构建；注册表只负责选择 adapter、认证和默认值。
-base URL 解析顺序固定为：
+The built-in definitions are Anthropic, OpenAI, Google, DeepSeek and Ollama. The
+request object is still built by the protocol adapter; the registry only selects
+the adapter, the authentication and the defaults.
+Base-URL resolution order is fixed as:
 
 1. CLI `--base-url`
-2. `~/.cadr/agent/config.json` 中对应 provider 的 `base-url`
-3. 注册表默认值
+2. That provider's `base-url` in `~/.cadr/agent/config.json`
+3. The registry default
 
-模型解析同理为 CLI `--model`、环境/配置覆盖、注册表默认值。Ollama 是无
-API key 的本地 provider；其余 API-key provider 缺少凭据时必须立即报告
-configuration condition。DeepSeek 使用
-`https://api.deepseek.com` 的 OpenAI Chat Completions 路径。
+Model resolution is analogous: CLI `--model`, environment/configuration
+override, registry default. Ollama is a local provider with no API key; every
+other API-key provider must report a configuration condition immediately when
+its credential is missing. DeepSeek uses the OpenAI Chat Completions path at
+`https://api.deepseek.com`.
 
-### 16.2 OpenAI Chat Completions adapter
+### 16.2 The OpenAI Chat Completions adapter
 
-新增独立 `openai-completions-provider`，负责
-`/v1/chat/completions` 请求与 SSE：
+A separate `openai-completions-provider` is added, responsible for
+`/v1/chat/completions` requests and SSE:
 
-- system/user/assistant/tool 四种 role 的历史转换
-- tool schema、assistant `tool_calls` 和 tool result 关联
-- 流式 `delta.content`、`delta.reasoning_content` 与分片
-  `tool_calls[].function.arguments` 聚合
-- `finish_reason` 映射：`stop`、`length`、`tool_calls`，未知值为错误
-- `stream_options.include_usage = true`，usage 中 cache/reasoning tokens
-  映射到统一 usage
-- 非流式响应复用相同的内容、tool call、usage 和 stop-reason 语义
+- history conversion for the four roles system/user/assistant/tool
+- tool schemas, assistant `tool_calls` and tool-result association
+- streaming `delta.content`, `delta.reasoning_content` and aggregation of
+  fragmented `tool_calls[].function.arguments`
+- `finish_reason` mapping: `stop`, `length`, `tool_calls`; an unknown value is
+  an error
+- `stream_options.include_usage = true`, with cache/reasoning tokens in usage
+  mapped into the unified usage
+- non-streaming responses reuse the same content, tool-call, usage and
+  stop-reason semantics
 
-模型/provider 的兼容差异只允许由注册表能力字段控制，不能散落成 CLI
-分支。DeepSeek 的录制回放必须走这个 adapter。
+Model/provider compatibility differences may be controlled only by registry
+capability fields, and must not be scattered into CLI branches. DeepSeek's
+recorded replay must go through this adapter.
 
-### 16.3 图片与模型目录
+### 16.3 Images and the model catalog
 
-统一 content 增加 `image-content`，只保存 MIME type 与 base64 数据，不把
-二进制或 token 写入日志。三种协议编码分别为：
+Unified content gains `image-content`, which stores only the MIME type and the
+base64 data, and never writes binary data or tokens to a log. The three
+protocols encode it as:
 
-- Anthropic：`source.type=base64`
-- OpenAI Responses：`input_image.image_url=data:<mime>;base64,<data>`
-- OpenAI Chat Completions：`image_url.url=data:<mime>;base64,<data>`
-- Google：`inlineData.mimeType` 与 `inlineData.data`
+- Anthropic: `source.type=base64`
+- OpenAI Responses: `input_image.image_url=data:<mime>;base64,<data>`
+- OpenAI Chat Completions: `image_url.url=data:<mime>;base64,<data>`
+- Google: `inlineData.mimeType` and `inlineData.data`
 
-provider/model 未声明图片能力时，在发请求前抛出明确
-`unsupported-content-error`，禁止静默丢弃。
+When a provider/model does not declare an image capability, an explicit
+`unsupported-content-error` is raised before the request is sent; silently
+dropping the content is forbidden.
 
-静态模型目录由 `model-metadata` 组成，记录 context window、最大输出、
-图片/工具/思维链能力以及每百万 token 的 input/output/cache 单价。usage
-成本以模型目录计算并存入统一 usage。更新脚本只生成确定性 Lisp 数据文件；
-运行时不依赖网络。
+The static model catalog consists of `model-metadata` entries recording the
+context window, maximum output, image/tool/chain-of-thought capabilities and the
+input/output/cache unit prices per million tokens. Usage cost is computed from
+the model catalog and stored in the unified usage. The update script produces
+only a deterministic Lisp data file; the runtime does not depend on the network.
 
-### 16.4 认证与 OAuth
+### 16.4 Authentication and OAuth
 
-provider 的请求认证统一解析为 `api-key-credential` 或
-`oauth-credential`。adapter 只接收最终请求头，不参与登录和刷新。
-`~/.cadr/agent/auth.json` 是唯一持久凭据文件，写入采用临时文件加原子替换，
-创建后强制 `0600`。所有 condition、会话和诊断输出先经过 secret
-redaction。
+Request authentication for a provider resolves uniformly to either
+`api-key-credential` or `oauth-credential`. The adapter receives only the final
+request headers and takes no part in login or refresh.
+`~/.cadr/agent/auth.json` is the only persistent credential file; it is written
+through a temporary file plus atomic replacement, and is forced to `0600` on
+creation. Every condition, session and diagnostic output passes through secret
+redaction first.
 
-OAuth 解析采用双重检查锁：access token 剩余有效期不足五分钟时，先取得
-provider 级锁，再重新读取 auth 文件；只有仍将过期的请求执行 refresh，
-随后在释放锁前持久化旋转后的凭据。
+OAuth resolution uses double-checked locking: when an access token has less than
+five minutes of validity left, it acquires the provider-level lock first and
+then re-reads the auth file; only a request that would still expire performs the
+refresh, and the rotated credential is persisted before the lock is released.
 
-OpenAI Codex OAuth 除客户端身份外严格采用固定 TS 审计提交的参数：
+Apart from the client identity, OpenAI Codex OAuth uses strictly the parameters
+of the fixed TS audit commit:
 
-- authorize：`https://auth.openai.com/oauth/authorize`
-- token：`https://auth.openai.com/oauth/token`
-- client id：`app_EMoamEEZ73f0CkXaXp7hrann`
-- redirect URI：`http://localhost:1455/auth/callback`
-- scope：`openid profile email offline_access`
-- PKCE：S256，并校验随机 state
-- authorize 附加
-  `id_token_add_organizations=true`、
-  `codex_cli_simplified_flow=true`、`originator=cadr`
-- Responses 请求头包含 bearer token、JWT 中提取的
-  `chatgpt-account-id`、`originator: cadr` 和
+- authorize: `https://auth.openai.com/oauth/authorize`
+- token: `https://auth.openai.com/oauth/token`
+- client id: `app_EMoamEEZ73f0CkXaXp7hrann`
+- redirect URI: `http://localhost:1455/auth/callback`
+- scope: `openid profile email offline_access`
+- PKCE: S256, with a random state that is verified
+- authorize additionally carries
+  `id_token_add_organizations=true`,
+  `codex_cli_simplified_flow=true`, `originator=cadr`
+- The Responses request headers contain the bearer token, the
+  `chatgpt-account-id` extracted from the JWT, `originator: cadr` and
   `OpenAI-Beta: responses=experimental`
 
-`originator=cadr` 是 Goal 9 Part C 经用户批准的客户端身份差异：它只改变
-第三方归因，不改变 OAuth、provider 身份、Responses payload 或事件语义。基线的
-`originator=pi` 不得用于 Cadr 流量。
+`originator=cadr` is the client-identity difference approved by the user in Goal
+9 Part C: it changes third-party attribution only, and changes neither OAuth,
+provider identity, the Responses payload nor event semantics. The baseline's
+`originator=pi` must not be used for Cadr traffic.
 
-本地一次性 callback server 只监听 `127.0.0.1:1455`，只接受
-`/auth/callback`，验证 state 后立即关闭。`/login openai` 的用户命令映射
-到基线 provider 身份 `openai-codex`；exchange、refresh、auth.json 存储和
-Codex Responses 读取始终使用同一身份。登录后若此前路由无可用凭据，或
-当前模型属于其他 provider，则选择并持久化 `openai-codex` 默认模型，随后无需
-provider/model 参数即可对话。TUI 按基线显示 OSC 8 可点击的原始 URL 和
-`Ctrl+click to open`，不经 session notice 加前缀；非 TUI fallback 才输出
-`Open this URL in your browser:` 与下一行原始 URL。`/logout openai`
-原子删除 `openai-codex` 凭据。Anthropic OAuth 复用相同 credential 接口，
-但在实现、测试报告和 README 中明确标记为未验证。
+The local one-shot callback server listens on `127.0.0.1:1455` only, accepts
+`/auth/callback` only, and closes immediately after verifying the state. The
+user command `/login openai` maps to the baseline provider identity
+`openai-codex`; the exchange, the refresh, auth.json storage and Codex Responses
+reads always use that same identity. After login, if the previous route had no
+usable credential, or if the current model belongs to another provider, the
+`openai-codex` default model is selected and persisted, so that conversation
+works with no provider/model argument afterwards. Following the baseline, the
+TUI shows the raw URL as an OSC 8 clickable link together with
+`Ctrl+click to open`, with no session-notice prefix; only the non-TUI fallback
+prints `Open this URL in your browser:` followed by the raw URL on the next
+line. `/logout openai` atomically deletes the `openai-codex` credential.
+Anthropic OAuth reuses the same credential interface, but is explicitly marked
+as unverified in the implementation, the test report and the README.
 
-所有发行入口（`cadr`、`cadr-server`、`cadr-evals`）外层还有一个不参与
-业务恢复的 fatal condition boundary。它在栈展开前捕获未处理的
-`serious-condition`，用户通道只得到 condition 类型、受限文案和本地日志路径；
-完整 backtrace 经已知秘密精确替换后写入 `~/.cadr/agent/crash/` 的 `0600` 文件，
-CLI 再对 Authorization、Bearer、token/key/secret 形态做二次模式脱敏。
-provider、credential、request、config、auth input 与外部服务 client 等持密
-对象都定义了不递归显示秘密槽位的 `print-object`，作为绕过 fatal boundary 时的
-纵深防御。该边界只处理本应终止进程的不变量/运行时故障；可恢复的 provider、
-tool、extension 和输入错误仍必须在各自产品边界归一化，不能靠崩溃处理器兜底。
+Every release entry point (`cadr`, `cadr-server`, `cadr-evals`) is additionally
+wrapped in a fatal condition boundary that takes no part in business recovery.
+It catches an unhandled `serious-condition` before the stack unwinds; the user
+channel receives only the condition type, restricted copy and the local log
+path, while the full backtrace, with known secrets exactly substituted, is
+written to a `0600` file under `~/.cadr/agent/crash/`, after which the CLI
+applies a second pattern-based redaction pass over Authorization, Bearer and
+token/key/secret shapes. Secret-bearing objects such as provider, credential,
+request, config, auth input and external-service client all define a
+`print-object` that does not recursively display secret slots, as defense in
+depth for a path that bypasses the fatal boundary. That boundary handles only
+invariant/runtime failures that ought to terminate the process; recoverable
+provider, tool, extension and input errors must still be normalized at their own
+product boundaries, and must not fall back on the crash handler.
 
-### 16.5 Phase 5 测试门禁
+### 16.5 Phase 5 test gates
 
-实现顺序为测试先行：
+Implementation is test-first:
 
-1. registry/default/覆盖/无 key 行为
-2. Chat Completions 非流式 payload 与录制 SSE E2E
-3. 四种图片编码与 unsupported-content 错误
-4. 模型查找和 cost 算术
-5. PKCE、callback state、0600、logout、脱敏
-6. 过期 token 的并发单次刷新录制回放
-7. OpenAI Codex OAuth Responses 请求头
-8. 原有 v1 全量回归、`npm run check` 和 Phase 5 凭据门控 live tests
+1. registry/default/override/no-key behavior
+2. Chat Completions non-streaming payload and recorded SSE E2E
+3. the four image encodings and the unsupported-content error
+4. model lookup and cost arithmetic
+5. PKCE, callback state, 0600, logout, redaction
+6. recorded replay of a single concurrent refresh of an expired token
+7. OpenAI Codex OAuth Responses request headers
+8. the full existing v1 regression, `npm run check`, and the Phase 5
+   credential-gated live tests
 
-Phase 7 的稳定扩展 API 后续已通过独立人工确认并完成实现。
+The Phase 7 stable extension API was subsequently confirmed by a human
+separately and implemented.
 
-## 17. v2 Phase 6：树形会话、压缩与导出
+## 17. v2 Phase 6: session trees, compaction and export
 
-Phase 6 把会话文件定义为 append-only event tree。运行时只选择一条
-root-to-leaf 路径作为模型上下文；分叉不会复制、修改或删除旧节点。这是
-parent-linked tree，而不是维护多份容易漂移的线性消息数组。
+Phase 6 defines the session file as an append-only event tree. At runtime a
+single root-to-leaf path is selected as the model context; branching does not
+copy, modify or delete an old node. This is a parent-linked tree, not several
+linear message arrays that are easy to let drift apart.
 
-### 17.1 JSONL v2 与树不变量（历史格式，已由 Wave 2 v3 取代）
+### 17.1 JSONL v2 and the tree invariants (historical format, superseded by Wave 2 v3)
 
-首行仍是 session header，但 `version` 升为 `2`。其余记录分为：
+The first line is still the session header, but `version` is raised to `2`. The
+remaining records are:
 
-- `message`：包含唯一 `id`、`parentId`、`timestamp` 与完整 `message`；
-- `compaction`：Phase 6 的 v2 节点曾含 `summary`、`sourceIds`、
-  `firstKeptEntryId` 与 `tokensBefore`；Wave 2 v3 不再写非参考
-  `sourceIds`。
+- `message`: contains a unique `id`, `parentId`, `timestamp` and the complete
+  `message`;
+- `compaction`: the Phase 6 v2 node once contained `summary`, `sourceIds`,
+  `firstKeptEntryId` and `tokensBefore`; Wave 2 v3 no longer writes the
+  non-reference `sourceIds`.
 
-每个普通追加节点的 `parentId` 都是当前 leaf；从历史节点分叉只移动内存
-中的 leaf，下一次追加自然形成第二个 child。文件永不原地删改节点，因此
-两个分支重启后仍可分别按 parent 链恢复。加载器拒绝重复 id、缺失/前向
-parent 与不存在的压缩引用，避免把损坏文件伪装成可恢复会话。
+The `parentId` of every ordinary appended node is the current leaf; branching
+from a historical node only moves the in-memory leaf, and the next append
+naturally forms a second child. The file never deletes or edits a node in place,
+so after a restart both branches can still be recovered along their parent
+chains. The loader rejects duplicate ids, missing/forward parents and
+non-existent compaction references, so that a corrupt file is not disguised as a
+recoverable session.
 
-v1 加载采用一次性原地迁移：
+Loading v1 performs a one-shot in-place migration:
 
-1. 保留 header 和每条消息 envelope 的全部既有字段；
-2. 按原顺序补唯一 id 与线性 parentId，header 改为 v2；
-3. 在同目录写临时文件并原子 rename；
-4. 再按 v2 不变量加载。
+1. keep every existing field of the header and of each message envelope;
+2. add unique ids and linear parentIds in the original order, and change the
+   header to v2;
+3. write a temporary file in the same directory and rename it atomically;
+4. then load under the v2 invariants.
 
-因此旧消息的内容、usage、tool call/result、时间戳与未知扩展字段都不会因
-反序列化再序列化而丢失。只有最后一条未完成 JSONL 尾记录沿用 v1 行为被
-忽略；中间损坏仍是硬错误。
+Consequently an old message's content, usage, tool calls/results, timestamps and
+unknown extension fields cannot be lost to a deserialize-reserialize round trip.
+Only an incomplete final JSONL record is ignored, following the v1 behavior;
+corruption in the middle is still a hard error.
 
-### 17.2 活跃分支与会话操作
+### 17.2 The active branch and session operations
 
-`session-branch` 可把 leaf 移到任意已存在节点；`session-messages` 每次从
-leaf 沿 parent 链重建活跃上下文，不保留第二份可漂移的消息真相。
-`list-sessions`、`resume-session` 与 CLI 提供：
+`session-branch` can move the leaf to any existing node; `session-messages`
+rebuilds the active context from the leaf along the parent chain every time, and
+keeps no second, driftable copy of message truth.
+`list-sessions`, `resume-session` and the CLI provide:
 
-- `--resume`：启动前打开会话选择器（基线 cli/session-picker.ts），选中后按
-  路径打开；精确 id 恢复走 `--session <id>`；
-- `/sessions`：列出可恢复会话并标出当前会话；
-- `/switch <id>`：在同一进程切换 session，同时替换 agent 上下文；
-- `/branch <node-id>`：把下一条消息接到指定历史节点；
-- `/export [path]`：导出完整树，而非仅导出当前分支。
+- `--resume`: opens the session picker before startup (baseline
+  cli/session-picker.ts) and opens the selection by path; an exact-id restore
+  goes through `--session <id>`;
+- `/sessions`: lists resumable sessions and marks the current one;
+- `/switch <id>`: switches session within the same process, replacing the agent
+  context at the same time;
+- `/branch <node-id>`: attaches the next message to the specified historical
+  node;
+- `/export [path]`: exports the complete tree, not merely the current branch.
 
-HTML 导出只使用自研转义与字符串生成。所有消息、工具参数、摘要、id 与
-parentId 都作为文本转义，文件不含脚本，故会话内容不能注入 HTML。
+HTML export uses only in-house escaping and string generation. Every message,
+tool argument, summary, id and parentId is escaped as text and the file contains
+no script, so session content cannot inject HTML.
 
-### 17.3 压缩节点与可追溯性
+### 17.3 Compaction nodes and traceability
 
-自动压缩属于 agent runtime，不属于 provider adapter。每次模型请求前，
-runtime 用最近一次有效 assistant usage 加尾部估算；无 usage 时用保守的
-字符/4 估算。当上下文超过
-`model.context-window - reserve-tokens` 时：
+Automatic compaction belongs to the agent runtime, not to a provider adapter.
+Before each model request, the runtime uses the most recent valid assistant
+usage plus a tail estimate; with no usage it uses a conservative
+characters-over-4 estimate. When the context exceeds
+`model.context-window - reserve-tokens`:
 
-1. 从最新消息向前累计 `keep-recent-tokens`，只在 user 或 assistant
-   边界切割，绝不从孤立 tool result 开始；
-2. 用当前 agent 的 provider、model 与 stream function 总结较旧部分；
-3. 追加 compaction 节点，`firstKeptEntryId` 指向保留后缀；完整旧节点依靠
-   append log 和 parent 链继续可追溯；
-4. 将模型上下文替换为“摘要消息 + 保留后缀”，再继续原请求。
+1. accumulate `keep-recent-tokens` backwards from the newest message, cutting
+   only at a user or assistant boundary, and never starting from an orphaned
+   tool result;
+2. summarize the older portion using the current agent's provider, model and
+   stream function;
+3. append a compaction node whose `firstKeptEntryId` points at the retained
+   suffix; the complete old nodes remain traceable through the append log and
+   the parent chain;
+4. replace the model context with "summary message + retained suffix", and
+   continue the original request.
 
-后续压缩可总结前一压缩节点与新的旧消息，形成可追踪的摘要链。原始节点
-始终留在 JSONL，压缩只改变上下文投影，不改变历史。压缩失败时不写半成品
-节点；agent 报告事件并保留原上下文。
+A later compaction may summarize the previous compaction node together with the
+newly-old messages, forming a traceable chain of summaries. The original nodes
+always remain in the JSONL; compaction changes the context projection only, not
+history. When compaction fails, no half-finished node is written; the agent
+reports an event and keeps the original context.
 
-若 provider 仍返回明确的 context-overflow 错误，runtime 把该错误节点保留
-为可追溯的旁支，回到请求前 leaf 强制压缩并只重试一次。第二次 overflow
-不循环重试，直接作为终态错误返回。
+If the provider still returns an explicit context-overflow error, the runtime
+keeps that error node as a traceable side branch, returns to the pre-request
+leaf, forces a compaction and retries exactly once. A second overflow is not
+retried in a loop and is returned directly as a terminal error.
 
-默认阈值沿用固定 TS 基线的意图：reserve 16,384 token、保留最近 20,000
-token；对小窗口模型按窗口比例下调，避免默认值反而让压缩永久触发。
-测试可显式覆盖这两个值以构造确定性边界。
+The default thresholds follow the intent of the fixed TS baseline: reserve
+16,384 tokens and keep the most recent 20,000 tokens; for small-window models
+they scale down in proportion to the window, so that the defaults do not
+themselves make compaction fire permanently. Tests may override both values
+explicitly to construct deterministic boundaries.
 
-### 17.4 Phase 6 测试门禁
+### 17.4 Phase 6 test gates
 
-Phase 6 在功能实现前先加入以下回归：
+Phase 6 adds the following regressions before the feature implementation:
 
-1. 新会话逐节点写出 v2 id/parentId，分叉后两条路径互不污染；
-2. 文件重载后两个 leaf 都能恢复并继续追加；
-3. v1 自动迁移为 v2，全部消息语义与原 envelope 附加字段保留；
-4. 重复 id、悬空 parent、损坏中间行失败，未完成尾行仍可恢复；
-5. 接近窗口时调用当前模型生成摘要，随后原请求继续；
-6. 压缩 context 只含摘要与保留后缀，而 JSONL 仍含全部原节点；Phase 6
-   当时还断言了后来在 Wave 2 v3 删除的 `sourceIds`；
-7. 精确 resume、列表、进程内 switch、CLI 参数互斥；
-8. HTML 导出含完整分支并正确转义恶意文本；
-9. 原有 Phase 1–5 全量回归、native build 与 `npm run check` 继续通过。
+1. a new session writes v2 id/parentId node by node, and after branching the two
+   paths do not contaminate each other;
+2. after the file is reloaded, both leaves can be restored and appended to;
+3. v1 migrates automatically to v2, preserving all message semantics and the
+   extra fields of the original envelope;
+4. duplicate id, dangling parent and a corrupt intermediate line fail, while an
+   incomplete trailing line remains recoverable;
+5. near the window, the current model is called to produce a summary, after
+   which the original request continues;
+6. the compacted context contains only the summary and the retained suffix,
+   while the JSONL still contains every original node; at the time Phase 6 also
+   asserted the `sourceIds` that Wave 2 v3 later removed;
+7. exact resume, listing, in-process switch, CLI argument exclusivity;
+8. HTML export contains the complete branch and escapes malicious text
+   correctly;
+9. the full existing Phase 1–5 regression, the native build and `npm run check`
+   continue to pass.
 
-Phase 7 的扩展 API 已在 Phase 6 全部门禁通过后单独提交人工确认并实现。
+The Phase 7 extension API was submitted for separate human confirmation and
+implemented after every Phase 6 gate passed.
 
-## 18. v2 Phase 7：Lisp 扩展系统（已实现）
+## 18. v2 Phase 7: the Lisp extension system (implemented)
 
-本节的稳定 API 已于 2026-07-30 人工确认并冻结。
+The stable API in this section was confirmed by a human and frozen on
+2026-07-30.
 
-扩展系统采用 **registry builder + immutable snapshot**：加载期只向 staging
-registry 注册定义，成功后原子替换 agent 使用的只读快照。扩展 package 提供
-命名空间隔离，快照提供重载隔离；二者都不是安全沙箱。Common Lisp 扩展拥有
-进程内任意代码能力，强隔离由用户通过容器提供。
+The extension system uses a **registry builder plus immutable snapshot**: the
+load phase only registers definitions into a staging registry, and on success
+atomically replaces the read-only snapshot the agent uses. An extension package
+provides namespace isolation and the snapshot provides reload isolation; neither
+is a security sandbox. A Common Lisp extension has arbitrary in-process code
+capability, and strong isolation is provided by the user through a container.
 
-### 18.1 扩展形态、发现与优先级
+### 18.1 Extension shapes, discovery and priority
 
-合法入口只有两种：
+There are exactly two legal entry points:
 
-- 单个 `*.lisp` 文件，extension id 为不含后缀的文件名；
-- 含 `extension.lisp` 的目录，extension id 为目录名。
+- a single `*.lisp` file, whose extension id is the filename without the
+  suffix;
+- a directory containing `extension.lisp`, whose extension id is the directory
+  name.
 
-每个入口在唯一的 `CADR-EXTENSION/<id>/<generation>` package 中加载，初始
-package 只 `:use` `CL` 与 `CADR-AGENT`；需要 `CADR-AI` 时使用显式包前缀。
-加载器动态绑定 `*package*`、`*load-pathname*` 与注册上下文。扩展不需要也
-不应写 `in-package`。这避免不同扩展的普通符号互相污染，但不声称限制可信
-扩展主动访问其他 package 或系统能力。
+Each entry point is loaded into a unique
+`CADR-EXTENSION/<id>/<generation>` package whose initial package `:use`s only
+`CL` and `CADR-AGENT`; an explicit package prefix is used when `CADR-AI` is
+needed. The loader dynamically binds `*package*`, `*load-pathname*` and the
+registration context. An extension neither needs nor should write
+`in-package`. This prevents ordinary symbols of different extensions from
+polluting one another, but claims no restriction on a trusted extension
+deliberately reaching another package or a system capability.
 
-发现顺序先按 scope、再按文件名字典序固定：
+Discovery order is fixed by scope first and filename lexicographic order
+second:
 
-1. `--extension <path>`，最高优先级；参数可重复，后出现者优先；
-2. `./.cadr/extensions/`，项目级；
-3. `~/.cadr/agent/extensions/`，全局级。
+1. `--extension <path>`, the highest priority; the argument is repeatable and a
+   later occurrence wins;
+2. `./.cadr/extensions/`, project scope;
+3. `~/.cadr/agent/extensions/`, global scope.
 
-同 id 的低优先级入口在加载前即被遮蔽，所以项目项明确覆盖全局同名项，
-CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定性的第一项；
-只有重复的 CLI 参数按“后者优先”处理。被遮蔽的入口不会执行，避免一个
-看似已覆盖的全局扩展仍产生加载期副作用。
+A lower-priority entry point with the same id is shadowed before loading, so a
+project entry explicitly overrides a global entry of the same name and a CLI
+entry overrides both. When the same id appears within the same scope, the
+conflict is reported and the deterministic first entry is kept; only a repeated
+CLI argument is resolved as "later wins". A shadowed entry point is never
+executed, which avoids a seemingly-overridden global extension still producing
+load-time side effects.
 
-不同 extension id 注册同名资源时，按上述优先级取第一个并报告冲突：
+When different extension ids register a resource of the same name, the first is
+taken by the priority above and the conflict is reported:
 
-- 扩展工具可以覆盖内置工具，与固定 TS 基线的能力一致；
-- 内置斜杠命令始终优先，扩展不能劫持 `/reload`、`/install`、认证或会话
-  命令；
-- 其余命令优先于同名 prompt template；
-- prompt template 和 skill 名称也按扩展优先级解析。
+- an extension tool may override a built-in tool, matching the capability of the
+  fixed TS baseline;
+- built-in slash commands always win; an extension cannot hijack `/reload`,
+  `/install`, or the authentication or session commands;
+- other commands take priority over a prompt template of the same name;
+- prompt-template and skill names likewise resolve by extension priority.
 
-### 18.2 冻结的注册 API
+### 18.2 The frozen registration API
 
-以下四个宏及其参数协议导出自 `CADR-AGENT`，发布后保持兼容：
+The following four macros and their argument protocols are exported from
+`CADR-AGENT` and stay compatible after release:
 
 ```lisp
 (define-tool "echo"
@@ -1122,44 +1293,56 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
   :template "Review $1 carefully.")
 ```
 
-具体契约如下：
+The specific contracts are:
 
 - `define-tool`
-  - 必填：字符串 name、description、JSON Schema hash-table、handler；
-  - `:execution-mode` 只能是 `:parallel` 或 `:sequential`，默认
-    `:parallel`；
-  - handler 固定为 `(call-id arguments context)`，返回 `(values content
-    details)`；content 是 `CADR-AI` content 列表；
-  - schema 在注册期验证结构，在每次调用期验证最终 arguments。
+  - required: a string name, description, a JSON Schema hash table, and a
+    handler;
+  - `:execution-mode` may only be `:parallel` or `:sequential`, defaulting to
+    `:parallel`;
+  - the handler is fixed at `(call-id arguments context)` and returns
+    `(values content details)`; content is a list of `CADR-AI` content;
+  - the schema is validated structurally at registration, and the final
+    arguments are validated on every call.
 - `define-command`
-  - handler 固定为 `(arguments context)`；arguments 是命令名后未经拆词的
-    字符串；
-  - 返回值不参与消息发送，扩展通过 context 通知前端或调用 agent；
-  - name 不含前导 `/`，只能使用小写 ASCII 字母、数字、`-`、`_`、`:`。
+  - the handler is fixed at `(arguments context)`; arguments is the unsplit
+    string after the command name;
+  - the return value takes no part in sending a message; the extension notifies
+    the frontend or calls the agent through the context;
+  - the name carries no leading `/`, and may use only lowercase ASCII letters,
+    digits, `-`, `_` and `:`.
 - `define-event-hook`
-  - 既有四事件 `:turn-start`、`:turn-end`、`:tool-call-before`、
-    `:tool-call-after` 的 payload 与结果语义不变；
-  - Wave 2 只增加提案第 3 节列出的原版 lifecycle event；handler 仍固定为
-    `(event context)`，新事件使用各自严格 plist result；
-  - priority 为整数，较小者先执行；相同 priority 按扩展优先级和定义顺序
-    固定执行。
+  - the payload and result semantics of the four existing events
+    `:turn-start`, `:turn-end`, `:tool-call-before` and `:tool-call-after` are
+    unchanged;
+  - Wave 2 adds only the baseline lifecycle events listed in section 3 of the
+    proposal; the handler is still fixed at `(event context)`, and new events
+    use their own strict plist result;
+  - priority is an integer and the smaller one runs first; equal priorities run
+    in a fixed order determined by extension priority and definition order.
 - `define-prompt-template`
-  - `:template` 可为字符串或 `(lambda (argv context) string)`；
-  - 静态字符串支持固定 TS 基线的 `$1`、`$2`、`$@`、`$ARGUMENTS`、
-    `${N:-default}`、`${@:-default}`、`${@:N}` 与 `${@:N:L}`；
-  - argv 使用支持单双引号的确定性拆词器生成，替换不递归；
-  - name 为 `skill:<name>` 时即为 Lisp skill。skill 不是第二套文件格式，
-    而是使用同一注册、优先级和重载机制的具名模板。
+  - `:template` may be a string or `(lambda (argv context) string)`;
+  - a static string supports the fixed TS baseline's `$1`, `$2`, `$@`,
+    `$ARGUMENTS`, `${N:-default}`, `${@:-default}`, `${@:N}` and `${@:N:L}`;
+  - argv is produced by a deterministic tokenizer supporting single and double
+    quotes, and substitution is not recursive;
+  - a name of the form `skill:<name>` is a Lisp skill. A skill is not a second
+    file format, but a named template using the same registration, priority and
+    reload machinery.
 - `define-provider`
-  - 只注册 `cadr-ai:provider-definition` 与可选 model metadata；
-  - 注册落在当前 extension host overlay，不改全局 provider registry。
+  - registers only a `cadr-ai:provider-definition` and optional model metadata;
+  - the registration lands in the current extension host overlay and does not
+    change the global provider registry.
 
-这些宏只能在有效加载注册上下文中调用；在 REPL 或普通应用代码中直接调用
-会给出明确 condition，避免定义落入不可见的全局隐式 registry。
+These macros may be called only inside a valid load-registration context;
+calling one directly in the REPL or in ordinary application code produces an
+explicit condition, so that a definition cannot land in an invisible global
+implicit registry.
 
-### 18.3 稳定的 handler 数据协议
+### 18.3 The stable handler data protocol
 
-`extension-context` 是不透明对象，稳定导出以下读取与动作接口：
+`extension-context` is an opaque object with the following stably exported
+reader and action interfaces:
 
 - `extension-context-cwd`
 - `extension-context-agent`
@@ -1169,29 +1352,34 @@ CLI 项覆盖二者。相同 scope 出现同 id 时报告冲突并保留确定�
 - `extension-context-notify`
 - `extension-context-compact`
 - `extension-context-reload`
-- `extension-context-select`、`extension-context-confirm`
-- `extension-context-input`、`extension-context-editor`
-- `extension-context-set-status`、`extension-context-set-widget`
-- `extension-context-set-title`、`extension-context-set-editor-text`
-- `extension-context-register-provider`、`extension-context-register-tool`
-- `extension-context-send-message`、`extension-context-send-user-message`
+- `extension-context-select`, `extension-context-confirm`
+- `extension-context-input`, `extension-context-editor`
+- `extension-context-set-status`, `extension-context-set-widget`
+- `extension-context-set-title`, `extension-context-set-editor-text`
+- `extension-context-register-provider`, `extension-context-register-tool`
+- `extension-context-send-message`, `extension-context-send-user-message`
 - `extension-context-set-session-name`
 
-context 只在当前 handler 动态范围内有效；保存后跨 handler 或跨 reload 使用
-会抛出 `stale-extension-context`。`extension-context-agent` 返回当前
-`CADR-AGENT:AGENT`，允许 Lisp 扩展使用已经公开的 agent API，但不把 CLI 或
-未来 TUI 对象纳入稳定接口。动作函数签名固定为：
+A context is valid only within the dynamic extent of the current handler; saving
+it and using it in another handler or after a reload raises
+`stale-extension-context`. `extension-context-agent` returns the current
+`CADR-AGENT:AGENT`, which lets a Lisp extension use the already-public agent
+API, but does not bring the CLI or a future TUI object into the stable
+interface. The action function signatures are fixed as:
 
-- `(extension-context-notify context message &key (level :info))`，level
-  只能是 `:info`、`:warning` 或 `:error`，由当前前端渲染；
-- `(extension-context-compact context &key (force-p t))`，返回是否发生压缩；
-- `(extension-context-reload context)`，返回 reload report，并立即使旧
-  context stale；
-- `extension-context-mode` 返回当前模式的 `:repl`、`:tui`、`:text`、
-  `:json` 或 `:rpc`；
-- dialog/UI 与 runtime action 的精确签名固定在获批提案第 4、7 节。
+- `(extension-context-notify context message &key (level :info))`, where level
+  may only be `:info`, `:warning` or `:error`, rendered by the current
+  frontend;
+- `(extension-context-compact context &key (force-p t))`, which returns whether
+  compaction happened;
+- `(extension-context-reload context)`, which returns the reload report and
+  immediately makes the old context stale;
+- `extension-context-mode` returns the current mode as `:repl`, `:tui`,
+  `:text`, `:json` or `:rpc`;
+- the exact signatures of the dialog/UI and runtime actions are fixed in
+  sections 4 and 7 of the approved proposal.
 
-`extension-event` 稳定导出以下只读 accessor：
+`extension-event` stably exports the following read-only accessors:
 
 - `extension-event-type`
 - `extension-event-turn-index`
@@ -1202,146 +1390,186 @@ context 只在当前 handler 动态范围内有效；保存后跨 handler 或跨
 - `extension-event-payload`
 - `extension-cancellation-aborted-p`
 
-旧四事件继续使用专用 accessor；新增事件 payload 是只读 kebab-case plist。
-`extension-cancellation-signal` 是不透明对象，只暴露 aborted 状态。
+The four old events keep their dedicated accessors; the payload of a new event
+is a read-only kebab-case plist.
+`extension-cancellation-signal` is an opaque object exposing only the aborted
+state.
 
-hook 的唯一修改返回值由
-`make-extension-hook-result` 构造，稳定 keyword 为：
+A hook's only mutating return value is constructed by
+`make-extension-hook-result`, whose stable keywords are:
 
-- `:replacement`：替换该事件的主 payload；
-- `:append-messages`：在该事件提交点追加的合法 `CADR-AI` 消息列表；
-- `:block-p` 与 `:reason`：只允许用于 `:tool-call-before`。
+- `:replacement`: replaces that event's main payload;
+- `:append-messages`: a list of valid `CADR-AI` messages appended at that
+  event's commit point;
+- `:block-p` and `:reason`: permitted only for `:tool-call-before`.
 
-`replacement` 的类型由事件决定：
+The type of `replacement` is determined by the event:
 
 | event | replacement |
 |---|---|
-| `:turn-start` | 即将持久化并发送的 user message |
-| `:turn-end` | 本轮最终 assistant message |
+| `:turn-start` | the user message about to be persisted and sent |
+| `:turn-end` | this turn's final assistant message |
 | `:tool-call-before` | `CADR-AI:TOOL-CALL` |
 | `:tool-call-after` | `CADR-AI:TOOL-RESULT-MESSAGE` |
 
-多个 hook 串行组合：后一个看到前一个的 replacement 与累计追加消息。
-返回类型错误、替换消息 role 错误、tool call/result id 不一致都只使当前
-hook 失败；保留上一个合法状态并继续下一个 hook。
+Multiple hooks compose serially: a later one sees the earlier one's replacement
+and the accumulated appended messages. A wrong return type, a replacement
+message with the wrong role, and an inconsistent tool call/result id each fail
+only the current hook; the last valid state is kept and the next hook continues.
 
-工具调用顺序固定为：
+The tool-call order is fixed as:
 
-1. `:tool-call-before` 链式改写或拦截；
-2. 用最终 name 重新解析工具，并用最终 arguments 做 schema 校验；
-3. 执行工具；
-4. `:tool-call-after` 链式改写结果；
-5. 持久化最终结果与 append messages。
+1. `:tool-call-before` chained rewrite or block;
+2. re-resolve the tool by its final name, and schema-validate the final
+   arguments;
+3. execute the tool;
+4. `:tool-call-after` chained result rewrite;
+5. persist the final result and the appended messages.
 
-因此 hook 不能靠“校验后改参数”绕过 schema。turn replacement 和 append
-messages 同样在写入 JSONL 前完成，session 文件仍是运行时语义的唯一事实
-来源。需要工具审批的用户可用 `:tool-call-before` hook 实现，核心不内置
-审批策略。
+A hook therefore cannot bypass the schema by "changing the arguments after
+validation". Turn replacement and appended messages likewise complete before the
+JSONL is written, so the session file remains the single source of truth for
+runtime semantics. A user who needs tool approval can implement it with a
+`:tool-call-before` hook; the core has no built-in approval policy.
 
-### 18.4 热重载与 condition containment
+### 18.4 Hot reload and condition containment
 
-`/reload` 重新发现并把每个入口加载到新的 generation package。
-加载成功的扩展形成 staging snapshot；单个扩展加载失败时：
+`/reload` rediscovers every entry point and loads each into a new generation
+package. The extensions that load successfully form the staging snapshot; when a
+single extension fails to load:
 
-- 首次加载：跳过该扩展，其他扩展继续；
-- 热重载：保留该 id 的 last-known-good 定义，其他成功项照常更新；
-- 高优先级覆盖项失败时不会偷偷启用被遮蔽的低优先级扩展。
+- on the first load: skip that extension and continue with the others;
+- on hot reload: keep that id's last-known-good definition, and update the other
+  successful ones as usual;
+- when a higher-priority override fails, a shadowed lower-priority extension is
+  not quietly enabled.
 
-完成全部入口后只做一次加锁指针交换。正在执行的 handler/tool 捕获旧快照，
-不会在半次调用中换实现；最后一个旧调用结束后才回收旧 package。registry
-交换可回滚，但扩展加载期主动产生的任意外部副作用无法回滚，这一点必须在
-README 安全章节明说。
+After all entry points are processed, exactly one locked pointer swap happens.
+A handler/tool already executing captures the old snapshot and will not change
+implementation mid-call; the old package is reclaimed only after the last old
+call finishes. The registry swap can be rolled back, but arbitrary external side
+effects an extension deliberately produced at load time cannot be, and the
+README security section must say so explicitly.
 
-所有边界都捕获 `condition`：
+Every boundary catches `condition`:
 
-- 加载错误含 extension id、绝对路径与 load 阶段；
-- command/hook/tool/template 错误含资源名与执行阶段；
-- tool 错误转换成 `is-error` tool result；
-- command/template 错误写入当前前端的错误输出；
-- hook 错误跳过当前 hook，agent 主循环继续。
+- a load error carries the extension id, the absolute path and the load stage;
+- a command/hook/tool/template error carries the resource name and the execution
+  stage;
+- a tool error is converted into an `is-error` tool result;
+- a command/template error is written to the current frontend's error output;
+- a hook error skips the current hook, and the agent main loop continues.
 
-用户可见文本先走既有 secret redaction。扩展错误永不终止 agent；只有
-cadr 本身的不变量损坏仍按核心错误处理，不能被扩展异常处理器吞掉。
+User-visible text passes through the existing secret redaction first. An
+extension error never terminates the agent; only damage to cadr's own invariants
+is still handled as a core error, and must not be swallowed by the extension
+exception handler.
 
-### 18.5 安全模型
+### 18.5 Security model
 
-对齐固定 TS 基线：扩展发现后默认直接加载，工具默认直接执行，不建立信任
-账本、首次加载确认、内容 fingerprint 审批或 `--yolo` 分支。扩展是进程内
-任意代码，package 隔离和 condition containment 只解决命名冲突与可靠性，
-不提供权限隔离。
+Aligned with the fixed TS baseline: an extension is loaded directly once
+discovered, a tool executes directly by default, and there is no trust ledger,
+no first-load confirmation, no content-fingerprint approval and no `--yolo`
+branch. An extension is arbitrary in-process code; package isolation and
+condition containment solve naming conflicts and reliability only, and provide
+no privilege isolation.
 
-README 必须明确：
+The README must state explicitly:
 
-- 在不可信仓库运行 cadr 等价于允许该仓库中的项目扩展执行任意本机代码；
-- 需要强隔离时应在容器、虚拟机或受限用户中运行；
-- 需要逐工具审批时，可加载文档提供的最小
-  `:tool-call-before` Lisp hook 扩展，审批策略不进入核心。
+- running cadr in an untrusted repository is equivalent to letting the project
+  extensions in that repository execute arbitrary code on the local machine;
+- a user who needs strong isolation should run it in a container, a virtual
+  machine or a restricted user account;
+- a user who needs per-tool approval can load the minimal
+  `:tool-call-before` Lisp hook extension the documentation provides; the
+  approval policy does not enter the core.
 
-### 18.6 `/install` 与 Lisp package/skill
+### 18.6 `/install` and Lisp packages/skills
 
-`/install <git-url>` 对齐固定 TS 基线的 URL 规则：无 `git:` 前缀时只接受
-显式 `http://`、`https://`、`ssh://` 或 `git://`；有 `git:` 前缀时兼容
-历史 shorthand（包括 `git@host:path`）。拒绝本地路径、`file://`、以 `-`
-开头的值、NUL、反斜杠和含 `..` 的仓库路径。
-实现通过 argv 列表调用 `git clone -- <url> <staging>`，绝不拼 shell
-字符串。
+`/install <git-url>` aligns with the fixed TS baseline's URL rules: without a
+`git:` prefix, only an explicit `http://`, `https://`, `ssh://` or `git://` is
+accepted; with a `git:` prefix, the historical shorthand (including
+`git@host:path`) remains compatible. Local paths, `file://`, values starting
+with `-`, NUL, backslashes and repository paths containing `..` are rejected.
+The implementation calls `git clone -- <url> <staging>` through an argv list,
+and never assembles a shell string.
 
-clone 目标先放在 `~/.cadr/agent/extensions/.staging-<random>/`。成功后验证：
+The clone target first lands in
+`~/.cadr/agent/extensions/.staging-<random>/`. On success it verifies that:
 
-1. 顶层存在 `extension.lisp`；
-2. 推导出的目录名只含安全字符；
-3. canonical entry 与所有加载文件不逃出 clone 根；
-4. 最终目标不存在，禁止静默覆盖已有扩展。
+1. `extension.lisp` exists at the top level;
+2. the derived directory name contains only safe characters;
+3. the canonical entry point and every loaded file stay inside the clone root;
+4. the final target does not exist, so that an existing extension cannot be
+   silently overwritten.
 
-验证通过后原子 rename 到全局扩展目录，再走正常 `/reload`。
-扩展加载失败不会破坏 REPL；安装目录保留，便于用户审计或修复。
-一个 git package 的 tools、commands、skills 与 prompt templates 全部由其
-Common Lisp `extension.lisp` 注册，不引入 npm、JavaScript 或 Markdown
-skill 运行时。
+Once verification passes, it is atomically renamed into the global extension
+directory and goes through a normal `/reload`.
+A failed extension load does not break the REPL; the install directory is kept,
+so the user can audit or repair it.
+A git package's tools, commands, skills and prompt templates are all registered
+by its Common Lisp `extension.lisp`; no npm, JavaScript or Markdown skill
+runtime is introduced.
 
-### 18.7 Phase 7 测试门禁
+### 18.7 Phase 7 test gates
 
-实现前先加入以下回归：
+The following regressions are added before the implementation:
 
-1. 四个注册宏的 happy path、参数错误、注册上下文外调用；
-2. 独立 package、确定性发现、global/project/CLI 覆盖与冲突诊断；
-3. 四类 hook 的链式 rewrite、append、block、priority 与改写后重校验；
-4. 加载期及 tool/command/hook/template 执行期任意 condition 均不杀 agent；
-5. reload 原子切换、失败时 last-known-good、运行中调用保持旧快照；
-6. 默认无审批加载、无信任账本、路径约束与错误隔离；
-7. prompt placeholder 全集、command/template/builtin 解析优先级；
-8. 用本地临时 git repo 验证 `/install`、argv 注入防护、目标冲突不覆盖；
-9. faux provider 在单次进程内完成“write 新扩展 → `/reload` → 调用新工具”；
-10. DeepSeek 凭据门控 FiveAM test 完成同一自扩展闭环；
-11. Phase 1–6 全量回归、native build、acceptance smoke 与
-    `npm run check` 继续通过。
+1. the happy path, argument errors and out-of-registration-context calls for the
+   four registration macros;
+2. separate packages, deterministic discovery, global/project/CLI overriding and
+   conflict diagnostics;
+3. chained rewrite, append, block, priority and post-rewrite revalidation for
+   the four hook kinds;
+4. any condition during load and during tool/command/hook/template execution
+   fails to kill the agent;
+5. atomic reload swap, last-known-good on failure, an in-flight call keeping the
+   old snapshot;
+6. approval-free loading by default, no trust ledger, path constraints and error
+   isolation;
+7. the full set of prompt placeholders, and command/template/built-in resolution
+   priority;
+8. `/install`, argv-injection protection and no overwriting on target conflict,
+   verified against a local temporary git repository;
+9. a faux provider completing "write a new extension → `/reload` → call the new
+   tool" within a single process;
+10. a DeepSeek credential-gated FiveAM test completing the same self-extension
+    loop;
+11. the full Phase 1–6 regression, the native build, the acceptance smoke and
+    `npm run check` continue to pass.
 
-若实现需要改变上述导出符号、handler arity 或 hook 组合语义，必须重新走
-人工确认，而不能在编码中静默漂移。
+If an implementation needs to change the exported symbols, handler arity or hook
+composition semantics above, it must go through human confirmation again, and
+must not drift silently during coding.
 
-### 18.8 Goal 8 Part B 限定扩充与重冻
+### 18.8 The Goal 8 Part B bounded expansion and re-freeze
 
-用户只批准固定审计提交已有的 additive surface：
+The user approved only the additive surface that already exists in the fixed
+audit commit:
 
-- `define-shortcut`、`define-flag`、message/entry/tool renderer；
-- handler context 的 idle/wait、custom UI、autocomplete、theme 与 tool
-  expansion；
-- 可跨同一 generation 捕获、在 reload/retirement 后 stale 的 load-scope
-  `extension-api`，提供 send/exec/flag/active-tools；
-- bare/named/hidden inline factories；
-- `define-native-provider` 与 `cadr-ai` additive
-  login/check/refresh-context contract；
-- bundled llama.cpp provider 与 `/llama`，management SSE 显式禁用 read
-  timeout，inference 复用 OpenAI Chat Completions。
+- `define-shortcut`, `define-flag`, the message/entry/tool renderers;
+- idle/wait, custom UI, autocomplete, theme and tool expansion on the handler
+  context;
+- a load-scope `extension-api` that can be captured across the same generation
+  and goes stale after a reload/retirement, providing send/exec/flag/
+  active-tools;
+- bare/named/hidden inline factories;
+- `define-native-provider` and the `cadr-ai` additive
+  login/check/refresh-context contract;
+- the bundled llama.cpp provider and `/llama`, whose management SSE explicitly
+  disables the read timeout and whose inference reuses OpenAI Chat Completions.
 
-既有宏 lambda list、旧事件 payload/result 与 handler-scope stale 语义均未
-改变。TUI glue 只在 `cadr-cli` 复用已有组件；相对 Goal 8 开工提交，
-`src/cadr-tui` production object ID 零变化。完整 API 基线证据与解冻边界见
-[`docs/proposals/goal-v8-part-b.md`](proposals/goal-v8-part-b.md)。
+The lambda lists of the existing macros, the old event payloads/results and the
+handler-scope stale semantics are all unchanged. The TUI glue only reuses
+existing components inside `cadr-cli`; relative to the Goal 8 start commit,
+`src/cadr-tui` production object IDs changed by zero. The full API baseline
+evidence and the unfreezing boundary are in
+[`docs/proposals/goal-v8-part-b.md`](proposals/goal-v8-part-b.md).
 
-## 19. Phase 8：TUI 架构
+## 19. Phase 8: TUI architecture
 
-Phase 8 新增独立 ASDF system `cadr-tui`。依赖方向扩展为：
+Phase 8 adds a separate ASDF system, `cadr-tui`. The dependency direction
+extends to:
 
 ```text
 cadr-cli -> cadr-agent -> cadr-ai
@@ -1349,144 +1577,180 @@ cadr-cli -> cadr-agent -> cadr-ai
    +----> cadr-tui
 ```
 
-`cadr-tui` 是无 agent 语义的终端组件库，只负责输入解码、Unicode 单元格
-布局、组件渲染、ANSI 差分输出和终端生命周期。`cadr-cli/tui.lisp` 是唯一
-adapter：它把与 REPL 完全相同的 `CADR-AGENT:AGENT-EVENT` 投影成界面状态，
-并把编辑器提交交给现有 prompt/command/template 调度。provider、session、
-extension、工具执行与压缩逻辑不得复制进 `cadr-tui`。
+`cadr-tui` is a terminal component library with no agent semantics; it handles
+only input decoding, Unicode cell layout, component rendering, ANSI differential
+output and terminal lifecycle. `cadr-cli/tui.lisp` is the sole adapter: it
+projects exactly the same `CADR-AGENT:AGENT-EVENT` the REPL uses into interface
+state, and hands editor submissions to the existing prompt/command/template
+dispatch. Provider, session, extension, tool-execution and compaction logic must
+not be copied into `cadr-tui`.
 
-### 19.1 渲染模型
+### 19.1 The rendering model
 
-组件的共同协议是 `(render component width) -> lines`；
-每个 line 的可见宽度不得超过 width。根视图每帧产生纯字符串行数组，
-`terminal-renderer` 与上一帧比较：
+The shared component protocol is `(render component width) -> lines`;
+no line's visible width may exceed width. The root view produces an array of
+plain string lines each frame, and `terminal-renderer` compares it with the
+previous frame:
 
-- 首帧、宽度变化或显式 invalidate 时全量重绘；
-- 其余帧只定位并重绘变化行；
-- 内容缩短时清除旧尾行；
-- 一帧 ANSI 输出包在 synchronized-output 序列中，避免半帧闪烁；
-- 光标位置由编辑器返回的逻辑 row/column 决定，不把不可见标记写进业务
-  文本。
+- a full redraw on the first frame, on a width change, or on an explicit
+  invalidate;
+- other frames locate and redraw only the changed lines;
+- when the content shortens, the stale trailing lines are cleared;
+- one frame of ANSI output is wrapped in a synchronized-output sequence, which
+  avoids a half-frame flicker;
+- the cursor position is determined by the logical row/column the editor
+  returns; invisible markers are not written into business text.
 
-测试使用 `virtual-terminal` 消费同一份 ANSI 输出，断言屏幕行与光标快照；
-真实终端不是单元测试前提。
+Tests consume the same ANSI output with `virtual-terminal` and assert screen
+lines and a cursor snapshot; a real terminal is not a prerequisite for unit
+tests.
 
-Unicode 布局以 grapheme cluster 为最小编辑与裁剪单位。组合附加符宽度为
-0；CJK wide/fullwidth、emoji、regional indicator 和 ZWJ emoji cluster
-宽度为 2；其余可打印字符宽度为 1。ANSI/OSC/APC 序列不计宽，tab 在渲染
-边界固定展开为三个空格。编辑器的移动、删除、换行与换行裁剪都不得拆开
-cluster。
+Unicode layout takes the grapheme cluster as the smallest unit of editing and
+clipping. A combining mark has width 0; CJK wide/fullwidth characters, emoji,
+regional indicators and ZWJ emoji clusters have width 2; every other printable
+character has width 1. ANSI/OSC/APC sequences have no width, and a tab expands
+to exactly three spaces at the rendering boundary. Editor movement, deletion,
+line breaking and wrap clipping must never split a cluster.
 
-### 19.2 输入与组件
+### 19.2 Input and components
 
-输入路径支持 legacy、CSI/SS3、CSI-u、Kitty 与 modifyOtherKeys，解析
-press/repeat/release 和 native modifiers；`stdin-buffer` 跨 read 保留不完整
-ESC/CSI/paste 序列，并在同一批次中按原顺序分离终端能力回复与用户输入。
-普通 UTF-8、方向键、Home/End、Delete/Backspace、Enter、Shift+Enter、
-Ctrl+C、Ctrl+D、PageUp/PageDown、Escape 和 bracketed paste 均进入同一套
-可配置 keybinding matcher。
+The input path supports legacy, CSI/SS3, CSI-u, Kitty and modifyOtherKeys,
+parsing press/repeat/release and native modifiers; `stdin-buffer` preserves an
+incomplete ESC/CSI/paste sequence across reads, and separates terminal
+capability replies from user input within the same batch while keeping the
+original order. Ordinary UTF-8, arrow keys, Home/End, Delete/Backspace, Enter,
+Shift+Enter, Ctrl+C, Ctrl+D, PageUp/PageDown, Escape and bracketed paste all
+enter the same configurable keybinding matcher.
 
-`multiline-editor` 保存纯文本、grapheme 光标索引和最多 100 条历史；Enter
-提交，Shift+Enter 插入换行，paste 原样插入并规范 CRLF 为 LF。编辑器与
-单行输入共享按词移动、kill ring、yank/yank-pop 和 undo 语义。固定基线只
-提供 undo，不提供 redo，因此核心不增加 redo 栈或绑定。
+`multiline-editor` stores plain text, a grapheme cursor index and at most 100
+history entries; Enter submits, Shift+Enter inserts a newline, and a paste is
+inserted verbatim with CRLF normalized to LF. The editor and the single-line
+input share word-wise movement, the kill ring, yank/yank-pop and undo semantics.
+The fixed baseline provides undo only, not redo, so the core adds no redo stack
+and no redo binding.
 
-Phase 8 固定包含以下组件：
+Phase 8 includes the following components, fixed:
 
-- slash、路径与 `@` 文件 autocomplete，使用确定性的 fuzzy 排序；
-- overlay stack 的 anchor/尺寸/边距/裁剪、focus/capture、非捕获输入分派
-  与 CJK/ANSI 安全合成；
-- OSC 11/颜色方案、cell-size 回复，以及 Kitty/iTerm2 图片编码、能力探测、
-  删除和不支持终端上的文本 fallback；
-- streaming Markdown 文本区：增量文本每帧重新做确定性 block/inline
-  渲染，支持标题、列表、引用、围栏代码和行内代码，不等待 message-end；
-- 工具块：显示工具名、参数摘要和执行状态，完成后默认折叠，可由 Enter
-  展开或收起；
-- 状态栏：只读展示当前 model、累计 input/output/cache token、累计成本和
-  session id；缺失价格时成本显示 `—`，不得猜价；
-- 通用 select-list：过滤、循环上下移动、PageUp/PageDown、Enter 确认、
-  Escape 取消；模型与会话选择器复用它。
+- slash, path and `@` file autocomplete, with deterministic fuzzy ranking;
+- overlay-stack anchor/size/margin/clipping, focus/capture, non-capturing input
+  dispatch and CJK/ANSI-safe composition;
+- OSC 11 / colour-scheme and cell-size replies, plus Kitty/iTerm2 image
+  encoding, capability detection, deletion and a text fallback on unsupported
+  terminals;
+- a streaming Markdown text area: incremental text re-runs deterministic
+  block/inline rendering each frame, supporting headings, lists, quotes, fenced
+  code and inline code, without waiting for message-end;
+- the tool block: shows the tool name, an argument summary and the execution
+  status, collapses by default on completion, and can be expanded or collapsed
+  with Enter;
+- the status bar: a read-only display of the current model, cumulative
+  input/output/cache tokens, cumulative cost and the session id; when a price is
+  missing, the cost shows `—`, and a price must not be guessed;
+- a generic select-list: filtering, wrapping up/down movement, PageUp/PageDown,
+  Enter to confirm, Escape to cancel; the model and session pickers reuse it.
 
-模型选择只使用 `CADR-AI` 当前模型目录，选择后通过现有 provider
-instantiate 路径更新 agent；会话选择只调用现有 session list/switch
-路径。两者都是原版已有交互能力，不产生第二套状态源。
+Model selection uses only `CADR-AI`'s current model catalog, and after selection
+updates the agent through the existing provider instantiation path; session
+selection calls only the existing session list/switch path. Both are interactive
+capabilities the baseline already has, and neither creates a second state
+source.
 
-### 19.3 终端生命周期与前端选择
+### 19.3 Terminal lifecycle and frontend selection
 
-`process-terminal` 只支持本项目目标平台 Linux x64 / SBCL 2.4+：
+`process-terminal` supports only this project's target platform, Linux x64 /
+SBCL 2.4+:
 
-1. 保存 stdin termios；
-2. 进入 raw mode，启用 bracketed paste，安装 SIGWINCH handler；
-3. 运行 TUI；
-4. 在覆盖整个运行期的 `unwind-protect` cleanup 中恢复 termios、handler、
-   bracketed paste 与硬件光标。
+1. save the stdin termios;
+2. enter raw mode, enable bracketed paste, install the SIGWINCH handler;
+3. run the TUI;
+4. restore termios, the handler, bracketed paste and the hardware cursor in an
+   `unwind-protect` cleanup that covers the entire run.
 
-进入 raw mode 失败时在进入主循环前报错，不能留下部分启用状态。退出、
-Ctrl+C、EOF、provider condition 和扩展 condition 都走同一 cleanup。
+If entering raw mode fails, it reports the error before entering the main loop,
+and must not leave a partially-enabled state behind. Exit, Ctrl-C, EOF, a
+provider condition and an extension condition all go through the same cleanup.
 
-交互式 stdin/stdout 默认启动 TUI；`--no-tui` 强制使用既有 line REPL。
-任一流不是 TTY 时自动使用一次性 text print 模式；`--mode json` 和
-`--mode rpc` 分别输出事件 JSONL 与 RPC JSONL。TUI/REPL 继续调用同一个
-`dispatch-user-input` 并订阅同一个 agent 事件流；模式选择不复制 agent
-状态。
+An interactive stdin/stdout starts the TUI by default; `--no-tui` forces the
+existing line REPL. If either stream is not a TTY, the one-shot text print mode
+is used automatically; `--mode json` and `--mode rpc` output event JSONL and RPC
+JSONL respectively. The TUI and the REPL continue to call the same
+`dispatch-user-input` and to subscribe to the same agent event stream; mode
+selection does not duplicate agent state.
 
-### 19.4 Phase 8 验证门
+### 19.4 Phase 8 verification gates
 
-- `cadr-tui/tests` 覆盖 Unicode width/cluster、换行裁剪、编辑器、paste、
-  history、select-list、Markdown、差分输出、resize、尾行清除和虚拟终端
-  快照；
-- `cadr-cli/tests` 覆盖 `--no-tui`、非 TTY 降级、共享 dispatch、agent 事件
-  到工具块/stream/status 的投影，以及 condition 下 terminal cleanup；
-- 人工终端验收覆盖真实多轮编码任务、流式输出、工具折叠、模型/会话选择、
-  resize、CJK/emoji 输入和异常退出后的 shell 状态。
+- `cadr-tui/tests` covers Unicode width/cluster, wrap clipping, the editor,
+  paste, history, select-list, Markdown, differential output, resize, trailing
+  line clearing and virtual-terminal snapshots;
+- `cadr-cli/tests` covers `--no-tui`, non-TTY degradation, the shared dispatch,
+  the projection from agent events to tool block/stream/status, and terminal
+  cleanup under a condition;
+- manual terminal acceptance covers a real multi-turn coding task, streaming
+  output, tool collapsing, model/session selection, resize, CJK/emoji input, and
+  the shell state after an abnormal exit.
 
-## 20. Phase 9：原生基础设施与最终依赖边界
+## 20. Phase 9: native infrastructure and the final dependency boundary
 
-Phase 9 保持 provider、agent、extension、session 与前端公开协议不变，只在
-其下方替换实现。切换顺序按风险固定为 JSON、CLI 参数、正则评估、HTTP：
+Phase 9 keeps the public provider, agent, extension, session and frontend
+protocols unchanged, and replaces the implementation underneath them only. The
+switch order is fixed by risk as JSON, CLI arguments, regular-expression
+evaluation, HTTP:
 
-1. `json.lisp` 自研 RFC JSON parser/stringifier，统一处理 UTF-8、Unicode
-   surrogate、任意精度十进制数字、转义、对象和数组；解析器限制容器嵌套
-   深度以正常 condition 拒绝恶意输入，stringifier 拒绝 NaN/Infinity；
-   `com.inuoe.jzon` 移除。
-2. `arguments.lisp` 自研本项目固定选项语法，支持 `--name value`、
-   `--name=value`、重复 `--extension`、flags 与结构化错误；`clingon` 移除。
-3. 完整正则引擎不重复造轮子，按 `docs/progress/goal-v2.md` 明确暂缓并保留 `cl-ppcre`；
-   glob 遍历、`.gitignore` 解释和 literal grep 仍由项目代码实现。
-4. `http.lisp` 自研连接、请求写出、响应解析、content-length、
-   connection-close、chunked 和流式 body；TLS 由 `cl+ssl` 提供；
-   `dexador` 移除。Content-Length 必须是非负十进制整数，截断 body 明确
-   报错；认证 header 值在 transport/API condition 生成前统一脱敏。
+1. `json.lisp` is an in-house RFC JSON parser/stringifier handling UTF-8,
+   Unicode surrogates, arbitrary-precision decimal numbers, escapes, objects and
+   arrays uniformly; the parser bounds container nesting depth so that malicious
+   input is rejected with an ordinary condition, and the stringifier rejects
+   NaN/Infinity; `com.inuoe.jzon` is removed.
+2. `arguments.lisp` is this project's own fixed option syntax, supporting
+   `--name value`, `--name=value`, repeated `--extension`, flags and structured
+   errors; `clingon` is removed.
+3. A full regular-expression engine is not reinvented; it is explicitly deferred
+   by `docs/progress/goal-v2.md` and `cl-ppcre` is kept.
+   Glob traversal, `.gitignore` interpretation and literal grep are still
+   implemented in project code.
+4. `http.lisp` implements connection, request writing, response parsing,
+   content-length, connection-close, chunked and streaming bodies in-house; TLS
+   is provided by `cl+ssl`; `dexador` is removed. Content-Length must be a
+   non-negative decimal integer, and a truncated body is an explicit error;
+   authentication header values are redacted uniformly before a transport/API
+   condition is produced.
 
-同时完成两项无行为变化的依赖收口：生产线程 API 直接使用 `sb-thread`，
-工具 JSON Schema 由 `schema.lisp` 原生校验，因而移除
-`bordeaux-threads` 与 `cl-jschema`。生产 UTF-8 转换使用 SBCL 原生设施，
-移除 `babel`、`flexi-streams` 和 `usocket` 的直接依赖。
+Two behavior-preserving dependency closures were completed at the same time: the
+production thread API uses `sb-thread` directly, and tool JSON Schemas are
+validated natively by `schema.lisp`, which removes `bordeaux-threads` and
+`cl-jschema`. Production UTF-8 conversion uses SBCL's native facilities, which
+removes the direct dependencies on `babel`, `flexi-streams` and `usocket`.
 
-最终生产依赖审计的不变量是：
+The invariants of the final production dependency audit are:
 
-- 两个在册自研例外仅为 `cl+ssl` 与 `cl-sqlite`；
-- `cl+ssl` 是唯一加密依赖；`cl-sqlite` 只绑定系统 `libsqlite3`；
-- 唯一明确暂缓依赖为完整正则引擎 `cl-ppcre`；
-- Goal 10 另有独立批准、仅显式启用的 Slynk 调试服务类目，不把它归入
-  自研例外或纯 Lisp 可替换类目；
-- 其他 `.asd` production system 依赖均为本项目 system 或 SBCL/ASDF
-  自带设施；
-- 测试 system 可保留历史库以构造独立 fixture 和对照，但生产源码不得
-  引用它们。
+- the two registered in-house exceptions are exactly `cl+ssl` and `cl-sqlite`;
+- `cl+ssl` is the only cryptographic dependency; `cl-sqlite` only binds the
+  system `libsqlite3`;
+- the only explicitly deferred dependency is the full regular-expression engine
+  `cl-ppcre`;
+- Goal 10 adds a separately approved, explicitly-enabled-only Slynk debugging
+  service category, which is not folded into the in-house exceptions or the
+  pure-Lisp replaceable category;
+- every other `.asd` production system dependency is either a system of this
+  project or a facility shipped with SBCL/ASDF;
+- test systems may keep historical libraries in order to construct independent
+  fixtures and comparisons, but production source must not reference them.
 
-Phase 9 的回归门包括原生 JSON、CLI、schema、真实 loopback HTTP、chunked、
-SSE 无界 read timeout、全部旧测试、native image、DeepSeek 普通流式、
-自扩展与真实 TUI smoke。实现和性能证据记录在
-`docs/progress/phase-9.md`。
+Phase 9's regression gates include native JSON, CLI, schema, real loopback HTTP,
+chunked bodies, unbounded SSE read timeout, every old test, the native image,
+ordinary DeepSeek streaming, self-extension and a real TUI smoke. The
+implementation and performance evidence are recorded in
+`docs/progress/phase-9.md`.
 
-## 21. cadr 命名与数据迁移边界
+## 21. The cadr naming and data migration boundary
 
-命名迁移只改变身份、路径与一次性兼容入口，不改变 provider、agent、
-session、extension 或 TUI 语义。迁移前已验收基线为
-`c07b5a668`，该提交及其全部祖先在当前分支可达。
+The naming migration changes identity, paths and a one-shot compatibility entry
+point only; it changes no provider, agent, session, extension or TUI semantics.
+The pre-migration accepted baseline is
+`c07b5a668`, and that commit and all of its ancestors are reachable on the
+current branch.
 
-公开命名固定为：
+The public naming is fixed as:
 
 ```text
 cadr-cli -> cadr-agent -> cadr-ai
@@ -1494,91 +1758,114 @@ cadr-cli -> cadr-agent -> cadr-ai
     +----> cadr-tui
 ```
 
-ASDF production/test system、目录、CL package 和 native image 均使用该
-命名。扩展稳定接口 `DEFINE-TOOL`、`DEFINE-COMMAND`、
-`DEFINE-EVENT-HOOK`、`DEFINE-PROMPT-TEMPLATE`、`DEFINE-PROVIDER` 及 Wave 2
-获批 context/event accessor 从 `CADR-AGENT` 导出；此次迁移后命名空间冻结，
-不再提供旧 nickname 或别名。
+The ASDF production/test systems, the directories, the CL packages and the
+native image all use that naming. The stable extension interfaces
+`DEFINE-TOOL`, `DEFINE-COMMAND`,
+`DEFINE-EVENT-HOOK`, `DEFINE-PROMPT-TEMPLATE` and `DEFINE-PROVIDER`, together
+with the Wave 2 approved context/event accessors, are exported from
+`CADR-AGENT`; after this migration the namespace is frozen, and no old nickname
+or alias is provided.
 
-用户数据根目录为 `~/.cadr/`，其中 agent 数据位于 `~/.cadr/agent/`
-（settings、auth、models、sessions、themes、prompts、tools、bin、
-extensions、crash 日志），与基线 `~/.pi/agent/` 布局同构；
-`~/.cadr/server/` 留在根上。`CADR_CODING_AGENT_DIR` 覆盖 agent 目录；
-goal 18 之前的平铺安装由启动时的第二道迁移自动把根上住户 rename 进
-`agent/`（保留 `0600` auth 权限；两种布局并存时拒绝二选一并报错；
-设置覆盖变量时跳过）。启动时只有在旧目录存在且新目录不存在时
-进入迁移门：
+The user data root is `~/.cadr/`, with agent data under `~/.cadr/agent/`
+(settings, auth, models, sessions, themes, prompts, tools, bin,
+extensions, crash logs), isomorphic to the baseline's `~/.pi/agent/` layout;
+`~/.cadr/server/` stays at the root. `CADR_CODING_AGENT_DIR` overrides the agent
+directory; for a flat installation from before goal 18, a second migration at
+startup automatically renames the residents at the root into `agent/`
+(preserving `0600` auth permissions; when both layouts coexist it refuses to
+choose between them and reports an error; it is skipped when the override
+variable is set). At startup the migration gate is entered only when the old
+directory exists and the new one does not:
 
-1. stdin 必须是 TTY，且原始 argv 不得含 `--yolo`；
-2. 用户明确回答 `y` 或 `yes` 后，以同文件系统 rename 移动整个目录；
-3. 迁移后的 `auth.json` 强制为 `0600`；
-4. 拒绝、EOF、非交互或 `--yolo` 都返回 configuration condition，并给出
-   可直接执行的、正确 shell quoting 的手动 `mv` 命令；
-5. 移动或权限修复失败时尝试把目录 rename 回原位置并 fail closed。
+1. stdin must be a TTY, and the original argv must not contain `--yolo`;
+2. after the user explicitly answers `y` or `yes`, the entire directory is moved
+   by a same-filesystem rename;
+3. the migrated `auth.json` is forced to `0600`;
+4. a refusal, EOF, a non-interactive run or `--yolo` all return a configuration
+   condition together with a directly executable, correctly shell-quoted manual
+   `mv` command;
+5. if the move or the permission fix fails, it attempts to rename the directory
+   back to its original location and fails closed.
 
-`--yolo` 仍不是 CLI 选项，也不重新引入工具确认机制；迁移门只在旧目录
-确实待迁移时检查原始 argv，以确保它绝不成为数据移动授权。
+`--yolo` is still not a CLI option and does not reintroduce a tool confirmation
+mechanism; the migration gate inspects the original argv only when the old
+directory really is awaiting migration, which ensures it can never become an
+authorization to move data.
 
-新配置读取 `CADR_PROVIDER`、`CADR_MODEL`、`CADR_BASE_URL`。旧前缀仅在
-`0.1.x` 作为缺省回退读取，每次实际采用旧值都向 stderr 打弃用警告；新值
-始终优先。兼容入口在 `0.2.0` 删除。session v1/v2 header 不含产品名字段，
-因此读取格式无需增加别名或重写逻辑。
+The new configuration reads `CADR_PROVIDER`, `CADR_MODEL` and `CADR_BASE_URL`.
+The old prefixes are read only in `0.1.x` as a default fallback, and every time
+an old value is actually adopted a deprecation warning is printed to stderr; the
+new value always wins. The compatibility entry point is deleted in `0.2.0`.
+Session v1/v2 headers carry no product-name field, so reading the format needs
+no alias and no rewrite logic.
 
-## 22. 北极星 Wave 2：harness、session v3 与进程模式
+## 22. North star Wave 2: harness, session v3 and process modes
 
-Wave 2 沿用原版的 storage/repository 分层：`harness-session` 只依赖统一
-storage contract；memory、严格 JSONL 与 SQLite 是可替换 adapter，不另建
-第二套 agent 状态。SQLite 使用原版表、索引、`001_initial.sql` migration、
-WAL、FULL synchronous、busy timeout、事务 append、branch materialization
-与 materialized stats。Wave 5 仍只负责独立 storage package、server 和 eval
-集成，不再重复实现这层 adapter。
+Wave 2 follows the baseline's storage/repository layering: `harness-session`
+depends only on the unified storage contract; memory, strict JSONL and SQLite
+are replaceable adapters, and no second agent state is built. SQLite uses the
+baseline's tables, indexes, `001_initial.sql` migration, WAL, FULL synchronous,
+busy timeout, transactional append, branch materialization and materialized
+stats. Wave 5 is still responsible only for the standalone storage package, the
+server and the eval integration, and does not reimplement this adapter layer.
 
-coding-agent session 新写入版本为 v3。header 使用 ISO-8601 timestamp、
-可选 `parentSession`；entry envelope 使用 `id`、`parentId`、timestamp，
-支持 message、thinking/model change、compaction、branch summary、custom、
-custom message、label 与 session info。agent harness storage 另使用原版已有的
-`active_tools_change` 和 `leaf` 记录。v1/v2 迁移保留未知字段并通过同目录临时
-文件原子替换；发现阶段最多扫描每个候选 1 MiB，坏 JSONL record 和崩溃尾
-跳过。coding-agent manager 在首个 assistant entry 前只缓冲、不创建文件。
-compaction 不再写非参考 `sourceIds`；完整原节点仍留在 append log 中，
-`firstKeptEntryId` 和 parent tree 提供追溯。
+The new write version for coding-agent sessions is v3. The header uses an
+ISO-8601 timestamp and an optional `parentSession`; the entry envelope uses
+`id`, `parentId` and a timestamp, and supports message, thinking/model change,
+compaction, branch summary, custom, custom message, label and session info.
+Agent harness storage additionally uses the baseline's existing
+`active_tools_change` and `leaf` records. The v1/v2 migration preserves unknown
+fields and replaces atomically through a temporary file in the same directory;
+the discovery phase scans at most 1 MiB per candidate, and skips a bad JSONL
+record and a crash tail. The coding-agent manager only buffers before the first
+assistant entry and does not create a file.
+Compaction no longer writes the non-reference `sourceIds`; the complete original
+nodes still remain in the append log, and `firstKeptEntryId` plus the parent
+tree provide traceability.
 
-agent runtime 具有原版 steering、follow-up 与 next-turn 队列。steering 在
-turn 开始和完整工具批次结束后注入；follow-up 只在 agent 本应停止时 drain；
-abort 清空前两者但保留 next-turn。每类队列支持 `one-at-a-time` 与 `all`，
-queue event 总是携带两个 live queue 的完整快照。retry、compaction 与
-extension lifecycle 都走同一 event spine。
+The agent runtime has the baseline's steering, follow-up and next-turn queues.
+Steering is injected at the start of a turn and after a complete tool batch;
+follow-up drains only when the agent would otherwise stop; an abort clears the
+first two but preserves next-turn. Each queue kind supports `one-at-a-time` and
+`all`, and a queue event always carries a complete snapshot of both live queues.
+Retry, compaction and the extension lifecycle all travel the same event spine.
 
-模式优先级固定为显式 `--mode`、`--print`、显式 `--no-tui`、非 TTY 自动
-text、最后 TUI。text 只输出最终文本；JSON 输出逐行 agent event；RPC 使用
-LF 分帧并兼容 CRLF、U+2028/U+2029 与无末尾 LF。RPC 实现固定 command
-union、一次 response、event 转发、session 控制、bash/abort、EOF cleanup
-和 extension UI request/response；它是 Wave 5 server 的复用边界，本 Wave
-不实现 server。
+Mode priority is fixed as explicit `--mode`, `--print`, explicit `--no-tui`,
+automatic text for a non-TTY, and finally the TUI. Text outputs the final text
+only; JSON outputs agent events line by line; RPC uses LF framing and is
+compatible with CRLF, U+2028/U+2029 and a missing trailing LF. The RPC
+implementation fixes the command union, the single response, event forwarding,
+session control, bash/abort, EOF cleanup and the extension UI
+request/response; it is the reuse boundary for the Wave 5 server, and this Wave
+does not implement a server.
 
-扩展 API 的限定扩大只包含审计提交已有的 lifecycle events、RPC UI surface
-与 runtime provider/tool/message/session actions。`define-event-hook` 原签名、
-四个旧事件与旧结果语义不变；兼容门禁
+The bounded widening of the extension API contains only the lifecycle events,
+the RPC UI surface and the runtime provider/tool/message/session actions that
+already exist in the audit commit. `define-event-hook`'s original signature, the
+four old events and the old result semantics are unchanged; the compatibility
+gate
 `LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-冻结这一点。runtime provider overlay 属于 extension host，不修改
-`cadr-ai` registry；TUI 组件层同样未改。完整事件、payload、Lisp 映射与
-逐项 `file:line` 基线见
-[`docs/proposals/goal-v7-extension-api.md`](proposals/goal-v7-extension-api.md)。
+freezes that. The runtime provider overlay belongs to the extension host and
+does not modify the `cadr-ai` registry; the TUI component layer is likewise
+unchanged. The complete events, payloads, Lisp mapping and per-item `file:line`
+baseline are in
+[`docs/proposals/goal-v7-extension-api.md`](proposals/goal-v7-extension-api.md).
 
-Goal 7 收尾时的 extension export 文本 SHA-256 为
-`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
-Goal 8 Part B 预裁第 0.5(3) 随 provider request lifecycle 新增公开
-`provider-request-replacement` 三项导出，随后按用户批准增加 additive
-extension/native-provider API，因此历史 SHA 均不再是当前锚点。Goal 8
-Part B 收尾重冻锚点为
-`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`，
-旧源兼容 fixture SHA-256
-`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`，
-RPC wire/process fixture SHA-256
-`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`，
-UI extension fixture SHA-256
-`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
-重冻 object ID：
+At the Goal 7 closeout the extension export text SHA-256 was
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`.
+Goal 8 Part B pre-adjudication 0.5(3) added the three public
+`provider-request-replacement` exports along with the provider request
+lifecycle, and the additive extension/native-provider API was then added with
+user approval, so neither historical SHA is the current anchor any more. The
+Goal 8 Part B closeout re-freeze anchor is
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`,
+the old-source compatibility fixture SHA-256 is
+`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`,
+the RPC wire/process fixture SHA-256 is
+`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`,
+and the UI extension fixture SHA-256 is
+`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`.
+Re-frozen object IDs:
 
 ```text
 e94a3f1c1c80ffb784a94e8bbef9c8645e8504da  cadr-ai.asd
@@ -1610,13 +1897,14 @@ d845e5e14fd9c9b864e65297e58728ae1f1e7c2f  src/cadr-cli/extensions/llama/provider
 5838bab8cf028e1632897989c92365521fe97087  src/cadr-cli/extensions/llama/extension.lisp
 ```
 
-此后该扩大面恢复“发布即稳定”；后续 goal 不得修改上述对象而不重新走人工
-裁决。
+From that point the widened surface returns to "stable on release"; a later goal
+must not modify the objects above without going through human adjudication
+again.
 
-## 23. Goal 8 Wave 5：storage、server 与 evals
+## 23. Goal 8 Wave 5: storage, server and evals
 
-Wave 5 只实现固定审计提交已有的三个独立 package，不扩张 agent/extension
-机制：
+Wave 5 implements only the three separate packages that already exist in the
+fixed audit commit, and does not expand the agent/extension machinery:
 
 ```text
 cadr-storage -> cadr-agent -> cadr-ai
@@ -1624,52 +1912,69 @@ cadr-server  -> cadr-ai + external cadr --mode rpc child
 cadr-evals   -> cadr-cli -> cadr-agent -> cadr-ai
 ```
 
-`cadr-storage` 是已完成 SQLite adapter 的独立 ASDF/package facade，公开
-migration、named statement adapter、repository 与 storage 类型；数据和事务
-实现仍只有一份，不复制 agent session 状态。它只复用已批准的
-`cl-sqlite`/CFFI 闭包，不增加依赖。
+`cadr-storage` is a standalone ASDF/package facade over the already-completed
+SQLite adapter, publishing migration, the named-statement adapter, the
+repository and the storage types; there is still exactly one implementation of
+the data and transaction layer, and agent session state is not duplicated. It
+reuses only the already-approved `cl-sqlite`/CFFI closure and adds no
+dependency.
 
-`cadr-server` 对齐原版 Unix-domain socket JSONL supervisor，而不是 HTTP
-server。每个 instance 拥有独立 `cadr --mode rpc` 子进程；supervisor
-持久化 machine/instance record，桥接普通 RPC、stream event 与 extension UI
-request/response，并在停止、异常退出和 server restart 时收敛状态。Radius
-只在现有 OAuth 或 `RADIUS_API_KEY` 可用时启用，沿用 credential gate；无凭据
-时完全 dormant；启用后按原版对 transient failure 指数退避，并在连续三次
-404 后重新注册 machine/Pi。
+`cadr-server` aligns with the baseline's Unix-domain-socket JSONL supervisor
+rather than an HTTP server. Each instance owns its own `cadr --mode rpc` child
+process; the supervisor persists machine/instance records, bridges ordinary RPC,
+stream events and extension UI request/response, and converges state on stop,
+abnormal exit and server restart. Radius is enabled only when an existing OAuth
+credential or `RADIUS_API_KEY` is available, following the credential gate; with
+no credential it is entirely dormant; once enabled it backs off exponentially on
+a transient failure as the baseline does, and re-registers the machine/Pi after
+three consecutive 404s.
 
-`cadr-evals` 用隔离的 project/agent/session 目录创建真实 agent runtime，
-要求显式 provider/model，不隐式回退；输入只允许 prompt/reload 序列，输出
-统一为 transcript、usage 与可选 selector。smoke 与 self-extension eval
-复用该公共 harness，测试可用 faux provider，环境中可用的 DeepSeek/Codex
-凭据在独立 `cadr-*/live-tests` systems 内走 FiveAM credential gate，并注入显式
-provider/model resolver，不读取用户 settings、session 或扩展。这与基线
-`describe.skipIf(!KEY)` 机制同构。provider/CLI/eval live 行为不再另设 shell
-smoke 层；`scripts/test-live.sh` 只是统一 FiveAM 入口与报告器，不复制测试语义。
-只观察原生 image、PTY/termios、Unix socket、跨进程迁移、signal
-或 RPC EOF 的 shell harness 继续保留；其逐项边界见
-`docs/acceptance/goal-v8-smoke-audit.md`。
+`cadr-evals` creates a real agent runtime with isolated project/agent/session
+directories, requires an explicit provider/model and does not fall back
+implicitly; the input admits only a prompt/reload sequence, and the output is
+uniformly a transcript, usage and an optional selector. The smoke and
+self-extension evals reuse that common harness; tests may use a faux provider,
+and the DeepSeek/Codex credentials available in the environment go through a
+FiveAM credential gate inside the separate `cadr-*/live-tests` systems with an
+explicit provider/model resolver injected, reading no user settings, session or
+extension. This is isomorphic to the baseline's `describe.skipIf(!KEY)`
+mechanism. Provider/CLI/eval live behavior no longer has a separate shell smoke
+layer; `scripts/test-live.sh` is merely a unified FiveAM entry point and
+reporter, and does not duplicate test semantics.
+The shell harnesses that observe only the native image, PTY/termios, Unix
+sockets, cross-process migration, signals or RPC EOF are kept; their per-item
+boundaries are in
+`docs/acceptance/goal-v8-smoke-audit.md`.
 
-Wave 5 门禁固定为：
+The Wave 5 gates are fixed as:
 
-1. standalone storage system 的 schema、事务、fork/materialized state；
-2. 真实 Unix socket 的单请求、错误、stale socket 与 RPC stream framing；
-3. supervisor spawn/list/status/RPC/UI/stop/restart recovery；
-4. eval 显式模型选择、隔离清理、transcript/usage 与 self-extension；
-5. 全量 CL tests、独立 server build/smoke、既有 `cadr` build/version。
+1. schema, transactions and fork/materialized state of the standalone storage
+   system;
+2. single request, errors, a stale socket and RPC stream framing over a real
+   Unix socket;
+3. supervisor spawn/list/status/RPC/UI/stop/restart recovery;
+4. explicit eval model selection, isolated cleanup, transcript/usage and
+   self-extension;
+5. the full CL tests, a standalone server build/smoke, and the existing `cadr`
+   build/version.
 
-Wave 5 已完成并冻结。三个 package 不引入第三方依赖。独立
-`cadr-server` 构建同样检测 `sb-core-compression`，缺失时生成无压缩 image；
-真实 Unix socket 已通过 spawn/list/status/RPC/stop。旧
-`live-evals-smoke.sh` 的 Codex 结论因改写凭据身份而撤回；补正后的真实
-凭据由显式 provider/model 的 FiveAM live gate 验证，login/store/default
-resolver/Codex transport 则由临时 auth/config 与网络桩确定性验证。最终
-ASDF gate 为 `3043 checks / 3042 pass / 1 Anthropic credential skip /
-0 fail`。此后三个 package 的公开 surface 遵循“发布即稳定”。
+Wave 5 is complete and frozen. The three packages introduce no third-party
+dependency. The standalone `cadr-server` build likewise detects
+`sb-core-compression` and produces an uncompressed image when it is missing;
+a real Unix socket passed spawn/list/status/RPC/stop. The old
+`live-evals-smoke.sh` Codex conclusion was withdrawn because it rewrote the
+credential identity; the corrected real credentials are verified by the FiveAM
+live gate with an explicit provider/model, while login/store/default
+resolver/Codex transport are verified deterministically with a temporary
+auth/config and network stubs. The final ASDF gate is
+`3043 checks / 3042 pass / 1 Anthropic credential skip /
+0 fail`. From this point the public surface of the three packages follows
+"stable on release".
 
-## 24. Goal 8 Part F 最终冻结锚点
+## 24. The Goal 8 Part F final freeze anchor
 
-证据补正后的生产与测试系统锚定提交
-`a85b0ad321969b5fcfbda58d279d9b9c3a96209e`。目录 tree object ID：
+After the evidence correction, the production and test systems are anchored at
+commit `a85b0ad321969b5fcfbda58d279d9b9c3a96209e`. Directory tree object IDs:
 
 ```text
 7c6e82c496d1fead28ab0dbc2da6d5baf9d3a3c5  src/cadr-ai
@@ -1681,7 +1986,7 @@ b1c26416d7f496a0e807c80d0ea9578cbbdd12b2  src/cadr-server
 f5b51e94a7d93680cd081d3fd259d1d4536b9009  src/cadr-evals
 ```
 
-ASDF/build blob object ID：
+ASDF/build blob object IDs:
 
 ```text
 e31b0c8d4fa963905cb5b806da53b23a9502cd0d  cadr-ai.asd
@@ -1698,243 +2003,346 @@ d09bb77c6c45dd4c7fc3a0d354cf589f066effd8  cadr-evals.asd
 593c7d773b13107f2f3758ccc49abc66005f941d  scripts/test-cl.sh
 ```
 
-Goal 8 当时宣告的 extension export SHA
-`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`
-是历史值，后续已漂移，不能再作为当前冻结锚点。Goal 10 Part D 的当前重冻值
-见第 28 节。公开 surface 变更必须进入新 goal 并先走人工裁决；依赖门禁与
-“完成即提交”门禁继续全局生效。
+The extension export SHA that Goal 8 declared at the time,
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`,
+is a historical value that has since drifted, and can no longer serve as the
+current freeze anchor. Goal 10 Part D's current re-frozen value is in
+section 28. A change to the public surface must enter a new goal and go
+through human
+adjudication first; the dependency gate and the "complete means committed"
+gate continue to apply globally.
 
-## 25. Goal 9 Part D 本地验证入口
+## 25. The Goal 9 Part D local verification entry point
 
-`scripts/verify.sh` 是发布前本地单一入口，顺序固定为：确定性 FiveAM、临时
-工作树内的 `cadr`/`cadr-server` 公共构建入口、Goal 11 非功能门禁、保留的
-native/process/PTY harness、完整固定基线 render differential、凭据可用性门控的
-live FiveAM、可用时的 DeepSeek 真实 TUI。隔离副本排除 Git metadata、现有
-二进制、凭据/测试 HOME、环境文件与编辑器缓存；真实 OAuth refresh 仍由
-canonical `~/.cadr/agent/auth.json` 的既有锁与原子写路径负责。
+`scripts/verify.sh` is the single local entry point before a release, in a fixed
+order: deterministic FiveAM, the shared `cadr`/`cadr-server` build entry points
+inside a temporary work tree, the Goal 11 non-functional gates, the retained
+native/process/PTY harnesses, the complete fixed-baseline render differential,
+the credential-availability-gated live FiveAM, and, when available, a real
+DeepSeek TUI. The isolated copy excludes Git metadata, existing binaries,
+credential/test HOMEs, environment files and editor caches; a real OAuth refresh
+is still handled by the existing lock and atomic write path of the canonical
+`~/.cadr/agent/auth.json`.
 
-脚本分别汇总 deterministic 与 live，不把真实 LLM 结果冒充确定性证据。任何
-已运行项失败最终返回非零，但 live FiveAM 的逐项报告和后续可运行 live harness
-仍会完成；凭据缺失只形成带原因的 skip。此入口纯本地，不创建远端 CI 配置。
+The script reports deterministic and live results separately, and does not pass
+off a real LLM result as deterministic evidence. Any item that ran and failed
+makes the final exit code non-zero, but the per-item live FiveAM report and the
+subsequent runnable live harnesses still complete; a missing credential merely
+produces a skip with a reason. This entry point is purely local and creates no
+remote CI configuration.
 
-## 26. Goal 9 Part E 版本与仓库卫生
+## 26. Goal 9 Part E versioning and repository hygiene
 
-根目录 `version.sexp` 是唯一生产版本源。八个生产 ASDF system 通过
-`(:read-file-form "version.sexp")` 读取它；`cadr-ai` 的内部版本 helper 再向
-CLI、server CLI、TUI banner、HTTP User-Agent 与 Radius registration 分发同一
-值。不新增公开 export，也不复制版本常量。当前发布候选版本为 `0.2.0`；
-`cadr-release-identity` 从该版本源组合已冻结的上游关系，CLI 输出
-`cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd)`。README、CHANGELOG
-与 Release 草案逐字锁定同一标识。tag 与 GitHub Release 仍等待用户确认。
+The root `version.sexp` is the single production version source. The eight
+production ASDF systems read it through
+`(:read-file-form "version.sexp")`; `cadr-ai`'s internal version helper then
+distributes the same value to the CLI, the server CLI, the TUI banner, the HTTP
+User-Agent and Radius registration. No new public export is added, and no
+version constant is duplicated. The current release candidate is `0.2.0`;
+`cadr-release-identity` composes the frozen upstream relationship from that
+version source, and the CLI prints
+`cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd)`. The README, the CHANGELOG
+and the Release draft lock the same identity verbatim. The tag and the GitHub
+Release still await user confirmation.
 
-仓库根目录只保留当前构建与用户入口；空的 TypeScript 时代 `packages/` 目录已
-删除。已接受的 Goal 9/10 文本归档于 `docs/progress/`，本地 goal 草稿、Codex/
-Obsidian/test-home 状态与 Python bytecode 由 `.gitignore` 隔离。文档职责从
-`docs/README.md` 导航，里程碑由根 `CHANGELOG.md` 维护；历史报告仍是证据，不能
-覆盖当前 architecture/parity/test contracts。
+The repository root keeps only the current build and user entry points; the
+empty TypeScript-era `packages/` directory has been deleted. The accepted Goal
+9/10 texts are archived under `docs/progress/`, and local goal drafts,
+Codex/Obsidian/test-home state and Python bytecode are isolated by `.gitignore`.
+Documentation responsibilities are navigated from `docs/README.md`, and
+milestones are maintained in the root `CHANGELOG.md`; historical reports are
+still evidence and cannot override the current architecture/parity/test
+contracts.
 
-四本当前账职责互不替代：行为账 `docs/parity-map.md` 记录可观察行为与测试
-证据；源码账 `docs/source-parity.md` 对固定基线的每个源文件给出处置结论；
-非功能账 `docs/performance.md` 记录性能、分配、内存、稳定性预算与同机基线；
-呈现账 `docs/presentation-parity.md` 逐项记录用户可见文案、语义样式、几何、格式
-与截断。`examples/manifest.sexp` 只是 99 个可运行示例的辅助机器清单，不是第五
-本账。Goal 12 的 source/example 完整性仍由既有 `GOAL12_LEDGER` 身份交叉核对；
-呈现账另以 `GOAL13_PRESENTATION_LEDGER` 身份锁定 B1-B4 分母与处置总数。
-未来升级先运行 `scripts/check-source-parity-drift.sh`，新增、删除、重命名任何源文件
-均须在 TSV 中写明人工处置，漏项或陈旧项均 fail closed；完整流程见
-`docs/source-parity-upgrade.md`。
+The responsibilities of the four current ledgers do not substitute for one
+another: the behavior ledger `docs/parity-map.md` records observable behavior
+and test evidence; the source ledger `docs/source-parity.md` gives a disposition
+verdict for every source file of the fixed baseline; the non-functional ledger
+`docs/performance.md` records performance, allocation, memory and stability
+budgets together with same-machine baselines; the presentation ledger
+`docs/presentation-parity.md` records user-visible copy, semantic styling,
+geometry, formatting and truncation item by item. `examples/manifest.sexp` is
+merely a machine-readable auxiliary inventory of 99 runnable examples, not a
+fifth ledger. Goal 12's source/example completeness is still cross-checked by
+the existing `GOAL12_LEDGER` identity; the presentation ledger additionally
+locks the B1-B4 denominator and disposition totals under the
+`GOAL13_PRESENTATION_LEDGER` identity.
+A future upgrade must first run `scripts/check-source-parity-drift.sh`; adding,
+deleting or renaming any source file requires an explicit human disposition in
+the TSV, and a missing or stale entry fails closed; the complete process is in
+`docs/source-parity-upgrade.md`.
 
-## 27. Goal 11 非功能属性验收轴
+## 27. The Goal 11 non-functional acceptance axis
 
-行为 parity 与非功能属性是两条独立门禁。前者要求 payload、session、事件、
-工具 result、JSON/RPC 与终端快照逐字节等价；后者要求同一输出在固定负载下的
-时间、分配、常驻内存和资源生命周期不发生数量级退化。任何一轴通过都不能抵消
-另一轴失败。
+Behavior parity and non-functional properties are two independent gates. The
+former requires byte-for-byte equivalence of payload, session, events, tool
+results, JSON/RPC and terminal snapshots; the latter requires that the same
+output show no order-of-magnitude regression in time, allocation, resident
+memory and resource lifetime under a fixed load. Passing either axis cannot
+offset a failure on the other.
 
-度量入口分为两层：
+The measurement entry points are two-layered:
 
-1. `scripts/bench.sh` 在固定 100×40 virtual terminal、固定五类 mixed entry、
-   N ∈ {0,50,200,1000,5000} 下测 steady frame、key→frame、stream delta、append、
-   heap/RSS 与 native-image cold start；
-2. `scripts/goal11-stability.sh` 以 production faux provider 驱动真实 agent、v3
-   session、TUI event projection 和逐事件 render，模拟 1200 轮/10 小时；另以
-   真实 ≥10MiB JSONL 测 load/resume/continue latency 与 sampled heap/RSS peak。
+1. `scripts/bench.sh` measures steady frame, key→frame, stream delta, append,
+   heap/RSS and native-image cold start on a fixed 100×40 virtual terminal, with
+   five fixed mixed entry kinds and N ∈ {0,50,200,1000,5000};
+2. `scripts/goal11-stability.sh` drives a real agent, a v3 session, TUI event
+   projection and per-event rendering with a production faux provider, and
+   simulates 1200 turns / 10 hours; it additionally measures load/resume/continue
+   latency and sampled heap/RSS peak on a real ≥10MiB JSONL file.
 
-Part C 仅采用固定 TS 基线已有的 component cache 与 array-style O(1) append；
-Part D 进一步把 agent messages 与 session entries 的 append 恢复为相同策略。
-没有引入 viewport pruning、virtual scrolling、transcript memoization 或行为可见
-的截断。公开 list 被整体替换时，private tail 只在下一次 append 做一次修复；
-session wire 与 agent event 不变。
+Part C adopts only the component cache and the array-style O(1) append that
+already exist in the fixed TS baseline; Part D further restores the same
+strategy for appending agent messages and session entries.
+No viewport pruning, virtual scrolling, transcript memoization or
+behaviorally-visible truncation was introduced. When a public list is replaced
+wholesale, the private tail is repaired exactly once on the next append; the
+session wire and the agent events are unchanged.
 
-`scripts/goal11-performance-gate.py` 是 machine-readable report 的唯一阈值判定器，
-并由 `scripts/verify.sh` 在隔离构建后、process/PTY harness 前调用。50ms frame、
-20 delta/s、append exponent 0.35、750ms cold start、1200-turn heap exponent 1.30、
-500ms full GC、10MiB session 5s 等阈值均相对当前实测留有 12×以上的主要时延
-余量，却会稳定击穿优化前 466–488ms frame、2.15 delta/s 与 linear append。
-方法、完整数据与阈值理由由 `docs/performance.md` 维护。
+`scripts/goal11-performance-gate.py` is the single threshold judge for the
+machine-readable report, and is invoked by `scripts/verify.sh` after the
+isolated build and before the process/PTY harnesses. The 50ms frame,
+20 delta/s, append exponent 0.35, 750ms cold start, 1200-turn heap exponent
+1.30, 500ms full GC and 10MiB session 5s thresholds all leave more than 12× of
+headroom on the dominant latencies relative to the current measurements, yet
+they reliably fail the pre-optimization 466–488ms frame, 2.15 delta/s and
+linear append. The method, the complete data and the reasoning behind each
+threshold are maintained in `docs/performance.md`.
 
-## 28. Goal 10 Part D Lisp 原生能力
+## 28. Goal 10 Part D Lisp-native capabilities
 
-本节是全局“不得默认新增机制”原则的显式人工裁决例外，只覆盖批准提案中的
-两项能力；不能类推授权其他机制。
+This section is an explicit human-adjudicated exception to the global "no
+mechanism may be added by default" principle, and covers only the two
+capabilities in the approved proposal; it does not authorize any other mechanism
+by analogy.
 
-工具 executor 或 schema 校验失败时，核心在原栈仍存活时建立
-`tool-execution-error` 与三个动态 restart：`retry-tool-call` 用新的 JSON object
-从 `:tool-call-before` 重走并重新校验，`skip-tool-call` 生成旧文案的 error
-result，`abort-agent-run` 先提交 error result 再走既有 abort。每个逻辑 call
-只产生一次 start/after/end；`:tool-call-error` 只在每次失败 attempt 的
-extension lifecycle 内出现，不进入 agent event、session、JSON 或 RPC wire。
-无 hook 选择时沿用原 error result，print/JSON/RPC/TUI 默认行为不变。
+When a tool executor or schema validation fails, the core establishes a
+`tool-execution-error` and three dynamic restarts while the original stack is
+still alive: `retry-tool-call` re-runs from `:tool-call-before` with a new JSON
+object and revalidates, `skip-tool-call` produces an error result with the old
+copy, and `abort-agent-run` commits the error result first and then goes through
+the existing abort. Each logical call produces start/after/end exactly once;
+`:tool-call-error` appears only inside the extension lifecycle of each failed
+attempt, and does not enter the agent events, the session, the JSON or the RPC
+wire. When no hook makes a choice, the original error result is kept, and the
+default print/JSON/RPC/TUI behavior is unchanged.
 
-`:tool-call-error` 是扩展事件全集第 34 个。其 payload 固定为
-`condition/tool-call/arguments/attempt/restart-names`；arguments 深复制，合法
-返回仅为 retry/skip/abort 三种动作。Goal 12 已批准的 additive runtime/OAuth
-bridges 落账后，当前 extension export SHA-256 为
-`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`；34-event
-源码块 SHA-256 为
-`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
-今后新增事件或改变 restart 语义仍须书面提案和用户逐项批准。
+`:tool-call-error` is the 34th member of the complete extension event set. Its
+payload is fixed as
+`condition/tool-call/arguments/attempt/restart-names`; arguments is deep-copied,
+and the only legal returns are the three actions retry/skip/abort. After the
+additive runtime/OAuth bridges approved in Goal 12 were ledgered, the current
+extension export SHA-256 is
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`; the
+34-event source block SHA-256 is
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
+Adding an event or changing restart semantics in the future still requires a
+written proposal and per-item user approval.
 
-`--slynk <port>` 是唯一启用入口，端口必须为十进制 `1..65535`，调用固定为
-`slynk:create-server :interface "127.0.0.1" :style :spawn :dont-close t`。
-配置和环境变量不能静默开启，bind 失败致命；退出时关闭 listener 并清空
-`cadr-cli:active-agent`。loopback 不是沙箱，跨机访问由用户建立 SSH tunnel，
-强隔离仍由容器、虚拟机或受限用户负责。
+`--slynk <port>` is the only enabling entry point, the port must be decimal
+`1..65535`, and the call is fixed as
+`slynk:create-server :interface "127.0.0.1" :style :spawn :dont-close t`.
+Configuration and environment variables cannot enable it silently, and a bind
+failure is fatal; on exit the listener is closed and
+`cadr-cli:active-agent` is cleared. Loopback is not a sandbox; cross-machine
+access is up to the user to establish through an SSH tunnel, and strong
+isolation is still the responsibility of a container, a virtual machine or a
+restricted user account.
 
-重冻实现 object ID 与测试证据完整列于
-[`docs/acceptance/goal-v10-part-d.md`](acceptance/goal-v10-part-d.md)。
+The re-frozen implementation object IDs and the test evidence are listed in full
+in
+[`docs/acceptance/goal-v10-part-d.md`](acceptance/goal-v10-part-d.md).
 
 ## 29. Goal 12 extension baseline completion
 
-Goal 12 F/G/H 补齐基线已有能力，不新增 Cadr 特有机制。Compaction 的生产路径
-在选出 source/kept entries 后构造 preparation，并按 manual、threshold、overflow
-原因发出 `:session-before-compact`；合法扩展结果与 metadata 原样进入 session，
-cancel/abort 不写 compaction，非法或失败 handler 回退原 summarizer。成功持久化后
-恰好发出一次 `:session-compact`。34 个 extension event 的真实发射点与 called
-回归由 [`docs/acceptance/goal-v12-extension-event-dispatch.md`](acceptance/goal-v12-extension-event-dispatch.md)
-逐项冻结；只找到并修复了这一处既有声明未接通。
+Goal 12 F/G/H fills in capabilities the baseline already has, and adds no
+Cadr-specific mechanism. The production compaction path constructs a preparation
+after selecting the source/kept entries, and emits `:session-before-compact`
+with a manual, threshold or overflow reason; a valid extension result and its
+metadata enter the session verbatim, a cancel/abort writes no compaction, and an
+invalid or failing handler falls back to the original summarizer. Exactly one
+`:session-compact` is emitted after a successful persist. The real emission
+points of the 34 extension events and their called-regressions are frozen item
+by item by
+[`docs/acceptance/goal-v12-extension-event-dispatch.md`](acceptance/goal-v12-extension-event-dispatch.md);
+exactly one existing declaration was found to be unwired, and it was fixed.
 
-Agent 保存真实 system prompt 及其八字段构造 options。CLI 与 SDK 共用相同
-options 形状，`:before-agent-start` 每个 handler 都收到独立深复制；reload 原子替换
-prompt 与 options。Extension HTTP 是 host 上的 session-local callback，不写入
-`cadr-ai` 全局 registry：公开层验证并复制 request/response，CLI adapter 复用既有
-native HTTP transport 并将 timeout、abort、transport failure 收敛成无秘密的扩展错误。
-没有 callback 时 API 明确不可用；默认 provider、OAuth、session、event、JSON/RPC
-wire 与 TUI 合同不变。
+The agent stores the real system prompt and the eight-field options that
+construct it. The CLI and the SDK share the same options shape, and every
+`:before-agent-start` handler receives an independent deep copy; a reload
+atomically replaces both the prompt and the options. Extension HTTP is a
+session-local callback on the host and is not written into the `cadr-ai` global
+registry: the public layer validates and copies the request/response, and the
+CLI adapter reuses the existing native HTTP transport and converges timeout,
+abort and transport failure into secret-free extension errors.
+With no callback, the API is explicitly unavailable; the default provider,
+OAuth, session, event, JSON/RPC wire and TUI contracts are unchanged.
 
-99 个固定基线 runnable example 现全部有功能等价 Lisp port。Source ledger 最终为
-`595/523/72/0`：595 个基线源文件均已处置，无暂缓或缺失项。当前 extension export
-SHA-256 重新冻结为
-`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`；34-event
-block SHA-256 仍为
-`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`。
+All 99 runnable examples of the fixed baseline now have a functionally
+equivalent Lisp port. The source ledger finally reads
+`595/523/72/0`: all 595 baseline source files have a disposition, with no
+deferred and no missing item. The current extension export
+SHA-256 is re-frozen at
+`61eb1b623f784b3a8f0f6fe6791c65ebe991ff314ed1d969b82f3edd57646f18`; the 34-event
+block SHA-256 is still
+`12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a`.
 
-Apple Terminal 路径直接对齐基线的系统 API：仅在 macOS、
-`TERM_PROGRAM=Apple_Terminal` 且收到 Return 时，通过 SBCL FFI 读取
-CoreGraphics `CGEventSourceFlagsState` 的 Shift mask，再将 Shift+Enter 规范为
-CSI-u `ESC[13;2u`。框架加载、查询或不支持架构上的失败均 fail
-closed；非 Apple Terminal 和非 Return 路径不查询原生状态，输入字节不变。
-该实现仅使用 macOS 自带 CoreGraphics，不新增 ASDF 依赖、第三方库或
-外部二进制。本机无 macOS/Apple Terminal，因此验证等级为 fixture
-对拍，不宣称 live 验证。
+The Apple Terminal path aligns directly with the baseline's system API: only on
+macOS, with `TERM_PROGRAM=Apple_Terminal`, and only on receiving Return, it
+reads the Shift mask of CoreGraphics `CGEventSourceFlagsState` through SBCL FFI,
+and then normalizes Shift+Enter into the CSI-u `ESC[13;2u`. A framework load, a
+query, or a failure on an unsupported architecture all fail
+closed; the non-Apple-Terminal and non-Return paths do not query the native
+state, and the input bytes are unchanged.
+This implementation uses only the CoreGraphics that ships with macOS, and adds
+no ASDF dependency, third-party library or external binary. This machine has no
+macOS/Apple Terminal, so the verification level is fixture
+cross-implementation comparison, and no live verification is claimed.
 
-## 30. Goal 12 source drift gate
+## 30. The Goal 12 source drift gate
 
-基线升级先运行 `scripts/check-source-parity-drift.sh`。它用 Part A 同一 source
-predicate 比较两个 commit，枚举新增、删除和 rename，并要求四列 TSV 对每项给出
-非空人工处置；missing、stale、malformed disposition 或未知 revision 一律失败。
-Modified file 仍须走行为与源码复审，不能借路径门禁自动通过。
+A baseline upgrade runs `scripts/check-source-parity-drift.sh` first. It uses
+the same source predicate as Part A to compare two commits, enumerates
+additions, deletions and renames, and requires a non-empty human disposition for
+each in a four-column TSV; a missing, stale or malformed disposition, or an
+unknown revision, always fails. A modified file must still go through behavior
+and source review, and cannot be waved through by the path gate.
 
-`scripts/test-source-parity-drift.sh` 以临时 Git repository 锁定 A/D/R、test-file
-排除、未处置失败和完整处置通过；它还把真实 `docs/source-parity.md` 送入同一解析器，
-要求恰好接受 Summary 声明的 595 行、路径集合 SHA-256 与账本 manifest 一致，并对
-散文忽略、坏 separator/row、重复 path 和错误总数 fail closed。路径 digest 只包含
-UTF-8 path 加单个 LF，并强制 `LC_ALL=C` 字节序，禁止继承宿主 locale collation。
-`--ledger-only` 是给
-不含 detached baseline object 的浅克隆使用的显式模式；普通 revision 模式继续把
-账本路径逐个与 `--from` tree 比较。`scripts/verify.sh` 在构建前先执行真实账本门禁，
-再执行 synthetic drift self-test，后者不得阻止真实输入被驱动。升级后必须分别
-复核行为账 `docs/parity-map.md`、源码账 `docs/source-parity.md`、非功能账
-`docs/performance.md` 与呈现账 `docs/presentation-parity.md`；作为辅助 inventory 的
-`examples/manifest.sexp` 也必须同步。确定性门禁从 manifest 重算 example 数量，
-核对既有 `GOAL12_LEDGER` source/example 身份，并独立核对呈现账的
-`GOAL13_PRESENTATION_LEDGER` 分母与处置总数；任一漂移即失败。
+`scripts/test-source-parity-drift.sh` locks A/D/R, test-file exclusion,
+undispositioned failure and full-disposition success against a temporary Git
+repository; it also feeds the real `docs/source-parity.md` into the same parser
+and requires exactly the 595 rows the Summary declares, a path-set SHA-256
+consistent with the ledger manifest, and it fails closed on prose ignores, a bad
+separator/row, a duplicate path and a wrong total. The path digest contains only
+the UTF-8 path plus a single LF, and forces `LC_ALL=C` byte ordering, so that
+the host locale's collation cannot be inherited.
+`--ledger-only` is the explicit mode for a shallow clone that does not contain
+the detached baseline objects; the ordinary revision mode continues to compare
+each ledger path against the `--from` tree. `scripts/verify.sh` runs the real
+ledger gate before the build, and then the synthetic drift self-test, which must
+not prevent the real input from being driven. After an upgrade, the behavior
+ledger `docs/parity-map.md`, the source ledger `docs/source-parity.md`, the
+non-functional ledger `docs/performance.md` and the presentation ledger
+`docs/presentation-parity.md` must each be re-reviewed; the auxiliary inventory
+`examples/manifest.sexp` must be updated in step as well. The deterministic gate
+recomputes the example count from the manifest, cross-checks the existing
+`GOAL12_LEDGER` source/example identity, and independently cross-checks the
+presentation ledger's
+`GOAL13_PRESENTATION_LEDGER` denominator and disposition totals; any drift
+fails.
 
-## 31. Goal 14 code organization contract
+## 31. The Goal 14 code organization contract
 
-四根 parity 轴回答“实现是否正确”：行为、源码处置、非功能属性与呈现任一轴
-都不能由另一轴替代。`docs/code-organization.md` 回答不同的问题——当前职责边界
-是否足够清楚，开发者能否继续增加功能而不把同一政策手写第二遍。它不是第五本
-parity 账，也不能改变任何固定基线结论。
+The four parity axes answer "is the implementation correct": behavior, source
+disposition, non-functional properties and presentation, none of which may be
+substituted by another. `docs/code-organization.md` answers a different
+question — whether the current responsibility boundaries are clear enough, and
+whether a developer can keep adding features without writing the same policy by
+hand a second time. It is not a fifth parity ledger, and it cannot change any
+fixed-baseline conclusion.
 
-Goal 14 将跨 system 且不含产品语义的政策收敛到叶子 system `cadr-core`：有界线程
-清理、component-local cancellation、原子文件替换、脱敏对象打印与 UTC 时间。
-selector frame、基础设施输出、provider identity/auth metadata 与 JavaScript
-UTF-16 count 等领域政策仍由各自 domain owner 持有。生产 package export、extension
-export/event SHA、session/payload/wire 与全部用户可观察行为均未因组织重构改变。
+Goal 14 converged the cross-system policies that carry no product semantics into
+the leaf system `cadr-core`: bounded thread cleanup, component-local
+cancellation, atomic file replacement, redacted object printing and UTC time.
+Domain policies such as the selector frame, infrastructure output, provider
+identity/auth metadata and the JavaScript UTF-16 count are still held by their
+own domain owners. Production package exports, the extension export/event SHAs,
+the session/payload/wire and every user-observable behavior are unchanged by the
+organizational refactor.
 
-`scripts/check-code-organization.py` 在 `verify.sh` 构建前扫描真实 `src/`。
-Part A 的 277-file histogram 把 15 个文件归入 `>=1000` 行的已审计 outlier band，
-因此该 band 是人工复核边界；每个命中项必须在
-`docs/code-organization-exemptions.json` 有逐路径理由。门禁同时拒绝未登记的大文件、
-重复/空理由与陈旧豁免，并以 synthetic fixture 验证 fail-closed 行为。
+`scripts/check-code-organization.py` scans the real `src/` before the
+`verify.sh` build. Part A's 277-file histogram places 15 files in the audited
+`>=1000`-line outlier band, which makes that band the human-review boundary;
+every hit must carry a per-path reason in
+`docs/code-organization-exemptions.json`. The gate simultaneously rejects
+unregistered large files, duplicate/empty reasons and stale exemptions, and
+verifies its fail-closed behavior with synthetic fixtures.
 
-这个行数检查只检测表层症状：通过不等于组织良好，失败只表示必须解释职责，不能
-为了过门禁机械切文件。更强的门禁是每个已收敛原语的行为和 source anti-bypass
-测试。今后每个新增生产代码的 goal 在开工前必须写明新代码归属、复用的既有原语，
-或说明为何确实需要一个新的独立决策；文件不足 1000 行不能豁免这项判断。
+This line-count check detects a surface symptom only: passing does not mean the
+organization is good, and failing means only that the responsibility must be
+explained — files must not be split mechanically just to pass the gate. The
+stronger gate is the behavior and source anti-bypass test of each converged
+primitive. From now on, every goal that adds production code must state, before
+work starts, where the new code belongs and which existing primitive it reuses,
+or explain why a genuinely new independent decision is required; being under
+1000 lines does not exempt a file from that judgement.
 
-## 32. Goal 15 fixed-baseline render differential
+## 32. Goal 15: the fixed-baseline render differential
 
-`scripts/render-diff.py gate` 从本仓库保留的固定基线 commit object 归档 pi，使用
-immutable marker 对应的 hydrated cache，并对 manifest 的 21 个场景、wide/narrow
-两个尺寸逐项 fresh capture。每侧都通过真实 PTY 与原生 faux provider 驱动实际
-composition root；完整 raw bytes、SHA-256、checkpoint 与 normalized derivative
-分别保存。只有经用户批准、限定于精确分隔符的值替换进入 normalization；空白、
-ANSI、颜色、光标、顺序、整行与无界数字均不归一化，raw 与 SHA 始终是权威证据。
+`scripts/render-diff.py gate` archives pi from the fixed-baseline commit object
+kept in this repository, uses the hydrated cache corresponding to the immutable
+marker, and takes a fresh capture of each of the manifest's 21 scenarios in both
+the wide and the narrow size. Each side drives the real composition root through
+a real PTY and a native faux provider; the complete raw bytes, the SHA-256, the
+checkpoints and the normalized derivative are each stored separately. Only
+user-approved value substitutions confined to exact delimiters enter
+normalization; whitespace, ANSI, colour, cursor, order, whole lines and
+unbounded numbers are not normalized, and the raw bytes and the SHA remain the
+authoritative evidence.
 
-场景域本身也 fail closed：`reachable-interfaces.json` 登记固定基线 22 条 slash
-command、28 个可达界面状态、15 类 constructor 的 22 个源码构造点，以及 Cadr 的
-13 个 overlay kind；固定基线集合先与 `baseline-interface-inventory.json` 交叉校验，
-无 `.git` 的源码归档使用该已审计快照，真实仓库则必须再与固定 commit object 一致；
-Cadr overlay kind 始终从当前源码提取。界面闭包之外，checker 还独立固定 bash
-行数/字节/单行截断、空输出、非零退出、超时与并行 tool batch 七个显著状态；每项
-必须登记基线 token、确定性 trigger 与真实 capture，或登记非空不捕获理由，当前
-零豁免。上述集合与 89 个 checkpoint 双向核对。
-新增命令、constructor、构造点、overlay kind，或任一二级/三级界面没有真实 capture，
-以及删除必需显著状态或使其 capture 失效，都会在 analyze 前失败，不能再由人工
-挑选场景静默漏过。
+The scenario domain itself also fails closed: `reachable-interfaces.json`
+registers the fixed baseline's 22 slash commands, 28 reachable interface states,
+22 source construction sites across 15 constructor kinds, and Cadr's 13 overlay
+kinds; the fixed-baseline set is first cross-validated against
+`baseline-interface-inventory.json`; a source archive without `.git` uses that
+audited snapshot, while a real repository must additionally agree with the fixed
+commit object; Cadr overlay kinds are always extracted from the current source.
+Outside the interface closure, the checker independently fixes seven salient
+states of bash: line/byte/single-line truncation, empty output, non-zero exit,
+timeout and a parallel tool batch; each must register a baseline token, a
+deterministic trigger and a real capture, or register a non-empty reason for not
+capturing, and there are currently zero exemptions. These sets are cross-checked
+in both directions against the 89 checkpoints.
+Adding a command, constructor, construction site or overlay kind, leaving any
+second- or third-level interface without a real capture, and deleting a required
+salient state or invalidating its capture all fail before analyze, and can no
+longer be quietly missed by hand-picking scenarios.
 
-Analyzer 以 tmux 重放未修改 raw stream，比较 checkpoint 的终端语义 screen，并
-fail closed 校验 `test/fixtures/render-diff/dispositions.json`：新差异无 disposition、
-旧 disposition 已陈旧、重复或 baseline commit 不匹配都会失败。I01 保留原始调度
-字节并以 self-replay 区分 scheduler segmentation；I02 是已正式裁决的 fatal-output
-安全差异。`scripts/verify.sh` 的 `fixed-baseline render differential` 阶段直接跑
-完整 capture + analyze，不读取历史 capture 冒充当前证据。
+The analyzer replays the unmodified raw stream through tmux, compares the
+terminal-semantic screen at each checkpoint, and fail-closed validates
+`test/fixtures/render-diff/dispositions.json`: a new difference with no
+disposition, a stale disposition, a duplicate, or a baseline-commit mismatch all
+fail. I01 preserves the original scheduling bytes and distinguishes scheduler
+segmentation by self-replay; I02 is a formally adjudicated fatal-output safety
+difference. The `fixed-baseline render differential` stage of `scripts/verify.sh`
+runs the complete capture plus analyze directly, and does not read a historical
+capture and pass it off as current evidence.
 
-这是唯一以固定 pi 的实际渲染输出为 oracle 的常设门禁。行为、源码、非功能、
-呈现四本账都从 Cadr 实现侧维护合同，不能单独发现“测试从错误实现反推”的问题；
-render differential 是跨实现 oracle，不是第五本账，也不能替代四轴对 payload、
-源码能力、长期性能与脚本未覆盖交互的审计。未来基线升级必须同时更新 manifest 与
-disposition 的 commit、重跑完整矩阵并逐条裁决全部新差异；流程见
-`docs/source-parity-upgrade.md`。
+This is the only standing gate whose oracle is the actual rendered output of the
+fixed pi. The behavior, source, non-functional and presentation ledgers all
+maintain the contract from the Cadr implementation side, and on their own cannot
+discover a "test reverse-engineered from a wrong implementation" problem; the
+render differential is a cross-implementation oracle, is not a fifth ledger, and
+cannot substitute for the four axes' audit of payloads, source capabilities,
+long-run performance and interactions no script covers. A future baseline
+upgrade must update the commit in both the manifest and the dispositions, re-run
+the complete matrix and adjudicate every new difference item by item; the
+process is in `docs/source-parity-upgrade.md`.
 
-## 33. Goal 16 product identity boundary
+## 33. Goal 16: the product identity boundary
 
-产品身份由 `src/cadr-ai/support/release.lisp` 的私有常量组单点拥有：slug、显示名、
-规范仓库 URL 与默认 share viewer。CLI、server、provider attribution 与导出路径
-只能从该 owner 派生，不得复制产品字符串；环境变量与可配置 endpoint 留在各自
-feature owner，但只接受 `CADR_*` 合同。
+Product identity is owned at a single point by the private constant group in
+`src/cadr-ai/support/release.lisp`: the slug, the display name, the canonical
+repository URL and the default share viewer. The CLI, the server, provider
+attribution and the export path may only derive from that owner, and must not
+duplicate a product string; environment variables and configurable endpoints
+stay with their own feature owners, but accept only the `CADR_*` contract.
 
-`/share` 默认生成 `https://cadr.dev/session/#<gist-id>`，非空
-`CADR_SHARE_VIEWER_URL` 与显式参数可覆盖，成功输出明示 viewer 地址。页面部署前
-链接暂不可达是用户已知情接受的过渡状态，不触发回退或额外 fallback。版本检查
-没有默认网络端点：只有 `CADR_VERSION_CHECK_URL` 非空时才请求 Cadr-compatible
-release；这修复了把 pi `0.83.x` 与 Cadr `0.2.x` 比较的产品语义错误。
+`/share` produces `https://cadr.dev/session/#<gist-id>` by default, a non-empty
+`CADR_SHARE_VIEWER_URL` and an explicit argument can override it, and a success
+states the viewer address explicitly. The link being unreachable before the page
+is deployed is a transitional state the user knowingly accepted, and it triggers
+neither a rollback nor an extra fallback. The version check has no default
+network endpoint: only when `CADR_VERSION_CHECK_URL` is non-empty does it
+request a Cadr-compatible release; this fixes the product-semantics error of
+comparing pi `0.83.x` with Cadr `0.2.x`.
 
-14 个生产 `PI_*` 环境名已硬切为精确的 `CADR_*` 映射，无 alias、warning 或
-旧名 fallback。Radius 的 `pi-gateway`、`radius.pi.dev`、`pis/*`、
-`radiusPiId`、`pi-messages`，扩展 manifest 的 `"pi"` key，以及 catalog、固定
-baseline、历史 announcement 与 `aligned with pi` 声明是外部合同或溯源，不是
-Cadr 自称 pi。Goal 16 Part D 的身份门禁以逐路径、逐固定文本、逐理由 allowlist
-保护这条边界；目录级豁免非法，真实树命中数必须与 manifest 一致。
+The 14 production `PI_*` environment names have been hard-switched to exact
+`CADR_*` mappings, with no alias, no warning and no old-name fallback. Radius's
+`pi-gateway`, `radius.pi.dev`, `pis/*`,
+`radiusPiId` and `pi-messages`, the extension manifest's `"pi"` key, and the
+catalog, the fixed baseline, historical announcements and the `aligned with pi`
+statement are external contracts or provenance, not Cadr calling itself pi. The
+Goal 16 Part D identity gate protects that boundary with a per-path, per-fixed-
+text, per-reason allowlist; a directory-level exemption is illegal, and the
+number of hits in the real tree must agree with the manifest.
