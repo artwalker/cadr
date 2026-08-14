@@ -6,7 +6,11 @@ The render differential drives fixed pi baseline
 `53fa77ccd8a279eb87e92294ef3687b03ff80112` and Cadr with the same scenario
 manifest and their native faux providers.  Each side runs under a real PTY.
 The collector fixes terminal size, dark theme, `C.UTF-8`, `TERM=xterm-256color`,
-`COLORTERM=truecolor`, isolated home/config/cwd directories, offline mode, faux
+`COLORTERM=truecolor`, forced chalk truecolor styles (`FORCE_COLOR=3` with the
+parent `NO_COLOR`/`FORCE_COLOR` removed — chalk treats a merely present
+`NO_COLOR` key or an inherited `FORCE_COLOR=0` as "no styles", which would drop
+the baseline's bold/dim/underline modifiers while theme RGB survives),
+isolated home/config/cwd directories, offline mode, faux
 response timestamps, response IDs, token boundaries, and response order.  It
 installs an isolated fake `gh` executable so `/share` deterministically reaches
 its successful user-visible URL path on both sides without external writes. It
@@ -243,10 +247,52 @@ the authority.
 | Hidden hardware cursor | Exact tmux cursor record `<CURSOR X,Y,0>` to `<CURSOR hidden>` | Both products hide the hardware cursor and draw the editor cursor as a screen cell. Its retained internal coordinates are not observable; coordinates remain exact whenever `cursor_flag=1`. |
 | Crash-log ID | Digits only between exact `cadr-crash-` and `.log` delimiters to `<CRASH_ID>` | PID/time/counter identity is intentionally unique; directory, filename grammar, and mode are tested elsewhere. |
 | Bash full-output file | Exact `/tmp/pi-bash-<hex>.log` or `/tmp/cadr-bash-<decimal>-<decimal>.log` grammar to `/tmp/<PRODUCT>-bash-<OUTPUT_ID>.log` | The suffix is process-generated; the full warning copy, punctuation, color and replay geometry remain checked. |
+| Unbold product banner | Exact unbold pi banner `ESC[38;2;138;190;183m pi ESC[38;2;102;102;102m v0.84.1 ESC[39m` (and its plain form) to the same `<PRODUCT> v<VERSION>` placeholder the bold form already produces | This host's tmux replay of the baseline banner sometimes omits the bold `1m`/`0m` wrapper around the accent product name — the same pi frame arrives in two envelopes. Both pi envelopes converge to one I04 pair; a cadr banner in either envelope has no unbold mapping and still compares unequal (evidence below). |
+| Node inspect stack-frame gray | Only the two Node inspect shapes lose their `90m`/`39m` wrapper: a `    at ...` frame wrapped as `ESC[90m    at ... ESC[39m`, and the split path `(dir/ ESC[39m file:line:col ESC[90m)`. Implemented as `strip_node_inspect_stack_colors` (`scripts/render-diff.py`). | Node 22 adds the gray stack wrapper when `FORCE_COLOR` is set; the disposition book was captured without that envelope, and the closer `39m` can land mid-path and defeat the driver-location normalizer. Every other `90m`/`39m` pair (theme gray such as `esc to interrupt`) remains checked byte-for-byte; cells and visible text are unchanged (I01 only). |
+
+The `FORCE_COLOR=3` / `NO_COLOR` handling documented in the contract section is
+capture-environment control, not byte rewriting: it removes a parent-process
+leak (`NO_COLOR` present, or `FORCE_COLOR=0`) that would silently strip the
+baseline's bold/dim/underline modifiers before capture and masquerade as an
+I01 envelope drift. The harness self-test fails if the fixed environment
+retains `NO_COLOR` or sets any `FORCE_COLOR` other than `3`.
+
+These three entries were adjudicated 2026-08-14 (advisor review of commit
+`b90422a56`). Replayable evidence:
+
+```sh
+python3 - <<'EOF'
+import importlib.util, sys, os, tempfile
+from pathlib import Path
+spec = importlib.util.spec_from_file_location("render_diff", "scripts/render-diff.py")
+rd = importlib.util.module_from_spec(spec); sys.modules["render_diff"] = rd
+spec.loader.exec_module(rd)
+n = rd.normalize_fixed_values
+pi_bold = b"\x1b[1m\x1b[38;2;138;190;183mpi\x1b[0m\x1b[38;2;102;102;102m v0.84.1\x1b[39m"
+pi_unbold = b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.1\x1b[39m"
+cadr_unbold = b"\x1b[38;2;138;190;183mcadr\x1b[38;2;102;102;102m v0.2.0\x1b[39m"
+print("pi bold == pi unbold   ->", n(pi_bold) == n(pi_unbold))      # True
+print("pi bold == cadr unbold ->", n(pi_bold) == n(cadr_unbold))    # False
+s = rd.strip_node_inspect_stack_colors
+print(s(b"\x1b[90m    at run (/tmp/x/driver.ts:10:5)\x1b[39m"))     # b'    at run (/tmp/x/driver.ts:10:5)'
+print(s(b"\x1b[90m(/tmp/x/\x1b[39mdriver.ts:10:5\x1b[90m)\x1b[39m")) # b'(/tmp/x/driver.ts:10:5)'
+theme = b"\x1b[90mesc to interrupt\x1b[39m"
+print("theme gray untouched   ->", s(theme) == theme)               # True
+os.environ["NO_COLOR"] = "1"; os.environ["FORCE_COLOR"] = "0"
+with tempfile.TemporaryDirectory() as tmp:
+    env = rd.fixed_environment(Path(tmp), 100, 32, Path(tmp) / "ready")
+print("NO_COLOR isolated      ->", "NO_COLOR" not in env)           # True
+print("FORCE_COLOR forced     ->", env.get("FORCE_COLOR"))          # 3
+EOF
+```
 
 No rule removes or folds whitespace, ANSI sequences, colors, visible cursor positions,
 line endings, punctuation, ordering, whole lines, UUID-shaped arbitrary text, or
 unscoped numbers.  The raw `.raw` and SHA-256 files remain the authority.
+The single exception is the Node inspect stack-frame rule above: applied
+inside `normalized_screen` (after tmux replay, never to the retained raw
+bytes), it removes exactly those two gray wrappers from the semantic screen
+and is listed with its boundary for that reason.
 
 ## Determinism boundary and blind spots
 
