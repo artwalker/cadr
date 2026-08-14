@@ -1,143 +1,187 @@
-# Goal 12 扩展 API 实现面第三次补充解冻提案
+# Goal 12 third supplementary unfreeze proposal for the extension API implementation surface
 
-状态：**approved and implemented**（用户于 2026-08-02 逐项裁决：F：批准，G：批准，H：批准）。
+状态：**approved and implemented** (the user adjudicated item by item on 2026-08-02: F：批准, G：批准, H：批准).
 
-固定基线：
+Fixed baseline:
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-（`v0.83.0-38-g74caa2649`）。本文所有 baseline `file:line` 均指该提交。
+(`v0.83.0-38-g74caa2649`). Every baseline `file:line` in this document refers to
+that commit.
 
-## 1. 为何再次停止
+## 1. Why work stopped again
 
-D/E 获批后，授权范围内的 runtime/TUI/OAuth bridge 已实现，99 个基线 extension
-example 中 94 个已可用现有 API 移植。逐个做真实入口审计时确认剩余 5 个文件依赖
-三条尚未接入生产调用链的基线合同：
+After D/E were approved, the runtime/TUI/OAuth bridge within the authorized scope
+was implemented, and 94 of the 99 baseline extension examples can already be
+ported with the existing API. A real-entry-point audit done one by one confirmed
+that the remaining 5 files depend on three baseline contracts that are not yet
+wired into the production call chain:
 
-- `custom-compaction.ts`：`:session-before-compact` 虽已在事件表和返回值校验器中存在，
-  但 compact 主路径从未 dispatch；
-- `prompt-customizer.ts`：`:before-agent-start` 的 `:system-prompt-options` 当前硬编码为 NIL；
-- custom Anthropic 与 GitLab Duo 的 3 个文件：OAuth/token/direct-access 控制面依赖
-  extension 可调用的 HTTP seam，Cadr 目前只有 subprocess `exec`，没有等价能力。
+- `custom-compaction.ts`: `:session-before-compact` does already exist in the
+  event table and the return-value validator, but the main compact path never
+  dispatches it;
+- `prompt-customizer.ts`: the `:system-prompt-options` of `:before-agent-start`
+  is currently hard-coded to NIL;
+- the 3 files of custom Anthropic and GitLab Duo: the OAuth/token/direct-access
+  control plane depends on an HTTP seam that the extension can call, and Cadr
+  currently has only the subprocess `exec` and no equivalent capability.
 
-这不是新增产品功能，而是此前提案把“API 已声明”误判成“真实调用链已闭合”。但三项
-都超出已批准文件面，且用户已明确要求越界即 blocked。因此没有伪造示例、调用
-`cadr-ai::native-http-request`、全局替换函数或把 provider 写入全局 registry。当前账本
-在批准前如实记为 **94 ported / 5 gap**；实施后为 **99 ported / 0 gap**。
+This is not a new product feature; it is that the earlier proposal misjudged "the
+API is already declared" as "the real call chain is already closed". But all
+three go beyond the approved file surface, and the user has explicitly required
+that any boundary crossing be immediately blocked. So no example was faked,
+`cadr-ai::native-http-request` was not called, no function was globally replaced,
+and no provider was written into the global registry. Before approval the current
+ledger honestly records **94 ported / 5 gap**; after implementation it is
+**99 ported / 0 gap**.
 
-## 2. 补充项 F：把 `session_before_compact` 接入真实 compaction 生命周期
+## 2. Supplementary item F: wire `session_before_compact` into the real compaction lifecycle
 
-### 2.1 确切需求与基线证据
+### 2.1 Exact requirement and baseline evidence
 
-基线在手动与自动 compaction 两条路径均于摘要生成前 dispatch：
+The baseline dispatches on both the manual and the automatic compaction paths
+before the summary is generated:
 
-- `packages/coding-agent/src/core/agent-session.ts:1796-1831`：手动 compaction 传入
-  `preparation`、`branchEntries`、`customInstructions`、`reason="manual"`、
-  `willRetry=false`、abort signal，并接受 cancel 或完整 custom compaction；
-- 同文件 `:2065-2105`：threshold/overflow 路径使用相同合同；
-- `packages/coding-agent/src/core/extensions/types.ts:591-612`：冻结事件与 after-event 字段；
-- `packages/coding-agent/examples/extensions/custom-compaction.ts:21-131`：示例读取完整
-  preparation，返回 `summary/firstKeptEntryId/tokensBefore/usage`。
+- `packages/coding-agent/src/core/agent-session.ts:1796-1831`: manual compaction
+  passes in `preparation`, `branchEntries`, `customInstructions`,
+  `reason="manual"`, `willRetry=false` and the abort signal, and accepts a cancel
+  or a complete custom compaction;
+- `:2065-2105` in the same file: the threshold/overflow path uses the same
+  contract;
+- `packages/coding-agent/src/core/extensions/types.ts:591-612`: the frozen event and the after-event fields;
+- `packages/coding-agent/examples/extensions/custom-compaction.ts:21-131`: the example reads the complete
+  preparation and returns `summary/firstKeptEntryId/tokensBefore/usage`.
 
-Cadr 已在 `src/cadr-agent/extensions.lisp:3527-3569,3577-3584,3903-3909` 校验并合并
-`:session-before-compact` 的 `:cancel-p/:compaction` 返回值，但
-`src/cadr-agent/compaction.lisp:235-297` 直接生成并写入默认摘要，从未调用 lifecycle。
+Cadr already validates and merges the `:cancel-p/:compaction` return values of
+`:session-before-compact` in
+`src/cadr-agent/extensions.lisp:3527-3569,3577-3584,3903-3909`, but
+`src/cadr-agent/compaction.lisp:235-297` generates and writes the default summary
+directly, and has never called the lifecycle.
 
-### 2.2 最小补充解冻面
+### 2.2 Minimal supplementary unfreeze surface
 
-- `src/cadr-agent/compaction.lisp`：在已完成 preparation、尚未调用默认 summarizer 时
-  dispatch；传入 source/kept entries、token 数、custom instructions、manual/threshold/
-  overflow reason、will-retry 与 session-local cancellation signal；严格消费已存在的
-  `:cancel-p/:compaction` 合同。
-- 对应 `test/cadr-agent/*compaction*` 与 Goal 12 example tests。
+- `src/cadr-agent/compaction.lisp`: dispatch once preparation is complete and the
+  default summarizer has not yet been called; pass in the source/kept entries,
+  the token count, the custom instructions, the manual/threshold/overflow reason,
+  will-retry and the session-local cancellation signal; consume strictly the
+  already-existing `:cancel-p/:compaction` contract.
+- The corresponding `test/cadr-agent/*compaction*` and Goal 12 example tests.
 
-不修改 `src/cadr-ai`，不新增事件，不改变 `extensions.lisp` 已冻结的事件语义。
+`src/cadr-ai` is not modified, no event is added, and the already-frozen event
+semantics of `extensions.lisp` are not changed.
 
-### 2.3 默认行为与门禁
+### 2.3 Default behavior and gates
 
-- 没有 handler 或 handler 返回 NIL 时，默认摘要输入、事件顺序、session entry、JSON/RPC
-  wire 与错误文案逐字节不变。
-- 红测试覆盖：手动/threshold/overflow payload；cancel；extension compaction；空摘要回退；
-  abort；handler error 回退；after event 的 `from-extension`；custom result 完整写入会话。
-- 已有 `:session-before-compact` 事件名与返回结构不增加字段、不改含义。
+- With no handler, or when the handler returns NIL, the default summary input,
+  the event ordering, the session entry, the JSON/RPC wire and the error copy are
+  byte-for-byte unchanged.
+- Red-test coverage: the manual/threshold/overflow payload; cancel; extension
+  compaction; the empty-summary fallback; abort; the handler-error fallback;
+  `from-extension` on the after event; the custom result being written into the
+  session in full.
+- The existing `:session-before-compact` event name and return structure gain no
+  fields and do not change meaning.
 
-### 2.4 替代方案、冻结与回滚
+### 2.4 Alternatives, freeze and rollback
 
-- 在示例里重写 `/compact` command：绕过自动 compaction/overflow，非基线合同。
-- 只调用 hook 但忽略返回值：会把“有事件”伪装成“可定制”。
+- Rewriting the `/compact` command inside the example: it bypasses automatic
+  compaction/overflow and is not the baseline contract.
+- Calling the hook but ignoring the return value: it would disguise "there is an
+  event" as "it is customizable".
 
-回滚只删除 compaction 主路径 dispatch 分支；无 handler 的旧路径保持原函数体。
+Rollback deletes only the dispatch branch on the main compaction path; the old
+path with no handler keeps its original function body.
 
-## 3. 补充项 G：保存并发出真实 `systemPromptOptions`
+## 3. Supplementary item G: store and emit the real `systemPromptOptions`
 
-### 3.1 确切需求与基线证据
+### 3.1 Exact requirement and baseline evidence
 
-基线 `BuildSystemPromptOptions` 包含 custom prompt、selected tools、tool snippets、prompt
-guidelines、append prompt、cwd、context files、skills：
+The baseline `BuildSystemPromptOptions` contains the custom prompt, selected
+tools, tool snippets, prompt guidelines, append prompt, cwd, context files and
+skills:
 
-- `packages/coding-agent/src/core/system-prompt.ts:8-25`：完整字段合同；
-- `packages/coding-agent/src/core/extensions/types.ts:698-709`：`before_agent_start` 必须携带
-  fully assembled prompt 与构建它的结构化 options；
-- `packages/coding-agent/src/core/extensions/runner.ts:1081-1112`：每个 handler 均收到同一
-  options，system prompt 的逐 handler 修改不反向污染 options；
-- `packages/coding-agent/examples/extensions/prompt-customizer.ts:22-96`：示例依赖
-  `selectedTools/skills/appendSystemPrompt`，不是只读 cwd 的近似实现。
+- `packages/coding-agent/src/core/system-prompt.ts:8-25`: the complete field contract;
+- `packages/coding-agent/src/core/extensions/types.ts:698-709`: `before_agent_start` must carry the
+  fully assembled prompt and the structured options that built it;
+- `packages/coding-agent/src/core/extensions/runner.ts:1081-1112`: every handler receives the same
+  options, and the per-handler modification of the system prompt does not pollute
+  the options in return;
+- `packages/coding-agent/examples/extensions/prompt-customizer.ts:22-96`: the example depends on
+  `selectedTools/skills/appendSystemPrompt`, not on an approximation that only reads cwd.
 
-Cadr 的 `src/cadr-agent/loop.lisp:1259-1277` 把 `:system-prompt-options` 写死为 NIL；真实
-字段只在 `src/cadr-cli/main.lisp:2280-2323` 和 `src/cadr-cli/sdk.lisp:355-375` 组装后
-立即压平成字符串。`src/cadr-agent/extensions.lisp:258-265` 的 command-only getter 不能
-替代 lifecycle event payload，也不得放宽其语义。
+Cadr's `src/cadr-agent/loop.lisp:1259-1277` hard-codes `:system-prompt-options`
+to NIL; the real fields are immediately flattened into a string only after being
+assembled in `src/cadr-cli/main.lisp:2280-2323` and
+`src/cadr-cli/sdk.lisp:355-375`. The command-only getter at
+`src/cadr-agent/extensions.lisp:258-265` cannot replace the lifecycle event
+payload, and its semantics must not be relaxed either.
 
-### 3.2 最小补充解冻面
+### 3.2 Minimal supplementary unfreeze surface
 
-- `src/cadr-agent/runtime.lisp`、`src/cadr-agent/tool.lisp`：agent 新增只读的
-  `system-prompt-options` slot/constructor 参数；未传入时为 NIL。
-- `src/cadr-agent/loop.lisp`：`before-agent-start` payload 读取该 slot，保留现有
-  system-prompt 串与逐 handler merge 语义。
-- `src/cadr-cli/main.lisp`、`src/cadr-cli/sdk.lisp`：系统提示构造同时返回 prompt 与
-  defensive-copy options，并在 reload 时原子更新两者。
-- 对应 agent/CLI/SDK/example tests。
+- `src/cadr-agent/runtime.lisp`, `src/cadr-agent/tool.lisp`: the agent gains a
+  read-only `system-prompt-options` slot/constructor argument; when it is not
+  passed in, it is NIL.
+- `src/cadr-agent/loop.lisp`: the `before-agent-start` payload reads that slot,
+  keeping the existing system-prompt string and the per-handler merge semantics.
+- `src/cadr-cli/main.lisp`, `src/cadr-cli/sdk.lisp`: system prompt construction
+  returns both the prompt and defensive-copy options, and updates both atomically
+  on reload.
+- The corresponding agent/CLI/SDK/example tests.
 
-不修改 `sdk-services.lisp` 的 prompt builder，不改变 command-only getter，不修改
-`src/cadr-ai`。
+The prompt builder in `sdk-services.lisp` is not modified, the command-only
+getter is not changed, and `src/cadr-ai` is not modified.
 
-### 3.3 默认行为与门禁
+### 3.3 Default behavior and gates
 
-- 构造者未传 options 时事件仍带 NIL；现有调用点与外部构造 API 保持兼容。
-- CLI/SDK 真实路径的最终 system prompt 必须逐字节不变；只新增此前为 NIL 的结构化
-  event 字段，不进入 agent-event/JSON/RPC wire。
-- 红测试覆盖全部 8 个字段、defensive copy、两 handler 顺序、reload 更新、CLI/SDK
-  等价，以及 command-only getter 继续拒绝 lifecycle context。
+- When the constructor does not pass options, the event still carries NIL; the
+  existing call sites and the external construction API stay compatible.
+- The final system prompt of the real CLI/SDK path must be byte-for-byte
+  unchanged; only the structured event field that was previously NIL is added,
+  and it does not enter the agent-event/JSON/RPC wire.
+- Red-test coverage of all 8 fields, the defensive copy, the ordering of two
+  handlers, the reload update, CLI/SDK equivalence, and the command-only getter
+  continuing to reject a lifecycle context.
 
-### 3.4 替代方案、冻结与回滚
+### 3.4 Alternatives, freeze and rollback
 
-- handler 现场重新扫描 resources：时序不一致、重复 I/O，且违反基线“无需重发现”。
-- 从最终 prompt 反向解析：有损且会把格式细节当 API。
-- 借用 command-only getter：改变已冻结 context-kind 语义。
+- Having the handler rescan the resources on the spot: inconsistent timing,
+  duplicated I/O, and it violates the baseline's "no rediscovery needed".
+- Parsing backwards from the final prompt: lossy, and it would treat formatting
+  details as the API.
+- Borrowing the command-only getter: it changes the already-frozen context-kind
+  semantics.
 
-回滚删除 agent slot/双值传递，prompt builder 与最终 prompt 本身不变。
+Rollback deletes the agent slot / the two-value return; the prompt builder and
+the final prompt itself are unchanged.
 
-## 4. 补充项 H：session-local extension HTTP control-plane seam
+## 4. Supplementary item H: a session-local extension HTTP control-plane seam
 
-### 4.1 确切需求与基线证据
+### 4.1 Exact requirement and baseline evidence
 
-基线 extension 运行于 JS，天然可调用 `fetch`；两份 provider 示例把该能力用于真实
-认证与 provider 控制面：
+Baseline extensions run in JS and can naturally call `fetch`; the two provider
+examples use that capability for real authentication and the provider control
+plane:
 
-- `custom-provider-anthropic/index.ts:78-153`：authorization-code exchange 与 refresh
-  均 POST JSON token endpoint；`:574-609` 注册 OAuth 与 custom stream；
-- `custom-provider-gitlab-duo/index.ts:183-208`：用 OAuth access token 换取并缓存
-  direct-access token；`:233-300` 完成 form-urlencoded login/refresh；`:306-375`
-  将短期 token/headers 投影到现有 Anthropic/OpenAI stream；
-- 同文件 `:381-403`：上述能力是 provider 注册的组成部分，不是独立 demo。
+- `custom-provider-anthropic/index.ts:78-153`: both the authorization-code
+  exchange and refresh POST JSON to the token endpoint; `:574-609` registers the
+  OAuth and the custom stream;
+- `custom-provider-gitlab-duo/index.ts:183-208`: exchanges the OAuth access token
+  for a direct-access token and caches it; `:233-300` completes the
+  form-urlencoded login/refresh; `:306-375` projects the short-lived
+  token/headers onto the existing Anthropic/OpenAI stream;
+- `:381-403` in the same file: those capabilities are part of the provider
+  registration, not a standalone demo.
 
-Cadr 的 `src/cadr-agent/extensions.lisp:26-45,781-815,1823-1860` 只有 host `exec` seam。
-`cadr-ai:*http-request-function*` 虽导出，但构造 request 所需接口未公开；直接调用
-`cadr-ai::native-http-request` 会让扩展依赖冻结层私有实现。shell 到 `curl` 又会新增宿主
-依赖并把 token 暴露在进程参数/环境中，均不接受。
+Cadr's `src/cadr-agent/extensions.lisp:26-45,781-815,1823-1860` has only the host
+`exec` seam. `cadr-ai:*http-request-function*` is exported, but the interface
+needed to construct a request is not public; calling
+`cadr-ai::native-http-request` directly would make extensions depend on a private
+implementation of the frozen layer. Shelling out to `curl` would in turn add a
+host dependency and expose the token in the process arguments/environment;
+neither is accepted.
 
-### 4.2 最小补充解冻面与签名
+### 4.2 Minimal supplementary unfreeze surface and signature
 
-- `src/cadr-agent/extensions.lisp`：给 extension host 增加 session-local
-  `http-request-function`，导出 additive：
+- `src/cadr-agent/extensions.lisp`: add a session-local
+  `http-request-function` to the extension host, exported additively:
 
   ```lisp
   (extension-api-http-request api url
@@ -145,41 +189,57 @@ Cadr 的 `src/cadr-agent/extensions.lisp:26-45,781-815,1823-1860` 只有 host `e
   => (:status integer :headers alist :body octet-vector)
   ```
 
-  URL/method/header/body 先复制并校验；signal/timeout 传播；返回值不含 request secrets。
-- `src/cadr-agent/package.lisp`：仅导出上式及必要的结果 reader（若实现采用 struct）。
-- `src/cadr-cli/extensions.lisp`：创建 host 时注入 adapter，内部复用现有 Cadr-AI HTTP
-  transport；扩展只见稳定的 agent API，不见 Cadr-AI 私有 request object。
-- `src/cadr-cli/sdk.lisp`：SDK host 使用同一 adapter，避免 CLI/SDK 扩展能力分叉。
-- 对应 agent/CLI/SDK/example tests。
+  The URL/method/header/body are copied and validated first; signal/timeout
+  propagate; the return value contains no request secrets.
+- `src/cadr-agent/package.lisp`: export only the form above and the necessary
+  result readers (if the implementation uses a struct).
+- `src/cadr-cli/extensions.lisp`: inject the adapter when the host is created,
+  internally reusing the existing Cadr-AI HTTP transport; the extension sees only
+  the stable agent API, never the Cadr-AI private request object.
+- `src/cadr-cli/sdk.lisp`: the SDK host uses the same adapter, avoiding a fork
+  between the CLI and SDK extension capabilities.
+- The corresponding agent/CLI/SDK/example tests.
 
-本项只提供 OAuth/direct-access 所需的 buffered control-plane request；provider 的 SSE
-仍通过已批准 `runtime-provider` stream function 和既有 Cadr-AI provider stream 实现，
-不另造 transport。无新第三方依赖，不改 `src/cadr-ai`，不进入 ASDF 闭包。
+This item provides only the buffered control-plane request that
+OAuth/direct-access needs; the provider's SSE is still implemented through the
+approved `runtime-provider` stream function and the existing Cadr-AI provider
+stream, and no second transport is built. No new third-party dependency, no
+modification of `src/cadr-ai`, and nothing enters the ASDF closure.
 
-### 4.3 凭据、默认行为与门禁
+### 4.3 Credentials, default behavior and gates
 
-- 未调用时零网络、零新线程、零可观察变化；host 未注入时明确报 unavailable。
-- redirect、abort、timeout、非 2xx 均返回/抛出稳定的 extension-level condition；condition、
-  log、notice、wire fixture 不得包含 Authorization、access token、refresh secret 或 body。
-- 临时 HTTP server 红测试覆盖 JSON/form body、headers/status/bytes、timeout、abort、并发
-  session 隔离、reload stale API；OAuth tests 使用网络桩和临时 auth store。
-- 两个 provider 均走既有 auth store、refresh lock、原子写；reload 移除 provider 投影但
-  不删 credential；不写 `src/cadr-ai` 全局 registry。
+- When it is not called there is zero network, zero new threads and zero
+  observable change; when the host has not injected it, unavailable is reported
+  explicitly.
+- Redirect, abort, timeout and non-2xx all return/signal a stable
+  extension-level condition; conditions, logs, notices and wire fixtures must not
+  contain the Authorization, the access token, the refresh secret or the body.
+- Red tests against a temporary HTTP server cover the JSON/form body, the
+  headers/status/bytes, timeout, abort, concurrent session isolation and the
+  reload stale API; the OAuth tests use network stubs and a temporary auth store.
+- Both providers go through the existing auth store, refresh lock and atomic
+  write; reload removes the provider projection but does not delete the
+  credential; the `src/cadr-ai` global registry is not written.
 
-### 4.4 替代方案、冻结与回滚
+### 4.4 Alternatives, freeze and rollback
 
-- 导出/修改 Cadr-AI transport：违反本批 `src/cadr-ai` 完全冻结。
-- `curl` subprocess：宿主依赖、token 泄露面和取消语义均劣于现有 transport。
-- 为两个示例各写特例：不是 extension API，后续 provider 仍无法移植。
-- 把 HTTP 做成默认 agent tool：污染默认 YOLO 工具集，且基线没有该机制。
+- Exporting/modifying the Cadr-AI transport: it violates this round's complete
+  freeze of `src/cadr-ai`.
+- A `curl` subprocess: the host dependency, the token exposure surface and the
+  cancellation semantics are all worse than the existing transport.
+- Writing a special case for each of the two examples: it is not an extension
+  API, and subsequent providers would still be unportable.
+- Making HTTP a default agent tool: it would pollute the default YOLO tool set,
+  and the baseline has no such mechanism.
 
-回滚删除 host callback 与公开 wrapper；未调用路径没有持久状态。
+Rollback deletes the host callback and the public wrapper; the path that does not
+call it has no persistent state.
 
-## 5. 受阻示例、裁决项与恢复顺序
+## 5. Blocked examples, adjudication items and resumption order
 
-批准时的 5 个 gap（现均关闭）：
+The 5 gaps at the time of approval (all now closed):
 
-| Baseline 文件 | gap | 对应裁决 |
+| Baseline file | gap | Corresponding adjudication |
 |---|---|---|
 | `custom-compaction.ts` | `:compaction-lifecycle-dispatch` | F |
 | `prompt-customizer.ts` | `:system-prompt-options-event-payload` | G |
@@ -187,12 +247,14 @@ Cadr 的 `src/cadr-agent/extensions.lisp:26-45,781-815,1823-1860` 只有 host `e
 | `custom-provider-gitlab-duo/index.ts` | `:extension-http-runtime` | H |
 | `custom-provider-gitlab-duo/test.ts` | `:extension-http-runtime` | H |
 
-用户裁决：
+User adjudication:
 
-1. **F（解冻 `src/cadr-agent/compaction.lisp` 的 lifecycle dispatch）：批准。**
-2. **G（解冻 agent prompt-options 保存与 CLI/SDK 双值传递）：批准。**
-3. **H（增加 session-local extension HTTP control-plane seam）：批准。**
+1. **F (unfreeze the lifecycle dispatch of `src/cadr-agent/compaction.lisp`): approved.**
+2. **G (unfreeze storing the agent prompt-options and the two-value return in CLI/SDK): approved.**
+3. **H (add a session-local extension HTTP control-plane seam): approved.**
 
-三项已按 F→G→H 完成 5 个示例；extension export SHA、architecture、README、
-source-parity 与 parity-map 随实施提交同步，随后进入 Goal 12 Part D。F/G/H
-补齐的是固定基线已有能力，不列为相对基线的有意新增。
+The three items have already completed the 5 examples in the order F→G→H; the extension export
+SHA, architecture, README, source-parity and parity-map are synchronized with the
+implementation commit, after which Goal 12 Part D begins. What F/G/H fill in are
+capabilities the fixed baseline already has; they are not listed as deliberate
+additions relative to the baseline.
