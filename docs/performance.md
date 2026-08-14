@@ -488,7 +488,10 @@ written by `scripts/goal20-part-a-noise-bands.py` to
 | 2026-08-14T04:11:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 291,287.2 | 0.0 | 360,272 |
 | 2026-08-14T05:23:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 251,607.9 | 0.0 | 360,272 |
 | 2026-08-14T06:39:45Z | verify-isolated | Friend-MachineD | `isolated-copy` | 257,222.4 | 0.0 | 360,272 |
+| 2026-08-14T07:28:53Z | verify-isolated | Friend-MachineD | `isolated-copy` | 252,819.5 | 3,993.0 | 360,272 |
+| 2026-08-14T08:19:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 284,481.1 | 0.0 | 360,272 |
+| 2026-08-14T09:13:26Z | verify-isolated | Friend-MachineD | `isolated-copy` | 259,739.7 | 0.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-14T06:39:45Z) versus `verify-isolated` (2026-08-14T05:23:44Z).
+Latest vs previous: `verify-isolated` (2026-08-14T09:13:26Z) versus `verify-isolated` (2026-08-14T08:19:46Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->
