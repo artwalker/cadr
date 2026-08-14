@@ -67,7 +67,7 @@ span are all written into [`docs/source-parity.md`](../source-parity.md). The
 ledger SHA-256 is
 `4603646c6a780466af6df2900b02afc6696b1fff00463c0eed3381ec92417aac`.
 
-| package | files | 已实现 | 有意差异 | 缺失 |
+| package | files | implemented | intentional difference | missing |
 |---|---:|---:|---:|---:|
 | ai | 183 | 117 | 30 | 36 |
 | coding-agent | 289 | 139 | 27 | 123 |
@@ -83,7 +83,7 @@ Of the 180 missing items, 99 are shipped runnable examples and 81 are
 production/helper capabilities. The suggested batches, ordered by dependency,
 are: TUI composition 19, Apple Terminal modifier 2,
 agent/session/coding core 22, AI catalog/OAuth/transport/stream 36, eval
-lifecycle 2, runnable examples 99. The 72 "有意差异" rows are retained line by
+lifecycle 2, runnable examples 99. The 72 "intentional difference" rows are retained line by
 line and have not yet been approved on the user's behalf.
 
 Mechanical re-check: rendered paths 595, unique 595; `diff -u` against the
@@ -138,7 +138,7 @@ and submenus, the protocol shared by the two editors, and root/overlay/input;
 the five `GOAL12-CODING-AGENT-*` tests cover every dependent component and the
 public barrel. The ledger goes from `coding-agent 139/27/123` to `147/27/115`,
 `tui 23/1/13` to `34/1/2`, and the whole repository to
-`362 已实现 / 72 有意差异 / 161 缺失`; the remainder is exactly
+`362 implemented / 72 intentional difference / 161 missing`; the remainder is exactly
 99 examples plus 62 production/helper capabilities.
 
 Verification: the deterministic suite is
@@ -196,7 +196,7 @@ tools. The final deterministic suite is
 
 The ledger goes from `coding-agent 147/27/115` to `163/27/99`, `agent 25/11/6`
 to `31/11/0`, and the whole repository to
-`384 已实现 / 72 有意差异 / 139 缺失`. The remaining items are exactly
+`384 implemented / 72 intentional difference / 139 missing`. The remaining items are exactly
 99 examples, 36 AI, 2 eval and the 2 Apple Terminal rows the user explicitly
 deferred.
 
@@ -241,7 +241,7 @@ capability/provider/auth/model-data/WebSocket layers;
 `scripts/check-model-data.lisp` and `scripts/generate-models.lisp` were
 actually run and passed; `cadr-ai` is `2117 checks / 2117 pass / 0 skip / 0 fail`.
 The ledger goes from `ai 117/30/36` to `153/30/0`, and the whole repository to
-`420 已实现 / 72 有意差异 / 103 缺失`; the remainder is exactly 99 examples,
+`420 implemented / 72 intentional difference / 103 missing`; the remainder is exactly 99 examples,
 2 eval and the 2 Apple Terminal rows the user explicitly deferred.
 
 ## Part C4 — Eval lifecycle (2)
@@ -289,7 +289,7 @@ yet exist, ASDF failed explicitly; after implementation
 `EVAL-HARNESS-REPORTER-INTERRUPTED-NOTICE-IS-EXACT`.
 
 The ledger goes from `evals 6/2/2` to `8/2/0`, and the whole repository to
-`422 已实现 / 72 有意差异 / 101 缺失`. The remaining items are exactly
+`422 implemented / 72 intentional difference / 101 missing`. The remaining items are exactly
 99 examples and the two Apple Terminal rows the user explicitly deferred; this
 batch has no new dependency and changes no existing observable behavior.
 
@@ -297,7 +297,7 @@ batch has no new dependency and changes no existing observable behavior.
 
 Status: implemented after the user revoked the original "not applicable to the
 target platform" deferral adjudication. That adjustment is a correction of
-product priority, not a re-verdict of a platform capability into 有意差异.
+product priority, not a re-verdict of a platform capability into intentional difference.
 
 - `src/cadr-tui/native-modifiers.lisp:3-78` implements the baseline's four
   CoreGraphics masks, the Darwin/arm64/x64 gating, the
@@ -319,7 +319,7 @@ product priority, not a re-verdict of a platform capability into 有意差异.
   prove the fixture cross-implementation comparison and the integration
   branch, and claim no live verification.
 
-The goal regression is `595 = 523 已实现 + 72 有意差异 + 0 暂缓/缺失`,
+The goal regression is `595 = 523 implemented + 72 intentional difference + 0 暂缓/missing`,
 reaching zero-deferral status for the first time.
 
 Mechanical acceptance:
@@ -378,7 +378,7 @@ rendering; it cannot replace the baseline's
 dispose and the overlay handle. Likewise, deriving `mode` does not replace the
 public `hasUI`, an internal agent slot does not replace the model/runtime
 context, and the existing simplified renderer does not replace the full
-Theme/ToolRenderContext. All those rows stay `缺失`, and no internal symbol,
+Theme/ToolRenderContext. All those rows stay `missing`, and no internal symbol,
 weak assertion or downgraded example was used to inflate the numbers.
 
 Each of the proposal's 19 items contains the exact requirement, the fixed
@@ -418,8 +418,8 @@ records binary build time
 `./cadr --version` is
 `cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`.
 
-The ledger goes from `422 已实现 / 72 有意差异 / 101 缺失` to
-`439 已实现 / 72 有意差异 / 84 缺失`. The remainder is exactly the 82
+The ledger goes from `422 implemented / 72 intentional difference / 101 missing` to
+`439 implemented / 72 intentional difference / 84 missing`. The remainder is exactly the 82
 proposal-blocked examples and the 2 Apple Terminal rows the user explicitly
 deferred. Stopping here is the adjudication boundary for new capabilities, not
 a declaration that the 82 examples are complete; re-verdicting them row by row

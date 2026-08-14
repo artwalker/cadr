@@ -1,6 +1,6 @@
 # Goal 20 Part I — Lisp-ification columns on the existing ledger
 
-Date: 2026-08-14. Status: denominator locked; every current Lisp row is `未评估`.
+Date: 2026-08-14. Status: denominator locked; every current Lisp row is `pending evaluation`.
 This landing does not assess any file and does not start Part K.
 
 No second table. Columns were added to the existing per-file ledger in
@@ -52,18 +52,18 @@ denominator is unaffected.
 
 Header now:
 
-`| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp化状态 | 评估结论 | 处理 goal |`
+`| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |`
 
-Closed states: `未评估` / `已评估-需改写` / `已评估-无需改写` / `改写中` / `已完成`.
+Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
 
-| row kind | Lisp化状态 | 评估结论 | 处理 goal |
+| row kind | Lisp-ification status | evaluation verdict | 处理 goal |
 |---|---|---|---|
-| every current `src/**/*.lisp` | `未评估` | — | — |
-| five export assets | `不适用` | `静态导出资产，逐字节复刻基线，无 Lisp 源可评估` | — |
+| every current `src/**/*.lisp` | `pending evaluation` | — | — |
+| five export assets | `n/a` | `Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate` | — |
 
 Progress: `0/293` files, `0/120,897` lines.
 
-`已评估-无需改写` was not used. That state still requires the two I0 questions
+`evaluated-no rewrite` was not used. That state still requires the two I0 questions
 (most TypeScript-like site with a line number; why it is correct in Lisp).
 
 Section 3.1 historical split rows (`agent/extensions.lisp` and the rest) were

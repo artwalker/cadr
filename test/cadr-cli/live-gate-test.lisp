@@ -82,7 +82,7 @@
            "SKIP CREDENTIAL-WAS-ABSENT: ANTHROPIC_API_KEY is not set"
            report))
       (is (search
-           "FAIL MODEL-VARIED [疑似模型输出波动]"
+           "FAIL MODEL-VARIED [suspected model-output variance]"
            report))
       (is (search "expected SELF_EXTENSION_OK" report))
       (is (search

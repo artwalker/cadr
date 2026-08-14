@@ -75,7 +75,7 @@ The cancellation deadlock is closed with runtime evidence at every link:
 ## Acceptance criterion 4 — Part D: tools/ and debug.log
 
 The three-choice conclusion is registered in `docs/source-parity.md`
-(config.ts row, verdict `有意差异`), with baseline usage traceability:
+(config.ts row, verdict `intentional difference`), with baseline usage traceability:
 
 - `getToolsDir` is dead code in the fixed baseline (zero callers outside
   config.ts) — registered as not implemented, not silently dropped.
@@ -129,7 +129,7 @@ The three-choice conclusion is registered in `docs/source-parity.md`
    (5 `unreachable-in-baseline` + 1 `unavailable-operating-system`).
 8. Release shape: glibc minimum and system library requirements are recorded
    in the README; the Apple Terminal path stays honestly labeled
-   "实现完成，平台不可实测".
+   "Implemented; not measurable on this platform".
 9. Verification speedup is registered only (this goal does not execute it).
 
 ## Acceptance criterion 8 — Part H: startup resource blocks
@@ -236,7 +236,7 @@ Per the 2026-08-12 user adjudication, Mermaid takes route 1 (pure-Lisp
 grok-mermaid port + differential golden sample) as a **separate goal 19**,
 not inside goal 18. The third-party dependency `grok-mermaid@0.2.2` is
 Apache-2.0 with zero runtime deps (4,224-line dependency-free ESM). The
-ledger row for `mermaid.ts` is `缺失` (not "有意差异") and the open question
+ledger row for `mermaid.ts` is `missing` (not "intentional difference") and the open question
 `OQ-G18-L1A-MERMAID` records the deferred todo; until goal 19 closes, Mermaid
 blocks fall back to source boxes per the baseline fallback semantics. Route 2
 was excluded (no Quicklisp ecosystem match), route 3 rejected as final state.
@@ -262,7 +262,7 @@ was excluded (no Quicklisp ecosystem match), route 3 rejected as final state.
 
 `docs/code-organization.md` covers all 285 production files (280 Lisp,
 115,621 lines, 4,727 top-level definitions, plus 5 static export assets).
-Verdicts are `合格`/`合格·大体量`/`应拆分`; no whole file merits `应合并`.
+Verdicts are `pass`/`pass · large`/`should split`; no whole file merits `should merge`.
 The conclusion is recorded honestly, including large-file cases.
 
 ## Acceptance criterion 13 — Ledger updates

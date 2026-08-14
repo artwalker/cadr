@@ -9,7 +9,7 @@ dependency must be pre-reviewed), this proposal gives the routes, cost and risk;
 no implementation was started within goal 18.
 
 > Ledger record (2026-08-12, user adjudication): in `docs/source-parity.md` the
-> `mermaid.ts` row goes from `待裁决` to `缺失` (not "有意差异" — the
+> `mermaid.ts` row goes from `pending adjudication` to `missing` (not "intentional difference" — the
 > capability is not yet implemented, and the ledger records that faithfully);
 > `OQ-G18-L1A-MERMAID` in `docs/open-questions.md` is moved into the
 > "adjudicated, pending goal" section. Until goal 19 is closed out, Mermaid
@@ -54,7 +54,7 @@ change to the ASDF closure and the release binary.
 
 The Quicklisp ecosystem has **no** Mermaid renderer (checked). This route is a dead end.
 
-### Route 3: record it as 有意差异 (mermaid blocks always render a source box)
+### Route 3: record it as intentional difference (mermaid blocks always render a source box)
 
 The baseline's own fallback for unsupported/too-wide diagrams is `sourceBox`;
 route 3 = fall back forever.
@@ -79,10 +79,10 @@ writing.
 - Route 1 is approved and split out as **goal 19**; the remaining goal 18
   batches (④⑥⑦⑧) are finished off first, and goal 19 opens immediately after
   goal 18 is closed out.
-- The source-parity ledger already records `缺失`; open-questions already
+- The source-parity ledger already records `missing`; open-questions already
   registers it as an adjudicated, pending goal.
 - When goal 19 is executed: docs/dependency-audit.md registers the
   artifact/hash/license/port relationship (for the Apache-2.0 derivative work,
   note the source and the license text); the differential fixture generator goes
   into the gates; the 89-line wrapper of mermaid.ts is ported through the normal
-  routing; on completion source-parity is re-judged `已实现`.
+  routing; on completion source-parity is re-judged `implemented`.

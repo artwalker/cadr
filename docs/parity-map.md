@@ -20,11 +20,11 @@ only as a historical delta anchor; neither is a current parity source of truth.
 
 Status meanings:
 
-- **已实现**: the complete externally observable behavior in the row is
+- **implemented**: the complete externally observable behavior in the row is
   implemented and has linked Common Lisp evidence.
-- **缺失**: absent or only partially implemented. A partial adapter is not
-  promoted to “已实现”.
-- **有意差异**: an existing user-approved difference listed in
+- **missing**: absent or only partially implemented. A partial adapter is not
+  promoted to “implemented”.
+- **intentional difference**: an existing user-approved difference listed in
   [README](../README.md#differences-from-typescript-pi). Unless a row says
   otherwise, these remain limited to language/build ecosystem differences;
   `originator=cadr` is the explicit Goal 9 Part C identity-only exception,
@@ -35,11 +35,11 @@ Test classification is deliberately strict:
 
 - `C` = covered: every relevant behavior in that TypeScript test file is
   covered by the linked CL tests.
-- `U` = applicable but uncovered: the production behavior exists, but the exact
+- `U` = applicable, not in scope: the production behavior exists, but the exact
   regression is missing from the CL suite.
 - `M` = corresponds to a missing feature: the file contains behavior outside the
   current implementation, including files that are only partially covered.
-- `N/A` = 不适用 by per-file user adjudication, solely because the
+- `N/A` = n/a by per-file user adjudication, solely because the
   implementation language or build ecosystem necessarily differs.
   `N/A` must not be expanded by the implementer on their own, and must not
   conceal any behavior that still applies.
@@ -103,17 +103,17 @@ Reference public surface:
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Unified types, errors, usage, events | 已实现 | [types](../src/cadr-ai/types.lisp), [conditions](../src/cadr-ai/conditions.lisp), [CL-AI-TYPES](#cl-ai-types) |
-| Native JSON, SSE, HTTP, retry | 已实现 | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [HTTP transport](../src/cadr-ai/transport/http.lisp), [streaming JSON](../src/cadr-ai/capabilities/streaming-json.lisp), [event streams](../src/cadr-ai/capabilities/event-stream.lisp), and [retry](../src/cadr-ai/support/retry.lisp), including proxy CONNECT in [CL-GOAL12-AI](#cl-goal12-ai) |
-| Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | 已实现 | Complete deterministic compatibility, transport, history, retry, image and provider-matrix behavior is covered by [CL-AI-WAVE3](#cl-ai-wave3) and the retained Wave 1 evidence |
-| Remaining independent APIs | 已实现 | Azure Responses, Bedrock Converse Stream, Vertex, Mistral Conversations, OpenAI Codex Responses and `pi-messages` have independent request/response/auth coverage in [CL-AI-WAVE3](#cl-ai-wave3) |
-| 38 built-in text providers | 已实现 | The registry is baseline-exact at 38 IDs; the non-baseline `ollama` registration was removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
-| Static catalogs and cost calculation | 已实现 | [generated catalog](../src/cadr-ai/models.generated.lisp) plus the schema/structure/per-shard integrity gate and deterministic native generators in [CL-GOAL12-AI](#cl-goal12-ai) cover the exact pinned 37-file, 1153-model snapshot |
-| API-key and OAuth/device authentication | 已实现 | [auth](../src/cadr-ai/auth.lisp), [OAuth core](../src/cadr-ai/oauth/pkce.lisp), [provider OAuth flows](../src/cadr-ai/oauth/providers/), and [CL-GOAL12-AI](#cl-goal12-ai) cover all provider-owned login/refresh/store/filter contracts, including GitHub Copilot, Kimi, OpenRouter, Radius and xAI |
-| Image input | 已实现 | [CL-AI-IMAGE](#cl-ai-image) |
-| Image generation / OpenRouter Images | 已实现 | Exact 40-model snapshot and request/result/error behavior in [CL-AI-WAVE3](#cl-ai-wave3) |
-| Dynamic provider/faux-provider public runtime | 已实现 | [models runtime](../src/cadr-ai/runtime/models.lisp) covers provider mutation, credentials, refresh/filter/dispatch; [faux provider](../src/cadr-ai/runtime/faux-provider.lisp) owns the deterministic provider contract |
-| `pi-ai` CLI | 已实现 | The equivalent provider login/logout surface is integrated into cadr's `auth`/`/login` commands; separate npm-bin packaging is an approved Lisp build-ecosystem difference |
+| Unified types, errors, usage, events | implemented | [types](../src/cadr-ai/types.lisp), [conditions](../src/cadr-ai/conditions.lisp), [CL-AI-TYPES](#cl-ai-types) |
+| Native JSON, SSE, HTTP, retry | implemented | [json](../src/cadr-ai/json.lisp), [sse](../src/cadr-ai/sse.lisp), [HTTP transport](../src/cadr-ai/transport/http.lisp), [streaming JSON](../src/cadr-ai/capabilities/streaming-json.lisp), [event streams](../src/cadr-ai/capabilities/event-stream.lisp), and [retry](../src/cadr-ai/support/retry.lisp), including proxy CONNECT in [CL-GOAL12-AI](#cl-goal12-ai) |
+| Anthropic/OpenAI Responses/OpenAI Completions/Google core adapters | implemented | Complete deterministic compatibility, transport, history, retry, image and provider-matrix behavior is covered by [CL-AI-WAVE3](#cl-ai-wave3) and the retained Wave 1 evidence |
+| Remaining independent APIs | implemented | Azure Responses, Bedrock Converse Stream, Vertex, Mistral Conversations, OpenAI Codex Responses and `pi-messages` have independent request/response/auth coverage in [CL-AI-WAVE3](#cl-ai-wave3) |
+| 38 built-in text providers | implemented | The registry is baseline-exact at 38 IDs; the non-baseline `ollama` registration was removed. See [CL-AI-WAVE3](#cl-ai-wave3) |
+| Static catalogs and cost calculation | implemented | [generated catalog](../src/cadr-ai/models.generated.lisp) plus the schema/structure/per-shard integrity gate and deterministic native generators in [CL-GOAL12-AI](#cl-goal12-ai) cover the exact pinned 37-file, 1153-model snapshot |
+| API-key and OAuth/device authentication | implemented | [auth](../src/cadr-ai/auth.lisp), [OAuth core](../src/cadr-ai/oauth/pkce.lisp), [provider OAuth flows](../src/cadr-ai/oauth/providers/), and [CL-GOAL12-AI](#cl-goal12-ai) cover all provider-owned login/refresh/store/filter contracts, including GitHub Copilot, Kimi, OpenRouter, Radius and xAI |
+| Image input | implemented | [CL-AI-IMAGE](#cl-ai-image) |
+| Image generation / OpenRouter Images | implemented | Exact 40-model snapshot and request/result/error behavior in [CL-AI-WAVE3](#cl-ai-wave3) |
+| Dynamic provider/faux-provider public runtime | implemented | [models runtime](../src/cadr-ai/runtime/models.lisp) covers provider mutation, credentials, refresh/filter/dispatch; [faux provider](../src/cadr-ai/runtime/faux-provider.lisp) owns the deterministic provider contract |
+| `pi-ai` CLI | implemented | The equivalent provider login/logout surface is integrated into cadr's `auth`/`/login` commands; separate npm-bin packaging is an approved Lisp build-ecosystem difference |
 
 #### Provider ledger
 
@@ -125,44 +125,44 @@ credential is inferred.
 
 | # | Provider | Protocol | Authentication | Status and main difficulty | Reachable verification |
 |---:|---|---|---|---|---|
-| 1 | `amazon-bedrock` | `bedrock-converse-stream` | AWS chain/profile/access keys or bearer token | 已实现; profile/access-key/bearer resolution, SigV4, region/inference-profile routing and Converse EventStream | fixture; no AWS credential |
-| 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | 已实现; full deterministic compatibility, OAuth and stream/error matrix | fixture; no live credential |
-| 4 | `azure-openai-responses` | `azure-openai-responses` | `AZURE_OPENAI_API_KEY` plus deployment endpoint | 已实现; Azure URL/deployment normalization and Responses replay | fixture; no Azure credential |
-| 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | 已实现; placeholder materialization and gateway-specific headers across three APIs | fixture; no Cloudflare credential |
-| 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | 已实现; endpoint materialization | fixture; no Cloudflare credential |
-| 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现; complete deterministic matrix plus a real streaming gate | fixture + [live-proven](../test/cadr-ai/live-provider-test.lisp) |
-| 9 | `fireworks` | Anthropic + Completions | `FIREWORKS_API_KEY` | 已实现; multi-API catalog routing | fixture; no Fireworks credential |
-| 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | 已实现; device flow, token exchange, model filtering and Copilot headers | fixture; no GitHub Copilot credential |
-| 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 已实现; complete deterministic Gemini 3.6 and compatibility matrix | fixture; no Gemini credential |
-| 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | 已实现; API-key/ADC resolution, RS256 JWT exchange and regional endpoint construction | fixture; no Vertex credential |
-| 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | 已实现; device flow and subscription headers | fixture; no Kimi credential |
-| 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
-| 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | 已实现; independent protocol, reasoning mode, raw stop and schema sanitization | fixture; no Mistral credential |
-| 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
-| 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 已实现; shared adapter and exact catalog | fixture; no NVIDIA credential |
-| 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 已实现; full deterministic Responses compatibility matrix | fixture; no OpenAI API-key credential |
-| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; one provider identity across login/store/default routing and Codex response transport; `originator=cadr` is an approved client-attribution difference | deterministic login/request tests + [Goal 9 Part C live gate](acceptance/goal-v9-part-c.md) |
-| 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 已实现; four-API model routing | fixture; no OpenCode credential |
-| 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 已实现; three-API model routing | fixture; no OpenCode credential |
-| 26 | `openrouter` | `openai-completions` | API key or OAuth | 已实现; OAuth shapes, cache-control variants and exact catalog | fixture; no OpenRouter credential |
-| 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 plan registry/catalog/request/error path | fixture only |
-| 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 regional plan registry/catalog/request/error path | fixture only |
-| 29 | `radius` | `pi-messages` | API key or Radius OAuth | 已实现; dynamic gateway config/catalog, PKCE authorization and independent stream protocol | fixture; no Radius credential |
-| 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
-| 31 | `vercel-ai-gateway` | `anthropic-messages` | `AI_GATEWAY_API_KEY` | 已实现; gateway headers and exact catalog | fixture; no Vercel credential |
-| 32 | `xai` | Completions + Responses | API key or xAI device OAuth | 已实现; dual API, trusted device polling and model routing | fixture; no xAI credential |
-| 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 MiMo catalog/compat/request/error path | fixture only |
-| 34 | `xiaomi-token-plan-ams` | `openai-completions` | `XIAOMI_TOKEN_PLAN_AMS_API_KEY` | 已实现; regional plan endpoint and empty-signature behavior | fixture; no credential |
-| 35 | `xiaomi-token-plan-cn` | `openai-completions` | `XIAOMI_TOKEN_PLAN_CN_API_KEY` | 已实现; regional plan endpoint/catalog | fixture; no credential |
-| 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | 已实现; regional plan endpoint/catalog | fixture; no credential |
-| 37 | `zai` | `openai-completions` | `ZAI_API_KEY` | 已实现; endpoint/catalog | fixture; no ZAI credential |
-| 38 | `zai-coding-cn` | `openai-completions` | `ZAI_CODING_CN_API_KEY` | 已实现; regional coding endpoint/catalog | fixture; no ZAI credential |
+| 1 | `amazon-bedrock` | `bedrock-converse-stream` | AWS chain/profile/access keys or bearer token | implemented; profile/access-key/bearer resolution, SigV4, region/inference-profile routing and Converse EventStream | fixture; no AWS credential |
+| 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | implemented; full deterministic compatibility, OAuth and stream/error matrix | fixture; no live credential |
+| 4 | `azure-openai-responses` | `azure-openai-responses` | `AZURE_OPENAI_API_KEY` plus deployment endpoint | implemented; Azure URL/deployment normalization and Responses replay | fixture; no Azure credential |
+| 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | implemented; placeholder materialization and gateway-specific headers across three APIs | fixture; no Cloudflare credential |
+| 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | implemented; endpoint materialization | fixture; no Cloudflare credential |
+| 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | implemented; complete deterministic matrix plus a real streaming gate | fixture + [live-proven](../test/cadr-ai/live-provider-test.lisp) |
+| 9 | `fireworks` | Anthropic + Completions | `FIREWORKS_API_KEY` | implemented; multi-API catalog routing | fixture; no Fireworks credential |
+| 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | implemented; device flow, token exchange, model filtering and Copilot headers | fixture; no GitHub Copilot credential |
+| 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | implemented; complete deterministic Gemini 3.6 and compatibility matrix | fixture; no Gemini credential |
+| 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | implemented; API-key/ADC resolution, RS256 JWT exchange and regional endpoint construction | fixture; no Vertex credential |
+| 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | implemented; device flow and subscription headers | fixture; no Kimi credential |
+| 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
+| 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | implemented; independent protocol, reasoning mode, raw stop and schema sanitization | fixture; no Mistral credential |
+| 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
+| 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | implemented; shared adapter and exact catalog | fixture; no NVIDIA credential |
+| 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | implemented; full deterministic Responses compatibility matrix | fixture; no OpenAI API-key credential |
+| 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | implemented; one provider identity across login/store/default routing and Codex response transport; `originator=cadr` is an approved client-attribution difference | deterministic login/request tests + [Goal 9 Part C live gate](acceptance/goal-v9-part-c.md) |
+| 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | implemented; four-API model routing | fixture; no OpenCode credential |
+| 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | implemented; three-API model routing | fixture; no OpenCode credential |
+| 26 | `openrouter` | `openai-completions` | API key or OAuth | implemented; OAuth shapes, cache-control variants and exact catalog | fixture; no OpenRouter credential |
+| 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 plan registry/catalog/request/error path | fixture only |
+| 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 regional plan registry/catalog/request/error path | fixture only |
+| 29 | `radius` | `pi-messages` | API key or Radius OAuth | implemented; dynamic gateway config/catalog, PKCE authorization and independent stream protocol | fixture; no Radius credential |
+| 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 31 | `vercel-ai-gateway` | `anthropic-messages` | `AI_GATEWAY_API_KEY` | implemented; gateway headers and exact catalog | fixture; no Vercel credential |
+| 32 | `xai` | Completions + Responses | API key or xAI device OAuth | implemented; dual API, trusted device polling and model routing | fixture; no xAI credential |
+| 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | implemented (fixture cross-implementation comparison); Wave 1 MiMo catalog/compat/request/error path | fixture only |
+| 34 | `xiaomi-token-plan-ams` | `openai-completions` | `XIAOMI_TOKEN_PLAN_AMS_API_KEY` | implemented; regional plan endpoint and empty-signature behavior | fixture; no credential |
+| 35 | `xiaomi-token-plan-cn` | `openai-completions` | `XIAOMI_TOKEN_PLAN_CN_API_KEY` | implemented; regional plan endpoint/catalog | fixture; no credential |
+| 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | implemented; regional plan endpoint/catalog | fixture; no credential |
+| 37 | `zai` | `openai-completions` | `ZAI_API_KEY` | implemented; endpoint/catalog | fixture; no ZAI credential |
+| 38 | `zai-coding-cn` | `openai-completions` | `ZAI_CODING_CN_API_KEY` | implemented; regional coding endpoint/catalog | fixture; no ZAI credential |
 
 The separate `openrouter` image provider and dynamic `faux` provider are not
 counted among the 38 text providers; both are implemented as public cadr
@@ -183,16 +183,16 @@ proxy/default-stream helpers.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Agent lifecycle and tool loop | 已实现 | [agent loop](../src/cadr-agent/loop/agent-loop.lisp), [CL-AGENT-LOOP](#cl-agent-loop) |
-| Sequential/parallel tools, validation, hook rewrite/block | 已实现 | [tool](../src/cadr-agent/tool.lisp), [schema](../src/cadr-agent/schema.lisp), [CL-AGENT-SCHEMA](#cl-agent-schema), [CL-EXT](#cl-ext) |
-| Busy guard | 已实现 | [runtime](../src/cadr-agent/runtime.lisp), [CL-WAVE2-AGENT](#cl-wave2-agent) |
-| Steering/follow-up queues and queue modes | 已实现 | [CL-WAVE2-AGENT](#cl-wave2-agent) |
-| `AgentHarness`, environment, repo/storage public abstractions | 已实现 | [CL-WAVE2-HARNESS](#cl-wave2-harness) |
-| Tree session and compaction core | 已实现 | [CL-WAVE2-SESSION](#cl-wave2-session) |
-| Built-in read/write/edit/bash/find/grep/ls harness set | 已实现 | Exact public tool names and execution-environment behavior are covered by [CL-PART-B](#cl-part-b) |
-| Skills/templates/system prompt | 有意差异 | Lisp registrations replace Markdown/TS resource formats; [CL-PART-B](#cl-part-b) |
-| Stream configuration/provider-request hooks and permanent shutdown | 已实现 | [CL-WAVE2-HARNESS](#cl-wave2-harness), [CL-GOAL9-HARNESS](#cl-goal9-harness) |
-| Tool-failure condition/restarts | 有意差异 | Lisp-native `retry-tool-call`/`skip-tool-call`/`abort-agent-run` and event 34 `:tool-call-error`; default behavior and all baseline wires remain unchanged. [CL-GOAL10-D](#cl-goal10-d) |
+| Agent lifecycle and tool loop | implemented | [agent loop](../src/cadr-agent/loop/agent-loop.lisp), [CL-AGENT-LOOP](#cl-agent-loop) |
+| Sequential/parallel tools, validation, hook rewrite/block | implemented | [tool](../src/cadr-agent/tool.lisp), [schema](../src/cadr-agent/schema.lisp), [CL-AGENT-SCHEMA](#cl-agent-schema), [CL-EXT](#cl-ext) |
+| Busy guard | implemented | [runtime](../src/cadr-agent/runtime.lisp), [CL-WAVE2-AGENT](#cl-wave2-agent) |
+| Steering/follow-up queues and queue modes | implemented | [CL-WAVE2-AGENT](#cl-wave2-agent) |
+| `AgentHarness`, environment, repo/storage public abstractions | implemented | [CL-WAVE2-HARNESS](#cl-wave2-harness) |
+| Tree session and compaction core | implemented | [CL-WAVE2-SESSION](#cl-wave2-session) |
+| Built-in read/write/edit/bash/find/grep/ls harness set | implemented | Exact public tool names and execution-environment behavior are covered by [CL-PART-B](#cl-part-b) |
+| Skills/templates/system prompt | intentional difference | Lisp registrations replace Markdown/TS resource formats; [CL-PART-B](#cl-part-b) |
+| Stream configuration/provider-request hooks and permanent shutdown | implemented | [CL-WAVE2-HARNESS](#cl-wave2-harness), [CL-GOAL9-HARNESS](#cl-goal9-harness) |
+| Tool-failure condition/restarts | intentional difference | Lisp-native `retry-tool-call`/`skip-tool-call`/`abort-agent-run` and event 34 `:tool-call-error`; default behavior and all baseline wires remain unchanged. [CL-GOAL10-D](#cl-goal10-d) |
 
 ### 2.3 `coding-agent`
 
@@ -241,17 +241,17 @@ and `get_commands`.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Interactive TUI and line fallback | 已实现 | [bootstrap](../src/cadr-cli/bootstrap/main.lisp), [command controller](../src/cadr-cli/bootstrap/commands.lisp), [interactive controller](../src/cadr-cli/interactive/controller.lisp), [frame](../src/cadr-cli/interactive/frame.lisp), [CL-TUI](#cl-tui) |
-| Text/JSON print and RPC modes | 已实现 | [CL-WAVE2-MODES](#cl-wave2-modes), [CL-WAVE2-RPC](#cl-wave2-rpc) |
-| Full CLI option/command contract | 已实现 | [arguments](../src/cadr-cli/arguments.lisp), [CL-PART-B](#cl-part-b) |
-| Built-in commands | 已实现 | Package/config/auth/session/model/theme/tree/import/clone and interactive commands are covered by [CL-PART-B](#cl-part-b) |
-| Public SDK/runtime/services | 已实现 | [CL-PART-B](#cl-part-b) |
-| Model registry/runtime and scoped model selection | 已实现 | [CL-PART-B](#cl-part-b) |
-| Tool set and mutation/runtime semantics | 已实现 | [tools](../src/cadr-cli/tools/), [CL-TOOLS](#cl-tools), [CL-PART-B](#cl-part-b) |
-| Session JSONL format | 已实现 | v3 header, entry union, delayed persistence and v1/v2 migration are covered by [CL-WAVE2-SESSION](#cl-wave2-session) |
-| Extension capability | 有意差异 | Original lifecycle/UI/runtime capabilities are covered; only the Lisp format/ecosystem differs. [CL-WAVE2-EXT](#cl-wave2-ext), [CL-PART-B](#cl-part-b) |
-| Runtime Slynk REPL | 有意差异 | Explicit `--slynk <port>`, loopback-only listener, live `active-agent`, cleanup and empty-HOME build isolation. [CL-GOAL10-D](#cl-goal10-d) |
-| Settings, themes, packages, context files, remote catalogs | 已实现 | [CL-PART-B](#cl-part-b) |
+| Interactive TUI and line fallback | implemented | [bootstrap](../src/cadr-cli/bootstrap/main.lisp), [command controller](../src/cadr-cli/bootstrap/commands.lisp), [interactive controller](../src/cadr-cli/interactive/controller.lisp), [frame](../src/cadr-cli/interactive/frame.lisp), [CL-TUI](#cl-tui) |
+| Text/JSON print and RPC modes | implemented | [CL-WAVE2-MODES](#cl-wave2-modes), [CL-WAVE2-RPC](#cl-wave2-rpc) |
+| Full CLI option/command contract | implemented | [arguments](../src/cadr-cli/arguments.lisp), [CL-PART-B](#cl-part-b) |
+| Built-in commands | implemented | Package/config/auth/session/model/theme/tree/import/clone and interactive commands are covered by [CL-PART-B](#cl-part-b) |
+| Public SDK/runtime/services | implemented | [CL-PART-B](#cl-part-b) |
+| Model registry/runtime and scoped model selection | implemented | [CL-PART-B](#cl-part-b) |
+| Tool set and mutation/runtime semantics | implemented | [tools](../src/cadr-cli/tools/), [CL-TOOLS](#cl-tools), [CL-PART-B](#cl-part-b) |
+| Session JSONL format | implemented | v3 header, entry union, delayed persistence and v1/v2 migration are covered by [CL-WAVE2-SESSION](#cl-wave2-session) |
+| Extension capability | intentional difference | Original lifecycle/UI/runtime capabilities are covered; only the Lisp format/ecosystem differs. [CL-WAVE2-EXT](#cl-wave2-ext), [CL-PART-B](#cl-part-b) |
+| Runtime Slynk REPL | intentional difference | Explicit `--slynk <port>`, loopback-only listener, live `active-agent`, cleanup and empty-HOME build isolation. [CL-GOAL10-D](#cl-goal10-d) |
+| Settings, themes, packages, context files, remote catalogs | implemented | [CL-PART-B](#cl-part-b) |
 
 ### 2.4 `tui`
 
@@ -263,15 +263,15 @@ navigation.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Grapheme/cell width, wrapping, ANSI-aware layout | 已实现 | [unicode](../src/cadr-tui/unicode.lisp), [CL-TUI](#cl-tui) |
-| Input decoding, bracketed paste, multiline editor, kill ring and undo | 已实现 | [input](../src/cadr-tui/input.lisp), [stdin buffer](../src/cadr-tui/stdin-buffer.lisp), [editor](../src/cadr-tui/editor.lisp), [CL-TUI](#cl-tui) |
-| Reusable component tree, focus lifecycle, box/text/spacer/Markdown/image/settings/loader composition and coding-agent interactive components | 已实现 | [composition](../src/cadr-tui/composition/), [interactive components](../src/cadr-cli/interactive/components/), [CL-TUI](#cl-tui) |
-| Markdown, tool block, status bar, select list, truncated text and image component | 已实现 | [components](../src/cadr-tui/components/), [CL-TUI](#cl-tui) |
-| Differential renderer and terminal cleanup | 已实现 | [renderer](../src/cadr-tui/renderer/), [terminal](../src/cadr-tui/terminal.lisp), [CL-TUI](#cl-tui) |
-| Autocomplete, fuzzy matching, configurable keybindings, word navigation | 已实现 | [autocomplete](../src/cadr-tui/autocomplete.lisp), [fuzzy](../src/cadr-tui/fuzzy.lisp), [keybindings](../src/cadr-tui/keybindings.lisp), [word navigation](../src/cadr-tui/word-navigation.lisp), [CL-TUI](#cl-tui) |
-| Overlay stack/compositing | 已实现 | [overlay](../src/cadr-tui/overlay.lisp), [renderer](../src/cadr-tui/renderer/), [CL-TUI](#cl-tui) |
-| Terminal image protocols, cell-size replies, color probing | 已实现 | [terminal image](../src/cadr-tui/terminal-image.lisp), [terminal colors](../src/cadr-tui/terminal-colors.lisp), [CL-TUI](#cl-tui) |
-| Goal 5 reference component/test surface | 已实现 | [components](../src/cadr-tui/components/), [component parity tests](../test/cadr-tui/component-parity-test.lisp), [CL-TUI](#cl-tui) |
+| Grapheme/cell width, wrapping, ANSI-aware layout | implemented | [unicode](../src/cadr-tui/unicode.lisp), [CL-TUI](#cl-tui) |
+| Input decoding, bracketed paste, multiline editor, kill ring and undo | implemented | [input](../src/cadr-tui/input.lisp), [stdin buffer](../src/cadr-tui/stdin-buffer.lisp), [editor](../src/cadr-tui/editor.lisp), [CL-TUI](#cl-tui) |
+| Reusable component tree, focus lifecycle, box/text/spacer/Markdown/image/settings/loader composition and coding-agent interactive components | implemented | [composition](../src/cadr-tui/composition/), [interactive components](../src/cadr-cli/interactive/components/), [CL-TUI](#cl-tui) |
+| Markdown, tool block, status bar, select list, truncated text and image component | implemented | [components](../src/cadr-tui/components/), [CL-TUI](#cl-tui) |
+| Differential renderer and terminal cleanup | implemented | [renderer](../src/cadr-tui/renderer/), [terminal](../src/cadr-tui/terminal.lisp), [CL-TUI](#cl-tui) |
+| Autocomplete, fuzzy matching, configurable keybindings, word navigation | implemented | [autocomplete](../src/cadr-tui/autocomplete.lisp), [fuzzy](../src/cadr-tui/fuzzy.lisp), [keybindings](../src/cadr-tui/keybindings.lisp), [word navigation](../src/cadr-tui/word-navigation.lisp), [CL-TUI](#cl-tui) |
+| Overlay stack/compositing | implemented | [overlay](../src/cadr-tui/overlay.lisp), [renderer](../src/cadr-tui/renderer/), [CL-TUI](#cl-tui) |
+| Terminal image protocols, cell-size replies, color probing | implemented | [terminal image](../src/cadr-tui/terminal-image.lisp), [terminal colors](../src/cadr-tui/terminal-colors.lisp), [CL-TUI](#cl-tui) |
+| Goal 5 reference component/test surface | implemented | [components](../src/cadr-tui/components/), [component parity tests](../test/cadr-tui/component-parity-test.lisp), [CL-TUI](#cl-tui) |
 
 ### 2.5 `storage`
 
@@ -284,11 +284,11 @@ session-storage contract.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| SQLite adapter and transaction contract | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
-| Migration/schema | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
-| SQLite repo create/open/list/delete/fork | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
-| Materialized tree/branch storage | 已实现 | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
-| JSONL filesystem sessions | 已实现 but not a storage-package substitute | [session journal](../src/cadr-agent/session/journal.lisp), [JSONL storage](../src/cadr-agent/storage/jsonl.lisp) |
+| SQLite adapter and transaction contract | implemented | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| Migration/schema | implemented | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| SQLite repo create/open/list/delete/fork | implemented | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| Materialized tree/branch storage | implemented | [cadr-storage tests](../test/cadr-storage/storage-test.lisp), [STORAGE-SQLITE](#storage-sqlite) |
+| JSONL filesystem sessions | implemented but not a storage-package substitute | [session journal](../src/cadr-agent/session/journal.lisp), [JSONL storage](../src/cadr-agent/storage/jsonl.lisp) |
 
 ### 2.6 `server`
 
@@ -302,11 +302,11 @@ maintains Radius presence.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Server CLI and Unix socket framing | 已实现 | [server tests](../test/cadr-server/server-test.lisp), [server smoke](../scripts/server-smoke.sh), [SERVER](#server) |
-| Instance supervisor and persistence | 已实现 | [server tests](../test/cadr-server/server-test.lisp), [SERVER](#server) |
-| RPC request/stream bridge and extension UI bridge | 已实现 | [server tests](../test/cadr-server/server-test.lisp), [server smoke](../scripts/server-smoke.sh), [SERVER](#server) |
-| Radius registration/presence | 已实现 | credential gate, heartbeat backoff and 404 re-registration in [radius.lisp](../src/cadr-server/radius.lisp), [SERVER](#server) |
-| Public server API | 已实现 | [package exports](../src/cadr-server/package.lisp), [SERVER](#server) |
+| Server CLI and Unix socket framing | implemented | [server tests](../test/cadr-server/server-test.lisp), [server smoke](../scripts/server-smoke.sh), [SERVER](#server) |
+| Instance supervisor and persistence | implemented | [server tests](../test/cadr-server/server-test.lisp), [SERVER](#server) |
+| RPC request/stream bridge and extension UI bridge | implemented | [server tests](../test/cadr-server/server-test.lisp), [server smoke](../scripts/server-smoke.sh), [SERVER](#server) |
+| Radius registration/presence | implemented | credential gate, heartbeat backoff and 404 re-registration in [radius.lisp](../src/cadr-server/radius.lisp), [SERVER](#server) |
+| Public server API | implemented | [package exports](../src/cadr-server/package.lisp), [SERVER](#server) |
 
 ### 2.7 `evals`
 
@@ -333,11 +333,11 @@ It also retains two `*.eval.ts` suites:
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| Generic eval harness and normalized transcript/usage | 已实现 | [eval tests](../test/cadr-evals/evals-test.lisp), [pi harness tests](../test/cadr-evals/pi-harness-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
-| Artifacts, harness table, reporter lifecycle and summaries | 已实现 | [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), [reporter](../test/cadr-evals/reporter-test.lisp), [summary](../test/cadr-evals/summary-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
-| Explicit provider/model runner | 已实现 | [run-evals](../scripts/run-evals.sh), [CL-GOAL9-EVALS](#cl-goal9-evals) |
-| Smoke eval | 已实现 | faux unit gate plus [DeepSeek/Codex live gate](../test/cadr-evals/live-evals-test.lisp), [EVALS](#evals) |
-| Self-extension eval | 已实现 | isolated write/reload/invoke gate plus baseline/candidate prompt table, native source/API/loader/tool-call judge and source-artifact reporter lifecycle in [extension authoring tests](../test/cadr-evals/extension-authoring-test.lisp), [EVALS](#evals) |
+| Generic eval harness and normalized transcript/usage | implemented | [eval tests](../test/cadr-evals/evals-test.lisp), [pi harness tests](../test/cadr-evals/pi-harness-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| Artifacts, harness table, reporter lifecycle and summaries | implemented | [artifacts](../test/cadr-evals/artifacts-test.lisp), [harness table](../test/cadr-evals/harness-table-test.lisp), [reporter](../test/cadr-evals/reporter-test.lisp), [summary](../test/cadr-evals/summary-test.lisp), [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| Explicit provider/model runner | implemented | [run-evals](../scripts/run-evals.sh), [CL-GOAL9-EVALS](#cl-goal9-evals) |
+| Smoke eval | implemented | faux unit gate plus [DeepSeek/Codex live gate](../test/cadr-evals/live-evals-test.lisp), [EVALS](#evals) |
+| Self-extension eval | implemented | isolated write/reload/invoke gate plus baseline/candidate prompt table, native source/API/loader/tool-call judge and source-artifact reporter lifecycle in [extension authoring tests](../test/cadr-evals/extension-authoring-test.lisp), [EVALS](#evals) |
 
 ### 2.8 `protocol`
 
@@ -348,9 +348,9 @@ contract in pure Lisp without adding a dependency.
 
 | Surface | Status | cadr evidence or gap |
 |---|---|---|
-| CBOR value subset, limits and rejection semantics | 已实现 | [CBOR tests](../test/cadr-protocol/cbor-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
-| Fragmented/coalesced bounded framing | 已实现 | [framing tests](../test/cadr-protocol/framing-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
-| Version 2 client/server schemas and codecs | 已实现 | [protocol tests](../test/cadr-protocol/protocol-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| CBOR value subset, limits and rejection semantics | implemented | [CBOR tests](../test/cadr-protocol/cbor-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| Fragmented/coalesced bounded framing | implemented | [framing tests](../test/cadr-protocol/framing-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
+| Version 2 client/server schemas and codecs | implemented | [protocol tests](../test/cadr-protocol/protocol-test.lisp), [CL-GOAL9-PROTOCOL](#cl-goal9-protocol) |
 
 ## 3. Gap and evidence index
 

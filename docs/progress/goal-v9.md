@@ -62,7 +62,7 @@ Extract item by item from the baseline and compare against cadr, producing the d
 2. Layout and spacing: padding/margin of each region, indentation levels, the separator and border character set, width-adaptive breakpoints;
 3. Element styling: each Markdown element (heading/list/quote/code block/table/link), the expanded and collapsed forms of the tool block, status-bar field order and format, selector highlighting and scroll indication, autocomplete popup styling;
 4. Animation parameters: the streaming repaint rhythm, cursor behavior, the form and frequency of the loading indicator.
-Every item is labeled "一致 / 不一致（已改齐）/ 有意差异 (with the reason attached and registered in the README)".
+Every item is labeled "match / mismatch (corrected)/ intentional difference (with the reason attached and registered in the README)".
 
 ### B3. Dynamic alignment (the user-confirmed part)
 Produce a per-scenario A/B checklist for the user to compare side by side in two terminals: cold start, streaming answer, long-output scrolling, tool call and expansion, each overlay selector, mixed CJK and emoji, narrow/wide resize, error display, exit. Item-by-item user confirmation is this Part's acceptance gate. **This is the only step in the whole project that still requires human eyes** — Part A2 has already converted every manual item at the behavioral level to automation, and only the perceptual judgement is made here.
@@ -71,7 +71,7 @@ Produce a per-scenario A/B checklist for the user to compare side by side in two
 - **The footer display lags**: after a successful login or model switch, the footer still shows the model from startup time (recorded during the goal 8 correction, not fixed out of scope). This is a state-presentation problem; fix it in this Part and add a regression test.
 
 ### B5. Definition of done
-The `docs/visual-parity.md` difference table is driven to zero item by item or recorded as an approved 有意差异 + item-by-item user confirmation of the A/B checklist. **The criterion is not "it looks comfortable", the criterion is item-by-item comparison.**
+The `docs/visual-parity.md` difference table is driven to zero item by item or recorded as an approved intentional difference + item-by-item user confirmation of the A/B checklist. **The criterion is not "it looks comfortable", the criterion is item-by-item comparison.**
 
 ## 3. Part C: changing the client identity to cadr
 

@@ -56,9 +56,9 @@ output, not cadr screenshots.
 - Scenario `conversation-mermaid` covers absent / rendered / fallback.
 - `REQUIRED_COVERAGE` has `mermaid-absent`, `mermaid-rendered`,
   `mermaid-fallback` (144 tags).
-- `docs/source-parity.md`: `mermaid.ts` → `已实现`
+- `docs/source-parity.md`: `mermaid.ts` → `implemented`
   (`transform-mermaid-markdown` / `transform-tui-markdown`).
-  Totals `670 = 507 已实现 + 163 有意差异 + 0 缺失`.
+  Totals `670 = 507 implemented + 163 intentional difference + 0 missing`.
 - `OQ-G18-L1A-MERMAID` marked implemented.
 - I4 machine count from `test/fixtures/render-diff/scenarios.json`:
 

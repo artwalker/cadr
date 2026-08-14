@@ -61,7 +61,7 @@ locked by a FiveAM test
 
 ## Existing pending items submitted for adjudication together with this case
 
-The following entries were already marked 待裁决 in earlier batches and are
+The following entries were already marked pending adjudication in earlier batches and are
 listed here together (see the acceptance report for details):
 
 1. `--resume <id>` (a cadr extension: the baseline has only the selector form).
@@ -82,7 +82,7 @@ listed here together (see the acceptance report for details):
    replace them (cadr has no equivalent page yet).
 9. (new) Keybinding storage: the baseline reads a `keybindings.json` file; cadr
    reads the `keybindings` key of settings.json. Whether to add
-   keybindings.json support or record it as 有意差异.
+   keybindings.json support or record it as intentional difference.
 
 ## Ledger actions after the adjudication
 

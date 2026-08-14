@@ -178,5 +178,5 @@ Adjudication result:
 
 Once both D and E are approved, the established order resumes: complete 1→10,
 15→19, 11, 13→12→14, Part D. If either is not approved, the corresponding
-examples continue to be honestly recorded as 缺失; the remaining already-approved
+examples continue to be honestly recorded as missing; the remaining already-approved
 increments must not pass themselves off as completing that contract.

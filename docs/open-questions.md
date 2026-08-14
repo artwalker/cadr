@@ -121,7 +121,7 @@ Adjudicated and implemented:
 
 - `OQ-G18-L1A-MERMAID`: route 1 was adjudicated on 2026-08-12; it landed in
   goal 19 Part C. In `docs/source-parity.md` the `mermaid.ts` row records
-  `已实现`
+  `implemented`
   (`src/cadr-tui/mermaid/transform.lisp:transform-mermaid-markdown`).
 
 
@@ -189,7 +189,7 @@ adjudication and the evidence are archived in
   a whole-tree audit to be baseline evidence, and continue into the exact
   allowlist rather than being replaced along with the product identity.
 
-- `OQ-G18-NPM-PACKAGE-SOURCE`: on 2026-08-10 adjudicated as 有意差异. The
+- `OQ-G18-NPM-PACKAGE-SOURCE`: on 2026-08-10 adjudicated as intentional difference. The
   baseline's `install`/`update` installs `npm:` package sources through npm;
   the Common Lisp build has no npm outlet and refuses with fixed wording ("npm
   packages are unavailable in the Common Lisp build; install a Lisp local or
@@ -197,7 +197,7 @@ adjudication and the evidence are archived in
   `goal18-npm-package-source-is-a-fixed-intentional-difference`
   (part-b-package-test.lisp) locks that fixed shape.
 
-- `OQ-G18-UPDATE-MODELS`: on 2026-08-10 adjudicated as 有意差异. The baseline's
+- `OQ-G18-UPDATE-MODELS`: on 2026-08-10 adjudicated as intentional difference. The baseline's
   `update --models` refreshes the model catalog over the network; cadr's model
   catalog is bundled with the binary, and the command outputs a fixed offline
   notice ("Model catalogs are bundled with this cadr build."). Equal-strength
@@ -205,7 +205,7 @@ adjudication and the evidence are archived in
   (part-b-package-test.lisp, using `:offline-p t` to prove no network takes
   part).
 
-- `OQ-G18-INSTALL-TELEMETRY`: on 2026-08-10 adjudicated as 有意差异. At
+- `OQ-G18-INSTALL-TELEMETRY`: on 2026-08-10 adjudicated as intentional difference. At
   interactive startup the baseline sends an install report to pi.dev's
   report-install endpoint (interactive-mode.ts:1045-1062, gated by
   enableInstallTelemetry and PI_OFFLINE); cadr keeps the

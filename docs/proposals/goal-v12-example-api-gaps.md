@@ -63,7 +63,7 @@ If implementation is approved, the common gates for every item are:
    verbatim unchanged; the full-screen, 15-overlay, payload and wire fixtures
    must not be compared after normalization.
 3. Every approved example must have load/registration/edge-case behavior tests;
-   only a genuinely runnable Lisp file may change a ledger verdict to `已实现`.
+   only a genuinely runnable Lisp file may change a ledger verdict to `implemented`.
 4. At closeout, recompute the per-path object IDs, the extension export SHA, the
    event-set hash and the wire fixture hash, synchronize architecture, README,
    source-parity and parity-map, and then freeze again.
@@ -198,7 +198,7 @@ If implementation is approved, the common gates for every item are:
 - **Exact requirement**: the autocomplete factory receives the complete current
   provider and the signal/cwd/result contract is aligned; the message renderer
   receives `(message, expanded/outputPad, theme)` and the entry renderer receives
-  `(entry, expanded, theme)`, they return a real Component and have
+  `(entry, expanded, theme)`, and they return a real Component and have
   invalidate/dispose.
 - **Baseline evidence**: `types.ts:124-125,225,1281-1291`;
   `github-issue-autocomplete.ts:89-119`, `message-renderer.ts:15-33`,
@@ -266,7 +266,7 @@ If implementation is approved, the common gates for every item are:
 ### 9. File mutation queue and truncation utilities (`:file-mutation-queue`, `:truncation-utilities`)
 
 - **Exact requirement**: make the per-path serialized mutation queue and the
-  complete result contract of truncate head/tail/line public utilities for
+  complete result contract of truncate head/tail/line into public utilities for
   extensions; the UTF-8/line/byte accounting is the same as for the built-in
   tools.
 - **Baseline evidence**: `packages/coding-agent/src/core/tools/file-mutation-queue.ts:1-43`,
@@ -527,7 +527,7 @@ The first 10 items complete the extension runtime and 15–19 complete the SDK
 facade with no new dependencies; 11–14 handle the ecosystem / external runtimes
 last, to avoid dependency questions obscuring the core API gaps. Any single item
 may be rejected or deferred on its own; the examples blocked by it continue to be
-honestly recorded as `缺失`.
+honestly recorded as `missing`.
 
 The user's adjudication may be written directly in the form "1 approve /
 2 defer / …". A capability approval for items 11–14 is not a dependency

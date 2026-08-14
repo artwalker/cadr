@@ -1108,7 +1108,7 @@
               channels "^\\| C-[0-9]+ \\|")))
       (is (= 18
              (goal13-count-ledger-rows
-              channels "^\\| C-[0-9]+ .*\\| 已覆盖 \\|$")))
+              channels "^\\| C-[0-9]+ .*\\| covered \\|$")))
       (is (= 18
              (goal13-count-ledger-rows
               channels "^\\| A-[0-9]+ \\|")))
@@ -1221,12 +1221,12 @@
                   "~A Cadr evidence lacks file:line: ~A"
                   name line)
               (cond
-                ((or (string= status "一致")
-                     (search "不一致（已改齐）" status))
+                ((or (string= status "match")
+                     (search "mismatch (corrected)" status))
                  (incf section-aligned))
-                ((search "有意差异" status)
+                ((search "intentional difference" status)
                  (incf section-intentional))
-                ((search "不一致" status)
+                ((search "mismatch" status)
                  (incf section-pending))
                 (t
                  (fail "~A has an unknown disposition: ~A"

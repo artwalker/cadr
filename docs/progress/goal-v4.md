@@ -16,7 +16,7 @@ Read the audit commit via `git show`/worktree (**taking the 2026-04 state of the
 
 ### 1. Feature gap inventory
 - Package by package (`ai`, `agent`, `coding-agent`, `tui`, `storage`, `server`, `evals`), enumerate its external behavior surface (provider list, run modes, CLI options, public API, tool set, session/storage format, service endpoints).
-- Label each item with a status: `已实现` (linking to the corresponding cadr module and tests) / `缺失` / `有意差异` (linking to an entry of the existing divergence list, such as the all-Lisp extension ecosystem).
+- Label each item with a status: `implemented` (linking to the corresponding cadr module and tests) / `missing` / `intentional difference` (linking to an entry of the existing divergence list, such as the all-Lisp extension ecosystem).
 - List the providers one by one (about 35), each labeled with: protocol category (openai-completions compatible / standalone protocol), authentication method, implementation difficulty (such as Bedrock SigV4, Vertex GCP authentication, Copilot device flow), and the **attainable verification level** (fixture cross-implementation comparison / live smoke, based on the credentials on hand: DeepSeek key, ChatGPT OAuth, local Ollama).
 
 ### 2. Three-way test classification audit

@@ -101,7 +101,7 @@ newest crash and cleanup boundaries from the audit.
 
 The ledger accounts for every current source file exactly once:
 
-| System | 合格 | 合格·大体量 | 应拆分 | 应合并 | Total |
+| System | pass | pass · large | should split | should merge | Total |
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 9 | 10 | 4 | 0 | 23 |
 | `cadr-ai` | 8 | 11 | 9 | 0 | 28 |
@@ -161,7 +161,7 @@ tree files: 143
 path set difference: empty
 line/count mismatches: empty
 ledger totals: lines=104348 definitions=4246
-verdict totals: 合格=62 合格·大体量=52 应拆分=29 应合并=0
+verdict totals: pass=62 pass · large=52 should split=29 should merge=0
 ```
 
 Part A changed no production file.  Relative to A0 commit `47f71898e`, the

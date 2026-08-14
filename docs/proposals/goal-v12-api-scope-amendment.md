@@ -204,7 +204,7 @@ Please adjudicate item by item:
 Once the three are approved, the original construction order 1→10, 15→19, 11,
 13→12→14, Part D resumes, and no repeated adjudication is requested for
 already-approved capabilities. If any one of them is not approved, the examples
-blocked by that gap continue to be recorded as 缺失; the capability approvals of
+blocked by that gap continue to be recorded as missing; the capability approvals of
 the remaining items are unchanged, but in order to obey the "immediately
 blocked" hard constraint, this round does not start work before the new
 adjudication.

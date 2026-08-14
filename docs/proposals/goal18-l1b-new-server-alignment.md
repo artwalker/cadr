@@ -1,7 +1,7 @@
-# Goal 18 Part L: one-off adjudication proposal for the 38 "new-server alignment" 待裁决 rows
+# Goal 18 Part L: one-off adjudication proposal for the 38 "new-server alignment" pending adjudication rows
 
 Status: **pending user adjudication.** After the re-anchor to v0.84.1,
-38 rows in the `docs/source-parity.md` working tree carry `有意差异` and
+38 rows in the `docs/source-parity.md` working tree carry `intentional difference` and
 `PENDING ADJUDICATION` at the same time (0 of them in HEAD 51aed63d1; all of
 them added by this upgrade), and neither the git history nor the existing
 proposals holds a corresponding adjudication record (the 9 existing pending
@@ -14,19 +14,19 @@ these 38 rows in one go.
 
 Five groups, 38 rows in total, all belonging to pi v0.84.1's **client/server
 architecture rewrite + experimental CLI scaffolding**, and all registered as
-`有意差异` on the cadr side:
+`intentional difference` on the cadr side:
 
 | # | Group | Rows | source-parity.md lines | Baseline files |
 |---|---|---|---|---|
 | 1 | experimental CLI scaffolding | 8 | 459–466 | `packages/coding-agent/src/cli/experimental/{auth,cli,command-options,command,commands/client,commands/pi,commands/server,transport-address}.ts` |
 | 2 | coding-agent client surface | 3 | 473–475 | `packages/coding-agent/src/client/{index,remote-session,transcript}.ts` |
 | 3 | server harness / management HTTP | 2 | 615, 636 | `packages/coding-agent/src/server/create-harness.ts`, `packages/coding-agent/src/utils/management-http.ts` |
-| 4 | packages/server v0.84.1 rewrite | 15 | 773–788 (except line 775, the barrel whose verdict is `已实现`) | `connection,errors,listener,protocol,server,sessions,snapshots`, `testing/{client,index,server,service}`, `transports/unix/{index,listener,preset,types}.ts` |
+| 4 | packages/server v0.84.1 rewrite | 15 | 773–788 (except line 775, the barrel whose verdict is `implemented`) | `connection,errors,listener,protocol,server,sessions,snapshots`, `testing/{client,index,server,service}`, `transports/unix/{index,listener,preset,types}.ts` |
 | 5 | packages/client v0.84.1 rewrite | 10 | 850–859 | `{client,connection,errors,index,promise,session-handle,state,transport,types,unix}.ts` |
 
 ## Evidence
 
-- The verdict column of all 38 rows is `有意差异`, and the mapping column is
+- The verdict column of all 38 rows is `intentional difference`, and the mapping column is
   `no cadr experimental CLI` / `no cadr remote-session client` /
   `src/cadr-server/* (v0.83 architecture port)`, that is, **cadr keeps the v0.83
   session-server architecture and has not ported the v0.84.1 client/server rewrite**.
@@ -45,7 +45,7 @@ architecture rewrite + experimental CLI scaffolding**, and all registered as
 
 - Route A (recommended): **keep cadr's existing v0.83 server architecture and
   the current state of having no experimental CLI**, and record all 38 rows as
-  `有意差异`; delete the words `PENDING ADJUDICATION` from the evidence column
+  `intentional difference`; delete the words `PENDING ADJUDICATION` from the evidence column
   and rewrite it as "user adjudication 2026-08-12: the v0.84.1 client/server
   rewrite and the experimental CLI are architecture-level additions, and cadr
   keeps the v0.83 server architecture; the difference in the baseline

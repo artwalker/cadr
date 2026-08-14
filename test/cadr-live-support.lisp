@@ -80,9 +80,9 @@ instead of a suspected product defect."
 
 (defun live-test-nature-label (nature)
   (ecase nature
-    (:suspected-product-defect "疑似产品缺陷")
-    (:suspected-model-output-variation "疑似模型输出波动")
-    (:unable-to-determine "无法判断")))
+    (:suspected-product-defect "suspected product defect")
+    (:suspected-model-output-variation "suspected model-output variance")
+    (:unable-to-determine "cannot determine")))
 
 (defun write-live-test-report (results &optional (stream *standard-output*))
   (let ((run-count 0)

@@ -33,12 +33,12 @@
                  (goal20-part-i-identity ledger)))
     (is (not (null section-2)))
     (is (= 293
-           (count-substring "| 未评估 | — | — |" section-2)))
+           (count-substring "| pending evaluation | — | — |" section-2)))
     (is (= 5
            (count-substring
-            "| 不适用 | 静态导出资产，逐字节复刻基线，无 Lisp 源可评估 | — |"
+            "| n/a | Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate | — |"
             section-2)))
     (is (= 12
            (count-substring "src/cadr-tui/mermaid/" section-2)))
-    (is (null (search "已评估" section-2)))
+    (is (null (search "evaluated" section-2)))
     (is (null (search "## Lisp" ledger)))))

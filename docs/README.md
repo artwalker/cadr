@@ -86,7 +86,7 @@ wins.
 - [identity-audit.md](identity-audit.md): goal 16 product-identity tree audit.
 - [lisp-idiom-audit.md](lisp-idiom-audit.md): Common Lisp expression audit.
 - [goal18-part-e-audit.md](goal18-part-e-audit.md): capability-preservation
-  review of the `有意差异` rows.
+  review of the `intentional difference` rows.
 - [goal18-i2-derived-coverage.md](goal18-i2-derived-coverage.md): mechanical
   derived-requirement minus existing-scenario report.
 - [goal18-startup-resources-audit.md](goal18-startup-resources-audit.md):

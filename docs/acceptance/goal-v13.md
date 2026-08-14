@@ -59,7 +59,7 @@ code.  The fourth ledger is `docs/presentation-parity.md`; it contains all 55
 semantic theme tokens, 52 visible-element contracts, 10 path/number formats,
 and 6 non-terminal surfaces, each with baseline and Cadr `file:line` evidence.
 
-The result is `123 = 82 一致 + 39 不一致 + 2 有意差异`.  The 39 row-level
+The result is `123 = 82 match + 39 mismatch + 2 intentional difference`.  The 39 row-level
 differences reduce to 11 implementation clusters: tool subsegment colors,
 tool path shortening/links, invalid-argument copy, read/write highlighting,
 tool-specific result colors, edit preview, compact-read titles,

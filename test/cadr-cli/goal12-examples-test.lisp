@@ -174,7 +174,7 @@
     (is (search "| `coding-agent` | 309 | 263 | 46 | 0 |" ledger))
     (is (search "| `tui` | 44 | 39 | 5 | 0 |" ledger))
     (is (search "| **Total** | **670** | **507** | **163** | **0** |" ledger))
-    (is (search "实现完成，平台不可实测" ledger))
+    (is (search "Implemented; not measurable on this platform" ledger))
     (is (search "all 99" readme :test #'char-equal))
     ;; Goal 20 Part F adjudication (2026-08-14): the load/behavior gap for
     ;; the 14 gate-less example ports is recorded on the behavior axis as
@@ -219,10 +219,10 @@
         (is (stringp line))
         (ecase (getf row :status)
           (:ported
-           (is (search "| `已实现` |" line))
+           (is (search "| `implemented` |" line))
            (is (search (format nil "`~A:" (getf row :lisp)) line)))
           (:gap
-           (is (search "| `缺失` |" line))
+           (is (search "| `missing` |" line))
            (is (search "goal-v12-api-scope-amendment-3.md" line))))))))
 
 (test goal12-approved-amendments-close-every-example-gap

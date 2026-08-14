@@ -140,8 +140,8 @@ The user approved, and the following two-layer semantics have been implemented:
   later green run.
 - the summary lists item by item the items run, the items skipped and the
   reason, and the failed items with their complete failure output; every failure
-  must additionally be labelled `疑似产品缺陷`, `疑似模型输出波动` or
-  `无法判断`, together with the grounds for the judgement.
+  must additionally be labelled `suspected product defect`, `suspected model-output variance` or
+  `cannot determine`, together with the grounds for the judgement.
 
 The dedicated live command keeps a real non-zero signal, and runs all eight
 items before its final exit, so that the separation does not degenerate into

@@ -36,8 +36,8 @@ ASDF system, no new Lisp dependency, `src/cadr-ai` untouched.
 
 ## Ledger
 
-- `docs/source-parity.md`: `mermaid.ts` `缺失` → `已实现`.
-  Totals `670 = 507 已实现 + 163 有意差异 + 0 缺失`.
+- `docs/source-parity.md`: `mermaid.ts` `missing` → `implemented`.
+  Totals `670 = 507 implemented + 163 intentional difference + 0 missing`.
 - `OQ-G18-L1A-MERMAID` marked implemented.
 - `docs/dependency-audit.md` records marked 18.0.5 as a test-only fixture.
 - Idiom / organization counts: 291→292 Lisp files; cadr-tui modules 48→49;

@@ -51,9 +51,9 @@ crashes, boundary states, and state errors.
 
 The status may only be:
 
-- `一致`: already equivalent before entering Part B, or this round's re-check found no difference.
-- `不一致（已改齐）`: this round found a difference, the implementation was corrected, and there is a permanent gate.
-- `有意差异`: must have user approval and be registered in the README. This round has two user adjudications: all selectors
+- `match`: already equivalent before entering Part B, or this round's re-check found no difference.
+- `mismatch (corrected)`: this round found a difference, the implementation was corrected, and there is a permanent gate.
+- `intentional difference`: must have user approval and be registered in the README. This round has two user adjudications: all selectors
   wrap in both directions, and the bash title never displays the timeout.
 
 ## B1. Reproducible baseline TUI
@@ -113,10 +113,10 @@ Cadr implementation and gates:
 
 | ID | Contract and re-check conclusion | Status |
 |---|---|---|
-| TH-01 | Fixed theme, `light/dark` auto, a single OSC 11 detection when unconfigured, auto DSR→OSC 11, `COLORFGBG` ANSI256→RGB relative luminance `>=0.5`, and dark fallback are all aligned; auto/fixed dynamically start and stop the notification at runtime. | 不一致（已改齐） |
-| TH-02 | Custom themes are validated against the complete schema; 100 ms debounce hot reload; the last valid theme is retained when one is temporarily missing or invalid. | 不一致（已改齐） |
-| TH-03 | Truecolor foreground/background use `38;2`/`48;2` respectively, and local restore is `39`/`49` respectively. | 不一致（已改齐） |
-| TH-04 | The 256-color cube/gray candidates, the `0.299/0.587/0.114` distance, and the gray-wins condition are aligned item by item. | 不一致（已改齐） |
+| TH-01 | Fixed theme, `light/dark` auto, a single OSC 11 detection when unconfigured, auto DSR→OSC 11, `COLORFGBG` ANSI256→RGB relative luminance `>=0.5`, and dark fallback are all aligned; auto/fixed dynamically start and stop the notification at runtime. | mismatch (corrected) |
+| TH-02 | Custom themes are validated against the complete schema; 100 ms debounce hot reload; the last valid theme is retained when one is temporarily missing or invalid. | mismatch (corrected) |
+| TH-03 | Truecolor foreground/background use `38;2`/`48;2` respectively, and local restore is `39`/`49` respectively. | mismatch (corrected) |
+| TH-04 | The 256-color cube/gray candidates, the `0.299/0.587/0.114` distance, and the gray-wins condition are aligned item by item. | mismatch (corrected) |
 
 The complete built-in color values follow; letter case does not affect the RGB value.
 
@@ -195,37 +195,37 @@ The raw byte evidence is saved in `/tmp/cadr-goal9-color-capture.txt`.
 
 | ID | Baseline contract and Cadr evidence | Status |
 |---|---|---|
-| LY-01 | The root order is startup/chat/pending/status/widgets/editor/footer; the above-editor widget container keeps one line in the empty state and one leading spacer in the non-empty state, and the below-editor container carries no spacer of its own; `src/cadr-cli/tui.lisp:461-474,2109-2329`, `GOAL9-B3-BASE-SCREEN-ABOVE-EDITOR-SPACER-MATCHES-BASELINE-COMPOSITION`. | 不一致（已改齐） |
-| LY-02 | user full-width background X=1/Y=1; assistant has no background and one blank line before visible content; thinking is muted+italic; `src/cadr-cli/tui.lisp:1689,1758,1872`. | 不一致（已改齐） |
-| LY-03 | A spacer before the tool, X=1/Y=1, state background; `src/cadr-tui/components/tool-block.lisp:464` `render-tool-block`. | 不一致（已改齐） |
-| LY-04 | The editor has `─` only at top and bottom, height `max(5,floor(rows*0.3))`, and the scroll information sits in the border; `src/cadr-tui/editor.lisp:1551` `render-editor`. | 不一致（已改齐） |
-| LY-05 | select primary=32, gap=2, description min=10, 5 rows by default, and a width of `<=40` turns the description off; `src/cadr-tui/components/select-list.lisp:19,120`. | 不一致（已改齐） |
-| LY-06 | The overlay defaults to `min(80,width)`, with the selector's own border, spacer, and narrow-screen clipping; `src/cadr-tui/overlay.lisp:79` `resolve-overlay-layout`, `src/cadr-cli/tui.lisp:1997`. | 一致 |
-| MD-01 | The H1/H2/H3+ styles, the H3+ prefix, and block spacing are aligned. | 不一致（已改齐） |
-| MD-02 | code fence, two-space indentation, syntax coloring for registered languages, and the code-block color for unknown languages are aligned; the baseline `syntax-highlight.test.ts` span/entity/inheritance, TS, diff, regexp, decorator, and HTML gates are ported in full, and the visible token boundaries of HTML/diff/JSON/Bash/SQL and the Python/Bash URL counterexamples are covered. The audited baseline's finished state itself keeps the opening and closing fence lines, so seeing a literal <code>```text</code> / <code>```</code> is a verified non-difference. | 不一致（已改齐） |
-| MD-03 | quote `│ `, italic, and the HR 80-cell cap are aligned. | 不一致（已改齐） |
-| MD-04 | ordered/unordered/task markers, four-space nesting, and continuation are aligned. | 不一致（已改齐） |
-| MD-05 | link underline/color, and the OSC 8 and fallback URL rules are aligned. | 不一致（已改齐） |
-| MD-06 | Table width allocation, wrap, bold header, the complete box, and the narrow-screen raw fallback are aligned. | 不一致（已改齐） |
-| MD-07 | inline style local restore and the streaming partial fence's flicker prevention are aligned. | 不一致（已改齐） |
-| TL-01 | The pending/success/error backgrounds and the title/argument/output/error/warning semantic colors are aligned; a real nonzero bash exit must propagate from the tool result into a red-background error state, the title remains `$ command` with no state glyph added, and the copy is `Command exited...`. | 不一致（已改齐） |
-| TL-02 | collapsed preview: bash 5, write 10, grep 15, find/ls 20; a successful read shows no result in the collapsed state and shows the complete result once expanded, and an error is always visible. | 不一致（已改齐） |
-| TL-03 | A real edit result enters the diff renderer; the context/add/remove colors, single-line word inverse, tab→3 spaces, and the overlong-line cap are aligned; bash running/settled displays `Elapsed`/`Took`. | 不一致（已改齐） |
-| TL-04 | The default active tools, their order, description, and prompt snippet/guidelines are aligned with the baseline `read,bash,edit,write`; `grep/find/ls` are only enabled explicitly, avoiding the model switching to bash echo/sed because the prompt deviates. | 不一致（已改齐） |
-| TL-05 | User adjudication: the bash title displays only `$ command` whether or not a timeout is passed in explicitly, and does not display `(timeout Ns)`. This differs intentionally from the explicit timeout suffix of the audited baseline `bash.ts:226-231`. | 有意差异 |
-| FT-01 | cwd/branch/session; input/output/cache read/write/hit/cost/context; provider/model/thinking; extension status — the three-row layout is aligned. | 不一致（已改齐） |
-| FT-02 | The context `>70%` warning and `>90%` error are aligned. | 不一致（已改齐） |
-| FT-03 | The working/retry/compaction spinner, the semantic colors, and the status region are aligned. | 不一致（已改齐） |
-| FT-04 | `/login`, `/model`, thinking, subscription, and auto-compaction all refresh from live agent state; the editor thinking/bash border is synchronized. | 不一致（已改齐） |
-| SL-01 | generic selected `→ ` + accent, muted description, and the scroll/no-match theme are aligned. | 不一致（已改齐） |
-| SL-02 | The session selected row uses a full-width `selectedBg`; tree colors only the fixed gutter/body segment and does not incorrectly pad to the whole row. | 不一致（已改齐） |
-| SL-03 | model has at most 10 rows, accent selected, muted provider, green `✓`, and border/spacer are aligned. | 不一致（已改齐） |
-| SL-04 | autocomplete primary 12..32, default 5, configurable 3..20, a 20 ms debounce for `@` only, and the popup after the bottom border. | 不一致（已改齐） |
-| SL-05 | User adjudication: all selectors wrap in both directions at the first and last item, and an empty list stays stable; the baseline's selectors do not wrap uniformly, so this is registered as an 有意差异. | 有意差异 |
-| AN-01 | spinner `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`, 80 ms; one blank line before the loader. | 不一致（已改齐） |
-| AN-02 | render 16 ms throttle; terminal progress 1 s keepalive; `showTerminalProgress` is read on every event and clears immediately when turned off. | 不一致（已改齐） |
-| AN-03 | IME zero-width marker, inverse fake cursor, and hardware cursor placement/hiding/restoration are aligned. | 不一致（已改齐） |
-| AN-04 | resize invalidation, alternate screen, scroll/follow, mouse, autowrap, and exit restoration already have equivalent implementations. | 一致 |
+| LY-01 | The root order is startup/chat/pending/status/widgets/editor/footer; the above-editor widget container keeps one line in the empty state and one leading spacer in the non-empty state, and the below-editor container carries no spacer of its own; `src/cadr-cli/tui.lisp:461-474,2109-2329`, `GOAL9-B3-BASE-SCREEN-ABOVE-EDITOR-SPACER-MATCHES-BASELINE-COMPOSITION`. | mismatch (corrected) |
+| LY-02 | user full-width background X=1/Y=1; assistant has no background and one blank line before visible content; thinking is muted+italic; `src/cadr-cli/tui.lisp:1689,1758,1872`. | mismatch (corrected) |
+| LY-03 | A spacer before the tool, X=1/Y=1, state background; `src/cadr-tui/components/tool-block.lisp:464` `render-tool-block`. | mismatch (corrected) |
+| LY-04 | The editor has `─` only at top and bottom, height `max(5,floor(rows*0.3))`, and the scroll information sits in the border; `src/cadr-tui/editor.lisp:1551` `render-editor`. | mismatch (corrected) |
+| LY-05 | select primary=32, gap=2, description min=10, 5 rows by default, and a width of `<=40` turns the description off; `src/cadr-tui/components/select-list.lisp:19,120`. | mismatch (corrected) |
+| LY-06 | The overlay defaults to `min(80,width)`, with the selector's own border, spacer, and narrow-screen clipping; `src/cadr-tui/overlay.lisp:79` `resolve-overlay-layout`, `src/cadr-cli/tui.lisp:1997`. | match |
+| MD-01 | The H1/H2/H3+ styles, the H3+ prefix, and block spacing are aligned. | mismatch (corrected) |
+| MD-02 | code fence, two-space indentation, syntax coloring for registered languages, and the code-block color for unknown languages are aligned; the baseline `syntax-highlight.test.ts` span/entity/inheritance, TS, diff, regexp, decorator, and HTML gates are ported in full, and the visible token boundaries of HTML/diff/JSON/Bash/SQL and the Python/Bash URL counterexamples are covered. The audited baseline's finished state itself keeps the opening and closing fence lines, so seeing a literal <code>```text</code> / <code>```</code> is a verified non-difference. | mismatch (corrected) |
+| MD-03 | quote `│ `, italic, and the HR 80-cell cap are aligned. | mismatch (corrected) |
+| MD-04 | ordered/unordered/task markers, four-space nesting, and continuation are aligned. | mismatch (corrected) |
+| MD-05 | link underline/color, and the OSC 8 and fallback URL rules are aligned. | mismatch (corrected) |
+| MD-06 | Table width allocation, wrap, bold header, the complete box, and the narrow-screen raw fallback are aligned. | mismatch (corrected) |
+| MD-07 | inline style local restore and the streaming partial fence's flicker prevention are aligned. | mismatch (corrected) |
+| TL-01 | The pending/success/error backgrounds and the title/argument/output/error/warning semantic colors are aligned; a real nonzero bash exit must propagate from the tool result into a red-background error state, the title remains `$ command` with no state glyph added, and the copy is `Command exited...`. | mismatch (corrected) |
+| TL-02 | collapsed preview: bash 5, write 10, grep 15, find/ls 20; a successful read shows no result in the collapsed state and shows the complete result once expanded, and an error is always visible. | mismatch (corrected) |
+| TL-03 | A real edit result enters the diff renderer; the context/add/remove colors, single-line word inverse, tab→3 spaces, and the overlong-line cap are aligned; bash running/settled displays `Elapsed`/`Took`. | mismatch (corrected) |
+| TL-04 | The default active tools, their order, description, and prompt snippet/guidelines are aligned with the baseline `read,bash,edit,write`; `grep/find/ls` are only enabled explicitly, avoiding the model switching to bash echo/sed because the prompt deviates. | mismatch (corrected) |
+| TL-05 | User adjudication: the bash title displays only `$ command` whether or not a timeout is passed in explicitly, and does not display `(timeout Ns)`. This differs intentionally from the explicit timeout suffix of the audited baseline `bash.ts:226-231`. | intentional difference |
+| FT-01 | cwd/branch/session; input/output/cache read/write/hit/cost/context; provider/model/thinking; extension status — the three-row layout is aligned. | mismatch (corrected) |
+| FT-02 | The context `>70%` warning and `>90%` error are aligned. | mismatch (corrected) |
+| FT-03 | The working/retry/compaction spinner, the semantic colors, and the status region are aligned. | mismatch (corrected) |
+| FT-04 | `/login`, `/model`, thinking, subscription, and auto-compaction all refresh from live agent state; the editor thinking/bash border is synchronized. | mismatch (corrected) |
+| SL-01 | generic selected `→ ` + accent, muted description, and the scroll/no-match theme are aligned. | mismatch (corrected) |
+| SL-02 | The session selected row uses a full-width `selectedBg`; tree colors only the fixed gutter/body segment and does not incorrectly pad to the whole row. | mismatch (corrected) |
+| SL-03 | model has at most 10 rows, accent selected, muted provider, green `✓`, and border/spacer are aligned. | mismatch (corrected) |
+| SL-04 | autocomplete primary 12..32, default 5, configurable 3..20, a 20 ms debounce for `@` only, and the popup after the bottom border. | mismatch (corrected) |
+| SL-05 | User adjudication: all selectors wrap in both directions at the first and last item, and an empty list stays stable; the baseline's selectors do not wrap uniformly, so this is registered as an intentional difference. | intentional difference |
+| AN-01 | spinner `⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏`, 80 ms; one blank line before the loader. | mismatch (corrected) |
+| AN-02 | render 16 ms throttle; terminal progress 1 s keepalive; `showTerminalProgress` is read on every event and clears immediately when turned off. | mismatch (corrected) |
+| AN-03 | IME zero-width marker, inverse fake cursor, and hardware cursor placement/hiding/restoration are aligned. | mismatch (corrected) |
+| AN-04 | resize invalidation, alternate screen, scroll/follow, mouse, autowrap, and exit restoration already have equivalent implementations. | match |
 
 Markdown gates:
 
@@ -244,8 +244,8 @@ Tool, footer, selector, and animation gates:
 - `test/cadr-cli/tui-test.lisp:223-1415,2334-2700`
 - `test/cadr-cli/part-b-interactive-test.lisp:1671-2180`
 
-Third-round mechanical ledger: of the 35 numbered items, `一致` 2, `不一致（已改齐）` 31,
-`有意差异` 2, `pending` 0. The targeted gates, the isolated / current-user full runs, the PTY lifecycle,
+Third-round mechanical ledger: of the 35 numbered items, `match` 2, `mismatch (corrected)` 31,
+`intentional difference` 2, `pending` 0. The targeted gates, the isolated / current-user full runs, the PTY lifecycle,
 the isolated native build, and the commit evidence are all in the ledger; the README difference registration is synchronized. The B3 real two-terminal
 A/B has been confirmed by the user, and Part B is closed.
 
@@ -430,10 +430,10 @@ locks S01-S04 at the same time, and plain string containment can no longer mask 
 | `/trust` | `Project trust` and the cwd | `↑↓ navigate  enter save  escape/ctrl+c cancel` | none | Trust, Trust parent folder, Do not trust | none | `→`; top and bottom borders and a fixed spacer | saved decision, current session, parent path | bidirectional |
 | extension custom UI | the single-line/multi-line title supplied by the extension | the generic `↑↓ navigate  enter select  escape cancel` | determined by the extension surface | the label/value supplied by the extension, in their original order | generic viewport | `→`; the framed select's top and bottom borders and a fixed spacer | the extension supplies the description | bidirectional; the real extension worker→live TUI bridge→keyboard selection→return value has a regression test |
 | autocomplete | no title | no extra hints | the editor's current `/command`, `/model ...`, `/login ...`, or `@path` prefix | the canonical command order / match ordering; model/provider/path items with their real values | limited by `autocompleteMaxVisible` | selected `→`, the popup sits after the editor's bottom border, with no outer overlay frame; `@path` has a complete 40×8 virtual-screen gate | the description is displayed when the width allows | bidirectional |
-| `/sessions`, `/switch`, `/branch`, `/install` | the baseline has no corresponding slash/TUI surface | Cadr has deleted them all from the built-in slash dispatch, the overlays, and autocomplete; typing them directly is handled only by the ordinary unknown-input path and constitutes neither a command alias nor a hidden backend | none | none | none | none | none | 不适用 |
-| `/compact` | the baseline has no overlay | it currently executes compaction directly and presents the progress or the result in the status/transcript | none | none | none | none | compaction status | 不适用 |
-| `/export` | the baseline has no overlay | it currently exports directly to the default HTML or to an explicit path and notices the result | none | none | none | none | the output path | 不适用 |
-| `/reload` | the baseline has no overlay | it currently reloads keybindings/extensions/skills/prompts/themes/context directly; on success it displays the baseline's original text as a dim status with no `session>` prefix | none | none | none | none | reload summary | 不适用 |
+| `/sessions`, `/switch`, `/branch`, `/install` | the baseline has no corresponding slash/TUI surface | Cadr has deleted them all from the built-in slash dispatch, the overlays, and autocomplete; typing them directly is handled only by the ordinary unknown-input path and constitutes neither a command alias nor a hidden backend | none | none | none | none | none | n/a |
+| `/compact` | the baseline has no overlay | it currently executes compaction directly and presents the progress or the result in the status/transcript | none | none | none | none | compaction status | n/a |
+| `/export` | the baseline has no overlay | it currently exports directly to the default HTML or to an explicit path and notices the result | none | none | none | none | the output path | n/a |
+| `/reload` | the baseline has no overlay | it currently reloads keybindings/extensions/skills/prompts/themes/context directly; on success it displays the baseline's original text as a dim status with no `session>` prefix | none | none | none | none | reload summary | n/a |
 
 The complete virtual-screen SHA-256 of the 15 overlays (including the standalone `/logout` surface) is locked by
 `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT`;

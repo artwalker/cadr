@@ -145,8 +145,8 @@ expect_ledger_failure \
 
 BAD_ROW_LEDGER="$FIXTURE/bad-row-ledger.md"
 awk '
-  !changed && /^\| `packages\// && (/`已实现`/ || /`有意差异`/) {
-    sub(/`已实现`|`有意差异`/, "`未裁决`")
+  !changed && /^\| `packages\// && (/`implemented`/ || /`intentional difference`/) {
+    sub(/`implemented`|`intentional difference`/, "`unadjudicated`")
     changed = 1
   }
   { print }
@@ -157,7 +157,7 @@ expect_ledger_failure \
 
 DUPLICATE_LEDGER="$FIXTURE/duplicate-ledger.md"
 awk '
-  !changed && /^\| `packages\// && (/`已实现`/ || /`有意差异`/) {
+  !changed && /^\| `packages\// && (/`implemented`/ || /`intentional difference`/) {
     print
     changed = 1
   }
@@ -169,7 +169,7 @@ expect_ledger_failure \
 
 BAD_SHA_LEDGER="$FIXTURE/bad-sha-ledger.md"
 awk '
-  !changed && /^\| `packages\// && (/`已实现`/ || /`有意差异`/) && /\.d\.ts`/ {
+  !changed && /^\| `packages\// && (/`implemented`/ || /`intentional difference`/) && /\.d\.ts`/ {
     sub(/\.d\.ts`/, "-changed.d.ts`")
     changed = 1
   }

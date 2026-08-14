@@ -51,7 +51,7 @@ approved):
    Mermaid is executed along the adjudicated route.
 
 7. **Re-close the four ledgers**: all 670 rows of the source ledger
-   dispositioned (缺失 0); the behavior/presentation/non-functional ledger
+   dispositioned (missing 0); the behavior/presentation/non-functional ledger
    figures are verified by the I4 machine reconciliation.
 
 8. **L4 no-blind-spot verification**: the I2-derived difference set is empty or

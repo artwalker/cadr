@@ -1,9 +1,9 @@
-# Goal 18 Part E re-review report: capability preservation for the `有意差异` rows
+# Goal 18 Part E re-review report: capability preservation for the `intentional difference` rows
 
-Re-review date 2026-08-09; the subject is all **77** current `有意差异` rows in
+Re-review date 2026-08-09; the subject is all **77** current `intentional difference` rows in
 `docs/source-parity.md` (the 72 existing rows + the 5 component-export rows
 recast by this Part E3). Method: mechanically extract every row whose verdict is
-`有意差异`, and check three things row by row — (a) whether the grounds for the
+`intentional difference`, and check three things row by row — (a) whether the grounds for the
 divergence are specific and legitimate, (b) whether the pointer of the
 equal-strength behavioral assertion is specific and runnable, (c) whether the
 assertion locks baseline behavior or is reverse-engineered from cadr's current
@@ -159,7 +159,7 @@ point.
 The user-visible behavior (the settings rows, the skill invocation message, the
 extension selector) is locked by the following assertions:
 
-- The verdict on the 5 ledger rows was changed from `已实现` to `有意差异`, and
+- The verdict on the 5 ledger rows was changed from `implemented` to `intentional difference`, and
   the note states the baseline consumption-point evidence, cadr's equivalent
   landing point and the assertion pointer (the corresponding rows in section 4.2
   of docs/source-parity.md; the summary table and the header counts were updated
@@ -184,7 +184,7 @@ extension selector) is locked by the following assertions:
 
 | Item | Status |
 |---|---|
-| Recasting the 5 component-export rows as `有意差异` + specific notes + assertion pointers | Done (this Part) |
+| Recasting the 5 component-export rows as `intentional difference` + specific notes + assertion pointers | Done (this Part) |
 | The settings-state-sweep image-row coverage gap | Done (the scenario enables image support, and the 72 checkpoints were re-compared) |
 | Updating the summary table / header counts / goal12-examples-test in step (523/72 → 518/77) | Done |
 | Re-review of the grounds and assertion pointers for the other 72 rows | Done (the §2 table; no remediation items) |
