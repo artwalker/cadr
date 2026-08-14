@@ -118,10 +118,25 @@
 
 (defclass tic-tac-toe-board-component (cadr-tui:component)
   ((state :initarg :state :reader tic-tac-toe-component-state)
+   ;; Baseline BoardOverlayComponent keeps the tui handle so agent-driven
+   ;; state changes can repaint (tic-tac-toe.ts:389-393 updateState); the
+   ;; user-input repaints are the framework's post-event render, matching
+   ;; the requestRender calls at tic-tac-toe.ts:412-420.
+   (tui :initarg :tui :initform nil :reader tic-tac-toe-component-tui)
    (agent-view-p :initarg :agent-view-p :initform nil
                  :reader tic-tac-toe-component-agent-view-p)
    (done :initarg :done :initform nil :reader tic-tac-toe-component-done)
    (on-play :initarg :on-play :initform nil :reader tic-tac-toe-component-on-play)))
+
+(defun tic-tac-toe-request-render ()
+  "Baseline updateState (tic-tac-toe.ts:389-393): repaint the live overlay
+after the agent's tool handler mutates the shared game state on another
+execution path - without this the screen freezes on the pre-move frame
+until an unrelated event happens to render (the goal 20 P0-2 defect)."
+  (let ((component *tic-tac-toe-component*))
+    (when (and component (tic-tac-toe-component-tui component))
+      (cadr-tui:tui-request-render
+       (tic-tac-toe-component-tui component)))))
 
 (defconstant +tic-tac-toe-cell-width+ 7)
 (defconstant +tic-tac-toe-cell-height+ 3)
@@ -479,11 +494,11 @@ exactly that duplication."
          (cadr-agent:extension-context-custom-component
           context
           (lambda (tui theme keybindings done)
-            (declare (ignore tui theme keybindings))
+            (declare (ignore theme keybindings))
             (setf *tic-tac-toe-component*
                   (make-instance
                    'tic-tac-toe-board-component
-                   :state *tic-tac-toe-state* :done done
+                   :state *tic-tac-toe-state* :tui tui :done done
                    :on-play
                    (lambda (row column)
                      (setf (aref (tic-tac-toe-state-board *tic-tac-toe-state*)
@@ -491,25 +506,27 @@ exactly that duplication."
                            (tic-tac-toe-state-status *tic-tac-toe-state*)
                            (tic-tac-toe-status
                             (tic-tac-toe-state-board *tic-tac-toe-state*)))
+                     ;; Baseline tic-tac-toe.ts:805-809 flips the turn (or
+                     ;; ends the game) before persisting the save entry, so
+                     ;; session reconstruction sees the post-move turn.
+                     (if (eq (tic-tac-toe-state-status *tic-tac-toe-state*) :playing)
+                         (setf (tic-tac-toe-state-current-turn *tic-tac-toe-state*) #\O)
+                         (setf *tic-tac-toe-active-p* nil))
                      (tic-tac-toe-save)
                      (if (eq (tic-tac-toe-state-status *tic-tac-toe-state*) :playing)
-                         (progn
-                           (setf (tic-tac-toe-state-current-turn *tic-tac-toe-state*) #\O)
-                           (cadr-agent:extension-api-send-message
-                            *example-api*
-                            (list
-                             :custom-type +tic-tac-toe-move-type+
-                             :content
-                             (format nil
-                                     "Player X played at (row=~D, col=~D). It is now Player O's turn.~%~%Board (your cursor marked with <>):~%~A"
-                                     row column
-                                     (tic-tac-toe-board-ascii *tic-tac-toe-state*))
-                             :display-p t
-                             :details (tic-tac-toe-board-data *tic-tac-toe-state*))
-                            :trigger-turn-p t))
-                         (progn
-                           (setf *tic-tac-toe-active-p* nil)
-                           (tic-tac-toe-send-game-over))))))))))))
+                         (cadr-agent:extension-api-send-message
+                          *example-api*
+                          (list
+                           :custom-type +tic-tac-toe-move-type+
+                           :content
+                           (format nil
+                                   "Player X played at (row=~D, col=~D). It is now Player O's turn.~%~%Board (your cursor marked with <>):~%~A"
+                                   row column
+                                   (tic-tac-toe-board-ascii *tic-tac-toe-state*))
+                           :display-p t
+                           :details (tic-tac-toe-board-data *tic-tac-toe-state*))
+                          :trigger-turn-p t)
+                         (tic-tac-toe-send-game-over)))))))))))
 
 (defun tic-tac-toe-action (action)
   (let ((state *tic-tac-toe-state*))
@@ -547,6 +564,9 @@ exactly that duplication."
              (column (tic-tac-toe-state-agent-column state)))
          (unless (char= (aref (tic-tac-toe-state-board state) row column)
                         #\Space)
+           ;; Baseline tic-tac-toe.ts:909-916 persists the cursor position
+           ;; before throwing, so a retry survives session reconstruction.
+           (tic-tac-toe-save)
            (error "Cell (~D,~D) is already ~A. Your cursor is still at (~D,~D)."
                   row column (aref (tic-tac-toe-state-board state) row column)
                   row column))
@@ -586,9 +606,16 @@ exactly that duplication."
      (when (member action '("move_up" "move_down" "move_left" "move_right")
                    :test #'string=)
        (sleep 0.3))
-     (let ((result (tic-tac-toe-action action)))
-       (tic-tac-toe-save)
-       (values result (tic-tac-toe-board-data *tic-tac-toe-state*) nil)))))
+    (let ((result (tic-tac-toe-action action)))
+      (tic-tac-toe-save)
+      ;; Baseline updateState fires after every agent action
+      ;; (tic-tac-toe.ts:389-393): repaint the live overlay from the
+      ;; agent's execution path.
+      (tic-tac-toe-request-render)
+      ;; Tool-result content must be a list of content blocks, not a raw
+      ;; string (hello.lisp and todo.lisp use the same helper).
+      (example-text-result
+       result (tic-tac-toe-board-data *tic-tac-toe-state*))))))
 
 (cadr-agent:define-rich-tool
  "tic_tac_toe_see_board"
@@ -599,7 +626,7 @@ exactly that duplication."
  :handler
  (lambda (call-id arguments signal on-update context)
    (declare (ignore call-id arguments signal on-update context))
-   (values
+   (example-text-result
     (format nil
             "Board (your cursor marked with <>):~%~A~%~%Your cursor: (row=~D, col=~D)~%Status: ~(~A~)~%Turn: ~A"
             (tic-tac-toe-board-ascii *tic-tac-toe-state*)
@@ -608,4 +635,4 @@ exactly that duplication."
             (tic-tac-toe-state-status *tic-tac-toe-state*)
             (if (char= (tic-tac-toe-state-current-turn *tic-tac-toe-state*) #\O)
                 "Player O (you)" "Player X"))
-    (tic-tac-toe-board-data *tic-tac-toe-state*) nil)))
+    (tic-tac-toe-board-data *tic-tac-toe-state*))))
