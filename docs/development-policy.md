@@ -260,7 +260,52 @@ Every human-judgement exit in this project is covered alike: the intentional-dif
 
 ### 5. New classes and changes of criteria require prior adjudication
 
-**Adding an intentional-difference class is equivalent to changing the definition of "alignment"**; **changing a gate's obligation unit or counting basis** (such as the denominator of a coverage figure) **is equivalent to changing what the gate promises.** Both require a written proposal and user adjudication first; neither may be self-authorised, and neither may change the criteria and declare compliance under the new criteria in the same commit. Before adjudication, figures under the new criteria may not serve as acceptance evidence.
+**Adding an intentional-difference class is equivalent to changing the definition of "alignment"**; **changing a gate's obligation unit or counting basis** (such as the denominator of a coverage figure) **is equivalent to changing what the gate promises.** Both require a written proposal first; neither may be self-authorised, and neither may change the criteria and declare compliance under the new criteria in the same commit. Before adjudication, figures under the new criteria may not serve as acceptance evidence.
+
+#### 5.1 Who adjudicates (user adjudication, 2026-08-15)
+
+**The advisor adjudicates; the user retains an unconditional veto.** This
+records what was already the practice — goal20 Part A and the I04 covering
+proposal were both advisor-ruled — and an earlier revision of this section
+that still demanded user adjudication for every proposal had drifted from
+it. **A decision mechanism that disagrees with its own documentation cannot
+be improved, because its real rules are written down nowhere.**
+
+Three consequences, all binding:
+
+1. **A ruling lands in the artifact it rules on.** Writing it only into a
+   working state file is not a ruling: the next reader opens the proposal,
+   sees "awaiting adjudication", and either waits or re-litigates it. The
+   proposal's `Status:` line must carry the verdict, the date and who
+   ruled. This was violated once already — the I04 proposal sat at
+   "awaiting adjudication" for a day after the ruling was made.
+2. **Durable rulings are committed.** Anything that still constrains
+   someone after the goal closes out goes into `docs/adjudications.md`,
+   which is tracked. A goal state file is disposable scratch; it is
+   gitignored, and one `git clean` would destroy the entire rationale layer
+   while every gate stayed green.
+3. **The advisor may not adjudicate a change to the advisor's own authority
+   or role boundary.** Those go to the user. This clause is itself an
+   instance: it was written by the advisor and adjudicated by the user.
+
+#### 5.2 Role boundary: executing and auditing are different hats (user adjudication, 2026-08-15)
+
+The two-role structure works because a doer and an independent checker are
+different people. It stops working the moment the checker becomes the doer.
+
+**An item the advisor executed is not audited by the advisor.** Either the
+user audits it, or the delivery states plainly that it has not been
+independently audited. Mechanical gate results (test counts, gate exits,
+digest comparisons) remain valid evidence in either case — they are
+produced by machinery, not judgement. What may not be claimed is the
+judgement layer: that the work was reviewed by someone who did not write
+it.
+
+Applied retroactively on the day this clause landed: the goal 20
+documentation translation (`e8cbfaec9`, `4c8e31416`, `7dd90672c`,
+`7cf6c3ca7`, `6f073134e`, `860c075cd`) was executed by the advisor. Its
+gate evidence stands; **its review does not, and it is recorded here as not
+independently audited.**
 
 ### 6. Reports must distinguish "drive completeness" from "conformance"
 

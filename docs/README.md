@@ -46,6 +46,10 @@ remain evidence and must not silently override a current contract.
 - [code-organization.md](code-organization.md): permanent directory ownership,
   converged policy primitives, anti-bypass tests, and reviewed large-file
   symptom gate for maintainable future development.
+- [adjudications.md](adjudications.md): append-only log of rulings that
+  outlive the goal that produced them.  A goal state file is disposable
+  scratch and is gitignored; this is the tracked record of why the rules are
+  what they are.
 - [development-policy.md](development-policy.md): user-adjudicated permanent
   development constraints, including the single product-identity owner and
   exact exception process.
