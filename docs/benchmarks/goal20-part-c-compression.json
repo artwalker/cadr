@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "generator": "scripts/goal20-part-c-compression-tradeoff.py",
+  "measuredAt": "2026-08-14T06:02:42Z",
+  "machine": "Friend-MachineD",
+  "gitHead": "cfa06a9fe55014dfef9e4c2e2c2d7fa359974e79",
+  "harness": "scripts/goal11-cold-start.py, new process to first real TUI frame, fresh temporary HOME, no credentials, isolated /tmp workspace, interleaved sampling",
+  "save_arguments": "cadr-cli:native-image-save-arguments; control drops :sb-core-compression from the feature list, all other flags equal",
+  "variants": {
+    "compressed": {
+      "binary_bytes": 20884056,
+      "n": 20,
+      "cold_start_median_us": 284338.0515,
+      "cold_start_mad_us": 7890.248500000016,
+      "cold_start_samples_us": [
+        313389.858,
+        288799.87,
+        279810.288,
+        287874.482,
+        284415.49,
+        307128.223,
+        302091.956,
+        283976.638,
+        284260.613,
+        299046.693,
+        281501.231,
+        308591.629,
+        278716.758,
+        300846.166,
+        262326.579,
+        258077.119,
+        261010.167,
+        275555.979,
+        284528.338,
+        277339.627
+      ]
+    },
+    "uncompressed": {
+      "binary_bytes": 74033504,
+      "n": 20,
+      "cold_start_median_us": 177014.84100000001,
+      "cold_start_mad_us": 5574.560000000027,
+      "cold_start_samples_us": [
+        183537.706,
+        179497.529,
+        199183.536,
+        181231.808,
+        168273.967,
+        198466.191,
+        179712.06,
+        174424.969,
+        177761.676,
+        176268.006,
+        180570.366,
+        187685.955,
+        169979.225,
+        173981.453,
+        164552.94,
+        170913.126,
+        168056.178,
+        171967.436,
+        168918.413,
+        180430.026
+      ]
+    }
+  }
+}
