@@ -620,16 +620,23 @@
               source))))
     (dolist (contract '("did != 9" "pass_lines != 9" "skip_lines != 9"
                         "fail_lines != 9" "checks != pass + skip + fail"
-                        "cadr test summary: systems=%d checks=%d pass=%d skip=%d fail=%d"))
+                        "cadr test summary: systems=%d checks=%d pass=%d skip=%d fail=%d"
+                        "write-test-check-anchor.py"
+                        "CADR_TEST_CHECK_LEDGER"))
       (is (search contract source)))
     (with-test-directory (temporary)
       (let ((fake-sbcl (merge-pathnames "fake-sbcl" temporary))
-            (quicklisp (merge-pathnames "setup.lisp" temporary)))
+            (quicklisp (merge-pathnames "setup.lisp" temporary))
+            (ledger (merge-pathnames "test-matrix.md" temporary)))
         (write-text
          fake-sbcl
          (format nil
                  "#!/bin/sh~%i=0~%while [ \"$i\" -lt 9 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
         (write-text quicklisp "")
+        (write-text
+         ledger
+         (format nil
+                 "# fixture~%<!-- GOAL20_TEST_CHECKS systems=9 checks=27 pass=27 skip=0 fail=0 -->~%"))
         (uiop:run-program (list "chmod" "+x" (namestring fake-sbcl)))
         (multiple-value-bind (output errors status)
             (uiop:run-program
@@ -637,10 +644,12 @@
               "env"
               (format nil "SBCL=~A" (namestring fake-sbcl))
               (format nil "QUICKLISP_SETUP=~A" (namestring quicklisp))
+              (format nil "CADR_TEST_CHECK_LEDGER=~A" (namestring ledger))
               (namestring script))
              :output :string :error-output :string
              :ignore-error-status t)
           (is (zerop status) "~A" errors)
           (is (search
                "cadr test summary: systems=9 checks=27 pass=27 skip=0 fail=0"
-               output)))))))
+               output))
+          (is (search "changed=no" output)))))))

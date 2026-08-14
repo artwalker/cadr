@@ -140,6 +140,7 @@ run_goal11_gate() {
       --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json"
     python3 scripts/write-performance-ledger.py \
       --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
+      --paired "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \
       --ledger "$PROJECT_DIRECTORY/docs/performance.md"
   )
 }
@@ -374,6 +375,18 @@ else
   skip_deterministic \
     "deterministic FiveAM" \
     "summarization choke point real source failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "FiveAM check-count ledger" \
+    python3 "$PROJECT_DIRECTORY/scripts/write-test-check-anchor.py" \
+      --verify \
+      --ledger "$PROJECT_DIRECTORY/docs/test-matrix.md" ||
+    DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "FiveAM check-count ledger" \
+    "deterministic FiveAM failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ] && copy_isolated_tree; then

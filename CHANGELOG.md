@@ -78,6 +78,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part B: paired-path ratios and FiveAM check counts are written by
+  scripts into `docs/performance.md` and the `GOAL20_TEST_CHECKS` comment in
+  `docs/test-matrix.md`. `scripts/record-paired-paths.py` books a run from
+  the paired-path summary; `scripts/write-test-check-anchor.py` fails
+  `test-cl.sh` when the committed check count drifted.
+
 - Goal 18 L2.1: the fixed pi baseline anchor now has a single owner — the
   `BASELINE` file at the repository root (commit, release tag, distance).
   The product release identity derives from it at load time, the diff and

@@ -86,3 +86,8 @@ case "$SUMMARY" in
   *" fail=0") ;;
   *) exit 1 ;;
 esac
+
+python3 "$PROJECT_DIRECTORY/scripts/write-test-check-anchor.py" \
+  --summary "$SUMMARY" \
+  --ledger "${CADR_TEST_CHECK_LEDGER:-$PROJECT_DIRECTORY/docs/test-matrix.md}" \
+  --strict

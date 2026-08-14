@@ -86,9 +86,13 @@ node "$PROJECT_DIRECTORY/scripts/goal20-gen-paired-fixtures.mjs" --check
   "$BASELINE_DIRECTORY" \
   $BENCH_ARGUMENTS --keep-journal "$PI_JOURNAL" --output "$PI_REPORT"
 
-exec python3 "$PROJECT_DIRECTORY/scripts/goal20-paired-paths.py" \
+python3 "$PROJECT_DIRECTORY/scripts/goal20-paired-paths.py" \
   --cadr "$CADR_REPORT" \
   --pi "$PI_REPORT" \
   --cadr-journal "$CADR_JOURNAL" \
   --pi-journal "$PI_JOURNAL" \
   --summary-json "$OUTPUT_DIRECTORY/summary.json"
+python3 "$PROJECT_DIRECTORY/scripts/record-paired-paths.py" \
+  --summary "$OUTPUT_DIRECTORY/summary.json" \
+  --cadr-report "$CADR_REPORT" \
+  --history "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json"

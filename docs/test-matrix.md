@@ -1,6 +1,11 @@
 # Gate denominators (Goal 20 Part M)
 
+<!-- GOAL20_TEST_CHECKS systems=9 checks=17048 pass=17048 skip=0 fail=0 -->
+
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
+`scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green
+nine-system run and fails when the committed count drifted. Do not edit it
+by hand.
 
 Each deterministic `verify.sh` stage must answer three questions. "N/N"
 without that answer is an undeclared denominator.
@@ -8,6 +13,7 @@ without that answer is an undeclared denominator.
 | Gate | Checks | Does not check | A pass means | Rest covered by |
 |---|---|---|---|---|
 | `test-cl.sh` (Nine-system FiveAM) | Isolated HOME, all packaged FiveAM files | Live provider I/O; render-diff screens; compile WARNING count | Every assertion in those suites held this run | render-diff, live stages, cadr-compile-warnings |
+| `write-test-check-anchor.py` | `GOAL20_TEST_CHECKS` equals this run's systems/checks/pass/skip/fail | Whether those assertions are the *right* assertions | The committed FiveAM total is this run's total | Adding tests without committing the comment |
 | `check-code-organization.py` | File placement vs exemptions | Behaviour; Lisp-ification status | Listed files sit where the manifest says | source-parity, Part I |
 | `check-product-identity.py` | Token allowlist | Runtime strings not in the allowlist scan | No unallowlisted product-token in scanned files | baseline-string-reachability |
 | `render-diff.py gate --tier core` | Semantic-screen SHA pairs + I01/I04 adjudications for core scenarios | Full-tier scenarios; whether a green pair is the *right* picture | Every core checkpoint is aligned or has a live disposition | full-tier gate; Part L reverse scan |
