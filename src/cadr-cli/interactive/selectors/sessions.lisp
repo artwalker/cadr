@@ -10,6 +10,7 @@
   (message-count 0 :type (integer 0 *))
   (modified 0 :type real)
   (all-messages-text "" :type string)
+  haystack
   payload)
 
 (defun normalized-search-text (text)
@@ -25,24 +26,30 @@
               #\")))
 
 (defun search-record-haystack (record)
-  (normalized-search-text
-   ;; Baseline session-selector-search.ts: the haystack is
-   ;; `${id} ${name ?? ""} ${allMessagesText} ${cwd}`.
-   (format nil "~A ~@[~A ~]~A ~@[~A~]"
-           (session-search-record-id record)
-           (session-search-record-name record)
-           (session-search-record-all-messages-text
-            record)
-           (and
-            (session-search-record-cwd record)
-            (etypecase
-                (session-search-record-cwd record)
-              (string (session-search-record-cwd record))
-              (pathname
-               (namestring
-                (session-search-record-cwd record))))))))
+  (or (session-search-record-haystack record)
+      (setf
+       (session-search-record-haystack record)
+       (normalized-search-text
+        ;; Baseline session-selector-search.ts: the haystack is
+        ;; `${id} ${name ?? ""} ${allMessagesText} ${cwd}`.
+        (format nil "~A ~@[~A ~]~A ~@[~A~]"
+                (session-search-record-id record)
+                (session-search-record-name record)
+                (session-search-record-all-messages-text
+                 record)
+                (and
+                 (session-search-record-cwd record)
+                 (etypecase
+                     (session-search-record-cwd record)
+                   (string
+                    (session-search-record-cwd record))
+                   (pathname
+                    (namestring
+                     (session-search-record-cwd
+                      record))))))))))
 
-(defun search-record-position (record query)
+(defun search-record-position
+    (record query &optional scanner)
   (let ((haystack
           (search-record-haystack record)))
     (cond
@@ -50,9 +57,10 @@
        (handler-case
            (multiple-value-bind (start end)
                (cl-ppcre:scan
-                (cl-ppcre:create-scanner
-                 (subseq query 3)
-                 :case-insensitive-mode t)
+                (or scanner
+                    (cl-ppcre:create-scanner
+                     (subseq query 3)
+                     :case-insensitive-mode t))
                 haystack)
              (declare (ignore end))
              start)
@@ -85,15 +93,18 @@
   (let ((matches nil)
         (regex-p
           (uiop:string-prefix-p
-           "re:" query)))
+           "re:" query))
+        (scanner nil))
     (when regex-p
-      (handler-case
-          (cl-ppcre:create-scanner
-           (subseq query 3)
-           :case-insensitive-mode t)
-        (condition ()
-          (return-from
-              filter-and-sort-sessions nil))))
+      (setf
+       scanner
+       (handler-case
+           (cl-ppcre:create-scanner
+            (subseq query 3)
+            :case-insensitive-mode t)
+         (condition ()
+           (return-from
+               filter-and-sort-sessions nil)))))
     (dolist (session sessions)
       (when (and
              (or
@@ -103,7 +114,7 @@
                (named-session-p session)))
              (let ((position
                      (search-record-position
-                      session query)))
+                      session query scanner)))
                (when position
                  (push
                   (cons session position)

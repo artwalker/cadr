@@ -80,6 +80,7 @@
                              (:file "wrap-ansi-test")
                              (:file "truncate-to-width-test")
                              (:file "fuzzy-test")
+                             (:file "goal20-fuzzy-normalized-test")
                              (:file "word-navigation-test")
                              (:file "keys-test")
                              (:file "keybindings-test")

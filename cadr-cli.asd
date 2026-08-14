@@ -210,6 +210,7 @@
                              (:file "goal20-part-l-test")
                              (:file "goal20-part-i-test")
                              (:file "goal20-part-b-ledger-test")
+                             (:file "goal20-selector-cache-test")
                              (:file "goal13-presentation-test")
                              (:file "goal14-a0-test")
                              (:file "goal14-organization-test")

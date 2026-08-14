@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=120965 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121006 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -23,9 +23,9 @@ five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
 goal is supposed to police, so this ledger covers all 298 current files.
 
-- 293 Lisp files, 120,965 lines, 4,969 top-level definitions.
+- 293 Lisp files, 121,006 lines, 4,972 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 298 production files and 125,240 physical lines in total.
+- 298 production files and 125,281 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `pass` means one predictable responsibility; `pass · large` means the same but
@@ -39,10 +39,10 @@ Goal 20 Part I locked the Lisp-ification denominator on 2026-08-14 (UTC 2026-08-
 find src -name '*.lisp' | wc -l
 # 293
 find src -name '*.lisp' -print0 | sort -z | xargs -0 wc -l | tail -1
-# 120965 total
+# 121006 total
 ```
 
-Every current `src/**/*.lisp` row starts at `pending evaluation`. The five export assets are `n/a` (`n/a` is outside the closed state set) and are outside the Lisp-ification denominator. Line counts in this ledger are newline counts (`wc -l`); `highlight.min.js` has no trailing newline, so `physical_line_count` is one higher on that file only. Progress is `0/293` files, `0/120,965` lines. Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
+Every current `src/**/*.lisp` row starts at `pending evaluation`. The five export assets are `n/a` (`n/a` is outside the closed state set) and are outside the Lisp-ification denominator. Line counts in this ledger are newline counts (`wc -l`); `highlight.min.js` has no trailing newline, so `physical_line_count` is one higher on that file only. Progress is `0/293` files, `0/121,006` lines. Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
 
 The audit used file contents and top-level forms, not LOC alone.  In particular,
 large protocol codecs and generated/assets files remain intact, while smaller
@@ -219,12 +219,12 @@ files with unrelated facilities fail.
 | `src/cadr-cli/interactive/extension-ui.lisp` | 690 | 30 | Bridge extension UI requests and custom components into the live TUI. | pass | pending evaluation | — | — |
 | `src/cadr-cli/interactive/autocomplete.lisp` | 332 | 15 | Construct command/path autocomplete and extension shortcut routing. | pass | pending evaluation | — | — |
 | `src/cadr-cli/interactive/controller.lisp` | 2,875 | 20 | Own the interactive lifecycle, slash-command routing, input loop, and cleanup. | pass · large | pending evaluation | — | — |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 392 | 27 | Own composable selector chrome, viewport/count, input, fuzzy matching, and wrap navigation. | pass | pending evaluation | — | — |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,462 | 48 | Search, mutate, navigate, and render resumable session trees. | pass · large | pending evaluation | — | — |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | 27 | Own composable selector chrome, viewport/count, input, fuzzy matching, and wrap navigation. | pass | pending evaluation | — | — |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,473 | 48 | Search, mutate, navigate, and render resumable session trees. | pass · large | pending evaluation | — | — |
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,812 | 57 | Filter, navigate, edit, and render the branching session tree overlay. | pass · large | pending evaluation | — | — |
 | `src/cadr-cli/interactive/selectors/settings.lisp` | 936 | 27 | Edit settings and theme submenus through the shared selector frame. | pass · large | pending evaluation | — | — |
 | `src/cadr-cli/interactive/selectors/auth.lisp` | 624 | 25 | Select authentication methods/providers and collect API keys. | pass · large | pending evaluation | — | — |
-| `src/cadr-cli/interactive/selectors/models.lisp` | 1,305 | 61 | Search, choose, scope, enable, and order models. | pass · large | pending evaluation | — | — |
+| `src/cadr-cli/interactive/selectors/models.lisp` | 1,316 | 62 | Search, choose, scope, enable, and order models. | pass · large | pending evaluation | — | — |
 | `src/cadr-cli/interactive/selectors/trust.lisp` | 293 | 10 | Choose and persist project trust decisions. | pass | pending evaluation | — | — |
 | `src/cadr-cli/interactive/selectors/fork.lisp` | 147 | 7 | Choose the user-message boundary for a forked session. | pass | pending evaluation | — | — |
 | `src/cadr-cli/media.lisp` | 1,277 | 56 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | pass · large | pending evaluation | — | — |
@@ -343,7 +343,7 @@ files with unrelated facilities fail.
 | `src/cadr-tui/composition/settings-list.lisp` | 459 | 30 | Implement settings-list behavior and the shared editor-component adapters. | pass · large | pending evaluation | — | — |
 | `src/cadr-tui/composition/text-box.lisp` | 275 | 23 | Implement text, spacer, box, and truncated-text components. | pass | pending evaluation | — | — |
 | `src/cadr-tui/editor.lisp` | 1,989 | 87 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | pass · large | pending evaluation | — | — |
-| `src/cadr-tui/fuzzy.lisp` | 117 | 6 | Score and filter fuzzy text matches. | pass | pending evaluation | — | — |
+| `src/cadr-tui/fuzzy.lisp` | 134 | 8 | Score and filter fuzzy text matches. | pass | pending evaluation | — | — |
 | `src/cadr-tui/input-component.lisp` | 419 | 19 | Implement the grapheme-aware single-line Input component and software cursor. | pass · large | pending evaluation | — | — |
 | `src/cadr-tui/input.lisp` | 376 | 17 | Incrementally decode terminal bytes, bracketed paste, and control sequences into input events. | pass · large | pending evaluation | — | — |
 | `src/cadr-tui/keybindings.lisp` | 176 | 11 | Store configurable keybinding definitions and resolve conflicts/actions. | pass | pending evaluation | — | — |

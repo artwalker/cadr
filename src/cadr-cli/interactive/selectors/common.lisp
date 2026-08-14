@@ -215,12 +215,14 @@ baseline's explicit empty-ellipsis call sites; entry rows pass
       (dolist (item items)
         (let ((score 0d0)
               (matched-p t)
-              (text
-                (funcall text-function item)))
+              (normalized-text
+                (string-downcase
+                 (funcall text-function item))))
           (dolist (token tokens)
             (multiple-value-bind
                   (token-matched-p token-score)
-                (cadr-tui:fuzzy-match token text)
+                (cadr-tui::fuzzy-match-against-normalized-text
+                 token normalized-text)
               (unless token-matched-p
                 (setf matched-p nil)
                 (return))

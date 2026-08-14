@@ -81,6 +81,7 @@
   current-model
   (scope :all)
   (query "" :type string)
+  (filtered-models nil :type list)
   (selected 0 :type (integer 0 *))
   refresh-status-message
   (refresh-status-kind :muted)
@@ -93,16 +94,22 @@
       (model-selector-state-scoped-models state)
       (model-selector-state-all-models state)))
 
-(defun model-selector-visible-models (state)
+(defun model-selector-apply-filter (state)
   (let ((models
           (model-selector-active-models state))
         (query
           (model-selector-state-query state)))
-    (if (zerop (length query))
-        (copy-list models)
-        (selector-fuzzy-filter
-         models query
-         #'model-selector-search-text))))
+    (setf
+     (model-selector-state-filtered-models state)
+     (if (zerop (length query))
+         (copy-list models)
+         (selector-fuzzy-filter
+          models query
+          #'model-selector-search-text))))
+  state)
+
+(defun model-selector-visible-models (state)
+  (model-selector-state-filtered-models state))
 
 (defun model-selector-clamp-selected (state)
   (let ((count
@@ -151,6 +158,7 @@
            :keybindings
            (or keybindings
                (make-models-selector-keybindings)))))
+    (model-selector-apply-filter state)
     (model-selector-select-current state)))
 
 (defun model-selector-finish-refresh
@@ -172,6 +180,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
    (or status-kind :muted)
    (model-selector-state-error-message state)
    error-message)
+  (model-selector-apply-filter state)
   (model-selector-select-current state)
   (model-selector-clamp-selected state)
   state)
@@ -185,6 +194,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
   (setf
    (model-selector-state-query state)
    (or query ""))
+  (model-selector-apply-filter state)
   (if (plusp
        (length
         (model-selector-state-query state)))
@@ -202,6 +212,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
          (eq :all
              (model-selector-state-scope state))
          :scoped :all))
+    (model-selector-apply-filter state)
     (model-selector-select-current state)
     (when
         (plusp

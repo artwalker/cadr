@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: model and session selectors cache filter and haystack
+  work across frames. Fuzzy matching downcases each candidate once
+  per filter instead of once per token.
+
 - Provider SSE reducers append stream text, thinking, signatures, and
   partial tool JSON with an amortized-linear buffer instead of
   concatenating the whole prefix on every delta. Tool-argument JSON is
