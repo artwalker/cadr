@@ -344,3 +344,32 @@
            :request-id "request-1")
          (cadr-ai:assistant-message-diagnostic-details
           loaded-diagnostic)))))
+
+(test make-session-entry-id-seeds-rng-once-and-stays-unique
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (source
+           (uiop:read-file-string
+            (merge-pathnames "src/cadr-agent/session/journal.lisp" root)))
+         (start (search "(defun make-session-entry-id" source))
+         (next
+           (and start
+                (search "(defun " source :start2 (1+ start))))
+         (body
+           (and start (subseq source start (or next (length source)))))
+         (by-id (make-hash-table :test #'equal))
+         (ids
+           (loop repeat 256
+                 for id = (cadr-agent::make-session-entry-id by-id)
+                 do (setf (gethash id by-id) t)
+                 collect id)))
+    (is (not (null start)))
+    (is (null (search "(make-random-state t)" body)))
+    (is (every
+         (lambda (id)
+           (and (= 8 (length id))
+                (equal id (string-downcase id))
+                (every (lambda (character)
+                         (digit-char-p character 16))
+                       id)))
+         ids))
+    (is (= 256 (hash-table-count by-id)))))

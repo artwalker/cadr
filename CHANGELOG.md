@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part O: `make-session-entry-id` seeds one random state per
+  image instead of calling `make-random-state` on every attempt, which
+  dominated `journal_append`.
+
 - Goal 18 Part L: re-anchored the fixed pi baseline to v0.84.1.
   cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd).  `--alt` is replaced
   by `--tui-mode regular|fullscreen` with the baseline diagnostics; the

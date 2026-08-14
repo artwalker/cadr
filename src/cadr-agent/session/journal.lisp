@@ -12,13 +12,13 @@
      (bash-execution-message-timestamp message))))
 
 (defun make-session-entry-id (by-id)
+  ;; Process *random-state*, seeded once per image. Reseeding from the
+  ;; OS on every attempt dominated journal_append.
   (loop repeat 100
         for id =
           (string-downcase
            (format nil "~8,'0X"
-                   (random
-                    #x100000000
-                    (make-random-state t))))
+                   (random #x100000000)))
         unless (gethash id by-id)
           return id
         finally
