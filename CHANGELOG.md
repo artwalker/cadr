@@ -14,6 +14,11 @@ tag/Release step.
   concatenating the whole prefix on every delta. Tool-argument JSON is
   parsed when the block ends, not on each fragment.
 
+- Goal 20 Part O: `parse-json-source` copies unescaped strings from the
+  source window and inlines peek/take. Escaped strings still decode
+  into a fill-pointer buffer. Enforced paired-path `journal_read`
+  5.42× → 3.92× and `session_load` 6.71× → 4.48×.
+
 - Goal 20 Part O: `make-session-entry-id` seeds one random state per
   image instead of calling `make-random-state` on every attempt, which
   dominated `journal_append`.

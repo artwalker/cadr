@@ -157,98 +157,131 @@
 
 (defun parse-json-source (source)
   (let ((position 0)
-        (length (length source)))
-    (labels
-        ((fail (message)
-           (error 'json-parse-error
-                  :message message
-                  :position position))
-         (peek ()
-           (and (< position length)
-                (char source position)))
-         (take ()
-           (prog1 (peek) (incf position)))
-         (skip-space ()
-           (loop while
-                 (and (peek)
-                      (member
-                       (peek)
-                       '(#\Space #\Tab
-                         #\Return #\Newline)))
-                 do (incf position)))
-         (expect (character)
-           (unless (and (peek)
-                        (char= (take) character))
-             (fail
-              (format nil "Expected ~S" character))))
-         (hex-value (character)
-           (or (digit-char-p character 16)
-               (fail "Invalid Unicode escape")))
-         (unicode-unit ()
-           (when (> (+ position 4) length)
-             (fail "Truncated Unicode escape"))
-           (loop with value = 0
-                 repeat 4
-                 do (setf value
-                          (+ (* value 16)
-                             (hex-value (take))))
-                 finally (return value)))
-         (parse-string ()
-           (expect #\")
-           (with-output-to-string (output)
-             (loop
-               (unless (peek)
-                 (fail "Unterminated string"))
-               (let ((character (take)))
-                 (cond
-                   ((char= character #\")
-                    (return))
-                   ((< (char-code character) #x20)
-                    (fail "Unescaped control character"))
-                   ((char= character #\\)
-                    (unless (peek)
-                      (fail "Truncated escape"))
-                    (case (take)
-                      (#\" (write-char #\" output))
-                      (#\\ (write-char #\\ output))
-                      (#\/ (write-char #\/ output))
-                      (#\b (write-char #\Backspace output))
-                      (#\f (write-char #\Page output))
-                      (#\n (write-char #\Newline output))
-                      (#\r (write-char #\Return output))
-                      (#\t (write-char #\Tab output))
-                      (#\u
-                       (let ((unit (unicode-unit)))
-                         (cond
-                           ((<= #xd800 unit #xdbff)
-                            (unless
-                                (and
-                                 (<= (+ position 2) length)
-                                 (char= (take) #\\)
-                                 (char= (take) #\u))
-                              (fail "Missing low surrogate"))
-                            (let ((low (unicode-unit)))
-                              (unless (<= #xdc00 low #xdfff)
-                                (fail "Invalid low surrogate"))
-                              (write-char
-                               (code-char
-                                (+ #x10000
-                                   (ash
-                                    (- unit #xd800)
-                                    10)
-                                   (- low #xdc00)))
-                               output)))
-                           ((<= #xdc00 unit #xdfff)
-                            (fail "Unexpected low surrogate"))
-                           (t
-                            (write-char
-                             (or (code-char unit)
-                                 (fail
-                                  "Invalid Unicode codepoint"))
-                             output)))))
-                      (otherwise
-                       (fail "Unknown string escape"))))
-                   (t (write-char character output)))))))
+        (length (length source))
+        (string-buffer
+          (make-array 64
+                      :element-type 'character
+                      :adjustable t
+                      :fill-pointer 0)))
+    (macrolet ((peek ()
+                 `(and (< position length)
+                       (char source position)))
+               (take ()
+                 `(prog1 (peek) (incf position))))
+      (labels
+          ((fail (message)
+             (error 'json-parse-error
+                    :message message
+                    :position position))
+           (skip-space ()
+             (loop for character = (peek)
+                   while (and character
+                              (member
+                               character
+                               '(#\Space #\Tab
+                                 #\Return #\Newline)))
+                   do (incf position)))
+           (expect (character)
+             (unless (and (peek)
+                          (char= (take) character))
+               (fail
+                (format nil "Expected ~S" character))))
+           (hex-value (character)
+             (or (digit-char-p character 16)
+                 (fail "Invalid Unicode escape")))
+           (unicode-unit ()
+             (when (> (+ position 4) length)
+               (fail "Truncated Unicode escape"))
+             (loop with value = 0
+                   repeat 4
+                   do (setf value
+                            (+ (* value 16)
+                               (hex-value (take))))
+                   finally (return value)))
+           (append-decoded-char (character)
+             (vector-push-extend character string-buffer))
+           (skip-string-escape ()
+             (unless (peek)
+               (fail "Truncated escape"))
+             (case (take)
+               ((#\" #\\ #\/ #\b #\f #\n #\r #\t))
+               (#\u (unicode-unit))
+               (otherwise
+                (fail "Unknown string escape"))))
+           (decode-escaped-string (start end)
+             (setf (fill-pointer string-buffer) 0)
+             (let ((saved position))
+               (setf position start)
+               (loop while (< position end)
+                     do (let ((character (take)))
+                          (if (char= character #\\)
+                              (progn
+                                (unless (peek)
+                                  (fail "Truncated escape"))
+                                (case (take)
+                                  (#\" (append-decoded-char #\"))
+                                  (#\\ (append-decoded-char #\\))
+                                  (#\/ (append-decoded-char #\/))
+                                  (#\b (append-decoded-char #\Backspace))
+                                  (#\f (append-decoded-char #\Page))
+                                  (#\n (append-decoded-char #\Newline))
+                                  (#\r (append-decoded-char #\Return))
+                                  (#\t (append-decoded-char #\Tab))
+                                  (#\u
+                                   (let ((unit (unicode-unit)))
+                                     (cond
+                                       ((<= #xd800 unit #xdbff)
+                                        (unless
+                                            (and
+                                             (<= (+ position 2) length)
+                                             (char= (take) #\\)
+                                             (char= (take) #\u))
+                                          (fail "Missing low surrogate"))
+                                        (let ((low (unicode-unit)))
+                                          (unless (<= #xdc00 low #xdfff)
+                                            (fail "Invalid low surrogate"))
+                                          (append-decoded-char
+                                           (code-char
+                                            (+ #x10000
+                                               (ash
+                                                (- unit #xd800)
+                                                10)
+                                               (- low #xdc00))))))
+                                       ((<= #xdc00 unit #xdfff)
+                                        (fail "Unexpected low surrogate"))
+                                       (t
+                                        (append-decoded-char
+                                         (or (code-char unit)
+                                             (fail
+                                              "Invalid Unicode codepoint")))))))
+                                  (otherwise
+                                   (fail "Unknown string escape"))))
+                              (append-decoded-char character))))
+               (setf position saved)
+               (subseq string-buffer 0 (fill-pointer string-buffer))))
+           (parse-string ()
+             (expect #\")
+             (let ((start position)
+                   (escaped-p nil))
+               (loop
+                 (let ((character (peek)))
+                   (unless character
+                     (fail "Unterminated string"))
+                   (cond
+                     ((char= character #\")
+                      (let ((end position))
+                        (take)
+                        (return
+                          (if escaped-p
+                              (decode-escaped-string start end)
+                              (subseq source start end)))))
+                     ((< (char-code character) #x20)
+                      (fail "Unescaped control character"))
+                     ((char= character #\\)
+                      (setf escaped-p t)
+                      (take)
+                      (skip-string-escape))
+                     (t (take)))))))
          (number-character-p (character)
            (and character
                 (find character
@@ -359,7 +392,7 @@
         (skip-space)
         (unless (= position length)
           (fail "Trailing input"))
-        value))))
+        value)))))
 
 (defun parse-json (source)
   (parse-json-source source))

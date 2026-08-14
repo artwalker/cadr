@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=120932 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=120965 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -23,9 +23,9 @@ five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
 goal is supposed to police, so this ledger covers all 298 current files.
 
-- 293 Lisp files, 120,932 lines, 4,969 top-level definitions.
+- 293 Lisp files, 120,965 lines, 4,969 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 298 production files and 125,207 physical lines in total.
+- 298 production files and 125,240 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `pass` means one predictable responsibility; `pass · large` means the same but
@@ -39,10 +39,10 @@ Goal 20 Part I locked the Lisp-ification denominator on 2026-08-14 (UTC 2026-08-
 find src -name '*.lisp' | wc -l
 # 293
 find src -name '*.lisp' -print0 | sort -z | xargs -0 wc -l | tail -1
-# 120932 total
+# 120965 total
 ```
 
-Every current `src/**/*.lisp` row starts at `pending evaluation`. The five export assets are `n/a` (`n/a` is outside the closed state set) and are outside the Lisp-ification denominator. Line counts in this ledger are newline counts (`wc -l`); `highlight.min.js` has no trailing newline, so `physical_line_count` is one higher on that file only. Progress is `0/293` files, `0/120,932` lines. Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
+Every current `src/**/*.lisp` row starts at `pending evaluation`. The five export assets are `n/a` (`n/a` is outside the closed state set) and are outside the Lisp-ification denominator. Line counts in this ledger are newline counts (`wc -l`); `highlight.min.js` has no trailing newline, so `physical_line_count` is one higher on that file only. Progress is `0/293` files, `0/120,965` lines. Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
 
 The audit used file contents and top-level forms, not LOC alone.  In particular,
 large protocol codecs and generated/assets files remain intact, while smaller
@@ -111,7 +111,7 @@ files with unrelated facilities fail.
 | `src/cadr-ai/crypto.lisp` | 367 | 14 | Implement SigV4 canonicalization/signing and service-account JWT signing. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/image-models.generated.lisp` | 173 | 1 | Hold generated image-model catalog data. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/images.lisp` | 222 | 8 | Build OpenRouter image requests and normalize generated-image results. | pass | pending evaluation | — | — |
-| `src/cadr-ai/json.lisp` | 543 | 27 | Parse and serialize bounded JSON plus common content/data-URL helpers. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/json.lisp` | 576 | 27 | Parse and serialize bounded JSON plus common content/data-URL helpers. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/model-data.lisp` | 398 | 26 | Validate model-data artifacts/manifests and generate deterministic catalog fixtures. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/models.generated.lisp` | 8,711 | 1 | Hold the generated model metadata catalog; the generator is its owner. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/models.lisp` | 288 | 22 | Define model metadata/catalog operations, thinking-level resolution, and cost calculation. | pass | pending evaluation | — | — |
