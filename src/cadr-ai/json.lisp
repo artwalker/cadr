@@ -362,15 +362,7 @@
         value))))
 
 (defun parse-json (source)
-  (handler-case
-      (parse-json-source source)
-    (json-parse-error (cause)
-      (error 'sse-protocol-error
-             :message
-             (format nil
-                     "Invalid JSON in provider response: ~A"
-                     cause)
-             :cause cause))))
+  (parse-json-source source))
 
 (defun write-json-string (value stream)
   (write-char #\" stream)

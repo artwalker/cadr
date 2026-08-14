@@ -813,7 +813,7 @@
       (values
        (handler-case
            (parse-json text)
-         (sse-protocol-error (cause)
+         (json-parse-error (cause)
            (error
             'transport-error
             :message

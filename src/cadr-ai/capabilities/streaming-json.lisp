@@ -109,7 +109,7 @@
 (defun parse-json-with-repair (json)
   (handler-case
       (parse-json json)
-    (sse-protocol-error (original)
+    (json-parse-error (original)
       (let ((repaired (repair-json json)))
         (if (string= repaired json)
             (error original)

@@ -128,10 +128,10 @@ NIL means that the caller must send the original, uncompressed body."
   (loop for shift downfrom (* 8 (1- (if (= marker 126) 2 8))) to 0 by 8
         do (write-byte (ldb (byte 8 shift) length) stream)))
 
-(defun write-websocket-frame (stream opcode payload &key (mask-p t))
+(defun write-websocket-frame (stream opcode payload &key (mask-p t) (fin-p t))
   (let* ((length (length payload))
          (mask (and mask-p (secure-random-bytes 4))))
-    (write-byte (logior #x80 opcode) stream)
+    (write-byte (logior (if fin-p #x80 0) opcode) stream)
     (cond
       ((< length 126)
        (write-byte (logior (if mask-p #x80 0) length) stream))
@@ -163,31 +163,62 @@ NIL means that the caller must send the original, uncompressed body."
     result))
 
 (defun read-websocket-frame (stream)
-  (let ((first (read-byte stream nil :eof))
-        (second (read-byte stream nil :eof)))
-    (when (or (eq first :eof) (eq second :eof))
-      (error 'network-error :message "WebSocket connection closed"
-             :retryable-p t))
-    (let* ((opcode (logand first #x0f))
-           (masked-p (logbitp 7 second))
-           (marker (logand second #x7f))
-           (length
-             (cond
-               ((< marker 126) marker)
-               ((= marker 126)
-                (logior (ash (read-byte stream) 8) (read-byte stream)))
-               (t
-                (loop repeat 8
-                      for value = 0 then (logior (ash value 8)
-                                                  (read-byte stream))
-                      finally (return value)))))
-           (mask (and masked-p (read-websocket-exactly stream 4)))
-           (payload (read-websocket-exactly stream length)))
-      (when mask
-        (dotimes (index length)
-          (setf (aref payload index)
-                (logxor (aref payload index)
-                        (aref mask (mod index 4))))))
+  (labels ((read-one ()
+             (let ((first (read-byte stream nil :eof))
+                   (second (read-byte stream nil :eof)))
+               (when (or (eq first :eof) (eq second :eof))
+                 (error 'network-error :message "WebSocket connection closed"
+                        :retryable-p t))
+               (let* ((fin-p (logbitp 7 first))
+                      (opcode (logand first #x0f))
+                      (masked-p (logbitp 7 second))
+                      (marker (logand second #x7f))
+                      (length
+                        (cond
+                          ((< marker 126) marker)
+                          ((= marker 126)
+                           (logior (ash (read-byte stream) 8)
+                                   (read-byte stream)))
+                          (t
+                           (let ((octets (read-websocket-exactly stream 8)))
+                             (when (logbitp 7 (aref octets 0))
+                               (error 'sse-protocol-error
+                                      :message "WebSocket payload length exceeds 2^63-1"))
+                             (loop for byte across octets
+                                   for value = byte
+                                     then (logior (ash value 8) byte)
+                                   finally (return value))))))
+                      (mask (and masked-p (read-websocket-exactly stream 4)))
+                      (payload (read-websocket-exactly stream length)))
+                 (when mask
+                   (dotimes (index length)
+                     (setf (aref payload index)
+                           (logxor (aref payload index)
+                                   (aref mask (mod index 4))))))
+                 (values opcode payload fin-p))))
+           (append-payload (left right)
+             (let ((combined
+                     (make-array (+ (length left) (length right))
+                                 :element-type '(unsigned-byte 8))))
+               (replace combined left)
+               (replace combined right :start1 (length left))
+               combined)))
+    (multiple-value-bind (opcode payload fin-p)
+        (read-one)
+      (when (zerop opcode)
+        (error 'sse-protocol-error
+               :message "WebSocket continuation frame without a start"))
+      (when (and (>= opcode 8) (not fin-p))
+        (error 'sse-protocol-error
+               :message "Fragmented WebSocket control frame"))
+      (loop until fin-p
+            do (multiple-value-bind (next-opcode next fin)
+                   (read-one)
+                 (unless (zerop next-opcode)
+                   (error 'sse-protocol-error
+                          :message "WebSocket continuation frame expected"))
+                 (setf payload (append-payload payload next)
+                       fin-p fin)))
       (values opcode payload))))
 
 (defstruct codex-websocket
@@ -216,14 +247,18 @@ NIL means that the caller must send the original, uncompressed body."
                   :websocket-failures 0 :sse-fallbacks 0))))
 
 (defun increment-codex-stat (session-id key)
-  (let ((stats (codex-stats session-id)))
-    (incf (getf stats key 0))
-    (setf (gethash session-id *codex-websocket-debug-stats*) stats)))
+  ;; The cache mutex is not recursive. Do not call this while holding it.
+  (sb-thread:with-mutex (*codex-websocket-cache-lock*)
+    (let ((stats (codex-stats session-id)))
+      (incf (getf stats key 0))
+      (setf (gethash session-id *codex-websocket-debug-stats*) stats))))
 
 (defun set-codex-stat (session-id key value)
-  (let ((stats (codex-stats session-id)))
-    (setf (getf stats key) value
-          (gethash session-id *codex-websocket-debug-stats*) stats)))
+  ;; Same non-recursive mutex as increment-codex-stat.
+  (sb-thread:with-mutex (*codex-websocket-cache-lock*)
+    (let ((stats (codex-stats session-id)))
+      (setf (getf stats key) value
+            (gethash session-id *codex-websocket-debug-stats*) stats))))
 
 (defun get-openai-codex-websocket-debug-stats (session-id)
   (sb-thread:with-mutex (*codex-websocket-cache-lock*)
@@ -277,11 +312,13 @@ NIL means that the caller must send the original, uncompressed body."
 (register-session-resource-cleanup #'close-openai-codex-websocket-sessions)
 
 (defun websocket-url-as-http-url (url)
+  ;; HTTP handshake needs an http(s) URL. wss/ws are the wire schemes;
+  ;; http(s) inputs are already the handshake form and pass through.
   (cond
-    ((uiop:string-prefix-p "https://" url)
-     (concatenate 'string "https://" (subseq url 8)))
-    ((uiop:string-prefix-p "http://" url)
-     (concatenate 'string "http://" (subseq url 7)))
+    ((uiop:string-prefix-p "wss://" url)
+     (concatenate 'string "https://" (subseq url 6)))
+    ((uiop:string-prefix-p "ws://" url)
+     (concatenate 'string "http://" (subseq url 5)))
     (t url)))
 
 (defun connect-codex-websocket (request abort-p environment)
@@ -413,10 +450,11 @@ NIL means that the caller must send the original, uncompressed body."
           (set-codex-stat session-id :last-previous-response-id previous-id))
         (progn
           (increment-codex-stat session-id :full-context-requests)
-          (let ((stats (codex-stats session-id)))
-            (remf stats :last-delta-input-items)
-            (remf stats :last-previous-response-id)
-            (setf (gethash session-id *codex-websocket-debug-stats*) stats))))))
+          (sb-thread:with-mutex (*codex-websocket-cache-lock*)
+            (let ((stats (codex-stats session-id)))
+              (remf stats :last-delta-input-items)
+              (remf stats :last-previous-response-id)
+              (setf (gethash session-id *codex-websocket-debug-stats*) stats)))))))
 
 (defun codex-response-items (model message)
   (let* ((context (make-context :messages (list message)))

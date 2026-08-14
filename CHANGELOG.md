@@ -59,6 +59,18 @@ tag/Release step.
 
 ### Fixed
 
+- WebSocket frames with payload length 65536 or more now read all eight
+  length octets (the 64-bit branch used to skip the first), and
+  fragmented messages are assembled until FIN. Codex WebSocket debug
+  stats take the cache mutex on write as well as read.
+  `wss://`/`ws://` URLs convert to `https://`/`http://` for the HTTP
+  upgrade.
+
+- `parse-json` signals `json-parse-error` instead of relabeling every
+  JSON failure as `sse-protocol-error`. HTTP `request-json` maps a
+  damaged body to `transport-error`; streaming JSON repair catches
+  `json-parse-error`.
+
 - Startup loaded-resource blocks now follow the baseline (goal 18 Part H):
   section order Context -> Skills -> Prompts -> Extensions -> Themes with
   the baseline labels, locale-compare sorting (Context keeps insertion

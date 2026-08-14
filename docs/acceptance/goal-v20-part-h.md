@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **293 files / 120,897 lines**
+Denominator: **293 files / 120,927 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 32 | 18,585 | 15.4% | `no worse than baseline` is falsifiable |
+| `paired` | 32 | 18,577 | 15.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.2% | single reference vs previous cadr |
-| `pairable-uncovered` | 237 | 94,840 | 78.4% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 237 | 94,878 | 78.5% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 15.4% of lines (32 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 21.6% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 78.4% of lines.
+- **K-advanceable** (paired ∪ unpairable): 21.5% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 78.5% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -340,7 +340,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/session/codec.lisp` | 571 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 648 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 563 | `session_pipeline.session_load`, `storage_journal.journal_read` |
-| `src/cadr-ai/json.lisp` | 551 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
+| `src/cadr-ai/json.lisp` | 543 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 767 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 859 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 101 | `provider_stream.stream_roundtrip` |
@@ -410,11 +410,11 @@ is added or the path is booked unpairable above.
 | `src/cadr-evals/harness.lisp` | 1 | 730 |
 | `src/cadr-tui/composition` | 2 | 697 |
 | `src/cadr-tui/terminal-image.lisp` | 1 | 677 |
+| `src/cadr-ai/websocket.lisp` | 1 | 620 |
 | `src/cadr-protocol/schema.lisp` | 1 | 620 |
 | `src/cadr-agent/session` | 2 | 609 |
 | `src/cadr-tui/autocomplete.lisp` | 1 | 592 |
 | `src/cadr-ai/capabilities` | 6 | 584 |
-| `src/cadr-ai/websocket.lisp` | 1 | 582 |
 | `src/cadr-tui/theme.lisp` | 1 | 563 |
 | `src/cadr-tui/components` | 2 | 561 |
 | `src/cadr-cli/migration.lisp` | 1 | 509 |

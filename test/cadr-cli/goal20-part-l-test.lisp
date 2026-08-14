@@ -61,6 +61,8 @@
     (is (null lines)))
   (let ((lines (cadr-cli::extension-render-value-lines nil 80)))
     (is (null lines)))
-  (let ((lines (cadr-cli::extension-render-value-lines '(:snake 1) 80)))
-    (is (null lines))
-    (is (null (find "NIL" lines :test #'string=)))))
+  ;; princ-to-string of '(nil) is "(NIL)". Do not assert (null lines)
+  ;; first: that made the NIL search dead (find on NIL is always NIL).
+  (let* ((lines (cadr-cli::extension-render-value-lines '(nil) 80))
+         (text (format nil "~{~A~}" (or lines '()))))
+    (is (null (search "NIL" text)))))

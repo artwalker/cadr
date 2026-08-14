@@ -26,7 +26,7 @@
              "true false"
              "{\"x\":\"control
 \"}"))
-    (signals cadr-ai:sse-protocol-error
+    (signals cadr-ai::json-parse-error
       (cadr-ai::parse-json source))))
 
 (test native-json-rejects-excessive-container-nesting
@@ -38,8 +38,18 @@
             (make-string depth :initial-element #\[)
             "0"
             (make-string depth :initial-element #\]))))
-    (signals cadr-ai:sse-protocol-error
+    (signals cadr-ai::json-parse-error
       (cadr-ai::parse-json source))))
+
+(test parse-json-does-not-relabel-damage-as-sse-protocol-error
+  (handler-case
+      (progn
+        (cadr-ai::parse-json "{")
+        (fail "parse-json must signal on truncated input"))
+    (cadr-ai:sse-protocol-error ()
+      (fail "session/config JSON damage must stay json-parse-error"))
+    (cadr-ai::json-parse-error ()
+      (pass))))
 
 (test native-json-preserves-valid-large-and-fractional-numbers
   (let ((large (cadr-ai::parse-json "123e65"))
