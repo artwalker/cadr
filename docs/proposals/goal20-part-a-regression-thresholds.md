@@ -1,7 +1,26 @@
 # Proposal: Goal 20 Part A — self-history drift thresholds
 
-Status: **awaiting user adjudication**. Not in force. Existing absolute
-ceilings in `scripts/goal11-performance-gate.py` stay unchanged.
+Status: **adjudicated 2026-08-14** (advisor ruling recorded in the goal 20
+state board; user retains veto). The proposed fixed percents were
+**rejected** in favor of the `max(floor, 6 * MAD)` band shape already used
+by `scripts/goal20-paired-paths.py`:
+
+- `frame_render.5000.median_bytes`: fail-closed, floor 4096 bytes (one
+  page; the metric is deterministic, historical variance 0, so +25% would
+  never trigger).
+- `cold_start.median_us`: floor 10ms with MAD measured at n >= 20; demoted
+  to informational by the measurement script itself if 6 * MAD exceeds 20%
+  of the median.
+- `frame_render.5000.median_us`: informational — the reading is quantized
+  at the 4000us timer step (observed sample set {0.0, 4000.0, 4001.0});
+  no percent or band can detect anything until the measurement gains
+  resolution.
+
+The measured bands live in `docs/benchmarks/goal20-part-a-noise-bands.json`
+(written only by `scripts/goal20-part-a-noise-bands.py`) and are enforced
+by `scripts/goal11-performance-gate.py` against the previous same-machine
+row of `docs/benchmarks/performance-history.json`. Existing absolute
+ceilings stay unchanged.
 
 ## Why
 
@@ -37,15 +56,19 @@ Adjudicate: accept / change the percents / pick a different store.
 
 ## Denominator (Goal 20 Part M)
 
-This proposal is **not a gate**. When the thresholds are later enabled they
-must declare:
+In force since the 2026-08-14 adjudication:
 
-- **Checks:** cadr-vs-previous-same-machine drift on the three metrics above,
-  plus the existing absolute ceilings (unchanged).
-- **Does not check:** pi pairing outside the three existing ratios (Part H);
-  quality of the screen; Lisp-ification; visible-string reachability.
+- **Checks:** cadr-vs-previous-same-machine drift on `cold_start.median_us`
+  and `frame_render.5000.median_bytes` (band `max(floor, 6 * MAD)` from the
+  bands file), plus the existing absolute ceilings (unchanged).
+- **Does not check:** `frame_render.5000.median_us` (informational: the
+  reading is quantized at the 4000us timer step and no band can detect
+  anything until the measurement gains resolution); pi pairing outside the
+  three existing ratios (Part H); quality of the screen; Lisp-ification;
+  visible-string reachability. Cross-machine runs and runs with no prior
+  same-machine history row are informational (same_machine rule).
 - **A pass means:** no ceiling breach and no self-history drift beyond the
-  adjudicated percents on a same-machine run. It does **not** mean
+  adjudicated bands on a same-machine run. It does **not** mean
   "performance is good" or "not worse than pi" for any other path.
 
 Who covers the rest: Part H (pi pairs), `goal11-performance-gate.py`

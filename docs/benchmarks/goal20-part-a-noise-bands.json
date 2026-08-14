@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "generator": "scripts/goal20-part-a-noise-bands.py",
+  "adjudication": "2026-08-14 advisor ruling (goal20-state.md): shape max(floor, 6*MAD); floors 4096 bytes / 10ms; frame time informational until the measurement has resolution",
+  "measuredAt": "2026-08-14T05:08:10Z",
+  "machine": "Friend-MachineD",
+  "gitHead": "3f839a406c872fd0c3a3b27f41ed070b33211b53",
+  "benchLabel": "goal20-part-a-bands",
+  "metrics": {
+    "cold_start.median_us": {
+      "enforcement": "fail-closed",
+      "floor_us": 10000.0,
+      "k": 6,
+      "n": 20,
+      "median_us": 271069.3555,
+      "mad_us": 3768.739500000025,
+      "band_us": 22612.43700000015,
+      "samples_us": [
+        263644.335,
+        275891.164,
+        284506.766,
+        259385.371,
+        273564.012,
+        268343.158,
+        293980.385,
+        295178.393,
+        268816.242,
+        267431.1,
+        277233.04,
+        274534.87,
+        267170.132,
+        265663.047,
+        273192.859,
+        265803.977,
+        272957.933,
+        271046.022,
+        271092.689,
+        270153.193
+      ]
+    },
+    "frame_render.5000.median_bytes": {
+      "enforcement": "fail-closed",
+      "floor_bytes": 4096.0,
+      "k": 6,
+      "n": 5,
+      "median_bytes": 360272.0,
+      "mad_bytes": 0.0,
+      "band_bytes": 4096.0,
+      "samples_bytes": [
+        360272.0,
+        360272.0,
+        360272.0,
+        360272.0,
+        360272.0
+      ]
+    },
+    "frame_render.5000.median_us": {
+      "enforcement": "informational",
+      "reason": "reading is quantized at the 4000us timer step (observed sample set {0.0, 4000.0, 4001.0}); no band can be expressed until the measurement gains resolution",
+      "n": 5,
+      "median_us": 3989.9999999999995,
+      "mad_us": 0.0,
+      "samples_us": [
+        3989.9999999999995,
+        3989.9999999999995,
+        0.0,
+        3989.9999999999995,
+        0.0
+      ]
+    }
+  }
+}

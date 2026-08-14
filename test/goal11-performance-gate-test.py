@@ -502,19 +502,30 @@ class ContinuousInputGateTest(unittest.TestCase):
                 self.assertIsInstance(cold_start, dict)
                 self.assertEqual(5, len(cold_start.get("samples_us", [])))
                 self.assertGreater(cold_start.get("median_us", 0), 0)
-        result = subprocess.run(
-            [
-                "python3",
-                str(ROOT / "scripts" / "goal11-performance-gate.py"),
-                "--bench",
-                str(final_path),
-                "--stability",
-                str(stability_path),
-            ],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
+        with tempfile.TemporaryDirectory() as temporary:
+            # The artifact predates today's history rows; replayability is
+            # judged against the fixed contract and ceilings, not against a
+            # drift series it was never part of. An empty history keeps the
+            # adjudicated drift gate in its no-prior-row informational state.
+            empty_history = Path(temporary) / "history.json"
+            empty_history.write_text(
+                json.dumps({"schemaVersion": 1, "entries": []}), encoding="utf-8"
+            )
+            result = subprocess.run(
+                [
+                    "python3",
+                    str(ROOT / "scripts" / "goal11-performance-gate.py"),
+                    "--bench",
+                    str(final_path),
+                    "--stability",
+                    str(stability_path),
+                    "--history",
+                    str(empty_history),
+                ],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
         self.assertEqual(0, result.returncode, result.stderr)
         self.assertIn("goal11 gate: PASS", result.stdout)
 
@@ -944,46 +955,134 @@ class ContinuousInputGateTest(unittest.TestCase):
 
 
 class SelfHistoryInformationalTest(unittest.TestCase):
-    def test_self_history_never_appends_failures(self):
-        failures: list[str] = []
-        bench = {
-            "machine": {"machine_instance": "Friend-MachineD"},
-            "cold_start": {"median_us": 300_000},
+    def test_self_history_drift_enforces_adjudicated_bands(self):
+        def bench(cold_us, alloc_bytes, frame_us=4_000, machine="Friend-MachineD"):
+            return {
+                "machine": {"machine_instance": machine},
+                "cold_start": {"median_us": cold_us},
+                "metrics": {
+                    "frame_render": {
+                        "points": [
+                            {
+                                "n": 5000,
+                                "median_us": frame_us,
+                                "median_bytes": alloc_bytes,
+                            }
+                        ]
+                    }
+                },
+            }
+
+        bands = {
+            "schemaVersion": 1,
+            "machine": "Friend-MachineD",
             "metrics": {
-                "frame_render": {
-                    "points": [
-                        {
-                            "n": 5000,
-                            "median_us": 4_000,
-                            "median_bytes": 360_000,
-                        }
-                    ]
-                }
+                "cold_start.median_us": {
+                    "enforcement": "fail-closed",
+                    "band_us": 12_000.0,
+                },
+                "frame_render.5000.median_bytes": {
+                    "enforcement": "fail-closed",
+                    "band_bytes": 4_096.0,
+                },
+                "frame_render.5000.median_us": {
+                    "enforcement": "informational",
+                    "reason": "quantized at the 4000us step",
+                },
             },
         }
+        history = {
+            "schemaVersion": 1,
+            "entries": [
+                {
+                    "machine": "Friend-MachineD",
+                    "coldStartMedianUs": 250_000,
+                    "frame5000MedianUs": 3_500,
+                    "frame5000MedianBytes": 300_000,
+                }
+            ],
+        }
         with tempfile.TemporaryDirectory() as temporary:
-            history = Path(temporary) / "history.json"
-            history.write_text(
-                json.dumps(
-                    {
-                        "schemaVersion": 1,
-                        "entries": [
-                            {
-                                "machine": "Friend-MachineD",
-                                "coldStartMedianUs": 250_000,
-                                "frame5000MedianUs": 3_500,
-                                "frame5000MedianBytes": 300_000,
-                            }
-                        ],
-                    }
-                ),
-                encoding="utf-8",
+            history_path = Path(temporary) / "history.json"
+            history_path.write_text(json.dumps(history), encoding="utf-8")
+            bands_path = Path(temporary) / "bands.json"
+            bands_path.write_text(json.dumps(bands), encoding="utf-8")
+
+            # Within band: passes and reports enforcement.
+            failures: list[str] = []
+            summary = GATE.self_history_summary(
+                bench(258_000, 302_000), str(history_path), str(bands_path), failures
             )
-            summary = GATE.self_history_summary(bench, str(history))
-        self.assertEqual([], failures)
-        self.assertIn("self_history_gate=informational-awaiting-adjudication", summary)
-        self.assertIn("self_history_enforced=no", summary)
-        self.assertTrue(any(item.startswith("self_history_cold_ratio=") for item in summary))
+            self.assertEqual([], failures)
+            self.assertIn("self_history_gate=adjudicated-bands", summary)
+            self.assertIn("self_history_enforced=cold,alloc", summary)
+            self.assertIn(
+                "self_history_frame5000_time=informational-quantized-4000us", summary
+            )
+
+            # Cold start beyond previous + band fails closed.
+            failures = []
+            GATE.self_history_summary(
+                bench(263_000, 300_000), str(history_path), str(bands_path), failures
+            )
+            self.assertTrue(any("cold start drifted" in item for item in failures))
+
+            # Allocation beyond previous + band fails closed.
+            failures = []
+            GATE.self_history_summary(
+                bench(250_000, 304_097), str(history_path), str(bands_path), failures
+            )
+            self.assertTrue(
+                any("frame allocation drifted" in item for item in failures)
+            )
+
+            # Frame time is informational: a huge regression adds no failure.
+            failures = []
+            GATE.self_history_summary(
+                bench(250_000, 300_000, frame_us=40_000),
+                str(history_path),
+                str(bands_path),
+                failures,
+            )
+            self.assertEqual([], failures)
+
+            # A bands file demotion (informational) disables cold enforcement.
+            demoted = json.loads(json.dumps(bands))
+            demoted["metrics"]["cold_start.median_us"]["enforcement"] = (
+                "informational"
+            )
+            demoted_path = Path(temporary) / "demoted.json"
+            demoted_path.write_text(json.dumps(demoted), encoding="utf-8")
+            failures = []
+            summary = GATE.self_history_summary(
+                bench(400_000, 300_000), str(history_path), str(demoted_path), failures
+            )
+            self.assertEqual([], failures)
+            self.assertIn("self_history_enforced=alloc", summary)
+
+            # Machine mismatch stays informational (same_machine rule).
+            failures = []
+            summary = GATE.self_history_summary(
+                bench(999_000, 999_000, machine="Other-Machine"),
+                str(history_path),
+                str(bands_path),
+                failures,
+            )
+            self.assertEqual([], failures)
+            self.assertIn(
+                "self_history_gate=informational-no-same-machine-row", summary
+            )
+
+            # Missing bands file fails closed post-adjudication.
+            failures = []
+            summary = GATE.self_history_summary(
+                bench(250_000, 300_000),
+                str(history_path),
+                str(Path(temporary) / "absent.json"),
+                failures,
+            )
+            self.assertTrue(any("noise-bands" in item for item in failures))
+            self.assertIn("self_history_gate=failed-no-noise-bands", summary)
 
 
 if __name__ == "__main__":

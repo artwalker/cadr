@@ -470,15 +470,24 @@ its isolated Goal 11 performance stage on every release verification.
 
 Produced by `scripts/write-performance-ledger.py` from
 `docs/benchmarks/performance-history.json`. Do not edit the table
-by hand. Part A drift percents are **not** fail-closed until the
-user adjudicates `docs/proposals/goal20-part-a-regression-thresholds.md`.
+by hand.
+
+Part A drift bands (adjudicated 2026-08-14, shape `max(floor, 6*MAD)`,
+written by `scripts/goal20-part-a-noise-bands.py` to
+`docs/benchmarks/goal20-part-a-noise-bands.json`, enforced by
+`scripts/goal11-performance-gate.py` on machine `Friend-MachineD`):
+
+- `cold_start.median_us`: fail-closed, band 22,612µs (n=20, MAD=3,768.7)
+- `frame_render.5000.median_bytes`: fail-closed, band 4,096B (n=5, MAD=0.0)
+- `frame_render.5000.median_us`: informational — reading is quantized at the 4000us timer step (observed sample set {0.0, 4000.0, 4001.0}); no band can be expressed until the measurement gains resolution
 
 | recordedAt (UTC) | label | machine | git | cold start µs | N=5000 frame µs | N=5000 frame bytes |
 |---|---|---|---|---:|---:|---:|
 | 2026-08-13T13:40:38Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,505.9 | 3,987.0 | 360,272 |
 | 2026-08-14T01:50:56Z | verify-isolated | Friend-MachineD | `isolated-copy` | 307,103.7 | 0.0 | 360,272 |
 | 2026-08-14T04:11:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 291,287.2 | 0.0 | 360,272 |
+| 2026-08-14T05:23:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 251,607.9 | 0.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-14T04:11:37Z) versus `verify-isolated` (2026-08-14T01:50:56Z).
+Latest vs previous: `verify-isolated` (2026-08-14T05:23:44Z) versus `verify-isolated` (2026-08-14T04:11:37Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->

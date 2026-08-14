@@ -931,20 +931,44 @@ def check_bench(
     ]
 
 
-def self_history_summary(bench: dict, history_path: str) -> list[str]:
-    """Print cadr-vs-previous-same-machine drift. Never fail-closes.
+def self_history_summary(
+    bench: dict, history_path: str, bands_path: str, failures: list[str]
+) -> list[str]:
+    """Fail-close cadr-vs-previous-same-machine drift per the adjudicated bands.
 
-    Goal 20 Part A: percents in
-    docs/proposals/goal20-part-a-regression-thresholds.md are not in
-    force until the user adjudicates them.
+    Goal 20 Part A, adjudicated 2026-08-14 (goal20-state.md ruling 2): the
+    band is max(floor, 6 * MAD) read from
+    docs/benchmarks/goal20-part-a-noise-bands.json, which only
+    scripts/goal20-part-a-noise-bands.py writes.  Enforced when the bands
+    file says fail-closed: cold_start.median_us (floor 10ms) and
+    frame_render.5000.median_bytes (floor 4096 bytes).
+    frame_render.5000.median_us stays informational: the reading is
+    quantized at the 4000us timer step and cannot express a band until the
+    measurement gains resolution.  A missing history file or a machine
+    mismatch stays informational (same_machine rule); a missing or
+    unreadable bands file fails now that enforcement is adjudicated.
     """
+    try:
+        bands = json.loads(Path(bands_path).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        check(
+            False,
+            f"adjudicated noise-bands file is missing or unreadable: {bands_path}",
+            failures,
+        )
+        return ["self_history_gate=failed-no-noise-bands"]
     path = Path(history_path)
     if not path.is_file():
         return ["self_history_gate=informational-no-file"]
     try:
         history = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return ["self_history_gate=informational-unreadable"]
+        check(
+            False,
+            f"self-history file is unreadable: {history_path}",
+            failures,
+        )
+        return ["self_history_gate=failed-unreadable-history"]
     machine = (bench.get("machine") or {}).get("machine_instance")
     previous = None
     for entry in reversed(list(history.get("entries") or [])):
@@ -975,15 +999,53 @@ def self_history_summary(bench: dict, history_path: str) -> list[str]:
     cold_r = ratio(cold, previous.get("coldStartMedianUs"))
     frame_r = ratio(frame, previous.get("frame5000MedianUs"))
     alloc_r = ratio(alloc, previous.get("frame5000MedianBytes"))
-    return [
-        "self_history_gate=informational-awaiting-adjudication",
-        "self_history_enforced=no",
+    summary = [
         f"self_history_cold_ratio="
         + ("n/a" if cold_r is None else f"{cold_r:.2f}x"),
         f"self_history_frame5000_ratio="
         + ("n/a" if frame_r is None else f"{frame_r:.2f}x"),
         f"self_history_frame5000_alloc_ratio="
         + ("n/a" if alloc_r is None else f"{alloc_r:.2f}x"),
+    ]
+    if bands.get("machine") != machine:
+        return [
+            "self_history_gate=informational-band-machine-mismatch",
+            "self_history_enforced=no",
+            *summary,
+        ]
+
+    metrics = bands.get("metrics") or {}
+    enforced = []
+
+    cold_band = metrics.get("cold_start.median_us") or {}
+    prior_cold = previous.get("coldStartMedianUs")
+    if cold_band.get("enforcement") == "fail-closed" and cold and prior_cold:
+        limit = prior_cold + cold_band["band_us"]
+        check(
+            cold <= limit,
+            "cold start drifted beyond the adjudicated band: "
+            f"{cold:.0f}us > {prior_cold:.0f}us + {cold_band['band_us']:.0f}us",
+            failures,
+        )
+        enforced.append("cold")
+
+    alloc_band = metrics.get("frame_render.5000.median_bytes") or {}
+    prior_alloc = previous.get("frame5000MedianBytes")
+    if alloc_band.get("enforcement") == "fail-closed" and alloc and prior_alloc:
+        limit = prior_alloc + alloc_band["band_bytes"]
+        check(
+            alloc <= limit,
+            "frame allocation drifted beyond the adjudicated band: "
+            f"{alloc:.0f}B > {prior_alloc:.0f}B + {alloc_band['band_bytes']:.0f}B",
+            failures,
+        )
+        enforced.append("alloc")
+
+    return [
+        "self_history_gate=adjudicated-bands",
+        "self_history_enforced=" + (",".join(enforced) if enforced else "no"),
+        "self_history_frame5000_time=informational-quantized-4000us",
+        *summary,
     ]
 
 
@@ -1082,7 +1144,17 @@ def main() -> int:
             / "benchmarks"
             / "performance-history.json"
         ),
-        help="cadr self-history JSON. Drift is informational until Part A is adjudicated.",
+        help="cadr self-history JSON compared against the adjudicated drift bands.",
+    )
+    parser.add_argument(
+        "--noise-bands",
+        default=str(
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "benchmarks"
+            / "goal20-part-a-noise-bands.json"
+        ),
+        help="adjudicated drift bands written by scripts/goal20-part-a-noise-bands.py.",
     )
     args = parser.parse_args()
 
@@ -1095,7 +1167,9 @@ def main() -> int:
         )
         bench = load_json(args.bench)
         bench_summary = check_bench(bench, failures, load_json(args.baseline))
-        bench_summary.extend(self_history_summary(bench, args.history))
+        bench_summary.extend(
+            self_history_summary(bench, args.history, args.noise_bands, failures)
+        )
         stability_summary = check_stability(load_json(args.stability), failures)
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"goal11 gate: invalid report: {error}", file=sys.stderr)

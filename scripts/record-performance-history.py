@@ -1,9 +1,11 @@
 #!/usr/bin/env python3
 """Append one verified bench run to the performance time series.
 
-Does not change fail-closed thresholds (Goal 20 Part A still needs
-user-adjudicated drift limits). Goal 20 Part B: the numbers must be
-written by a script, never hand-edited into docs/performance.md.
+The fail-closed Part A drift bands live in
+docs/benchmarks/goal20-part-a-noise-bands.json (adjudicated 2026-08-14)
+and are enforced by scripts/goal11-performance-gate.py; this script only
+appends history rows. Goal 20 Part B: the numbers must be written by a
+script, never hand-edited into docs/performance.md.
 """
 
 from __future__ import annotations
