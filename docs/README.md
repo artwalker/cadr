@@ -24,6 +24,10 @@ remain evidence and must not silently override a current contract.
   and human verification levels and their entry points.
 - [dependency-audit.md](dependency-audit.md): production dependencies,
   transitive closure, authorization class, and replacement boundary.
+- [glossary.md](glossary.md): one fixed English term per concept for the
+  Chinese-to-English documentation translation, so that a term does not acquire
+  three renderings across the tree.  Extend it rather than improvising a
+  synonym.
 - [open-questions.md](open-questions.md): proposed mechanisms awaiting human
   decision; entries here are not authorization to implement.
 - [delivery-checklist.md](delivery-checklist.md): mandatory root-image rebuild,

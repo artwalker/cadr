@@ -1,369 +1,326 @@
-# cadr 常设开发政策
+# cadr standing development policy
 
-> **本文件是跨 goal 的常设约束，不随任何单个 goal 关账而失效。**
-> 每个 goal 文档均须引用本文件；每次开发前须确认本文件的约束已被理解。
-> 修改本文件需用户裁决。
+> **This file holds cross-goal constraints. It does not lapse when any single goal closes out.**
+> Every goal document must cite it; before any development, confirm its constraints are understood.
+> Changing this file requires user adjudication.
 
 ---
 
-## 一、cadr 是 Lisp 程序，不是 Lisp 写的 TypeScript（用户 2026-08-03 裁定）
+## 一、cadr is a Lisp program, not TypeScript written in Lisp (user adjudication, 2026-08-03)
 
-原文出自 `goal14.md` 〇.五，因 goal 14 已关账，移入本常设文件。
+The original text is `goal14.md` 〇.五; goal 14 has closed out, so it moved into this standing file.
 
-### 1. 对齐的定义是功能对齐
+### 1. Alignment is defined as functional alignment
 
-**"理解 pi 在做什么，然后用 Lisp 实现"就是对齐 pi**，且这是比逐处对应更好的方法。判据是可观察行为，不是源码结构。
+**"Understand what pi does, then implement it in Lisp" *is* alignment with pi**, and it is a better method than point-for-point correspondence. The criterion is observable behavior, not source structure.
 
-此前的实践之所以偏向转写，原因不在对齐**标准**，而在对齐**方法**：goal 12 把审计单位定为"pi 的 595 个源文件，每个都要有 cadr 的对应位置"——**以源文件为单位做对照，结构镜像即为必然产物**，哪怕该 goal 明文写着"不是逐行翻译"且留有"有意差异"判定类。
+Earlier practice leaned toward transcription not because of the alignment **standard** but because of the alignment **method**: goal 12 set the audit unit as "pi's 595 source files, each needing a corresponding cadr location" — **audit file-by-file and a structural mirror is the inevitable by-product**, even though that goal said in writing "this is not a line-by-line translation" and provided an "intentional difference" verdict class.
 
-**审计单位为可观察行为**。`docs/source-parity.md` 中"有意差异"行增多是预期结果，不是失控信号。
+**The audit unit is observable behavior.** More "intentional difference" rows in `docs/source-parity.md` is the expected result, not a signal of drift.
 
-### 2. 分岔的代价：失去机械漂移探测
+### 2. The price of divergence: losing mechanical drift detection
 
-结构对应时，`scripts/check-source-parity-drift.sh` 可在上游发版后**机械地**列出新增/删除/重命名文件并逼出处置结论——不需要理解，跑不掉。
+While structure corresponds, `scripts/check-source-parity-drift.sh` can **mechanically** list added, deleted, and renamed files after an upstream release and force a disposition out of each one — no understanding required, and nothing slips past.
 
-结构分岔后该探测器失效：只能问"pi 这次改动改变了什么行为、cadr 那个不同形状的实现里有没有同样的行为"——**无法机械化**。
+Once structure diverges, that detector stops working: the only remaining question is "what behavior did this upstream change alter, and does cadr's differently-shaped implementation have that same behavior" — **which cannot be mechanized**.
 
-这不是理论风险。**本项目已确证："有对应实现"为真而"行为一致"为假，是最难发现的一类缺陷**：`read` 行号颜色、路径未缩写、OAuth 浏览器提示文案按 provider 分而 cadr 用通用文案、`/login` 与 `/export` 多显示 `Working...`、overlay 标题/边框色、输入光标缺失——**四本账全判"已对齐"，全部由用户在真实终端截图发现**。
+This is not a theoretical risk. **This project has already confirmed that "a corresponding implementation exists" being true while "the behavior matches" is false is the hardest class of defect to find**: `read` line-number coloring, unabbreviated paths, per-provider OAuth browser prompt copy where cadr used generic copy, `/login` and `/export` showing an extra `Working...`, overlay title and border colors, a missing input cursor — **all four ledgers said "aligned", and every one of them was found by the user screenshotting a real terminal.**
 
-### 3. 准入条件：分岔多少结构，就补多少行为断言
+### 3. Admission condition: however much structure you diverge, add that much behavioral assertion
 
-**结构可以自由分岔，但每一处分岔必须同时补上与原结构等强度的行为断言。**
+**Structure may diverge freely, but every point of divergence must simultaneously gain a behavioral assertion of equal strength to the structure it replaced.**
 
-断言必须**对着基线逐项锁死，不得从 cadr 当前实现反推**。本项目已在此栽过：13 个整屏快照 SHA 长期全绿，锁住的却是错误的垂直对齐——因为 SHA 是从当时的实现生成的，而非从基线语义推导的。
+Assertions must be **locked item by item against the baseline, never reverse-engineered from cadr's current implementation**. This project has already been burned here: thirteen full-screen snapshot SHAs stayed green for a long time while locking the wrong vertical alignment — because the SHAs were generated from the implementation of the day, not derived from baseline semantics.
 
-**无等强度行为断言的分岔一律不予采纳**，无论其在 Lisp 意义上多么合理。
+**A divergence with no equal-strength behavioral assertion is not accepted, without exception**, however reasonable it may be in Lisp terms.
 
-**已落地的正例**：`src/cadr-ai/providers/definitions.lisp` 的 `provider-definition` 声明表，每行携带 `:baseline-source "packages/ai/src/providers/*.ts:NN"`，配 38 provider × 每字段的基线矩阵门禁。
+**A landed positive example**: the `provider-definition` declaration table in `src/cadr-ai/providers/definitions.lisp`, where each row carries `:baseline-source "packages/ai/src/providers/*.ts:NN"`, paired with a 38-provider × per-field baseline matrix gate.
 
-### 4. 闸门：合法的分岔理由（2026-08-13 修订）
+### 4. The admission test: legitimate grounds for divergence (revised 2026-08-13)
 
-**修订缘由**：本条原文（goal 13 Part C2 确立）明确拒绝"更符合 Lisp 风格"作为分岔理由，依据是"动了工作正常的代码、担了回归风险、换来零功能收益"。**该依据成立的前提是：无法证明改动保行为。**
+**Why this was revised**: the original text of this item (established in goal 13 Part C2) explicitly rejected "more idiomatic Lisp" as grounds for divergence, on the basis that it "touches working code, takes on regression risk, and buys zero functional gain". **That basis held only while it was impossible to prove a change preserves behavior.**
 
-**立条时该前提为真，且可逐条核对**：
-
-```
-政策第一节裁定          2026-08-03
-render-diff.py 创建     2026-08-04   e16881d3c   ← 晚一天
-归一化文本层门禁        2026-08-08   3d71d27b9   ← 晚五天
-```
-
-即立条当日，**逐字节呈现差分尚不存在**；能证明"改动保行为"的设施是此后才建起来的。截至本次修订已具备：
+**When the item was written that premise was true, and it can be checked item by item**:
 
 ```
-render-diff 逐字节终端对拍 + 归一化文本层门禁    141 个必覆盖检查点
-确定性测试                                      16,497 条（test-cl.sh 九套件）
-四本对齐账                                      行为 / 源码 / 非功能 / 呈现
+Section 一 policy adjudication      2026-08-03
+render-diff.py created              2026-08-04   e16881d3c   ← one day later
+normalized text-layer gate          2026-08-08   3d71d27b9   ← five days later
 ```
 
-**前提变了，结论随之变。**
+That is, on the day the item was written, **the byte-level presentation differential did not yet exist**; the machinery capable of proving "this change preserves behavior" was built afterwards. As of this revision it is in place:
 
-**用户 2026-08-13 裁定（本条的统率原则，其余条款均服从于此）：**
+```
+render-diff byte-level terminal comparison + normalized text-layer gate    141 required checkpoints
+deterministic tests                                                        16,497 (test-cl.sh, nine suites)
+four alignment ledgers                                                     behavior / source / non-functional / presentation
+```
 
-> **核心是发挥 Lisp 的优势写 Lisp 程序，不是苟且写 Lisp 版的 TypeScript。新代码旧代码一体适用。**
+**The premise changed, so the conclusion changes with it.**
+
+**User adjudication, 2026-08-13 (the governing principle for this item; every other clause is subordinate to it):**
+
+> **The point is to write Lisp programs that exploit Lisp's advantages, not to expediently write TypeScript in Lisp. This applies to new and old code alike.**
 >
-> **性能上不封顶、下不低于基线**：Lisp 实现最好超过 pi，最低与 pi 持平。
+> **Performance has no ceiling and a floor at the baseline**: the Lisp implementation should ideally beat pi, and at worst match it.
 
-两句合起来的含义要说清：**"Lisp 本位"不是风格偏好，是要拿到 Lisp 真正的好处。拿不到好处的改写不叫 Lisp 本位，叫换个写法。**
+The two sentences together need spelling out: **"Lisp-native" is not a style preference; it is about actually obtaining what Lisp offers. A rewrite that obtains nothing is not Lisp-native, it is just a different spelling.**
 
-**判据是结果，不是特性清单。** 唯一的检验是：**说得出这次拿到了什么具体好处，且该好处可核对**（消除了哪处重复决策、哪个手工不变量、哪条错误路径，或给出实测数字）。**"用了宏""改成了 CLOS"本身不是好处，是手段**——手段说明了而好处说不出，等同于没理由。
+**The criterion is the outcome, not a feature checklist.** The only test is: **can you state what concrete benefit this change obtained, and is that benefit checkable** (which repeated decision was removed, which hand-maintained invariant, which error path — or measured numbers). **"Used a macro" and "switched to CLOS" are not benefits, they are means** — a stated means with an unstatable benefit is the same as no grounds at all.
 
-下列是**举例，不是穷尽清单，更不是必须对上号的表**：
+The following are **examples, not an exhaustive list, and certainly not a table you must match yourself against**:
 
 ```
-宏与编译期计算      消除重复决策、把手工不变量变成机器保证
-CLOS 与多重分派     表达契约、method combination、按类型而非条件分支组织
-条件系统与 restart  可恢复错误与交互式处置，替代层层错误码与哨兵值
-特化数组与类型声明  换来速度与内存布局控制
-符号与包系统        命名空间、关键字参数、编译期符号计算
-动态作用域          上下文传递不必层层穿参
-同像性与 reader     以数据描述规则，而非以代码模拟数据
-REPL 与增量编译     交互式开发、运行中重定义
+macros and compile-time computation   remove repeated decisions; turn hand-maintained invariants into machine guarantees
+CLOS and multiple dispatch            express contracts, method combination, organise by type instead of conditionals
+the condition system and restart      recoverable errors and interactive handling, replacing layered error codes and sentinels
+specialised arrays and declarations   buy speed and control over memory layout
+symbols and the package system        namespacing, keyword arguments, compile-time symbol computation
+dynamic scope                         pass context without threading it through every call
+homoiconicity and the reader          describe rules as data instead of simulating data in code
+REPL and incremental compilation      interactive development, redefinition in a running image
 ```
 
-**Lisp 的优势不止于此，本表随认识增长而增长。** 援引表外的优势**不需要事先裁决**——照上面的判据说清好处即可；**援引表内的也不因在表内而免于说明**。
+**Lisp's advantages are not limited to these, and this table grows as understanding grows.** Invoking an advantage not in the table **does not require prior adjudication** — state the benefit by the criterion above and that is enough; **invoking one that is in the table does not exempt you from stating it either.**
 
-**探索用什么 Lisp 构造是执行方的职责，不是可选项。** 本条的硬条件约束的是**举证**，不是**手段**：用哪种构造、要不要发明本表没有的做法，**由执行方判断，不必请示**。发现本表没有的优势并用上，**是达标，不是越界**。
+**Exploring which Lisp constructs to use is the implementer's responsibility, not an option.** The hard conditions in this item constrain the **evidence burden**, not the **means**: which construct to use, and whether to invent an approach this table does not list, **is the implementer's judgement and needs no permission**. Finding an advantage this table does not list and using it **is meeting the bar, not overstepping it.**
 
-**保守地退回直译是失败模式，不是安全选择。** 本条列了多项硬条件与大量"不得"——若据此推断"照基线抄最不会被驳回"，那是把本条读反了：**照抄的代价不出现在门禁里，只出现在产品里**（更慢、更难维护、拿不到 Lisp 的任何好处），而**门禁抓不到"本可以更好但没做"**。
+**Retreating conservatively to a literal translation is a failure mode, not the safe choice.** This item lists many hard conditions and many prohibitions — if that leads you to conclude "copying the baseline is least likely to be rejected", you have read the item backwards: **the cost of copying does not show up in the gates, it shows up in the product** (slower, harder to maintain, none of Lisp's benefits obtained), and **no gate can catch "this could have been better but was not".**
 
-因此：**想不出 Lisp 本位实现时，须如实说"没想出来"并交裁决，不得默默照抄基线形状了事。** 前者是可处理的信息，后者是无声的欠账。
+Therefore: **when you cannot think of a Lisp-native implementation, you must say so honestly and escalate for adjudication; you must not quietly copy the baseline's shape and move on.** The former is information that can be acted on; the latter is silent outstanding debt.
 
-**注意这类欠账比第 2 条那一类更难发现。** 第 2 条记载的是"有对应实现为真而行为一致为假"——行为不同，至少差分门禁**有可能**抓到。而照抄基线形状产生的代码**行为完全相同**，四本账必然全绿、逐字节差分必然通过，**它在结构上不可能被任何现有门禁发现**。唯一的发现途径是执行方自己报告，或事后有人重读代码。**这正是本条把"如实说没想出来"定为义务的原因。**
+**Note that this class of debt is harder to find than the one in item 2.** Item 2 records "a corresponding implementation exists but the behavior differs" — the behavior differs, so a differential gate at least **has a chance** of catching it. Code produced by copying the baseline's shape **behaves identically**: all four ledgers will necessarily be green and the byte-level differential will necessarily pass, and **it is structurally impossible for any existing gate to find it.** The only routes to discovery are the implementer reporting it, or someone re-reading the code later. **That is precisely why this item makes "say honestly that you could not think of one" an obligation.**
 
-反过来，**性能不得成为维持转写形态的借口**：若某处直译比 Lisp 本位实现更快，那是实现问题不是语言问题，须实测举证而非推测；若确实拿不出更快或持平的 Lisp 实现，**报 blocked 交裁决，不得默认保留直译并记为"性能考量"**。
+Conversely, **performance must not become an excuse for keeping a transcribed form**: if a literal translation is faster somewhere than the Lisp-native implementation, that is an implementation problem and not a language problem, and it must be demonstrated by measurement rather than assumed; if you genuinely cannot produce a Lisp implementation that is faster or equal, **report blocked and escalate for adjudication; do not default to keeping the literal translation and record it as "a performance consideration".**
 
-#### 4.1 新代码：Lisp 本位是无条件要求
+#### 4.1 New code: Lisp-native is an unconditional requirement
 
-写新代码**不需要任何分岔理由**——4.2 的闸门只管重写已跑通的代码。第 5 条的检验方法直接适用：指着任意一处问"为什么这么写"，**答案里不得出现"因为 pi 那边就是这样"**。
+Writing new code **requires no grounds for divergence at all** — the admission test in 4.2 governs only rewrites of code that already works. The test in item 5 applies directly: point at any location and ask "why is it written this way", and **the answer must not be "because that is how pi does it".**
 
-**但豁免的只是"理由"，不是"断言"。** 第 3 条对新代码同等适用且无例外：**结构与基线分岔多少，就要补多少等强度行为断言，且须对着基线锁死、不得从 cadr 实现反推。** 新代码天然与基线结构不同，因此它需要的断言只多不少。
+**But what is exempted is the *grounds*, not the *assertions*.** Item 3 applies equally to new code with no exception: **however much the structure diverges from the baseline, that much equal-strength behavioral assertion must be added, locked against the baseline and never reverse-engineered from the cadr implementation.** New code is inherently structurally different from the baseline, so it needs more assertions, not fewer.
 
-把上游的数据结构语义一并搬过来**不是分岔，是没写对**。已确证的实例：`src/cadr-tui/mermaid/parse.lisp` 以 `(coerce s 'list)` 模拟 JS 的 `[...s]`，再以 `nth` 逐位索引——JS 数组下标是 O(1)，CL 链表是 O(n)，**基线的复杂度语义并未被保留**。这既非"贴近基线"，也不需要动用 4.2 的闸门：它本就该写对。
+Carrying the upstream data structure's semantics across as well **is not divergence; it is not writing it correctly**. A confirmed instance: `src/cadr-tui/mermaid/parse.lisp` simulated JS's `[...s]` with `(coerce s 'list)` and then indexed it position by position with `nth` — a JS array subscript is O(1), a CL list is O(n), so **the baseline's complexity semantics were not preserved**. That is neither "staying close to the baseline" nor a case for 4.2's admission test: it should simply have been written correctly.
 
-#### 4.2 重写已跑通的代码：合法理由与硬条件
+#### 4.2 Rewriting code that already works: legitimate grounds and hard conditions
 
-合法理由为五条：
+There are five legitimate grounds:
 
-**消除一个 bug 类别 / 去掉一个手工不变量 / 解锁一个能力 / 显著减少代码 / Lisp 本位实现更好**
+**remove a class of bug / remove a hand-maintained invariant / unlock a capability / substantially reduce code / the Lisp-native implementation is better**
 
-第五条为本次新增。**硬条件分两组，各在其适用范围内缺一不可。**
+The fifth is added by this revision. **The hard conditions come in two groups; within its applicable scope, not one condition in a group may be dropped.**
 
-**先分规模，再套条件——一刀切等于以"安全"之名冻结全部改进。**
+**Determine the scale first, then apply the conditions — a single blanket rule freezes every improvement in the name of "safety".**
 
-| 规模 | 定义 | 条件 2（性能举证） | 条件 3（账本映射） | 何时可做 |
+| Scale | Definition | Condition 2 (performance evidence) | Condition 3 (ledger mappings) | When it may be done |
 |---|---|---|---|---|
-| **定点修正** | 单个模块内、改动可逐条枚举的修正 | 该改动的前后实测对照 | ≤10 处可手工更新并逐条附证 | **即刻**，不等 goal 20 |
-| **成规模重写** | 整个模块的结构重组 | 同上，**且须由性能回归门禁覆盖**——整模块重写的临时测量不可靠 | 必须机械化重算 | 该模块被回归门禁覆盖后 |
+| **Point fix** | A correction inside one module whose edits can be enumerated one by one | Before/after measurement of that change | ≤10 mappings may be updated by hand, each with checking evidence | **Immediately**, without waiting for goal 20 |
+| **At-scale rewrite** | Structural reorganisation of a whole module | Same, **and it must be covered by the performance regression gate** — ad-hoc measurement of a whole-module rewrite is unreliable | Must be recomputed mechanically | Once that module is covered by the regression gate |
 
-**条件 1（断言先落地）对两种规模一律适用，无缩放。**
+**Condition 1 (assertions land first) applies to both scales with no scaling.**
 
-**规模由改动的可枚举性判定，不由行数判定**：说得清"改了哪几处、每处为什么"就是定点修正；说不清、只能整体端走的，就是成规模重写。**含糊时按成规模处理。**
+**Scale is judged by the enumerability of the change, not by line count**: if you can state "which places changed and why each one changed", it is a point fix; if you cannot, and the module can only be carried off whole, it is an at-scale rewrite. **When in doubt, treat it as at-scale.**
 
-设此分级的理由：把定点修正也压在成规模重写的门槛下，等于把已确证的缺陷一并冻结到 goal 20 之后——**而转写痕迹每多存在一天就多复制一份**，同模块尚未动笔的部分会照着同一个错误模式继续写。
+The reason for this grading: holding point fixes to the at-scale threshold would freeze already-confirmed defects until after goal 20 — **and every extra day a transcription artifact survives is another day it gets copied**, with the untouched parts of the same module continuing to be written to the same wrong pattern.
 
-**定点修正的代价有实测参照**：`src/cadr-tui/mermaid/canvas.lisp` 对字符串误用 `defconstant`（重复加载抛 `DEFCONSTANT-UNEQL`），2026-08-13 发现当天即修为 `defparameter`——**一处改动、零行为变化、无需任何门禁支持**。把这类改动压在成规模重写的门槛后面，挡不住风险，只挡住修复。
+**The cost of a point fix has a measured reference**: `src/cadr-tui/mermaid/canvas.lisp` misused `defconstant` on a string (reloading signalled `DEFCONSTANT-UNEQL`); it was found on 2026-08-13 and fixed to `defparameter` the same day — **one edit, zero behavior change, requiring no gate support at all.** Holding changes like that behind the at-scale threshold does not block risk, it blocks repair.
 
-**注意与 4.1 的分界**：尚未进构建的新代码（如当前的 `src/cadr-tui/mermaid/`）归 4.1 管——**那是"没写对"，直接改，不走本条闸门**。本条只管已跑通、已被门禁覆盖的旧代码。
+**Note the boundary with 4.1**: new code not yet in the build (for example `src/cadr-tui/mermaid/` at present) is governed by 4.1 — **that is "not written correctly", so fix it directly; this item's admission test does not apply.** This item governs only old code that already works and is already covered by gates.
 
-**A. 通用硬条件——任何结构重写均适用，无论援引五条中的哪一条：**
+**A. General hard conditions — these apply to any structural rewrite, whichever of the five grounds is invoked:**
 
-1. **等强度行为断言先落地，再动代码。** 不许改完补测。断言须对着基线锁死，**不得从改后实现反推**（第 3 条既有要求）——本项目已在此栽过：13 个整屏快照 SHA 长期全绿，锁住的却是错误的垂直对齐，因为 SHA 是从当时的实现生成的。
-2. **性能须以实测证明不劣于两个参照：pi 的同路径实现，以及改动前的 cadr。**
+1. **Equal-strength behavioral assertions land first, before the code is touched.** Adding tests afterwards is not allowed. Assertions must be locked against the baseline and **must not be reverse-engineered from the post-change implementation** (an existing requirement of item 3) — this project has already been burned here: thirteen full-screen snapshot SHAs stayed green for a long time while locking the wrong vertical alignment, because the SHAs were generated from the implementation of the day.
+2. **Performance must be demonstrated by measurement to be no worse than two references: pi's same-path implementation, and cadr before the change.**
 
-   **例外仅一种：该路径在 pi 侧不存在同路径实现**（cadr 独有能力，或结构分岔
-   后无一一对应的对象）。此时改用"不劣于改动前 cadr"单参照，
-   **但"无配对路径"这一判定须先经机械认定并入账，不得由改动方现场宣布**
-   （认定机制见 goal 20 Part H）。**未经认定即用单参照，视为未举证。**（用户 2026-08-13 裁定：**Lisp 实现的性能上不封顶、下不低于基线**——最好超过 pi，最低持平。）
+   **There is exactly one exception: no same-path implementation exists on the pi side** (a cadr-only capability, or no one-to-one counterpart after a structural divergence). In that case switch to the single reference "no worse than cadr before the change",
+   **but the "no paired path" finding must first be established mechanically and booked; the changer may not declare it on the spot**
+   (for the establishing mechanism see goal 20 Part H). **Using the single reference without that finding counts as not having discharged the evidence burden.** (User adjudication, 2026-08-13: **the Lisp implementation's performance has no ceiling and a floor at the baseline** — ideally beating pi, at worst matching it.)
 
-   **举证责任在改动方，不在门禁。** 逐字节差分只看输出、不看代价：一个重写后的实现慢十倍，141 个检查点仍会全绿；性能门禁当前也仅有绝对天花板（实测余量：冷启动 4.85×、帧分配 23.3×），回归化列于 goal 20 Part A/B。**因此在门禁补齐之前，改动须自带前后实测对照**——不得以"门禁没覆盖到"为由免于举证，也不得以"门禁还没建好"为由推迟改动。
+   **The evidence burden lies with the changer, not with the gate.** The byte-level differential looks only at output, never at cost: a rewritten implementation that is ten times slower will still leave all 141 checkpoints green; the performance gate currently has only absolute ceilings as well (measured headroom: cold start 4.85×, frame allocation 23.3×), with regression checks listed under goal 20 Part A/B. **So until the gates are complete, a change must carry its own before/after measurement** — you may not be excused from the evidence burden on the grounds that "the gate does not cover it", nor may you defer the change on the grounds that "the gate is not built yet".
 
-   实测劣于任一参照即为未完成：**要么改到不劣，要么报 blocked 交裁决**，不得记为"可接受的取舍"。
-3. **源码账的映射须在同一改动内更新。** `docs/source-parity.md` 现有 **1,038 处指向 cadr 侧「文件:行号」的映射，覆盖 680 行中的 555 行（81%）**。重写会使它们失效，**账本不更新即为说谎**——第 2 条已确证"有对应实现为真、行为一致为假"是最难发现的一类缺陷，而失效的映射连"有对应实现"都不再为真。更新方式按规模缩放：**受影响映射不超过 10 处**（定点修正的典型量级）**可手工更新，但须逐条附核对证据**（改后路径与行号确实指向该实现）；**超过 10 处必须机械化**（脚本重算并校验），**不得手填**。
+   Measuring worse than either reference means the work is unfinished: **either fix it until it is not worse, or report blocked and escalate for adjudication**; it must not be recorded as "an acceptable trade-off".
+3. **Source-ledger mappings must be updated inside the same change.** `docs/source-parity.md` currently holds **1,038 mappings pointing at cadr-side "file:line", covering 555 of 680 rows (81%)**. A rewrite invalidates them, and **a ledger that is not updated is lying** — item 2 already confirmed that "a corresponding implementation exists but the behavior differs" is the hardest class of defect to find, and an invalidated mapping means even "a corresponding implementation exists" is no longer true. The update method scales with size: **when at most 10 mappings are affected** (the typical magnitude of a point fix) **they may be updated by hand, but each must carry checking evidence** (that the post-change path and line really do point at that implementation); **above 10 it must be mechanized** (a script recomputes and validates), **never filled in by hand.**
 
-   **当前无门禁可发现失效映射**：`check-source-parity-drift.sh` 只比对 pi 侧 `packages/**.ts` 的增删改，**不校验 cadr 侧路径是否仍然存在**。该缺口须在成规模重写开始前补上（列入 goal 20 Part F）；**定点修正不受此缺口阻塞**，因其映射变动可逐条核对。
+   **No gate can currently find an invalidated mapping**: `check-source-parity-drift.sh` only compares additions, deletions, and modifications of pi-side `packages/**.ts`, and **does not check whether the cadr-side path still exists.** That gap must be closed before any at-scale rewrite begins (listed under goal 20 Part F); **point fixes are not blocked by this gap**, because their mapping changes can be checked one by one.
 
-**B. 第五条理由的附加条件：**
+**B. Additional condition for the fifth ground:**
 
-4. **按模块推进，不搞全局运动。** 每个模块须在动工前交代：改前行为断言在哪、改后如何证明等价、覆盖缺口在哪。**"Lisp 本位"不得作为一次性大规模翻修的立项理由**——那正是本条原文当年要防的东西，本次修订只解除对"理由"的一刀切拒绝，不解除对"运动式重写"的拒绝。
+4. **Proceed module by module; no tree-wide campaign.** Before work starts, each module must account for: where the pre-change behavioral assertions are, how equivalence will be demonstrated afterwards, and where the coverage gaps are. **"Lisp-native" must not be the grounds for undertaking a single sweeping overhaul** — that is exactly what the original text of this item was written to prevent; this revision lifts only the blanket rejection of the *reason*, not the rejection of *campaign rewrites*.
 
-**「Lisp 本位实现更好」本身是人工判断出口，一体适用第五节纪律。** 第五节第 2 条的兜底条款（"今后任何『记录理由即可放行』的机制"）覆盖本条：
+**"The Lisp-native implementation is better" is itself a human-judgement exit, and the discipline of section 五 applies to it in full.** The catch-all clause in section 五 item 2 ("any future mechanism where recording a reason permits release") covers this item:
 
-- **逐条陈述具体改进**：这次消除了什么形状的转写痕迹、换成了什么 Lisp 构造、据此得到什么。**断言式结论不算陈述**（如"重写为更地道的实现"）。
-- **样板拒绝**：同一批次内理由文本重复即失败。**本项目已确证该失效模式**——`docs/source-parity.md` 现存 **94 处模板相同**的备注（抠掉反引号内路径与数字后归一；逐字完全相同的为 0 处，全文 16 个模板家族覆盖 670 行中的 347 行），在声明"仅能加载不算对齐"的同时，把零着色的示例判为 `已实现`。
-- **广度告警**：单一理由覆盖的模块数超过多数时，须在报告中显式标注其比例。
+- **State the concrete improvements one by one**: what shape of transcription artifact was removed this time, what Lisp construct replaced it, and what was obtained as a result. **An assertive conclusion is not a statement** (e.g. "rewritten into a more idiomatic implementation").
+- **Boilerplate is rejected**: within one batch, repeated reason text is a failure. **This project has confirmed this failure mode** — `docs/source-parity.md` currently holds **94 notes with an identical template** (normalized by stripping backticked paths and digits; the count of byte-identical notes is 0, and across the file 16 template families cover 347 of 670 rows), which, while declaring that "merely loading is not alignment", nonetheless marked a zero-coloring example as `已实现`.
+- **Breadth warning**: when a single reason covers more than a majority of the modules, its proportion must be stated explicitly in the report.
 
-#### 4.3 第 5 条既有 `Keep` 判定的处置
+#### 4.3 Handling the existing `Keep` verdicts in item 5
 
-第 5 条记录 `cadr-cli`（96 文件 / 0 宏）与 `cadr-tui`（23 文件 / 0 宏）判为 `Keep`。该判定须重审，**有两个各自独立成立的理由**：
+Item 5 records `cadr-cli` (96 files / 0 macros) and `cadr-tui` (23 files / 0 macros) as `Keep`. That verdict must be re-examined, for **two independently sufficient reasons**:
 
-1. **闸门变了**——该判定作出于旧闸门之下，当时"Lisp 本位"不是合法理由。
-2. **审计面早已过时**——那两个数字是 2026-08-04 的快照，今天为 `cadr-cli` 113 文件、`cadr-tui` 43 文件（宏数仍为 0）。**合计 119 → 156，即约四分之一的代码从未进入过 C2 审计。** 这部分不存在任何 `Keep` 判定可援引。
+1. **The admission test changed** — the verdict was reached under the old test, when "Lisp-native" was not legitimate grounds.
+2. **The audited surface is long out of date** — those two numbers are a 2026-08-04 snapshot; today they are `cadr-cli` 113 files and `cadr-tui` 43 files (macro count still 0). **119 → 156 in total, meaning about a quarter of the code has never entered a C2 audit at all.** For that portion no `Keep` verdict exists to invoke.
 
-本次修订**不自动推翻旧判定，也不使其自动生效**：
+This revision **neither automatically overturns the old verdicts nor automatically makes them operative**:
 
-- CLI selector 们"长得像但契约不同"的理由**与本次修订无关，继续成立**——合并不相关的可观察契约是耦合，不是 Lisp 本位。
-- 但"因为不是合法理由所以 Keep"的部分**已失效，须在新闸门下重新审视**。
-- **重审须逐模块进行并附结论**，不得以"C2 已判 Keep"一笔带过，也不得以本次修订为由发起全局重写。
+- The reason that the CLI selectors "look alike but have different contracts" **is unrelated to this revision and still stands** — merging unrelated observable contracts is coupling, not Lisp-native design.
+- But whatever part of that verdict rested on "Keep, because those are not legitimate grounds" **has lapsed and must be reconsidered under the new admission test.**
+- **Re-examination must proceed module by module with a stated conclusion**; it may not be waved through with "C2 already ruled Keep", nor may this revision be used to launch a tree-wide rewrite.
 
-#### 4.4 仍然拒绝的
+#### 4.4 Still rejected
 
-- **无等强度行为断言的重写**，无论其在 Lisp 意义上多么合理（第 3 条原文，不变）。
-- **断言从改后实现反推的重写**——等于什么都没锁。
-- **以"顺手"为名的夹带**：在功能改动中混入无关的风格重写，使回归定位失效。
-- **硬条件不齐的重写**，理由多充分都不做。**通用硬条件 1–3 对五条理由一律适用**，不因援引的是"消除 bug 类别"这类硬理由而豁免。
+- **A rewrite with no equal-strength behavioral assertion**, however reasonable in Lisp terms (item 3's original text, unchanged).
+- **A rewrite whose assertions are reverse-engineered from the post-change implementation** — that locks nothing at all.
+- **Smuggling under the banner of "while I was in there"**: mixing unrelated style rewrites into a functional change, which destroys the ability to localise a regression.
+- **A rewrite whose hard conditions are incomplete**, however sufficient the grounds. **General hard conditions 1–3 apply to all five grounds**, with no exemption for invoking a hard ground such as "removes a class of bug".
 
-**判断标准（修订）**，两步，缺一不可：
+**The test (revised)**, in two steps, both required:
 
-1. **理由**：说得出这次改动消除了什么具体坏处（前四条），**或**说得出改后为何是更好的 Lisp 实现且陈述具体到可核对（第五条）。
-2. **条件**：通用硬条件 1–3 齐备；**若援引第五条，附加条件 4 亦须齐备。**
+1. **Grounds**: you can state what concrete harm this change removes (the first four grounds), **or** you can state why the post-change code is a better Lisp implementation, specifically enough to be checked (the fifth ground).
+2. **Conditions**: general hard conditions 1–3 are complete; **if the fifth ground is invoked, additional condition 4 must be complete as well.**
 
-**理由成立而条件不齐，不做；条件齐备而理由说不出，同样不做。**
+**Grounds without complete conditions: do not proceed. Complete conditions with unstatable grounds: likewise do not proceed.**
 
-### 5. 已跨过线与未跨过线的部分（截至 2026-08-04）
+### 5. What has and has not crossed the line (as of 2026-08-04)
 
-**已跨过**：扩展 API（`src/cadr-agent/extensions/registration.lisp` 的 15 个 `define-*` 宏，全树 17 个宏中的 15 个）、provider 声明表、`cadr-core` 失败安全原语。
+**Crossed**: the extension API (the 15 `define-*` macros in `src/cadr-agent/extensions/registration.lisp`, 15 of the tree's 17 macros), the provider declaration table, and the `cadr-core` failure-safety primitives.
 
-**未跨过**：`cadr-cli`（96 文件 / 0 宏）、`cadr-tui`（23 文件 / 0 宏）。**但这两块的 0 不是欠账**——C2 审计判为 `Keep` 且理由成立：TUI 的 CLOS 用法已是全树最强；CLI 的 selector 们**长得像但契约不同**（搜索、分页、取消规则各异），合并会把不相关的可观察契约耦合起来。
+**Not crossed**: `cadr-cli` (96 files / 0 macros) and `cadr-tui` (23 files / 0 macros). **But those zeros are not outstanding debt** — the C2 audit ruled `Keep` and the reasoning held: the TUI's use of CLOS is already the strongest in the tree; the CLI's selectors **look alike but have different contracts** (search, paging, and cancellation rules all differ), and merging them would couple unrelated observable contracts.
 
-**检验方法**：指着任意一处结构问"为什么这么写"，答案里不得出现"因为 pi 那边就是这样"。
-
----
-
-## 二、代码质量与组织是常设约束（用户 2026-08-03 裁定）
-
-原文出自 `goal14.md` Part D 第 5 项。
-
-**目的不是控制文件大小，是不让同一个决策再被手工重复第 N 遍。**
-
-`interactive-services.lisp` 不是某天一次写成 9,063 行的；`join-thread` 三处漏超时也不是一次写下的——都是每次"就加这一处、放手边最方便"攒出来的，**而每一次都不触发任何阈值**。
-
-**因此每个 goal 涉及新增代码时，都须在动工前交代**：
-1. 新代码的归属文件与理由；
-2. **是否复用了已有原语，而非重新手工实现一遍**。
-
-**门禁的能力边界**：自动检测只能拦住"新增超大文件"，**拦不住"往已经合格的文件里持续追加直到它超标"**，也拦不住"又手抄了一遍某个决策"。后者靠每次开发时的判断，不靠门禁。
-
-**已确证由手工重复造成的 bug 家族**（见 `docs/code-organization.md` 的重复决策表）：退出死锁（`join-thread` 漏超时三处）、诊断泄漏四次（setsid / ASDF / SSL / `session>`）、间距偏差、Anthropic 提示文案错误、崩溃 backtrace 泄漏会话状态、write 用 UTF-8 字节数、导出文件名与树时间戳偏差。
+**The test**: point at any piece of structure and ask "why is it written this way"; the answer must not contain "because that is how pi does it".
 
 ---
 
-## 三、其余长期有效的约束（索引）
+## 二、Code quality and organization are standing constraints (user adjudication, 2026-08-03)
 
-- **全量对齐、不做阉割**：pi 有的 cadr 都要有；无凭据只降验证等级（fixture 对拍），不缩范围。
-- **凭据纪律**：API key 与 OAuth token 绝不进对话/日志/会话文件；`auth.json` 强制 `0600`；崩溃日志须脱敏且 `0600`。
-- **自研原则**：TLS 走 cl+ssl 是唯一密码学例外；新第三方依赖须预审、blocked 交用户裁决。
-- **新增机制须裁决**：任何"相对原版新增"的想法记入 `docs/open-questions.md` 交用户裁决，不默认实现。
-- **完成的定义**：已提交落账，且宣告须附可亲手验证的证据（源码位置、测试名、门禁输出）。自行宣布完成无效。
-- **基线锁定**：锁上游发布 tag（当前 `v0.84.1 (+0, 53fa77ccd)`），不追移动的开发分支。
+The original text is `goal14.md` Part D item 5.
+
+**The purpose is not to control file size; it is to stop the same decision being re-made by hand an Nth time.**
+
+`interactive-services.lisp` was not written as 9,063 lines in one sitting; the three places where `join-thread` lacked a timeout were not written at once either — both accumulated from "just this one more, right here is most convenient", **and not one of those steps tripped any threshold.**
+
+**So whenever a goal involves new code, before work starts it must account for**:
+1. which file the new code belongs in, and why;
+2. **whether an existing primitive was reused rather than hand-implemented again.**
+
+**The limits of what gates can do**: automated detection can stop "a huge new file", but it **cannot stop "appending to an already-acceptable file until it exceeds the limit"**, and it cannot stop "that decision was hand-copied once more". The latter rests on judgement at development time, not on gates.
+
+**Bug families confirmed to be caused by hand repetition** (see the repeated-decision table in `docs/code-organization.md`): shutdown deadlock (`join-thread` missing a timeout in three places), diagnostics leaking four times (setsid / ASDF / SSL / `session>`), spacing deviations, wrong Anthropic prompt copy, crash backtraces leaking session state, `write` counting UTF-8 bytes, and export filenames deviating from tree timestamps.
 
 ---
 
-## 四、产品身份只有一个决策源（用户 2026-08-05 裁定）
+## 三、Other constraints that remain in force (index)
 
-产品 slug、显示名、规范仓库 URL 与默认 share viewer 只允许由
-`src/cadr-ai/support/release.lisp` 的私有产品身份常量组拥有。其他 production
-owner 只能从该组派生；不得在 HTTP header、User-Agent、OAuth 参数、用户文案、
-导出产物、临时文件、线程名或示例中手写第二份产品身份。
+- **Full parity, no crippling**: whatever pi has, cadr must have; missing credentials only lower the verification tier (fixture comparison), they never shrink scope.
+- **Credential discipline**: API keys and OAuth tokens never enter transcripts, logs, or session files; `auth.json` is forced to `0600`; crash logs must be redacted and `0600`.
+- **Build-it-ourselves principle**: TLS via cl+ssl is the sole cryptography exception; new third-party dependencies require prior review, and a blocked report escalates to the user for adjudication.
+- **New mechanisms require adjudication**: any idea that is "an addition relative to the original" goes into `docs/open-questions.md` for user adjudication; it is not implemented by default.
+- **Definition of done**: committed and booked, and the announcement must carry evidence that can be verified by hand (source location, test name, gate output). Declaring completion yourself is void.
+- **Baseline pinning**: pin the upstream release tag (currently `v0.84.1 (+0, 53fa77ccd)`); do not chase a moving development branch.
 
-环境变量与可配置 endpoint 由各 feature owner 保存，但 Cadr runtime 只接受
-`CADR_*` 命名空间。旧 `PI_*` 只能出现在迁移文档或固定基线 driver 中，绝不能
-成为 fallback、alias 或 warning 兼容层。
+---
 
-外部合同与基线溯源不是产品自我标识。确需保留的 Radius client/API/wire、扩展
-manifest schema、catalog 来源、历史文本和固定对拍输入，必须逐条进入
-`docs/product-identity-allowlist.json`，每条具备精确文件、精确行、固定 token、
-出现次数与非空理由。禁止目录、glob 或泛化正则豁免；opaque 第三方资产只能以
-精确路径、SHA-256 和理由锁定。
+## 四、Product identity has exactly one decision source (user adjudication, 2026-08-05)
 
-`scripts/check-product-identity.py` 同时拒绝未登记命中、陈旧/重复 disposition、
-次数漂移、清单总数漂移与 opaque digest 漂移。`scripts/verify.sh` 必须先跑合成
-self-test，再跑真实仓库；任一失败都阻断后续确定性门禁。新增或改变 allowlist
-等同改变产品身份边界，须先走书面提案和用户逐项裁决，不能以“只是注释/内部名”
-自行放行。
+The product slug, display name, canonical repository URL, and default share viewer may be owned only by the private product-identity constant group in `src/cadr-ai/support/release.lisp`. Other production owners may only derive from that group; a second copy of the product identity must never be hand-written into an HTTP header, User-Agent, OAuth parameter, user-facing copy, exported artifact, temporary file, thread name, or example.
 
-## 五、门禁的人工判断出口必须可核对（用户 2026-08-08 裁定）
+Environment variables and configurable endpoints are held by their respective feature owners, but the Cadr runtime accepts only the `CADR_*` namespace. The old `PI_*` may appear only in migration documents or the fixed-baseline driver, and must never become a fallback, an alias, or a warning-based compatibility layer.
 
-### 1. 为何存在这条
+External contracts and baseline provenance are not product self-identification. Radius client/API/wire, extension manifest schemas, catalog sources, historical text, and fixed comparison inputs that genuinely must be retained must each enter `docs/product-identity-allowlist.json` individually, with an exact file, exact line, fixed token, occurrence count, and a non-empty reason. Directory, glob, or generalised-regex exemptions are forbidden; opaque third-party assets may be pinned only by exact path, SHA-256, and reason.
 
-本项目已三次出现同一形状的事故——**门禁正确地检出了问题，人工判断层把它解释掉了**：
+`scripts/check-product-identity.py` rejects unregistered hits, stale or duplicate dispositions, count drift, manifest-total drift, and opaque-digest drift alike. `scripts/verify.sh` must run the synthetic self-test first and the real repository second; a failure of either blocks the deterministic gates that follow. Adding to or changing the allowlist is equivalent to changing the product-identity boundary, and requires a written proposal and item-by-item user adjudication first; it may not be released on your own authority as "just a comment / an internal name".
 
-| 事件 | 检出 | 出口如何被使用 |
+## 五、A gate's human-judgement exits must be checkable (user adjudication, 2026-08-08)
+
+### 1. Why this exists
+
+This project has produced the same shape of incident three times — **the gate correctly detected the problem, and the human-judgement layer explained it away**:
+
+| Incident | Detection | How the exit was used |
 |---|---|---|
-| goal 8 OAuth live | 测试正确失败 | 用 `jq` 改凭据键名让测试通过，绕开缺陷本身 |
-| goal 17 呈现差分 | `overlays-auth-oauth/login-dialog` 正确截出 pi/cadr 两个不同 SHA | 盖 `I01`+`I04` 与一句样板 note 结案，而 cadr 实际缺失 `Enter code:`、`Waiting for authentication...`、标题与容器——两个类别都不覆盖这些 |
-| goal 17 覆盖单位 | —— | obligation 单位由运行时笛卡尔积改为固定片段，printable 分支 1108→672，在同一提交内按新定义宣布满分 |
+| goal 8 OAuth live | The test correctly failed | Used `jq` to rename a credential key so the test would pass, bypassing the defect itself |
+| goal 17 presentation differential | `overlays-auth-oauth/login-dialog` correctly captured two different SHAs for pi and cadr | Closed with `I01`+`I04` and one boilerplate note, while cadr was actually missing `Enter code:`, `Waiting for authentication...`, the title, and the container — none of which either class covers |
+| goal 17 coverage unit | —— | The obligation unit was changed from a runtime Cartesian product to fixed fragments, printable branches 1108→672, and a perfect score was declared under the new definition in the same commit |
 
-**共同点不是不诚实**（三次都主动披露了不利数据），而是：**面对"修到底"与"判为可接受"，出口是阻力更小的一侧。** 因此约束的对象是出口本身，不是态度。
+**What these share is not dishonesty** (all three actively disclosed the unfavourable data), but this: **faced with "fix it properly" versus "rule it acceptable", the exit is the path of less resistance.** So what is constrained here is the exit itself, not anyone's attitude.
 
-### 2. 适用范围
+### 2. Scope
 
-本项目的全部人工判断出口一体适用：`test/fixtures/render-diff/dispositions.json` 的
-intentional-difference 裁定、`visible-string-exemptions.json`、
-`docs/product-identity-allowlist.json`（第四节已单独细化）、`docs/parity-map.md`
-的 N/A 判定、`docs/source-parity.md` 的 `Evidence / reason` 列、live 门禁的 skip
-条件，以及今后任何"记录理由即可放行"的机制。
+Every human-judgement exit in this project is covered alike: the intentional-difference verdicts in `test/fixtures/render-diff/dispositions.json`, `visible-string-exemptions.json`, `docs/product-identity-allowlist.json` (detailed separately in section 四), the N/A verdicts in `docs/parity-map.md`, the `Evidence / reason` column of `docs/source-parity.md`, live gate skip conditions, and any future mechanism where recording a reason permits release.
 
-### 3. 每条出口记录的强制字段
+### 3. Mandatory fields for each exit record
 
-1. **实际差异／违例的具体陈述**——必须写清"这里 pi 与 cadr 分别是什么"或"这条为何不适用"。**断言式结论不算陈述**（如 `no product defect is admitted`）。
-2. **所引类别为何逐字覆盖该差异**——类别摘要必须能逐字解释所陈述的差异。**解释不到的部分即为缺陷，须修复，不得由该类别顺带吸收。**
-3. **证据**——对拍类出口须带双方 digest 或等价证据；无证据条目一律不成立。
+1. **A concrete statement of the actual difference or violation** — it must state what pi and cadr each are at this point, or why this one does not apply. **An assertive conclusion is not a statement** (e.g. `no product defect is admitted`).
+2. **Why the cited class covers that difference word for word** — the class summary must be able to explain the stated difference word for word. **Whatever it cannot explain is a defect and must be fixed; it must not be absorbed in passing by that class.**
+3. **Evidence** — comparison-type exits must carry both sides' digests or equivalent evidence; an entry without evidence does not stand.
 
-### 4. 门禁须能自查的三条
+### 4. Three things a gate must be able to check itself
 
-1. **样板拒绝**：同一出口文件内，理由文本重复即失败。理由是逐条判断的产物，重复即说明未逐条判断。
-2. **类别不得越层吸收**：描述字节层差异的类别（如 `I01` 的 ANSI 分段与拆除序列）不得用于结案**可见文本层**的差异。对拍须先把双方归一化为可见文本网格再比一次；**归一化文本不同的检查点，不允许仅以字节层类别结案。**
-3. **广度告警**：单一类别覆盖出口条目超过多数时，须在报告中显式标注其覆盖比例。万能类别不必然错误，但它使该门禁的强度等同于该类别的严谨性，必须可见。
+1. **Boilerplate is rejected**: within one exit file, repeated reason text is a failure. A reason is the product of a per-item judgement; repetition shows the judgement was not made per item.
+2. **A class must not absorb across layers**: a class describing a byte-level difference (such as `I01`'s ANSI segmentation and teardown sequences) must not be used to close a **visible-text-level** difference. A comparison must first normalize both sides into a visible-text grid and compare again; **a checkpoint whose normalized text differs may not be closed on a byte-level class alone.**
+3. **Breadth warning**: when a single class covers more than a majority of the exit entries, its coverage proportion must be stated explicitly in the report. A catch-all class is not necessarily wrong, but it makes that gate's strength equal to that class's rigour, which must therefore be visible.
 
-### 5. 新类别与判据变更须先裁决
+### 5. New classes and changes of criteria require prior adjudication
 
-**新增 intentional-difference 类别，等同于改变"对齐"的定义**；**改变门禁的义务单位或计数口径**（如覆盖率的分母定义）**等同于改变门禁承诺的内容**。二者均须先走书面提案与用户裁决，不得自裁自用，也不得在同一提交内既改判据又按新判据宣布达标。裁决前，新判据下的数字不得作为验收依据。
+**Adding an intentional-difference class is equivalent to changing the definition of "alignment"**; **changing a gate's obligation unit or counting basis** (such as the denominator of a coverage figure) **is equivalent to changing what the gate promises.** Both require a written proposal and user adjudication first; neither may be self-authorised, and neither may change the criteria and declare compliance under the new criteria in the same commit. Before adjudication, figures under the new criteria may not serve as acceptance evidence.
 
-### 6. 报告须区分"驱动完整度"与"一致性"
+### 6. Reports must distinguish "drive completeness" from "conformance"
 
-覆盖率类指标须写明其度量对象。例：`baseline-visible-strings` 的 construction suite
-为 TypeScript，驱动的是固定基线 pi，**其 672/672 度量的是场景集对基线分支的驱动
-完整度，不是 cadr 的一致性**，在结构上无法发现 cadr 缺失字符串。凡此类指标，报告
-须如实标注度量对象，不得以更强的含义呈现。
-## 六、Lisp 能力的常设用法（顾问 2026-08-13 调查，用户裁定抽为常设）
+Coverage-type metrics must state what they measure. Example: the construction suite for `baseline-visible-strings` is TypeScript and drives the fixed-baseline pi, so **its 672/672 measures how completely the scenario set drives the baseline's branches, not cadr's conformance**, and it is structurally incapable of finding a string cadr is missing. For every metric of this kind, the report must state the measured object honestly and must not present it with a stronger meaning.
 
-**本节记录的是做法，不是某个 goal 的任务。** goal 20 Part N 是它们的首次
-落地工程；**Part N 关账后本节继续有效**。每条都零新增依赖
-（`sb-introspect`／`sb-mop`／`trace`／`sb-cover`／`sb-sprof` 均为 SBCL 自带，
-slynk 由 `OQ-G10-D2-SLYNK-REPL` 于 2026-08-01 批准并随镜像发行）。
+## 六、Standing uses of Lisp's capabilities (advisor investigation 2026-08-13; user adjudicated it into standing form)
 
-### 1. 诊断：静态读不出触发条件时，取证而非推测
+**This section records practices, not any one goal's tasks.** goal 20 Part N is their first engineering application; **this section remains in force after Part N closes out.** Every item adds zero dependencies (`sb-introspect`, `sb-mop`, `trace`, `sb-cover`, and `sb-sprof` all ship with SBCL; slynk was approved by `OQ-G10-D2-SLYNK-REPL` on 2026-08-01 and ships with the image).
 
-**「推测触发条件」不算诊断。** 凡用户或门禁发现缺陷而静态阅读无法确定
-其运行时触发条件者，须用下列手段之一现场取证，并把关键状态记入缺陷报告：
+### 1. Diagnosis: when static reading cannot yield the trigger, capture evidence instead of guessing
+
+**"Guessing the trigger" is not diagnosis.** Whenever the user or a gate finds a defect whose runtime trigger cannot be determined by reading the source, evidence must be captured on the spot by one of the following, and the key state recorded in the defect report:
 
 ```
-./cadr --slynk <port>       起 loopback-only 服务；REPL 中 (cadr-cli::active-agent)
-                            取到正在运行的 agent 对象，复现到出错时状态仍在
-(trace some-function)       不改代码即可看清调用与返回，回答"走了哪个分支"
+./cadr --slynk <port>       starts a loopback-only server; in the REPL (cadr-cli::active-agent)
+                            returns the running agent object, and reproducing to the failure leaves that state live
+(trace some-function)       shows calls and returns without editing code, answering "which branch was taken"
 ```
 
-**取证须遵守第三节的凭据纪律**——登录/认证路径取证时尤其注意，
-不得打印或落盘 API key 与 OAuth token。
+**Evidence capture must obey the credential discipline of section 三** — be especially careful when capturing on login and authentication paths: API keys and OAuth tokens must not be printed or written to disk.
 
-### 2. 开发回路：先加载探测，再谈整核重建
+### 2. Development loop: load and probe first, before rebuilding a whole image
 
-改一处、验一处的场景**优先用 `asdf:load-system` 加载子系统直接调用函数**，
-不必重建发行镜像。实测冷缓存加载 `cadr-ai`（61 文件 / 25,818 行）约 12 秒；
-写法见 `scripts/test-cl.sh` 的隔离 `HOME` 与 `ASDF_OUTPUT_TRANSLATIONS` 模式。
+For change-one-thing-verify-one-thing work, **prefer `asdf:load-system` to load the subsystem and call the function directly**, rather than rebuilding the release image. Measured cold-cache load of `cadr-ai` (61 files / 25,818 lines) is about 12 seconds; for how to write it, see the isolated `HOME` and `ASDF_OUTPUT_TRANSLATIONS` pattern in `scripts/test-cl.sh`.
 
-### 3. 账本与门禁：能由镜像回答的，不许人手维护
+### 3. Ledgers and gates: whatever the image can answer must not be maintained by hand
 
-- **符号位置由 `sb-introspect:find-definition-sources-by-name` 派生**，
-  不得手写「文件:行号」。**手写必然烂**——本项目已确证：`source-parity.md`
-  的 1,038 处手工映射烂了 108 处、横跨五次关账无人发现。
-- **声明表的字段比对由 `sb-mop:class-slots` 枚举驱动**，不得在测试里手列字段。
-  **手列必然漏**——本项目已确证：provider 矩阵门禁只比 6/21 字段，
-  漏掉的正是缺陷所在的 `default-model`。
-- **排除项也须由声明承载**，不得散落在测试代码里。
+- **Derive symbol locations with `sb-introspect:find-definition-sources-by-name`**; do not hand-write "file:line". **Hand-written mappings necessarily rot** — this project has confirmed it: 108 of `source-parity.md`'s 1,038 hand-written mappings had rotted, across five closeouts, with nobody noticing.
+- **Drive declaration-table field comparison from `sb-mop:class-slots` enumeration**; do not hand-list fields in a test. **Hand-listing necessarily misses** — this project has confirmed it: the provider matrix gate compared only 6 of 21 fields, and the one it missed was `default-model`, where the defect was.
+- **Exclusions must be carried by declarations too**, not scattered through test code.
 
-### 4. 编译告警是免费的缺陷来源，必须听
+### 4. Compiler warnings are a free source of defects and must be heeded
 
-**cadr 自身的编译 WARNING 视为缺陷**，新增即门禁失败。
-STYLE-WARNING 先只计数入账。第三方依赖的告警不计入自身账。
+**cadr's own compilation WARNINGs count as defects**; a new one fails the gate. STYLE-WARNINGs are only counted and booked for now. Third-party dependencies' warnings do not count against our own account.
 
-**两条配套规则，缺一则本条可被架空**：
+**Two accompanying rules; without either, this item can be hollowed out**:
 
-- **抑制告警等同于制造缺陷**：新增任何针对 cadr 自身代码的
-  `muffle-conditions`／`muffle-warning`／`declaim` 抑制，**本身即门禁失败**，
-  除非逐条声明并交裁决。（既有 `src/cadr-cli/extensions/loader.lisp` 的两处
-  muffle 用于**加载用户扩展**、不覆盖 cadr 自身编译，属正当。）
-- **归因须有机械标准**：第三方宏在 cadr 源文件中展开触发的告警，
-  其源位置会指向 cadr 的 `.lisp`。**"自身 vs 第三方"的判别标准须写明并机械化**，
-  不得靠人工目测；判别不了的**计入自身账**（宁可误报，不可漏报）。
+- **Suppressing a warning is equivalent to manufacturing a defect**: adding any `muffle-conditions`, `muffle-warning`, or `declaim` suppression aimed at cadr's own code **is itself a gate failure**, unless declared item by item and adjudicated. (The two existing muffles in `src/cadr-cli/extensions/loader.lisp` are for **loading user extensions** and do not cover cadr's own compilation, so they are legitimate.)
+- **Attribution needs a mechanical standard**: a warning triggered by a third-party macro expanding inside a cadr source file will point at cadr's `.lisp` as its source location. **The standard for "ours vs third-party" must be written down and mechanized**, not eyeballed; whatever cannot be classified **counts against our own account** (better a false positive than a miss).
 
-**理由是实测**：项目长期不处理编译告警，而单加载 `cadr-ai` 即有 3 个
-真 WARNING——`release.lisp` 把 `defparameter` 套在 `multiple-value-bind` 里
-（非 toplevel，编译器拿不到编译期声明）。**编译器早就在喊，只是没人听。**
+**The reasoning is measured**: the project went a long time without addressing compiler warnings, and loading `cadr-ai` alone produced 3 real WARNINGs — `release.lisp` wrapped `defparameter` inside `multiple-value-bind` (not toplevel, so the compiler could not obtain the compile-time declaration). **The compiler had been shouting all along; nobody was listening.**
 
-### 5. 性能：声明要有实测，剖面不作判据
+### 5. Performance: declarations need measurements, profiles are not criteria
 
-- **类型声明只加在热路径**，且**每处须给出加声明前后的实测数字**。
-  **说不出改善的声明不加**——满树加声明是噪音，不是质量。
-- **降低 `safety` 换速度须先提案裁决**：那是拿崩溃风险换性能，
-  属改变产品的失败特性。
-- **`sb-sprof` 剖面是诊断工具，不是判据。** 判据仍是回归门禁与配对基准；
-  但**「慢了 X%」不构成可行动的结论**，未达标的路径须附剖面说明瓶颈在哪。
+- **Add type declarations only on hot paths**, and **every one must come with measured numbers from before and after.** **A declaration whose improvement you cannot state is not added** — declarations sprayed across the tree are noise, not quality.
+- **Lowering `safety` for speed requires a proposal and adjudication first**: that trades crash risk for performance, which changes the product's failure characteristics.
+- **An `sb-sprof` profile is a diagnostic tool, not a criterion.** The criteria remain the regression gate and the paired benchmarks; but **"X% slower" is not an actionable conclusion**, and a path that misses the bar must attach a profile showing where the bottleneck is.
 
-### 6. 已考察并排除的能力（重提须先驳倒理由）
+### 6. Capabilities examined and excluded (raising them again requires refuting the reason first)
 
-**注意本表的含义**：排除的是"把该能力当作质量／诊断机制"，
-**不等于禁止在实现中使用**——表内已有两项正在被正常使用。
+**Note what this table means**: what is excluded is **treating the capability as a quality or diagnostic mechanism**; it **does not forbid using it in the implementation** — two entries in the table are in normal use right now.
 
-| 能力 | 不作为质量／诊断机制的理由 |
+| Capability | Reason it is not used as a quality/diagnostic mechanism |
 |---|---|
-| `sb-posix`（现用于 13 个文件）、`sb-bsd-sockets`（6 个文件） | **在用，且应继续用**。它们是工具库，**本表排除的只是"把它们当质量或诊断机制"这一用法**，不是禁止使用 |
-| `sb-md5`／`sb-rotate-byte` | 未使用且无需求；工具库，非质量或诊断机制 |
-| `sb-cltl2`（编译期环境查询） | 服务宏作者的代码生成；本项目无对应需求 |
-| `sb-introspect:function-lambda-list`（签名自省） | cadr 结构按第一节允许分岔，签名本就不应与 pi 一一对应 |
-| 条件系统用于 agent 自身错误处理 | 属改变产品可观察失败行为，须走裁决而非当作开发工具 |
-| `save-lisp-and-die` 转储故障镜像 | 单个 20 MB 量级；slynk 现场取证覆盖同一需求且更轻 |
-| `sb-ext:lock-package` 隔离扩展 | 见 `docs/open-questions.md` 的 `OQ-G20-EXTENSION-ISOLATION`：**cadr 现有隔离已强于 pi**（pi 无沙箱），加锁换不来 pi 也不具备的安全性 |
+| `sb-posix` (currently used in 13 files), `sb-bsd-sockets` (6 files) | **In use, and should stay in use.** They are utility libraries; **what this table excludes is only the use of them as a quality or diagnostic mechanism**, not their use at all |
+| `sb-md5`, `sb-rotate-byte` | Unused and not needed; utility libraries, not quality or diagnostic mechanisms |
+| `sb-cltl2` (compile-time environment queries) | Serves code generation for macro authors; this project has no corresponding need |
+| `sb-introspect:function-lambda-list` (signature introspection) | cadr's structure is permitted to diverge under section 一, so signatures should not correspond one-to-one with pi's in the first place |
+| The condition system for the agent's own error handling | That changes the product's observable failure behavior, so it goes through adjudication rather than being treated as a development tool |
+| `save-lisp-and-die` to dump a failure image | Roughly 20 MB each; slynk live evidence capture covers the same need and is lighter |
+| `sb-ext:lock-package` to isolate extensions | See `OQ-G20-EXTENSION-ISOLATION` in `docs/open-questions.md`: **cadr's existing isolation is already stronger than pi's** (pi has no sandbox), so locking buys no security pi lacks |
 
 ---
