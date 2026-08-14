@@ -91,3 +91,5 @@ python3 "$PROJECT_DIRECTORY/scripts/write-test-check-anchor.py" \
   --summary "$SUMMARY" \
   --ledger "${CADR_TEST_CHECK_LEDGER:-$PROJECT_DIRECTORY/docs/test-matrix.md}" \
   --strict
+
+python3 "$PROJECT_DIRECTORY/scripts/goal20-unpaired-paths.py" --check

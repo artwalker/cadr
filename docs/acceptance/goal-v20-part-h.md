@@ -278,26 +278,206 @@ inapplicable keys as `undefined` (present as JS properties, absent on the
 wire), `console.log`'s implicit newline missing from pi's character counts, and
 the coarse `get-internal-real-time` clock.
 
-## 6. Paths that cannot be paired
+## 6. Unpairable paths and K-advanceable share
 
-These have no pi counterpart, so no same-input pair exists. They are listed so
-the absence is a recorded decision rather than an oversight.
+Part H item 2: unpairable paths are listed with reasons, not skipped.
+Item 3: this share is the Part K advanceable surface.
 
-| cadr-only path | evidence | why unpairable |
+<!-- GOAL20_UNPAIRED_PATHS_START -->
+
+Produced by `scripts/goal20-unpaired-paths.py` from
+`docs/benchmarks/goal20-unpaired-paths.json`. Do not edit the
+tables by hand. `--check` fails when a new `src/**/*.lisp` file
+is not reflected in the booked denominator, or when a prefix
+matches nothing.
+
+Denominator: **293 files / 120,897 lines**
+(same Part I lock: `src/**/*.lisp`, `wc -l`).
+
+| class | files | lines | share of lines | Part K |
+|---|---:|---:|---:|---|
+| `paired` | 32 | 18,585 | 15.4% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,472 | 6.2% | single reference vs previous cadr |
+| `pairable-uncovered` | 237 | 94,840 | 78.4% | blocked by Part A hard condition 2 |
+
+- **Falsifiable vs baseline:** 15.4% of lines (32 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 21.6% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 78.4% of lines.
+
+H does not require the paired ratios to be ≤ 1.0×; that is Part O.
+
+### 6.1 Unpairable paths
+
+These have no same-path baseline counterpart, so no same-input pair
+exists. Absence is a recorded decision, not an oversight. A path may
+be unpairable without owning every line of a file (restarts live
+inside otherwise-pairable tool execution).
+
+| path | why unpairable | booked files |
 |---|---|---|
-| `--slynk <port>` loopback REPL service | `src/cadr-cli/remote-repl.lisp`, `src/cadr-cli/arguments.lisp` | approved Lisp-native addition; pi has no in-process REPL to feed the same input to (README "Differences from TypeScript pi"). |
-| Lisp extension host: load, compile, and dispatch | `src/cadr-agent/extensions/lifecycle.lisp`, `registration.lisp`, `examples/extensions/*.lisp` | pi extensions are JavaScript modules and npm packages, so the input artifact itself differs and "same fixture bytes" is impossible. Where extension activity reaches the JSONL or RPC wire, `scripts/event-diff.py` already compares the observable events; the load and dispatch cost has no comparable pi input. |
-| Tool-failure restarts and the `:tool-call-error` extension event | `src/cadr-agent/loop/tool-execution.lisp` | approved Lisp-native addition with no baseline path. |
-| Redacted fatal-condition summary and `0600` crash log | `src/cadr-ai/crash.lisp` | approved Goal 13 divergence: pi prints a terminal stack dump instead. The two do different work by design. |
-| SBCL native image build and process cold start | `build.sh`, `scripts/goal11-cold-start.py` | an SBCL image start against a Node bundle start measures the two runtimes. Explicitly rejected as a pair; cold start keeps its own absolute 750 ms ceiling in `scripts/goal11-performance-gate.py`. |
-| OAuth success/failure page mark | `src/cadr-ai/oauth/page.lisp` | branding-only difference (cons-cell grid instead of pi's logo). |
-| Live-credential provider calls | `test/` live suites | a network call is not a fixture. Pair 2 covers the deterministic assembly and parse; the live path stays credential-gated. |
-| Deterministic vs live test entry points, ASDF/Quicklisp build steps | `scripts/test-cl.sh`, `build.sh` | build- and test-ecosystem differences, already an approved category. |
+| --slynk loopback REPL | Approved Lisp-native addition (Goal 10 D2). The baseline has no in-process REPL that can take the same input. | `src/cadr-cli/remote-repl.lisp` |
+| Lisp extension host (load, compile, dispatch) | Baseline extensions are JavaScript modules; the input artifact differs, so same-fixture-bytes pairing is impossible. Observable wire events stay on event-diff. | `src/cadr-agent/extensions/api.lisp`<br>`src/cadr-agent/extensions/commands.lisp`<br>`src/cadr-agent/extensions/context.lisp`<br>`src/cadr-agent/extensions/lifecycle.lisp`<br>`src/cadr-agent/extensions/providers.lisp`<br>`src/cadr-agent/extensions/registration.lisp`<br>`src/cadr-agent/extensions/rendering.lisp`<br>`src/cadr-agent/extensions/snapshot.lisp` |
+| Tool-failure restarts and :tool-call-error | Approved Lisp-native addition (Goal 10 D1) with no baseline path. The default tool-execution path is still pairable and is not covered yet. | — (path, not an exclusive file) |
+| Redacted fatal-condition summary and 0600 crash log | Approved Goal 13 divergence: the baseline prints a terminal stack dump. The two do different work by design. | `src/cadr-ai/crash.lisp`<br>`src/cadr-cli/crash.lisp` |
+| SBCL native-image build and process cold start | An image start against a Node bundle start measures the two runtimes, not cadr vs baseline code. Cold start keeps its own absolute ceiling. | `src/cadr-cli/build-support.lisp` |
+| OAuth success/failure page mark | Branding-only difference (cons-cell grid instead of the baseline logo). | `src/cadr-ai/oauth/page.lisp` |
+| Live-credential provider calls | A network call is not a fixture. stream_roundtrip covers deterministic assembly and parse; the live path stays credential-gated. | — (path, not an exclusive file) |
+| ASDF/Quicklisp build and deterministic vs live test entry points | Build- and test-ecosystem difference, already an approved category. Not production src. | — (path, not an exclusive file) |
+| cadr-server session-server contract | Baseline v0.84.1 rewrote packages/server; cadr-server still speaks the v0.83 session-server contract (goal 18 L1b pending adjudication). Same-input pairing is undefined until that alignment lands. | `src/cadr-server/config.lisp`<br>`src/cadr-server/handler.lisp`<br>`src/cadr-server/ipc.lisp`<br>`src/cadr-server/main.lisp`<br>`src/cadr-server/package.lisp`<br>`src/cadr-server/protocol.lisp`<br>`src/cadr-server/radius.lisp`<br>`src/cadr-server/rpc-process.lisp`<br>`src/cadr-server/storage.lisp`<br>`src/cadr-server/supervisor.lisp`<br>`src/cadr-server/types.lisp` |
 
-`SQLite session storage` is deliberately **not** on this list: pi ships
-`packages/session-backends/sqlite-node`, so `src/cadr-agent/sqlite-storage.lisp`
-is pairable in principle and is simply not covered yet.
+`src/cadr-agent/sqlite-storage.lisp` and `src/cadr-storage/` are
+**not** unpairable: the baseline ships `packages/session-backends/sqlite-node`,
+so SQLite is pairable and simply not covered yet.
 
+### 6.2 Currently paired owners
+
+A file is `paired` when a live Part H or Goal 11 thunk names it as
+production work, not merely as a transitive callee. Callees that
+are not named stay `pairable-uncovered`.
+
+| file | lines | metrics |
+|---|---:|---|
+| `src/cadr-agent/session/codec.lisp` | 571 | `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/journal.lisp` | 648 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/migration.lisp` | 563 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-ai/json.lisp` | 551 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
+| `src/cadr-ai/provider.lisp` | 767 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/providers/openai-completions.lisp` | 859 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/sse.lisp` | 101 | `provider_stream.stream_roundtrip` |
+| `src/cadr-cli/arguments.lisp` | 734 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
+| `src/cadr-cli/bootstrap/main.lisp` | 319 | `cli_dispatch.list_models_render` |
+| `src/cadr-cli/interactive/entries.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/frame.lisp` | 238 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/state.lisp` | 298 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/status.lisp` | 456 | `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 996 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/models/registry.lisp` | 799 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/models/store.lisp` | 168 | `cli_dispatch.list_models_registry` |
+| `src/cadr-tui/components/image.lisp` | 45 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/components/markdown.lisp` | 1,564 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/components/tool-block.lisp` | 626 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/protocol.lisp` | 127 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/text-box.lisp` | 275 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/editor.lisp` | 1,989 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/input.lisp` | 376 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/keys.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/alt-screen.lisp` | 424 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,234 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/main-screen.lisp` | 614 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/terminal.lisp` | 882 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+
+### 6.3 Pairable, not yet paired
+
+Grouped by directory. Every line here still has a baseline
+counterpart; large-scale Lisp-ification is blocked until a pair
+is added or the path is booked unpairable above.
+
+| module | files | lines |
+|---|---:|---:|
+| `src/cadr-cli/interactive` | 27 | 16,273 |
+| `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
+| `src/cadr-cli/bootstrap` | 5 | 5,566 |
+| `src/cadr-tui/mermaid` | 12 | 5,048 |
+| `src/cadr-ai/providers` | 12 | 4,962 |
+| `src/cadr-cli/extensions` | 9 | 3,488 |
+| `src/cadr-cli/packages` | 6 | 3,329 |
+| `src/cadr-cli/tools` | 9 | 2,612 |
+| `src/cadr-cli/sdk` | 8 | 2,464 |
+| `src/cadr-cli/modes` | 8 | 2,317 |
+| `src/cadr-tui/latex.lisp` | 1 | 1,913 |
+| `src/cadr-ai/oauth` | 10 | 1,736 |
+| `src/cadr-agent/storage` | 4 | 1,525 |
+| `src/cadr-cli/models` | 4 | 1,498 |
+| `src/cadr-agent/loop` | 4 | 1,486 |
+| `src/cadr-ai/runtime` | 2 | 1,438 |
+| `src/cadr-cli/media.lisp` | 1 | 1,277 |
+| `src/cadr-tui/unicode.lisp` | 1 | 1,213 |
+| `src/cadr-cli/support` | 13 | 1,168 |
+| `src/cadr-ai/transport` | 2 | 1,080 |
+| `src/cadr-cli/settings` | 3 | 910 |
+| `src/cadr-agent/execution-env.lisp` | 1 | 884 |
+| `src/cadr-agent/compaction.lisp` | 1 | 860 |
+| `src/cadr-agent/sqlite-storage.lisp` | 1 | 860 |
+| `src/cadr-agent/schema.lisp` | 1 | 833 |
+| `src/cadr-ai/auth` | 5 | 820 |
+| `src/cadr-ai/support` | 7 | 819 |
+| `src/cadr-agent/resources.lisp` | 1 | 741 |
+| `src/cadr-evals/summary.lisp` | 1 | 733 |
+| `src/cadr-evals/harness.lisp` | 1 | 730 |
+| `src/cadr-tui/composition` | 2 | 697 |
+| `src/cadr-tui/terminal-image.lisp` | 1 | 677 |
+| `src/cadr-protocol/schema.lisp` | 1 | 620 |
+| `src/cadr-agent/session` | 2 | 609 |
+| `src/cadr-tui/autocomplete.lisp` | 1 | 592 |
+| `src/cadr-ai/capabilities` | 6 | 584 |
+| `src/cadr-ai/websocket.lisp` | 1 | 582 |
+| `src/cadr-tui/theme.lisp` | 1 | 563 |
+| `src/cadr-tui/components` | 2 | 561 |
+| `src/cadr-cli/migration.lisp` | 1 | 509 |
+| `src/cadr-protocol/cbor.lisp` | 1 | 508 |
+| `src/cadr-tui/overlay.lisp` | 1 | 481 |
+| `src/cadr-evals/suites.lisp` | 1 | 479 |
+| `src/cadr-ai/package.lisp` | 1 | 475 |
+| `src/cadr-agent/package.lisp` | 1 | 447 |
+| `src/cadr-agent/runtime.lisp` | 1 | 435 |
+| `src/cadr-tui/input-component.lisp` | 1 | 419 |
+| `src/cadr-ai/model-data.lisp` | 1 | 398 |
+| `src/cadr-ai/crypto.lisp` | 1 | 367 |
+| `src/cadr-cli/resource-loader.lisp` | 1 | 365 |
+| `src/cadr-evals/harness-table.lisp` | 1 | 359 |
+| `src/cadr-tui/package.lisp` | 1 | 352 |
+| `src/cadr-agent/tool.lisp` | 1 | 318 |
+| `src/cadr-evals/reporter.lisp` | 1 | 308 |
+| `src/cadr-cli/package.lisp` | 1 | 289 |
+| `src/cadr-ai/models.lisp` | 1 | 288 |
+| `src/cadr-cli/config.lisp` | 1 | 288 |
+| `src/cadr-cli/tool-manager.lisp` | 1 | 286 |
+| `src/cadr-agent/truncate.lisp` | 1 | 283 |
+| `src/cadr-agent/messages.lisp` | 1 | 243 |
+| `src/cadr-ai/types.lisp` | 1 | 230 |
+| `src/cadr-agent/proxy.lisp` | 1 | 229 |
+| `src/cadr-tui/stdin-buffer.lisp` | 1 | 229 |
+| `src/cadr-ai/images.lisp` | 1 | 222 |
+| `src/cadr-ai/auth.lisp` | 1 | 204 |
+| `src/cadr-cli/output-accumulator.lisp` | 1 | 199 |
+| `src/cadr-tui/terminal-colors.lisp` | 1 | 191 |
+| `src/cadr-agent/branch-summarization.lisp` | 1 | 187 |
+| `src/cadr-tui/keybindings.lisp` | 1 | 176 |
+| `src/cadr-ai/image-models.generated.lisp` | 1 | 173 |
+| `src/cadr-evals/artifacts.lisp` | 1 | 168 |
+| `src/cadr-evals/main.lisp` | 1 | 154 |
+| `src/cadr-protocol/framing.lisp` | 1 | 145 |
+| `src/cadr-tui/word-navigation.lisp` | 1 | 141 |
+| `src/cadr-protocol/codec.lisp` | 1 | 121 |
+| `src/cadr-tui/fuzzy.lisp` | 1 | 117 |
+| `src/cadr-cli/repl.lisp` | 1 | 112 |
+| `src/cadr-core/atomic-file.lisp` | 1 | 106 |
+| `src/cadr-evals/package.lisp` | 1 | 100 |
+| `src/cadr-core/paths.lisp` | 1 | 95 |
+| `src/cadr-agent/summarization.lisp` | 1 | 86 |
+| `src/cadr-agent/file-mutation-queue.lisp` | 1 | 84 |
+| `src/cadr-cli/truncation.lisp` | 1 | 79 |
+| `src/cadr-tui/native-modifiers.lisp` | 1 | 78 |
+| `src/cadr-core/cancellation.lisp` | 1 | 70 |
+| `src/cadr-core/time.lisp` | 1 | 66 |
+| `src/cadr-cli/system-prompt.lisp` | 1 | 53 |
+| `src/cadr-core/threads.lisp` | 1 | 47 |
+| `src/cadr-ai/conditions.lisp` | 1 | 44 |
+| `src/cadr-core/redacted-print.lisp` | 1 | 44 |
+| `src/cadr-agent/conditions.lisp` | 1 | 43 |
+| `src/cadr-core/package.lisp` | 1 | 43 |
+| `src/cadr-tui/kill-ring.lisp` | 1 | 38 |
+| `src/cadr-protocol/package.lisp` | 1 | 33 |
+| `src/cadr-tui/undo-stack.lisp` | 1 | 20 |
+| `src/cadr-storage/package.lisp` | 1 | 19 |
+| `src/cadr-storage/sqlite.lisp` | 1 | 12 |
+| `src/cadr-tui/threads.lisp` | 1 | 6 |
+
+<!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths
 
 An unpaired path must still be measured. The rule for anything in section 6,

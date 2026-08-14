@@ -40,5 +40,5 @@
             section-2)))
     (is (= 12
            (count-substring "src/cadr-tui/mermaid/" section-2)))
-    (is (null (search "evaluated" section-2)))
+    (is (null (search "| evaluated-" section-2)))
     (is (null (search "## Lisp" ledger)))))

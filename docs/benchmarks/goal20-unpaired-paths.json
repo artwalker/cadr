@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 1,
+  "denominator": {
+    "files": 293,
+    "lines": 120897
+  },
+  "pairedMetrics": [
+    "cli_dispatch.argv_parse",
+    "cli_dispatch.help_render",
+    "cli_dispatch.list_models_registry",
+    "cli_dispatch.list_models_render",
+    "provider_stream.stream_roundtrip",
+    "session_pipeline.session_load",
+    "session_pipeline.context_walk",
+    "storage_journal.journal_read",
+    "storage_journal.journal_append",
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+  ],
+  "unpairablePaths": [
+    {
+      "id": "slynk_repl",
+      "path": "--slynk loopback REPL",
+      "reason": "Approved Lisp-native addition (Goal 10 D2). The baseline has no in-process REPL that can take the same input."
+    },
+    {
+      "id": "lisp_extension_host",
+      "path": "Lisp extension host (load, compile, dispatch)",
+      "reason": "Baseline extensions are JavaScript modules; the input artifact differs, so same-fixture-bytes pairing is impossible. Observable wire events stay on event-diff."
+    },
+    {
+      "id": "tool_failure_restarts",
+      "path": "Tool-failure restarts and :tool-call-error",
+      "reason": "Approved Lisp-native addition (Goal 10 D1) with no baseline path. The default tool-execution path is still pairable and is not covered yet."
+    },
+    {
+      "id": "fatal_condition_summary",
+      "path": "Redacted fatal-condition summary and 0600 crash log",
+      "reason": "Approved Goal 13 divergence: the baseline prints a terminal stack dump. The two do different work by design."
+    },
+    {
+      "id": "native_image_cold_start",
+      "path": "SBCL native-image build and process cold start",
+      "reason": "An image start against a Node bundle start measures the two runtimes, not cadr vs baseline code. Cold start keeps its own absolute ceiling."
+    },
+    {
+      "id": "oauth_success_page_mark",
+      "path": "OAuth success/failure page mark",
+      "reason": "Branding-only difference (cons-cell grid instead of the baseline logo)."
+    },
+    {
+      "id": "live_provider_socket",
+      "path": "Live-credential provider calls",
+      "reason": "A network call is not a fixture. stream_roundtrip covers deterministic assembly and parse; the live path stays credential-gated."
+    },
+    {
+      "id": "asdf_quicklisp_build",
+      "path": "ASDF/Quicklisp build and deterministic vs live test entry points",
+      "reason": "Build- and test-ecosystem difference, already an approved category. Not production src."
+    },
+    {
+      "id": "cadr_server_v83_contract",
+      "path": "cadr-server session-server contract",
+      "reason": "Baseline v0.84.1 rewrote packages/server; cadr-server still speaks the v0.83 session-server contract (goal 18 L1b pending adjudication). Same-input pairing is undefined until that alignment lands."
+    }
+  ],
+  "fileRules": [
+    {
+      "prefix": "src/cadr-cli/remote-repl.lisp",
+      "class": "unpairable",
+      "pathId": "slynk_repl"
+    },
+    {
+      "prefix": "src/cadr-agent/extensions/",
+      "class": "unpairable",
+      "pathId": "lisp_extension_host"
+    },
+    {
+      "prefix": "src/cadr-ai/crash.lisp",
+      "class": "unpairable",
+      "pathId": "fatal_condition_summary"
+    },
+    {
+      "prefix": "src/cadr-cli/crash.lisp",
+      "class": "unpairable",
+      "pathId": "fatal_condition_summary"
+    },
+    {
+      "prefix": "src/cadr-cli/build-support.lisp",
+      "class": "unpairable",
+      "pathId": "native_image_cold_start"
+    },
+    {
+      "prefix": "src/cadr-ai/oauth/page.lisp",
+      "class": "unpairable",
+      "pathId": "oauth_success_page_mark"
+    },
+    {
+      "prefix": "src/cadr-server/",
+      "class": "unpairable",
+      "pathId": "cadr_server_v83_contract"
+    },
+    {
+      "prefix": "src/cadr-cli/arguments.lisp",
+      "class": "paired",
+      "metrics": ["cli_dispatch.argv_parse", "cli_dispatch.help_render"]
+    },
+    {
+      "prefix": "src/cadr-cli/models/registry.lisp",
+      "class": "paired",
+      "metrics": ["cli_dispatch.list_models_registry"]
+    },
+    {
+      "prefix": "src/cadr-cli/models/store.lisp",
+      "class": "paired",
+      "metrics": ["cli_dispatch.list_models_registry"]
+    },
+    {
+      "prefix": "src/cadr-cli/bootstrap/main.lisp",
+      "class": "paired",
+      "metrics": ["cli_dispatch.list_models_render"]
+    },
+    {
+      "prefix": "src/cadr-ai/provider.lisp",
+      "class": "paired",
+      "metrics": ["provider_stream.stream_roundtrip"]
+    },
+    {
+      "prefix": "src/cadr-ai/providers/openai-completions.lisp",
+      "class": "paired",
+      "metrics": ["provider_stream.stream_roundtrip"]
+    },
+    {
+      "prefix": "src/cadr-ai/sse.lisp",
+      "class": "paired",
+      "metrics": ["provider_stream.stream_roundtrip"]
+    },
+    {
+      "prefix": "src/cadr-ai/json.lisp",
+      "class": "paired",
+      "metrics": [
+        "provider_stream.stream_roundtrip",
+        "storage_journal.journal_read",
+        "storage_journal.journal_append",
+        "session_pipeline.session_load"
+      ]
+    },
+    {
+      "prefix": "src/cadr-agent/session/migration.lisp",
+      "class": "paired",
+      "metrics": ["session_pipeline.session_load", "storage_journal.journal_read"]
+    },
+    {
+      "prefix": "src/cadr-agent/session/journal.lisp",
+      "class": "paired",
+      "metrics": ["session_pipeline.context_walk", "storage_journal.journal_append"]
+    },
+    {
+      "prefix": "src/cadr-agent/session/codec.lisp",
+      "class": "paired",
+      "metrics": ["storage_journal.journal_read", "storage_journal.journal_append"]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/frame.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/state.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/entries.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/tool-rendering.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-cli/interactive/status.lisp",
+      "class": "paired",
+      "metrics": ["goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/editor.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/input.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/terminal.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/keys.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/renderer/",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/components/markdown.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/components/tool-block.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/components/image.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/composition/root.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/composition/protocol.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/composition/rich-content.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    },
+    {
+      "prefix": "src/cadr-tui/composition/text-box.lisp",
+      "class": "paired",
+      "metrics": ["goal11.mouse_drag", "goal11.wheel", "goal11.continuous_alt_input"]
+    }
+  ]
+}

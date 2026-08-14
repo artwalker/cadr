@@ -627,3 +627,11 @@ by `scripts/goal20-profile.sh`. Diagnostic only; not a gate. N2.9 asked
 for package-level profiles next to the totals; the flat reports live in
 that file so a later ledger rewrite cannot wipe them.
 
+## Goal 20 Part H unpairable paths
+
+Which production Lisp files can currently falsify "no worse than the
+baseline", which are booked unpairable (single reference), and which
+still block Part K, is generated in
+[`acceptance/goal-v20-part-h.md`](acceptance/goal-v20-part-h.md) §6
+by `scripts/goal20-unpaired-paths.py`. Do not hand-edit those tables.
+

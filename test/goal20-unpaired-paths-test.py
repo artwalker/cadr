@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+import importlib.util
+import json
+import tempfile
+import unittest
+from pathlib import Path
+
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def load_script():
+    spec = importlib.util.spec_from_file_location(
+        "goal20_unpaired_paths",
+        ROOT / "scripts" / "goal20-unpaired-paths.py",
+    )
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+MODULE = load_script()
+
+
+class TestClassify(unittest.TestCase):
+    def test_longest_prefix_wins(self) -> None:
+        rules = [
+            {"prefix": "src/cadr-tui/", "class": "unpairable", "pathId": "x"},
+            {
+                "prefix": "src/cadr-tui/renderer/",
+                "class": "paired",
+                "metrics": ["goal11.mouse_drag"],
+            },
+        ]
+        hit = MODULE.classify("src/cadr-tui/renderer/main-screen.lisp", rules)
+        self.assertEqual(hit["class"], "paired")
+        miss = MODULE.classify("src/cadr-cli/repl.lisp", rules)
+        self.assertEqual(miss["class"], "pairable-uncovered")
+
+    def test_inventory_classifies_the_locked_tree(self) -> None:
+        inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
+        classified = MODULE.classify_tree(ROOT, inventory)
+        self.assertEqual(classified["files"], 293)
+        self.assertEqual(classified["lines"], 120897)
+        totals = classified["totals"]
+        self.assertEqual(
+            totals["paired"]["files"]
+            + totals["unpairable"]["files"]
+            + totals["pairable-uncovered"]["files"],
+            293,
+        )
+        self.assertGreater(totals["pairable-uncovered"]["lines"], totals["paired"]["lines"])
+        sqlite = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-agent/sqlite-storage.lisp"
+        ]
+        self.assertEqual(len(sqlite), 1)
+        self.assertEqual(sqlite[0]["class"], "pairable-uncovered")
+
+    def test_stale_denominator_fails_closed(self) -> None:
+        inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
+        inventory = json.loads(json.dumps(inventory))
+        inventory["denominator"]["files"] = 1
+        with self.assertRaises(MODULE.GateError) as raised:
+            MODULE.classify_tree(ROOT, inventory)
+        self.assertIn("denominator drifted", str(raised.exception))
+
+    def test_unused_prefix_fails_closed(self) -> None:
+        inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
+        inventory = json.loads(json.dumps(inventory))
+        inventory["fileRules"].append(
+            {
+                "prefix": "src/cadr-cli/does-not-exist.lisp",
+                "class": "paired",
+                "metrics": ["cli_dispatch.argv_parse"],
+            }
+        )
+        with self.assertRaises(MODULE.GateError) as raised:
+            MODULE.classify_tree(ROOT, inventory)
+        self.assertIn("matched no Lisp file", str(raised.exception))
+
+    def test_check_accepts_the_written_ledger(self) -> None:
+        inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
+        classified = MODULE.classify_tree(ROOT, inventory)
+        MODULE.check_ledger(ROOT, inventory, classified)
+
+    def test_replace_refuses_missing_markers(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "ledger.md"
+            path.write_text("# no markers\n", encoding="utf-8")
+            with self.assertRaises(MODULE.GateError):
+                MODULE.replace_marked_section(path.read_text(encoding="utf-8"), "x")
+
+
+if __name__ == "__main__":
+    unittest.main()

@@ -82,6 +82,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: `scripts/goal20-unpaired-paths.py` books which
+  `src/**/*.lisp` files are paired, unpairable, or still uncovered.
+  The report is section 6 of `docs/acceptance/goal-v20-part-h.md`.
+
 - Goal 20 Part O: `scripts/goal20-profile.sh` captures `sb-sprof` for
   paired paths that still miss 1.0×; the report is
   `docs/benchmarks/goal20-part-o-remaining-sprof.md`.
