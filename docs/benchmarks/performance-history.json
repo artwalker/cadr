@@ -72,6 +72,15 @@
       "coldStartMedianUs": 259739.71875,
       "frame5000MedianUs": 0.0,
       "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T10:03:37Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 270719.96875,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
     }
   ]
 }
