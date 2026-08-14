@@ -353,6 +353,22 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertEqual(pi.name, "render-sessions")
         self.assertEqual(cadr.name, "render-sessions")
 
+    def test_fixed_environment_isolates_chalk_style_kills(self) -> None:
+        # Agent hosts leak NO_COLOR=1 and FORCE_COLOR=0. Chalk then drops
+        # bold/dim/underline while theme RGB still prints, which the gate
+        # records as 251 pi-only I04 pair drifts.
+        with mock.patch.dict(
+            os.environ, {"NO_COLOR": "1", "FORCE_COLOR": "0", "TERM": "dumb"}, clear=False
+        ):
+            with tempfile.TemporaryDirectory(prefix="cadr-render-env-") as temporary:
+                env = RENDER_DIFF.fixed_environment(
+                    Path(temporary), 100, 32, Path(temporary) / "ready"
+                )
+        self.assertNotIn("NO_COLOR", env)
+        self.assertEqual(env["FORCE_COLOR"], "3")
+        self.assertEqual(env["TERM"], "xterm-256color")
+        self.assertEqual(env["COLORTERM"], "truecolor")
+
     def test_captured_processes_pin_ripgrep_to_the_deterministic_walker(self) -> None:
         # Both products invoke rg without --sort, so result order follows
         # rg's parallel walker and flips under gate load.  The harness must
@@ -378,6 +394,7 @@ class RenderDiffGateTest(unittest.TestCase):
             for dimension in manifest["dimensions"]
             for scenario in manifest["scenarios"]
             if scenario.get("tier", "core") == "core"
+            and RENDER_DIFF.scenario_allows_dimension(scenario, dimension["id"])
         ]
         calls: list[tuple[str, str, str]] = []
         caches: list[Path] = []
@@ -395,10 +412,13 @@ class RenderDiffGateTest(unittest.TestCase):
                 self.assertEqual(RENDER_DIFF.gate(arguments), 0)
 
         self.assertEqual(calls, expected)
-        self.assertEqual(
-            len(calls),
-            len([s for s in manifest["scenarios"] if s.get("tier", "core") == "core"])
-            * len(manifest["dimensions"]),
+        self.assertEqual(len(calls), len(expected))
+        self.assertTrue(
+            any(
+                scenario["id"] == "example-space-invaders"
+                and not RENDER_DIFF.scenario_allows_dimension(scenario, "narrow")
+                for scenario in manifest["scenarios"]
+            )
         )
         self.assertEqual(len(set(caches)), 1)
         self.assertEqual(caches[0], arguments.output.resolve() / ".cadr-cache")
@@ -707,6 +727,23 @@ class RenderDiffGateTest(unittest.TestCase):
             RENDER_DIFF.normalize_fixed_values(ordinary_message), ordinary_message
         )
 
+    def test_node_inspect_stack_colors_do_not_break_driver_location(self) -> None:
+        # FORCE_COLOR=3 (required for chalk bold) also turns on Node 22
+        # stack gray. The 39m closer lands mid-path and would leave the
+        # driver line number in the I04 screen.
+        colored = (
+            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-53fa77ccd/"
+            b"packages/coding-agent/\x1b[39mtest/goal15-render-driver.ts:1068:12"
+            b"\x1b[90m)\x1b[39m\n"
+            b"\x1b[90m    at listOnTimeout (node:internal/timers:588:17)\x1b[39m"
+        )
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(colored, "pi"),
+            b"    at Timeout.<anonymous> (<PI_BASELINE>/packages/coding-agent/test/"
+            b"goal15-render-driver.ts:<DRIVER_LINE>:<DRIVER_COLUMN>)\n"
+            b"    at listOnTimeout (node:internal/timers:588:17)",
+        )
+
     def test_wrapped_fatal_crash_values_are_normalized_only_in_crash_output(self) -> None:
         cadr = (
             b"Fatal error: forced render crash\n"
@@ -818,9 +855,13 @@ class RenderDiffGateTest(unittest.TestCase):
                 return_value=None,
             ) as tool_definitions, mock.patch.object(RENDER_DIFF, "analyze", return_value=0):
                 self.assertEqual(RENDER_DIFF.gate(arguments), 0)
-        self.assertEqual(
-            len(calls), 2 * len(manifest["scenarios"]) * len(manifest["dimensions"])
+        pairs = sum(
+            1
+            for dimension in manifest["dimensions"]
+            for scenario in manifest["scenarios"]
+            if RENDER_DIFF.scenario_allows_dimension(scenario, dimension["id"])
         )
+        self.assertEqual(len(calls), 2 * pairs)
         self.assertEqual(sum(call.endswith(":both") for call in calls), len(calls) // 2)
         self.assertEqual(sum(call.endswith(":pi") for call in calls), len(calls) // 2)
         construct.assert_called_once_with(

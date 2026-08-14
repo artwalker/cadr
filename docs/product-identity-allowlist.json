@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 447,
+  "expected_findings": 629,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -913,6 +913,86 @@
       "line": "        (b\"extend Pi.\", b\"extend <PRODUCT_TITLE>.\"),",
       "occurrences": 1,
       "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    narrow 48-column fixture (pi aborts: line exceeds terminal width).\"\"\"",
+      "occurrences": 1,
+      "reason": "Comment records why invaders is wide-only: baseline pi rejects a 60-column board on the 48-column fixture."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    # Chalk (pi theme bold/dim/underline) treats a present NO_COLOR key as",
+      "occurrences": 1,
+      "reason": "Harness comment names the baseline chalk theme so FORCE_COLOR isolation stays explained."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            b\"pi\\x1b[38;2;102;102;102m v0.84.1\",",
+      "occurrences": 1,
+      "reason": "I04 normalizer maps the unbold baseline banner bytes onto the product placeholder."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        unbold_pi_header = (",
+      "occurrences": 1,
+      "reason": "Self-test identifier for the unbold baseline banner fixture."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if normalize_fixed_values(unbold_pi_header) != unbold_expected:",
+      "occurrences": 1,
+      "reason": "Self-test compares unbold baseline banner bytes after I04 normalization."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            raise HarnessFailure(\"pi unbold product header normalization drifted\")",
+      "occurrences": 1,
+      "reason": "HarnessFailure text names the baseline side whose unbold banner must stay normalized."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        bold_pi_header = (",
+      "occurrences": 1,
+      "reason": "Self-test identifier for the bold baseline banner fixture."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if normalize_fixed_values(unbold_pi_header) != normalize_fixed_values(",
+      "occurrences": 1,
+      "reason": "Self-test requires bold and unbold baseline banners to share one I04 pair."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            bold_pi_header",
+      "occurrences": 1,
+      "reason": "Self-test argument naming the bold baseline banner fixture."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                \"bold and unbold pi headers must normalize to one I04 pair\"",
+      "occurrences": 1,
+      "reason": "HarnessFailure text for the I04 banner-unification self-test."
     },
     {
       "path": "scripts/render-diff.py",
@@ -2214,31 +2294,7 @@
       "path": "src/cadr-ai/support/release.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "   \"~A ~A · aligned with pi ~A (+~D, ~A)\"",
-      "occurrences": 1,
-      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "   +cadr-aligned-pi-commit+))",
-      "occurrences": 1,
-      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "   +cadr-aligned-pi-distance+",
-      "occurrences": 1,
-      "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "   +cadr-aligned-pi-release+",
+      "line": "     \"~A ~A · aligned with pi ~A (+~D, ~A)\"",
       "occurrences": 1,
       "reason": "Approved release identity states alignment with the fixed pi release, distance, and commit."
     },
@@ -2251,28 +2307,12 @@
       "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
     },
     {
-      "path": "src/cadr-ai/support/release.lisp",
+      "path": "src/cadr-ai/providers/definitions.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  (defparameter +cadr-aligned-pi-commit+ short-commit))",
+      "line": "     . \"Trace metadata naming the pi source line; not a baseline runtime field.\")))",
       "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "  (defparameter +cadr-aligned-pi-distance+ distance)",
-      "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
-    },
-    {
-      "path": "src/cadr-ai/support/release.lisp",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "  (defparameter +cadr-aligned-pi-release+ release)",
-      "occurrences": 1,
-      "reason": "Release identity names the aligned pi baseline; reference, not Cadr identity."
+      "reason": "Slot-exclusion note names the pi source line the metadata points at; not Cadr identity."
     },
     {
       "path": "src/cadr-cli/arguments.lisp",
@@ -3273,6 +3313,1134 @@
       "line": "single CJK characters, and word runs (pi@53fa77ccd",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.1 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "scripts/goal11-performance-gate.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"\"\"Host match between a cadr report and a pi report.",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-performance-gate.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    compare on the host that produced both halves, so every pi-paired gate",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-performance-gate.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi as machine.hostname (os.hostname()).  Absolute microseconds only",
+      "occurrences": 1,
+      "reason": "Goal 11 fixed-baseline performance artifact or driver identity; required to distinguish pi measurements from Cadr."
+    },
+    {
+      "path": "scripts/goal11-pi-baseline-bench.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "const gitRepoDir = existsSync(path.join(baselineDirectory, \".git\")) ? baselineDirectory : \"/root/projects/pi-mono\";",
+      "occurrences": 1,
+      "reason": "Goal 11 pi-side driver provenance: when the baseline cache is not a git checkout it falls back to the local pi repository clone to resolve the pinned pi git object ids."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "             ;; pi's vocabulary without inventing a second map.",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; (test/cadr-ai/provider-streams-test.lisp).  pi's is",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; CLI dispatch pair the same models.json and auth.json bytes pi reads.",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; directory has to exist and pi has to pass the same resolved path for the",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; pi returns thinkingLevel and model from buildSessionContext; cadr keeps",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; ratio into noise.  CLOCK_MONOTONIC matches what pi's",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;; the registry can read auth.json, which is also what pi's",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;;; Goal 11 paired cadr against pi on three TUI-input ratios only (mouse",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;;; paired, so \"no worse than pi\" was unfalsifiable for cadr-cli, cadr-ai,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": ";;;; scripts/goal20-paired-paths.mjs feeds to pi;",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H cadr-side driver: comments document which pi code path each measurement pairs against so the pairing stays auditable."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tkind: \"pi-goal20-part-h-paired-paths\",",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "//     scripts/goal20-paired-paths.mjs /tmp/cadr-render-diff-pi-53fa77ccd",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "//   /tmp/cadr-render-diff-pi-53fa77ccd/node_modules/.bin/tsx \\",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// Goal 11 paired cadr against pi on three TUI-input ratios only (mouse",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// Goal 20 Part H: pi side of the non-TUI paired benchmarks.",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// Run it through the baseline's own tsx so the pi sources load unbuilt:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// Statistics: same shape as scripts/goal11-bench.lisp / goal11-pi-baseline-bench.mjs",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// pi module loading",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// pi's documented transport seam is ProviderRequestOptions.fetch; cadr's is",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// the pi half of four such paths; scripts/goal20-paired-paths.lisp measures",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "// zero paired coverage, so \"no worse than pi\" was unfalsifiable for the",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "const scratch = mkdtempSync(path.join(tmpdir(), \"goal20-pi-paired-\"));",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: cli_dispatch\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: provider_stream\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: session_pipeline\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: storage_journal\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H pi-side driver: runs inside the pi baseline checkout and must name pi in its report kind, usage text, and progress messages to distinguish the pi half from the cadr half."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "legacy-env",
+      "token": "PI_KIND",
+      "line": "    check(pi[\"kind\"] == PI_KIND, f\"pi report kind is {pi['kind']!r}\", failures)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "legacy-env",
+      "token": "PI_KIND",
+      "line": "PI_KIND = \"pi-goal20-part-h-paired-paths\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "legacy-env",
+      "token": "PI_ROLE_FOLD",
+      "line": "        key = PI_ROLE_FOLD.get(role, role)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "legacy-env",
+      "token": "PI_ROLE_FOLD",
+      "line": "PI_ROLE_FOLD = {\"compactionSummary\": \"user\", \"custom\": \"user\"}",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "        pi[\"provenance\"][\"source_revision\"] == EXPECTED_PI_REVISION,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "EXPECTED_PI_REVISION = _baseline_anchor.read_baseline(PROJECT_DIRECTORY)[\"commit\"]",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                            / max(1e-9, pi[\"metrics\"][group][name][\"median_us\"])",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                    f\"limit={limit:.2f}us ({ratio:.2f}x pi, ceiling {ceiling:.2f}x)\",",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                cadr_observed[key] == pi_observed[key],",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                f\"provider_stream event kind {kind} differs: pi={pi_count} cadr={cadr_count}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                f\"{group}.{key} differs: pi={pi_observed[key]!r} cadr={cadr_observed[key]!r}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                pi_count == cadr_count,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                pi_metric[\"median_us\"], pi_metric[\"mad_us\"], cadr_metric[\"mad_us\"], ceiling",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            (pi_count, cadr_count) == (recorded[\"pi\"], recorded[\"cadr\"]),",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            bound = \"ratio\" if ceiling * pi_metric[\"median_us\"] >= limit else \"variance\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            cadr[\"parameters\"][field] == pi[\"parameters\"][field],",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            cadr_journal[\"written_body_bytes\"] / pi_journal[\"written_body_bytes\"] - 1,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            cadr_journal[field] <= JOURNAL_BYTE_TOLERANCE * pi_journal[field],",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            f\"cadr {field} exceeds {JOURNAL_BYTE_TOLERANCE:.2f}x pi: \"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            f\"cadr={recorded['cadr']}, got pi={pi_count} cadr={cadr_count}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            f\"pi={pi_journal[field]} cadr={cadr_journal[field]}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            f\"recorded {kind} divergence moved: expected pi={recorded['pi']} \"",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            if sorted(pi_leaves.get(path, [])) != sorted(cadr_leaves.get(path, [])):",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            notes += check_journals(arguments.pi_journal, arguments.cadr_journal, failures)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            pi_journal[\"written_body_bytes\"],",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            pi_metric = pi[\"metrics\"][group][name]",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            raise ValueError(\"--cadr-journal and --pi-journal must be given together\")",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            ratio = cadr_metric[\"median_us\"] / max(1e-9, pi_metric[\"median_us\"])",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        \"journal_body_bytes=pi{}/cadr{} ({:+.1%})\".format(",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        \"pi report was not produced from the pinned baseline revision\",",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        == pi[\"provenance\"][\"staged_agent_dir_sha256\"],",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        abs(cadr_help - pi_help) <= HELP_CHARACTER_TOLERANCE * pi_help,",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        cadr_journal[\"journal_cwd\"].rstrip(\"/\") == pi_journal[\"journal_cwd\"].rstrip(\"/\"),",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        cadr_roles == pi_roles,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        ceiling * pi_median,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        check_parameters(cadr, pi, failures)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        check_provenance(cadr, pi, failures)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"context message roles differ after folding pi's synthetic roles: \"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"pi={len(pi_entries)} cadr={len(cadr_entries)}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"pi={pi_help} cadr={cadr_help}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"pi={pi_roles!r} cadr={cadr_roles!r}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        f\"pi_host={pi['machine']['hostname']}\",",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        for entry in (pi_entry, cadr_entry):",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        for path in set(pi_leaves) | set(cadr_leaves):",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        host_match = goal11.same_machine(cadr, pi)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if bool(arguments.cadr_journal) != bool(arguments.pi_journal):",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        len(pi_entries) == len(cadr_entries),",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        notes += check_observed(cadr, pi, failures)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        notes.append(f\"known_divergence:event_kind:{kind}=pi{pi_count}/cadr{cadr_count}\")",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi = load_json(arguments.pi)",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi[\"provenance\"][\"source_revision\"] == EXPECTED_PI_REVISION,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_count = pi_kinds.get(kind)",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_leaves, cadr_leaves = stripped",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_median + max(MICROSECOND_FLOOR_US, 6 * max(pi_mad, cadr_mad)),",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_observed = pi[\"metrics\"][group][\"observed\"]",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        quick = bool(cadr[\"parameters\"][\"quick\"] or pi[\"parameters\"][\"quick\"])",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        ratios = check_ratios(cadr, pi, enforced, failures)",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        sorted(cadr_kinds) == sorted(pi_kinds),",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      --cadr /tmp/goal20-cadr.json --pi /tmp/goal20-pi.json \\",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "      [--cadr-journal /tmp/cadr.jsonl --pi-journal /tmp/pi.jsonl] \\",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"toolcall_delta\": {\"pi\": 6, \"cadr\": 5},",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    # pi emits a toolcall_delta for the opening tool-call chunk even though it",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    check(pi[\"kind\"] == PI_KIND, f\"pi report kind is {pi['kind']!r}\", failures)",
+      "occurrences": 3,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    check(pi[\"schema_version\"] == 1, \"pi report schema_version is not 1\", failures)",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    differing = differing_journal_keys(pi_entries[1:], cadr_entries[1:])",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    for kind in sorted(set(cadr_kinds) | set(pi_kinds)):",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    for label, report in ((\"cadr\", cadr), (\"pi\", pi)):",
+      "occurrences": 4,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    for pi_entry, cadr_entry in zip(pi_entries, cadr_entries):",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    notes.append(f\"help_characters=pi{pi_help}/cadr{cadr_help}\")",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    parser.add_argument(\"--pi\", required=True, help=\"scripts/goal20-paired-paths.mjs report\")",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    parser.add_argument(\"--pi-journal\", help=\"journal written by --keep-journal (pi side)\")",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi_entries = [json.loads(line) for line in Path(pi_path).read_text(encoding=\"utf-8\").splitlines()]",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi_help = pi[\"metrics\"][\"cli_dispatch\"][\"observed\"][\"help_characters\"]",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi_journal = pi[\"metrics\"][\"storage_journal\"][\"observed\"]",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi_kinds = pi[\"metrics\"][\"provider_stream\"][\"observed\"][\"event_kind_counts\"]",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    pi_roles = fold_pi_roles(pi[\"metrics\"][\"session_pipeline\"][\"observed\"][\"context_message_roles\"])",
+      "occurrences": 3,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\"\"\"Goal 20 Part H: pair the cadr and pi non-TUI benchmark reports.",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# (session-messages in src/cadr-agent/session/journal.lisp).  Folding pi's",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# Divergences the pairing found that are real cadr-vs-pi gaps rather than",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# Recorded cadr/pi median ratios plus headroom.  Observed spread over repeated",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# The pi revision is owned by the BASELINE anchor (goal 18 L2.1); deriving it",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# cadr's help text is the pi text with the product-identity renames applied,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# cadr's session codec writes a few fields differently from pi's (see the",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# pi tags the messages it synthesises from compaction and custom entries with",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# pi's help render lands under a microsecond and its run-to-run swing alone",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# state so further drift fails; they are NOT a claim that cadr matches pi on",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "# swings on pi's own jitter; the MICROSECOND_FLOOR_US term below, not the ratio,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Goal 11 paired cadr against pi on three TUI-input ratios (mouse drag, wheel,",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_KIND = \"pi-goal20-part-h-paired-paths\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_journals(pi_path: str, cadr_path: str, failures: list[str]) -> list[str]:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_observed(cadr: dict, pi: dict, failures: list[str]) -> list[str]:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_parameters(cadr: dict, pi: dict, failures: list[str]) -> None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_provenance(cadr: dict, pi: dict, failures: list[str]) -> None:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def check_ratios(cadr: dict, pi: dict, enforced: bool, failures: list[str]) -> list[str]:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def differing_journal_keys(pi_entries: list[dict], cadr_entries: list[dict]) -> set[str]:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def fold_pi_roles(roles: dict) -> dict:",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "def paired_limit_us(pi_median: float, pi_mad: float, cadr_mad: float, ceiling: float) -> float:",
+      "occurrences": 2,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "than pi\" was unfalsifiable for the CLI, provider, agent-session, and storage",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H comparator: validates and compares the cadr and pi halves of the paired non-TUI benchmarks; pi names identify the pi report kind, CLI flags, provenance pins, ratio messages, and the comments documenting which pi behavior each check pairs against."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "legacy-env",
+      "token": "PI_JOURNAL",
+      "line": "  $BENCH_ARGUMENTS --keep-journal \"$PI_JOURNAL\" --output \"$PI_REPORT\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "legacy-env",
+      "token": "PI_JOURNAL",
+      "line": "  --pi-journal \"$PI_JOURNAL\" \\",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "legacy-env",
+      "token": "PI_JOURNAL",
+      "line": "PI_JOURNAL=\"$OUTPUT_DIRECTORY/pi-journal.jsonl\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "legacy-env",
+      "token": "PI_REPORT",
+      "line": "  $BENCH_ARGUMENTS --keep-journal \"$PI_JOURNAL\" --output \"$PI_REPORT\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "legacy-env",
+      "token": "PI_REPORT",
+      "line": "  --pi \"$PI_REPORT\" \\",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "legacy-env",
+      "token": "PI_REPORT",
+      "line": "PI_REPORT=\"$OUTPUT_DIRECTORY/pi.json\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-53fa77ccd}\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  --pi \"$PI_REPORT\" \\",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  --pi-journal \"$PI_JOURNAL\" \\",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  echo \"goal20 paired paths: pi baseline tsx not found at $TSX_COMMAND.\" >&2",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-53fa77ccd}\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_JOURNAL=\"$OUTPUT_DIRECTORY/pi-journal.jsonl\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_REPORT=\"$OUTPUT_DIRECTORY/pi.json\"",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
     }
   ],
   "opaque_files": [

@@ -1,6 +1,7 @@
 import { appendFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { createServer } from "node:http";
 import { dirname, isAbsolute, join, relative, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ToolResultMessage } from "@earendil-works/pi-ai";
 import { fauxAssistantMessage, fauxThinking, fauxToolCall, registerFauxProvider } from "@earendil-works/pi-ai/compat";
 import { getCapabilities, setCapabilities } from "@earendil-works/pi-tui";
@@ -180,6 +181,7 @@ interface ScenarioSetup {
 	mainArgv?: string[];
 	pickerSessions?: ExtraSessionFixture[];
 	updateNotifications?: boolean;
+	exampleExtensions?: string[];
 }
 
 interface FixtureFile {
@@ -264,6 +266,66 @@ function materializeFixtureFiles(
 		const path = resolveFixturePath(fixtureRoot(file.root, cwd, agentDir, sessionDir), file.path);
 		mkdirSync(dirname(path), { recursive: true });
 		writeFileSync(path, file.content, "utf8");
+	}
+}
+
+function applyExampleHarnessDeterminism(name: string, source: string): string {
+	let text = `Math.random = () => 0;\n${source}`;
+	text = text.replaceAll(
+		"this.interval = setInterval(",
+		"this.interval = process.env.RENDER_DIFF_READY_PATH ? (null as never) : setInterval(",
+	);
+	if (name === "snake") {
+		const needle =
+			"\t\t} else if (matchesKey(data, \"left\") || data === \"a\" || data === \"A\") {\n" +
+			"\t\t\tif (this.state.direction !== \"right\") this.state.nextDirection = \"left\";\n" +
+			"\t\t}";
+		const replacement =
+			`${needle}\n` +
+			"\t\tif (process.env.RENDER_DIFF_READY_PATH && !this.state.gameOver) {\n" +
+			"\t\t\tthis.tick();\n" +
+			"\t\t\tthis.version++;\n" +
+			"\t\t\tthis.tui.requestRender();\n" +
+			"\t\t}";
+		if (!text.includes(needle)) {
+			throw new Error("snake.ts handleInput shape changed; cannot apply harness tick hook");
+		}
+		text = text.replace(needle, replacement);
+	}
+	return text;
+}
+
+function exampleExtensionToolNames(names: readonly string[]): string[] {
+	const toolsByExample: Record<string, readonly string[]> = {
+		hello: ["hello"],
+		todo: ["todo"],
+		"reload-runtime": ["reload_runtime"],
+	};
+	return names.flatMap((name) => [...(toolsByExample[name] ?? [])]);
+}
+
+function materializeExampleExtensions(names: readonly string[], agentDir: string): void {
+	if (names.length === 0) {
+		return;
+	}
+	const sourceDirectory = join(
+		dirname(fileURLToPath(import.meta.url)),
+		"..",
+		"examples",
+		"extensions",
+	);
+	const destinationDirectory = join(agentDir, "extensions");
+	mkdirSync(destinationDirectory, { recursive: true });
+	for (const name of names) {
+		const source = join(sourceDirectory, `${name}.ts`);
+		if (!existsSync(source)) {
+			throw new Error(`Unknown baseline example extension: ${source}`);
+		}
+		let text = readFileSync(source, "utf8");
+		if (process.env.RENDER_DIFF_READY_PATH) {
+			text = applyExampleHarnessDeterminism(name, text);
+		}
+		writeFileSync(join(destinationDirectory, `${name}.ts`), text, "utf8");
 	}
 }
 
@@ -721,6 +783,7 @@ async function main(): Promise<void> {
 	process.env.PI_OFFLINE = "1";
 	const scenario = loadScenario(manifestPath, scenarioId);
 	materializeFixtureFiles(scenario.setup?.fixtureFiles ?? [], cwd, agentDir, sessionDir);
+	materializeExampleExtensions(scenario.setup?.exampleExtensions ?? [], agentDir);
 	if (scenario.setup?.trustSavedDecision) {
 		const decision = scenario.setup.trustSavedDecision;
 		new ProjectTrustStore(agentDir).set(decision.scope === "parent" ? dirname(cwd) : cwd, decision.decision);
@@ -926,7 +989,10 @@ async function main(): Promise<void> {
 		model,
 		resourceLoaderOptions: {
 			systemPrompt: "Render differential fixed system prompt.",
-			noExtensions: !(scenario.setup?.resources?.extensions ?? false),
+			noExtensions: !(
+				(scenario.setup?.resources?.extensions ?? false) ||
+				((scenario.setup?.exampleExtensions?.length ?? 0) > 0)
+			),
 			noSkills: !(scenario.setup?.resources?.skills ?? false),
 			noPromptTemplates: !(scenario.setup?.resources?.promptTemplates ?? false),
 			noThemes: !(scenario.setup?.resources?.themes ?? false),
@@ -942,7 +1008,16 @@ async function main(): Promise<void> {
 				sessionStartEvent,
 				model,
 				thinkingLevel: "high",
-				tools: ["read", "bash", "edit", "write", "grep", "find", "ls"],
+				tools: [
+					"read",
+					"bash",
+					"edit",
+					"write",
+					"grep",
+					"find",
+					"ls",
+					...exampleExtensionToolNames(scenario.setup?.exampleExtensions ?? []),
+				],
 				scopedModels:
 					scenario.setup?.enabledModelIds === undefined && comparisonProvidersEnabled(scenario) && otherModel
 						? [{ model }, { model: otherModel }]

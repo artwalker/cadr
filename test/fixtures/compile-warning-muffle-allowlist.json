@@ -1,0 +1,8 @@
+{
+  "entries": [
+    {
+      "path": "src/cadr-cli/extensions/loader.lisp",
+      "reason": "Muffles warnings while loading user extensions, not cadr's own compile. Policy section 6.4 exemption."
+    }
+  ]
+}

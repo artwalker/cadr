@@ -2168,16 +2168,26 @@ interactive-mode.ts:5956-5960).")
                                  option)
                                 (and (stringp selection) selection)
                                 auth-path))
+                              (when (consp selection)
+                                (error
+                                 'cadr-ai:configuration-error
+                                 :message
+                                 (post-login-selection-error
+                                  "Saved API key for"
+                                  (oauth-selector-option-name option)
+                                  provider
+                                  (first selection)
+                                  (second selection))))
                               (when (eq selection :no-default-model)
                                 (error
                                  'cadr-ai:configuration-error
                                  :message
-                                 (format
-                                  nil
-                                  "Saved API key for ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
-                                  (oauth-selector-option-name
-                                   option)
-                                  provider))))))))
+                                 (post-login-selection-error
+                                  "Saved API key for"
+                                  (oauth-selector-option-name option)
+                                  provider
+                                  :no-default-model
+                                  nil))))))))
                    (:trust
                     (when on-trust-selected
                       (funcall

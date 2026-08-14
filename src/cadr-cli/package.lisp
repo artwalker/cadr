@@ -38,6 +38,10 @@
    #:model-registry-all
    #:model-registry-find
    #:model-registry-error
+   #:provider-default-model-id
+   #:classify-post-login-model
+   #:post-login-selection-error
+   #:post-login-selection-result
    #:resolve-scoped-models
    #:resolve-model
    #:parse-model-spec

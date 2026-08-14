@@ -33,7 +33,18 @@
               (cadr-ai::json-get scenario "tier" "core")
               "full"))
            scenarios)))
-    (values (length core) (length scenarios))))
+    (values
+     (length core)
+     (length scenarios)
+     (goal18-scenario-capture-count core)
+     (goal18-scenario-capture-count scenarios))))
+
+(defun goal18-scenario-capture-count (scenarios)
+  (loop for scenario in scenarios
+        for declared = (cadr-ai::json-get scenario "dimensions")
+        sum (if declared
+                (length (goal18-json-array declared))
+                2)))
 
 (defun goal18-visible-string-counts (root)
   (let* ((data
@@ -64,7 +75,7 @@
 
 (test goal18-presentation-ledger-numbers-match-the-real-artifacts
   (let ((root (asdf:system-source-directory "cadr-cli")))
-    (multiple-value-bind (core-count full-count)
+    (multiple-value-bind (core-count full-count core-captures full-captures)
         (goal18-scenario-counts root)
       (multiple-value-bind (sites branches)
           (goal18-visible-string-counts root)
@@ -83,9 +94,9 @@
                  base-screens
                  overlays
                  core-count
-                 (* 2 core-count)
+                 core-captures
                  full-count
-                 (* 2 full-count)
+                 full-captures
                  sites
                  branches)))
           (is (not (null (search expected ledger)))

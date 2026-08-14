@@ -1,0 +1,407 @@
+{
+	"providers": {
+		"goal20faux": {
+			"name": "Goal 20 Faux",
+			"api": "openai-completions",
+			"baseUrl": "http://127.0.0.1:1/v1",
+			"models": [
+				{
+					"id": "goal20-paired-0",
+					"name": "Goal 20 Paired 0",
+					"reasoning": true,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 128000,
+					"maxTokens": 16384
+				},
+				{
+					"id": "goal20-paired-1",
+					"name": "Goal 20 Paired 1",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 129000,
+					"maxTokens": 16400
+				},
+				{
+					"id": "goal20-paired-2",
+					"name": "Goal 20 Paired 2",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 130000,
+					"maxTokens": 16416
+				},
+				{
+					"id": "goal20-paired-3",
+					"name": "Goal 20 Paired 3",
+					"reasoning": true,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 131000,
+					"maxTokens": 16432
+				},
+				{
+					"id": "goal20-paired-4",
+					"name": "Goal 20 Paired 4",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 132000,
+					"maxTokens": 16448
+				},
+				{
+					"id": "goal20-paired-5",
+					"name": "Goal 20 Paired 5",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 133000,
+					"maxTokens": 16464
+				},
+				{
+					"id": "goal20-paired-6",
+					"name": "Goal 20 Paired 6",
+					"reasoning": true,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 134000,
+					"maxTokens": 16480
+				},
+				{
+					"id": "goal20-paired-7",
+					"name": "Goal 20 Paired 7",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 135000,
+					"maxTokens": 16496
+				},
+				{
+					"id": "goal20-paired-8",
+					"name": "Goal 20 Paired 8",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 136000,
+					"maxTokens": 16512
+				},
+				{
+					"id": "goal20-paired-9",
+					"name": "Goal 20 Paired 9",
+					"reasoning": true,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 137000,
+					"maxTokens": 16528
+				},
+				{
+					"id": "goal20-paired-10",
+					"name": "Goal 20 Paired 10",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 138000,
+					"maxTokens": 16544
+				},
+				{
+					"id": "goal20-paired-11",
+					"name": "Goal 20 Paired 11",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 139000,
+					"maxTokens": 16560
+				},
+				{
+					"id": "goal20-paired-12",
+					"name": "Goal 20 Paired 12",
+					"reasoning": true,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 140000,
+					"maxTokens": 16576
+				},
+				{
+					"id": "goal20-paired-13",
+					"name": "Goal 20 Paired 13",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 141000,
+					"maxTokens": 16592
+				},
+				{
+					"id": "goal20-paired-14",
+					"name": "Goal 20 Paired 14",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 142000,
+					"maxTokens": 16608
+				},
+				{
+					"id": "goal20-paired-15",
+					"name": "Goal 20 Paired 15",
+					"reasoning": true,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 143000,
+					"maxTokens": 16624
+				},
+				{
+					"id": "goal20-paired-16",
+					"name": "Goal 20 Paired 16",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 144000,
+					"maxTokens": 16640
+				},
+				{
+					"id": "goal20-paired-17",
+					"name": "Goal 20 Paired 17",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 145000,
+					"maxTokens": 16656
+				},
+				{
+					"id": "goal20-paired-18",
+					"name": "Goal 20 Paired 18",
+					"reasoning": true,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 146000,
+					"maxTokens": 16672
+				},
+				{
+					"id": "goal20-paired-19",
+					"name": "Goal 20 Paired 19",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 147000,
+					"maxTokens": 16688
+				},
+				{
+					"id": "goal20-paired-20",
+					"name": "Goal 20 Paired 20",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 148000,
+					"maxTokens": 16704
+				},
+				{
+					"id": "goal20-paired-21",
+					"name": "Goal 20 Paired 21",
+					"reasoning": true,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 149000,
+					"maxTokens": 16720
+				},
+				{
+					"id": "goal20-paired-22",
+					"name": "Goal 20 Paired 22",
+					"reasoning": false,
+					"input": [
+						"text",
+						"image"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 150000,
+					"maxTokens": 16736
+				},
+				{
+					"id": "goal20-paired-23",
+					"name": "Goal 20 Paired 23",
+					"reasoning": false,
+					"input": [
+						"text"
+					],
+					"cost": {
+						"input": 0,
+						"output": 0,
+						"cacheRead": 0,
+						"cacheWrite": 0
+					},
+					"contextWindow": 151000,
+					"maxTokens": 16752
+				}
+			]
+		}
+	}
+}

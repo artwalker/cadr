@@ -1,0 +1,20 @@
+{
+	"kind": "goal20-part-h-fixture-manifest",
+	"generator": "scripts/goal20-gen-paired-fixtures.mjs",
+	"parameters": {
+		"session_entry_count": 512,
+		"provider_message_count": 96,
+		"sse_text_delta_count": 384,
+		"fixture_cwd": "/goal20-paired-paths",
+		"journal_cwd": "/tmp/goal20-part-h-journal-cwd",
+		"session_id": "019f0000-0000-7000-8000-00000000cadr"
+	},
+	"sha256": {
+		"session.jsonl": "115c7973b7eb7fdc9a95dc34ca31538cbb373562a581e6988525303cd452f14a",
+		"provider-context.json": "fbed2a2ebfb7dad864dd194569297460b69eb7670635608b26dcbab657f319d6",
+		"openai-completions.sse": "b27d0f15c650b2419e5d7b60f9019d83ee9f5bf7ec08c9e3dae1e2befd77b28e",
+		"models.json": "1d52d96633b51f7bea0b21592f495bd2f4154115b9e219ec224996daf0906048",
+		"auth.json": "ddeb81361b0104333a06cbf1c34c431426e1f3abcd46959ff18f4d710e1eb9e9",
+		"cli-argv.json": "dddcd05e4a41038330dd314a6aae981cd066882a5a63d39a7b533f58e509a5bd"
+	}
+}

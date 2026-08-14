@@ -553,9 +553,8 @@ injects the TUI render request when the component is shown."))
     ((cadr-tui::select-list-p value)
      (cadr-tui:render-select-list value width))
     (t
-     (cadr-tui:wrap-text
-      (princ-to-string value)
-     width))))
+     ;; Unformatted Lisp values must not reach the transcript.
+     nil)))
 
 (defun tui-extension-theme-runtime ()
   (list
@@ -608,9 +607,10 @@ injects the TUI render request when the component is shown."))
                 (case (tui-entry-type entry)
                   (:custom-message
                    (or (getf (tui-entry-custom-payload entry) :content) ""))
-                  (:custom-entry
-                   (princ-to-string
-                    (getf (tui-entry-custom-payload entry) :data))))))
+                  ;; Baseline skips custom entries with no renderer
+                  ;; (interactive-mode.ts:3432-3434). princ-to-string of
+                  ;; NIL here printed a bare "NIL" after /snake Q.
+                  (:custom-entry nil))))
         (setf
          (tui-entry-custom-component entry) rendered
          (tui-entry-custom-component-theme entry) theme

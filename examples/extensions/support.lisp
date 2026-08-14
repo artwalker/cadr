@@ -1,5 +1,14 @@
 (defparameter *example-api* (cadr-agent:current-extension-api))
 
+(defun example-render-diff-harness-p ()
+  "True when the official render-diff PTY driver is capturing this process.
+
+   Wall-clock game loops and unseeded RANDOM are forbidden in that
+   environment: key sequences are the only input. See AGENTS.md
+   (screenEqual vs byte equality) and goal 20 Part D."
+  (let ((ready (uiop:getenv "RENDER_DIFF_READY_PATH")))
+    (and ready (plusp (length ready)))))
+
 (defun example-object-schema (&rest required-properties)
   (let ((properties (cadr-ai::json-object)))
     (loop for (name type description) on required-properties by #'cdddr
@@ -184,8 +193,7 @@
 (defun example-session-branch (context)
   (let ((session (cadr-agent:extension-context-session context)))
     (and session
-         (cadr-agent:session-branch
-          session (cadr-agent:session-leaf-id session)))))
+         (cadr-agent::session-path-entries session))))
 
 (defun example-entry-role (entry)
   (let ((message (cadr-agent:session-entry-message entry)))
@@ -230,6 +238,49 @@
 
 (defun example-trim (text)
   (string-trim '(#\Space #\Tab #\Newline #\Return) text))
+
+(defun example-theme-fg (theme token text)
+  "Apply the TUI theme-runtime :fg callback, or return TEXT unchanged."
+  (let ((fn (and (listp theme) (getf theme :fg))))
+    (if (functionp fn)
+        (funcall fn token (or text ""))
+        (or text ""))))
+
+(defun example-theme-bg (theme token text)
+  "Apply the TUI theme-runtime :bg callback, or return TEXT unchanged."
+  (let ((fn (and (listp theme) (getf theme :bg))))
+    (if (functionp fn)
+        (funcall fn token (or text ""))
+        (or text ""))))
+
+(defun example-theme-background-function (theme token)
+  "A TEXT-COMPONENT :background-function bound to THEME's TOKEN."
+  (lambda (text) (example-theme-bg theme token text)))
+
+(defun example-decode-unix-milliseconds (milliseconds)
+  (decode-universal-time
+   (+ (floor (or milliseconds 0) 1000) 2208988800)))
+
+(defun example-clock-time-string (milliseconds)
+  "The baseline examples print Date#toLocaleTimeString here."
+  (multiple-value-bind (second minute hour)
+      (example-decode-unix-milliseconds milliseconds)
+    (multiple-value-bind (display-hour period)
+        (cond ((zerop hour) (values 12 "AM"))
+              ((< hour 12) (values hour "AM"))
+              ((= hour 12) (values 12 "PM"))
+              (t (values (- hour 12) "PM")))
+      (format nil "~D:~2,'0D:~2,'0D ~A"
+              display-hour minute second period))))
+
+(defun example-clock-date-time-string (milliseconds)
+  "The baseline examples print Date#toLocaleString here."
+  (multiple-value-bind (second minute hour date month year)
+      (example-decode-unix-milliseconds milliseconds)
+    (declare (ignore second minute hour))
+    (format nil "~D/~D/~D, ~A"
+            month date year
+            (example-clock-time-string milliseconds))))
 
 (defun example-load-support () nil)
 

@@ -117,16 +117,26 @@
                                      (provider-display-name))
                              (and (stringp selection) selection)
                              (namestring (auth-file-path)))
+                     (when (consp selection)
+                       (error
+                        'cadr-ai:configuration-error
+                        :message
+                        (post-login-selection-error
+                         action-label
+                         (provider-display-name)
+                         provider
+                         (first selection)
+                         (second selection))))
                      (when (eq selection :no-default-model)
                        (error
                         'cadr-ai:configuration-error
                         :message
-                        (format
-                         nil
-                         "~A ~A, but no default model is configured for provider \"~(~A~)\". Use /model to select a model."
+                        (post-login-selection-error
                          action-label
                          (provider-display-name)
-                         provider)))))
+                         provider
+                         :no-default-model
+                         nil)))))
              (finish-output output)
              t))))
       (cond

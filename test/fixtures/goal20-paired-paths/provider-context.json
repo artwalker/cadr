@@ -1,0 +1,2187 @@
+{
+	"systemPrompt": "You are a paired-path benchmark fixture. Answer briefly and never change observable output.",
+	"messages": [
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 0: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665600000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 1."
+				},
+				{
+					"type": "text",
+					"text": "Answer 1 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 901,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 949,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665601000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0002",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-2.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 952,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 976,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665602000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0002",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665603000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 4: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665604000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 5."
+				},
+				{
+					"type": "text",
+					"text": "Answer 5 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 905,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 953,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665605000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0006",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-6.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 956,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 980,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665606000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0006",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665607000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 8: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665608000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 9."
+				},
+				{
+					"type": "text",
+					"text": "Answer 9 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 909,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 957,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665609000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0010",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-10.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 960,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 984,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665610000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0010",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665611000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 12: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665612000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 13."
+				},
+				{
+					"type": "text",
+					"text": "Answer 13 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 913,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 961,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665613000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0014",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-14.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 964,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 988,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665614000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0014",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665615000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 16: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665616000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 17."
+				},
+				{
+					"type": "text",
+					"text": "Answer 17 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 917,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 965,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665617000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0018",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-18.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 968,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 992,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665618000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0018",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665619000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 20: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665620000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 21."
+				},
+				{
+					"type": "text",
+					"text": "Answer 21 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 921,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 969,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665621000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0022",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-22.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 972,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 996,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665622000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0022",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665623000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 24: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665624000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 25."
+				},
+				{
+					"type": "text",
+					"text": "Answer 25 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 925,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 973,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665625000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0026",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-26.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 976,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1000,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665626000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0026",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665627000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 28: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665628000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 29."
+				},
+				{
+					"type": "text",
+					"text": "Answer 29 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 929,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 977,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665629000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0030",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-30.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 980,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1004,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665630000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0030",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665631000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 32: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665632000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 33."
+				},
+				{
+					"type": "text",
+					"text": "Answer 33 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 933,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 981,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665633000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0034",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-34.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 984,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1008,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665634000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0034",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665635000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 36: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665636000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 37."
+				},
+				{
+					"type": "text",
+					"text": "Answer 37 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 937,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 985,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665637000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0038",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-38.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 988,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1012,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665638000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0038",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665639000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 40: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665640000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 41."
+				},
+				{
+					"type": "text",
+					"text": "Answer 41 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 941,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 989,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665641000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0042",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-42.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 992,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1016,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665642000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0042",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665643000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 44: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665644000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 45."
+				},
+				{
+					"type": "text",
+					"text": "Answer 45 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 945,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 993,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665645000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0046",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-46.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 996,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1020,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665646000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0046",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665647000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 48: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665648000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 49."
+				},
+				{
+					"type": "text",
+					"text": "Answer 49 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 949,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 997,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665649000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0050",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-50.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1000,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1024,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665650000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0050",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665651000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 52: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665652000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 53."
+				},
+				{
+					"type": "text",
+					"text": "Answer 53 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 953,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1001,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665653000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0054",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-54.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1004,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1028,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665654000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0054",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665655000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 56: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665656000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 57."
+				},
+				{
+					"type": "text",
+					"text": "Answer 57 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 957,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1005,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665657000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0058",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-58.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1008,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1032,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665658000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0058",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665659000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 60: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665660000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 61."
+				},
+				{
+					"type": "text",
+					"text": "Answer 61 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 961,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1009,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665661000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0062",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-62.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1012,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1036,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665662000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0062",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665663000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 64: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665664000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 65."
+				},
+				{
+					"type": "text",
+					"text": "Answer 65 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 965,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1013,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665665000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0066",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-66.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1016,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1040,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665666000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0066",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665667000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 68: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665668000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 69."
+				},
+				{
+					"type": "text",
+					"text": "Answer 69 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 969,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1017,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665669000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0070",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-70.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1020,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1044,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665670000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0070",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665671000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 72: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665672000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 73."
+				},
+				{
+					"type": "text",
+					"text": "Answer 73 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 973,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1021,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665673000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0074",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-74.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1024,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1048,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665674000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0074",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665675000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 76: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665676000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 77."
+				},
+				{
+					"type": "text",
+					"text": "Answer 77 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 977,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1025,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665677000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0078",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-78.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1028,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1052,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665678000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0078",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665679000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 80: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665680000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 81."
+				},
+				{
+					"type": "text",
+					"text": "Answer 81 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 981,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1029,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665681000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0082",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-82.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1032,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1056,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665682000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0082",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665683000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 84: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665684000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 85."
+				},
+				{
+					"type": "text",
+					"text": "Answer 85 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 985,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1033,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665685000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0086",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-86.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1036,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1060,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665686000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0086",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665687000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 88: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665688000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 89."
+				},
+				{
+					"type": "text",
+					"text": "Answer 89 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 989,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1037,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665689000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0090",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-90.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1040,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1064,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665690000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0090",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665691000
+		},
+		{
+			"role": "user",
+			"content": [
+				{
+					"type": "text",
+					"text": "Turn 92: 请解释 caching 与 emoji 🚀。"
+				}
+			],
+			"timestamp": 1786665692000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "thinking",
+					"thinking": "Reasoning about turn 93."
+				},
+				{
+					"type": "text",
+					"text": "Answer 93 with `inline code` and a wrapped paragraph."
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 993,
+				"output": 48,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1041,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "stop",
+			"timestamp": 1786665693000
+		},
+		{
+			"role": "assistant",
+			"content": [
+				{
+					"type": "toolCall",
+					"id": "call_p0094",
+					"name": "read",
+					"arguments": {
+						"path": "src/example-94.ts",
+						"offset": 1,
+						"limit": 40
+					}
+				}
+			],
+			"api": "openai-completions",
+			"provider": "goal20faux",
+			"model": "goal20-paired-1",
+			"usage": {
+				"input": 1044,
+				"output": 24,
+				"cacheRead": 0,
+				"cacheWrite": 0,
+				"totalTokens": 1068,
+				"cost": {
+					"input": 0,
+					"output": 0,
+					"cacheRead": 0,
+					"cacheWrite": 0,
+					"total": 0
+				}
+			},
+			"stopReason": "toolUse",
+			"timestamp": 1786665694000
+		},
+		{
+			"role": "toolResult",
+			"toolCallId": "call_p0094",
+			"toolName": "read",
+			"content": [
+				{
+					"type": "text",
+					"text": "export const alpha = 1;\nexport const beta = 2;"
+				}
+			],
+			"isError": false,
+			"timestamp": 1786665695000
+		}
+	],
+	"tools": [
+		{
+			"name": "read",
+			"description": "Read a file from disk with an optional line window.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"path": {
+						"type": "string",
+						"description": "Path to read."
+					},
+					"offset": {
+						"type": "number",
+						"description": "First line, 1-based."
+					},
+					"limit": {
+						"type": "number",
+						"description": "Line count."
+					}
+				},
+				"required": [
+					"path"
+				]
+			}
+		},
+		{
+			"name": "bash",
+			"description": "Run a shell command and return its combined output.",
+			"parameters": {
+				"type": "object",
+				"properties": {
+					"command": {
+						"type": "string",
+						"description": "Command to run."
+					},
+					"timeout": {
+						"type": "number",
+						"description": "Timeout in milliseconds."
+					}
+				},
+				"required": [
+					"command"
+				]
+			}
+		}
+	]
+}

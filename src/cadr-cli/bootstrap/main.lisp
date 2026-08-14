@@ -31,7 +31,13 @@
   ;; padded six-column table.
   (let* ((registry
            (make-model-registry
-            :path (cadr-core:agent-models-path)))
+            :path (cadr-core:agent-models-path)
+            ;; A models.json provider outside the built-in catalog is only
+            ;; available when the registry can read auth.json, so the
+            ;; listing needs the same credential store every other
+            ;; make-model-registry caller passes.
+            :credentials
+            (make-file-auth-storage (default-auth-path))))
          (load-error
            (model-registry-error registry)))
     (when load-error

@@ -1,0 +1,21 @@
+{
+  "baselineCommit": "53fa77ccd",
+  "obligations": [
+    {
+      "id": "login-no-models-available",
+      "literal": "no models are available for that provider",
+      "path": "src/cadr-cli/models/login-selection.lisp",
+      "producer": "post-login-selection-error",
+      "baseline": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5430",
+      "note": "L0 xAI. FiveAM goal20-l-xai-has-default-model-and-empty-snapshot-is-not-unconfigured drives the branch."
+    },
+    {
+      "id": "login-no-default-model",
+      "literal": "no default model is configured for provider",
+      "path": "src/cadr-cli/models/login-selection.lisp",
+      "producer": "post-login-selection-error",
+      "baseline": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5428",
+      "note": "Branch 1 remains; must not be the only login-selection failure string."
+    }
+  ]
+}

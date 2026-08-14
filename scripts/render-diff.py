@@ -261,6 +261,43 @@ REQUIRED_COVERAGE = {
     "config-selector-scroll",
     "edit",
     "edit-multiline-diff",
+    "example-add-echo",
+    "example-ask-turn",
+    "example-ask-usage",
+    "example-bookmark-labeled",
+    "example-commands-list",
+    "example-commands-path",
+    "example-compact-started",
+    "example-echo-session",
+    "example-event-bus-emit",
+    "example-event-bus-startup",
+    "example-footer-off",
+    "example-footer-on",
+    "example-header-off",
+    "example-header-on",
+    "example-hello-result",
+    "example-invaders-initial",
+    "example-invaders-left",
+    "example-invaders-right",
+    "example-notify-ready",
+    "example-overlay-open",
+    "example-overlay-search",
+    "example-pirate-on",
+    "example-qna-empty",
+    "example-reload-queued",
+    "example-session-named",
+    "example-snake-initial",
+    "example-snake-moved",
+    "example-snake-over",
+    "example-status-card",
+    "example-status-message",
+    "example-thinking-label-set",
+    "example-todo-added",
+    "example-todos-empty",
+    "example-tools-selector",
+    "example-ttt-cursor",
+    "example-ttt-initial",
+    "example-ttt-played",
     "extension-flag-help",
     "fatal-crash",
     "find",
@@ -401,6 +438,40 @@ REQUIRED_SIGNIFICANT_STATE_DOMAINS = {
 
 class HarnessFailure(RuntimeError):
     pass
+
+
+def scenario_dimensions(
+    manifest: dict[str, Any], scenario: dict[str, Any]
+) -> list[dict[str, Any]]:
+    """Dimensions this scenario is captured in. Omit to use the full matrix.
+
+    Space Invaders' baseline board is 60 columns and cannot render in the
+    narrow 48-column fixture (pi aborts: line exceeds terminal width)."""
+    allowed = scenario.get("dimensions")
+    catalog = list(manifest["dimensions"])
+    if allowed is None:
+        return catalog
+    if (
+        not isinstance(allowed, list)
+        or not allowed
+        or len(allowed) != len(set(allowed))
+        or any(not isinstance(item, str) for item in allowed)
+    ):
+        raise HarnessFailure(
+            f"invalid scenario dimensions for {scenario.get('id')}"
+        )
+    by_id = {dimension["id"]: dimension for dimension in catalog}
+    unknown = [item for item in allowed if item not in by_id]
+    if unknown:
+        raise HarnessFailure(
+            f"scenario {scenario.get('id')} names unknown dimensions: {unknown}"
+        )
+    return [by_id[item] for item in allowed]
+
+
+def scenario_allows_dimension(scenario: dict[str, Any], dimension_id: str) -> bool:
+    allowed = scenario.get("dimensions")
+    return allowed is None or dimension_id in allowed
 
 
 def scenario_checkpoint_ids(scenario: dict[str, Any]) -> list[str]:
@@ -2176,6 +2247,13 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
     for key in tuple(env):
         if credential_environment_variable_p(key):
             env.pop(key, None)
+    # Chalk (pi theme bold/dim/underline) treats a present NO_COLOR key as
+    # disable, and FORCE_COLOR=0 from the parent agent environment as
+    # "no styles". Theme RGB is applied without chalk, so a leaked
+    # FORCE_COLOR=0 drops only the modifiers and looks like an I01
+    # envelope drift against the book. Isolate both.
+    env.pop("NO_COLOR", None)
+    env.pop("FORCE_COLOR", None)
     fake_binary_directory = install_fake_github_cli(home)
     env.update(
         {
@@ -2193,7 +2271,7 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
             "COLORFGBG": "15;0",
             "COLUMNS": str(columns),
             "LINES": str(rows),
-            "NO_COLOR": "",
+            "FORCE_COLOR": "3",
             "PI_OFFLINE": "1",
             "PATH": str(fake_binary_directory) + os.pathsep + env.get("PATH", ""),
             "RENDER_DIFF_READY_PATH": str(ready_path),
@@ -2536,6 +2614,18 @@ def normalize_fixed_values(data: bytes) -> bytes:
             b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.1",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
+        # I01: this host's tmux replay of the baseline banner omits the
+        # bold wrapper (1m/0m) around the accent product name. Map that
+        # envelope onto the same I04 placeholder the bold form already
+        # produces so the exact screen pair stays stable.
+        (
+            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.1\x1b[39m",
+            b"\x1b[1m\x1b[38;2;138;190;183m<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>\x1b[39m",
+        ),
+        (
+            b"pi\x1b[38;2;102;102;102m v0.84.1",
+            b"<PRODUCT>\x1b[38;2;102;102;102m v<VERSION>",
+        ),
         (
             b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
@@ -2719,8 +2809,36 @@ def screen_wrapped_literal_pattern(value: bytes) -> bytes:
     return separator.join(re.escape(value[index : index + 1]) for index in range(len(value)))
 
 
+def strip_node_inspect_stack_colors(data: bytes) -> bytes:
+    """Drop Node's FORCE_COLOR stack-frame gray so I04 path rules still match.
+
+    Node 22 wraps frames in CSI 90m ... 39m and splits
+    `(dir/\\x1b[39mfile:line:col\\x1b[90m)` when FORCE_COLOR is set. The
+    book was captured without that envelope. The closer 39m can land
+    mid-path and would otherwise defeat the driver-location normalizer.
+    Only those two Node inspect shapes are stripped — not every 90m/39m
+    pair (agy review: unanchored DOTALL would eat theme gray).
+    I01 only: cells and text stay the same.
+    """
+    if b"\x1b[90m" not in data:
+        return data
+    result = re.sub(
+        rb"\x1b\[90m\(([^\x1b]*)\x1b\[39m([^\x1b]*)\x1b\[90m\)\x1b\[39m",
+        rb"(\1\2)",
+        data,
+        flags=re.DOTALL,
+    )
+    return re.sub(
+        rb"\x1b\[90m(    at .*?)\x1b\[39m",
+        rb"\1",
+        result,
+        flags=re.DOTALL,
+    )
+
+
 def normalized_screen(data: bytes, side: str) -> bytes:
     """Normalize a terminal-emulated screen without changing replay geometry."""
+    data = strip_node_inspect_stack_colors(data)
     escaped_side = re.escape(("pi00" if side == "pi" else "cadr").encode())
     prefix = rb"/tmp/cadr-render-diff-[^/\r\n]+/" + escaped_side
     separator = rb"(?:\r?\n)?"
@@ -2906,6 +3024,10 @@ def capture(args: argparse.Namespace) -> int:
     manifest = load_manifest(manifest_path)
     scenario = find_scenario(manifest, args.scenario)
     dimension = find_dimension(manifest, args.dimension)
+    if not scenario_allows_dimension(scenario, args.dimension):
+        raise HarnessFailure(
+            f"scenario {scenario['id']} is not captured in dimension {args.dimension}"
+        )
     commit = manifest["baselineCommit"]
     with tempfile.TemporaryDirectory(prefix="cadr-render-diff-") as temporary:
         sandbox = Path(temporary)
@@ -3262,6 +3384,8 @@ def analyze(args: argparse.Namespace) -> int:
     for dimension in manifest["dimensions"]:
         dimension_id = dimension["id"]
         for scenario in scenarios:
+            if not scenario_allows_dimension(scenario, dimension_id):
+                continue
             scenario_id = scenario["id"]
             raw_streams: dict[str, bytes] = {}
             normalized_streams: dict[str, bytes] = {}
@@ -3453,6 +3577,8 @@ def gate(args: argparse.Namespace) -> int:
             )
         for dimension in manifest["dimensions"]:
             for scenario in scenarios:
+                if not scenario_allows_dimension(scenario, dimension["id"]):
+                    continue
                 capture_arguments = argparse.Namespace(
                     manifest=args.manifest,
                     pi_repo=args.pi_repo,
@@ -3506,6 +3632,10 @@ def self_test(args: argparse.Namespace) -> int:
         isolated = fixed_environment(sandbox, 12, 4, sandbox / "ready")
         if any(credential_environment_variable_p(key) for key in isolated):
             raise HarnessFailure("fixed environment retained a provider credential variable")
+        if "NO_COLOR" in isolated:
+            raise HarnessFailure("fixed environment must unset NO_COLOR, not inherit it")
+        if isolated.get("FORCE_COLOR") != "3":
+            raise HarnessFailure("fixed environment must force chalk truecolor styles")
         fake_share = subprocess.run(
             ["gh", "gist", "create", "--public=false", "/tmp/render.html"],
             env=isolated,
@@ -3524,6 +3654,25 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("pi styled product header normalization drifted")
         if normalize_fixed_values(cadr_header) != expected_header:
             raise HarnessFailure("cadr styled product header normalization drifted")
+        unbold_pi_header = (
+            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.1\x1b[39m"
+        )
+        unbold_expected = (
+            b"\x1b[1m\x1b[38;2;138;190;183m<PRODUCT>\x1b[0m"
+            b"\x1b[38;2;102;102;102m v<VERSION>\x1b[39m"
+        )
+        if normalize_fixed_values(unbold_pi_header) != unbold_expected:
+            raise HarnessFailure("pi unbold product header normalization drifted")
+        bold_pi_header = (
+            b"\x1b[1m\x1b[38;2;138;190;183mpi\x1b[0m"
+            b"\x1b[38;2;102;102;102m v0.84.1\x1b[39m"
+        )
+        if normalize_fixed_values(unbold_pi_header) != normalize_fixed_values(
+            bold_pi_header
+        ):
+            raise HarnessFailure(
+                "bold and unbold pi headers must normalize to one I04 pair"
+            )
         if normalize_fixed_values(b"\x1b]0;\xcf\x80 - work\x07") != normalize_fixed_values(
             b"\x1b]0;cadr - work\x07"
         ):

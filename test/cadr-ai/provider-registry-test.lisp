@@ -1,6 +1,32 @@
 (in-package #:cadr-ai/tests)
 (in-suite cadr-ai-suite)
 
+(test provider-definition-slots-are-enumerated-not-hand-listed
+  ;; Goal 20 N1/M1: compared slots come from the structure, not a
+  ;; six-field list in this file. default-model must stay compared —
+  ;; that is the xAI login defect's field.
+  (let* ((all
+           (mapcar #'sb-mop:slot-definition-name
+                   (sb-mop:class-slots
+                    (find-class 'cadr-ai:provider-definition))))
+         (excluded
+           (mapcar #'car
+                   (cadr-ai::provider-definition-comparison-exclusions)))
+         (compared (cadr-ai::provider-definition-compared-slots))
+         (reasons
+           (mapcar #'cdr
+                   (cadr-ai::provider-definition-comparison-exclusions))))
+    (is (member 'cadr-ai::default-model all))
+    (is (member 'cadr-ai::default-model compared))
+    (is (not (member 'cadr-ai::default-model excluded)))
+    (is (equal (sort (copy-list compared) #'string< :key #'symbol-name)
+               (sort (set-difference all excluded) #'string< :key #'symbol-name)))
+    (is (<= (length excluded) (length compared)))
+    (is (= (length reasons) (length (remove-duplicates reasons :test #'string=))))
+    (is (string= "grok-4.5"
+                 (cadr-ai:provider-definition-default-model
+                  (cadr-ai:find-provider-definition :xai))))))
+
 (test built-in-provider-registry-is-complete
   (let ((ids (mapcar #'cadr-ai:provider-definition-id
                      (cadr-ai:list-provider-definitions))))

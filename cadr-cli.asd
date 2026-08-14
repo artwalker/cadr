@@ -51,6 +51,7 @@
                                            (:file "store")
                                            (:file "registry")
                                            (:file "matching")
+                                           (:file "login-selection")
                                            (:file "credential-print")))
                              (:file "media")
                              (:module "interactive"
@@ -205,6 +206,9 @@
                              (:file "goal12-core-capabilities-test")
                              (:file "goal12-sdk-test")
                              (:file "goal12-examples-test")
+                             (:file "goal20-example-games-test")
+                             (:file "goal20-part-l-test")
+                             (:file "goal20-part-i-test")
                              (:file "goal13-presentation-test")
                              (:file "goal14-a0-test")
                              (:file "goal14-organization-test")

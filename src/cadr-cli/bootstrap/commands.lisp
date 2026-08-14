@@ -1124,40 +1124,8 @@
                      (cadr-ai:model-provider
                       (provider-config-model
                        config))))))
-                 (let* ((native-p
-                          (model-registry-native-provider-p
-                           model-registry provider))
-                        (definition
-                          (and
-                           (not native-p)
-                           (cadr-ai:find-provider-definition
-                            provider)))
-                        (model
-                          (if native-p
-                              (find
-                               provider available-models
-                               :key #'cadr-ai:model-provider
-                               :test #'eq)
-                              (model-registry-find
-                               model-registry
-                               provider
-                               (cadr-ai:provider-definition-default-model
-                                definition)))))
-                   (if
-                       (and model
-                            (find
-                             model available-models
-                             :test
-                             #'cadr-ai:models-equal-p))
-                       (progn
-                         (select-model model)
-                         ;; Report the selection so the login completion
-                         ;; message can carry the baseline "Selected <id>."
-                         (cadr-ai:model-id model))
-                       ;; The login handler turns this marker into the
-                       ;; baseline "no default model is configured"
-                       ;; caveat; the login itself already succeeded.
-                       :no-default-model))
+                 (post-login-selection-result
+                  provider available-models #'select-model)
                  (let ((updated
                          (resolve-provider-config
                           :provider

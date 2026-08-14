@@ -36,11 +36,19 @@
 
 (cadr-agent:define-event-hook
  :session-start
- :handler (lambda (event context) (declare (ignore event)) (todo-restore context)))
+ :handler
+ (lambda (event context)
+   (declare (ignore event))
+   (todo-restore context)
+   nil))
 
 (cadr-agent:define-event-hook
  :session-tree
- :handler (lambda (event context) (declare (ignore event)) (todo-restore context)))
+ :handler
+ (lambda (event context)
+   (declare (ignore event))
+   (todo-restore context)
+   nil))
 
 (cadr-agent:define-rich-tool
  "todo"
@@ -64,49 +72,49 @@
    (let ((action (example-argument arguments "action" "list")))
      (cond
        ((string= action "list")
-        (example-result (todo-format-list) :details (todo-details :list)))
+        (example-text-result (todo-format-list) (todo-details :list)))
        ((string= action "add")
         (let ((text (example-argument arguments "text" nil)))
           (if (or (null text) (zerop (length (example-trim text))))
-              (example-result "Error: text required for add"
-                              :details (todo-details :add "text required"))
+              (example-text-result "Error: text required for add"
+                                   (todo-details :add "text required"))
               (let ((todo (list :id *example-todo-next-id*
                                 :text text :done-p nil)))
                 (incf *example-todo-next-id*)
                 (setf *example-todos* (append *example-todos* (list todo)))
-                (example-result
+                (example-text-result
                  (format nil "Added todo #~D: ~A"
                          (getf todo :id) (getf todo :text))
-                 :details (todo-details :add))))))
+                 (todo-details :add))))))
        ((string= action "toggle")
         (let* ((id (example-argument arguments "id" nil))
                (todo (and id (find id *example-todos*
                                    :key (lambda (row) (getf row :id))))))
           (cond
             ((null id)
-             (example-result "Error: id required for toggle"
-                             :details (todo-details :toggle "id required")))
+             (example-text-result "Error: id required for toggle"
+                                  (todo-details :toggle "id required")))
             ((null todo)
-             (example-result
+             (example-text-result
               (format nil "Todo #~D not found" id)
-              :details (todo-details :toggle
-                                     (format nil "#~D not found" id))))
+              (todo-details :toggle
+                            (format nil "#~D not found" id))))
             (t
              (setf (getf todo :done-p) (not (getf todo :done-p)))
-             (example-result
+             (example-text-result
               (format nil "Todo #~D ~:[uncompleted~;completed~]"
                       id (getf todo :done-p))
-              :details (todo-details :toggle))))))
+              (todo-details :toggle))))))
        ((string= action "clear")
         (let ((count (length *example-todos*)))
           (setf *example-todos* nil *example-todo-next-id* 1)
-          (example-result (format nil "Cleared ~D todos" count)
-                          :details (todo-details :clear))))
+          (example-text-result (format nil "Cleared ~D todos" count)
+                               (todo-details :clear))))
        (t
-        (example-result (format nil "Unknown action: ~A" action)
-                        :details (todo-details :list
-                                               (format nil "unknown action: ~A"
-                                                       action)))))))
+        (example-text-result (format nil "Unknown action: ~A" action)
+                             (todo-details :list
+                                           (format nil "unknown action: ~A"
+                                                   action)))))))
  :render-call
  (lambda (arguments render-context theme)
    (declare (ignore render-context theme))

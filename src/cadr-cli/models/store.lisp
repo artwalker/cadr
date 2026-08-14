@@ -147,8 +147,11 @@
      (let ((input
              (cadr-ai::json-get object "input")))
        (and input
+            ;; find returns the matching string; supports-images-p is a
+            ;; boolean slot, so a bare find aborts the models.json load.
             (find "image" input
-                  :test #'string=)))
+                  :test #'equal)
+            t))
      :supports-tools-p
      (not
       (eq nil

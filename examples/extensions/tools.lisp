@@ -67,11 +67,13 @@
  :handler
  (lambda (event context)
    (declare (ignore event))
-   (tools-example-restore context)))
+   (tools-example-restore context)
+   nil))
 
 (cadr-agent:define-event-hook
  :session-tree
  :handler
  (lambda (event context)
    (declare (ignore event))
-   (tools-example-restore context)))
+   (tools-example-restore context)
+   nil))

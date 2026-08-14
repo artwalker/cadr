@@ -943,5 +943,48 @@ class ContinuousInputGateTest(unittest.TestCase):
                 self.assertNotIn(forbidden, serialized)
 
 
+class SelfHistoryInformationalTest(unittest.TestCase):
+    def test_self_history_never_appends_failures(self):
+        failures: list[str] = []
+        bench = {
+            "machine": {"machine_instance": "Friend-MachineD"},
+            "cold_start": {"median_us": 300_000},
+            "metrics": {
+                "frame_render": {
+                    "points": [
+                        {
+                            "n": 5000,
+                            "median_us": 4_000,
+                            "median_bytes": 360_000,
+                        }
+                    ]
+                }
+            },
+        }
+        with tempfile.TemporaryDirectory() as temporary:
+            history = Path(temporary) / "history.json"
+            history.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "entries": [
+                            {
+                                "machine": "Friend-MachineD",
+                                "coldStartMedianUs": 250_000,
+                                "frame5000MedianUs": 3_500,
+                                "frame5000MedianBytes": 300_000,
+                            }
+                        ],
+                    }
+                ),
+                encoding="utf-8",
+            )
+            summary = GATE.self_history_summary(bench, str(history))
+        self.assertEqual([], failures)
+        self.assertIn("self_history_gate=informational-awaiting-adjudication", summary)
+        self.assertIn("self_history_enforced=no", summary)
+        self.assertTrue(any(item.startswith("self_history_cold_ratio=") for item in summary))
+
+
 if __name__ == "__main__":
     unittest.main()

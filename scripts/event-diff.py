@@ -456,12 +456,15 @@ def make_invocation(
     for directory in (cwd, agent_dir, session_dir):
         directory.mkdir(parents=True, exist_ok=True)
     env = dict(os.environ)
+    env.pop("NO_COLOR", None)
+    env.pop("FORCE_COLOR", None)
     env.update(
         {
             "HOME": str(run_root / side / "home"),
             "PI_OFFLINE": "1",
             "CADR_OFFLINE": "1",
             "EVENT_DIFF_SIDECAR": str(sidecar),
+            "FORCE_COLOR": "3",
         }
     )
     Path(env["HOME"]).mkdir(parents=True, exist_ok=True)

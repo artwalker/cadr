@@ -135,6 +135,12 @@ run_goal11_gate() {
     python3 scripts/goal11-performance-gate.py \
       --bench "$VERIFY_ROOT/goal11-performance.json" \
       --stability "$VERIFY_ROOT/goal11-stability.json"
+    python3 scripts/record-performance-history.py \
+      --bench "$VERIFY_ROOT/goal11-performance.json" \
+      --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json"
+    python3 scripts/write-performance-ledger.py \
+      --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
+      --ledger "$PROJECT_DIRECTORY/docs/performance.md"
   )
 }
 
@@ -168,6 +174,18 @@ run_product_identity_gate() {
     python3 "$PROJECT_DIRECTORY/scripts/check-product-identity.py" \
       --root "$PROJECT_DIRECTORY" \
       --manifest "$PROJECT_DIRECTORY/docs/product-identity-allowlist.json"
+}
+
+run_part_l_visible_string_gates() {
+  python3 "$PROJECT_DIRECTORY/scripts/baseline-string-reachability.py" \
+    --root "$PROJECT_DIRECTORY" &&
+    python3 "$PROJECT_DIRECTORY/scripts/cadr-visible-output-origin.py" \
+      --analysis "$PROJECT_DIRECTORY/.tmp/render-diff-analysis"
+}
+
+run_compile_warning_gate() {
+  python3 "$PROJECT_DIRECTORY/scripts/cadr-compile-warnings.py" \
+    --root "$PROJECT_DIRECTORY" --system cadr-ai
 }
 
 run_render_diff_gate() {
@@ -299,10 +317,26 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "Part L visible-string reachability and origin" \
+    run_part_l_visible_string_gates || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "Part L visible-string reachability and origin" \
+    "product identity gate failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "cadr-ai compile WARNING" \
+    run_compile_warning_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic "cadr-ai compile WARNING" "Part L visible-string gates failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "real source parity ledger" \
     run_source_parity_ledger_gate || DETERMINISTIC_READY=0
 else
-  skip_deterministic "real source parity ledger" "product identity gate failed"
+  skip_deterministic "real source parity ledger" "cadr-ai compile WARNING failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then

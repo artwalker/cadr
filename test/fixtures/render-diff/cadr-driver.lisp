@@ -28,6 +28,8 @@
 
 (defconstant +fixed-timestamp+ 1700000000000)
 
+(defvar *render-diff-extension-manager* nil)
+
 (defun json-get (object key &optional default)
   (if (hash-table-p object)
       (multiple-value-bind (value present-p) (gethash key object)
@@ -73,6 +75,137 @@
       (error "Render fixture path must be a safe relative file: ~A"
              value))
     path))
+
+(defun render-diff-project-root ()
+  (uiop:ensure-directory-pathname
+   (pathname (first cl-user::*render-diff-arguments*))))
+
+(defun example-extension-names (scenario)
+  (mapcar
+   #'identity
+   (json-vector-list
+    (json-get (json-get scenario "setup") "exampleExtensions"))))
+
+(defun example-extension-lisp-path (name)
+  (let ((path
+          (merge-pathnames
+           (format nil "examples/extensions/~A.lisp" name)
+           (render-diff-project-root))))
+    (unless (probe-file path)
+      (error "Unknown example extension ~A: ~A" name path))
+    (namestring (truename path))))
+
+(defun example-command-records (manager)
+  "Public getCommands shape: extension + prompt, no builtins (pi@53fa77ccd)."
+  (let* ((host (cadr-cli::cli-extension-manager-host manager))
+         (snapshot (cadr-agent::extension-host-current-snapshot host)))
+    (append
+     (loop for definition in
+           (cadr-agent::extension-snapshot-commands snapshot)
+           for name = (cadr-agent::extension-command-definition-name definition)
+           unless (string= name "llama")
+           collect
+           (list
+            :name name
+            :description
+            (cadr-agent::extension-command-definition-description definition)
+            :source :extension
+            :source-info
+            (list
+             :path (cadr-agent::extension-definition-origin definition))))
+     (loop for definition in
+           (cadr-agent::extension-snapshot-templates snapshot)
+           collect
+           (list
+            :name (cadr-agent::extension-template-definition-name definition)
+            :description
+            (cadr-agent::extension-template-definition-description definition)
+            :source :prompt
+            :source-info
+            (list
+             :path (cadr-agent::extension-definition-origin definition)))))))
+
+(defun example-tool-records (manager agent)
+  (declare (ignore manager))
+  (loop for tool in (cadr-agent::merged-agent-tools agent)
+        collect
+        (list
+         :name (cadr-ai:tool-name tool)
+         :description (cadr-ai:tool-description tool)
+         :label (cadr-ai:tool-name tool))))
+
+(defun example-context-usage (agent)
+  "Mirrors pi-driver ctx.getContextUsage (tokens / window / percent)."
+  (let* ((model (cadr-agent:agent-model agent))
+         (window (and model (cadr-ai:model-context-window model)))
+         (tokens
+           (cadr-agent::context-estimated-tokens
+            (cadr-agent:agent-messages agent))))
+    (and window
+         (plusp window)
+         (list :tokens tokens
+               :context-window window
+               :percent (* 100d0 (/ tokens window))))))
+
+(defun example-host-action (manager agent action arguments)
+  (case action
+    (:append-entry
+     (let ((session (cadr-agent:agent-session agent)))
+       (when session
+         (let ((entry
+                 (cadr-agent:session-append-custom
+                  session (first arguments) (second arguments)))
+               (ui-function
+                 (and *render-diff-extension-manager*
+                      (cadr-agent::extension-host-ui-function
+                       (cadr-cli::cli-extension-manager-host
+                        *render-diff-extension-manager*)))))
+           (when ui-function
+             (funcall
+              ui-function :append-custom-entry
+              (list :custom-type (first arguments)
+                    :data (second arguments))))
+           entry))))
+    (:commands (example-command-records manager))
+    (:context-usage (example-context-usage agent))
+    (:model (cadr-agent:agent-model agent))
+    (:set-label
+     (let ((session (cadr-agent:agent-session agent)))
+       (when session
+         (cadr-agent:session-set-label
+          session (first arguments) (second arguments)))))
+    (:get-session-name
+     (let ((session (cadr-agent:agent-session agent)))
+       (and session (cadr-agent:session-name session))))
+    (:all-tools (example-tool-records manager agent))
+    (otherwise
+     (error
+      'cadr-agent:extension-execution-error
+      :message
+      (format nil "Unsupported example-host action: ~(~A~)" action)))))
+
+(defun start-example-extension-host (scenario cwd agent-directory agent)
+  (let ((names (example-extension-names scenario)))
+    (when names
+      (let ((manager
+              (cadr-cli::make-cli-extension-manager
+               :cwd cwd
+               :global-directory
+               (merge-pathnames "extensions/" agent-directory)
+               :explicit-paths
+               (mapcar #'example-extension-lisp-path names)
+               :no-discovery-p t
+               :mode :tui
+               :output *error-output*)))
+        (cadr-cli::reload-cli-extensions manager)
+        (let ((host (cadr-cli::cli-extension-manager-host manager)))
+          (cadr-agent::attach-extension-host host agent)
+          (setf
+           (cadr-agent::extension-host-action-function host)
+           (lambda (action arguments)
+             (example-host-action manager agent action arguments))))
+        (setf *render-diff-extension-manager* manager)
+        manager))))
 
 (defun materialize-fixture-files
     (scenario cwd agent-directory session-directory)
@@ -1080,20 +1213,25 @@ render loopback login received
        (values t nil))
       (t
        (let ((output (make-string-output-stream)))
-         (if
-             (cadr-cli::handle-session-command
-              line agent
-              :directory session-directory
-              :cwd cwd
-              :output output
-              :ansi-theme-p t
-              :changelog-path
-              (uiop:getenv "RENDER_DIFF_REFERENCE_CHANGELOG")
-              :status-function status-consumer)
-             (values t (get-output-stream-string output))
-             (values nil nil)))))))
+         (cond
+           ((cadr-cli::handle-session-command
+             line agent
+             :directory session-directory
+             :cwd cwd
+             :output output
+             :ansi-theme-p t
+             :changelog-path
+             (uiop:getenv "RENDER_DIFF_REFERENCE_CHANGELOG")
+             :status-function status-consumer)
+            (values t (get-output-stream-string output)))
+           ((and *render-diff-extension-manager*
+                 (cadr-cli::handle-extension-command
+                  line *render-diff-extension-manager*))
+            (values t nil))
+           (t (values nil nil))))))))
 
 (defun run-scenario (scenario cwd agent-dir session-directory)
+  (setf *render-diff-extension-manager* nil)
   (materialize-fixture-files
    scenario cwd agent-dir session-directory)
   (when
@@ -1371,6 +1509,7 @@ render loopback login received
        handle
        (mapcar #'response-message
                (json-vector-list (json-get scenario "responses"))))
+      (start-example-extension-host scenario cwd agent-dir agent)
       (cadr-tui:set-current-theme :dark)
       (cadr-tui:set-keybindings
        (cadr-tui:make-keybindings-manager
@@ -1447,6 +1586,10 @@ render loopback login received
            (lambda (line)
              (cadr-agent:agent-prompt
               agent line :source :interactive))
+           :extension-host
+           (and *render-diff-extension-manager*
+                (cadr-cli::cli-extension-manager-host
+                 *render-diff-extension-manager*))
            :command-function
            (lambda (line)
              (funcall
@@ -1526,6 +1669,14 @@ render loopback login received
            :set-extension-ui-function
            (lambda (consumer)
              (setf extension-ui-consumer consumer)
+             (when *render-diff-extension-manager*
+               (setf
+                (cadr-agent::extension-host-ui-function
+                 (cadr-cli::cli-extension-manager-host
+                  *render-diff-extension-manager*))
+                consumer)
+               (when consumer
+                 (cadr-agent::ensure-agent-session-started agent)))
              (when
                  (and consumer
                       (not extension-ui-worker)

@@ -28,7 +28,8 @@
    (declare (ignore event))
    (register-dynamic-echo-tool context "echo_session" "[session] ")
    (cadr-agent:extension-context-notify
-    context "Registered dynamic tool: echo_session")))
+    context "Registered dynamic tool: echo_session")
+   nil))
 
 (cadr-agent:define-command
  "add-echo-tool"

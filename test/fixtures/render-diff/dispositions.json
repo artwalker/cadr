@@ -349,7 +349,7 @@
           "cadr": "feba35d6b2d083a509ae688247286aece75030a66acd5c25d823354a16ea1240"
         }
       },
-      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '✓ Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '\u2713 Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "slash-debug",
@@ -647,7 +647,7 @@
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
-      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (⠋ vs ⠙, I01 timing); text and layout identical."
+      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (\u280b vs \u2819, I01 timing); text and layout identical."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -6870,7 +6870,7 @@
           "cadr": "e62598c37b13a18f021a7a62968e525abc80c7205e71142ac6e19a6695aa00ff"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -7179,6 +7179,1314 @@
         }
       },
       "note": "At conversation-mermaid/process-exit after alt-screen teardown the resume/help residue differs by Goal 16 identity and I01 ANSI segmentation; no mermaid-specific defect."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "snake-initial",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3bb7a340633888bda236cac908cac87dd34d20e196ef9548f3186bdaf885a55d",
+          "cadr": "606338841034f831bcaf494fb823a4ba524d22563313c8b0457c536cb27ec00e"
+        },
+        "narrow": {
+          "pi": "3aa840abd46ebe83ee8b3a231cc97721ffa54f742813f37ed98033f636010346",
+          "cadr": "93cde0f32e2690845952a3ffe760860f1f8b1ea945eedb3fe4b068822bbdf8ea"
+        }
+      },
+      "note": "At example-snake/snake-initial the board, food at (0,0), and green/red SGR now match the baseline snake.ts contract. Remaining visible deltas are startup chrome (pi lists snake.ts under Extensions; cadr shows the product version line) plus I04 identity wrapping and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "snake-moved",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "58f12763e7ffbd301e2207185c36825a1204c21ff2ce43682e02e86902c44049",
+          "cadr": "e75bbf60ded545fd4c40e0197af2654455627073ee6126747785d1cea30fac41"
+        },
+        "narrow": {
+          "pi": "2dc6682158cf051d701175b437ec57bf14809041e483f54eaa906b99f20ebdbf",
+          "cadr": "0d7e0c83d4b1730473504eb1ae83401850d0eb47e7dca9d17f6c0886eefd3a95"
+        }
+      },
+      "note": "At example-snake/snake-moved one harness tick has advanced the snake one cell down from the initial row; coloring remains. Residual deltas are the same startup-chrome / I04 / I01 set as snake-initial."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "snake-over",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "eec307946c10d44cdf4e34bad9fb5796ead3b605d148a2a28a92b12562ef825a",
+          "cadr": "3967d67b8f334063a80c01689a17fcb4619e884245b02aff66f3949c5fa67ceb"
+        },
+        "narrow": {
+          "pi": "3ffc28052a806567700129464ad9c4c05629578ec6822111ae375d85f66a7c94",
+          "cadr": "54867ff05f21aa4fb422806e155b31db8c9190fbff6dfbdaf1e656700672bd0a"
+        }
+      },
+      "note": "At example-snake/snake-over both sides show GAME OVER after the harness walked the snake into the south wall. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-tic-tac-toe",
+      "checkpoint": "ttt-initial",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "99e205e1c43ac597dcf0c501c6b2fea661fd42354f454471ff2f0400d6fe1a3d",
+          "cadr": "6364df978ae210fc352559339a8df9d94cecf934752caf6473b1c02f81292665"
+        },
+        "narrow": {
+          "pi": "d3ea5d448c2ca439a38c8558a89372f023b6ba6b2cb263ee975e4ece75a578d2",
+          "cadr": "5a9b1a8da95c1328942e1f0b4bf177e2ded8e1bee36cae9600d22b71dc29f8b7"
+        }
+      },
+      "note": "At example-tic-tac-toe/ttt-initial cadr now paints the baseline box-drawing board with a green user-cursor highlight (raw SGR, no new theme token). Remaining deltas are title/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-tic-tac-toe",
+      "checkpoint": "ttt-cursor",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c5f63674cdc014d188206e16b9a34f8d0ce215a7b722fafb7442fb2eadcee67f",
+          "cadr": "733c52cdc48554b802b01c2ae2260371dede2d6a2509d8815c87c776e4bb3df8"
+        },
+        "narrow": {
+          "pi": "7c970d7b1cd1ea2a73c31bf6ca2e99c72153e34fd4e85d5422fdbde37983c4e0",
+          "cadr": "d8850adce7c1d13353d153aafa7d9fcc9490e629bc1a4b7410e42968973a31a3"
+        }
+      },
+      "note": "At example-tic-tac-toe/ttt-cursor the user cursor has moved one cell up; cadr highlights that cell's borders. Residual deltas are title/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-tic-tac-toe",
+      "checkpoint": "ttt-played",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f2b8686c687e7ba9b20d05d955d28d9550e37c153cfa8a44513287555fb69880",
+          "cadr": "fdb05832f7baecc5bec59fa95601d141eeba256ff08c56673d1fb66ee63afbb1"
+        },
+        "narrow": {
+          "pi": "144dab0a0479e2d9b33fdcfbebe7d4f7a0f2fb8068c16c82499747845f40bcbd",
+          "cadr": "1f2173b93fdaf70e8f7c50b4fd24f1b2604a5d8ca66f9ab1f5c0017b1d4bcf0a"
+        }
+      },
+      "note": "At example-tic-tac-toe/ttt-played Player X occupies the highlighted top-center cell and both sides show the empty-faux-queue error plus Agent turn (O). After Part E's driver fires session-start on UI attach, cadr's footer is 1.5k/1.5k (was 1.4k) and the leftover initial-board border line has scrolled off; two quiet recaptures pinned the same cadr pair. Residual deltas are title/chrome layout, I04 identity wrapping, and I01 ANSI segmentation \u2014 not a missing cursor painter."
+    },
+    {
+      "scenario": "example-space-invaders",
+      "checkpoint": "invaders-initial",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "aa91b176ddd9ecb858664d11d71965f8d8e82c607508a06a6e7720b5d8c21ecf",
+          "cadr": "8af49cacd934bca2626395f4eb3040460380a44b6d3f9b893dc2f1a1242e6d43"
+        }
+      },
+      "note": "At example-space-invaders/invaders-initial both sides render a frozen 60-column board (narrow is excluded: baseline pi aborts when a line exceeds 48 columns). Remaining deltas are uncolored cadr glyphs vs pi SGR, I04 identity wrapping, and I01 ANSI segmentation. invaders-left/right stay as checkpoints: their incremental PTY slices are aligned (no Kitty key-release), so they must not carry dispositions."
+    },
+    {
+      "scenario": "example-snake",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "8e30c21f79c0f357b5a84780b592bf82620318a902c40bad10298b4224a15f6f",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        },
+        "narrow": {
+          "pi": "6d2bcec6db15f8ae07eab6069b356e6b3e7f98783ecc327d8db8fd2a0940d10a",
+          "cadr": "666f94185337398d8dd85f5ccaad8a6221b46871752b0929c1b48a42d58b64eb"
+        }
+      },
+      "note": "At example-snake/process-exit both sides have left /snake; remaining deltas are startup chrome / I04 identity wrapping and I01 ANSI teardown, not the board painter."
+    },
+    {
+      "scenario": "example-tic-tac-toe",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "55e471dc9ab6192a435dd9d36e1e543a1b1e4597a1bbf45289637ec545eb813b",
+          "cadr": "7a69b407c3d784318ca366777f310f7aec672f1f846e75dd62208cf0b7279cb9"
+        },
+        "narrow": {
+          "pi": "88018b9f7922816e72e1bcb1ee2b259670fe43a975190a543316badc0a2d1871",
+          "cadr": "ce900ca247d48b23ea0c5fbc93bca2175a719107100c0d38f46f212dd8d25abb"
+        }
+      },
+      "note": "At example-tic-tac-toe/process-exit the overlay is gone. The cadr pair moved with ttt-played: session-start now fires on UI attach, so the leftover conversation footer is 1.5k/1.5k and the stale board-border scroll line is gone. Residual deltas are post-game chrome / I04 wrapping and I01 ANSI teardown, not the cursor-highlight painter."
+    },
+    {
+      "scenario": "example-space-invaders",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3dc89139f339c28bf7c5f09d892b43420724e9a80faa59550f9867dc5033642e",
+          "cadr": "3dc89139f339c28bf7c5f09d892b43420724e9a80faa59550f9867dc5033642e"
+        }
+      },
+      "note": "At example-space-invaders/wide/process-exit the semantic screens match after leaving /invaders. Remaining bytes are I01 ANSI teardown only."
+    },
+    {
+      "scenario": "example-bookmark",
+      "checkpoint": "bookmark-labeled",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "a17a70e5022b6e74146a5ca015b2cf49c38ad7ce16c8c752070e9d562656085d",
+          "cadr": "532dfb41e4aca5081908cfcb641c541f127d70bb906caf8f5e72c433cbbdf5f4"
+        },
+        "wide": {
+          "pi": "4000236e8272e66828b2077043a404317eee6669f0ee87a876c31486b89905e6",
+          "cadr": "99a1aea7a0d8c40029de00f59fafa824923f64c365fb1f376430f0658ecb6ad6"
+        }
+      },
+      "note": "At example-bookmark/bookmark-labeled both sides show Bookmarked as: first after a faux assistant turn. Residual deltas are startup Extensions listing, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-bookmark",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "63d834586d7199f224133861e937a3ac3318f5f90b252baa4867568dfb08d821",
+          "cadr": "2f8cc5445bb7a3aa08787461550dc8ba96e3ad453d336a7380eca1502d837705"
+        },
+        "wide": {
+          "pi": "450a5ea7757df2e8aa463718a2e2887647759ace235bc54b551055ab86062d3e",
+          "cadr": "6aee9a69fa180428d93971d4e7f9304a34bcaa000443e20efca0df2ee99316a6"
+        }
+      },
+      "note": "At example-bookmark/process-exit the bookmark notify is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the label."
+    },
+    {
+      "scenario": "example-commands",
+      "checkpoint": "commands-list",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "aa887497819e5ed7e42c9f99a3de59a5a1a9845d16e278cf5e27867fb6f27e68",
+          "cadr": "dda4e725ba80206a7828c20525cc86aeca8e864f8ffa8dad1b1f2abd23fecdaa"
+        },
+        "wide": {
+          "pi": "03de233e4a9532ae87e1b2e3bd679cb2da67fced5c49bdcfdf4d6aa71ecb712d",
+          "cadr": "d3738d8a66408459ca5665210d5d3997e6366db35bd5e8518862ca31365553d0"
+        }
+      },
+      "note": "At example-commands/commands-list both sides show Available Commands with --- Extensions --- and /commands - List available slash commands. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-commands",
+      "checkpoint": "commands-path",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "7be648510bdae49db5b6a0d95fee1e6bd27f23b37eb9f157d814bdc5e7c2a054",
+          "cadr": "94782fa1b6d978b068c06cccfbc73006ea4b5871498faf37f8877e8dbdc55a60"
+        },
+        "wide": {
+          "pi": "111f51b2fd9fea6eb18548806a9048eb3646363d1ed0652ea5bcfac84c082217",
+          "cadr": "84c7d7db8b7a6ccb1fedbea1e9c34e5c5f738a51fc274c60198320fd6eecbf7e"
+        }
+      },
+      "note": "At example-commands/commands-path both sides opened the View source path? confirm after selecting /commands. Residual deltas are path/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-commands",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "cf56acda106c360e656e6032afab12155ada93943a706da3a7ed0eff439a9562",
+          "cadr": "e3c3807faef5aa75aae7a06a2f8a4e6ef312ce9d3cc1a9a861ac924cd5b11e3a"
+        },
+        "wide": {
+          "pi": "8104bd35e239541e2cbdc52b5aaea17959d0643763e27be0585ad1ca7ef9a604",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        }
+      },
+      "note": "At example-commands/process-exit the selector is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the command list."
+    },
+    {
+      "scenario": "example-custom-footer",
+      "checkpoint": "footer-off",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "fdd5dab7d6da6f8f67e1774a00313180a0018e2eb21885aad70a56fa25554db5",
+          "cadr": "e1de1804ff966b37954a66b4a60ae43742f475f5ae99647dd43bbdc9e9810ca0"
+        },
+        "wide": {
+          "pi": "7c92eb43ce06a0391c4f359046578c3e0c7e168622ba93c4ab2b88b78d2bcce2",
+          "cadr": "7e1710c0cba04d8183584688f81a0fdcd868b52a882cc7ff6ed70ee5ca10a7fb"
+        }
+      },
+      "note": "At example-custom-footer/footer-off both sides show Default footer restored. Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-custom-footer",
+      "checkpoint": "footer-on",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "1e3f17781450261cd95e69d78a078a5c0dbb69c4da0b5216755f2f70d220416e",
+          "cadr": "3ff5503f3b974c4adaae67db885bb4a9a730b3bebe15a8ff274f07f882836181"
+        },
+        "wide": {
+          "pi": "c60fc149459c947d3b8708453298537aba28cb6af31d9e892d645591e53ce658",
+          "cadr": "4bb48231b1e47bffac580f5b239ec2f2fc8629ce69c3fe4c7bdf4bffa240fb13"
+        }
+      },
+      "note": "At example-custom-footer/footer-on both sides show Custom footer enabled and a token/model footer line. Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-custom-footer",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "0d8cac5e4443236921688fbd02976133c5ea707bac3e5a433b9a01880f53a7d6",
+          "cadr": "9c13c844b962e030a6db4b875bf3b094a26a996ad725a8bac50824f97a610d78"
+        },
+        "wide": {
+          "pi": "957b14936a0d56d7c6b278c1127667e53df3135449e85411ed40f3e23c123380",
+          "cadr": "619d8c954de8760c514540e23bd4f34852da525d5b9477ac47ef8b6f5b30fdba"
+        }
+      },
+      "note": "At example-custom-footer/process-exit the custom footer is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the token line."
+    },
+    {
+      "scenario": "example-custom-header",
+      "checkpoint": "header-off",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d92fc77e496b6c4756a2b3671e9a09e1fd2c40718186253efd58558fe864c92e",
+          "cadr": "be2103f870c5abd19600f8bb65d844ae49be948fb6e67b05cb9153529456e696"
+        },
+        "wide": {
+          "pi": "17912f4c5be15c757be6c1fa43ef46d4794b6293b4eef6087a5c3f53386ef96f",
+          "cadr": "fe55c9bbc14d62857d0cf6c83bf84721778c738ea8448e4c79d5a0681e1667e0"
+        }
+      },
+      "note": "At example-custom-header/header-off both sides show Built-in header restored after /builtin-header. Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-custom-header",
+      "checkpoint": "header-on",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "9a375bb613bddaa31c5d96583bff8279060d151e97df1fbb31312556b3b87b8f",
+          "cadr": "63b6af7a57d34092f994efe1419aa831190e89dca1e58357312eabdbb711bca9"
+        },
+        "wide": {
+          "pi": "3160bd350a77e6d08ffb7d8b29c22be571e6e9fbf48f6b3d66236612bf0762b0",
+          "cadr": "d8b0fcbc67c73d4fb6ea75aec6e1ab375b1ca83274532575cd52e99af13a61db"
+        }
+      },
+      "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.84.1. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-custom-header",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6107b318fc8ece3d07fcc6842aa27990c2b39f7fbbac65598d9e6dd73b037c9c",
+          "cadr": "719a96111737788f012c6d6ac4b479995df6cdbb1fdb548b7930cbf7694e75de"
+        },
+        "wide": {
+          "pi": "40117d5c4b4322f6fef6cdf4f40c3a4e192562fe1492c8aaa492d4bdc073894e",
+          "cadr": "a740bc25cea6fdcb5c69f5638cb9687837f7ad9e7f1835a9b2022c4862e5cb35"
+        }
+      },
+      "note": "At example-custom-header/process-exit the custom header is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the mascot."
+    },
+    {
+      "scenario": "example-event-bus",
+      "checkpoint": "event-bus-emit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "b7f2bfc732ba7a140509d40f613d0048dbfca006765de5bd68f3e06861142a41",
+          "cadr": "2b4a0f76da531ff521ab369ed9a8f2dc8f82bf2f6f1200cba927d17efdd0932f"
+        },
+        "wide": {
+          "pi": "ada0b4bd1e7e21cc56af11866c23c46e7922ffcc25f53f2088ead4158f4b2e54",
+          "cadr": "18b3fcb9fe7b52f8d25ea05876ff48afc7f42732b8a3f097e746f82e2b5d5cf8"
+        }
+      },
+      "note": "At example-event-bus/event-bus-emit both sides show Event from /emit command: hi. Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-event-bus",
+      "checkpoint": "event-bus-startup",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "fd0fc32f54970895a847ad00818c539b01839a7594c22ac4c016cabe0de980e4",
+          "cadr": "94774379c0077e96f0755efae96926c6892c10ee06ae1a48b140e0dd9ba72b1c"
+        },
+        "wide": {
+          "pi": "e79d1fbfff686838ed7777ff6a5d4c06eb4213835991675f6cae15b101f7ec0b",
+          "cadr": "118e7f78a3c9367756ad793be31451d6a2c2b724ca17331419194ca7295d004e"
+        }
+      },
+      "note": "At example-event-bus/event-bus-startup both sides show Event from event-bus-example: Session started. Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-event-bus",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "d74eb060eac2931d170ff482bd4206380a1ef5497a5a18d7a16215fda0a01be4",
+          "cadr": "d1282f45190e4e8f415ce437e77281b11bf750e0ef8f284f8450fbcd8be9cc07"
+        },
+        "wide": {
+          "pi": "cf59c72ef8434587dabd8b6b90871f3b565202364141b53be93a29c093074c48",
+          "cadr": "c960de7282ff0c2cd6fd3c414b7436027dcc0aad241da47ba88241556b71dbe6"
+        }
+      },
+      "note": "At example-event-bus/process-exit the emit notify is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the event bus."
+    },
+    {
+      "scenario": "example-hello",
+      "checkpoint": "hello-result",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "5609ec4f61bae2ed314033a4f707fe3260b9dbd90fe4fa70bded341e0bf35c67",
+          "cadr": "5b1bb6ec4a395c38accb69cdeb49d33f8d431168cb109e62b5a7863c14da2607"
+        },
+        "wide": {
+          "pi": "c09e7ea71e54a5f671ba2bd790f8fc1ebc0a96f516c427f0cdd6a2ec52dfbf1e",
+          "cadr": "87100abbe1ecf5e5dbed640f9734e086ee1c893d447ba9bfb59a0c8947520944"
+        }
+      },
+      "note": "At example-hello/hello-result both sides execute the hello tool and print Hello, PartE!. Residual deltas are tool-call chrome (cadr shows JSON args; pi shows the tool name), startup Extensions listing, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-hello",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "85d5e466ed23f7b8bf22ce266603ea7b620af0c645413f96eb7ff3c58d561b4a",
+          "cadr": "de3bafec9afce8d97d184df368dac799905a25970ffbae32cba063f2022b4d80"
+        },
+        "wide": {
+          "pi": "46f335f90fd27f10810a7bfc54ad1732d6636361b7a416867293644b84a69170",
+          "cadr": "fbbe1bb5330ae51e7d9dc12aa98459aa1de089e91d01cd7e34f1e9de50e2db34"
+        }
+      },
+      "note": "At example-hello/process-exit the hello result is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the greeting text."
+    },
+    {
+      "scenario": "example-notify",
+      "checkpoint": "notify-ready",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "cf6d85a13b843ad72e90ea4ed2b3ff53b8918ee4cad2ebc87db41f708da2323f",
+          "cadr": "85a943a3aa0d932f8ff5ee67e41367d9b23a7d9a4046ac2163b05b8d7ca5b90c"
+        },
+        "wide": {
+          "pi": "887db10b50fed9da0bd51668306cbe27953e1c782ba8dc90a09c340197d30ba5",
+          "cadr": "7fd4d070210cf4fc7fa6d079bebf4618c29c111a14feac500fe732aac94f559e"
+        }
+      },
+      "note": "At example-notify/notify-ready both sides finished the faux turn that fires agent_end. OSC 777 title is I04 product identity (Pi vs Cadr). Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-notify",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "32889a7c15eef416053c432bd95d9bcc383a66df36f4790b82ce7b79f0dc3d19",
+          "cadr": "fcedcea7e8651422677f95da2a21c70c0c761f376b5b6ef9d48418ed97e033b1"
+        },
+        "wide": {
+          "pi": "c522428a864cbe98a9b02fa42bd104104f3cf82eb69586b8656945744129ce2f",
+          "cadr": "1d0beab2582e802c8231d4473edac8ceaa872f89ce3f780628648b5a9f657776"
+        }
+      },
+      "note": "At example-notify/process-exit the notify turn is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the OSC payload."
+    },
+    {
+      "scenario": "example-overlay-test",
+      "checkpoint": "overlay-open",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4b0d3a671816884de82ef07c4a426272c37ae3acfe7fd94f5fa0b8ef3daae42e",
+          "cadr": "54dcff4e80bbe57adce90711c0504c9fb7681537c116bc79571d92dfdbaf5a7c"
+        }
+      },
+      "note": "At example-overlay-test/overlay-open both sides show the 70-col Overlay Test box with edge-case rows and Search selected. Residual deltas are overlay compositing against startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-overlay-test",
+      "checkpoint": "overlay-search",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0ab40c7378a528344f089191237fb5f9862e82d931306911e0eccbba8057a3a4",
+          "cadr": "951235fe19fa6575505c8318cdea6fc51f0e3814ef91f3ff6b12424eab78212e"
+        }
+      },
+      "note": "At example-overlay-test/overlay-search both sides accepted Search: \"abc\". Residual deltas are notify/chrome layout, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-overlay-test",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "713cd7f5a17c52aeb978071ff8ed5fce4634ad31a528ac4da4517b8dacb5ad85",
+          "cadr": "29ca575f62d4fc9dd285f99894d56dc49e77a1cf749f7baefca64f373356a3aa"
+        }
+      },
+      "note": "At example-overlay-test/process-exit the overlay is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the overlay painter."
+    },
+    {
+      "scenario": "example-pirate",
+      "checkpoint": "pirate-on",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "290c2c32f0e454b3b824cc33832907c88a8a48a61ee89239e522d758d735496a",
+          "cadr": "2f2630d56c81580a66f639a3a496f7071489121aa1314458b8222a9fc1c71fbb"
+        },
+        "wide": {
+          "pi": "eba805ec714348b75c664a1a8667fa2c0e3fc814a019f0c195d0bcee0da82f6f",
+          "cadr": "707566d37a73f7019ca02f9b81916d09503626abd5e7ed386124986d10b24cd5"
+        }
+      },
+      "note": "At example-pirate/pirate-on both sides show Arrr! Pirate mode enabled!. Residual deltas are startup Extensions listing, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-pirate",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "8172ca3d36e5ff14f78c0a9aa658a25fd5d8b7bd521e3f62bef6ca2b41877a24",
+          "cadr": "cb34e9bc605ec668a4fe633fad44b94c892ffb8a3e03ffcd43a5ec6fb222696a"
+        },
+        "wide": {
+          "pi": "139c84108e77aa96af9c2c64d64c2faa5921b692620df739cb2ddd1737220dda",
+          "cadr": "ab1f0108e7d0e3cc2668188f945d95e1e4ccb147dee201b4530a8206c6066cb0"
+        }
+      },
+      "note": "At example-pirate/process-exit the pirate notify is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the toggle text."
+    },
+    {
+      "scenario": "example-session-name",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "baeccd26a0bf81385d0b63eb62f22589629bdde0606eb2e8690a2bc89a3285ce",
+          "cadr": "4e8f1e84b4202affab4b035ccfde1dc7fe8b06464fe1e9c981c161e1395f9de1"
+        },
+        "wide": {
+          "pi": "285cccfc91a2f8db7d905ed4ab685cfeeb57dc2de2da993438da828a94f01991",
+          "cadr": "a55979f4bc6538739a162e762e0f5c46de7b965ddb1187daca612cd03715cdaf"
+        }
+      },
+      "note": "At example-session-name/process-exit the name notify is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the session name."
+    },
+    {
+      "scenario": "example-session-name",
+      "checkpoint": "session-named",
+      "dimensions": [
+        "narrow",
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "6d23faf728e7d57b83c065dd66e1573008d800e6ca0b1fa5b0b099a5468e9bd2",
+          "cadr": "34418ef25fc255b07e4fe7a6955c60769206d09b840cef5966abd66b5eb4e09f"
+        },
+        "wide": {
+          "pi": "225b9f392eb98f3fe83978cb2f3e12f7605b4a07776b25c83b30e9d01ca1f7dd",
+          "cadr": "f386742c7c85cafeccc4bfe37198ee54c259f54c57c1767c20a084a6be514cdb"
+        }
+      },
+      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries \u2022 Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-dynamic-tools",
+      "checkpoint": "add-echo",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a46fd5bbf00ad3bce7a2ed7f7bcdaec14b1acb47da095b68f2c0dd8e42fe1d7a",
+          "cadr": "b9465b452713b38da973524abea2f0907a3bc6eac984760c58864254b8c119ca"
+        },
+        "narrow": {
+          "pi": "955091abd2836b001963dc032ba92c7747e9af0049513afad688c8f32432492a",
+          "cadr": "9b66cef68eb13e0a8d9e143f41b939f3cf61f7f346e0e85f51cb76747ca8c19e"
+        }
+      },
+      "note": "At example-dynamic-tools/add-echo both sides notify Registered dynamic tool: probe after /add-echo-tool. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-dynamic-tools",
+      "checkpoint": "echo-session",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9ea34d975fa38262b2e32652948ae0020d39884e03d3152d72e3b00d97a92400",
+          "cadr": "6d3699458d546a0c71dcf9bc294d285f0a8bbc9f341a08e0f4986ad2b3949f7f"
+        },
+        "narrow": {
+          "pi": "d329b4e5ce09e9b981a75aae4192f1ae4cf0efee63b17e85389fac84d6e4baad",
+          "cadr": "17784b2e6ba7c928866173c0c310fd2d5b7ecf25fbe1540c07f323e3b8fd9422"
+        }
+      },
+      "note": "At example-dynamic-tools/echo-session both sides notify Registered dynamic tool: echo_session on session_start. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-dynamic-tools",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "bd0ad48c0b761a6089b0798cc605b085dadfcb7a36999afe527330e156daf1d1",
+          "cadr": "e7f83c425d2a1ea46c2ec816c941f85312dc2f9bf6fc9b4b9de0023aa43e127c"
+        },
+        "narrow": {
+          "pi": "5aa70b3b5450af4cb025ec81243bb60eb0f7d49d229b2ae8bdebdbebb5977177",
+          "cadr": "a84c476af6d2bfc89a354390ae0899144aacb42c52a68a1236933d81f0479923"
+        }
+      },
+      "note": "At example-dynamic-tools/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-entry-renderer",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "69d87a64b16e6afff6ddd38c16f70e79f425168a0dfb7ecc11c4a06b321a2611",
+          "cadr": "e9f4d1ac2f9ee052677f42785cc01df918abaac4afea565a009be7e0e6dc3a12"
+        },
+        "narrow": {
+          "pi": "9932ecb48024b10cc1735d010875f45a18a3bf955f75deca5444c2d57dff6af5",
+          "cadr": "2540916f200dc194ed70bd273877710aa90a436501afeec6623e1b76b9f5f911"
+        }
+      },
+      "note": "At example-entry-renderer/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-entry-renderer",
+      "checkpoint": "status-card",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "00f509a5bd3bf80cbe7ce7e60fc38b51a11ccf75d4394f5810c52e1b7dcff9d0",
+          "cadr": "bd03c7464218dd011c7b0c994d6455fd203326cc56c8f98f980952ef03a1b432"
+        },
+        "narrow": {
+          "pi": "4a59f27586ab209f39096ccc902f74c13b245786308c4f65bb783c0037270f63",
+          "cadr": "9a5e3091f40f59b7faffde9c9c5c6df90af5d11ea5b4759c737091f73c98ae84"
+        }
+      },
+      "note": "At example-entry-renderer/status-card both sides render the status-card custom entry for detail-one. Residual deltas are chrome/layout, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-message-renderer",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "91a5d359857628ce040d62ff9accfd8711cb95e6e07362e4c0e113b1d780b721",
+          "cadr": "67c6481ed81e9b5ccc91845dba4e54aa6f22071409405232e1f83142d44fa9e4"
+        },
+        "narrow": {
+          "pi": "11171aa13c84559f0bf4d7a901507e2de9fced4dd041cb048d6f16359074b69a",
+          "cadr": "12b5e713be7e71a8920fbae7286082318ad76453683b9022f331f8ce4940a683"
+        }
+      },
+      "note": "At example-message-renderer/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-message-renderer",
+      "checkpoint": "status-message",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "82d59484252e416077d76ba10770daa8dba3b129cf7b2d88c123f8e75b493244",
+          "cadr": "a3efbb13e5fbcf797a4d7dd09923ebdc0aa12a75fbb9bb77a26eae6d52469064"
+        },
+        "narrow": {
+          "pi": "047066193089736a2f4e6d63ff559d58f4097fba3af1aab38c1d925ee209f247",
+          "cadr": "d708399bd77137463d78ce2dbface7f4b4e2f70eeb65c3a9cf30aa8395d5c0fd"
+        }
+      },
+      "note": "At example-message-renderer/status-message both sides paint [INFO] ready from the status-update renderer. Residual deltas are chrome/layout, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-qna",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "9d10a82c268a6ad48772f928daa6205fa1662fa2729cef83a2feec2caedb30f2",
+          "cadr": "4dbd079452bd8af90010d85b5e9404a7973aa7eea2ab390811988434abe3b1c4"
+        },
+        "narrow": {
+          "pi": "88c3a2738ab8d6ee831cf6a4d69d7f7f862a42995f765bf71983c331fea6a102",
+          "cadr": "c34b2456a943a7d5f26754f4b5c11b6bc935f242c5477215e0aafd09a5ba6523"
+        }
+      },
+      "note": "At example-qna/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-qna",
+      "checkpoint": "qna-empty",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "3a494450e9d3bea535c35526f09af6301ff9d0431c88f888168fcf58eb15470b",
+          "cadr": "3f25d53dc7fc2abfff1f00da3aaf82ca6d9d24490618bc4cdcd650445252d1ca"
+        },
+        "narrow": {
+          "pi": "f556331ac1f3a0fdf3090c237cf3f6d4e4092648d939e6b5bd35df0b3a1ffa44",
+          "cadr": "148ec34b06c9d170887469a97045947842203519c809122c62cb3ff8776b3529"
+        }
+      },
+      "note": "At example-qna/qna-empty both sides notify No assistant messages found. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-reload-runtime",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "c620c180982d6b3d5fa0b58cb9e46623aec18ed763325ec49bdd22194ec0870c",
+          "cadr": "ba4714e97f78d8983f9b99f205a31eb79d33b94a8c82d54a1168a506c925bf93"
+        },
+        "narrow": {
+          "pi": "0f89fe1946d359336384dbcdf8f7a1aa58c8ad0cd240c243a8f8db178a802b36",
+          "cadr": "6ec19112f1d49ad06e74b0b461d0b07cdfcd459aca52162c417f199164354223"
+        }
+      },
+      "note": "At example-reload-runtime/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-reload-runtime",
+      "checkpoint": "reload-queued",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "a1ce8f466f65cdbb312d6474d2e9bbc42301612e6d0987c7f3c540a93e3ae180",
+          "cadr": "190d43139c36b901624b83f2284ba3dcf87959ef6373a0080f6638b1d36f108a"
+        },
+        "narrow": {
+          "pi": "8977d5d5d3d761286de2942f4dbb83404aa5e5ad0e0f26157932565cca26fed3",
+          "cadr": "1c321f2d6453dc25234c04a143c4102d0babc66c42f19b6aac07521924d113e3"
+        }
+      },
+      "note": "At example-reload-runtime/reload-queued both sides show Queued /reload-runtime as a follow-up command. Residual deltas are tool chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-send-user-message",
+      "checkpoint": "ask-turn",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6b2b2807bdc7a055a72b637b85373167d9936c4c0916f54f1c508537682698b9",
+          "cadr": "1c4cf34078362d651b487571274f90aa399805e1e8975176de2bbcc08ee25a86"
+        },
+        "narrow": {
+          "pi": "53b48f35e18bba67017e22b2609149e4ba913edc12646ba26a779f096536eefb",
+          "cadr": "b648c52453b84b0dea4b9b0bdc1da08fa2b3ca7e2797a6995389b30399e96031"
+        }
+      },
+      "note": "At example-send-user-message/ask-turn both sides show the faux reply ask reply. after /ask ping. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-send-user-message",
+      "checkpoint": "ask-usage",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "41fd31ce1f799a8dfd9aadb7ccb470fe4255680b4fa61ee2857abe66e23f07d7",
+          "cadr": "7751e5345972fac708a22f164ca8124eb83bf3483e9f1434c8bc19ca5ed11a5e"
+        },
+        "narrow": {
+          "pi": "6ccb26e2bcd1bfbea7bbe894205ca3239dbcdd933217d1d44a9f9befe1e8ddfb",
+          "cadr": "0d6f26c5b0080749ae88a478a306dc4a2e9f2253a90b9ed34f33bc84c050e408"
+        }
+      },
+      "note": "At example-send-user-message/ask-usage both sides show Usage: /ask <message>. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-send-user-message",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "83918b47a05b02c90d1eb0a3ac1a7c04551bf29b5d0f0ee2acbf99c77cdb9513",
+          "cadr": "bef601ecb45e84e48a76952c09809deb6580916522deedcd4abd4e7d38230fe9"
+        },
+        "narrow": {
+          "pi": "38103b98d37518122cdd5b881b3271e949c9696d1e31cb2ff3448081f473dc53",
+          "cadr": "ec27515af711a8da5d919b1316c1469ed8debc93ab88e8ee2fea75f20e954e18"
+        }
+      },
+      "note": "At example-send-user-message/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-thinking-label",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "60b4af656831708ef5cd0863841839fbc403d92821db699b9a5a110ac4190940",
+          "cadr": "c1cdeeee7986dabe18e01add8989183a0c444417f0f4660d365db6428ad1c319"
+        },
+        "narrow": {
+          "pi": "030834f18e56c29be21914d8e57acd9644845927c6b3d82eff3fa3d6a0753c23",
+          "cadr": "fbea654a22314573cc223c51ace900f83f51dc90e3e847d0136bf6447d1caece"
+        }
+      },
+      "note": "At example-thinking-label/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-thinking-label",
+      "checkpoint": "thinking-label-set",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "f3a54c9f59bd97a2d9b76122d28cce4ed6c7a7cdbce0d21d592608ffc2428052",
+          "cadr": "bc764d85d707073387bd0ebebe82e5d4ef9dba7092aa62c1776d467b01641054"
+        },
+        "narrow": {
+          "pi": "824ddd91c47904e450e976dda3f247fd88a73675ba90d117ee4ff48ba7ea0d56",
+          "cadr": "319b4553edd6ebaed8e530df7818e856d734656c799428325da3cae336fb0f82"
+        }
+      },
+      "note": "At example-thinking-label/thinking-label-set both sides show Hidden thinking label set to: Test. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-todo",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "527c62b4c74be62c15b6af5b5d68995587bf43dc391a96e94f79e5689575546f",
+          "cadr": "868eda83a1dcd60aefb8ad87e7bd422ef4a01be1407593b70fe964c205d5d78f"
+        },
+        "narrow": {
+          "pi": "539c981daba050dbf0883d112dbf7c77cb5a06901083fbf260693a1045aca479",
+          "cadr": "ecca680143be70342997952cd4a97435ccd95df95710c3e550a85dd585f3d271"
+        }
+      },
+      "note": "At example-todo/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-todo",
+      "checkpoint": "todo-added",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "03fe741865d8c045908b0dbdb512ba41a5fb12834a635ba1a065c31c8d667701",
+          "cadr": "6e7c8265a578cdc3baef7ff39e602ed48d1c8736113eb75051c355af22da0159"
+        },
+        "narrow": {
+          "pi": "c7d0c9bdfe9d7c5c8aa5231763a74e64fc9eaf581fd46d4e71b5cf45b4db45ad",
+          "cadr": "85d60dbedea07c1052d1259c22a256b91ec1f83903672d119ded8c8c0a1212e2"
+        }
+      },
+      "note": "At example-todo/todo-added both sides record the faux todo add. Residual deltas are result chrome (pi custom renderer vs cadr tool text), I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-todo",
+      "checkpoint": "todos-empty",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "89d834872aa54f3d358d60cb051086e338b673782afbe6de50f12080152fe85e",
+          "cadr": "1b19ecb3be988eb9692b3afb4da9fd9663676bbe0119535c44f1f2e1f40dddd4"
+        },
+        "narrow": {
+          "pi": "eb1c05ebc310e47c5b0eb5729031e92be20b51e1eb8d53bf960bc17e6fda2ceb",
+          "cadr": "eaa3150bc06c293ef96ecbae4187b6865659898dcfee684679598eff37587214"
+        }
+      },
+      "note": "At example-todo/todos-empty both sides show No todos yet. Ask the agent to add some!. Residual deltas are dialog chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-tools",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "1ff0b427524211467278288260d6203e2457981c0f341aa255aeaeab4051796a",
+          "cadr": "36a64a8d73dc19a66aa63d1587f6455e9be69c414c1d1dad98ab3be411db8694"
+        },
+        "narrow": {
+          "pi": "727fffd72df5c81c07f4c3b6f18ac0163348ccbf2a0fcba8d6e9af9814c02f75",
+          "cadr": "48f9a791b208b63e234b20b15229afd415d6778462e1cbe4bbc72f4f8c9b4151"
+        }
+      },
+      "note": "At example-tools/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "example-tools",
+      "checkpoint": "tools-selector",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "6cc4ad7aa692fb14e2cbda5982fda9e37dc4c3541898409591ee494b47471ebd",
+          "cadr": "bb528caaa42b23edbe6de43233ee8c4e0d2c157a053b69392eb6ed311311e771"
+        },
+        "narrow": {
+          "pi": "372f137886ea18e9ef0d01e6655337ec2810072390665b07682b622ee731c673",
+          "cadr": "4f385a6d305c89d8c743b18cfa43f01911e2d7f6e911b3c553fab48b09269674"
+        }
+      },
+      "note": "At example-tools/tools-selector both sides open the Tool Configuration selector. Residual deltas are option chrome, I04 identity wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-trigger-compact",
+      "checkpoint": "compact-started",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "0a5daa7ee3078590c6a1b15d71b9f22b4de8c1a7c772fcff9b48fa24f79e5a82",
+          "cadr": "4d8488bde5598c955f32faed50298f5cda502d7ac353b07c6b9d9b0afc38cec3"
+        },
+        "narrow": {
+          "pi": "3b323078d66b623df5c3d43883ea6498b7b8fd504c399d5a555aa528a1947f7a",
+          "cadr": "c55eca78cc441e34fdddd83e32ca6c0b461feba56018b005170d7e8e71e187e8"
+        }
+      },
+      "note": "At example-trigger-compact/compact-started both sides show a Compaction notify. pi keeps Compaction started (async onComplete never fires on an empty session); cadr prints Compaction completed synchronously. Residual deltas are that notify wording, startup chrome, I04 wrapping, and I01 ANSI segmentation."
+    },
+    {
+      "scenario": "example-trigger-compact",
+      "checkpoint": "process-exit",
+      "dimensions": [
+        "wide",
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "098cf21dd4c5208de397c93f5c563365533f8f38e5b10f6b8c9d5206b35fafcd",
+          "cadr": "c805b8c0c375e35f00db358671953c5a61b6a942770460bfe3e70c936029d78d"
+        },
+        "narrow": {
+          "pi": "62bc2d2b783a572d25464dead2ad9b5ad894c2c32c5fe3ef11ed2a2b15f8fe0f",
+          "cadr": "ea57650829cea71a17819ffb4ce7bd75a22478a779483aad3758fe07804c3952"
+        }
+      },
+      "note": "At example-trigger-compact/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
     }
   ]
 }

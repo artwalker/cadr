@@ -269,20 +269,21 @@
 
 (defun space-invaders-start (component)
   (unless (space-invaders-running-p component)
-    (setf (space-invaders-running-p component) t
-          (space-invaders-thread component)
-          (sb-thread:make-thread
-           (lambda ()
-             (loop while (space-invaders-running-p component)
-                   do (sleep +invaders-tick-seconds+)
-                      (when (and (space-invaders-running-p component)
-                                 (not (space-invaders-paused-p component)))
-                        (sb-thread:with-mutex ((space-invaders-lock component))
-                          (invaders-tick (space-invaders-state component)
-                                         (space-invaders-keys component)))
-                        (cadr-tui:tui-request-render
-                         (space-invaders-tui component)))))
-           :name "cadr space invaders example timer")))
+    (setf (space-invaders-running-p component) t)
+    (unless (example-render-diff-harness-p)
+      (setf (space-invaders-thread component)
+            (sb-thread:make-thread
+             (lambda ()
+               (loop while (space-invaders-running-p component)
+                     do (sleep +invaders-tick-seconds+)
+                        (when (and (space-invaders-running-p component)
+                                   (not (space-invaders-paused-p component)))
+                          (sb-thread:with-mutex ((space-invaders-lock component))
+                            (invaders-tick (space-invaders-state component)
+                                           (space-invaders-keys component)))
+                          (cadr-tui:tui-request-render
+                           (space-invaders-tui component)))))
+             :name "cadr space invaders example timer"))))
   component)
 
 (defun space-invaders-stop (component)

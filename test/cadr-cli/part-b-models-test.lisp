@@ -387,6 +387,66 @@
               (cadr-cli:model-registry-error
                registry))))))))
 
+(test model-registry-loads-image-input-and-lists-custom-provider
+  ;; Regression, found by scripts/goal20-paired-paths.*: json-model put the
+  ;; result of (find "image" input) -- the string "image" -- into the
+  ;; boolean-typed supports-images-p slot, so one image-capable entry aborted
+  ;; the whole models.json load.  A custom provider is also only "available"
+  ;; when the registry can read auth.json, which is what print-cli-models
+  ;; failed to pass.
+  (with-test-directory (root)
+    (let ((models-path
+            (merge-pathnames "agent/models.json" root))
+          (auth-path
+            (merge-pathnames "agent/auth.json" root)))
+      (write-json
+       models-path
+       (args
+        "providers"
+        (args
+         "goal20faux"
+         (args
+          "baseUrl" "http://127.0.0.1:9/v1"
+          "api" "openai-completions"
+          "models"
+          (vector
+           (args
+            "id" "faux-vision"
+            "name" "Faux Vision"
+            "contextWindow" 4242
+            "maxTokens" 512
+            "input" (vector "text" "image")))))))
+      (write-json
+       auth-path
+       (args
+        "goal20faux"
+        (args "type" "api_key" "key" "faux")))
+      (let* ((registry
+               (cadr-cli:make-model-registry
+                :path models-path
+                :credentials
+                (cadr-cli:make-file-auth-storage
+                 auth-path)))
+             (model
+               (find
+                "faux-vision"
+                (cadr-cli:model-registry-all registry)
+                :key #'cadr-ai:model-id
+                :test #'string=)))
+        (is (null
+             (cadr-cli:model-registry-error
+              registry)))
+        (is (not (null model)))
+        (is (eq t
+                (cadr-ai:model-supports-images-p
+                 model)))
+        (is (member
+             "faux-vision"
+             (cadr-cli::model-registry-available-models
+              registry)
+             :key #'cadr-ai:model-id
+             :test #'string=))))))
+
 (test model-registry-refresh-does-not-promote-benign-signals-to-user-errors
   (let ((registry
           (cadr-cli::%make-model-registry))

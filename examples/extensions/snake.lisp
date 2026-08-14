@@ -20,9 +20,16 @@
   (and (= (car left) (car right))
        (= (cdr left) (cdr right))))
 
+(defun snake-harness-random (limit &optional random-state)
+  (if (example-render-diff-harness-p)
+      0
+      (if random-state
+          (random limit random-state)
+          (random limit))))
+
 (defun snake-spawn-food (snake &optional (random-state *random-state*))
-  (loop for point = (snake-point (random +snake-width+ random-state)
-                                 (random +snake-height+ random-state))
+  (loop for point = (snake-point (snake-harness-random +snake-width+ random-state)
+                                 (snake-harness-random +snake-height+ random-state))
         unless (find point snake :test #'snake-point=)
           return point))
 
@@ -114,19 +121,20 @@
 
 (defun snake-component-start (component)
   (unless (snake-component-running-p component)
-    (setf (snake-component-running-p component) t
-          (snake-component-thread component)
-          (sb-thread:make-thread
-           (lambda ()
-             (loop while (snake-component-running-p component)
-                   do (sleep +snake-tick-seconds+)
-                      (when (and (snake-component-running-p component)
-                                 (not (snake-component-paused-p component)))
-                        (sb-thread:with-mutex ((snake-component-lock component))
-                          (snake-tick (snake-component-state component)))
-                        (cadr-tui:tui-request-render
-                         (snake-component-tui component)))))
-           :name "cadr snake example timer")))
+    (setf (snake-component-running-p component) t)
+    (unless (example-render-diff-harness-p)
+      (setf (snake-component-thread component)
+            (sb-thread:make-thread
+             (lambda ()
+               (loop while (snake-component-running-p component)
+                     do (sleep +snake-tick-seconds+)
+                        (when (and (snake-component-running-p component)
+                                   (not (snake-component-paused-p component)))
+                          (sb-thread:with-mutex ((snake-component-lock component))
+                            (snake-tick (snake-component-state component)))
+                          (cadr-tui:tui-request-render
+                           (snake-component-tui component)))))
+             :name "cadr snake example timer"))))
   component)
 
 (defun snake-component-stop (component)
@@ -138,19 +146,26 @@
   (setf (snake-component-thread component) nil)
   component)
 
+(defun snake-ansi (code text)
+  "Baseline snake.ts uses raw SGR (dim/green/red/yellow/bold), not theme tokens."
+  (format nil "~C[~Am~A~C[0m" #\Escape code text #\Escape))
+
 (defun snake-board-line (state y effective-width)
   (with-output-to-string (output)
-    (write-string " │" output)
+    (write-string (snake-ansi "2m" " │") output)
     (loop for x below effective-width
           for point = (snake-point x y)
           do (write-string
               (cond
-                ((snake-point= point (first (snake-state-snake state))) "██")
-                ((find point (rest (snake-state-snake state)) :test #'snake-point=) "▓▓")
-                ((snake-point= point (snake-state-food state)) "◆ ")
+                ((snake-point= point (first (snake-state-snake state)))
+                 (snake-ansi "32m" "██"))
+                ((find point (rest (snake-state-snake state)) :test #'snake-point=)
+                 (snake-ansi "32m" "▓▓"))
+                ((snake-point= point (snake-state-food state))
+                 (snake-ansi "31m" "◆ "))
                 (t "  "))
               output))
-    (write-string "│" output)))
+    (write-string (snake-ansi "2m" "│") output)))
 
 (defmethod cadr-tui:component-render
     ((component snake-component) width &key focused-p)
@@ -162,22 +177,34 @@
            (footer
              (cond
                ((snake-component-paused-p component)
-                "PAUSED · any key resumes · Q quits")
+                (format nil "~A any key resumes · Q quits"
+                        (snake-ansi "33;1m" "PAUSED")))
                ((snake-state-game-over-p state)
-                "GAME OVER · R restarts · Q quits")
+                (format nil "~A · R restarts · Q quits"
+                        (snake-ansi "31;1m" "GAME OVER")))
                (t "arrows/WASD move · ESC saves · Q quits"))))
       (append
-       (list (format nil " ╭~A╮" (make-string box-width :initial-element #\─))
-             (format nil " │SNAKE · Score: ~D · High: ~D~V@T│"
-                     (snake-state-score state)
-                     (snake-state-high-score state)
-                     box-width "")
-             (format nil " ├~A┤" (make-string box-width :initial-element #\─)))
+       (list (snake-ansi "2m" (format nil " ╭~A╮" (make-string box-width :initial-element #\─)))
+             (format nil "~A~A │ ~A │ ~A~A"
+                     (snake-ansi "2m" " │")
+                     (snake-ansi "1;32m" "SNAKE")
+                     (format nil "Score: ~A"
+                             (snake-ansi "1;33m"
+                                         (princ-to-string (snake-state-score state))))
+                     (format nil "High: ~A"
+                             (snake-ansi "1;33m"
+                                         (princ-to-string
+                                          (snake-state-high-score state))))
+                     (snake-ansi "2m" "│"))
+             (snake-ansi "2m" (format nil " ├~A┤" (make-string box-width :initial-element #\─))))
        (loop for y below +snake-height+
              collect (snake-board-line state y effective-width))
-       (list (format nil " ├~A┤" (make-string box-width :initial-element #\─))
-             (format nil " │~VA│" box-width footer)
-             (format nil " ╰~A╯" (make-string box-width :initial-element #\─)))))))
+       (list (snake-ansi "2m" (format nil " ├~A┤" (make-string box-width :initial-element #\─)))
+             (format nil "~A~A~A"
+                     (snake-ansi "2m" " │")
+                     footer
+                     (snake-ansi "2m" "│"))
+             (snake-ansi "2m" (format nil " ╰~A╯" (make-string box-width :initial-element #\─))))))))
 
 (defun snake-event-direction (event)
   (let ((text (or (cadr-tui:input-event-text event) "")))
@@ -222,7 +249,12 @@
          (when (and direction
                     (not (snake-direction-opposite-p
                           (snake-state-direction state) direction)))
-           (setf (snake-state-next-direction state) direction))))))
+           (setf (snake-state-next-direction state) direction))
+         (when (and (example-render-diff-harness-p)
+                    (not (snake-state-game-over-p state)))
+           (sb-thread:with-mutex ((snake-component-lock component))
+             (snake-tick state))
+           (cadr-tui:tui-request-render (snake-component-tui component)))))))
   (values nil nil))
 
 (defmethod cadr-tui:component-dispose ((component snake-component))

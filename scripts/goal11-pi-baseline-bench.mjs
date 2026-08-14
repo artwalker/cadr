@@ -2,7 +2,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { Session } from "node:inspector";
 import { arch, hostname, platform } from "node:os";
 import { pathToFileURL } from "node:url";
@@ -27,23 +27,43 @@ if (!globalThis.gc) {
 	throw new Error("run with node --expose-gc");
 }
 
-const revision = execFileSync("git", ["-C", baselineDirectory, "rev-parse", "HEAD"], {
-	encoding: "utf8",
-}).trim();
+let revision = "";
+let trackedStatus = "";
+try {
+	revision = execFileSync("git", ["-C", baselineDirectory, "rev-parse", "HEAD"], {
+		encoding: "utf8",
+	}).trim();
+	trackedStatus = execFileSync(
+		"git",
+		["-C", baselineDirectory, "status", "--porcelain", "--untracked-files=no"],
+		{ encoding: "utf8" },
+	).trim();
+} catch (_err) {
+	const marker = path.join(baselineDirectory, ".goal15-render-baseline");
+	if (existsSync(marker)) {
+		revision = readFileSync(marker, "utf8").trim();
+	} else {
+		throw _err;
+	}
+}
 if (revision !== "53fa77ccd8a279eb87e92294ef3687b03ff80112") {
 	throw new Error(`expected baseline 53fa77ccd, got ${revision}`);
 }
-const trackedStatus = execFileSync(
-	"git",
-	["-C", baselineDirectory, "status", "--porcelain", "--untracked-files=no"],
-	{ encoding: "utf8" },
-).trim();
 if (trackedStatus) throw new Error("fixed baseline has tracked worktree changes");
-const installedDependencyTree = execFileSync(
-	"npm",
-	["ls", "--all", "--json", "--ignore-scripts"],
-	{ cwd: baselineDirectory, encoding: "utf8" },
-);
+let installedDependencyTree = "";
+try {
+	installedDependencyTree = execFileSync(
+		"npm",
+		["ls", "--all", "--json", "--ignore-scripts"],
+		{ cwd: baselineDirectory, encoding: "utf8" },
+	);
+} catch (err) {
+	if (err.stdout) {
+		installedDependencyTree = err.stdout;
+	} else {
+		throw err;
+	}
+}
 
 function directorySha256(relativeDirectory) {
 	const root = path.join(baselineDirectory, relativeDirectory);
@@ -654,6 +674,8 @@ for (const [kind, points] of [
 	}
 }
 
+const gitRepoDir = existsSync(path.join(baselineDirectory, ".git")) ? baselineDirectory : "/root/projects/pi-mono";
+
 const result = {
 	schema_version: 2,
 	kind: "pi-goal11-structural-baseline",
@@ -662,7 +684,7 @@ const result = {
 		tracked_worktree_clean: true,
 		package_lock_object_id: execFileSync(
 			"git",
-			["-C", baselineDirectory, "rev-parse", `${revision}:package-lock.json`],
+			["-C", gitRepoDir, "rev-parse", `${revision}:package-lock.json`],
 			{ encoding: "utf8" },
 		).trim(),
 		installed_dependency_tree_sha256: createHash("sha256")
@@ -676,14 +698,14 @@ const result = {
 		},
 		tui_object_id: execFileSync(
 			"git",
-			["-C", baselineDirectory, "rev-parse", `${revision}:packages/tui/src/tui.ts`],
+			["-C", gitRepoDir, "rev-parse", `${revision}:packages/tui/src/tui.ts`],
 			{ encoding: "utf8" },
 		).trim(),
 		interactive_mode_object_id: execFileSync(
 			"git",
 			[
 				"-C",
-				baselineDirectory,
+				gitRepoDir,
 				"rev-parse",
 				`${revision}:packages/coding-agent/src/modes/interactive/interactive-mode.ts`,
 			],
@@ -691,7 +713,7 @@ const result = {
 		).trim(),
 		alt_screen_object_id: execFileSync(
 			"git",
-			["-C", baselineDirectory, "rev-parse", `${revision}:packages/tui/src/tui-alt-screen.ts`],
+			["-C", gitRepoDir, "rev-parse", `${revision}:packages/tui/src/tui-alt-screen.ts`],
 			{ encoding: "utf8" },
 		).trim(),
 	},

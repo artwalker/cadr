@@ -24,6 +24,8 @@ def visible_terminal_text(transcript):
 
 def sanitized_environment(home):
     environment = os.environ.copy()
+    environment.pop("NO_COLOR", None)
+    environment.pop("FORCE_COLOR", None)
     environment.update(
         {
             "COLUMNS": "100",
@@ -31,6 +33,7 @@ def sanitized_environment(home):
             "LC_ALL": environment.get("LC_ALL", "C.UTF-8"),
             "LINES": "40",
             "TERM": "xterm-256color",
+            "FORCE_COLOR": "3",
             "XDG_CACHE_HOME": os.path.join(home, ".cache"),
             "XDG_CONFIG_HOME": os.path.join(home, ".config"),
             "XDG_DATA_HOME": os.path.join(home, ".local", "share"),

@@ -3,13 +3,12 @@
 (cadr-agent:define-rich-tool
  "hello"
  :label "Hello"
- :description "Say hello to a named person"
- :prompt-snippet "Use hello for a friendly greeting"
- :prompt-guidelines '("Preserve the supplied name exactly.")
+ :description "A simple greeting tool"
  :parameters (example-object-schema "name" "string" "Name to greet")
  :handler
  (lambda (call-id arguments signal on-update context)
    (declare (ignore call-id signal on-update context))
-   (example-result
-    (format nil "Hello, ~A!" (example-argument arguments "name" "world"))
-    :details '(:kind :greeting))))
+   (let ((name (example-argument arguments "name" "world")))
+     (example-text-result
+      (format nil "Hello, ~A!" name)
+      (list :greeted name)))))

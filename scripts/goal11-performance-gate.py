@@ -91,6 +91,21 @@ def baseline_limit_us(value: float, run_mad: float) -> float:
     return max(2 * value, value + max(5_000, 6 * run_mad))
 
 
+def same_machine(candidate: dict, baseline: dict) -> bool:
+    """Host match between a cadr report and a pi report.
+
+    cadr reports the host as machine.machine_instance ((machine-instance)),
+    pi as machine.hostname (os.hostname()).  Absolute microseconds only
+    compare on the host that produced both halves, so every pi-paired gate
+    calls this one rule: scripts/goal20-paired-paths.py imports it rather
+    than growing a second host-match mechanism.
+    """
+    return (
+        candidate["machine"]["machine_instance"]
+        == baseline["machine"]["hostname"]
+    )
+
+
 def percentile(values: list[float], fraction: float) -> float:
     ordered = sorted(values)
     index = max(0, min(len(ordered) - 1, math.ceil(fraction * len(ordered)) - 1))
@@ -759,10 +774,7 @@ def check_bench(
         check_point_samples(
             point, label, allocation_field, allocation_summary, failures
         )
-    same_machine = (
-        data["machine"]["machine_instance"]
-        == baseline["machine"]["hostname"]
-    )
+    baseline_same_machine = same_machine(data, baseline)
     baseline_mouse_ratio = mouse["median_us"] / max(
         1, baseline_mouse["median_us"]
     )
@@ -862,7 +874,7 @@ def check_bench(
     # Fixed absolute microseconds are only comparable on the machine that
     # produced the archived baseline. Other hosts retain the pre-existing broad
     # absolute budgets above and report ratios without treating them as gates.
-    if same_machine:
+    if baseline_same_machine:
         check(
             mouse["median_us"]
             <= baseline_limit_us(
@@ -904,14 +916,74 @@ def check_bench(
         f"wheel={wheel['median_us'] / 1000:.2f}ms",
         f"continuous_p99={continuous['p99_us'] / 1000:.2f}ms",
         f"continuous_gc_max={continuous['gc_affected_max_us'] / 1000:.2f}ms",
-        f"baseline_same_machine={'yes' if same_machine else 'no'}",
+        f"baseline_same_machine={'yes' if baseline_same_machine else 'no'}",
         "baseline_relative_gate="
-        + ("enforced" if same_machine else "informational-host-mismatch"),
+        + (
+            "enforced"
+            if baseline_same_machine
+            else "informational-host-mismatch"
+        ),
         f"baseline_mouse_ratio={baseline_mouse_ratio:.2f}x",
         f"baseline_wheel_ratio={baseline_wheel_ratio:.2f}x",
         f"baseline_continuous_p99_ratio={baseline_continuous_p99_ratio:.2f}x",
         f"append_exp={append_exponent:.3f}",
         f"cold={cold_start / 1000:.2f}ms",
+    ]
+
+
+def self_history_summary(bench: dict, history_path: str) -> list[str]:
+    """Print cadr-vs-previous-same-machine drift. Never fail-closes.
+
+    Goal 20 Part A: percents in
+    docs/proposals/goal20-part-a-regression-thresholds.md are not in
+    force until the user adjudicates them.
+    """
+    path = Path(history_path)
+    if not path.is_file():
+        return ["self_history_gate=informational-no-file"]
+    try:
+        history = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return ["self_history_gate=informational-unreadable"]
+    machine = (bench.get("machine") or {}).get("machine_instance")
+    previous = None
+    for entry in reversed(list(history.get("entries") or [])):
+        if machine and entry.get("machine") == machine:
+            previous = entry
+            break
+    if previous is None:
+        return [
+            "self_history_gate=informational-no-same-machine-row",
+            "self_history_enforced=no",
+        ]
+    cold = (bench.get("cold_start") or {}).get("median_us")
+    frame = None
+    alloc = None
+    for point in ((bench.get("metrics") or {}).get("frame_render") or {}).get(
+        "points"
+    ) or []:
+        if point.get("n") == 5000:
+            frame = point.get("median_us")
+            alloc = point.get("median_bytes")
+            break
+
+    def ratio(current, prior):
+        if not current or not prior:
+            return None
+        return current / prior
+
+    cold_r = ratio(cold, previous.get("coldStartMedianUs"))
+    frame_r = ratio(frame, previous.get("frame5000MedianUs"))
+    alloc_r = ratio(alloc, previous.get("frame5000MedianBytes"))
+    return [
+        "self_history_gate=informational-awaiting-adjudication",
+        "self_history_enforced=no",
+        f"self_history_cold_ratio="
+        + ("n/a" if cold_r is None else f"{cold_r:.2f}x"),
+        f"self_history_frame5000_ratio="
+        + ("n/a" if frame_r is None else f"{frame_r:.2f}x"),
+        f"self_history_frame5000_alloc_ratio="
+        + ("n/a" if alloc_r is None else f"{alloc_r:.2f}x"),
     ]
 
 
@@ -1002,6 +1074,16 @@ def main() -> int:
             / "goal-v11-pi-baseline.json"
         ),
     )
+    parser.add_argument(
+        "--history",
+        default=str(
+            Path(__file__).resolve().parents[1]
+            / "docs"
+            / "benchmarks"
+            / "performance-history.json"
+        ),
+        help="cadr self-history JSON. Drift is informational until Part A is adjudicated.",
+    )
     args = parser.parse_args()
 
     failures: list[str] = []
@@ -1011,9 +1093,9 @@ def main() -> int:
             "fixed baseline artifact SHA-256 differs",
             failures,
         )
-        bench_summary = check_bench(
-            load_json(args.bench), failures, load_json(args.baseline)
-        )
+        bench = load_json(args.bench)
+        bench_summary = check_bench(bench, failures, load_json(args.baseline))
+        bench_summary.extend(self_history_summary(bench, args.history))
         stability_summary = check_stability(load_json(args.stability), failures)
     except (KeyError, OSError, TypeError, ValueError, json.JSONDecodeError) as error:
         print(f"goal11 gate: invalid report: {error}", file=sys.stderr)

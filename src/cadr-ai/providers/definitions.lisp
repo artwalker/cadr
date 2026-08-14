@@ -26,6 +26,21 @@
 
 (defparameter *provider-definitions* (make-hash-table))
 
+(defparameter *provider-definition-comparison-exclusions*
+  '((baseline-source
+     . "Trace metadata naming the pi source line; not a baseline runtime field.")))
+
+(defun provider-definition-comparison-exclusions ()
+  *provider-definition-comparison-exclusions*)
+
+(defun provider-definition-compared-slots ()
+  (let ((excluded
+          (mapcar #'car *provider-definition-comparison-exclusions*)))
+    (remove-if
+     (lambda (name) (member name excluded))
+     (mapcar #'sb-mop:slot-definition-name
+             (sb-mop:class-slots (find-class 'provider-definition))))))
+
 (defparameter *built-in-provider-definition-rows*
   `(
     (:id :amazon-bedrock

@@ -1,0 +1,33 @@
+{
+	"list_models": [
+		"--list-models",
+		"goal20"
+	],
+	"parse": [
+		"--provider",
+		"goal20faux",
+		"--model",
+		"goal20-paired-3",
+		"--thinking",
+		"medium",
+		"--append-system-prompt",
+		"be terse",
+		"--append-system-prompt",
+		"cite files",
+		"--tools",
+		"read,bash,edit",
+		"--exclude-tools",
+		"web_search,fetch",
+		"--session-dir",
+		"/goal20-paired-paths/sessions",
+		"--mode",
+		"json",
+		"--no-themes",
+		"--no-context-files",
+		"--verbose",
+		"--list-models",
+		"goal20",
+		"explain the paired path benchmark",
+		"@docs/performance.md"
+	]
+}

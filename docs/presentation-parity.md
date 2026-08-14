@@ -34,7 +34,7 @@ cannot stand in for a process exit status.
 
 | ID | Observable channel | Fixed baseline output (`file:line`) | Cadr output | Gate | Coverage |
 |---|---|---|---|---|---|
-| C-01 | TUI screen while alternate screen is active | terminal composition and lifecycle (`interactive-mode.ts:785,3785-3791,6107-6121`) | `run-tui` composes the complete document through the terminal renderer (`src/cadr-cli/interactive/controller.lisp:204-2466`) | 13 base-screen and 15 overlay snapshots with independent baseline assertions; fixed-baseline PTY render differential: 38 scenarios/76 captures in `verify.sh`, 49/98 in the mandatory pre-tag and post-upstream full gate; the latter proves all 476 printable sites/776 printable branch obligations are captured or explicitly exempted. 38/76 and 49/98 are counted from test/fixtures/render-diff/scenarios.json (core = default tier, two global dimensions) | 已覆盖 |
+| C-01 | TUI screen while alternate screen is active | terminal composition and lifecycle (`interactive-mode.ts:785,3785-3791,6107-6121`) | `run-tui` composes the complete document through the terminal renderer (`src/cadr-cli/interactive/controller.lisp:204-2466`) | 13 base-screen and 15 overlay snapshots with independent baseline assertions; fixed-baseline PTY render differential: 61 scenarios/120 captures in `verify.sh`, 72/142 in the mandatory pre-tag and post-upstream full gate; the latter proves all 476 printable sites/776 printable branch obligations are captured or explicitly exempted. 61/120 and 72/142 are recounted mechanically from test/fixtures/render-diff/scenarios.json with the commands below the table (core = default tier; most scenarios use both dimensions; scenarios with a declared `dimensions` list count only those; `example-space-invaders` is wide-only because the baseline 60-column board exceeds the 48-column fixture) | 已覆盖 |
 | C-02 | stdout/stderr before TUI startup or without TUI takeover | help/version/list/config errors and one-shot command output (`main.ts:541-648`; `cli/args.ts:239-331`) | CLI metadata, migration diagnostics and configuration failures use the process streams before `run-tui` (`src/cadr-cli/main.lisp:2428-2775`) | `GOAL9-A2-PROCESS-FAUX-*`; `test-wave2-process-modes.sh`; acceptance smoke | 已覆盖 |
 | C-03 | stdout after TUI teardown | clean interactive exit prints dim `To resume this session:` plus the exact command; signal/emergency exits do not (`interactive-mode.ts:236-249,3622-3634`) | clean normal, Ctrl+C and suspend/resume returns print `cadr --session ...` after terminal stop; custom directories add `--session-dir`; SIGTERM/SIGHUP non-local exits bypass it (`src/cadr-cli/main.lisp:3945-4331`; `src/cadr-cli/utilities.lisp:445-477`) | `GOAL13-SESSION-IDS-AND-POST-TUI-RESUME-COPY-MATCH-THE-BASELINE`; real-PTY normal/Ctrl+C/suspend-resume ordering; signal process harness | 已覆盖 |
 | C-04 | `--print` stdout/stderr | final assistant text to raw stdout and request failures to stderr (`print-mode.ts:32-151`) | print consumer emits final text only; normalized errors use stderr (`src/cadr-cli/main.lisp:49-113,4338-4376`) | `GOAL9-A2-PROCESS-FAUX-PRINT-*`; process-mode harness | 已覆盖 |
@@ -59,6 +59,24 @@ their user-observable bytes are deliberately projected into C-01/C-04/C-05/C-06,
 while raw implementation diagnostics are excluded by those channel gates.
 Build and test diagnostics are development-only channels and do not exist in
 the shipped `cadr`, `cadr-server`, or `cadr-evals` runtime surface.
+
+The C-01 scale numbers are never hand-synced. Recount them from the artifacts
+(same semantics as `test/cadr-cli/goal18-presentation-numbers-test.lisp`:
+core = scenarios whose tier defaults to `core`; captures = declared
+`dimensions` count, else 2; sites/branches = `printable-visible` entries and
+their unique branch ids):
+
+```sh
+jq -r '[.scenarios[] | select((.tier // "core") != "full")] as $core |
+  "core \($core | length)/\([$core[] | (.dimensions // [0,0]) | length] | add) " +
+  "full \(.scenarios | length)/\([.scenarios[] | (.dimensions // [0,0]) | length] | add)"' \
+  test/fixtures/render-diff/scenarios.json
+jq -r '[.entries[] | select(.sink.channel == "printable-visible")] as $p |
+  "sites \($p | length) branches \([$p[].branches[]?.id] | unique | length)"' \
+  test/fixtures/render-diff/baseline-visible-strings.json
+```
+
+2026-08-14 recount: core 61/120, full 72/142, sites 476, branches 776.
 
 ### Exceptional-path closure
 

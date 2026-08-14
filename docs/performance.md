@@ -463,3 +463,21 @@ rejects a missing trace, a forged tail summary, short duration, threshold
 breach, inconsistent GC accounting, or a claimed convergence that disagrees
 with post-GC retained state. `verify.sh` runs this three-minute trace inside
 its isolated Goal 11 performance stage on every release verification.
+
+<!-- GOAL20_PERF_HISTORY_START -->
+
+## Goal 20 self-history (script-written)
+
+Produced by `scripts/write-performance-ledger.py` from
+`docs/benchmarks/performance-history.json`. Do not edit the table
+by hand. Part A drift percents are **not** fail-closed until the
+user adjudicates `docs/proposals/goal20-part-a-regression-thresholds.md`.
+
+| recordedAt (UTC) | label | machine | git | cold start µs | N=5000 frame µs | N=5000 frame bytes |
+|---|---|---|---|---:|---:|---:|
+| 2026-08-13T13:40:38Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,505.9 | 3,987.0 | 360,272 |
+| 2026-08-14T01:50:56Z | verify-isolated | Friend-MachineD | `isolated-copy` | 307,103.7 | 0.0 | 360,272 |
+
+Latest vs previous: `verify-isolated` (2026-08-14T01:50:56Z) versus `verify-isolated` (2026-08-13T13:40:38Z).
+
+<!-- GOAL20_PERF_HISTORY_END -->

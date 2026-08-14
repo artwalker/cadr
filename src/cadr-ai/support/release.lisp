@@ -52,21 +52,17 @@ short-commit)."
      (parse-integer (third fields))
      (subseq (first fields) 0 9))))
 
-(multiple-value-bind (release distance short-commit)
-    (read-baseline-anchor)
-  (defparameter +cadr-aligned-pi-release+ release)
-  (defparameter +cadr-aligned-pi-distance+ distance)
-  (defparameter +cadr-aligned-pi-commit+ short-commit))
-
 (defun cadr-release-identity ()
-  (format
-   nil
-   "~A ~A · aligned with pi ~A (+~D, ~A)"
-   (cadr-product-slug)
-   (cadr-version)
-   +cadr-aligned-pi-release+
-   +cadr-aligned-pi-distance+
-   +cadr-aligned-pi-commit+))
+  (multiple-value-bind (release distance short-commit)
+      (read-baseline-anchor)
+    (format
+     nil
+     "~A ~A · aligned with pi ~A (+~D, ~A)"
+     (cadr-product-slug)
+     (cadr-version)
+     release
+     distance
+     short-commit)))
 
 (defun cadr-docs-directory ()
   ;; The product docs live in docs/ beside the ASDF source root; the

@@ -123,37 +123,214 @@
    (done :initarg :done :initform nil :reader tic-tac-toe-component-done)
    (on-play :initarg :on-play :initform nil :reader tic-tac-toe-component-on-play)))
 
+(defconstant +tic-tac-toe-cell-width+ 7)
+(defconstant +tic-tac-toe-cell-height+ 3)
+
+(defun tic-tac-toe-sgr (code text)
+  "Baseline tic-tac-toe.ts paints the cursor and marks with raw SGR, not theme tokens."
+  (format nil "~C[~Am~A~C[0m" #\Escape code text #\Escape))
+
+(defun tic-tac-toe-cell-fg (value win-p)
+  (cond
+    ((char= value #\Space) nil)
+    (win-p "32")
+    ((char= value #\X) "34")
+    (t "33")))
+
+(defun tic-tac-toe-center-pad (content width)
+  (let ((content-width (cadr-tui:visible-width content)))
+    (cond
+      ((>= content-width width)
+       (cadr-tui:truncate-to-width content width))
+      (t
+       (let* ((pad (- width content-width))
+              (left (floor pad 2)))
+         (concatenate 'string
+                      (make-string left :initial-element #\Space)
+                      content
+                      (make-string (- pad left) :initial-element #\Space)))))))
+
+(defun tic-tac-toe-win-cells (board)
+  (let ((line (tic-tac-toe-winning-line board)))
+    (and line
+         (mapcar (lambda (cell) (cons (first cell) (second cell))) line))))
+
+(defun tic-tac-toe-win-p (win-cells row column)
+  (and win-cells (member (cons row column) win-cells :test #'equal)))
+
+(defun tic-tac-toe-border-fg (adjacent)
+  (let ((codes
+          (remove nil
+                  (mapcar
+                   (lambda (item)
+                     (tic-tac-toe-cell-fg (car item) (cdr item)))
+                   adjacent))))
+    (cond
+      ((null codes) nil)
+      ((every (lambda (code) (string= code (first codes))) codes)
+       (first codes))
+      (t nil))))
+
+(defun tic-tac-toe-paint-border (character highlighted-p fg)
+  (cond
+    (highlighted-p (tic-tac-toe-sgr "32;1m" character))
+    (fg (tic-tac-toe-sgr (format nil "~A;1m" fg) character))
+    (t (tic-tac-toe-sgr "2m" character))))
+
+(defun tic-tac-toe-cell-at (board win-cells row column)
+  (cons (aref board row column)
+        (tic-tac-toe-win-p win-cells row column)))
+
+(defun tic-tac-toe-build-cell (value line-index win-p)
+  (let ((empty (make-string +tic-tac-toe-cell-width+ :initial-element #\Space)))
+    (if (or (char= value #\Space)
+            (/= line-index (floor +tic-tac-toe-cell-height+ 2)))
+        empty
+        (let* ((glyph (if (char= value #\X) (string #\BOX_DRAWINGS_LIGHT_DIAGONAL_CROSS)
+                          (string #\LARGE_CIRCLE)))
+               (fg (tic-tac-toe-cell-fg value win-p))
+               (pad (- +tic-tac-toe-cell-width+ (cadr-tui:visible-width glyph)))
+               (left (floor pad 2)))
+          (concatenate
+           'string
+           (make-string left :initial-element #\Space)
+           (tic-tac-toe-sgr (format nil "~A;1m" fg) glyph)
+           (make-string (- pad left) :initial-element #\Space))))))
+
+(defun tic-tac-toe-corner-char (grid-row grid-column)
+  (cond
+    ((and (zerop grid-row) (zerop grid-column)) (string #\BOX_DRAWINGS_LIGHT_DOWN_AND_RIGHT))
+    ((and (zerop grid-row) (= grid-column 3)) (string #\BOX_DRAWINGS_LIGHT_DOWN_AND_LEFT))
+    ((and (= grid-row 3) (zerop grid-column)) (string #\BOX_DRAWINGS_LIGHT_UP_AND_RIGHT))
+    ((and (= grid-row 3) (= grid-column 3)) (string #\BOX_DRAWINGS_LIGHT_UP_AND_LEFT))
+    ((zerop grid-row) (string #\BOX_DRAWINGS_LIGHT_DOWN_AND_HORIZONTAL))
+    ((= grid-row 3) (string #\BOX_DRAWINGS_LIGHT_UP_AND_HORIZONTAL))
+    ((zerop grid-column) (string #\BOX_DRAWINGS_LIGHT_VERTICAL_AND_RIGHT))
+    ((= grid-column 3) (string #\BOX_DRAWINGS_LIGHT_VERTICAL_AND_LEFT))
+    (t (string #\BOX_DRAWINGS_LIGHT_VERTICAL_AND_HORIZONTAL))))
+
+(defun tic-tac-toe-cursor-corner-p (show-p cursor-row cursor-column grid-row grid-column)
+  (and show-p
+       (or (= grid-row cursor-row) (= grid-row (1+ cursor-row)))
+       (or (= grid-column cursor-column) (= grid-column (1+ cursor-column)))))
+
+(defun tic-tac-toe-cursor-h-p (show-p cursor-row cursor-column grid-row column)
+  (and show-p (= column cursor-column)
+       (or (= grid-row cursor-row) (= grid-row (1+ cursor-row)))))
+
+(defun tic-tac-toe-cursor-v-p (show-p cursor-row cursor-column row grid-column)
+  (and show-p (= row cursor-row)
+       (or (= grid-column cursor-column) (= grid-column (1+ cursor-column)))))
+
+(defun tic-tac-toe-render-visual-board (state width &key agent-view-p)
+  (let* ((board (tic-tac-toe-state-board state))
+         (win-cells (tic-tac-toe-win-cells board))
+         (playing-p (eq (tic-tac-toe-state-status state) :playing))
+         (user-turn-p (char= (tic-tac-toe-state-current-turn state) #\X))
+         (show-cursor-p playing-p)
+         (cursor-row (cond
+                       ((not show-cursor-p) -1)
+                       ((or agent-view-p (not user-turn-p))
+                        (tic-tac-toe-state-agent-row state))
+                       (t (tic-tac-toe-state-user-row state))))
+         (cursor-column (cond
+                          ((not show-cursor-p) -1)
+                          ((or agent-view-p (not user-turn-p))
+                           (tic-tac-toe-state-agent-column state))
+                          (t (tic-tac-toe-state-user-column state))))
+         (cursor-code (if (or agent-view-p (not user-turn-p)) "33;1m" "32;1m"))
+         (lines nil))
+    (labels
+        ((paint (character highlighted-p fg)
+           (cond
+             (highlighted-p (tic-tac-toe-sgr cursor-code character))
+             (fg (tic-tac-toe-sgr (format nil "~A;1m" fg) character))
+             (t (tic-tac-toe-sgr "2m" character))))
+         (adjacent-cells (pairs)
+           (loop for (row column) in pairs
+                 when (and (<= 0 row 2) (<= 0 column 2))
+                   collect (tic-tac-toe-cell-at board win-cells row column))))
+      (loop for grid-row from 0 to 3
+            do
+            (let ((row ""))
+              (loop for grid-column from 0 to 3
+                    do
+                    (setf row
+                          (concatenate
+                           'string row
+                           (paint
+                            (tic-tac-toe-corner-char grid-row grid-column)
+                            (tic-tac-toe-cursor-corner-p
+                             show-cursor-p cursor-row cursor-column
+                             grid-row grid-column)
+                            (tic-tac-toe-border-fg
+                             (adjacent-cells
+                              (list (list (1- grid-row) (1- grid-column))
+                                    (list (1- grid-row) grid-column)
+                                    (list grid-row (1- grid-column))
+                                    (list grid-row grid-column)))))))
+                    (when (< grid-column 3)
+                      (setf row
+                            (concatenate
+                             'string row
+                             (paint
+                              (make-string +tic-tac-toe-cell-width+
+                                           :initial-element #\BOX_DRAWINGS_LIGHT_HORIZONTAL)
+                              (tic-tac-toe-cursor-h-p
+                               show-cursor-p cursor-row cursor-column
+                               grid-row grid-column)
+                              (tic-tac-toe-border-fg
+                               (adjacent-cells
+                                (list (list (1- grid-row) grid-column)
+                                      (list grid-row grid-column)))))))))
+              (push (tic-tac-toe-center-pad row width) lines))
+            (when (< grid-row 3)
+              (loop for line-index below +tic-tac-toe-cell-height+
+                    do
+                    (let ((row ""))
+                      (loop for grid-column from 0 to 3
+                            do
+                            (setf row
+                                  (concatenate
+                                   'string row
+                                   (paint
+                                    (string #\BOX_DRAWINGS_LIGHT_VERTICAL)
+                                    (tic-tac-toe-cursor-v-p
+                                     show-cursor-p cursor-row cursor-column
+                                     grid-row grid-column)
+                                    (tic-tac-toe-border-fg
+                                     (adjacent-cells
+                                      (list (list grid-row (1- grid-column))
+                                            (list grid-row grid-column)))))))
+                            (when (< grid-column 3)
+                              (setf row
+                                    (concatenate
+                                     'string row
+                                     (tic-tac-toe-build-cell
+                                      (aref board grid-row grid-column)
+                                      line-index
+                                      (tic-tac-toe-win-p
+                                       win-cells grid-row grid-column))))))
+                      (push (tic-tac-toe-center-pad row width) lines))))))
+    (nreverse lines)))
+
 (defmethod cadr-tui:component-render
     ((component tic-tac-toe-board-component) width &key focused-p)
-  (declare (ignore width focused-p))
+  (declare (ignore focused-p))
   (let* ((state (tic-tac-toe-component-state component))
-         (board (tic-tac-toe-state-board state))
-         (cursor-row (if (tic-tac-toe-component-agent-view-p component)
-                         (tic-tac-toe-state-agent-row state)
-                         (tic-tac-toe-state-user-row state)))
-         (cursor-column (if (tic-tac-toe-component-agent-view-p component)
-                            (tic-tac-toe-state-agent-column state)
-                            (tic-tac-toe-state-user-column state))))
-    (append
-     (list (format nil "TIC-TAC-TOE · ~A"
+         (title
+           (format nil " Tic-Tac-Toe · ~A "
                    (ecase (tic-tac-toe-state-status state)
                      (:playing
                       (if (char= (tic-tac-toe-state-current-turn state) #\X)
                           "Your turn (X)" "Agent turn (O)"))
                      (:win-x "Player X wins") (:win-o "Player O wins")
-                     (:draw "Draw")))
-           "")
-     (loop for row below 3 append
-           (list
-            (format nil " ~{~A~^ │ ~}"
-                    (loop for column below 3
-                          for value = (aref board row column)
-                          collect
-                          (format nil "~:[ ~;>~]~A~:[ ~; <~]"
-                                  (and (= row cursor-row) (= column cursor-column))
-                                  (if (char= value #\Space) "·" (string value))
-                                  (and (= row cursor-row) (= column cursor-column)))))
-            (if (= row 2) "" "───┼───┼───")))
+                     (:draw "Draw")))))
+    (append
+     (list title "")
+     (tic-tac-toe-render-visual-board
+      state width
+      :agent-view-p (tic-tac-toe-component-agent-view-p component))
      (unless (tic-tac-toe-component-agent-view-p component)
        (list "arrows move · enter plays · escape closes")))))
 
@@ -214,7 +391,8 @@
    :handler
    (lambda (event context)
      (declare (ignore event))
-     (tic-tac-toe-reconstruct context))))
+     (tic-tac-toe-reconstruct context)
+     nil)))
 
 (cadr-agent:define-event-hook
  :before-agent-start

@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "recordedAt": "2026-08-13T13:40:38Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 267505.875,
+      "frame5000MedianUs": 3987.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T01:50:56Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 307103.71875,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    }
+  ]
+}

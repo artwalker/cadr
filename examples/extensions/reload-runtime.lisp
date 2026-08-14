@@ -11,11 +11,12 @@
 (cadr-agent:define-rich-tool
  "reload_runtime"
  :label "Reload Runtime"
- :description "Schedule /reload-runtime after the current turn"
+ :description "Reload extensions, skills, prompts, themes, and context files"
  :parameters (example-empty-schema)
  :handler
  (lambda (call-id arguments signal on-update context)
    (declare (ignore call-id arguments signal on-update context))
    (cadr-agent:extension-api-send-user-message
     *example-api* "/reload-runtime" :deliver-as :follow-up)
-   (example-result "Runtime reload queued")))
+   (example-text-result
+    "Queued /reload-runtime as a follow-up command.")))
