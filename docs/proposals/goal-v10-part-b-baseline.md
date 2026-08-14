@@ -1,46 +1,59 @@
-# Goal 10 Part B 基线裁决提案
+# Goal 10 Part B baseline adjudication proposal
 
-状态：**用户已裁决：Part B 暂挂等待 `v0.84.0`；先执行零依赖的 Part C。**
+Status: **The user has adjudicated: Part B is suspended waiting for `v0.84.0`; execute the zero-dependency Part C first.**
 
-## 0. 用户裁决（2026-08-01）
+## 0. User adjudication (2026-08-01)
 
-本文保留最初 blocked 时的事实与选项，以下裁决取代第 4、5 节的执行建议：
+This document preserves the facts and options as they stood when it was first
+blocked; the adjudication below supersedes the execution recommendations of
+sections 4 and 5:
 
-1. 不锁 `v0.83.0`：它比当前基线倒退 38 commits，不符合追新目标。
-2. 不例外锁 `origin/main@4488ad55c`：上游正连续重构会话存储层与 server
-   协议，开发中提交不作为新基线。
-3. 顺序调整为 `Part C → Part B（等待 v0.84.0）→ Part D → Part E`。
-   Part C 只依赖已验收的 Part A 仓库与 Goal 9 Part D `verify.sh`；原有
-   “Part B 必须在 Part D 之前”约束保持不变。
-4. Part C 完成后若 `v0.84.0` 仍未发布，暂停并报告，不得自行改锁 HEAD。
-5. 第 3 节所列最小密码学面已获预授权：bearer-token digest 必须复用
-   `src/cadr-ai/oauth.lisp:63` 的纯 Lisp `sha256-bytes`；定长字节比较用不提前
-   退出的循环，不引入新算法或依赖。测试须覆盖正确 token、错误 token、不同
-   长度、并发 handshake、日志/错误不泄露 token、socket suffix 固定向量。
-   若需新密码学依赖或超出提案列出的文件范围，重新 blocked。
+1. Do not lock `v0.83.0`: it regresses 38 commits behind the current baseline,
+   which does not meet the goal of tracking the newest.
+2. Do not make an exception and lock `origin/main@4488ad55c`: upstream is
+   continuously refactoring the session storage layer and the server protocol, and
+   an in-development commit is not taken as the new baseline.
+3. The order is adjusted to `Part C → Part B (waiting for v0.84.0) → Part D → Part E`.
+   Part C depends only on the accepted Part A repository and the Goal 9 Part D
+   `verify.sh`; the existing constraint "Part B must come before Part D" remains
+   unchanged.
+4. If `v0.84.0` still has not been released once Part C is finished, pause and
+   report; the lock must not be changed to HEAD on one's own initiative.
+5. The minimal cryptographic surface listed in section 3 is pre-authorized: the
+   bearer-token digest must reuse the pure-Lisp `sha256-bytes` at
+   `src/cadr-ai/oauth.lisp:63`; the fixed-length byte comparison uses a loop that
+   does not exit early, and introduces no new algorithm or dependency. Tests must
+   cover the correct token, a wrong token, differing lengths, concurrent
+   handshakes, logs/errors not leaking the token, and a fixed vector for the socket
+   suffix. If a new cryptographic dependency is needed, or the file scope listed in
+   the proposal is exceeded, become blocked again.
 
-## 1. 确切冲突
+## 1. The exact conflict
 
-Goal 10 同时要求：
+Goal 10 requires all of the following at the same time:
 
-1. 基线锁执行时最新稳定 release tag，不锁开发分支 tip；
-2. 从 Goal 9 基线 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-   继续追新；
-3. 补齐 client、composable server、fullscreen transcript、scrollbar、UI mode
-   等点名增量。
+1. the baseline locks the latest stable release tag at execution time, and does not
+   lock the tip of a development branch;
+2. continue tracking the newest from the Goal 9 baseline
+   `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`;
+3. fill in the named increments: client, composable server, fullscreen transcript,
+   scrollbar, UI mode, and so on.
 
-2026-08-01 的权威远程状态使三者无法同时成立。GitHub Latest release 仍是
-`v0.83.0`，tag commit 为
-`845d6ff1f6643aba440341cce877ce1c43ebbc39`，发布于
-`2026-07-29T22:30:33Z`。当前规范基线已在该 tag 之后 38 commits；上游
-`origin/main` 为 `4488ad55c18f07ae89a489096c90de8667b3adfb`，又在当前
-基线之后 99 commits、在 tag 之后 137 commits。
+The authoritative remote state on 2026-08-01 makes the three impossible to hold at
+once. The GitHub Latest release is still `v0.83.0`, its tag commit is
+`845d6ff1f6643aba440341cce877ce1c43ebbc39`, released at
+`2026-07-29T22:30:33Z`. The current canonical baseline is already 38 commits after
+that tag; upstream `origin/main` is `4488ad55c18f07ae89a489096c90de8667b3adfb`,
+which is a further 99 commits after the current baseline and 137 commits after the
+tag.
 
-所以锁 `v0.83.0` 不是“追新”，而是把已验收基线倒退 38 commits；Goal 10
-点名能力也不在该 release。goal-v10 第 1.1 节已经预裁：tag 与 HEAD 差距过大且
-目标能力只在 HEAD 时必须 blocked，不得自行改锁 HEAD。
+So locking `v0.83.0` is not "tracking the newest"; it regresses the accepted
+baseline by 38 commits, and the capabilities Goal 10 names are not in that release
+either. Section 1.1 of goal-v10 already pre-adjudicated this: when the gap between
+tag and HEAD is too large and the target capabilities exist only at HEAD, it must
+become blocked, and the lock must not be changed to HEAD on one's own initiative.
 
-权威复核：
+Authoritative re-check:
 
 ```text
 GitHub Latest: v0.83.0
@@ -52,87 +65,107 @@ current..HEAD:    99 commits
 v0.83.0..HEAD:   137 commits
 ```
 
-GitHub Release：`https://github.com/earendil-works/pi/releases/tag/v0.83.0`。
+GitHub Release: `https://github.com/earendil-works/pi/releases/tag/v0.83.0`.
 
-## 2. HEAD 增量规模与行为面
+## 2. Size of the HEAD increment and its behavioral surface
 
-| 范围 | commits | files | diff |
+| Range | commits | files | diff |
 |---|---:|---:|---:|
 | `v0.83.0..74caa2649` | 38 | 122 | `+7042/-1089` |
 | `74caa2649..origin/main` | 99 | 200 | `+15724/-2627` |
 | `v0.83.0..origin/main` | 137 | 287 | `+22556/-3506` |
 
-测试分母从当前基线 363 个 package `*.test.ts` 增至 HEAD 的 385 个；
-`74caa2649..HEAD` 有 51 个受影响测试文件（23 新增、27 修改、1 删除）。新增项
-分布为 agent 1、AI 1、client 6、coding-agent 6、server 7、TUI 2。顶层 package
-从 8 个增至 9 个，新增 `packages/client`。
+The test denominator grows from the current baseline's 363 package `*.test.ts`
+files to 385 at HEAD; `74caa2649..HEAD` has 51 affected test files (23 added, 27
+modified, 1 deleted). The additions are distributed as agent 1, AI 1, client 6,
+coding-agent 6, server 7, TUI 2. Top-level packages grow from 8 to 9, with
+`packages/client` added.
 
-经实际 diff 审计，主要行为面为：
+An audit of the actual diff gives the main behavioral surfaces as:
 
-- transport-neutral client、Unix socket、请求关联、session lease、背压；
-- composable protocol server、token handshake、snapshot/progress、session
-  attachment、socket 权限与 stale inode 安全清理；
-- protocol v2 字段/判别联合收紧；
-- repository/store/search、reader/fork、per-session queue、JSONL/SQLite/FTS5
-  会话存储重构；
-- fullscreen transcript、嵌套 ScrollView、临时/可拖动 scrollbar、滚轮路由、
-  Kitty crop、settings 搜索空格；
-- coding-agent UI mode、远程 session controller、auth reload lock、Wayland
-  clipboard；
-- Fireworks Kimi K3 reasoning、Codex WebSocket 按 account 隔离、Google/
-  Anthropic stream 修正。
+- transport-neutral client, Unix socket, request correlation, session lease,
+  backpressure;
+- composable protocol server, token handshake, snapshot/progress, session
+  attachment, socket permissions and safe cleanup of stale inodes;
+- tightening of protocol v2 fields/discriminated unions;
+- repository/store/search, reader/fork, per-session queue, JSONL/SQLite/FTS5
+  session-storage refactor;
+- fullscreen transcript, nested ScrollView, transient/draggable scrollbar, wheel
+  routing, Kitty crop, spaces in settings search;
+- coding-agent UI mode, remote session controller, auth reload lock, Wayland
+  clipboard;
+- Fireworks Kimi K3 reasoning, per-account isolation of the Codex WebSocket,
+  Google/Anthropic stream corrections.
 
-没有新增外部 direct npm dependency；新增 manifest 边仅为内部 client/protocol，
-`brace-expansion` 是已有依赖 patch 升级。`wl-paste` 是可选运行时命令，不构成
-新包依赖，但实施时须进入差异/运行环境说明。
+No new external direct npm dependency was added; the added manifest edges are only
+the internal client/protocol, and `brace-expansion` is a patch upgrade of an
+existing dependency. `wl-paste` is an optional runtime command and does not
+constitute a new package dependency, but at implementation time it must enter the
+divergence/runtime-environment documentation.
 
-## 3. 独立密码学裁决
+## 3. Separate cryptographic adjudication
 
-若用户裁定追 HEAD，仍不能直接施工 composable server：
+If the user adjudicates that HEAD is to be tracked, the composable server still
+cannot be built directly:
 
-- `origin/main:packages/server/src/server.ts:34-35` 对 bearer token 做 SHA-256
-  digest；
-- 同文件 `:257-258` 用 `timingSafeEqual` 比较客户端 token digest；
-- `packages/server/src/transports/unix/listener.ts:307-309` 另用 SHA-256 生成
-  owned socket path 的 8-hex 后缀。
+- `origin/main:packages/server/src/server.ts:34-35` takes a SHA-256 digest of the
+  bearer token;
+- the same file at `:257-258` uses `timingSafeEqual` to compare the client token
+  digest;
+- `packages/server/src/transports/unix/listener.ts:307-309` additionally uses
+  SHA-256 to generate the 8-hex suffix of the owned socket path.
 
-现有授权覆盖 PKCE、AWS HMAC-SHA256 与 RS256/OpenSSL 路径，不自动授权新的
-server bearer-token digest/constant-time compare。按 Goal 10 blocked 类别 `(b)`，
-必须单独裁决。最小 Lisp 路径是不加依赖，复用现有 SHA-256 primitive 并新增
-固定长度 byte-vector constant-time compare；测试必须锁定正确 token、错误 token、
-不同长度输入、并发 handshake、日志/错误不泄露 token，以及 socket suffix 固定
-向量。若实现需要扩大到新密码学依赖或其他文件，再次 blocked。
+The existing authorization covers PKCE, AWS HMAC-SHA256, and the RS256/OpenSSL
+path; it does not automatically authorize a new server bearer-token
+digest/constant-time compare. Under Goal 10 blocked category `(b)`, this must be
+adjudicated separately. The minimal Lisp path is to add no dependency, reuse the
+existing SHA-256 primitive, and add a fixed-length byte-vector constant-time
+compare; tests must lock the correct token, a wrong token, inputs of differing
+lengths, concurrent handshakes, logs/errors not leaking the token, and a fixed
+vector for the socket suffix. If the implementation needs to expand to a new
+cryptographic dependency or other files, become blocked again.
 
-## 4. 路线与取舍
+## 4. Routes and trade-offs
 
-### 路线 1：等待 `v0.84.0`（建议批准）
+### Route 1: wait for `v0.84.0` (recommended for approval)
 
-保持“只锁稳定 release tag”的裁决和 Goal 10 点名范围不变。上游发布后重新查询
-GitHub Latest，记录实际 tag/hash，再从 `74caa2649` 做完整增量审计。优点是基线
-稳定、可交流且不倒退；代价是 Part B/C/D/E 在 release 出现前不能继续。
+Keeps the "only lock a stable release tag" adjudication and the scope Goal 10 names
+unchanged. After upstream releases, query GitHub Latest again, record the actual
+tag/hash, and then do a complete incremental audit from `74caa2649`. The advantage
+is a baseline that is stable, communicable, and does not regress; the cost is that
+Part B/C/D/E cannot continue before the release appears.
 
-密码学仍须在新 release 实际包含 composable server 时逐项批准，不能因等待 release
-而自动获得授权。
+The cryptography must still be approved item by item when the new release actually
+contains the composable server; it must not obtain authorization automatically
+because a release was waited for.
 
-### 路线 2：本次例外锁 `origin/main@4488ad55c`，并授权最小密码学面
+### Route 2: make a one-time exception and lock `origin/main@4488ad55c`, and authorize the minimal cryptographic surface
 
-立即获得 Goal 10 点名能力，但明确撤销本 goal 的“只锁发布 tag”规则一次；HEAD
-是开发快照，99-commit 移植期间上游仍可能继续变化。若批准，基线固定在上述 commit
-hash 而非浮动 `main`，且必须同时明确批准第 3 节 token digest/constant-time compare
-与 socket suffix SHA-256；否则仍 blocked。
+Obtains the capabilities Goal 10 names immediately, but explicitly revokes this
+goal's "only lock a release tag" rule once; HEAD is a development snapshot, and
+upstream may still keep changing during the 99-commit port. If approved, the
+baseline is fixed at the commit hash above rather than a floating `main`, and the
+section 3 token digest/constant-time compare and socket suffix SHA-256 must be
+explicitly approved at the same time; otherwise it stays blocked.
 
-### 路线 3：锁 `v0.83.0`（否决）
+### Route 3: lock `v0.83.0` (rejected)
 
-形式上满足“最新稳定 tag”，实质倒退 38 commits，丢失已验收的 11 个测试文件与
-Goal 9 增量，也无法实现本 goal 点名能力。它违反“不缩范围”和“追新”目标，不应
-选择。
+Formally satisfies "the latest stable tag", but in substance regresses 38 commits,
+loses 11 accepted test files and the Goal 9 increment, and cannot realize the
+capabilities this goal names. It violates the "do not shrink scope" and "track the
+newest" goals, and should not be chosen.
 
-## 5. 请求用户逐项裁决
+## 5. Request for item-by-item user adjudication
 
-1. 基线：批准路线 1 等待 `v0.84.0`，还是路线 2 例外锁当前 HEAD？
-2. 若批准路线 2：是否批准第 3 节最小密码学实现面？
-3. 若选择等待：`v0.84.0` 发布后必须重新解析实际 tag/hash/依赖/密码学 diff，本文
-   数字只作本次阻塞证据，不预授权未来 release 的未知变化。
+1. Baseline: approve Route 1, waiting for `v0.84.0`, or Route 2, an exceptional lock
+   on the current HEAD?
+2. If Route 2 is approved: is the minimal cryptographic implementation surface of
+   section 3 approved?
+3. If waiting is chosen: after `v0.84.0` is released, the actual
+   tag/hash/dependency/cryptography diff must be re-resolved; the figures in this
+   document serve only as evidence for this blockage, and do not pre-authorize
+   unknown changes in a future release.
 
-在以上裁决前，Part B 不创建旧 tag checkout、不重写 fixture/parity；因 Part 顺序
-固定，Part C 也不得提前实施。
+Before the adjudications above, Part B does not create an old-tag checkout and does
+not rewrite fixtures/parity; because the Part order is fixed, Part C must not be
+implemented ahead of time either.

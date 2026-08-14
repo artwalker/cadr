@@ -1,264 +1,341 @@
-# Goal 9 Part B 阶段报告
+# Goal 9 Part B phase report
 
-> 状态：机械、运行时与 live 门禁均已落账；用户于 2026-08-01 明确裁决
-> Part B 验收通过并关闭，随后才开始 Part C。
+> Status: the mechanical, runtime and live gates are all recorded in the ledger;
+> on 2026-08-01 the user explicitly adjudicated that Part B passed acceptance
+> and is closed, and only then did Part C begin.
 
-## 1. 基线与机械账本
+## 1. Baseline and mechanical ledger
 
-- 规范基线：`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
-- 基线 checkout：`/tmp/cadr-parity-74caa2649`，`git rev-parse HEAD` 与规范
-  hash 逐字节一致。
-- `npm run build:offline` 成功；基线 source runner `--version` 为 `0.83.0`。
-- 基线 TUI 已在 100×32 `tmux` PTY 中冷启动并以 `/quit` 正常退出。
-- [`visual-parity.md`](../visual-parity.md) 第三轮共 35 个机械编号项：
-  `一致` 2 项，`不一致（已改齐）` 31 项，`有意差异` 2 项；`pending` 0 项。
-- 两项有意差异均为用户裁决：所有选择器双向循环；bash 标题永不显示 timeout。
-  README 只登记这两项视觉/交互差异。
+- Specification baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+- Baseline checkout: `/tmp/cadr-parity-74caa2649`, whose `git rev-parse HEAD` is
+  byte-identical to the specification hash.
+- `npm run build:offline` succeeded; the baseline source runner's `--version` is
+  `0.83.0`.
+- The baseline TUI was cold-started in a 100×32 `tmux` PTY and exited normally
+  with `/quit`.
+- Round three of [`visual-parity.md`](../visual-parity.md) has 35 mechanically
+  numbered items in total: 2 `一致`, 31 `不一致（已改齐）`, 2 `有意差异`;
+  0 `pending`.
+- Both intentional differences are user adjudications: every selector cycles in
+  both directions; the bash title never shows a timeout. The README registers
+  only these two visual/interaction differences.
 
-## 2. 已对齐的行为面
+## 2. Behavior surfaces already aligned
 
-- 完整 dark/light semantic palette、truecolor/256-color 转换以及 `39`/`49`
-  局部恢复。
-- fixed、未配置 detect-once、auto DSR→OSC 11、动态通知和自定义主题 schema
-  热重载。
-- editor border、bash/thinking live border、fake cursor、IME marker、resize 与
-  terminal lifecycle。
-- Markdown block/inline/table/link/code fence、基线语法高亮可见语义、状态恢复。
-- tool title/argument/output、真实 edit diff、折叠预算和 semantic diff。
-- footer 全字段、extension status、context threshold、JS rounding、live
-  auto-compaction。
-- spinner、retry/compaction、16 ms render throttle、terminal-progress keepalive、
-  OSC 133 zones。
-- session/tree/model/settings/trust/scoped-model selector、overlay、autocomplete
-  与窄屏裁剪；settings 与基线能力门控一致：supports-images=nil 时 25 项，true
-  时增加 Show images/Image width 至 27 项。门禁为
-  `GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`、
-  `GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT` 与
-  `GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES`。
-- extension select 已经真实 worker→live TUI overlay bridge→键盘选择→返回值回归，
-  不再仅证明孤立 framed selector 会 render；门禁为
-  `GOAL9-B3-EXTENSION-SELECT-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` 与
-  `GOAL9-B3-EXTENSION-CONFIRM-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE`。
+- The complete dark/light semantic palette, truecolor/256-color conversion and
+  local `39`/`49` restoration.
+- fixed, unconfigured detect-once, auto DSR→OSC 11, dynamic notifications and
+  hot reload of the custom theme schema.
+- editor border, bash/thinking live border, fake cursor, IME marker, resize and
+  terminal lifecycle.
+- Markdown block/inline/table/link/code fence, the visible semantics of baseline
+  syntax highlighting, state restoration.
+- tool title/argument/output, real edit diff, collapse budget and semantic diff.
+- All footer fields, extension status, context threshold, JS rounding, live
+  auto-compaction.
+- spinner, retry/compaction, 16 ms render throttle, terminal-progress keepalive,
+  OSC 133 zones.
+- session/tree/model/settings/trust/scoped-model selector, overlay, autocomplete
+  and narrow-screen cropping; settings match the baseline's capability gating:
+  25 items when supports-images=nil, and 27 when true, with Show images/Image
+  width added. The gates are
+  `GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`,
+  `GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT` and
+  `GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES`.
+- extension select now regresses through a real worker→live TUI overlay
+  bridge→keyboard selection→return value, and no longer merely proves that an
+  isolated framed selector renders; the gates are
+  `GOAL9-B3-EXTENSION-SELECT-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` and
+  `GOAL9-B3-EXTENSION-CONFIRM-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE`.
 
-没有新增第三方依赖；语法高亮为纯 Lisp 实现。
+No third-party dependency was added; the syntax highlighting is a pure Lisp
+implementation.
 
-## 3. 首轮 B3 退回与运行时补正
+## 3. First round: B3 rejection and runtime correction
 
-原 B2 只充分覆盖了静态常量、构造后的组件和最终字符串，没有把真实事件序列
-中的空边界、逐帧流式状态和错误转换纳入视觉合约。用户在真实双终端 A/B 中因此
-发现十项逃逸。`docs/visual-parity.md` 已把 B2 方法扩充为 faux provider + virtual
-terminal/PTY 的运行时状态门禁。
+The original B2 adequately covered only static constants, constructed components
+and final strings; it did not bring the empty boundaries, the per-frame
+streaming state and the error transitions of real event sequences into the
+visual contract. In a real two-terminal A/B the user consequently found ten
+escapes. `docs/visual-parity.md` has expanded the B2 method into a runtime-state
+gate built on a faux provider plus a virtual terminal/PTY.
 
-| 项 | 回归门禁 | 原故障与修正 | 原 4759 条为何未捕获 |
+| Item | Regression gate | Original failure and fix | Why the original 4759 checks did not catch it |
 |---|---|---|---|
-| P0-1 `/fork` 空候选崩溃 | `GOAL9-SELECT-LIST-EMPTY-AND-FIRST-ITEM-NAVIGATION-NEVER-WRITES-NEGATIVE-INDEX` | 旧导航先把 unsigned `selected` 写成 `-1` 再 clamp；改为在写槽前原子计算合法循环索引，空列表固定为 0。 | 旧 selector 测试只使用非空列表并从中间/向下导航，没有覆盖首项向上、过滤后零候选及 Enter/render。 |
-| P0-2 CJK/emoji 编辑崩溃 | `EDITOR-INCREMENTAL-CJK-AND-EMOJI-INPUT-NEVER-RENDERS-EMPTY-GRAPHEME`、`GRAPHEME-CLUSTERS-HANDLE-EMPTY-AND-DANGLING-JOINER-BOUNDARIES` | Common Lisp 中空字符串为真，autocomplete 对 `""` 执行 `(char value 0)`；同时悬空 ZWJ 吞掉 cursor placeholder。现先验长度并保持逐码点 grapheme 边界。 | 旧测试一次插入完整 grapheme，且未挂 autocomplete provider；没有逐码点渲染 ZWJ 中间态或 Unicode+尾随空格产生的空 path prefix。 |
-| P0-3 `session> <char>` | `GOAL9-B-TUI-BASH-STREAM-DOES-NOT-CREATE-SESSION-NOTICES` | TUI 把 bash live stream 接到 notice stream，而 bash 每字符 flush，遂生成一行一个 notice；TUI 不再把该流接入 notice 通道。 | notice、bash capture 和最终 tool result 分别测试，从未通过真实 mode wiring 驱动每字符 flush 并检查 virtual screen。 |
-| P1-4 exit 7 显示成功 | `GOAL9-B-BASH-NONZERO-EXIT-IS-A-TOOL-ERROR`、`GOAL9-B-NONZERO-BASH-TOOL-RENDERS-ERROR-STATE` | 非零退出从普通 result 改为 error tool result；运行时 block 为 `:error`、红色背景。第二轮进一步移除了基线没有的状态 glyph。 | 组件测试手工构造 `:error`，bash 测试只找 exit footer；没有跑真实 agent tool loop 验证 result `is-error` 到 TUI 状态。 |
-| P1-5 selector 不循环 | `GOAL9-SELECT-LIST-NAVIGATION-WRAPS-AT-BOTH-BOUNDARIES` | up/down/page 均以候选数取模，首末双向循环；零候选仍不移动。 | 旧测试把 clamp 当正确行为，没有以基线首末循环作为运行时契约。 |
-| P1-6 长输出与工具选择 | `GOAL9-STREAMED-MULTILINE-ASSISTANT-OUTPUT-STAYS-LINE-ORIENTED-EVERY-FRAME`、`GOAL9-DEFAULT-TOOL-AND-PROMPT-CONTRACT-MATCHES-AUDIT-BASELINE` | 120 行逐帧证明显式换行在 event→renderer→virtual terminal 链路不丢失；现场连排不是 Markdown 换行实现。实际偏离在更上游：Cadr 错把 7 个工具默认启用，且四工具 descriptions/snippets/guidelines 与基线不同；现默认恢复 `read,bash,edit,write` 并逐字对齐相应提示，解释并修正 bash echo/sed 偏好。 | 旧测试反而把 7 工具固化为“基线”，system prompt 仅宽松查 substring，stream 测试只有一个静态 delta，无多行逐帧 renderer/viewport。 |
-| P2-7 键位提示/行为 | `GOAL9-P2-BASELINE-KEY-HINTS-AND-DECODER-ACTIONS-AGREE`、`GOAL9-P2-CTRL-C-CLEARS-BUSY-DRAFT-AND-ESCAPE-INTERRUPTS` | 默认改为 Escape interrupt、Ctrl-C clear/双击 exit、Ctrl-D empty exit；raw 与 Kitty 输入均走可配置 app actions。 | 旧测试只比静态提示并把错误文本固化，没有验证 decoder→busy/idle action、双击时序和 virtual terminal。 |
-| P2-8 `/model` | `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS` | 移除基线不存在的 `Select Model`；模型目录刷新成功后在 selector 中显示 `Model catalogs refreshed.`。 | 旧 snapshot 明确期待错误标题，也没有覆盖 refresh 完成后的第二帧。 |
-| P2-9 exit 文案/耗时 | `GOAL9-B-BASH-TOOL-RUNTIME-RENDERS-ELAPSED-AND-TOOK-LINES`、`GOAL9-B-TOOL-EVENTS-RECORD-RUNTIME-FOR-THE-LIVE-TUI` | tool error 改为 `Command exited with code 7`；bash start/end 使用同一 monotonic clock，running 显示 `Elapsed`，完成/失败显示 `Took 0.0s`。 | 旧测试固化了 `Process exited...`，tool block 没有时间状态，也没有 start→end 事件时钟测试。 |
-| P2-10 tree/history/fork layout | `GOAL9-SESSION-SELECTOR-LAYOUT-MATCHES-BASELINE-PANEL-AND-LIST`、`GOAL9-SESSION-SELECTOR-RENAME-LAYOUT-MATCHES-BASELINE-SPACERS`、`GOAL9-TREE-SELECTOR-LAYOUT-MATCHES-BASELINE-TREE-VIEWPORT-AND-LABEL-SHELL`、`GOAL9-FORK-HISTORY-OVERLAY-MATCHES-BASELINE-MESSAGE-LAYOUT` | 对齐 header 左右栏、两行 hints、query/spacers、10 行居中 viewport、树枝/折叠符、路径/cwd/count/age、scroll、rename/label shell 与 fork message layout。 | 旧测试只验证过滤/选择业务语义和少数 selected background 常量，没有完整 panel/viewport 的逐行快照。 |
+| P0-1 `/fork` empty-candidate crash | `GOAL9-SELECT-LIST-EMPTY-AND-FIRST-ITEM-NAVIGATION-NEVER-WRITES-NEGATIVE-INDEX` | The old navigation first wrote the unsigned `selected` as `-1` and then clamped it; it now atomically computes a legal cyclic index before writing the slot, and an empty list is fixed at 0. | The old selector tests used only non-empty lists and navigated from the middle or downwards; they did not cover moving up from the first item, zero candidates after filtering, or Enter/render. |
+| P0-2 CJK/emoji editing crash | `EDITOR-INCREMENTAL-CJK-AND-EMOJI-INPUT-NEVER-RENDERS-EMPTY-GRAPHEME`, `GRAPHEME-CLUSTERS-HANDLE-EMPTY-AND-DANGLING-JOINER-BOUNDARIES` | In Common Lisp the empty string is true, so autocomplete executed `(char value 0)` on `""`; at the same time a dangling ZWJ swallowed the cursor placeholder. The length is now checked first, and per-code-point grapheme boundaries are preserved. | The old tests inserted a complete grapheme in one go and attached no autocomplete provider; they never rendered the intermediate ZWJ states code point by code point, nor the empty path prefix produced by Unicode plus a trailing space. |
+| P0-3 `session> <char>` | `GOAL9-B-TUI-BASH-STREAM-DOES-NOT-CREATE-SESSION-NOTICES` | The TUI connected the bash live stream to the notice stream, and bash flushes per character, so it generated one notice per line; the TUI no longer connects that stream to the notice channel. | notice, bash capture and the final tool result were tested separately, and per-character flushing was never driven through the real mode wiring with the virtual screen inspected. |
+| P1-4 exit 7 displayed as success | `GOAL9-B-BASH-NONZERO-EXIT-IS-A-TOOL-ERROR`, `GOAL9-B-NONZERO-BASH-TOOL-RENDERS-ERROR-STATE` | A non-zero exit changed from an ordinary result to an error tool result; the runtime block is `:error` with a red background. Round two additionally removed a status glyph the baseline does not have. | The component tests hand-constructed `:error`, and the bash tests only looked for the exit footer; the real agent tool loop was never run to verify the result `is-error` through to the TUI state. |
+| P1-5 selector does not cycle | `GOAL9-SELECT-LIST-NAVIGATION-WRAPS-AT-BOTH-BOUNDARIES` | up/down/page all take the modulus of the candidate count, so the first and last items cycle in both directions; zero candidates still do not move. | The old tests treated clamping as the correct behavior and did not take the baseline's first/last cycling as a runtime contract. |
+| P1-6 long output and tool selection | `GOAL9-STREAMED-MULTILINE-ASSISTANT-OUTPUT-STAYS-LINE-ORIENTED-EVERY-FRAME`, `GOAL9-DEFAULT-TOOL-AND-PROMPT-CONTRACT-MATCHES-AUDIT-BASELINE` | 120 lines prove frame by frame that explicit line breaks are not lost along the event→renderer→virtual terminal path; the run-together lines seen in the field are not a Markdown line-break implementation. The actual deviation is further upstream: Cadr wrongly enabled 7 tools by default, and the descriptions/snippets/guidelines of four tools differed from the baseline; the default is now restored to `read,bash,edit,write` and the corresponding prompts are aligned verbatim, explaining and correcting the bash echo/sed preference. | The old tests instead froze the 7 tools as the “baseline”, the system prompt was only loosely checked for a substring, and the stream test had only one static delta, with no multi-line per-frame renderer/viewport. |
+| P2-7 key hints/behavior | `GOAL9-P2-BASELINE-KEY-HINTS-AND-DECODER-ACTIONS-AGREE`, `GOAL9-P2-CTRL-C-CLEARS-BUSY-DRAFT-AND-ESCAPE-INTERRUPTS` | The default changed to Escape interrupt, Ctrl-C clear / double press to exit, Ctrl-D empty exit; both raw and Kitty input go through configurable app actions. | The old tests only compared the static hints and froze the wrong text; they did not verify the decoder→busy/idle action, the double-press timing or the virtual terminal. |
+| P2-8 `/model` | `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS` | Removed `Select Model`, which does not exist in the baseline; after the model catalogs refresh successfully, `Model catalogs refreshed.` is shown in the selector. | The old snapshot explicitly expected the wrong title, and it did not cover the second frame after the refresh completes. |
+| P2-9 exit copy/elapsed time | `GOAL9-B-BASH-TOOL-RUNTIME-RENDERS-ELAPSED-AND-TOOK-LINES`, `GOAL9-B-TOOL-EVENTS-RECORD-RUNTIME-FOR-THE-LIVE-TUI` | The tool error changed to `Command exited with code 7`; bash start/end use the same monotonic clock, running shows `Elapsed`, and completion/failure shows `Took 0.0s`. | The old tests froze `Process exited...`, the tool block had no time state, and there was no start→end event clock test. |
+| P2-10 tree/history/fork layout | `GOAL9-SESSION-SELECTOR-LAYOUT-MATCHES-BASELINE-PANEL-AND-LIST`, `GOAL9-SESSION-SELECTOR-RENAME-LAYOUT-MATCHES-BASELINE-SPACERS`, `GOAL9-TREE-SELECTOR-LAYOUT-MATCHES-BASELINE-TREE-VIEWPORT-AND-LABEL-SHELL`, `GOAL9-FORK-HISTORY-OVERLAY-MATCHES-BASELINE-MESSAGE-LAYOUT` | Aligned the header's left and right columns, the two hint lines, query/spacers, the 10-line centered viewport, the branch/collapse glyphs, path/cwd/count/age, scroll, the rename/label shell and the fork message layout. | The old tests verified only the filter/selection business semantics and a few selected-background constants; there was no line-by-line snapshot of the complete panel/viewport. |
 
-红→绿记录：
+Red-to-green record:
 
-- P0-1 红相为原现场同一 `UNSIGNED-BYTE datum -1`；空/边界/循环门禁绿
-  `33/33`。
-- P0-2 红相 `14 checks / 10 pass / 4 fail`，包含原始 empty-array index
-  condition 与三个 ZWJ 中间帧错误；对应门禁及 Unicode 相关回归全绿。
-- P0-3 红相 `2 checks / 1 pass / 1 fail`，notice 收到逐字符
-  `alphadeltagamma`；绿相 notice 与 virtual screen 均无该内容。
-- P1-4 红相同时出现普通 result、`:complete` 和 `Process exited...`；底层与
-  faux-agent TUI 门禁现全绿。
-- P1-6 旧工具/prompt 精确契约红 `0/1`；修正后工具/prompt 及 120 帧纯整数
-  输出合计 `525/525`。
-- P2-7/8 红相分别固定了错误 action/hint、`Select Model` 且缺失 refresh 完成帧；
-  修正后 key/decoder `10/10`、virtual terminal `3/3`、model overlay `28/28`。
-- P2-9 红相因 tool block 没有 start/end 状态而在新增 accessor/keyword 处直接失败；
-  实现后 component 与真实 event 路径均绿。
-- P2-10 首轮运行时快照 `103 checks / 89 pass / 14 fail`；按基线修正实现，
-  并移除测试数据中的非基线假设后，五个布局门禁 `100/100`。
+- P0-1's red phase was the same `UNSIGNED-BYTE datum -1` as the original
+  incident; the empty/boundary/cycling gates are green at `33/33`.
+- P0-2's red phase was `14 checks / 10 pass / 4 fail`, including the original
+  empty-array index condition and three ZWJ intermediate-frame errors; the
+  corresponding gates and the Unicode-related regressions are all green.
+- P0-3's red phase was `2 checks / 1 pass / 1 fail`, with the notice receiving
+  the per-character `alphadeltagamma`; in the green phase neither the notice nor
+  the virtual screen contains it.
+- P1-4's red phase showed the ordinary result, `:complete` and
+  `Process exited...` at the same time; the underlying and the faux-agent TUI
+  gates are now all green.
+- P1-6's old exact tool/prompt contract was red at `0/1`; after the fix, the
+  tool/prompt plus the 120-frame pure-integer output total `525/525`.
+- P2-7/8's red phases respectively froze the wrong action/hint, `Select Model`,
+  and a missing refresh-completion frame; after the fix, key/decoder is `10/10`,
+  the virtual terminal `3/3`, and the model overlay `28/28`.
+- P2-9's red phase failed outright at the newly added accessors/keywords because
+  the tool block had no start/end state; after implementation both the component
+  path and the real event path are green.
+- P2-10's first runtime snapshot was `103 checks / 89 pass / 14 fail`; after
+  implementing the fixes per the baseline and removing the non-baseline
+  assumptions from the test data, the five layout gates are `100/100`.
 
-保留日志：`/tmp/cadr-goal9-b-p0-stream-{red,green}.log`、
-`/tmp/cadr-goal9-b-p1-tool-error-{red,green}.log`、
-`/tmp/cadr-goal9-b-p2-timing-{red,green}.log`。
+Retained logs: `/tmp/cadr-goal9-b-p0-stream-{red,green}.log`,
+`/tmp/cadr-goal9-b-p1-tool-error-{red,green}.log`,
+`/tmp/cadr-goal9-b-p2-timing-{red,green}.log`.
 
-## 3.1 第二轮 B3 退回与内容等价补正
+## 3.1 Second round: B3 rejection and content-equivalence correction
 
-第二轮暴露的根因不是“又漏了几个常量”，而是原 5399 条仍偏向事件类型、结构和
-局部 substring，没有证明内容逐字符不变、provider 能力矩阵完整以及整屏文案逐字
-等价。以下门禁均先在旧实现上复现现场红相，再以同一断言转绿。
+The root cause exposed by round two is not “a few more constants were missed”,
+but that the original 5399 checks still leaned towards event types, structure
+and local substrings, and did not prove that the content is unchanged character
+by character, that the provider capability matrix is complete, or that the
+full-screen copy is verbatim equivalent. Every gate below first reproduces the
+field red phase on the old implementation, and then turns green with the same
+assertion.
 
-| 项 | 当前源码位置 | 回归门禁 | 原故障与修正 | 原 5399 条为何未捕获 |
+| Item | Current source location | Regression gate | Original failure and fix | Why the original 5399 checks did not catch it |
 |---|---|---|---|---|
-| P0-1 流式数字前空格被吞 | `src/cadr-ai/providers/openai-completions.lisp:526-548` | `test/cadr-ai/openai-completions-test.lisp:135` `OPENAI-COMPLETIONS-STREAM-TEXT-IS-CHARACTER-EXACT-FOR-ALL-DELTA-BOUNDARIES`；`:182` `OPENAI-COMPLETIONS-NONSTREAM-TEXT-IS-CHARACTER-EXACT` | `append-chat-text-delta` 改为只拒绝长度为零的字符串；遍历全部单切点及空白、数字边界。 | 旧 fixture 只断言事件结构，未拼回并逐字符比原文。 |
-| P0-2 Responses reasoning summary 缺失 | `src/cadr-ai/providers/openai.lisp:423-450,467-529`；`src/cadr-cli/tui.lisp:1689-1749` | `test/cadr-ai/provider-streams-test.lisp:149` `OPENAI-RESPONSES-REASONING-SUMMARY-PARTS-EMIT-EXACT-THINKING-EVENTS`；`test/cadr-cli/tui-test.lisp:2334` `GOAL9-USER-AND-ASSISTANT-MESSAGE-SHELLS-MATCH-BASELINE` | 补 summary part/delta、分段、最终回填与 thinking start/delta/end；TUI 复用 muted italic renderer。 | 旧门禁仅覆盖 DeepSeek `reasoning_content` 和通用 renderer，没有 Responses fixture。 |
-| P0-3 未知模型 thinking 降级 | `src/cadr-ai/registry.lisp:384-474`；`src/cadr-cli/config.lisp:156-234` | `test/cadr-cli/config-auth-test.lisp:44` `UNKNOWN-DEEPSEEK-MODEL-INHERITS-FALLBACK-CAPABILITIES-FOR-EVERY-THINKING-LEVEL` | catalog miss 继承 provider 默认模型协议/能力/thinking map但保留用户 model ID，覆盖全部 thinking level。 | 旧测试仅有 catalog hit，没有未知 model × level 的 payload/event 矩阵。 |
-| P0-4 read `offset=0` | `src/cadr-cli/tools/read.lisp:3-42` | `test/cadr-cli/file-tools-test.lisp:38` `READ-OFFSET-MATCHES-BASELINE-ZERO-NEGATIVE-AND-BEYOND-END-SEMANTICS` | 0 从头、负值 clamp；超界文案逐字对齐。 | 旧测试仅覆盖正 offset/limit，错误只做类型级断言。 |
-| P1-5a 用户块间距 | `src/cadr-cli/tui.lisp:1758-1793,1872-1888` | `test/cadr-cli/tui-test.lisp:1112` `GOAL9-B3-USER-BLOCK-SPACING-AND-WRAPPING-MATCH-BASELINE` | assistant→user transcript 增加基线 spacer。 | 旧测试孤立渲染 user component，没有相邻 transcript。 |
-| P1-5b 用户块换行 | `src/cadr-cli/tui.lisp:1758-1793` | `test/cadr-cli/tui-test.lisp:1112` `GOAL9-B3-USER-BLOCK-SPACING-AND-WRAPPING-MATCH-BASELINE`，精确期望见 `:1129-1137` | 固定宽度续行保留基线行首 padding。 | 旧测试只搜索内容 substring，没有逐行快照。 |
-| P1-7 bash 标题 timeout | `src/cadr-cli/tui.lisp:1124-1202` | `test/cadr-cli/tui-test.lisp:1223` `GOAL9-B3-EXPLICIT-BASH-TIMEOUT-NEVER-APPEARS-IN-TITLE`；`:1139` `GOAL9-B3-TOOL-TITLE-COPY-HAS-NO-STATUS-GLYPH-OR-DEFAULT-TIMEOUT` | 用户裁决后，无论 default/explicit timeout 均只显示 `$ command`。这与基线 `bash.ts:226-231` 有意不同。 | 上轮测试只证明“无默认 timeout”，并把显式 timeout 后缀当基线正确行为，因而无法发现用户实际要求尚未满足。 |
-| P1-8 工具标题 glyph | `src/cadr-tui/components.lisp:1187-1197,1567-1599` | `test/cadr-cli/tui-test.lisp:652` `GOAL9-B-NONZERO-BASH-TOOL-RENDERS-ERROR-STATE`；`:1139` `GOAL9-B3-TOOL-TITLE-COPY-HAS-NO-STATUS-GLYPH-OR-DEFAULT-TIMEOUT` | running/success/error 标题移除 `…/✓/×`，状态只由背景和语义色表达。 | 旧 snapshot 自身固化新增 glyph，未逐字对拍完整标题。 |
-| P1-9 `/login` 无参数 | `src/cadr-cli/interactive-services.lisp:7159-7208`；`src/cadr-cli/tui.lisp:3802-3807,3962-3963` | `test/cadr-cli/tui-test.lisp:1338` `GOAL9-B3-LOGIN-WITHOUT-ARGUMENTS-RENDERS-AUTH-METHOD-SELECTOR` | 新增 account/API key 两级选择及 masked key 输入。 | 旧测试只覆盖显式 provider 与孤立 provider selector，未走无参命令分派。 |
-| P2-10 `/model` 文案 | `src/cadr-cli/interactive-services.lisp:8012-8141` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`；`test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | 未 scoped 状态补 `/login` 文案并使用 `> `；scoped 状态和 refresh status 独立快照。 | 旧测试只搜 warning/model 和样式 token，没有整屏逐行快照。 |
-| P2-11 `/tree` 提示 | `src/cadr-cli/interactive-services.lisp:5990-6035` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:39` `GOAL9-B3-TREE-HELP-COPY-PRESERVES-ARROW-GLYPHS-AND-FILTER-ABBREVIATIONS` | 恢复箭头字形、branch chord 与 filters 缩写。 | 旧测试只验证 action，不断言最终两行提示。 |
-| P2-12 `/tree` 工具条目 | `src/cadr-cli/main.lisp:557-695`；`src/cadr-cli/interactive-services.lisp:5458-5605` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:70` `GOAL9-B3-TREE-TOOL-RESULTS-RENDER-CALL-LABELS-NOT-RAW-OUTPUT` | call ID 关联 result，渲染 `[tool: args]` 标签而非 raw output。 | 旧 fixture 只有孤立 result，没有真实 call/result 关联。 |
-| P2-13 垂直对齐（后续补正） | `src/cadr-cli/tui.lisp:2811-2834` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:129` `GOAL9-B3-COLD-STARTUP-CONTENT-IS-TOP-ALIGNED`；`test/cadr-cli/goal9-b3-base-screen-contract-test.lisp:265-333` 两条短内容/边界门禁 | 当时只以 `(and startup-lines (null entry-content))` 特判空会话，把 padding 放到 startup 后且仍让 editor/footer 锚底；用户后续 A/B 证明这不是基线策略。补正后根 composition 不再插入 viewport filler：冷启动和短会话整体顶部堆叠，恰好填满不裁剪，溢出才 tail-scroll。 | 第一条测试只有空 startup，整屏 expected hash 又从错误实现生成；没有 1/3 轮短会话、exact-fill、overflow 的独立布局不变量。 |
+| P0-1 leading space before a streamed number swallowed | `src/cadr-ai/providers/openai-completions.lisp:526-548` | `test/cadr-ai/openai-completions-test.lisp:135` `OPENAI-COMPLETIONS-STREAM-TEXT-IS-CHARACTER-EXACT-FOR-ALL-DELTA-BOUNDARIES`; `:182` `OPENAI-COMPLETIONS-NONSTREAM-TEXT-IS-CHARACTER-EXACT` | `append-chat-text-delta` now rejects only zero-length strings; it iterates over every single split point and over whitespace and digit boundaries. | The old fixtures only asserted the event structure; they never reassembled the text and compared it against the original character by character. |
+| P0-2 Responses reasoning summary missing | `src/cadr-ai/providers/openai.lisp:423-450,467-529`; `src/cadr-cli/tui.lisp:1689-1749` | `test/cadr-ai/provider-streams-test.lisp:149` `OPENAI-RESPONSES-REASONING-SUMMARY-PARTS-EMIT-EXACT-THINKING-EVENTS`; `test/cadr-cli/tui-test.lisp:2334` `GOAL9-USER-AND-ASSISTANT-MESSAGE-SHELLS-MATCH-BASELINE` | Added the summary part/delta, the segmentation, the final backfill and thinking start/delta/end; the TUI reuses the muted italic renderer. | The old gates covered only DeepSeek `reasoning_content` and the generic renderer; there was no Responses fixture. |
+| P0-3 unknown-model thinking downgrade | `src/cadr-ai/registry.lisp:384-474`; `src/cadr-cli/config.lisp:156-234` | `test/cadr-cli/config-auth-test.lisp:44` `UNKNOWN-DEEPSEEK-MODEL-INHERITS-FALLBACK-CAPABILITIES-FOR-EVERY-THINKING-LEVEL` | On a catalog miss it inherits the provider default model's protocol/capabilities/thinking map but keeps the user's model ID, covering every thinking level. | The old tests had only catalog hits; there was no unknown model × level payload/event matrix. |
+| P0-4 read `offset=0` | `src/cadr-cli/tools/read.lisp:3-42` | `test/cadr-cli/file-tools-test.lisp:38` `READ-OFFSET-MATCHES-BASELINE-ZERO-NEGATIVE-AND-BEYOND-END-SEMANTICS` | 0 starts from the beginning, negative values clamp; the out-of-range copy is aligned verbatim. | The old tests covered only positive offset/limit, and errors were only asserted at the type level. |
+| P1-5a user block spacing | `src/cadr-cli/tui.lisp:1758-1793,1872-1888` | `test/cadr-cli/tui-test.lisp:1112` `GOAL9-B3-USER-BLOCK-SPACING-AND-WRAPPING-MATCH-BASELINE` | Added the baseline spacer for the assistant→user transcript. | The old tests rendered the user component in isolation, with no adjacent transcript. |
+| P1-5b user block wrapping | `src/cadr-cli/tui.lisp:1758-1793` | `test/cadr-cli/tui-test.lisp:1112` `GOAL9-B3-USER-BLOCK-SPACING-AND-WRAPPING-MATCH-BASELINE`, with the exact expectation at `:1129-1137` | Fixed-width continuation lines preserve the baseline's line-leading padding. | The old tests only searched for a content substring; there was no line-by-line snapshot. |
+| P1-7 bash title timeout | `src/cadr-cli/tui.lisp:1124-1202` | `test/cadr-cli/tui-test.lisp:1223` `GOAL9-B3-EXPLICIT-BASH-TIMEOUT-NEVER-APPEARS-IN-TITLE`; `:1139` `GOAL9-B3-TOOL-TITLE-COPY-HAS-NO-STATUS-GLYPH-OR-DEFAULT-TIMEOUT` | After the user adjudication, only `$ command` is displayed whether the timeout is default or explicit. This differs intentionally from baseline `bash.ts:226-231`. | The previous round's tests only proved “no default timeout”, and treated the explicit timeout suffix as correct baseline behavior, so they could not discover that what the user actually required was still unmet. |
+| P1-8 tool title glyph | `src/cadr-tui/components.lisp:1187-1197,1567-1599` | `test/cadr-cli/tui-test.lisp:652` `GOAL9-B-NONZERO-BASH-TOOL-RENDERS-ERROR-STATE`; `:1139` `GOAL9-B3-TOOL-TITLE-COPY-HAS-NO-STATUS-GLYPH-OR-DEFAULT-TIMEOUT` | The running/success/error titles drop `…/✓/×`; the state is expressed only by the background and the semantic color. | The old snapshot itself froze the newly added glyph, and did not carry out a verbatim cross-implementation comparison of the complete title. |
+| P1-9 `/login` without arguments | `src/cadr-cli/interactive-services.lisp:7159-7208`; `src/cadr-cli/tui.lisp:3802-3807,3962-3963` | `test/cadr-cli/tui-test.lisp:1338` `GOAL9-B3-LOGIN-WITHOUT-ARGUMENTS-RENDERS-AUTH-METHOD-SELECTOR` | Added the two-level account/API key selection and masked key input. | The old tests covered only the explicit provider and an isolated provider selector, and did not go through argument-less command dispatch. |
+| P2-10 `/model` copy | `src/cadr-cli/interactive-services.lisp:8012-8141` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`; `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | The unscoped state adds the `/login` copy and uses `> `; the scoped state and the refresh status have their own snapshots. | The old tests only searched for warning/model and style tokens; there was no full-screen line-by-line snapshot. |
+| P2-11 `/tree` hints | `src/cadr-cli/interactive-services.lisp:5990-6035` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:39` `GOAL9-B3-TREE-HELP-COPY-PRESERVES-ARROW-GLYPHS-AND-FILTER-ABBREVIATIONS` | Restored the arrow glyphs, the branch chord and the filter abbreviations. | The old tests verified only the action, and did not assert the final two hint lines. |
+| P2-12 `/tree` tool entries | `src/cadr-cli/main.lisp:557-695`; `src/cadr-cli/interactive-services.lisp:5458-5605` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:70` `GOAL9-B3-TREE-TOOL-RESULTS-RENDER-CALL-LABELS-NOT-RAW-OUTPUT` | The call ID is associated with the result, and a `[tool: args]` label is rendered instead of raw output. | The old fixtures had only an isolated result, with no real call/result association. |
+| P2-13 vertical alignment (subsequent correction) | `src/cadr-cli/tui.lisp:2811-2834` | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:129` `GOAL9-B3-COLD-STARTUP-CONTENT-IS-TOP-ALIGNED`; the two short-content/boundary gates at `test/cadr-cli/goal9-b3-base-screen-contract-test.lisp:265-333` | At the time an empty session was special-cased with only `(and startup-lines (null entry-content))`, putting the padding after startup while still anchoring the editor/footer to the bottom; the user's later A/B proved this is not the baseline's policy. After the correction the root composition no longer inserts a viewport filler: cold start and short sessions stack from the top as a whole, filling exactly without cropping, and only overflow tail-scrolls. | The first test had only an empty startup, and the whole-screen expected hash was generated from the wrong implementation; there were no independent layout invariants for 1/3-round short sessions, exact fill and overflow. |
 
-红相包括原始空格折叠、Responses 零 thinking、未知模型零 thinking、
-`offset must be at least 1`、旧 overlay/tool/tree/cold-start 完整快照差异。此前记录的
-5614 条是第二轮历史结果，不能作为第三轮验收证据。read 标题的 `:起-止` 后缀未修改，
-因为它是基线 `formatReadLineRange` 的正确行为。
+The red phases include the original space collapsing, zero thinking for
+Responses, zero thinking for the unknown model, `offset must be at least 1`, and
+the complete snapshot differences of the old overlay/tool/tree/cold-start. The
+5614 checks recorded earlier are a round-two historical result and cannot serve
+as round-three acceptance evidence. The `:start-end` suffix of the read title
+was not modified, because it is the correct behavior of the baseline's
+`formatReadLineRange`.
 
-## 3.2 第三轮：证据真实性补正
+## 3.2 Third round: correction of evidence authenticity
 
-上轮有三项“已对齐”宣告不成立：timeout 只验证了未显式传参路径，却把用户要求覆盖的
-explicit timeout 排除在结论外；write 只验证 executor 确实返回 byte receipt，没有验证
-TUI 在 start/end 两帧展示 call content 还是 receipt；`/model` 则把 scoped 分支仍保留的
-`tab scope (all/scoped)` 提示误报为已删除。三处都把局部实现事实冒充为完整用户路径证据。
+Three of the previous round's “aligned” declarations do not hold: timeout
+verified only the path where no argument is passed explicitly, yet left the
+explicit timeout that the user required be covered outside the conclusion; write
+verified only that the executor really returns a byte receipt, and did not
+verify whether the TUI displays the call content or the receipt in the start/end
+frames; and `/model` mis-reported the `tab scope (all/scoped)` hint still
+retained by the scoped branch as deleted. All three passed off a local
+implementation fact as evidence for the complete user path.
 
-| 面 | 当前源码与门禁 | 本轮事实 | 旧检查为何漏过 |
+| Surface | Current source and gate | This round's facts | Why the old check missed it |
 |---|---|---|---|
-| bash timeout 标题 | `src/cadr-cli/tui.lisp:1124-1202`；`test/cadr-cli/tui-test.lisp:1223` `GOAL9-B3-EXPLICIT-BASH-TIMEOUT-NEVER-APPEARS-IN-TITLE` | default 与 explicit timeout 均不得出现在标题。该用户裁决与审计基线显式后缀冲突，按有意差异登记。 | 旧门禁只证明“默认 timeout 不应凭空出现”，并主动保留 explicit 后缀，测试范围与宣告范围不一致。 |
-| write running/success 文案 | `src/cadr-cli/tui.lisp:1221-1249,1261-1501`；`test/cadr-cli/tui-test.lisp:1274` `GOAL9-B3-WRITE-TOOL-DISPLAYS-REQUEST-CONTENT-NOT-BYTE-RECEIPT` | running 与 success 均展示请求 content 的基线 preview；模型侧 result 已在第 3.3 节另行按基线逐字修正，显示层不得以 receipt 替代 content。 | 旧测试只测 executor receipt 和 tool status，未对 event→block 的完整 output 行做 start/end 快照，也没有验证 receipt 自身是否符合基线。 |
-| `/model` `tab scope` 提示 | `src/cadr-cli/interactive-services.lisp:8012`；`test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`；`test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | unscoped/scoped 两条完整文案路径均不再出现 `tab scope (all/scoped)`；scoped 状态只保留 `Scope: all | scoped` 状态标题。 | 旧门禁只覆盖 unscoped 分支，并把 scoped 分支残留提示当作允许差异；宣告范围大于真实验证范围。 |
-| read collapsed preview | `src/cadr-tui/components.lisp:1213-1222,1514-1565`；`test/cadr-tui/components-test.lisp:423` `GOAL9-TOOL-COLLAPSED-PREVIEWS-MATCH-BASELINE-BUDGETS` | 成功 read 折叠态不显示结果；展开显示完整结果；error 始终可见。 | 旧共享 budget 错把 read 与 write 合并为 10 行，并只断言裁剪数量，未对照 read 专用 result renderer。 |
-| Markdown streaming fence | `src/cadr-tui/components.lisp:796-906`；`test/cadr-tui/components-test.lisp:764` `GOAL9-MARKDOWN-STREAMING-FENCES-MATCH-BASELINE-EXACTLY`；`test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` | 审计基线完成态本身保留开、闭 fence 行，因此截图中的字面 <code>```text</code> / <code>```</code> 已核实为非差异；本轮只修 empty/partial streaming fence 与 fence 后首个空 code line，并从 delta 经 TUI state、Markdown renderer 到 virtual terminal 锁定完整链路。 | 旧测试偏重完成态和 token 样式，没有逐帧固定完整行数组，也没有穿过完整 TUI 链。 |
-| 15 个 overlay 整屏合约 | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:125` `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` | model、model-scoped、settings、resume、fork、tree、scoped-models、trust、login-method、login-provider、logout-provider、api-key、import、extension-select、extension-custom 均锁定完整 virtual-screen SHA-256。收尾自查发现初版清单漏列独立 `/logout` surface；新增 case 先以 `PENDING` 期望复现 `14 pass / 1 fail`，再锁定真实整屏 SHA 转绿。 | 原门禁分散在 substring、样式 token 和业务 action 测试，只抽查六个 overlay；本轮初版枚举又误把 login/logout 共用 renderer 当成同一 surface，未证明每个命令 surface 的整屏输出。 |
-| settings 能力门控 | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:169` `GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`；`:347` `GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT`；`:497` `GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES` | 与基线相同：supports-images=nil 时 25 项；true 时按能力增加 Show images/Image width，合计 27 项；submenu 与边界循环另行锁定。 | 旧报告把 nil 分支的 25 项误当作固定用户裁决，没有覆盖 capability=true 分支。 |
-| `@path` autocomplete | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:837` `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` | 40×8 完整 virtual screen、换行与上下双向循环均锁定。 | 旧检查只断言匹配项或局部 popup，没有完整屏幕与 wrap 行为。 |
-| extension raw/live | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:589` `GOAL9-B3-EXTENSION-SELECTOR-STYLES-COUNTDOWN-KEYS-AND-TOOL-TOGGLE-ARE-EXACT`；`:646` `GOAL9-B3-EXTENSION-SELECT-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE`；`:694` `GOAL9-B3-EXTENSION-CONFIRM-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` | raw input、倒计时、按键、tool toggle，以及真实 worker→live TUI overlay bridge→键盘→返回值均有门禁。 | 旧检查只证明孤立 framed selector 可 render，未证明真实 bridge 与返回值。 |
-| provider thinking 全矩阵 | `test/cadr-ai/provider-streams-test.lisp:487` `EVERY-BUILT-IN-PROVIDER-AND-API-HAS-THINKING-LEVEL-HIT-MISS-CONTRACT` | 每个 built-in provider/API × 每个 thinking level × catalog hit/miss 均断言 payload 与 thinking 事件行为。 | 旧检查以单一 provider 的事件结构代替完整能力矩阵。 |
+| bash timeout title | `src/cadr-cli/tui.lisp:1124-1202`; `test/cadr-cli/tui-test.lisp:1223` `GOAL9-B3-EXPLICIT-BASH-TIMEOUT-NEVER-APPEARS-IN-TITLE` | Neither the default nor the explicit timeout may appear in the title. That user adjudication conflicts with the audit baseline's explicit suffix, and is registered as 有意差异. | The old gate only proved that “a default timeout must not appear out of nowhere”, and deliberately kept the explicit suffix, so the test scope and the declared scope did not match. |
+| write running/success copy | `src/cadr-cli/tui.lisp:1221-1249,1261-1501`; `test/cadr-cli/tui-test.lisp:1274` `GOAL9-B3-WRITE-TOOL-DISPLAYS-REQUEST-CONTENT-NOT-BYTE-RECEIPT` | Both running and success display the baseline preview of the request content; the model-side result has already been separately corrected verbatim against the baseline in section 3.3, and the display layer must not substitute the receipt for the content. | The old tests only tested the executor receipt and the tool status; they took no start/end snapshot of the complete output lines from event→block, and did not verify whether the receipt itself conforms to the baseline. |
+| `/model` `tab scope` hint | `src/cadr-cli/interactive-services.lisp:8012`; `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:7` `GOAL9-B3-MODEL-OVERLAY-COPY-MATCHES-UNSCOPED-BASELINE`; `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:144` `GOAL9-B3-MODEL-OVERLAYS-HAVE-COMPLETE-BASELINE-LINE-CONTRACTS` | Neither of the two complete copy paths, unscoped and scoped, shows `tab scope (all/scoped)` any more; the scoped state retains only the `Scope: all | scoped` status title. | The old gate covered only the unscoped branch, and treated the hint left over in the scoped branch as an allowed difference; the declared scope was larger than the actually verified scope. |
+| read collapsed preview | `src/cadr-tui/components.lisp:1213-1222,1514-1565`; `test/cadr-tui/components-test.lisp:423` `GOAL9-TOOL-COLLAPSED-PREVIEWS-MATCH-BASELINE-BUDGETS` | A successful read shows no result in the collapsed state; expanding shows the complete result; errors are always visible. | The old shared budget wrongly merged read and write into 10 lines and asserted only the crop count, without comparing against read's dedicated result renderer. |
+| Markdown streaming fence | `src/cadr-tui/components.lisp:796-906`; `test/cadr-tui/components-test.lisp:764` `GOAL9-MARKDOWN-STREAMING-FENCES-MATCH-BASELINE-EXACTLY`; `test/cadr-cli/goal9-b-runtime-parity-test.lisp:174` `GOAL9-STREAMED-MARKDOWN-FENCE-IS-EXACT-THROUGH-THE-FULL-TUI-CHAIN` | The audit baseline's completed state itself retains the opening and closing fence lines, so the literal <code>```text</code> / <code>```</code> in the screenshot has been verified as a non-difference; this round only fixes the empty/partial streaming fence and the first empty code line after a fence, and locks the complete chain from the delta through the TUI state and the Markdown renderer to the virtual terminal. | The old tests leaned towards the completed state and token styling; they did not fix the complete line array frame by frame, and did not pass through the complete TUI chain. |
+| the 15 overlay full-screen contracts | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:125` `GOAL9-B3-EVERY-OVERLAY-HAS-AN-EXACT-FULL-VIRTUAL-TERMINAL-SNAPSHOT` | model, model-scoped, settings, resume, fork, tree, scoped-models, trust, login-method, login-provider, logout-provider, api-key, import, extension-select and extension-custom all lock a complete virtual-screen SHA-256. The closeout self-check found that the first version of the list omitted the separate `/logout` surface; the newly added case first reproduced `14 pass / 1 fail` with a `PENDING` expectation, and then went green by locking the real full-screen SHA. | The original gates were scattered across substring, style-token and business-action tests and spot-checked only six overlays; and the first version of this round's enumeration in turn wrongly treated the renderer shared by login/logout as one and the same surface, without proving the full-screen output of every command surface. |
+| settings capability gating | `test/cadr-cli/goal9-b3-p2-regressions-test.lisp:169` `GOAL9-B3-SETTINGS-OVERLAY-IS-AN-EXACT-BASELINE-SCREEN`; `:347` `GOAL9-B3-SETTINGS-CAPABILITY-AND-SUBMENUS-MATCH-BASELINE-CONTRACT`; `:497` `GOAL9-B3-EVERY-SETTINGS-SUBMENU-WRAPS-AT-BOTH-BOUNDARIES` | Same as the baseline: 25 items when supports-images=nil; when true, Show images/Image width are added according to capability, 27 in total; the submenus and boundary cycling are locked separately. | The old report mistook the 25 items of the nil branch for a fixed user adjudication, and did not cover the capability=true branch. |
+| `@path` autocomplete | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:837` `GOAL9-B3-AT-PATH-AUTOCOMPLETE-HAS-AN-EXACT-FULL-SCREEN-AND-WRAPS` | The 40×8 complete virtual screen, the wrapping and the up/down bidirectional cycling are all locked. | The old checks only asserted the matching items or a local popup, with no complete screen and no wrap behavior. |
+| extension raw/live | `test/cadr-cli/goal9-b3-overlay-contract-test.lisp:589` `GOAL9-B3-EXTENSION-SELECTOR-STYLES-COUNTDOWN-KEYS-AND-TOOL-TOGGLE-ARE-EXACT`; `:646` `GOAL9-B3-EXTENSION-SELECT-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE`; `:694` `GOAL9-B3-EXTENSION-CONFIRM-RUNS-THROUGH-THE-LIVE-TUI-OVERLAY-BRIDGE` | raw input, the countdown, key presses, the tool toggle, and the real worker→live TUI overlay bridge→keyboard→return value all have gates. | The old checks only proved that an isolated framed selector can render, and did not prove the real bridge and the return value. |
+| the full provider thinking matrix | `test/cadr-ai/provider-streams-test.lisp:487` `EVERY-BUILT-IN-PROVIDER-AND-API-HAS-THINKING-LEVEL-HIT-MISS-CONTRACT` | Every built-in provider/API × every thinking level × catalog hit/miss asserts the payload and the thinking event behavior. | The old checks substituted a single provider's event structure for the complete capability matrix. |
 
-`/sessions`、`/switch`、`/branch`、`/install` 已从 Cadr 内置 slash dispatch、TUI
-overlay 与 autocomplete 全部删除，与基线 surface 一致；它们不再是 `/resume` alias，
-也不存在保留给用户调用的隐藏命令 backend。`/compact`、`/export`、`/reload` 按基线
-仍为直接动作，不打开 overlay。删除门禁为
-`GOAL9-B3-NONBASELINE-COMMAND-NAMES-DO-NOT-OPEN-TUI-OVERLAYS`，autocomplete
-集合另由 `GOAL9-B3-BUILTIN-AUTOCOMPLETE-COMMAND-CONTRACT-MATCHES-BASELINE` 锁定。
+`/sessions`, `/switch`, `/branch` and `/install` have all been deleted from
+Cadr's built-in slash dispatch, TUI overlays and autocomplete, which matches the
+baseline surface; they are no longer `/resume` aliases, and there is no hidden
+command backend retained for the user to invoke. `/compact`, `/export` and
+`/reload` remain direct actions per the baseline and do not open an overlay. The
+deletion gate is `GOAL9-B3-NONBASELINE-COMMAND-NAMES-DO-NOT-OPEN-TUI-OVERLAYS`,
+and the autocomplete set is separately locked by
+`GOAL9-B3-BUILTIN-AUTOCOMPLETE-COMMAND-CONTRACT-MATCHES-BASELINE`.
 
-第三轮 B2 增加三条硬门禁：所有展示结论必须覆盖真实 event→state→frame；renderer
-专用语义不得由共享预算或相邻工具代测；overlay 必须按 surface 全枚举，完整行快照、
-样式、空态、viewport 和首末循环缺一不可。完整对照表见
-[`visual-parity.md`](../visual-parity.md#b2-overlay-完整逐行合约)。
+Round three's B2 adds three hard gates: every display conclusion must cover a
+real event→state→frame; renderer-specific semantics must not be tested by proxy
+through a shared budget or an adjacent tool; overlays must be fully enumerated
+by surface, and the complete line snapshot, the styling, the empty state, the
+viewport and first/last cycling are every one of them indispensable. For the
+complete comparison table see
+[`visual-parity.md`](../visual-parity.md#b2-overlay-complete-line-by-line-contract).
 
-## 3.3 第四轮：模型可见 tool result 逐字审计
+## 3.3 Fourth round: verbatim audit of the model-visible tool result
 
-本轮把工具调用拆成三层独立合约：request/arguments、写入会话并回传模型的
-result、TUI renderer。前一轮只修 write 的显示层，甚至把错误 receipt 误写成
-“按基线保留”；本轮以注册表 `+builtin-coding-tool-names+` 的七个工具为封闭集合，
-逐个对照审计提交源码。`glob.lisp` 只是测试/内部辅助，未注册为模型可调用工具，
-不冒充第八个内置工具。
+This round splits a tool call into three independent contracts:
+request/arguments, the result that is written into the session and returned to
+the model, and the TUI renderer. The previous round fixed only write's display
+layer, and even wrote the erroneous receipt up as “retained per the baseline”.
+This round takes the seven tools of the registry `+builtin-coding-tool-names+`
+as a closed set and audits them one by one against the audit commit's source.
+`glob.lisp` is only a test/internal helper; it is not registered as a
+model-callable tool and does not pose as an eighth built-in tool.
 
-| 工具 | 审计基线 `file:line` | 模型可见 result 合约 | Cadr 源码与永久门禁 | 结论 |
+| Tool | Audit baseline `file:line` | Model-visible result contract | Cadr source and permanent gate | Conclusion |
 |---|---|---|---|---|
-| write | `packages/coding-agent/src/core/tools/write.ts:220-223` | `Successfully wrote N bytes to <原始 path>`；`N=JavaScript content.length`，即 UTF-16 码元数，不是 UTF-8 bytes。 | `src/cadr-cli/tools/write.lisp:42`；`GOAL9-B3-WRITE-RESULT-MATCHES-BASELINE-UTF16-CODE-UNIT-COUNT` 用 `中🙂` 锁定 `N=3`。 | 不一致（已改齐） |
-| edit | `packages/coding-agent/src/core/tools/edit.ts:323-360`；`packages/coding-agent/src/core/tools/edit-diff.ts:257-292,347-352` | success、ENOENT、not-found、duplicate、no-change、overlap 均保留原始 path、edit index 与 replacement 数。 | `src/cadr-cli/tools/edit.lisp:173-269,577-632`；`GOAL9-B3-EDIT-RESULT-AND-ERRORS-MATCH-BASELINE-COPY`。 | 不一致（已改齐） |
-| read | `packages/coding-agent/src/core/tools/read.ts:246-315`；`packages/coding-agent/src/utils/image-process.ts:67-117`；`packages/coding-agent/src/utils/image-resize.ts:116-123` | user limit、2000 行、50.0KB、首行超限、总行数/next offset；图片转换/省略/resize 坐标提示均逐字且数值同口径。 | `src/cadr-cli/tools/read.lisp:3-100`、`src/cadr-cli/interactive-services.lisp:3174-3294`；`GOAL9-B3-READ-RESULT-NOTICES-MATCH-BASELINE-LINE-COUNTS`。 | 不一致（已改齐） |
-| bash | `packages/coding-agent/src/core/tools/bash.ts:404-454` | 空输出、非零退出、timeout、2000 行/50.0KB/单长行截断提示；随机 full-output path 只替换值，模板逐字一致。 | `src/cadr-cli/tools/bash.lisp:48-87,220-316`；`GOAL9-B3-BASH-RESULT-STATUS-AND-TRUNCATION-COPY-MATCH-BASELINE`。额外移除 timeout 时 `setsid` 注入的非命令 stderr。 | 不一致（已改齐） |
-| find | `packages/coding-agent/src/core/tools/find.ts:282-346` | 空结果、`N results limit reached. Use limit=2N...`、50.0KB notice；路径相对 search root。 | `src/cadr-cli/tools/find.lisp:10-71`；`GOAL9-B3-SEARCH-TOOL-RESULTS-MATCH-BASELINE-COPY-AND-COUNTS`。 | 不一致（已改齐） |
-| grep | `packages/coding-agent/src/core/tools/grep.ts:178-356` | default limit 100；`path:line: text`/context spacing；500 UTF-16 码元长行；match/byte/long-line notice 与数值。 | `src/cadr-cli/tools/grep.lisp:10-136`；同一 search 门禁以 CJK/emoji 边界锁定 UTF-16 口径，并覆盖 byte-boundary。 | 不一致（已改齐） |
-| ls | `packages/coding-agent/src/core/tools/ls.ts:124-202` | `(empty directory)`、排序/目录 `/`、entry limit 与 50.0KB notice。 | `src/cadr-cli/tools/ls.lisp:11-73`；同一 search 门禁及既有 limit 门禁。 | 不一致（已改齐） |
+| write | `packages/coding-agent/src/core/tools/write.ts:220-223` | `Successfully wrote N bytes to <original path>`; `N=JavaScript content.length`, i.e. the number of UTF-16 code units, not UTF-8 bytes. | `src/cadr-cli/tools/write.lisp:42`; `GOAL9-B3-WRITE-RESULT-MATCHES-BASELINE-UTF16-CODE-UNIT-COUNT` locks `N=3` using `中🙂`. | 不一致（已改齐） |
+| edit | `packages/coding-agent/src/core/tools/edit.ts:323-360`; `packages/coding-agent/src/core/tools/edit-diff.ts:257-292,347-352` | success, ENOENT, not-found, duplicate, no-change and overlap all preserve the original path, the edit index and the replacement count. | `src/cadr-cli/tools/edit.lisp:173-269,577-632`; `GOAL9-B3-EDIT-RESULT-AND-ERRORS-MATCH-BASELINE-COPY`. | 不一致（已改齐） |
+| read | `packages/coding-agent/src/core/tools/read.ts:246-315`; `packages/coding-agent/src/utils/image-process.ts:67-117`; `packages/coding-agent/src/utils/image-resize.ts:116-123` | user limit, 2000 lines, 50.0KB, first line over the limit, total line count / next offset; the image conversion/omission/resize coordinate notices are all verbatim and their figures use the same basis. | `src/cadr-cli/tools/read.lisp:3-100`, `src/cadr-cli/interactive-services.lisp:3174-3294`; `GOAL9-B3-READ-RESULT-NOTICES-MATCH-BASELINE-LINE-COUNTS`. | 不一致（已改齐） |
+| bash | `packages/coding-agent/src/core/tools/bash.ts:404-454` | empty output, non-zero exit, timeout, and the 2000-line / 50.0KB / single-long-line truncation notices; the random full-output path substitutes the value only, and the template is verbatim identical. | `src/cadr-cli/tools/bash.lisp:48-87,220-316`; `GOAL9-B3-BASH-RESULT-STATUS-AND-TRUNCATION-COPY-MATCH-BASELINE`. Additionally removed the non-command stderr injected by `setsid` on timeout. | 不一致（已改齐） |
+| find | `packages/coding-agent/src/core/tools/find.ts:282-346` | empty result, `N results limit reached. Use limit=2N...`, the 50.0KB notice; paths relative to the search root. | `src/cadr-cli/tools/find.lisp:10-71`; `GOAL9-B3-SEARCH-TOOL-RESULTS-MATCH-BASELINE-COPY-AND-COUNTS`. | 不一致（已改齐） |
+| grep | `packages/coding-agent/src/core/tools/grep.ts:178-356` | default limit 100; `path:line: text` / context spacing; 500-UTF-16-code-unit long lines; the match/byte/long-line notices and their figures. | `src/cadr-cli/tools/grep.lisp:10-136`; the same search gate locks the UTF-16 basis with CJK/emoji boundaries, and covers the byte boundary. | 不一致（已改齐） |
+| ls | `packages/coding-agent/src/core/tools/ls.ts:124-202` | `(empty directory)`, sorting / directory `/`, the entry limit and the 50.0KB notice. | `src/cadr-cli/tools/ls.lisp:11-73`; the same search gate and the existing limit gate. | 不一致（已改齐） |
 
-运行时/操作系统原生异常只允许保留“实现语言迁移必然导致的异常对象措辞”差异；
-所有项目自行拼装并会进入会话的 success/error/continuation/truncation 文案均已逐字
-对齐。图片能力的 provider 请求策略仍由既有 `cadr-ai` 冻结层负责，本表只审计
-read tool 产生的 result 内容，不借此修改 provider 机制。
+Runtime/operating-system native exceptions are only allowed to retain the
+“exception-object wording that the implementation-language migration inevitably
+causes” difference; all the success/error/continuation/truncation copy that the
+project assembles itself and that enters the session has been aligned verbatim.
+The provider request policy for the image capability is still owned by the
+existing frozen `cadr-ai` layer; this table audits only the result content
+produced by the read tool, and does not use it to modify the provider mechanism.
 
-红相不是抽象推断：write 用 `中🙂` 得到旧值 `7 UTF-8 bytes` 而基线为 `3 bytes`；
-edit、read、bash、find/grep/ls 的旧文案/notice 同批失败；图片分支随后复现旧
-`Converted image/bmp to PNG` 与损坏 BMP 被误当文本 `BM`。先前 6878 条为何漏过：
-write 只有 ASCII，导致 UTF-8 bytes 与 UTF-16 units 恰好相等；其余测试只断言文件
-副作用、substring、details flag 或 TUI 展示，没有把 executor result 作为完整字符串
-快照，也没有 Unicode、截断边界和损坏图片输入。本轮专用门禁 `24/24`，其中
-grep 另用 CJK/emoji 构造“Common Lisp 字符数小于 500、UTF-16 码元数大于 500”
-的边界，防止同类计数口径再次被 ASCII 掩盖。
+The red phase is not abstract inference: with `中🙂`, write got the old value
+`7 UTF-8 bytes` while the baseline is `3 bytes`; the old copy/notices of edit,
+read, bash and find/grep/ls failed in the same batch; the image branch then
+reproduced the old `Converted image/bmp to PNG` and a corrupted BMP being
+mistaken for the text `BM`. Why the previous 6878 checks missed it: write had
+only ASCII, which made UTF-8 bytes and UTF-16 units happen to be equal; the
+remaining tests asserted only file side effects, substrings, the details flag or
+the TUI display, never took the executor result as a complete string snapshot,
+and had no Unicode, no truncation boundaries and no corrupted image input. This
+round's dedicated gate is `24/24`, and within it grep additionally uses
+CJK/emoji to construct the boundary “fewer than 500 Common Lisp characters, more
+than 500 UTF-16 code units”, to prevent the same class of counting basis from
+being masked by ASCII again.
 
-## 3.4 第五轮：timeout 噪音与时序确定性补正
+## 3.4 Fifth round: timeout noise and timing-determinism correction
 
-`setsid: child ... did not exit normally: Success` 不是可忽略的测试噪音。旧实现把
-`setsid` 自身 stderr 与命令 stdout/stderr 合并到同一 pipe，wrapper 退出竞态因此会
-污染模型可见 tool result。`src/cadr-cli/tools/bash.lisp:141-163` 现把命令 stderr 在
-child session 内以 `2>&1` 合并到命令 stdout，同时令 `setsid` 自身
-`:error-output nil`；没有使用 regex 擦除，故用户命令真实输出中即使包含 `setsid:`
-也不会被误删。
+`setsid: child ... did not exit normally: Success` is not ignorable test noise.
+The old implementation merged `setsid`'s own stderr with the command's
+stdout/stderr into the same pipe, so a wrapper exit race would contaminate the
+model-visible tool result. `src/cadr-cli/tools/bash.lisp:141-163` now merges the
+command's stderr into the command's stdout inside the child session with
+`2>&1`, while giving `setsid` itself `:error-output nil`; no regex erasure is
+used, so even if the user command's real output contains `setsid:` it will not
+be wrongly deleted.
 
-timeout 门禁改用不会自行退出的 `exec /usr/bin/tail -f /dev/null`，且 deadline 在
-process-group ID 显式建立后才开始；它验证的只可能是 timeout，不再与 `sleep 1` 的
-自然结束争抢 50 ms 窗口。永久门禁为
-`GOAL9-B3-BASH-RESULT-STATUS-AND-TRUNCATION-COPY-MATCH-BASELINE` 与
+The timeout gate now uses `exec /usr/bin/tail -f /dev/null`, which never exits
+on its own, and the deadline only starts after the process-group ID is
+explicitly established; the only thing it can verify is the timeout, and it no
+longer races the natural end of `sleep 1` over a 50 ms window. The permanent
+gates are `GOAL9-B3-BASH-RESULT-STATUS-AND-TRUNCATION-COPY-MATCH-BASELINE` and
 `GOAL9-B3-BASH-TIMEOUT-NEVER-LEAKS-WRAPPER-DIAGNOSTICS`
-（`test/cadr-cli/tool-result-parity-test.lisp:159-219`），后者单独断言 result 不含
-`setsid:` 或 `cadr-bash-wrapper`。
+(`test/cadr-cli/tool-result-parity-test.lisp:159-219`); the latter separately
+asserts that the result contains neither `setsid:` nor `cadr-bash-wrapper`.
 
-原 6203 checks 没捕获的原因是：bash 用例只在一次 50 ms 竞速中精确比较最终文案，
-既未隔离 wrapper fd，也未单独断言 wrapper 词汇永不出现；preflight 用例又把
-“50 ms 内 shutdown thread 没结束”当成 shutdown 已开始的替代证据，scheduler
-稍慢就会在 release 前尚未写入 shutdown flag。其余并发门禁也多只验最终状态，
-没有证明中间态确实已到达。新增检查锁的是显式状态转移，不再靠运行得够快取胜。
+The reason the original 6203 checks did not catch it: the bash case compared the
+final copy exactly within a single 50 ms race, and neither isolated the wrapper
+fd nor separately asserted that the wrapper vocabulary never appears; and the
+preflight case treated “the shutdown thread has not finished within 50 ms” as
+substitute evidence that shutdown had begun, so a slightly slower scheduler
+would not yet have written the shutdown flag before release. Most of the
+remaining concurrency gates likewise verified only the final state, and did not
+prove that the intermediate state was actually reached. What the newly added
+checks lock is an explicit state transition; they no longer win by running fast
+enough.
 
-时序审计不是只修两条已知红灯。以下自动化面已全部从“等一小段时间然后猜状态”
-改成可观察状态握手：
+The timing audit is not just fixing two known red lights. All the automated
+surfaces below have been changed from “wait a short while and then guess the
+state” to an observable state handshake:
 
-| 范围 | 旧竞态 | 当前确定性同步 |
+| Scope | Old race | Current deterministic synchronization |
 |---|---|---|
-| agent shutdown/preflight/compaction/tree | `sleep 1ms` 轮询或 50 ms 反向 semaphore timeout | 在 agent lock 下等待 shutdown flag 的 condition broadcast，并断言 active operation/mutation count；见 `test/cadr-agent/shutdown-test.lisp:24-365`。 |
-| parallel tools、file mutation | 用 10–80 ms 延迟制造先后顺序 | entered/release semaphore；realpath alias 另断言共享同一 mutex；见 `tool-loop-test.lisp:102`、`part-b-tools-test.lisp:76`。 |
-| execution-env/bash subprocess | 短 timeout 与有限 `sleep` 进程竞速；后台输出靠延迟 | 不自行退出的 `tail -f /dev/null`；FIFO 明确握手后台 writer ready/release，并以 `/proc/<pid>` 证明清理；见 `execution-env-test.lisp:182`、`bash-test.lisp:80`。 |
-| SSE/真实 HTTP socket | delayed stream 与第二帧靠 wall-clock sleep | stream entered/release semaphore；首个 SSE callback 释放 server 第二帧；见 `test/cadr-ai/http-test.lisp:47-177`。 |
-| RPC prompt/UI/bash | 10 ms 轮询 thread、pending hash 与输出 | join 已捕获 worker；newline-notifying Gray stream 驱动 JSON record handshake；bash worker 同步 join/abort；见 `test/cadr-cli/helpers.lisp:46-95`、`rpc-test.lisp:5-380`。 |
-| footer debounce/render | 10–50 ms sleep/poll | 注入 monotonic clock，跨越 debounce 边界前后逐次调用并断言；见 `interactive-services.lisp:2113-2290`、`part-b-interactive-test.lisp:668-883`。 |
-| extension/TUI overlay | worker polling再固定等 20 ms | overlay 安装完成 callback 发 semaphore；git daemon 读取 `Ready to rumble`；见 `goal9-b3-overlay-contract-test.lisp:650-742`、`extensions-test.lisp:614-686`。 |
-| TUI command/event | 轮询 footer/model/theme/progress flags | command callback 在返回前完成状态更新；busy abort 用 semaphore；RPC workflow join worker；见 `tui-test.lisp`、`goal9-a2-interactive-test.lisp:115`、`goal9-a2-workflows-test.lisp:187`。 |
-| PTY smoke | 发键/resize 后固定 sleep 再截图；等待已删除的 `sessions` 文案和旧 prompt glyph | 每个动作轮询其确切可见状态或 terminal-restored marker；当前 slash surface、无 glyph editor 与 `/quit` 路径逐项校正；见 `scripts/{goal5-manual-tui-smoke,live-tui-smoke}.sh`。 |
+| agent shutdown/preflight/compaction/tree | `sleep 1ms` polling or a 50 ms reverse semaphore timeout | wait under the agent lock for the condition broadcast of the shutdown flag, and assert the active operation/mutation count; see `test/cadr-agent/shutdown-test.lisp:24-365`. |
+| parallel tools, file mutation | using a 10–80 ms delay to manufacture an ordering | entered/release semaphores; the realpath alias additionally asserts that the same mutex is shared; see `tool-loop-test.lisp:102`, `part-b-tools-test.lisp:76`. |
+| execution-env/bash subprocess | racing a short timeout against a bounded `sleep` process; background output relied on a delay | `tail -f /dev/null`, which never exits on its own; a FIFO explicitly handshakes the background writer's ready/release, and `/proc/<pid>` proves the cleanup; see `execution-env-test.lisp:182`, `bash-test.lisp:80`. |
+| SSE/real HTTP socket | the delayed stream and the second frame relied on a wall-clock sleep | stream entered/release semaphores; the first SSE callback releases the server's second frame; see `test/cadr-ai/http-test.lisp:47-177`. |
+| RPC prompt/UI/bash | 10 ms polling of the thread, the pending hash and the output | join the captured worker; a newline-notifying Gray stream drives the JSON record handshake; the bash worker joins/aborts synchronously; see `test/cadr-cli/helpers.lisp:46-95`, `rpc-test.lisp:5-380`. |
+| footer debounce/render | 10–50 ms sleep/poll | inject a monotonic clock, and call and assert step by step on either side of the debounce boundary; see `interactive-services.lisp:2113-2290`, `part-b-interactive-test.lisp:668-883`. |
+| extension/TUI overlay | worker polling and then a fixed 20 ms wait | the overlay-installed callback signals a semaphore; the git daemon reads `Ready to rumble`; see `goal9-b3-overlay-contract-test.lisp:650-742`, `extensions-test.lisp:614-686`. |
+| TUI command/event | polling the footer/model/theme/progress flags | the command callback completes the state update before returning; busy abort uses a semaphore; the RPC workflow joins the worker; see `tui-test.lisp`, `goal9-a2-interactive-test.lisp:115`, `goal9-a2-workflows-test.lisp:187`. |
+| PTY smoke | a fixed sleep after sending keys/resize and then a screenshot; waiting for the deleted `sessions` copy and the old prompt glyph | every action polls its exact visible state or the terminal-restored marker; the current slash surface, the glyph-free editor and the `/quit` path are corrected item by item; see `scripts/{goal5-manual-tui-smoke,live-tui-smoke}.sh`. |
 
-全仓 `sleep`/timeout 审计的剩余项分三类，均不以时间流逝决定断言真假：
+The remaining items of the whole-repository `sleep`/timeout audit fall into
+three classes, none of which lets the passage of time decide whether an
+assertion is true:
 
-- `test/cadr-tui/manual-acceptance-test.lisp:250` 只给人工交互 event loop 限速，自动
-  FiveAM 测试不会调用该 runner。
-- `test/cadr-cli/tui-test.lisp:1178-1207` 的 `"sleep 1"` 是不执行的标题 fixture；
-  extension/RPC/sdk 的 `timeout-ms` 是 payload/立即取消语义，retry 测试注入假的
-  sleep function。
-- process/PTY smoke 中保留的 `sleep` 只是在有界循环中降低 polling 频率；成功条件
-  是 port file、Unix socket、request marker、精确 screen state 或恢复 marker，
-  不再有固定延迟后直接断言的路径。
+- `test/cadr-tui/manual-acceptance-test.lisp:250` only rate-limits the
+  manual-interaction event loop; the automated FiveAM tests never call that
+  runner.
+- The `"sleep 1"` at `test/cadr-cli/tui-test.lisp:1178-1207` is a title fixture
+  that is never executed; the `timeout-ms` of extension/RPC/sdk is
+  payload/immediate-cancel semantics, and the retry tests inject a fake sleep
+  function.
+- The `sleep` retained in the process/PTY smokes only lowers the polling
+  frequency inside a bounded loop; the success condition is a port file, a Unix
+  socket, a request marker, an exact screen state or a restore marker, and there
+  is no longer any path that asserts directly after a fixed delay.
 
-此前报告把 `SHUTDOWN-DURING-PREFLIGHT-PREVENTS-PROVIDER-START` 的首跑失败写成
-“立即复跑全绿”，该收尾判定是错的，现明确撤回。今后任何测试若需复跑才绿，本轮
-即未完成：必须保留首次红灯、定位不确定性并改为显式同步，不能用第二次结果覆盖它。
+An earlier report wrote the first-run failure of
+`SHUTDOWN-DURING-PREFLIGHT-PREVENTS-PROVIDER-START` up as “all green on an
+immediate rerun”; that closeout verdict is wrong and is now explicitly
+withdrawn. From now on, if any test needs a rerun to go green, this round is not
+finished: the first red light must be kept, the nondeterminism located and
+changed to explicit synchronization, and the second result must not be used to
+overwrite it.
 
-## 3.5 第六轮：live OAuth 顺序依赖与共享状态补正
+## 3.5 Sixth round: live OAuth order dependency and shared-state correction
 
-顾问的 `6220 checks / 6216 pass / 1 skip / 3 fail` 不是另一套测试规模：
-`6220 = cadr-ai 1911 + cadr-agent 623 + cadr-tui 1178 + cadr-cli 2508`。三个 fail
-正是 `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` 的 status、stdout、
-stderr 三条断言；CLI suite 失败后 ASDF 没有继续 storage/server/evals/protocol。
+The advisor's `6220 checks / 6216 pass / 1 skip / 3 fail` is not a different
+test scale: `6220 = cadr-ai 1911 + cadr-agent 623 + cadr-tui 1178 + cadr-cli
+2508`. The three fails are exactly the status, stdout and stderr assertions of
+`LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL`; after the CLI suite
+failed, ASDF did not continue to storage/server/evals/protocol.
 
-此前宣告的五次 `6919/6918/1/0` 是当时真实运行结果，但不足以证明 refresh 路径。
-那五次运行期间 canonical `~/.cadr/auth.json` 中的 access token 离 5 分钟主动刷新
-窗口仍很远，文件 SHA-256 始终为
-`1b2d7e98b4d1576d0df894b3188a7ff161f0eb885e074320780d7db99e080539`；因此只验证了
-fresh-access 路径。把它汇报成覆盖 live OAuth 生命周期，是证据范围夸大。
+The five runs of `6919/6918/1/0` declared earlier were real run results at the
+time, but they are not enough to prove the refresh path. During those five runs
+the access token in the canonical `~/.cadr/auth.json` was still far from the
+5-minute proactive refresh window, and the file's SHA-256 was throughout
+`1b2d7e98b4d1576d0df894b3188a7ff161f0eb885e074320780d7db99e080539`; only the
+fresh-access path was therefore verified. Reporting that as covering the live
+OAuth lifecycle overstates the scope of the evidence.
 
-旧 CLI live 测试逐次把整个真实 `auth.json` 复制进临时 HOME。隔离 CLI 在副本上调用
-`resolve-oauth-credential`；进入刷新窗口时，OpenAI 返回的新 access/refresh token
-只写回临时副本，canonical 文件仍保存已经消费的旧 refresh token。后续测试或后续
-suite run 再从 canonical 复制，便会稳定走无效 token。确定性 rotating-token 仿真
-直接复现：独立副本 A 刷新成功，副本 B 得到 `invalid_grant`，且 canonical 仍为旧
-token；改用共享 canonical 原子刷新后，两次读取只刷新一次且 canonical 保存新 token。
+The old CLI live tests copied the whole real `auth.json` into a temporary HOME
+each time. The isolated CLI called `resolve-oauth-credential` on the copy; on
+entering the refresh window, the new access/refresh token returned by OpenAI was
+written back only to the temporary copy, while the canonical file still held the
+already-consumed old refresh token. A later test or a later suite run copying
+from canonical again would then reliably use an invalid token. The deterministic
+rotating-token simulation reproduces this directly: independent copy A refreshes
+successfully, copy B gets `invalid_grant`, and canonical still holds the old
+token; after switching to an atomic refresh on the shared canonical, two reads
+refresh only once and canonical holds the new token.
 
-当前机制只有一个真源：`test/cadr-live-support.lisp` 每次都重新读取 canonical auth，
-不缓存用户凭据；若凭据已进入刷新窗口，则通过既有 `auth-storage-modify` 文件锁执行
-一次 read-modify-write，把轮换后的 token 原子写回 canonical，再把这一份 fresh
-credential 写入 CLI 临时 store。eval live 测试复用同一 helper，不再单独读取并刷新。
-该 helper 是独立 ASDF test system，CLI/evals 不再各自编译、加载同一源码副本。
+The current mechanism has only one source of truth:
+`test/cadr-live-support.lisp` rereads the canonical auth every time and does not
+cache the user's credential; if the credential has already entered the refresh
+window, it performs one read-modify-write through the existing
+`auth-storage-modify` file lock, atomically writing the rotated token back to
+canonical, and then writes that same fresh credential into the CLI's temporary
+store. The eval live tests reuse the same helper and no longer read and refresh
+on their own. That helper is a separate ASDF test system, and CLI/evals no
+longer each compile and load their own copy of the same source.
 
-真实文件安全结论：refresh 确实必须写回真实 canonical 文件，否则 rotating refresh
-token 必然把用户凭据留成废值；该写入只在过期窗口发生，并保留 mode `0600` 与其他
-provider。fresh credential 路径逐字比较文件内容，证明不重写；refresh 失败路径同样
-逐字不变；隔离 CLI 调用前后也逐字断言 canonical 不变。永久门禁为：
+The real-file safety conclusion: a refresh really must be written back to the
+real canonical file, otherwise a rotating refresh token would inevitably leave
+the user's credential as a dead value; that write happens only in the expiry
+window, and it preserves mode `0600` and the other providers. The
+fresh-credential path compares the file contents verbatim to prove that nothing
+is rewritten; the failed-refresh path is likewise verbatim unchanged; and
+canonical is asserted verbatim unchanged before and after the isolated CLI
+invocation. The permanent gates are:
 
 - `LIVE-OAUTH-SUITE-CREDENTIAL-REFRESHES-ONCE-AND-WRITES-THROUGH-CANONICAL-STORE`
 - `LIVE-OAUTH-SUITE-DOES-NOT-REWRITE-A-FRESH-CANONICAL-CREDENTIAL`
@@ -266,51 +343,72 @@ provider。fresh credential 路径逐字比较文件内容，证明不重写；r
 - `LIVE-OAUTH-SUITE-REREADS-THE-CANONICAL-STORE-ON-EVERY-USE`
 - `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL`
 
-这次差异不是“我这边能过、顾问环境有问题”：两边使用同一用户凭据和同一测试命令，
-决定旧代码走哪条路径的是运行时 token 是否已进入刷新窗口，以及 canonical 是否已被
-此前的副本刷新消费。当前五次运行使用修正后的 `4fdc38b05`；顾问三次失败使用旧
-`62eee0579`。确定性仿真负责覆盖轮换分支，真实五连跑负责覆盖完整套件顺序。
-顺序依赖与共享状态污染从此与 flaky 同级：单次或单机转绿不能结案，必须证明套件
-顺序无关、canonical 状态安全，并以连续全量运行锁定。
+This difference is not “it passes on my side, the advisor's environment has a
+problem”: both sides used the same user credential and the same test command,
+and what decided which path the old code took is whether the runtime token had
+already entered the refresh window, and whether canonical had already been
+consumed by an earlier copy's refresh. The current five runs use the corrected
+`4fdc38b05`; the advisor's three failures use the old `62eee0579`. The
+deterministic simulation is responsible for covering the rotation branch, and
+the five real runs in a row are responsible for covering the complete suite
+ordering. Order dependency and shared-state contamination now rank with
+flakiness: going green once or on one machine cannot close the case; it must be
+proved that the suite is order-independent and that the canonical state is safe,
+and it must be locked down with consecutive full runs.
 
-## 3.6 第七轮：真实 LLM 波动与证据口径纠正
+## 3.6 Seventh round: real LLM variation and correction of the evidence basis
 
-顾问在 OAuth 修复后连续三次复跑；此前必红的
-`LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` 三次均通过，确认
-`4fdc38b05` 只修测试凭据复制/共享，没有掩盖生产刷新缺陷。三轮真实 auth 的
-SHA-256 与 `0600` 权限也均未变化。
+After the OAuth fix, the advisor reran three times in a row;
+`LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL`, previously red without
+fail, passed all three times, confirming that `4fdc38b05` only fixes the
+copying/sharing of test credentials and does not mask a production refresh
+defect. Across the three rounds the SHA-256 and the `0600` permissions of the
+real auth also did not change.
 
-但三轮混合全量结果为：第一轮 `6436 checks / 5 fail`，失败面是
-`LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE`；第二、三轮均为
-`6933 checks / 0 fail`。用户输入没有提供三轮各自的 pass/skip 原始数字，本报告不
-反推补写。第一轮停在 evals 后，没有 protocol 结果；这不是时序竞态或共享状态污染，
-而是模型未必每次完成写扩展、reload、调用工具闭环的固有行为波动。
+But the three rounds' mixed full results are: round one
+`6436 checks / 5 fail`, with the failure surface being
+`LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE`; rounds two and three are
+both `6933 checks / 0 fail`. The user's input did not provide the raw per-round
+pass/skip numbers for the three rounds, and this report does not
+reverse-engineer and fill them in. Round one stopped after evals, with no
+protocol result; this is not a timing race or shared-state contamination, but
+the inherent behavioral variation of a model that does not necessarily complete
+the write-extension, reload and tool-invocation loop every time.
 
-因此第 5 节此前的“五次全绿”只是一组含 live 的历史运行记录，不能再作为确定性
-证据。live 不应通过握手、放宽断言或重跑到绿来伪装稳定。其门禁位置、退出语义与
-Part D 发布前职责当时进入 blocked 提案：
-[`goal-v9-live-test-gating.md`](../proposals/goal-v9-live-test-gating.md)；后续裁决与实施
-见第 3.7 节。
+The earlier “five green runs” of section 5 is therefore only a set of historical
+run records that include live, and can no longer serve as deterministic
+evidence. live must not fake stability through handshakes, relaxed assertions,
+or rerunning until green. Its gate placement, exit semantics and pre-release
+Part D responsibility went into a blocked proposal at the time:
+[`goal-v9-live-test-gating.md`](../proposals/goal-v9-live-test-gating.md); for
+the subsequent adjudication and implementation see section 3.7.
 
-永久报告纪律从本轮立即生效：凡宣告“连续 N 次全绿”，必须逐次附完整
-`checks / pass / skip / fail`，且入口不得包含真实网络/LLM 调用；含 live 的运行只能
-分阶段报告实际结果，任何失败不得被后续绿色覆盖。
+The permanent reporting discipline takes effect immediately from this round:
+whenever “N green runs in a row” is declared, the complete
+`checks / pass / skip / fail` must be attached for every single run, and the
+entry point must not contain a real network/LLM call; a run that includes live
+may only report its actual results stage by stage, and no failure may be
+overwritten by a later green.
 
-## 3.7 第八轮：确定性/live 门禁分离
+## 3.7 Eighth round: separating the deterministic and live gates
 
-用户已逐项批准 live 门禁提案。`e779ee828` 将三个网络 live 文件移出普通 ASDF
-test systems，并新增专用 `cadr-*/live-tests` systems 与统一
-`./scripts/test-live.sh`。`test/cadr-cli/live-auth-test.lisp` 仍留在确定性 CLI suite：
-它只用临时 auth store 与网络桩，是 OAuth 轮换缺陷的确定性门禁，不是假 live。
+The user has approved the live gate proposal item by item. `e779ee828` moves the
+three networked live files out of the ordinary ASDF test systems, and adds
+dedicated `cadr-*/live-tests` systems plus a unified `./scripts/test-live.sh`.
+`test/cadr-cli/live-auth-test.lisp` still remains in the deterministic CLI
+suite: it uses only a temporary auth store and network stubs, it is the
+deterministic gate for the OAuth rotation defect, and it is not a fake live.
 
-该分离向固定基线的官方 CI 实际效果靠拢：基线仍把 live block 写在 Vitest 内，但
-CI 不注入 provider 凭据，故只实际执行确定性部分；Cadr 用显式入口表达同一边界。
-这是组织方式差异，已登记 README，不改变任何 live prompt、断言、模型、凭据门控
-或生产 `src/`。
+This separation moves closer to the actual effect of the fixed baseline's
+official CI: the baseline still writes the live blocks inside Vitest, but CI
+does not inject provider credentials, so only the deterministic part actually
+executes; Cadr expresses the same boundary with an explicit entry point. This is
+a difference in organization, it is registered in the README, and it changes no
+live prompt, assertion, model or credential gating, nor any production `src/`.
 
-确定性入口连续五次原始汇总：
+Raw summary of five consecutive runs of the deterministic entry point:
 
-| run | checks | pass | skip | fail | 日志 |
+| run | checks | pass | skip | fail | log |
 |---:|---:|---:|---:|---:|---|
 | 1 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-1.log` |
 | 2 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-2.log` |
@@ -318,34 +416,39 @@ CI 不注入 provider 凭据，故只实际执行确定性部分；Cadr 用显�
 | 4 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-4.log` |
 | 5 | 6921 | 6921 | 0 | 0 | `/tmp/cadr-goal9-deterministic-5.log` |
 
-独立 live 入口完整运行一次，未首项退出：
+The separate live entry point ran once in full, without exiting at the first
+item:
 
-| live item | 状态 | 原因/覆盖 |
+| live item | Status | Reason/coverage |
 |---|---|---|
-| `LIVE-DEEPSEEK-CHAT-COMPLETIONS-STREAMS` | pass，5 checks | DeepSeek stream |
-| `LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT` | skip，1 check | `ANTHROPIC_API_KEY is not set` |
-| `LIVE-DEEPSEEK-PRINT-MODE-EMITS-ONLY-FINAL-TEXT` | pass，3 checks | DeepSeek CLI print |
-| `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` | pass，4 checks | canonical OAuth → isolated CLI |
-| `LIVE-DEEPSEEK-EVAL-SMOKE` | pass，4 checks | explicit DeepSeek eval |
-| `LIVE-OPENAI-CODEX-EVAL-SMOKE-USES-EXPLICIT-MODEL-AND-REAL-OAUTH` | pass，4 checks | explicit Codex eval |
-| `LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE` | pass，6 checks | self-extension behavior |
-| `LIVE-DEEPSEEK-REPOSITORY-FAIL-FIX-PASS-LOOP` | pass，5 checks | repository repair behavior |
+| `LIVE-DEEPSEEK-CHAT-COMPLETIONS-STREAMS` | pass, 5 checks | DeepSeek stream |
+| `LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT` | skip, 1 check | `ANTHROPIC_API_KEY is not set` |
+| `LIVE-DEEPSEEK-PRINT-MODE-EMITS-ONLY-FINAL-TEXT` | pass, 3 checks | DeepSeek CLI print |
+| `LIVE-OPENAI-CODEX-EXPLICIT-MODEL-USES-OAUTH-CREDENTIAL` | pass, 4 checks | canonical OAuth → isolated CLI |
+| `LIVE-DEEPSEEK-EVAL-SMOKE` | pass, 4 checks | explicit DeepSeek eval |
+| `LIVE-OPENAI-CODEX-EVAL-SMOKE-USES-EXPLICIT-MODEL-AND-REAL-OAUTH` | pass, 4 checks | explicit Codex eval |
+| `LIVE-DEEPSEEK-SELF-EXTENSION-WRITE-RELOAD-AND-INVOKE` | pass, 6 checks | self-extension behavior |
+| `LIVE-DEEPSEEK-REPOSITORY-FAIL-FIX-PASS-LOOP` | pass, 5 checks | repository repair behavior |
 
-汇总为 `8 items / 7 run / 7 pass / 1 skip / 0 fail`，检查数为
-`32 checks / 31 pass / 1 skip / 0 fail`。本轮没有失败项；若有失败，runner 会逐项输出
-完整 FiveAM check/condition、captured output、`疑似产品缺陷 / 疑似模型输出波动 /
-无法判断` 与判断依据，全部项目结束后才以 exit `1` 返回。永久回归
-`LIVE-RUNNER-CONTINUES-AFTER-A-FAILED-ITEM`、
-`LIVE-REPORT-LISTS-EVERY-ITEM-AND-COMPLETE-COUNTS` 与
-`DETERMINISTIC-SYSTEMS-EXCLUDE-NETWORK-LIVE-FILES` 锁定这些边界。
+The summary is `8 items / 7 run / 7 pass / 1 skip / 0 fail`, and the check count
+is `32 checks / 31 pass / 1 skip / 0 fail`. This round has no failed item; if
+there were a failure, the runner would print for every item the complete FiveAM
+check/condition, the captured output, `疑似产品缺陷 / 疑似模型输出波动 /
+无法判断` and the grounds for the judgement, and would return exit `1` only
+after all items had finished. The permanent regressions
+`LIVE-RUNNER-CONTINUES-AFTER-A-FAILED-ITEM`,
+`LIVE-REPORT-LISTS-EVERY-ITEM-AND-COMPLETE-COUNTS` and
+`DETERMINISTIC-SYSTEMS-EXCLUDE-NETWORK-LIVE-FILES` lock these boundaries.
 
-Part D `verify.sh` 必须调用 available live，失败默认阻断发布；只有用户看到上述完整
-报告后可显式解除，脚本不得自动忽略。按既定裁决，该接线在 Part D 落地，不提前创建
-不完整 verifier。
+Part D's `verify.sh` must invoke the available live, and a failure blocks the
+release by default; only the user, after seeing the complete report above, may
+explicitly lift it, and the script must not ignore it automatically. Per the
+established adjudication, that wiring lands in Part D; no incomplete verifier is
+created early.
 
-## 4. 色彩字节证据
+## 4. Color byte evidence
 
-同一 dark palette 输入的 capture：
+Capture from the same dark palette input:
 
 ```text
 truecolor accent-fg = ESC[38;2;138;190;183m
@@ -356,15 +459,17 @@ foreground reset    = ESC[39m
 background reset    = ESC[49m
 ```
 
-原始 capture：`/tmp/cadr-goal9-color-capture.txt`。
+Raw capture: `/tmp/cadr-goal9-color-capture.txt`.
 
-## 5. 第六轮历史混合运行证据（非确定性）
+## 5. Round-six historical mixed-run evidence (non-deterministic)
 
-代码提交为 `4fdc38b05` 后，曾使用当前用户 settings/auth 状态连续执行同一条
-`./scripts/test-cl.sh` 五次。当时五轮原始数字如下，但该入口包含真实 LLM 调用，
-本表不得再用于宣告确定性“连续全绿”：
+After the code commit `4fdc38b05`, the same `./scripts/test-cl.sh` was executed
+five times in a row using the current user settings/auth state. The raw numbers
+of those five rounds are below, but that entry point contains real LLM calls, so
+this table must no longer be used to declare a deterministic “all green in a
+row”:
 
-| run | checks | pass | skip | fail | 完整日志 |
+| run | checks | pass | skip | fail | full log |
 |---:|---:|---:|---:|---:|---|
 | 1 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-1.log` |
 | 2 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-2.log` |
@@ -372,25 +477,30 @@ background reset    = ESC[49m
 | 4 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-4.log` |
 | 5 | 6933 | 6932 | 1 | 0 | `/tmp/cadr-live-auth-full-5.log` |
 
-每轮唯一 skip 都是本机没有 `ANTHROPIC_API_KEY` 的
-`LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT`；DeepSeek 与 Codex OAuth live
-门禁均实际执行。分层复核为 `cadr-agent 623/623`、`cadr-cli 2522/2522`、
-`cadr-ai 1911 checks / 1910 pass / 1 skip / 0 fail`。
+The single skip in every round is
+`LIVE-ANTHROPIC-STREAM-PRESERVES-TWO-TURN-CONTEXT`, because this machine has no
+`ANTHROPIC_API_KEY`; the DeepSeek and Codex OAuth live gates both actually
+executed. The layered re-check was `cadr-agent 623/623`, `cadr-cli 2522/2522`,
+`cadr-ai 1911 checks / 1910 pass / 1 skip / 0 fail`.
 
-五轮 canonical auth SHA-256 在每轮前后均为
-`1b2d7e98b4d1576d0df894b3188a7ff161f0eb885e074320780d7db99e080539`；本次真实运行
-没有触发刷新，也没有改写用户 auth。轮换写回由第 3.5 节确定性测试覆盖，不能拿 fresh
-token 的五连跑冒充 refresh 分支证据。
+The canonical auth SHA-256 was
+`1b2d7e98b4d1576d0df894b3188a7ff161f0eb885e074320780d7db99e080539` before and
+after every one of the five rounds; this real run did not trigger a refresh and
+did not rewrite the user's auth. The rotation write-back is covered by the
+deterministic tests of section 3.5; a five-run streak on a fresh token must not
+be passed off as evidence for the refresh branch.
 
-外挂 PTY smoke 同样改为状态同步后真实执行：
+The external PTY smokes were likewise switched to state synchronization and then
+actually run:
 
-- `./scripts/goal5-manual-tui-smoke.sh`：overlay focus、CJK、image fallback、resize、
-  terminal restore 全部通过。
-- `./scripts/live-tui-smoke.sh`：当前 slash surface、autocomplete/undo/kill-ring、
-  DeepSeek 两轮 write/edit、resize、CJK、`/quit` terminal restore 全部通过；日志
-  `/tmp/cadr-goal9-live-tui-smoke.log`。
+- `./scripts/goal5-manual-tui-smoke.sh`: overlay focus, CJK, image fallback,
+  resize and terminal restore all pass.
+- `./scripts/live-tui-smoke.sh`: the current slash surface,
+  autocomplete/undo/kill-ring, two rounds of DeepSeek write/edit, resize, CJK
+  and `/quit` terminal restore all pass; log
+  `/tmp/cadr-goal9-live-tui-smoke.log`.
 
-残留 grep 命令与原始输出：
+Residual grep commands and raw output:
 
 ```text
 $ rg -n 'strip-setsid-timeout-noise|:error-output :output' src/cadr-cli/tools/bash.lisp
@@ -408,13 +518,16 @@ $ rg -n 'setsid:|cadr-bash-wrapper' test/cadr-cli/tool-result-parity-test.lisp
 219:      (is (null (search "cadr-bash-wrapper" message))))))
 ```
 
-模型可见 executor result 与 TUI preview 仍分别有门禁；write 的 UTF-16 receipt
-语义没有被本轮时序补正改动。
+The model-visible executor result and the TUI preview still have separate gates;
+the UTF-16 receipt semantics of write were not changed by this round's timing
+correction.
 
-## 6. 第四轮隔离构建产物（历史证据）
+## 6. Round-four isolated build artifacts (historical evidence)
 
-以下 hash 是第四轮产物，不冒充第五轮源码构建证据；本轮用户指定的验收门槛是
-连续 5 次全量与保留 smoke，未要求重建发布二进制：
+The hashes below are round-four artifacts; they do not pose as round-five
+source-build evidence. The acceptance threshold the user specified for this
+round is 5 consecutive full runs plus the retained smokes; rebuilding the
+release binaries was not required:
 
 ```text
 compression branch: SBCL lacks sb-core-compression; both builds used the documented uncompressed fallback
@@ -426,38 +539,43 @@ cadr-server SHA-256: a973aaa04f1d0f85ee6a59fbe767209fb45b0269e89df48790af05c0a60
 logs: /tmp/cadr-goal9-build.log; /tmp/cadr-goal9-build-server.log
 ```
 
-## 7. 第三至第六轮提交
+## 7. Commits of rounds three to six
 
-| commit | 内容 |
+| commit | content |
 |---|---|
-| `3b41becd3` | provider thinking 能力矩阵与字节级模式门禁 |
-| `94c1b0822` | tool preview、Markdown 与 editor autocomplete |
-| `7d89b096b` | overlay 完整合约、settings/auth/extension glue 与运行时门禁 |
-| `d77321774` | docs/README 收口与最终证据 |
-| `034f69e0f` | 明确完成态 Markdown fence 为已核实非差异 |
-| `21ae81f13` | 补齐 `/logout` 独立整屏 SHA，并刷新第三轮全量数字 |
-| `1c442d271` | 第四轮模型可见 tool result 与永久回归门禁 |
-| `be243c0ab` | 隔离 `setsid` wrapper stderr、确定性 timeout target 与无噪音回归 |
-| `baaf6dd75` | 全套时序测试改用 semaphore/condition/join/FIFO/injected clock |
-| `29e9bade9` | PTY smoke 改为观察实际 screen/marker 状态，不再固定延迟断言 |
-| `4fdc38b05` | live OAuth canonical 共享刷新、隔离凭据注入与确定性轮换回归 |
-| `e779ee828` | deterministic/live ASDF 分离、完整 live 汇总与失败分类回归 |
+| `3b41becd3` | the provider thinking capability matrix and byte-level pattern gates |
+| `94c1b0822` | tool preview, Markdown and editor autocomplete |
+| `7d89b096b` | the complete overlay contracts, settings/auth/extension glue and runtime gates |
+| `d77321774` | docs/README closure and final evidence |
+| `034f69e0f` | state explicitly that the completed-state Markdown fence is a verified non-difference |
+| `21ae81f13` | add the separate full-screen SHA for `/logout`, and refresh the round-three full-run figures |
+| `1c442d271` | round-four model-visible tool result and permanent regression gates |
+| `be243c0ab` | isolate the `setsid` wrapper stderr, the deterministic timeout target and a noise-free regression |
+| `baaf6dd75` | the whole set of timing tests switched to semaphore/condition/join/FIFO/injected clock |
+| `29e9bade9` | PTY smokes changed to observing the actual screen/marker state, no longer asserting after a fixed delay |
+| `4fdc38b05` | live OAuth shared canonical refresh, isolated credential injection and the deterministic rotation regression |
+| `e779ee828` | deterministic/live ASDF separation, the complete live summary and the failure-classification regression |
 
-提交后须再次确认本轮路径无未提交变更；用户预存的
-`docs/acceptance/goal-v8-final.md`、`.obsidian/`、`goal9.md`、`goal10.md` 与
-`scripts/__pycache__/` 不属于本轮且保持原样。
+After committing, it must be confirmed again that this round's paths have no
+uncommitted changes; the user's pre-existing
+`docs/acceptance/goal-v8-final.md`, `.obsidian/`, `goal9.md`, `goal10.md` and
+`scripts/__pycache__/` do not belong to this round and remain as they are.
 
-## 8. B3 人工门禁
+## 8. The B3 manual gate
 
-精确启动命令、环境约束和 11 个逐场景检查项见
-[`visual-parity.md`](../visual-parity.md#b3-双终端-ab-门禁)。
+For the exact startup command, the environment constraints and the 11
+per-scenario check items see
+[`visual-parity.md`](../visual-parity.md#b3-two-terminal-ab-gate).
 
-## 9. 最终用户验收
+## 9. Final user acceptance
 
-用户在顾问独立复核后明确裁决 Part B 关闭。复核证据为：确定性套件连续三次
-`6921 checks / 6921 pass / 0 skip / 0 fail`，逐位一致；`test-live.sh` 的条目级与
-检查级汇总格式符合裁决，八项中七项实际运行并通过，一项因缺
-`ANTHROPIC_API_KEY` 明确跳过。该裁决覆盖上列 B3 双终端 A/B 门禁及全部后续补正，
-不再处于“等待用户确认”状态。
+After the advisor's independent re-review, the user explicitly adjudicated that
+Part B is closed. The re-review evidence is: the deterministic suite gave
+`6921 checks / 6921 pass / 0 skip / 0 fail` three times in a row, identical
+digit for digit; the item-level and check-level summary format of
+`test-live.sh` conforms to the adjudication, seven of the eight items actually
+ran and passed, and one explicitly skipped for lack of `ANTHROPIC_API_KEY`. That
+adjudication covers the B3 two-terminal A/B gate listed above and all subsequent
+corrections, and it is no longer in the “awaiting user confirmation” state.
 
-当前处置：`Part B 已通过用户验收并关闭`。
+Current disposition: `Part B has passed user acceptance and is closed`.

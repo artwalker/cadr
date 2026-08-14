@@ -1,29 +1,30 @@
-# GOAL v8 Part B 四项裁决提案
+# GOAL v8 Part B four-item adjudication proposal
 
-> 历史提案：文内 `71efc6f0…` 仅是 Goal 8 当时的审计锚点；Goal 9 起当前
-> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+> Historical proposal: the `71efc6f0…` in this document is only the audit anchor
+> as of Goal 8; from Goal 9 on, the current normative baseline is
+> `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 
-状态：**四项均已获用户逐项批准并按第 5 节完成；本文保留为授权与基线证据。**
+Status: **All four items were approved by the user item by item and completed per section 5; this document is retained as the authorization and baseline evidence.**
 
-固定行为基线：
-`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`，checkout
-`/tmp/cadr-parity-71efc6f0`。本文所有 TypeScript `file:line` 均指该提交。
+Fixed behavior baseline:
+`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`, checkout
+`/tmp/cadr-parity-71efc6f0`. Every TypeScript `file:line` in this document refers to that commit.
 
-## 0. 程序边界与已落账增量
+## 0. Procedural boundary and increments already on the ledger
 
-预授权范围内的 Part B 增量已经按逻辑分为五个提交：
+The Part B increments within the pre-authorized scope have already been split logically into five commits:
 
-| 提交 | 内容 | 预裁边界 |
+| Commit | Content | Pre-adjudicated boundary |
 |---|---|---|
-| `724494fd562d34097c225072ace81771311c58f4` | 测试与 fixtures | Goal 8 Part B；六个 lifecycle event 对应预裁第 0.5(3) |
-| `36310bfb040674ef43dff421e4e537eb7471ebaa` | agent/session/resource/tool/input runtime | provider request hooks 只按预裁第 0.5(3) |
-| `267b215aa45e488053dd85330d8a9c1106553369` | CLI service primitives | provider lifecycle bridge 只按预裁第 0.5(3) |
-| `81b441aec12669ef368670f494a1b28697bb8193` | CLI-owned interactive controllers | 未修改 `src/cadr-tui` 生产代码 |
-| `d0a90f9e009aadcca4f3fb482596c21e4314308b` | REPL/RPC/TUI glue | startup lifecycle wiring 只按预裁第 0.5(3) |
+| `724494fd562d34097c225072ace81771311c58f4` | tests and fixtures | Goal 8 Part B; the six lifecycle events correspond to pre-adjudication item 0.5(3) |
+| `36310bfb040674ef43dff421e4e537eb7471ebaa` | agent/session/resource/tool/input runtime | provider request hooks only under pre-adjudication item 0.5(3) |
+| `267b215aa45e488053dd85330d8a9c1106553369` | CLI service primitives | provider lifecycle bridge only under pre-adjudication item 0.5(3) |
+| `81b441aec12669ef368670f494a1b28697bb8193` | CLI-owned interactive controllers | did not modify `src/cadr-tui` production code |
+| `d0a90f9e009aadcca4f3fb482596c21e4314308b` | REPL/RPC/TUI glue | startup lifecycle wiring only under pre-adjudication item 0.5(3) |
 
-预裁第 0.5(3) 的 provider request replacement 新增三个公开导出，所以
-“extension export SHA 仍为 Goal 7 冻结值”的说法错误。用 Goal 7 相同取样
-范围重算：
+The provider request replacement under pre-adjudication item 0.5(3) adds three
+public exports, so the claim that "the extension export SHA is still the Goal 7
+frozen value" is wrong. Recomputed over the same sampling range as Goal 7:
 
 ```text
 sed -n '/#:define-tool/,/#:make-extension-hook-result/p' \
@@ -31,89 +32,101 @@ sed -n '/#:define-tool/,/#:make-extension-hook-result/p' \
 e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a  -
 ```
 
-Goal 7 原值
+The Goal 7 original value
 `cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`
-只保留为历史锚点；当前锚点是
-`e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a`。
-本次 SHA 修正不扩大后续四项权限。
+is retained only as a historical anchor; the current anchor is
+`e89a7f84962c539bfab1645df4867a8f3b587ae46201865abcf9d2b503dc068a`.
+This SHA correction does not widen the permissions of the four subsequent items.
 
-共同硬约束：
+Hard constraints common to all:
 
-1. 四项均保持 `M`/blocked，用户必须逐项批准；不得以批准其中一项推定批准
-   其他项；
-2. 只实现固定基线已有机制，不增加基线没有的安全、审批、缓存或抽象；
-3. 现有扩展宏签名、既有事件语义与 stale-context 规则零变更；
-4. 新增第三方依赖必须先获用户授权，并同步
-   `docs/dependency-audit.md` 与 README；不得先添加后追认；
-5. 若批准项的最小实现超出本文列出的解冻面，立即再次 blocked；
-6. 实现顺序固定为测试先行、最小生产实现、全量门禁、逻辑提交、重冻。
+1. All four items remain `M`/blocked, and the user must approve them item by
+   item; approval of one of them must not be taken to imply approval of the
+   others;
+2. Only mechanisms that already exist in the fixed baseline are implemented; no
+   security, approval, caching or abstraction that the baseline does not have is
+   added;
+3. Zero changes to existing extension macro signatures, existing event semantics
+   and the stale-context rule;
+4. A new third-party dependency must first obtain user authorization, and
+   `docs/dependency-audit.md` and the README must be updated in step; adding
+   first and ratifying afterwards is not permitted;
+5. If the minimal implementation of an approved item exceeds the unfreeze surface
+   listed in this document, go blocked again immediately;
+6. The implementation order is fixed as tests first, minimal production
+   implementation, full gates, logical commits, refreeze.
 
-## 1. 裁决项一：真实图片像素解码、转换与缩放
+## 1. Adjudication item one: real image pixel decoding, conversion and scaling
 
-### 1.1 确切需求
+### 1.1 Exact requirement
 
-补齐 `packages/coding-agent/test/image-processing.test.ts` 的整文件语义：
+Fill in the whole-file semantics of
+`packages/coding-agent/test/image-processing.test.ts`:
 
-1. PNG 在限制内保持原 bytes；
-2. JPEG 可转换为 PNG；
-3. PNG/JPEG 必须读取真实像素并执行 EXIF orientation；
-4. 超出宽高时保持比例缩放，基线采样器为 Lanczos3；
-5. 超出编码大小时比较 PNG/JPEG，并按 JPEG quality
-   `requested, 85, 70, 55, 40` 与 0.75 倍尺寸阶梯压缩；
-6. 直至 `1x1` 仍超限则返回 `nil`；
-7. worker 是 Node/Bun 的并发实现细节；Lisp 可同步执行，但输出语义必须一致。
+1. PNG keeps its original bytes when within the limit;
+2. JPEG can be converted to PNG;
+3. PNG/JPEG must read real pixels and apply EXIF orientation;
+4. when the width/height are exceeded, scale proportionally; the baseline
+   sampler is Lanczos3;
+5. when the encoded size is exceeded, compare PNG/JPEG and compress in steps by
+   JPEG quality `requested, 85, 70, 55, 40` and 0.75× dimensions;
+6. if it is still over the limit down to `1x1`, return `nil`;
+7. the worker is a Node/Bun concurrency implementation detail; Lisp may execute
+   synchronously, but the output semantics must be identical.
 
-### 1.2 基线是否真的解码像素
+### 1.2 Does the baseline really decode pixels
 
-**是，基线真实解码并重采样像素，绝非仅读取尺寸头。**
+**Yes — the baseline really decodes and resamples pixels; it is in no way merely reading the dimension header.**
 
-| 事实 | 固定基线 |
+| Fact | Fixed baseline |
 |---|---|
-| `PhotonImage.new_from_byteslice(bytes)` 解码输入，应用 EXIF orientation，再用 `get_bytes()` 重编码 PNG | `packages/coding-agent/src/utils/image-convert.ts:4-23` |
-| resize 同样先调用 `new_from_byteslice`，随后从已解码 image 读取宽高 | `packages/coding-agent/src/utils/image-resize-core.ts:59-80` |
-| 使用 `photon.resize(..., SamplingFilter.Lanczos3)` 对像素重采样，并从 resized image 编码 PNG/JPEG | `packages/coding-agent/src/utils/image-resize-core.ts:95-120` |
-| 依次尝试 JPEG quality 与 0.75 尺寸递减，直到 `1x1` 或满足 byte limit | `packages/coding-agent/src/utils/image-resize-core.ts:122-163` |
-| worker 失败时回退到同一 in-process 像素实现 | `packages/coding-agent/src/utils/image-resize.ts:78-109` |
-| 测试要求 JPEG→PNG，而非只认 MIME/尺寸 | `packages/coding-agent/test/image-processing.test.ts:29-49` |
-| 测试要求 `100x100` 真正缩到不超过 `50x50` | `packages/coding-agent/test/image-processing.test.ts:85-98` |
-| 测试要求编码后 bytes 变小、无法降到 1 byte 时返回 null，并接受 JPEG 输入 | `packages/coding-agent/test/image-processing.test.ts:100-139` |
+| `PhotonImage.new_from_byteslice(bytes)` decodes the input, applies EXIF orientation, then re-encodes PNG with `get_bytes()` | `packages/coding-agent/src/utils/image-convert.ts:4-23` |
+| resize likewise calls `new_from_byteslice` first, then reads width and height from the already-decoded image | `packages/coding-agent/src/utils/image-resize-core.ts:59-80` |
+| uses `photon.resize(..., SamplingFilter.Lanczos3)` to resample the pixels, and encodes PNG/JPEG from the resized image | `packages/coding-agent/src/utils/image-resize-core.ts:95-120` |
+| tries JPEG quality and 0.75 dimension decrements in turn, until `1x1` or the byte limit is satisfied | `packages/coding-agent/src/utils/image-resize-core.ts:122-163` |
+| when the worker fails, falls back to the same in-process pixel implementation | `packages/coding-agent/src/utils/image-resize.ts:78-109` |
+| the tests require JPEG→PNG, not merely accepting the MIME/dimensions | `packages/coding-agent/test/image-processing.test.ts:29-49` |
+| the tests require `100x100` to really shrink to no more than `50x50` | `packages/coding-agent/test/image-processing.test.ts:85-98` |
+| the tests require the encoded bytes to get smaller, to return null when it cannot get down to 1 byte, and to accept JPEG input | `packages/coding-agent/test/image-processing.test.ts:100-139` |
 
-当前 cadr 仅对 BMP 做了像素解码：
+The current cadr does pixel decoding for BMP only:
 
-- `src/cadr-cli/media.lisp:31-47` 只识别 magic；
-- `src/cadr-cli/media.lisp:191-231` 只有 RGBA→PNG encoder；
-- `src/cadr-cli/media.lisp:233-293` 解码 BMP pixels；
-- `src/cadr-cli/media.lisp:295-302` 对非 BMP 原样返回；
-- `src/cadr-cli/interactive-services.lisp:2566-2654` 对 PNG/JPEG 只读尺寸头；
-- `src/cadr-cli/interactive-services.lisp:2656-2701` 只有测试可注入的
-  `resize-function`，没有生产 PNG/JPEG decoder/resampler。
+- `src/cadr-cli/media.lisp:31-47` recognizes magic only;
+- `src/cadr-cli/media.lisp:191-231` has only an RGBA→PNG encoder;
+- `src/cadr-cli/media.lisp:233-293` decodes BMP pixels;
+- `src/cadr-cli/media.lisp:295-302` returns non-BMP unchanged;
+- `src/cadr-cli/interactive-services.lisp:2566-2654` reads only the dimension header for PNG/JPEG;
+- `src/cadr-cli/interactive-services.lisp:2656-2701` has only a test-injectable
+  `resize-function`, with no production PNG/JPEG decoder/resampler.
 
-所以“当前代码已经通过尺寸头覆盖图片处理”是假的；它只覆盖 metadata 与
-BMP conversion，没有覆盖基线的 PNG/JPEG pixel pipeline。
+So "the current code already covers image processing via the dimension header"
+is false; it covers only metadata and BMP conversion, and does not cover the
+baseline's PNG/JPEG pixel pipeline.
 
-### 1.3 最小依赖与解冻范围
+### 1.3 Minimal dependencies and unfreeze scope
 
-建议批准两个直接 Quicklisp production dependencies：
+Recommend approving two direct Quicklisp production dependencies:
 
-| 系统 | 固定 Quicklisp release | 用途 | 新传递闭包 |
+| System | Fixed Quicklisp release | Purpose | New transitive closure |
 |---|---|---|---|
-| `cl-jpeg` | `cl-jpeg-20230214-git` | JPEG decode/encode | 只有 ASDF；ASDF 为实现提供 |
+| `cl-jpeg` | `cl-jpeg-20230214-git` | JPEG decode/encode | only ASDF; ASDF is provided by the implementation |
 | `png-read` | `png-read-20170830-git` | PNG scanline/filter/color decode | `babel`, `chipz`, `iterate` |
 
-`babel` 与 `iterate` 已存在于登记过的 `cl-sqlite` 传递闭包，但通过
-`png-read` 进入图片路径后必须重新在依赖审计中明确登记；`chipz` 是新的
-传递系统。两个 direct dependencies 与 `chipz` 都必须先获用户批准。
+`babel` and `iterate` already exist in the registered `cl-sqlite` transitive
+closure, but once they enter the image path via `png-read` they must be
+explicitly re-registered in the dependency audit; `chipz` is a new transitive
+system. Both direct dependencies and `chipz` must first obtain user approval.
 
-最小生产实现：
+Minimal production implementation:
 
-1. `cl-jpeg`/`png-read` 把 JPEG/PNG 统一解码为 RGBA；
-2. cadr 内实现确定性的 Lanczos3 RGBA resampler；
-3. 复用现有 `encode-rgba-png`，JPEG 候选用 `cl-jpeg`；
-4. JPEG decode 前按基线应用 EXIF orientation；
-5. 保留输入未超限时的原 bytes fast path；
-6. 不新增 subprocess，不调用外部 ImageMagick。
+1. `cl-jpeg`/`png-read` decode JPEG/PNG uniformly to RGBA;
+2. implement a deterministic Lanczos3 RGBA resampler inside cadr;
+3. reuse the existing `encode-rgba-png`; use `cl-jpeg` for the JPEG candidate;
+4. apply EXIF orientation before JPEG decode, following the baseline;
+5. retain the original-bytes fast path for when the input is not over the limit;
+6. add no subprocess, and call no external ImageMagick.
 
-最小解冻文件：
+Minimal unfrozen files:
 
 ```text
 cadr-cli.asd
@@ -126,81 +139,84 @@ docs/parity-map.md
 docs/progress/goal-v8.md
 ```
 
-`src/cadr-tui`、`src/cadr-ai`、`src/cadr-agent` 保持冻结。若库 API 不能在该
-边界内覆盖 PNG/JPEG pixel pipeline，重新 blocked。
+`src/cadr-tui`, `src/cadr-ai` and `src/cadr-agent` stay frozen. If the library
+APIs cannot cover the PNG/JPEG pixel pipeline within that boundary, go blocked
+again.
 
-### 1.4 已考虑但否决的替代方案
+### 1.4 Alternatives considered and rejected
 
-| 方案 | 否决理由 |
+| Alternative | Reason for rejection |
 |---|---|
-| 继续只读尺寸头 | 直接违反 JPEG→PNG、真实 resize 和 byte reduction 基线 |
-| ImageMagick/ffmpeg subprocess | 新增外部运行时依赖，构建与部署不再 hermetic |
-| `opticl` | closure 明显更大：`cl-jpeg`, `cl-tga`, `opticl-core`, `pngload`, `retrospectiff`, `skippy`, `zpng` 等 |
-| 自写完整 PNG/JPEG codec | 重复成熟 codec，维护面和恶意输入风险都远高于两个窄库 |
-| 只用 `cl-jpeg`、自行实现 PNG inflate/filter | 仍需重写 DEFLATE、filter、CRC 与 color-type 边界，收益不足 |
-| 将 worker 语义逐字移植为 Lisp 线程 | worker 是防 Node event loop 阻塞的实现手段，不是可观察合约 |
+| Keep reading only the dimension header | Directly violates the JPEG→PNG, real resize and byte reduction baseline |
+| ImageMagick/ffmpeg subprocess | Adds an external runtime dependency; build and deployment are no longer hermetic |
+| `opticl` | The closure is markedly larger: `cl-jpeg`, `cl-tga`, `opticl-core`, `pngload`, `retrospectiff`, `skippy`, `zpng` and others |
+| Write a complete PNG/JPEG codec ourselves | Duplicates a mature codec; both the maintenance surface and the malicious-input risk are far higher than two narrow libraries |
+| Use `cl-jpeg` only and implement PNG inflate/filter ourselves | Still requires rewriting DEFLATE, filters, CRC and the color-type boundaries; insufficient gain |
+| Port the worker semantics verbatim to Lisp threads | The worker is an implementation means for preventing Node event-loop blocking, not an observable contract |
 
-**建议裁决：批准 `cl-jpeg` + `png-read` 及上述闭包和最小解冻面。**
+**Recommended adjudication: approve `cl-jpeg` + `png-read` together with the closure above and the minimal unfreeze surface.**
 
-## 2. 裁决项二：Part B 所需扩展 API 与 CLI UI glue
+## 2. Adjudication item two: the extension API and CLI UI glue Part B requires
 
-### 2.1 确切需求
+### 2.1 Exact requirement
 
-只补齐下列固定基线 extension surface：
+Fill in only the following fixed-baseline extension surface:
 
-1. `ctx.isIdle()` 与 command-only `ctx.waitForIdle()`；
-2. shortcut、flag、message renderer、entry renderer 注册；
-3. tool call/result custom renderer；
-4. load-scope extension API 的 `sendMessage`、`sendUserMessage`、`exec`、
-   `getFlag`、`getActiveTools`、`setActiveTools`；
-5. bare/named/hidden inline extension factories；
-6. CLI-owned UI bridge 的 custom overlay、autocomplete wrapper、theme
-   get/set/list/load 与 tool-output expansion get/set。
+1. `ctx.isIdle()` and command-only `ctx.waitForIdle()`;
+2. shortcut, flag, message renderer and entry renderer registration;
+3. tool call/result custom renderer;
+4. the load-scope extension API's `sendMessage`, `sendUserMessage`, `exec`,
+   `getFlag`, `getActiveTools`, `setActiveTools`;
+5. bare/named/hidden inline extension factories;
+6. the CLI-owned UI bridge's custom overlay, autocomplete wrapper, theme
+   get/set/list/load and tool-output expansion get/set.
 
-不新增事件名，不改既有宏签名，不放宽现有 handler context 的生命周期，也不
-解冻 `src/cadr-tui` 生产代码。
+No new event names, no changes to existing macro signatures, no loosening of the
+lifetime of the existing handler context, and no unfreezing of `src/cadr-tui`
+production code.
 
-### 2.2 固定基线证据
+### 2.2 Fixed-baseline evidence
 
-| Surface | 固定基线 |
+| Surface | Fixed baseline |
 |---|---|
-| `ExtensionContext.isIdle` | `packages/coding-agent/src/core/extensions/types.ts:307-347`，方法在 `:329-330` |
-| command-only `waitForIdle` | `packages/coding-agent/src/core/extensions/types.ts:353-365`，方法在 `:357-358` |
-| shortcut、flag、`getFlag` | `packages/coding-agent/src/core/extensions/types.ts:1243-1269` |
+| `ExtensionContext.isIdle` | `packages/coding-agent/src/core/extensions/types.ts:307-347`, method at `:329-330` |
+| command-only `waitForIdle` | `packages/coding-agent/src/core/extensions/types.ts:353-365`, method at `:357-358` |
+| shortcut, flag, `getFlag` | `packages/coding-agent/src/core/extensions/types.ts:1243-1269` |
 | message/entry renderer | `packages/coding-agent/src/core/extensions/types.ts:1271-1279` |
-| `exec`、active tools get/set | `packages/coding-agent/src/core/extensions/types.ts:1313-1326` |
-| tool renderer context、`renderCall`、`renderResult` | `packages/coding-agent/src/core/extensions/types.ts:410-497` |
-| custom UI、autocomplete | `packages/coding-agent/src/core/extensions/types.ts:195-225` |
-| theme 与 tool expansion | `packages/coding-agent/src/core/extensions/types.ts:265-281` |
-| 注册与 action delegation | `packages/coding-agent/src/core/extensions/loader.ts:230-352` |
-| inline factory 构造与命名 | `packages/coding-agent/src/core/extensions/loader.ts:483-497`; `packages/coding-agent/src/core/resource-loader.ts:158-175,945-967` |
-| runtime 绑定与动态 context | `packages/coding-agent/src/core/extensions/runner.ts:278-293,313-430,659-763` |
+| `exec`, active tools get/set | `packages/coding-agent/src/core/extensions/types.ts:1313-1326` |
+| tool renderer context, `renderCall`, `renderResult` | `packages/coding-agent/src/core/extensions/types.ts:410-497` |
+| custom UI, autocomplete | `packages/coding-agent/src/core/extensions/types.ts:195-225` |
+| theme and tool expansion | `packages/coding-agent/src/core/extensions/types.ts:265-281` |
+| registration and action delegation | `packages/coding-agent/src/core/extensions/loader.ts:230-352` |
+| inline factory construction and naming | `packages/coding-agent/src/core/extensions/loader.ts:483-497`; `packages/coding-agent/src/core/resource-loader.ts:158-175,945-967` |
+| runtime binding and dynamic context | `packages/coding-agent/src/core/extensions/runner.ts:278-293,313-430,659-763` |
 
-直接约束行为的 tests：
+Tests that constrain the behavior directly:
 
-| 行为 | 固定基线 |
+| Behavior | Fixed baseline |
 |---|---|
 | renderer/shortcut/flag discovery | `packages/coding-agent/test/extensions-discovery.test.ts:374-393,463-497` |
-| shortcut 冲突与 reserved key 语义 | `packages/coding-agent/test/extensions-runner.test.ts:161-365` |
-| renderer 与 flag resolution | `packages/coding-agent/test/extensions-runner.test.ts:596-699` |
-| plan mode 使用 flags 和 active tools | `packages/coding-agent/test/plan-mode-extension.test.ts:35-128` |
-| tool renderer state、fallback、inheritance | `packages/coding-agent/test/tool-execution-component.test.ts:38-365` |
-| expansion、theme、custom focus、autocomplete | `packages/coding-agent/test/interactive-mode-status.test.ts:120-376` |
-| inline factories 进入 harness | `packages/coding-agent/test/test-harness.test.ts:271-322` |
-| `pi` 对象可在 handler 外、同一有效 runtime 内异步使用 | `packages/coding-agent/test/suite/regressions/2023-queued-slash-command-followup.test.ts:17-79` |
-| active tools 同一 run 生效并写入 tool-result delta | `packages/coding-agent/test/suite/regressions/6162-extension-active-tools-next-turn.test.ts:8-123` |
-| inline factory bare/named/hidden/mixed 命名 | `packages/coding-agent/test/suite/regressions/6260-inline-extension-naming.test.ts:36-118` |
-| settled 后 `isIdle=true`，command `waitForIdle` 等到 session settled | `packages/coding-agent/test/suite/regressions/6363-agent-settled-event.test.ts:29-120` |
-| module cache 与每次 factory rerun 的边界 | `packages/coding-agent/test/suite/regressions/extension-factory-cache.test.ts:69-129` |
+| shortcut conflicts and reserved-key semantics | `packages/coding-agent/test/extensions-runner.test.ts:161-365` |
+| renderer and flag resolution | `packages/coding-agent/test/extensions-runner.test.ts:596-699` |
+| plan mode uses flags and active tools | `packages/coding-agent/test/plan-mode-extension.test.ts:35-128` |
+| tool renderer state, fallback, inheritance | `packages/coding-agent/test/tool-execution-component.test.ts:38-365` |
+| expansion, theme, custom focus, autocomplete | `packages/coding-agent/test/interactive-mode-status.test.ts:120-376` |
+| inline factories reach the harness | `packages/coding-agent/test/test-harness.test.ts:271-322` |
+| the `pi` object may be used asynchronously outside a handler, within the same valid runtime | `packages/coding-agent/test/suite/regressions/2023-queued-slash-command-followup.test.ts:17-79` |
+| active tools take effect within the same run and are written into the tool-result delta | `packages/coding-agent/test/suite/regressions/6162-extension-active-tools-next-turn.test.ts:8-123` |
+| inline factory bare/named/hidden/mixed naming | `packages/coding-agent/test/suite/regressions/6260-inline-extension-naming.test.ts:36-118` |
+| `isIdle=true` after settling; command `waitForIdle` waits until the session has settled | `packages/coding-agent/test/suite/regressions/6363-agent-settled-event.test.ts:29-120` |
+| the boundary between the module cache and rerunning the factory each time | `packages/coding-agent/test/suite/regressions/extension-factory-cache.test.ts:69-129` |
 
-### 2.3 最小 Lisp 公共合约
+### 2.3 Minimal Lisp public contract
 
-现有 `extension-context` 继续只在 handler 内有效；其 stale error、现有
-accessor 和现有宏签名全部不变。新增一个与 TS factory 参数 `pi` 对应的
-load-scope opaque handle：
+The existing `extension-context` remains valid only inside a handler; its stale
+error, its existing accessors and the existing macro signatures are all
+unchanged. Add one load-scope opaque handle corresponding to the TS factory
+parameter `pi`:
 
 ```lisp
-(current-extension-api) ; 仅扩展加载期可取，=> extension-api
+(current-extension-api) ; only obtainable during extension load, => extension-api
 
 (extension-api-send-message
  api message &key trigger-turn-p deliver-as)
@@ -213,23 +229,25 @@ load-scope opaque handle：
 (extension-api-set-active-tools api tool-names)
 ```
 
-该 handle 可由扩展捕获并在同一有效 generation 的 command/tool/async
-continuation 中使用，满足 regression #2023；reload、session replacement 或
-bundle retirement 后仍必须 stale。它不是永生 global，也不放宽
-`extension-context`。
+The handle may be captured by an extension and used in the command/tool/async
+continuation of the same valid generation, which satisfies regression #2023;
+after a reload, session replacement or bundle retirement it must still be stale.
+It is not an immortal global, and it does not loosen `extension-context`.
 
-只向 context 增加：
+Only these are added to the context:
 
 ```lisp
 (extension-context-idle-p context)
 (extension-command-context-wait-for-idle context)
 ```
 
-第二个函数只接受 command context；普通 event/tool context 调用必须报类型
-错误。settled 定义沿用现有 agent 的 retry/follow-up drain 边界。
+The second function accepts only a command context; calling it on an ordinary
+event/tool context must signal a type error. The definition of settled follows
+the existing agent's retry/follow-up drain boundary.
 
-注册面只增新宏，不改现有 `define-tool`、`define-command`、
-`define-event-hook`、`define-provider` lambda list：
+The registration surface gains new macros only; the lambda lists of the existing
+`define-tool`, `define-command`, `define-event-hook` and `define-provider` are
+unchanged:
 
 ```lisp
 (define-shortcut key &key description handler)
@@ -239,21 +257,23 @@ bundle retirement 后仍必须 stale。它不是永生 global，也不放宽
 (define-tool-renderer tool-name &key call result)
 ```
 
-`define-tool-renderer` 独立存在，避免给已冻结的 `define-tool` 加 keyword。
-renderer 返回现有 cadr-tui component/line protocol，缺失 call/result slot 时
-按基线回退或继承，不创建第二套组件类型。
+`define-tool-renderer` exists separately, avoiding adding a keyword to the
+already-frozen `define-tool`. A renderer returns the existing cadr-tui
+component/line protocol; when the call/result slot is missing it falls back or
+inherits as the baseline does, and no second set of component types is created.
 
-inline factory 输入只允许：
+The inline factory input allows only:
 
 ```lisp
 function
 (:name string :factory function :hidden-p boolean)
 ```
 
-bare factory 显示 `<inline:N>`，named factory 显示 `<inline:name>`；module/source
-parse cache 仍按 cwd/generation，factory 每次 load 都运行。
+A bare factory displays `<inline:N>`, a named factory displays `<inline:name>`;
+the module/source parse cache still follows cwd/generation, and the factory runs
+on every load.
 
-UI bridge 只增加：
+The UI bridge adds only:
 
 ```lisp
 (extension-context-custom context factory &key overlay-p overlay-options)
@@ -266,11 +286,12 @@ UI bridge 只增加：
 (extension-context-set-tools-expanded context expanded-p)
 ```
 
-实现必须位于 `cadr-cli`，复用现有 overlay/editor/theme/autocomplete/tool row
-组件；`src/cadr-tui` 继续冻结。若任何一项确需修改 `src/cadr-tui` 生产 object
-ID，立即 blocked。
+The implementation must live in `cadr-cli` and reuse the existing
+overlay/editor/theme/autocomplete/tool row components; `src/cadr-tui` stays
+frozen. If any one of them genuinely requires modifying a `src/cadr-tui`
+production object ID, go blocked immediately.
 
-### 2.4 最小解冻范围
+### 2.4 Minimal unfreeze scope
 
 ```text
 src/cadr-agent/extensions.lisp
@@ -292,92 +313,102 @@ docs/architecture.md
 docs/progress/goal-v8.md
 ```
 
-只允许按测试证明实际需要的文件进入提交；该清单不是整目录授权。
-`src/cadr-ai` 与 `src/cadr-tui` 保持冻结。
+Only files that the tests prove are actually needed may enter the commit; this
+list is not a whole-directory authorization.
+`src/cadr-ai` and `src/cadr-tui` stay frozen.
 
-### 2.5 向后兼容与重冻门禁
+### 2.5 Backward compatibility and refreeze gates
 
 1. `LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-   必须继续全绿；
-2. 现有四个旧 event、33 个已冻结 event 与所有旧宏签名逐项回归；
-3. 捕获旧 `extension-context` 离开 handler 后仍抛
-   `stale-extension-context`；
-4. 新 load-scope API 在 reload/retirement 后也 stale；
-5. `src/cadr-tui` production object ID 零变化；
-6. 实现提交后重算 extension export SHA 与全部 extension object ID，更新
-   architecture，再恢复“发布即稳定”。
+   must stay fully green;
+2. the existing four old events, the 33 frozen events and all old macro
+   signatures are regressed item by item;
+3. a captured old `extension-context` still signals
+   `stale-extension-context` after it leaves the handler;
+4. the new load-scope API is stale after reload/retirement as well;
+5. zero change to `src/cadr-tui` production object IDs;
+6. after the implementation commit, recompute the extension export SHA and all
+   extension object IDs, update architecture, then restore "stable on release".
 
-### 2.6 已考虑但否决的替代方案
+### 2.6 Alternatives considered and rejected
 
-| 方案 | 否决理由 |
+| Alternative | Reason for rejection |
 |---|---|
-| 直接让 `extension-context` 永久有效 | 破坏 Goal 7 stale-context 冻结与 reload/session replacement 隔离 |
-| 给现有宏加 keywords | 改变冻结 lambda list，旧扩展兼容门禁失真 |
-| 新增 event 传递 UI/active-tools | 基线已有 action/context surface，无需发明事件 |
-| 只做 test fixture wrapper | 无法覆盖真实 resource loader、TUI focus、active-tool next request |
-| 在 `cadr-agent` 复制 TUI component | 破坏依赖方向并产生第二套 UI 类型 |
-| 修改 `src/cadr-tui` | 当前证据显示 CLI glue 可复用现有组件；若事实相反必须另行裁决 |
-| 将这些行判 N/A | 它们不是语言/构建必然差异，而是原版公开扩展机制 |
+| Simply make `extension-context` permanently valid | Breaks the Goal 7 stale-context freeze and reload/session-replacement isolation |
+| Add keywords to the existing macros | Changes a frozen lambda list, and distorts the old-extension compatibility gate |
+| Add new events that carry UI/active-tools | The baseline already has an action/context surface; there is no need to invent events |
+| Do only a test fixture wrapper | Cannot cover the real resource loader, TUI focus, or the active-tool next request |
+| Copy the TUI components into `cadr-agent` | Breaks the dependency direction and produces a second set of UI types |
+| Modify `src/cadr-tui` | The current evidence shows the CLI glue can reuse the existing components; if the facts are the opposite, a separate adjudication is required |
+| Rule these rows N/A | They are not language/build inevitable differences, but the baseline's public extension mechanism |
 
-**建议裁决：批准本节列出的 additive API 与 CLI glue；禁止解冻
-`src/cadr-ai`、`src/cadr-tui`。**
+**Recommended adjudication: approve the additive API and CLI glue listed in this section; unfreezing
+`src/cadr-ai` and `src/cadr-tui` is forbidden.**
 
-## 3. 裁决项三：llama.cpp bundled extension 与最小 `cadr-ai` 合约
+## 3. Adjudication item three: the llama.cpp bundled extension and the minimal `cadr-ai` contract
 
-### 3.1 确切需求
+### 3.1 Exact requirement
 
-整文件覆盖 `packages/coding-agent/test/llama-extension.test.ts`：
+Cover `packages/coding-agent/test/llama-extension.test.ts` as a whole file:
 
-1. bundled extension 注册 native runtime provider 与 `/llama`；
-2. management URL 与 `/v1` inference URL 规范化；
-3. 只暴露 `loaded` models，并映射 context window、image modality 等 metadata；
-4. provider-scoped model store 支持 online refresh 与 cache-only restore；
-5. 未配置时 dormant；交互登录保存 server URL 与 optional key；
-6. auth check/resolve 产生请求期 base URL/key；
-7. Hugging Face 搜索、GGUF quantization 分组与 gated metadata；
-8. `/models/sse` 的 load/download progress 与最终 catalog refresh；
-9. inference 复用已有 OpenAI Chat Completions stream，不新增 wire protocol。
+1. the bundled extension registers a native runtime provider and `/llama`;
+2. normalization of the management URL and the `/v1` inference URL;
+3. expose only `loaded` models, and map metadata such as context window and
+   image modality;
+4. the provider-scoped model store supports online refresh and cache-only
+   restore;
+5. dormant when unconfigured; interactive login saves the server URL and the
+   optional key;
+6. auth check/resolve produce the request-time base URL/key;
+7. Hugging Face search, GGUF quantization grouping and gated metadata;
+8. `/models/sse` load/download progress and the final catalog refresh;
+9. inference reuses the existing OpenAI Chat Completions stream and adds no new
+   wire protocol.
 
-### 3.2 固定基线证据
+### 3.2 Fixed-baseline evidence
 
-| 合约 | 固定基线 |
+| Contract | Fixed baseline |
 |---|---|
-| runtime provider 的 auth/models/refresh/filter/stream 面 | `packages/ai/src/models.ts:34-120` |
-| runtime login/check 的公共语义 | `packages/ai/src/models.ts:127-171,364-445` |
-| provider mutation、provider-scoped store、credential-aware refresh 与 cache fallback | `packages/ai/src/models.ts:218-328` |
-| store entry 与 provider-scoped read/write/delete | `packages/ai/src/models-store.ts:3-28` |
+| the runtime provider's auth/models/refresh/filter/stream surface | `packages/ai/src/models.ts:34-120` |
+| the public semantics of runtime login/check | `packages/ai/src/models.ts:127-171,364-445` |
+| provider mutation, provider-scoped store, credential-aware refresh and cache fallback | `packages/ai/src/models.ts:218-328` |
+| store entry and provider-scoped read/write/delete | `packages/ai/src/models-store.ts:3-28` |
 | API-key login/check/resolve | `packages/ai/src/auth/types.ts:150-182,212-220` |
-| llama provider URL/key login、check、resolve | `packages/coding-agent/src/extensions/llama/provider.ts:58-110` |
-| loaded catalog、cache restore、OpenAI completions stream | `packages/coding-agent/src/extensions/llama/provider.ts:111-133` |
-| extension 注册与 URL normalization | `packages/coding-agent/test/llama-extension.test.ts:42-60` |
+| llama provider URL/key login, check, resolve | `packages/coding-agent/src/extensions/llama/provider.ts:58-110` |
+| loaded catalog, cache restore, OpenAI completions stream | `packages/coding-agent/src/extensions/llama/provider.ts:111-133` |
+| extension registration and URL normalization | `packages/coding-agent/test/llama-extension.test.ts:42-60` |
 | loaded-only model mapping | `packages/coding-agent/test/llama-extension.test.ts:62-87` |
 | cache-only restore | `packages/coding-agent/test/llama-extension.test.ts:89-131` |
 | dormant/login/check/resolve | `packages/coding-agent/test/llama-extension.test.ts:133-162` |
 | Hugging Face search/details | `packages/coding-agent/test/llama-extension.test.ts:164-202` |
-| 本地 loopback SSE load/download | `packages/coding-agent/test/llama-extension.test.ts:204-291` |
+| local loopback SSE load/download | `packages/coding-agent/test/llama-extension.test.ts:204-291` |
 
-`llama-extension.test.ts` 不是 Ollama/llama.cpp live smoke。它启动本地 loopback
-HTTP/SSE server，所有断言均 deterministic，固定基线没有 `skipIf(!KEY)`。
-因此不能按 live 凭据门控原则跳过；本机没部署 llama.cpp 也不是 N/A 理由。
+`llama-extension.test.ts` is not an Ollama/llama.cpp live smoke. It starts a
+local loopback HTTP/SSE server, all of its assertions are deterministic, and the
+fixed baseline has no `skipIf(!KEY)`. It therefore must not be skipped under the
+live-credential gating principle; llama.cpp not being deployed on this machine
+is not a reason for N/A either.
 
-### 3.3 `cadr-ai` 已有能力
+### 3.3 What `cadr-ai` already has
 
-当前 `cadr-ai` 并非缺少整个 provider runtime：
+The current `cadr-ai` is not missing an entire provider runtime:
 
-- `src/cadr-ai/models-runtime.lisp:66-79` 已有 models/model-function、
-  auth resolver、OAuth、refresh/filter、complete/stream slots；
-- `src/cadr-ai/models-runtime.lisp:100-154` 已有 provider mutation 与同步
-  current models；
-- `src/cadr-ai/models-runtime.lisp:293-341` 已有 auth check 与 availability；
-- `src/cadr-ai/models-runtime.lisp:343-418` 已有 provider-scoped model store 与
-  refresh/cache fallback；
-- `src/cadr-ai/models-runtime.lisp:538-543` 已有 complete/stream dispatch。
+- `src/cadr-ai/models-runtime.lisp:66-79` already has models/model-function,
+  auth resolver, OAuth, refresh/filter and complete/stream slots;
+- `src/cadr-ai/models-runtime.lisp:100-154` already has provider mutation and
+  synchronizing current models;
+- `src/cadr-ai/models-runtime.lisp:293-341` already has auth check and
+  availability;
+- `src/cadr-ai/models-runtime.lisp:343-418` already has a provider-scoped model
+  store and refresh/cache fallback;
+- `src/cadr-ai/models-runtime.lisp:538-543` already has complete/stream dispatch.
 
-所以不允许重写 registry，也不允许把 llama management 塞进 `cadr-ai`。
+So rewriting the registry is not allowed, and neither is stuffing llama
+management into `cadr-ai`.
 
-### 3.4 `cadr-ai` 需要的最小新增合约面
+### 3.4 The minimal new contract surface `cadr-ai` needs
 
-只对 `runtime-provider` 做 additive slots：
+Only additive slots on `runtime-provider`:
 
 ```lisp
 api-key-login-function
@@ -385,7 +416,8 @@ auth-check-function
 refresh-context-function
 ```
 
-API-key login 使用与基线 `AuthInteraction` 等价的 opaque interaction：
+API-key login uses an opaque interaction equivalent to the baseline's
+`AuthInteraction`:
 
 ```lisp
 (make-runtime-auth-interaction
@@ -397,12 +429,12 @@ API-key login 使用与基线 `AuthInteraction` 等价的 opaque interaction：
 (runtime-auth-interaction-aborted-p interaction)
 ```
 
-`prompt` 是严格 plist，至少支持 llama 所需的
-`(:type :text/:secret :message string :placeholder optional-string)`；
-`event` 是 `(:type keyword :message string)`。这不是新 UI 框架，CLI 只把它
-桥接到现有 input/secret/notification。
+`prompt` is a strict plist that supports at least the
+`(:type :text/:secret :message string :placeholder optional-string)` that llama
+needs; `event` is `(:type keyword :message string)`. This is not a new UI
+framework; the CLI only bridges it to the existing input/secret/notification.
 
-新增 opaque refresh context：
+A new opaque refresh context:
 
 ```lisp
 (runtime-refresh-context-credential context)
@@ -412,40 +444,43 @@ API-key login 使用与基线 `AuthInteraction` 等价的 opaque interaction：
 (runtime-refresh-context-aborted-p context)
 ```
 
-新增 runtime entry point：
+A new runtime entry point:
 
 ```lisp
 (models-runtime-login-api-key runtime provider-id interaction)
 ```
 
-精确语义：
+Exact semantics:
 
-1. `models-runtime-login-api-key` 只调用 provider 的
-   `api-key-login-function`，返回并由既有 credential store 保存
-   `api-key-credential`；不解冻 OAuth login；
-2. `models-runtime-check-auth` 若有 `auth-check-function` 则优先调用，否则保持
-   现有 resolver fallback；
-3. `models-runtime-refresh` 若有 `refresh-context-function`，传入 provider-scoped
-   store、credential、allow-network、force、abort view；否则继续调用现有
-   `refresh-function credential store allow-network force`；
-4. **现有 `refresh-function` 参数表不改**，现有 provider 零迁移；
-5. 只导出上述新增类型/accessor/entry point 和构造器需要的 additive slot
-   accessor；静态 provider registry、模型类型、HTTP/SSE 与 wire protocol
-   不改。
+1. `models-runtime-login-api-key` only calls the provider's
+   `api-key-login-function`, returning an `api-key-credential` that the existing
+   credential store saves; it does not unfreeze OAuth login;
+2. `models-runtime-check-auth` calls `auth-check-function` first if there is
+   one, and otherwise keeps the existing resolver fallback;
+3. `models-runtime-refresh`, if there is a `refresh-context-function`, passes in
+   the provider-scoped store, credential, allow-network, force and abort view;
+   otherwise it goes on calling the existing
+   `refresh-function credential store allow-network force`;
+4. **the existing `refresh-function` parameter list is not changed**, and
+   existing providers need zero migration;
+5. export only the new types/accessors/entry point above and the additive slot
+   accessors the constructor needs; the static provider registry, the model
+   types, HTTP/SSE and the wire protocol are not changed.
 
-agent/CLI glue 另行最小增加：
+The agent/CLI glue adds, separately and minimally:
 
 ```lisp
 (define-native-provider runtime-provider)
 ```
 
-它与现有 `define-provider` 并存，后者签名和静态 overlay 语义不变。
-`cadr-cli` 把 native runtime provider 接入现有 model selector、auth/store 和
-agent dispatch；llama client、Hugging Face client、SSE progress 与 `/llama`
-command 放在 bundled CLI extension 目录，不进入 `cadr-ai`。inference 复用现有
-`:openai-completions` adapter。
+It coexists with the existing `define-provider`, whose signature and static
+overlay semantics are unchanged. `cadr-cli` wires the native runtime provider
+into the existing model selector, auth/store and agent dispatch; the llama
+client, the Hugging Face client, SSE progress and the `/llama` command go in the
+bundled CLI extension directory and do not enter `cadr-ai`. Inference reuses the
+existing `:openai-completions` adapter.
 
-### 3.5 最小解冻范围与保险丝
+### 3.5 Minimal unfreeze scope and the fuse
 
 ```text
 src/cadr-ai/models-runtime.lisp
@@ -466,8 +501,9 @@ docs/architecture.md
 docs/progress/goal-v8.md
 ```
 
-这里是对 Goal 7 “若需修改 `src/cadr-ai` 则 blocked”的**限定 override
-提案**，尚未获批。只允许修改下列冻结对象：
+This is a **scoped override proposal** against Goal 7's "if `src/cadr-ai` needs
+modifying, go blocked", and it has not yet been approved. Only the following
+frozen objects may be modified:
 
 ```text
 src/cadr-ai/models-runtime.lisp
@@ -476,104 +512,113 @@ test/cadr-ai/models-runtime-test.lisp
 cadr-ai.asd
 ```
 
-若实现需要触碰其他 `src/cadr-ai` production object ID，立即 blocked；不得
-顺手修改。该项不新增第三方依赖。
+If the implementation needs to touch any other `src/cadr-ai` production object
+ID, go blocked immediately; modifying it in passing is not permitted. This item
+adds no third-party dependency.
 
-### 3.6 已考虑但否决的替代方案
+### 3.6 Alternatives considered and rejected
 
-| 方案 | 否决理由 |
+| Alternative | Reason for rejection |
 |---|---|
-| 因本机未部署 llama.cpp 而 skip | 测试是本地 loopback deterministic contract，不是 live block |
-| 用现有静态 `define-provider` 冒充 | 无法覆盖动态 catalog、cache-only restore、custom login/check |
-| 把 llama/Hugging Face management 放进 `cadr-ai` | 破坏 extension boundary，扩大核心职责 |
-| 在 CLI 重写一套 provider runtime | 重复 `models-runtime` 已有 store/auth/dispatch |
-| 改现有 `refresh-function` 参数表 | 破坏现有 runtime provider；additive context slot 已足够 |
-| 新增 llama wire adapter | inference 已是标准 OpenAI Chat Completions |
+| Skip because llama.cpp is not deployed on this machine | The test is a local loopback deterministic contract, not a live block |
+| Pass the existing static `define-provider` off as it | Cannot cover the dynamic catalog, cache-only restore, or custom login/check |
+| Put llama/Hugging Face management into `cadr-ai` | Breaks the extension boundary and widens the core's responsibilities |
+| Rewrite a provider runtime in the CLI | Duplicates the store/auth/dispatch `models-runtime` already has |
+| Change the existing `refresh-function` parameter list | Breaks existing runtime providers; an additive context slot is already enough |
+| Add a llama wire adapter | Inference is already standard OpenAI Chat Completions |
 
-**建议裁决：批准上述四个 `cadr-ai` 文件的限定解冻与 additive contract，
-其余 `cadr-ai` 继续冻结。**
+**Recommended adjudication: approve the scoped unfreeze of the four `cadr-ai` files above and the additive contract;
+the rest of `cadr-ai` stays frozen.**
 
-## 4. 裁决项四：`config.test.ts` 整文件判 N/A
+## 4. Adjudication item four: rule `config.test.ts` N/A as a whole file
 
-### 4.1 文件内容摘要
+### 4.1 Summary of the file's contents
 
-固定基线文件共 437 行，只包含 Node/Bun 安装来源与 JS package-manager
-self-update contract：
+The fixed-baseline file is 437 lines in total and contains only the Node/Bun
+installation source and the JS package-manager self-update contract:
 
-| 内容 | 固定基线 |
+| Content | Fixed baseline |
 |---|---|
-| 临时 npm/pnpm/yarn/bun global install layout 与 fake CLI helpers | `packages/coding-agent/test/config.test.ts:1-147` |
-| 从 Windows `.pnpm` path 检测 pnpm；unknown wrapper 不自更新 | `packages/coding-agent/test/config.test.ts:148-168` |
-| npm custom prefix、exact version、package rename、configured/empty `npmCommand`、display quoting、Windows prefix | `packages/coding-agent/test/config.test.ts:170-293` |
+| temporary npm/pnpm/yarn/bun global install layout and fake CLI helpers | `packages/coding-agent/test/config.test.ts:1-147` |
+| detecting pnpm from the Windows `.pnpm` path; an unknown wrapper does not self-update | `packages/coding-agent/test/config.test.ts:148-168` |
+| npm custom prefix, exact version, package rename, configured/empty `npmCommand`, display quoting, Windows prefix | `packages/coding-agent/test/config.test.ts:170-293` |
 | bun global install | `packages/coding-agent/test/config.test.ts:295-306` |
-| pnpm rename 与 pnpm v11 store resolution | `packages/coding-agent/test/config.test.ts:308-375` |
-| yarn/bun rename 时先卸载旧 package | `packages/coding-agent/test/config.test.ts:377-426` |
-| install path 不可写时禁止 self-update 并给出说明 | `packages/coding-agent/test/config.test.ts:428-436` |
+| pnpm rename and pnpm v11 store resolution | `packages/coding-agent/test/config.test.ts:308-375` |
+| on a yarn/bun rename, uninstall the old package first | `packages/coding-agent/test/config.test.ts:377-426` |
+| when the install path is not writable, forbid self-update and give an explanation | `packages/coding-agent/test/config.test.ts:428-436` |
 
-对应 production contract 明确枚举
-`"bun-binary" | "npm" | "pnpm" | "yarn" | "bun" | "unknown"`，出处
-`packages/coding-agent/src/config.ts:25-94`；package-manager command 构造在
-`:115-186`，global ownership/writability/self-update gate 在
-`:304-355`。
+The corresponding production contract explicitly enumerates
+`"bun-binary" | "npm" | "pnpm" | "yarn" | "bun" | "unknown"`, sourced at
+`packages/coding-agent/src/config.ts:25-94`; the package-manager command
+construction is at `:115-186`, and the global
+ownership/writability/self-update gate is at
+`:304-355`.
 
-### 4.2 N/A 理由
+### 4.2 Grounds for N/A
 
-cadr 是由 SBCL `build.sh` 生成的单一 native executable，不由 npm、pnpm、
-yarn、bun 或 Bun embedded filesystem 安装。让 Lisp binary 检测
-`node_modules`、`.pnpm`、`PNPM_HOME`、`bun pm bin -g` 或执行 JS package
-uninstall/install，不是语义移植，而是把原版仅因 JavaScript 发布方式存在的
-机制硬塞进另一构建生态。
+cadr is a single native executable produced by the SBCL `build.sh`; it is not
+installed by npm, pnpm, yarn, bun or the Bun embedded filesystem. Having a Lisp
+binary detect `node_modules`, `.pnpm`, `PNPM_HOME` or `bun pm bin -g`, or run a
+JS package uninstall/install, is not a semantic port; it is forcing a mechanism
+that exists in the baseline only because of the JavaScript distribution method
+into a different build ecosystem.
 
-这正是全局原则允许保留的“构建方式必然差异”。当前 cadr 的 self-update
-边界是明确提示用户使用 Common Lisp build/install method：
-`src/cadr-cli/package-manager.lisp:849-877,1187-1197`。
+This is exactly the "build-method inevitable difference" that the global
+principle allows to be retained. The current cadr self-update boundary is to
+explicitly tell the user to use the Common Lisp build/install method:
+`src/cadr-cli/package-manager.lisp:849-877,1187-1197`.
 
-N/A 只适用于 `config.test.ts` 这一个 package-manager/self-update 文件，不
-扩张到版本检查：
+The N/A applies only to the one package-manager/self-update file
+`config.test.ts`, and does not extend to version checking:
 
-- `packages/coding-agent/test/version-check.test.ts` 仍须逐文件对齐；
-- 当前 `src/cadr-cli/sdk-services.lisp:240-398` 与
-  `test/cadr-cli/part-b-sdk-test.lisp:152-323` 的 remote version-check 属于
-  applicable behavior；
-- extension/resource Git package update 也不因本裁决变成 N/A。
+- `packages/coding-agent/test/version-check.test.ts` must still be aligned file
+  by file;
+- the remote version-check currently in `src/cadr-cli/sdk-services.lisp:240-398`
+  and `test/cadr-cli/part-b-sdk-test.lisp:152-323` is applicable behavior;
+- extension/resource Git package update does not become N/A because of this
+  adjudication either.
 
-批准后的账本动作仅为把
-`packages/coding-agent/test/config.test.ts` 从 `M` 改为经用户裁决的 `N/A`，
-并在 parity-map 差异说明中登记“SBCL binary build/install method”。不新增
-production code，不伪造 C。
+The only ledger action after approval is to change
+`packages/coding-agent/test/config.test.ts` from `M` to a user-adjudicated
+`N/A`, and to record "SBCL binary build/install method" in the parity-map
+difference note. No production code is added, and no C is faked.
 
-### 4.3 已考虑但否决的替代方案
+### 4.3 Alternatives considered and rejected
 
-| 方案 | 否决理由 |
+| Alternative | Reason for rejection |
 |---|---|
-| 在 cadr 模拟 npm/pnpm/yarn/bun 检测 | 引入不适用于 SBCL binary 的新机制与 Node package coupling |
-| 把 `build.sh` 更新命令解释为同一 contract 并标 C | install ownership、rename、global root、writability 语义完全不同 |
-| 用已实现 remote version-check 代替并标 C | 违反整文件从严原则；version notification 不是 self-update |
-| 保持永久 M | 已有明确且仅由构建生态导致的 N/A 边界，人工裁决后应如实入账 |
+| Simulate npm/pnpm/yarn/bun detection in cadr | Introduces a new mechanism that does not apply to an SBCL binary, plus Node package coupling |
+| Interpret the `build.sh` update command as the same contract and mark it C | The install ownership, rename, global root and writability semantics are completely different |
+| Substitute the already-implemented remote version-check and mark it C | Violates the whole-file strictness principle; version notification is not self-update |
+| Keep it M permanently | A clear N/A boundary caused solely by the build ecosystem already exists, and after human adjudication it should be recorded truthfully |
 
-**建议裁决：批准该文件整文件 N/A；不影响 `version-check.test.ts` 或资源包
-update 行。**
+**Recommended adjudication: approve N/A for this file as a whole file; it does not affect `version-check.test.ts` or the resource-package
+update rows.**
 
-## 5. 实现与验收顺序
+## 5. Implementation and acceptance order
 
-用户已逐项批准第 1–4 项；以下顺序作为已执行的授权约束保留。
+The user has approved items 1–4 item by item; the order below is retained as the
+authorization constraint that was executed.
 
-若有批准，顺序固定：
+If approval is given, the order is fixed:
 
-1. 只把获批项移入“本 goal 允许变更”清单；
-2. 第 1 项先更新 dependency audit/README 并单独提交授权记录，再加依赖；
-3. 每项测试先行，保留可归因的红门禁；
-4. 第 2/3 项先跑 legacy extension compatibility，再做生产实现；
-5. specific tests 全绿后跑 `./scripts/test-cl.sh`；
-6. 按逻辑分组提交，工作区必须干净；
-7. 重算 extension export SHA/object IDs，更新 architecture；
-8. 只有全部获批项完成、提交且全量复验后，才允许更新 parity 计数。
+1. move only approved items into the "changes allowed in this goal" list;
+2. for item 1, first update the dependency audit/README and commit the
+   authorization record separately, then add the dependencies;
+3. tests first for every item, retaining an attributable red gate;
+4. for items 2/3, run legacy extension compatibility first, then do the
+   production implementation;
+5. once the specific tests are fully green, run `./scripts/test-cl.sh`;
+6. commit in logical groups; the working tree must be clean;
+7. recompute the extension export SHA/object IDs and update architecture;
+8. only after every approved item is complete, committed and fully re-verified
+   may the parity counts be updated.
 
-建议裁决格式：
+Suggested adjudication format:
 
 ```text
-第 1 项：批准 / 否决
-第 2 项：批准 / 否决
-第 3 项：批准 / 否决
-第 4 项：批准 / 否决
+Item 1: approve / reject
+Item 2: approve / reject
+Item 3: approve / reject
+Item 4: approve / reject
 ```

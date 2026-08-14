@@ -1,63 +1,72 @@
-# Goal 8 smoke 与 live 证据审计
+# Goal 8 smoke and live evidence audit
 
-审计日期：2026-07-31。
+Audit date: 2026-07-31.
 
-审计判据：若验证在运行产品前改写/规范化真实输入、增加用户路径没有的
-特判，或断言弱于所宣称的真实用户路径，则原“通过”证据无效。能以
-`skipIf(!KEY)` 同构凭据门控表达的 provider/eval 行为必须进入 FiveAM；
-只有必须观察原生进程、PTY/termios、Unix socket 或跨进程数据迁移的行为
-保留为 shell harness。
+Audit criterion: if a verification rewrites/normalizes the real input before
+running the product, adds a special case that the user path does not have, or
+asserts something weaker than the real user path it claims, then the original
+"pass" evidence is invalid. Provider/eval behavior that can be expressed with a
+credential gate isomorphic to `skipIf(!KEY)` must move into FiveAM; only
+behavior that must observe a native process, PTY/termios, a Unix socket or
+cross-process data migration stays as a shell harness.
 
-## 结论
+## Conclusion
 
-原 `live-openai-oauth-smoke.sh` 和 `live-evals-smoke.sh` 都把真实
-`auth.json` 中的 `openai` 键用 `jq` 改名为 `openai-codex` 后才运行；
-前者还显式传入 provider/model。它们只证明“改名并覆盖默认参数后可以
-调用”，没有证明 `/login openai` 的产物或默认用户路径可用。此前两条
-OAuth “live passed” 证据撤回。
+The old `live-openai-oauth-smoke.sh` and `live-evals-smoke.sh` both used
+`jq` to rename the `openai` key in the real `auth.json` to `openai-codex`
+before running; the former also passed provider/model explicitly. They only
+prove "it can be called after renaming and overriding the default parameters";
+they do not prove that the product of `/login openai`, or the default user
+path, works. The two earlier OAuth "live passed" pieces of evidence are
+withdrawn.
 
-七个可内置脚本已删除，其覆盖进入以下凭据门控测试：
+Seven scripts that could be internalized have been deleted, and their coverage
+moves into the following credential-gated tests:
 
 - `test/cadr-ai/live-provider-test.lisp`
 - `test/cadr-cli/live-test.lisp`
 - `test/cadr-evals/live-evals-test.lisp`
 
-第一次补正把 OpenAI live 门禁反向耦合到真实
-`~/.cadr/settings.json`，并把可变的 `defaultModel` 钉死为 provider 内置
-默认值。用户合法切换到 catalog 模型 `gpt-5.6-luna` 后，顾问独立复跑即
-失败；该证据再次撤回。
+The first remediation coupled the OpenAI live gate backwards onto the real
+`~/.cadr/settings.json`, and pinned the mutable `defaultModel` to the
+provider's built-in default value. After the user legitimately switched to the
+catalog model `gpt-5.6-luna`, the advisor's independent re-run failed; that
+evidence is withdrawn again.
 
-最终机制按基线拆为两层：
+The final mechanism is split into two layers, following the baseline:
 
-- 确定性层使用临时 auth/config、登录桩和 HTTP 桩，覆盖
-  `/login openai` 把凭据写到 `openai-codex`、默认模型解析取得该凭据并
-  进入 Codex Responses 请求；它不读取 homedir。
-- live 层只以凭据可用性门控，并在测试代码中显式指定 provider/model。
-  CLI live 为隔离 settings/session/extension，逐字节复制真实 auth 文件到
-  临时 HOME；不改键、不迁移、不规范化。eval live 直接从正确身份取得真实
-  OAuth，再把显式 resolver 注入隔离 harness。
+- The deterministic layer uses a temporary auth/config, a login stub and an
+  HTTP stub, and covers `/login openai` writing the credential to
+  `openai-codex`, default model resolution obtaining that credential and
+  entering a Codex Responses request; it does not read the homedir.
+- The live layer is gated on credential availability alone, and specifies
+  provider/model explicitly in the test code. To isolate
+  settings/session/extensions, the CLI live copies the real auth file byte by
+  byte into a temporary HOME; it does not change keys, migrate, or normalize.
+  The eval live obtains the real OAuth directly from the correct identity, then
+  injects an explicit resolver into the isolated harness.
 
-## 逐脚本审计
+## Script-by-script audit
 
-| 脚本 | 处置 | 绕过/弱断言审计 | 现在的实际覆盖边界 |
+| Script | Disposition | Bypass / weak-assertion audit | The actual coverage boundary now |
 |---|---|---|---|
-| `scripts/acceptance-smoke.sh` | 保留 | 隔离 HOME、种子 JSONL 和假 API key 是跨进程 session fixture；脚本不宣称 provider live，因此不是凭据绕过 | 原生 image 启动、延迟持久化、另两个进程的 `--continue` 与精确 `--resume`；不覆盖真实 provider |
-| `scripts/goal5-manual-tui-smoke.sh` | 保留 | 使用专用 TUI harness，不是完整应用/provider 路径；此前文档将其限定为组件验收，断言与边界一致 | 真实 tmux PTY 下 overlay focus、CJK、图片 fallback、resize、termios 恢复 |
-| `scripts/live-anthropic-smoke.sh` | 删除并内置 | 无输入改写，但只 grep 两个子串，弱于完整响应、事件终态和 usage | FiveAM 在 `ANTHROPIC_API_KEY` 存在时运行两轮精确上下文；本机无凭据则按基线跳过 |
-| `scripts/live-deepseek-smoke.sh` | 删除并内置 | 无输入改写，但只 grep 子串 | FiveAM 精确断言响应、start/done 事件与正 usage |
-| `scripts/live-evals-smoke.sh` | 删除并内置 | 用 `jq` 把 `openai` 改名为 `openai-codex`，构成绕过 | FiveAM 分别门控 DeepSeek/Codex eval；两者均在测试内显式指定 provider/model，并注入不读用户配置的 resolver |
-| `scripts/live-extension-smoke.sh` | 删除并内置 | 无凭据改写；只靠输出/session grep，工具面边界未写明 | FiveAM 使用原精确扩展源码，限制为任务所需工具，断言路径、注册、tool result、最终响应和 tool usage |
-| `scripts/live-openai-oauth-smoke.sh` | 删除并内置 | 用 `jq` 改 OAuth 键；原通过无效。显式 provider/model 本身符合基线 live 机制，但不能证明默认路由 | 确定性门禁证明 login/store/default resolver/Codex transport；live 门禁在隔离 HOME 中显式使用 `openai-codex/gpt-5.5`，只证明真实 OAuth 可用 |
-| `scripts/live-print-smoke.sh` | 删除并内置 | 无输入改写；脚本只覆盖 stdout | FiveAM 在临时 HOME/workspace 通过真实 CLI handler 显式使用 DeepSeek，精确断言退出码、stdout 和 stderr |
-| `scripts/live-repo-smoke.sh` | 删除并内置 | 额外 `CADR_ALLOW_LIVE_TOOL_SMOKE=1` 是原版没有的授权机制；session grep 只做间接断言 | FiveAM 仅按 `DEEPSEEK_API_KEY` 门控；fixture 让未修复代码的首跑必为 code 1 并留痕，要求 `test.sh` 逐字节未改、磁盘修复、最终测试和 code 0；允许最多三次完整隔离尝试，但只接受同一次尝试内证据全部成立 |
-| `scripts/live-tui-smoke.sh` | 保留 | 显式 DeepSeek provider/model，所以不证明默认选择或 OAuth；其声明一直是终端交互而非默认配置 | 真实二进制、tmux PTY、autocomplete/undo/kill-ring、两轮工具编辑、CJK/resize/termios；FiveAM 无法忠实模拟终端驱动 |
-| `scripts/migration-smoke.sh` | 保留 | 假 key 与 loopback SSE 是迁移后的可控 continuation fixture，不宣称 provider live | 非交互 fail-closed、PTY 确认、目录原子移动、权限与跨进程 continuation |
-| `scripts/server-smoke.sh` | 保留 | 无 provider 输入改写；断言真实 socket 返回结构 | 两个原生二进制、Unix socket、supervisor/child 多进程及 spawn/list/status/RPC/stop |
-| `scripts/test-wave2-process-modes.sh` | 保留 | loopback SSE 是协议 fixture；脚本不宣称 live provider。审计重跑发现旧版固定 sleep 50ms 可能在进程已自然退出后才发信号，实际得到 exit 0；已改为等待服务端 request marker 证明请求在途 | 原生进程的 text/stdin/JSONL/RPC UI/EOF、真实在途请求上的 SIGTERM 143 与 shutdown hook |
+| `scripts/acceptance-smoke.sh` | Kept | The isolated HOME, the seeded JSONL and the fake API key are a cross-process session fixture; the script does not claim provider live, so this is not a credential bypass | Native image startup, delayed persistence, `--continue` and exact `--resume` from two other processes; does not cover a real provider |
+| `scripts/goal5-manual-tui-smoke.sh` | Kept | Uses a dedicated TUI harness, not the full application/provider path; earlier documentation limited it to component acceptance, and its assertions match that boundary | overlay focus, CJK, image fallback, resize and termios restoration under a real tmux PTY |
+| `scripts/live-anthropic-smoke.sh` | Deleted and internalized | No input rewriting, but greps only two substrings, which is weaker than the full response, the terminal event state and usage | FiveAM runs two rounds of exact context when `ANTHROPIC_API_KEY` is present; with no credential on this machine it skips as the baseline does |
+| `scripts/live-deepseek-smoke.sh` | Deleted and internalized | No input rewriting, but greps only substrings | FiveAM asserts the response, the start/done events and positive usage exactly |
+| `scripts/live-evals-smoke.sh` | Deleted and internalized | Uses `jq` to rename `openai` to `openai-codex`, which constitutes a bypass | FiveAM gates the DeepSeek and Codex evals separately; both specify provider/model explicitly inside the test and inject a resolver that does not read the user configuration |
+| `scripts/live-extension-smoke.sh` | Deleted and internalized | No credential rewriting; relies only on grepping output/session, and the tool-surface boundary is not written down | FiveAM uses the original exact extension source, restricted to the tools the task needs, and asserts the path, the registration, the tool result, the final response and tool usage |
+| `scripts/live-openai-oauth-smoke.sh` | Deleted and internalized | Uses `jq` to change the OAuth key; the original pass is invalid. Explicit provider/model is itself consistent with the baseline live mechanism, but cannot prove the default routing | The deterministic gate proves login/store/default resolver/Codex transport; the live gate explicitly uses `openai-codex/gpt-5.5` in an isolated HOME, and proves only that the real OAuth works |
+| `scripts/live-print-smoke.sh` | Deleted and internalized | No input rewriting; the script covers stdout only | FiveAM explicitly uses DeepSeek through the real CLI handler in a temporary HOME/workspace, and asserts the exit code, stdout and stderr exactly |
+| `scripts/live-repo-smoke.sh` | Deleted and internalized | The extra `CADR_ALLOW_LIVE_TOOL_SMOKE=1` is an authorization mechanism the baseline does not have; the session grep asserts only indirectly | FiveAM gates on `DEEPSEEK_API_KEY` alone; the fixture makes the first run of unfixed code necessarily code 1 and leave a trace, and requires `test.sh` to be byte-for-byte unchanged, the fix to be on disk, a final test, and code 0; up to three complete isolated attempts are allowed, but only evidence that all holds within one and the same attempt is accepted |
+| `scripts/live-tui-smoke.sh` | Kept | Explicit DeepSeek provider/model, so it does not prove the default selection or OAuth; what it claims has always been terminal interaction, not the default configuration | The real binary, a tmux PTY, autocomplete/undo/kill-ring, two rounds of tool edits, CJK/resize/termios; FiveAM cannot faithfully simulate a terminal driver |
+| `scripts/migration-smoke.sh` | Kept | The fake key and the loopback SSE are a controllable post-migration continuation fixture, and it does not claim provider live | Non-interactive fail-closed, PTY confirmation, atomic directory move, permissions and cross-process continuation |
+| `scripts/server-smoke.sh` | Kept | No provider input rewriting; asserts the structure a real socket returns | Two native binaries, a Unix socket, the supervisor/child multi-process arrangement, and spawn/list/status/RPC/stop |
+| `scripts/test-wave2-process-modes.sh` | Kept | The loopback SSE is a protocol fixture; the script does not claim a live provider. The audit re-run found that the old version's fixed 50 ms sleep could send the signal only after the process had already exited on its own, actually yielding exit 0; it has been changed to wait for the server-side request marker to prove the request is in flight | text/stdin/JSONL/RPC UI/EOF on a native process, SIGTERM 143 on a genuinely in-flight request, and the shutdown hook |
 
-## 补正后的实跑结果
+## Actual run results after the remediation
 
-全量 `./scripts/test-cl.sh`：
+The full `./scripts/test-cl.sh`:
 
 ```text
 3043 checks
@@ -66,41 +75,47 @@ OAuth “live passed” 证据撤回。
 0 fail
 ```
 
-本地可用凭据两条均真跑：DeepSeek provider/print/eval/self-extension/
-repo repair 全绿；Codex OAuth 显式 CLI 与显式 eval 全绿。正式全量运行前后，
-用户 settings 均为 `openai-codex/gpt-5.6-luna`，证明 live 测试既不钉死也
-不改写个人模型选择。测试重构提交：
-`c73f27dffce029cefd29393015b0fc212ed47eca`。
+Both credentials available locally were genuinely run: DeepSeek
+provider/print/eval/self-extension/repo repair all green; Codex OAuth explicit
+CLI and explicit eval all green. Both before and after the official full run,
+the user's settings were `openai-codex/gpt-5.6-luna`, which proves the live
+tests neither pin down nor rewrite the personal model selection. Test
+refactoring commit:
+`c73f27dffce029cefd29393015b0fc212ed47eca`.
 
-此前真实 TUI 登录后，`auth.json` mode 0600 且含旧 `openai` 与新
-`openai-codex` 两个键，settings 当时为 `openai-codex/gpt-5.5`；不重启、
-不传 provider/model 的同一 session 精确回复 `OAUTH_TUI_DIRECT_OK`。这是
-产品路径的人工证据，不再混入自动 live 门禁。
+After the earlier real TUI login, `auth.json` was mode 0600 and held both the
+old `openai` key and the new `openai-codex` key, and settings were
+`openai-codex/gpt-5.5` at the time; the same session, without a restart and
+without being passed provider/model, replied exactly `OAUTH_TUI_DIRECT_OK`.
+This is manual evidence from the product path, and it is no longer mixed into
+the automatic live gate.
 
-## 用户可变状态自查
+## Self-check on user-mutable state
 
-| FiveAM live 面 | 自查结果 | 处置 |
+| FiveAM live surface | Self-check result | Disposition |
 |---|---|---|
-| `test/cadr-ai/live-provider-test.lisp` 两条 provider stream | 只读环境凭据，显式 provider/model，消息历史由测试构造 | 无需修改 |
-| `LIVE-DEEPSEEK-PRINT-MODE-EMITS-ONLY-FINAL-TEXT` | 原来虽显式选型和 `--no-session/--no-extensions`，仍会加载真实 HOME 的 config/settings/model store | 改为临时 HOME/workspace；不复制任何个人文件 |
-| 原 `LIVE-OPENAI-OAUTH-LOGIN-DEFAULT-ROUTE-IS-DIRECTLY-USABLE` | 读取真实 settings 并断言用户模型等于内置默认；失败即源于此 | 删除该 live 契约；改为确定性 login/default-route 门禁 + 隔离 HOME 中显式 Codex live 门禁 |
-| `LIVE-DEEPSEEK-EVAL-SMOKE` | eval 选择显式，但默认 resolver 仍会读取真实 config/auth | 注入只含测试 key 与显式模型的 DeepSeek resolver |
-| Codex eval smoke | 默认 resolver 读取真实 config/auth，且把错误身份存在视为失败 | 只用正确身份作为 gate，取得真实 OAuth 后注入显式 Codex resolver |
-| DeepSeek self-extension 与 repository repair | harness 已隔离 project/session/extension，但 resolver 仍读真实 config | 复用显式 DeepSeek resolver；原有隔离目录与空扩展启动断言保留 |
+| The two provider streams in `test/cadr-ai/live-provider-test.lisp` | Reads only the environment credential, explicit provider/model, message history constructed by the test | No change needed |
+| `LIVE-DEEPSEEK-PRINT-MODE-EMITS-ONLY-FINAL-TEXT` | Although it did select the model explicitly and pass `--no-session/--no-extensions`, it still loaded the config/settings/model store of the real HOME | Changed to a temporary HOME/workspace; no personal file is copied |
+| The former `LIVE-OPENAI-OAUTH-LOGIN-DEFAULT-ROUTE-IS-DIRECTLY-USABLE` | Read the real settings and asserted that the user's model equals the built-in default; the failure originated exactly here | Deleted that live contract; replaced by a deterministic login/default-route gate plus an explicit Codex live gate in an isolated HOME |
+| `LIVE-DEEPSEEK-EVAL-SMOKE` | The eval selection is explicit, but the default resolver still reads the real config/auth | Injects a DeepSeek resolver holding only the test key and the explicit model |
+| Codex eval smoke | The default resolver reads the real config/auth, and treats the presence of the wrong identity as a failure | Uses only the correct identity as the gate, and injects an explicit Codex resolver after obtaining the real OAuth |
+| DeepSeek self-extension and repository repair | The harness already isolates project/session/extensions, but the resolver still reads the real config | Reuses the explicit DeepSeek resolver; the existing isolated directory and empty-extension startup assertions are kept |
 
-结论：实际 provider live 共八个测试；除两条 `cadr-ai` provider stream
-原本合规外，其余六条均已消除对用户 settings、已选模型、会话历史和已装
-扩展的隐式读取。
+Conclusion: there are eight actual provider live tests; apart from the two
+`cadr-ai` provider streams, which were already compliant, the other six have
+all had their implicit reads of the user's settings, selected model, session
+history and installed extensions eliminated.
 
-两套 build 均在当前 SBCL 缺少 `sb-core-compression` 时明确降级并成功：
+Both builds explicitly degraded and succeeded where the current SBCL lacks
+`sb-core-compression`:
 
 ```text
 cadr         65,348,488 bytes  mode 0755  version cadr 0.1.0
 cadr-server  57,155,288 bytes  mode 0755  version cadr-server 0.1.0
 ```
 
-六个保留脚本全部在最终 build 后运行通过；其中 process-modes 修正同步后
-连续通过两次：
+All six kept scripts ran and passed after the final build; among them,
+process-modes passed twice in a row once its fix was in place:
 
 ```text
 acceptance smoke: delayed persistence, --continue, and exact --resume passed
@@ -111,7 +126,7 @@ goal5 manual TUI smoke: overlay focus, CJK frame, image fallback, resize, and te
 live TUI smoke: autocomplete, undo, kill-ring, DeepSeek two-turn edit, resize, CJK, and terminal restore passed
 ```
 
-绕过残留检查：
+Residual-bypass check:
 
 ```text
 rg -n 'jq.*(openai|openai-codex)|CADR_ALLOW_LIVE_TOOL_SMOKE|has\("openai"\)' scripts test cadr-ai.asd cadr-cli.asd cadr-evals.asd
@@ -120,19 +135,26 @@ rg -n 'live-(anthropic|deepseek|evals|extension|openai-oauth|print|repo)-smoke\.
 # no output
 ```
 
-## 顺手发现但不在本次修复范围
+## Found along the way but out of scope for this fix
 
-自扩展 live 测试若开放全部默认工具，模型可能在隔离目录外执行宽范围
-`find`。这与项目已裁决的原版默认 YOLO/由用户容器隔离的安全模型一致，
-不是本次产品缺陷；测试现以所声明的扩展任务工具面限定证据范围，不向核心
-添加审批或沙箱机制。
+If the self-extension live test opened up all the default tools, the model
+could run a wide-ranging `find` outside the isolated directory. This is
+consistent with the security model the project has already adjudicated — the
+baseline's default YOLO, with isolation done by the user's container — and is
+not a product defect of this round; the test now bounds the scope of its
+evidence by the tool surface of the extension task it declares, and adds no
+approval or sandbox mechanism to the core.
 
-历史进度文档中引用已删除脚本的命令输出只保留为当时记录；其中 OAuth
-“通过”由本审计明确撤回，当前验收只能引用新的 FiveAM 门禁结果。
+In the historical progress documents, the command output citing the deleted
+scripts is kept only as a record of the time; within it, the OAuth "pass" is
+explicitly withdrawn by this audit, and current acceptance may cite only the
+new FiveAM gate results.
 
-真实 `/login openai` 后的同一 session 请求确实使用
-`openai-codex/gpt-5.5` 并成功，但 footer 仍显示启动时的
-`deepseek-v4-flash`。这不影响实际路由或持久化；当前实现把启动瞬间的
-`(cadr-agent:agent-model agent)` 作为值传给 TUI（
-`src/cadr-cli/main.lisp:3337`），疑似未随模型切换刷新。按本次范围要求只
-记录并排入 Goal 9，不修改 TUI。
+After a real `/login openai`, the request in the same session did use
+`openai-codex/gpt-5.5` and succeeded, but the footer still showed
+`deepseek-v4-flash` from startup. This affects neither the actual routing nor
+persistence; the current implementation passes `(cadr-agent:agent-model agent)`
+as of the instant of startup to the TUI as a value
+(`src/cadr-cli/main.lisp:3337`), which apparently is not refreshed when the
+model is switched. As this round's scope requires, it is only recorded and
+queued into Goal 9; the TUI is not modified.

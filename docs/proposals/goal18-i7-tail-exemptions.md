@@ -1,75 +1,94 @@
-# Goal 18 I7 收尾：十个基线分支的覆盖豁免提案（已裁决）
+# Goal 18 I7 closeout: coverage-exemption proposal for ten baseline branches (adjudicated)
 
-状态：**已裁决（`USER-2026-08-10-001`，落账提交 `b435ef522`）。** 本提案只申请豁免判定，
-不改任何产品行为。
+Status: **Adjudicated (`USER-2026-08-10-001`, ledger commit `b435ef522`).** This proposal
+requests only an exemption verdict; it does not change any product behavior.
 
-## 背景
+## Background
 
-goal18.md I7 要求基线可见字符串清单的每个 printable 分支被捕获或显式豁免。
-本轮把未捕获分支从 59 个降到 10 个：49 个经真实修复加差分场景或构造驱动
-落账（迁移输出、`--list-models` 表格与 models.json 告警、扩展加载失败的
-`-ne` 提示、快捷键冲突诊断、提示词文件告警、pnpm 与 Update note 等），其余
-10 个分支经逐个源码核查确认在本项目门禁环境下**不可确定性驱动**，申请
-豁免。
+goal18.md I7 requires that every printable branch of the baseline visible-string
+inventory be captured or explicitly exempted. This round brought the uncaptured
+branches down from 59 to 10: 49 were recorded in the ledger through real fixes
+plus differential scenarios or constructed drives (migration output, the
+`--list-models` table and the models.json warning, the `-ne` hint on extension
+load failure, the keybinding-conflict diagnostic, the prompt-file warning, pnpm
+and the Update note, and so on); the remaining 10 branches were confirmed by
+source review one by one to be **not deterministically drivable** in this
+project's gate environment, and an exemption is requested.
 
-豁免机制：`test/fixtures/render-diff/visible-string-exemptions.json`（schema
-3，fail-closed：未知、陈旧、重复或已有真实捕获的豁免条目都会使门禁失败）。
-现有 `obstacleKind` 枚举不含"防御性回退/权限依赖失败臂"，故随本案新增
-`unreachable-in-harness` kind（同时为防御性回退分支引入
-`unreachable-in-baseline`），二者均已随裁决落账。
+Exemption mechanism: `test/fixtures/render-diff/visible-string-exemptions.json`
+(schema 3, fail-closed: an unknown, stale or duplicated exemption entry, or one
+that already has a real capture, makes the gate fail). The existing
+`obstacleKind` enumeration does not contain "defensive fallback / permission-
+dependent failure arm", so this case adds the `unreachable-in-harness` kind (and
+at the same time introduces `unreachable-in-baseline` for defensive fallback
+branches); both were recorded in the ledger together with the adjudication.
 
-## A 类：防御性回退分支（非 Error 抛值才触达，用户输入不可达）——5 分支
+## Class A: defensive fallback branches (reached only when a non-Error value is thrown, unreachable from user input) — 5 branches
 
-逐处审计结论：这些 `error.message || "<fallback>"` 分支只在抛出**非 Error
-对象**时触达；基线自身所有抛点均为带 message 的 Error。
+Site-by-site audit conclusion: these `error.message || "<fallback>"` branches are
+reached only when a **non-Error object** is thrown; every throw site in the
+baseline itself is an Error carrying a message.
 
-| 分支 | 位置 | 审计依据 |
+| Branch | Location | Audit basis |
 |---|---|---|
-| `B-fd13d93a29bf` | `main.ts:150` "Failed to parse auth command" | `credential-print.ts` 全部 12 个抛点均为 `CredentialPrintError`（:38,51,56,68,71,74,99,111,140,143,145,149）；`parseArgs` 只记录 diagnostics 不抛 |
-| `B-3f0215f4a9d2` | `main.ts:211` "Failed to resolve credential" | `resolveCredentialForPrint` 只抛 `CredentialPrintError`；`ModelRuntime.create({allowModelNetwork:false})` 的 models.json 加载错误经 `model-config.ts:251,261,271` 以返回值传达而非抛出 |
-| `B-fa0be7fade22` | `main.ts:633` "Failed to export session" | `exportFromFile` 全部抛点带 message（`export-html/index.ts:245,248,293`） |
-| `B-85d3c79ec77b` | `package-manager-cli.ts:733` "Unknown model catalog refresh error" | `refreshModelCatalogs` 的网络与解析失败均带 message |
-| `B-c5a60ab5ff3b` | `package-manager-cli.ts:870` "Unknown package command error" | 两处 catch-all 包裹的操作失败均带 message |
+| `B-fd13d93a29bf` | `main.ts:150` "Failed to parse auth command" | all 12 throw sites in `credential-print.ts` are `CredentialPrintError` (:38,51,56,68,71,74,99,111,140,143,145,149); `parseArgs` only records diagnostics and does not throw |
+| `B-3f0215f4a9d2` | `main.ts:211` "Failed to resolve credential" | `resolveCredentialForPrint` throws only `CredentialPrintError`; the models.json load errors of `ModelRuntime.create({allowModelNetwork:false})` are conveyed as return values through `model-config.ts:251,261,271` rather than thrown |
+| `B-fa0be7fade22` | `main.ts:633` "Failed to export session" | every throw site of `exportFromFile` carries a message (`export-html/index.ts:245,248,293`) |
+| `B-85d3c79ec77b` | `package-manager-cli.ts:733` "Unknown model catalog refresh error" | both the network failures and the parse failures of `refreshModelCatalogs` carry a message |
+| `B-c5a60ab5ff3b` | `package-manager-cli.ts:870` "Unknown package command error" | the operation failures wrapped by the two catch-alls both carry a message |
 
-cadr 侧对应路径已实现同形回退文案（非凭据错误走各自 fallback 消息）。
+The corresponding paths on the cadr side already implement same-shape fallback
+copy (non-credential errors take their respective fallback messages).
 
-## B 类：权限依赖失败臂（root 下不可确定性触达）——4 分支
+## Class B: permission-dependent failure arms (not deterministically reachable as root) — 4 branches
 
-| 分支 | 位置 | 说明 |
+| Branch | Location | Notes |
 |---|---|---|
-| `B-d987d23f73bb` `B-4b479e0533e6` | `migrations.ts:148` "Warning: Could not migrate … to prompts/: " | 需 `rename(2)` 失败（EACCES）；门禁以 root 运行，权限位不生效；tsx 经 ESM 链接加载基线，`fs` 打补丁不可达（已实测）；setuid 子进程方案因插桩树为 0700 临时目录而不可读 |
-| `B-a329842f84c5` `B-c1b8a22b174c` | `file-processor.ts:80` "Error: Could not read file " | 同上（需 `readFile` EACCES）；目录情形在基线先于 mime 检测崩溃（未捕获异常），cadr 按 P0-1 既定规则归一化为该文案并配 FiveAM |
+| `B-d987d23f73bb` `B-4b479e0533e6` | `migrations.ts:148` "Warning: Could not migrate … to prompts/: " | requires `rename(2)` to fail (EACCES); the gate runs as root, so permission bits have no effect; tsx loads the baseline through ESM linking, so patching `fs` is unreachable (measured); the setuid subprocess approach is unreadable because the instrumented tree is a 0700 temporary directory |
+| `B-a329842f84c5` `B-c1b8a22b174c` | `file-processor.ts:80` "Error: Could not read file " | same as above (requires `readFile` EACCES); in the directory case the baseline crashes before mime detection (uncaught exception), and cadr normalizes it to that copy under the established P0-1 rule and pairs it with a FiveAM test |
 
-cadr 侧：迁移失败臂经 `*migration-rename-function*` 注入缝配 FiveAM
-（`goal18-commands-directories-migrate-to-prompts` 的失败断言）；@file 目录
-情形有 FiveAM 锁定
-（`goal18-file-argument-directory-is-a-normalized-error`）。
+On the cadr side: the migration failure arm is paired with a FiveAM test through
+the `*migration-rename-function*` injection seam (the failure assertion of
+`goal18-commands-directories-migrate-to-prompts`); the @file directory case is
+locked by a FiveAM test
+(`goal18-file-argument-directory-is-a-normalized-error`).
 
-## C 类：操作系统不可用——1 分支
+## Class C: operating system unavailable — 1 branch
 
-| 分支 | 位置 | 说明 |
+| Branch | Location | Notes |
 |---|---|---|
-| `B-6e91fc06717b` | `tools-manager.ts:349` "not found. Install with: pkg install " | 仅 `platform() === "android"`（Termux）触达；适用既有 `unavailable-operating-system` kind |
+| `B-6e91fc06717b` | `tools-manager.ts:349` "not found. Install with: pkg install " | reached only under `platform() === "android"` (Termux); the existing `unavailable-operating-system` kind applies |
 
-## 随本案一并请求裁决的既有挂起项
+## Existing pending items submitted for adjudication together with this case
 
-以下条目在此前批次已标记待裁决，现一并列出（详见验收报告）：
+The following entries were already marked 待裁决 in earlier batches and are
+listed here together (see the acceptance report for details):
 
-1. `--resume <id>`（cadr 扩展：基线仅有选择器形态）。
-2. npm 包安装源在 cadr 不可用，而 `--help` 按基线展示 npm 包示例。
-3. `update --models`：基线联网刷新模型目录；cadr 模型目录随二进制内置。
-4. Telemetry：基线向 pi.dev 发安装上报；cadr 无此出口。
-5. `-r` 无参时的 pre-TUI 会话选择器（startup-ui.ts）；cadr 直接恢复最新。
-6. 裸环境 TUI 的 sentinel 模型态 vs cadr 的 openai 兜底。
-7. cadr 自有开关（`--slynk`、`--no-tui`）从 --help 移除以逐字对齐基线。
-8. （新）弃用目录警告中的两个基线文档 URL（github.com/earendil-works/
-   pi-mono）：保留逐字（输出对齐）还是替换（cadr 尚无等价页面）。
-9. （新）键位存储：基线读 `keybindings.json` 文件；cadr 读 settings.json
-   的 `keybindings` 键。是否补 keybindings.json 支持或记为有意差异。
+1. `--resume <id>` (a cadr extension: the baseline has only the selector form).
+2. The npm package install source is unavailable in cadr, while `--help` shows
+   the npm package example as in the baseline.
+3. `update --models`: the baseline refreshes the model catalog over the network;
+   cadr's model catalog is built into the binary.
+4. Telemetry: the baseline sends an install report to pi.dev; cadr has no such
+   outlet.
+5. The pre-TUI session selector when `-r` has no argument (startup-ui.ts); cadr
+   resumes the most recent one directly.
+6. The sentinel model state of the TUI in a bare environment vs cadr's openai
+   fallback.
+7. cadr's own switches (`--slynk`, `--no-tui`) were removed from --help in order
+   to align verbatim with the baseline.
+8. (new) The two baseline documentation URLs in the deprecated-directory warning
+   (github.com/earendil-works/pi-mono): keep them verbatim (output alignment) or
+   replace them (cadr has no equivalent page yet).
+9. (new) Keybinding storage: the baseline reads a `keybindings.json` file; cadr
+   reads the `keybindings` key of settings.json. Whether to add
+   keybindings.json support or record it as 有意差异.
 
-## 裁决后的落账动作
+## Ledger actions after the adjudication
 
-已落账（`b435ef522`）：A 类 5 分支以 `unreachable-in-baseline`、B 类 4 分支以
-`unreachable-in-harness`、C 类 1 分支以 `unavailable-operating-system` 全部
-写入豁免注册表，每条附 `userDecisionId: USER-2026-08-10-001`、
-`baselineEvidence` 与 probe；全量门禁在该 10 分支上转绿。
+Recorded in the ledger (`b435ef522`): the 5 Class A branches under
+`unreachable-in-baseline`, the 4 Class B branches under
+`unreachable-in-harness`, and the 1 Class C branch under
+`unavailable-operating-system` were all written into the exemption registry,
+each carrying `userDecisionId: USER-2026-08-10-001`, `baselineEvidence` and a
+probe; the full gate turned green on those 10 branches.

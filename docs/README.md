@@ -113,6 +113,8 @@ them reflects the judgement at writing time; **on any conflict
   explicit user approval before implementation.
 - [acceptance/](acceptance/): mechanical, live, smoke, and human acceptance
   reports for completed Parts.
+- [reviews/](reviews/): dated external reviews and engineering-foundations
+  reports. Advisory records, not contracts; items needing adjudication say so.
 
 Current Goal 10 reports: [Part B no-op](acceptance/goal-v10-part-b.md),
 [Part D Lisp-native capabilities](acceptance/goal-v10-part-d.md), and

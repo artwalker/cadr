@@ -1,83 +1,99 @@
-# Goal 10 Part D Lisp 原生能力提案
+# Goal 10 Part D Lisp-native capabilities proposal
 
-状态：**2026-08-01 已逐项批准并实施。Part B 后续由用户裁定为 no-op，执行顺序门禁解除；实现与重冻证据见 `docs/acceptance/goal-v10-part-d.md`。**
+Status: **Approved item by item and implemented on 2026-08-01. Part B was subsequently adjudicated by the user to be a no-op, and the execution-order gate is lifted; the implementation and re-freeze evidence are in `docs/acceptance/goal-v10-part-d.md`.**
 
-当前 cadr 实现基点：
-`7fb06d093d5eebd7163e3271fdc3451c31aa213a`。当前行为基线仍为
-`74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`；Part B 只会在上游稳定
-`v0.84.0` 发布后重锁。本文已完成裁决，但任何实现必须同时满足：
+Current cadr implementation base point:
+`7fb06d093d5eebd7163e3271fdc3451c31aa213a`. The current behavioral baseline is
+still `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`; Part B will re-lock only after
+upstream stable `v0.84.0` is released. This document's adjudication is complete,
+but any implementation must satisfy both of:
 
-1. Part B 已完成，且本文的源码位置与 object ID 已对新基线复审；
-2. 实现严格留在本文获批的能力、依赖与文件面内；若最小实现面扩大，
-   重新 blocked 交用户裁决。
+1. Part B is finished, and this document's source locations and object IDs have
+   been re-reviewed against the new baseline;
+2. the implementation stays strictly within the capabilities, dependencies, and
+   file surface approved in this document; if the minimal implementation surface
+   expands, become blocked again and escalate for user adjudication.
 
-## 1. 总边界
+## 1. Overall boundary
 
-两项都是固定 TypeScript pi 没有的有意新增，不计入 parity 的
-`C` 判定。获批实现后必须登记 README 差异清单与 parity-map，并遵守：
+Both items are deliberate additions that the fixed TypeScript pi does not have,
+and they do not count toward the parity `C` verdict. Once approved and
+implemented they must be registered in the README divergence list and the
+parity-map, and must obey:
 
-- 缺省路径完全不启用，既有 CLI、provider payload、system prompt、
-  tool schema/description/result、session bytes、agent/JSON/RPC event 与 TUI 快照
-  逐字节不变；
-- 不引入审批、信任账本或新安全边界；仍是默认 YOLO，强隔离
-  由容器、虚拟机或受限用户提供；
-- 现有扩展宏签名、旧四事件、stale/snapshot/reload 语义零变更；
-- 只能解冻本文列出的文件和符号。若 Part B 后的最小实现面扩大，
-  立即 blocked，不得顺手跨越新冻结面。
+- the default path does not enable them at all; the existing CLI, provider
+  payload, system prompt, tool schema/description/result, session bytes,
+  agent/JSON/RPC events, and TUI snapshots are byte-for-byte unchanged;
+- no approval flow, trust ledger, or new security boundary is introduced; it is
+  still YOLO by default, and strong isolation is provided by a container, a
+  virtual machine, or a restricted user;
+- the existing extension macro signatures, the four old events, and the
+  stale/snapshot/reload semantics have zero change;
+- only the files and symbols listed in this document may be unfrozen. If the
+  minimal implementation surface expands after Part B, become blocked
+  immediately; a newly frozen surface must not be crossed in passing.
 
-开工冻结审计另发现：用 Goal 7/8 的相同取样命令，当前 HEAD 的
-extension export SHA-256 实测为
-`bb4665245ef9df19b274535071fcc5f6e56c79ab29db2152cd41afaa4df3b1e0`，
-不是 `docs/architecture.md` 仍称“继续”的 Goal 8 历史值
-`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
-差异来自 Goal 9 已批准的 `define-markdown-transformer` 导出，不是本提案造成。
-本次不冒充重冻；Part B 重建基线文档时先校正当前锚点，Part D
-实现后再重算。
+The start-of-work freeze audit additionally found: using the same sampling
+command as Goal 7/8, the extension export SHA-256 measured at the current HEAD is
+`bb4665245ef9df19b274535071fcc5f6e56c79ab29db2152cd41afaa4df3b1e0`,
+not the Goal 8 historical value
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`
+that `docs/architecture.md` still says "continues".
+The difference comes from the `define-markdown-transformer` export approved in
+Goal 9, not from this proposal. This round does not pretend to have re-frozen;
+when Part B rebuilds the baseline document it will first correct the current
+anchor, and it will be recomputed again after the Part D implementation.
 
-## 2. D1：工具失败现场的 condition/restart
+## 2. D1: condition/restart at the tool-failure site
 
-### 2.1 确切需求与现状
+### 2.1 Exact requirement and current state
 
-目标是在 schema 校验或 tool executor 报错的原始栈仍存在时发出
-`tool-execution-error`，同时建立“改参重试 / 跳过 / 中止 agent run”三个
-restart。Common Lisp host 可用 `handler-bind`/`invoke-restart` 直接选择；
-扩展可用一个新 hook 选择，并可通过已冻结的 extension UI 在
-TUI/RPC 前端显示选择器。核心 TUI 不内置自动弹窗。
+The goal is to signal `tool-execution-error` while the original stack of the
+schema validation or tool executor error still exists, and at the same time
+establish three restarts: "retry with changed arguments / skip / abort the agent
+run". A Common Lisp host can choose directly with `handler-bind`/`invoke-restart`;
+an extension can choose with a new hook, and can show a selector in the
+TUI/RPC front end through the already frozen extension UI. The core TUI has no
+built-in automatic pop-up.
 
-当前路径的决定性证据：
+Decisive evidence for the current path:
 
-- `src/cadr-agent/tool.lisp:141-189`：`:tool-call-before` 及重校验后，
-  schema condition 被 `handler-case` 直接转为 error tool result；
-- `src/cadr-agent/tool.lisp:191-217`：executor 的任意 `error` 在解栈后仅保留
-  `princ-to-string`，无可用 restart；
-- `src/cadr-agent/loop.lisp:148-189,215-285`：`:tool-call-after` 与
-  `:tool-execution-end` 只处理终态 outcome，批次可并行且结果按源顺序提交；
-- `src/cadr-agent/extensions.lisp:949-982,3380-3462`：当前扩展事件不包含
-  失败现场的决策点。
+- `src/cadr-agent/tool.lisp:141-189`: after `:tool-call-before` and revalidation,
+  the schema condition is turned directly into an error tool result by
+  `handler-case`;
+- `src/cadr-agent/tool.lisp:191-217`: any `error` from the executor retains only
+  `princ-to-string` after the stack is unwound, with no usable restart;
+- `src/cadr-agent/loop.lisp:148-189,215-285`: `:tool-call-after` and
+  `:tool-execution-end` handle only the terminal outcome; the batch may run in
+  parallel and results are submitted in source order;
+- `src/cadr-agent/extensions.lisp:949-982,3380-3462`: the current extension events
+  contain no decision point at the failure site.
 
-未知工具、`:length` 截断和 `:tool-call-before` 主动 block 不是
-executor 失败，继续按旧路径生成结果，不建立这组 restart。
+An unknown tool, `:length` truncation, and an active block by
+`:tool-call-before` are not executor failures; they continue to produce results by
+the old path and do not establish this restart group.
 
-### 2.2 公开 condition 与 restart 契约
+### 2.2 Public condition and restart contract
 
-复用已导出的 `cadr-agent:tool-execution-error`；不修改其已有 reader。
-condition 的 `message` 必须等于现有 tool result 文本，`cause` 保留原始
-condition，`tool` 和 `tool-call-id` 保持已有含义。只新增并导出三个
-restart name symbol：
+Reuse the already exported `cadr-agent:tool-execution-error`; do not modify its
+existing readers. The condition's `message` must equal the existing tool result
+text, `cause` retains the original condition, and `tool` and `tool-call-id` keep
+their existing meanings. Only three restart name symbols are added and exported:
 
-| restart | 参数 | 精确语义 |
+| restart | Arguments | Exact semantics |
 |---|---|---|
-| `cadr-agent:retry-tool-call` | `(replacement-arguments)` | 保留 call id/name，用新 JSON object 从 `:tool-call-before` 开始重走，再次解析工具并做 schema 校验；每次重试都不绕过 hook 或校验 |
-| `cadr-agent:skip-tool-call` | `(&optional reason)` | 不再执行，生成 `is-error=t` 的终态 tool result；缺省 `reason` 时逐字使用原失败文本 |
-| `cadr-agent:abort-agent-run` | `(&optional reason)` | 先为当前逻辑 tool call 产生同上 error result，再进入既有 `agent-abort` 路径；当前批次完成收敛后不发新 provider payload |
+| `cadr-agent:retry-tool-call` | `(replacement-arguments)` | keeps the call id/name and rewalks from `:tool-call-before` with the new JSON object, resolving the tool again and performing schema validation; no retry bypasses the hook or the validation |
+| `cadr-agent:skip-tool-call` | `(&optional reason)` | does not execute further and produces a terminal tool result with `is-error=t`; when `reason` is omitted it uses the original failure text verbatim |
+| `cadr-agent:abort-agent-run` | `(&optional reason)` | first produces the same error result as above for the current logical tool call, then enters the existing `agent-abort` path; after the current batch converges to completion, no new provider payload is sent |
 
-restart 只在对应 condition 的动态范围内存在，不保存到 session，
-也不把栈或 condition 序列化到 JSON/RPC。并行工具的 restart 按 call
-隔离，一个 worker 不能查找或调用另一个 call 的 restart。
+The restarts exist only within the dynamic extent of the corresponding condition,
+are not saved to the session, and do not serialize the stack or the condition into
+JSON/RPC. Restarts of parallel tools are isolated per call; one worker must not
+find or invoke another call's restart.
 
-### 2.3 与 extension hook 的关系
+### 2.3 Relationship to the extension hook
 
-新增事件 `:tool-call-error`，仍使用现有签名：
+A new event `:tool-call-error` is added, still using the existing signature:
 
 ```lisp
 (define-event-hook :tool-call-error
@@ -85,7 +101,7 @@ restart 只在对应 condition 的动态范围内存在，不保存到 session�
   :handler (lambda (event context) ...))
 ```
 
-`(extension-event-payload event)` 为严格只读 plist：
+`(extension-event-payload event)` is a strictly read-only plist:
 
 ```lisp
 (:condition <tool-execution-error>
@@ -98,10 +114,10 @@ restart 只在对应 condition 的动态范围内存在，不保存到 session�
  cadr-agent:abort-agent-run))
 ```
 
-`:arguments` 是 defensive deep copy，修改它不影响当前 attempt；改变行为的
-唯一方式是返回经验证的 `:retry` result。
+`:arguments` is a defensive deep copy; modifying it does not affect the current
+attempt. The only way to change behavior is to return a validated `:retry` result.
 
-handler 返回 `nil` 表示不选择；非 `nil` 只允许：
+A handler returning `nil` means it makes no choice; non-`nil` allows only:
 
 ```lisp
 (:action :retry :arguments <hash-table>)
@@ -109,133 +125,162 @@ handler 返回 `nil` 表示不选择；非 `nil` 只允许：
 (:action :abort :reason <optional-string>)
 ```
 
-第一个返回非 `nil` 且通过类型校验的 hook 短路后续 hook，核心在
-condition 仍活跃时代为调用对应 restart。非法返回值只记录该扩展
-失败并继续下一 hook，不改变工具结果。
+The first hook that returns non-`nil` and passes type validation short-circuits the
+subsequent hooks, and the core invokes the corresponding restart on its behalf
+while the condition is still live. An illegal return value only records that
+extension as failed and continues to the next hook; it does not change the tool
+result.
 
-时序冻结为：
+The ordering is frozen as:
 
-1. 逻辑 call 只发一次 `:tool-execution-start`；
-2. 每个实际 attempt 先跑 `:tool-call-before` 并重校验；
-3. 失败时在现场跑 `:tool-call-error`；retry 回到第 2 步；
-4. 只对最终成功、skip、abort 或无人处理的失败跑一次
-   `:tool-call-after`；
-5. 只发一次终态 `:tool-execution-end`。
+1. a logical call emits `:tool-execution-start` only once;
+2. every actual attempt first runs `:tool-call-before` and revalidates;
+3. on failure, `:tool-call-error` runs at the site; a retry returns to step 2;
+4. `:tool-call-after` runs once, only for a final success, a skip, an abort, or a
+   failure nobody handled;
+5. the terminal `:tool-execution-end` is emitted only once.
 
-因此 `:tool-call-after` 不会看到中间失败 attempt，旧扩展的“一个 call 对应
-一个 after”不变。交互式审批仍不进核心；需要选择的用户由此
-hook 调用 `extension-context-select` 并返回上述 action。
+Therefore `:tool-call-after` never sees an intermediate failed attempt, and the old
+extensions' "one call corresponds to one after" is unchanged. Interactive approval
+still does not enter the core; a user who needs to choose does so through this hook
+calling `extension-context-select` and returning one of the actions above.
 
-### 2.4 非交互模式与零变更保证
+### 2.4 Non-interactive modes and the zero-change guarantee
 
-print、JSON 和 RPC 都不安装隐式 condition handler，也不自动选择
-restart。无 `:tool-call-error` 扩展，或所有 hook 返回 `nil` 时：
+print, JSON, and RPC install no implicit condition handler, and choose no restart
+automatically. When there is no `:tool-call-error` extension, or all hooks return
+`nil`:
 
-- condition 沿现有边界转成同一个 `is-error=t` tool result；
-- 文本仍是原 condition 的既有脱敏字符串；
-- agent event 类型、数量和顺序不变；`:tool-call-error` 只是扩展内部
-  lifecycle event，不加入 `agent-event` 或 JSON/RPC wire；
-- `:tool-call-after`、会话持久化和下一轮喂给模型的 tool result 逐字节
-  不变。
+- the condition is turned into the same `is-error=t` tool result along the
+  existing boundary;
+- the text is still the existing redacted string of the original condition;
+- agent event types, counts, and order are unchanged; `:tool-call-error` is only an
+  extension-internal lifecycle event and does not join `agent-event` or the
+  JSON/RPC wire;
+- `:tool-call-after`, session persistence, and the tool result fed to the model on
+  the next round are byte-for-byte unchanged.
 
-门禁将用同一 faux provider/tool condition 同时跑“开工 object”与“新实现缺省
-路径”，递归比较 session JSON、model-visible result、agent events 及 text/JSON/RPC
-完整输出，不用规范化或弱断言取得通过。
+The gate will run both the "start-of-work object" and the "new implementation's
+default path" with the same faux provider/tool condition, recursively comparing
+session JSON, the model-visible result, agent events, and the complete
+text/JSON/RPC output; it does not obtain a pass through normalization or weak
+assertions.
 
-### 2.5 最小解冻面
+### 2.5 Minimal unfreeze surface
 
-以当前 HEAD 为提案审计点：
+The current HEAD is the audit point of this proposal:
 
-| 路径 | 当前 object ID | 仅允许变更 |
+| Path | Current object ID | Only permitted changes |
 |---|---|---|
-| `src/cadr-agent/tool.lisp` | `08beda50203d7af790d1690a06090ca7df82da23` | 原栈信号、restart cluster、重试/skip outcome |
-| `src/cadr-agent/loop.lisp` | `118b99b97488a8640f9e825c50b6b7e1423f0769` | attempt 编排、abort 收敛、事件不变门禁 |
-| `src/cadr-agent/extensions.lisp` | `39924113baa1928cb521dcf257e4afe9509bb0ca` | 仅新事件 payload/result 校验与调度 |
-| `src/cadr-agent/package.lisp` | `05357d1575581916098191e14c1821f39a7a42e2` | 仅新增三个 restart name export |
-| `test/cadr-agent/tool-loop-test.lisp` | `0e32eed1d92d96bb023f2e6f214687028993e53a` | condition/restart、并行隔离、旧路径快照 |
-| `test/cadr-agent/extensions-wave2-test.lisp` | `cf16c937b667eb2252a45ec93585edc8d0a4d60a` | 新 hook 与旧扩展兼容门禁 |
+| `src/cadr-agent/tool.lisp` | `08beda50203d7af790d1690a06090ca7df82da23` | signaling on the original stack, the restart cluster, retry/skip outcome |
+| `src/cadr-agent/loop.lisp` | `118b99b97488a8640f9e825c50b6b7e1423f0769` | attempt orchestration, abort convergence, the event-invariance gate |
+| `src/cadr-agent/extensions.lisp` | `39924113baa1928cb521dcf257e4afe9509bb0ca` | only the new event's payload/result validation and dispatch |
+| `src/cadr-agent/package.lisp` | `05357d1575581916098191e14c1821f39a7a42e2` | only adding the three restart name exports |
+| `test/cadr-agent/tool-loop-test.lisp` | `0e32eed1d92d96bb023f2e6f214687028993e53a` | condition/restart, parallel isolation, old-path snapshots |
+| `test/cadr-agent/extensions-wave2-test.lisp` | `cf16c937b667eb2252a45ec93585edc8d0a4d60a` | the new hook and the old-extension compatibility gate |
 
-`src/cadr-ai`、`src/cadr-cli`、`src/cadr-tui`、全部 `src/cadr-cli/tools/`、
-ASDF 与 provider 实现继续冻结。实现前测试先红，至少锁定：
+`src/cadr-ai`, `src/cadr-cli`, `src/cadr-tui`, all of `src/cadr-cli/tools/`, ASDF,
+and the provider implementations stay frozen. Tests go red before the
+implementation, locking at least:
 
-1. handler 观察 condition 时 executor 的 `unwind-protect` cleanup 尚未发生；
-2. schema 失败和 executor 失败均可改参重试；新参数必须重跑 before hook 与 schema；
-3. retry 多次时 before/error 按 attempt 发生，after/start/end 仍各一次；
-4. skip 的缺省文本与旧 error result 逐字相同；abort 不发新 provider request；
-5. 两个并行失败 call 的 condition/restart/arguments 互不泄漏；
+1. when the handler observes the condition, the executor's `unwind-protect` cleanup
+   has not yet happened;
+2. both a schema failure and an executor failure can be retried with changed
+   arguments; the new arguments must rerun the before hook and the schema;
+3. on multiple retries, before/error occur per attempt while after/start/end still
+   occur once each;
+4. skip's default text is word-for-word identical to the old error result; abort
+   sends no new provider request;
+5. the condition/restart/arguments of two concurrently failing calls do not leak
+   into each other;
 6. `LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-   无修改全绿，旧宏签名和旧四事件零变更；
-7. 缺省路径的 session/model-visible bytes 与 text/JSON/RPC 输出完整对拍。
+   is fully green without modification, and the old macro signatures and the four
+   old events have zero change;
+7. the default path's session/model-visible bytes and text/JSON/RPC output undergo
+   a complete differential comparison.
 
-### 2.6 已考虑的替代方案
+### 2.6 Alternatives considered
 
-| 方案 | 否决理由 |
+| Alternative | Reason for rejection |
 |---|---|
-| 保留 `handler-case`，在解栈后普通循环重试 | 丢失原始栈和动态 restart，没有利用 Lisp 的核心能力 |
-| 为 TUI 内置工具失败弹窗 | 把审批/策略重新塞进核心，违反默认 YOLO 和扩展边界 |
-| 只暴露 condition，不给扩展 event | 外部 Lisp host 可用，但既有扩展无法在动态现场可移植地选择 |
-| 自动按旧参数重试 N 次 | 引入基线没有的策略且对非幂等工具危险；retry 只能被 handler/hook 显式选择 |
-| 序列化 condition/backtrace 到 JSON/RPC | 泄漏栈、扩张 wire 并破坏零观测变更；不做 |
+| keep `handler-case` and retry in an ordinary loop after unwinding | loses the original stack and the dynamic restarts, and does not exploit Lisp's core capability |
+| build a tool-failure pop-up into the TUI | stuffs approval/policy back into the core, violating YOLO by default and the extension boundary |
+| expose only the condition, giving extensions no event | usable by an external Lisp host, but existing extensions cannot choose portably at the dynamic site |
+| automatically retry N times with the old arguments | introduces a policy the baseline does not have and is dangerous for non-idempotent tools; a retry may only be chosen explicitly by a handler/hook |
+| serialize the condition/backtrace into JSON/RPC | leaks the stack, expands the wire, and breaks zero observable change; not done |
 
-### 2.7 冻结影响与回滚
+### 2.7 Freeze impact and rollback
 
-此项限定解冻 tool/loop 内部执行边界和扩展事件集；不改工具
-domain type、六/八个内置工具、旧 hook 结果或 wire。收尾时重算全部解冻
-object ID、扩展事件集 hash 与现有 extension export SHA，然后重冻。
+This item unfreezes only the internal execution boundary of tool/loop and the
+extension event set; it does not change the tool domain types, the six/eight
+built-in tools, old hook results, or the wire. At wrap-up, recompute all unfrozen
+object IDs, the extension event-set hash, and the existing extension export SHA,
+then re-freeze.
 
-回滚只需移除 restart cluster、`:tool-call-error` 验证/调度及三个 export，
-恢复现有 `handler-case → make-error-tool-result` 路径。无配置、session 或数据迁移。
+Rollback only requires removing the restart cluster, the `:tool-call-error`
+validation/dispatch, and the three exports, restoring the existing
+`handler-case → make-error-tool-result` path. There is no configuration, session, or data migration.
 
-## 3. D2：Slynk 远程 REPL
+## 3. D2: Slynk remote REPL
 
-### 3.1 确切需求和公开界面
+### 3.1 Exact requirement and public interface
 
-只在用户显式传入端口时，为当前 `cadr` 进程启动 Slynk：
+Start Slynk for the current `cadr` process only when the user explicitly passes a
+port:
 
 ```text
 ./cadr --slynk 4005
 ```
 
-精确 CLI 契约：
+The exact CLI contract:
 
-- `--slynk <port>` 是需值选项；缺省不存在 listener，不读取配置或环境
-  变量，也不记住上次值；
-- port 必须是 `1..65535` 的十进制整数；不接受 `0`，避免为报告
-  ephemeral port 污染 text/JSON/RPC stdout；
-- 调用 `slynk:create-server :port port :interface "127.0.0.1"
-  :style :spawn :dont-close t`；不提供 host/interface 选项，不解析
-  `localhost`，不允许 `0.0.0.0`/`::`；
-- bind 失败是启动 fatal configuration error，不降级为“无 REPL 继续”；
-- 正常退出用 `slynk:stop-server` 关闭 listener，然后清空活动 agent
-  引用。不写入 session/config，不修改工具或扩展发现。
+- `--slynk <port>` is a value-taking option; by default no listener exists, no
+  configuration or environment variable is read, and the previous value is not
+  remembered;
+- the port must be a decimal integer in `1..65535`; `0` is not accepted, which
+  avoids polluting text/JSON/RPC stdout in order to report an
+  ephemeral port;
+- it calls `slynk:create-server :port port :interface "127.0.0.1"
+  :style :spawn :dont-close t`; no host/interface option is provided, `localhost`
+  is not resolved, and `0.0.0.0`/`::` are not allowed;
+- a bind failure is a fatal startup configuration error; it does not degrade into
+  "continue without a REPL";
+- a normal exit closes the listener with `slynk:stop-server` and then clears the
+  active agent reference. It writes no session/config and does not modify tool or
+  extension discovery.
 
-新增一个只读公开入口：
+One read-only public entry point is added:
 
 ```lisp
 (cadr-cli:active-agent) ; => cadr-agent:agent | nil
 ```
 
-它只返回当前 CLI 运行的 agent，不复制第二份状态，不提供写操作。
-稳定检查流程是先调用已有 `cadr-agent:agent-wait-for-idle`，再读现有
-agent/session accessor。在 SLY MREPL 中重新编译/定义具名工具辅助函数后，
-SBCL 的全局 function binding 从下一次调用起生效；agent 和 session
-对象不重建，session id、leaf 和历史不丢失。不承诺对已进入栈的
-当前函数追溯替换。
+It only returns the agent the current CLI is running; it does not copy a second
+copy of the state and provides no write operation. The stable inspection procedure
+is to call the existing `cadr-agent:agent-wait-for-idle` first, then read the
+existing agent/session accessors. After recompiling/redefining a named tool helper
+function in the SLY MREPL, SBCL's global function binding takes effect from the
+next call onward; the agent and session objects are not rebuilt, and the session
+id, leaf, and history are not lost. No retroactive replacement is promised for a
+current function already on the stack.
 
-当前接入证据：
+Evidence for the current integration points:
 
-- `src/cadr-cli/arguments.lisp:7-54,56-113,311-454`：参数对象、需值选项、
-  flag 和未知参数已有唯一 parser；
-- `src/cadr-cli/main.lisp:2700-2733`：agent 只在 CLI handler 内建立；
-- `src/cadr-cli/main.lisp:3523-3935`：TUI/REPL/text/JSON/RPC 共用同一
-  agent 和终端生命周期，适合在模式分发外层统一启停。
+- `src/cadr-cli/arguments.lisp:7-54,56-113,311-454`: the argument object,
+  value-taking options, flags, and unknown arguments already have a single parser;
+- `src/cadr-cli/main.lisp:2700-2733`: the agent is established only inside the CLI
+  handler;
+- `src/cadr-cli/main.lisp:3523-3935`: TUI/REPL/text/JSON/RPC share the same agent
+  and terminal lifecycle, which suits starting and stopping them uniformly outside
+  the mode dispatch.
 
-### 3.2 依赖预审与传递闭包
+### 3.2 Dependency pre-review and transitive closure
 
-Slynk 是新第三方依赖，必须与能力本身分开授权。审计对象为当前
-Quicklisp `2026-01-01` 的 `sly-20260101-git`，上游 commit
-`e01c7b4b66876073b07edbc797188435eb098698`，archive MD5
-`129945ec9a674a1efe353e2d3742fb00`。依赖闭包是：
+Slynk is a new third-party dependency and must be authorized separately from the
+capability itself. The audit target is `sly-20260101-git` in the current
+Quicklisp `2026-01-01`, upstream commit
+`e01c7b4b66876073b07edbc797188435eb098698`, archive MD5
+`129945ec9a674a1efe353e2d3742fb00`. The dependency closure is:
 
 ```text
 cadr-cli
@@ -244,137 +289,157 @@ cadr-cli
       └─ ASDF
 ```
 
-- Quicklisp `systems.txt:5548-5552` 只列 `slynk → asdf` 及各 contrib
-  `→ slynk`；
-- `slynk/slynk.asd:20-82,99-101` 的 core system 没有其他
-  `depends-on`，`slynk/mrepl` 只依赖 `slynk`；
-- SBCL backend `slynk/backend/sbcl.lisp:21-25` 运行时 `require`
-  `sb-bsd-sockets`、`sb-introspect`、`sb-posix`、`sb-cltl2`；四者均为
-  SBCL contrib，不是第三方闭包；
-- 不引入 `slynk/fancy-inspector`、`arglists`、`profiler`、`stickers`、
-  `trace-dialog`、`macrostep` 或 `named-readtables`。
+- Quicklisp `systems.txt:5548-5552` lists only `slynk → asdf` and each contrib
+  `→ slynk`;
+- the core system in `slynk/slynk.asd:20-82,99-101` has no other
+  `depends-on`, and `slynk/mrepl` depends only on `slynk`;
+- the SBCL backend `slynk/backend/sbcl.lisp:21-25` `require`s
+  `sb-bsd-sockets`, `sb-introspect`, `sb-posix`, and `sb-cltl2` at runtime; all
+  four are SBCL contribs, not part of the third-party closure;
+- `slynk/fancy-inspector`, `arglists`, `profiler`, `stickers`,
+  `trace-dialog`, `macrostep`, and `named-readtables` are not introduced.
 
-Slynk 是纯 Common Lisp 编辑器协议服务器，无新 C ABI、动态库、密码学
-或数据库依赖；但它开放任意进程内求值通道，因此不归入图片 codec
-的“纯 Lisp 可替换”类目。若获批，`docs/dependency-audit.md` 和 README
-将新增独立的“显式启用的调试服务”类目，按上述 snapshot 和闭包登记。
+Slynk is a pure Common Lisp editor-protocol server with no new C ABI, dynamic
+library, cryptographic, or database dependency; but it opens an arbitrary
+in-process evaluation channel, so it is not filed under the image codec's
+"pure-Lisp replaceable" category. If approved, `docs/dependency-audit.md` and the
+README will add a separate "explicitly enabled debugging service" category,
+registered per the snapshot and closure above.
 
-Slynk 上游绑定语义的审计证据：
-`slynk/slynk.lisp:923-949` 的默认值是 `localhost`且 `create-server`
-接受显式 `interface`；本提案不信任默认解析，始终传入
-`127.0.0.1`。`Slynk` 可选读取 `~/.sly-secret`
-(`slynk/slynk.lisp:1020-1035`)，但 cadr 不把该可选文件当作安全边界。
+Audit evidence for Slynk's upstream binding semantics:
+the default value in `slynk/slynk.lisp:923-949` is `localhost` and `create-server`
+accepts an explicit `interface`; this proposal does not trust the default
+resolution and always passes `127.0.0.1`. `Slynk` optionally reads `~/.sly-secret`
+(`slynk/slynk.lisp:1020-1035`), but cadr does not treat that optional file as a
+security boundary.
 
-还有一个不能忽略的加载副作用：`slynk/slynk.asd:80-82`
-在 ASDF load 后调用 `slynk::init`，而
-`slynk/slynk.lisp:4217-4232` 会加载构建用户的 `.slynk.lisp` 或
-`.slynkrc`。不能把个人配置、副作用甚至 secret 烘进发布 image。
-因此正式构建和确定性测试必须先把已解析为绝对路径的
-`QUICKLISP_SETUP` 保留下来，再以新建的空临时 `HOME` 启动 SBCL；退出时
-删除临时目录。不修补 Slynk 源码，不信任构建机的点文件。
+There is one more load side effect that must not be ignored: `slynk/slynk.asd:80-82`
+calls `slynk::init` after the ASDF load, and
+`slynk/slynk.lisp:4217-4232` loads the building user's `.slynk.lisp` or
+`.slynkrc`. Personal configuration, side effects, or even secrets must not be baked
+into the released image. Therefore the official build and the deterministic tests
+must first preserve the `QUICKLISP_SETUP` already resolved to an absolute path, and
+then start SBCL with a newly created empty temporary `HOME`; the temporary
+directory is deleted on exit. Slynk's source is not patched, and the build
+machine's dotfiles are not trusted.
 
-### 3.3 安全立场
+### 3.3 Security position
 
-`--slynk` 是对“这个进程允许本机同网络 namespace 的客户执行任意
-Lisp”的显式启用，不是审批弹窗或权限沙箱。即使只监听 loopback，同一
-host/container/network namespace 中的其他进程仍可能连接，并能读取
-agent 状态、凭据和文件，或执行系统调用。
+`--slynk` is an explicit enabling of "this process allows clients in the same
+network namespace on this machine to execute arbitrary Lisp"; it is not an approval
+pop-up or a permission sandbox. Even when listening only on loopback, other
+processes in the same host/container/network namespace can still connect, and can
+read agent state, credentials, and files, or perform system calls.
 
-因此 README 必须明确：
+The README must therefore state clearly:
 
-- 默认关闭；不允许配置或环境变量静默开启；
-- 只在可信机器上启用，需要跨机时由用户自行建立 SSH tunnel，cadr
-  永不监听非 loopback 地址；
-- 需要强隔离时，将 cadr 和 Slynk 一起放入容器/虚拟机/受限用户；
-- 默认 YOLO 与该能力不矛盾：两者都不把核心弹窗当安全边界，
-  但 Slynk 的任意求值风险必须由显式 CLI 开关告知。
+- off by default; configuration or environment variables must not be allowed to
+  silently enable it;
+- enable it only on a trusted machine; when cross-machine access is needed the
+  user establishes an SSH tunnel themselves, and cadr never listens on a
+  non-loopback address;
+- when strong isolation is needed, put cadr and Slynk together into a
+  container/virtual machine/restricted user;
+- YOLO by default does not contradict this capability: neither of them treats a
+  core pop-up as a security boundary, but Slynk's arbitrary-evaluation risk must be
+  disclosed by an explicit CLI switch.
 
-### 3.4 最小解冻面
+### 3.4 Minimal unfreeze surface
 
-| 路径 | 当前 object ID | 仅允许变更 |
+| Path | Current object ID | Only permitted changes |
 |---|---|---|
-| `cadr-cli.asd` | `4c45e1ba78e10f6c499b1aab6e565305dcdecd94` | 新增 `slynk/mrepl`、一个 runtime 模块及测试装配 |
-| `src/cadr-cli/package.lisp` | `143e4997bee670c28edbb03bd5f84c3a59288e88` | 仅导出 `active-agent` |
-| `src/cadr-cli/arguments.lisp` | `39adf3ff684ac296b2f8af9ce6a1576dc1c798ac` | `--slynk <port>` 解析、校验与 help |
-| `src/cadr-cli/remote-repl.lisp` | 新文件 | active-agent 锁、Slynk 启停和 loopback 固定参数 |
-| `src/cadr-cli/main.lisp` | `a5b04bbee254c4b2b90519e5763b1269909efe34` | 只在 agent 建立后、mode 分发前安装/清理 runtime REPL |
-| `test/cadr-cli/remote-repl-test.lisp` | 新文件 | parser、socket、eval/redefine/session 连续性与 stdout 快照 |
-| `scripts/test-cl.sh` | `a2eb0f544a67b0ec868b70c86e7a40b2d1518510` | 仅为 Slynk ASDF init 提供空临时 HOME，保留绝对 `QUICKLISP_SETUP` |
-| `build.sh` | `43826965957004c3b13c49d5ddd77c29b62d35b3` | 同样隔离会被保存到 native image 的 Slynk init |
+| `cadr-cli.asd` | `4c45e1ba78e10f6c499b1aab6e565305dcdecd94` | adding `slynk/mrepl`, one runtime module, and the test wiring |
+| `src/cadr-cli/package.lisp` | `143e4997bee670c28edbb03bd5f84c3a59288e88` | only exporting `active-agent` |
+| `src/cadr-cli/arguments.lisp` | `39adf3ff684ac296b2f8af9ce6a1576dc1c798ac` | `--slynk <port>` parsing, validation, and help |
+| `src/cadr-cli/remote-repl.lisp` | new file | the active-agent lock, Slynk start/stop, and the fixed loopback arguments |
+| `src/cadr-cli/main.lisp` | `a5b04bbee254c4b2b90519e5763b1269909efe34` | installing/cleaning up the runtime REPL only after the agent is established and before mode dispatch |
+| `test/cadr-cli/remote-repl-test.lisp` | new file | parser, socket, eval/redefine/session continuity, and stdout snapshots |
+| `scripts/test-cl.sh` | `a2eb0f544a67b0ec868b70c86e7a40b2d1518510` | only providing an empty temporary HOME for the Slynk ASDF init, preserving the absolute `QUICKLISP_SETUP` |
+| `build.sh` | `43826965957004c3b13c49d5ddd77c29b62d35b3` | likewise isolating the Slynk init that would be saved into the native image |
 
-`src/cadr-agent`、`src/cadr-ai`、`src/cadr-tui`、provider/tool 源码、
-`build.lisp`/server/evals 继续冻结。`build.lisp` 只需 quickload `cadr-cli`，
-不修改；Slynk
-由 ASDF 进入 native image，不在运行时依赖 Quicklisp 源码。
+`src/cadr-agent`, `src/cadr-ai`, `src/cadr-tui`, the provider/tool sources, and
+`build.lisp`/server/evals stay frozen. `build.lisp` only needs to quickload
+`cadr-cli` and is not modified; Slynk
+enters the native image through ASDF and does not depend on Quicklisp sources at
+runtime.
 
-测试先行，至少包含：
+Tests come first, and include at least:
 
-1. 无 `--slynk` 时端口不监听，help/version/text/JSON/RPC/TUI 的旧快照零变更；
-2. 非整数、0、超界、缺值和端口冲突确定性失败；
-3. 真实 socket 只 bind `127.0.0.1`，不出现 `0.0.0.0`/`::`；退出后端口可重用；
-4. 通过真实 Slynk 协议连接 native image，求值
-   `(cadr-cli:active-agent)` 取得当前 session id；
-5. agent idle 时从 SLY 重定义一个测试工具辅助函数，下一轮返回新值；
-   前后 agent identity、session id、leaf/history 连续；
-6. 完整进程测试在不存在 Quicklisp 源码的隔离 HOME 下运行，证明
-   native image 不做运行时加载；
-7. 在构建用户 HOME 放置会创建 sentinel 的 `.slynkrc`，构建后断言
-   sentinel 不存在且 image 中无该字符串；
-8. 启用 Slynk 也不往 stdout、session、错误或日志写 credential，不破坏
-   JSON/RPC framing。
+1. without `--slynk` no port is listened on, and the old help/version/text/JSON/RPC/TUI snapshots have zero change;
+2. a non-integer, 0, out of range, a missing value, and a port conflict fail deterministically;
+3. the real socket binds only `127.0.0.1`, with no `0.0.0.0`/`::` appearing; the port is reusable after exit;
+4. connecting to the native image over the real Slynk protocol and evaluating
+   `(cadr-cli:active-agent)` obtains the current session id;
+5. while the agent is idle, redefining a test tool helper function from SLY makes the next round return the new value;
+   the agent identity, session id, and leaf/history are continuous before and after;
+6. the full-process test runs under an isolated HOME where no Quicklisp source exists, proving that the
+   native image does no runtime loading;
+7. placing a `.slynkrc` that creates a sentinel in the building user's HOME, then asserting after the build that the
+   sentinel does not exist and that the image contains no such string;
+8. enabling Slynk still writes no credential to stdout, the session, errors, or logs, and does not break the
+   JSON/RPC framing.
 
-### 3.5 已考虑的替代方案
+### 3.5 Alternatives considered
 
-| 方案 | 否决理由 |
+| Alternative | Reason for rejection |
 |---|---|
-| 自研 socket REPL | 重复编辑器协议、debugger、编译与线程集成，安全敏感且没有必要 |
-| 只启动进程外 `sbcl --load` | 得到另一个 Lisp world，看不到活动 agent/session，重定义也不会影响运行进程 |
-| 默认开启固定端口 | 不经用户选择即开放任意求值，不可接受 |
-| 支持 `--slynk-host`/`0.0.0.0` | 把远程暴露、认证和防火墙策略带入 cadr；用户需跨机时应用 SSH tunnel |
-| 用配置/环境变量静默开启 | 开关难以在命令行审计，且可被项目环境意外激活 |
-| 只依赖 core `slynk`，不预载 MREPL | 能连接但不保证可用的编辑器 REPL，未满足本项要求 |
-| 预载全部 Slynk contrib | 扩大代码面与功能面；本项只需 core + MREPL |
+| write our own socket REPL | duplicates the editor protocol, debugger, compilation, and thread integration; security-sensitive and unnecessary |
+| only start an out-of-process `sbcl --load` | yields another Lisp world that cannot see the active agent/session, and a redefinition does not affect the running process |
+| enable a fixed port by default | opens arbitrary evaluation without the user choosing it; unacceptable |
+| support `--slynk-host`/`0.0.0.0` | brings remote exposure, authentication, and firewall policy into cadr; when a user needs cross-machine access they should use an SSH tunnel |
+| silently enable via configuration/environment variable | the switch is hard to audit on the command line, and it can be activated accidentally by the project environment |
+| depend on core `slynk` only, without preloading MREPL | connects but does not guarantee a usable editor REPL, which does not meet this item's requirement |
+| preload all Slynk contribs | enlarges the code surface and the feature surface; this item needs only core + MREPL |
 
-### 3.6 冻结影响与回滚
+### 3.6 Freeze impact and rollback
 
-此项只解冻 CLI 参数/生命周期、一个只读 agent 入口、`cadr-cli`
-ASDF 依赖面与构建/测试 HOME 隔离。获批实现后，收尾必须记录 Slynk
-版本/闭包、重算八个
-解冻 object ID，并重冻 `active-agent` 签名和 `--slynk` 行为。
+This item unfreezes only the CLI arguments/lifecycle, one read-only agent entry
+point, the `cadr-cli` ASDF dependency surface, and the build/test HOME isolation.
+Once approved and implemented, wrap-up must record the Slynk
+version/closure, recompute the eight
+unfrozen object IDs, and re-freeze the `active-agent` signature and the `--slynk`
+behavior.
 
-回滚移除 `--slynk`、`remote-repl.lisp`、`active-agent` export 及 ASDF
-`slynk/mrepl` 依赖，同步删除差异/依赖登记。无 session/config 迁移，旧二进制
-与新二进制读取的数据格式完全相同。
+Rollback removes `--slynk`, `remote-repl.lisp`, the `active-agent` export, and the
+ASDF `slynk/mrepl` dependency, and deletes the divergence/dependency registration
+at the same time. There is no session/config migration, and the data format read by
+the old binary and the new binary is exactly the same.
 
-## 4. 用户裁决与实现门禁
+## 4. User adjudication and the implementation gate
 
-用户于 2026-08-01 逐项裁决：
+On 2026-08-01 the user adjudicated item by item:
 
-1. `D1` **批准**：按第 2 节实现 condition/restart 与
-   `:tool-call-error`。该事件是扩展事件全集第 34 个；Goal 8 的“33 个封顶”
-   只为本次经完整提案、逐项裁决的新增解除。实现收尾时以 34 个事件的
-   全集重新冻结；今后任何新增仍须重新提交书面提案并逐项裁决，不得从本次
-   授权类推。届时重算 extension export SHA，同步 `docs/architecture.md`
-   与 README，并把 `:tool-call-error` 标为相对基线的有意新增；
-2. `D2-capability` **批准**：严格按第 3 节实现默认关闭、仅显式
-   `--slynk <port>`、固定 `127.0.0.1`、跨机由用户自建 SSH tunnel 的
-   `active-agent` 契约。README 必须如实说明这是任意求值通道，loopback
-   不是沙箱，强隔离应使用容器、虚拟机或受限用户；
-3. `D2-dependency` **批准**：依赖精确锁定 Quicklisp 2026-01-01
-   `slynk/mrepl → slynk → ASDF`、上游 commit
-   `e01c7b4b66876073b07edbc797188435eb098698`、archive MD5
-   `129945ec9a674a1efe353e2d3742fb00`，且不得引入第 3.2 节排除的 contrib。
-   `docs/dependency-audit.md` 与 README 实现时新增独立的“显式启用的调试
-   服务”类目，不归入“纯 Lisp 可替换”；
-4. `.slynkrc` 防烘入措施是强制门禁：构建与确定性测试均须在全新空临时
-   `HOME` 中启动 SBCL，保留预先解析的绝对 `QUICKLISP_SETUP`，退出清理；
-   不补丁第三方源码，不信任构建机点文件，并以回归证明发布 image 不含其
-   任何副作用。
+1. `D1` **approved**: implement the condition/restart and
+   `:tool-call-error` per section 2. That event is the 34th of the complete
+   extension event set; Goal 8's "capped at 33" is lifted only for this addition,
+   which went through a complete proposal and item-by-item adjudication. At
+   implementation wrap-up, re-freeze on the complete set of 34 events; any future
+   addition must still submit a fresh written proposal and be adjudicated item by
+   item, and must not be inferred by analogy from this authorization. At that point
+   recompute the extension export SHA, synchronize `docs/architecture.md`
+   and the README, and mark `:tool-call-error` as a deliberate addition relative to the baseline;
+2. `D2-capability` **approved**: implement strictly per section 3 the
+   `active-agent` contract that is off by default, only via an explicit
+   `--slynk <port>`, fixed to `127.0.0.1`, with cross-machine access left to a
+   user-built SSH tunnel. The README must state truthfully that this is an
+   arbitrary-evaluation channel, that loopback
+   is not a sandbox, and that strong isolation should use a container, a virtual machine, or a restricted user;
+3. `D2-dependency` **approved**: the dependency is pinned exactly to Quicklisp 2026-01-01
+   `slynk/mrepl → slynk → ASDF`, upstream commit
+   `e01c7b4b66876073b07edbc797188435eb098698`, archive MD5
+   `129945ec9a674a1efe353e2d3742fb00`, and the contribs excluded in section 3.2 must not be introduced.
+   At implementation time `docs/dependency-audit.md` and the README add a separate "explicitly enabled debugging
+   service" category, not filed under "pure-Lisp replaceable";
+4. the `.slynkrc` bake-in prevention measure is a mandatory gate: both the build and the deterministic tests must
+   start SBCL in a brand-new empty temporary `HOME`, preserving the pre-resolved absolute `QUICKLISP_SETUP`, and clean
+   up on exit; third-party sources are not patched, the build machine's dotfiles are not trusted, and a regression
+   proves the released image contains none of its side effects.
 
-批准不解除执行顺序：Part B 必须先锁定并完成 `v0.84.0` 对齐，之后才能
-复审 object ID 并开始 Part D 实现。当前不得提前修改生产代码、ASDF、依赖
-清单、README 冻结值或 architecture 冻结值。
+Approval does not lift the execution order: Part B must first lock and complete the
+`v0.84.0` alignment, and only then may the object IDs be re-reviewed and the Part D
+implementation begun. For now, production code, ASDF, the dependency
+list, README frozen values, and architecture frozen values must not be modified ahead of time.
 
-裁决落账复核（2026-08-01）：上游 GitHub Latest 仍为 `v0.83.0`
-（发布于 2026-07-29），`v0.84.0` tag ref 仍返回 404；Part B 继续暂挂，
-未改锁 HEAD。
+Adjudication ledger re-check (2026-08-01): upstream GitHub Latest is still `v0.83.0`
+(released 2026-07-29), and the `v0.84.0` tag ref still returns 404; Part B remains
+suspended, and the lock was not changed to HEAD.

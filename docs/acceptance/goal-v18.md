@@ -141,7 +141,7 @@ The three-choice conclusion is registered in `docs/source-parity.md`
   winner, baseline failure composition).
 - The six startup resource fixture classes are preloaded with two-sided
   captures; empty-environment scenarios remain.
-- The "有状态/无状态双场景" rule is written into `docs/render-diff.md`;
+- The "populated-state / empty-state dual scenario" rule is written into `docs/render-diff.md`;
   the empty-environment blind-spot inventory is in
   `docs/goal18-startup-resources-audit.md`.
 
@@ -295,8 +295,8 @@ following the upstream regression. Registered in three places:
   "visible text is identical to pi" wording was removed). I05 retires when
   the upstream regression is fixed, reverting the 14 keys to byte-for-byte
   alignment.
-- `docs/open-questions.md` `OQ-G18-AUTH-CANCEL-14` under 已裁决并实施.
-- `docs/proposals/goal18-auth-cancel-regression.md` marked 已裁决 with the
+- `docs/open-questions.md` `OQ-G18-AUTH-CANCEL-14` under Adjudicated and implemented.
+- `docs/proposals/goal18-auth-cancel-regression.md` marked adjudicated with the
   ledger record.
 
 ## Four-ledger split note (L4 design, not drift)

@@ -1,163 +1,210 @@
-# Goal 12 扩展 API 实现面补充解冻提案
+# Goal 12 supplementary unfreeze proposal for the extension API implementation surface
 
-状态：**A/B/C 已于 2026-08-02 获用户逐项批准；后续调用链审计产生的 D/E 见
-`goal-v12-api-scope-amendment-2.md`。**
+Status: **A/B/C were approved by the user item by item on 2026-08-02; for the D/E
+produced by the later call-chain audit see
+`goal-v12-api-scope-amendment-2.md`.**
 
-固定基线：
+Fixed baseline:
 `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`
-（`v0.83.0-38-g74caa2649`）。本文所有 baseline `file:line` 均指该提交。
+(`v0.83.0-38-g74caa2649`). Every baseline `file:line` in this document refers to
+that commit.
 
-## 1. 为何必须补充裁决
+## 1. Why a supplementary adjudication is required
 
-用户已批准 `goal-v12-example-api-gaps.md` 全部 19 项能力，但同时规定：任一
-实现需要越出各项所列最小文件面时，必须立即 blocked 并重新提案。开工前
-逐路径读取证明第 7、8、10 项的真实基线语义必然穿过原未列出的核心文件。
-这不是功能扩面，而是原提案对现有 Cadr 分层判断不完整。
+The user has already approved all 19 capabilities of
+`goal-v12-example-api-gaps.md`, but stipulated at the same time: whenever an
+implementation needs to go beyond the minimal file surface listed for an item, it
+must immediately be blocked and re-proposed. Reading each path before starting
+work proved that the real baseline semantics of items 7, 8 and 10 necessarily
+pass through core files that were not originally listed. This is not a widening
+of functionality; it is that the original proposal judged the existing Cadr
+layering incompletely.
 
-本提案只请求增补解冻必不可少的文件；原 19 项的需求、默认行为、依赖
-和回滚边界全部不变。`src/cadr-ai` 仍完全冻结。
+This proposal requests only the files whose unfreezing is indispensable; the
+requirements, default behavior, dependencies and rollback boundaries of the
+original 19 items are all unchanged. `src/cadr-ai` remains completely frozen.
 
-## 2. 补充项 A：第 7 项 tool terminate 的 agent-loop 语义
+## 2. Supplementary item A: the agent-loop semantics of tool terminate in item 7
 
-### 2.1 确切需求与基线证据
+### 2.1 Exact requirement and baseline evidence
 
-- `packages/agent/src/types.ts:354-368` 把 `terminate` 定义为
-  `AgentToolResult` 上不进 provider wire 的 agent-only 提示。
-- `packages/agent/src/agent-loop.ts:540-553,582-584` 规定精确批语义：只有当
-  finalized call 非空，且该批每个最终 result 均为 `terminate === true`
-  时才终止 agent loop。混合批不终止。
-- `packages/coding-agent/src/core/extensions/types.ts:446-497` 将该字段作为扩展
-  tool execute 结果合同的一部分。
+- `packages/agent/src/types.ts:354-368` defines `terminate` as an agent-only hint
+  on `AgentToolResult` that does not go onto the provider wire.
+- `packages/agent/src/agent-loop.ts:540-553,582-584` prescribes the exact batch
+  semantics: the agent loop terminates only when the finalized calls are
+  non-empty and every final result in that batch has `terminate === true`. A
+  mixed batch does not terminate.
+- `packages/coding-agent/src/core/extensions/types.ts:446-497` makes that field
+  part of the result contract of an extension tool's execute.
 
-Cadr 当前 `src/cadr-agent/tool.lisp:127-130,228-254` 的 outcome 及 executor
-返回合同只保留 content/details；`src/cadr-agent/loop.lisp:457-548,885-908`
-的 batch 第三值只有 abort，无法表达“全部 terminate 才停”。
+Cadr's current outcome and executor return contract in
+`src/cadr-agent/tool.lisp:127-130,228-254` keeps only content/details; the third
+value of the batch in `src/cadr-agent/loop.lisp:457-548,885-908` has only abort,
+and cannot express "stop only when all terminate".
 
-### 2.2 最小补充解冻面
+### 2.2 Minimal supplementary unfreeze surface
 
-- `src/cadr-agent/tool.lisp`：在 agent-only outcome 中保留 terminate，不改
-  `cadr-ai:tool-result-message`。
-- `src/cadr-agent/loop.lisp`：对 finalized outcomes 实施与基线一致的
-  非空 + `every` 批门控，与 abort 状态分开。
+- `src/cadr-agent/tool.lisp`: keep terminate in the agent-only outcome; do not
+  change `cadr-ai:tool-result-message`.
+- `src/cadr-agent/loop.lisp`: apply to the finalized outcomes the same
+  non-empty + `every` batch gating as the baseline, kept separate from the abort
+  state.
 
-原已批第 7 项的其余文件面不变。不解冻 `src/cadr-ai`。
+The rest of the file surface of the already-approved item 7 is unchanged.
+`src/cadr-ai` is not unfrozen.
 
-### 2.3 默认行为与门禁
+### 2.3 Default behavior and gates
 
-- 所有旧 tool 默认 terminate=nil，其 result、event、JSON/RPC wire 逐字节不变。
-- 红测试覆盖：单个 true、全部 true、true/nil 混合、空批、after hook 最终值，
-  并锁定每个 tool result 仍完整入会话。
-- 旧扩展 fixture、旧宏 lambda list、34-event 集及 payload/wire fixture 不变。
+- Every old tool defaults to terminate=nil, and its result, events and JSON/RPC
+  wire are byte-for-byte unchanged.
+- Red-test coverage: a single true, all true, a true/nil mix, an empty batch, the
+  final value of the after hook; and it locks that every tool result still enters
+  the session in full.
+- The old extension fixtures, the old macro lambda list, the 34-event set and the
+  payload/wire fixtures are unchanged.
 
-### 2.4 已考虑但否决的替代方案
+### 2.4 Alternatives considered and rejected
 
-- 把 terminate 写进 details：会污染发给模型与 UI 的可观察 payload，且 loop 仍不读。
-- 把 terminate 当 abort/error：会把正常终止伪装为错误，改变 event 与会话。
-- 单个 tool 立即停：违反基线的整批 `every` 语义。
+- Writing terminate into details: it would pollute the observable payload sent to
+  the model and the UI, and the loop still would not read it.
+- Treating terminate as abort/error: it would disguise a normal termination as an
+  error and change events and the session.
+- Stopping immediately on a single tool: it violates the baseline's whole-batch
+  `every` semantics.
 
-回滚：删除 outcome 字段与 loop gate；旧路径因默认 nil 无迁移。
+Rollback: delete the outcome field and the loop gate; old paths need no migration
+because the default is nil.
 
-## 3. 补充项 B：第 8 项 partial update 与 cancellation 的执行路径
+## 3. Supplementary item B: the execution path of partial update and cancellation in item 8
 
-### 3.1 确切需求与基线证据
+### 3.1 Exact requirement and baseline evidence
 
-- `packages/coding-agent/src/core/extensions/types.ts:307-346,479-486` 规定 handler
-  获得 signal、onUpdate 与 ExtensionContext。
-- `packages/agent/src/types.ts:371-377,388-394` 把 partial callback 定义为当次
-  execute 的有界合同，handler settle 后的 callback 必须忽略。
-- `packages/agent/src/agent-loop.ts:672-689` 由 agent tool 执行层发出
-  `tool_execution_update`。
+- `packages/coding-agent/src/core/extensions/types.ts:307-346,479-486` prescribes
+  that the handler receives signal, onUpdate and ExtensionContext.
+- `packages/agent/src/types.ts:371-377,388-394` defines the partial callback as a
+  contract bounded to that one execute; callbacks after the handler settles must
+  be ignored.
+- `packages/agent/src/agent-loop.ts:672-689` emits `tool_execution_update` from
+  the agent tool execution layer.
 
-Cadr 当前 `src/cadr-agent/extensions.lisp:2024-2064` 将扩展 handler 降为
-`(call-id arguments context)`；`src/cadr-agent/tool.lisp:228-254` 的 executor 只有两参；
-`src/cadr-agent/loop.lisp:175-189,457-548` 只发 start/end。仅在 extension adapter
-里临时发 event 无法保证 settle 边界、restart 重试、并行批次序及核心
-lifecycle 一致性。
+Cadr currently reduces the extension handler to `(call-id arguments context)` in
+`src/cadr-agent/extensions.lisp:2024-2064`; the executor in
+`src/cadr-agent/tool.lisp:228-254` takes only two arguments;
+`src/cadr-agent/loop.lisp:175-189,457-548` emits only start/end. Emitting events
+ad hoc inside the extension adapter alone cannot guarantee the settle boundary,
+restart retries, parallel batch ordering, or consistency with the core
+lifecycle.
 
-### 3.2 最小补充解冻面
+### 3.2 Minimal supplementary unfreeze surface
 
-- `src/cadr-agent/tool.lisp`：向工具 executor 传入当次 cancellation signal 与
-  update callback，用 unwind-protect 关闭 callback，保证 settle 后更新忽略。
-- `src/cadr-agent/loop.lisp`：通过现有 agent lifecycle/event spine 发出
-  `:tool-execution-update`，并保持同一 call-id 与并行批隔离。
+- `src/cadr-agent/tool.lisp`: pass this invocation's cancellation signal and
+  update callback into the tool executor, and close the callback with
+  unwind-protect so that updates after settle are ignored.
+- `src/cadr-agent/loop.lisp`: emit `:tool-execution-update` through the existing
+  agent lifecycle/event spine, keeping the same call-id and parallel-batch
+  isolation.
 
-原已批第 8 项的 extensions/package/execution-env/CLI tool factory 文件面不变。
-不解冻 `src/cadr-ai`。
+The extensions/package/execution-env/CLI tool factory file surface of the
+already-approved item 8 is unchanged. `src/cadr-ai` is not unfrozen.
 
-### 3.3 默认行为与门禁
+### 3.3 Default behavior and gates
 
-- 旧二参 `cadr-ai:tool-executor` 及旧三参 extension handler 仍走兼容 adapter，
-  无 partial 时 event 序列逐字节不变。
-- 红测试覆盖：单调用多次 update、settle 后 update 被忽略、handler 错误、
-  retry 后新 signal、用户 abort、并行工具隔离及 update/start/end 的精确顺序。
-- `ctx.shutdown()` 继续调用既有 agent shutdown，不新增退出策略。
+- The old two-argument `cadr-ai:tool-executor` and the old three-argument
+  extension handler still go through a compatibility adapter; with no partial,
+  the event sequence is byte-for-byte unchanged.
+- Red-test coverage: several updates in a single call, updates after settle being
+  ignored, handler errors, a new signal after retry, user abort, parallel tool
+  isolation, and the exact ordering of update/start/end.
+- `ctx.shutdown()` keeps calling the existing agent shutdown; no new exit policy
+  is added.
 
-### 3.4 已考虑但否决的替代方案
+### 3.4 Alternatives considered and rejected
 
-- 在 extension adapter 里直接 emit：绕过 tool restart/settle 层，迟到 callback
-  会泄漏到后续 turn。
-- 让扩展轮询 `extension-cancellation-aborted-p`：无法将用户 abort 与当次
-  tool invocation 精确绑定，也缺 partial callback。
-- 只在 TUI 合成 update：print/json/rpc 与核心 lifecycle 会分叉。
+- Emitting directly inside the extension adapter: it bypasses the tool
+  restart/settle layer, and a late callback would leak into a subsequent turn.
+- Having the extension poll `extension-cancellation-aborted-p`: it cannot bind a
+  user abort precisely to that one tool invocation, and it also lacks the partial
+  callback.
+- Synthesizing updates only in the TUI: print/json/rpc would diverge from the
+  core lifecycle.
 
-回滚：删除执行上下文参数与 update 发射；旧 adapter 不变。
+Rollback: delete the execution-context arguments and the update emission; the old
+adapter is unchanged.
 
-## 4. 补充项 C：第 10 项进入真实 `/login` orchestration
+## 4. Supplementary item C: item 10 entering the real `/login` orchestration
 
-### 4.1 确切需求与基线证据
+### 4.1 Exact requirement and baseline evidence
 
-- `packages/coding-agent/src/core/extensions/types.ts:1364-1475` 规定扩展 provider 的
-  login/refresh/getApiKey/model projection/custom stream 合同。
-- `packages/coding-agent/src/core/extensions/provider-composer.ts:230-247,411-498` 把该合同
-  适配到统一 provider/auth runtime，而非让扩展直接写凭据文件。
+- `packages/coding-agent/src/core/extensions/types.ts:1364-1475` prescribes the
+  login/refresh/getApiKey/model projection/custom stream contract of an extension
+  provider.
+- `packages/coding-agent/src/core/extensions/provider-composer.ts:230-247,411-498`
+  adapts that contract onto the unified provider/auth runtime, instead of letting
+  the extension write the credential file directly.
 
-Cadr 虽然已有 runtime-provider 与 auth storage，但 `src/cadr-cli/config.lisp:221-236`
-只接受 openai/openai-codex/anthropic，`:238-275` 的 `/login` 用 `ecase`
-直调两个内置函数。`src/cadr-cli/main.lisp:3141-3148` 在 extension command
-之前处理该路径，因此只改已批的 extensions/model-services 无法让扩展
-OAuth 进入真实 `/login`。
+Cadr does already have a runtime-provider and auth storage, but
+`src/cadr-cli/config.lisp:221-236` accepts only openai/openai-codex/anthropic,
+and the `/login` at `:238-275` uses `ecase` to call two built-in functions
+directly. `src/cadr-cli/main.lisp:3141-3148` handles that path before extension
+commands, so changing only the already-approved extensions/model-services cannot
+make extension OAuth enter the real `/login`.
 
-### 4.2 最小补充解冻面
+### 4.2 Minimal supplementary unfreeze surface
 
-- `src/cadr-cli/config.lisp`：让 `handle-auth-command` 可注入 provider OAuth
-  resolver/handler；无注入时的内置 openai/anthropic 路径与文案不变。
-- `src/cadr-cli/main.lisp`：将当前 extension/model runtime 绑到 auth command，
-  复用现有 auth store、refresh lock 与原子写。
-- `src/cadr-cli/tui.lisp` **仅作条件解冻**：若扩展 OAuth callback 的展示/输入
-  无法由现有 `/login` output/auth-url 桥完整承载，只允许增加同一 callback
-  桥；不改 selector 布局、文案或默认条目。实施时若证明不需要则不修改。
+- `src/cadr-cli/config.lisp`: let `handle-auth-command` accept an injected
+  provider OAuth resolver/handler; with no injection, the built-in
+  openai/anthropic path and its copy are unchanged.
+- `src/cadr-cli/main.lisp`: bind the current extension/model runtime to the auth
+  command, reusing the existing auth store, refresh lock and atomic write.
+- `src/cadr-cli/tui.lisp` **is unfrozen only conditionally**: if the
+  display/input of the extension OAuth callback cannot be carried in full by the
+  existing `/login` output/auth-url bridge, only adding the same callback bridge
+  is allowed; the selector layout, copy and default entries must not change. If
+  the implementation proves it unnecessary, the file is not modified.
 
-原已批的 extensions/model-services 文件面不变。`src/cadr-ai` 继续冻结。
+The already-approved extensions/model-services file surface is unchanged.
+`src/cadr-ai` stays frozen.
 
-### 4.3 默认行为与门禁
+### 4.3 Default behavior and gates
 
-- 无扩展 OAuth 时，`/login openai`、`/login anthropic`、无参选择器、存储
-  provider identity 及所有文案逐字节不变。
-- 红测试使用临时 auth store 和网络打桩，覆盖：扩展 provider 出现在
-  `/login`；login 凭据以同一 provider identity 落盘；默认 route 立即可取；
-  refresh 并发只发生一次；getApiKey/model projection/custom stream 各自生效；
-  reload 移除 auth method/model 但不删除已存凭据。
-- 日志、condition、notice 与 wire fixture 不得包含 token/refresh secret。
+- With no extension OAuth, `/login openai`, `/login anthropic`, the
+  argument-less selector, the stored provider identity and all copy are
+  byte-for-byte unchanged.
+- The red tests use a temporary auth store and network stubs, covering: the
+  extension provider appearing in `/login`; login credentials landing on disk
+  under the same provider identity; the default route being immediately
+  retrievable; a concurrent refresh happening only once;
+  getApiKey/model projection/custom stream each taking effect; reload removing
+  the auth method/model without deleting already-stored credentials.
+- Logs, conditions, notices and wire fixtures must not contain a token/refresh
+  secret.
 
-### 4.4 已考虑但否决的替代方案
+### 4.4 Alternatives considered and rejected
 
-- 让示例直接写 `auth.json`：绕过 identity、refresh lock、原子写和权限保持，
-  是已明令禁止的“绕过式通过”。
-- 把 extension `/login` 当普通自定义 command：核心 auth handler 优先拦截，
-  且无法进入统一 credential/runtime 合同。
-- 在 `src/cadr-ai` 加特例：不需要，且违反冻结红线。
+- Letting the example write `auth.json` directly: it bypasses identity, the
+  refresh lock, the atomic write and permission preservation, and is the
+  explicitly forbidden "passing by bypassing".
+- Treating the extension `/login` as an ordinary custom command: the core auth
+  handler intercepts it first, and it cannot enter the unified credential/runtime
+  contract.
+- Adding a special case in `src/cadr-ai`: unnecessary, and it violates the freeze
+  red line.
 
-回滚：删除 auth resolver 注入与 runtime 绑定；内置函数仍为默认。
+Rollback: delete the auth resolver injection and the runtime binding; the
+built-in functions remain the default.
 
-## 5. 裁决与施工顺序
+## 5. Adjudication and construction order
 
-请逐项裁决：
+Please adjudicate item by item:
 
-1. **A（第 7 项补充文件面）：批准 / 拒绝 / 暂缓。**
-2. **B（第 8 项补充文件面）：批准 / 拒绝 / 暂缓。**
-3. **C（第 10 项补充文件面）：批准 / 拒绝 / 暂缓。**
+1. **A (supplementary file surface for item 7): approve / reject / defer.**
+2. **B (supplementary file surface for item 8): approve / reject / defer.**
+3. **C (supplementary file surface for item 10): approve / reject / defer.**
 
-三项获批后，恢复原施工顺序 1→10、15→19、11、13→12→14、Part D，
-不再对已批能力重复要求裁决。若任一项不获批，受该 gap 阻塞的示例
-继续记为缺失；其余项的能力批准不变，但为遵守“立即 blocked”硬约束，
-本轮在新裁决前不开工。
+Once the three are approved, the original construction order 1→10, 15→19, 11,
+13→12→14, Part D resumes, and no repeated adjudication is requested for
+already-approved capabilities. If any one of them is not approved, the examples
+blocked by that gap continue to be recorded as 缺失; the capability approvals of
+the remaining items are unchanged, but in order to obey the "immediately
+blocked" hard constraint, this round does not start work before the new
+adjudication.

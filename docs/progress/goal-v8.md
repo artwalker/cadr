@@ -1,60 +1,66 @@
-# GOAL v8：终局路线图进度
+# GOAL v8: endgame roadmap progress
 
-> 历史报告：文内 `71efc6f0…` 记录 Goal 8 当时的审计锚点；Goal 9 起当前
-> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+> Historical report: the `71efc6f0…` in this document records the audit anchor
+> as it stood for Goal 8; from Goal 9 onward the current canonical baseline is
+> `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 
-固定基线：
+Pinned baseline:
 
-- 审计提交：`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`
-- 审计 checkout：`/tmp/cadr-parity-71efc6f0`
-- Goal 8 开工提交：`664e6b80ae1dc0d67711dc83e92e5e39f7518174`
-- 开工账本：`104 C / 0 U / 248 M`
+- Audit commit: `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`
+- Audit checkout: `/tmp/cadr-parity-71efc6f0`
+- Goal 8 start-of-work commit: `664e6b80ae1dc0d67711dc83e92e5e39f7518174`
+- Start-of-work ledger: `104 C / 0 U / 248 M`
 
-> 证据补正（2026-07-31）：本文后续保留的旧
-> `live-*-smoke.sh` 命令输出只记录当时执行历史，不再作为当前验收证据。
-> `live-openai-oauth-smoke.sh` 与 `live-evals-smoke.sh` 曾用 `jq` 把
-> `openai` 凭据改名为 `openai-codex`；其 OAuth “通过”结论已撤回。当前
-> 证据以文末补正记录和
-> [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md) 为准。
+> Evidence correction (2026-07-31): the old `live-*-smoke.sh` command output
+> retained later in this document only records the execution history at that
+> time and is no longer current acceptance evidence.
+> `live-openai-oauth-smoke.sh` and `live-evals-smoke.sh` once used `jq` to
+> rename the `openai` credential to `openai-codex`; their OAuth "pass"
+> conclusion has been withdrawn. The current evidence is governed by the
+> correction record at the end of this document and by
+> [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md).
 
-## Part A：Wave 3 provider 与完整 AI 面
+## Part A: Wave 3 provider and the complete AI surface
 
-状态：完成并提交。
+Status: complete and committed.
 
-### 落账提交
+### Recorded commits
 
-1. `28ddcf68e97ab553b1184434f51e4a82e7d886f2` — 测试与固定
-   fixtures 先行；
-2. `c8b418aa65f223490f0313532807ec7b6b2028b6` — 独立协议、认证、
-   完整目录、model/image/faux runtime 与公共工具；
-3. `e1cce7056e3aefb1602fe19f25642c45c1d353c1` — CLI 按基线
-   `openai-codex` 身份解析 OAuth，RPC provider 构造同步新签名，live
-   smoke 使用隔离凭据副本。
+1. `28ddcf68e97ab553b1184434f51e4a82e7d886f2` — tests and pinned
+   fixtures first;
+2. `c8b418aa65f223490f0313532807ec7b6b2028b6` — standalone protocols,
+   authentication, the complete catalog, model/image/faux runtime and shared
+   utilities;
+3. `e1cce7056e3aefb1602fe19f25642c45c1d353c1` — the CLI resolves OAuth under
+   the baseline `openai-codex` identity, RPC provider construction is synced to
+   the new signature, and the live smoke uses an isolated credential copy.
 
-### 实现证据
+### Implementation evidence
 
-- 38/38 baseline text provider IDs，移除非基线内置 `ollama`；
-- 固定 npm 包 `@earendil-works/pi-ai@0.83.0`，tarball SHA-256
-  `f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4`；
-- 37 个静态 provider JSON、1153 个 model；manifest SHA-256
-  `68fddb01b38c7abc7c579103da455475593fd788b3dbbf79c04b95bb5a4bb3a7`，
+- 38/38 baseline text provider IDs; the non-baseline built-in `ollama` was
+  removed;
+- the npm package `@earendil-works/pi-ai@0.83.0` is pinned, tarball SHA-256
+  `f983c28a21209305ed9c274977e29130fa4d8848df6cdf37e9094d95cc7bc6d4`;
+- 37 static provider JSONs, 1153 models; manifest SHA-256
+  `68fddb01b38c7abc7c579103da455475593fd788b3dbbf79c04b95bb5a4bb3a7`,
   structure hash
-  `5d82f5b1946bdf6d01733aa2a4e4410849c6d44a2ad3038171078c17aed367ce`；
-- OpenRouter image 固定目录 40 个 model，fixture SHA-256
-  `7a783225dfa4faea2fa53175b5df4af704630b9d54b50b5bcf5560e62d1726bb`；
-- Azure Responses、Bedrock Converse EventStream/SigV4、Vertex
-  ADC/service-account RS256、Mistral Conversations、OpenAI Codex Responses
-  和 `pi-messages` 均有独立 request/response/error/auth 测试；
-- model runtime 覆盖 provider mutation、credential priority/refresh、
-  availability/filter/dispatch；另有 faux provider、完整 image generation、
-  context/overflow/retry/schema/UUID 行为；
-- SSE 请求继续显式禁用 read timeout，并由
-  `SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT` 门禁。
+  `5d82f5b1946bdf6d01733aa2a4e4410849c6d44a2ad3038171078c17aed367ce`;
+- the pinned OpenRouter image catalog has 40 models, fixture SHA-256
+  `7a783225dfa4faea2fa53175b5df4af704630b9d54b50b5bcf5560e62d1726bb`;
+- Azure Responses, Bedrock Converse EventStream/SigV4, Vertex
+  ADC/service-account RS256, Mistral Conversations, OpenAI Codex Responses
+  and `pi-messages` each have separate request/response/error/auth tests;
+- the model runtime covers provider mutation, credential priority/refresh,
+  availability/filter/dispatch; there are also faux provider, complete image
+  generation, and context/overflow/retry/schema/UUID behavior;
+- SSE requests continue to explicitly disable the read timeout, gated by
+  `SSE-REQUEST-EXPLICITLY-DISABLES-READ-TIMEOUT`.
 
-### Live 门控等价及重分类
+### Live gating equivalence and reclassification
 
-按用户裁决，离线确定性行为仍逐文件从严；基线 live block 按凭据可用性
-同构门控。本机实际运行并通过：
+Per user adjudication, offline deterministic behavior is still held strictly
+file by file; the baseline's live blocks are gated isomorphically by credential
+availability. Actually run on this machine and passed:
 
 ```text
 ./scripts/live-deepseek-smoke.sh
@@ -64,10 +70,13 @@ live smoke: DeepSeek Chat Completions streaming passed
 OAuth live smoke: OpenAI Codex Responses streaming passed
 ```
 
-其他 provider 凭据均不可用，相关 live block 依基线门控跳过；本地未部署的
-Ollama、LM Studio 和 llama.cpp 同样跳过，fixture 不冒充 live。
+No other provider credential is available, so the related live blocks are
+skipped per the baseline gating; Ollama, LM Studio and llama.cpp, which are not
+deployed locally, are skipped in the same way, and fixtures do not masquerade as
+live.
 
-该裁决使以下含 live-gated block 的文件可在离线行为完整后由 `M` 转 `C`：
+That adjudication lets the following files containing live-gated blocks move
+from `M` to `C` once their offline behavior is complete:
 
 `abort.test.ts`, `anthropic-eager-tool-input-e2e.test.ts`,
 `anthropic-long-cache-retention-e2e.test.ts`,
@@ -88,11 +97,11 @@ Ollama、LM Studio 和 llama.cpp 同样跳过，fixture 不冒充 live。
 `xiaomi-token-plan-ams-anthropic-empty-signature-smoke.test.ts`,
 `zen.test.ts`.
 
-验证等级仍独立标注：只有 DeepSeek 与 Codex OAuth 为 `live-proven`，其余为
-`fixture`。Part A 后 AI 为 `120 C / 0 U / 0 M`，全仓为
-`224 C / 0 U / 128 M`。
+The verification level is still labeled separately: only DeepSeek and Codex
+OAuth are `live-proven`; the rest are `fixture`. After Part A, AI is
+`120 C / 0 U / 0 M` and the whole repository is `224 C / 0 U / 128 M`.
 
-### 机械验证
+### Mechanical verification
 
 ```text
 ./scripts/test-cl.sh
@@ -109,55 +118,59 @@ cadr build: SBCL lacks sb-core-compression; building an uncompressed image.
 cadr 0.1.0
 ```
 
-构建产物：`cadr`，61,710,696 bytes，mode `0755`。
+Build artifact: `cadr`, 61,710,696 bytes, mode `0755`.
 
-### 冻结与依赖对照
+### Freeze and dependency cross-check
 
-Part A 仅解冻 `src/cadr-ai`、`test/cadr-ai`、`cadr-ai.asd` 及所需 CLI
-provider 粘合点。TUI、extension、agent tool 与 CLI tool 冻结路径相对开工
-提交逐项 object ID 一致；`git diff 664e6b80...HEAD -- <冻结路径>` 为空。
-没有新增第三方依赖：HMAC-SHA256 为预裁的纯 Lisp 实现，RS256 使用既有
-`cl+ssl`/OpenSSL 例外。
+Part A unfroze only `src/cadr-ai`, `test/cadr-ai`, `cadr-ai.asd` and the
+required CLI provider glue points. The frozen paths for TUI, extension, agent
+tool and CLI tool have item-by-item identical object IDs relative to the
+start-of-work commit; `git diff 664e6b80...HEAD -- <frozen-path>` is empty.
+No new third-party dependency was added: HMAC-SHA256 is a pre-adjudicated pure
+Lisp implementation, and RS256 uses the existing `cl+ssl`/OpenSSL exception.
 
-Goal meter 收尾快照：`1,526,490` tokens，`4,609` 秒（累计值）。
+Goal meter closing snapshot: `1,526,490` tokens, `4,609` seconds (cumulative).
 
-## Part B：完整 coding-agent 行为面
+## Part B: the complete coding-agent behavior surface
 
-状态：完成并提交。用户已逐项批准
-[`docs/proposals/goal-v8-part-b.md`](../proposals/goal-v8-part-b.md) 的四项
-裁决；实现严格按提案第 5 节顺序执行。
+Status: complete and committed. The user has approved item by item the four
+adjudications in
+[`docs/proposals/goal-v8-part-b.md`](../proposals/goal-v8-part-b.md); the
+implementation followed the order of §5 of the proposal strictly.
 
-### 预授权提交
+### Pre-authorized commits
 
-1. `724494fd562d34097c225072ace81771311c58f4` — 固定 Part B 测试与
-   fixtures，提交信息注明预裁第 0.5(3)；
+1. `724494fd562d34097c225072ace81771311c58f4` — pin the Part B tests and
+   fixtures; the commit message notes pre-adjudicated item 0.5(3);
 2. `36310bfb040674ef43dff421e4e537eb7471ebaa` — agent/session/resource/
-   tool/input runtime；六个 lifecycle event 与 provider request hook 限于
-   预裁第 0.5(3)；
-3. `267b215aa45e488053dd85330d8a9c1106553369` — CLI service primitives；
+   tool/input runtime; the six lifecycle events and the provider request hook
+   are limited to pre-adjudicated item 0.5(3);
+3. `267b215aa45e488053dd85330d8a9c1106553369` — CLI service primitives;
 4. `81b441aec12669ef368670f494a1b28697bb8193` — CLI-owned interactive
-   controllers，未修改 `src/cadr-tui` 生产代码；
-5. `d0a90f9e009aadcca4f3fb482596c21e4314308b` — REPL/RPC/TUI glue 与
-   startup lifecycle wiring。
+   controllers; `src/cadr-tui` production code was not modified;
+5. `d0a90f9e009aadcca4f3fb482596c21e4314308b` — REPL/RPC/TUI glue and
+   startup lifecycle wiring.
 
-### 获批项提交
+### Approved-item commits
 
-1. `1b0350d37` — 先行登记 `cl-jpeg`、`png-read` 及传递闭包，分类为
-   纯 Lisp 可替换依赖；
-2. `68b07c010` — JPEG/PNG 真像素解码、EXIF orientation、Lanczos3 缩放与
-   编码大小降级；
-3. `602e03902`、`0f7836754` — additive extension API、load-scope handle、
-   renderer/flag/shortcut、inline factory 与 CLI-owned UI bridge；
-4. `158bc3128` — `cadr-ai` native provider 最小 runtime 合约，仅修改
-   `models-runtime.lisp`、`package.lisp` 与对应 test；`cadr-ai.asd` 无需改动；
-5. `cbd50a040`、`ee981f6a8` — `define-native-provider`、llama.cpp bundled
-   extension、Hugging Face GGUF 查询与无 read-timeout 的 `/models/sse`；
-6. `config.test.ts` 按用户裁决整文件记为 `N/A`，边界不扩张到
-   `version-check.test.ts` 或资源包更新。
+1. `1b0350d37` — register `cl-jpeg`, `png-read` and their transitive closure up
+   front, classified as pure Lisp replaceable dependencies;
+2. `68b07c010` — real pixel decoding for JPEG/PNG, EXIF orientation, Lanczos3
+   scaling and encoded-size downgrade;
+3. `602e03902`, `0f7836754` — additive extension API, load-scope handle,
+   renderer/flag/shortcut, inline factory and CLI-owned UI bridge;
+4. `158bc3128` — the minimal runtime contract for `cadr-ai` native providers;
+   only `models-runtime.lisp`, `package.lisp` and the corresponding tests were
+   modified; `cadr-ai.asd` needed no change;
+5. `cbd50a040`, `ee981f6a8` — `define-native-provider`, the llama.cpp bundled
+   extension, Hugging Face GGUF queries and `/models/sse` with no read timeout;
+6. `config.test.ts` is recorded as `N/A` for the whole file per user
+   adjudication; the boundary does not expand to `version-check.test.ts` or to
+   resource-bundle updates.
 
-### 扩展重冻
+### Extension re-freeze
 
-按 Goal 7 相同取样命令重算：
+Recomputed with the same sampling command as Goal 7:
 
 ```text
 sed -n '/#:define-tool/,/#:make-extension-hook-result/p' \
@@ -165,7 +178,7 @@ sed -n '/#:define-tool/,/#:make-extension-hook-result/p' \
 e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046  -
 ```
 
-重冻 object ID：
+Re-frozen object IDs:
 
 ```text
 e94a3f1c1c80ffb784a94e8bbef9c8645e8504da  cadr-ai.asd
@@ -197,7 +210,7 @@ d845e5e14fd9c9b864e65297e58728ae1f1e7c2f  src/cadr-cli/extensions/llama/provider
 5838bab8cf028e1632897989c92365521fe97087  src/cadr-cli/extensions/llama/extension.lisp
 ```
 
-Goal 7 三个 fixture SHA 保持不变：
+The three Goal 7 fixture SHAs are unchanged:
 
 ```text
 e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442  test/fixtures/extensions/legacy-wave2-api.lisp
@@ -206,11 +219,12 @@ c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486  test/fixtures/
 ```
 
 `LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-继续全绿；相对 Goal 8 开工提交执行
-`git diff 664e6b80...HEAD -- src/cadr-tui` 为空，TUI production 冻结红线
-未触碰。上述扩大面从此恢复“发布即稳定”。
+remains fully green; run against the Goal 8 start-of-work commit,
+`git diff 664e6b80...HEAD -- src/cadr-tui` is empty, and the TUI production
+freeze red line was not touched. The expanded surface above is restored to
+"stable on release" from now on.
 
-### 全量门禁与账本
+### Full gate run and ledger
 
 ```text
 ./scripts/test-cl.sh
@@ -221,32 +235,38 @@ cadr-cli    1056/1056
 total       2905/2905
 ```
 
-Part B 把开工时 coding-agent 的 128 个 `M` 重分类为 127 个 `C` 和一个经
-用户裁决的 `N/A`；逐文件变更清单就是 parity-map manifest 中所有
-`CL-PART-B` 行及 `config.test.ts` 行。收尾账本：
-`351 C / 0 U / 0 M / 1 N/A`。
+Part B reclassified the coding-agent's 128 `M` entries at start of work into
+127 `C` and one user-adjudicated `N/A`; the file-by-file change list is exactly
+all the `CL-PART-B` rows in the parity-map manifest plus the `config.test.ts`
+row. Closing ledger:
+`351 C / 0 U / 0 M / 1 N/A`.
 
-## Wave 5：storage、server 与 evals
+## Wave 5: storage, server and evals
 
-状态：完成并提交。该 Wave 只补齐固定基线已有的三个独立 package，没有
-修改已重冻的 extension/TUI surface，也没有引入第三方依赖。
+Status: complete and committed. This wave only filled in the three standalone
+packages that already exist in the pinned baseline; it did not modify the
+already re-frozen extension/TUI surface, and it did not introduce a third-party
+dependency.
 
-### 落账提交
+### Recorded commits
 
-1. `d7b81ce16`、`098362696` — 测试先行，建立独立 `cadr-storage`
-   facade，复用唯一 SQLite repository/storage 实现；
-2. `ee9a18640`、`c2f463ffb` — 测试先行，实现 Unix-socket JSONL
-   supervisor、RPC child、持久化、Radius credential gate 与 UI/event bridge；
-3. `11d9f9685`、`a99048395` — 测试先行，实现隔离 eval harness、smoke 与
-   self-extension suites；
-4. `c11278b07` — native server 构建、真实 socket smoke、原版 spawn flags、
-   进程退出/accept-loop 修复，以及 Radius backoff/连续三次 404 重注册；
-5. `370aeafce` — eval CLI runner 与 DeepSeek/Codex OAuth live gate；
-6. `088f3c639` — 将三个 package 纳入全量测试入口；
-7. `7be14f292` — 显式声明 server 使用的 SBCL process contrib，不新增
-   第三方依赖。
+1. `d7b81ce16`, `098362696` — tests first; establish a standalone
+   `cadr-storage` facade reusing the single SQLite repository/storage
+   implementation;
+2. `ee9a18640`, `c2f463ffb` — tests first; implement the Unix-socket JSONL
+   supervisor, RPC child, persistence, Radius credential gate and UI/event
+   bridge;
+3. `11d9f9685`, `a99048395` — tests first; implement the isolated eval harness,
+   smoke and self-extension suites;
+4. `c11278b07` — native server build, real socket smoke, the baseline's spawn
+   flags, process-exit/accept-loop fixes, and Radius backoff / re-registration
+   after three consecutive 404s;
+5. `370aeafce` — eval CLI runner and DeepSeek/Codex OAuth live gate;
+6. `088f3c639` — bring the three packages into the full test entry point;
+7. `7be14f292` — explicitly declare the SBCL process contrib the server uses;
+   no new third-party dependency.
 
-### 门禁证据
+### Gate evidence
 
 ```text
 ./scripts/test-cl.sh
@@ -266,105 +286,129 @@ server smoke: spawn/list/status/RPC/stop over Unix socket passed
 live evals: DeepSeek and OpenAI Codex smoke suites passed
 ```
 
-`build.sh` 与 `build-server.sh` 均在当前 SBCL 缺少
-`sb-core-compression` 时明确降级为无压缩 image；产物分别为 `cadr` 与
-`cadr-server`，二者 `--version` 均显示 cadr 新命名。最终产物为：
+Both `build.sh` and `build-server.sh` explicitly downgrade to an uncompressed
+image when the current SBCL lacks `sb-core-compression`; the artifacts are
+`cadr` and `cadr-server` respectively, and `--version` shows the new cadr
+naming for both. The final artifacts are:
 
 ```text
 cadr         65,381,272 bytes  mode 0755
 cadr-server  57,220,848 bytes  mode 0755
 ```
 
-### 冻结与账本
+### Freeze and ledger
 
-相对 Goal 8 开工提交，`git diff 664e6b80...HEAD -- src/cadr-tui` 仍为空；
-Part B 的 extension export SHA 仍为
-`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
-Wave 5 不改变 `*.test.ts` 分类，因此终局账本保持
-`351 C / 0 U / 0 M / 1 N/A`；新增的 82 个断言覆盖基线中没有
-`*.test.ts` 的 storage/server/evals package surface。
+Relative to the Goal 8 start-of-work commit,
+`git diff 664e6b80...HEAD -- src/cadr-tui` is still empty; Part B's extension
+export SHA is still
+`e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`.
+Wave 5 does not change the `*.test.ts` classification, so the endgame ledger
+stays `351 C / 0 U / 0 M / 1 N/A`; the 82 new assertions cover the
+storage/server/evals package surface that has no `*.test.ts` in the baseline.
 
-## Part F：终局机械收官
+## Part F: endgame mechanical wrap-up
 
-状态：旧机械证据因 OAuth 绕过被退回；2026-07-31 证据补正后须重新验收。
-用户仍需按
-[`docs/acceptance/goal-v8-final.md`](../acceptance/goal-v8-final.md)
-逐项完成人工验收，尚未宣告进入维护态。
+Status: the old mechanical evidence was rejected because of the OAuth bypass;
+after the 2026-07-31 evidence correction it must be accepted again. The user
+must still complete the manual acceptance item by item per
+[`docs/acceptance/goal-v8-final.md`](../acceptance/goal-v8-final.md);
+entry into maintenance mode has not been declared.
 
-### 收官提交
+### Wrap-up commits
 
-1. `33575aa3e` — 修正全链路 smoke 对新增 `agent_settled` 与延迟 session
-   持久化的陈旧假设；
-2. `3e78b1962` — TUI live smoke 使用唯一 slash command 前缀，不再依赖
-   扩充后会变化的命令排序；
-3. `03383d127` — 最终账本、依赖审计、冻结 object ID、README 验证
-   等级与终局验收包。
+1. `33575aa3e` — correct the end-to-end smoke's stale assumptions about the new
+   `agent_settled` and about deferred session persistence;
+2. `3e78b1962` — the TUI live smoke uses a unique slash-command prefix and no
+   longer depends on a command ordering that changes once commands are added;
+3. `03383d127` — final ledger, dependency audit, frozen object IDs, README
+   verification levels, and the endgame acceptance package.
 
-### 机械结论
+### Mechanical conclusions
 
-- 终局账本：`351 C / 0 U / 0 M / 1 N/A`；
-- 全量：`2987/2987`；
-- `build.sh`、`build-server.sh` 均成功无压缩降级并产出新命名；
-- acceptance、process modes、migration、server 与 TUI deterministic
-  smokes 全绿；
-- DeepSeek 的旧 live 记录由凭据门控 FiveAM 重新验证；Codex OAuth 的旧
-  stream/eval 记录因改写凭据身份而撤回；默认路由由临时目录与网络桩
-  确定性验证，live 仅显式验证凭据；
-- Anthropic 无凭据，按基线 credential gate 跳过；
-- 依赖审计无新增第三方依赖；
-- 最终代码、ASDF/build 与 extension SHA 已写入 architecture 第 24 节。
+- endgame ledger: `351 C / 0 U / 0 M / 1 N/A`;
+- full suite: `2987/2987`;
+- `build.sh` and `build-server.sh` both downgraded to uncompressed successfully
+  and produced the new naming;
+- the acceptance, process modes, migration, server and TUI deterministic
+  smokes are all green;
+- DeepSeek's old live records were re-verified by credential-gated FiveAM;
+  Codex OAuth's old stream/eval records were withdrawn because they rewrote the
+  credential identity; the default route is verified deterministically with a
+  temporary directory and a network stub, and live only verifies the credential
+  explicitly;
+- Anthropic has no credential and is skipped per the baseline credential gate;
+- the dependency audit found no new third-party dependency;
+- the final code, ASDF/build and extension SHAs have been written into §24 of
+  architecture.
 
-Goal 8 的终局大验收仍以用户人工清单为最后一道门；自行宣布完成无效。
+Goal 8's endgame grand acceptance still takes the user's manual checklist as the
+last gate; declaring completion on one's own is invalid.
 
-## 2026-07-31 证据真实性补正
+## 2026-07-31 evidence-truthfulness correction
 
-本轮不是给旧 smoke 打补丁，而是收敛验证机制：
+This round is not patching the old smokes; it converges the verification
+mechanism:
 
-- `/login openai` 的 exchange、refresh、存储、读取统一为基线
-  `openai-codex` 身份；登录后的默认模型选择覆盖无凭据或其他 provider
-  的既有路由；
-- OAuth URL 在 TUI 中使用基线 OSC 8 原始链接与点击提示，不再经过
-  `session>` notice；
-- 七个 provider/CLI/eval shell live 脚本删除，其覆盖移入 ASDF/FiveAM
-  凭据门控；
-- 只保留真实二进制、PTY/termios、Unix socket、迁移、signal/RPC EOF
-  这类进程级 harness；逐脚本结论见
-  [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md)；
-- OpenAI 登录/default-route 回归使用临时 auth/config 与网络桩；live 门禁
-  只按凭据可用性启用，在测试内显式指定 provider/model，不读取用户 settings。
-  CLI 为隔离其他个人状态，仅逐字节复制 auth 文件，不改名或规范化。
+- the exchange, refresh, storage and read of `/login openai` are unified onto
+  the baseline `openai-codex` identity; the default model selection after login
+  overrides an existing route that has no credential or belongs to another
+  provider;
+- the OAuth URL uses the baseline OSC 8 raw link and click hint in the TUI, and
+  no longer goes through the `session>` notice;
+- seven provider/CLI/eval shell live scripts were deleted, and their coverage
+  moved into ASDF/FiveAM credential gating;
+- only process-level harnesses of the kind that use a real binary,
+  PTY/termios, Unix sockets, migration, and signal/RPC EOF are kept; the
+  per-script conclusions are in
+  [`goal-v8-smoke-audit.md`](../acceptance/goal-v8-smoke-audit.md);
+- the OpenAI login/default-route regression uses a temporary auth/config and a
+  network stub; the live gate is enabled only by credential availability,
+  specifies provider/model explicitly inside the test, and does not read the
+  user's settings. To isolate other personal state, the CLI only copies the auth
+  file byte for byte; it does not rename or normalize it.
 
-### 补正提交与最终机械结果
+### Correction commits and final mechanical results
 
-1. `cd5f7ba16dc30fa0bc5c1d7e7723a9f0553bd764` — 统一 OpenAI Codex
-   登录/存储/读取身份、默认模型选择与 URL 展示，并先落回归；
-2. `42ef9d74dff0aac7b1c52ed7402e8206e103fb66` — 删除七个可内置 live
-   shell 脚本，覆盖并入三个 ASDF/FiveAM credential gate；
-3. `03aca58dc0c17c227436cc0e3373c01da30f0312` — repo live gate 强制先
-   观察真实 code 1、保持 test fixture 未改，再接受修复后的 code 0；
-4. `a85b0ad321969b5fcfbda58d279d9b9c3a96209e` — process smoke 以服务端
-   请求 marker 同步 SIGTERM，不再依赖固定 50ms 猜测；
-5. `c73f27dffce029cefd29393015b0fc212ed47eca` — 将 OAuth 回归拆成
-   临时目录/网络桩确定性层与显式 provider/model live 层，并隔离全部
-   CLI/eval live 对用户 settings、session、扩展的读取。
+1. `cd5f7ba16dc30fa0bc5c1d7e7723a9f0553bd764` — unify the OpenAI Codex
+   login/storage/read identity, the default model selection and the URL
+   display, landing the regression first;
+2. `42ef9d74dff0aac7b1c52ed7402e8206e103fb66` — delete the seven live shell
+   scripts that can be built in, merging their coverage into three ASDF/FiveAM
+   credential gates;
+3. `03aca58dc0c17c227436cc0e3373c01da30f0312` — the repo live gate forces a
+   real code 1 to be observed first, with the test fixture left unchanged,
+   before the post-fix code 0 is accepted;
+4. `a85b0ad321969b5fcfbda58d279d9b9c3a96209e` — the process smoke synchronizes
+   SIGTERM on a server-side request marker and no longer relies on a fixed 50ms
+   guess;
+5. `c73f27dffce029cefd29393015b0fc212ed47eca` — split the OAuth regression into
+   a deterministic layer using a temporary directory / network stub and a live
+   layer with explicit provider/model, and isolate every CLI/eval live read of
+   the user's settings, sessions and extensions.
 
-最终机械证据：
+Final mechanical evidence:
 
-- 全量 ASDF gate：`3043 checks / 3042 pass / 1 skip / 0 fail`，唯一 skip
-  为无 Anthropic key；DeepSeek 与 Codex OAuth live blocks 均真跑；
-- `build.sh` 与 `build-server.sh` 均在无 `sb-core-compression` 的 SBCL
-  上降级成功，产出 `cadr` 65,348,488 bytes 与 `cadr-server`
-  57,155,288 bytes，mode 0755，二者 `--version` 均为 `0.1.0` 新名；
-- 六个保留脚本全部重跑通过：acceptance、process modes、migration、
-  server、Goal 5 PTY 与 live DeepSeek TUI；
-- 产品人工证据仍成立：真实 TUI `/login openai` 后在同一进程、不加
-  provider/model 参数直接
-  对话，settings 持久化为 `openai-codex/gpt-5.5`，assistant 精确回复
-  `OAUTH_TUI_DIRECT_OK`；自动 live 门禁不再读取或断言该 settings；
-- 正式全量运行使用用户当前 `openai-codex/gpt-5.6-luna` settings，运行
-  前后保持不变；
-- extension export SHA 仍为
-  `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`，
-  相对 Goal 8 开工提交的 `src/cadr-tui` production diff 仍为空。
+- full ASDF gate: `3043 checks / 3042 pass / 1 skip / 0 fail`; the only skip
+  is the absent Anthropic key; the DeepSeek and Codex OAuth live blocks both
+  really ran;
+- `build.sh` and `build-server.sh` both downgraded successfully on an SBCL
+  without `sb-core-compression`, producing `cadr` at 65,348,488 bytes and
+  `cadr-server` at 57,155,288 bytes, mode 0755, and `--version` for both is
+  `0.1.0` under the new name;
+- all six retained scripts were re-run and passed: acceptance, process modes,
+  migration, server, Goal 5 PTY and live DeepSeek TUI;
+- the product-level manual evidence still holds: after a real TUI
+  `/login openai`, conversing directly in the same process without
+  provider/model arguments, settings persisted as `openai-codex/gpt-5.5` and
+  the assistant replied exactly
+  `OAUTH_TUI_DIRECT_OK`; the automatic live gate no longer reads or asserts on
+  those settings;
+- the official full run used the user's current `openai-codex/gpt-5.6-luna`
+  settings, unchanged before and after the run;
+- the extension export SHA is still
+  `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`,
+  and the `src/cadr-tui` production diff relative to the Goal 8 start-of-work
+  commit is still empty.
 
-此前 `2987/2987` 及旧脚本结果只保留为历史记录，不能代替以上补正证据。
+The earlier `2987/2987` and the old script results are retained only as a
+historical record; they cannot substitute for the correction evidence above.

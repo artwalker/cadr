@@ -1,60 +1,72 @@
-# Goal 9 live 测试门禁定位提案
+# Goal 9 live-test gate placement proposal
 
-状态：**第 1–3 项已由用户逐项批准；测试入口与完整汇总已在
-`e779ee828` 实施。Part D `verify.sh` 按已批准规则在既定 Part D 落地。**
+Status: **Items 1–3 have been approved by the user one by one; the test entry
+points and the complete summary were implemented in `e779ee828`. Part D's
+`verify.sh` lands in the already-fixed Part D under the approved rules.**
 
-固定基线：`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`，
-checkout `/tmp/cadr-parity-74caa2649`。本文基线 `file:line` 均指该提交。
+Fixed baseline: `earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`,
+checkout `/tmp/cadr-parity-74caa2649`. Every baseline `file:line` in this
+document refers to that commit.
 
-## 1. 问题与边界
+## 1. Problem and boundaries
 
-OAuth 顺序依赖修复后，顾问连续三次复跑的 OAuth live 门禁均通过，但全量结果为：
+After the OAuth order-dependency fix, the OAuth live gate passed in all three
+consecutive reruns by the advisor, but the full results were:
 
-| run | 已知 checks | 已知 fail | 结论 |
+| run | known checks | known fail | conclusion |
 |---:|---:|---:|---|
-| 1 | 6436 | 5 | DeepSeek self-extension live 失败；ASDF 未继续 protocol suite |
-| 2 | 6933 | 0 | 通过 |
-| 3 | 6933 | 0 | 通过 |
+| 1 | 6436 | 5 | DeepSeek self-extension live failed; ASDF did not continue to the protocol suite |
+| 2 | 6933 | 0 | passed |
+| 3 | 6933 | 0 | passed |
 
-顾问没有在裁决输入中给出三轮各自的 pass/skip 数，本文不反推并冒充原始输出。
-这组三轮只能证明真实模型行为有波动，不能作为确定性重复性证据。
+The advisor did not give the per-round pass/skip numbers for the three rounds in
+the adjudication input, and this document does not reverse-engineer them and
+pass them off as raw output. This set of three rounds can only prove that real
+model behavior varies; it cannot serve as evidence of deterministic
+repeatability.
 
-本提案只裁决 live 测试的组织、退出语义与验收位置，不修改：
+This proposal adjudicates only the organization, the exit semantics and the
+acceptance location of the live tests. It does not modify:
 
-1. provider、agent、extension 或工具的生产实现；
-2. live 测试的 prompt、断言、模型、temperature、retry 或工具面；
-3. 凭据存储、刷新与隔离机制；
-4. 无凭据时的 availability gate 语义；
-5. 任何第三方依赖。
+1. the production implementation of providers, the agent, extensions or tools;
+2. the prompts, assertions, models, temperature, retry or tool surface of the
+   live tests;
+3. the credential storage, refresh and isolation mechanisms;
+4. the availability-gate semantics when there is no credential;
+5. any third-party dependency.
 
-## 2. 基线 pi 的实际做法
+## 2. What baseline pi actually does
 
-### 2.1 live 块位于普通 Vitest 套件
+### 2.1 The live blocks sit in the ordinary Vitest suite
 
-基线 root `test` 执行所有 workspace 的 `test`：
-`package.json:33-34`。`packages/ai` 的入口是普通 `vitest --run`：
-`packages/ai/package.json:59`。
+The baseline root `test` runs the `test` of every workspace:
+`package.json:33-34`. The entry point of `packages/ai` is a plain `vitest --run`:
+`packages/ai/package.json:59`.
 
-真实 provider 块使用 `describe.skipIf(!KEY)`。例如 DeepSeek 在
-`packages/ai/test/stream.test.ts:448-472`；凭据存在时五个真实调用进入普通 suite，
-其中单项声明 `{ retry: 3 }`。coding-agent 的真实 session 分支测试同样位于普通
-suite，并以 `describe.skipIf(!API_KEY)` 门控：
-`packages/coding-agent/test/agent-session-branching.test.ts:27-55`。
+The real provider blocks use `describe.skipIf(!KEY)`. For example DeepSeek is at
+`packages/ai/test/stream.test.ts:448-472`; when a credential is present, five
+real calls enter the ordinary suite, and one of them declares `{ retry: 3 }`.
+The coding-agent's real session-branching test likewise sits in the ordinary
+suite and is gated by `describe.skipIf(!API_KEY)`:
+`packages/coding-agent/test/agent-session-branching.test.ts:27-55`.
 
-因此基线运行语义是：
+The baseline's run semantics are therefore:
 
-- 无凭据：对应 live block skip；
-- 有凭据且最终断言失败：Vitest 返回非零，所在 `npm test` 失败；
-- `skipIf` 只解决 availability，不把真实 LLM 变成确定性测试。
+- no credential: the corresponding live block skips;
+- credential present and the final assertion fails: Vitest returns non-zero and
+  the enclosing `npm test` fails;
+- `skipIf` only solves availability; it does not turn a real LLM into a
+  deterministic test.
 
-### 2.2 官方 CI 实际不运行 provider live
+### 2.2 The official CI does not actually run provider live
 
-基线 PR/push CI 在 `.github/workflows/ci.yml:32-42` 执行 install、build、check、
-`npm test`，但 workflow 没有注入任何 provider key 或 `auth.json`。发布 workflow
-也在 `.github/workflows/build-binaries.yml:253-263` 执行 `npm test`，同样没有
-provider 凭据。
+The baseline PR/push CI runs install, build, check and `npm test` at
+`.github/workflows/ci.yml:32-42`, but the workflow injects no provider key and
+no `auth.json`. The release workflow also runs `npm test` at
+`.github/workflows/build-binaries.yml:253-263`, likewise without provider
+credentials.
 
-查证命令：
+Verification command:
 
 ```text
 rg -n 'ANTHROPIC_API_KEY|OPENAI_API_KEY|DEEPSEEK_API_KEY|OPENAI_CODEX|PI_AUTH_JSON' \
@@ -62,102 +74,134 @@ rg -n 'ANTHROPIC_API_KEY|OPENAI_API_KEY|DEEPSEEK_API_KEY|OPENAI_CODEX|PI_AUTH_JS
 (no output; exit 1)
 ```
 
-结论必须分两层说：基线的 live 失败在**有凭据的本地 `npm test`** 中会阻断；但在
-固定提交的**官方 CI/发布 test job** 中没有凭据，live 块全部 skip，因此不会阻断
-官方 CI。不能用“它们写在普通 suite”推导“官方 CI 已实际验证 live”。
+The conclusion must be stated in two layers: a baseline live failure does block
+in a **local `npm test` that has credentials**; but in the **official
+CI/release test job** at the fixed commit there are no credentials, all the live
+blocks skip, and therefore they do not block the official CI. "They are written
+in the ordinary suite" must not be used to derive "the official CI has actually
+verified live".
 
-## 3. 当前 Cadr 的问题
+## 3. The current problem in Cadr
 
-当前 `scripts/test-cl.sh:19-26` 顺序执行八个 ASDF test systems。网络 live 文件混在
-普通 systems 中：
+Currently `scripts/test-cl.sh:19-26` runs eight ASDF test systems in sequence.
+The networked live files are mixed into the ordinary systems:
 
-| system | live 文件 | 当前后果 |
+| system | live file | current consequence |
 |---|---|---|
-| `cadr-ai/tests` | `test/cadr-ai/live-provider-test.lisp` | provider 波动可在第一个 system 终止全量 |
-| `cadr-cli/tests` | `test/cadr-cli/live-test.lisp` | CLI/OAuth 波动会阻止 storage/server/evals/protocol |
-| `cadr-evals/tests` | `test/cadr-evals/live-evals-test.lisp` | agent 行为波动会阻止 protocol |
+| `cadr-ai/tests` | `test/cadr-ai/live-provider-test.lisp` | provider variation can terminate the whole run at the first system |
+| `cadr-cli/tests` | `test/cadr-cli/live-test.lisp` | CLI/OAuth variation prevents storage/server/evals/protocol |
+| `cadr-evals/tests` | `test/cadr-evals/live-evals-test.lisp` | agent-behavior variation prevents protocol |
 
-`test/cadr-cli/live-auth-test.lisp` 虽然名称含 `live`，但只使用临时 auth store 与
-网络桩，是确定性回归，必须继续留在普通 suite。
+Although the name of `test/cadr-cli/live-auth-test.lisp` contains `live`, it
+uses only a temporary auth store and network stubs; it is a deterministic
+regression and must remain in the ordinary suite.
 
-该组织方式比基线官方 CI 更严格：本机固定存在 DeepSeek 与 Codex OAuth 凭据，所以
-`test-cl.sh` 每次都会执行 live；一个行为型 LLM smoke 失败便让后续确定性 suite 没有
-结果。于是“全量 checks”本身随模型输出变化，不能作为稳定工程门禁。
+This organization is stricter than the baseline's official CI: DeepSeek and
+Codex OAuth credentials are permanently present on this machine, so
+`test-cl.sh` executes live every time; one failing behavioral LLM smoke then
+leaves the subsequent deterministic suites without a result. The "full checks"
+figure itself therefore varies with model output, and cannot serve as a stable
+engineering gate.
 
-## 4. 用户裁决
+## 4. User adjudication
 
-### 4.1 裁决一：分离确定性与 live 入口
+### 4.1 Adjudication one: separate the deterministic and live entry points
 
-用户批准并已实施：
+The user approved, and it has been implemented:
 
-1. `./scripts/test-cl.sh` 只运行离线确定性 FiveAM suites；网络 provider live 文件从
-   三个普通 ASDF test systems 移入独立 live systems；
-2. 新增单一入口 `./scripts/test-live.sh`，只编排 credential-gated FiveAM live
-   systems，不在 shell 中复制断言或解析模型文本；
-3. `live-auth-test.lisp` 保留在确定性 CLI suite；
-4. 无凭据仍逐项 skip 并打印原因，语义与基线 `skipIf(!KEY)` 同构。
+1. `./scripts/test-cl.sh` only runs the offline deterministic FiveAM suites; the
+   networked provider live files move out of the three ordinary ASDF test
+   systems into separate live systems;
+2. a single new entry point `./scripts/test-live.sh` orchestrates only the
+   credential-gated FiveAM live systems, and does not duplicate assertions or
+   parse model text in the shell;
+3. `live-auth-test.lisp` stays in the deterministic CLI suite;
+4. with no credential it still skips item by item and prints the reason,
+   semantically isomorphic to the baseline's `skipIf(!KEY)`.
 
-这是相对固定基线新增的测试入口机制，已登记进 README 差异清单。官方基线 CI
-本就通过“不提供凭据”把确定性 CI 与 live
-事实分开；Cadr 只是把这一隐式边界变成可审计的显式入口。
+This is a test entry-point mechanism added relative to the fixed baseline, and
+it is registered in the README difference list. The official baseline CI already
+separates deterministic CI from live in fact by "not supplying credentials";
+Cadr merely turns that implicit boundary into an auditable explicit entry point.
 
-### 4.2 裁决二：live 失败的阻断范围
+### 4.2 Adjudication two: the blocking scope of a live failure
 
-用户批准并已实施以下双层语义：
+The user approved, and the following two-layer semantics have been implemented:
 
-- live 失败不得改变 `test-cl.sh` 的结果，也不得阻止尚未运行的确定性 suite；
-- `test-live.sh` 必须运行完所有已启用 provider/surface 后汇总，任一已启用项失败则
-  最终 exit `1`；不得在第一个 package 失败时丢失其余 live 结果；
-- 不把失败自动改成 skip/warning，不自动反复运行直到转绿；
-- 某次 live 失败只能由用户明确裁决为“接受外部波动”或“产品 blocker”，不得由后续
-  一次绿色覆盖。
-- 汇总逐项列出已运行项、已跳过项与原因、失败项与完整失败输出；每个失败还必须标注
-  `疑似产品缺陷`、`疑似模型输出波动` 或 `无法判断` 及判断依据。
+- a live failure must not change the result of `test-cl.sh`, and must not
+  prevent deterministic suites that have not yet run;
+- `test-live.sh` must finish running every enabled provider/surface before
+  summarizing, and if any enabled item fails the final exit is `1`; the
+  remaining live results must not be lost when the first package fails;
+- a failure must not be automatically turned into a skip/warning, and must not
+  be automatically rerun over and over until it goes green;
+- a given live failure can only be explicitly adjudicated by the user as "accept
+  the external variation" or "product blocker"; it must not be overwritten by a
+  later green run.
+- the summary lists item by item the items run, the items skipped and the
+  reason, and the failed items with their complete failure output; every failure
+  must additionally be labelled `疑似产品缺陷`, `疑似模型输出波动` or
+  `无法判断`, together with the grounds for the judgement.
 
-Dedicated live 命令保留真实非零信号，并在最终退出前运行全部八项，避免分离退化成
-藏红灯。
+The dedicated live command keeps a real non-zero signal, and runs all eight
+items before its final exit, so that the separation does not degenerate into
+hiding red lights.
 
-### 4.3 裁决三：Goal 9 Part D 与发布前门禁
+### 4.3 Adjudication three: Goal 9 Part D and the pre-release gate
 
-用户批准：Part D 的 `scripts/verify.sh` 固定按以下阶段执行并分别报告：
+The user approved: Part D's `scripts/verify.sh` executes in the following fixed
+stages and reports them separately:
 
 ```text
 deterministic FiveAM -> isolated build -> deterministic process/PTY smoke
                      -> credential-gated live FiveAM -> live TUI smoke
 ```
 
-规则：
+Rules:
 
-1. 前三阶段为可重复的硬门禁；
-2. 本机已登记可用的 DeepSeek 与 Codex OAuth 必须实际执行，不得被 skip；其他 provider
-   继续 availability skip；
-3. live 阶段失败时 `verify.sh` 最终 exit `1`，但必须先收集全部 live 结果；发布默认
-   blocked，除非用户针对该次完整报告明确接受；
-4. 发布报告同时列出 deterministic 与 live 两张表，禁止合并成一个“全绿”数字；
-5. CI 无凭据时只证明 deterministic gate，与基线官方 CI 同构；README/报告必须列明
-   本地 `verify.sh` 比 CI 多出的 live 覆盖。
+1. the first three stages are repeatable hard gates;
+2. the DeepSeek and Codex OAuth registered as available on this machine must
+   actually execute and must not be skipped; other providers continue to skip on
+   availability;
+3. when the live stage fails, `verify.sh` finally exits `1`, but it must first
+   collect all the live results; the release is blocked by default unless the
+   user explicitly accepts that particular complete report;
+4. the release report lists both the deterministic and the live table, and
+   merging them into a single "all green" figure is forbidden;
+5. when CI has no credential it proves only the deterministic gate, isomorphic
+   to the baseline's official CI; the README/report must state the live coverage
+   that the local `verify.sh` has over and above CI.
 
-解除发布阻断只能由用户在看到完整 live 报告后显式确认；脚本不得自行把任何失败
-判为可忽略。该接线仍按既定范围留到 Part D，不在本次提前创建半成品 `verify.sh`。
+Lifting the release block can only be done by the user's explicit confirmation
+after seeing the complete live report; the script must not judge any failure
+ignorable on its own. That wiring is still left to Part D per the fixed scope,
+and no half-finished `verify.sh` is created early this time.
 
-### 4.4 已确立规则：证据语言与数字纪律
+### 4.4 Established rules: evidence language and numeric discipline
 
-用户本轮已直接确立以下永久规则，不等待本提案批准：
+The user has already established the following permanent rules directly this
+round, without waiting for this proposal to be approved:
 
-1. “连续 N 次全绿”只允许描述不含任何真实网络/LLM 调用的确定性入口；
-2. 必须逐次列出 `checks / pass / skip / fail`，缺任一数字只能标为“不完整记录”，
-   不得补算后冒充原始输出；
-3. live 多轮结果写成“共 N 次：X pass / Y fail / Z skip”，并逐轮列完整数字；任何
-   fail 都必须保留，后续 pass 不得覆盖；
-4. 含 live 的组合 `verify.sh` 只能宣告“各阶段结果”，不得作为确定性证据；
-5. provider/model、凭据门控状态、运行时间、失败面必须记录，但禁止写入 credential、
-   token、完整敏感响应或用户 auth 内容。
+1. "N green runs in a row" may only describe a deterministic entry point that
+   contains no real network/LLM call;
+2. `checks / pass / skip / fail` must be listed for every single run; if any one
+   number is missing, the run may only be marked as an "incomplete record", and
+   must not be back-computed and then passed off as raw output;
+3. multi-round live results are written as "N runs in total: X pass / Y fail /
+   Z skip", with the complete numbers listed for every round; any fail must be
+   kept, and a later pass must not overwrite it;
+4. a combined `verify.sh` that includes live may only declare "the per-stage
+   results", and must not serve as deterministic evidence;
+5. the provider/model, the credential-gate state, the run time and the failure
+   surface must be recorded, but writing credentials, tokens, complete sensitive
+   responses or the user's auth contents is forbidden.
 
-这直接撤销此前把含 live 的五连跑称为确定性全绿的错误口径。
+This directly revokes the earlier incorrect basis that called the five-run
+streak containing live a deterministic all-green.
 
-## 5. 实际实现与解冻范围
+## 5. Actual implementation and unfreezing scope
 
-实际只修改测试与文档：
+Only tests and documentation were actually modified:
 
 ```text
 cadr-ai.asd
@@ -178,27 +222,29 @@ docs/open-questions.md
 docs/proposals/goal-v9-live-test-gating.md
 README.md
 docs/acceptance/goal-v9-part-b.md
-scripts/verify.sh                    # 仅在既定 Part D 实现
+scripts/verify.sh                    # implemented only in the established Part D
 ```
 
-`src/` 全部冻结；不新增第三方依赖。若实现需要修改任何生产文件、改变 live 断言或
-引入自动容错/retry，立即重新 blocked。
+All of `src/` is frozen; no third-party dependency is added. If the
+implementation requires modifying any production file, changing a live
+assertion, or introducing automatic fault tolerance/retry, it goes back to
+blocked immediately.
 
-## 6. 已考虑但否决的方案
+## 6. Options considered and rejected
 
-| 方案 | 否决理由 |
+| Option | Reason for rejection |
 |---|---|
-| 保持现状并把偶发失败记为 flaky | LLM 行为波动不是时序 bug；后续确定性 suite 仍被截断 |
-| retry 到绿再算通过 | 隐藏失败率，继续制造“全绿”假象 |
-| 放宽 self-extension 断言 | 会把 live 覆盖弱化，且本提案无权改变测试语义 |
-| live 失败只 warning、永远 exit 0 | 红灯被边缘化，发布前无法形成真实约束 |
-| 从仓库删除行为型 live 测试 | 丢失真实 agent/tool/extension 闭环证据 |
-| 仅在 CI 注入真实凭据 | 基线 CI 没这样做；token 轮换、成本、外部波动会污染确定性 CI |
-| 将 live 与 deterministic 数字继续合并 | checks 会因中止位置变化，无法比较覆盖回归 |
+| Keep the status quo and record the sporadic failures as flaky | LLM behavior variation is not a timing bug; the subsequent deterministic suites are still truncated |
+| Retry until green and only then count it as passing | Hides the failure rate and keeps manufacturing the illusion of "all green" |
+| Relax the self-extension assertions | Would weaken live coverage, and this proposal has no authority to change test semantics |
+| Make a live failure only a warning and always exit 0 | The red light is marginalized, and no real constraint can form before release |
+| Delete the behavioral live tests from the repository | Loses the real agent/tool/extension closed-loop evidence |
+| Inject real credentials in CI only | The baseline CI does not do this; token rotation, cost and external variation would contaminate the deterministic CI |
+| Keep merging the live and the deterministic figures | checks would change with where the run aborts, making coverage regressions incomparable |
 
-## 7. 实施验收
+## 7. Implementation acceptance
 
-`./scripts/test-cl.sh` 连续五次结果完全一致：
+`./scripts/test-cl.sh` gives completely identical results five times in a row:
 
 | run | checks | pass | skip | fail |
 |---:|---:|---:|---:|---:|
@@ -208,10 +254,14 @@ scripts/verify.sh                    # 仅在既定 Part D 实现
 | 4 | 6921 | 6921 | 0 | 0 |
 | 5 | 6921 | 6921 | 0 | 0 |
 
-`./scripts/test-live.sh` 完整运行八项后为 `32 checks / 31 pass / 1 skip /
-0 fail`。实际执行七项：DeepSeek provider stream、DeepSeek print、OpenAI Codex OAuth
-CLI、DeepSeek/Codex eval、DeepSeek self-extension、DeepSeek repository repair；Anthropic
-multi-turn 因 `ANTHROPIC_API_KEY is not set` 明确 skip。没有失败项，故本轮没有失败
-输出或性质判断；汇总器的失败输出、三类判断、不中途截断与非零退出由确定性回归锁定。
+After `./scripts/test-live.sh` runs all eight items in full, the result is
+`32 checks / 31 pass / 1 skip / 0 fail`. Seven items actually executed: DeepSeek
+provider stream, DeepSeek print, OpenAI Codex OAuth CLI, DeepSeek/Codex eval,
+DeepSeek self-extension, DeepSeek repository repair; Anthropic multi-turn
+explicitly skipped because `ANTHROPIC_API_KEY is not set`. There was no failed
+item, so this round has no failure output and no nature judgement; the
+summarizer's failure output, its three judgement classes, its not truncating
+midway and its non-zero exit are locked by deterministic regressions.
 
-这五轮只证明 deterministic gate；单次 live 结果单独列账，不合并为“全量全绿”。
+These five rounds prove only the deterministic gate; the single live result is
+ledgered separately and is not merged into "the full run is all green".

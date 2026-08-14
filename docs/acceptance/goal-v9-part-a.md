@@ -1,15 +1,15 @@
-# Goal 9 Part A / A2 阶段报告
+# Goal 9 Part A / A2 stage report
 
-> 状态：Part A / A2 实现、账本与永久门禁已完成。本文记录提交态机械证据；Codex OAuth live 请求另受账户额度限制，不以弱断言或 fixture 冒充真实通过。
+> Status: the Part A / A2 implementation, ledger and permanent gates are complete. This document records the mechanical evidence in the committed state; the Codex OAuth live request is separately constrained by the account quota, and neither a weak assertion nor a fixture is used to masquerade as a real pass.
 
-## 1. 基线、审计窗口与工作树
+## 1. Baseline, audit window and work tree
 
-- 规范基线：`74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`，审计 checkout 为 `/tmp/cadr-parity-74caa2649`。
-- 历史锚点：`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`，历史 checkout 保留在 `/tmp/cadr-parity-71efc6f0`；它不再是 parity 判定依据。
-- Cadr 实现树：`/root/projects/cadr`，分支 `cadr-migration`。
-- 规范 diff：119 个文件，`+7030/-1089`；端点净结果没有删除整个既有包，新增包为 `packages/protocol`。
+- Canonical baseline: `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`, with audit checkout `/tmp/cadr-parity-74caa2649`.
+- Historical anchor: `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`, with the historical checkout kept at `/tmp/cadr-parity-71efc6f0`; it is no longer the basis for parity verdicts.
+- Cadr implementation tree: `/root/projects/cadr`, branch `cadr-migration`.
+- Canonical diff: 119 files, `+7030/-1089`; the net result at the endpoint deletes no entire existing package, and the new package is `packages/protocol`.
 
-复核命令：
+Re-check commands:
 
 ```bash
 git -C /tmp/cadr-parity-74caa2649 rev-parse HEAD
@@ -22,7 +22,7 @@ git -C /tmp/cadr-parity-74caa2649 \
   71efc6f0c1909874ec8c944637a9ae7fc0e2d508..74caa2649f10ed71b4378ce69f5d9fbfd2466ca5
 ```
 
-Goal 文本所称“38 个提交”是包含历史锚点自身的闭区间计数：
+The "38 commits" the goal text speaks of is a closed-interval count that includes the historical anchor itself:
 
 ```bash
 git -C /tmp/cadr-parity-74caa2649 \
@@ -34,110 +34,110 @@ git -C /tmp/cadr-parity-74caa2649 \
 # 37
 ```
 
-因此真正的增量是 37 个提交；下面列出闭区间 38 个对象，编号 00 是历史锚点，01–37 才是新基线增量。
+The real increment is therefore 37 commits; below, the 38 objects of the closed interval are listed, where number 00 is the historical anchor and only 01–37 are the new baseline's increment.
 
-## 2. 38 个提交的全量行为面
+## 2. The full behavior surface of the 38 commits
 
-### 2.1 历史锚点
+### 2.1 Historical anchor
 
-| # | commit | 行为面与审计结论 |
+| # | commit | Behavior surface and audit conclusion |
 |---:|---|---|
-| 00 | `71efc6f0c` | 历史锚点，`Add [Unreleased] section for next cycle`；仅用于界定旧端点，不计入 37 个增量。 |
+| 00 | `71efc6f0c` | Historical anchor, `Add [Unreleased] section for next cycle`; used only to delimit the old endpoint, not counted in the 37 increments. |
 
-### 2.2 Comparative eval（15 个增量对象）
+### 2.2 Comparative eval (15 incremental objects)
 
-| # | commit | 行为面与受影响路径 |
+| # | commit | Behavior surface and affected paths |
 |---:|---|---|
-| 01 | `32f3a9728` | 新增 comparative Pi eval harness、artifact、harness table、reporter、summary 与四个测试文件；主要位于 `packages/evals/`，并调整 extension loader。 |
-| 02 | `af00848d6` | artifact 显式绑定 task，涉及 eval extension、Pi harness、smoke 与 reporter。 |
-| 03 | `2eed6d219` | 删除中间演进中的 `artifact-names` 模块，把命名职责收回 artifact/reporter；端点不存在该冗余模块。 |
-| 04 | `eb08aa8fa` | attachment 类型专门化，强化 artifact 输入合约。 |
-| 05 | `3631e82d0` | source artifact 泛化，不再只绑定单一源类型。 |
-| 06 | `2a2e677be` | source artifact 改为语言中立表示；这是 Lisp 移植必须保留的语义。 |
-| 07 | `56e6a8a3f` | 每个测试后记录 eval session，新增 setup 生命周期钩子。 |
-| 08 | `6a3eae8e4` | hash 前规范化 eval 输入，影响 harness table 分组稳定性。 |
-| 09 | `d9ae6e2b0` | 简化 comparative 内部结构，但保留 artifact/table/summary 对外语义。 |
-| 12 | `29f97c20f` | 简化 harness table 测试，不改变生产行为。 |
-| 13 | `ac033d186` | 对齐 comparison report 输出和 summary 断言。 |
-| 15 | `fce7445b1` | 比较方向改为显式声明，避免 candidate/baseline 反转。 |
-| 16 | `ca11823f7` | 收敛 comparative ergonomics，影响声明与汇总入口。 |
-| 17 | `743e1595c` | 删除自定义 shuffle；比较顺序回到固定、可复现语义。 |
-| 18 | `7659e1c98` | evals-baseline 合并提交；无独立端点文件增量，以上 eval 演进的汇合点。 |
+| 01 | `32f3a9728` | Adds the comparative Pi eval harness, artifact, harness table, reporter, summary and four test files; mainly under `packages/evals/`, and adjusts the extension loader. |
+| 02 | `af00848d6` | Artifacts are explicitly bound to a task; touches the eval extension, Pi harness, smoke and reporter. |
+| 03 | `2eed6d219` | Deletes the `artifact-names` module from the intermediate evolution and takes naming responsibility back into artifact/reporter; that redundant module does not exist at the endpoint. |
+| 04 | `eb08aa8fa` | Attachment types are specialized, strengthening the artifact input contract. |
+| 05 | `3631e82d0` | Source artifacts are generalized and no longer bound to a single source type. |
+| 06 | `2a2e677be` | Source artifacts move to a language-neutral representation; this is a semantic the Lisp port must preserve. |
+| 07 | `56e6a8a3f` | Records an eval session after each test, and adds a setup lifecycle hook. |
+| 08 | `6a3eae8e4` | Normalizes eval input before hashing, which affects the grouping stability of the harness table. |
+| 09 | `d9ae6e2b0` | Simplifies the internal structure of comparative, but preserves the external artifact/table/summary semantics. |
+| 12 | `29f97c20f` | Simplifies the harness table tests; production behavior is unchanged. |
+| 13 | `ac033d186` | Aligns the comparison report output and the summary assertions. |
+| 15 | `fce7445b1` | The comparison direction becomes explicitly declared, avoiding a candidate/baseline inversion. |
+| 16 | `ca11823f7` | Converges the comparative ergonomics; affects the declaration and summary entry points. |
+| 17 | `743e1595c` | Deletes the custom shuffle; comparison order returns to fixed, reproducible semantics. |
+| 18 | `7659e1c98` | The evals-baseline merge commit; no independent endpoint file increment, the confluence point of the eval evolution above. |
 
-对应 Cadr 实现已落在 `src/cadr-evals/{harness,artifacts,harness-table,summary}.lisp` 以及同名测试中；提交见第 8 节。
+The corresponding Cadr implementation has landed in `src/cadr-evals/{harness,artifacts,harness-table,summary}.lisp` and in the tests of the same names; for the commits see §8.
 
-### 2.3 仓库管理元数据（2 个增量对象）
+### 2.3 Repository management metadata (2 incremental objects)
 
-| # | commit | 行为面与审计结论 |
+| # | commit | Behavior surface and audit conclusion |
 |---:|---|---|
-| 10 | `fe1f7230f` | 仅 `.github/APPROVED_CONTRIBUTORS`，没有运行时行为，Lisp 迁移仓无需移植。 |
-| 14 | `6bcc29a06` | 同上，仅 contributor gate 数据。 |
+| 10 | `fe1f7230f` | Only `.github/APPROVED_CONTRIBUTORS`; no runtime behavior, so the Lisp migration repository need not port it. |
+| 14 | `6bcc29a06` | Same as above; contributor gate data only. |
 
-### 2.4 AI provider 与 model metadata（4 个增量对象）
+### 2.4 AI provider and model metadata (4 incremental objects)
 
-| # | commit | 行为面与受影响路径 |
+| # | commit | Behavior surface and affected paths |
 |---:|---|---|
-| 11 | `05558a792` | `opencode-go` 展示名由 `OpenCode Zen Go` 修正为 `OpenCode Go`。 |
-| 25 | `b889a0ce3` | GPT-5.6 定价更新，来源为 `packages/ai/scripts/generate-models.ts`。 |
-| 33 | `2c3041242` | OpenAI Completions 流允许没有 finish reason；同步 types、四个既有流测试与文档。 |
-| 35 | `70bbe47a9` | Bedrock HTTP/流内错误保留结构化 metadata，新测试为 `packages/ai/test/bedrock-error-metadata.test.ts`。 |
+| 11 | `05558a792` | The display name of `opencode-go` is corrected from `OpenCode Zen Go` to `OpenCode Go`. |
+| 25 | `b889a0ce3` | GPT-5.6 pricing update, sourced from `packages/ai/scripts/generate-models.ts`. |
+| 33 | `2c3041242` | The OpenAI Completions stream allows there to be no finish reason; the types, four existing stream tests and the documentation are synced. |
+| 35 | `70bbe47a9` | Bedrock HTTP and in-stream errors retain structured metadata; the new test is `packages/ai/test/bedrock-error-metadata.test.ts`. |
 
-对应 Cadr 行为位于 `src/cadr-ai/{http,models,provider,registry,types}.lisp`、`src/cadr-ai/providers/openai-completions.lisp` 和 Bedrock 错误门禁中。
+The corresponding Cadr behavior lives in `src/cadr-ai/{http,models,provider,registry,types}.lisp`, `src/cadr-ai/providers/openai-completions.lisp` and the Bedrock error gate.
 
-### 2.5 Coding-agent core / extensions（4 个增量对象）
+### 2.5 Coding-agent core / extensions (4 incremental objects)
 
-| # | commit | 行为面与受影响路径 |
+| # | commit | Behavior surface and affected paths |
 |---:|---|---|
-| 19 | `bb226f9c1` | 删除 `setToolsExpanded` 冗余状态写入，避免重复更新。 |
-| 32 | `393c34422` | SDK 示例从已弃用 `getModel` 切换到新模型入口；示例/API 使用面。 |
-| 36 | `714978bf5` | Markdown API 重做：extension 注册 markdown transformer；user/assistant/thinking/streaming 渲染传入 message type 与可用宽度；transform 链、错误隔离和缓存语义同步。 |
-| 37 | `74caa2649` | `pi` manifest 字段逐项类型校验；无效字段丢弃、有效字段保留，不让畸形 manifest 拖垮 package discovery。 |
+| 19 | `bb226f9c1` | Deletes the redundant `setToolsExpanded` state write, avoiding a duplicate update. |
+| 32 | `393c34422` | The SDK examples switch from the deprecated `getModel` to the new model entry point; examples / API usage surface. |
+| 36 | `714978bf5` | Markdown API rework: extensions register a markdown transformer; user/assistant/thinking/streaming rendering is passed the message type and the available width; the transform chain, error isolation and cache semantics are synced. |
+| 37 | `74caa2649` | Field-by-field type validation of the `pi` manifest; invalid fields are discarded and valid fields kept, so a malformed manifest does not drag down package discovery. |
 
-Cadr 对应门禁包括 `test/cadr-agent/extensions-wave3-test.lisp`、`test/cadr-cli/extensions-test.lisp`、`test/cadr-cli/tui-test.lisp`、`test/cadr-tui/components-test.lisp` 以及 `GOAL9-MALFORMED-PACKAGE-MANIFEST-IGNORES-INVALID-FIELDS-WITHOUT-DROPPING-VALID-FIELDS`。
+The corresponding Cadr gates include `test/cadr-agent/extensions-wave3-test.lisp`, `test/cadr-cli/extensions-test.lisp`, `test/cadr-cli/tui-test.lisp`, `test/cadr-tui/components-test.lisp` and `GOAL9-MALFORMED-PACKAGE-MANIFEST-IGNORES-INVALID-FIELDS-WITHOUT-DROPPING-VALID-FIELDS`.
 
-### 2.6 Agent harness（6 个增量对象）
+### 2.6 Agent harness (6 incremental objects)
 
-| # | commit | 行为面与受影响路径 |
+| # | commit | Behavior surface and affected paths |
 |---:|---|---|
-| 20 | `96eda8b47` | `packages/agent/docs/harness-v2.md` 补齐 agent-loop building blocks；文档合约。 |
-| 22 | `82c485983` | harness shutdown 成为永久、幂等生命周期；关闭后 prompt/nextTurn/append/compact 均拒绝。 |
-| 23 | `7d86e6233` | shutdown 功能合并提交，无独立端点文件增量。 |
-| 26 | `bc031ae45` | shutdown 等待已经开始的 mutation，不留下后台写入。 |
-| 28 | `871a99047` | prompt、mutation 等异步工作统一进入 task tracking。 |
-| 29 | `9cde1725d` | `waitForIdle` 保持原有语义，不被 shutdown/task tracking 改写。 |
+| 20 | `96eda8b47` | `packages/agent/docs/harness-v2.md` fills in the agent-loop building blocks; documentation contract. |
+| 22 | `82c485983` | Harness shutdown becomes a permanent, idempotent lifecycle; after shutdown, prompt/nextTurn/append/compact are all rejected. |
+| 23 | `7d86e6233` | The shutdown feature merge commit; no independent endpoint file increment. |
+| 26 | `bc031ae45` | Shutdown waits for mutations that have already started, leaving no background write behind. |
+| 28 | `871a99047` | Asynchronous work such as prompt and mutation all enters task tracking. |
+| 29 | `9cde1725d` | `waitForIdle` keeps its original semantics and is not rewritten by shutdown/task tracking. |
 
-Cadr 对应实现在 `src/cadr-agent/{runtime,loop,compaction,conditions}.lisp`；`test/cadr-agent/shutdown-test.lisp` 覆盖活跃任务等待、永久关闭、关闭后 append/compact 拒绝和空闲 session 字节不变。
+The corresponding Cadr implementation is in `src/cadr-agent/{runtime,loop,compaction,conditions}.lisp`; `test/cadr-agent/shutdown-test.lisp` covers waiting on active tasks, permanent shutdown, rejection of append/compact after shutdown, and byte-invariance of an idle session.
 
-### 2.7 TUI（2 个增量对象）
+### 2.7 TUI (2 incremental objects)
 
-| # | commit | 行为面与受影响路径 |
+| # | commit | Behavior surface and affected paths |
 |---:|---|---|
-| 21 | `c13ffe187` | 新增 alternate-screen renderer、main-screen 拆分、viewport/scroll、mouse selection、OSC 8/52、Kitty crop、iTerm stale 清理、退出时恢复完整文档；联动 coding-agent `--alt` 与 `interactive-tui.test.ts`。 |
-| 34 | `dfe47d3fb` | grapheme width 与终端 cell 对齐，重点是 CJK、emoji、combining、区域旗帜与截断边界（#6987）。 |
+| 21 | `c13ffe187` | Adds the alternate-screen renderer, the main-screen split, viewport/scroll, mouse selection, OSC 8/52, Kitty crop, iTerm stale cleanup, and restoring the complete document on exit; wired together with the coding-agent's `--alt` and `interactive-tui.test.ts`. |
+| 34 | `dfe47d3fb` | Grapheme width is aligned with terminal cells, with the emphasis on CJK, emoji, combining marks, regional flags and truncation boundaries (#6987). |
 
-Cadr 的结构门禁在 `test/cadr-tui/{alt-screen,unicode,terminal-image,components,component-parity}-test.lisp`；真实 PTY 生命周期另见第 6 节。
+Cadr's structural gates are in `test/cadr-tui/{alt-screen,unicode,terminal-image,components,component-parity}-test.lisp`; for the real PTY lifecycle see §6.
 
-### 2.8 Remote protocol（4 个增量对象）
+### 2.8 Remote protocol (4 incremental objects)
 
-| # | commit | 行为面与受影响路径 |
+| # | commit | Behavior surface and affected paths |
 |---:|---|---|
-| 24 | `56eb685b6` | 新增 `packages/protocol`：CBOR、4-byte framing、codec、v2 schemas、客户端/服务端消息与 3 个测试文件。 |
-| 27 | `bd2cfabc5` | CBOR 拒绝 cyclic values，源码重组至 `src/cbor/`；严格 map key、深度、长度和 JSON 值边界。 |
-| 30 | `b2a1a0655` | protocol changelog，并收敛 CBOR public files；文档/发布面。 |
-| 31 | `c066d01a4` | protocol package 合并提交，无独立端点文件增量。 |
+| 24 | `56eb685b6` | Adds `packages/protocol`: CBOR, 4-byte framing, codec, v2 schemas, client/server messages and 3 test files. |
+| 27 | `bd2cfabc5` | CBOR rejects cyclic values and the source is reorganized into `src/cbor/`; strict map key, depth, length and JSON value boundaries. |
+| 30 | `b2a1a0655` | The protocol changelog, and convergence of the CBOR public files; documentation/release surface. |
+| 31 | `c066d01a4` | The protocol package merge commit; no independent endpoint file increment. |
 
-Cadr 使用纯 Lisp 实现，没有因此引入第三方依赖；对应系统为 `cadr-protocol.asd`，门禁为 `test/cadr-protocol/{cbor,framing,protocol}-test.lisp`。
+Cadr uses a pure Lisp implementation and introduced no third-party dependency because of this; the corresponding system is `cadr-protocol.asd` and the gates are `test/cadr-protocol/{cbor,framing,protocol}-test.lisp`.
 
-## 3. 包与测试文件计数
+## 3. Package and test-file counts
 
-计数口径只统计规范基线中 Git 跟踪的 `packages/<name>/test/**/*.test.ts`：
+The counting basis counts only the Git-tracked `packages/<name>/test/**/*.test.ts` in the canonical baseline:
 
 ```bash
 git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only 74caa2649 -- packages \
   | awk '/\/test\/.*\.test\.ts$/ {n++} END {print n+0}'
 ```
 
-| package | 旧基线测试 | 新基线测试 | 增量 | 新基线包内跟踪文件 |
+| package | old baseline tests | new baseline tests | increment | tracked files in the new baseline package |
 |---|---:|---:|---:|---:|
 | `packages/ai` | 120 | 121 | +1 | 310 |
 | `packages/agent` | 18 | 18 | 0 | 71 |
@@ -147,37 +147,37 @@ git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only 74caa2649 -- packages \
 | `packages/protocol` | 0 | 3 | +3 | 17 |
 | `packages/storage` | 0 | 0 | 0 | 18 |
 | `packages/server` | 0 | 0 | 0 | 17 |
-| **总计** | **352** | **363** | **+11** | **1117** |
+| **Total** | **352** | **363** | **+11** | **1117** |
 
-当前 Cadr 树有 99 个 `*test.lisp` 文件：AI 22、agent 18、CLI 26、evals 6、protocol 3、server 1、storage 1、TUI 22。该数字不是 parity 分母；parity 分母始终是基线 363 个 TS 测试文件。
+The current Cadr tree has 99 `*test.lisp` files: AI 22, agent 18, CLI 26, evals 6, protocol 3, server 1, storage 1, TUI 22. That number is not the parity denominator; the parity denominator is always the baseline's 363 TS test files.
 
-初次按新基线重建账本得到 `347 C / 9 U / 6 M / 1 N/A = 363`。完成实现、提交和受影响既有 `C` 复验后，最终账本为
-`362 C / 0 U / 0 M / 1 N/A = 363`；唯一 `N/A` 仍严格限定为
-`packages/coding-agent/test/config.test.ts` 整文件。
+Rebuilding the ledger against the new baseline for the first time gave `347 C / 9 U / 6 M / 1 N/A = 363`. After the implementation, the commits and the re-verification of the affected existing `C` entries, the final ledger is
+`362 C / 0 U / 0 M / 1 N/A = 363`; the only `N/A` is still strictly confined to the whole file
+`packages/coding-agent/test/config.test.ts`.
 
-## 4. 新增 11 个测试文件逐项状态
+## 4. Item-by-item status of the 11 new test files
 
-`git diff --diff-filter=A --name-only 71efc6f0..74caa2649 -- packages | awk '/\/test\/.*\.test\.ts$/'` 给出以下 11 项。
+`git diff --diff-filter=A --name-only 71efc6f0..74caa2649 -- packages | awk '/\/test\/.*\.test\.ts$/'` yields the following 11 items.
 
-| # | 新基线测试文件 | Cadr 对应门禁 | 当前状态 |
+| # | new baseline test file | corresponding Cadr gate | current status |
 |---:|---|---|---|
-| 1 | `packages/ai/test/bedrock-error-metadata.test.ts` | `test/cadr-ai/bedrock-error-metadata-test.lisp`，9 个 Bedrock HTTP/流内错误 metadata 用例 | 已实现、提交并复验 |
-| 2 | `packages/coding-agent/test/interactive-tui.test.ts` | `test/cadr-tui/alt-screen-test.lisp`、`test/cadr-cli/part-b-cli-test.lisp` 的 `--alt`/factory 门禁 | 已实现、提交并复验 |
-| 3 | `packages/coding-agent/test/suite/regressions/7187-malformed-package-manifest.test.ts` | `GOAL9-MALFORMED-PACKAGE-MANIFEST-IGNORES-INVALID-FIELDS-WITHOUT-DROPPING-VALID-FIELDS` | 已实现、提交并复验 |
-| 4 | `packages/evals/test/pi-harness.test.ts` | `test/cadr-evals/pi-harness-test.lisp` | 已实现并提交；确定性 eval 套件通过 |
-| 5 | `packages/evals/test/vitest-evals/artifacts.test.ts` | `test/cadr-evals/artifacts-test.lisp` | 已实现并提交；确定性 eval 套件通过 |
-| 6 | `packages/evals/test/vitest-evals/harness-table.test.ts` | `test/cadr-evals/harness-table-test.lisp` | 已实现并提交；确定性 eval 套件通过 |
-| 7 | `packages/evals/test/vitest-evals/summary.test.ts` | `test/cadr-evals/summary-test.lisp` | 已实现并提交；确定性 eval 套件通过 |
-| 8 | `packages/protocol/test/cbor/cbor.test.ts` | `test/cadr-protocol/cbor-test.lisp` | 已实现并提交；protocol 41 tests / 497 checks 全绿 |
-| 9 | `packages/protocol/test/framing.test.ts` | `test/cadr-protocol/framing-test.lisp` | 已实现并提交；protocol 41 tests / 497 checks 全绿 |
-| 10 | `packages/protocol/test/protocol.test.ts` | `test/cadr-protocol/protocol-test.lisp` | 已实现并提交；protocol 41 tests / 497 checks 全绿 |
-| 11 | `packages/tui/test/tui-alt-screen.test.ts` | `test/cadr-tui/alt-screen-test.lisp` 的 10 个 viewport/input/image/link/selection/restore 用例 | 已实现、提交并复验；TUI 套件 691/691 |
+| 1 | `packages/ai/test/bedrock-error-metadata.test.ts` | `test/cadr-ai/bedrock-error-metadata-test.lisp`, 9 cases of Bedrock HTTP and in-stream error metadata | implemented, committed and re-verified |
+| 2 | `packages/coding-agent/test/interactive-tui.test.ts` | the `--alt`/factory gates in `test/cadr-tui/alt-screen-test.lisp` and `test/cadr-cli/part-b-cli-test.lisp` | implemented, committed and re-verified |
+| 3 | `packages/coding-agent/test/suite/regressions/7187-malformed-package-manifest.test.ts` | `GOAL9-MALFORMED-PACKAGE-MANIFEST-IGNORES-INVALID-FIELDS-WITHOUT-DROPPING-VALID-FIELDS` | implemented, committed and re-verified |
+| 4 | `packages/evals/test/pi-harness.test.ts` | `test/cadr-evals/pi-harness-test.lisp` | implemented and committed; the deterministic eval suite passes |
+| 5 | `packages/evals/test/vitest-evals/artifacts.test.ts` | `test/cadr-evals/artifacts-test.lisp` | implemented and committed; the deterministic eval suite passes |
+| 6 | `packages/evals/test/vitest-evals/harness-table.test.ts` | `test/cadr-evals/harness-table-test.lisp` | implemented and committed; the deterministic eval suite passes |
+| 7 | `packages/evals/test/vitest-evals/summary.test.ts` | `test/cadr-evals/summary-test.lisp` | implemented and committed; the deterministic eval suite passes |
+| 8 | `packages/protocol/test/cbor/cbor.test.ts` | `test/cadr-protocol/cbor-test.lisp` | implemented and committed; protocol 41 tests / 497 checks fully green |
+| 9 | `packages/protocol/test/framing.test.ts` | `test/cadr-protocol/framing-test.lisp` | implemented and committed; protocol 41 tests / 497 checks fully green |
+| 10 | `packages/protocol/test/protocol.test.ts` | `test/cadr-protocol/protocol-test.lisp` | implemented and committed; protocol 41 tests / 497 checks fully green |
+| 11 | `packages/tui/test/tui-alt-screen.test.ts` | the 10 viewport/input/image/link/selection/restore cases in `test/cadr-tui/alt-screen-test.lisp` | implemented, committed and re-verified; TUI suite 691/691 |
 
-`C` 的落账条件是：实现已提交、受影响整套全绿、parity-map 已用新基线重分类。上表 11 项均满足三个条件，没有用“有测试文件”替代行为等价证据。
+The conditions for recording `C` are: the implementation is committed, the whole affected suite is green, and parity-map has been reclassified against the new baseline. All 11 items in the table above satisfy the three conditions; "a test file exists" was not used in place of behavioral-equivalence evidence.
 
-## 5. Payload fixture 重生成证据
+## 5. Payload fixture regeneration evidence
 
-使用规范 checkout 的 public payload hook 重生成：
+Regenerated using the canonical checkout's public payload hook:
 
 ```bash
 /tmp/cadr-parity-74caa2649/node_modules/.bin/tsx \
@@ -186,9 +186,9 @@ git -C /tmp/cadr-parity-74caa2649 ls-tree -r --name-only 74caa2649 -- packages \
   --output /tmp/cadr-fixtures-74caa2649
 ```
 
-exporter 产生 24 个 request JSON，并把第 25 项 Wave 1 catalog 写到输出目录的 sibling `catalogs/`。24 个请求 payload 与仓库当前 fixture 逐字节一致：
+The exporter produces 24 request JSONs and writes the 25th item, the Wave 1 catalog, to the `catalogs/` sibling of the output directory. The 24 request payloads are byte-for-byte identical to the repository's current fixtures:
 
-| request fixture | 新基线输出与仓库共同 SHA-256 | `cmp` |
+| request fixture | SHA-256 shared by the new baseline output and the repository | `cmp` |
 |---|---|---|
 | `ant-ling-default.json` | `22c6a61e29248b1e9612835f84f08c3b0c3ddc910afaab65fa6ae4baa3c948ab` | identical |
 | `anthropic-adaptive-long-cache.json` | `acc4ee7758511bcd4f7edd05d77d84aad8516f8d8a765e79bd8d7251832a6546` | identical |
@@ -215,7 +215,7 @@ exporter 产生 24 个 request JSON，并把第 25 项 Wave 1 catalog 写到输�
 | `together-default.json` | `49842b21c51c0849a1818623cf32bc8da8a83705baad978dd8f31da82537053d` | identical |
 | `xiaomi-default.json` | `98c6dc1afd37b940e004d75652682807e8c1821a7087351467f2b70dafee24ba` | identical |
 
-逐项复核命令：
+Item-by-item re-check command:
 
 ```bash
 find /tmp/cadr-fixtures-74caa2649 -maxdepth 1 -type f -name '*.json' -print0 \
@@ -227,16 +227,16 @@ find /tmp/cadr-fixtures-74caa2649 -maxdepth 1 -type f -name '*.json' -print0 \
     done
 ```
 
-第 25 项 `wave1-provider-models.json` **不是** byte-identical，不能把 live catalog 漂移伪装成全同：
+The 25th item, `wave1-provider-models.json`, is **not** byte-identical; live catalog drift must not be passed off as complete sameness:
 
-| 产物 | SHA-256 | providers / models | 差异 |
+| artifact | SHA-256 | providers / models | difference |
 |---|---|---:|---|
-| 仓库 `test/fixtures/catalogs/wave1-provider-models.json` | `3e1f8e1ee9831ac61a4809d14a61006d48c4c47d3b010d2c1f72cd34c7a543bc` | 12 / 143 | 固定审计 fixture |
-| 新基线 live generator 输出 `/tmp/catalogs/wave1-provider-models.json` | `49ff4ac4e05f2cd2b1b7ac5f326d170a92bf766cf388a7a58e5d698e04de43b9` | 12 / 145 | HuggingFace 51 → 53，合计 143 → 145 |
+| repository `test/fixtures/catalogs/wave1-provider-models.json` | `3e1f8e1ee9831ac61a4809d14a61006d48c4c47d3b010d2c1f72cd34c7a543bc` | 12 / 143 | pinned audit fixture |
+| new baseline live generator output `/tmp/catalogs/wave1-provider-models.json` | `49ff4ac4e05f2cd2b1b7ac5f326d170a92bf766cf388a7a58e5d698e04de43b9` | 12 / 145 | HuggingFace 51 → 53, total 143 → 145 |
 
-这是 exporter 运行时读取的外部 catalog 数据漂移，不是 `71efc6f0..74caa2649` 内 payload 编码行为变化。24 个实际 wire request 仍逐字节一致，因此现有请求 fixture 和 Lisp provider 构造不受影响；Wave 1 固定 catalog 不因一次 live 抓取静默刷新。
+This is drift in the external catalog data the exporter reads at runtime, not a change of payload encoding behavior within `71efc6f0..74caa2649`. The 24 actual wire requests are still byte-for-byte identical, so the existing request fixtures and the Lisp provider construction are unaffected; the pinned Wave 1 catalog is not silently refreshed because of one live fetch.
 
-另用与基线版本相同的固定 `@earendil-works/pi-ai@0.83.0` 产物读取静态 catalog 为 37 providers / 1153 models；同次 live generator 目录 `/tmp/cadr-model-catalog.HW3Yur.json/models.json` 为 37 / 1154。复核命令：
+Separately, reading the static catalog with the pinned `@earendil-works/pi-ai@0.83.0` artifact — the same version as the baseline's — gives 37 providers / 1153 models; the live generator directory from the same run, `/tmp/cadr-model-catalog.HW3Yur.json/models.json`, gives 37 / 1154. Re-check commands:
 
 ```bash
 node --input-type=module -e '
@@ -251,22 +251,22 @@ data=json.load(open("/tmp/cadr-model-catalog.HW3Yur.json/models.json"))
 print(len(data), sum(len(value) for value in data.values()))'
 ```
 
-## 6. Part A2 八项永久自动化门禁
+## 6. Part A2's eight permanent automated gates
 
-| Goal 8 人工项 | 永久门禁名 / 入口 | 覆盖证据 | 当前结果 |
+| Goal 8 manual item | permanent gate name / entry point | coverage evidence | current result |
 |---|---|---|---|
-| 会话 | `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED` | faux provider；new/name/switch/branch/compact/export/continue/resume；A/B 两分支双向无串线 | 与 workflow 组共同 3 tests / 67 checks 全绿 |
-| 模式 | `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT` + 三个 `GOAL9-A2-PROCESS-FAUX-*` 门禁 | 进程内语义层加独立 SBCL 进程 × actual faux provider 交集；真实 argv/parser、stdout/stderr/exit、JSONL 精确 12-event 与 `text_start/delta/end`、RPC 双 response/事件/EOF 往返 | workflow 组 67 checks + process-faux 21/21 全绿 |
-| 扩展 | `GOAL9-A2-EXTENSION-WORKFLOW-COVERS-LEGACY-UI-RENDERERS-AND-STALE-RELOAD` | 源文件真实 discovery/load；command/tool/hook/custom UI/message+tool renderer；`/reload` 后旧 generation stale；旧 API source 不改 | 与 workflow 组共同 3 tests / 67 checks 全绿 |
-| 启动与退出 | `scripts/goal9-a2-pty.sh` 的 `normal`、`ctrl-c`、`suspend-resume` | 真 PTY；raw/ICANON/ECHO、cursor、bracketed paste；SIGTSTP 前还原、SIGCONT 后重入、最终还原；严格检查序列次数与顺序 | 与下列交互场景合计 6/6；已由 `scripts/verify.sh` 永久调用 |
-| 输入编辑 | `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT` + PTY `input-editor` | 语义层覆盖多行/CJK/emoji/宽字符换行、按词移动、history、kill/yank/yank-pop、undo；真实 `openpty` 输入后由同一 production `render-frame` 路径分别写 PTY 与 virtual terminal，6 帧逐 cell 快照 | 交互组 86 checks + PTY 6 snapshots 全绿 |
-| 补全 | `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO` + PTY `completion` | 语义层覆盖 slash/path/`@`、选择/取消/应用/undo；真实 PTY 锁定 path 与 slash 的选择、undo、cancel 及 5 帧快照 | 交互组 86 checks + PTY 5 snapshots 全绿 |
-| Overlay | `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS` + PTY `overlay` | 语义层覆盖六类 selector、双 overlay focus、CJK 边框与 resize；真实 PTY 锁定 settings 首末循环、搜索、退格、取消及 5 帧快照 | 交互组 86 checks + PTY 5 snapshots 全绿 |
-| 渲染（结构） | `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS` | faux stream；thinking/text/tool delta；Markdown 标题/列表/表格/code/link；工具展开折叠；token/cache/cost/session 状态栏 | 与交互组共同 4 tests / 86 checks 全绿 |
+| Sessions | `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED` | faux provider; new/name/switch/branch/compact/export/continue/resume; two branches A and B with no crosstalk in either direction | fully green together with the workflow group at 3 tests / 67 checks |
+| Modes | `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT` + the three `GOAL9-A2-PROCESS-FAUX-*` gates | the in-process semantic layer plus the intersection of a separate SBCL process × the actual faux provider; real argv/parser, stdout/stderr/exit, JSONL with exactly 12 events and `text_start/delta/end`, RPC double response/event/EOF round trip | workflow group 67 checks + process-faux 21/21, fully green |
+| Extensions | `GOAL9-A2-EXTENSION-WORKFLOW-COVERS-LEGACY-UI-RENDERERS-AND-STALE-RELOAD` | real discovery/load from source files; command/tool/hook/custom UI/message+tool renderer; the old generation is stale after `/reload`; the old API source is not modified | fully green together with the workflow group at 3 tests / 67 checks |
+| Startup and exit | `normal`, `ctrl-c` and `suspend-resume` from `scripts/goal9-a2-pty.sh` | a real PTY; raw/ICANON/ECHO, cursor, bracketed paste; restore before SIGTSTP, re-enter after SIGCONT, final restore; strict checking of sequence counts and order | 6/6 in total together with the interactive scenarios below; permanently invoked by `scripts/verify.sh` |
+| Input editing | `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT` + PTY `input-editor` | the semantic layer covers multiline/CJK/emoji/wide-character wrapping, word-wise movement, history, kill/yank/yank-pop, undo; after real `openpty` input, the same production `render-frame` path writes to the PTY and to a virtual terminal respectively, with 6 frames snapshotted cell by cell | interactive group 86 checks + PTY 6 snapshots, fully green |
+| Completion | `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO` + PTY `completion` | the semantic layer covers slash/path/`@`, selection/cancel/apply/undo; a real PTY pins path and slash selection, undo, cancel and 5 frame snapshots | interactive group 86 checks + PTY 5 snapshots, fully green |
+| Overlay | `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS` + PTY `overlay` | the semantic layer covers the six selector kinds, dual-overlay focus, CJK borders and resize; a real PTY pins the settings first/last wraparound, search, backspace, cancel and 5 frame snapshots | interactive group 86 checks + PTY 5 snapshots, fully green |
+| Rendering (structure) | `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS` | faux stream; thinking/text/tool deltas; Markdown headings/lists/tables/code/links; tool expand and collapse; token/cache/cost/session status bar | fully green together with the interactive group at 4 tests / 86 checks |
 
-上述行为测试没有调用真实 LLM。交互层采用分层交集：FiveAM 锁定全部语义分支，真实 `openpty` 锁定 raw process-terminal → input decoder/selector → production `render-frame`，并用同一路径写 virtual-terminal 快照；模式层则在独立 SBCL 进程中直接使用 actual faux provider。纯观感判断仍只由 Part B 的 A/B 负责。
+The behavior tests above do not call a real LLM. The interactive layer uses a layered intersection: FiveAM pins every semantic branch, a real `openpty` pins raw process-terminal → input decoder/selector → production `render-frame`, and the same path writes the virtual-terminal snapshots; the mode layer, in turn, uses the actual faux provider directly in a separate SBCL process. Purely perceptual judgement is still the responsibility of Part B's A/B alone.
 
-PTY 门禁输出格式：
+PTY gate output format:
 
 ```text
 normal: PASS stty-restored echo-restored cursor-cycles=1 bracketed-paste-cycles=1
@@ -278,72 +278,72 @@ overlay: PASS real-pty raw-input snapshots=5 terminal-restored
 goal9 A2 PTY deterministic gates: 6/6 passed
 ```
 
-## 7. `--fork` 精确语义
+## 7. The precise semantics of `--fork`
 
-命令行 `--fork` 的参数是**源 session 定位符**，不是 entry ID：
+The argument to the command-line `--fork` is a **source session locator**, not an entry ID:
 
-1. 含 `/`、`\` 或以 `.jsonl` 结尾时按 session 文件路径解析；相对路径相对于当前工作目录。
-2. 否则先在当前项目 session 集合中按完整 ID、再按 ID prefix 匹配。
-3. 当前项目没有匹配时，再在全局 session 集合中按完整 ID、再按 ID prefix 匹配。
-4. 找到后创建新 session，`parentSession` 指向源 session，并复制源 conversation。
-5. entry ID 不合法；按 user-message entry 分叉必须使用交互命令 `/fork` 的 selector。
+1. When it contains `/` or `\`, or ends with `.jsonl`, it is resolved as a session file path; a relative path is relative to the current working directory.
+2. Otherwise it is matched within the current project's session set, first by full ID and then by ID prefix.
+3. When the current project has no match, it is then matched within the global session set, first by full ID and then by ID prefix.
+4. Once found, a new session is created with `parentSession` pointing at the source session, and the source conversation is copied.
+5. An entry ID is not valid; forking at a user-message entry must use the selector of the interactive `/fork` command.
 
-实现证据：`src/cadr-cli/main.lisp` 的 `SESSION-ARGUMENT-PATH-P`、`FIND-SESSION-BY-ID-OR-PREFIX`、`RESOLVE-FORK-SOURCE-SESSION`、`RESOLVE-CLI-SESSION`。回归门禁：`FORK-ACCEPTS-SESSION-ID-PREFIX-AND-PREFERS-CURRENT-PROJECT`。README 已在 Usage 段明确上述边界。
+Implementation evidence: `SESSION-ARGUMENT-PATH-P`, `FIND-SESSION-BY-ID-OR-PREFIX`, `RESOLVE-FORK-SOURCE-SESSION` and `RESOLVE-CLI-SESSION` in `src/cadr-cli/main.lisp`. Regression gate: `FORK-ACCEPTS-SESSION-ID-PREFIX-AND-PREFERS-CURRENT-PROJECT`. The README states the boundaries above explicitly in the Usage section.
 
-基线证据为 `/tmp/cadr-parity-74caa2649/packages/coding-agent/src/main.ts` 的 `resolveSessionPath`：路径优先，随后 local exact/prefix，再 global exact/prefix。顾问曾把 entry ID 传给 `--fork` 得到 `Session not found`，属于参数类型误用，不是允许 entry ID 后实现失败。
+The baseline evidence is `resolveSessionPath` in `/tmp/cadr-parity-74caa2649/packages/coding-agent/src/main.ts`: path first, then local exact/prefix, then global exact/prefix. The advisor once passed an entry ID to `--fork` and got `Session not found`; that is a misuse of the argument type, not an implementation failure after entry IDs were allowed.
 
-## 8. 已落账的实现提交
+## 8. Implementation commits already recorded
 
-以下提交已经进入 `cadr-migration`；未提交工作不列作完成：
+The following commits have already entered `cadr-migration`; uncommitted work is not listed as complete:
 
-| commit | 内容 |
+| commit | content |
 |---|---|
-| `7d52f919aec631627b9b1cfc4d3d1ccaa6610e55` | remote session protocol v2 核心实现 |
-| `0f47f41438f698ab74c595a2f7752f31c7161e71` | provider stream metadata、无 finish reason、GPT-5.6 定价与 OpenCode Go 命名 |
-| `995196c1bb60e3ab0f27e4c193b0588ce625c19b` | 永久 harness shutdown 生命周期与 task tracking |
-| `bb925fdb117beaf43f584c44c06004b3488b932c` | grapheme/terminal cell 宽度对齐 |
-| `e13b3458631b5c2a84bf5c5a00c93e6fa33f65e9` | Bedrock 结构化错误 metadata |
-| `90a66b797e1f24214b1dc602bde99d4ee24df652` | protocol 三个基线测试文件完整语义门禁 |
-| `f902d97f17e581d90a81c9f07dc7dad1e40b0c04` | shutdown 后 append/compact 拒绝与空闲 session 不变门禁 |
-| `ec8962c659573624d2a7acdbc4a6a40cdce9d341` | comparative eval harness、artifact/table/summary 与四个测试文件 |
-| `032269bd9fc758dbe12a093ab30359baa8135b5b` | Markdown transformer 扩展 API |
-| `709907adbdf60e773ffdade40f9c69e936eb0060` | 实际组件宽度下的 Markdown transform/parse/cache 语义 |
-| `eeef16dba710713850b4c80c69a23f91a5cac6f0` | 畸形 package manifest 字段容错 |
-| `51ca77ce0b4c33b336f862d98c178a654c7c8f8b` | alternate-screen、main-screen scrollback、终端输入和图片裁剪语义 |
-| `511a62323000918f475623bcf18713cea9ae9a88` | `--alt`、`--fork` 与交互 CLI 语义 |
-| `bfde1c70118bb10c6331d48e051e7e6cbe6da463` | Part A2 faux/快照/真实 PTY 永久门禁 |
-| `c6b3a4c18a3c0ed6a17d3185469fcb9916d9563e` | 终端图片 fallback 测试解除对调用者 HOME 的耦合 |
+| `7d52f919aec631627b9b1cfc4d3d1ccaa6610e55` | core implementation of remote session protocol v2 |
+| `0f47f41438f698ab74c595a2f7752f31c7161e71` | provider stream metadata, no finish reason, GPT-5.6 pricing and the OpenCode Go naming |
+| `995196c1bb60e3ab0f27e4c193b0588ce625c19b` | permanent harness shutdown lifecycle and task tracking |
+| `bb925fdb117beaf43f584c44c06004b3488b932c` | grapheme / terminal cell width alignment |
+| `e13b3458631b5c2a84bf5c5a00c93e6fa33f65e9` | Bedrock structured error metadata |
+| `90a66b797e1f24214b1dc602bde99d4ee24df652` | complete semantic gates for the protocol's three baseline test files |
+| `f902d97f17e581d90a81c9f07dc7dad1e40b0c04` | gates for rejecting append/compact after shutdown and for idle-session invariance |
+| `ec8962c659573624d2a7acdbc4a6a40cdce9d341` | comparative eval harness, artifact/table/summary and four test files |
+| `032269bd9fc758dbe12a093ab30359baa8135b5b` | Markdown transformer extension API |
+| `709907adbdf60e773ffdade40f9c69e936eb0060` | Markdown transform/parse/cache semantics at the actual component width |
+| `eeef16dba710713850b4c80c69a23f91a5cac6f0` | field tolerance for malformed package manifests |
+| `51ca77ce0b4c33b336f862d98c178a654c7c8f8b` | alternate-screen, main-screen scrollback, terminal input and image cropping semantics |
+| `511a62323000918f475623bcf18713cea9ae9a88` | `--alt`, `--fork` and interactive CLI semantics |
+| `bfde1c70118bb10c6331d48e051e7e6cbe6da463` | Part A2 faux / snapshot / real-PTY permanent gates |
+| `c6b3a4c18a3c0ed6a17d3185469fcb9916d9563e` | the terminal image fallback test is decoupled from the caller's HOME |
 
-## 9. 测试证据与外部 live 状态
+## 9. Test evidence and external live status
 
-提交态独立证据：
+Independent evidence in the committed state:
 
-- `cadr-protocol/tests`：41 tests / 497 checks，全绿。
-- Part A2 workflow 定向组：3 tests / 67 checks，全绿。
-- Part A2 interactive 定向组：4 tests / 86 checks，全绿。
-- Part A2 PTY deterministic gates：3 个 lifecycle + editor/completion/overlay，6/6 全绿。
-- `cadr-tui/tests`：691/691，全绿；另以隔离 HOME 重跑，同为 691/691。
-- 隔离 HOME 的全量 `./scripts/test-cl.sh`：4009 checks，4006 pass、3 个
-  Codex OAuth 凭据门控 skip、0 fail。分套件为 AI 732、agent 621、TUI 691、
-  CLI 1269、storage 23、server 43、evals 133、protocol 497。
-- 其中 `cadr-cli/tests` 为 1269 checks，1268 pass、1 skip、0 fail；
-  `cadr-evals/tests` 为 133 checks，132 pass、1 skip、0 fail。DeepSeek live
-  块在测试内显式指定 provider/model 并真实运行；隔离 HOME 只移除用户
-  settings、session、extension 与 OAuth auth store 耦合。
+- `cadr-protocol/tests`: 41 tests / 497 checks, fully green.
+- Part A2 workflow targeted group: 3 tests / 67 checks, fully green.
+- Part A2 interactive targeted group: 4 tests / 86 checks, fully green.
+- Part A2 PTY deterministic gates: 3 lifecycle + editor/completion/overlay, 6/6 fully green.
+- `cadr-tui/tests`: 691/691, fully green; also re-run with an isolated HOME, likewise 691/691.
+- The full `./scripts/test-cl.sh` with an isolated HOME: 4009 checks, 4006 pass, 3
+  Codex OAuth credential-gated skips, 0 fail. By suite: AI 732, agent 621, TUI 691,
+  CLI 1269, storage 23, server 43, evals 133, protocol 497.
+- Of these, `cadr-cli/tests` is 1269 checks, 1268 pass, 1 skip, 0 fail;
+  `cadr-evals/tests` is 133 checks, 132 pass, 1 skip, 0 fail. The DeepSeek live
+  block specifies provider/model explicitly inside the test and really runs; the
+  isolated HOME removes only the coupling to the user's settings, sessions, extensions and OAuth auth store.
 
-真实凭据状态必须与确定性门禁分开记录：
+The real credential status must be recorded separately from the deterministic gates:
 
-- DeepSeek key 可用；当前 eval/live 块真实运行全绿。
-- Codex OAuth 凭据可被读取并已真实发起请求，但账户返回 `The usage limit has been reached.`。live-inclusive eval 运行共有 133 checks，其中 Codex OAuth 功能断言因此失败；真实 HOME 的 CLI live 块同因该上游额度状态出现 3 个失败断言。不能把它改成 fixture 或弱断言来伪装通过。
-- 没有 AWS 等其他 provider 凭据；相应 live 块按基线凭据门控跳过，Bedrock 当前验证等级为 deterministic fixture。
+- The DeepSeek key is available; the current eval/live blocks really run and are fully green.
+- The Codex OAuth credential can be read and a real request has been issued, but the account returns `The usage limit has been reached.` The live-inclusive eval run has 133 checks in total, and the Codex OAuth functional assertions therefore fail; the CLI live block under the real HOME likewise has 3 failing assertions because of that upstream quota state. It must not be changed into a fixture or a weak assertion to fake a pass.
+- There is no credential for AWS or any other provider; the corresponding live blocks are skipped per the baseline credential gating, and Bedrock's current verification level is deterministic fixture.
 
-Part A / A2 关账事实：
+Part A / A2 closeout facts:
 
-1. 当前规范基线引用已统一为 `74caa2649…`，旧 `71efc6f0…` 只保留历史锚说明。
-2. `docs/parity-map.md` 的 363 项 manifest 与新基线测试路径集合精确相等；11 个新增文件及 26 个受影响既有 `C` 已复验。
-3. 实现和测试均按逻辑分组提交；本报告与账本文档由 Part A 文档提交落账。
-4. A2 八项行为已转为 faux/快照/真实 PTY 永久门禁；Part B 只保留无法机械判定的观感 A/B。
-5. 工作区剩余修改仅包括用户在 Goal 8 验收文档中的既有证据，以及用户提供的 `goal9.md`；生成的 `scripts/__pycache__/` 因当前执行环境拒绝清理而单独列明，不属于产品产物或提交内容。
+1. All current canonical baseline references are unified to `74caa2649…`; the old `71efc6f0…` is kept only as the historical-anchor note.
+2. The 363-item manifest in `docs/parity-map.md` is exactly equal to the new baseline's set of test paths; the 11 new files and the 26 affected existing `C` entries have been re-verified.
+3. Implementation and tests were both committed in logical groups; this report and the ledger document are recorded by the Part A documentation commit.
+4. The eight A2 behaviors have been converted into faux / snapshot / real-PTY permanent gates; Part B retains only the perceptual A/B that cannot be judged mechanically.
+5. The remaining modifications in the working tree are only the user's existing evidence in the Goal 8 acceptance document and the user-provided `goal9.md`; the generated `scripts/__pycache__/` is listed separately because the current execution environment refuses to clean it, and it is neither a product artifact nor commit content.
 
 ```text
 parity-map: 362 C / 0 U / 0 M / 1 N/A = 363
@@ -353,14 +353,8 @@ A2 PTY: 6/6 pass
 Part A/A2 implementation commits: 15
 ```
 
-## 10. Goal 9 关账真实性补正
+## 10. Goal 9 closeout truthfulness correction
 
-关账独立审计发现两处原报告宣告强于事实：编辑/补全/overlay 的既有测试直接把
-字节交给 decoder，并非真实 PTY；模式测试分别证明了进程边界和 faux 语义，却没有
-证明二者交集。旧 lifecycle 仅有 3/3，增加新 driver 期望而尚未扩 harness 时稳定红
-`timed out waiting for GOAL9_A2_INPUT_EDITOR_READY`，证明缺口真实存在。
+The independent closeout audit found two places where the original report claimed more than the facts: the existing tests for editing/completion/overlay hand bytes straight to the decoder and are not a real PTY; the mode tests proved the process boundary and the faux semantics separately, but did not prove the intersection of the two. The old lifecycle had only 3/3, and when a new driver expectation was added before the harness had been extended it was stably red with `timed out waiting for GOAL9_A2_INPUT_EDITOR_READY`, proving that the gap really existed.
 
-补正提交 `a2298ac4d` 增加三个独立真实 PTY 交互场景，以及独立 SBCL 子进程中的
-actual faux text/JSON/RPC 三门禁。PTY 连续四次固定 `6/6`；process-faux 为
-`21/21`；最终确定性套件为 `7040 checks / 7040 pass / 0 skip / 0 fail`。没有修改
-生产代码、注册测试专用 provider、调用网络或新增依赖。
+The correction commit `a2298ac4d` adds three separate real-PTY interactive scenarios, plus the three actual-faux text/JSON/RPC gates in a separate SBCL child process. The PTY gate was a fixed `6/6` four times in a row; process-faux is `21/21`; the final deterministic suite is `7040 checks / 7040 pass / 0 skip / 0 fail`. No production code was modified, no test-only provider was registered, no network was called and no dependency was added.

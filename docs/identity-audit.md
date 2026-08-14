@@ -1,17 +1,20 @@
-# Goal 16 产品身份全树审计
+# Goal 16 product-identity whole-tree audit
 
-状态：Part A 审计完成，Part C 已按用户裁决实施；固定审计代码基线为
-`3dbb58b895a1f732d6354233e91d6981b0a35c09`。本文件只记录事实与判定，
-不授权 Part C 实现。
+Status: the Part A audit is complete and Part C has been implemented per user
+adjudication; the fixed audit code baseline is
+`3dbb58b895a1f732d6354233e91d6981b0a35c09`. This file records facts and verdicts
+only; it does not authorize the Part C implementation.
 
-## 1. 范围与方法
+## 1. Scope and method
 
-审计覆盖所有会进入发行镜像、运行时请求、用户产物或开发/验收入口的受跟踪
-文件：`src/`、`examples/`、`scripts/`、根 ASDF/构建文件、README、CHANGELOG
-与 CI。`docs/`、测试和 fixture 另作溯源/对拍保留项核查，不把基线字样误判为
-产品自我标识。
+The audit covers every tracked file that reaches the release image, a runtime
+request, a user artifact, or a development/acceptance entry point: `src/`,
+`examples/`, `scripts/`, the root ASDF/build files, the README, the CHANGELOG
+and CI. `docs/`, the tests and the fixtures are checked separately as
+provenance / cross-implementation-comparison retained items, and baseline
+wording is not misjudged as product self-identification.
 
-机械枚举使用下列集合，不靠手挑文件：
+The mechanical enumeration uses the following set, rather than hand-picked files:
 
 ```sh
 rg -n --hidden -i '(\bpi\b|\bPI_[A-Z]|pi\.dev|badlogic|earendil-works|pi-mono|pi-ai|pi-coding|pi-gateway|pi-wsl)' \
@@ -22,150 +25,176 @@ rg -n 'https://github\.com/(badlogic|earendil-works|artwalker)' \
 git remote -v
 ```
 
-第二条实际得到 **14 个**不同的生产环境变量，不是规格初查中含重复项的 15
-个。数学常量 `pi`、`API_KEY` 中的子串、vendor 语法表中的语言内建符号均已
-排除。判定含义：
+The second command actually yields **14** distinct production environment
+variables, not the 15 with duplicates in the specification's initial survey. The
+mathematical constant `pi`, the substring inside `API_KEY`, and language built-in
+symbols in vendor syntax tables have all been excluded. What the verdicts mean:
 
-- `须替换`：自由可改的 Cadr 自我标识或命名空间；
-- `功能约束保留`：值属于外部协议/注册客户端，改动会直接破坏已核实合同；
-- `正当保留`：基线溯源、对齐声明、迁移或固定对拍输入；
-- `低优先`：仅实现内部可见，但仍应在同批重命名以消除半改状态；
-- `已合规`：已经是 Cadr 身份，作为门禁正例。
+- `must replace`: a freely changeable Cadr self-identification or namespace;
+- `retained under functional constraint`: the value belongs to an external
+  protocol / a registered client, and changing it would directly break a
+  verified contract;
+- `legitimately retained`: baseline provenance, an alignment declaration,
+  migration, or a fixed cross-implementation-comparison input;
+- `low priority`: visible only inside the implementation, but it should still be
+  renamed in the same batch to eliminate the half-changed state;
+- `already compliant`: already Cadr's identity, serving as a positive example
+  for the gate.
 
-## 2. 已合规的身份锚点
+## 2. Identity anchors that are already compliant
 
-| 位置 | 当前值与可见对象 | 判定 | 依据 |
+| Location | Current value and who sees it | Verdict | Grounds |
 |---|---|---|---|
-| `src/cadr-ai/support/release.lisp:3-21` | `cadr 0.2.0 · aligned with pi ...`；用户、`--version`、Radius | `已合规` | 产品名为 Cadr；后半是有意的基线对齐声明。版本单一来源已经存在。 |
-| `src/cadr-cli/system-prompt.lisp:4` | `You are cadr`；模型 | `已合规` | 模型侧身份正确。 |
-| `src/cadr-ai/oauth/pkce.lisp:52,303` | OpenAI `originator=cadr`；OpenAI | `已合规` | Goal 9 已裁决并经真实 OAuth 验证。 |
-| `src/cadr-ai/oauth/page.lisp:3-4` | Cadr 自有 cons-cell SVG；用户浏览器 | `已合规` | 不再使用 pi 品牌资产。 |
-| `src/cadr-cli/bootstrap/sessions.lisp:1341` | `cadr-session-<ISO>_<uuid>.html`；用户文件 | `已合规` | 产品前缀正确。 |
-| `src/cadr-cli/support/resume-version-git.lisp:4-47` | `cadr --session ...`；退出后 stdout | `已合规` | CLI 名正确。 |
-| `src/cadr-core/paths.lisp`（owner）、`src/cadr-cli/migration.lisp`（迁移） | `~/.cadr/agent/`；用户磁盘 | `已合规` | Goal 18 起布局对齐基线 `~/.pi/agent/`；全部路径经 cadr-core owner 单一派生。 |
-| Git remote `backup` | `https://github.com/artwalker/cadr.git`；维护者 | `已合规` | 规范仓库。`origin=git@github.com:badlogic/pi-mono.git` 是上游同步 remote，按规格不改。 |
+| `src/cadr-ai/support/release.lisp:3-21` | `cadr 0.2.0 · aligned with pi ...`; the user, `--version`, Radius | `already compliant` | The product name is Cadr; the second half is a deliberate baseline alignment declaration. A single source for the version already exists. |
+| `src/cadr-cli/system-prompt.lisp:4` | `You are cadr`; the model | `already compliant` | The model-side identity is correct. |
+| `src/cadr-ai/oauth/pkce.lisp:52,303` | OpenAI `originator=cadr`; OpenAI | `already compliant` | Adjudicated in Goal 9 and verified against real OAuth. |
+| `src/cadr-ai/oauth/page.lisp:3-4` | Cadr's own cons-cell SVG; the user's browser | `already compliant` | It no longer uses pi brand assets. |
+| `src/cadr-cli/bootstrap/sessions.lisp:1341` | `cadr-session-<ISO>_<uuid>.html`; user files | `already compliant` | The product prefix is correct. |
+| `src/cadr-cli/support/resume-version-git.lisp:4-47` | `cadr --session ...`; stdout after exit | `already compliant` | The CLI name is correct. |
+| `src/cadr-core/paths.lisp` (owner), `src/cadr-cli/migration.lisp` (migration) | `~/.cadr/agent/`; the user's disk | `already compliant` | From Goal 18 on the layout is aligned with the baseline's `~/.pi/agent/`; every path is derived from the single cadr-core owner. |
+| Git remote `backup` | `https://github.com/artwalker/cadr.git`; the maintainer | `already compliant` | The canonical repository. `origin=git@github.com:badlogic/pi-mono.git` is the upstream sync remote and, per the specification, is not changed. |
 
-这些锚点目前仍散在多个包中；Part C 必须让可复用的产品 slug、显示名和规范
-仓库 URL 从既有 release identity 单一来源派生，不能再复制字符串。
+These anchors are still scattered across several packages; Part C must make the
+reusable product slug, display name and canonical repository URL derive from the
+existing single release-identity source, and must stop copying the strings.
 
-## 3. 发往第三方服务的标识
+## 3. Identifiers sent to third-party services
 
-| 位置 | 当前值 | 可见对象 | 判定 | 依据与目标值 |
+| Location | Current value | Who sees it | Verdict | Grounds and target value |
 |---|---|---|---|---|
-| `src/cadr-cli/support/resume-version-git.lisp:80-85` | `pi/<version> (...; sbcl/...)` | 版本检查服务 | `须替换`（已裁决） | 纯 User-Agent，自由可改；目标 `cadr/<version> (...)`。函数名 `pi-user-agent` 同批重命名。 |
-| `src/cadr-cli/support/headers.lisp:29` | `HTTP-Referer: https://pi.dev` | OpenRouter | `须替换`（已裁决） | 用量归因，不鉴权；在 `cadr.dev` 未上线前目标为规范仓库 `https://github.com/artwalker/cadr`。 |
-| `src/cadr-cli/support/headers.lisp:30` | `X-OpenRouter-Title: pi` | OpenRouter | `须替换`（已裁决） | 目标 `cadr`。 |
-| `src/cadr-cli/support/headers.lisp:35` | `X-BILLING-INVOKE-ORIGIN: Pi` | NVIDIA | `须替换`（已裁决） | 计费归因，不鉴权；目标 `cadr`。 |
-| `src/cadr-cli/support/headers.lisp:44` | `User-Agent: pi-coding-agent` | Cloudflare | `须替换`（已裁决） | 目标 `cadr-coding-agent`。 |
-| `src/cadr-cli/support/headers.lisp:53-54` | `x-opencode-client: pi` | OpenCode | `须替换`（已裁决） | session ID 头不变；client 目标 `cadr`。 |
-| `src/cadr-ai/oauth/providers/xai.lisp:132-140` | 设备码 `referrer=pi` | xAI | `须替换`（已裁决） | client ID 与 scope 不变，referrer 目标 `cadr`；Part C 须真实发起一次设备码请求。 |
-| `src/cadr-ai/auth/radius-cloudflare.lisp:4-16`、`src/cadr-ai/oauth/providers/radius.lisp:8-10,24-31,48-55,87-115` | OAuth `client_id=pi-gateway` | Radius | `功能约束保留` | 2026-08-04 实测 `GET https://radius.pi.dev/v1/oauth` 为 HTTP 200，discovery 明确返回 `clientId:"pi-gateway"`、对应 token/device endpoints 与 `gateway offline_access` scope；这是注册客户端 ID，不是自由归因字段。 |
+| `src/cadr-cli/support/resume-version-git.lisp:80-85` | `pi/<version> (...; sbcl/...)` | the version-check service | `must replace` (adjudicated) | A pure User-Agent, freely changeable; target `cadr/<version> (...)`. The function name `pi-user-agent` is renamed in the same batch. |
+| `src/cadr-cli/support/headers.lisp:29` | `HTTP-Referer: https://pi.dev` | OpenRouter | `must replace` (adjudicated) | Usage attribution, not authentication; until `cadr.dev` is live the target is the canonical repository `https://github.com/artwalker/cadr`. |
+| `src/cadr-cli/support/headers.lisp:30` | `X-OpenRouter-Title: pi` | OpenRouter | `must replace` (adjudicated) | Target `cadr`. |
+| `src/cadr-cli/support/headers.lisp:35` | `X-BILLING-INVOKE-ORIGIN: Pi` | NVIDIA | `must replace` (adjudicated) | Billing attribution, not authentication; target `cadr`. |
+| `src/cadr-cli/support/headers.lisp:44` | `User-Agent: pi-coding-agent` | Cloudflare | `must replace` (adjudicated) | Target `cadr-coding-agent`. |
+| `src/cadr-cli/support/headers.lisp:53-54` | `x-opencode-client: pi` | OpenCode | `must replace` (adjudicated) | The session ID header is unchanged; the client target is `cadr`. |
+| `src/cadr-ai/oauth/providers/xai.lisp:132-140` | device code `referrer=pi` | xAI | `must replace` (adjudicated) | The client ID and scope are unchanged, the referrer target is `cadr`; Part C must issue one real device-code request. |
+| `src/cadr-ai/auth/radius-cloudflare.lisp:4-16`, `src/cadr-ai/oauth/providers/radius.lisp:8-10,24-31,48-55,87-115` | OAuth `client_id=pi-gateway` | Radius | `retained under functional constraint` | Measured on 2026-08-04, `GET https://radius.pi.dev/v1/oauth` returned HTTP 200, and discovery explicitly returns `clientId:"pi-gateway"`, the corresponding token/device endpoints and the `gateway offline_access` scope; this is a registered client ID, not a free attribution field. |
 
-User-Agent、OpenRouter、NVIDIA、Cloudflare、OpenCode 五组归因值和 xAI
-referrer 已由用户在 Goal 16 规格中预裁，不再等待值级裁决。Radius 是本审计
-唯一需要以注册合同为由保留的第三方 client 标识。
+The five groups of attribution values — User-Agent, OpenRouter, NVIDIA,
+Cloudflare, OpenCode — and the xAI referrer were pre-adjudicated by the user in
+the Goal 16 specification, and no longer wait on a value-level adjudication.
+Radius is the only third-party client identifier in this audit that has to be
+retained on the grounds of a registration contract.
 
-## 4. 上游服务端点与数据流
+## 4. Upstream service endpoints and data flows
 
-| 位置 | 当前值与数据流 | 判定 | 依据 |
+| Location | Current value and data flow | Verdict | Grounds |
 |---|---|---|---|
-| `src/cadr-cli/support/changelog-share.lisp:252-260,262-323` | `/share` 先把完整会话 HTML 以 `gh gist create --public=false` 上传到 GitHub Gist，再生成 `https://pi.dev/session/#<gist-id>`。URL fragment 不随首个 HTTP 请求发送，但上游 viewer 的浏览器代码可取得 gist ID 并读取会话。 | `须裁决` | 已有 `CADR_SHARE_VIEWER_URL`，但仍读取旧 `PI_SHARE_VIEWER_URL` 且默认指向上游。涉及会话外发与上游页面代码，不能自行选默认值。 |
-| `src/cadr-cli/sdk/cache-version.lisp:272-359,388-413` | GET `https://pi.dev/api/latest-version`，发送当前版本及 OS/SBCL/架构 User-Agent，读取上游 package release，并与 Cadr `0.2.0` 比较。 | `须裁决` | 无会话数据，但语义错误：上游 `0.83.x` 不是 Cadr 更新。当前 URL 硬编码且无 Cadr URL 配置。 |
-| `src/cadr-ai/providers/definitions.lisp:647-664` | Radius provider 默认 `https://radius.pi.dev`，协议 `:pi-messages`。 | `功能约束保留` | 这是名为 Radius 的真实 provider endpoint，不是 Cadr 官网。2026-08-04 实测根路径和 `/v1/oauth` 均 HTTP 200。`RADIUS_GATEWAY_URL` 可覆盖模型网关。 |
-| `src/cadr-server/radius.lisp:151-166` | cadr-server presence 默认 `https://radius.pi.dev/v1/`，可由 `CADR_RADIUS_SERVER_URL` 或 `CADR_RADIUS_URL` 覆盖。 | `功能约束保留` | 同一 Radius API；代码实际调用 `machines/*`、`pis/*` 注册/心跳/断开。旧 `PI_RADIUS_*` fallback 另按环境变量案删除。 |
+| `src/cadr-cli/support/changelog-share.lisp:252-260,262-323` | `/share` first uploads the complete session HTML to a GitHub Gist with `gh gist create --public=false`, then produces `https://pi.dev/session/#<gist-id>`. The URL fragment is not sent with the first HTTP request, but the upstream viewer's browser code can obtain the gist ID and read the session. | `requires adjudication` | `CADR_SHARE_VIEWER_URL` already exists, but the old `PI_SHARE_VIEWER_URL` is still read and the default still points upstream. It involves sending a session outward and upstream page code; the default value must not be chosen unilaterally. |
+| `src/cadr-cli/sdk/cache-version.lisp:272-359,388-413` | GET `https://pi.dev/api/latest-version`, sending the current version and an OS/SBCL/architecture User-Agent, reads the upstream package release and compares it against Cadr `0.2.0`. | `requires adjudication` | No session data, but the semantics are wrong: an upstream `0.83.x` is not a Cadr update. The URL is currently hard-coded and there is no Cadr URL configuration. |
+| `src/cadr-ai/providers/definitions.lisp:647-664` | The Radius provider defaults to `https://radius.pi.dev`, protocol `:pi-messages`. | `retained under functional constraint` | This is the real provider endpoint of the service named Radius, not Cadr's own site. Measured on 2026-08-04, both the root path and `/v1/oauth` returned HTTP 200. `RADIUS_GATEWAY_URL` may override the model gateway. |
+| `src/cadr-server/radius.lisp:151-166` | cadr-server presence defaults to `https://radius.pi.dev/v1/`, overridable by `CADR_RADIUS_SERVER_URL` or `CADR_RADIUS_URL`. | `retained under functional constraint` | The same Radius API; the code actually calls `machines/*` and `pis/*` for registration/heartbeat/disconnect. The old `PI_RADIUS_*` fallback is deleted separately under the environment-variable item. |
 
-`/share` 并非直接 POST 到 pi.dev；真正存储是 GitHub Gist。但把会话交给上游
-viewer 代码处理仍是外部信任边界，不能用“fragment 不上服务器”淡化。
+`/share` does not POST directly to pi.dev; the actual storage is a GitHub Gist.
+But handing the session to upstream viewer code to process is still an external
+trust boundary, and "the fragment does not reach the server" must not be used to
+play it down.
 
-## 5. 生产环境变量：14 个完整清单
+## 5. Production environment variables: the complete list of 14
 
-| 旧变量 | 位置 | 当前优先级 | 目标名 | 判定与影响 |
+| Old variable | Location | Current precedence | Target name | Verdict and impact |
 |---|---|---|---|---|
-| `PI_CACHE_RETENTION` | `src/cadr-ai/providers/bedrock.lisp:338-348` | 唯一名称 | `CADR_CACHE_RETENTION` | `须替换`；Bedrock long cache 配置。 |
-| `PI_CONFIG_DIR` | `src/cadr-server/config.lisp:16-24` | `CADR_CONFIG_DIR` 后备 | `CADR_CONFIG_DIR` | `须替换`；旧名仅兼容。 |
-| `PI_EVAL_ARTIFACT_DIR` | `src/cadr-evals/reporter.lisp:23-31` | `CADR_EVAL_ARTIFACT_DIR` 后备 | `CADR_EVAL_ARTIFACT_DIR` | `须替换`；旧名仅兼容。 |
-| `PI_EXPERIMENTAL` | `src/cadr-cli/support/html.lisp:46-51` | `CADR_EXPERIMENTAL` 后备 | `CADR_EXPERIMENTAL` | `须替换`；旧名仅兼容。 |
-| `PI_MODEL` | `src/cadr-evals/harness.lisp:92-100` | `CADR_EVAL_MODEL` 后备 | `CADR_EVAL_MODEL` | `须替换`；仅 eval selection。 |
-| `PI_OFFLINE` | `src/cadr-cli/tool-manager.lisp:26-28`、`src/cadr-cli/sdk/cache-version.lisp:323-331,388-399` | 唯一名称 | `CADR_OFFLINE` | `须替换`；控制工具下载与版本检查。 |
-| `PI_PROVIDER` | `src/cadr-evals/harness.lisp:83-91` | `CADR_EVAL_PROVIDER` 后备 | `CADR_EVAL_PROVIDER` | `须替换`；仅 eval selection。 |
-| `PI_RADIUS_SERVER_URL` | `src/cadr-server/radius.lisp:153-158` | `CADR_RADIUS_SERVER_URL` 后备 | `CADR_RADIUS_SERVER_URL` | `须替换`；旧名仅兼容。 |
-| `PI_RADIUS_URL` | `src/cadr-server/radius.lisp:159-164` | `CADR_RADIUS_URL` 后备 | `CADR_RADIUS_URL` | `须替换`；旧名仅兼容。 |
-| `PI_SERVER_CADR_PATH` | `src/cadr-server/rpc-process.lisp:259-264` | `CADR_SERVER_CADR_PATH` 后备 | `CADR_SERVER_CADR_PATH` | `须替换`；旧名仅兼容。 |
-| `PI_SERVER_DIR` | `src/cadr-server/config.lisp:10-15` | `CADR_SERVER_DIR` 后备 | `CADR_SERVER_DIR` | `须替换`；旧名仅兼容。 |
-| `PI_SHARE_VIEWER_URL` | `src/cadr-cli/support/changelog-share.lisp:252-260` | `CADR_SHARE_VIEWER_URL` 之前，旧名反而优先 | `CADR_SHARE_VIEWER_URL` | `须替换`；还存在优先级倒置。 |
-| `PI_SKIP_VERSION_CHECK` | `src/cadr-cli/sdk/cache-version.lisp:388-399` | 唯一名称 | `CADR_SKIP_VERSION_CHECK` | `须替换`；取决于版本检查默认裁决。 |
-| `PI_TIMING` | `src/cadr-cli/support/timings.lisp:3-4` | 唯一名称 | `CADR_TIMING` | `须替换`；启动计时。 |
+| `PI_CACHE_RETENTION` | `src/cadr-ai/providers/bedrock.lisp:338-348` | sole name | `CADR_CACHE_RETENTION` | `must replace`; Bedrock long cache configuration. |
+| `PI_CONFIG_DIR` | `src/cadr-server/config.lisp:16-24` | fallback behind `CADR_CONFIG_DIR` | `CADR_CONFIG_DIR` | `must replace`; the old name is compatibility only. |
+| `PI_EVAL_ARTIFACT_DIR` | `src/cadr-evals/reporter.lisp:23-31` | fallback behind `CADR_EVAL_ARTIFACT_DIR` | `CADR_EVAL_ARTIFACT_DIR` | `must replace`; the old name is compatibility only. |
+| `PI_EXPERIMENTAL` | `src/cadr-cli/support/html.lisp:46-51` | fallback behind `CADR_EXPERIMENTAL` | `CADR_EXPERIMENTAL` | `must replace`; the old name is compatibility only. |
+| `PI_MODEL` | `src/cadr-evals/harness.lisp:92-100` | fallback behind `CADR_EVAL_MODEL` | `CADR_EVAL_MODEL` | `must replace`; eval selection only. |
+| `PI_OFFLINE` | `src/cadr-cli/tool-manager.lisp:26-28`, `src/cadr-cli/sdk/cache-version.lisp:323-331,388-399` | sole name | `CADR_OFFLINE` | `must replace`; controls tool downloads and the version check. |
+| `PI_PROVIDER` | `src/cadr-evals/harness.lisp:83-91` | fallback behind `CADR_EVAL_PROVIDER` | `CADR_EVAL_PROVIDER` | `must replace`; eval selection only. |
+| `PI_RADIUS_SERVER_URL` | `src/cadr-server/radius.lisp:153-158` | fallback behind `CADR_RADIUS_SERVER_URL` | `CADR_RADIUS_SERVER_URL` | `must replace`; the old name is compatibility only. |
+| `PI_RADIUS_URL` | `src/cadr-server/radius.lisp:159-164` | fallback behind `CADR_RADIUS_URL` | `CADR_RADIUS_URL` | `must replace`; the old name is compatibility only. |
+| `PI_SERVER_CADR_PATH` | `src/cadr-server/rpc-process.lisp:259-264` | fallback behind `CADR_SERVER_CADR_PATH` | `CADR_SERVER_CADR_PATH` | `must replace`; the old name is compatibility only. |
+| `PI_SERVER_DIR` | `src/cadr-server/config.lisp:10-15` | fallback behind `CADR_SERVER_DIR` | `CADR_SERVER_DIR` | `must replace`; the old name is compatibility only. |
+| `PI_SHARE_VIEWER_URL` | `src/cadr-cli/support/changelog-share.lisp:252-260` | ahead of `CADR_SHARE_VIEWER_URL` — the old name takes precedence instead | `CADR_SHARE_VIEWER_URL` | `must replace`; there is also a precedence inversion. |
+| `PI_SKIP_VERSION_CHECK` | `src/cadr-cli/sdk/cache-version.lisp:388-399` | sole name | `CADR_SKIP_VERSION_CHECK` | `must replace`; depends on the version-check default adjudication. |
+| `PI_TIMING` | `src/cadr-cli/support/timings.lisp:3-4` | sole name | `CADR_TIMING` | `must replace`; startup timing. |
 
-`scripts/goal11-cold-start.py` 的 `PI_CODING_AGENT_DIR` 和
-`scripts/render-diff.py` 的 `PI_OFFLINE` 只用于清理/驱动固定 TypeScript 基线环境，
-不是 Cadr 生产变量，判 `正当保留`。
+The `PI_CODING_AGENT_DIR` in `scripts/goal11-cold-start.py` and the `PI_OFFLINE`
+in `scripts/render-diff.py` are used only to clean up / drive the fixed
+TypeScript baseline environment; they are not Cadr production variables and are
+ruled `legitimately retained`.
 
-## 6. 仓库链接与其余残留
+## 6. Repository links and the remaining residue
 
-| 位置 | 当前值 | 可见对象 | 判定 | 依据与目标 |
+| Location | Current value | Who sees it | Verdict | Grounds and target |
 |---|---|---|---|---|
-| `src/cadr-cli/support/changelog-share.lisp:135-161` | `/changelog` 将相对链接及 badlogic/earendil 链接改写到 `https://github.com/earendil-works/pi` | 用户浏览器 | `须替换` | 目标统一为 `https://github.com/artwalker/cadr`；私有仓库当前可能要求登录，但公开后 URL 不变。不得改 `origin`。 |
-| `src/cadr-cli/interactive/clipboard.lisp:323-329` | `pi-wsl-clip-<uuid>.png` | 临时目录/诊断 | `须替换` | 目标 `cadr-wsl-clip-<uuid>.png`。 |
-| `examples/extensions/notify.lisp:28` | 通知标题 `Pi` | 用户桌面 | `须替换` | 目标 `Cadr`。示例也属于发行用户面，不能漏扫。 |
-| `src/cadr-agent/export-html/template.js:1666` | localStorage `pi-share:v1:sidebar-width` | 导出 HTML/浏览器 | `须替换` | 目标 `cadr-share:v1:sidebar-width`；只会重置既有浏览器侧宽度偏好。 |
-| `src/cadr-agent/export-html/template.js:23,1098` | meta `pi-url-params`、`pi-share-base-url` | 导出 HTML/上游 viewer iframe | `功能约束保留（条件式）` | Cadr exporter 不生成这些 meta；注释及全树唯一消费者表明它们由当前上游 viewer 注入。若保留 pi.dev viewer，名字必须保留；若禁用/改指 viewer，应与新 viewer 一并改为 `cadr-*`。 |
-| `src/cadr-ai/providers/openai.lisp:201-207` | synthetic call ID `pi_tool_load_<hash>` | provider、会话 | `须替换` | 不参与鉴权；目标 `cadr_tool_load_<hash>`。 |
-| `src/cadr-server/radius.lisp:468,553,568,579` | 用户/日志文案 `Radius Pi` | stderr/日志 | `须替换` | 这是自由文案，不是 wire；目标 `Radius instance`。 |
-| `src/cadr-server/radius.lisp:627` | thread `cadr-radius-pi-<id>` | debugger/线程列表 | `低优先` | 半改状态；目标 `cadr-radius-instance-<id>`。 |
-| `src/cadr-cli/sdk/cache-version.lisp:299-403`、`src/cadr-cli/package.lisp:118-121` | `get/check-latest-pi-*` 等导出符号 | Lisp API/内部 | `须替换` | 功能将查询 Cadr release；目标 `*-cadr-*`，不保留上游名 alias，除非用户在 Part B 另行要求。 |
-| `src/cadr-cli/support/resume-version-git.lisp:80` | `pi-user-agent` 函数名 | 内部 | `低优先` | 与 UA 值同批改为 `cadr-user-agent`。 |
+| `src/cadr-cli/support/changelog-share.lisp:135-161` | `/changelog` rewrites relative links and badlogic/earendil links to `https://github.com/earendil-works/pi` | the user's browser | `must replace` | The target is unified as `https://github.com/artwalker/cadr`; the private repository may currently require a login, but the URL does not change once it is public. `origin` must not be changed. |
+| `src/cadr-cli/interactive/clipboard.lisp:323-329` | `pi-wsl-clip-<uuid>.png` | the temporary directory / diagnostics | `must replace` | Target `cadr-wsl-clip-<uuid>.png`. |
+| `examples/extensions/notify.lisp:28` | notification title `Pi` | the user's desktop | `must replace` | Target `Cadr`. The examples are part of the shipped user surface too, and must not be missed by the scan. |
+| `src/cadr-agent/export-html/template.js:1666` | localStorage `pi-share:v1:sidebar-width` | the exported HTML / the browser | `must replace` | Target `cadr-share:v1:sidebar-width`; it only resets the existing browser-side width preference. |
+| `src/cadr-agent/export-html/template.js:23,1098` | meta `pi-url-params`, `pi-share-base-url` | the exported HTML / the upstream viewer iframe | `retained under functional constraint (conditional)` | The Cadr exporter does not generate these meta tags; the comments and the sole consumer in the whole tree show that they are injected by the current upstream viewer. If the pi.dev viewer is kept, the names must be kept; if the viewer is disabled or repointed, they should be changed to `cadr-*` together with the new viewer. |
+| `src/cadr-ai/providers/openai.lisp:201-207` | synthetic call ID `pi_tool_load_<hash>` | the provider, the session | `must replace` | It takes no part in authentication; target `cadr_tool_load_<hash>`. |
+| `src/cadr-server/radius.lisp:468,553,568,579` | user/log copy `Radius Pi` | stderr / logs | `must replace` | This is free copy, not wire; target `Radius instance`. |
+| `src/cadr-server/radius.lisp:627` | thread `cadr-radius-pi-<id>` | the debugger / the thread list | `low priority` | A half-changed state; target `cadr-radius-instance-<id>`. |
+| `src/cadr-cli/sdk/cache-version.lisp:299-403`, `src/cadr-cli/package.lisp:118-121` | exported symbols such as `get/check-latest-pi-*` | the Lisp API / internal | `must replace` | The feature will query Cadr releases; target `*-cadr-*`, keeping no upstream-name alias, unless the user separately requires one in Part B. |
+| `src/cadr-cli/support/resume-version-git.lisp:80` | the `pi-user-agent` function name | internal | `low priority` | Changed to `cadr-user-agent` in the same batch as the UA value. |
 
-## 7. 必须保留的上游/外部合同
+## 7. Upstream/external contracts that must be retained
 
-| 位置 | 保留内容 | 判定 | 具体理由 |
+| Location | What is retained | Verdict | Specific grounds |
 |---|---|---|---|
-| `src/cadr-ai/auth/radius-cloudflare.lisp:13`、`src/cadr-ai/oauth/providers/radius.lisp:9` | `pi-gateway` | `功能约束保留` | Radius live discovery 明确声明注册 client ID；改名会使授权码、device-code、refresh 三条 token 流使用未注册 client。 |
-| `src/cadr-server/radius.lisp:535,639,698` | `pis/*` API path | `功能约束保留` | 远端 Radius API 的资源路径；不是本地产品名。 |
-| `src/cadr-server/protocol.lisp:44`、`src/cadr-server/storage.lisp:83-114` | `radiusPiId` | `功能约束保留` | Radius 返回对象 ID 的本地 wire/持久化字段；改名会破坏现存 `instances.json` 与 server RPC。 |
-| `src/cadr-ai/provider.lisp:38,117-118`、`src/cadr-ai/providers/pi-messages.lisp`、`src/cadr-ai/providers/definitions.lisp:650-651` | `pi-messages` protocol 名 | `正当保留` | 指 Radius 所使用的上游 wire dialect，类似 `openai-responses`，不是 Cadr 自称 pi。 |
-| `src/cadr-cli/packages/manifest.lisp:9-29,128` | package.json 的 `"pi"` manifest key | `功能约束保留` | 基线扩展生态的外部 manifest schema；改名会让现有 package 的 extensions/skills/prompts/themes 全部不可发现。函数名 `read-package-pi-manifest` 准确描述该外部 schema。 |
-| `src/cadr-evals/suites.lisp:239-246` | `@earendil-works/pi-coding-agent` | `正当保留` | 只用于检测生成扩展是否仍引用 legacy TypeScript API；是审计输入，不是身份。 |
-| `src/cadr-ai/models.generated.lisp:1`、`src/cadr-ai/image-models.generated.lisp:1` 及对应 refresh scripts | `pi-ai 0.83.0` 来源注释 | `正当保留` | 固定 catalog 的可审计溯源。 |
-| `src/cadr-ai/support/release.lisp:10-21` | `aligned with pi v0.84.1 (+0, 53fa77ccd)` | `正当保留` | 版本关系声明，规格明确要求保留。 |
-| `src/cadr-cli/interactive/components/announcement.lisp:3-40` | `pi has joined Earendil` 与原博客 URL | `正当保留` | 这是移植的历史 announcement 组件，描述 2026-04-08 已发生的上游事件；改成 Cadr 会制造假历史，且默认界面不启用。 |
-| `src/cadr-cli/interactive/selectors/common.lisp:118,128` | `Pi Text component` docstring | `正当保留` | 仅内部说明其对拍来源和布局语义。 |
-| `scripts/render-diff.py`、`scripts/goal11-pi-baseline-bench.mjs`、`scripts/export-ts-payloads.ts`、`cadr-evals.asd:30` | pi baseline 名、固定 commit/package | `正当保留` | 对拍与溯源输入；替换会让门禁失去对象。 |
-| README、CHANGELOG、`docs/`、tests/fixtures 中明确写作“original/aligned/baseline/migration”的 pi 引用 | 上游说明 | `正当保留` | 对外身份与来源致谢必须区分；身份门禁需逐条 allowlist，不可全局删除。 |
+| `src/cadr-ai/auth/radius-cloudflare.lisp:13`, `src/cadr-ai/oauth/providers/radius.lisp:9` | `pi-gateway` | `retained under functional constraint` | Radius live discovery explicitly declares the registered client ID; renaming it would make all three token flows — authorization code, device code and refresh — use an unregistered client. |
+| `src/cadr-server/radius.lisp:535,639,698` | `pis/*` API path | `retained under functional constraint` | The resource path of the remote Radius API; not a local product name. |
+| `src/cadr-server/protocol.lisp:44`, `src/cadr-server/storage.lisp:83-114` | `radiusPiId` | `retained under functional constraint` | The local wire/persistence field for the object ID that Radius returns; renaming it would break the existing `instances.json` and the server RPC. |
+| `src/cadr-ai/provider.lisp:38,117-118`, `src/cadr-ai/providers/pi-messages.lisp`, `src/cadr-ai/providers/definitions.lisp:650-651` | the `pi-messages` protocol name | `legitimately retained` | It refers to the upstream wire dialect that Radius uses, like `openai-responses`; it is not Cadr calling itself pi. |
+| `src/cadr-cli/packages/manifest.lisp:9-29,128` | the `"pi"` manifest key in package.json | `retained under functional constraint` | The external manifest schema of the baseline extension ecosystem; renaming it would make the extensions/skills/prompts/themes of every existing package undiscoverable. The function name `read-package-pi-manifest` accurately describes that external schema. |
+| `src/cadr-evals/suites.lisp:239-246` | `@earendil-works/pi-coding-agent` | `legitimately retained` | Used only to detect whether a generated extension still references the legacy TypeScript API; it is an audit input, not an identity. |
+| `src/cadr-ai/models.generated.lisp:1`, `src/cadr-ai/image-models.generated.lisp:1` and the corresponding refresh scripts | the `pi-ai 0.83.0` source comment | `legitimately retained` | Auditable provenance for the fixed catalog. |
+| `src/cadr-ai/support/release.lisp:10-21` | `aligned with pi v0.84.1 (+0, 53fa77ccd)` | `legitimately retained` | A version-relationship declaration; the specification explicitly requires it to be retained. |
+| `src/cadr-cli/interactive/components/announcement.lisp:3-40` | `pi has joined Earendil` and the original blog URL | `legitimately retained` | This is a ported historical announcement component describing an upstream event that already happened on 2026-04-08; changing it to Cadr would manufacture a false history, and it is not enabled in the default interface. |
+| `src/cadr-cli/interactive/selectors/common.lisp:118,128` | the `Pi Text component` docstring | `legitimately retained` | It only explains internally its cross-implementation-comparison origin and layout semantics. |
+| `scripts/render-diff.py`, `scripts/goal11-pi-baseline-bench.mjs`, `scripts/export-ts-payloads.ts`, `cadr-evals.asd:30` | the pi baseline name, the fixed commit/package | `legitimately retained` | Cross-implementation-comparison and provenance inputs; replacing them would leave the gates with nothing to check. |
+| pi references in the README, the CHANGELOG, `docs/` and tests/fixtures that are explicitly written as "original/aligned/baseline/migration" | upstream explanation | `legitimately retained` | Outward identity and provenance acknowledgement must be distinguished; the identity gate needs an item-by-item allowlist and must not delete them globally. |
 
-## 8. 结论
+## 8. Conclusion
 
-审计没有发现第二个具备注册白名单证据的归因字段；除 Radius client/API 合同
-外，所有对外自称 pi 的值均应替换。问题不止规格列出的五处：环境变量有 14
-个，另发现导出 HTML storage/meta、通知示例、provider synthetic call ID、Radius
-自由文案与导出 Lisp API 名。
+The audit found no second attribution field that has registration-allowlist
+evidence; apart from the Radius client/API contracts, every value that calls
+itself pi outwardly should be replaced. The problem is not confined to the five
+places the specification lists: there are 14 environment variables, and the
+audit additionally found the exported HTML storage/meta, the notification
+example, the provider synthetic call ID, the Radius free copy and the exported
+Lisp API names.
 
-Part C 的门禁必须 fail-closed：产品源码中新出现 `pi`/上游域名/仓库名时，只有
-本文件第 7 节对应的逐条 allowlist 才可通过；不能用目录级或正则级大豁免把
-未来残留一起吞掉。
+Part C's gate must be fail-closed: when `pi` / an upstream domain / an upstream
+repository name newly appears in the product source, only the item-by-item
+allowlist that corresponds to section 7 of this file may pass; a directory-level
+or regex-level blanket exemption must not be used to swallow future residue
+along with it.
 
-## 9. Part C 实施处置（2026-08-05）
+## 9. Part C implementation dispositions (2026-08-05)
 
-| 批次 | 处置 | 提交 |
+| Batch | Disposition | Commit |
 |---|---|---|
-| C1 | 产品 slug、显示名、规范仓库、默认 viewer 的身份常量组进入 `release.lisp`；第三方 UA/header 与 xAI referrer 统一为 Cadr。xAI 真实 device-code 请求返回 HTTP 200。 | `cc4f1f0e0` |
-| C2 | `/share` 默认 viewer 改为 `https://cadr.dev/session/`，支持 `CADR_SHARE_VIEWER_URL` 覆盖并在输出中明示 viewer；版本检查改为仅在 `CADR_VERSION_CHECK_URL` 非空时启用。 | `ac23e11bb` |
-| C3 | 14 个生产 `PI_*` 名称按批准映射硬切为 `CADR_*`，无 alias、warning 或旧名 fallback。 | `af8612d95` |
-| C4 | changelog 仓库、WSL 临时文件、通知标题、导出 storage key、synthetic tool ID 与 Radius 自由文案全部改为 Cadr；外部协议与基线溯源不动。 | `5eb36c930` |
+| C1 | The identity constant group for the product slug, display name, canonical repository and default viewer moved into `release.lisp`; the third-party UA/headers and the xAI referrer were unified as Cadr. A real xAI device-code request returned HTTP 200. | `cc4f1f0e0` |
+| C2 | The `/share` default viewer was changed to `https://cadr.dev/session/`, with support for a `CADR_SHARE_VIEWER_URL` override and the viewer stated explicitly in the output; the version check was changed to be enabled only when `CADR_VERSION_CHECK_URL` is non-empty. | `ac23e11bb` |
+| C3 | The 14 production `PI_*` names were hard-switched to `CADR_*` per the approved mapping, with no alias, warning or old-name fallback. | `af8612d95` |
+| C4 | The changelog repository, the WSL temporary file, the notification title, the exported storage key, the synthetic tool ID and the Radius free copy were all changed to Cadr; the external protocols and the baseline provenance were left untouched. | `5eb36c930` |
 
-当前生产源中的旧环境变量已清零；Radius client/API/wire、扩展 manifest、catalog
-来源、固定基线工具与 `aligned with pi` 声明继续按第 7 节精确保留。Part D 将该
-边界固化为受跟踪 allowlist、合成自测和真实树扫描，不把本审计文本当运行时豁免。
+The old environment variables in the current production source are down to zero;
+the Radius client/API/wire, the extension manifest, the catalog provenance, the
+fixed-baseline tooling and the `aligned with pi` declaration continue to be
+retained exactly as section 7 specifies. Part D freezes that boundary into a
+tracked allowlist, a synthetic self-test and a real tree scan, and does not treat
+this audit text as a runtime exemption.
 
-## 10. Goal 17 固定基线门禁扩展复核（2026-08-05）
+## 10. Goal 17 fixed-baseline gate extension re-review (2026-08-05)
 
-Goal 17 将呈现、tool result 与 event 对拍扩展为三个真实固定基线驱动器，并把
-它们纳入 `verify.sh`。这些驱动器必须在代码中精确区分 `pi` 与 `cadr` 两侧、启动
-上游进程、识别上游路径/身份字符串，并仅向上游子进程注入 `PI_OFFLINE`；这些
-字样是对拍输入，不是 Cadr 自我标识或运行时兼容入口。
+Goal 17 extended the presentation, tool result and event cross-implementation
+comparisons into three real fixed-baseline drivers, and brought them into
+`verify.sh`. Those drivers must distinguish the `pi` and the `cadr` side
+precisely in code, start the upstream process, recognize upstream path/identity
+strings, and inject `PI_OFFLINE` into the upstream subprocess only; that wording
+is a cross-implementation-comparison input, not Cadr self-identification or a
+runtime compatibility entry point.
 
-组织拆分同时移动了 config selector、direct user bash 与 package update 的基线
-出处注释，但没有改变产品身份。Goal 17 收尾删除了已失效的 Pi 侧调度启发式
-注释及对应 disposition；Goal 17 新增固定基线 construction 驱动后，真实树为
-**353 个命中、316 条精确
-disposition、1 个 digest 锁定 opaque 文件**。allowlist 仍逐行锁定完整文本与出现
-次数；任何新增、删除、移动或数量变化都会 fail-closed，不存在目录级豁免。
+The organizational split also moved the baseline-provenance comments for the
+config selector, direct user bash and package update, but it did not change the
+product identity. The Goal 17 wrap-up deleted the obsolete Pi-side
+scheduling-heuristic comment and the corresponding disposition; after Goal 17
+added the fixed-baseline construction driver, the real tree is
+**353 hits, 316 exact
+dispositions, 1 digest-locked opaque file**. The allowlist still locks the full
+text and the occurrence count line by line; any addition, deletion, move or
+change in count fails closed, and there is no directory-level exemption.

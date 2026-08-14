@@ -57,7 +57,7 @@ classes, tool files, extension type fields, public API export count, RPC
 methods, process exit codes, session format versions, and the
 file add/delete/rename catch-all.
 
-**Completeness argument ("还有没有第十类")**: the classes above were closed by
+**Completeness argument ("is there a tenth class?")**: the classes above were closed by
 walking every producer of a *named, user-observable or contract-bound set* in
 the baseline tree: CLI surface (flags, slash commands, exit codes), persisted
 or wire contracts (settings keys, session format versions, RPC methods,

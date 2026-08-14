@@ -1,25 +1,30 @@
-# GOAL v7 扩展 API 限定扩充提案
+# GOAL v7 extension API bounded expansion proposal
 
-> 历史提案：文内 `71efc6f0…` 仅是 Goal 7 当时的审计锚点；Goal 9 起当前
-> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+> Historical proposal: the `71efc6f0…` in this document is only Goal 7's audit
+> anchor at the time; from Goal 9 onward the current canonical baseline is
+> `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 
-状态：**第 1–8 项已实现并通过验收；扩大后的 API 已重新冻结。**
+Status: **Items 1–8 are implemented and have passed acceptance; the expanded API has been re-frozen.**
 
-固定行为基线：
-`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`，checkout
-`/tmp/cadr-parity-71efc6f0`。本文所有 `file:line` 均指该提交。
+Fixed behavior baseline:
+`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`, checkout
+`/tmp/cadr-parity-71efc6f0`. Every `file:line` in this document refers to that commit.
 
-## 1. 边界
+## 1. Boundary
 
-本提案只解冻：
+This proposal unfreezes only:
 
-1. Wave 2 会话、agent event spine 和队列测试直接需要的、审计提交已经存在的
-   extension lifecycle events；
-2. 审计提交 RPC 协议已经存在的 extension UI request/response surface；
-3. 上述新增面的 Lisp 命名、payload 表示、结果表示和 `cadr-cli` bridge。
+1. the extension lifecycle events that the Wave 2 session, the agent event
+   spine and the queue tests directly need, and that already exist in the audit
+   commit;
+2. the extension UI request/response surface that already exists in the audit
+   commit's RPC protocol;
+3. the Lisp naming, payload representation, result representation and
+   `cadr-cli` bridge for the surfaces added above.
 
-明确不解冻 provider、工具执行语义、TUI 组件或其余扩展能力。现有四个事件、
-宏签名和行为保持原样：
+It explicitly does not unfreeze providers, tool execution semantics, TUI
+components, or any remaining extension capability. The existing four events,
+the macro signature and the behavior stay as they are:
 
 ```lisp
 (define-event-hook event &key (priority 0) handler)
@@ -30,83 +35,93 @@
 :tool-call-after
 ```
 
-既有 `extension-event-*` accessor、`extension-hook-result`、
-`make-extension-hook-result`、handler 顺序、priority、replacement、append、
-block/error 隔离、snapshot/reload 与 stale-context 语义均不变。
+The existing `extension-event-*` accessors, `extension-hook-result`,
+`make-extension-hook-result`, handler order, priority, replacement, append,
+block/error isolation, snapshot/reload and stale-context semantics are all
+unchanged.
 
-## 2. Lisp 公共表示
+## 2. The Lisp public representation
 
-### 2.1 事件名
+### 2.1 Event names
 
-TypeScript `snake_case` event 名映射为 Common Lisp keyword 的 kebab-case。
-原有四个事件不改名、不加别名：
+TypeScript `snake_case` event names map to kebab-case Common Lisp keywords.
+The four existing events are not renamed and get no alias:
 
-| 原版事件 | Lisp 事件 | 处理 |
+| Baseline event | Lisp event | Handling |
 |---|---|---|
-| `turn_start` | `:turn-start` | 已有，零变更 |
-| `turn_end` | `:turn-end` | 已有，零变更 |
-| `tool_call` | `:tool-call-before` | 已有，零变更 |
-| `tool_result` | `:tool-call-after` | 已有，零变更 |
+| `turn_start` | `:turn-start` | Existing, zero change |
+| `turn_end` | `:turn-end` | Existing, zero change |
+| `tool_call` | `:tool-call-before` | Existing, zero change |
+| `tool_result` | `:tool-call-after` | Existing, zero change |
 
-其余获批事件按下表新增。
+The remaining approved events are added according to the tables below.
 
 ### 2.2 Payload
 
-新增一个公开 accessor：
+One public accessor is added:
 
 ```lisp
-(extension-event-payload event) ; => 只读 property list
+(extension-event-payload event) ; => read-only property list
 ```
 
-新事件的字段以 kebab-case keyword 保存；camelCase 只存在于原版 TypeScript
-或 RPC JSON。嵌套对象同样使用只读 plist，序列使用 list/vector，既有 cadr
-domain object 直接复用。缺失 optional 字段不出现在 plist 中；显式 false
-使用 `nil`，需要区分“缺失”和 `nil` 时用 `(getf plist key sentinel)`。
+The new events' fields are stored as kebab-case keywords; camelCase exists only
+in the baseline TypeScript or in the RPC JSON. Nested objects likewise use
+read-only plists, sequences use list/vector, and existing cadr domain objects
+are reused directly. A missing optional field does not appear in the plist; an
+explicit false uses `nil`, and where "missing" has to be distinguished from
+`nil`, use `(getf plist key sentinel)`.
 
-原有四个事件继续使用既有专用 accessor；本提案不改变它们的 payload，也不
-要求旧扩展改用 `extension-event-payload`。
+The four existing events keep using their existing dedicated accessors; this
+proposal does not change their payload, and does not require old extensions to
+switch to `extension-event-payload`.
 
-TypeScript `AbortSignal` 映射为新的 opaque
-`extension-cancellation-signal`；只公开：
+TypeScript's `AbortSignal` maps to a new opaque
+`extension-cancellation-signal`; only the following is exposed:
 
 ```lisp
 (extension-cancellation-aborted-p signal) ; => boolean
 ```
 
-这同一对象用于 lifecycle payload 的 `:signal` 和 UI dialog 的 `:signal`。
+This same object is used for the `:signal` of the lifecycle payload and the
+`:signal` of the UI dialog.
 
-### 2.3 Handler 返回值
+### 2.3 Handler return values
 
-旧事件仍只接受 `nil` 或 `extension-hook-result`，验证规则完全不变。
+Old events still accept only `nil` or `extension-hook-result`, and the
+validation rules are entirely unchanged.
 
-新事件使用原版 object-return 语义的 Lisp 等价：handler 返回 `nil` 或严格
-校验的 plist。每个事件只接受下表列出的 key；未知 key、错误类型或不允许有
-返回值的事件返回非 `nil` 都触发该 extension 的执行错误，不污染其他扩展。
-多个 handler 的合并、短路和链式改写按固定参考 runner 实现：
-`packages/coding-agent/src/core/extensions/runner.ts:787-948`。
+New events use the Lisp equivalent of the baseline's object-return semantics: a
+handler returns `nil` or a strictly validated plist. Each event accepts only
+the keys listed in the tables below; an unknown key, a wrong type, or a
+non-`nil` return from an event that is not allowed to have a return value each
+raise an execution error for that extension, without contaminating other
+extensions. The merging, short-circuiting and chained rewriting across multiple
+handlers follow the fixed reference runner implementation:
+`packages/coding-agent/src/core/extensions/runner.ts:787-948`.
 
-这样不修改 `define-event-hook` 或 `make-extension-hook-result` 的签名，也不会
-把新事件的结果语义塞进既有四事件。
+This way the signatures of `define-event-hook` and
+`make-extension-hook-result` are not modified, and the new events' result
+semantics are not stuffed into the four existing events.
 
-## 3. 新增 lifecycle events
+## 3. New lifecycle events
 
 ### 3.1 Session lifecycle
 
-| 原版事件 → Lisp | payload 字段（原版 → Lisp） | handler result plist | 固定基线 |
+| Baseline event → Lisp | payload field (baseline → Lisp) | handler result plist | Fixed baseline |
 |---|---|---|---|
-| `session_start` → `:session-start` | `reason` → `:reason` (`:startup/:reload/:new/:resume/:fork`); `previousSessionFile?` → `:previous-session-file` | 无 | `packages/coding-agent/src/core/extensions/types.ts:561-568` |
-| `session_info_changed` → `:session-info-changed` | `name` → `:name`，清除时为 `nil` | 无 | `packages/coding-agent/src/core/extensions/types.ts:570-575` |
+| `session_start` → `:session-start` | `reason` → `:reason` (`:startup/:reload/:new/:resume/:fork`); `previousSessionFile?` → `:previous-session-file` | none | `packages/coding-agent/src/core/extensions/types.ts:561-568` |
+| `session_info_changed` → `:session-info-changed` | `name` → `:name`, `nil` when cleared | none | `packages/coding-agent/src/core/extensions/types.ts:570-575` |
 | `session_before_switch` → `:session-before-switch` | `reason` → `:reason` (`:new/:resume`); `targetSessionFile?` → `:target-session-file` | `(:cancel-p boolean)` | `packages/coding-agent/src/core/extensions/types.ts:577-582,1103-1105` |
 | `session_before_fork` → `:session-before-fork` | `entryId` → `:entry-id`; `position` → `:position` (`:before/:at`) | `:cancel-p`, `:skip-conversation-restore-p` | `packages/coding-agent/src/core/extensions/types.ts:584-589,1107-1110` |
 | `session_before_compact` → `:session-before-compact` | `preparation` → `:preparation`; `branchEntries` → `:branch-entries`; `customInstructions?` → `:custom-instructions`; `reason` → `:reason` (`:manual/:threshold/:overflow`); `willRetry` → `:will-retry-p`; `signal` → `:signal` | `:cancel-p`; `:compaction` | `packages/coding-agent/src/core/extensions/types.ts:591-602,1112-1115` |
-| `session_compact` → `:session-compact` | `compactionEntry` → `:compaction-entry`; `fromExtension` → `:from-extension-p`; `reason` → `:reason`; `willRetry` → `:will-retry-p` | 无 | `packages/coding-agent/src/core/extensions/types.ts:604-613` |
-| `session_shutdown` → `:session-shutdown` | `reason` → `:reason` (`:quit/:reload/:new/:resume/:fork`); `targetSessionFile?` → `:target-session-file` | 无 | `packages/coding-agent/src/core/extensions/types.ts:615-621` |
+| `session_compact` → `:session-compact` | `compactionEntry` → `:compaction-entry`; `fromExtension` → `:from-extension-p`; `reason` → `:reason`; `willRetry` → `:will-retry-p` | none | `packages/coding-agent/src/core/extensions/types.ts:604-613` |
+| `session_shutdown` → `:session-shutdown` | `reason` → `:reason` (`:quit/:reload/:new/:resume/:fork`); `targetSessionFile?` → `:target-session-file` | none | `packages/coding-agent/src/core/extensions/types.ts:615-621` |
 | `session_before_tree` → `:session-before-tree` | `preparation` → `:preparation`; `signal` → `:signal` | `:cancel-p`; `:summary`; `:details`; `:usage`; `:custom-instructions`; `:replace-instructions-p`; `:label` | `packages/coding-agent/src/core/extensions/types.ts:638-643,1117-1130` |
-| `session_tree` → `:session-tree` | `newLeafId` → `:new-leaf-id`; `oldLeafId` → `:old-leaf-id`; `summaryEntry?` → `:summary-entry`; `fromExtension?` → `:from-extension-p` | 无 | `packages/coding-agent/src/core/extensions/types.ts:645-652` |
+| `session_tree` → `:session-tree` | `newLeafId` → `:new-leaf-id`; `oldLeafId` → `:old-leaf-id`; `summaryEntry?` → `:summary-entry`; `fromExtension?` → `:from-extension-p` | none | `packages/coding-agent/src/core/extensions/types.ts:645-652` |
 
-`CompactionPreparation` 的嵌套 plist 精确字段：
+The exact fields of `CompactionPreparation`'s nested plist:
 
-| 原版字段 | Lisp key |
+| Baseline field | Lisp key |
 |---|---|
 | `firstKeptEntryId` | `:first-kept-entry-id` |
 | `messagesToSummarize` | `:messages-to-summarize` |
@@ -117,12 +132,12 @@ TypeScript `AbortSignal` 映射为新的 opaque
 | `fileOps` | `:file-operations` |
 | `settings` | `:settings` |
 
-出处：
-`packages/coding-agent/src/core/compaction/compaction.ts:688-708`。
+Source:
+`packages/coding-agent/src/core/compaction/compaction.ts:688-708`.
 
-`TreePreparation` 的嵌套 plist 精确字段：
+The exact fields of `TreePreparation`'s nested plist:
 
-| 原版字段 | Lisp key |
+| Baseline field | Lisp key |
 |---|---|
 | `targetId` | `:target-id` |
 | `oldLeafId` | `:old-leaf-id` |
@@ -133,62 +148,65 @@ TypeScript `AbortSignal` 映射为新的 opaque
 | `replaceInstructions?` | `:replace-instructions-p` |
 | `label?` | `:label` |
 
-出处：`packages/coding-agent/src/core/extensions/types.ts:623-636`。
+Source: `packages/coding-agent/src/core/extensions/types.ts:623-636`.
 
-扩展提供的 `:compaction` 必须是完整 compaction result：
+The `:compaction` an extension supplies must be a complete compaction result:
 `:summary`, `:first-kept-entry-id`, `:tokens-before`,
-`:estimated-tokens-after?`, `:usage?`, `:details?`，出处
-`packages/coding-agent/src/core/compaction/compaction.ts:87-97`。
+`:estimated-tokens-after?`, `:usage?`, `:details?`; source
+`packages/coding-agent/src/core/compaction/compaction.ts:87-97`.
 
-### 3.2 Agent、message 与 input lifecycle
+### 3.2 Agent, message and input lifecycle
 
-| 原版事件 → Lisp | payload 字段（原版 → Lisp） | handler result plist | 固定基线 |
+| Baseline event → Lisp | payload field (baseline → Lisp) | handler result plist | Fixed baseline |
 |---|---|---|---|
-| `context` → `:context` | `messages` → `:messages` | `(:messages list)`；按 handler 顺序链式替换 | `packages/coding-agent/src/core/extensions/types.ts:669-673,1065-1067` |
-| `before_agent_start` → `:before-agent-start` | `prompt` → `:prompt`; `images?` → `:images`; `systemPrompt` → `:system-prompt`; `systemPromptOptions` → `:system-prompt-options` | `:message`; `:system-prompt`，后者链式替换 | `packages/coding-agent/src/core/extensions/types.ts:698-709,1097-1101` |
-| `agent_start` → `:agent-start` | 无 | 无 | `packages/coding-agent/src/core/extensions/types.ts:711-714` |
-| `agent_end` → `:agent-end` | `messages` → `:messages` | 无 | `packages/coding-agent/src/core/extensions/types.ts:716-720` |
-| `agent_settled` → `:agent-settled` | 无 | 无 | `packages/coding-agent/src/core/extensions/types.ts:722-725` |
-| `message_start` → `:message-start` | `message` → `:message` | 无 | `packages/coding-agent/src/core/extensions/types.ts:742-746` |
-| `message_update` → `:message-update` | `message` → `:message`; `assistantMessageEvent` → `:assistant-message-event` | 无 | `packages/coding-agent/src/core/extensions/types.ts:748-753` |
-| `message_end` → `:message-end` | `message` → `:message` | `(:message replacement)`；replacement role 必须不变并按 handler 顺序链式替换 | `packages/coding-agent/src/core/extensions/types.ts:755-759,1092-1095`; runner `:830-870` |
-| `input` → `:input` | `text` → `:text`; `images?` → `:images`; `source` → `:source` (`:interactive/:rpc/:extension`); `streamingBehavior?` → `:streaming-behavior` (`:steer/:follow-up`) | `(:action :continue)`；`(:action :transform :text ... :images ...)`；或 `(:action :handled)` | `packages/coding-agent/src/core/extensions/types.ts:824-847` |
+| `context` → `:context` | `messages` → `:messages` | `(:messages list)`; chained replacement in handler order | `packages/coding-agent/src/core/extensions/types.ts:669-673,1065-1067` |
+| `before_agent_start` → `:before-agent-start` | `prompt` → `:prompt`; `images?` → `:images`; `systemPrompt` → `:system-prompt`; `systemPromptOptions` → `:system-prompt-options` | `:message`; `:system-prompt`, the latter chain-replaced | `packages/coding-agent/src/core/extensions/types.ts:698-709,1097-1101` |
+| `agent_start` → `:agent-start` | none | none | `packages/coding-agent/src/core/extensions/types.ts:711-714` |
+| `agent_end` → `:agent-end` | `messages` → `:messages` | none | `packages/coding-agent/src/core/extensions/types.ts:716-720` |
+| `agent_settled` → `:agent-settled` | none | none | `packages/coding-agent/src/core/extensions/types.ts:722-725` |
+| `message_start` → `:message-start` | `message` → `:message` | none | `packages/coding-agent/src/core/extensions/types.ts:742-746` |
+| `message_update` → `:message-update` | `message` → `:message`; `assistantMessageEvent` → `:assistant-message-event` | none | `packages/coding-agent/src/core/extensions/types.ts:748-753` |
+| `message_end` → `:message-end` | `message` → `:message` | `(:message replacement)`; the replacement's role must not change, and it is chain-replaced in handler order | `packages/coding-agent/src/core/extensions/types.ts:755-759,1092-1095`; runner `:830-870` |
+| `input` → `:input` | `text` → `:text`; `images?` → `:images`; `source` → `:source` (`:interactive/:rpc/:extension`); `streamingBehavior?` → `:streaming-behavior` (`:steer/:follow-up`) | `(:action :continue)`; `(:action :transform :text ... :images ...)`; or `(:action :handled)` | `packages/coding-agent/src/core/extensions/types.ts:824-847` |
 
-### 3.3 Tool execution 与 model lifecycle
+### 3.3 Tool execution and model lifecycle
 
-| 原版事件 → Lisp | payload 字段（原版 → Lisp） | handler result | 固定基线 |
+| Baseline event → Lisp | payload field (baseline → Lisp) | handler result | Fixed baseline |
 |---|---|---|---|
-| `tool_execution_start` → `:tool-execution-start` | `toolCallId` → `:tool-call-id`; `toolName` → `:tool-name`; `args` → `:arguments` | 无 | `packages/coding-agent/src/core/extensions/types.ts:761-767` |
-| `tool_execution_update` → `:tool-execution-update` | 同上；`partialResult` → `:partial-result` | 无 | `packages/coding-agent/src/core/extensions/types.ts:769-776` |
-| `tool_execution_end` → `:tool-execution-end` | `toolCallId`, `toolName`; `result` → `:result`; `isError` → `:error-p` | 无 | `packages/coding-agent/src/core/extensions/types.ts:778-785` |
-| `model_select` → `:model-select` | `model` → `:model`; `previousModel` → `:previous-model`; `source` → `:source` (`:set/:cycle/:restore`) | 无 | `packages/coding-agent/src/core/extensions/types.ts:791-799` |
-| `thinking_level_select` → `:thinking-level-select` | `level` → `:level`; `previousLevel` → `:previous-level` | 无 | `packages/coding-agent/src/core/extensions/types.ts:801-806` |
+| `tool_execution_start` → `:tool-execution-start` | `toolCallId` → `:tool-call-id`; `toolName` → `:tool-name`; `args` → `:arguments` | none | `packages/coding-agent/src/core/extensions/types.ts:761-767` |
+| `tool_execution_update` → `:tool-execution-update` | as above; `partialResult` → `:partial-result` | none | `packages/coding-agent/src/core/extensions/types.ts:769-776` |
+| `tool_execution_end` → `:tool-execution-end` | `toolCallId`, `toolName`; `result` → `:result`; `isError` → `:error-p` | none | `packages/coding-agent/src/core/extensions/types.ts:778-785` |
+| `model_select` → `:model-select` | `model` → `:model`; `previousModel` → `:previous-model`; `source` → `:source` (`:set/:cycle/:restore`) | none | `packages/coding-agent/src/core/extensions/types.ts:791-799` |
+| `thinking_level_select` → `:thinking-level-select` | `level` → `:level`; `previousLevel` → `:previous-level` | none | `packages/coding-agent/src/core/extensions/types.ts:801-806` |
 
-这些只增加观察事件；不会修改 provider 或工具执行语义。工具拦截/结果改写继续
-走既有 `:tool-call-before` / `:tool-call-after`，其 reference 对应分别为
-`packages/coding-agent/src/core/extensions/types.ts:853-912,1071-1075` 和
-`:914-973,1085-1090`。
+These add observation events only; they do not modify provider or tool
+execution semantics. Tool interception/result rewriting continues to go through
+the existing `:tool-call-before` / `:tool-call-after`, whose corresponding
+references are
+`packages/coding-agent/src/core/extensions/types.ts:853-912,1071-1075` and
+`:914-973,1085-1090` respectively.
 
-审计提交还有下列 extension events，但本提案明确不新增：
+The audit commit also has the following extension events, but this proposal
+explicitly does not add them:
 
-| 不新增事件 | 原因 | 固定基线 |
+| Event not added | Reason | Fixed baseline |
 |---|---|---|
-| `project_trust` | 安全模型与本 Wave 无关 | `packages/coding-agent/src/core/extensions/types.ts:519-541` |
-| `resources_discover` | resource/skill 生态不在本次限定解冻 | `packages/coding-agent/src/core/extensions/types.ts:543-555` |
-| `before_provider_request`, `before_provider_headers`, `after_provider_response` | provider 层继续冻结 | `packages/coding-agent/src/core/extensions/types.ts:675-696` |
-| `user_bash` | 工具语义继续冻结 | `packages/coding-agent/src/core/extensions/types.ts:808-821,1077-1083` |
+| `project_trust` | The security model has nothing to do with this Wave | `packages/coding-agent/src/core/extensions/types.ts:519-541` |
+| `resources_discover` | The resource/skill ecosystem is not in this bounded unfreeze | `packages/coding-agent/src/core/extensions/types.ts:543-555` |
+| `before_provider_request`, `before_provider_headers`, `after_provider_response` | The provider layer stays frozen | `packages/coding-agent/src/core/extensions/types.ts:675-696` |
+| `user_bash` | Tool semantics stay frozen | `packages/coding-agent/src/core/extensions/types.ts:808-821,1077-1083` |
 
 ## 4. RPC extension UI surface
 
-### 4.1 Lisp context 函数
+### 4.1 Lisp context functions
 
-现有函数签名不变：
+The existing function signature is unchanged:
 
 ```lisp
 (extension-context-notify context message &key (level :info))
 ```
 
-新增且仅新增以下公共函数：
+The following public functions are added, and only these:
 
 ```lisp
 (extension-context-select
@@ -219,102 +237,117 @@ TypeScript `AbortSignal` 映射为新的 opaque
 (extension-context-set-editor-text context text)
 ```
 
-原版 dialog 签名与 options：
-`packages/coding-agent/src/core/extensions/types.ts:95-100,131-142`；status/widget/
-title/editor surface：`:147-170,192-193,215-222`。
+The baseline dialog signatures and options:
+`packages/coding-agent/src/core/extensions/types.ts:95-100,131-142`; the
+status/widget/title/editor surface: `:147-170,192-193,215-222`.
 
-不新增 `onTerminalInput`、working indicator、custom component、footer/header、
-paste、autocomplete、custom editor、theme 或 tool-expansion API；它们不在
-RPC extension UI wire union 内，且会越过 TUI 冻结。
+No `onTerminalInput`, working indicator, custom component, footer/header,
+paste, autocomplete, custom editor, theme or tool-expansion API is added; they
+are not inside the RPC extension UI wire union, and they would cross the TUI
+freeze.
 
 ### 4.2 RPC JSONL wire
 
-wire 字段名和值逐字保持参考，不 Lisp 化：
+The wire field names and values keep the reference verbatim and are not
+Lisp-ified:
 
-下表中的 `rpc-types.ts` 与 `rpc-mode.ts` 分别指
-`packages/coding-agent/src/modes/rpc/rpc-types.ts` 和
-`packages/coding-agent/src/modes/rpc/rpc-mode.ts`。
+In the table below, `rpc-types.ts` and `rpc-mode.ts` refer to
+`packages/coding-agent/src/modes/rpc/rpc-types.ts` and
+`packages/coding-agent/src/modes/rpc/rpc-mode.ts` respectively.
 
-| Lisp 调用 | stdout request | stdin response/default | 固定基线 |
+| Lisp call | stdout request | stdin response/default | Fixed baseline |
 |---|---|---|---|
-| `extension-context-select` | `{"type":"extension_ui_request","id", "method":"select","title","options","timeout"?}` | `{"type":"extension_ui_response","id","value"}` 或 `cancelled:true`→`nil` | `rpc-types.ts:238-240,280-283`; `rpc-mode.ts:135-139` |
-| `extension-context-confirm` | method `confirm`, `title`, `message`, `timeout?` | `confirmed:boolean`；cancel→`nil` | `rpc-types.ts:240,280-283`; `rpc-mode.ts:141-144` |
-| `extension-context-input` | method `input`, `title`, `placeholder?`, `timeout?` | `value` 或 cancel→`nil` | `rpc-types.ts:241-248,280-283`; `rpc-mode.ts:146-149` |
-| `extension-context-editor` | method `editor`, `title`, `prefill?` | `value` 或 cancel→`nil` | `rpc-types.ts:249,280-283`; `rpc-mode.ts:253-269` |
+| `extension-context-select` | `{"type":"extension_ui_request","id", "method":"select","title","options","timeout"?}` | `{"type":"extension_ui_response","id","value"}` or `cancelled:true`→`nil` | `rpc-types.ts:238-240,280-283`; `rpc-mode.ts:135-139` |
+| `extension-context-confirm` | method `confirm`, `title`, `message`, `timeout?` | `confirmed:boolean`; cancel→`nil` | `rpc-types.ts:240,280-283`; `rpc-mode.ts:141-144` |
+| `extension-context-input` | method `input`, `title`, `placeholder?`, `timeout?` | `value` or cancel→`nil` | `rpc-types.ts:241-248,280-283`; `rpc-mode.ts:146-149` |
+| `extension-context-editor` | method `editor`, `title`, `prefill?` | `value` or cancel→`nil` | `rpc-types.ts:249,280-283`; `rpc-mode.ts:253-269` |
 | `extension-context-notify` | method `notify`, `message`, `notifyType?` | fire-and-forget | `rpc-types.ts:250-256`; `rpc-mode.ts:151-160` |
 | `extension-context-set-status` | method `setStatus`, `statusKey`, `statusText` | fire-and-forget | `rpc-types.ts:257-263`; `rpc-mode.ts:167-176` |
 | `extension-context-set-widget` | method `setWidget`, `widgetKey`, `widgetLines`, `widgetPlacement?` | fire-and-forget | `rpc-types.ts:264-271`; `rpc-mode.ts:194-207` |
 | `extension-context-set-title` | method `setTitle`, `title` | fire-and-forget | `rpc-types.ts:272`; `rpc-mode.ts:217-225` |
 | `extension-context-set-editor-text` | method `set_editor_text`, `text` | fire-and-forget | `rpc-types.ts:273`; `rpc-mode.ts:237-245` |
 
-所有 request `id` 都唯一。dialog request 在 response、timeout 或 signal abort
-后只完成一次并移除 pending entry；参考状态机：
-`packages/coding-agent/src/modes/rpc/rpc-mode.ts:89-130`。RPC bind 使用该
-context 的出处为同文件 `:312-320`。
+Every request `id` is unique. A dialog request completes exactly once after a
+response, a timeout or a signal abort, and removes the pending entry; reference
+state machine:
+`packages/coding-agent/src/modes/rpc/rpc-mode.ts:89-130`. The source for the
+RPC bind's use of that context is `:312-320` in the same file.
 
-EOF/close 时所有 pending dialog 必须以各自默认值完成，不悬挂线程；迟到或
-未知 `extension_ui_response.id` 返回 RPC error，不影响其他 request。
+On EOF/close every pending dialog must complete with its own default value and
+leave no hanging thread; a late or unknown `extension_ui_response.id` returns
+an RPC error and does not affect other requests.
 
-### 4.3 分层
+### 4.3 Layering
 
-- `cadr-agent` 只持有 UI callback protocol，不依赖 `cadr-cli` 或 `cadr-tui`。
-- `cadr-cli` 的 RPC bridge 负责 request id、pending map、timeout/signal、
-  JSONL request/response。
-- `cadr-cli` 的 TUI glue 只能组合现有 `cadr-tui` 组件与 overlay API。若任何
-  方法无法在不改 `cadr-tui` 的前提下实现，立即再次 blocked，不准顺手改组件。
-- print/JSON 无 dialog-capable UI：select/input/editor 返回 `nil`，confirm
-  返回 `nil`；fire-and-forget 方法不写 stdout，避免污染协议。
+- `cadr-agent` holds only the UI callback protocol and does not depend on
+  `cadr-cli` or `cadr-tui`.
+- `cadr-cli`'s RPC bridge is responsible for the request id, the pending map,
+  timeout/signal, and the JSONL request/response.
+- `cadr-cli`'s TUI glue may only compose existing `cadr-tui` components and the
+  overlay API. If any method cannot be implemented without changing
+  `cadr-tui`, go blocked again immediately; changing a component along the way
+  is not permitted.
+- print/JSON has no dialog-capable UI: select/input/editor return `nil`, and
+  confirm returns `nil`; the fire-and-forget methods do not write to stdout, so
+  as not to contaminate the protocol.
 
-## 5. 向后兼容门禁
+## 5. The backward-compatibility gate
 
-实现前先在 `test/cadr-agent/extensions-test.lisp` 增加一个失败测试：
+Before implementation, first add a failing test in
+`test/cadr-agent/extensions-test.lisp`:
 
-`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`。
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`.
 
-测试加载一份不修改的旧 API fixture，同时注册：
+The test loads an unmodified old-API fixture that registers, at the same time:
 
 - `define-tool`, `define-command`, `define-prompt-template`;
-- `define-event-hook` 的四个旧事件；
-- 旧 context accessor 与 notify/compact/reload；
-- replacement、append、tool block/reason、priority 与 handler error isolation。
+- the four old events of `define-event-hook`;
+- the old context accessors and notify/compact/reload;
+- replacement, append, tool block/reason, priority and handler error isolation.
 
-它必须证明：
+It must prove:
 
-1. 原 fixture 无修改即可 compile/load；
-2. 四个旧 event 的 payload、顺序、链式 replacement、append 和 block 结果
-   与开工提交 `14fc6eefeb7e9329a2743ba385cf913060240de2` 完全相同；
-3. `define-event-hook` macro lambda list 仍为
-   `(event &key (priority 0) handler)`；
-4. 所有旧 export 仍为 external symbol；只允许增加本文列出的 export；
-5. 旧 event 返回 plist 仍报原错误，新增 event 返回
-   `extension-hook-result` 也报 event-specific 类型错误，防止两个 contract
-   静默串线。
+1. the original fixture compiles/loads with no modification;
+2. the payload, order, chained replacement, append and block results of the
+   four old events are exactly the same as at the start-of-work commit
+   `14fc6eefeb7e9329a2743ba385cf913060240de2`;
+3. `define-event-hook`'s macro lambda list is still
+   `(event &key (priority 0) handler)`;
+4. every old export is still an external symbol; only the exports listed in
+   this document may be added;
+5. an old event returning a plist still raises the original error, and a new
+   event returning an `extension-hook-result` likewise raises an
+   event-specific type error, preventing the two contracts from silently
+   crossing wires.
 
-同时为每个新增事件至少覆盖 payload、合法结果、非法字段/类型、handler
-failure isolation；RPC UI 用进程级 JSONL 测试覆盖 response、cancel、
-timeout、signal、unknown id、EOF cleanup 和 stdout cleanliness。
+At the same time, cover for each newly added event at least the payload, the
+legal results, illegal fields/types and handler failure isolation; the RPC UI
+uses process-level JSONL tests to cover response, cancel, timeout, signal,
+unknown id, EOF cleanup and stdout cleanliness.
 
-## 6. 本 goal 允许变更与继续冻结
+## 6. What this goal allows to change, and what stays frozen
 
-扩展相关条目从原冻结表移入本 goal 允许变更：
+The extension-related entries move out of the original freeze table into what
+this goal allows to change:
 
-| 允许变更路径/文本 | 仅允许的变化 |
+| Path/text allowed to change | The only change allowed |
 |---|---|
-| `src/cadr-agent/extensions.lisp` | 本文事件、payload、cancel signal 与 UI callback protocol |
-| `src/cadr-agent/package.lisp` | 仅新增本文列出的 public symbols；旧 export 不删不改 |
-| `test/cadr-agent/extensions-test.lisp` | 新事件与旧 API 兼容门禁 |
-| `src/cadr-cli/extensions.lisp` | 仅 UI bridge glue |
-| `test/cadr-cli/extensions-test.lisp` | bridge 单元测试 |
-| `src/cadr-cli/modes/rpc/` | RPC extension UI wire 与进程测试 |
-| `cadr-agent.asd`, `cadr-cli.asd` | 仅新增模块/测试装配确有需要时 |
+| `src/cadr-agent/extensions.lisp` | This document's events, payloads, cancel signal and UI callback protocol |
+| `src/cadr-agent/package.lisp` | Only the public symbols listed in this document are added; old exports are neither deleted nor changed |
+| `test/cadr-agent/extensions-test.lisp` | The new events and the old-API compatibility gate |
+| `src/cadr-cli/extensions.lisp` | Only the UI bridge glue |
+| `test/cadr-cli/extensions-test.lisp` | Bridge unit tests |
+| `src/cadr-cli/modes/rpc/` | The RPC extension UI wire and process tests |
+| `cadr-agent.asd`, `cadr-cli.asd` | Only when a new module/test assembly is genuinely needed |
 
-收尾时上述扩大后的 API 重新冻结，记录逐路径 Git object ID、完整 export 文本
-SHA-256、宏展开/签名测试和 wire fixture SHA-256，并更新
-`docs/architecture.md`。其后恢复“发布即稳定”。
+At closeout the expanded API above is re-frozen, recording the per-path Git
+object ID, the SHA-256 of the complete export text, the
+macroexpansion/signature tests and the wire fixture SHA-256, and
+`docs/architecture.md` is updated. After that, "released means stable" resumes.
 
-继续冻结且必须保持开工 object ID：
+Stays frozen and must keep the start-of-work object ID:
 
-| 路径 | object ID |
+| Path | object ID |
 |---|---|
 | `src/cadr-ai` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` |
 | `test/cadr-ai` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` |
@@ -330,19 +363,21 @@ SHA-256、宏展开/签名测试和 wire fixture SHA-256，并更新
 | `test/cadr-cli/bash-test.lisp` | `3475ab2a3760afa06928d8748a44e1514d1ac461` |
 | `test/cadr-cli/execution-policy-test.lisp` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` |
 
-## 7. 获批的 Wave 2 runtime actions
+## 7. Approved Wave 2 runtime actions
 
-用户已将以下原版 extension actions 一并限定解冻；约束与 lifecycle/UI
-扩充相同：只增加审计提交已有能力，不改变现有宏签名和现有事件语义。
+The user has granted a bounded unfreeze to the following baseline extension
+actions as well; the constraints are the same as for the lifecycle/UI
+expansion: only capabilities the audit commit already has are added, and the
+existing macro signatures and existing event semantics are not changed.
 
-| 获批 action | 直接依赖的目标文件 | 固定基线 |
+| Approved action | Target files that depend on it directly | Fixed baseline |
 |---|---|---|
 | runtime `registerProvider` | `agent-session-dynamic-provider.test.ts`, `suite/agent-session-runtime.test.ts`, regressions `2860` | `packages/coding-agent/src/core/extensions/types.ts:1344-1416` |
 | runtime `registerTool` | `agent-session-dynamic-tools.test.ts`, `suite/agent-session-runtime.test.ts` | `packages/coding-agent/src/core/extensions/types.ts:1233-1240` |
 | `sendMessage` / `sendUserMessage` | `suite/agent-session-queue.test.ts`, regressions `5943` | `packages/coding-agent/src/core/extensions/types.ts:1281-1298` |
 | `setSessionName` | regressions `3686`, `5996` | `packages/coding-agent/src/core/extensions/types.ts:1303-1311` |
 
-Lisp 新增映射固定为：
+The new Lisp mappings are fixed as:
 
 ```lisp
 (define-provider definition &key models)
@@ -357,33 +392,41 @@ Lisp 新增映射固定为：
 (extension-context-set-session-name context name)
 ```
 
-`definition` 复用 `cadr-ai:provider-definition`，`models` 复用
-`cadr-ai:model-metadata`，`tool` 复用 `cadr-ai:tool`；不复制 provider/tool
-domain type。`define-provider` 只覆盖原版 load-time `registerProvider`，
-context 函数覆盖 callback 内立即生效的注册。现有 `define-tool` 继续只允许
-load 期间调用，不改变其既有语义。
+`definition` reuses `cadr-ai:provider-definition`, `models` reuses
+`cadr-ai:model-metadata`, and `tool` reuses `cadr-ai:tool`; the provider/tool
+domain types are not copied. `define-provider` covers only the baseline's
+load-time `registerProvider`, and the context functions cover the registrations
+that take effect immediately inside a callback. The existing `define-tool`
+continues to be callable only during load, and its existing semantics are
+unchanged.
 
-`deliver-as` 精确映射为 `:steer`、`:follow-up`、`:next-turn`；其中
-`sendUserMessage` 只接受前两者。缺省时，idle 直接启动 turn，streaming 时
-必须显式给出投递队列。session name 在写入和事件发出前移除 CR/LF。
+`deliver-as` maps exactly to `:steer`, `:follow-up` and `:next-turn`; of these,
+`sendUserMessage` accepts only the first two. When it is omitted, idle starts a
+turn directly, and while streaming the delivery queue must be given explicitly.
+The session name has CR/LF removed before it is written and before the event is
+emitted.
 
-provider 注册保存在每个 extension host 的 runtime overlay，不改
-`cadr-ai` 的全局 registry。它可覆盖当前 active model 或追加当前 session
-可见 model；extension reload 后 overlay 随 bundle snapshot 一并替换。
-若实现该能力需要修改 `src/cadr-ai` 任一冻结 object ID，必须立即 blocked，
-不得实施该修改。
+Provider registration is stored in each extension host's runtime overlay, and
+`cadr-ai`'s global registry is not changed. It may override the currently
+active model or append a model visible to the current session; after an
+extension reload, the overlay is replaced together with the bundle snapshot.
+If implementing this capability requires modifying any frozen object ID under
+`src/cadr-ai`, it must go blocked immediately, and that modification must not
+be carried out.
 
-## 8. 用户裁决
+## 8. User adjudication
 
-用户已逐项确认第 1–7 项；第 8 项裁决为第 7 节四组 action 全部限定解冻。
-向后兼容门禁必须先于生产实现落地，Part B→C→D 顺序不变。goal 7 收尾时，
-扩大后的 extension API 重新冻结并记录新 object/export/wire hashes。
+The user has confirmed items 1–7 one by one; the adjudication of item 8 is a
+bounded unfreeze of all four groups of actions in section 7.
+The backward-compatibility gate must land before the production implementation,
+and the Part B→C→D order is unchanged. At goal 7's closeout, the expanded
+extension API is re-frozen and the new object/export/wire hashes are recorded.
 
-## 9. 收尾重冻
+## 9. Closeout re-freeze
 
-重冻对象：
+Objects re-frozen:
 
-| 路径 | Git object ID |
+| Path | Git object ID |
 |---|---|
 | `src/cadr-agent/extensions.lisp` | `58539b2849fcf6b6756657d46f94ac09a3c639fc` |
 | `src/cadr-agent/package.lisp` | `15525d7cc8bd860d66b3bbaf0f1ab56174464d39` |
@@ -398,20 +441,21 @@ provider 注册保存在每个 extension host 的 runtime overlay，不改
 | `cadr-agent.asd` | `189df27ae5b63f6619e53e981ad7c4c77a68868b` |
 | `cadr-cli.asd` | `dc112807eea502182a1518f5582f6d47348a6ad2` |
 
-从 `#:define-tool` 到 `#:make-extension-hook-result`（含两端）的完整 export
-文本 SHA-256：
-`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
+The SHA-256 of the complete export text from `#:define-tool` to
+`#:make-extension-hook-result` (both ends included):
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`.
 
-兼容 fixture SHA-256：
+Compatibility fixture SHA-256:
 `e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`
-（`test/fixtures/extensions/legacy-wave2-api.lisp`）。
+(`test/fixtures/extensions/legacy-wave2-api.lisp`).
 
-RPC wire/process fixture SHA-256：
+RPC wire/process fixture SHA-256:
 `6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`
-（`test/fixtures/rpc-process-client.py`）；UI extension fixture SHA-256：
-`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
+(`test/fixtures/rpc-process-client.py`); UI extension fixture SHA-256:
+`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`.
 
-宏签名与旧事件语义由
-`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-持续冻结。此后恢复“发布即稳定”；任何进一步扩面先进入
-`docs/open-questions.md` 等人工裁决。
+The macro signatures and the old event semantics are kept frozen on an ongoing
+basis by
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`.
+After this, "released means stable" resumes; any further surface expansion
+first enters `docs/open-questions.md` and awaits human adjudication.

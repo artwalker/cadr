@@ -497,8 +497,9 @@ written by `scripts/goal20-part-a-noise-bands.py` to
 | 2026-08-14T13:08:34Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,801.4 | 3,993.0 | 360,272 |
 | 2026-08-14T14:08:42Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,418.0 | 0.0 | 360,272 |
 | 2026-08-14T15:57:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 310,513.3 | 0.0 | 360,272 |
+| 2026-08-14T17:09:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 299,350.2 | 3,996.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-14T15:57:44Z) versus `verify-isolated` (2026-08-14T14:08:42Z).
+Latest vs previous: `verify-isolated` (2026-08-14T17:09:15Z) versus `verify-isolated` (2026-08-14T15:57:44Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->
 
@@ -512,25 +513,26 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths-quick` (2026-08-14T12:23:00Z) on `Friend-MachineD`, git `ad8e541b9232`, ratio_gate=`informational-quick-run`, quick=yes, samples=1
+Current: `paired-paths` (2026-08-14T16:48:03Z) on `Friend-MachineD`, git `c287896cec9e`, ratio_gate=`enforced`, quick=no, samples=5
 
-Previous: none. A second `record-paired-paths.py` run is
-required before the ledger can show a delta.
+Previous: `paired-paths` (2026-08-14T16:41:33Z) on `Friend-MachineD`, git `c287896cec9e`, ratio_gate=`enforced`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 7.3 | 5.8 | 1.25× | — | 3.00× |
-| `cli_dispatch.help_render` | 6.9 | 9.6 | 0.72× | — | 6.00× |
-| `cli_dispatch.list_models_registry` | 3,220.5 | 8,355.7 | 0.39× | — | 1.50× |
-| `cli_dispatch.list_models_render` | 4,740.8 | 2,361.5 | 2.01× | — | 4.00× |
-| `provider_stream.stream_roundtrip` | 16,982.6 | 30,888.1 | 0.55× | — | 2.50× |
-| `session_pipeline.session_load` | 9,653.5 | 2,607.3 | 3.70× | — | 9.00× |
-| `session_pipeline.context_walk` | 174.1 | 232.3 | 0.75× | — | 2.00× |
-| `storage_journal.journal_read` | 7,811.3 | 1,820.7 | 4.29× | — | 8.00× |
-| `storage_journal.journal_append` | 16,399.2 | 2,136.7 | 7.67× | — | 12.00× |
+| `cli_dispatch.argv_parse` | 6.7 | 4.1 | 1.63× | 2.84× | 3.00× |
+| `cli_dispatch.help_render` | 5.0 | 0.8 | 6.39× | 5.26× | 6.00× |
+| `cli_dispatch.list_models_registry` | 2,757.0 | 4,530.7 | 0.61× | 0.62× | 1.50× |
+| `cli_dispatch.list_models_render` | 4,048.0 | 1,393.3 | 2.91× | 2.99× | 4.00× |
+| `provider_stream.stream_roundtrip` | 9,310.5 | 5,873.1 | 1.59× | 1.45× | 2.50× |
+| `session_pipeline.session_load` | 10,024.3 | 1,730.9 | 5.79× | 4.98× | 9.00× |
+| `session_pipeline.context_walk` | 115.6 | 113.1 | 1.02× | 1.02× | 2.00× |
+| `storage_journal.journal_read` | 7,895.7 | 1,563.3 | 5.05× | 5.39× | 8.00× |
+| `storage_journal.journal_append` | 4,098.4 | 1,903.5 | 2.15× | 8.45× | 12.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
 | 2026-08-14T12:23:00Z | paired-paths-quick | `ad8e541b9232` | yes | informational-quick-run | 7.67× | 4.29× | 3.70× | 2.01× |
+| 2026-08-14T16:41:33Z | paired-paths | `c287896cec9e` | no | enforced | 8.45× | 5.39× | 4.98× | 2.99× |
+| 2026-08-14T16:48:03Z | paired-paths | `c287896cec9e` | no | enforced | 2.15× | 5.05× | 5.79× | 2.91× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->

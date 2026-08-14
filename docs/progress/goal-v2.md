@@ -1,86 +1,86 @@
-# GOAL v2: pi-cl 全量功能对齐与纯 Lisp 生态化
+# GOAL v2: full functional alignment of pi-cl and a pure-Lisp ecosystem
 
-## 〇、与 v1 的关系
+## 0. Relationship to v1
 
-本 goal 在 v1 交付物（pi-ai / pi-agent / pi-cli 三个 system，249 项测试全绿）基础上继续，不推翻既有架构。v1 的一切纪律继续生效：测试先行、阶段门禁、每阶段可运行产物、对拍验证、诚实报告。docs/architecture.md 随每阶段同步更新。
+This goal continues on top of the v1 deliverables (the three systems pi-ai / pi-agent / pi-cli, 249 tests all green) and does not overturn the existing architecture. Every discipline of v1 remains in force: tests first, phase gates, a runnable product at every phase, cross-implementation comparison verification, honest reporting. docs/architecture.md is updated in step with every phase.
 
-## 一、总体目标
+## 1. Overall goal
 
-最终交付一个**功能语义完全对齐原版 pi**（earendil-works/pi，沿用 v1 固定的审计提交）的 Common Lisp 实现，并确立一条生态原则：
+Ultimately deliver a Common Lisp implementation whose **functional semantics are fully aligned with the baseline pi** (earendil-works/pi, reusing the audit commit fixed in v1), and establish one ecosystem principle:
 
-> **扩展生态完全是 Lisp 的。** 扩展、skill、prompt template 全部用 Common Lisp 编写和加载。不追求加载原版 TS 扩展，不内嵌 JS 运行时。原版扩展生态的"能力"要对齐（能做到的事一样多），"格式"不兼容（这是语言迁移的既定决策，写入 README 差异章节）。
+> **The extension ecosystem is entirely Lisp's.** Extensions, skills, and prompt templates are all written and loaded in Common Lisp. Loading the baseline's TS extensions is not pursued, and no JS runtime is embedded. The "capability" of the baseline extension ecosystem must be aligned (it can do exactly as many things), the "format" is incompatible (this is a settled decision of the language migration, written into the README differences chapter).
 
-## 二、自研与依赖原则（重要）
+## 2. In-house implementation and dependency principles (important)
 
-1. **默认自研**：凡属协议解析、算法、渲染、数据结构的部分，优先纯 Lisp 自己实现，逐步替换 v1 引入的第三方库。每替换一个库，必须先让自研实现通过该库原有职责对应的全部测试，再切换，最后从 .asd 依赖中移除。
-2. **唯一例外——TLS**：HTTPS 的加密层允许通过 FFI 绑定系统 OpenSSL（cl+ssl 或自写薄绑定）。禁止自研密码学。HTTP 客户端本身（连接管理、请求写出、响应解析、chunked 编码、流式读取）要自研，使 dexador 可被移除。
-3. 自研模块一律配独立测试套件，且必须通过 v1 已有的全部回归测试（尤其 SSE 的 UTF-8 切割 fixture）。
-4. 替换顺序由风险从低到高排：JSON → CLI 参数解析 → glob/正则中用到的子集 → HTTP 客户端。cl-ppcre 的完整正则引擎自研成本极高，允许保留到最后，作为独立可选阶段。
-5. SBCL 自带设施（sb-thread、sb-bsd-sockets、uiop/asdf）不算第三方依赖，鼓励使用。
+1. **In-house by default**: for everything that belongs to protocol parsing, algorithms, rendering, or data structures, implement it in pure Lisp first, replacing the third-party libraries introduced in v1 step by step. For each library replaced, the in-house implementation must first pass all the tests corresponding to that library's original responsibilities, then the switch is made, and finally it is removed from the .asd dependencies.
+2. **The only exception — TLS**: the encryption layer of HTTPS may bind the system OpenSSL through FFI (cl+ssl or a self-written thin binding). Implementing cryptography in-house is forbidden. The HTTP client itself (connection management, writing requests out, response parsing, chunked encoding, streaming reads) is to be built in-house, so that dexador can be removed.
+3. Every in-house module is given a separate test suite, without exception, and must pass all the regression tests already present in v1 (especially the SSE UTF-8 splitting fixture).
+4. The replacement order runs from lower to higher risk: JSON → CLI argument parsing → the subset used in glob/regex → HTTP client. Implementing cl-ppcre's complete regular-expression engine in-house is extremely costly, so it may be kept until last, as a separate optional phase.
+5. SBCL's own facilities (sb-thread, sb-bsd-sockets, uiop/asdf) do not count as third-party dependencies and are encouraged.
 
-## 三、功能范围：对齐原版的全量清单
+## 3. Functional scope: the full list for aligning with the baseline
 
-以下按阶段排列。每一项都以原版对应源码为行为参照，差异必须记录在 README 的差异清单中。
+The following is arranged by phase. Every item takes the corresponding baseline source as its behavioral reference, and differences must be recorded in the README's difference list.
 
-### Phase 5：Provider 完备化
-- 新增 **OpenAI Chat Completions 协议 adapter**（/v1/chat/completions，含流式），这是接入 DeepSeek、开源推理服务（vLLM、Ollama）等大多数厂商的通用协议。
-- 建立 **provider 注册表**：每个 provider = 协议 + base-url + 认证方式 + 默认模型 + key 环境变量。内置：anthropic、openai、google、deepseek（走 Anthropic 兼容或 Chat Completions，实现时测试后择优）、ollama（本地）。
-- 支持 `--base-url` / 配置文件覆盖任意 provider 的地址。
-- 静态模型目录：内置一份模型元数据表（上下文窗口、是否支持工具/思维链），提供更新脚本从各家公开数据刷新；含价格数据与用量成本计算（对齐原版 usage 展示）。
-- 图片输入：消息模型增加 image content（base64），三种协议各自正确编码；不支持图片的 provider 明确报错而非静默丢弃。
-- **OAuth 认证支持**：
-  - provider 认证抽象为 `api-key | oauth` 两种方式，协议 adapter 不变，仅认证头构造不同。
-  - 实现标准 PKCE 授权流程：本地一次性回调 HTTP 服务（纯 Lisp 自研，符合第二节自研原则）、打开浏览器授权、code 换 token。做成 `/login <provider>` 与 `/logout <provider>` 命令。
-  - token 存储于 `~/.pi-cl/auth.json`，文件权限强制 0600；access token 过期用 refresh token 静默续期，续期加锁防止并发请求重复刷新；token 适用与 API key 完全相同的脱敏红线（不进日志、不进 condition 报告、不进会话文件）。
-  - 第一优先级为 **OpenAI Codex OAuth**（复用 v1 已实现的 Responses API 协议路径），授权端点、client ID、请求头构造以固定参考提交中 pi 原版实现的实际行为为准，不自行发明。
-  - Anthropic OAuth（Claude 订阅）实现相同接口结构，但标记为**未验证**（无订阅账号可测），README 中如实注明。
-  - README 差异清单中注明：订阅 OAuth 通道在各家条款中通常限定官方客户端使用，第三方工具使用该通道的条款风险由使用者自担。
+### Phase 5: provider completeness
+- Add an **OpenAI Chat Completions protocol adapter** (/v1/chat/completions, including streaming); this is the common protocol for connecting to DeepSeek, open-source inference services (vLLM, Ollama), and most other vendors.
+- Establish a **provider registry**: each provider = protocol + base-url + authentication method + default model + key environment variable. Built in: anthropic, openai, google, deepseek (over the Anthropic-compatible path or Chat Completions, whichever proves better after testing at implementation time), ollama (local).
+- Support `--base-url` / configuration-file override of any provider's address.
+- Static model catalog: a built-in model metadata table (context window, whether tools / chain of thought are supported), with an update script provided to refresh it from each vendor's public data; includes price data and usage cost computation (aligned with the baseline's usage display).
+- Image input: the message model gains image content (base64), and each of the three protocols encodes it correctly; a provider that does not support images reports an explicit error instead of silently dropping it.
+- **OAuth authentication support**:
+  - Provider authentication is abstracted into the two methods `api-key | oauth`; the protocol adapter is unchanged, only the construction of the authentication header differs.
+  - Implement the standard PKCE authorization flow: a local one-shot callback HTTP service (built in-house in pure Lisp, conforming to the in-house principle of section 2), opening the browser to authorize, exchanging the code for a token. Delivered as the `/login <provider>` and `/logout <provider>` commands.
+  - Tokens are stored in `~/.pi-cl/auth.json`, with file permissions forced to 0600; when the access token expires it is silently renewed with the refresh token, and the renewal takes a lock to prevent concurrent requests from refreshing repeatedly; tokens are subject to exactly the same redaction red line as API keys (not into logs, not into condition reports, not into session files).
+  - The first priority is **OpenAI Codex OAuth** (reusing the Responses API protocol path already implemented in v1); the authorization endpoint, client ID, and request-header construction are governed by the actual behavior of the baseline pi implementation at the fixed reference commit, not invented here.
+  - Anthropic OAuth (Claude subscription) implements the same interface structure but is marked **unverified** (no subscription account available to test with), noted truthfully in the README.
+  - Note in the README difference list: subscription OAuth channels are usually restricted to official clients by each vendor's terms, and the terms risk of a third-party tool using such a channel is borne by the user.
 
-### Phase 6：会话系统对齐
-- 会话由线性升级为**树形**：每条消息含 id 与 parent-id，支持从任意历史节点分叉继续（对齐原版 branch 语义）。JSONL 格式升级为 v2，提供 v1 → v2 迁移，旧会话可无损读取。
-- **会话压缩**：上下文接近模型窗口上限时，将较早消息总结压缩（调用当前模型完成总结），保留压缩摘要节点与原始节点的引用关系，可追溯。
-- 会话列表、切换、`--resume <id>`、HTML 导出（自研极简 HTML 生成，无需模板库）。
+### Phase 6: session-system alignment
+- Sessions are upgraded from linear to a **tree**: every message carries an id and a parent-id, and forking from any historical node to continue is supported (aligned with the baseline branch semantics). The JSONL format is upgraded to v2, a v1 → v2 migration is provided, and old sessions can be read without loss.
+- **Session compaction**: when the context approaches the model window's upper limit, earlier messages are summarized and compacted (the summary is produced by calling the current model), and the reference relationship between the compacted summary node and the original nodes is retained, so it remains traceable.
+- Session listing, switching, `--resume <id>`, HTML export (in-house minimal HTML generation, no template library needed).
 
-### Phase 7：Lisp 扩展系统（本 goal 的核心）
-- 扩展 = 一个 `.lisp` 文件或一个含 `extension.lisp` 的目录，通过受控的 `load` 进入独立 package。
-- 扩展 API（导出自 pi-agent，保持稳定）：
-  - `define-tool`：注册新工具（名称、描述、JSON Schema、执行函数、执行模式）
-  - `define-command`：注册 REPL 斜杠命令（如 /compact、/model）
-  - `define-event-hook`：订阅 agent 生命周期事件（turn 开始/结束、工具调用前后），hook 可以拦截、改写、追加消息——对齐原版扩展能干预 agent 行为的能力
-  - `define-prompt-template`：具名提示模板，REPL 内以 /name 展开
-- 加载来源与优先级：`~/.pi-cl/extensions/`（全局）、`./.pi-cl/extensions/`（项目级，覆盖全局同名项）、`--extension <path>`（一次性）。
-- **热重载**：`/reload` 命令重新 load 全部扩展；扩展加载或执行中的任何 condition 都被捕获，报告错误并保持 agent 存活，绝不允许扩展错误击穿主循环。
-- **自扩展能力验收**：agent 必须能在一次会话中，用自己的 write 工具写出一个新扩展文件、/reload、然后在同一会话内成功调用这个新工具。这是"self-extensible"的核心语义，作为硬性验收项。
-- 安全：扩展是任意代码，加载即执行。首次加载某路径的扩展时向用户显示路径并要求确认（--yolo 跳过）；项目级扩展目录尤其如此（防止 clone 恶意仓库即中招）。
-- skills / package 安装（从 git URL 拉取扩展目录到全局扩展目录）建立在同一机制上，`/install <git-url>` 实现为内置命令。
+### Phase 7: the Lisp extension system (the core of this goal)
+- An extension = one `.lisp` file or one directory containing `extension.lisp`, entering a separate package through a controlled `load`.
+- The extension API (exported from pi-agent, kept stable):
+  - `define-tool`: register a new tool (name, description, JSON Schema, execution function, execution mode)
+  - `define-command`: register a REPL slash command (such as /compact, /model)
+  - `define-event-hook`: subscribe to agent lifecycle events (turn start/end, before and after a tool call); a hook may intercept, rewrite, or append messages — aligned with the baseline extensions' ability to intervene in agent behavior
+  - `define-prompt-template`: a named prompt template, expanded inside the REPL as /name
+- Load sources and priority: `~/.pi-cl/extensions/` (global), `./.pi-cl/extensions/` (project level, overriding a global item of the same name), `--extension <path>` (one-off).
+- **Hot reload**: the `/reload` command re-loads all extensions; any condition during extension loading or execution is caught, the error is reported and the agent is kept alive; an extension error must never be allowed to break through the main loop.
+- **Self-extension capability acceptance**: within a single session, the agent must be able to write out a new extension file with its own write tool, /reload, and then successfully invoke this new tool within the same session. This is the core semantics of "self-extensible" and is a hard acceptance item.
+- Security: an extension is arbitrary code, and loading it executes it. The first time an extension at a given path is loaded, show the user the path and require confirmation (--yolo skips it); this applies to the project-level extension directory in particular (so that cloning a malicious repository is not itself enough to be compromised).
+- Skills / package installation (pulling an extension directory from a git URL into the global extension directory) is built on the same mechanism, and `/install <git-url>` is implemented as a built-in command.
 
-### Phase 8：TUI（自研，对齐 pi-tui）
-- 纯 Lisp 实现差分渲染终端 UI：ANSI escape 序列输出、终端尺寸探测与 resize 处理、宽字符（CJK/emoji 按 Unicode East Asian Width 计宽）、按行 diff 只重绘变化区域。
-- 组件：多行编辑器输入框（光标移动、历史、粘贴）、流式 markdown 渲染文本区、工具调用折叠块、状态栏（模型、token 用量、成本）、选择列表（模型/会话选择）。
-- 原始终端模式的进入/退出必须异常安全：任何 condition 下都要恢复终端状态（unwind-protect 全覆盖），崩溃不留下坏终端。
-- REPL 模式保留为 `--no-tui` 降级路径，两种前端共享同一 agent 事件流，前端只是事件的不同渲染器——这是架构约束，禁止 TUI 分支携带独立业务逻辑。
-- TUI 的测试策略：渲染层以"虚拟终端缓冲区"做快照测试（输入事件序列 → 断言缓冲区内容），不依赖真实 TTY；真实终端行为以人工验收清单覆盖并记录。
+### Phase 8: TUI (in-house, aligned with pi-tui)
+- A differentially rendered terminal UI implemented in pure Lisp: ANSI escape sequence output, terminal size detection and resize handling, wide characters (CJK/emoji measured by Unicode East Asian Width), a per-line diff that repaints only the changed regions.
+- Components: a multi-line editor input box (cursor movement, history, paste), a streaming markdown rendering text area, collapsible tool-call blocks, a status bar (model, token usage, cost), a selection list (model/session selection).
+- Entering/leaving raw terminal mode must be exception-safe: the terminal state must be restored under any condition (unwind-protect covering everything), and a crash must not leave a broken terminal behind.
+- REPL mode is kept as the `--no-tui` fallback path; the two frontends share the same agent event stream, and a frontend is only a different renderer of the events — this is an architectural constraint, and the TUI branch is forbidden to carry business logic of its own.
+- The TUI test strategy: the rendering layer is snapshot-tested with a "virtual terminal buffer" (input event sequence → assert the buffer contents), without depending on a real TTY; real terminal behavior is covered and recorded by a manual acceptance checklist.
 
-### Phase 9：库替换与收尾
-- 按第二节的顺序执行自研替换，每替换一项出一份简短报告（被替换库、自研模块、测试证据、性能对比）。
-- 最终依赖审计：.asd 中剩余的第三方依赖逐一说明保留理由（预期仅剩 TLS 绑定，或明确列出的暂缓项如 cl-ppcre）。
-- 全量回归 + 全部 live smoke（用 DeepSeek 端点）+ 更新 README 与差异清单 + 最终报告。
+### Phase 9: library replacement and wrap-up
+- Execute the in-house replacements in the order of section 2; for each replacement produce a short report (library replaced, in-house module, test evidence, performance comparison).
+- Final dependency audit: state the reason for keeping each remaining third-party dependency in the .asd one by one (expected to be only the TLS binding, or explicitly listed deferred items such as cl-ppcre).
+- Full regression + all live smokes (using the DeepSeek endpoint) + updating the README and the difference list + the final report.
 
-## 四、验收标准（v2 新增，v1 标准继续有效）
+## 4. Acceptance criteria (new in v2; the v1 criteria remain in force)
 
-1. `--provider deepseek` 开箱可用（设 DEEPSEEK_API_KEY 即可），Chat Completions 与 Anthropic 兼容两条路径至少一条有录制回放 E2E。
-1a. OAuth：使用真实 ChatGPT 账号完成 `/login openai` 后，live smoke 全程走 OAuth 通道（Responses API）跑通；token 刷新逻辑有录制回放测试（过期 → 静默续期 → 请求成功）；auth.json 权限为 0600 的检查含在测试中；日志与错误输出的脱敏测试覆盖 OAuth token。
-2. 会话可分叉：从历史某节点继续产生新分支，两分支互不污染，重启后均可恢复。
-3. 上下文超限时自动压缩发生且会话可继续，压缩前的完整历史仍可从会话文件追溯。
-4. 自扩展验收：单次会话内完成"agent 写扩展 → /reload → 调用新工具"闭环（faux provider 确定性测试 + live smoke 各一次）。
-5. 扩展抛出任意错误（加载期与执行期各测）时 agent 存活且给出可读报错。
-6. TUI 下完成一次真实多轮编码任务；terminal resize、CJK 输入渲染正确；异常退出后终端状态正常。快照测试覆盖核心组件。
-7. 依赖审计报告存在，v1 引入的 dexador、com.inuoe.jzon、clingon 已被自研实现替换并移除。
-8. README 差异清单完整列出与原版 pi 的全部已知差异（至少含：扩展语言为 Lisp、不兼容 TS 扩展、其余任何行为差异）。
+1. `--provider deepseek` works out of the box (setting DEEPSEEK_API_KEY is enough); of the two paths, Chat Completions and Anthropic-compatible, at least one has a record-replay E2E.
+1a. OAuth: after completing `/login openai` with a real ChatGPT account, the live smoke runs through over the OAuth channel (Responses API) from end to end; the token refresh logic has a record-replay test (expiry → silent renewal → successful request); the check that auth.json's permissions are 0600 is included in the tests; the redaction tests for logs and error output cover the OAuth token.
+2. Sessions can be forked: continuing from some historical node produces a new branch, the two branches do not contaminate each other, and both can be restored after a restart.
+3. When the context exceeds the limit, automatic compaction happens and the session can continue, and the complete history before compaction is still traceable from the session file.
+4. Self-extension acceptance: complete the loop "agent writes an extension → /reload → invokes the new tool" within a single session (once as a faux provider deterministic test and once as a live smoke).
+5. When an extension throws any error (tested at load time and at execution time separately) the agent survives and gives a readable error report.
+6. Complete one real multi-turn coding task under the TUI; terminal resize and CJK input render correctly; the terminal state is normal after an abnormal exit. Snapshot tests cover the core components.
+7. The dependency audit report exists, and dexador, com.inuoe.jzon, and clingon, introduced in v1, have been replaced by in-house implementations and removed.
+8. The README difference list completely lists all known differences from the baseline pi (containing at least: the extension language is Lisp, TS extensions are incompatible, and any other behavioral difference).
 
-## 五、风险与原则
+## 5. Risks and principles
 
-- 扩展 API 一旦发布即为稳定接口，Phase 7 设计需经人工确认后再实现（同 v1 的架构门禁）。
-- TUI 是最大工程量，允许在 Phase 8 内部再分子阶段，但每个子阶段仍须可运行。
-- 自研替换若在某项上遇到超预期成本，允许申请将该项移入"暂缓清单"并说明理由，由人工裁决——不允许静默保留依赖。
-- 一切与原版行为不明处，以固定审计提交的源码实际行为为准；不确定时记入 docs/open-questions.md 并暂停询问。
+- Once published the extension API is a stable interface; the Phase 7 design must be confirmed by a human before it is implemented (the same as v1's architecture gate).
+- The TUI is the largest engineering effort; Phase 8 may be split into sub-phases internally, but every sub-phase must still be runnable.
+- If an in-house replacement meets higher-than-expected cost on some item, an application may be made to move that item into the "deferred list" with the reason stated, adjudicated by a human — silently keeping the dependency is not allowed.
+- Wherever the baseline behavior is unclear, the actual behavior of the source at the fixed audit commit governs; when uncertain, record it in docs/open-questions.md and pause to ask.

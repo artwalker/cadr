@@ -2,15 +2,17 @@
 
 ## Part A — deterministic measurement infrastructure
 
-状态：完成。基准实现提交 `6ee7d84f3`；生产性能路径未改动。
+Status: Complete. Benchmark implementation commit `6ee7d84f3`; the production
+performance path was not changed.
 
-新增一键 JSON 基准 `scripts/bench.sh`，实现位于
-`scripts/goal11-bench.lisp`，真实 TUI 冷启动由
-`scripts/goal11-cold-start.py` 测量。覆盖固定混合会话的单帧耗时/分配、
-按键到帧、流式 delta 到帧、追加成本、SBCL heap、RSS 与首帧冷启动；默认
-N 梯度、样本数、median/MAD 和原始样本均写入 JSON。
+A one-command JSON benchmark `scripts/bench.sh` was added, with its
+implementation in `scripts/goal11-bench.lisp`; the real TUI cold start is
+measured by `scripts/goal11-cold-start.py`. It covers, over a fixed mixed
+session, single-frame time/allocation, key-to-frame, streaming delta-to-frame,
+append cost, SBCL heap, RSS and first-frame cold start; the default N ladder,
+the sample count, median/MAD and the raw samples are all written into the JSON.
 
-机械验证：
+Mechanical verification:
 
 ```text
 bash -n scripts/bench.sh
@@ -19,51 +21,59 @@ python3 scripts/goal11-cold-start.py /root/projects/cadr/cadr
   251420.906
 ./scripts/bench.sh --quick --samples 1 --warmups 1 \
   --output /tmp/cadr-goal11-quick.json
-  exit 0; N=0/50/200 全部四条路径完成
+  exit 0; N=0/50/200, all four paths completed
 ./scripts/bench.sh --label before-optimization \
   --output /tmp/cadr-goal11-before.json
-  exit 0; N=0/50/200/1000/5000 全部四条路径完成
+  exit 0; N=0/50/200/1000/5000, all four paths completed
 jq . /tmp/cadr-goal11-before.json
   exit 0
 ```
 
-归档基线为
-[`docs/benchmarks/goal-v11-before.json`](../benchmarks/goal-v11-before.json)，
-摘要与方法见 [`docs/performance.md`](../performance.md)。决定性结果：5000
-条目下 frame 488.0ms、key→frame 480.0ms、stream 466.0ms / 2.15 delta/s，
-三者均为线性；append 从 N=0 的 0.024µs 增至 N=5000 的 5.200µs，斜率
-0.910，确认累计 O(N²)；真实 PTY 首帧 median 163.5ms、MAD 4.5ms。
+The archived baseline is
+[`docs/benchmarks/goal-v11-before.json`](../benchmarks/goal-v11-before.json);
+the summary and the method are in [`docs/performance.md`](../performance.md).
+Decisive results: at 5000 entries, frame 488.0ms, key→frame 480.0ms, stream
+466.0ms / 2.15 delta/s, all three linear; append grows from 0.024µs at N=0 to
+5.200µs at N=5000, slope 0.910, confirming cumulative O(N²); real PTY first
+frame median 163.5ms, MAD 4.5ms.
 
-Part A 没有使用真实 LLM、凭据、随机 fixture、输入改写或弱断言。完整 JSON
-记录 HEAD 与 TUI object ID，后续优化结果必须由同一脚本、同一机器、同一
-参数生成。
+Part A used no real LLM, no credentials, no random fixture, no input rewriting
+and no weak assertion. The complete JSON records the HEAD and the TUI object ID;
+later optimization results must be produced by the same script, on the same
+machine, with the same parameters.
 
 ## Part B — fixed-baseline long-session strategy
 
-状态：完成。审计对象固定为 `74caa2649f10…`。
+Status: Complete. The audited object is fixed at `74caa2649f10…`.
 
-逐项结论与源码证据已写入
-[`docs/performance.md`](../performance.md#fixed-ts-baseline-strategy)：pi 没有
-viewport-before-render、虚拟滚动或增量历史前缀帧；每帧仍遍历完整 component
-tree，main/alt screen 都是在全量 render 之后才做 diff 或 viewport slice。
-pi 的已验证策略是：稳定 `Markdown`/`Text`/bash preview 按内容与宽度缓存、
-chat child 以数组 `push` O(1) 追加、只重建当前 streaming component、16ms
-render request 合并、只写变化行。
+The item-by-item conclusions and the source evidence have been written into
+[`docs/performance.md`](../performance.md#fixed-ts-baseline-strategy): pi has no
+viewport-before-render, no virtual scrolling and no incremental history-prefix
+frame; every frame still walks the complete component tree, and on both the main
+and the alt screen the diff or the viewport slice happens only after a full
+render. pi's verified strategy is: stable `Markdown`/`Text`/bash previews cached
+by content and width, chat children appended in O(1) with array `push`, only the
+current streaming component rebuilt, 16ms render requests coalesced, and only
+changed lines written.
 
-由此冻结 Part C 实现边界：只移植 per-entry width/content cache 与 O(1) tail
-append；不新增 transcript memoization、viewport pruning 或 virtual scrolling。
-这是 component-level memoization + differential rendering，不是新的 UI 架构。
+This freezes the Part C implementation boundary: port only the per-entry
+width/content cache and the O(1) tail append; add no transcript memoization, no
+viewport pruning and no virtual scrolling. This is component-level memoization +
+differential rendering, not a new UI architecture.
 
-同机结构对照由 `scripts/goal11-pi-baseline-bench.mjs` 直接加载 fixed worktree 的
-production dist 执行，JSON 归档于
-[`docs/benchmarks/goal-v11-pi-baseline.json`](../benchmarks/goal-v11-pi-baseline.json)。
-N=5000 时 pi frame/key/stream 分别为 14.46/15.06/17.94ms，均保持线性；append
-为 0.0136µs 且判定 constant。cadr 优化前对应值为 488.0/480.0/466.0ms 与
-5.200µs linear。绝对倍率受 cadr virtual terminal 与 pi mock terminal 的末端
-差异影响，报告未把它伪装成 runtime-identical 对拍；策略/复杂度证据不受该
-限制。
+The same-host structural comparison is executed by
+`scripts/goal11-pi-baseline-bench.mjs`, which loads the production dist of the
+fixed worktree directly; the JSON is archived at
+[`docs/benchmarks/goal-v11-pi-baseline.json`](../benchmarks/goal-v11-pi-baseline.json).
+At N=5000 pi's frame/key/stream are 14.46/15.06/17.94ms respectively, all
+staying linear; append is 0.0136µs and is judged constant. cadr's corresponding
+pre-optimization values are 488.0/480.0/466.0ms and 5.200µs linear. The absolute
+ratio is affected by the terminal-end difference between cadr's virtual terminal
+and pi's mock terminal, and the report does not disguise it as a
+runtime-identical cross-implementation comparison; the strategy/complexity
+evidence is not subject to that limitation.
 
-机械验证：
+Mechanical verification:
 
 ```text
 node --check scripts/goal11-pi-baseline-bench.mjs
@@ -71,21 +81,22 @@ node --check scripts/goal11-pi-baseline-bench.mjs
 node --expose-gc scripts/goal11-pi-baseline-bench.mjs \
   /tmp/cadr-parity-74caa2649 \
   > /tmp/cadr-goal11-pi-baseline.json
-  exit 0; N=0/50/200/1000/5000 全部四条路径完成
+  exit 0; N=0/50/200/1000/5000, all four paths completed
 sha256sum /tmp/cadr-goal11-pi-baseline.json \
   docs/benchmarks/goal-v11-pi-baseline.json
-  f2240d4d56aba32582a33d0a055713649622e572861958808d51f8c1eb16a906（两者一致）
+  f2240d4d56aba32582a33d0a055713649622e572861958808d51f8c1eb16a906 (the two agree)
 ```
 
-Part B 未修改 production code。
+Part B did not modify production code.
 
 ## Part C — long-session rendering and append complexity
 
-状态：完成。实现提交 `56a50ca9c`。
+Status: Complete. Implementation commit `56a50ca9c`.
 
-测试先行证据：新增 cache 测试在实现前稳定失败为 4 pass / 1 fail，失败点是
-相同 width/theme 的第二次 render 未复用首个 line list；实现后本 Part 四项
-回归为 20/20。源码位置与测试名：
+Test-first evidence: before the implementation the new cache test failed stably
+at 4 pass / 1 fail, the failure point being that a second render at the same
+width/theme did not reuse the first line list; after the implementation this
+Part's four regressions are 20/20. Source locations and test names:
 
 | requirement | production source | regression test |
 |---|---|---|
@@ -94,70 +105,79 @@ Part B 未修改 production code。
 | O(1) tail append and safe direct-SETF recovery | `src/cadr-cli/tui.lisp:21-39, 470-504, 1119, 3980` | `GOAL11-TUI-ENTRY-APPEND-MAINTAINS-O1-TAIL-INVARIANT` |
 | mixed user/assistant/tool/notice transcript bytes unchanged | `src/cadr-cli/tui.lisp:1806-2000` | `GOAL11-CACHED-MIXED-TRANSCRIPT-IS-BYTE-IDENTICAL` |
 
-完整性能归档：
-[`docs/benchmarks/goal-v11-after-part-c.json`](../benchmarks/goal-v11-after-part-c.json)，
-SHA-256 `4d6accbe834b5b6a8aa198b6a8aab178deae21b4c443dd480062276285b93f9a`。
-N=5000 的 frame/key/stream 从 488.01/480.01/466.01ms 降至全部 4.00ms；
-frame allocation 从 139.58MB 降至 0.72MB；stream throughput 从 2.15 升至
-250 delta/s。append 从 5.200µs linear 降为 0.020µs constant。详细方法、
-倍率与内存代价见 [`docs/performance.md`](../performance.md#part-c--baseline-mechanisms-restored)。
+Complete performance archive:
+[`docs/benchmarks/goal-v11-after-part-c.json`](../benchmarks/goal-v11-after-part-c.json),
+SHA-256 `4d6accbe834b5b6a8aa198b6a8aab178deae21b4c443dd480062276285b93f9a`.
+At N=5000 frame/key/stream fell from 488.01/480.01/466.01ms to 4.00ms each;
+frame allocation fell from 139.58MB to 0.72MB; stream throughput rose from 2.15
+to 250 delta/s. append fell from 5.200µs linear to 0.020µs constant. The
+detailed method, the ratios and the memory cost are in
+[`docs/performance.md`](../performance.md#part-c--baseline-mechanisms-restored).
 
-机械验证：
+Mechanical verification:
 
 ```text
-四项 Goal 11 targeted regressions
+Four Goal 11 targeted regressions
   20 checks / 20 pass / 0 skip / 0 fail
 ./scripts/test-cl.sh
   7110 checks / 7110 pass / 0 skip / 0 fail
 ./build.sh
-  exit 0; SBCL 2.6.7 无 sb-core-compression，按既定契约降级为无压缩 image
+  exit 0; SBCL 2.6.7 has no sb-core-compression, degraded to an uncompressed image per the established contract
 ./scripts/bench.sh --label after-part-c \
   --output /tmp/cadr-goal11-after-part-c-committed.json
-  exit 0; N=0/50/200/1000/5000 全部四条路径与真实 PTY 冷启动完成
+  exit 0; N=0/50/200/1000/5000, all four paths plus the real PTY cold start completed
 sha256sum /tmp/cadr-goal11-after-part-c-committed.json \
   docs/benchmarks/goal-v11-after-part-c.json
-  4d6accbe834b5b6a8aa198b6a8aab178deae21b4c443dd480062276285b93f9a（两者一致）
+  4d6accbe834b5b6a8aa198b6a8aab178deae21b4c443dd480062276285b93f9a (the two agree)
 ```
 
-未加入 transcript memoization、viewport pruning 或 virtual scrolling；输出
-语义无变更。
+No transcript memoization, viewport pruning or virtual scrolling was added;
+output semantics are unchanged.
 
 ## Part D — long-run stability and large sessions
 
-状态：完成。实现提交 `ec5834ec2`。
+Status: Complete. Implementation commit `ec5834ec2`.
 
-新增 `scripts/goal11-stability.sh` / `scripts/goal11-stability.lisp`，以 production
-faux provider 驱动 1200 轮真实 agent/session/TUI event path 并渲染 14,400 帧，
-相当于每分钟两轮下 10 小时交互。五个 checkpoint 的 FD/Lisp thread/OS thread
-始终为 5/1/2；retained heap 从 35.86MiB 线性增长到 78.17MiB（exponent
-0.966），full GC 最大 80.0ms；释放场景后 heap 回到 35.77MiB，未发现泄漏或
-资源残留。
+`scripts/goal11-stability.sh` / `scripts/goal11-stability.lisp` were added; with
+the production faux provider they drive 1200 turns of the real
+agent/session/TUI event path and render 14,400 frames, which is equivalent to 10
+hours of interaction at two turns per minute. At the five checkpoints the
+FD/Lisp thread/OS thread counts are always 5/1/2; retained heap grows linearly
+from 35.86MiB to 78.17MiB (exponent 0.966), and the maximum full GC is 80.0ms;
+after the scenario is released the heap returns to 35.77MiB, and no leak or
+residual resource was found.
 
-真实 10,507,435-byte / 2400-entry JSONL 的 load/resume/continue 分别为
-328/268/276ms，1ms sampler 记录的 RSS 峰值约 168MiB，三次操作后保留 heap
-约 73MiB。报告没有把 retained conversation state 误报为 leak，也没有把 sampled
-peak 冒充精确瞬时上界。
+For a real 10,507,435-byte / 2400-entry JSONL, load/resume/continue are
+328/268/276ms respectively, the RSS peak recorded by the 1ms sampler is about
+168MiB, and the retained heap after the three operations is about 73MiB. The
+report does not misreport retained conversation state as a leak, and it does not
+pass the sampled peak off as an exact instantaneous upper bound.
 
-场景发现 agent messages 与 session entries 的 append 仍线性遍历。固定基线
-分别用 array `push`，故以同一 private-tail 机制修复；不改变 public list、session
-bytes、事件或 TUI 输出。源码位置与回归测试：
+The scenario found that appends to agent messages and session entries still
+traverse linearly. The fixed baseline uses array `push` for each, so the fix
+uses the same private-tail mechanism; the public list, the session bytes, the
+events and the TUI output are not changed. Source locations and regression
+tests:
 
 | requirement | production source | regression test |
 |---|---|---|
 | agent message O(1) append and whole-list replacement recovery | `src/cadr-agent/runtime.lisp:23-31`, `src/cadr-agent/tool.lisp:74-116`, `src/cadr-agent/loop.lisp:127-166` | `GOAL11-AGENT-MESSAGE-APPEND-MAINTAINS-O1-TAIL-INVARIANT` |
 | session entry O(1) append and loaded-session tail restoration | `src/cadr-agent/session.lisp:34-50, 802-890, 1860-1880` | `GOAL11-SESSION-APPEND-MAINTAINS-O1-TAIL-INVARIANT` |
 
-测试先行红证据为 cadr-agent suite 625 checks / 623 pass / 2 fail，两个失败均为
-新增 tail accessor 尚不存在；实现后该 suite 635/635。旧 object 的 agent append
-在 N=20000 为 21.593µs、exponent 0.994；新 object 为 0.110µs、exponent
--0.035。session 的随机 ID 固定成本掩盖 slope，但 N=20000 从 135.394µs 降至
-109.678µs，cons-tail identity 测试直接锁定复杂度机制。
+The test-first red evidence is the cadr-agent suite at 625 checks / 623 pass / 2
+fail, both failures being that the newly added tail accessor did not yet exist;
+after the implementation that suite is 635/635. On the old object, agent append
+at N=20000 is 21.593µs with exponent 0.994; on the new object it is 0.110µs with
+exponent -0.035. The fixed cost of the session's random ID masks the slope, but
+at N=20000 it fell from 135.394µs to 109.678µs, and the cons-tail identity test
+locks the complexity mechanism directly.
 
-完整机器可读结果：
-[`docs/benchmarks/goal-v11-stability.json`](../benchmarks/goal-v11-stability.json)。
-门禁脚本对 committed performance/stability JSON 输出 `goal11 gate: PASS`。
+Complete machine-readable results:
+[`docs/benchmarks/goal-v11-stability.json`](../benchmarks/goal-v11-stability.json).
+For the committed performance/stability JSON the gate script outputs
+`goal11 gate: PASS`.
 
-机械验证：
+Mechanical verification:
 
 ```text
 ./scripts/test-cl.sh
@@ -175,24 +195,28 @@ python3 scripts/goal11-performance-gate.py \
 
 ## Part E — release gate and documentation
 
-状态：完成。`scripts/verify.sh` 在隔离构建之后、process/PTY harness 之前重新生成
-完整 benchmark 与 10 小时稳定性报告，并以
-`scripts/goal11-performance-gate.py` 判定预算；任何失败都会阻止后续阶段，不能以
-历史归档或弱断言代替本次测量。隔离副本没有 `.git` 时，报告的 source revision
-明确记为 `isolated-copy`，production object ID 仍由 `git hash-object` 固定。
+Status: Complete. `scripts/verify.sh` regenerates the complete benchmark and the
+10-hour stability report after the isolated builds and before the process/PTY
+harnesses, and decides the budget with `scripts/goal11-performance-gate.py`; any
+failure blocks the later stages, and a historical archive or a weak assertion
+must not take the place of this measurement. When the isolated copy has no
+`.git`, the reported source revision is explicitly recorded as
+`isolated-copy`, while the production object ID is still fixed by
+`git hash-object`.
 
-测试先行红证据：`GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT`
-在实现前为 35 checks / 29 pass / 6 fail，缺失三个脚本、stage 名和两个输出文件；
-实现后为 35/35。
+Test-first red evidence: before the implementation
+`GOAL9-PART-D-VERIFY-ENTRYPOINT-HAS-APPROVED-STAGE-CONTRACT` was 35 checks / 29
+pass / 6 fail, missing three scripts, the stage name and two output files; after
+the implementation it is 35/35.
 
-最终一键验收：
+Final one-command acceptance:
 
 ```text
 ./scripts/verify.sh
   exit 0
   deterministic FiveAM: 7128 checks / 7128 pass / 0 skip / 0 fail
-  isolated cadr build: PASS（重复同一 7128-check gate）
-  isolated cadr-server build: PASS（重复同一 7128-check gate）
+  isolated cadr build: PASS (the same 7128-check gate, repeated)
+  isolated cadr-server build: PASS (the same 7128-check gate, repeated)
   Goal 11 gate: PASS
     frame/key/stream 4.00/4.00/4.00ms
     append exponent 0.029
@@ -205,51 +229,58 @@ python3 scripts/goal11-performance-gate.py \
   DeepSeek live TUI: PASS
 ```
 
-README、architecture、test matrix 和 `docs/performance.md` 共同冻结双验收轴：
-功能 parity 与非功能预算缺一不可。Goal 11 的机械门禁已闭合；真实用户日常长会话
-体感仍由用户终局验收，不以 synthetic benchmark 冒充。
+README, architecture, the test matrix and `docs/performance.md` together freeze
+the two acceptance axes: functional parity and the non-functional budget, and
+neither may be missing. Goal 11's mechanical gate is closed; how a real user's
+everyday long session actually feels is still decided by the user's final
+acceptance, and is not impersonated by a synthetic benchmark.
 
 ## Fifth A/B follow-up — continuous mouse and wheel streams
 
-状态：完成。实现提交 `15bc6ae08`；性能证据提交 `5a62cbc82`。
+Status: Complete. Implementation commit `15bc6ae08`; performance evidence commit
+`5a62cbc82`.
 
-旧 Goal 11 只覆盖单帧、key→frame、stream delta 与长会话 checkpoint；既有
-alt-screen regressions 只验证 scroll/selection 的结果，没有量化连续 SGR mouse
-输入的 event→frame latency、每事件分配或 GC tail。因此它们能证明“行为正确”，
-却无法捕获长 transcript 上每次拖拽/滚轮近一秒的卡顿。
+The old Goal 11 covered only the single frame, key→frame, stream delta and the
+long-session checkpoints; the existing alt-screen regressions verified only the
+results of scroll/selection, and did not quantify the event→frame latency, the
+per-event allocation or the GC tail of continuous SGR mouse input. They could
+therefore prove "behavior is correct", but could not catch the nearly
+one-second stall on every drag/wheel over a long transcript.
 
-本轮新增的 production-path 门禁与实现证据：
+The production-path gates and implementation evidence added this round:
 
 | requirement | production / gate source | regression test |
 |---|---|---|
-| real SGR drag and wheel event→frame metrics at every N | `scripts/goal11-bench.lisp` 的 `mouse-drag-statistics` / `wheel-statistics` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
-| fixed 1024-event stream, raw samples, p95/p99/max, allocation and GC-affected wall latency | `scripts/goal11-bench.lisp` 的 `continuous-alt-input-json` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
+| real SGR drag and wheel event→frame metrics at every N | `mouse-drag-statistics` / `wheel-statistics` in `scripts/goal11-bench.lisp` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
+| fixed 1024-event stream, raw samples, p95/p99/max, allocation and GC-affected wall latency | `continuous-alt-input-json` in `scripts/goal11-bench.lisp` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
 | release budgets for median/allocation/event count/p99/GC max | `scripts/goal11-performance-gate.py` | `GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` |
-| scroll/selection uses baseline differential redraw instead of forced full clear | `src/cadr-tui/renderer.lisp` 的 scroll/mouse paths | `GOAL11-ALT-INPUT-REUSES-BASELINE-DIFFERENTIAL-REDRAW` |
-| non-allocating width scan remains byte-for-byte equivalent in terminal cell semantics | `src/cadr-tui/unicode.lisp` | `GOAL11-VISIBLE-WIDTH-FAST-PATH-MATCHES-REFERENCE-GRAPHEME-SEMANTICS`（182 fixed combinations） |
-| image-line fast/slow detection preserves embedded Kitty/iTerm semantics | `src/cadr-tui/terminal-image.lisp` | `TERMINAL-IMAGE-ENCODING-SIZING-AND-DETECTION`（含 304k prefix fixture） |
+| scroll/selection uses baseline differential redraw instead of forced full clear | the scroll/mouse paths in `src/cadr-tui/renderer.lisp` | `GOAL11-ALT-INPUT-REUSES-BASELINE-DIFFERENTIAL-REDRAW` |
+| non-allocating width scan remains byte-for-byte equivalent in terminal cell semantics | `src/cadr-tui/unicode.lisp` | `GOAL11-VISIBLE-WIDTH-FAST-PATH-MATCHES-REFERENCE-GRAPHEME-SEMANTICS` (182 fixed combinations) |
+| image-line fast/slow detection preserves embedded Kitty/iTerm semantics | `src/cadr-tui/terminal-image.lisp` | `TERMINAL-IMAGE-ENCODING-SIZING-AND-DETECTION` (including a 304k prefix fixture) |
 
-测试先行的旧路径诊断：N=5000、8MiB nursery 下，8-event sample median
-896.041ms、p99/max 932.060ms、median allocation 202,858,216 bytes/event；
-8/8 events 均跨 GC。1024-event 默认规模超过两分钟仍未完成，故中止并明确
-标注为不完整诊断。
+Test-first diagnosis of the old path: at N=5000 with an 8MiB nursery, the
+8-event sample had median 896.041ms, p99/max 932.060ms, and median allocation
+202,858,216 bytes/event; 8/8 events crossed a GC. The default 1024-event size
+had still not finished after more than two minutes, so it was aborted and
+explicitly marked as an incomplete diagnosis.
 
-优化没有引入 fixed baseline 不存在的 transcript cache、viewport pruning 或
-virtual scrolling。它只恢复 differential redraw，并把 width/image/reset/copy
-改为同语义的无中间字符串扫描。最终 committed 1024-event run 为：mouse / wheel
-均为 36.001ms，allocation 2,832,352 / 3,668,816 bytes；continuous median
-36.001ms、p95 48.001ms、p99 52.001ms、max 68.002ms，447 个 GC-affected
-events 的 max 68.002ms；cold start 157.428ms。报告 HEAD
-`15bc6ae084d37a4b760e959bccf540ec1fe68c73`，TUI object
-`9c6d20fc7ae5e722eacbfd2e5d9eeba4883d1600`，SHA-256
-`1d2d3d1faac43006e56b08a505487035c0d8a6dffdc0b52ab069a45c0d0d8f1e`。
+The optimization introduced no transcript cache, viewport pruning or virtual
+scrolling that the fixed baseline does not have. It only restored differential
+redraw and turned width/image/reset/copy into semantically identical scans
+without intermediate strings. The final committed 1024-event run is: mouse /
+wheel both 36.001ms, allocation 2,832,352 / 3,668,816 bytes; continuous median
+36.001ms, p95 48.001ms, p99 52.001ms, max 68.002ms, and a max of 68.002ms over
+the 447 GC-affected events; cold start 157.428ms. The report's HEAD is
+`15bc6ae084d37a4b760e959bccf540ec1fe68c73`, its TUI object is
+`9c6d20fc7ae5e722eacbfd2e5d9eeba4883d1600`, and its SHA-256 is
+`1d2d3d1faac43006e56b08a505487035c0d8a6dffdc0b52ab069a45c0d0d8f1e`.
 
-机械验证：
+Mechanical verification:
 
 ```text
 python3 test/goal11-performance-gate-test.py
-  2 tests / OK；逐项证明 mouse、wheel、allocation、event count、p99、GC max
-  与“跨 nursery 却未观察到 GC”任一越界都会失败
+  2 tests / OK; proves item by item that mouse, wheel, allocation, event count, p99, GC max
+  and "crossed a nursery yet observed no GC" each fail on any breach
 ./scripts/test-cl.sh
   7706 checks / 7706 pass / 0 skip / 0 fail
 python3 scripts/goal11-performance-gate.py \
@@ -258,15 +289,15 @@ python3 scripts/goal11-performance-gate.py \
   PASS：mouse/wheel 36.00/36.00ms；continuous p99 52.00ms；GC max 68.00ms
 ```
 
-最终发布路径复测：
+Final release-path re-measurement:
 
 ```text
 ./scripts/verify.sh
   exit 0
   root cadr binary freshness: PASS
   deterministic FiveAM: 7706 checks / 7706 pass / 0 skip / 0 fail
-  isolated cadr build: PASS（重复同一 7706-check gate）
-  isolated cadr-server build: PASS（重复同一 7706-check gate）
+  isolated cadr build: PASS (the same 7706-check gate, repeated)
+  isolated cadr-server build: PASS (the same 7706-check gate, repeated)
   Goal 11 gate: PASS
     frame/key/stream 4.00/8.00/4.00ms
     mouse/wheel 36.00/40.00ms
@@ -279,38 +310,46 @@ python3 scripts/goal11-performance-gate.py \
   DeepSeek live TUI: PASS
 ```
 
-交付二进制于 `2026-08-01 23:46:54.986162021 +0800` 构建；最后一次
-`src/` 提交为 `15bc6ae084d37a4b760e959bccf540ec1fe68c73`，时间
-`2026-08-01T23:44:52+08:00`。新鲜度门禁通过，版本为
-`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`。
+The delivered binary was built at `2026-08-01 23:46:54.986162021 +0800`; the
+last `src/` commit is `15bc6ae084d37a4b760e959bccf540ec1fe68c73`, at
+`2026-08-01T23:44:52+08:00`. The freshness gate passed, and the version is
+`cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)`.
 
 ## Goal 12 A0 correction — fixed paired alt-screen baseline
 
-状态：完成。门禁/基准提交 `82db71b8c`。
+Status: Complete. Gate/benchmark commit `82db71b8c`.
 
-上一节的 1024-event cadr 数据有效，但原 pi `14–18ms` 数字来自 main-screen，
-没有驱动 production `TuiAltScreen` raw mouse/wheel handler，不能据此裁决连续输入。
-A0 以同机、同 100×40、N=5000、同 1024-event trace、五个 fresh fixture、默认
-runtime GC 重新对拍；两边都走 production input/request-render，并立即 flush requested
-frame，排除共同的 16ms scheduler wait。
+The 1024-event cadr data of the previous section is valid, but the original pi
+`14–18ms` figures came from the main screen, did not drive the production
+`TuiAltScreen` raw mouse/wheel handler, and cannot be used to adjudicate
+continuous input. A0 redid the cross-implementation comparison on the same host,
+at the same 100×40, N=5000, with the same 1024-event trace, five fresh fixtures
+and the default runtime GC; both sides go through production
+input/request-render and flush the requested frame immediately, excluding the
+16ms scheduler wait they have in common.
 
-归档 pi baseline 为 median/p95/p99/max
-315.576/347.536/365.552/427.549ms；cadr 为
-32.001/40.001/48.001/68.002ms。mouse/wheel 单点分别为 pi
-276.150/297.999ms、cadr 32.000/36.000ms。cadr 全部 tail 均低于 pi，故用户可感知
-的长 transcript 成本来自两边共有的 full-document O(N) render，不存在需要用
-non-baseline mechanism 修正的 cadr 数量级退化。
+The archived pi baseline is median/p95/p99/max
+315.576/347.536/365.552/427.549ms; cadr is
+32.001/40.001/48.001/68.002ms. The single mouse/wheel points are pi
+276.150/297.999ms and cadr 32.000/36.000ms respectively. All of cadr's tails are
+below pi's, so the user-perceptible cost on a long transcript comes from the
+full-document O(N) render that both sides have, and there is no
+order-of-magnitude cadr regression that would need to be corrected with a
+non-baseline mechanism.
 
-门禁新增完整 artifact SHA、source/dist/dependency provenance、五轮原始样本重算和
-同机相对阈值；不同主机明确降为 `informational-host-mismatch`。测试
-`GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` 与
-`test_committed_fixed_baseline_artifact_passes_full_contract` 锁定该合同。
+The gate adds the complete artifact SHA, source/dist/dependency provenance,
+recomputation from five rounds of raw samples, and a same-host relative
+threshold; a different host is explicitly downgraded to
+`informational-host-mismatch`. The tests
+`GOAL11-CONTINUOUS-ALT-INPUT-BENCHMARKS-ARE-RELEASE-GATED` and
+`test_committed_fixed_baseline_artifact_passes_full_contract` lock that
+contract.
 
 ```text
 python3 test/goal11-performance-gate-test.py
   5 tests / OK
 ./scripts/test-cl.sh
-  PASS（全部确定性 suite，0 fail）
+  PASS (all deterministic suites, 0 fail)
 python3 scripts/goal11-performance-gate.py \
   --bench /tmp/goal12-a0-cadr.json \
   --stability docs/benchmarks/goal-v11-stability.json \
@@ -321,7 +360,7 @@ python3 scripts/goal11-performance-gate.py \
   baseline relative gate enforced；mouse/wheel/p99 ratio 0.12/0.12/0.13×
 ```
 
-完整证据：pi artifact SHA-256
-`56e09adc50af1c9433111cc018b095c059f99bf7ada366f5d437f64d64b46ad9`；
+Complete evidence: pi artifact SHA-256
+`56e09adc50af1c9433111cc018b095c059f99bf7ada366f5d437f64d64b46ad9`;
 cadr artifact SHA-256
-`8f85b41714f142f721218009bf40524e0ff842c4c6c3d76dda486595ca05d414`。
+`8f85b41714f142f721218009bf40524e0ff842c4c6c3d76dda486595ca05d414`.

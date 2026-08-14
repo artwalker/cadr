@@ -1,28 +1,31 @@
-# Goal 10 Part A 阶段报告
+# Goal 10 Part A stage report
 
-> 用户于 2026-08-01 完成人工验收：独立核实 remote、全历史凭据扫描，并从
-> GitHub 临时 clone 后从零构建；Part A 正式关闭。
+> The user completed manual acceptance on 2026-08-01: independently verifying
+> the remote, a full-history credential scan, and building from scratch after a
+> temporary clone from GitHub; Part A is formally closed.
 
-> 状态：私有异地备份已建立，全部本地分支与 tag 已推送；从远程默认分支
-> 独立 clone 后完成真实构建。
+> Status: the private off-site backup is established, and every local branch and
+> tag has been pushed; a real build was completed after an independent clone
+> from the remote default branch.
 
-## 1. 远程与分支
+## 1. Remote and branches
 
-- 仓库：`https://github.com/artwalker/cadr`；GitHub API 返回
-  `visibility=PRIVATE`。
-- 本地远程名固定为 `backup`；既有 `origin` 未修改，仍为
-  `git@github.com:badlogic/pi-mono.git`。
-- 远程默认分支为 `cadr-migration`，使普通 clone 直接得到 Cadr 主线，而非
-  上游 TypeScript 跟踪树。
-- `git push backup --all` 推送三条本地分支：
-  `cadr-migration@13a8c9472c7c82b54716a0286492d9a4888c3bd9`、
-  `main@0d43c5804b57f5fb19e67f62051103a85d38fb42`、
-  `pi-mono-legacy@48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`。
-- `git push backup --tags` 推送全部 308 个 distinct 本地 tag；远程的 312 条
-  tag ref 行还包含四个 annotated-tag dereference，不把它们误计成额外 tag；
-  没有创建发布 Release。
+- Repository: `https://github.com/artwalker/cadr`; the GitHub API returns
+  `visibility=PRIVATE`.
+- The local remote name is fixed as `backup`; the existing `origin` was not
+  modified and is still `git@github.com:badlogic/pi-mono.git`.
+- The remote default branch is `cadr-migration`, which makes a plain clone land
+  directly on the Cadr mainline rather than on the upstream TypeScript tracking
+  tree.
+- `git push backup --all` pushed three local branches:
+  `cadr-migration@13a8c9472c7c82b54716a0286492d9a4888c3bd9`,
+  `main@0d43c5804b57f5fb19e67f62051103a85d38fb42`,
+  `pi-mono-legacy@48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1`.
+- `git push backup --tags` pushed all 308 distinct local tags; the remote's 312
+  tag ref lines also contain four annotated-tag dereferences, which are not
+  miscounted as extra tags; no published Release was created.
 
-远程复核：
+Remote re-check:
 
 ```text
 13a8c9472c7c82b54716a0286492d9a4888c3bd9 refs/heads/cadr-migration
@@ -30,19 +33,24 @@
 48b9a05f2cfc3f34f749ac4a2d8d17aec0f843a1 refs/heads/pi-mono-legacy
 ```
 
-## 2. 推送前凭据与产物审计
+## 2. Pre-push credential and artifact audit
 
-当前跟踪树与两条必须备份的分支均不包含 `auth.json`、`.env*`、`.tmp-home/`、
-`.codex/`、根 `cadr` 或 `cadr-server` 二进制。全历史路径审计没有发现这些本地
-状态；全 refs 另按 OpenAI/Anthropic/GitHub/Google/AWS token 与 PEM 格式扫描，
-零真实凭据命中。唯一两个高置信材料是 Cadr 的
-`test/fixtures/auth/service-account-private-key.pem`（身份固定为
-`fixture@example.invalid`）和上游历史的 proxy-agent 测试证书，均为合成测试
-fixture，不是可登录或部署的用户凭据。初次宽松 `sk-` 扫描只命中测试名中的
-`task-...`/`markdown-...` 子串和上游已删除的网页抓取产物；收紧为 token 边界后
-零 token 命中，没有把误报伪装成泄漏或反过来忽略。
+Neither the current tracked tree nor the two branches that must be backed up
+contains `auth.json`, `.env*`, `.tmp-home/`, `.codex/`, or the root `cadr` or
+`cadr-server` binaries. The full-history path audit found none of this local
+state; all refs were additionally scanned for OpenAI/Anthropic/GitHub/Google/AWS
+tokens and for the PEM format, with zero real-credential hits. The only two
+high-confidence materials are Cadr's
+`test/fixtures/auth/service-account-private-key.pem` (whose identity is fixed as
+`fixture@example.invalid`) and the proxy-agent test certificate from upstream
+history; both are synthetic test fixtures, not user credentials that can be
+logged in with or deployed. The initial loose `sk-` scan hit only the
+`task-...`/`markdown-...` substrings in test names and web-scrape artifacts that
+upstream had already deleted; after tightening to token boundaries there were
+zero token hits, and no false positive was passed off as a leak, nor was
+anything ignored in the other direction.
 
-`.gitignore` 已在推送前覆盖：
+`.gitignore` already covered the following before the push:
 
 ```text
 /cadr
@@ -57,27 +65,33 @@ __pycache__/
 *.py[cod]
 ```
 
-因此没有触发“凭据曾进入历史则禁止改写历史”的阻塞条件。
+The blocking condition "if credentials ever entered history, rewriting history
+is forbidden" was therefore not triggered.
 
-## 3. 独立 clone 与构建
+## 3. Independent clone and build
 
-将私有仓库普通 clone 到
-`/tmp/cadr-backup-clone.2mZyvH/repository`，自动 checkout
-`cadr-migration@13a8c9472`。在 clone 内执行 `./build.sh`，exit `0`：
+The private repository was plain-cloned to
+`/tmp/cadr-backup-clone.2mZyvH/repository`, which automatically checked out
+`cadr-migration@13a8c9472`. Running `./build.sh` inside the clone gave exit `0`:
 
-- 八套确定性测试合计 `7040 checks / 7040 pass / 0 skip / 0 fail`；
-- 本机 SBCL 不带 `sb-core-compression`，按既定回退构建无压缩 image；
-- 产物 `cadr` 为 66,429,936 bytes、mode `0755`；
-- `./cadr --version` 输出 `cadr 0.1.0`。
+- the eight deterministic test suites totalled
+  `7040 checks / 7040 pass / 0 skip / 0 fail`;
+- this machine's SBCL does not carry `sb-core-compression`, and an uncompressed
+  image was built per the established fallback;
+- the artifact `cadr` is 66,429,936 bytes, mode `0755`;
+- `./cadr --version` outputs `cadr 0.1.0`.
 
-原始构建日志：`/tmp/cadr-goal10-part-a-clone-build.log`。
+Raw build log: `/tmp/cadr-goal10-part-a-clone-build.log`.
 
-## 4. 边界与落账
+## 4. Boundary and ledger entry
 
-- 对外动作严格限于用户预授权的私有建仓、分支/tag 推送和默认分支配置；没有
-  改为 public、创建 Release 或改写任何历史。
-- 新增第三方依赖：`0`。
-- Part 耗时约 25 分钟，含历史敏感信息审计、远程传输与独立构建；产品未提供
-  可按 Part 审计的 token 数，未伪造估值。
-- 本报告与远程配置作为 Part A 独立提交落账；提交后再次推送
-  `cadr-migration`。
+- Outward actions were strictly limited to the private repository creation,
+  branch/tag push and default-branch configuration that the user pre-authorized;
+  nothing was switched to public, no Release was created, and no history was
+  rewritten.
+- New third-party dependencies: `0`.
+- The Part took about 25 minutes, including the history sensitive-information
+  audit, the remote transfer and the independent build; the product does not
+  provide a per-Part auditable token count, and no estimate was fabricated.
+- This report and the remote configuration are entered on the ledger as an
+  independent Part A commit; after the commit, `cadr-migration` is pushed again.

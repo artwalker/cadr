@@ -33,14 +33,16 @@ Status meanings:
 
 Test classification is deliberately strict:
 
-- `C` = 已覆盖: every relevant behavior in that TypeScript test file is
+- `C` = covered: every relevant behavior in that TypeScript test file is
   covered by the linked CL tests.
-- `U` = 适用但未覆盖: the production behavior exists, but the exact regression
-  is missing from the CL suite.
-- `M` = 对应缺失功能: the file contains behavior outside the current
-  implementation, including files that are only partially covered.
-- `N/A` = 经用户逐文件裁决、仅因实现语言或构建生态必然不同而不适用。
-  `N/A` 不能由实现者自行扩张，也不能掩盖任何仍适用的行为。
+- `U` = applicable but uncovered: the production behavior exists, but the exact
+  regression is missing from the CL suite.
+- `M` = corresponds to a missing feature: the file contains behavior outside the
+  current implementation, including files that are only partially covered.
+- `N/A` = 不适用 by per-file user adjudication, solely because the
+  implementation language or build ecosystem necessarily differs.
+  `N/A` must not be expanded by the implementer on their own, and must not
+  conceal any behavior that still applies.
 
 Live-gated blocks use **credential-gate equivalence**. When the baseline wraps
 a live block in `skipIf(!KEY)` (or an equivalent availability gate), cadr may
@@ -124,10 +126,10 @@ credential is inferred.
 | # | Provider | Protocol | Authentication | Status and main difficulty | Reachable verification |
 |---:|---|---|---|---|---|
 | 1 | `amazon-bedrock` | `bedrock-converse-stream` | AWS chain/profile/access keys or bearer token | 已实现; profile/access-key/bearer resolution, SigV4, region/inference-profile routing and Converse EventStream | fixture; no AWS credential |
-| 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 2 | `ant-ling` | `openai-completions` | `ANT_LING_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
 | 3 | `anthropic` | `anthropic-messages` | API key, bearer auth token, or subscription OAuth | 已实现; full deterministic compatibility, OAuth and stream/error matrix | fixture; no live credential |
 | 4 | `azure-openai-responses` | `azure-openai-responses` | `AZURE_OPENAI_API_KEY` plus deployment endpoint | 已实现; Azure URL/deployment normalization and Responses replay | fixture; no Azure credential |
-| 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 5 | `cerebras` | `openai-completions` | `CEREBRAS_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
 | 6 | `cloudflare-ai-gateway` | Anthropic + Completions + Responses | Cloudflare key, account ID, gateway ID | 已实现; placeholder materialization and gateway-specific headers across three APIs | fixture; no Cloudflare credential |
 | 7 | `cloudflare-workers-ai` | `openai-completions` | Cloudflare key and account ID | 已实现; endpoint materialization | fixture; no Cloudflare credential |
 | 8 | `deepseek` | `openai-completions` | `DEEPSEEK_API_KEY` | 已实现; complete deterministic matrix plus a real streaming gate | fixture + [live-proven](../test/cadr-ai/live-provider-test.lisp) |
@@ -135,27 +137,27 @@ credential is inferred.
 | 10 | `github-copilot` | Anthropic + Completions + Responses | Copilot token or GitHub device OAuth | 已实现; device flow, token exchange, model filtering and Copilot headers | fixture; no GitHub Copilot credential |
 | 11 | `google` | `google-generative-ai` | `GEMINI_API_KEY` | 已实现; complete deterministic Gemini 3.6 and compatibility matrix | fixture; no Gemini credential |
 | 12 | `google-vertex` | `google-vertex` | API key or ADC/service account + project/location | 已实现; API-key/ADC resolution, RS256 JWT exchange and regional endpoint construction | fixture; no Vertex credential |
-| 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 13 | `groq` | `openai-completions` | `GROQ_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 14 | `huggingface` | `openai-completions` | `HF_TOKEN` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
 | 15 | `kimi-coding` | `anthropic-messages` | `KIMI_API_KEY` or device OAuth | 已实现; device flow and subscription headers | fixture; no Kimi credential |
-| 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
+| 16 | `minimax` | `anthropic-messages` | `MINIMAX_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 17 | `minimax-cn` | `anthropic-messages` | `MINIMAX_CN_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
 | 18 | `mistral` | `mistral-conversations` | `MISTRAL_API_KEY` | 已实现; independent protocol, reasoning mode, raw stop and schema sanitization | fixture; no Mistral credential |
-| 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
-| 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional registry/catalog/request/error path | fixture only |
+| 19 | `moonshotai` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
+| 20 | `moonshotai-cn` | `openai-completions` | `MOONSHOT_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 regional registry/catalog/request/error path | fixture only |
 | 21 | `nvidia` | `openai-completions` | `NVIDIA_API_KEY` | 已实现; shared adapter and exact catalog | fixture; no NVIDIA credential |
 | 22 | `openai` | `openai-responses` | `OPENAI_API_KEY` | 已实现; full deterministic Responses compatibility matrix | fixture; no OpenAI API-key credential |
 | 23 | `openai-codex` | `openai-codex-responses` | ChatGPT OAuth | 已实现; one provider identity across login/store/default routing and Codex response transport; `originator=cadr` is an approved client-attribution difference | deterministic login/request tests + [Goal 9 Part C live gate](acceptance/goal-v9-part-c.md) |
 | 24 | `opencode` | Anthropic + Google + Completions + Responses | `OPENCODE_API_KEY` | 已实现; four-API model routing | fixture; no OpenCode credential |
 | 25 | `opencode-go` | Anthropic + Completions + Responses | `OPENCODE_API_KEY` | 已实现; three-API model routing | fixture; no OpenCode credential |
 | 26 | `openrouter` | `openai-completions` | API key or OAuth | 已实现; OAuth shapes, cache-control variants and exact catalog | fixture; no OpenRouter credential |
-| 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | 已实现（fixture 对拍）; Wave 1 plan registry/catalog/request/error path | fixture only |
-| 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | 已实现（fixture 对拍）; Wave 1 regional plan registry/catalog/request/error path | fixture only |
+| 27 | `qwen-token-plan` | `openai-completions` | `QWEN_TOKEN_PLAN_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 plan registry/catalog/request/error path | fixture only |
+| 28 | `qwen-token-plan-cn` | `openai-completions` | `QWEN_TOKEN_PLAN_CN_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 regional plan registry/catalog/request/error path | fixture only |
 | 29 | `radius` | `pi-messages` | API key or Radius OAuth | 已实现; dynamic gateway config/catalog, PKCE authorization and independent stream protocol | fixture; no Radius credential |
-| 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | 已实现（fixture 对拍）; Wave 1 registry/catalog/request/error path | fixture only |
+| 30 | `together` | `openai-completions` | `TOGETHER_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 registry/catalog/request/error path | fixture only |
 | 31 | `vercel-ai-gateway` | `anthropic-messages` | `AI_GATEWAY_API_KEY` | 已实现; gateway headers and exact catalog | fixture; no Vercel credential |
 | 32 | `xai` | Completions + Responses | API key or xAI device OAuth | 已实现; dual API, trusted device polling and model routing | fixture; no xAI credential |
-| 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | 已实现（fixture 对拍）; Wave 1 MiMo catalog/compat/request/error path | fixture only |
+| 33 | `xiaomi` | `openai-completions` | `XIAOMI_API_KEY` | 已实现 (fixture cross-implementation comparison); Wave 1 MiMo catalog/compat/request/error path | fixture only |
 | 34 | `xiaomi-token-plan-ams` | `openai-completions` | `XIAOMI_TOKEN_PLAN_AMS_API_KEY` | 已实现; regional plan endpoint and empty-signature behavior | fixture; no credential |
 | 35 | `xiaomi-token-plan-cn` | `openai-completions` | `XIAOMI_TOKEN_PLAN_CN_API_KEY` | 已实现; regional plan endpoint/catalog | fixture; no credential |
 | 36 | `xiaomi-token-plan-sgp` | `openai-completions` | `XIAOMI_TOKEN_PLAN_SGP_API_KEY` | 已实现; regional plan endpoint/catalog | fixture; no credential |

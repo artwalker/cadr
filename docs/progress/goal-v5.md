@@ -1,130 +1,144 @@
-# GOAL v5: Wave 0 回归清偿 + TUI 全量对齐
+# GOAL v5: Wave 0 regression payoff + full TUI alignment
 
-> 历史报告：文内 `71efc6f0…` 记录 Goal 5 当时的审计锚点；Goal 9 起当前
-> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+> Historical report: the `71efc6f0…` in this document records the audit anchor
+> as it stood for Goal 5; from Goal 9 onward the current canonical baseline is
+> `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 
-## 〇、前置条件与定位
+## 0. Preconditions and positioning
 
-- goal 4 已验收。全程以 `docs/parity-map.md` 为工作清单，行为基线仍为 `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`（审计用 detached worktree，禁止以 pi-mono-legacy 的 2026-04 状态为基准）。
-- **总序已由用户拍板（2026-07-30）**：Wave 0 → TUI（原 Wave 4 提前，理由：无依赖链且用户价值最高）→ Wave 1 → 2 → 3 → 5。本 goal 只含前两段；后续波次在本 goal 验收后另立 goal，不得预先开工。
-- 本 goal 冻结范围之外的一切：provider、agent 循环、会话格式、扩展 API（已冻结）、REPL 行为均不得改动。TUI 之外发现的问题只记录进 docs/open-questions.md。
+- goal 4 has been accepted. Throughout, `docs/parity-map.md` is the work list, and the behavior baseline is still `71efc6f0c1909874ec8c944637a9ae7fc0e2d508` (a detached worktree used for auditing; taking pi-mono-legacy's 2026-04 state as the reference is forbidden).
+- **The overall ordering has been settled by the user (2026-07-30)**: Wave 0 → TUI (formerly Wave 4, moved up; reason: no dependency chain and the highest user value) → Wave 1 → 2 → 3 → 5. This goal contains only the first two segments; later waves get their own goal after this goal is accepted, and work on them must not start early.
+- Everything outside this goal's freeze scope — providers, the agent loop, the session format, the extension API (already frozen) and REPL behavior — must not be changed. Problems found outside the TUI are only recorded in docs/open-questions.md.
 
-## 一、Part A：收尾提交 + Wave 0
+## 1. Part A: wrap-up commit + Wave 0
 
-1. docs-only 提交 goal 4 产出：`docs/parity-map.md`、`docs/progress/goal-v4.md`，不含任何其他文件。
-2. 补齐两条 `U` 级回归测试：
-   - `U-SEARCH-GITIGNORE`（对应 `3303-find-nested-gitignore.test.ts`：嵌套 .gitignore 语义）
-   - `U-TUI-RI`（对应 `regression-regional-indicator-width.test.ts`：区域指示符（旗帜 emoji）宽度）
-3. 零生产代码变更。若新测试证明存在真实 bug：记录现象与最小复现，标记 blocked 等用户确认修复方案，不得静默修改生产代码。
+1. A docs-only commit of the goal 4 output: `docs/parity-map.md` and `docs/progress/goal-v4.md`, containing no other file.
+2. Fill in two `U`-level regression tests:
+   - `U-SEARCH-GITIGNORE` (corresponds to `3303-find-nested-gitignore.test.ts`: nested .gitignore semantics)
+   - `U-TUI-RI` (corresponds to `regression-regional-indicator-width.test.ts`: regional indicator (flag emoji) width)
+3. Zero production code changes. If a new test proves a real bug exists: record the symptom and the minimal reproduction, mark it blocked and wait for the user to confirm the fix approach; production code must not be modified silently.
 
-## 二、Part B：TUI 全量对齐（原 Wave 4）
+## 2. Part B: full TUI alignment (formerly Wave 4)
 
-### 目标
+### Objective
 
-以审计提交的 `packages/tui` 与 coding-agent 的 TUI 侧行为为标准答案，将 cadr-tui 补齐到组件级对等。parity-map 中 `tui` 包的 25 个 `M` 测试文件即工作清单——完成时每个文件必须重新分类为 `C`，或在报告中逐文件注明 N/A 及理由（N/A 仅限测试的是 TS 运行时特有机制，且需链接差异清单）。
+Taking the audit commit's `packages/tui` and the TUI side of coding-agent's behavior as the reference answer, bring cadr-tui up to component-level equivalence. The 25 `M` test files of the `tui` package in parity-map are the work list — at completion every file must be reclassified as `C`, or marked N/A file by file in the report together with the reason (N/A is limited to tests of mechanisms specific to the TS runtime, and must link to the divergence list).
 
-### 明确要求
+### Explicit requirements
 
-1. **组件清单**（对照审计提交 `packages/tui/src/`）：autocomplete、fuzzy、kill-ring、undo-stack、word-navigation、keybindings（含 native-modifiers）、stdin-buffer、terminal-colors、terminal-image（iTerm2/kitty/sixel 按原版支持范围）、overlay 全家（含 CJK 边界行为）、select-list 与 markdown 的存量缺口。行为以原版逐项为准，**不得加入原版没有的机制**——任何"顺手改进"的想法记 open-questions.md 交用户裁决。
-2. **架构约束不变**：REPL 与 TUI 仍是同一 `CADR-AGENT` 事件流的两个渲染器；`--no-tui` 永远可用；TUI 层不得侵入 provider/session/扩展逻辑。
-3. **测试规格**：每个组件配虚拟终端快照测试；原版 25+1 个测试文件的断言逐文件移植语义（不是逐行翻译）；CJK/emoji/区域指示符宽度回归必须包含。测试先行。
-4. **不改既有通过行为**：goal 3 验收时的 690 条断言必须全数保持绿色；只增不删（既有测试如需调整须在报告中逐条说明理由）。
+1. **Component list** (against the audit commit's `packages/tui/src/`): autocomplete, fuzzy, kill-ring, undo-stack, word-navigation, keybindings (including native-modifiers), stdin-buffer, terminal-colors, terminal-image (iTerm2/kitty/sixel to the baseline's support range), the whole overlay family (including CJK boundary behavior), and the existing gaps in select-list and markdown. Behavior follows the baseline item by item, and **a mechanism the baseline does not have must not be added** — any "improvement while we are at it" idea is recorded in open-questions.md and escalated for user adjudication.
+2. **Architectural constraints are unchanged**: REPL and TUI are still two renderers of the same `CADR-AGENT` event stream; `--no-tui` is always available; the TUI layer must not intrude into provider/session/extension logic.
+3. **Test specification**: every component gets a virtual-terminal snapshot test; the assertions of the baseline's 25+1 test files are ported file by file at the semantic level (not line-by-line translation); CJK/emoji/regional-indicator width regressions must be included. Tests first.
+4. **Do not change existing passing behavior**: all 690 assertions from the goal 3 acceptance must stay green; only add, never delete (if an existing test needs adjustment, the reason must be stated item by item in the report).
 
-### 验收标准
+### Acceptance criteria
 
-1. parity-map 的 `tui` 行更新后 C/U/M 重新计数，`M` 中不属于 N/A 的清零；汇总表同步更新，更新以独立 docs 提交落账。
-2. 全量测试绿，总数严格大于 690，新增数与新组件清单对得上。
-3. `./scripts/live-tui-smoke.sh` 扩展覆盖新组件后通过。
-4. **用户人工验收清单**（由顾问在验收时出具，覆盖：补全弹出与选择、undo、kill-ring 粘贴、按词跳转、终端内图片显示、overlay 中文边界、resize 下的以上全部）——固定基线只有 undo、没有 redo，按全局对齐原则不新增 redo；用户逐项确认前不得宣告完成，自行宣布无效。
-5. 阶段报告 `docs/progress/goal-v5.md`：组件映射表、逐测试文件分类变更、精确命令与结果。
+1. After the `tui` rows of parity-map are updated, C/U/M are recounted and the `M` entries that are not N/A are zeroed; the summary table is updated in sync, and the update is recorded by a separate docs commit.
+2. The full test suite is green, the total is strictly greater than 690, and the number added matches the new component list.
+3. `./scripts/live-tui-smoke.sh` passes after being extended to cover the new components.
+4. **A user manual-acceptance checklist** (issued by the advisor at acceptance, covering: the completion popup and selection, undo, kill-ring paste, word-wise jumping, in-terminal image display, overlay Chinese boundaries, and all of the above under resize) — the pinned baseline has only undo and no redo, and by the global alignment principle no redo is added; completion must not be declared before the user confirms item by item, and declaring it on one's own is invalid.
+5. The stage report `docs/progress/goal-v5.md`: the component mapping table, the classification change per test file, and the exact commands and results.
 
-## 三、原则
+## 3. Principles
 
-- 测试先行、阶段门禁、发现的非 TUI 问题只记录不修复。
-- 人工确认门禁不变：扩展 API 不动；如 TUI 对齐过程中发现必须触碰冻结接口，标记 blocked 等用户裁决。
-- 完成后暂停，等待 Wave 1 指令。
+- Tests first, stage gates, and non-TUI problems that are found are only recorded, not fixed.
+- The manual-confirmation gate is unchanged: the extension API is not touched; if the TUI alignment work finds that a frozen interface must be touched, mark it blocked and wait for user adjudication.
+- Pause when done and wait for the Wave 1 instruction.
 
-## 四、执行记录
+## 4. Execution record
 
-### 2026-07-30：Part A 门禁
+### 2026-07-30: Part A gate
 
-- Goal 4 产出已作为纯文档提交 `f9cefa43d` 落账，提交只含
-  `docs/parity-map.md` 与 `docs/progress/goal-v4.md`。
-- `U-SEARCH-GITIGNORE` 已测试先行补入
-  `test/cadr-cli/search-tools-test.lisp`；`cadr-cli` 220 checks 全绿，且未改
-  生产代码。
-- `U-TUI-RI` 已测试先行补入 `test/cadr-tui/unicode-test.lisp`。区域指示符
-  单体、完整旗帜与常见流式 emoji 宽度断言通过，但基线换行断言暴露真实差异：
-  `wrap-text("      - 🇨", 9)` 当前返回首行 `"      - "`（可见宽度 8），固定
-  TS 基线返回首行 `"      -"`（可见宽度 7）。最小复现即该输入、宽度 9。
-- 根因是 `wrap-logical-line` 仅按 grapheme 硬切且保留断点尾空格；固定基线
-  `wrapTextWithAnsi` 在溢出时 `trimEnd()`，不让续行从空白开始。
-- Part A 当时按硬门禁未修改生产代码。用户随后明确授权在 Part B 中测试
-  先行移植完整 `wrapTextWithAnsi` 语义，不打孤立补丁；该差异已随
-  ANSI/OSC 8、词/CJK 边界和尾空白语义一起修复。
+- The Goal 4 output has been recorded as the pure-documentation commit
+  `f9cefa43d`; the commit contains only `docs/parity-map.md` and
+  `docs/progress/goal-v4.md`.
+- `U-SEARCH-GITIGNORE` has been added tests-first to
+  `test/cadr-cli/search-tools-test.lisp`; `cadr-cli` is 220 checks fully green,
+  and production code was not changed.
+- `U-TUI-RI` has been added tests-first to `test/cadr-tui/unicode-test.lisp`.
+  The width assertions for a lone regional indicator, a complete flag and
+  common streaming emoji pass, but the baseline wrapping assertion exposed a
+  real difference:
+  `wrap-text("      - 🇨", 9)` currently returns the first line `"      - "`
+  (visible width 8), while the pinned TS baseline returns the first line
+  `"      -"` (visible width 7). The minimal reproduction is exactly that
+  input at width 9.
+- The root cause is that `wrap-logical-line` hard-cuts by grapheme only and
+  keeps the trailing space at the break point; the pinned baseline's
+  `wrapTextWithAnsi` calls `trimEnd()` on overflow so a continuation line does
+  not start with whitespace.
+- Part A did not modify production code at the time, per the hard gate. The
+  user then explicitly authorized porting the complete `wrapTextWithAnsi`
+  semantics tests-first in Part B rather than applying an isolated patch; that
+  difference has been fixed together with the ANSI/OSC 8, word/CJK boundary
+  and trailing-whitespace semantics.
 
-### Part B 最终映射
+### Part B final mapping
 
-下表固定测试语义和实现模块。原 25 个 `M` 文件全部适用于 cadr，均已转为
-`C`；没有 N/A。
+The table below pins the test semantics and the implementation modules. All 25
+original `M` files apply to cadr and have all been turned into `C`; there is no
+N/A.
 
-| 固定基线测试文件 | 必须移植的行为 | cadr 目标模块 |
+| pinned baseline test file | behavior that must be ported | cadr target module |
 |---|---|---|
-| `autocomplete.test.ts` | slash、路径、`@` 文件模糊补全，引用、隐藏项、符号链接与稳定排序 | `autocomplete.lisp`、`fuzzy.lisp` |
-| `bug-regression-isimageline-startswith-bug.test.ts` | 任意位置识别 iTerm2/Kitty 图片转义且无长行崩溃或文本误报 | `terminal-image.lisp` |
-| `editor.test.ts` | 历史、Unicode/CJK、词换行、kill-ring、undo、autocomplete、字符跳转、粘贴原子段与 sticky column | `editor.lisp`、`kill-ring.lisp`、`undo-stack.lisp`、`word-navigation.lisp` |
-| `fuzzy.test.ts` | 顺序匹配、边界/连续得分、字母数字互换、多 token 排序 | `fuzzy.lisp` |
-| `input.test.ts` | 单行输入、横向滚动、Unicode 词删除、kill/yank/undo 与可配置按键 | `input-component.lisp` |
-| `keybindings.test.ts` | 默认值、用户覆盖、去重、禁用、冲突和防御性副本 | `keybindings.lisp` |
-| `keys.test.ts` | legacy/CSI/CSI-u/Kitty/modifyOtherKeys 解析、修饰键、press/repeat/release | `keys.lisp` |
-| `markdown.test.ts` | 流式 Markdown、ANSI 主题、列表/引用/代码/表格/链接/图片与宽度快照 | `components.lisp`、`terminal-image.lisp` |
-| `overlay-non-capturing.test.ts` | 非捕获 overlay 输入分派、焦点恢复、嵌套与动态可见性 | `overlay.lisp`、`renderer.lisp` |
-| `overlay-options.test.ts` | anchor、行列、百分比尺寸、边距、最大高度和裁剪 | `overlay.lisp` |
-| `overlay-short-content.test.ts` | overlay 高于主内容时仍正确合成和清理 | `overlay.lisp`、`renderer.lisp` |
-| `regression-overlay-cjk-boundary.test.ts` | overlay 起点落在宽字符内部或边界时不残留半个 grapheme | `unicode.lisp`、`overlay.lisp` |
-| `select-list.test.ts` | 描述单行化、主列最小/最大宽度、截断回调与对齐 | `components.lisp` |
-| `stdin-buffer.test.ts` | 分块 ESC/CSI/SS3/mouse/Kitty、超时、去重、paste、flush/clear/destroy | `stdin-buffer.lisp`、`keys.lisp` |
-| `tab-width.test.ts` | tab 与 ANSI/overlay 切片统一按 3 cells 计宽 | `unicode.lisp`、`overlay.lisp` |
-| `terminal-colors.test.ts` | OSC 11 与颜色方案报告解析、查询消费和超时后迟到回复 | `terminal-colors.lisp`、`renderer.lisp` |
-| `terminal-image.test.ts` | 能力探测、iTerm2/Kitty 编码、尺寸解析、行数、删除、fallback 与 OSC 8 | `terminal-image.lisp`、`components.lisp` |
-| `terminal.test.ts` | Apple Return、Kitty 协商/fallback、普通输入回放和环境尺寸 | `terminal.lisp`、`keys.lisp` |
-| `truncate-to-width.test.ts` | ANSI 安全连续前缀截断、ellipsis、padding、畸形转义、Thai/Lao 输出归一化 | `unicode.lisp` |
-| `truncated-text.test.ts` | 首行截断、精确宽度和垂直 padding，样式 reset 不泄漏 | `components.lisp` |
-| `tui-cell-size-input.test.ts` | cell-size 查询回复被消费，裸 Escape 与后续用户输入仍转发 | `terminal-image.lisp`、`renderer.lisp` |
-| `tui-overlay-style-leak.test.ts` | overlay 切片丢弃尾 SGR 时仍补 reset，不污染后续 cell | `unicode.lisp`、`overlay.lisp` |
-| `tui-render.test.ts` | 差分/全量重绘、resize、内容收缩、样式 reset、Kitty 图片预清理与删除 | `renderer.lisp`、`terminal-image.lisp` |
-| `word-navigation.test.ts` | ASCII 标点、路径、CJK、空白和粘贴原子段的前后移动 | `word-navigation.lisp` |
-| `wrap-ansi.test.ts` | ANSI/OSC 8 状态跨行、词/CJK 换行、尾空白和孤立区域指示符 | `unicode.lisp` |
+| `autocomplete.test.ts` | slash, path and `@` file fuzzy completion, quoting, hidden entries, symlinks and stable ordering | `autocomplete.lisp`, `fuzzy.lisp` |
+| `bug-regression-isimageline-startswith-bug.test.ts` | recognize iTerm2/Kitty image escapes at any position, with no long-line crash and no false positive on text | `terminal-image.lisp` |
+| `editor.test.ts` | history, Unicode/CJK, word wrapping, kill-ring, undo, autocomplete, character jumping, atomic paste segments and sticky column | `editor.lisp`, `kill-ring.lisp`, `undo-stack.lisp`, `word-navigation.lisp` |
+| `fuzzy.test.ts` | in-order matching, boundary/consecutive scoring, alphanumeric interchange, multi-token ordering | `fuzzy.lisp` |
+| `input.test.ts` | single-line input, horizontal scrolling, Unicode word deletion, kill/yank/undo and configurable keys | `input-component.lisp` |
+| `keybindings.test.ts` | defaults, user overrides, deduplication, disabling, conflicts and defensive copies | `keybindings.lisp` |
+| `keys.test.ts` | legacy/CSI/CSI-u/Kitty/modifyOtherKeys parsing, modifier keys, press/repeat/release | `keys.lisp` |
+| `markdown.test.ts` | streaming Markdown, ANSI themes, lists/quotes/code/tables/links/images and width snapshots | `components.lisp`, `terminal-image.lisp` |
+| `overlay-non-capturing.test.ts` | non-capturing overlay input dispatch, focus restoration, nesting and dynamic visibility | `overlay.lisp`, `renderer.lisp` |
+| `overlay-options.test.ts` | anchor, row and column, percentage sizing, margins, maximum height and clipping | `overlay.lisp` |
+| `overlay-short-content.test.ts` | still composes and cleans up correctly when the overlay is taller than the main content | `overlay.lisp`, `renderer.lisp` |
+| `regression-overlay-cjk-boundary.test.ts` | no half grapheme is left behind when the overlay's start point falls inside a wide character or on its boundary | `unicode.lisp`, `overlay.lisp` |
+| `select-list.test.ts` | single-lining of descriptions, minimum/maximum width of the main column, truncation callback and alignment | `components.lisp` |
+| `stdin-buffer.test.ts` | chunked ESC/CSI/SS3/mouse/Kitty, timeouts, deduplication, paste, flush/clear/destroy | `stdin-buffer.lisp`, `keys.lisp` |
+| `tab-width.test.ts` | tabs and ANSI/overlay slicing all measure width as 3 cells | `unicode.lisp`, `overlay.lisp` |
+| `terminal-colors.test.ts` | parsing of OSC 11 and color-scheme reports, query consumption, and a late reply after a timeout | `terminal-colors.lisp`, `renderer.lisp` |
+| `terminal-image.test.ts` | capability probing, iTerm2/Kitty encoding, size parsing, line count, deletion, fallback and OSC 8 | `terminal-image.lisp`, `components.lisp` |
+| `terminal.test.ts` | Apple Return, Kitty negotiation/fallback, ordinary input replay and environment size | `terminal.lisp`, `keys.lisp` |
+| `truncate-to-width.test.ts` | ANSI-safe contiguous-prefix truncation, ellipsis, padding, malformed escapes, Thai/Lao output normalization | `unicode.lisp` |
+| `truncated-text.test.ts` | first-line truncation, exact width and vertical padding, with style resets not leaking | `components.lisp` |
+| `tui-cell-size-input.test.ts` | the cell-size query reply is consumed, while a bare Escape and subsequent user input are still forwarded | `terminal-image.lisp`, `renderer.lisp` |
+| `tui-overlay-style-leak.test.ts` | when overlay slicing drops a trailing SGR a reset is still appended, so subsequent cells are not polluted | `unicode.lisp`, `overlay.lisp` |
+| `tui-render.test.ts` | differential/full repaint, resize, content shrinkage, style reset, Kitty image pre-cleanup and deletion | `renderer.lisp`, `terminal-image.lisp` |
+| `word-navigation.test.ts` | forward and backward movement over ASCII punctuation, paths, CJK, whitespace and atomic paste segments | `word-navigation.lisp` |
+| `wrap-ansi.test.ts` | ANSI/OSC 8 state across lines, word/CJK wrapping, trailing whitespace and a lone regional indicator | `unicode.lisp` |
 
-另外两条状态变化为：
+Two further status changes:
 
-- `regression-regional-indicator-width.test.ts`：`U → C`，证据在
-  `unicode-test.lisp` 与 `wrap-ansi-test.lisp`。
-- `tui-shrink.test.ts`：保持 `C`，旧行为由新增 renderer 回归继续覆盖。
+- `regression-regional-indicator-width.test.ts`: `U → C`, with evidence in
+  `unicode-test.lisp` and `wrap-ansi-test.lisp`.
+- `tui-shrink.test.ts`: stays `C`, with the old behavior still covered by the new renderer regressions.
 
-Part A 的 `3303-find-nested-gitignore.test.ts` 同时由 `U → C`。因此严格
-manifest 的 TUI 行从 `C/U/M = 1/1/25` 变为 `27/0/0`，全仓从
-`1/2/349` 变为 `28/0/324`。
+Part A's `3303-find-nested-gitignore.test.ts` goes `U → C` at the same time. The
+TUI rows of the strict manifest therefore go from `C/U/M = 1/1/25` to
+`27/0/0`, and the whole repository from `1/2/349` to `28/0/324`.
 
-### Part B 实现
+### Part B implementation
 
-| 组件域 | 实现 |
+| component domain | implementation |
 |---|---|
-| ANSI/Unicode 布局 | 完整词边界、ANSI/OSC 8 跨行状态、尾空白、CJK、emoji、区域指示符、tab=3、ANSI 安全截断 |
-| 输入协议 | legacy、CSI/SS3、CSI-u、Kitty、modifyOtherKeys、native modifiers、press/repeat/release |
-| 输入 buffering | 分块 ESC/CSI/paste、超时、Kitty 去重、终端能力回复过滤和同批用户输入顺序 |
-| 编辑 | multiline 与 single-line、历史、sticky column、按词移动、字符跳转、原子 paste、kill/yank/yank-pop、undo |
-| 补全 | slash、路径、引号、隐藏文件、符号链接、递归 `@` 文件和稳定 fuzzy 排序 |
-| overlay | anchor、百分比尺寸、边距、裁剪、focus/capture、非捕获输入、嵌套和 CJK/ANSI 安全合成 |
-| 终端能力 | OSC 11/颜色方案、cell size、Kitty/iTerm2 能力与图片、删除、尺寸和文本 fallback |
-| 组件/渲染 | Markdown、select list、truncated text、image component、差分/全量重绘、resize、style 隔离 |
+| ANSI/Unicode layout | complete word boundaries, ANSI/OSC 8 state across lines, trailing whitespace, CJK, emoji, regional indicators, tab=3, ANSI-safe truncation |
+| input protocols | legacy, CSI/SS3, CSI-u, Kitty, modifyOtherKeys, native modifiers, press/repeat/release |
+| input buffering | chunked ESC/CSI/paste, timeouts, Kitty deduplication, filtering of terminal capability replies, and the order of user input within the same batch |
+| editing | multiline and single-line, history, sticky column, word-wise movement, character jumping, atomic paste, kill/yank/yank-pop, undo |
+| completion | slash, paths, quotes, hidden files, symlinks, recursive `@` files and stable fuzzy ordering |
+| overlay | anchor, percentage sizing, margins, clipping, focus/capture, non-capturing input, nesting and CJK/ANSI-safe composition |
+| terminal capabilities | OSC 11 / color scheme, cell size, Kitty/iTerm2 capabilities and images, deletion, size and text fallback |
+| components/rendering | Markdown, select list, truncated text, image component, differential/full repaint, resize, style isolation |
 
-固定基线没有 redo；实现只包含原版 undo，没有引入额外核心机制。真实
-`process-terminal` 复用了 `stdin-buffer`，并修复了两项实机才暴露的问题：
-终端 DA 回复与用户输入粘连，以及 Return 被错误识别为 `Ctrl+-`。两者都先
-加入回归测试，再按固定基线语义修复。
+The pinned baseline has no redo; the implementation contains only the baseline's
+undo and introduced no extra core mechanism. The real
+`process-terminal` reuses `stdin-buffer`, and fixed two problems that only real
+hardware exposed:
+the terminal DA reply sticking to user input, and Return being wrongly
+recognized as `Ctrl+-`. For both, a regression test was added first and the fix
+then made per the pinned baseline's semantics.
 
-### 自动验收证据
+### Automated acceptance evidence
 
 ```text
 ./scripts/test-cl.sh
@@ -152,15 +166,17 @@ bash -n scripts/goal5-manual-tui.sh \
   exit 0
 ```
 
-既有测试文件只增加断言，没有删除或放宽断言。最终 `git diff --check`
-通过。`U-TUI-RI`、完整 `wrapTextWithAnsi` 语义和真实 Return/终端回复路径
-均留在 Goal 5 门禁中。`goal5-manual-tui.sh` 只加载 test system，不进入
-生产镜像或核心 API；它把图片与 CJK overlay 的人工验收变成真实终端中的
-可重复操作。
+Existing test files only gained assertions; no assertion was deleted or
+weakened. The final `git diff --check` passes. `U-TUI-RI`, the complete
+`wrapTextWithAnsi` semantics and the real Return / terminal-reply path all
+remain in the Goal 5 gate. `goal5-manual-tui.sh` loads only the test system and
+does not enter the production image or the core API; it turns the manual
+acceptance of images and CJK overlays into a repeatable operation in a real
+terminal.
 
-### 提交记录
+### Commit record
 
-实现与测试按逻辑分为三个提交：
+Implementation and tests are split logically into three commits:
 
 1. `8bdb6461f2ee7659bad7d935a19c2b94e8acfaa5`
    `test(cadr): pin uncovered baseline regressions`
@@ -169,18 +185,23 @@ bash -n scripts/goal5-manual-tui.sh \
 3. `b1d11c74eb11d4534bc392df59c5b18289ebfc46`
    `feat(cli): wire full TUI parity into interactive runtime`
 
-### 人工验收通过
+### Manual acceptance passed
 
-用户于 2026-07-30 逐项确认人工验收通过：补全与选择、undo、kill-ring、
-按词移动、终端图片及 fallback、overlay 中文边界与双 overlay 焦点、resize、
-`--no-tui` line REPL 均符合固定基线。真实终端截图证据覆盖 CJK overlay
-边界、双 overlay 焦点、图片 fallback、resize 与终端恢复。
+On 2026-07-30 the user confirmed item by item that manual acceptance passed:
+completion and selection, undo, kill-ring, word-wise movement, terminal images
+and fallback, overlay Chinese boundaries and dual-overlay focus, resize, and the
+`--no-tui` line REPL all match the pinned baseline. Real-terminal screenshot
+evidence covers CJK overlay boundaries, dual-overlay focus, image fallback,
+resize and terminal restore.
 
-提交态重新运行 `./build.sh`，四个套件分别为 256、156、582、225，
-合计 1219/1219 全绿；构建在当前 SBCL 无 `sb-core-compression` 时按设计
-降级生成无压缩 `cadr`，`./cadr --version` 输出 `cadr 0.1.0`。
-`./scripts/live-tui-smoke.sh` 再次通过。
+`./build.sh` was re-run in the committed state; the four suites are 256, 156,
+582 and 225 respectively, 1219/1219 fully green in total; when the current SBCL
+lacks `sb-core-compression` the build downgrades by design and produces an
+uncompressed `cadr`, and `./cadr --version` outputs `cadr 0.1.0`.
+`./scripts/live-tui-smoke.sh` passes again.
 
-`git status --short --untracked-files=no` 无输出，受版本控制的工作区干净。
-用户要求保留的无关未跟踪路径 `.codex`、`.tmp-home/`、`docs/.obsidian/`
-仍原样存在，未纳入任何提交。Goal 5 完成；Wave 1 未开始。
+`git status --short --untracked-files=no` produces no output; the
+version-controlled working tree is clean. The unrelated untracked paths the user
+asked to keep — `.codex`, `.tmp-home/` and `docs/.obsidian/` — still exist
+unchanged and were not included in any commit. Goal 5 is complete; Wave 1 has
+not started.

@@ -1,59 +1,76 @@
-# Goal 18 I2/I7 派生覆盖差集报告（2026-08-10）
+# Goal 18 I2/I7 derived-coverage difference-set report (2026-08-10)
 
-本报告是 goal18.md I2 第 3 条要求的「派生要求 − 现有场景」机器答案。
-每个类别的**集合**都从固定基线（53fa77ccd）机械派生；门禁 fail-closed：
-派生集合漂移、映射缺失、注册表陈旧任一发生即失败。
+This report is the machine answer to "derived requirements − existing scenarios"
+required by goal18.md I2 item 3. The **set** for every category is mechanically
+derived from the fixed baseline (53fa77ccd); the gate is fail-closed: it fails if
+any one of derived-set drift, a missing mapping, or a stale registry occurs.
 
-## 已机械派生并对账闭合的类别
+## Categories that are mechanically derived and reconciled closed
 
-| 类别 | 派生源 | 规模 | 对账方式 | 差集 |
+| Category | Derivation source | Size | Reconciliation method | Difference set |
 |---|---|---|---:|---|
-| slash 命令 | `core/slash-commands.ts` 注册表（git 提取） | 22 | `reachable-interfaces.json` 注册表逐条有 capture，门禁核对顺序与成员 | 空 |
-| 界面构造器与构造点 | `new *Component(` 全量扫描（git 提取） | 15 构造器 / 22 站点 | `baseline-interface-inventory.json` 字段与 git 重提取比对 | 空 |
-| 登录对话框形态 | `login-dialog.ts` 的 `show*` 公开方法（git 提取，I2 新增） | 8 | `loginDialogCoverage` 映射：5 个经差分场景检查点，3 个（showDetails/showInfo/showPrompt，无登录流在 harness 可达）经 construction 逐字节驱动 | 空 |
-| 扩展事件 | `types.ts` `ExtensionEvent` 联合展开（git 提取，I2 新增） | 33 叶子事件 | FiveAM 断言 cadr 集合 = 派生集合 + 已裁决拆分（`tool_call`/`tool_result` → before/after/error） | 空 |
-| 可见字符串分支 | 246 源文件 × 已建模 sink 提取（既有，71 个产出条目） | 508 sites / 1117 分支条目；其中 printable 义务 479 sites / 787 分支 | 逐分支捕获或结构化豁免 | 空（10 分支已裁决豁免，见下） |
-| 未建模 sink 候选 | 反向清点：全部 console/process-write/show*/print* 调用中带固定文本且不落任何清单站点者（I7.3 新增） | 14 | `visible-string-unmodeled-review.json` 逐条 verdict + reason，门禁对账 | 空 |
+| slash commands | the `core/slash-commands.ts` registry (extracted from git) | 22 | every entry of the `reachable-interfaces.json` registry has a capture; the gate checks order and membership | empty |
+| interface constructors and construction sites | full scan of `new *Component(` (extracted from git) | 15 constructors / 22 sites | `baseline-interface-inventory.json` fields compared against a fresh git extraction | empty |
+| login-dialog forms | the `show*` public methods of `login-dialog.ts` (extracted from git, added in I2) | 8 | the `loginDialogCoverage` mapping: 5 through differential scenario checkpoints, 3 (showDetails/showInfo/showPrompt, no login flow is reachable in the harness) driven byte-for-byte through construction | empty |
+| extension events | expansion of the `ExtensionEvent` union in `types.ts` (extracted from git, added in I2) | 33 leaf events | FiveAM asserts the cadr set = the derived set + the adjudicated splits (`tool_call`/`tool_result` → before/after/error) | empty |
+| visible-string branches | 246 source files × modeled-sink extraction (pre-existing, 71 produced entries) | 508 sites / 1117 branch entries; of these the printable obligation is 479 sites / 787 branches | per-branch capture or structured exemption | empty (10 branches adjudicated as exempt, see below) |
+| unmodeled sink candidates | reverse inventory: among all console/process-write/show*/print* calls, those that carry fixed text and land on no inventory site (added in I7.3) | 14 | a verdict + reason per entry in `visible-string-unmodeled-review.json`, reconciled by the gate | empty |
 
-## 差集的豁免闭合：10 分支已裁决（USER-2026-08-10-001）
+## Exemption closure of the difference set: 10 branches adjudicated (USER-2026-08-10-001)
 
-A 类防御性回退 5（`main.ts:150/211/633`、`package-manager-cli.ts:733/870`）、
-B 类权限依赖失败臂 4（`migrations.ts:148`、`file-processor.ts:80`）、C 类
-Android 1（`tools-manager.ts:349`），逐条审计依据见
-`docs/proposals/goal18-i7-tail-exemptions.md`。2026-08-10 用户已裁决
-（`userDecisionId: USER-2026-08-10-001`，落账提交 `b435ef522`）：A 类 5 分支
-以 `unreachable-in-baseline`、B 类 4 分支以新增的 `unreachable-in-harness`
-、C 类 1 分支以既有 `unavailable-operating-system` 全部入豁免注册表
-（`test/fixtures/render-diff/visible-string-exemptions.json` schema 3，每条
-附 `baselineEvidence` 与 probe）。注册表 fail-closed 语义不变：未知、陈旧、
-重复或已有真实捕获的豁免条目仍会使门禁失败；该 10 分支不再属于未闭合项。
+Class A defensive fallbacks 5 (`main.ts:150/211/633`,
+`package-manager-cli.ts:733/870`), class B permission-dependent failure arms 4
+(`migrations.ts:148`, `file-processor.ts:80`), class C Android 1
+(`tools-manager.ts:349`); the per-entry audit grounds are in
+`docs/proposals/goal18-i7-tail-exemptions.md`. On 2026-08-10 the user adjudicated
+(`userDecisionId: USER-2026-08-10-001`, ledger commit `b435ef522`): the 5 class-A
+branches under `unreachable-in-baseline`, the 4 class-B branches under the newly
+added `unreachable-in-harness`, and the 1 class-C branch under the existing
+`unavailable-operating-system` all enter the exemption registry
+(`test/fixtures/render-diff/visible-string-exemptions.json` schema 3, each entry
+carrying `baselineEvidence` and a probe). The registry's fail-closed semantics are
+unchanged: an unknown, stale, duplicate, or already really captured exemption
+entry still makes the gate fail; those 10 branches are no longer unclosed items.
 
-## 选择不机械派生的类别及理由（交裁决）
+## Categories deliberately not mechanically derived, and the reasons (escalated for adjudication)
 
-1. **状态条件渲染点**（`addLoadedSection(...)`、`if (xs.length)` 一类）：
-   派生可得站点清单，但"每站点须有空/非空双态场景"的义务无法机械绑定到
-   具体场景状态——某状态可否在 harness 构造、由哪个场景提供，需要语义
-   判断。现行机制：I3 双态规则写入 `docs/render-diff.md`（新增场景的强制
-   规则）+ 启动资源六区块的空/非空双场景已在位。**若裁决要求更严，需
-   为每个渲染条件点维护人工映射表（又回到手工清单），或接受现状。**
-2. **状态迁移检查点**：I1 已把遍历型场景的滚动位/选中态/切换前后列入
-   显式检查点；"每个动作后是否应设检查点"无机械判据（动作数 × 检查点
-   会爆炸性放大捕获量而无线性收益）。现行规则：遍历型场景必须在被遍历
-   的关键状态上设点（写入 render-diff 文档）。
+1. **State-conditional render points** (the `addLoadedSection(...)`,
+   `if (xs.length)` kind): derivation yields a site inventory, but the obligation
+   "every site must have empty/non-empty two-state scenarios" cannot be
+   mechanically bound to a concrete scenario state — whether some state can be
+   constructed in the harness, and which scenario supplies it, requires semantic
+   judgement. Current mechanism: the I3 two-state rule is written into
+   `docs/render-diff.md` (a mandatory rule for new scenarios) + the empty/non-empty
+   two scenarios of the six startup-resource blocks are already in place. **If the
+   adjudication demands something stricter, a manual mapping table must be
+   maintained for every render condition point (which is back to a hand-maintained
+   inventory), or the status quo accepted.**
+2. **State-transition checkpoints**: I1 has already listed the scroll position /
+   selected state / before and after a switch of traversal-type scenarios as
+   explicit checkpoints; "whether a checkpoint should be set after every action"
+   has no mechanical criterion (actions × checkpoints would explosively enlarge the
+   capture volume with no linear gain). Current rule: traversal-type scenarios must
+   set points on the key states being traversed (written into the render-diff
+   document).
 
-## 手工清单的现状
+## Current state of the hand-maintained inventory
 
-`REQUIRED_COVERAGE` 仍是手工集合，但已改为**当前声明全集**（138 个覆盖
-标签）：任何场景或标签被删除即失败，覆盖不可回退。它与派生集合的关系：
-派生集合管"基线有什么"，手工全集管"场景声称覆盖什么"，两者都由门禁
-对账。
+`REQUIRED_COVERAGE` is still a hand-maintained set, but it has been changed to the
+**complete set of current declarations** (138 coverage tags): the deletion of any
+scenario or tag fails, coverage cannot regress. Its relation to the derived sets:
+the derived sets govern "what the baseline has", the hand-maintained complete set
+governs "what the scenarios claim to cover", and both are reconciled by the gate.
 
-## 已知覆盖形态说明：启动弃用警告块
+## Note on a known coverage form: the startup deprecation-warning block
 
-`migrations.ts` 的弃用目录警告（hooks//tools/ 提示 + 文档 URL + "Press any
-key to continue..." 暂停）只在基线 `main.ts` 的交互路径发出；render-diff
-的 TUI 场景经 driver 直接构造 InteractiveMode，不经 main()，因此该块目前
-由 construction 驱动（基线侧逐字节）+ cadr 侧 FiveAM
-（`goal18-deprecation-warnings-match-the-baseline-text`，含按键等待与完整
-文案）覆盖，无双侧场景。要补双侧对拍需一个"注册 faux 后走完整 main()"
-的新 driver 入口——收益与驱动复杂度不称，记录在案。
+The deprecated-directory warning of `migrations.ts` (the hooks//tools/ notice +
+documentation URL + the "Press any key to continue..." pause) is emitted only on
+the interactive path of the baseline's `main.ts`; render-diff's TUI scenarios
+construct InteractiveMode directly through the driver, not through main(), so that
+block is currently covered by construction driving (byte-for-byte on the baseline
+side) + FiveAM on the cadr side
+(`goal18-deprecation-warnings-match-the-baseline-text`, including the keypress wait
+and the complete copy), with no two-sided scenario. Adding a two-sided
+cross-implementation comparison would require a new driver entry point that
+"registers the faux and then runs the complete main()" — the gain is not
+commensurate with the driving complexity; recorded here.

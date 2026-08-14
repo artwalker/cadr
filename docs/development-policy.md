@@ -6,9 +6,9 @@
 
 ---
 
-## 一、cadr is a Lisp program, not TypeScript written in Lisp (user adjudication, 2026-08-03)
+## 1. cadr is a Lisp program, not TypeScript written in Lisp (user adjudication, 2026-08-03)
 
-The original text is `goal14.md` 〇.五; goal 14 has closed out, so it moved into this standing file.
+The original text is `goal14.md` 0.5; goal 14 has closed out, so it moved into this standing file.
 
 ### 1. Alignment is defined as functional alignment
 
@@ -43,7 +43,7 @@ Assertions must be **locked item by item against the baseline, never reverse-eng
 **When the item was written that premise was true, and it can be checked item by item**:
 
 ```
-Section 一 policy adjudication      2026-08-03
+Section 1 policy adjudication      2026-08-03
 render-diff.py created              2026-08-04   e16881d3c   ← one day later
 normalized text-layer gate          2026-08-08   3d71d27b9   ← five days later
 ```
@@ -146,7 +146,7 @@ The reason for this grading: holding point fixes to the at-scale threshold would
 
 4. **Proceed module by module; no tree-wide campaign.** Before work starts, each module must account for: where the pre-change behavioral assertions are, how equivalence will be demonstrated afterwards, and where the coverage gaps are. **"Lisp-native" must not be the grounds for undertaking a single sweeping overhaul** — that is exactly what the original text of this item was written to prevent; this revision lifts only the blanket rejection of the *reason*, not the rejection of *campaign rewrites*.
 
-**"The Lisp-native implementation is better" is itself a human-judgement exit, and the discipline of section 五 applies to it in full.** The catch-all clause in section 五 item 2 ("any future mechanism where recording a reason permits release") covers this item:
+**"The Lisp-native implementation is better" is itself a human-judgement exit, and the discipline of section 5 applies to it in full.** The catch-all clause in section 5 item 2 ("any future mechanism where recording a reason permits release") covers this item:
 
 - **State the concrete improvements one by one**: what shape of transcription artifact was removed this time, what Lisp construct replaced it, and what was obtained as a result. **An assertive conclusion is not a statement** (e.g. "rewritten into a more idiomatic implementation").
 - **Boilerplate is rejected**: within one batch, repeated reason text is a failure. **This project has confirmed this failure mode** — `docs/source-parity.md` currently holds **94 notes with an identical template** (normalized by stripping backticked paths and digits; the count of byte-identical notes is 0, and across the file 16 template families cover 347 of 670 rows), which, while declaring that "merely loading is not alignment", nonetheless marked a zero-coloring example as `已实现`.
@@ -189,7 +189,7 @@ This revision **neither automatically overturns the old verdicts nor automatical
 
 ---
 
-## 二、Code quality and organization are standing constraints (user adjudication, 2026-08-03)
+## 2. Code quality and organization are standing constraints (user adjudication, 2026-08-03)
 
 The original text is `goal14.md` Part D item 5.
 
@@ -207,7 +207,7 @@ The original text is `goal14.md` Part D item 5.
 
 ---
 
-## 三、Other constraints that remain in force (index)
+## 3. Other constraints that remain in force (index)
 
 - **Full parity, no crippling**: whatever pi has, cadr must have; missing credentials only lower the verification tier (fixture comparison), they never shrink scope.
 - **Credential discipline**: API keys and OAuth tokens never enter transcripts, logs, or session files; `auth.json` is forced to `0600`; crash logs must be redacted and `0600`.
@@ -218,7 +218,7 @@ The original text is `goal14.md` Part D item 5.
 
 ---
 
-## 四、Product identity has exactly one decision source (user adjudication, 2026-08-05)
+## 4. Product identity has exactly one decision source (user adjudication, 2026-08-05)
 
 The product slug, display name, canonical repository URL, and default share viewer may be owned only by the private product-identity constant group in `src/cadr-ai/support/release.lisp`. Other production owners may only derive from that group; a second copy of the product identity must never be hand-written into an HTTP header, User-Agent, OAuth parameter, user-facing copy, exported artifact, temporary file, thread name, or example.
 
@@ -228,7 +228,7 @@ External contracts and baseline provenance are not product self-identification. 
 
 `scripts/check-product-identity.py` rejects unregistered hits, stale or duplicate dispositions, count drift, manifest-total drift, and opaque-digest drift alike. `scripts/verify.sh` must run the synthetic self-test first and the real repository second; a failure of either blocks the deterministic gates that follow. Adding to or changing the allowlist is equivalent to changing the product-identity boundary, and requires a written proposal and item-by-item user adjudication first; it may not be released on your own authority as "just a comment / an internal name".
 
-## 五、A gate's human-judgement exits must be checkable (user adjudication, 2026-08-08)
+## 5. A gate's human-judgement exits must be checkable (user adjudication, 2026-08-08)
 
 ### 1. Why this exists
 
@@ -244,7 +244,7 @@ This project has produced the same shape of incident three times — **the gate 
 
 ### 2. Scope
 
-Every human-judgement exit in this project is covered alike: the intentional-difference verdicts in `test/fixtures/render-diff/dispositions.json`, `visible-string-exemptions.json`, `docs/product-identity-allowlist.json` (detailed separately in section 四), the N/A verdicts in `docs/parity-map.md`, the `Evidence / reason` column of `docs/source-parity.md`, live gate skip conditions, and any future mechanism where recording a reason permits release.
+Every human-judgement exit in this project is covered alike: the intentional-difference verdicts in `test/fixtures/render-diff/dispositions.json`, `visible-string-exemptions.json`, `docs/product-identity-allowlist.json` (detailed separately in section 4), the N/A verdicts in `docs/parity-map.md`, the `Evidence / reason` column of `docs/source-parity.md`, live gate skip conditions, and any future mechanism where recording a reason permits release.
 
 ### 3. Mandatory fields for each exit record
 
@@ -266,7 +266,7 @@ Every human-judgement exit in this project is covered alike: the intentional-dif
 
 Coverage-type metrics must state what they measure. Example: the construction suite for `baseline-visible-strings` is TypeScript and drives the fixed-baseline pi, so **its 672/672 measures how completely the scenario set drives the baseline's branches, not cadr's conformance**, and it is structurally incapable of finding a string cadr is missing. For every metric of this kind, the report must state the measured object honestly and must not present it with a stronger meaning.
 
-## 六、Standing uses of Lisp's capabilities (advisor investigation 2026-08-13; user adjudicated it into standing form)
+## 6. Standing uses of Lisp's capabilities (advisor investigation 2026-08-13; user adjudicated it into standing form)
 
 **This section records practices, not any one goal's tasks.** goal 20 Part N is their first engineering application; **this section remains in force after Part N closes out.** Every item adds zero dependencies (`sb-introspect`, `sb-mop`, `trace`, `sb-cover`, and `sb-sprof` all ship with SBCL; slynk was approved by `OQ-G10-D2-SLYNK-REPL` on 2026-08-01 and ships with the image).
 
@@ -280,7 +280,7 @@ Coverage-type metrics must state what they measure. Example: the construction su
 (trace some-function)       shows calls and returns without editing code, answering "which branch was taken"
 ```
 
-**Evidence capture must obey the credential discipline of section 三** — be especially careful when capturing on login and authentication paths: API keys and OAuth tokens must not be printed or written to disk.
+**Evidence capture must obey the credential discipline of section 3** — be especially careful when capturing on login and authentication paths: API keys and OAuth tokens must not be printed or written to disk.
 
 ### 2. Development loop: load and probe first, before rebuilding a whole image
 
@@ -318,7 +318,7 @@ For change-one-thing-verify-one-thing work, **prefer `asdf:load-system` to load 
 | `sb-posix` (currently used in 13 files), `sb-bsd-sockets` (6 files) | **In use, and should stay in use.** They are utility libraries; **what this table excludes is only the use of them as a quality or diagnostic mechanism**, not their use at all |
 | `sb-md5`, `sb-rotate-byte` | Unused and not needed; utility libraries, not quality or diagnostic mechanisms |
 | `sb-cltl2` (compile-time environment queries) | Serves code generation for macro authors; this project has no corresponding need |
-| `sb-introspect:function-lambda-list` (signature introspection) | cadr's structure is permitted to diverge under section 一, so signatures should not correspond one-to-one with pi's in the first place |
+| `sb-introspect:function-lambda-list` (signature introspection) | cadr's structure is permitted to diverge under section 1, so signatures should not correspond one-to-one with pi's in the first place |
 | The condition system for the agent's own error handling | That changes the product's observable failure behavior, so it goes through adjudication rather than being treated as a development tool |
 | `save-lisp-and-die` to dump a failure image | Roughly 20 MB each; slynk live evidence capture covers the same need and is lighter |
 | `sb-ext:lock-package` to isolate extensions | See `OQ-G20-EXTENSION-ISOLATION` in `docs/open-questions.md`: **cadr's existing isolation is already stronger than pi's** (pi has no sandbox), so locking buys no security pi lacks |

@@ -1,32 +1,36 @@
-# GOAL v7: Wave 2 — 完成报告
+# GOAL v7: Wave 2 — completion report
 
-> 历史报告：文内 `71efc6f0…` 记录 Goal 7 当时的审计锚点；Goal 9 起当前
-> 规范基线为 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
+> Historical report: the `71efc6f0…` inside this document records the audit
+> anchor as it stood at Goal 7; from Goal 9 on, the current normative baseline is
+> `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
 
-## 状态
+## Status
 
-Part A→B→C→D 已按顺序完成。用户逐项确认限定扩充提案第 1–7 项，并裁决
-第 8 项的 runtime provider/tool registration、`sendMessage`/
-`sendUserMessage` 和 `setSessionName` 一并限定解冻；实现只覆盖审计提交
-已有能力，扩大后的 extension API 已重新冻结。
+Parts A→B→C→D were completed in that order. The user confirmed items 1–7 of the
+limited-expansion proposal one by one, and adjudicated that item 8's runtime
+provider/tool registration, `sendMessage`/`sendUserMessage` and
+`setSessionName` be unfrozen under the same limitation; the implementation
+covers only capabilities that already exist in the audit commit, and the widened
+extension API has been re-frozen.
 
-实现前兼容门禁
-`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-已先行落地；生产实现前结果为 `221/221`，收尾仍为全绿门禁的一部分。
+The pre-implementation compatibility gate
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION` landed
+first; before the production implementation its result was `221/221`, and at
+closeout it is still part of the all-green gate.
 
-固定参考：
+Fixed references:
 
-- 审计提交：`71efc6f0c1909874ec8c944637a9ae7fc0e2d508`
-- 审计 checkout：`/tmp/cadr-parity-71efc6f0`
-- 开工提交：`14fc6eefeb7e9329a2743ba385cf913060240de2`
-- 开工测试基线：`1332/1332`
+- Audit commit: `71efc6f0c1909874ec8c944637a9ae7fc0e2d508`
+- Audit checkout: `/tmp/cadr-parity-71efc6f0`
+- Work-start commit: `14fc6eefeb7e9329a2743ba385cf913060240de2`
+- Work-start test baseline: `1332/1332`
 
-## 冻结区开工基线
+## Frozen-area work-start baseline
 
-以下 object ID 在收尾时必须逐项一致；其中扩展 API 还额外固定了导出块文本
-的 SHA-256。
+The following object IDs must be identical item by item at closeout; for the
+extension API the SHA-256 of the export block text is additionally fixed.
 
-| 冻结路径 | 开工 object ID |
+| Frozen path | Work-start object ID |
 |---|---|
 | `src/cadr-ai` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` |
 | `test/cadr-ai` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` |
@@ -46,126 +50,129 @@ Part A→B→C→D 已按顺序完成。用户逐项确认限定扩充提案第 
 | `test/cadr-cli/bash-test.lisp` | `3475ab2a3760afa06928d8748a44e1514d1ac461` |
 | `test/cadr-cli/execution-policy-test.lisp` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` |
 
-扩展导出块 SHA-256：
-`65bdec58440ddfaaf1aa80b62c069f91a0713251b7601911f2ee2747d1586e6d`。
+Extension export block SHA-256:
+`65bdec58440ddfaaf1aa80b62c069f91a0713251b7601911f2ee2747d1586e6d`.
 
-## Agent 包：18 个 M 文件
+## Agent package: 18 M files
 
-每个文件均有 Common Lisp 对应面；Part A 不提出 N/A。
+Every file has a Common Lisp counterpart surface; Part A proposes no N/A.
 
-| 原版测试文件 | cadr 目标模块 | 必须移植的语义 |
+| Baseline test file | cadr target module | Semantics that must be ported |
 |---|---|---|
-| `packages/agent/test/agent-loop.test.ts` | `src/cadr-agent/agent.lisp`, `queue.lisp`, `harness.lisp` | event spine、工具批次顺序、steering 注入、next-turn 与终止 |
-| `packages/agent/test/agent.test.ts` | `src/cadr-agent/agent.lisp`, `queue.lisp` | 生命周期、异步订阅、busy guard、abort、continue、两类队列 |
-| `packages/agent/test/e2e.test.ts` | `src/cadr-agent/harness.lisp` | faux provider 的 prompt/tool/abort/context/thinking/continue 闭环 |
-| `packages/agent/test/harness/agent-harness-stream.test.ts` | `src/cadr-agent/harness.lisp` | stream options 与 provider hook 快照 |
-| `packages/agent/test/harness/agent-harness.test.ts` | `src/cadr-agent/harness.lisp`, `queue.lisp`, `compaction.lisp` | 队列、事件、savepoint、retry、compaction、hook 错误与监听顺序 |
-| `packages/agent/test/harness/compaction.test.ts` | `src/cadr-agent/compaction.lisp`, `session.lisp` | 阈值、切点、summary、split turn、usage 与失败恢复 |
-| `packages/agent/test/harness/nodejs-env.test.ts` | `src/cadr-agent/execution-env.lisp` | 文件系统与 shell 执行抽象的 Lisp 等价实现 |
-| `packages/agent/test/harness/prompt-templates.test.ts` | `src/cadr-agent/prompt-templates.lisp` | 模板发现、变量展开、错误与排序 |
-| `packages/agent/test/harness/repo.test.ts` | `src/cadr-agent/repo.lisp` | repo CRUD、分支/树遍历与一致性 |
-| `packages/agent/test/harness/resource-formatting.test.ts` | `src/cadr-agent/resource-formatting.lisp` | 资源格式化与边界 |
-| `packages/agent/test/harness/session.test.ts` | `src/cadr-agent/session.lisp` | JSONL session、树、迁移、恢复与继续 |
-| `packages/agent/test/harness/skills.test.ts` | `src/cadr-agent/skills.lisp` | Lisp 扩展生态下的 skill 发现与加载 |
-| `packages/agent/test/harness/sqlite-migrations.test.ts` | `src/cadr-agent/storage/sqlite.lisp` | schema 迁移、幂等与失败原子性 |
-| `packages/agent/test/harness/sqlite-node.test.ts` | `src/cadr-agent/storage/sqlite.lisp` | SQLite 节点存取与重开一致性 |
-| `packages/agent/test/harness/storage.test.ts` | `src/cadr-agent/storage.lisp` | storage contract 与实现替换 |
-| `packages/agent/test/harness/system-prompt.test.ts` | `src/cadr-agent/system-prompt.lisp` | prompt 组装、资源注入与稳定顺序 |
-| `packages/agent/test/harness/tools.test.ts` | `src/cadr-agent/harness.lisp` | harness 的工具注册/调用编排；工具自身语义冻结 |
-| `packages/agent/test/harness/truncate.test.ts` | `src/cadr-agent/truncate.lisp` | UTF-8 byte/line 截断、边界与 metadata |
+| `packages/agent/test/agent-loop.test.ts` | `src/cadr-agent/agent.lisp`, `queue.lisp`, `harness.lisp` | event spine, tool batch ordering, steering injection, next-turn and termination |
+| `packages/agent/test/agent.test.ts` | `src/cadr-agent/agent.lisp`, `queue.lisp` | lifecycle, asynchronous subscription, busy guard, abort, continue, the two kinds of queue |
+| `packages/agent/test/e2e.test.ts` | `src/cadr-agent/harness.lisp` | the faux provider's prompt/tool/abort/context/thinking/continue closed loop |
+| `packages/agent/test/harness/agent-harness-stream.test.ts` | `src/cadr-agent/harness.lisp` | stream options and provider hook snapshots |
+| `packages/agent/test/harness/agent-harness.test.ts` | `src/cadr-agent/harness.lisp`, `queue.lisp`, `compaction.lisp` | queue, events, savepoint, retry, compaction, hook errors and listener ordering |
+| `packages/agent/test/harness/compaction.test.ts` | `src/cadr-agent/compaction.lisp`, `session.lisp` | threshold, cut point, summary, split turn, usage and failure recovery |
+| `packages/agent/test/harness/nodejs-env.test.ts` | `src/cadr-agent/execution-env.lisp` | the Lisp-equivalent implementation of the filesystem and shell execution abstraction |
+| `packages/agent/test/harness/prompt-templates.test.ts` | `src/cadr-agent/prompt-templates.lisp` | template discovery, variable expansion, errors and ordering |
+| `packages/agent/test/harness/repo.test.ts` | `src/cadr-agent/repo.lisp` | repo CRUD, branch/tree traversal and consistency |
+| `packages/agent/test/harness/resource-formatting.test.ts` | `src/cadr-agent/resource-formatting.lisp` | resource formatting and boundaries |
+| `packages/agent/test/harness/session.test.ts` | `src/cadr-agent/session.lisp` | JSONL session, tree, migration, resume and continue |
+| `packages/agent/test/harness/skills.test.ts` | `src/cadr-agent/skills.lisp` | skill discovery and loading under the Lisp extension ecosystem |
+| `packages/agent/test/harness/sqlite-migrations.test.ts` | `src/cadr-agent/storage/sqlite.lisp` | schema migration, idempotence and failure atomicity |
+| `packages/agent/test/harness/sqlite-node.test.ts` | `src/cadr-agent/storage/sqlite.lisp` | SQLite node access and reopen consistency |
+| `packages/agent/test/harness/storage.test.ts` | `src/cadr-agent/storage.lisp` | the storage contract and implementation substitution |
+| `packages/agent/test/harness/system-prompt.test.ts` | `src/cadr-agent/system-prompt.lisp` | prompt assembly, resource injection and stable ordering |
+| `packages/agent/test/harness/tools.test.ts` | `src/cadr-agent/harness.lisp` | the harness's tool registration/invocation orchestration; the tools' own semantics stay frozen |
+| `packages/agent/test/harness/truncate.test.ts` | `src/cadr-agent/truncate.lisp` | UTF-8 byte/line truncation, boundaries and metadata |
 
-## Coding-agent session/queue：46 个 M 文件
+## Coding-agent session/queue: 46 M files
 
-| 原版测试文件 | cadr 目标模块 | 备注 |
+| Baseline test file | cadr target module | Notes |
 |---|---|---|
-| `packages/coding-agent/test/agent-session-auto-compaction-queue.test.ts` | `queue.lisp`, `harness.lisp`, `compaction.lisp` | compaction 前后队列时序 |
-| `packages/coding-agent/test/agent-session-branching.test.ts` | `session.lisp`, `harness.lisp` | 分支 session |
-| `packages/coding-agent/test/agent-session-compaction.test.ts` | `compaction.lisp`, `session.lisp` | compaction 事件与持久化 |
-| `packages/coding-agent/test/agent-session-concurrent.test.ts` | `queue.lisp`, `harness.lisp` | 并发事件串行化与 settlement |
-| `packages/coding-agent/test/agent-session-dynamic-provider.test.ts` | `harness.lisp` | provider 配置 savepoint；provider 层冻结；依赖 `session_start` 扩展事件 |
-| `packages/coding-agent/test/agent-session-dynamic-tools.test.ts` | `harness.lisp` | 工具 registry 快照；工具语义冻结；依赖 `session_start` 扩展事件 |
-| `packages/coding-agent/test/agent-session-retry.test.ts` | `harness.lisp`, `queue.lisp` | retry 与 prompt completion |
-| `packages/coding-agent/test/agent-session-runtime-events.test.ts` | `harness.lisp`, `session.lisp`, extension lifecycle | **冻结冲突** |
+| `packages/coding-agent/test/agent-session-auto-compaction-queue.test.ts` | `queue.lisp`, `harness.lisp`, `compaction.lisp` | queue timing before and after compaction |
+| `packages/coding-agent/test/agent-session-branching.test.ts` | `session.lisp`, `harness.lisp` | branched session |
+| `packages/coding-agent/test/agent-session-compaction.test.ts` | `compaction.lisp`, `session.lisp` | compaction events and persistence |
+| `packages/coding-agent/test/agent-session-concurrent.test.ts` | `queue.lisp`, `harness.lisp` | concurrent event serialization and settlement |
+| `packages/coding-agent/test/agent-session-dynamic-provider.test.ts` | `harness.lisp` | provider configuration savepoint; the provider layer stays frozen; depends on the `session_start` extension event |
+| `packages/coding-agent/test/agent-session-dynamic-tools.test.ts` | `harness.lisp` | tool registry snapshot; tool semantics stay frozen; depends on the `session_start` extension event |
+| `packages/coding-agent/test/agent-session-retry.test.ts` | `harness.lisp`, `queue.lisp` | retry and prompt completion |
+| `packages/coding-agent/test/agent-session-runtime-events.test.ts` | `harness.lisp`, `session.lisp`, extension lifecycle | **freeze conflict** |
 | `packages/coding-agent/test/agent-session-stats.test.ts` | `session.lisp`, `harness.lisp` | usage/session stats |
-| `packages/coding-agent/test/agent-session-tree-navigation.test.ts` | `session.lisp`, `compaction.lisp` | tree navigation 与 branch summary |
-| `packages/coding-agent/test/branch-summary-extensions.test.ts` | `compaction.lisp`, extension lifecycle | **冻结冲突：`session_before_tree`** |
-| `packages/coding-agent/test/compaction-extensions-example.test.ts` | `compaction.lisp`, extension lifecycle | **冻结冲突：compaction hook** |
-| `packages/coding-agent/test/compaction-extensions.test.ts` | `compaction.lisp`, extension lifecycle | **冻结冲突：compaction hook** |
-| `packages/coding-agent/test/compaction-serialization.test.ts` | `compaction.lisp`, `session.lisp` | compaction 并发互斥 |
+| `packages/coding-agent/test/agent-session-tree-navigation.test.ts` | `session.lisp`, `compaction.lisp` | tree navigation and branch summary |
+| `packages/coding-agent/test/branch-summary-extensions.test.ts` | `compaction.lisp`, extension lifecycle | **freeze conflict: `session_before_tree`** |
+| `packages/coding-agent/test/compaction-extensions-example.test.ts` | `compaction.lisp`, extension lifecycle | **freeze conflict: compaction hook** |
+| `packages/coding-agent/test/compaction-extensions.test.ts` | `compaction.lisp`, extension lifecycle | **freeze conflict: compaction hook** |
+| `packages/coding-agent/test/compaction-serialization.test.ts` | `compaction.lisp`, `session.lisp` | compaction mutual exclusion under concurrency |
 | `packages/coding-agent/test/compaction-summary-reasoning.test.ts` | `compaction.lisp` | reasoning summary |
-| `packages/coding-agent/test/compaction.test.ts` | `compaction.lisp`, `session.lisp` | context 选择与摘要格式 |
+| `packages/coding-agent/test/compaction.test.ts` | `compaction.lisp`, `session.lisp` | context selection and summary format |
 | `packages/coding-agent/test/sdk-session-manager.test.ts` | `session.lisp`, `harness.lisp` | session manager facade |
-| `packages/coding-agent/test/session-cwd.test.ts` | `session.lisp`, CLI session selection | cwd 过滤 |
-| `packages/coding-agent/test/session-file-invalid.test.ts` | `session.lisp`, CLI errors | 显式坏文件必须保留并报错 |
+| `packages/coding-agent/test/session-cwd.test.ts` | `session.lisp`, CLI session selection | cwd filtering |
+| `packages/coding-agent/test/session-file-invalid.test.ts` | `session.lisp`, CLI errors | an explicitly given bad file must be kept and must raise an error |
 | `packages/coding-agent/test/session-id-readonly.test.ts` | `session.lisp`, CLI args | readonly session id |
-| `packages/coding-agent/test/session-info-modified-timestamp.test.ts` | `session.lisp` | session 列表时间 |
-| `packages/coding-agent/test/session-manager/build-context.test.ts` | `session.lisp` | 从树构造 context |
-| `packages/coding-agent/test/session-manager/custom-session-id.test.ts` | `session.lisp` | 自定义 ID |
-| `packages/coding-agent/test/session-manager/file-operations.test.ts` | `session.lisp`, `repo.lisp` | 创建、加载、追加、重写 |
-| `packages/coding-agent/test/session-manager/labels.test.ts` | `session.lisp` | label 节点 |
-| `packages/coding-agent/test/session-manager/migration.test.ts` | `session.lisp` | v1/v2→v3 无损迁移 |
+| `packages/coding-agent/test/session-info-modified-timestamp.test.ts` | `session.lisp` | session list timestamps |
+| `packages/coding-agent/test/session-manager/build-context.test.ts` | `session.lisp` | building context from the tree |
+| `packages/coding-agent/test/session-manager/custom-session-id.test.ts` | `session.lisp` | custom ID |
+| `packages/coding-agent/test/session-manager/file-operations.test.ts` | `session.lisp`, `repo.lisp` | create, load, append, rewrite |
+| `packages/coding-agent/test/session-manager/labels.test.ts` | `session.lisp` | label nodes |
+| `packages/coding-agent/test/session-manager/migration.test.ts` | `session.lisp` | lossless v1/v2→v3 migration |
 | `packages/coding-agent/test/session-manager/save-entry.test.ts` | `session.lisp` | custom entry |
-| `packages/coding-agent/test/session-manager/tree-traversal.test.ts` | `session.lisp` | parent tree 与 leaf |
+| `packages/coding-agent/test/session-manager/tree-traversal.test.ts` | `session.lisp` | parent tree and leaf |
 | `packages/coding-agent/test/startup-session-name.test.ts` | `session.lisp`, CLI startup | session name |
-| `packages/coding-agent/test/suite/agent-session-bash-persistence.test.ts` | `harness.lisp`, `session.lisp` | bash message 持久化；bash 语义冻结 |
-| `packages/coding-agent/test/suite/agent-session-compaction.test.ts` | `harness.lisp`, `compaction.lisp` | harness compaction 闭环 |
-| `packages/coding-agent/test/suite/agent-session-model-extension.test.ts` | `harness.lisp`, extension lifecycle | **冻结冲突；provider/tool 语义继续冻结** |
-| `packages/coding-agent/test/suite/agent-session-prompt.test.ts` | `harness.lisp`, `queue.lisp` | prompt 生命周期 |
-| `packages/coding-agent/test/suite/agent-session-queue.test.ts` | `queue.lisp`, `harness.lisp` | steering/follow-up 精确语义 |
-| `packages/coding-agent/test/suite/agent-session-retry-events.test.ts` | `harness.lisp`, `queue.lisp`, extension events | settlement 顺序；部分为**冻结冲突** |
-| `packages/coding-agent/test/suite/agent-session-runtime.test.ts` | `harness.lisp`, `session.lisp` | runtime 绑定与关闭 |
-| `packages/coding-agent/test/suite/regressions/1717-2113-agent-session-event-settlement.test.ts` | `harness.lisp`, extension events | **冻结冲突：`message_end`/`tool_call`** |
-| `packages/coding-agent/test/suite/regressions/2860-replaced-session-context.test.ts` | `harness.lisp`, `session.lisp`, extension lifecycle | **冻结冲突：start/shutdown** |
-| `packages/coding-agent/test/suite/regressions/3686-session-name-event.test.ts` | `session.lisp`, extension/public events | **冻结冲突：`session_info_changed`** |
+| `packages/coding-agent/test/suite/agent-session-bash-persistence.test.ts` | `harness.lisp`, `session.lisp` | bash message persistence; bash semantics stay frozen |
+| `packages/coding-agent/test/suite/agent-session-compaction.test.ts` | `harness.lisp`, `compaction.lisp` | the harness compaction closed loop |
+| `packages/coding-agent/test/suite/agent-session-model-extension.test.ts` | `harness.lisp`, extension lifecycle | **freeze conflict; provider/tool semantics stay frozen** |
+| `packages/coding-agent/test/suite/agent-session-prompt.test.ts` | `harness.lisp`, `queue.lisp` | prompt lifecycle |
+| `packages/coding-agent/test/suite/agent-session-queue.test.ts` | `queue.lisp`, `harness.lisp` | the exact steering/follow-up semantics |
+| `packages/coding-agent/test/suite/agent-session-retry-events.test.ts` | `harness.lisp`, `queue.lisp`, extension events | settlement ordering; partly a **freeze conflict** |
+| `packages/coding-agent/test/suite/agent-session-runtime.test.ts` | `harness.lisp`, `session.lisp` | runtime binding and shutdown |
+| `packages/coding-agent/test/suite/regressions/1717-2113-agent-session-event-settlement.test.ts` | `harness.lisp`, extension events | **freeze conflict: `message_end`/`tool_call`** |
+| `packages/coding-agent/test/suite/regressions/2860-replaced-session-context.test.ts` | `harness.lisp`, `session.lisp`, extension lifecycle | **freeze conflict: start/shutdown** |
+| `packages/coding-agent/test/suite/regressions/3686-session-name-event.test.ts` | `session.lisp`, extension/public events | **freeze conflict: `session_info_changed`** |
 | `packages/coding-agent/test/suite/regressions/5217-compaction-reason.test.ts` | `compaction.lisp` | compaction reason |
-| `packages/coding-agent/test/suite/regressions/5943-session-start-notify.test.ts` | extension lifecycle | **冻结冲突：`session_start`** |
-| `packages/coding-agent/test/suite/regressions/5996-session-name-newlines.test.ts` | `session.lisp`, extension/public events | 名称清洗；部分为**冻结冲突** |
-| `packages/coding-agent/test/suite/regressions/6324-branch-summary-ambient-auth.test.ts` | `compaction.lisp`, `harness.lisp` | ambient auth 透传；provider 层冻结 |
+| `packages/coding-agent/test/suite/regressions/5943-session-start-notify.test.ts` | extension lifecycle | **freeze conflict: `session_start`** |
+| `packages/coding-agent/test/suite/regressions/5996-session-name-newlines.test.ts` | `session.lisp`, extension/public events | name sanitization; partly a **freeze conflict** |
+| `packages/coding-agent/test/suite/regressions/6324-branch-summary-ambient-auth.test.ts` | `compaction.lisp`, `harness.lisp` | ambient auth pass-through; the provider layer stays frozen |
 | `packages/coding-agent/test/suite/regressions/6647-compaction-retries-transient-stream-drop.test.ts` | `compaction.lisp`, `harness.lisp` | transient stream retry |
-| `packages/coding-agent/test/suite/regressions/pre-prompt-compaction-no-continue.test.ts` | `compaction.lisp`, `queue.lisp` | pre-prompt compaction 不误 continue |
-| `packages/coding-agent/test/suite/regressions/startup-session-rebind-duplicate-subscription.test.ts` | `harness.lisp`, `session.lisp`, extension lifecycle | subscription 去重；部分为**冻结冲突** |
+| `packages/coding-agent/test/suite/regressions/pre-prompt-compaction-no-continue.test.ts` | `compaction.lisp`, `queue.lisp` | pre-prompt compaction does not continue by mistake |
+| `packages/coding-agent/test/suite/regressions/startup-session-rebind-duplicate-subscription.test.ts` | `harness.lisp`, `session.lisp`, extension lifecycle | subscription deduplication; partly a **freeze conflict** |
 
-## Part C：print/JSON 目标文件
+## Part C: print/JSON target files
 
-`CODING-CLI-SDK` 是混合大类；本 goal 只纳入与模式选择、一次性输入、输出洁净
-和进程关闭直接相关的文件：
+`CODING-CLI-SDK` is a large mixed category; this goal takes in only the files
+directly related to mode selection, one-shot input, output cleanliness and
+process shutdown:
 
-| 原版测试文件 | cadr 目标模块 | 必须移植的语义 |
+| Baseline test file | cadr target module | Semantics that must be ported |
 |---|---|---|
-| `packages/coding-agent/test/args.test.ts` | `src/cadr-cli/args.lisp` | `--mode`、`--print`、`--no-tui` 解析与冲突 |
-| `packages/coding-agent/test/initial-message.test.ts` | `src/cadr-cli/initial-message.lisp` | argv prompt 与 stdin 合并 |
-| `packages/coding-agent/test/print-mode.test.ts` | `src/cadr-cli/modes/print.lisp`, JSON mode | text/JSON 输出、错误退出、shutdown |
-| `packages/coding-agent/test/stdout-cleanliness.test.ts` | CLI entry/modes | stdout 只承载协议或结果 |
-| `packages/coding-agent/test/suite/regressions/5080-signal-shutdown-extension-cleanup.test.ts` | CLI close, extension lifecycle | **冻结冲突：`session_shutdown`** |
-| `packages/coding-agent/test/suite/regressions/5724-sigterm-signal-exit.test.ts` | CLI signal handling | SIGTERM 退出语义 |
+| `packages/coding-agent/test/args.test.ts` | `src/cadr-cli/args.lisp` | parsing of and conflicts among `--mode`, `--print`, `--no-tui` |
+| `packages/coding-agent/test/initial-message.test.ts` | `src/cadr-cli/initial-message.lisp` | merging the argv prompt with stdin |
+| `packages/coding-agent/test/print-mode.test.ts` | `src/cadr-cli/modes/print.lisp`, JSON mode | text/JSON output, error exit, shutdown |
+| `packages/coding-agent/test/stdout-cleanliness.test.ts` | CLI entry/modes | stdout carries only the protocol or the result |
+| `packages/coding-agent/test/suite/regressions/5080-signal-shutdown-extension-cleanup.test.ts` | CLI close, extension lifecycle | **freeze conflict: `session_shutdown`** |
+| `packages/coding-agent/test/suite/regressions/5724-sigterm-signal-exit.test.ts` | CLI signal handling | SIGTERM exit semantics |
 
-其余 `CODING-CLI-SDK` M 文件不因标签相同而提前解冻；它们仍属于后续 Wave。
-JSON 模式没有独立 parity-map 标签，以 `print-mode.test.ts` 的 JSON cases 和
-本 goal 新增的真实进程 JSONL 测试共同验收。
+The remaining `CODING-CLI-SDK` M files are not unfrozen early merely because
+they carry the same tag; they still belong to later Waves. JSON mode has no
+separate parity-map tag, and is accepted jointly by the JSON cases of
+`print-mode.test.ts` and the real-process JSONL test added by this goal.
 
-模式优先级的固定基线是：
+The fixed baseline for mode priority is:
 
-1. 显式 `--mode rpc`；
-2. 显式 `--mode json`；
-3. 显式 `--print`；
-4. stdin 或 stdout 任一非 TTY 时自动 print；
-5. 其余进入 interactive。
+1. explicit `--mode rpc`;
+2. explicit `--mode json`;
+3. explicit `--print`;
+4. automatic print when either stdin or stdout is not a TTY;
+5. everything else enters interactive.
 
-`--no-tui` 仅作为 cadr 明确保留、且必须显式请求的行 REPL 差异，不参与非
-TTY 自动回落。
+`--no-tui` is only the line-REPL difference that cadr deliberately keeps and
+that must be requested explicitly; it does not take part in the non-TTY
+automatic fallback.
 
-## Part D：RPC 的 6 个 M 文件
+## Part D: the 6 M files of RPC
 
-| 原版测试文件 | cadr 目标模块 | 必须移植的语义 |
+| Baseline test file | cadr target module | Semantics that must be ported |
 |---|---|---|
-| `packages/coding-agent/test/rpc-client-clone.test.ts` | `src/cadr-cli/modes/rpc/client.lisp` | clone 与客户端 state |
-| `packages/coding-agent/test/rpc-client-process-exit.test.ts` | RPC client/entry | 子进程退出与 pending request 收敛 |
-| `packages/coding-agent/test/rpc-jsonl.test.ts` | `src/cadr-cli/modes/rpc/jsonl.lisp` | LF/CRLF/U+2028/U+2029/无末尾 LF |
-| `packages/coding-agent/test/rpc-prompt-response-semantics.test.ts` | `src/cadr-cli/modes/rpc/mode.lisp` | prompt preflight、单次 response、错误 |
-| `packages/coding-agent/test/rpc.test.ts` | `src/cadr-cli/modes/rpc/` | command、event、session 与关闭闭环 |
-| `packages/coding-agent/test/suite/regressions/5868-rpc-unknown-command-id.test.ts` | RPC dispatcher | unknown command 保留 request id |
+| `packages/coding-agent/test/rpc-client-clone.test.ts` | `src/cadr-cli/modes/rpc/client.lisp` | clone and client state |
+| `packages/coding-agent/test/rpc-client-process-exit.test.ts` | RPC client/entry | subprocess exit and convergence of pending requests |
+| `packages/coding-agent/test/rpc-jsonl.test.ts` | `src/cadr-cli/modes/rpc/jsonl.lisp` | LF/CRLF/U+2028/U+2029/no trailing LF |
+| `packages/coding-agent/test/rpc-prompt-response-semantics.test.ts` | `src/cadr-cli/modes/rpc/mode.lisp` | prompt preflight, a single response, errors |
+| `packages/coding-agent/test/rpc.test.ts` | `src/cadr-cli/modes/rpc/` | command, event, session and the shutdown closed loop |
+| `packages/coding-agent/test/suite/regressions/5868-rpc-unknown-command-id.test.ts` | RPC dispatcher | an unknown command keeps the request id |
 
-参考 command union 为：
+The reference command union is:
 
 `prompt`, `steer`, `follow_up`, `abort`, `new_session`, `get_state`,
 `set_model`, `cycle_model`, `get_available_models`, `set_thinking_level`,
@@ -175,20 +182,21 @@ TTY 自动回落。
 `abort_bash`, `get_session_stats`, `export_html`, `switch_session`, `fork`,
 `clone`, `get_fork_messages`, `get_entries`, `get_tree`,
 `get_last_assistant_text`, `set_session_name`, `get_messages`,
-`get_commands`。
+`get_commands`.
 
-response 固定为
-`{id?,type:"response",command,success,data?}` 或
-`{id?,type:"response",command,success:false,error}`；session events 原样逐行
-转发。输入 EOF 正常关闭；解析错误的 `command` 为 `parse`；未知命令保留
-`id`。JSONL 只以 LF 分帧、兼容 CRLF、不把 U+2028/U+2029 当分隔符，并处理
-末尾无 LF 的最后一帧。
+The response is fixed as
+`{id?,type:"response",command,success,data?}` or
+`{id?,type:"response",command,success:false,error}`; session events are
+forwarded line by line as they are. Input EOF closes normally; the `command` of
+a parse error is `parse`; an unknown command keeps its `id`. JSONL frames on LF
+only, tolerates CRLF, does not treat U+2028/U+2029 as separators, and handles a
+last frame with no trailing LF.
 
-## Session v3 精确磁盘规格
+## Exact Session v3 on-disk specification
 
 ### Header
 
-首个有效 JSONL record：
+The first valid JSONL record:
 
 ```json
 {
@@ -201,22 +209,24 @@ response 固定为
 }
 ```
 
-`parentSession` 可省略。参考实现发现 session 时流式扫描最多 1 MiB，跳过空行
-和坏 JSON，按 cwd 过滤；显式传入的非空坏文件保留原样并报错，空文件才允许
-初始化。
+`parentSession` may be omitted. When discovering sessions the reference
+implementation scans at most 1 MiB in a stream, skips blank lines and bad JSON,
+and filters by cwd; a non-empty bad file passed explicitly is kept as it is and
+raises an error, and only an empty file may be initialized.
 
-### Entry envelope 与类型
+### Entry envelope and types
 
-所有节点共有：
+Common to all nodes:
 
 ```json
 {"type":"entry-type","id":"8-hex","parentId":"optional-id","timestamp":"ISO-8601 string"}
 ```
 
-ID 是做过碰撞检查的 8 位十六进制字符串。条目按实际 append 顺序写入，树由
-`parentId` 表示；reload 后当前 leaf 是物理上最后一个有效 entry。
+The ID is an 8-digit hexadecimal string that has been collision-checked. Entries
+are written in actual append order and the tree is expressed by `parentId`;
+after a reload the current leaf is the physically last valid entry.
 
-| `type` | envelope 外字段 |
+| `type` | fields outside the envelope |
 |---|---|
 | `message` | `message` |
 | `thinking_level_change` | `thinkingLevel` |
@@ -228,83 +238,97 @@ ID 是做过碰撞检查的 8 位十六进制字符串。条目按实际 append 
 | `label` | `targetId`, `label?` |
 | `session_info` | `name?` |
 
-参考 coding-agent manager 在出现首个 assistant entry 前不创建文件；首次落盘
-用 exclusive create 写 header 和缓冲 entries，之后 append。
+The reference coding-agent manager does not create the file before the first
+assistant entry appears; the first write to disk uses an exclusive create to
+write the header and the buffered entries, and appends afterwards.
 
-### 读取、崩溃尾与迁移
+### Reading, crash tails and migration
 
-- blank 或 malformed JSONL record 被跳过，包括崩溃留下的坏尾；首个成功
-  parse 的 record 必须是含字符串 `id` 的 session header。
-- v1→v2 为既有 entry 补 `id`/`parentId` 链，并把 compaction 的
-  `firstKeptEntryIndex` 转为 `firstKeptEntryId`。
-- v2→v3 把 message role `hookMessage` 重命名为 `custom`。
-- 迁移直接改 parsed object，因此未知 envelope 字段必须保留。
-- 原版 `_rewriteFile` 是截断重写；本 goal 明确要求 cadr 继续使用更强的同目录
-  临时文件 + rename 原子替换。
-- 对真实 `~/.cadr/sessions/` 只允许 dry-run/备份路径；所有迁移测试必须使用
-  临时目录。开工时该目录有 10 个 JSONL 文件，Part A 未读写其内容。
+- A blank or malformed JSONL record is skipped, including a bad tail left by a
+  crash; the first record that parses successfully must be a session header
+  containing a string `id`.
+- v1→v2 fills in the `id`/`parentId` chain for existing entries and converts
+  compaction's `firstKeptEntryIndex` into `firstKeptEntryId`.
+- v2→v3 renames the message role `hookMessage` to `custom`.
+- Migration modifies the parsed object directly, so unknown envelope fields must
+  be preserved.
+- The baseline's `_rewriteFile` is a truncating rewrite; this goal explicitly
+  requires cadr to keep using the stronger same-directory temporary file +
+  rename atomic replacement.
+- For the real `~/.cadr/sessions/` only dry-run/backup paths are allowed; every
+  migration test must use a temporary directory. At work start that directory
+  held 10 JSONL files, and Part A neither read nor wrote their contents.
 
-### cadr 当前 v2 的差异
+### Differences of cadr's current v2
 
-| 当前 cadr v2 | 参考 v3 |
+| current cadr v2 | reference v3 |
 |---|---|
 | header `version:2` | `version:3` |
-| header timestamp 为整数毫秒 | ISO 字符串 |
-| 无 `parentSession` | 可选 `parentSession` |
-| 只支持 `message`、`compaction` | 支持上表全部 9 类 entry |
-| compaction 使用非参考字段 `sourceIds` | `details?`, `usage?`, `fromHook?` |
-| message 内部使用 `type` 与 snake_case | 原版 AgentMessage role/camelCase |
-| 严格拒绝中间坏 JSON；仅忽略无换行坏尾 | 跳过 blank/malformed record |
-| create 时立即写 header | 首个 assistant entry 后才落盘 |
-| 仅 v1→v2，且只迁 message | v1→v2→v3 |
-| 重复或 dangling parent 直接拒绝 | 以 append log + parent tree 恢复 |
-| 已有原子 temp+rename | 继续保留该更强纪律 |
+| header timestamp is integer milliseconds | ISO string |
+| no `parentSession` | optional `parentSession` |
+| supports only `message`, `compaction` | supports all 9 entry types in the table above |
+| compaction uses the non-reference field `sourceIds` | `details?`, `usage?`, `fromHook?` |
+| messages internally use `type` and snake_case | the baseline's AgentMessage role/camelCase |
+| strictly rejects bad JSON in the middle; ignores only a bad tail with no newline | skips blank/malformed records |
+| writes the header immediately on create | writes to disk only after the first assistant entry |
+| v1→v2 only, and migrates messages only | v1→v2→v3 |
+| rejects a duplicate or dangling parent outright | recovers with the append log + parent tree |
+| already has atomic temp+rename | keeps that stronger discipline |
 
-## Queue 精确语义
+## Exact queue semantics
 
-- steering 和 follow-up 各自是 FIFO；默认 mode 均为 `one-at-a-time`，另有
-  `all`。
-- steering 在一次 turn 开始时以及每个 assistant/tool batch 结束后轮询；
-  当前 batch 的全部 tool call 完成后才注入，不抢占半个 batch。
-- follow-up 只在 agent 本应停止时 drain，并启动下一次 inner run。
-- `one-at-a-time` 每次 drain 一个；`all` 原子取得当时队列快照。
-- agent busy 时 `prompt`/`continue` 报错；`steer`/`followUp` 允许入队。
-- harness abort 捕获并清空 steer/follow-up 队列、终止当前 run、保留 next-turn
-  queue，并发出 abort 与 queue-update。
-- queue-update 必须携带 `{steer, followUp}` 两个队列的完整快照。
-- cadr 当前只有 busy guard 与 abort flag，没有双队列、mode、注入时机或
-  wait-for-idle。
+- steering and follow-up are each FIFO; the default mode of both is
+  `one-at-a-time`, and there is also `all`.
+- steering is polled at the start of a turn and after the end of every
+  assistant/tool batch; injection happens only after every tool call of the
+  current batch has finished, and does not preempt half a batch.
+- follow-up is drained only when the agent would otherwise stop, and it starts
+  the next inner run.
+- `one-at-a-time` drains one each time; `all` atomically takes the queue snapshot
+  as it is at that moment.
+- while the agent is busy, `prompt`/`continue` raise an error; `steer`/`followUp`
+  may be enqueued.
+- harness abort captures and clears the steer/follow-up queues, terminates the
+  current run, keeps the next-turn queue, and emits abort and queue-update.
+- queue-update must carry the complete snapshot of both `{steer, followUp}`
+  queues.
+- cadr currently has only a busy guard and an abort flag, with no dual queue, no
+  mode, no injection timing and no wait-for-idle.
 
-## N/A 候选
+## N/A candidates
 
-本轮不提出 N/A。`nodejs-env`、SQLite、prompt/resource/skill 等测试都有明确
-的 Common Lisp 等价实现，不属于“TS 运行时独有”。扩展生命周期和 RPC UI
-bridge 同样是原版跨平台产品语义，不能诚实地标成 N/A。
+This round proposes no N/A. The `nodejs-env`, SQLite and
+prompt/resource/skill tests all have a clear Common Lisp equivalent
+implementation, and are not "unique to the TS runtime". The extension
+lifecycle and the RPC UI bridge are likewise the baseline's cross-platform
+product semantics, and cannot honestly be marked N/A.
 
-## 进入 Part B 前的原始硬阻塞
+## The original hard blocker before entering Part B
 
-以下内容是 Part A 当时的阻塞审计记录；随后用户通过限定解冻提案第 1–8 项
-逐项解除阻塞，当前结论以本文开头的完成状态与后文收尾证据为准。
+What follows is the blocking audit record as it stood at Part A; the user
+subsequently lifted the blockers one by one through items 1–8 of the
+limited-unfreeze proposal, and the current conclusion is governed by the
+completion status at the top of this document and the closeout evidence below.
 
-cadr 当前公开 hook 白名单只有：
+cadr's current public hook allowlist contains only:
 
 ```lisp
 (:turn-start :turn-end :tool-call-before :tool-call-after)
 ```
 
-对应 `src/cadr-agent/extensions.lisp:349-351`；宏和公开 context accessor 位于
-`src/cadr-agent/extensions.lisp:435` 与 `src/cadr-agent/package.lisp:35-45`，
-均被 goal7 绝对冻结。
+This corresponds to `src/cadr-agent/extensions.lisp:349-351`; the macro and the
+public context accessors are at `src/cadr-agent/extensions.lisp:435` and
+`src/cadr-agent/package.lisp:35-45`, and both are absolutely frozen by goal7.
 
-但目标文件直接要求：
+But the target files directly require:
 
 - `session_start`, `session_shutdown`, `session_before_switch`,
   `session_before_fork`, `session_before_tree`;
 - `session_info_changed`, `message_end`, `tool_call`, `agent_settled`;
-- RPC `createExtensionUIContext` 及 `extension_ui_request/response`，覆盖
-  select/confirm/input/editor/notify/status/widget/title/editor text。
+- the RPC `createExtensionUIContext` and `extension_ui_request/response`,
+  covering select/confirm/input/editor/notify/status/widget/title/editor text.
 
-参考证据包括：
+The reference evidence includes:
 
 - `packages/coding-agent/src/core/agent-session-runtime.ts:138-172`
 - `packages/coding-agent/src/core/agent-session.ts:584-585,2875,2950-2953`
@@ -312,23 +336,27 @@ cadr 当前公开 hook 白名单只有：
 - `packages/coding-agent/src/modes/rpc/rpc-mode.ts:128-319`
 - `packages/coding-agent/src/modes/rpc/rpc-types.ts:239-273`
 
-这不是 TS 运行时差异，也不能在不改变 hook 白名单、事件 payload 和 context
-surface 的情况下完成。可执行的两条路只有：
+This is not a TS runtime difference, and it cannot be done without changing the
+hook allowlist, the event payloads and the context surface. There are only two
+workable routes:
 
-1. 仅解冻 Wave 2 目标实际需要的原版扩展生命周期事件和 RPC extension UI
-   surface，保持宏签名不变并只增加原版已有能力；
-2. 保持扩展 API 完全冻结，同时由用户明确把上述测试及 RPC extension UI
-   从 goal7 验收范围移除，作为批准过的 scoped exception。
+1. unfreeze only the baseline extension lifecycle events and the RPC extension
+   UI surface that the Wave 2 targets actually need, keeping the macro signature
+   unchanged and adding only capabilities the baseline already has;
+2. keep the extension API completely frozen, while the user explicitly removes
+   the tests above and the RPC extension UI from the goal7 acceptance scope, as
+   an approved scoped exception.
 
-用户随后裁决允许先提出限定扩充方案；实现仍须等待该方案逐项确认，Part
-B/C/D 均未启动。
+The user subsequently adjudicated that a limited-expansion plan may be proposed
+first; the implementation still had to wait for that plan to be confirmed item
+by item, and Parts B/C/D had not started.
 
-### 第二次阻塞复核
+### Second blocker review
 
-对 46 个 `CODING-SESSION` 目标逐文件扫描 `pi.on(...)` 后，18 个文件直接注册
-了当前冻结白名单以外的公开事件：
+After scanning the 46 `CODING-SESSION` targets file by file for `pi.on(...)`,
+18 files directly register public events outside the currently frozen allowlist:
 
-| 目标文件 | 直接依赖的原版公开事件 |
+| Target file | Baseline public events directly depended on |
 |---|---|
 | `agent-session-concurrent.test.ts` | `input` |
 | `agent-session-dynamic-provider.test.ts` | `session_start` |
@@ -349,94 +377,113 @@ B/C/D 均未启动。
 | `suite/regressions/5943-session-start-notify.test.ts` | `session_start` |
 | `suite/regressions/pre-prompt-compaction-no-continue.test.ts` | `session_before_compact` |
 
-这还没有计入不通过字面量 `pi.on(...)` 注册的 extension runner 测试，也没有
-计入 Part C `print-mode.test.ts` 对 `session_shutdown` 的直接要求。
+This does not yet count the extension runner tests that do not register through
+a literal `pi.on(...)`, nor Part C's direct requirement of `session_shutdown` in
+`print-mode.test.ts`.
 
-替代实现复核结论：
+Conclusions of the alternative-implementation review:
 
-- 只增加内部 agent/session event spine 无法让扩展注册这些事件；
-- 把新事件偷偷映射到现有四种事件会改变 payload/时序，而且不是原版语义；
-- 绕过 `register-extension-hook` 另建私有注册通道仍会扩大可观察 API；
-- RPC UI bridge 必须增加现有 `extension-context` 不具备的 select/confirm/input/
-  editor/status/widget/title/editor-text 能力，也不能仅靠 RPC dispatcher 私有实现；
-- `docs/architecture.md:1015-1017` 还明确冻结 event 为当前四种，因此即使保持
-  宏签名和 package export 文本不动，扩大白名单仍然是在触碰已冻结 API。
+- adding only an internal agent/session event spine cannot let extensions
+  register these events;
+- quietly mapping the new events onto the existing four events would change
+  payload/timing, and is not the baseline semantics;
+- bypassing `register-extension-hook` to build a separate private registration
+  channel would still widen the observable API;
+- the RPC UI bridge must add the
+  select/confirm/input/editor/status/widget/title/editor-text capabilities that
+  the existing `extension-context` does not have, and it also cannot rest on a
+  private implementation inside the RPC dispatcher alone;
+- `docs/architecture.md:1015-1017` additionally freezes the events to the
+  current four explicitly, so even leaving the macro signature and the package
+  export text untouched, widening the allowlist is still touching a frozen API.
 
-所以“保持所有冻结 object ID，同时让所有目标文件转 C”在当前规格下不可满足。
+Therefore "keep every frozen object ID while turning every target file to C" is
+unsatisfiable under the current specification.
 
-## Part B：session v3、队列与 agent harness
+## Part B: session v3, queues and the agent harness
 
-完成：
+Completed:
 
-- 新会话写 v3 header/envelope；首个 assistant entry 前延迟落盘；
-- v1/v2→v3 原子迁移，保留未知字段；坏 record/崩溃尾跳过，session 发现读取
-  上限 1 MiB；
-- thinking/model/compaction/branch/custom/custom-message/label/session-info
-  全 entry union；harness storage 另覆盖原版 `active_tools_change` 与 `leaf`；
-- steering/follow-up/next-turn、`one-at-a-time`/`all`、batch 后注入、abort
-  清理与 wait-for-idle；
-- transient retry、retry event、abort during backoff、overflow compaction；
-- memory/JSONL/SQLite storage/repository、fork、branch materialization、
-  materialized stats、`001_initial.sql`、WAL/FULL/busy timeout 与事务 rollback；
-- prompt template、skill、resource/system-prompt formatting、UTF-8 byte/line
-  truncation，以及 filesystem/shell execution environment 的 timeout、abort 与
-  process-group cleanup。
+- new sessions write the v3 header/envelope; the write to disk is deferred until
+  the first assistant entry;
+- atomic v1/v2→v3 migration preserving unknown fields; bad records/crash tails
+  are skipped, and session discovery reads at most 1 MiB;
+- the full entry union
+  thinking/model/compaction/branch/custom/custom-message/label/session-info;
+  harness storage additionally covers the baseline's `active_tools_change` and
+  `leaf`;
+- steering/follow-up/next-turn, `one-at-a-time`/`all`, post-batch injection,
+  abort cleanup and wait-for-idle;
+- transient retry, retry event, abort during backoff, overflow compaction;
+- memory/JSONL/SQLite storage/repository, fork, branch materialization,
+  materialized stats, `001_initial.sql`, WAL/FULL/busy timeout and transaction
+  rollback;
+- prompt template, skill, resource/system-prompt formatting, UTF-8 byte/line
+  truncation, and the timeout, abort and process-group cleanup of the
+  filesystem/shell execution environment.
 
-SQLite adapter 因 Agent 包两条审计测试在本 Wave 的强制清单中提前实现；
-Wave 5 保留 standalone storage package、server 与 eval 集成，不重复 adapter。
-没有 N/A。
+The SQLite adapter was implemented early because two audit tests of the Agent
+package are on this Wave's mandatory list; Wave 5 keeps the standalone storage
+package, the server and the eval integration, and does not repeat the adapter.
+There is no N/A.
 
-限定扩展 API 按获批提案增加 lifecycle events、RPC UI context 和四组 runtime
-actions。runtime provider 使用 extension-host overlay，未改 `src/cadr-ai`；
-TUI bridge 未改 `src/cadr-tui`。旧宏签名、旧四事件和旧结果语义由
-`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`
-持续验证。
+The limited extension API adds lifecycle events, the RPC UI context and four
+groups of runtime actions, following the approved proposal. The runtime provider
+uses an extension-host overlay and did not change `src/cadr-ai`; the TUI bridge
+did not change `src/cadr-tui`. The old macro signature, the old four events and
+the old result semantics are continuously verified by
+`LEGACY-EXTENSION-SOURCE-REMAINS-COMPATIBLE-AFTER-WAVE-2-API-EXPANSION`.
 
-## Part C：text/JSON 模式
+## Part C: text/JSON modes
 
-模式优先级实现为：显式 `--mode` → `--print` → 显式 `--no-tui` → 非 TTY
-自动 text → TUI。text 只写最终 assistant 文本，JSON 每行一个 agent event；
-argv 第一条 prompt 与 stdin 合并，后续 argv message 依次执行；provider
-错误走 stderr 和非零退出，shutdown/signal cleanup 保持执行。
+Mode priority is implemented as: explicit `--mode` → `--print` → explicit
+`--no-tui` → automatic text when not a TTY → TUI. text writes only the final
+assistant text, and JSON writes one agent event per line; the first argv prompt
+is merged with stdin, and later argv messages are executed in order; provider
+errors go to stderr with a non-zero exit, and shutdown/signal cleanup keeps
+running.
 
-既有断言/脚本变更清单：
+List of changes to existing assertions/scripts:
 
-| 位置 | 旧行为 | 新行为 | 基线依据 |
+| Location | Old behavior | New behavior | Baseline grounds |
 |---|---|---|---|
-| CLI mode gate | 非 TTY 默认 line REPL | 非 TTY默认 one-shot text；`--no-tui` 才是 line REPL | `packages/coding-agent/src/main.ts` mode selection 与 `args.test.ts` |
-| `scripts/acceptance-smoke.sh` | pipe 隐式进入 REPL 做多轮 | 显式传 `--no-tui` 保持多轮验收 | line REPL 是 cadr 保留差异，只允许显式选择 |
-| 既有 multi-turn live scripts | pipe 隐式进入 REPL | 显式传 `--no-tui` | 同上 |
+| CLI mode gate | non-TTY defaulted to the line REPL | non-TTY defaults to one-shot text; only `--no-tui` is the line REPL | `packages/coding-agent/src/main.ts` mode selection and `args.test.ts` |
+| `scripts/acceptance-smoke.sh` | a pipe implicitly entered the REPL for multiple turns | passes `--no-tui` explicitly to keep the multi-turn acceptance | the line REPL is a difference cadr keeps, and may only be selected explicitly |
+| existing multi-turn live scripts | a pipe implicitly entered the REPL | passes `--no-tui` explicitly | same as above |
 
-没有删除旧测试；上述是本 goal 唯一改变既有测试语义的豁免。
+No old test was deleted; the above is this goal's only exemption that changes
+the semantics of an existing test.
 
-## Part D：RPC
+## Part D: RPC
 
-实现审计提交的完整 command union、固定 response shape、request id 保留、
-agent event JSONL 转发、session/model/thinking/queue/compaction 控制、
-bash/abort、clone/fork/tree/messages/stats/HTML/commands，以及 EOF/close
-cleanup。framing 只以 LF 分帧，兼容 CRLF、U+2028/U+2029 和无末尾 LF。
+Implements the audit commit's complete command union, the fixed response shape,
+request id preservation, agent event JSONL forwarding,
+session/model/thinking/queue/compaction control, bash/abort,
+clone/fork/tree/messages/stats/HTML/commands, and EOF/close cleanup. Framing is
+on LF only, tolerating CRLF, U+2028/U+2029 and no trailing LF.
 
-RPC extension UI bridge 覆盖 select/confirm/input/editor 的 response、
-cancel、timeout、signal、unknown id 与 EOF 默认完成，以及 notify/status/
-widget/title/editor text 的 fire-and-forget wire。进程测试用本地 OpenAI SSE
-stub 完成 prompt→event→steer→正常关闭，不实现 server。
+The RPC extension UI bridge covers response, cancel, timeout, signal, unknown id
+and EOF default completion for select/confirm/input/editor, and the
+fire-and-forget wire for notify/status/widget/title/editor text. The process
+test completes prompt→event→steer→normal shutdown with a local OpenAI SSE stub,
+and does not implement a server.
 
-## Parity 清单
+## Parity inventory
 
-Part A 的 76 个目标文件全部由 `M` 转为 `C`：
+All 76 target files of Part A moved from `M` to `C`:
 
-- Agent：18/18；
-- coding-agent session/queue：46/46；
-- print/JSON：6/6；
-- RPC：6/6；
-- N/A：0。
+- Agent: 18/18;
+- coding-agent session/queue: 46/46;
+- print/JSON: 6/6;
+- RPC: 6/6;
+- N/A: 0.
 
-全仓 manifest 由 `28 C / 0 U / 324 M` 更新为
-`104 C / 0 U / 248 M`。
+The whole-repository manifest was updated from `28 C / 0 U / 324 M` to
+`104 C / 0 U / 248 M`.
 
-## 扩展 API 重冻
+## Extension API re-freeze
 
-| 路径 | 收尾 Git object ID |
+| Path | Closeout Git object ID |
 |---|---|
 | `src/cadr-agent/extensions.lisp` | `58539b2849fcf6b6756657d46f94ac09a3c639fc` |
 | `src/cadr-agent/package.lisp` | `15525d7cc8bd860d66b3bbaf0f1ab56174464d39` |
@@ -451,36 +498,36 @@ Part A 的 76 个目标文件全部由 `M` 转为 `C`：
 | `cadr-agent.asd` | `189df27ae5b63f6619e53e981ad7c4c77a68868b` |
 | `cadr-cli.asd` | `dc112807eea502182a1518f5582f6d47348a6ad2` |
 
-Export 文本 SHA-256：
-`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`。
-旧源兼容 fixture SHA-256：
-`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`。
-RPC wire/process fixture SHA-256：
-`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`。
-UI extension fixture SHA-256：
-`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`。
+Export text SHA-256:
+`cc8e7d180b5007cbf4daa66ff904f8c0714992df646211c232135500efd936e7`.
+Old-source compatibility fixture SHA-256:
+`e2548662d773edfa21ecfa3b126b2209404a2b27385e6cd48e1f145a41747442`.
+RPC wire/process fixture SHA-256:
+`6dc3a25271080a59c3380704044c435a0a20a972c5ba19f32cae2acee2649b10`.
+UI extension fixture SHA-256:
+`c1148870a539dd4a24001da74d17f668b6092bf55d41d845319d5439e3df9486`.
 
-## 冻结区收尾对照
+## Frozen-area closeout comparison
 
-| 冻结路径 | 开工 object ID | 收尾 object ID | 结果 |
+| Frozen path | Work-start object ID | Closeout object ID | Result |
 |---|---|---|---|
-| `src/cadr-ai` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` | 一致 |
-| `test/cadr-ai` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` | 一致 |
-| `cadr-ai.asd` | `f99e2708e9ff7e3465824c7ea04bedce9512724c` | `f99e2708e9ff7e3465824c7ea04bedce9512724c` | 一致 |
-| `src/cadr-tui` | `1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950` | `1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950` | 一致 |
-| `test/cadr-tui` | `947e63cc73b259ea2b18bfc281b5229a13f9a5d0` | `947e63cc73b259ea2b18bfc281b5229a13f9a5d0` | 一致 |
-| `cadr-tui.asd` | `c09f6172c1c186f15c726b2c04b7ea65a4f4214c` | `c09f6172c1c186f15c726b2c04b7ea65a4f4214c` | 一致 |
-| `src/cadr-agent/tool.lisp` | `42093b6062ab16cde78f72cb87a878057b7dd131` | `42093b6062ab16cde78f72cb87a878057b7dd131` | 一致 |
-| `test/cadr-agent/tool-loop-test.lisp` | `f44cd198c1fbfab8b7402f457d1ea2a848a9aa74` | `f44cd198c1fbfab8b7402f457d1ea2a848a9aa74` | 一致 |
-| `src/cadr-cli/tools` | `0ad21371b8ad2e759dacb26202383965a68d5493` | `0ad21371b8ad2e759dacb26202383965a68d5493` | 一致 |
-| `test/cadr-cli/file-tools-test.lisp` | `206bb0416ff53abba10378a873eeffb698162327` | `206bb0416ff53abba10378a873eeffb698162327` | 一致 |
-| `test/cadr-cli/search-tools-test.lisp` | `5ca50cd12f4b1442891c12ee9fa231b24df07a6c` | `5ca50cd12f4b1442891c12ee9fa231b24df07a6c` | 一致 |
-| `test/cadr-cli/bash-test.lisp` | `3475ab2a3760afa06928d8748a44e1514d1ac461` | `3475ab2a3760afa06928d8748a44e1514d1ac461` | 一致 |
-| `test/cadr-cli/execution-policy-test.lisp` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` | 一致 |
+| `src/cadr-ai` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` | `e9c5affef2e36db4cdf6f7fc37a20534cd1a661a` | identical |
+| `test/cadr-ai` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` | `e984d714c6e53cb34d89c495939f9d2b3d975fd8` | identical |
+| `cadr-ai.asd` | `f99e2708e9ff7e3465824c7ea04bedce9512724c` | `f99e2708e9ff7e3465824c7ea04bedce9512724c` | identical |
+| `src/cadr-tui` | `1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950` | `1a5ba07b17cd3b0c55c8a1ec35a79d1fafda0950` | identical |
+| `test/cadr-tui` | `947e63cc73b259ea2b18bfc281b5229a13f9a5d0` | `947e63cc73b259ea2b18bfc281b5229a13f9a5d0` | identical |
+| `cadr-tui.asd` | `c09f6172c1c186f15c726b2c04b7ea65a4f4214c` | `c09f6172c1c186f15c726b2c04b7ea65a4f4214c` | identical |
+| `src/cadr-agent/tool.lisp` | `42093b6062ab16cde78f72cb87a878057b7dd131` | `42093b6062ab16cde78f72cb87a878057b7dd131` | identical |
+| `test/cadr-agent/tool-loop-test.lisp` | `f44cd198c1fbfab8b7402f457d1ea2a848a9aa74` | `f44cd198c1fbfab8b7402f457d1ea2a848a9aa74` | identical |
+| `src/cadr-cli/tools` | `0ad21371b8ad2e759dacb26202383965a68d5493` | `0ad21371b8ad2e759dacb26202383965a68d5493` | identical |
+| `test/cadr-cli/file-tools-test.lisp` | `206bb0416ff53abba10378a873eeffb698162327` | `206bb0416ff53abba10378a873eeffb698162327` | identical |
+| `test/cadr-cli/search-tools-test.lisp` | `5ca50cd12f4b1442891c12ee9fa231b24df07a6c` | `5ca50cd12f4b1442891c12ee9fa231b24df07a6c` | identical |
+| `test/cadr-cli/bash-test.lisp` | `3475ab2a3760afa06928d8748a44e1514d1ac461` | `3475ab2a3760afa06928d8748a44e1514d1ac461` | identical |
+| `test/cadr-cli/execution-policy-test.lisp` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` | `19df8cfbae90aa3d2afb44eb01c81939de90a2cc` | identical |
 
-`src/cadr-ai` fuse 未触发；`src/cadr-tui` 也未改。
+The `src/cadr-ai` fuse did not trip; `src/cadr-tui` was not changed either.
 
-## 验收证据
+## Acceptance evidence
 
 ```text
 ./scripts/test-cl.sh
@@ -519,29 +566,35 @@ file ./cadr
   live extension smoke: DeepSeek write/reload/invoke loop passed
 ```
 
-所有 migration 测试使用临时目录；未读取或改写真实 `~/.cadr/sessions/`。
-`git diff --check` 在收尾复核通过。Goal 7 完成后暂停，不开始 Wave 3。
+Every migration test uses a temporary directory; the real `~/.cadr/sessions/`
+was neither read nor rewritten. `git diff --check` passed in the closeout
+review. Work pauses after Goal 7 is complete; Wave 3 is not started.
 
-## 关账整改
+## Closeout remediation
 
-用户验收后追加的两项整改已经纳入正式边界：
+The two remediations added after the user's acceptance have already been taken
+into the formal boundary:
 
-- `cl-sqlite`（ASDF system `sqlite`）追认为与 `cl+ssl` 同级的第二个在册
-  自研例外；其 `iterate`、CFFI、Alexandria、Babel、trivial-features
-  传递闭包与系统 `libsqlite3` 归属记录在 `docs/dependency-audit.md`，README
-  同步完整例外清单；
-- 后续每份 goal 的 Part A 必须审计新增第三方依赖及传递闭包，未获用户明确
-  授权时立即 `blocked`，禁止先实现后追认；
-- 后续“完成”必须包含按逻辑分组提交、提交后的全量复验和干净工作区；未提交
-  改动的完成宣告无效。
+- `cl-sqlite` (ASDF system `sqlite`) is retroactively recognized as the second
+  registered self-build exception, at the same level as `cl+ssl`; its `iterate`,
+  CFFI, Alexandria, Babel, trivial-features transitive closure and the ownership
+  of the system `libsqlite3` are recorded in `docs/dependency-audit.md`, and the
+  README carries the complete exception list in sync;
+- the Part A of every subsequent goal must audit newly added third-party
+  dependencies and their transitive closure, and must be `blocked` immediately
+  when the user's explicit authorization has not been obtained; implementing
+  first and being recognized retroactively is forbidden;
+- every subsequent "complete" must include commits grouped logically, a full
+  re-verification after the commits, and a clean working tree; a completion
+  declaration with uncommitted changes is invalid.
 
-Wave 2 代码按以下顺序落账：
+The Wave 2 code was recorded in the ledger in the following order:
 
-| 顺序 | 提交 | 内容 |
+| Order | Commit | Contents |
 |---:|---|---|
-| 1 | `e627a787d` | 固定 Wave 2 测试、fixture 与进程/live 门禁 |
-| 2 | `d5958bb6b` | 扩充并重冻 extension API |
-| 3 | `795df7997` | session v3、queue、retry、storage 与 harness |
-| 4 | `7f9ef7d73` | one-shot text 与 JSON 模式 |
-| 5 | `83e96958f` | RPC protocol、UI bridge 与 ASDF wiring |
-| 6 | 本报告所在提交 | 依赖审计、架构、parity 与关账文档 |
+| 1 | `e627a787d` | pin the Wave 2 tests, fixtures and the process/live gates |
+| 2 | `d5958bb6b` | widen and re-freeze the extension API |
+| 3 | `795df7997` | session v3, queue, retry, storage and harness |
+| 4 | `7f9ef7d73` | one-shot text and JSON modes |
+| 5 | `83e96958f` | RPC protocol, UI bridge and ASDF wiring |
+| 6 | the commit containing this report | dependency audit, architecture, parity and closeout documentation |

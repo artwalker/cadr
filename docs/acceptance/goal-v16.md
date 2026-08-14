@@ -1,48 +1,52 @@
-# Goal 16 验收记录
+# Goal 16 acceptance record
 
-状态：Part A0、A、B、Part C1-C5 与 Part D 已完成并提交；等待用户验收。
+Status: Part A0, A, B, Part C1-C5, and Part D are complete and committed; awaiting user acceptance.
 
-## Part A0：压缩降级行为
+## Part A0: compaction degradation behavior
 
-独立提交：`3dbb58b895a1f732d6354233e91d6981b0a35c09`
-（`fix(agent): align compaction degradation with baseline`）。
+Separate commit: `3dbb58b895a1f732d6354233e91d6981b0a35c09`
+(`fix(agent): align compaction degradation with baseline`).
 
-### 基线合同与实现
+### Baseline contract and implementation
 
-- 固定基线 `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` 的
-  `packages/coding-agent/src/core/compaction/compaction.ts:679-685` 只在
-  `stopReason === "error"` 时失败；空串、空白、`length`、`toolUse`、
-  `aborted` 的已生成文本均原样返回。
-- `packages/coding-agent/src/core/branch-summarization.ts:353-375` 将 abort
-  作为取消返回，error 使用 provider 文案，空摘要最终降级为
-  `No summary generated`。
-- Cadr 复用现有 `agent-stream-function`、extension cancellation signal、
-  session journal/migration 与 overflow 临时分支恢复；没有新建重试器或新机制。
+- `packages/coding-agent/src/core/compaction/compaction.ts:679-685` of the fixed
+  baseline `74caa2649f10ed71b4378ce69f5d9fbfd2466ca5` fails only when
+  `stopReason === "error"`; the already generated text for an empty string,
+  whitespace, `length`, `toolUse`, and `aborted` is all returned as is.
+- `packages/coding-agent/src/core/branch-summarization.ts:353-375` returns abort
+  as a cancellation, uses the provider's copy for error, and finally degrades an
+  empty summary to `No summary generated`.
+- Cadr reuses the existing `agent-stream-function`, the extension cancellation
+  signal, session journal/migration, and overflow temporary-branch recovery; no new
+  retrier and no new mechanism were created.
 
-变更归属：
+Change ownership:
 
-| 合同 | 实现位置 |
+| Contract | Implementation location |
 |---|---|
-| summary 失败/降级矩阵、abort 后不持久化 | `src/cadr-agent/compaction.lisp` |
-| branch abort/error/empty fallback | `src/cadr-agent/branch-summarization.lisp`、`src/cadr-agent/loop/agent-loop.lisp` |
-| 空/空白 summary 持久化与重载 | `src/cadr-agent/session/journal.lisp`、`src/cadr-agent/session/migration.lisp` |
+| summary failure/degradation matrix, no persistence after abort | `src/cadr-agent/compaction.lisp` |
+| branch abort/error/empty fallback | `src/cadr-agent/branch-summarization.lisp`, `src/cadr-agent/loop/agent-loop.lisp` |
+| empty/whitespace summary persistence and reload | `src/cadr-agent/session/journal.lisp`, `src/cadr-agent/session/migration.lisp` |
 
-链路审计还发现并移除了三处同源严格化：extension compaction 拒绝空摘要、
-journal 拒绝空摘要、migration 无法重载已持久化空摘要。未保留任何基线没有的
-空值失败分支。
+The path audit additionally found and removed three same-origin over-strictnesses:
+extension compaction rejecting an empty summary, the journal rejecting an empty
+summary, and migration being unable to reload a persisted empty summary. No
+empty-value failure branch that the baseline does not have was retained.
 
-### 恢复与自救
+### Recovery and self-rescue
 
-- threshold auto-compaction 失败时保留原上下文并继续当前 prompt；agent 的 busy
-  状态由既有 unwind-protect 清除。用户可继续对话或再次执行 `/compact`。
-- context overflow compaction 成功时沿既有路径重试；失败时恢复原 error leaf，
-  返回 provider error，但 agent 回到 idle，下一条 prompt 仍可执行。
-- 用户在 summary response 后取消时不写 compaction entry；branch summary abort
-  不移动 session leaf。
+- When threshold auto-compaction fails, the original context is kept and the current
+  prompt continues; the agent's busy state is cleared by the existing
+  unwind-protect. The user may continue the conversation or run `/compact` again.
+- When context-overflow compaction succeeds it retries along the existing path; when
+  it fails it restores the original error leaf and returns the provider error, but
+  the agent goes back to idle and the next prompt can still be executed.
+- When the user cancels after the summary response, no compaction entry is written;
+  a branch summary abort does not move the session leaf.
 
-### 红绿证据
+### Red/green evidence
 
-新增/更新门禁：
+Added/updated gates:
 
 - `COMPACTION-SUMMARY-FAILURE-CONTRACT-MATCHES-BASELINE`
 - `EMPTY-AND-WHITESPACE-COMPACTION-SUMMARIES-PERSIST-AND-CONTINUE`
@@ -53,44 +57,56 @@ journal 拒绝空摘要、migration 无法重载已持久化空摘要。未保�
 - `ABORTED-BRANCH-SUMMARY-CANCELS-WITHOUT-MOVING-THE-SESSION`
 - `SESSION-COMPACTION-EMPTY-HOOK-IS-USED-FAILING-HOOK-FALLS-BACK-AND-ABORT-STOPS`
 
-测试先行的旧实现运行：998 checks / 990 pass / 0 skip / **8 fail**，失败逐项
-命中空摘要、空白摘要、extension summary、overflow error copy 与 branch
-fallback。修复后 `CADR-AGENT-SUITE` 为 1024/1024/0/0。
+The tests-first run against the old implementation: 998 checks / 990 pass / 0 skip /
+**8 fail**, the failures hitting item by item the empty summary, the whitespace
+summary, the extension summary, the overflow error copy, and the branch fallback.
+After the fix `CADR-AGENT-SUITE` is 1024/1024/0/0.
 
-## Part A：身份审计
+## Part A: identity audit
 
-提交：`dcba371ff`（`docs: audit product identity across the full tree`）。产物：
-`docs/identity-audit.md`。Part A 的 staged diff 仅包含该审计和本报告，生产代码
-零变更。结果：
+Commit: `dcba371ff` (`docs: audit product identity across the full tree`). Artifact:
+`docs/identity-audit.md`. Part A's staged diff contains only that audit and this
+report, with zero change to production code. Results:
 
-- 全量枚举得到 14 个不同的生产 `PI_*` 环境变量；
-- 六组第三方归因值（含 xAI referrer）均为 `须替换`，已有用户预裁；
-- Radius `pi-gateway` 有 live discovery 的注册合同证据，`radius.pi.dev` 是真实
-  provider/API endpoint，二者不是推测性保留；
-- `/share`、版本检查、HTML viewer meta 合同和环境变量迁移已分离为 Part B
-  决策；
-- 额外发现 export localStorage、notify 示例、synthetic tool call ID、Radius
-  自由日志文案与导出 Lisp API 名残留；
-- catalog 注释、固定基线 harness、版本对齐声明、扩展 manifest `"pi"` schema
-  与 Radius wire dialect 已给出逐条保留理由。
+- full enumeration yields 14 distinct production `PI_*` environment variables;
+- six groups of third-party attribution values (including the xAI referrer) are all
+  `must replace`, with an existing user pre-adjudication;
+- Radius `pi-gateway` has registration-contract evidence from live discovery, and
+  `radius.pi.dev` is a real provider/API endpoint; the two are not speculative
+  retentions;
+- `/share`, the version check, the HTML viewer meta contract, and the
+  environment-variable migration have been separated out as Part B decisions;
+- additionally found: export localStorage, the notify example, the synthetic tool
+  call ID, Radius free-form log copy, and residual exported Lisp API names;
+- catalog comments, the fixed-baseline harness, the version-alignment declaration,
+  the extension manifest `"pi"` schema, and the Radius wire dialect have each been
+  given a retention reason.
 
-## Part B：已裁决提案
+## Part B: adjudicated proposal
 
-提案：`docs/proposals/goal-v16-identity.md`。它把实现决策拆成六项：
+Proposal: `docs/proposals/goal-v16-identity.md`. It splits the implementation
+decisions into six items:
 
-1. `/share` 默认 viewer 最终裁决为 `https://cadr.dev/session/`，保持启用并仅由
-   `CADR_SHARE_VIEWER_URL` 或显式参数覆盖；用户已知情接受页面上线前链接暂不可达；
-2. 版本检查未配置 Cadr endpoint 时默认禁用；
-3. 14 个 `PI_*` 环境变量硬切为 `CADR_*`，不保留 alias 或 warning 兼容期；
-4. 仓库链接、临时文件、HTML localStorage、synthetic call ID、Radius 自由文案和
-   example 标题等非合同身份值整组替换；
-5. Radius 注册/API/wire、扩展 manifest、catalog/基线溯源等精确 allowlist；
-6. 复用既有 release identity 作为私有单一来源，按 C1→C5 后进入 D 门禁。
+1. the `/share` default viewer is finally adjudicated as `https://cadr.dev/session/`,
+   stays enabled, and is overridden only by `CADR_SHARE_VIEWER_URL` or an explicit
+   argument; the user has knowingly accepted that the link is temporarily unreachable
+   before the page goes live;
+2. the version check is disabled by default when no Cadr endpoint is configured;
+3. the 14 `PI_*` environment variables are hard-switched to `CADR_*`, retaining no
+   alias or warning compatibility period;
+4. non-contract identity values such as the repository link, temporary files, HTML
+   localStorage, the synthetic call ID, Radius free-form copy, and the example title
+   are replaced as one group;
+5. an exact allowlist for Radius registration/API/wire, the extension manifest, and
+   catalog/baseline provenance;
+6. reuse the existing release identity as the private single source, and enter the D
+   gate after C1→C5.
 
-用户在 Goal 16 规格中预裁的 User-Agent、OpenRouter、NVIDIA、Cloudflare、
-OpenCode 与 xAI referrer 值不重复请求裁决。Part B 只写文档，未修改生产代码。
+The User-Agent, OpenRouter, NVIDIA, Cloudflare, OpenCode, and xAI referrer values the
+user pre-adjudicated in the Goal 16 specification are not submitted for adjudication
+again. Part B only writes documentation; it did not modify production code.
 
-Radius 外部核验（2026-08-04）：
+Radius external verification (2026-08-04):
 
 ```text
 GET https://radius.pi.dev/             -> HTTP 200
@@ -99,115 +115,132 @@ discovery.clientId                     -> pi-gateway
 discovery.scope                        -> gateway offline_access
 ```
 
-## Part C：身份收敛实施
+## Part C: identity convergence implementation
 
-### C1：单一身份源与第三方 attribution
+### C1: single identity source and third-party attribution
 
-提交 `cc4f1f0e0`。`src/cadr-ai/support/release.lisp` 统一拥有产品 slug、显示名、
-规范仓库 URL 与默认 share viewer；版本 User-Agent、OpenRouter、NVIDIA、
-Cloudflare、OpenCode 和 xAI device-code referrer 均从 Cadr 身份派生。xAI 以相同
-client ID/scope、`referrer=cadr` 发起真实 device authorization 请求并得到 HTTP
-200，故无需回退功能约束。
+Commit `cc4f1f0e0`. `src/cadr-ai/support/release.lisp` uniformly owns the product
+slug, display name, canonical repository URL, and default share viewer; the version
+User-Agent, OpenRouter, NVIDIA, Cloudflare, OpenCode, and the xAI device-code
+referrer are all derived from the Cadr identity. xAI issued a real device
+authorization request with the same client ID/scope and `referrer=cadr` and received
+HTTP 200, so no fallback functional constraint is needed.
 
-合同门禁包括 `GOAL16-PRODUCT-IDENTITY-HAS-ONE-PRIVATE-OWNER`、
-`GOAL16-THIRD-PARTY-ATTRIBUTION-USES-CADR-IDENTITY` 与现有 xAI OAuth payload
-测试；provider payload 其余字段不变。
+The contract gates include `GOAL16-PRODUCT-IDENTITY-HAS-ONE-PRIVATE-OWNER`,
+`GOAL16-THIRD-PARTY-ATTRIBUTION-USES-CADR-IDENTITY`, and the existing xAI OAuth
+payload test; the remaining fields of the provider payload are unchanged.
 
-### C2：服务端点
+### C2: service endpoints
 
-提交 `ac23e11bb`。`/share` 使用 `https://cadr.dev/session/` 默认 viewer，非空
-`CADR_SHARE_VIEWER_URL` 和显式参数保持覆盖优先级；成功状态同时呈现生成链接和
-viewer 地址。render-diff 的 `slash-share` 只新增获批的 I03 URL 差异，完整
-40/40 capture 与 fail-closed disposition 均通过。
+Commit `ac23e11bb`. `/share` uses `https://cadr.dev/session/` as the default viewer;
+a non-empty `CADR_SHARE_VIEWER_URL` and an explicit argument keep their override
+precedence; the success state presents both the generated link and the viewer
+address. render-diff's `slash-share` adds only the approved I03 URL difference, and
+the complete 40/40 capture and the fail-closed dispositions all pass.
 
-版本检查不再查询 pi.dev；未配置 `CADR_VERSION_CHECK_URL` 时不发网络请求，配置
-后复用原 timeout、JSON、比较与静默网络失败合同，`CADR_OFFLINE` 和
-`CADR_SKIP_VERSION_CHECK` 仍可关闭。该项在 CHANGELOG 记为修复，因为比较两个
-不同产品的版本号本身无语义。
+The version check no longer queries pi.dev; when `CADR_VERSION_CHECK_URL` is not
+configured no network request is made, and once configured it reuses the original
+timeout, JSON, comparison, and silent-network-failure contracts, while `CADR_OFFLINE`
+and `CADR_SKIP_VERSION_CHECK` can still switch it off. This item is recorded in the
+CHANGELOG as a fix, because comparing the version numbers of two different products
+has no meaning in itself.
 
-### C3：环境变量硬切
+### C3: environment-variable hard switch
 
-提交 `af8612d95`。14 个生产旧名按批准表一次硬切为 `CADR_*`，其中
-`PI_MODEL -> CADR_EVAL_MODEL`、`PI_PROVIDER -> CADR_EVAL_PROVIDER` 是明确重命名，
-不是简单换前缀。生产 `src/` 的旧名扫描为零；固定 TypeScript 基线 driver 中的
-`PI_OFFLINE` 不属于 Cadr runtime，继续保留。
+Commit `af8612d95`. The 14 old production names were hard-switched to `CADR_*` in one
+go per the approved table, among which `PI_MODEL -> CADR_EVAL_MODEL` and
+`PI_PROVIDER -> CADR_EVAL_PROVIDER` are explicit renames, not a simple prefix change.
+A scan for old names in production `src/` returns zero; `PI_OFFLINE` in the fixed
+TypeScript baseline driver does not belong to the Cadr runtime and is retained.
 
-门禁 `GOAL16-C3-PRODUCTION-ENVIRONMENT-NAMES-ARE-CADR-ONLY` 同时证明新名生效、
-旧名不再读取；Bedrock/eval/server/tool/version 的行为回归全部通过。
+The gate `GOAL16-C3-PRODUCTION-ENVIRONMENT-NAMES-ARE-CADR-ONLY` proves both that the
+new names take effect and that the old names are no longer read; the behavioral
+regressions for Bedrock/eval/server/tool/version all pass.
 
-### C4：自由身份值
+### C4: free-form identity values
 
-提交 `5eb36c930`。`/changelog` 规范仓库、WSL 临时文件、notify 示例、导出 HTML
-localStorage、synthetic tool-call ID 与 Radius 自由日志/线程文案完成替换。Radius
-client/API/wire、扩展 manifest、generated provenance 和固定基线输入未改。
+Commit `5eb36c930`. The `/changelog` canonical repository, the WSL temporary file,
+the notify example, the exported HTML localStorage, the synthetic tool-call ID, and
+the Radius free-form log/thread copy have been replaced. The Radius
+client/API/wire, the extension manifest, the generated provenance, and the
+fixed-baseline inputs were not changed.
 
-门禁 `GOAL16-C4-FREE-IDENTITY-VALUES-ARE-CADR-OWNED` 逐文件断言旧字符串消失；
-HTML template SHA 同步更新，session entries、payload 与 wire 未变化。
+The gate `GOAL16-C4-FREE-IDENTITY-VALUES-ARE-CADR-OWNED` asserts file by file that
+the old strings are gone; the HTML template SHA was updated in step, and session
+entries, payload, and wire did not change.
 
-### C5：文档收敛
+### C5: documentation convergence
 
-commit `481033fe1`。
+commit `481033fe1`.
 
-README 记录 14 项迁移表、share 过渡期、版本检查开关与外部合同边界；CHANGELOG
-把版本检查列为修复；architecture、审计、提案和 open-questions 均同步最终裁决。
-Part C 没有新增依赖、兼容层、telemetry 或未裁决机制。
+The README records the 14-item migration table, the share transition period, the
+version-check switch, and the external contract boundary; the CHANGELOG lists the
+version check as a fix; architecture, the audit, the proposal, and open-questions all
+synchronize the final adjudication. Part C added no dependency, compatibility layer,
+telemetry, or unadjudicated mechanism.
 
-## Part D：产品身份漂移门禁
+## Part D: product-identity drift gate
 
-commit `44f8dd8a7`。
+commit `44f8dd8a7`.
 
-- `scripts/check-product-identity.py` 只扫描 production 范围：`src/`、
-  `examples/`、`scripts/`、`.github/`、根 README/CHANGELOG、ASDF 与构建入口。
-- `docs/product-identity-allowlist.json` 共记录 274 次真实命中、251 条精确
-  disposition 与 1 个 SHA-256 锁定的 opaque 资产。每条 disposition 同时绑定
-  path、kind、token、完整行内容、出现次数与非空理由；目录、glob、正则或
-  空理由豁免均非法。
-- 门禁 fail-closed 拒绝新命中、移动后的同 token、重复/过期 disposition、
-  次数漂移、总数漂移与 opaque digest 漂移。`test/product-identity-gate-test.py`
-  的 9 个独立回归覆盖这些反例，并直接驱动当前真实仓库。
-- 测试先行证据：无 checker 时合成用例整批失败；checker 落地但无真实
-  manifest 时真实仓库用例失败；`verify.sh` 未接入时顺序合同回归失败。
-  实现后 9/9 通过，真实扫描数与 manifest 逐项相等。
-- `scripts/verify.sh` 在 code organization 后、source parity/FiveAM/构建前依次运行
-  合成回归与真实树扫描；任一失败会阻断后续确定性阶段。
-- 常设政策落入 `docs/development-policy.md`：改动 identity allowlist 等同改动
-  产品身份边界，须先书面提案并经用户逐项裁决。
+- `scripts/check-product-identity.py` scans only the production scope: `src/`,
+  `examples/`, `scripts/`, `.github/`, the root README/CHANGELOG, ASDF, and the build
+  entry points.
+- `docs/product-identity-allowlist.json` records 274 real hits, 251 exact
+  dispositions, and 1 SHA-256-locked opaque asset in total. Every disposition binds
+  path, kind, token, the complete line content, the occurrence count, and a non-empty
+  reason at once; a directory, glob, regex, or empty-reason exemption is illegal.
+- The gate is fail-closed and rejects a new hit, the same token after a move, a
+  duplicate/expired disposition, count drift, total drift, and opaque digest drift.
+  The 9 independent regressions of `test/product-identity-gate-test.py` cover these
+  counterexamples and drive the current real repository directly.
+- Tests-first evidence: with no checker, the synthetic cases fail as a whole batch;
+  with the checker landed but no real manifest, the real-repository case fails; with
+  `verify.sh` not yet wired in, the ordering-contract regression fails. After
+  implementation 9/9 pass, and the real scan counts equal the manifest item by item.
+- `scripts/verify.sh` runs the synthetic regressions and the real-tree scan in order
+  after code organization and before source parity/FiveAM/build; a failure of either
+  blocks the subsequent deterministic stages.
+- The standing policy lands in `docs/development-policy.md`: changing the identity
+  allowlist is equivalent to changing the product identity boundary, and must first
+  go through a written proposal and item-by-item user adjudication.
 
-## Goal 16 完整验证（2026-08-05）
+## Goal 16 complete verification (2026-08-05)
 
-`./scripts/test-cl.sh`：
+`./scripts/test-cl.sh`:
 
 ```text
 cadr test summary: systems=9 checks=14827 pass=14827 skip=0 fail=0
 ```
 
-`./scripts/verify.sh`：
+`./scripts/verify.sh`:
 
-| 阶段 | 结果 |
+| Stage | Result |
 |---|---|
 | root cadr binary freshness | PASS |
 | code organization gate | PASS |
-| product identity gate | PASS（9 个合成/真实回归；274 命中 / 251 disposition / 1 opaque） |
-| real source parity ledger | PASS（595） |
+| product identity gate | PASS (9 synthetic/real regressions; 274 hits / 251 dispositions / 1 opaque) |
+| real source parity ledger | PASS (595) |
 | source parity drift self-test | PASS |
-| deterministic FiveAM | PASS（14,827/14,827） |
-| isolated cadr build | PASS（无 core compression 时无压缩降级） |
-| isolated cadr-server build | PASS（无 core compression 时无压缩降级） |
+| deterministic FiveAM | PASS (14,827/14,827) |
+| isolated cadr build | PASS (uncompressed degradation when core compression is absent) |
+| isolated cadr-server build | PASS (uncompressed degradation when core compression is absent) |
 | Goal 11 performance and stability gate | PASS |
 | native acceptance smoke | PASS |
 | native process modes | PASS |
 | migration PTY smoke | PASS |
 | Unix socket server smoke | PASS |
-| terminal lifecycle PTY | PASS（6/6） |
+| terminal lifecycle PTY | PASS (6/6) |
 | deterministic TUI harness | PASS |
-| fixed-baseline render differential | PASS（40/40；160/160 dispositions） |
-| credential-gated FiveAM | PASS（7 pass / 1 Anthropic credential skip / 0 fail） |
+| fixed-baseline render differential | PASS (40/40; 160/160 dispositions) |
+| credential-gated FiveAM | PASS (7 pass / 1 Anthropic credential skip / 0 fail) |
 | DeepSeek live TUI | PASS |
 
-live 项目级统计为 8 项、7 run/pass、1 个 `ANTHROPIC_API_KEY is not set` skip；
-检查级统计为 32 checks / 31 pass / 1 skip / 0 fail。该结果不冒充确定性证据。
+The live item-level statistics are 8 items, 7 run/pass, 1 `ANTHROPIC_API_KEY is not
+set` skip; the check-level statistics are 32 checks / 31 pass / 1 skip / 0 fail. That
+result does not pass itself off as deterministic evidence.
 
-根二进制新鲜度：
+Root binary freshness:
 
 ```text
 binary build time: 2026-08-05 02:07:50.103011288 +0800
@@ -216,87 +249,104 @@ latest source mtime: 2026-08-05 01:23:24 +0800
 binary version: cadr 0.2.0 · aligned with pi v0.83.0 (+38, 74caa2649)
 ```
 
-## 关账后 A/B 补正：bash 截断与状态矩阵
+## Post-closeout A/B correction: bash truncation and the state matrix
 
-固定基线实际有两条不同的 bash 呈现路径。用户引用的
-`modes/interactive/components/bash-execution.ts:190-200` 属 `!` 直接执行；本次截图
-来自普通 agent bash，其对应合同是 `core/tools/bash.ts:248-306`：模型 result 的详细
-footer 保留，但 TUI 在 `:251-255` 剥离它，并在 `:292-306` 只生成一条 warning 色
-`[Full output: ... Truncated: ...]`。Cadr 已在
-`src/cadr-cli/interactive/tool-rendering.lisp:331-376` 做同样分层；模型 result、session
-历史、JSON/RPC wire 均未修改。
+The fixed baseline actually has two different bash presentation paths. The
+`modes/interactive/components/bash-execution.ts:190-200` the user cited belongs to `!`
+direct execution; this screenshot comes from ordinary agent bash, whose corresponding
+contract is `core/tools/bash.ts:248-306`: the detailed footer of the model result is
+retained, but the TUI strips it at `:251-255` and at `:292-306` produces only a single
+warning-colored `[Full output: ... Truncated: ...]`. Cadr already does the same
+layering at `src/cadr-cli/interactive/tool-rendering.lisp:331-376`; the model result,
+the session history, and the JSON/RPC wire were all left unmodified.
 
-`reachable-interfaces.json` 与 checker 现在把完备性扩成“界面 × 显著状态”。必需集合
-由 checker 独立持有，账本删除同一 state/domain 也会失败；每项必须有固定基线 token、
-确定性 trigger，以及有效 checkpoint 或明确不捕获理由。当前 7 项全部真实捕获、零
-豁免，触发和 checkpoint 见 `docs/render-diff.md`。新增场景把矩阵从 20×2/83 checkpoint
-扩为 21×2/89 checkpoint。旧门禁未捕获的直接原因是 20 个场景没有任何输出超过
-50KB 或 2,000 行，静态工具 result 测试又未经过真实 TUI 的“result footer + presentation
-warning”组合路径。
+`reachable-interfaces.json` and the checker now expand completeness into "interface ×
+significant state". The required set is held independently by the checker, and
+deleting the same state/domain from the ledger also fails; every item must have a
+fixed-baseline token, a deterministic trigger, and either a valid checkpoint or an
+explicit reason for not capturing. All 7 current items are really captured with zero
+exemptions; their triggers and checkpoints are in `docs/render-diff.md`. The new
+scenarios expand the matrix from 20×2/83 checkpoints to 21×2/89 checkpoints. The
+direct reason the old gate did not catch it is that none of the 20 scenarios had any
+output exceeding 50KB or 2,000 lines, and the static tool-result test did not go
+through the real TUI's combined "result footer + presentation warning" path.
 
-### 105.6% 上下文压缩查证（本轮不改代码）
+### 105.6% context compaction investigation (no code change this round)
 
-1. **独立尺寸裁剪：没有。** 基线 `compaction.ts:710-788` 通过 cut point 留住近期
-   `keepRecentTokens`，但 `:648-666` 会把其余 `messagesToSummarize` 整体序列化成单条
-   summary prompt，没有第二次按模型窗口裁剪。Cadr 同样以 cut point 留近期内容并在
-   `compaction.lisp:189-225` 一次发送 source entries；仅对每个 tool result 做 2,000
-   字符裁剪（`:109-114`），也没有全局 prompt budget。
-2. **触发阈值：272k 模型上一致。** 基线默认 reserve/keep 为 16,384/20,000
-   （`compaction.ts:132-136`），条件为 `contextTokens > contextWindow - reserveTokens`
-   （`:232-238`），即 272,000 窗口在 255,616 tokens、约 94.0% 触发。Cadr 默认值相同
-   （`runtime.lisp:39-43`），判断位于 `compaction.lisp:339-366`；其小窗口会把两个值
-   cap 到窗口四分之一，但 272k 不触发该 cap。看到 105.6% 不证明触发晚，更可能是
-   94% 后 compaction 已失败而原上下文按基线降级语义继续保留。
-3. **失败恢复：有有限重试，无缩小摘要的 fallback。** 基线所有 summary request
-   经 `completeSummarization` → `retryAssistantCall`（`compaction.ts:555-580`），使用
-   配置的 retry policy；耗尽后 threshold 只发 `Auto-compaction failed: ...`
-   （`agent-session.ts:2196-2211`）。context overflow 可 compact 后重试原 prompt 一次，
-   第二次 overflow 才提示减小上下文或换大窗口（`:1979-2011`）。Cadr 已有一次 overflow
-   compact-and-retry（`loop/agent-loop.lisp:73-101`），但 summary 调用
-   `compaction.lisp:205-225` 未走 retry wrapper；这是查证出的 parity gap。仅凭本次通用
-   provider error 无法判定是超窗还是瞬时错误，因此本轮不擅自修改；应另立补正把
-   summary retry 按基线接通，并保留“无二次裁剪/无降级摘要算法”的基线边界。
+1. **A separate size trim: none.** The baseline's `compaction.ts:710-788` retains the
+   recent `keepRecentTokens` through a cut point, but `:648-666` serializes the
+   remaining `messagesToSummarize` as a whole into a single summary prompt, with no
+   second trim against the model window. Cadr likewise retains recent content by a
+   cut point and sends the source entries in one go at `compaction.lisp:189-225`; it
+   only does a 2,000-character trim on each tool result (`:109-114`), and it has no
+   global prompt budget either.
+2. **Trigger threshold: identical on the 272k model.** The baseline's default
+   reserve/keep is 16,384/20,000 (`compaction.ts:132-136`), with the condition
+   `contextTokens > contextWindow - reserveTokens` (`:232-238`), i.e. a 272,000 window
+   triggers at 255,616 tokens, about 94.0%. Cadr's defaults are the same
+   (`runtime.lisp:39-43`) and the decision sits at `compaction.lisp:339-366`; its small
+   windows cap both values to a quarter of the window, but 272k does not trigger that
+   cap. Seeing 105.6% does not prove a late trigger; more likely compaction had
+   already failed after 94% and the original context is retained under the baseline's
+   degradation semantics.
+3. **Failure recovery: a bounded retry exists, a summary-shrinking fallback does
+   not.** All baseline summary requests go through `completeSummarization` →
+   `retryAssistantCall` (`compaction.ts:555-580`), using the configured retry policy;
+   once it is exhausted, threshold only emits `Auto-compaction failed: ...`
+   (`agent-session.ts:2196-2211`). A context overflow may compact and then retry the
+   original prompt once, and only a second overflow prompts to reduce the context or
+   switch to a larger window (`:1979-2011`). Cadr already has one overflow
+   compact-and-retry (`loop/agent-loop.lisp:73-101`), but the summary call
+   `compaction.lisp:205-225` does not go through the retry wrapper; this is the parity
+   gap the investigation found. This round's generic provider error alone cannot
+   determine whether it was a window overflow or a transient error, so nothing was
+   modified without authorization this round; a separate correction should be raised
+   to wire the summary retry through per the baseline, and to preserve the baseline
+   boundary of "no second trim / no degraded summary algorithm".
 
-### 补正提交与最终验证
+### Correction commits and final verification
 
-- `0ac0b054a`：普通 agent bash 的模型 result/TUI 呈现分层与原故障回归。
-- `79971ecac`：显著状态注册表、21 场景/89 checkpoint 矩阵、fail-closed 回归及
-  两条固定基线路径 identity disposition。产品身份门禁当前为 276 次命中、253 条
-  精确 disposition、1 个 digest-locked opaque 文件。
+- `0ac0b054a`: the model result/TUI presentation layering for ordinary agent bash, and
+  the regression for the original defect.
+- `79971ecac`: the significant-state registry, the 21-scenario/89-checkpoint matrix,
+  the fail-closed regressions, and the identity dispositions for the two fixed-baseline
+  paths. The product-identity gate is currently at 276 hits, 253 exact
+  dispositions, and 1 digest-locked opaque file.
 
-`./scripts/test-cl.sh` 在上述提交内容上独立运行：
+`./scripts/test-cl.sh` run independently on the content of those commits:
 
 ```text
 cadr test summary: systems=9 checks=14832 pass=14832 skip=0 fail=0
 ```
 
-`./scripts/verify.sh` 完整阶段汇总：
+`./scripts/verify.sh` complete stage summary:
 
-| 阶段 | 结果 |
+| Stage | Result |
 |---|---|
 | root cadr binary freshness | PASS |
 | code organization gate | PASS |
-| product identity gate | PASS（276 / 253 / 1 opaque） |
-| real source parity ledger | PASS（595） |
+| product identity gate | PASS (276 / 253 / 1 opaque) |
+| real source parity ledger | PASS (595) |
 | source parity drift self-test | PASS |
-| deterministic FiveAM | PASS（14,832/14,832） |
-| isolated cadr build | PASS（SBCL 无 core compression 时无压缩降级） |
-| isolated cadr-server build | PASS（SBCL 无 core compression 时无压缩降级） |
+| deterministic FiveAM | PASS (14,832/14,832) |
+| isolated cadr build | PASS (uncompressed degradation when SBCL has no core compression) |
+| isolated cadr-server build | PASS (uncompressed degradation when SBCL has no core compression) |
 | Goal 11 performance and stability gate | PASS |
 | native acceptance smoke | PASS |
 | native process modes | PASS |
 | migration PTY smoke | PASS |
 | Unix socket server smoke | PASS |
-| terminal lifecycle PTY | PASS（6/6） |
+| terminal lifecycle PTY | PASS (6/6) |
 | deterministic TUI harness | PASS |
-| fixed-baseline render differential | PASS（42/42；6 aligned；172/172 adjudicated） |
-| credential-gated FiveAM | PASS（7 pass / 1 Anthropic credential skip / 0 fail） |
+| fixed-baseline render differential | PASS (42/42; 6 aligned; 172/172 adjudicated) |
+| credential-gated FiveAM | PASS (7 pass / 1 Anthropic credential skip / 0 fail) |
 | DeepSeek live TUI | PASS |
 
-live 项目级统计为 8 项、7 run/pass、1 个 `ANTHROPIC_API_KEY is not set` skip；
-检查级统计为 32 checks / 31 pass / 1 skip / 0 fail。
+The live item-level statistics are 8 items, 7 run/pass, 1 `ANTHROPIC_API_KEY is not
+set` skip; the check-level statistics are 32 checks / 31 pass / 1 skip / 0 fail.
 
-提交实现后再次重建根二进制，新鲜度证据：
+The root binary was rebuilt again after the implementation was committed; freshness
+evidence:
 
 ```text
 binary build time: 2026-08-05 06:39:25.510688474 +0800

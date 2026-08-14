@@ -1,50 +1,63 @@
-# Goal 18 Part L：38 条 "new-server alignment" PENDING ADJUDICATION 一次性裁决提案（待裁决）
+# Goal 18 Part L: one-off adjudication proposal for the 38 "new-server alignment" 待裁决 rows
 
-状态：**待用户裁决。** re-anchor 至 v0.84.1 后，
-`docs/source-parity.md` 工作区出现 38 行 `有意差异` 与
-`PENDING ADJUDICATION` 并存（HEAD 51aed63d1 中为 0，均为本次升级新增），
-git 历史与既有提案中无对应裁决记录（I7 提案的 9 项既有挂起不含本组；
-goal18-l-runbook 前置裁决三项亦不含）。按"每行有裁决"的账本口径，
-本提案请用户一次性裁决这 38 行。
+Status: **pending user adjudication.** After the re-anchor to v0.84.1,
+38 rows in the `docs/source-parity.md` working tree carry `有意差异` and
+`PENDING ADJUDICATION` at the same time (0 of them in HEAD 51aed63d1; all of
+them added by this upgrade), and neither the git history nor the existing
+proposals holds a corresponding adjudication record (the 9 existing pending
+items of the I7 proposal do not include this group; nor do the three
+prerequisite adjudications of goal18-l-runbook). Under the ledger's convention
+that "every row has an adjudication", this proposal asks the user to adjudicate
+these 38 rows in one go.
 
-## 分组与范围
+## Grouping and scope
 
-五组共 38 行，全部属于 pi v0.84.1 的 **client/server 架构重写 +
-experimental CLI 脚手架**，cadr 侧均登记为 `有意差异`：
+Five groups, 38 rows in total, all belonging to pi v0.84.1's **client/server
+architecture rewrite + experimental CLI scaffolding**, and all registered as
+`有意差异` on the cadr side:
 
-| # | 组 | 行数 | source-parity.md 行 | 基线文件 |
+| # | Group | Rows | source-parity.md lines | Baseline files |
 |---|---|---|---|---|
 | 1 | experimental CLI scaffolding | 8 | 459–466 | `packages/coding-agent/src/cli/experimental/{auth,cli,command-options,command,commands/client,commands/pi,commands/server,transport-address}.ts` |
-| 2 | coding-agent client 面 | 3 | 473–475 | `packages/coding-agent/src/client/{index,remote-session,transcript}.ts` |
-| 3 | server harness / management HTTP | 2 | 615, 636 | `packages/coding-agent/src/server/create-harness.ts`、`packages/coding-agent/src/utils/management-http.ts` |
-| 4 | packages/server v0.84.1 rewrite | 15 | 773–788（775 行为 `已实现` 的 barrel 除外） | `connection,errors,listener,protocol,server,sessions,snapshots`、`testing/{client,index,server,service}`、`transports/unix/{index,listener,preset,types}.ts` |
+| 2 | coding-agent client surface | 3 | 473–475 | `packages/coding-agent/src/client/{index,remote-session,transcript}.ts` |
+| 3 | server harness / management HTTP | 2 | 615, 636 | `packages/coding-agent/src/server/create-harness.ts`, `packages/coding-agent/src/utils/management-http.ts` |
+| 4 | packages/server v0.84.1 rewrite | 15 | 773–788 (except line 775, the barrel whose verdict is `已实现`) | `connection,errors,listener,protocol,server,sessions,snapshots`, `testing/{client,index,server,service}`, `transports/unix/{index,listener,preset,types}.ts` |
 | 5 | packages/client v0.84.1 rewrite | 10 | 850–859 | `{client,connection,errors,index,promise,session-handle,state,transport,types,unix}.ts` |
 
-## 证据
+## Evidence
 
-- 全部 38 行的判定列均为 `有意差异`，映射列为
+- The verdict column of all 38 rows is `有意差异`, and the mapping column is
   `no cadr experimental CLI` / `no cadr remote-session client` /
-  `src/cadr-server/* (v0.83 architecture port)`，即 **cadr 维持 v0.83
-  session-server 架构，未移植 v0.84.1 的 client/server 重写**。
-- 验收标准 12 只要求"248 个改动文件已按第 1a 节分流"与四本账闭合，
-  未要求移植 client/server 重写；该重写是架构决策，非 Part L 的默认义务。
-- 既有裁决先例：goal 18 I7 提案的 9 项既有挂起（--resume、npm 源、
-  update --models、telemetry、-r 无参选择器、sentinel、--slynk/--no-tui
-  移除、废弃 URL、keybindings.json）已随 `USER-2026-08-10-001` 落账，
-  不覆盖本组；本组是新 re-anchor 暴露的类别，须单独裁决。
+  `src/cadr-server/* (v0.83 architecture port)`, that is, **cadr keeps the v0.83
+  session-server architecture and has not ported the v0.84.1 client/server rewrite**.
+- Acceptance criterion 12 requires only that "the 248 changed files have been
+  triaged per section 1a" and that the four ledgers close; it does not require
+  porting the client/server rewrite; that rewrite is an architectural decision,
+  not a default obligation of Part L.
+- Existing adjudication precedent: the 9 existing pending items of the goal 18
+  I7 proposal (--resume, the npm registry, update --models, telemetry, the
+  argument-less -r selector, the sentinel, the removal of --slynk/--no-tui,
+  the deprecated URL, keybindings.json) were recorded in the ledger along with
+  `USER-2026-08-10-001`, and do not cover this group; this group is a class
+  exposed by the new re-anchor, and must be adjudicated separately.
 
-## 请求裁决
+## Adjudication requested
 
-- 路线 A（推荐）：**维持 cadr 现有 v0.83 server 架构与无 experimental
-  CLI 的现状**，38 行全部记为 `有意差异`；证据列删除
-  `PENDING ADJUDICATION` 字样，改写为"用户 2026-08-12 裁决：
-  v0.84.1 client/server 重写与 experimental CLI 属架构级新增，cadr
-  维持 v0.83 server 架构；基线能力面差异已登记（new-server alignment
-  item）"，并保留基线 file:line 与映射说明。
-- 路线 B：部分或全部转入未实现/缺口清单并分期移植（需另行提案评估
-  v0.84.1 server 协议重写的工程量与验收面，本 goal 不默认承担）。
+- Route A (recommended): **keep cadr's existing v0.83 server architecture and
+  the current state of having no experimental CLI**, and record all 38 rows as
+  `有意差异`; delete the words `PENDING ADJUDICATION` from the evidence column
+  and rewrite it as "user adjudication 2026-08-12: the v0.84.1 client/server
+  rewrite and the experimental CLI are architecture-level additions, and cadr
+  keeps the v0.83 server architecture; the difference in the baseline
+  capability surface has been registered (new-server alignment item)", while
+  retaining the baseline file:line and the mapping explanation.
+- Route B: move some or all of them into the unimplemented/gap list and port
+  them in phases (this requires a separate proposal to assess the engineering
+  effort and the acceptance surface of the v0.84.1 server protocol rewrite,
+  which this goal does not undertake by default).
 
-裁决后按既有流程落账：改 `docs/source-parity.md` 证据列、重跑
-`check-source-parity-drift.sh --ledger-only`（670 条、SHA-256 必须不变
-或随账本同步）、在 open-questions 登记本裁决，随后继续收尾批次。
-
+After adjudication, record it in the ledger by the existing process: change the
+evidence column of `docs/source-parity.md`, re-run
+`check-source-parity-drift.sh --ledger-only` (670 rows; the SHA-256 must either
+stay unchanged or be synchronized with the ledger), register this adjudication
+in open-questions, and then continue with the wrap-up batches.

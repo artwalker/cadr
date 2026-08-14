@@ -1,155 +1,163 @@
-# Goal 8 终局验收包
+# Goal 8 final acceptance package
 
-Goal 8 的历史固定基线为
-`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`；
-Goal 9 起当前规范基线已升级为
-`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`。
-此前机械验收因 OAuth smoke 改写真实凭据身份而退回。2026-07-31 补正后
-必须重新完成本节；下列真实终端人工项仍须由用户逐项确认，项目才能进入
-维护态。
+Goal 8's historical fixed baseline is
+`earendil-works/pi@71efc6f0c1909874ec8c944637a9ae7fc0e2d508`;
+from Goal 9 on, the current normative baseline has been upgraded to
+`earendil-works/pi@74caa2649f10ed71b4378ce69f5d9fbfd2466ca5`.
+The earlier mechanical acceptance was sent back because the OAuth smoke rewrote
+the identity of the real credential. After the 2026-07-31 correction this
+section must be completed again; the real-terminal manual items below must still
+be confirmed by the user item by item before the project can enter maintenance
+state.
 
-## 机械验收
+## Mechanical acceptance
 
-- [x] parity-map：`351 C / 0 U / 0 M / 1 N/A`；唯一 N/A 为用户逐文件批准的
-  `packages/coding-agent/test/config.test.ts`。
-- [x] `./scripts/test-cl.sh`：`3043 checks / 3042 pass / 1 skip / 0 fail`；
-  唯一 skip 为本机无 `ANTHROPIC_API_KEY`。
-- [x] `./build.sh`：缺少 `sb-core-compression` 时降级成功；
-  `cadr 0.1.0`，65,348,488 bytes，mode 0755。
-- [x] `./build-server.sh`：同样降级成功；
-  `cadr-server 0.1.0`，57,155,288 bytes，mode 0755。
-- [x] `./scripts/acceptance-smoke.sh`：延迟持久化、`--continue`、精确
-  `--resume`。
-- [x] `./scripts/test-wave2-process-modes.sh`：text、自动 stdin、JSONL、
-  RPC intervention/UI/EOF、在服务端确认请求在途后执行 SIGTERM cleanup。
-- [x] `./scripts/migration-smoke.sh`：非交互 fail-closed、完整目录移动、
-  auth mode 0600、迁移后 continuation。
-- [x] `./scripts/server-smoke.sh`：真实 Unix socket 上
-  spawn/list/status/RPC/stop。
-- [x] `./scripts/goal5-manual-tui-smoke.sh`：overlay focus、CJK frame、
-  image fallback、resize、terminal restore。
-- [x] `test/cadr-ai/live-provider-test.lisp`：凭据门控 DeepSeek 精确响应、
-  stream 终态与 usage；无 Anthropic 凭据时按基线 skip。
-- [x] `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST`：
-  临时 auth/config、登录桩与 HTTP 桩确定性覆盖
-  `/login openai` → `openai-codex` 存储 → 默认模型解析 → Codex Responses；
-  同时断言未写入错误的 `openai` 身份。
-- [x] `test/cadr-cli/live-test.lisp`：DeepSeek 与 Codex 都在隔离 HOME 中
-  显式指定 provider/model；Codex 只逐字节复制真实 auth 文件作为凭据输入，
-  不读取用户 settings、session 或扩展。
-- [x] `test/cadr-evals/live-evals-test.lisp`：DeepSeek 与 Codex eval、
-  self-extension、repo read/edit/fail/fix/pass 均在 FiveAM 内凭据门控。
-- [x] `./scripts/live-tui-smoke.sh`：DeepSeek 两轮真实 TUI 编辑、resize、
-  CJK、autocomplete、undo、kill-ring、terminal restore。
-- [x] 无 Anthropic 凭据；对应 live block 按与基线相同的 credential gate
-  跳过，没有用 fixture 冒充 live。
-- [x] shell smoke 机制收敛：逐脚本审计、删除七个可内置 live 脚本、仅保留
-  五类边界的六个进程/终端 harness，且全部重新运行通过，见
-  [`goal-v8-smoke-audit.md`](goal-v8-smoke-audit.md)。
-- [x] 产品人工证据：真实 TUI `/login openai` 后不重启、不加参数直接发送提示；
-  `auth.json` 同时保留旧 `openai` 记录并新增 `openai-codex`，settings 为
-  `openai-codex/gpt-5.5`，同一 session 的 assistant 回复精确为
-  `OAUTH_TUI_DIRECT_OK`。该证据不作为自动 live 测试的输入。
-- [x] dependency audit：Wave 5/Part F 无新第三方依赖。
-- [x] extension export SHA：
-  `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`。
-- [x] 相对 Goal 8 开工提交，`src/cadr-tui` production diff 为空。
+- [x] parity-map: `351 C / 0 U / 0 M / 1 N/A`; the only N/A is
+  `packages/coding-agent/test/config.test.ts`, approved by the user file by file.
+- [x] `./scripts/test-cl.sh`: `3043 checks / 3042 pass / 1 skip / 0 fail`;
+  the only skip is that this machine has no `ANTHROPIC_API_KEY`.
+- [x] `./build.sh`: degrades successfully when `sb-core-compression` is missing;
+  `cadr 0.1.0`, 65,348,488 bytes, mode 0755.
+- [x] `./build-server.sh`: degrades successfully in the same way;
+  `cadr-server 0.1.0`, 57,155,288 bytes, mode 0755.
+- [x] `./scripts/acceptance-smoke.sh`: deferred persistence, `--continue`, exact
+  `--resume`.
+- [x] `./scripts/test-wave2-process-modes.sh`: text, automatic stdin, JSONL,
+  RPC intervention/UI/EOF, SIGTERM cleanup executed after the server side confirms the request is in flight.
+- [x] `./scripts/migration-smoke.sh`: non-interactive fail-closed, full directory
+  move, auth mode 0600, continuation after migration.
+- [x] `./scripts/server-smoke.sh`: spawn/list/status/RPC/stop over a real Unix
+  socket.
+- [x] `./scripts/goal5-manual-tui-smoke.sh`: overlay focus, CJK frame,
+  image fallback, resize, terminal restore.
+- [x] `test/cadr-ai/live-provider-test.lisp`: credential-gated exact DeepSeek
+  response, stream final state and usage; skipped per the baseline when there is no Anthropic credential.
+- [x] `LOGIN-OPENAI-TEMP-STORE-DEFAULT-RESOLVER-ROUTES-CODEX-REQUEST`:
+  temporary auth/config, and a login stub plus an HTTP stub deterministically cover
+  `/login openai` → `openai-codex` storage → default model resolution → Codex Responses;
+  it also asserts that the wrong `openai` identity was not written.
+- [x] `test/cadr-cli/live-test.lisp`: both DeepSeek and Codex specify
+  provider/model explicitly inside an isolated HOME; Codex only copies the real auth file byte for byte as the credential input,
+  and does not read the user's settings, sessions, or extensions.
+- [x] `test/cadr-evals/live-evals-test.lisp`: the DeepSeek and Codex evals,
+  self-extension, and repo read/edit/fail/fix/pass are all credential-gated inside FiveAM.
+- [x] `./scripts/live-tui-smoke.sh`: two rounds of real TUI editing against
+  DeepSeek, resize, CJK, autocomplete, undo, kill-ring, terminal restore.
+- [x] No Anthropic credential; the corresponding live block is skipped by the
+  same credential gate as the baseline, and no fixture was passed off as live.
+- [x] The shell smoke mechanism converged: a script-by-script audit, deletion of
+  seven live scripts that could be brought in-process, and keeping only the six process/terminal harnesses for
+  five classes of boundary, all of which were rerun and passed, see
+  [`goal-v8-smoke-audit.md`](goal-v8-smoke-audit.md).
+- [x] Product manual evidence: in a real TUI, after `/login openai`, a prompt was sent directly, without restarting and without adding arguments;
+  `auth.json` keeps the old `openai` record and adds `openai-codex`, settings are
+  `openai-codex/gpt-5.5`, and the assistant reply in the same session is exactly
+  `OAUTH_TUI_DIRECT_OK`. This evidence is not used as input to any automated live test.
+- [x] dependency audit: Wave 5/Part F has no new third-party dependency.
+- [x] extension export SHA:
+  `e0bcbf8c5f170efb99579fe6065579a8c2e93c7f1bd590b7502b08180ba54046`.
+- [x] Relative to the Goal 8 start commit, the `src/cadr-tui` production diff is empty.
 
-### 与此前“通过”的区别
+### Difference from the earlier "pass"
 
-此前 `live-openai-oauth-smoke.sh` 和 `live-evals-smoke.sh` 先复制
-`auth.json`，再用 `jq` 将 `openai` 键改名为 `openai-codex`；前者还显式
-传入 provider/model。该路径证明的只是“改名并覆盖默认值后能用”，不能证明
-`/login openai` 的产物或普通启动路径。两条旧 OAuth 通过结论现已撤回。
+Previously `live-openai-oauth-smoke.sh` and `live-evals-smoke.sh` first copied
+`auth.json`, then used `jq` to rename the `openai` key to `openai-codex`; the
+former also passed provider/model explicitly. That path proves only "it works
+after renaming and overriding the default value", and cannot prove the product of
+`/login openai` or the ordinary startup path. Both old OAuth pass conclusions are
+now withdrawn.
 
-本轮有效证据必须同时满足：
+This round's valid evidence must satisfy all of the following:
 
-1. 确定性层使用临时 auth/config 和网络桩覆盖 login change → 正确身份存储
-   → 默认模型解析 → Codex Responses，不读 homedir；
-2. live 层只以可用凭据门控，测试内显式指定 provider/model；CLI 的隔离
-   HOME 仅逐字节复制 auth 输入，不改键、不规范化；
-3. eval live 层注入显式 provider/model resolver；其 project、session 与
-   extension 继续使用 harness 自建的隔离目录；
-4. `cadr-ai` 两条 provider live 本来就只读环境凭据并显式构造 provider/model，
-   无需修改；
-5. 在用户当前 `openai-codex/gpt-5.6-luna` settings 下运行全量仍全绿，
-   且测试前后 settings 逐字段不变。
+1. the deterministic layer uses temporary auth/config and network stubs to cover
+   login change → correct identity storage → default model resolution → Codex
+   Responses, without reading the homedir;
+2. the live layer is gated only on credential availability, and the test
+   specifies provider/model explicitly; the CLI's isolated HOME only copies the
+   auth input byte for byte, without renaming keys and without normalizing;
+3. the eval live layer injects an explicit provider/model resolver; its project,
+   session, and extension continue to use the isolated directories the harness
+   builds itself;
+4. the two `cadr-ai` provider live tests already read only the environment
+   credential and construct provider/model explicitly, and need no change;
+5. running the full set under the user's current `openai-codex/gpt-5.6-luna`
+   settings is still all green, and settings are unchanged field by field before and after the tests.
 
-## 用户真实终端人工验收
+## User real-terminal manual acceptance
 
-在真实终端、真实仓库副本或容器内执行；不要对重要工作区直接做工具写入测试。
+Execute in a real terminal, in a real repository copy or in a container; do not run tool write tests directly against an important working tree.
 
-- [x] 启动与退出：启动 full-screen TUI；正常退出、Ctrl-C、挂起/恢复后
-  shell 回显、光标、粘贴与 termios 均恢复。
-  *永久门禁：`scripts/goal9-a2-pty.sh` 的 `normal`、`ctrl-c`、
-  `suspend-resume` 三个真实 PTY 场景。*
-- [x] 输入编辑：多行、CJK、emoji、宽字符换行；按词移动；history；
-  kill/yank/yank-pop；undo。
-  *永久门禁：
-  `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT`。*
-- [x] 补全：slash command、文件路径、`@`；键盘选择、取消、应用后 undo。
-  *永久门禁：
-  `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO`。*
-- [x] Overlay：session、tree、model、scoped-model、settings、trust 选择器；
-  双 overlay 焦点、CJK 边框、窄宽 resize 均正确。
-  *永久门禁：
-  `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS`。*
-- [x] 渲染：流式 text/thinking/tool、Markdown 列表/表格/代码/链接；
-  长内容折叠展开与状态栏 token/cache/cost。
-  *结构永久门禁：
-  `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS`；纯观感留给
-  Goal 9 Part B 的基线 A/B。*
-- [x] 图片：真实 Kitty/iTerm2 协议终端显示；不支持协议时 fallback；resize 后
-  旧 image placement 清理。
-  *（顾问代验，2026-07-31，PTY + 环境能力伪造）：无能力终端出 `[Image:` 占位且
-  零协议字节；`KITTY_WINDOW_ID=1` 下检出 `ESC _Ga=T,f=100,...,i=505` 传输序列；
-  `TERM_PROGRAM=iTerm.app` 下检出 `ESC ]1337;File=inline=1;width=12;...`；
-  重绘/退出检出 `a=d,d=I,i=505` 与 `a=d,d=A` 清理序列。*
-- [x] 工具：read/write/edit/bash/find/grep/ls 在隔离仓库默认直接执行，
-  无核心审批弹窗；错误、超时、截断与后续恢复可见。
-  *（顾问代验，2026-07-31，隔离 git 仓库 + 真实 DeepSeek 五场景）：ls/find/grep
-  定位 TODO；edit 将 `return a - b` 真实改写为 `return a + b`（磁盘核实）；
-  write 创建 test_calc.py 且 bash 运行 python3 通过；不存在文件的错误清晰回传；
-  500 行文件读取无异常。全程无 `[y/N]`/审批提示。*
-- [x] 会话：新建、命名、switch、branch、compact、export、退出后
-  `--continue` 与 `--resume`；两个分支内容不串线。
-  *永久门禁：
-  `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED`。*
-- [x] 扩展：加载、命令、tool、hook、reload；旧扩展兼容；custom UI/renderer；
-  reload 后旧 generation 正确 stale。
-  *永久门禁：
-  `GOAL9-A2-EXTENSION-WORKFLOW-COVERS-LEGACY-UI-RENDERERS-AND-STALE-RELOAD`。*
-- [x] 模式：`--print` 只输出最终文本；`--mode json` 每行合法 JSON；
-  `--mode rpc` request/response/event 与 extension UI 往返。
-  *永久门禁：
-  `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT`。*
-- [x] Server：一个终端运行 `cadr-server serve`，另一终端完成
-  spawn/list/status/rpc/rpc-stream/stop；服务重启后旧 online instance
-  收敛为 stopped。
-  *（顾问代验，2026-07-31，隔离 `CADR_SERVER_DIR` + 双进程）：serve 建立
-  Unix socket；spawn 返回 `status:"online"`（id 019fb654-…90cc）；`kill -9`
-  模拟崩溃后重启 serve，`list` 与 `status` 均收敛为 `status:"stopped"`。
-  spawn/list/status/rpc/stop 的常规路径另由 `./scripts/server-smoke.sh` 覆盖。*
-- [x] 安全立场：README 的默认 YOLO、容器隔离责任与可选审批 hook 示例符合
-  用户预期。
-  *（顾问核实，2026-07-31，机制对齐判定）：用户裁定此项属"机制与 pi 一致即可"，
-  无需主观判断。基线 `packages/coding-agent/README.md:499` 为 "**No permission
+- [x] Startup and exit: start the full-screen TUI; on normal exit, on Ctrl-C, and
+  after suspend/resume, shell echo, cursor, paste, and termios are all restored.
+  *Permanent gate: the three real PTY scenarios `normal`, `ctrl-c`, and
+  `suspend-resume` of `scripts/goal9-a2-pty.sh`.*
+- [x] Input editing: multi-line, CJK, emoji, wide-character wrapping; word-wise
+  movement; history; kill/yank/yank-pop; undo.
+  *Permanent gate:
+  `GOAL9-A2-INPUT-EDITOR-PTY-EVENTS-AND-VIRTUAL-SCREEN-COVER-FULL-CONTRACT`.*
+- [x] Completion: slash command, file path, `@`; keyboard selection, cancel, undo after applying.
+  *Permanent gate:
+  `GOAL9-A2-COMPLETION-PTY-EVENTS-SNAPSHOT-SELECTION-CANCEL-AND-UNDO`.*
+- [x] Overlay: the session, tree, model, scoped-model, settings, and trust selectors;
+  dual-overlay focus, CJK borders, and narrow/wide resize are all correct.
+  *Permanent gate:
+  `GOAL9-A2-OVERLAY-SELECTORS-FOCUS-CJK-AND-RESIZE-SNAPSHOTS`.*
+- [x] Rendering: streaming text/thinking/tool, Markdown lists/tables/code/links;
+  collapse and expand of long content, and status-bar token/cache/cost.
+  *Permanent structural gate:
+  `GOAL9-A2-FAUX-STREAM-RENDERING-STRUCTURE-AND-STATUS-SNAPSHOTS`; the purely perceptual part is left to
+  the baseline A/B of Goal 9 Part B.*
+- [x] Images: display in a real Kitty/iTerm2 protocol terminal; fallback when the protocol is unsupported; the old
+  image placement is cleaned up after a resize.
+  *(Verified by the advisor on the user's behalf, 2026-07-31, PTY + faked environment capabilities): a terminal without the capability emits the `[Image:` placeholder and
+  zero protocol bytes; under `KITTY_WINDOW_ID=1` the transmission sequence `ESC _Ga=T,f=100,...,i=505` was detected;
+  under `TERM_PROGRAM=iTerm.app` `ESC ]1337;File=inline=1;width=12;...` was detected;
+  on repaint/exit the cleanup sequences `a=d,d=I,i=505` and `a=d,d=A` were detected.*
+- [x] Tools: read/write/edit/bash/find/grep/ls execute directly by default in an isolated repository,
+  with no core approval popup; errors, timeouts, truncation, and the subsequent recovery are visible.
+  *(Verified by the advisor on the user's behalf, 2026-07-31, isolated git repository + five real DeepSeek scenarios): ls/find/grep
+  located the TODO; edit really rewrote `return a - b` into `return a + b` (verified on disk);
+  write created test_calc.py and bash ran python3 successfully; the error for a nonexistent file was returned clearly;
+  reading a 500-line file raised nothing. No `[y/N]`/approval prompt at any point.*
+- [x] Sessions: create, name, switch, branch, compact, export, and after exiting
+  `--continue` and `--resume`; the contents of the two branches do not bleed into each other.
+  *Permanent gate:
+  `GOAL9-A2-SESSION-WORKFLOWS-ARE-DETERMINISTIC-AND-BRANCHES-STAY-ISOLATED`.*
+- [x] Extensions: loading, commands, tool, hook, reload; legacy extension compatibility; custom UI/renderer;
+  the old generation is correctly stale after reload.
+  *Permanent gate:
+  `GOAL9-A2-EXTENSION-WORKFLOW-COVERS-LEGACY-UI-RENDERERS-AND-STALE-RELOAD`.*
+- [x] Modes: `--print` outputs only the final text; `--mode json` every line is valid JSON;
+  `--mode rpc` request/response/event and the extension UI round trip.
+  *Permanent gate:
+  `GOAL9-A2-PRINT-JSON-AND-RPC-MODES-COVER-THE-REAL-CONTRACT`.*
+- [x] Server: run `cadr-server serve` in one terminal and complete
+  spawn/list/status/rpc/rpc-stream/stop in another; after the service restarts the old online instance
+  converges to stopped.
+  *(Verified by the advisor on the user's behalf, 2026-07-31, isolated `CADR_SERVER_DIR` + two processes): serve established
+  the Unix socket; spawn returned `status:"online"` (id 019fb654-…90cc); after simulating a crash with `kill -9`
+  and restarting serve, both `list` and `status` converged to `status:"stopped"`.
+  The ordinary spawn/list/status/rpc/stop path is covered separately by `./scripts/server-smoke.sh`.*
+- [x] Security posture: the README's default YOLO, the container-isolation responsibility, and the optional approval-hook example meet
+  the user's expectations.
+  *(Verified by the advisor, 2026-07-31, mechanism-alignment verdict): the user adjudicated that this item is a matter of "the mechanism only needs to be consistent with pi",
+  requiring no subjective judgement. The baseline `packages/coding-agent/README.md:499` reads "**No permission
   popups.** Run in a container, or build your own confirmation flow with
-  extensions"；cadr README 为"无内置审批对话框、无核心 `--yolo` 模式，隔离靠容器
-  或等效沙箱，需要审批者通过 hook 扩展实现"，语义一致；`--approve`/`--no-approve`
-  的项目信任语义亦与基线对齐。*
+  extensions"; the cadr README reads "no built-in approval dialog, no core `--yolo` mode, isolation relies on a container
+  or an equivalent sandbox, and anyone who needs approval implements it through a hook extension" — semantically consistent; the project-trust semantics of
+  `--approve`/`--no-approve` are likewise aligned with the baseline.*
 
-## 人工验收项的处置（用户裁决，2026-07-31）
+## Disposition of the manual acceptance items (user adjudication, 2026-07-31)
 
-- 标注"顾问代验"的三项（图片、工具、Server）由用户授权顾问以自动化方式执行，
-  证据见上。
-- 安全立场一项由用户裁定为"机制与 pi 一致即可"，已核实一致。
-- **其余八项（启动与退出、输入编辑、补全、Overlay、渲染、会话、扩展、模式）
-  转入 Goal 9 Part A2，以 faux provider 与 PTY 驱动的确定性自动化测试覆盖，
-  进套件永久防退化**；机制与基线一致（基线 pi 的端到端验证同样使用 faux
-  provider，见 `packages/agent/test/e2e.test.ts`），禁止用真实 LLM 驱动。
-  其中无法自动化的纯观感判断并入 Goal 9 Part B 的 A/B 清单，由用户与基线 pi
-  并排比对时一次性确认。
+- The three items marked "verified by the advisor on the user's behalf" (images, tools, Server) were executed by the advisor in an automated way with the user's authorization,
+  the evidence being above.
+- The security-posture item was adjudicated by the user as "the mechanism only needs to be consistent with pi", and consistency has been verified.
+- **The remaining eight (startup and exit, input editing, completion, Overlay, rendering, sessions, extensions, modes)
+  move into Goal 9 Part A2, covered by deterministic automated tests driven by a faux provider and a PTY,
+  entering the suite as permanent protection against regression**; the mechanism is consistent with the baseline (the baseline pi's end-to-end verification likewise uses a faux
+  provider, see `packages/agent/test/e2e.test.ts`), and driving them with a real LLM is forbidden.
+  The purely perceptual judgements among them that cannot be automated are folded into Goal 9 Part B's A/B checklist, confirmed in one pass by the user
+  while comparing side by side with the baseline pi.
 
-因此 Goal 8 的关账条件为：本文机械验收全部通过 + 上述处置生效。八项行为验收
-的保障不因此减弱，而是升级为永久自动化；观感验收改由 Goal 9 Part B 承担。
+Goal 8's closeout condition is therefore: this document's mechanical acceptance passes in full + the disposition above takes effect. The guarantee behind the eight behavioral acceptance items
+is not weakened by this but upgraded to permanent automation; perceptual acceptance is instead borne by Goal 9 Part B.
