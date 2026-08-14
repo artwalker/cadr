@@ -326,19 +326,16 @@
       (if thinking-p
           (progn
             (setf (thinking-content-thinking current)
-                  (concatenate
-                   'string
-                   (thinking-content-thinking current)
-                   delta))
+                  (nappend-string
+                   (thinking-content-thinking current) delta))
             (when (non-empty-string-p
                    (json-get part "thoughtSignature"))
               (setf (thinking-content-signature current)
                     (json-get part "thoughtSignature"))))
           (progn
             (setf (text-content-text current)
-                  (concatenate 'string
-                               (text-content-text current)
-                               delta))
+                  (nappend-string
+                   (text-content-text current) delta))
             (when (non-empty-string-p
                    (json-get part "thoughtSignature"))
               (setf (text-content-signature current)

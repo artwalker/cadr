@@ -206,6 +206,38 @@ completed assistant message."))
   (terminal-p nil :type boolean)
   (current-block-index nil :type (or null (integer 0 *))))
 
+(defun nappend-string (buffer chunk)
+  "Append CHUNK onto BUFFER in amortized linear time.
+
+BUFFER may be NIL, a simple string, or an adjustable fill-pointer
+string. Returns the buffer to store back. Per-delta
+`concatenate 'string` of the whole accumulation is quadratic."
+  (let* ((addition (if (stringp chunk) chunk ""))
+         (add-length (length addition)))
+    (when (zerop add-length)
+      (return-from nappend-string (if (stringp buffer) buffer "")))
+    (let ((base
+            (if (and (stringp buffer)
+                     (array-has-fill-pointer-p buffer)
+                     (adjustable-array-p buffer))
+                buffer
+                (let* ((old (if (stringp buffer) buffer ""))
+                       (fresh
+                         (make-array (max 16 (* 2 (length old)))
+                                     :element-type 'character
+                                     :adjustable t
+                                     :fill-pointer (length old))))
+                  (replace fresh old)
+                  fresh))))
+      (let* ((start (fill-pointer base))
+             (needed (+ start add-length)))
+        (when (> needed (array-dimension base 0))
+          (adjust-array
+           base (max needed (* 2 (array-dimension base 0)))))
+        (setf (fill-pointer base) needed)
+        (replace base addition :start1 start)
+        base))))
+
 (defun require-api-key (provider)
   (let ((key (provider-api-key provider)))
     (unless (non-empty-string-p key)

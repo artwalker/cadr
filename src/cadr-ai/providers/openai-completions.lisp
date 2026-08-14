@@ -677,13 +677,12 @@
       (ecase type
         (:text
          (setf (text-content-text block)
-               (concatenate 'string
-                            (text-content-text block) delta)))
+               (nappend-string
+                (text-content-text block) delta)))
         (:thinking
          (setf (thinking-content-thinking block)
-               (concatenate 'string
-                            (thinking-content-thinking block)
-                            delta))))
+               (nappend-string
+                (thinking-content-thinking block) delta))))
       (emit-event emit
                   (ecase type
                     (:text :text-delta)
@@ -732,18 +731,11 @@
         (setf
          (gethash key
                   (provider-stream-state-partial-json state))
-         (concatenate
-          'string
+         (nappend-string
           (gethash key
                    (provider-stream-state-partial-json state)
                    "")
-         arguments))
-        (setf
-         (tool-call-arguments block)
-         (parse-streaming-json
-          (gethash key
-                   (provider-stream-state-partial-json state)
-                   "")))
+          arguments))
         (emit-event emit :tool-call-delta message
                     :content-index content-index
                     :delta arguments)))

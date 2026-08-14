@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=120927 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=120932 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -23,9 +23,9 @@ five mixed provider/authentication files with 25 exact owners. Silently
 retaining any earlier denominator would omit exactly the source boundaries this
 goal is supposed to police, so this ledger covers all 298 current files.
 
-- 293 Lisp files, 120,927 lines, 4,968 top-level definitions.
+- 293 Lisp files, 120,932 lines, 4,969 top-level definitions.
 - 5 static export assets, 4,275 lines.
-- 298 production files and 125,202 physical lines in total.
+- 298 production files and 125,207 physical lines in total.
 - A top-level definition is a column-zero form beginning with `def*` or
   `define-*`; static assets therefore have zero.
 - `pass` means one predictable responsibility; `pass · large` means the same but
@@ -39,10 +39,10 @@ Goal 20 Part I locked the Lisp-ification denominator on 2026-08-14 (UTC 2026-08-
 find src -name '*.lisp' | wc -l
 # 293
 find src -name '*.lisp' -print0 | sort -z | xargs -0 wc -l | tail -1
-# 120927 total
+# 120932 total
 ```
 
-Every current `src/**/*.lisp` row starts at `pending evaluation`. The five export assets are `n/a` (`n/a` is outside the closed state set) and are outside the Lisp-ification denominator. Line counts in this ledger are newline counts (`wc -l`); `highlight.min.js` has no trailing newline, so `physical_line_count` is one higher on that file only. Progress is `0/293` files, `0/120,927` lines. Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
+Every current `src/**/*.lisp` row starts at `pending evaluation`. The five export assets are `n/a` (`n/a` is outside the closed state set) and are outside the Lisp-ification denominator. Line counts in this ledger are newline counts (`wc -l`); `highlight.min.js` has no trailing newline, so `physical_line_count` is one higher on that file only. Progress is `0/293` files, `0/120,932` lines. Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
 
 The audit used file contents and top-level forms, not LOC alone.  In particular,
 large protocol codecs and generated/assets files remain intact, while smaller
@@ -132,17 +132,17 @@ files with unrelated facilities fail.
 | `src/cadr-ai/auth/github-copilot.lisp` | 66 | 3 | Parse GitHub device authorization and resolve Copilot endpoint/model metadata. | pass | pending evaluation | — | — |
 | `src/cadr-ai/auth/radius-cloudflare.lisp` | 115 | 4 | Validate Radius configuration and materialize Radius/Cloudflare endpoints. | pass | pending evaluation | — | — |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | 8 | Resolve Google Vertex credentials and exchange service-account access tokens. | pass | pending evaluation | — | — |
-| `src/cadr-ai/provider.lisp` | 767 | 74 | Define provider protocol classes plus common request, retry, history, stream, and error machinery. | pass · large | pending evaluation | — | — |
-| `src/cadr-ai/providers/anthropic.lisp` | 618 | 16 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | pass · large | pending evaluation | — | — |
-| `src/cadr-ai/providers/google.lisp` | 408 | 17 | Implement Google Generative AI request, thinking, response, and stream semantics. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/provider.lisp` | 799 | 75 | Define provider protocol classes plus common request, retry, history, stream, and error machinery. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/providers/anthropic.lisp` | 610 | 16 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/providers/google.lisp` | 405 | 17 | Implement Google Generative AI request, thinking, response, and stream semantics. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/providers/azure-openai.lisp` | 241 | 12 | Adapt Azure, Copilot, and Cloudflare OpenAI-compatible endpoints and headers. | pass | pending evaluation | — | — |
-| `src/cadr-ai/providers/bedrock.lisp` | 929 | 32 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/providers/bedrock.lisp` | 927 | 32 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/providers/codex.lisp` | 35 | 1 | Adapt the OpenAI Codex Responses request contract. | pass | pending evaluation | — | — |
 | `src/cadr-ai/providers/mistral.lisp` | 98 | 4 | Adapt Mistral Conversations reasoning and tool-call identifiers. | pass | pending evaluation | — | — |
-| `src/cadr-ai/providers/pi-messages.lisp` | 251 | 6 | Implement pi Messages request rewriting and event/response reduction. | pass | pending evaluation | — | — |
+| `src/cadr-ai/providers/pi-messages.lisp` | 254 | 6 | Implement pi Messages request rewriting and event/response reduction. | pass | pending evaluation | — | — |
 | `src/cadr-ai/providers/vertex.lisp` | 130 | 2 | Adapt Google Vertex endpoints and signed request construction. | pass | pending evaluation | — | — |
-| `src/cadr-ai/providers/openai-completions.lisp` | 859 | 31 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | pass · large | pending evaluation | — | — |
-| `src/cadr-ai/providers/openai.lisp` | 772 | 17 | Implement OpenAI Responses request, response, tool, reasoning, and stream semantics. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/providers/openai-completions.lisp` | 851 | 31 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | pass · large | pending evaluation | — | — |
+| `src/cadr-ai/providers/openai.lisp` | 763 | 17 | Implement OpenAI Responses request, response, tool, reasoning, and stream semantics. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/providers/definitions.lisp` | 1,035 | 14 | Validate and own the complete 38-provider declaration matrix and environment inputs. | pass · large | pending evaluation | — | — |
 | `src/cadr-ai/providers/registry.lisp` | 157 | 2 | Instantiate declared providers through the appropriate native protocol class. | pass | pending evaluation | — | — |
 | `src/cadr-ai/providers/runtime-projection.lisp` | 288 | 15 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | pass | pending evaluation | — | — |

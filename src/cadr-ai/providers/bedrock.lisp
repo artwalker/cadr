@@ -701,9 +701,8 @@
             index
             (provider-stream-state-current-block-index state)))
     (setf (text-content-text block)
-          (concatenate 'string
-                       (text-content-text block)
-                       delta))
+          (nappend-string
+           (text-content-text block) delta))
     (emit-event emit :text-delta message
                 :content-index index
                 :delta delta)))
@@ -720,9 +719,8 @@
             index
             (provider-stream-state-current-block-index state)))
     (setf (thinking-content-thinking block)
-          (concatenate 'string
-                       (thinking-content-thinking block)
-                       delta))
+          (nappend-string
+           (thinking-content-thinking block) delta))
     (emit-event emit :thinking-delta message
                 :content-index index
                 :delta delta)))
@@ -806,11 +804,8 @@
                   (when (typep block 'thinking-content)
                     (setf
                      (thinking-content-signature block)
-                     (concatenate
-                      'string
-                      (or
-                       (thinking-content-signature block)
-                       "")
+                     (nappend-string
+                      (or (thinking-content-signature block) "")
                       reasoning-signature))))))
              (tool
               (let* ((block-index
@@ -821,24 +816,19 @@
                        (and block-index
                             (nth block-index
                                  (assistant-message-content message))))
-                     (piece (or (json-get tool "input") ""))
-                     (partial
-                       (concatenate
-                        'string
-                        (or
-                         (gethash
-                          index
-                          (provider-stream-state-partial-json state))
-                         "")
-                        piece)))
+                     (piece (or (json-get tool "input") "")))
                 (when (typep block 'tool-call)
                   (setf
                    (gethash
                     index
                     (provider-stream-state-partial-json state))
-                   partial
-                   (tool-call-arguments block)
-                   (parse-partial-json-object partial))
+                   (nappend-string
+                    (or
+                     (gethash
+                      index
+                      (provider-stream-state-partial-json state))
+                     "")
+                    piece))
                   (emit-event emit :tool-call-delta message
                               :content-index block-index
                               :delta piece)))))))
@@ -853,6 +843,14 @@
                        (nth block-index
                             (assistant-message-content message)))))
            (when (typep block 'tool-call)
+             (let ((json
+                     (gethash
+                      index
+                      (provider-stream-state-partial-json state)
+                      "")))
+               (when (non-empty-string-p json)
+                 (setf (tool-call-arguments block)
+                       (parse-partial-json-object json))))
              (emit-event emit :tool-call-end message
                          :content-index block-index
                          :tool-call block))))

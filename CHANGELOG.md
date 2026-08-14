@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Provider SSE reducers append stream text, thinking, signatures, and
+  partial tool JSON with an amortized-linear buffer instead of
+  concatenating the whole prefix on every delta. Tool-argument JSON is
+  parsed when the block ends, not on each fragment.
+
 - Goal 20 Part O: `make-session-entry-id` seeds one random state per
   image instead of calling `make-random-state` on every attempt, which
   dominated `journal_append`.

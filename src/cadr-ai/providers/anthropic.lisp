@@ -525,43 +525,35 @@
                ((and block (string= delta-type "text_delta"))
                 (let ((text (or (json-get delta "text") "")))
                   (setf (text-content-text block)
-                        (concatenate 'string
-                                     (text-content-text block)
-                                     text))
+                        (nappend-string
+                         (text-content-text block) text))
                   (emit-event emit :text-delta message
                               :content-index content-index
                               :delta text)))
                ((and block (string= delta-type "thinking_delta"))
                 (let ((text (or (json-get delta "thinking") "")))
                   (setf (thinking-content-thinking block)
-                        (concatenate
-                         'string
-                         (thinking-content-thinking block)
-                         text))
+                        (nappend-string
+                         (thinking-content-thinking block) text))
                   (emit-event emit :thinking-delta message
                               :content-index content-index
                               :delta text)))
                ((and block (string= delta-type "signature_delta"))
                 (setf (thinking-content-signature block)
-                      (concatenate
-                       'string
+                      (nappend-string
                        (or (thinking-content-signature block) "")
                        (or (json-get delta "signature") ""))))
                ((and block (string= delta-type "input_json_delta"))
-                (let* ((fragment (or (json-get delta "partial_json") ""))
-                       (previous
-                         (gethash provider-index
-                                  (provider-stream-state-partial-json state)
-                                  "")))
+                (let ((fragment (or (json-get delta "partial_json") "")))
                   (setf (gethash
                          provider-index
                          (provider-stream-state-partial-json state))
-                        (concatenate 'string previous fragment))
-                  (setf (tool-call-arguments block)
-                        (parse-streaming-json
+                        (nappend-string
                          (gethash
                           provider-index
-                          (provider-stream-state-partial-json state))))
+                          (provider-stream-state-partial-json state)
+                          "")
+                         fragment))
                   (emit-event emit :tool-call-delta message
                               :content-index content-index
                               :delta fragment)))))))

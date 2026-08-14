@@ -177,24 +177,18 @@
                      :content-index index)))
       ((string= type "toolcall_delta")
        (let* ((piece (or (json-get data "delta") ""))
-              (partial
-                (concatenate
-                 'string
-                 (or (gethash
-                      index
-                      (provider-stream-state-partial-json state))
-                     "")
-                 piece))
               (block
                 (nth index
                      (assistant-message-content message))))
          (setf
           (gethash index
                    (provider-stream-state-partial-json state))
-          partial)
-         (when (typep block 'tool-call)
-           (setf (tool-call-arguments block)
-                 (parse-partial-json-object partial)))
+          (nappend-string
+           (or (gethash
+                index
+                (provider-stream-state-partial-json state))
+               "")
+           piece))
          (emit-event emit :tool-call-delta message
                      :content-index index
                      :delta piece)))
@@ -202,6 +196,15 @@
        (let ((block
                (nth index
                     (assistant-message-content message))))
+         (when (typep block 'tool-call)
+           (let ((json
+                   (gethash
+                    index
+                    (provider-stream-state-partial-json state)
+                    "")))
+             (when (non-empty-string-p json)
+               (setf (tool-call-arguments block)
+                     (parse-partial-json-object json)))))
          (emit-event emit :tool-call-end message
                      :content-index index
                      :tool-call block)))

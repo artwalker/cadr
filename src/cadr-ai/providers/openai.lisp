@@ -578,9 +578,8 @@
            (when (typep block 'text-content)
              (let ((delta (or (json-get payload "delta") "")))
                (setf (text-content-text block)
-                     (concatenate 'string
-                                  (text-content-text block)
-                                  delta))
+                     (nappend-string
+                      (text-content-text block) delta))
                (emit-event emit :text-delta message
                            :content-index content-index
                            :delta delta)))))
@@ -592,10 +591,8 @@
            (when (typep block 'thinking-content)
              (let ((delta (or (json-get payload "delta") "")))
                (setf (thinking-content-thinking block)
-                     (concatenate
-                      'string
-                      (thinking-content-thinking block)
-                      delta))
+                     (nappend-string
+                      (thinking-content-thinking block) delta))
                (emit-event emit :thinking-delta message
                            :content-index content-index
                            :delta delta)))))
@@ -605,10 +602,8 @@
            (when (typep block 'thinking-content)
              (let ((delta (format nil "~%~%")))
                (setf (thinking-content-thinking block)
-                     (concatenate
-                      'string
-                      (thinking-content-thinking block)
-                      delta))
+                     (nappend-string
+                      (thinking-content-thinking block) delta))
                (emit-event emit :thinking-delta message
                            :content-index content-index
                            :delta delta)))))
@@ -616,20 +611,16 @@
          (multiple-value-bind (block content-index)
              (openai-stream-block state output-index)
            (when (typep block 'tool-call)
-             (let* ((delta (or (json-get payload "delta") ""))
-                    (old (gethash
-                          output-index
-                          (provider-stream-state-partial-json state)
-                          "")))
+             (let ((delta (or (json-get payload "delta") "")))
                (setf (gethash
                       output-index
                       (provider-stream-state-partial-json state))
-                     (concatenate 'string old delta))
-               (setf (tool-call-arguments block)
-                     (parse-streaming-json
+                     (nappend-string
                       (gethash
                        output-index
-                       (provider-stream-state-partial-json state))))
+                       (provider-stream-state-partial-json state)
+                       "")
+                      delta))
                (emit-event emit :tool-call-delta message
                            :content-index content-index
                            :delta delta)))))
