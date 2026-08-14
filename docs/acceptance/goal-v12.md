@@ -319,7 +319,7 @@ product priority, not a re-verdict of a platform capability into intentional dif
   prove the fixture cross-implementation comparison and the integration
   branch, and claim no live verification.
 
-The goal regression is `595 = 523 implemented + 72 intentional difference + 0 暂缓/missing`,
+The goal regression is `595 = 523 implemented + 72 intentional difference + 0 deferred/missing`,
 reaching zero-deferral status for the first time.
 
 Mechanical acceptance:

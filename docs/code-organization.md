@@ -51,7 +51,7 @@ files with unrelated facilities fail.
 ## 2. Per-file ledger
 ### 2.1 `cadr-agent`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-agent/branch-summarization.lisp` | 187 | 11 | Prepare a session branch and ask the model for its branch summary. | pass | pending evaluation | — | — |
 | `src/cadr-agent/summarization.lisp` | 86 | 4 | Own the shared conversation-summary prompt, request, and retry contract. | pass | pending evaluation | — | — |
@@ -97,7 +97,7 @@ files with unrelated facilities fail.
 
 ### 2.2 `cadr-ai`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-ai/auth.lisp` | 204 | 16 | Serialize, atomically persist, redact, and refresh provider credentials. | pass | pending evaluation | — | — |
 | `src/cadr-ai/capabilities/event-stream.lisp` | 61 | 6 | Implement the producer/consumer event stream and terminal-result protocol. | pass | pending evaluation | — | — |
@@ -163,7 +163,7 @@ files with unrelated facilities fail.
 
 ### 2.3 `cadr-cli`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-cli/arguments.lisp` | 734 | 23 | Parse, validate, resolve, and document the CLI argument contract. | pass · large | pending evaluation | — | — |
 | `src/cadr-cli/bootstrap/auth.lisp` | 176 | 2 | Project provider-owned authentication options into the native CLI login command. | pass | pending evaluation | — | — |
@@ -282,7 +282,7 @@ files with unrelated facilities fail.
 
 ### 2.4 `cadr-evals`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-evals/artifacts.lisp` | 168 | 11 | Validate, hash, persist, and reference eval artifacts. | pass | pending evaluation | — | — |
 | `src/cadr-evals/harness-table.lisp` | 359 | 17 | Define eval harness rows/tables, canonical group keys, and iteration wrappers. | pass · large | pending evaluation | — | — |
@@ -295,7 +295,7 @@ files with unrelated facilities fail.
 
 ### 2.5 `cadr-protocol`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-protocol/cbor.lisp` | 508 | 37 | Encode and decode bounded RFC 8949 CBOR values. | pass · large | pending evaluation | — | — |
 | `src/cadr-protocol/codec.lisp` | 121 | 10 | Compose message validation, CBOR, and framing into incremental client/server codecs. | pass | pending evaluation | — | — |
@@ -305,7 +305,7 @@ files with unrelated facilities fail.
 
 ### 2.6 `cadr-server`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-server/config.lisp` | 45 | 6 | Resolve server state, auth, instance, and socket paths. | pass | pending evaluation | — | — |
 | `src/cadr-server/handler.lisp` | 101 | 1 | Dispatch one local server request to supervisor operations. | pass | pending evaluation | — | — |
@@ -321,14 +321,14 @@ files with unrelated facilities fail.
 
 ### 2.7 `cadr-storage`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-storage/package.lisp` | 19 | 1 | Declare the minimal SQLite adapter package. | pass | pending evaluation | — | — |
 | `src/cadr-storage/sqlite.lisp` | 12 | 3 | Wrap SQLite open, close, and migration operations. | pass | pending evaluation | — | — |
 
 ### 2.8 `cadr-tui`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-tui/autocomplete.lisp` | 592 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | pass · large | pending evaluation | — | — |
 | `src/cadr-tui/components/image.lisp` | 45 | 1 | Render image bytes or the baseline text fallback. | pass | pending evaluation | — | — |
@@ -382,7 +382,7 @@ files with unrelated facilities fail.
 
 ### 2.9 `cadr-core`
 
-| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |
+| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-core/atomic-file.lisp` | 106 | 8 | Atomically replace files with durability policy and private-mode enforcement. | pass | pending evaluation | — | — |
 | `src/cadr-core/cancellation.lisp` | 70 | 7 | Own the shared cancellable-state primitive and its thread-safe propagation. | pass | pending evaluation | — | — |

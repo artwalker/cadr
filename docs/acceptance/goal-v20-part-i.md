@@ -52,11 +52,11 @@ denominator is unaffected.
 
 Header now:
 
-`| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | 处理 goal |`
+`| Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |`
 
 Closed states: `pending evaluation` / `evaluated-rewrite needed` / `evaluated-no rewrite` / `rewriting` / `done`.
 
-| row kind | Lisp-ification status | evaluation verdict | 处理 goal |
+| row kind | Lisp-ification status | evaluation verdict | handling goal |
 |---|---|---|---|
 | every current `src/**/*.lisp` | `pending evaluation` | — | — |
 | five export assets | `n/a` | `Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate` | — |
