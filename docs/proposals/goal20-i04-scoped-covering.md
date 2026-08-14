@@ -1,7 +1,10 @@
 # Proposal: Goal 20 — scope I04 covering to approved identity pairs
 
-Status: **awaiting adjudication**. No gate criteria change in the commit
-that lands this file.
+Status: **accepted** (advisor, 2026-08-14; subject to user veto). The
+scoped-hunk rule and the v1 screen-pair table below are adopted, with the
+three corrections in "Adjudication" at the end of this file. No gate
+criteria changed in the commit that landed this file; the criteria change
+lands with the matcher, in its own commit, per "Enablement".
 
 This is a change of the render-diff obligation unit (development-policy
 §5.5). The hole it closes is the P0-1 root cause: 119 stray `m` glyphs
@@ -58,10 +61,16 @@ adjudicated=481`).
 | Of those, `textGeometryEqual` true (identity already collapsed by `normalized_screen`; remaining SHA diff is ANSI) | 160 |
 | Of those, `textGeometryEqual` false (visible text still differs; currently umbrellaeed by I04) | **194** |
 | I04 entry-groups (scenario+checkpoint) with any dimension `textGeometryEqual` false | 112 / 217 |
-| `textGeometryEqual` false results **without** I04 | **0** |
+| `textGeometryEqual` false results **without** I04, **within the requires-disposition population** | **0** |
 
-Every unmatched visible-text checkpoint in that snapshot is I04-covered.
-I02/I03/I05 never carry a text diff on their own.
+Within the requires-disposition population, every unmatched visible-text
+checkpoint in that snapshot is I04-covered. I02/I03/I05 never carry a text
+diff on their own.
+
+**The population qualifier is load-bearing** — see Correction 1 in the
+adjudication. Counting the whole snapshot instead gives 8, not 0; those 8
+are `aligned` (raw byte-identical) and never reach a verdict. Do not quote
+the `0` without the qualifier.
 
 Current-ledger I04 keys that are not in the snapshot (settings /
 cli-help / local-status sweeps, …) are **unmeasured**. They must be
@@ -235,3 +244,83 @@ commit.
 Adjudicate: accept the scoped-hunk rule and v1 table / change the
 table / reject in favor of a different covering test. Do not accept
 "keep the boolean OR and tighten the notes".
+
+## Adjudication (advisor, 2026-08-14; subject to user veto)
+
+**Accepted**: the scoped-hunk rule and the v1 screen-pair table, on the
+enablement order written above. Three corrections.
+
+Every ledger figure in this proposal was recounted independently before the
+ruling: entries 432, I04 283 (65.5%), expanded I04 keys 425, I04-only 1,
+I01+I04-only 268, I04 with another text-covering class 14; and on the
+snapshot, results 497, I04 354, of those textGeometryEqual false 194 and
+true 160, entry-groups 112/217. All match.
+
+### Correction 1 — "every unmatched visible-text key is I04-covered" is false as written
+
+Measured: **8** results have `textGeometryEqual` false without I04, not 0:
+`startup-existing`, `commands-and-exit` and `fatal-crash` at
+`process-exit` in both dimensions, plus `example-space-invaders/wide`
+`invaders-left` and `invaders-right`.
+
+The substantive conclusion survives, because all 8 are
+`automaticDisposition: aligned`, whose criterion is **raw byte equality**
+(`render-diff.py:3480`), and aligned keys never enter the disposition path
+at all (`:3508` excludes them from `required_keys`). Within the
+requires-disposition population, I04 really is the only umbrella.
+
+Reword the claim to name that population. This is not pedantry: the figure
+`0` will be quoted later to argue that the other classes need no scoping,
+and `0` only holds inside one population.
+
+### Correction 2 — the normalizer is side-asymmetric, and the proposed table sits on top of that
+
+`invaders-left` and `invaders-right` have **raw byte-identical** streams
+(`raw.equal` true) yet `screenEqual` false **and** `textGeometryEqual`
+false. Byte-identical implementations cannot differ in product behaviour,
+so `normalized_screen()` is producing different output from identical input
+depending on which side it is told it is normalizing.
+
+Harmless today — those keys are `aligned` and never reach a verdict. But
+the proposed screen-pair table is side-dependent by construction, so it
+adds a layer on top of an asymmetry that already exists.
+
+**Add self-test C before enabling**: apply the v1 table to a set of
+`raw.equal == true` keys and require the folded texts to still be equal. A
+and B prove the matcher goes red when it should. C proves it does *not* go
+red when it should not. C is the one that matters more here, because a
+false red creates pressure to loosen the matcher, and loosening it is
+exactly how this hole comes back.
+
+### Correction 3 — step 3 must disclose what deleting all whitespace admits
+
+Folding a hard wrap is legitimate: a wrap either breaks mid-word or turns a
+space into a newline, and both collapse the same way. But deleting *all*
+whitespace also admits differing indentation, padding, column alignment and
+blank-line counts. In a TUI those are not incidental — geometry is exactly
+what `docs/presentation-parity.md` records item by item.
+
+The rule stands; the proposal must state what it lets through and why that
+is acceptable (for instance: geometry is independently held by the
+presentation ledger, so this exit does not need to hold it a second time).
+Under development-policy §5, a human-judgement exit must disclose its own
+scope, and a newly written exit is not exempt from that.
+
+### Endorsed without change
+
+- Rejecting `docs/product-identity-allowlist.json` as the matcher. It is a
+  source-scan allowlist — exact path, line, token, occurrence count — and
+  most of its 634 findings never reach a screen. This overturned the
+  advisor's own initial lean, with the correct reason.
+- Disclosing the red count (121 keys / 52 stems / 31 scenarios) **before**
+  asking for approval.
+- Pre-committing the three things that must not be folded into I04:
+  viewport-slice alignment, example-extension entry filenames, and the
+  invaders HUD/sprite/help-line rewrites.
+- "Mining pairs from today's unmatched diffs is forbidden — that is how a
+  defect becomes a rename." This is the standing rule against deriving an
+  assertion from the implementation it is meant to check, correctly applied
+  here. Keep the sentence in the file: it is the ready-made counterexample
+  for the next person who wants to widen the table.
+- Enabling the matcher and declaring the tree green must not be the same
+  commit. The 121 reds are the gate-validity proof.
