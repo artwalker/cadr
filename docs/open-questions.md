@@ -6,6 +6,18 @@ must not enter implementation.
 
 Items awaiting adjudication:
 
+- `OQ-G20-UNDO-STACK-CAP`: **capping the editor undo stack**. Goal 20 queue
+  item 12G-1 proposed a depth cap because every push stores a full-buffer
+  `copy-tree` snapshot (`src/cadr-tui/undo-stack.lisp:7-10`). Executor
+  finding (2026-08-15): the baseline `UndoStack`
+  (`packages/tui/src/undo-stack.ts:11-13`) is **unbounded**, so a cap
+  changes user-visible undo depth — a behavioral divergence that must not
+  ship silently. Options: (a) keep parity (unbounded) and accept the
+  memory cost; (b) cap at a stated depth as an adjudicated intentional
+  difference; (c) bound by snapshot *bytes* rather than count, keeping
+  shallow-buffer sessions fully undoable. No implementation before
+  adjudication.
+
 - `OQ-G20-AGENT-EVAL-TOOL`: **a Lisp evaluation tool for the agent (not for
   humans)**. On 2026-08-13 the user raised "cadr is written in Lisp; could the
   REPL be used to change it while it runs, so as to raise development quality
