@@ -292,6 +292,47 @@
       (emit (length text)))
     (nreverse clusters)))
 
+(defun map-grapheme-spans (function text start end)
+  "Call FUNCTION with each grapheme span of TEXT between START and END as
+\(span-start span-end).  Same segmentation state machine as
+GRAPHEME-CLUSTERS, but no cluster strings are allocated (goal 20, 12F-2).
+The walk stops early when FUNCTION returns true."
+  (block nil
+    (let ((cluster-start start)
+          (index start)
+          (regional-count 0)
+          (join-next-p nil))
+      (loop while (< index end)
+            for character = (char text index)
+            do
+            (cond
+              ((= index cluster-start)
+               (setf regional-count
+                     (if (regional-indicator-p character) 1 0)))
+              ((or (and join-next-p
+                        (not (member character
+                                     '(#\Space #\Tab
+                                       #\Newline #\Return))))
+                   (combining-character-p character)
+                   (= (codepoint character) #x200d))
+               (when (regional-indicator-p character)
+                 (incf regional-count)))
+              ((and (regional-indicator-p character)
+                    (= regional-count 1))
+               (incf regional-count))
+              (t
+               (when (< cluster-start index)
+                 (when (funcall function cluster-start index)
+                   (return)))
+               (setf cluster-start index
+                     regional-count
+                     (if (regional-indicator-p character) 1 0))))
+            (setf join-next-p
+                  (= (codepoint character) #x200d))
+            (incf index))
+      (when (< cluster-start end)
+        (funcall function cluster-start end)))))
+
 (defun grapheme-width (cluster)
   (cond
     ((string= cluster (string #\Tab)) 3)
@@ -574,7 +615,7 @@
         (column 0)
         (width 0)
         (index 0)
-        (pending-ansi "")
+        (pending-ansi nil)
         (done-p nil))
     (values
      (with-output-to-string (output)
@@ -583,42 +624,44 @@
              for ansi-end = (ansi-sequence-end text index)
              do
              (if ansi-end
-                 (let ((code (subseq text index ansi-end)))
-                   (cond
-                     ((and (>= column start-column)
-                           (< column end-column))
-                      (write-string code output))
-                     ((< column start-column)
-                      (setf pending-ansi
-                            (concatenate
-                             'string pending-ansi code))))
+                 (progn
+                   (when (and (>= column start-column)
+                              (< column end-column))
+                     (write-string text output :start index :end ansi-end))
+                   (when (< column start-column)
+                     (push (subseq text index ansi-end) pending-ansi))
                    (setf index ansi-end))
-                 (let* ((next-ansi
-                          (or (position #\Escape text
-                                        :start index)
-                              (length text)))
-                        (fragment
-                          (subseq text index next-ansi)))
-                   (dolist (cluster (grapheme-clusters fragment))
-                     (let* ((cluster-width
-                              (grapheme-width cluster))
-                            (in-range-p
-                              (and (>= column start-column)
-                                   (< column end-column)))
-                            (fits-p
-                              (or (not strict-p)
-                                  (<= (+ column cluster-width)
-                                      end-column))))
-                       (when (and in-range-p fits-p)
-                         (when (plusp (length pending-ansi))
-                           (write-string pending-ansi output)
-                           (setf pending-ansi ""))
-                         (write-string cluster output)
-                         (incf width cluster-width))
-                       (incf column cluster-width)
-                       (when (>= column end-column)
-                         (setf done-p t)
-                         (return))))
+                 (let ((next-ansi
+                         (or (position #\Escape text
+                                       :start index)
+                             (length text))))
+                   (map-grapheme-spans
+                    (lambda (span-start span-end)
+                      (if done-p
+                          t
+                          (let* ((cluster-width
+                                   (grapheme-span-width
+                                    text span-start span-end))
+                                 (in-range-p
+                                   (and (>= column start-column)
+                                        (< column end-column)))
+                                 (fits-p
+                                   (or (not strict-p)
+                                       (<= (+ column cluster-width)
+                                           end-column))))
+                            (when (and in-range-p fits-p)
+                              (when pending-ansi
+                                (dolist (code (nreverse pending-ansi))
+                                  (write-string code output))
+                                (setf pending-ansi nil))
+                              (write-string text output
+                                            :start span-start
+                                            :end span-end)
+                              (incf width cluster-width))
+                            (incf column cluster-width)
+                            (when (>= column end-column)
+                              (setf done-p t)))))
+                    text index next-ansi)
                    (setf index next-ansi)))))
      width)))
 

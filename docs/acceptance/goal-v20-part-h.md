@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **293 files / 121,134 lines**
+Denominator: **293 files / 121,177 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 33 | 18,946 | 15.6% | `no worse than baseline` is falsifiable |
+| `paired` | 34 | 20,202 | 16.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.2% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,716 | 78.2% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 235 | 93,503 | 77.2% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 15.6% of lines (33 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 21.8% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 78.2% of lines.
+- **Falsifiable vs baseline:** 16.7% of lines (34 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 22.8% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 77.2% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -370,6 +370,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/terminal.lisp` | 882 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/unicode.lisp` | 1,256 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 
 ### 6.3 Pairable, not yet paired
 
@@ -396,7 +397,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/loop` | 4 | 1,486 |
 | `src/cadr-ai/runtime` | 2 | 1,438 |
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
-| `src/cadr-tui/unicode.lisp` | 1 | 1,213 |
 | `src/cadr-cli/support` | 13 | 1,168 |
 | `src/cadr-ai/transport` | 2 | 1,080 |
 | `src/cadr-cli/settings` | 3 | 910 |

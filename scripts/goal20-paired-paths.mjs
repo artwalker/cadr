@@ -129,6 +129,8 @@ const REPETITIONS = {
 	"storage_journal.journal_append": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
+	"render_slicing.slice_ansi_clip": 200,
+	"render_slicing.slice_plain_clip": 200,
 };
 const QUICK_DIVISOR = 20;
 
@@ -262,6 +264,7 @@ const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/cor
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
+const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 
 // Both sides render into a sink that only counts, so neither pays terminal
 // I/O and neither can win by writing less.
@@ -607,6 +610,33 @@ async function measureTextTruncation() {
 	};
 }
 
+async function measureRenderSlicing() {
+	const dense = Array.from(
+		{ length: 200 },
+		(_, i) => `\x1b[38;2;${(i * 37) % 256};${(i * 91) % 256};${(i * 53) % 256}mword${i}\x1b[0m `,
+	).join("");
+	const plain = "a".repeat(4000);
+	const denseClip = tuiUtilsModule.sliceWithWidth(dense, 40, 60, true);
+	const denseHead = tuiUtilsModule.sliceWithWidth(dense, 0, 80, true);
+	const plainClip = tuiUtilsModule.sliceWithWidth(plain, 100, 60, true);
+	return {
+		slice_ansi_clip: await collect("render_slicing.slice_ansi_clip", () => {
+			return () => tuiUtilsModule.sliceWithWidth(dense, 40, 60, true);
+		}),
+		slice_plain_clip: await collect("render_slicing.slice_plain_clip", () => {
+			return () => tuiUtilsModule.sliceWithWidth(plain, 100, 60, true);
+		}),
+		observed: {
+			dense_clip_text: denseClip.text,
+			dense_clip_width: denseClip.width,
+			dense_head_text: denseHead.text,
+			dense_head_width: denseHead.width,
+			plain_clip_text: plainClip.text,
+			plain_clip_width: plainClip.width,
+		},
+	};
+}
+
 // ---------------------------------------------------------------------------
 
 process.stderr.write("goal20 pi paired paths: cli_dispatch\n");
@@ -619,6 +649,8 @@ process.stderr.write("goal20 pi paired paths: storage_journal\n");
 const storageJournal = await measureStorageJournal();
 process.stderr.write("goal20 pi paired paths: text_truncation\n");
 const textTruncation = await measureTextTruncation();
+process.stderr.write("goal20 pi paired paths: render_slicing\n");
+const renderSlicing = await measureRenderSlicing();
 
 const result = {
 	schema_version: 1,
@@ -648,6 +680,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateTail",
+			"render_slicing.slice_ansi_clip": "packages/tui/src/utils.ts sliceWithWidth",
+			"render_slicing.slice_plain_clip": "packages/tui/src/utils.ts sliceWithWidth",
 		},
 	},
 	parameters: {
@@ -670,6 +704,7 @@ const result = {
 		session_pipeline: sessionPipeline,
 		storage_journal: storageJournal,
 		text_truncation: textTruncation,
+		render_slicing: renderSlicing,
 	},
 };
 

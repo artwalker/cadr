@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "denominator": {
     "files": 293,
-    "lines": 121134
+    "lines": 121177
   },
   "pairedMetrics": [
     "cli_dispatch.argv_parse",
@@ -18,7 +18,9 @@
     "goal11.wheel",
     "goal11.continuous_alt_input",
     "text_truncation.truncate_head",
-    "text_truncation.truncate_tail"
+    "text_truncation.truncate_tail",
+    "render_slicing.slice_ansi_clip",
+    "render_slicing.slice_plain_clip"
   ],
   "unpairablePaths": [
     {
@@ -162,6 +164,11 @@
       "prefix": "src/cadr-agent/truncate.lisp",
       "class": "paired",
       "metrics": ["text_truncation.truncate_head", "text_truncation.truncate_tail"]
+    },
+    {
+      "prefix": "src/cadr-tui/unicode.lisp",
+      "class": "paired",
+      "metrics": ["render_slicing.slice_ansi_clip", "render_slicing.slice_plain_clip"]
     },
     {
       "prefix": "src/cadr-agent/session/codec.lisp",

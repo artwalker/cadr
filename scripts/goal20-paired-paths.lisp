@@ -73,7 +73,9 @@
     ("storage_journal.journal_read" . 5)
     ("storage_journal.journal_append" . 3)
     ("text_truncation.truncate_head" . 50)
-    ("text_truncation.truncate_tail" . 50)))
+    ("text_truncation.truncate_tail" . 50)
+    ("render_slicing.slice_ansi_clip" . 200)
+    ("render_slicing.slice_plain_clip" . 200)))
 
 (defparameter *quick-divisor* 20)
 (defparameter *journal-append-entry-count* 128)
@@ -769,6 +771,43 @@
 
 ;;; ---------------------------------------------------------------------
 
+(defun slicing-fixtures ()
+  (values
+   (with-output-to-string (out)
+     (dotimes (i 200)
+       (format out "~C[38;2;~D;~D;~Dmword~D~C[0m "
+               #\Escape (mod (* i 37) 256) (mod (* i 91) 256)
+               (mod (* i 53) 256) i #\Escape)))
+   (make-string 4000 :initial-element #\a)))
+
+(defun measure-render-slicing ()
+  (multiple-value-bind (dense plain) (slicing-fixtures)
+    (multiple-value-bind (dense-text dense-width)
+        (cadr-tui:slice-with-width dense 40 60 t)
+      (multiple-value-bind (plain-text plain-width)
+          (cadr-tui:slice-with-width plain 100 60 t)
+        (multiple-value-bind (head-text head-width)
+            (cadr-tui:slice-with-width dense 0 80 t)
+          (json-object
+           "observed"
+           (json-object
+            "dense_clip_text" dense-text
+            "dense_clip_width" dense-width
+            "dense_head_text" head-text
+            "dense_head_width" head-width
+            "plain_clip_text" plain-text
+            "plain_clip_width" plain-width)
+           "slice_ansi_clip"
+           (collect "render_slicing.slice_ansi_clip"
+                    (lambda ()
+                      (lambda ()
+                        (cadr-tui:slice-with-width dense 40 60 t))))
+           "slice_plain_clip"
+           (collect "render_slicing.slice_plain_clip"
+                    (lambda ()
+                      (lambda ()
+                        (cadr-tui:slice-with-width plain 100 60 t))))))))))
+
 (defun provenance-json (staged-digests)
   (let ((project (namestring cl-user::*cadr-bench-project-directory*)))
     (json-object
@@ -795,7 +834,11 @@
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
-      "src/cadr-agent/truncate.lisp truncate-harness-tail")
+      "src/cadr-agent/truncate.lisp truncate-harness-tail"
+      "render_slicing.slice_ansi_clip"
+      "src/cadr-tui/unicode.lisp slice-with-width"
+      "render_slicing.slice_plain_clip"
+      "src/cadr-tui/unicode.lisp slice-with-width")
      "fixture_sha256" (fixture-digests-json)
      "source_revision"
      (handler-case
@@ -823,6 +866,8 @@
           (let ((storage (measure-storage-journal)))
             (format *error-output* "goal20 cadr paired paths: text_truncation~%")
             (let ((truncation (measure-text-truncation)))
+              (format *error-output* "goal20 cadr paired paths: render_slicing~%")
+              (let ((slicing (measure-render-slicing)))
             (json-object
              "kind" "cadr-goal20-part-h-paired-paths"
              ;; machine_instance / hostname are the field names
@@ -841,7 +886,8 @@
               "provider_stream" provider
               "session_pipeline" session
               "storage_journal" storage
-              "text_truncation" truncation)
+              "text_truncation" truncation
+              "render_slicing" slicing)
              "parameters"
              (json-object
               "journal_append_entry_count" *journal-append-entry-count*
@@ -857,7 +903,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))
+             "schema_version" 1)))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

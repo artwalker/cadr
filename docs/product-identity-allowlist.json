@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 640,
+  "expected_findings": 642,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4529,6 +4529,22 @@
       "line": "    # that cadr currently LOSES to pi on truncation (whole-content encode +",
       "occurrences": 1,
       "reason": "Ceiling comment records that cadr currently loses to the pinned baseline on truncation; Part O owns the ratchet."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: render_slicing\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H paired-path driver progress marker naming the pinned-baseline side; mirrors the existing per-group markers."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    # the 12F-2 span-iteration rewrite; pi still pays the quadratic",
+      "occurrences": 1,
+      "reason": "Ceiling comment records that the pinned baseline still pays the quadratic accumulation cadr removed in 12F-2."
     }
   ],
   "opaque_files": [

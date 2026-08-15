@@ -67,6 +67,7 @@ METRICS = {
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "text_truncation": ("truncate_head", "truncate_tail"),
+    "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
 }
 
 # Recorded cadr/pi median ratios plus headroom.  Observed spread over repeated
@@ -103,6 +104,12 @@ RATIO_CEILINGS = {
     # Ratchet down only.
     "text_truncation.truncate_head": 20.0,
     "text_truncation.truncate_tail": 18.0,
+    # cadr currently WINS here (2026-08-15 quick run: 0.26x / 0.21x) after
+    # the 12F-2 span-iteration rewrite; pi still pays the quadratic
+    # pendingAnsi concat.  1.5 follows the list_models_registry precedent:
+    # headroom above 1.0 so jitter cannot false-red a metric cadr leads.
+    "render_slicing.slice_ansi_clip": 1.5,
+    "render_slicing.slice_plain_clip": 1.5,
 }
 
 # Absolute allowance for the microsecond-scale metrics.  goal11's own limit
@@ -115,6 +122,14 @@ MICROSECOND_FLOOR_US = 10.0
 
 # Observed values that must be identical: same fixture in, same work done.
 OBSERVED_EXACT = {
+    "render_slicing": (
+        "dense_clip_text",
+        "dense_clip_width",
+        "dense_head_text",
+        "dense_head_width",
+        "plain_clip_text",
+        "plain_clip_width",
+    ),
     "text_truncation": (
         "content_bytes",
         "head_output_lines",
