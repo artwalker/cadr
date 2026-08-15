@@ -1,6 +1,6 @@
 # Gate denominators (Goal 20 Part M)
 
-<!-- GOAL20_TEST_CHECKS systems=9 checks=18554 pass=18554 skip=0 fail=0 -->
+<!-- GOAL20_TEST_CHECKS systems=9 checks=18555 pass=18555 skip=0 fail=0 -->
 
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
 `scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green
@@ -20,6 +20,7 @@ without that answer is an undeclared denominator.
 | `tool-result-diff.py` | Tool-result byte contract vs baseline | TUI chrome around those results | Listed tool results match after normalize | render-diff |
 | `event-diff.py` | Session event stream vs baseline | TUI | Listed events match | render-diff |
 | `goal11-performance-gate.py` | Absolute ceilings + 3 pi ratios | Self-history (Part A, not enabled); non-TUI packages | No ceiling breach; ratios hold on same-machine | Part A/H once enabled |
+| `check-source-parity-cadr-paths.py` | Every cadr-side mapping path in `source-parity.md` exists on disk; the rotten set equals `docs/source-parity-rotten-mappings.json` exactly | Line-number freshness of surviving mappings | No new rot enters, and every heal shrinks the record in the same commit | Part F mapping repairs |
 | `baseline-string-reachability.py` | Named baseline literals have a cadr producer | cadr-only leaks; "is this the right picture" | Each listed literal is live in the named file | cadr-visible-output-origin |
 | `cadr-visible-output-origin.py` | Unformatted Lisp tokens on cadr screens | Baseline-string presence | No NIL / `#<` / `#S(` on scanned cadr screens | FiveAM goal20-l-custom-entry-* |
 | `cadr-compile-warnings.py` | cadr-owned compile WARNING == 0; unallowlisted muffle | STYLE-WARNING fail-closed; notes; third-party | No new cadr WARNING | STYLE-WARNING ledger (count only) |

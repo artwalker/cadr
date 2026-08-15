@@ -1,0 +1,13 @@
+{
+  "comment": "Distinct rotten cadr-side paths in docs/source-parity.md. rottenOccurrences matches the ledger section-0 recompute count (one path can rot many rows).",
+  "rottenOccurrences": 108,
+  "rottenMappings": [
+    "src/cadr-cli/core-support.lisp",
+    "src/cadr-cli/interactive-services.lisp",
+    "src/cadr-cli/model-services.lisp",
+    "src/cadr-cli/package-manager.lisp",
+    "src/cadr-cli/sdk-services.lisp",
+    "src/cadr-cli/settings.lisp",
+    "src/cadr-cli/utilities.lisp"
+  ]
+}

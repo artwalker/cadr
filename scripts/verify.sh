@@ -349,6 +349,15 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "cadr-side mapping existence" \
+    python3 "$PROJECT_DIRECTORY/scripts/check-source-parity-cadr-paths.py" ||
+    DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "cadr-side mapping existence" "source parity drift self-test failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "summarization choke point adversarial self-test" \
     "$PROJECT_DIRECTORY/scripts/test-summarization-choke-point.sh" ||
     DETERMINISTIC_READY=0

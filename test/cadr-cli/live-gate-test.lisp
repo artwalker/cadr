@@ -210,6 +210,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
              "code organization gate"
              "real source parity ledger"
              "source parity drift self-test"
+             "cadr-side mapping existence"
              "summarization choke point"
              "deterministic FiveAM"
              "FiveAM check-count ledger"
