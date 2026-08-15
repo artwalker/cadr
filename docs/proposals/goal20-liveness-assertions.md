@@ -44,7 +44,7 @@ the capture writes one `{...}.timing.json`: an array of
 ## 2. Baseline re-capture: scope and cost
 
 - Scope: the **33 agent-turn scenarios** (the scenarios.json entries whose
-  actions drive a model turn; the remaining 37 startup/cli/commands
+  actions drive a model turn; the remaining 39 startup/cli/commands
   scenarios have no turn window and get no liveness assertion).
 - pi side: 33 scenarios × 2 dimensions = **66 re-captures** at the pinned
   baseline. The baseline cache `/tmp/cadr-render-diff-pi-53fa77ccd`

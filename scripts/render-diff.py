@@ -2054,6 +2054,54 @@ def credential_environment_variable_p(key: str) -> bool:
     }
 
 
+# Liveness timing sidecars (goal 20, queue 12E-1; proposal
+# docs/proposals/goal20-liveness-assertions.md). capture_side registers its
+# PTY master fd here; read_ready/drain then append one
+# [relative_seconds, chunk_bytes] entry per successful read. The registry is
+# keyed by fd and detached before close so that a reused fd can never append
+# to a finished capture — the 2026-08-15 pilot showed that tracking only
+# openpty polluted logs with 5.8MB of unrelated file reads after fd reuse.
+_TIMING_LOGS: dict[int, list[list[Any]]] = {}
+_TIMING_BASES: dict[int, float] = {}
+
+
+def timing_register(fd: int) -> None:
+    _TIMING_BASES.pop(fd, None)
+    _TIMING_LOGS[fd] = []
+
+
+def timing_detach(fd: int) -> list[list[Any]]:
+    _TIMING_BASES.pop(fd, None)
+    return _TIMING_LOGS.pop(fd, [])
+
+
+def timing_record(fd: int, chunk: bytes) -> None:
+    log = _TIMING_LOGS.get(fd)
+    if log is None or not chunk:
+        return
+    now = time.monotonic()
+    base = _TIMING_BASES.get(fd)
+    if base is None:
+        base = now
+        _TIMING_BASES[fd] = base
+    log.append([round(now - base, 6), len(chunk)])
+
+
+def validate_timing(entries: list[list[Any]], raw_length: int) -> None:
+    total = 0
+    previous = 0.0
+    for entry in entries:
+        moment, chunk_bytes = entry
+        if moment < previous:
+            raise HarnessFailure("timing sidecar timestamps moved backwards")
+        previous = moment
+        total += chunk_bytes
+    if total != raw_length:
+        raise HarnessFailure(
+            f"timing sidecar byte sum {total} does not match raw length {raw_length}"
+        )
+
+
 def read_ready(fd: int, output: bytearray, timeout: float, process: subprocess.Popen[bytes]) -> None:
     ready, _, _ = select.select([fd], [], [], timeout)
     if not ready:
@@ -2067,6 +2115,7 @@ def read_ready(fd: int, output: bytearray, timeout: float, process: subprocess.P
         if error.errno == errno.EIO:
             return
         raise
+    timing_record(fd, chunk)
     output.extend(chunk)
 
 
@@ -2083,6 +2132,7 @@ def drain(fd: int, output: bytearray) -> None:
             raise
         if not chunk:
             return
+        timing_record(fd, chunk)
         output.extend(chunk)
 
 
@@ -2509,7 +2559,7 @@ def capture_side(
     timeout: float,
     cadr_cache: Path | None = None,
     visible_sites: bool = False,
-) -> tuple[bytes, list[dict[str, Any]]]:
+) -> tuple[bytes, list[dict[str, Any]], list[list[Any]]]:
     side_root = sandbox / ("pi00" if side == "pi" else "cadr")
     home = side_root / "home"
     cwd = side_root / "workspace"
@@ -2533,6 +2583,7 @@ def capture_side(
     )
     master_fd, slave_fd = os.openpty()
     set_winsize(slave_fd, dimension["columns"], dimension["rows"])
+    timing_register(master_fd)
     output = bytearray()
     checkpoints: list[dict[str, Any]] = []
     process: subprocess.Popen[bytes] | None = None
@@ -2585,8 +2636,10 @@ def capture_side(
                 f"{side} driver exited {status}, expected {expected_exit}; transcript tail:\n{tail}"
             )
         checkpoints.append({"id": "process-exit", "offset": len(output), "status": status})
-        return bytes(output), checkpoints
+        timing = timing_detach(master_fd)
+        return bytes(output), checkpoints, timing
     finally:
+        timing_detach(master_fd)
         if process is not None and process.poll() is None:
             os.killpg(process.pid, signal.SIGKILL)
             process.wait()
@@ -3010,6 +3063,19 @@ def write_checkpoints(
     )
 
 
+def write_timing(
+    output_dir: Path,
+    scenario_id: str,
+    dimension_id: str,
+    side: str,
+    entries: list[list[Any]],
+) -> None:
+    stem = f"{scenario_id}.{dimension_id}.{side}"
+    (output_dir / f"{stem}.timing.json").write_text(
+        json.dumps(entries, separators=(",", ":")) + "\n", encoding="ascii"
+    )
+
+
 def annotate_normalized_offsets(
     checkpoints: list[dict[str, Any]], data: bytes, side: str, sandbox: Path
 ) -> None:
@@ -3043,7 +3109,7 @@ def capture(args: argparse.Namespace) -> int:
         captures: dict[str, bytes] = {}
         sides = ("pi", "cadr") if args.side == "both" else (args.side,)
         for side in sides:
-            raw, checkpoints = capture_side(
+            raw, checkpoints, timing = capture_side(
                 side,
                 baseline,
                 manifest_path,
@@ -3057,11 +3123,15 @@ def capture(args: argparse.Namespace) -> int:
             captures[side] = raw
             annotate_normalized_offsets(checkpoints, raw, side, sandbox)
             artifact_side = "pi.visible" if visible_sites and side == "pi" else side
+            validate_timing(timing, len(raw))
             write_capture(
                 args.output.resolve(), scenario["id"], args.dimension, artifact_side, raw
             )
             write_checkpoints(
                 args.output.resolve(), scenario["id"], args.dimension, artifact_side, checkpoints
+            )
+            write_timing(
+                args.output.resolve(), scenario["id"], args.dimension, artifact_side, timing
             )
             write_capture(
                 args.output.resolve(), scenario["id"], args.dimension,
@@ -3710,6 +3780,17 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure(
                 "screen normalization changed terminal replay geometry"
             )
+    validate_timing([[0.0, 4], [0.25, 6]], 10)
+    for bad_entries, bad_length in (
+        ([[0.0, 4]], 9),
+        ([[0.25, 4], [0.0, 6]], 10),
+    ):
+        try:
+            validate_timing(bad_entries, bad_length)
+        except HarnessFailure:
+            pass
+        else:
+            raise HarnessFailure("validate_timing accepted a corrupt timing sidecar")
     replay_roots = [args.output / "replay-1", args.output / "replay-2"]
     for replay_root in replay_roots:
         subprocess.run(
@@ -3728,6 +3809,15 @@ def self_test(args: argparse.Namespace) -> int:
         for path in raw_files:
             if b"\x1b[" not in path.read_bytes():
                 raise HarnessFailure(f"capture omitted ANSI bytes: {path}")
+        timing_files = sorted(replay_root.glob("conversation-content.wide.*.timing.json"))
+        if len(timing_files) != 2:
+            raise HarnessFailure(
+                f"expected two timing sidecars, found {len(timing_files)}"
+            )
+        for timing_path in timing_files:
+            replay_timing = json.loads(timing_path.read_text(encoding="ascii"))
+            raw_companion = replay_root / timing_path.name.replace(".timing.json", ".raw")
+            validate_timing(replay_timing, len(raw_companion.read_bytes()))
     raw_equal = compare_replays(
         manifest,
         find_scenario(manifest, "conversation-content"),
