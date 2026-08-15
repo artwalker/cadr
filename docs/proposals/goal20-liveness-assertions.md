@@ -133,14 +133,20 @@ part of this proposal's enablement.
 
 ## Enablement (ordered)
 
+**Amended by the adjudication below: silence injection is step 2, not a
+follow-up.** The list here is what gets executed, so the change lands here
+rather than only in the ruling at the end of the file.
+
 1. Timing sidecar + offset mapping + self-test coverage (no assertion
-   yet; deterministic, additive).
-2. Full 66-capture pi re-measurement; publish the per-scenario
-   distribution table in the acceptance report.
-3. Per-scenario N_i adjudicated from that table (§3 rule).
-4. Statistical liveness stage in `scripts/verify.sh` (§4 shape).
-5. Follow-up, separately proposed: silence-injection scenario for
-   first-token latency (the actual P0-4 shape).
+   yet; deterministic, additive). — **done, `f234344f7`**
+2. **Silence-injection scenario**: a turn whose faux stream withholds its
+   first token past the intended N. Red before the fix, green after — the
+   gate-validity proof. **This is the P0-4 shape; without it the gate is a
+   rhythm regression lock and must be named as one.**
+3. Full 66-capture pi re-measurement, **including the step-2 scenario**;
+   publish the per-scenario distribution table in the acceptance report.
+4. Per-scenario N_i adjudicated from that table (§3 rule).
+5. Statistical liveness stage in `scripts/verify.sh` (§4 shape).
 
 ## Adjudication (advisor, 2026-08-15; subject to user veto)
 
