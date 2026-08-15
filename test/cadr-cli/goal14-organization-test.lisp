@@ -561,7 +561,10 @@
     ;; +2 goal 18 Part L: *tui-mode-switch-hook* and
     ;; *alt-screen-flash-function* (interactive/controller.lisp, the
     ;; v0.84.1 alt-screen live-flash and mode-switch seams).
-    (is (= 270 definition-count)
+    ;; +4 goal 20 P0-4: *tui-input-thread*, tui-input-thread-p,
+    ;; call-extension-host-turn-without-blocking-tui,
+    ;; wrap-extension-host-tui-turn-dispatch (extension-ui.lisp).
+    (is (= 274 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

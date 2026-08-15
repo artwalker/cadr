@@ -412,6 +412,8 @@ interactive-mode.ts:5956-5960).")
          (done-p nil)
          (last-clear-at nil)
          (worker nil)
+         (extension-prompt-worker nil)
+         (unwrap-tui-turn-dispatch nil)
          (version-update-worker nil)
          (package-update-worker nil)
          (session-loader-worker nil)
@@ -2614,6 +2616,19 @@ interactive-mode.ts:5956-5960).")
       (when set-extension-ui-function
         (funcall set-extension-ui-function
                  #'extension-ui-call))
+      (when extension-host
+        (setf
+         unwrap-tui-turn-dispatch
+         (wrap-extension-host-tui-turn-dispatch
+          extension-host
+          (lambda (thunk)
+            (setf
+             extension-prompt-worker
+             (sb-thread:make-thread
+              (lambda ()
+                (call-with-tui-command-error-notice
+                 thunk #'show-error))
+              :name "cadr-tui-extension-prompt"))))))
       (when version-update-check-function
         (setf
          version-update-worker
@@ -2643,6 +2658,8 @@ interactive-mode.ts:5956-5960).")
                    (cadr-tui:renderer-flash renderer message)
                    (request-render))))
       (unwind-protect
+           (let ((*tui-input-thread*
+                   sb-thread:*current-thread*))
            (cadr-tui:call-with-terminal
             terminal
             (lambda ()
@@ -2818,10 +2835,12 @@ interactive-mode.ts:5956-5960).")
             :after-stop
             (lambda ()
               (cadr-tui:renderer-after-stop
-               renderer)))
+               renderer))))
         (setf *tui-mode-switch-hook* nil
               *alt-screen-flash-function* nil)
         (finish-custom-ui nil)
+        (when unwrap-tui-turn-dispatch
+          (funcall unwrap-tui-turn-dispatch))
         (when terminal-progress-active-p
           (set-terminal-progress-state nil))
         (stop-tui-render-coordinator
@@ -2832,6 +2851,14 @@ interactive-mode.ts:5956-5960).")
           (when abort-function
             (funcall abort-function))
           (stop-thread-for-cleanup worker))
+        (when
+            (and extension-prompt-worker
+                 (sb-thread:thread-alive-p
+                  extension-prompt-worker))
+          (when abort-function
+            (funcall abort-function))
+          (stop-thread-for-cleanup
+           extension-prompt-worker))
         (when
             (and session-loader-worker
                  (sb-thread:thread-alive-p

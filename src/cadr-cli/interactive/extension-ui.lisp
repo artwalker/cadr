@@ -688,3 +688,75 @@ injects the TUI render request when the component is shown."))
             :visible-p t))
           width rows)
          cursor-row cursor-column)))))
+
+(defvar *tui-input-thread* nil
+  "The thread that owns `run-tui`'s input/render loop. send-message
+with trigger-turn must not call agent-prompt on this thread: the loop
+only flush-renders after each input read, so a blocking turn freezes
+the screen (goal 20 P0-4).")
+
+(defun tui-input-thread-p ()
+  (and *tui-input-thread*
+       (eq sb-thread:*current-thread* *tui-input-thread*)))
+
+(defun call-extension-host-turn-without-blocking-tui
+    (start-turn-function thunk)
+  "Run THUNK via START-TURN-FUNCTION when called from the TUI input
+thread; otherwise run it inline. START-TURN-FUNCTION receives a
+zero-argument function."
+  (if (tui-input-thread-p)
+      (funcall start-turn-function thunk)
+      (funcall thunk)))
+
+(defun wrap-extension-host-tui-turn-dispatch
+    (host start-turn-function)
+  "Make trigger-turn send-message/send-user-message return before the
+LLM turn finishes when invoked from the TUI input thread.
+
+Baseline `sendCustomMessage` is async; tic-tac-toe.ts does not await
+it, so the TUI keeps painting streaming text and tool blocks. Cadr's
+API is synchronous, so the same call used to run `agent-prompt` on the
+input thread and hold `flush-render` for the whole turn.
+
+Returns a restorer that puts the previous host functions back."
+  (let ((previous-send
+          (cadr-agent::extension-host-send-message-function host))
+        (previous-user
+          (cadr-agent::extension-host-send-user-message-function
+           host)))
+    (when previous-send
+      (setf
+       (cadr-agent::extension-host-send-message-function host)
+       (lambda (message &key trigger-turn-p deliver-as)
+         (if (and trigger-turn-p (null deliver-as) (tui-input-thread-p))
+             (progn
+               (call-extension-host-turn-without-blocking-tui
+                start-turn-function
+                (lambda ()
+                  (funcall previous-send message
+                           :trigger-turn-p t
+                           :deliver-as nil)))
+               message)
+             (funcall previous-send message
+                      :trigger-turn-p trigger-turn-p
+                      :deliver-as deliver-as)))))
+    (when previous-user
+      (setf
+       (cadr-agent::extension-host-send-user-message-function host)
+       (lambda (content &key deliver-as)
+         (if (and (null deliver-as) (tui-input-thread-p))
+             (progn
+               (call-extension-host-turn-without-blocking-tui
+                start-turn-function
+                (lambda ()
+                  (funcall previous-user content :deliver-as nil)))
+               content)
+             (funcall previous-user content
+                      :deliver-as deliver-as)))))
+    (lambda ()
+      (setf
+       (cadr-agent::extension-host-send-message-function host)
+       previous-send
+       (cadr-agent::extension-host-send-user-message-function host)
+       previous-user)
+      nil)))

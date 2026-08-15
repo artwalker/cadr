@@ -287,3 +287,79 @@
 (test goal20-qna-empty-assistant
   (let ((source (goal20-example-source "examples/extensions/qna.lisp")))
     (is (search "No assistant messages found" source))))
+
+(test goal20-p0-4-ttt-move-renderer-paints-compact-banner
+  ;; Goal 20 P0-4: the move customType is registered, but a missing
+  ;; renderer falls back to the LLM content (full ASCII board). The
+  ;; baseline paints BannerMessageComponent (tic-tac-toe.ts:685-692).
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/tic-tac-toe.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((host (cadr-cli::cli-extension-manager-host manager))
+               (entry
+                 (cadr-cli::make-tui-entry
+                  :type :custom-message
+                  :custom-type "tic-tac-toe-move"
+                  :custom-payload
+                  (list :custom-type "tic-tac-toe-move"
+                        :content
+                        "Player X played at (row=0, col=1). It is now Player O's turn."
+                        :details (list :current-turn "O")
+                        :display-p t)
+                  :custom-options '(:expanded-p nil :output-pad 1))))
+          (is (not
+               (null
+                (cadr-agent::find-extension-message-renderer
+                 host "tic-tac-toe-move"))))
+          (let ((screen
+                  (format
+                   nil "~{~A~^~%~}"
+                   (cadr-cli::render-tui-entry
+                    entry 80 :extension-host host))))
+            (is (search "Player X played" screen))
+            (is (search "next:" screen))
+            (is (null (search "played at (row=" screen)))
+            (is (null (search "-----+-----" screen)))))))))
+
+(test goal20-p0-4-trigger-turn-does-not-block-tui-input-thread
+  ;; Gate-validity: without the wrap, a 0.3s send-message would hold the
+  ;; caller (the TUI input loop) and freeze flush-render. With the wrap
+  ;; the caller returns before the turn finishes.
+  (let* ((finished-p nil)
+         (host (cadr-agent::make-extension-host :mode :tui))
+         (worker nil))
+    (setf (cadr-agent::extension-host-send-message-function host)
+          (lambda (message &key trigger-turn-p deliver-as)
+            (declare (ignore deliver-as))
+            (when trigger-turn-p
+              (sleep 0.25)
+              (setf finished-p t))
+            message))
+    (cadr-cli::wrap-extension-host-tui-turn-dispatch
+     host
+     (lambda (thunk)
+       (setf worker
+             (sb-thread:make-thread
+              thunk :name "goal20-p0-4-dispatch"))))
+    (let ((cadr-cli::*tui-input-thread* sb-thread:*current-thread*)
+          (start (get-internal-real-time)))
+      (funcall
+       (cadr-agent::extension-host-send-message-function host)
+       '(:custom-type "x" :content "y" :display-p t)
+       :trigger-turn-p t)
+      (is (< (/ (- (get-internal-real-time) start)
+                internal-time-units-per-second)
+             0.1d0)
+          "trigger-turn blocked the TUI input thread")
+      (is (null finished-p)))
+    (when worker
+      (sb-thread:join-thread worker))
+    (is (not (null finished-p)))))

@@ -431,18 +431,85 @@ exactly that duplication."
          (funcall (tic-tac-toe-component-done component) nil)))))
   (values nil nil))
 
+(defun tic-tac-toe-theme-fg (theme token text)
+  (let ((fg (getf theme :fg)))
+    (if (functionp fg)
+        (funcall fg token text)
+        text)))
+
+(defun tic-tac-toe-theme-bold (theme text)
+  (let ((bold (getf theme :bold)))
+    (if (functionp bold)
+        (funcall bold text)
+        text)))
+
+(defclass tic-tac-toe-banner-message (cadr-tui:component)
+  ((title :initarg :title :reader tic-tac-toe-banner-title)
+   (details :initarg :details :reader tic-tac-toe-banner-details)
+   (expanded-p :initarg :expanded-p :initform nil
+               :reader tic-tac-toe-banner-expanded-p)
+   (theme :initarg :theme :initform nil
+          :reader tic-tac-toe-banner-theme)))
+
+(defun tic-tac-toe-move-banner-title (details theme)
+  "Baseline BannerMessageComponent title (tic-tac-toe.ts:685-692)."
+  (let* ((turn (or (getf details :current-turn) "O"))
+         (agent-p (string= turn "O"))
+         (turn-label
+           (format nil "~A (~A)"
+                   (tic-tac-toe-theme-fg
+                    theme
+                    (if agent-p :warning :accent)
+                    (tic-tac-toe-theme-bold theme (if agent-p "O" "X")))
+                   (if agent-p "Agent" "You"))))
+    (format nil "~A  ~A  next: ~A"
+            (tic-tac-toe-theme-fg
+             theme :accent
+             (tic-tac-toe-theme-bold theme "Player X played"))
+            (tic-tac-toe-theme-fg theme :dim "→")
+            turn-label)))
+
+(defmethod cadr-tui:component-render
+    ((component tic-tac-toe-banner-message) width &key focused-p)
+  (declare (ignore focused-p))
+  (let* ((theme (tic-tac-toe-banner-theme component))
+         (title (tic-tac-toe-banner-title component))
+         (title-width (cadr-tui:visible-width title))
+         (fill (max 0 (- width title-width 2)))
+         (left (floor fill 2))
+         (right (- fill left))
+         (rule (lambda (n)
+                 (tic-tac-toe-theme-fg
+                  theme :dim
+                  (make-string n :initial-element #\─))))
+         (lines
+           (list
+            (format nil "~A ~A ~A"
+                    (funcall rule left) title (funcall rule right)))))
+    (if (and (tic-tac-toe-banner-expanded-p component)
+             (tic-tac-toe-banner-details component))
+        (let ((state
+                (tic-tac-toe-state-from-data
+                 (tic-tac-toe-banner-details component))))
+          (append
+           lines
+           (list "")
+           (uiop:split-string
+            (tic-tac-toe-board-ascii (or state *tic-tac-toe-state*))
+            :separator '(#\Newline))))
+        lines)))
+
 (cadr-agent:define-component-message-renderer
  +tic-tac-toe-move-type+
  :renderer
  (lambda (message options theme)
-   (declare (ignore theme))
-   (let ((state (or (tic-tac-toe-state-from-data (getf message :details))
-                    *tic-tac-toe-state*)))
-     (if (getf options :expanded-p)
-         (make-instance 'tic-tac-toe-board-component
-                        :state state :agent-view-p t)
-         (cadr-tui:make-text-component
-          "Player X played → next: O (Agent)" :padding-x 0 :padding-y 0)))))
+   (let ((details (getf message :details)))
+     (make-instance
+      'tic-tac-toe-banner-message
+      :title (tic-tac-toe-move-banner-title details theme)
+      :details details
+      :expanded-p (getf options :expanded-p)
+      :theme theme))))
 
 (cadr-agent:define-component-message-renderer
  +tic-tac-toe-game-over-type+

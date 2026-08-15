@@ -328,3 +328,31 @@ wrapping.
 
 All eleven implementation clusters are closed.  The final presentation ledger
 is `123 = 119 aligned/closed + 0 open + 4 intentional`.
+
+## Live-terminal gap (goal 20 P0-4, 2026-08-15)
+
+User A/B of `/tic-tac-toe` against a live model. Baseline screenshot during
+the agent's turn shows, above the board overlay:
+
+1. Compact move banner `Player X played → next: O (Agent)` (custom
+   message renderer, not the LLM content string).
+2. Assistant reasoning text in the transcript.
+3. Tool-call blocks (`tic_tac_toe move_right`, `tic_tac_toe play`).
+4. Activity indicator `Working...`.
+
+Cadr showed only the overlay. Two independent defects, both now locked:
+
+- `send-message` with trigger-turn ran `agent-prompt` on the TUI input
+  thread, so `flush-render` never ran during the turn
+  (`goal20-p0-4-trigger-turn-does-not-block-tui-input-thread`).
+- The move customType renderer must paint the compact banner, not the
+  raw board-content fallback
+  (`goal20-p0-4-ttt-move-renderer-paints-compact-banner`).
+
+Snake and space-invaders have no agent transcript path (no
+`send-message`); this gap is tic-tac-toe plus any other extension that
+triggers a turn from a custom component's input handler.
+
+The render-diff `example-tic-tac-toe` scenario still has empty faux
+responses, so it cannot see items 2–4. That remains
+`EXAMPLES-AGENT-DRIVEN-REDRAW-GAP`.

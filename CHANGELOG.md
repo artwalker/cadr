@@ -73,6 +73,12 @@ tag/Release step.
 
 ### Fixed
 
+- Goal 20 P0-4: extension `send-message` with trigger-turn no longer
+  runs the agent turn on the TUI input thread, so streaming text, tool
+  blocks, and the working indicator can paint during the turn. The
+  tic-tac-toe move custom message uses the compact banner renderer
+  instead of the raw board content.
+
 - WebSocket frames with payload length 65536 or more now read all eight
   length octets (the 64-bit branch used to skip the first), and
   fragmented messages are assembled until FIN. Codex WebSocket debug
