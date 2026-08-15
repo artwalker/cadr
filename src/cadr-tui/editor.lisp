@@ -359,23 +359,10 @@
         (next-cluster-boundary text cursor))))
 
 (defun previous-cluster-boundary (text cursor)
-  (loop with position = 0
-        with previous = 0
-        for cluster in (grapheme-clusters text)
-        for next = (+ position (length cluster))
-        while (< position cursor)
-        do (setf previous position
-                 position next)
-        finally (return previous)))
+  (grapheme-previous-boundary text cursor))
 
 (defun next-cluster-boundary (text cursor)
-  (loop with position = 0
-        for cluster in (grapheme-clusters text)
-        for next = (+ position (length cluster))
-        when (> next cursor)
-          do (return next)
-        do (setf position next)
-        finally (return (length text))))
+  (grapheme-next-boundary text cursor))
 
 (defun editor-replace-range
     (editor start end replacement)
@@ -1557,8 +1544,9 @@
           (current-width 0)
           (wrap-index nil)
           (wrap-width 0))
-      (loop for segment in segments
-            for index from 0
+      (loop for segment-cell on segments
+            for segment = (car segment-cell)
+            for next = (cadr segment-cell)
             for grapheme = (first segment)
             for start = (second segment)
             for width = (grapheme-width grapheme)
@@ -1593,29 +1581,28 @@
                   current-width 0)))
               (setf wrap-index nil))
             (incf current-width width)
-            (let ((next (nth (1+ index) segments)))
-              (when
-                  (and next
+            (when
+                (and next
+                     (or
+                      (and whitespace-p
+                           (not
+                            (every
+                             #'navigation-whitespace-p
+                             (first next))))
+                      (and
+                       (not whitespace-p)
+                       (not
+                        (every
+                         #'navigation-whitespace-p
+                         (first next)))
                        (or
-                        (and whitespace-p
-                             (not
-                              (every
-                               #'navigation-whitespace-p
-                               (first next))))
-                        (and
-                         (not whitespace-p)
-                         (not
-                          (every
-                           #'navigation-whitespace-p
-                           (first next)))
-                         (or
-                          (some #'navigation-cjk-p
-                                grapheme)
-                          (some #'navigation-cjk-p
-                                (first next))))))
-                (setf
-                 wrap-index (second next)
-                 wrap-width current-width))))
+                        (some #'navigation-cjk-p
+                              grapheme)
+                        (some #'navigation-cjk-p
+                              (first next))))))
+              (setf
+               wrap-index (second next)
+               wrap-width current-width)))
       (push
        (list
         (subseq line chunk-start)

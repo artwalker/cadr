@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **293 files / 121,194 lines**
+Denominator: **293 files / 121,223 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 34 | 20,204 | 16.7% | `no worse than baseline` is falsifiable |
+| `paired` | 34 | 20,233 | 16.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.2% | single reference vs previous cadr |
-| `pairable-uncovered` | 235 | 93,518 | 77.2% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 235 | 93,518 | 77.1% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 16.7% of lines (34 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 22.8% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 77.2% of lines.
+- **K-advanceable** (paired ∪ unpairable): 22.9% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 77.1% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -361,7 +361,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/text-box.lisp` | 275 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/editor.lisp` | 1,989 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/editor.lisp` | 1,976 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/input.lisp` | 376 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 424 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -370,7 +370,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/terminal.lisp` | 882 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/unicode.lisp` | 1,256 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
+| `src/cadr-tui/unicode.lisp` | 1,298 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 
 ### 6.3 Pairable, not yet paired
 

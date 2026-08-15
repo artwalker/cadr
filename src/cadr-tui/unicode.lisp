@@ -1254,3 +1254,45 @@ The walk stops early when FUNCTION returns true."
         (setf result (nconc result wrapped))
         (update-ansi-state state line)))
     (or result (list ""))))
+
+(defvar *grapheme-boundary-cache*
+  (make-hash-table :test #'eq :weakness :key :synchronized t)
+  "Weak eq map from a text object to its grapheme boundary vector.
+Editor cursor motion queries boundaries many times per buffer; the
+vector is rebuilt only when the buffer is a fresh string (goal 20,
+12G-1).")
+
+(defun grapheme-boundaries (text)
+  "Ascending vector of grapheme boundary offsets for TEXT: index 0 is 0,
+the last element is (length text), and every cluster spans [v[i], v[i+1])."
+  (or (gethash text *grapheme-boundary-cache*)
+      (setf (gethash text *grapheme-boundary-cache*)
+            (coerce
+             (let ((bounds (list 0)))
+               (map-grapheme-spans
+                (lambda (span-start span-end)
+                  (declare (ignore span-start))
+                  (push span-end bounds)
+                  ;; The walker stops early on a true return value.
+                  nil)
+                text 0 (length text))
+               (nreverse bounds))
+             'vector))))
+
+(defun grapheme-next-boundary (text cursor)
+  "Smallest grapheme boundary in TEXT strictly greater than CURSOR."
+  (let ((bounds (grapheme-boundaries text)))
+    (or (find-if (lambda (boundary) (> boundary cursor)) bounds)
+        (length text))))
+
+(defun grapheme-previous-boundary (text cursor)
+  "Largest grapheme boundary in TEXT strictly smaller than CURSOR, or 0.
+The final boundary ((length text)) is a cluster end, never a start, so
+it is excluded — the pre-cache walk could only return cluster starts."
+  (let ((bounds (grapheme-boundaries text))
+        (best 0))
+    (loop for index below (1- (length bounds))
+          for boundary = (aref bounds index)
+          while (< boundary cursor)
+          do (setf best boundary))
+    best))

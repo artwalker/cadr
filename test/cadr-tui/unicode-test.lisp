@@ -137,3 +137,36 @@
         "~S must occupy ~D terminal cells"
         (first case)
         (second case))))
+
+(defun reference-previous-cluster-boundary (text cursor)
+  ;; Pre-12G-1 implementation, kept verbatim as the equivalence oracle.
+  (loop with position = 0
+        with previous = 0
+        for cluster in (cadr-tui::grapheme-clusters text)
+        for next = (+ position (length cluster))
+        while (< position cursor)
+        do (setf previous position
+                 position next)
+        finally (return previous)))
+
+(defun reference-next-cluster-boundary (text cursor)
+  (loop with position = 0
+        for cluster in (cadr-tui::grapheme-clusters text)
+        for next = (+ position (length cluster))
+        when (> next cursor)
+          do (return next)
+        do (setf position next)
+        finally (return (length text))))
+
+(test grapheme-boundary-cache-matches-cluster-walk
+  ;; goal 20, 12G-1: the cached boundary vector must agree with the
+  ;; re-clustering walk at every cursor position, including empty text,
+  ;; cursor-on-boundary, and past-the-end.
+  (dolist (text (list "" "abc" "aé🙂中" "é́x" "让中文mixed🙂tail"))
+    (dotimes (cursor (+ 2 (length text)))
+      (is (= (reference-previous-cluster-boundary text cursor)
+             (cadr-tui::grapheme-previous-boundary text cursor))
+          "previous boundary of ~S at ~D" text cursor)
+      (is (= (reference-next-cluster-boundary text cursor)
+             (cadr-tui::grapheme-next-boundary text cursor))
+          "next boundary of ~S at ~D" text cursor))))
