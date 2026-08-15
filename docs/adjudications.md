@@ -116,3 +116,33 @@ stands; its review does not.**
 design authority, auditor, and occasionally executor at once — a structure
 that makes one person the judge of work they may have touched. Mills gave
 those roles to different people for this reason.
+
+---
+
+## 2026-08-15 — Liveness assertions: accepted, with the motivating defect moved to the front
+
+**Ruled**: advisor. **Proposal**:
+[`proposals/goal20-liveness-assertions.md`](proposals/goal20-liveness-assertions.md).
+
+**Decided**: accept the timing sidecar, the statistical tier and the
+per-scenario threshold rule. **Move silence injection from step 5 to step 2**
+and fold it into this proposal.
+
+**Why it was decidable**: the proposal disclosed that no existing scenario
+reproduces P0-4 — they all stream promptly, while P0-4 was seconds of
+silence at the start of a turn. So the gate as specified is a rhythm
+regression lock, not a fix for what motivated it. Shipping the
+infrastructure first and the motivating case "separately, later" would have
+produced a green gate claiming to watch a dimension whose actual escape
+channel stayed open.
+
+**Standing consequence**: when a proposal's own evidence shows the gate
+would not have caught the defect that prompted it, the item that closes
+that gap is not a follow-up — it moves to the front, or the gate ships
+under a name that states what it does not cover.
+
+**Worth copying**: this proposal ran a throwaway pilot before naming a
+threshold, so N came from measured data rather than taste — the discipline
+the earlier `cold_start` band lacked. Its fd-reuse finding (tracking only
+`openpty` polluted the log with 5.8MB of unrelated reads) is recorded so
+the next person does not rediscover it.

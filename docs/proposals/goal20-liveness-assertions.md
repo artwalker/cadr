@@ -1,10 +1,12 @@
 # Proposal: Goal 20 — liveness assertions for agent-turn output (queue item 12E-1)
 
-Status: **awaiting adjudication**. Requested by the advisor ruling of
-2026-08-15 (goal20-state.md item 12E-1: "立项,但报告低估了工作量,先出提案").
+Status: **accepted** (advisor, 2026-08-15; subject to user veto), with one
+reordering and one count correction — see "Adjudication" at the end.
+Requested by the advisor ruling of 2026-08-15 (goal20-state.md item 12E-1).
 This file answers the four required questions in §§1–4. §5 is the pilot
 measurement that §3 depends on. No gate, ledger, or capture format is
-changed by this file.
+changed by this file; the criteria change lands with step 1 of Enablement,
+in its own commit.
 
 ## Why
 
@@ -139,3 +141,74 @@ part of this proposal's enablement.
 4. Statistical liveness stage in `scripts/verify.sh` (§4 shape).
 5. Follow-up, separately proposed: silence-injection scenario for
    first-token latency (the actual P0-4 shape).
+
+## Adjudication (advisor, 2026-08-15; subject to user veto)
+
+**Accepted**, on the enablement order below as amended. All four required
+questions are answered, and the two load-bearing facts were re-verified
+independently before ruling:
+
+| Claim | Verified |
+|---|---|
+| Only two PTY `os.read` sites, so no byte path is missed | `render-diff.py:2065` and `:2079`. The other two `os.read` hits are `os.readlink` and a string literal inside a generated script. **Correct.** |
+| 33 agent-turn scenarios | Counted by presence of faux `responses`: **exactly 33**. |
+
+Two things this proposal does that should be the house style. It ran a
+throwaway pilot before proposing a threshold, so §3 sets N from measured
+data instead of from taste — which is what development-policy §5.5 demands
+and what the earlier `cold_start` band got wrong. And the pilot's fd-reuse
+finding (tracking only `openpty` polluted the log with 5.8MB of unrelated
+reads) is recorded, so the next person does not rediscover it.
+
+### Correction 1 — the enablement order buries the part that matters
+
+§5 states plainly that **no current scenario reproduces P0-4**: they all
+stream promptly, so the pilot measures rendering rhythm, and P0-4's silence
+was seconds long at the *start* of a turn. The proposal is right about
+this, and the honesty is the reason it can be accepted at all.
+
+But it follows that **the gate as specified would not have caught the
+defect that motivated it.** Its value is a regression lock — the proposal
+says so itself — and the item that addresses the motivating defect is the
+silence-injection scenario, listed last as "follow-up, separately
+proposed".
+
+**Ordered last, that item does not get done.** The sequence ships four
+steps of infrastructure, declares liveness covered, and leaves the actual
+escape channel open — with a green gate now claiming the dimension is
+watched.
+
+**Amendment**: silence injection moves from step 5 to **step 2**, ahead of
+the 66-capture re-measurement, and it is part of *this* proposal, not a
+separate one. The re-measurement then includes it, so N is derived from a
+scenario set that contains the shape being defended against. Concretely:
+one scenario whose faux stream withholds its first token past the intended
+N, asserted red before the fix and green after — the gate-validity proof
+this gate cannot ship without.
+
+**If silence injection turns out to be infeasible**, come back and say so:
+the correct outcome is then a liveness gate that is explicitly documented
+as a rhythm regression lock which does not cover first-token latency, and
+an open-questions entry for the uncovered dimension. What is not
+acceptable is shipping it silently under the name "liveness".
+
+### Correction 2 — the scenario split does not add up
+
+§2 says 33 agent-turn plus "the remaining 37"; the manifest holds **72**
+scenarios, so the remainder is **39**. The 33 is right and the plan is
+unaffected — but a reader who checks the arithmetic finds it short by two
+and has to work out which figure to distrust. Fix the 37.
+
+### Endorsed without change
+
+- Additive sidecar, `.raw` untouched. No historical artifact is
+  invalidated, which keeps this reversible.
+- Statistical tier, separate stage, outside `gate --tier core`. A
+  wall-clock assertion inside the deterministic tier would manufacture
+  false reds, and false reds are what drive people to loosen thresholds —
+  the I04 recurrence path.
+- Per-scenario `N_i` rather than a global constant. The paced scenario
+  (`stream-interrupt-queue`, ~80 ms) proves a single constant would either
+  false-red it or go permissive everywhere else.
+- Failure output carries the full gap distribution. A red that only says
+  "too slow" wastes the measurement it just took.
