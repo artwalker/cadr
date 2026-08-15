@@ -28,3 +28,27 @@ without that answer is an undeclared denominator.
 provider-matrix after N1: compared slots come from `sb-mop:class-slots`. Exclusion count is 1 (`baseline-source`). Compared count is the rest. Exclusion count is not allowed to exceed compared count.
 
 `baseline-visible-strings` 672/672 remains **drive completeness of the pi construction suite**, not cadr consistency. Declared here so that number cannot be cited as cadr parity.
+
+## Human stage: exploratory testing charter (goal 20, item 12E-2)
+
+Adjudicated 2026-08-15 (advisor; user holds veto): structured exploratory
+testing is a required stage before every Part close. It is a human stage,
+not a script — nothing here runs in `verify.sh`. Every goal-20 P0 was
+found by a person playing with the product, not by a gate; this section
+reclassifies that channel from accident to expected yield and makes it
+checkable.
+
+The acceptance report of a Part is incomplete without a charter record
+containing all of:
+
+| Field | Why it is required |
+|---|---|
+| Charter text — the boundary of this round | Otherwise "explored" is unfalsifiable |
+| What this round deliberately does **not** cover | One round cannot cover everything; the exclusion is what makes the next round's choice evidence-based |
+| Duration | 45 minutes and 5 minutes are not the same claim |
+| Findings, **including "nothing found"** | An empty result is data; several empty rounds mean the charter is stale |
+| Disposition of each finding | Exactly two exits: converted to a scripted assertion, or registered as a no-oracle area (standing gaps go to `docs/open-questions.md`). "Noted" is not a disposition |
+
+Time-box guide: ~45 minutes per round. Example charters: run one full
+agent session in each bundled game; resize the terminal mid-turn;
+interrupt a stream mid-flight.
