@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import sys
 from pathlib import Path
 
 START = "<!-- GOAL20_PERF_HISTORY_START -->"
@@ -279,6 +280,11 @@ def main() -> int:
         type=Path,
         default=Path("docs/benchmarks/goal20-paired-paths.json"),
     )
+    parser.add_argument(
+        "--check",
+        action="store_true",
+        help="fail if the committed ledger differs from a regeneration; do not write",
+    )
     args = parser.parse_args()
     history = json.loads(args.history.read_text(encoding="utf-8"))
     try:
@@ -286,17 +292,31 @@ def main() -> int:
     except (OSError, json.JSONDecodeError):
         bands = None
     markdown = args.ledger.read_text(encoding="utf-8")
-    markdown = replace_marked_section(
+    regenerated = replace_marked_section(
         markdown, START, END, render_section(history, bands)
     )
     paired_count = 0
     if args.paired.is_file():
         paired = json.loads(args.paired.read_text(encoding="utf-8"))
         paired_count = len(paired.get("entries") or [])
-        markdown = replace_marked_section(
-            markdown, PAIRED_START, PAIRED_END, render_paired_section(paired)
+        regenerated = replace_marked_section(
+            regenerated, PAIRED_START, PAIRED_END, render_paired_section(paired)
         )
-    args.ledger.write_text(markdown, encoding="utf-8")
+    if args.check:
+        if regenerated != markdown:
+            print(
+                "performance-ledger: docs/performance.md differs from a "
+                "regeneration of its marked sections; record with "
+                "write-performance-ledger.py (no --check) and commit",
+                file=sys.stderr,
+            )
+            return 1
+        print(
+            "performance-ledger: committed ledger matches regeneration "
+            f"(entries={len(history.get('entries') or [])} paired={paired_count})"
+        )
+        return 0
+    args.ledger.write_text(regenerated, encoding="utf-8")
     print(
         "performance-ledger: "
         f"entries={len(history.get('entries') or [])} "

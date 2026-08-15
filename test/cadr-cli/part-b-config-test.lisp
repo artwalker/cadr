@@ -638,18 +638,43 @@
          (format nil
                  "# fixture~%<!-- GOAL20_TEST_CHECKS systems=9 checks=27 pass=27 skip=0 fail=0 -->~%"))
         (uiop:run-program (list "chmod" "+x" (namestring fake-sbcl)))
-        (multiple-value-bind (output errors status)
-            (uiop:run-program
-             (list
-              "env"
-              (format nil "SBCL=~A" (namestring fake-sbcl))
-              (format nil "QUICKLISP_SETUP=~A" (namestring quicklisp))
-              (format nil "CADR_TEST_CHECK_LEDGER=~A" (namestring ledger))
-              (namestring script))
-             :output :string :error-output :string
-             :ignore-error-status t)
-          (is (zerop status) "~A" errors)
-          (is (search
-               "cadr test summary: systems=9 checks=27 pass=27 skip=0 fail=0"
-               output))
-          (is (search "changed=no" output)))))))
+        (flet ((run-test-cl (extra-arg ledger-path)
+                 (multiple-value-list
+                  (uiop:run-program
+                   (append
+                    (list
+                     "env"
+                     (format nil "SBCL=~A" (namestring fake-sbcl))
+                     (format nil "QUICKLISP_SETUP=~A" (namestring quicklisp))
+                     (format nil "CADR_TEST_CHECK_LEDGER=~A" (namestring ledger-path))
+                     (namestring script))
+                    (when extra-arg (list extra-arg)))
+                   :output :string :error-output :string
+                   :ignore-error-status t))))
+          ;; Read-only default: a matching fixture passes and the ledger
+          ;; file is not rewritten (goal 20, 11a).
+          (destructuring-bind (output errors status)
+              (run-test-cl nil ledger)
+            (is (zerop status) "~A" errors)
+            (is (search
+                 "cadr test summary: systems=9 checks=27 pass=27 skip=0 fail=0"
+                 output))
+            (is (search "test-check-anchor: systems=9 checks=27" output)))
+          ;; The read-only default must go red on a dirty ledger.
+          (let ((dirty (merge-pathnames "dirty-test-matrix.md" temporary)))
+            (write-text
+             dirty
+             (format nil
+                     "# fixture~%<!-- GOAL20_TEST_CHECKS systems=9 checks=26 pass=26 skip=0 fail=0 -->~%"))
+            (destructuring-bind (output errors status)
+                (run-test-cl nil dirty)
+              (declare (ignore output))
+              (is (not (zerop status))
+                  "read-only test-cl.sh must fail on a drifted ledger: ~A"
+                  errors)))
+          ;; --record remains the explicit write path.
+          (destructuring-bind (output errors status)
+              (run-test-cl "--record" ledger)
+            (declare (ignore errors))
+            (is (zerop status))
+            (is (search "changed=no" output))))))))

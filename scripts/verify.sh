@@ -6,6 +6,18 @@ SBCL_COMMAND="${SBCL:-sbcl}"
 QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 VERIFY_ROOT="$(mktemp -d)"
 ISOLATED_PROJECT="$VERIFY_ROOT/project"
+
+# Goal 20, queue 11a: verify is read-only by default.  Performance ledger
+# rows are written only with an explicit --record.
+RECORD_LEDGER=0
+if [ "${1:-}" = "--record" ]; then
+  RECORD_LEDGER=1
+  shift
+fi
+if [ "$#" -gt 0 ]; then
+  echo "usage: $0 [--record]" >&2
+  exit 2
+fi
 PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
 OVERALL_FAILURE=0
 
@@ -135,13 +147,20 @@ run_goal11_gate() {
     python3 scripts/goal11-performance-gate.py \
       --bench "$VERIFY_ROOT/goal11-performance.json" \
       --stability "$VERIFY_ROOT/goal11-stability.json"
-    python3 scripts/record-performance-history.py \
-      --bench "$VERIFY_ROOT/goal11-performance.json" \
-      --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json"
-    python3 scripts/write-performance-ledger.py \
-      --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
-      --paired "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \
-      --ledger "$PROJECT_DIRECTORY/docs/performance.md"
+    if [ "$RECORD_LEDGER" -eq 1 ]; then
+      python3 scripts/record-performance-history.py \
+        --bench "$VERIFY_ROOT/goal11-performance.json" \
+        --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json"
+      python3 scripts/write-performance-ledger.py \
+        --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
+        --paired "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \
+        --ledger "$PROJECT_DIRECTORY/docs/performance.md"
+    else
+      python3 scripts/write-performance-ledger.py --check \
+        --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
+        --paired "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \
+        --ledger "$PROJECT_DIRECTORY/docs/performance.md"
+    fi
   )
 }
 

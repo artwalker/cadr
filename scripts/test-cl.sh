@@ -5,6 +5,18 @@ SBCL_COMMAND="${SBCL:-sbcl}"
 QUICKLISP_SETUP_SOURCE="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 
+# Goal 20, queue 11a: verification is read-only by default.  The anchor is
+# re-recorded only with an explicit --record.
+RECORD_ANCHOR=0
+if [ "${1:-}" = "--record" ]; then
+  RECORD_ANCHOR=1
+  shift
+fi
+if [ "$#" -gt 0 ]; then
+  echo "usage: $0 [--record]" >&2
+  exit 2
+fi
+
 if [ ! -f "$QUICKLISP_SETUP_SOURCE" ]; then
   echo "cadr test: Quicklisp setup not found at $QUICKLISP_SETUP_SOURCE." >&2
   exit 1
@@ -87,9 +99,19 @@ case "$SUMMARY" in
   *) exit 1 ;;
 esac
 
-python3 "$PROJECT_DIRECTORY/scripts/write-test-check-anchor.py" \
-  --summary "$SUMMARY" \
-  --ledger "${CADR_TEST_CHECK_LEDGER:-$PROJECT_DIRECTORY/docs/test-matrix.md}" \
-  --strict
+if [ "$RECORD_ANCHOR" -eq 1 ]; then
+  python3 "$PROJECT_DIRECTORY/scripts/write-test-check-anchor.py" \
+    --summary "$SUMMARY" \
+    --ledger "${CADR_TEST_CHECK_LEDGER:-$PROJECT_DIRECTORY/docs/test-matrix.md}" \
+    --strict
+else
+  python3 "$PROJECT_DIRECTORY/scripts/write-test-check-anchor.py" \
+    --verify \
+    --summary "$SUMMARY" \
+    --ledger "${CADR_TEST_CHECK_LEDGER:-$PROJECT_DIRECTORY/docs/test-matrix.md}" || {
+    echo "test-cl.sh: check-count ledger drifted; re-record with $0 --record and commit" >&2
+    exit 1
+  }
+fi
 
 python3 "$PROJECT_DIRECTORY/scripts/goal20-unpaired-paths.py" --check
