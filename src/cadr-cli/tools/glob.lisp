@@ -175,7 +175,13 @@
                  for relative-base =
                    (relative-posix-path file base)
                  when (cl-ppcre:scan scanner relative-base)
-                   collect (relative-posix-path file cwd))))
+                   collect
+                   ;; The default path "." makes base and cwd the same
+                   ;; directory; reuse the match string instead of
+                   ;; computing the relative path twice (goal 20, 12F-4).
+                   (if (string= (namestring base) (namestring cwd))
+                       relative-base
+                       (relative-posix-path file cwd)))))
     (declare (ignore _))
     (when (< limit 1)
       (error "limit must be at least 1"))

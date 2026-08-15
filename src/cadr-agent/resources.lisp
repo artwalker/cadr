@@ -74,12 +74,12 @@
       (let ((metadata nil)
             (raw
               (subseq normalized 4 end)))
-        (let ((lines
+        (let ((remaining
                 (uiop:split-string
                  raw :separator '(#\Newline)))
               (index 0))
-          (loop while (< index (length lines))
-                for line = (nth index lines)
+          (loop while remaining
+                for line = (pop remaining)
                 do
                 (incf index)
                 (let ((trimmed
@@ -113,11 +113,9 @@
                                      (loop
                                        while
                                        (and
-                                        (< index
-                                           (length lines))
+                                        remaining
                                         (let ((next
-                                                (nth index
-                                                     lines)))
+                                                (car remaining)))
                                           (or
                                            (zerop
                                             (length next))
@@ -126,7 +124,7 @@
                                             '(#\Space
                                               #\Tab)))))
                                        for next =
-                                       (nth index lines)
+                                       (pop remaining)
                                        do
                                        (incf index)
                                        (write-string

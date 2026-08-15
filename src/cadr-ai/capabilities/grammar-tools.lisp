@@ -11,8 +11,9 @@
     (dolist (tool (context-tools context))
       (let ((name (normalized-tool-name (tool-name tool) normalizer)))
         (unless (gethash name unique)
-          (setf order (append order (list name))))
+          (push name order))
         (setf (gethash name unique) tool)))
+    (setf order (nreverse order))
     (unless enabled-p
       (return-from split-deferred-tools
         (values (mapcar (lambda (name) (gethash name unique)) order)
@@ -38,8 +39,8 @@
         (dolist (name order)
           (if (gethash name deferred-names)
               (setf (gethash name deferred) (gethash name unique))
-              (setf immediate (append immediate (list (gethash name unique))))))
-        (values immediate deferred)))))
+              (push (gethash name unique) immediate)))
+        (values (nreverse immediate) deferred)))))
 
 (defun sampling-value (sampling key)
   (cond

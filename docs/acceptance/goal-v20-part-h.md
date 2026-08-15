@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **293 files / 121,181 lines**
+Denominator: **293 files / 121,192 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 34 | 20,202 | 16.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.2% | single reference vs previous cadr |
-| `pairable-uncovered` | 235 | 93,507 | 77.2% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 235 | 93,518 | 77.2% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 16.7% of lines (34 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 22.8% of lines.
@@ -383,11 +383,11 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/interactive` | 27 | 16,396 |
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
 | `src/cadr-cli/bootstrap` | 5 | 5,566 |
-| `src/cadr-tui/mermaid` | 12 | 5,048 |
+| `src/cadr-tui/mermaid` | 12 | 5,054 |
 | `src/cadr-ai/providers` | 12 | 4,943 |
 | `src/cadr-cli/extensions` | 9 | 3,488 |
 | `src/cadr-cli/packages` | 6 | 3,329 |
-| `src/cadr-cli/tools` | 9 | 2,612 |
+| `src/cadr-cli/tools` | 9 | 2,618 |
 | `src/cadr-cli/sdk` | 8 | 2,464 |
 | `src/cadr-cli/modes` | 8 | 2,317 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,913 |
@@ -406,7 +406,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/schema.lisp` | 1 | 833 |
 | `src/cadr-ai/auth` | 5 | 820 |
 | `src/cadr-ai/support` | 7 | 819 |
-| `src/cadr-agent/resources.lisp` | 1 | 741 |
+| `src/cadr-agent/resources.lisp` | 1 | 739 |
 | `src/cadr-evals/summary.lisp` | 1 | 733 |
 | `src/cadr-evals/harness.lisp` | 1 | 730 |
 | `src/cadr-tui/composition` | 2 | 697 |
@@ -415,7 +415,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-protocol/schema.lisp` | 1 | 620 |
 | `src/cadr-agent/session` | 2 | 609 |
 | `src/cadr-tui/autocomplete.lisp` | 1 | 592 |
-| `src/cadr-ai/capabilities` | 6 | 584 |
+| `src/cadr-ai/capabilities` | 6 | 585 |
 | `src/cadr-tui/theme.lisp` | 1 | 563 |
 | `src/cadr-tui/components` | 2 | 561 |
 | `src/cadr-cli/migration.lisp` | 1 | 509 |

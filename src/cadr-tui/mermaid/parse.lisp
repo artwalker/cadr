@@ -105,26 +105,32 @@
 ;;; Split one source line into statements on `;`, stopping at a `%%` comment.
 ;;; Quoted spans are opaque, so a label may contain `;` and `%%`.
 (defun gm-split-statements (line out)
-  (let ((chars (gm-char-list line))
-        (cur "")
-        (in-quotes nil))
-    (loop for i from 0 below (length chars)
-          for c = (nth i chars)
-          do (cond (in-quotes
-                    (when (char= c #\") (setf in-quotes nil))
-                    (setf cur (concatenate 'string cur (string c))))
-                   ((char= c #\")
-                    (setf in-quotes t)
-                    (setf cur (concatenate 'string cur (string c))))
-                   ((and (char= c #\%) (< (1+ i) (length chars))
-                         (char= (nth (1+ i) chars) #\%))
-                    (return))
-                   ((char= c #\;)
-                    (setf out (gm-flush-statement cur out))
-                    (setf cur ""))
-                   (t
-                    (setf cur (concatenate 'string cur (string c))))))
-    (gm-flush-statement cur out)))
+  ;; Stream the accumulator and index the string directly: the old
+  ;; char-list + nth + per-char concatenate form was quadratic twice
+  ;; over (goal 20, 12F-4).
+  (let ((in-quotes nil)
+        (line-length (length line)))
+    (with-output-to-string (stream)
+      (loop for i from 0 below line-length
+            for c = (char line i)
+            do (cond (in-quotes
+                      (when (char= c #\") (setf in-quotes nil))
+                      (write-char c stream))
+                     ((char= c #\")
+                      (setf in-quotes t)
+                      (write-char c stream))
+                     ((and (char= c #\%) (< (1+ i) line-length)
+                           (char= (char line (1+ i)) #\%))
+                      (return))
+                     ((char= c #\;)
+                      (setf out
+                            (gm-flush-statement
+                             (get-output-stream-string stream) out)))
+                     (t
+                      (write-char c stream))))
+      (setf out
+            (gm-flush-statement (get-output-stream-string stream) out)))
+    out))
 
 ;;; All statements in a source block, in order.
 (defun gm-statements-of (src)
