@@ -1,0 +1,93 @@
+{
+ "schemaVersion": 1,
+ "baselineCommit": "53fa77ccd8a279eb87e92294ef3687b03ff80112",
+ "environment": {
+  "locale": "C.UTF-8",
+  "term": "xterm-256color",
+  "colorTerm": "truecolor",
+  "theme": "dark"
+ },
+ "dimensions": [
+  {
+   "id": "wide",
+   "columns": 100,
+   "rows": 32
+  },
+  {
+   "id": "narrow",
+   "columns": 48,
+   "rows": 20
+  }
+ ],
+ "scenarios": [
+  {
+   "id": "liveness-ttt-agent-turn",
+   "group": "examples",
+   "coverage": [
+    "liveness-turn-output"
+   ],
+   "description": "Goal 20 12E-1: tic-tac-toe trigger-turn with a slow faux stream. The agent turn must keep emitting output (spinner frames); a silent turn is the P0-4 shape. Timing sidecar is the subject, not screens.",
+   "setup": {
+    "exampleExtensions": [
+     "tic-tac-toe"
+    ]
+   },
+   "stream": {
+    "tokensPerSecond": 0.5,
+    "chunkCharacters": 4
+   },
+   "responses": [
+    {
+     "content": [
+      {
+       "type": "text",
+       "text": "Blocked the middle column. Waiting for X to move."
+      }
+     ],
+     "stopReason": "stop"
+    }
+   ],
+   "actions": [
+    {
+     "waitForHex": "1b5b3f323032366c"
+    },
+    {
+     "pauseMs": 200
+    },
+    {
+     "sendText": "/tic-tac-toe"
+    },
+    {
+     "send": "enter"
+    },
+    {
+     "waitFor": "Tic-Tac-Toe"
+    },
+    {
+     "pauseMs": 80
+    },
+    {
+     "send": "enter"
+    },
+    {
+     "waitFor": "Waiting for X to move"
+    },
+    {
+     "pauseMs": 200
+    },
+    {
+     "checkpoint": "after-agent-turn"
+    },
+    {
+     "send": "escape"
+    },
+    {
+     "pauseMs": 80
+    },
+    {
+     "send": "ctrl+d"
+    }
+   ]
+  }
+ ]
+}

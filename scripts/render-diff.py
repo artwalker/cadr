@@ -959,7 +959,7 @@ def load_interface_registry(
     )
 
 
-def load_manifest(path: Path) -> dict[str, Any]:
+def load_manifest(path: Path, enforce_coverage_floor: bool = True) -> dict[str, Any]:
     data = json.loads(path.read_text(encoding="utf-8"))
     if data.get("schemaVersion") != 1:
         raise HarnessFailure("render-diff manifest schemaVersion must be 1")
@@ -978,6 +978,12 @@ def load_manifest(path: Path) -> dict[str, Any]:
         if not all(isinstance(item, str) and item for item in scenario_coverage):
             raise HarnessFailure(f"scenario {scenario_id} has invalid coverage labels")
         coverage.update(scenario_coverage)
+    if not enforce_coverage_floor:
+        # Liveness manifests (goal 20, 12E-1) intentionally cover only the
+        # timing-probe scenarios; neither the render-gate floor nor the
+        # interface registry (whose checkpoints live in the full manifest)
+        # applies to them.
+        return data
     missing = sorted(REQUIRED_COVERAGE - coverage)
     if missing:
         raise HarnessFailure(f"render-diff manifest misses required coverage: {', '.join(missing)}")
@@ -3087,7 +3093,10 @@ def annotate_normalized_offsets(
 
 def capture(args: argparse.Namespace) -> int:
     manifest_path = args.manifest.resolve()
-    manifest = load_manifest(manifest_path)
+    manifest = load_manifest(
+        manifest_path,
+        enforce_coverage_floor=not getattr(args, "allow_partial_coverage", False),
+    )
     scenario = find_scenario(manifest, args.scenario)
     dimension = find_dimension(manifest, args.dimension)
     if not scenario_allows_dimension(scenario, args.dimension):
@@ -3975,6 +3984,11 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--scenario", required=True)
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
             command.add_argument("--side", choices=("pi", "cadr", "both"), default="both")
+            command.add_argument(
+                "--allow-partial-coverage",
+                action="store_true",
+                help="skip the render-gate coverage floor (liveness probe manifests)",
+            )
         if name == "replay-check":
             command.add_argument("--scenario", required=True)
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
