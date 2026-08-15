@@ -61,8 +61,39 @@
 (defun truncation-result-max-bytes (result)
   (harness-truncation-result-max-bytes result))
 
+(declaim (inline utf8-char-length))
+(defun utf8-char-length (character)
+  "UTF-8 byte count of CHARACTER without allocating.
+Surrogate code points (#xD800-#xDFFF) cannot be encoded; delegate to the
+real encoder so the same encoding error is signaled as the previous
+encode-the-whole-string implementation (goal 20, 12F-1)."
+  (let ((code (char-code character)))
+    (cond
+      ((< code #x80) 1)
+      ((< code #x800) 2)
+      ((<= #xd800 code #xdfff)
+       (length (cadr-ai::utf8-octets (string character))))
+      ((< code #x10000) 3)
+      (t 4))))
+
 (defun harness-utf8-length (text)
-  (length (cadr-ai::utf8-octets text)))
+  (declare (type simple-string text))
+  (loop with total of-type fixnum = 0
+        for character of-type character across text
+        for code of-type fixnum = (char-code character)
+        do (incf total
+                 (cond
+                   ((< code #x80) 1)
+                   ((< code #x800) 2)
+                   ((<= #xd800 code #xdfff)
+                    ;; Surrogate code points cannot be encoded; delegate to
+                    ;; the real encoder so the same encoding error is
+                    ;; signaled as the previous encode-the-whole-string
+                    ;; implementation (goal 20, 12F-1).
+                    (length (cadr-ai::utf8-octets (string character))))
+                   ((< code #x10000) 3)
+                   (t 4)))
+        finally (return total)))
 
 (defun harness-text-lines (text)
   (if (zerop (length text))
@@ -161,10 +192,8 @@
         (bytes 0))
     (loop for index downfrom
             (1- (length text)) to 0
-          for character = (char text index)
           for character-bytes =
-            (harness-utf8-length
-             (string character))
+            (utf8-char-length (char text index))
           while
             (<= (+ bytes character-bytes)
                 max-bytes)

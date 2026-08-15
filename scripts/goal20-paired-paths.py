@@ -66,6 +66,7 @@ METRICS = {
     "provider_stream": ("stream_roundtrip",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
+    "text_truncation": ("truncate_head", "truncate_tail"),
 }
 
 # Recorded cadr/pi median ratios plus headroom.  Observed spread over repeated
@@ -95,6 +96,13 @@ RATIO_CEILINGS = {
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
     "storage_journal.journal_append": 12.0,
+    # Initial values frozen from the first full measurement (2026-08-15,
+    # Friend-MachineD, samples=5): head 16.71x, tail 15.27x.  These record
+    # that cadr currently LOSES to pi on truncation (whole-content encode +
+    # per-line passes vs Buffer.byteLength); Part O owns pulling them down.
+    # Ratchet down only.
+    "text_truncation.truncate_head": 20.0,
+    "text_truncation.truncate_tail": 18.0,
 }
 
 # Absolute allowance for the microsecond-scale metrics.  goal11's own limit
@@ -107,6 +115,17 @@ MICROSECOND_FLOOR_US = 10.0
 
 # Observed values that must be identical: same fixture in, same work done.
 OBSERVED_EXACT = {
+    "text_truncation": (
+        "content_bytes",
+        "head_output_lines",
+        "head_output_bytes",
+        "head_truncated_by",
+        "head_first_line_exceeds",
+        "tail_output_lines",
+        "tail_output_bytes",
+        "tail_truncated_by",
+        "tail_last_line_partial",
+    ),
     "cli_dispatch": (
         "parsed_provider",
         "parsed_model",

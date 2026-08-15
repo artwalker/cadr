@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "denominator": {
     "files": 293,
-    "lines": 121105
+    "lines": 121134
   },
   "pairedMetrics": [
     "cli_dispatch.argv_parse",
@@ -16,7 +16,9 @@
     "storage_journal.journal_append",
     "goal11.mouse_drag",
     "goal11.wheel",
-    "goal11.continuous_alt_input"
+    "goal11.continuous_alt_input",
+    "text_truncation.truncate_head",
+    "text_truncation.truncate_tail"
   ],
   "unpairablePaths": [
     {
@@ -155,6 +157,11 @@
       "prefix": "src/cadr-agent/session/journal.lisp",
       "class": "paired",
       "metrics": ["session_pipeline.context_walk", "storage_journal.journal_append"]
+    },
+    {
+      "prefix": "src/cadr-agent/truncate.lisp",
+      "class": "paired",
+      "metrics": ["text_truncation.truncate_head", "text_truncation.truncate_tail"]
     },
     {
       "prefix": "src/cadr-agent/session/codec.lisp",

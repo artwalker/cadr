@@ -87,6 +87,35 @@
            result)))
         maximum)))))
 
+(test harness-utf8-length-surrogate-input-signals
+  ;; compaction.lisp:166-170 deliberately builds surrogate-bearing text
+  ;; to mirror JavaScript UTF-16 slicing, so surrogate code points reach
+  ;; the byte counter in practice.  Lock the signaling behavior before
+  ;; the allocation-free rewrite (goal 20, 12F-1).
+  (let ((surrogate-text (format nil "ok~Cbad" (code-char #xd800))))
+    (signals error
+      (cadr-agent::harness-utf8-length surrogate-text))
+    (signals error
+      (cadr-agent::utf8-tail-bytes surrogate-text 50))))
+
+(test harness-utf8-length-matches-encoder-on-every-code-point
+  ;; The allocation-free range counter must agree with the real encoder
+  ;; on every non-surrogate code point (surrogates are covered by the
+  ;; signaling test above).  One check so the FiveAM count stays sane.
+  (is
+   (loop with ok = t
+         for code from 0 below #x110000
+         when (or (< code #xd800) (> code #xdfff))
+         do (unless
+                (=
+                 (length
+                  (cadr-ai::utf8-octets (string (code-char code))))
+                 (cadr-agent::harness-utf8-length
+                  (string (code-char code))))
+              (setf ok nil)
+              (return))
+         finally (return ok))))
+
 (test goal12-shared-truncation-api-preserves-baseline-semantics
   (let ((complete
           (cadr-agent::truncate-head

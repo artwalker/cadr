@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 638,
+  "expected_findings": 640,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4513,6 +4513,22 @@
       "line": "            for side in (\"pi\", \"cadr\"):",
       "occurrences": 1,
       "reason": "Goal 20 12E-1 liveness re-measurement driver: names the pinned-baseline side whose PTY timing is measured against cadr."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: text_truncation\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 Part H paired-path driver progress marker naming the pinned-baseline side; mirrors the existing per-group markers."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    # that cadr currently LOSES to pi on truncation (whole-content encode +",
+      "occurrences": 1,
+      "reason": "Ceiling comment records that cadr currently loses to the pinned baseline on truncation; Part O owns the ratchet."
     }
   ],
   "opaque_files": [

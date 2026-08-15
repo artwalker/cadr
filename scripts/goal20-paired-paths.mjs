@@ -127,6 +127,8 @@ const REPETITIONS = {
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
 	"storage_journal.journal_append": 3,
+	"text_truncation.truncate_head": 50,
+	"text_truncation.truncate_tail": 50,
 };
 const QUICK_DIVISOR = 20;
 
@@ -259,6 +261,7 @@ const listModelsModule = await import(moduleUrl("packages/coding-agent/src/cli/l
 const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/core/model-runtime.ts"));
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
+const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 
 // Both sides render into a sink that only counts, so neither pays terminal
 // I/O and neither can win by writing less.
@@ -575,6 +578,35 @@ async function measureStorageJournal() {
 	};
 }
 
+async function measureTextTruncation() {
+	const lines = [];
+	for (let i = 1; i <= 4000; i++) {
+		lines.push(i % 2 === 1 ? "x".repeat(220) : "é🙂中文 mixed tail line");
+	}
+	const content = `${lines.join("\n")}\n`;
+	const head = truncateModule.truncateHead(content);
+	const tail = truncateModule.truncateTail(content);
+	return {
+		truncate_head: await collect("text_truncation.truncate_head", () => {
+			return () => truncateModule.truncateHead(content);
+		}),
+		truncate_tail: await collect("text_truncation.truncate_tail", () => {
+			return () => truncateModule.truncateTail(content);
+		}),
+		observed: {
+			content_bytes: Buffer.byteLength(content, "utf8"),
+			head_output_lines: head.outputLines,
+			head_output_bytes: head.outputBytes,
+			head_truncated_by: head.truncatedBy ?? "null",
+			head_first_line_exceeds: head.firstLineExceedsLimit ? 1 : 0,
+			tail_output_lines: tail.outputLines,
+			tail_output_bytes: tail.outputBytes,
+			tail_truncated_by: tail.truncatedBy ?? "null",
+			tail_last_line_partial: tail.lastLinePartial ? 1 : 0,
+		},
+	};
+}
+
 // ---------------------------------------------------------------------------
 
 process.stderr.write("goal20 pi paired paths: cli_dispatch\n");
@@ -585,6 +617,8 @@ process.stderr.write("goal20 pi paired paths: session_pipeline\n");
 const sessionPipeline = await measureSessionPipeline();
 process.stderr.write("goal20 pi paired paths: storage_journal\n");
 const storageJournal = await measureStorageJournal();
+process.stderr.write("goal20 pi paired paths: text_truncation\n");
+const textTruncation = await measureTextTruncation();
 
 const result = {
 	schema_version: 1,
@@ -610,6 +644,10 @@ const result = {
 				"packages/coding-agent/src/core/session-manager.ts loadEntriesFromFile",
 			"storage_journal.journal_append":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.create + appendMessage",
+			"text_truncation.truncate_head":
+				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
+			"text_truncation.truncate_tail":
+				"packages/coding-agent/src/core/tools/truncate.ts truncateTail",
 		},
 	},
 	parameters: {
@@ -631,6 +669,7 @@ const result = {
 		provider_stream: providerStream,
 		session_pipeline: sessionPipeline,
 		storage_journal: storageJournal,
+		text_truncation: textTruncation,
 	},
 };
 

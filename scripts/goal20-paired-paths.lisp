@@ -71,7 +71,9 @@
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
-    ("storage_journal.journal_append" . 3)))
+    ("storage_journal.journal_append" . 3)
+    ("text_truncation.truncate_head" . 50)
+    ("text_truncation.truncate_tail" . 50)))
 
 (defparameter *quick-divisor* 20)
 (defparameter *journal-append-entry-count* 128)
@@ -716,6 +718,56 @@
       "written_file_entry_count" (length written-objects)))))
 
 ;;; ---------------------------------------------------------------------
+;;; Pair 5: tool-output truncation (goal 20, 12F-1)
+;;; ---------------------------------------------------------------------
+
+(defun truncation-fixture-content ()
+  (with-output-to-string (out)
+    (loop for i from 1 to 4000
+          do (if (oddp i)
+                 (write-line (make-string 220 :initial-element #\x) out)
+                 (write-line "é🙂中文 mixed tail line" out)))))
+
+(defun measure-text-truncation ()
+  (let* ((content (truncation-fixture-content))
+         (head (cadr-agent::truncate-harness-head content))
+         (tail (cadr-agent::truncate-harness-tail content)))
+    (json-object
+     "observed"
+     (json-object
+      "content_bytes" (cadr-agent::harness-utf8-length content)
+      "head_output_lines"
+      (cadr-agent::harness-truncation-result-output-lines head)
+      "head_output_bytes"
+      (cadr-agent::harness-truncation-result-output-bytes head)
+      "head_truncated_by"
+      (let ((reason (cadr-agent::harness-truncation-result-truncated-by head)))
+        (if reason (string-downcase (symbol-name reason)) "null"))
+      "head_first_line_exceeds"
+      (if (cadr-agent::harness-truncation-result-first-line-exceeds-limit-p head)
+          1 0)
+      "tail_output_lines"
+      (cadr-agent::harness-truncation-result-output-lines tail)
+      "tail_output_bytes"
+      (cadr-agent::harness-truncation-result-output-bytes tail)
+      "tail_truncated_by"
+      (let ((reason (cadr-agent::harness-truncation-result-truncated-by tail)))
+        (if reason (string-downcase (symbol-name reason)) "null"))
+      "tail_last_line_partial"
+      (if (cadr-agent::harness-truncation-result-last-line-partial-p tail)
+          1 0))
+     "truncate_head"
+     (collect "text_truncation.truncate_head"
+              (lambda ()
+                (lambda ()
+                  (cadr-agent::truncate-harness-head content))))
+     "truncate_tail"
+     (collect "text_truncation.truncate_tail"
+              (lambda ()
+                (lambda ()
+                  (cadr-agent::truncate-harness-tail content)))))))
+
+;;; ---------------------------------------------------------------------
 
 (defun provenance-json (staged-digests)
   (let ((project (namestring cl-user::*cadr-bench-project-directory*)))
@@ -739,7 +791,11 @@
       "storage_journal.journal_read"
       "src/cadr-agent/session/migration.lisp read-session-objects"
       "storage_journal.journal_append"
-      "src/cadr-agent/session/journal.lisp create-session + session-append-message")
+      "src/cadr-agent/session/journal.lisp create-session + session-append-message"
+      "text_truncation.truncate_head"
+      "src/cadr-agent/truncate.lisp truncate-harness-head"
+      "text_truncation.truncate_tail"
+      "src/cadr-agent/truncate.lisp truncate-harness-tail")
      "fixture_sha256" (fixture-digests-json)
      "source_revision"
      (handler-case
@@ -765,6 +821,8 @@
         (let ((session (measure-session-pipeline)))
           (format *error-output* "goal20 cadr paired paths: storage_journal~%")
           (let ((storage (measure-storage-journal)))
+            (format *error-output* "goal20 cadr paired paths: text_truncation~%")
+            (let ((truncation (measure-text-truncation)))
             (json-object
              "kind" "cadr-goal20-part-h-paired-paths"
              ;; machine_instance / hostname are the field names
@@ -782,7 +840,8 @@
               "cli_dispatch" cli
               "provider_stream" provider
               "session_pipeline" session
-              "storage_journal" storage)
+              "storage_journal" storage
+              "text_truncation" truncation)
              "parameters"
              (json-object
               "journal_append_entry_count" *journal-append-entry-count*
@@ -798,7 +857,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))
+             "schema_version" 1))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
