@@ -15,6 +15,10 @@
     (write-string prefix stream)
     (format stream "~C[0m" #\Escape)))
 
+(defparameter +kitty-escape-prefix+
+    (format nil "~C_G" #\Escape)
+  "Kitty image-protocol marker; one instance instead of a fresh format per line (goal 20, 12E-6).")
+
 (defun kitty-parameter-integer
     (line parameter)
   (let ((position
@@ -27,13 +31,11 @@
        :junk-allowed t))))
 
 (defun kitty-image-id (line)
-  (when (search (format nil "~C_G" #\Escape)
-                line)
+  (when (search +kitty-escape-prefix+ line)
     (kitty-parameter-integer line "i=")))
 
 (defun kitty-image-rows (line)
-  (if (search (format nil "~C_G" #\Escape)
-              line)
+  (if (search +kitty-escape-prefix+ line)
       (or (kitty-parameter-integer line "r=")
           1)
       1))

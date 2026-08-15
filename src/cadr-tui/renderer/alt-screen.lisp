@@ -359,10 +359,10 @@
                          (delete-all-kitty-images)
                          stream)))))
                (loop for row below height
-                     for new =
-                     (or (nth row current) "")
-                     for old =
-                     (nth row previous)
+                     for new-tail = current then (cdr new-tail)
+                     for old-tail = previous then (cdr old-tail)
+                     for new = (if new-tail (car new-tail) "")
+                     for old = (and old-tail (car old-tail))
                      when
                      (or
                       full-p

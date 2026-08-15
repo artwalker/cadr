@@ -744,7 +744,9 @@
     ;; +3 goal 19 Part C: markdown.lisp marked-18 code-span helpers
     ;; (markdown-code-span-run-length, markdown-normalize-code-span-text,
     ;; replace-markdown-code-spans).
-    (is (= 326 definition-count)
+    ;; +1 goal 20 12E-6: +kitty-escape-prefix+ (main-screen.lisp), one
+    ;; shared Kitty marker instance instead of a per-line format.
+    (is (= 327 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"
