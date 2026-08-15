@@ -87,6 +87,9 @@
     {
      "send": "ctrl+d"
     }
+   ],
+   "dimensions": [
+    "wide"
    ]
   }
  ]

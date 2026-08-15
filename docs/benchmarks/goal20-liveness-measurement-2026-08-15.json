@@ -1,0 +1,619 @@
+{
+ "measuredAt": "2026-08-15T08:30:16Z",
+ "elapsedSeconds": 323.9,
+ "rows": [
+  {
+   "scenario": "conversation-content",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 79,
+   "median_ms": 0.5,
+   "p95_ms": 37.0,
+   "worst_ms": 102.1
+  },
+  {
+   "scenario": "conversation-content",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 81,
+   "median_ms": 0.5,
+   "p95_ms": 35.4,
+   "worst_ms": 102.7
+  },
+  {
+   "scenario": "conversation-mermaid",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 66,
+   "median_ms": 0.5,
+   "p95_ms": 21.6,
+   "worst_ms": 50.4
+  },
+  {
+   "scenario": "conversation-mermaid",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 64,
+   "median_ms": 0.5,
+   "p95_ms": 22.2,
+   "worst_ms": 50.2
+  },
+  {
+   "scenario": "tools-success",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 315,
+   "median_ms": 0.5,
+   "p95_ms": 21.4,
+   "worst_ms": 70.1
+  },
+  {
+   "scenario": "tools-success",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 295,
+   "median_ms": 0.5,
+   "p95_ms": 21.4,
+   "worst_ms": 69.7
+  },
+  {
+   "scenario": "tools-failure",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 82,
+   "median_ms": 0.7,
+   "p95_ms": 80.5,
+   "worst_ms": 81.1
+  },
+  {
+   "scenario": "tools-failure",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 87,
+   "median_ms": 0.8,
+   "p95_ms": 80.1,
+   "worst_ms": 81.2
+  },
+  {
+   "scenario": "tools-significant-states",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 218,
+   "median_ms": 0.6,
+   "p95_ms": 22.2,
+   "worst_ms": 92.5
+  },
+  {
+   "scenario": "tools-significant-states",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 219,
+   "median_ms": 0.5,
+   "p95_ms": 21.7,
+   "worst_ms": 96.9
+  },
+  {
+   "scenario": "tools-render-branch-sweep",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 732,
+   "median_ms": 0.4,
+   "p95_ms": 2.5,
+   "worst_ms": 311.2
+  },
+  {
+   "scenario": "tools-render-branch-sweep",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 638,
+   "median_ms": 0.4,
+   "p95_ms": 5.3,
+   "worst_ms": 250.6
+  },
+  {
+   "scenario": "tool-bash-abort",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 79,
+   "median_ms": 0.5,
+   "p95_ms": 27.3,
+   "worst_ms": 56.7
+  },
+  {
+   "scenario": "tool-bash-abort",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 81,
+   "median_ms": 0.4,
+   "p95_ms": 28.9,
+   "worst_ms": 57.8
+  },
+  {
+   "scenario": "tree-entry-state-sweep",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 196,
+   "median_ms": 0.7,
+   "p95_ms": 4.9,
+   "worst_ms": 524.0
+  },
+  {
+   "scenario": "tree-entry-state-sweep",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 190,
+   "median_ms": 0.7,
+   "p95_ms": 4.4,
+   "worst_ms": 525.1
+  },
+  {
+   "scenario": "selector-state-sweep",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 127,
+   "median_ms": 0.6,
+   "p95_ms": 70.5,
+   "worst_ms": 132.5
+  },
+  {
+   "scenario": "selector-state-sweep",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 109,
+   "median_ms": 0.6,
+   "p95_ms": 78.1,
+   "worst_ms": 133.7
+  },
+  {
+   "scenario": "selector-scoped-state-sweep",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 72,
+   "median_ms": 0.6,
+   "p95_ms": 50.3,
+   "worst_ms": 134.3
+  },
+  {
+   "scenario": "selector-scoped-state-sweep",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 66,
+   "median_ms": 0.7,
+   "p95_ms": 50.2,
+   "worst_ms": 133.6
+  },
+  {
+   "scenario": "selector-trust-inherited",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 46,
+   "median_ms": 0.5,
+   "p95_ms": 49.5,
+   "worst_ms": 112.3
+  },
+  {
+   "scenario": "selector-trust-inherited",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 51,
+   "median_ms": 0.3,
+   "p95_ms": 50.3,
+   "worst_ms": 112.1
+  },
+  {
+   "scenario": "overlays-core",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 241,
+   "median_ms": 0.5,
+   "p95_ms": 69.3,
+   "worst_ms": 281.9
+  },
+  {
+   "scenario": "overlays-core",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 233,
+   "median_ms": 0.5,
+   "p95_ms": 68.9,
+   "worst_ms": 283.1
+  },
+  {
+   "scenario": "overlays-auth",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 113,
+   "median_ms": 0.5,
+   "p95_ms": 51.1,
+   "worst_ms": 111.1
+  },
+  {
+   "scenario": "overlays-auth",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 102,
+   "median_ms": 0.6,
+   "p95_ms": 51.3,
+   "worst_ms": 112.4
+  },
+  {
+   "scenario": "overlays-auth-oauth",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 124,
+   "median_ms": 0.4,
+   "p95_ms": 22.9,
+   "worst_ms": 300.7
+  },
+  {
+   "scenario": "overlays-auth-oauth",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 115,
+   "median_ms": 0.4,
+   "p95_ms": 25.4,
+   "worst_ms": 301.8
+  },
+  {
+   "scenario": "overlays-auth-device-code",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 117,
+   "median_ms": 0.4,
+   "p95_ms": 31.6,
+   "worst_ms": 301.9
+  },
+  {
+   "scenario": "overlays-auth-device-code",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 117,
+   "median_ms": 0.4,
+   "p95_ms": 31.8,
+   "worst_ms": 302.1
+  },
+  {
+   "scenario": "overlays-auth-api-key",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 115,
+   "median_ms": 0.4,
+   "p95_ms": 32.4,
+   "worst_ms": 301.0
+  },
+  {
+   "scenario": "overlays-auth-api-key",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 100,
+   "median_ms": 0.6,
+   "p95_ms": 48.2,
+   "worst_ms": 303.1
+  },
+  {
+   "scenario": "overlays-auth-browser-callback",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 118,
+   "median_ms": 0.5,
+   "p95_ms": 21.2,
+   "worst_ms": 301.8
+  },
+  {
+   "scenario": "overlays-auth-browser-callback",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 105,
+   "median_ms": 0.5,
+   "p95_ms": 21.2,
+   "worst_ms": 304.2
+  },
+  {
+   "scenario": "overlays-auth-manual-code-complete",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 89,
+   "median_ms": 0.5,
+   "p95_ms": 22.1,
+   "worst_ms": 301.8
+  },
+  {
+   "scenario": "overlays-auth-manual-code-complete",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 106,
+   "median_ms": 0.4,
+   "p95_ms": 21.4,
+   "worst_ms": 302.6
+  },
+  {
+   "scenario": "overlays-auth-browser-callback-complete",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 85,
+   "median_ms": 0.6,
+   "p95_ms": 27.3,
+   "worst_ms": 302.3
+  },
+  {
+   "scenario": "overlays-auth-browser-callback-complete",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 76,
+   "median_ms": 0.6,
+   "p95_ms": 48.9,
+   "worst_ms": 302.5
+  },
+  {
+   "scenario": "overlays-logout",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 45,
+   "median_ms": 0.8,
+   "p95_ms": 33.3,
+   "worst_ms": 89.3
+  },
+  {
+   "scenario": "overlays-logout",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 44,
+   "median_ms": 0.5,
+   "p95_ms": 34.0,
+   "worst_ms": 89.4
+  },
+  {
+   "scenario": "overlays-secondary",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 157,
+   "median_ms": 0.5,
+   "p95_ms": 90.0,
+   "worst_ms": 101.6
+  },
+  {
+   "scenario": "overlays-secondary",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 142,
+   "median_ms": 0.6,
+   "p95_ms": 90.8,
+   "worst_ms": 100.5
+  },
+  {
+   "scenario": "stream-interrupt-queue",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 268,
+   "median_ms": 77.4,
+   "p95_ms": 81.0,
+   "worst_ms": 82.1
+  },
+  {
+   "scenario": "stream-interrupt-queue",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 256,
+   "median_ms": 79.5,
+   "p95_ms": 80.9,
+   "worst_ms": 100.9
+  },
+  {
+   "scenario": "extension-surfaces",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 46,
+   "median_ms": 0.5,
+   "p95_ms": 34.4,
+   "worst_ms": 70.7
+  },
+  {
+   "scenario": "extension-surfaces",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 41,
+   "median_ms": 0.7,
+   "p95_ms": 50.5,
+   "worst_ms": 71.3
+  },
+  {
+   "scenario": "autocomplete-surfaces",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 44,
+   "median_ms": 0.5,
+   "p95_ms": 89.2,
+   "worst_ms": 101.1
+  },
+  {
+   "scenario": "autocomplete-surfaces",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 40,
+   "median_ms": 0.6,
+   "p95_ms": 90.3,
+   "worst_ms": 100.2
+  },
+  {
+   "scenario": "provider-error",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 44,
+   "median_ms": 0.5,
+   "p95_ms": 21.1,
+   "worst_ms": 50.4
+  },
+  {
+   "scenario": "provider-error",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 48,
+   "median_ms": 0.4,
+   "p95_ms": 21.2,
+   "worst_ms": 50.4
+  },
+  {
+   "scenario": "user-bash-state-sweep",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 206,
+   "median_ms": 0.3,
+   "p95_ms": 16.5,
+   "worst_ms": 189.1
+  },
+  {
+   "scenario": "user-bash-state-sweep",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 204,
+   "median_ms": 0.3,
+   "p95_ms": 16.4,
+   "worst_ms": 193.0
+  },
+  {
+   "scenario": "settings-state-sweep",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 92,
+   "median_ms": 1.0,
+   "p95_ms": 22.6,
+   "worst_ms": 69.9
+  },
+  {
+   "scenario": "settings-state-sweep",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 91,
+   "median_ms": 1.1,
+   "p95_ms": 22.9,
+   "worst_ms": 71.0
+  },
+  {
+   "scenario": "example-hello",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 29,
+   "median_ms": 0.6,
+   "p95_ms": 50.8,
+   "worst_ms": 204.1
+  },
+  {
+   "scenario": "example-hello",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 28,
+   "median_ms": 0.6,
+   "p95_ms": 50.0,
+   "worst_ms": 203.5
+  },
+  {
+   "scenario": "example-notify",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 23,
+   "median_ms": 0.6,
+   "p95_ms": 99.4,
+   "worst_ms": 203.8
+  },
+  {
+   "scenario": "example-notify",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 22,
+   "median_ms": 0.7,
+   "p95_ms": 50.0,
+   "worst_ms": 203.7
+  },
+  {
+   "scenario": "example-bookmark",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 58,
+   "median_ms": 0.5,
+   "p95_ms": 50.4,
+   "worst_ms": 203.5
+  },
+  {
+   "scenario": "example-bookmark",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 56,
+   "median_ms": 0.6,
+   "p95_ms": 50.6,
+   "worst_ms": 204.8
+  },
+  {
+   "scenario": "example-send-user-message",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 40,
+   "median_ms": 0.4,
+   "p95_ms": 101.7,
+   "worst_ms": 204.0
+  },
+  {
+   "scenario": "example-send-user-message",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 31,
+   "median_ms": 0.8,
+   "p95_ms": 101.6,
+   "worst_ms": 204.1
+  },
+  {
+   "scenario": "example-reload-runtime",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 27,
+   "median_ms": 0.6,
+   "p95_ms": 50.1,
+   "worst_ms": 203.6
+  },
+  {
+   "scenario": "example-reload-runtime",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 33,
+   "median_ms": 0.5,
+   "p95_ms": 50.2,
+   "worst_ms": 203.1
+  },
+  {
+   "scenario": "example-todo",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 40,
+   "median_ms": 0.5,
+   "p95_ms": 113.6,
+   "worst_ms": 203.9
+  },
+  {
+   "scenario": "example-todo",
+   "dimension": "narrow",
+   "side": "pi",
+   "reads": 42,
+   "median_ms": 0.6,
+   "p95_ms": 69.9,
+   "worst_ms": 203.3
+  },
+  {
+   "scenario": "liveness-ttt-agent-turn",
+   "dimension": "wide",
+   "side": "pi",
+   "reads": 354,
+   "median_ms": 79.8,
+   "p95_ms": 81.0,
+   "worst_ms": 203.7
+  },
+  {
+   "scenario": "liveness-ttt-agent-turn",
+   "dimension": "wide",
+   "side": "cadr",
+   "reads": 335,
+   "median_ms": 78.8,
+   "p95_ms": 83.9,
+   "worst_ms": 221.0
+  }
+ ],
+ "failures": []
+}

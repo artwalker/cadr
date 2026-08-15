@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 634,
+  "expected_findings": 638,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4481,6 +4481,38 @@
       "line": "BASELINE_DIRECTORY=\"${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-$BASELINE_SHORT}\"",
       "occurrences": 1,
       "reason": "Goal 20 Part H orchestrator: locates the pi baseline checkout (GOAL20_PI_BASELINE, render-diff cache path) and names the pi report/journal artifacts it writes."
+    },
+    {
+      "path": "scripts/goal20-liveness-measure.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\"\"\"Goal 20, 12E-1 step 3: re-measure pi-side PTY output timing per scenario.",
+      "occurrences": 1,
+      "reason": "Goal 20 12E-1 liveness re-measurement driver: names the pinned-baseline side whose PTY timing is measured against cadr."
+    },
+    {
+      "path": "scripts/goal20-liveness-measure.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "dimensions, pi side, then the liveness manifest scenarios on both sides,",
+      "occurrences": 1,
+      "reason": "Goal 20 12E-1 liveness re-measurement driver: names the pinned-baseline side whose PTY timing is measured against cadr."
+    },
+    {
+      "path": "scripts/goal20-liveness-measure.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                side = \"pi\"",
+      "occurrences": 1,
+      "reason": "Goal 20 12E-1 liveness re-measurement driver: names the pinned-baseline side whose PTY timing is measured against cadr."
+    },
+    {
+      "path": "scripts/goal20-liveness-measure.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            for side in (\"pi\", \"cadr\"):",
+      "occurrences": 1,
+      "reason": "Goal 20 12E-1 liveness re-measurement driver: names the pinned-baseline side whose PTY timing is measured against cadr."
     }
   ],
   "opaque_files": [
