@@ -11,37 +11,6 @@ OVERALL_FAILURE=0
 
 DETERMINISTIC_NAMES=()
 DETERMINISTIC_RESULTS=()
-DETERMINISTIC_SECONDS=()
-ONLY_STAGES=()
-
-while [ "$#" -gt 0 ]; do
-  case "$1" in
-    --only)
-      [ "$#" -ge 2 ] || { printf 'verify.sh: --only needs a value\n' >&2; exit 2; }
-      ONLY_STAGES+=("$2"); shift 2 ;;
-    --only=*) ONLY_STAGES+=("${1#--only=}"); shift ;;
-    --list-stages)
-      # Derived from the script itself, so it cannot drift from what runs.
-      grep -oE '^[[:space:]]*run_deterministic "[^"]+"' "$0" |
-        sed -E 's/^[[:space:]]*run_deterministic "//; s/"$//' | sort -u
-      exit 0 ;;
-    -h|--help)
-      cat <<'USAGE'
-usage: verify.sh [--only SUBSTRING]... [--list-stages]
-
-  --only SUBSTRING   run only deterministic stages whose name contains
-                     SUBSTRING (case-insensitive, repeatable).  Unselected
-                     stages are reported SKIP, not PASS.
-  --list-stages      print the stage names this script can run, then exit.
-
-With no --only every stage runs; the default behaviour is unchanged.
-Selecting a subset is for local iteration on a change with no causal link
-to the other stages.  Closing a Part requires a full run.
-USAGE
-      exit 0 ;;
-    *) printf 'verify.sh: unknown argument: %s\n' "$1" >&2; exit 2 ;;
-  esac
-done
 LIVE_NAMES=()
 LIVE_RESULTS=()
 
@@ -53,26 +22,6 @@ trap cleanup EXIT
 record_deterministic() {
   DETERMINISTIC_NAMES+=("$1")
   DETERMINISTIC_RESULTS+=("$2")
-  DETERMINISTIC_SECONDS+=("${3:-0}")
-}
-
-# Stage selection.  --only takes a case-insensitive substring of a stage name
-# and may be repeated; with none given every stage runs, so the default
-# behaviour is unchanged.  This exists because the full pipeline is the only
-# place full verification can run while CI is down (queue item 11b), and
-# running all 24 stages for a change with no causal link to them is pure wait.
-# It is not a way to skip a stage that is actually implicated: closing a Part
-# still requires a full run.
-stage_selected() {
-  [ "${#ONLY_STAGES[@]}" -eq 0 ] && return 0
-  local needle haystack
-  haystack=$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')
-  for needle in "${ONLY_STAGES[@]}"; do
-    case "$haystack" in
-      *"$(printf '%s' "$needle" | tr '[:upper:]' '[:lower:]')"*) return 0 ;;
-    esac
-  done
-  return 1
 }
 
 record_live() {
@@ -83,21 +32,13 @@ record_live() {
 run_deterministic() {
   local name="$1"
   shift
-  if ! stage_selected "$name"; then
-    record_deterministic "$name" "SKIP (not selected by --only)" 0
-    return 0
-  fi
   printf '\n==> %s\n' "$name"
-  local started elapsed
-  started=$SECONDS
   if "$@"; then
-    elapsed=$((SECONDS - started))
-    record_deterministic "$name" PASS "$elapsed"
+    record_deterministic "$name" PASS
     return 0
   else
     local status=$?
-    elapsed=$((SECONDS - started))
-    record_deterministic "$name" "FAIL ($status)" "$elapsed"
+    record_deterministic "$name" "FAIL ($status)"
     OVERALL_FAILURE=1
     return "$status"
   fi
@@ -277,17 +218,13 @@ run_event_diff_gate() {
 
 print_summary() {
   local index
-  local total=0
   printf '\nDeterministic stages\n'
-  printf '%-48s %-28s %8s\n' Stage Result Seconds
+  printf '%-48s %s\n' Stage Result
   for ((index = 0; index < ${#DETERMINISTIC_NAMES[@]}; index++)); do
-    printf '%-48s %-28s %8s\n' \
+    printf '%-48s %s\n' \
       "${DETERMINISTIC_NAMES[$index]}" \
-      "${DETERMINISTIC_RESULTS[$index]}" \
-      "${DETERMINISTIC_SECONDS[$index]:-0}"
-    total=$((total + ${DETERMINISTIC_SECONDS[$index]:-0}))
+      "${DETERMINISTIC_RESULTS[$index]}"
   done
-  printf '%-48s %-28s %8s\n' "TOTAL (deterministic)" "" "$total"
 
   printf '\nLive stages\n'
   printf '%-48s %s\n' Stage Result
