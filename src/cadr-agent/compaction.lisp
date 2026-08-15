@@ -120,10 +120,14 @@
    :initial-value 0))
 
 (defun compaction-cut-point (entries keep-recent-tokens)
+  ;; Reverse-then-forward is the same walk as the old (nth index …)
+  ;; downfrom loop, in O(n) instead of O(n·k) (goal 20, 12F-3).
   (let ((accumulated 0)
-        (candidate nil))
-    (loop for index downfrom (1- (length entries)) to 0
-          for entry = (nth index entries)
+        (candidate nil)
+        (entry-count (length entries)))
+    (loop for entry in (reverse entries)
+          for reverse-index from 0
+          for index = (- (1- entry-count) reverse-index)
           do
           (incf accumulated
                 (compaction-entry-estimated-tokens entry))

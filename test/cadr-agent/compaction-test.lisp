@@ -1444,3 +1444,42 @@
                       :key #'cadr-agent:agent-event-type)))))
         (uiop:delete-directory-tree
          root :validate t :if-does-not-exist :ignore)))))
+
+(test compaction-cut-point-keeps-backward-walk-semantics
+  ;; goal 20, 12F-3: reverse+forward must equal the old nth-downfrom walk:
+  ;; accumulate from the end, overwrite the candidate on every message
+  ;; entry, stop once the threshold is reached, never return index 0.
+  (flet ((message-entry (characters)
+           (cadr-agent::make-session-entry
+            :type :message
+            :message (cadr-ai:make-user-message
+                      :content (make-string characters
+                                            :initial-element #\u))))
+         (other-entry (characters)
+           (cadr-agent::make-session-entry
+            :type :compaction
+            :summary (make-string characters :initial-element #\s))))
+    ;; empty
+    (is (null (cadr-agent::compaction-cut-point nil 10)))
+    ;; single message at index 0 is not a legal cut
+    (is (null
+         (cadr-agent::compaction-cut-point
+          (list (message-entry 40)) 5)))
+    ;; threshold crossed on the last entry: cut at the last message
+    (is (= 2
+           (cadr-agent::compaction-cut-point
+            (list (message-entry 40) (message-entry 40) (message-entry 40))
+            5)))
+    ;; candidate survives a trailing non-message once the threshold holds
+    (is (= 2
+           (cadr-agent::compaction-cut-point
+            (list (message-entry 40) (other-entry 400) (message-entry 8))
+            50)))
+    ;; walk reaching index 0: candidate is the deepest message, index 1
+    (is (= 1
+           (cadr-agent::compaction-cut-point
+            (list (other-entry 400) (message-entry 40)) 50)))
+    ;; threshold never reached and the only message sits at index 0
+    (is (null
+         (cadr-agent::compaction-cut-point
+          (list (message-entry 4) (other-entry 4)) 1000)))))
