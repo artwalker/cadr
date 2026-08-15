@@ -913,3 +913,39 @@ Every future goal that adds production code must state before implementation:
 The review must consider repeated decisions even when every touched file is
 below the line threshold.  New files belong where responsibility is owned, not
 where the current caller happens to be easiest to edit.
+
+## 6. Package-boundary leak baseline (goal 20, item 12E-3)
+
+`cadr-ai::` double-colon references from outside `src/cadr-ai/` are a
+compile-time declaration of "I depend on your internals"; the export list
+is therefore not the real API surface. The advisor ruling (2026-08-15)
+defers the ratchet gate until Part K closes — Part K restructuring moves
+the count in both directions, and a monotone constraint mid-refactor
+would manufacture false reds. Until then this section carries the
+baseline and the trend.
+
+Measured 2026-08-15 (HEAD `1aa4e9b1a`):
+
+| Metric | Value |
+|---|---:|
+| `cadr-ai::` occurrences outside `src/cadr-ai/` | 890 |
+| Distinct files containing them | 98 |
+| Distinct internal symbols referenced | 64 |
+
+Reproduce:
+
+```sh
+grep -roE 'cadr-ai::[A-Za-z0-9*+<>=/_-]+' src --include='*.lisp' | grep -v '^src/cadr-ai/' | wc -l   # occurrences
+grep -rlE 'cadr-ai::' src --include='*.lisp' | grep -v '^src/cadr-ai/' | wc -l                     # files
+grep -rlE 'cadr-ai::' src --include='*.lisp' | grep -v '^src/cadr-ai/' \
+  | xargs grep -hoE 'cadr-ai::[A-Za-z0-9*+<>=/_-]+' | sort -u | wc -l                              # symbols
+```
+
+Cadence (per the ruling): recompute all three at each Part K close and
+append one row below — visibility and history first, constraint
+direction second. The ratchet proposal returns at Part K close with this
+trend line attached.
+
+| Date | HEAD | Occurrences | Files | Symbols | Note |
+|---|---|---:|---:|---:|---|
+| 2026-08-15 | `1aa4e9b1a` | 890 | 98 | 64 | baseline |
