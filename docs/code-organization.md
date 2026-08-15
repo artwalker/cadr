@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=286 needs-rewrite=1 no-rewrite=6 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -384,13 +384,13 @@ files with unrelated facilities fail.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-core/atomic-file.lisp` | 106 | 8 | Atomically replace files with durability policy and private-mode enforcement. | pass | pending evaluation | — | — |
-| `src/cadr-core/cancellation.lisp` | 70 | 7 | Own the shared cancellable-state primitive and its thread-safe propagation. | pass | pending evaluation | — | — |
-| `src/cadr-core/package.lisp` | 43 | 1 | Declare the public `cadr-core` package surface. | pass | pending evaluation | — | — |
-| `src/cadr-core/paths.lisp` | 95 | 19 | Own the single user-level path layout consumed by every cadr system. | pass | pending evaluation | — | — |
-| `src/cadr-core/redacted-print.lisp` | 44 | 6 | Provide the secret-safe print-object registry that keeps credentials opaque everywhere. | pass | pending evaluation | — | — |
-| `src/cadr-core/threads.lisp` | 47 | 2 | Bound cleanup waits and terminate unresponsive workers instead of hanging exit paths. | pass | pending evaluation | — | — |
-| `src/cadr-core/time.lisp` | 66 | 5 | Own UTC/ISO time and ID formatting primitives. | pass | pending evaluation | — | — |
+| `src/cadr-core/atomic-file.lisp` | 106 | 8 | Atomically replace files with durability policy and private-mode enforcement. | pass | no-rewrite | Most-TS spot: plain string errors at :8/:41 instead of typed conditions. Right in Lisp: call-with-X + unwind-protect is the CL idiom, and the zero-dependency base layer deliberately stays below the condition hierarchies that import it. | 20 |
+| `src/cadr-core/cancellation.lisp` | 70 | 7 | Own the shared cancellable-state primitive and its thread-safe propagation. | pass | no-rewrite | Most-TS spot: ignore-errors around the user predicate at :21-22. Right in Lisp: the contract is that a failing predicate must never crash the canceller; defstruct+mutex+waitqueue is the native shape. | 20 |
+| `src/cadr-core/package.lisp` | 43 | 1 | Declare the public `cadr-core` package surface. | pass | no-rewrite | Most-TS spot: the explicit export list reads like a TS barrel file. Right in Lisp: defpackage is the boundary mechanism — this list is what the 12E-3 leak metric is measured against. | 20 |
+| `src/cadr-core/paths.lisp` | 95 | 19 | Own the single user-level path layout consumed by every cadr system. | pass | no-rewrite | Most-TS spot: eleven isomorphic one-line merge-pathnames bodies at :42-84. Right in Lisp: the set is a registry of distinct paths with per-entry provenance comments, one decision owned once — a macro would add indirection without removing a decision. | 20 |
+| `src/cadr-core/redacted-print.lisp` | 44 | 6 | Provide the secret-safe print-object registry that keeps credentials opaque everywhere. | pass | no-rewrite | Most-TS spot: hand-rolled replace-all at :22-36. Right in Lisp: cadr-core is the zero-dependency layer, and define-redacted-print-object at :13-20 is the tree-wide model of a machine-enforced benefit. | 20 |
+| `src/cadr-core/threads.lisp` | 47 | 2 | Bound cleanup waits and terminate unresponsive workers instead of hanging exit paths. | pass | no-rewrite | Most-TS spot: the catch-all (condition () timed-out) at :19. Right in Lisp: bounded cleanup must never throw, the sentinel disambiguates timeout from result, and keyword outcomes are idiomatic. | 20 |
+| `src/cadr-core/time.lisp` | 66 | 5 | Own UTC/ISO time and ID formatting primitives. | pass | needs-rewrite | unix-milliseconds at :5-7 is second-granular (get-universal-time) while named milliseconds; pi Date.now() is real ms, so this is a precision gap vs the baseline. Fix changes observable timestamp/ID precision — needs baseline-locked assertions first (Part K). | 20 |
 
 ## 3. Verdict summary and expected distribution
 

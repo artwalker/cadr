@@ -3,7 +3,7 @@
 (in-suite cadr-cli-suite)
 
 (defparameter *goal20-lispification-identity*
-  "GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=293 needs-rewrite=0 no-rewrite=0 in-progress=0 done=0")
+  "GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=286 needs-rewrite=1 no-rewrite=6 in-progress=0 done=0")
 
 (defun goal20-part-i-ledger ()
   (uiop:read-file-string
@@ -32,8 +32,12 @@
     (is (string= *goal20-lispification-identity*
                  (goal20-part-i-identity ledger)))
     (is (not (null section-2)))
-    (is (= 293
+    (is (= 286
            (count-substring "| pending evaluation | — | — |" section-2)))
+    (is (= 6
+           (count-substring "| no-rewrite |" section-2)))
+    (is (= 1
+           (count-substring "| needs-rewrite |" section-2)))
     (is (= 5
            (count-substring
             "| n/a | Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate | — |"
