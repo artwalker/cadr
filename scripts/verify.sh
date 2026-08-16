@@ -7,50 +7,101 @@ QUICKLISP_SETUP="${QUICKLISP_SETUP:-${HOME}/quicklisp/setup.lisp}"
 VERIFY_ROOT="$(mktemp -d)"
 ISOLATED_PROJECT="$VERIFY_ROOT/project"
 
-# Goal 20, queue 11a: verify is read-only by default.  Performance ledger
-# rows are written only with an explicit --record.
-RECORD_LEDGER=0
-if [ "${1:-}" = "--record" ]; then
-  RECORD_LEDGER=1
-  shift
-fi
-if [ "$#" -gt 0 ]; then
-  echo "usage: $0 [--record]" >&2
-  exit 2
-fi
 PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
 OVERALL_FAILURE=0
 
+# Goal 20, queue 11a: verify is read-only by default.  Performance ledger
+# rows are written only with an explicit --record.
+# Goal 20, verify-UX item: --only filters stages (unselected ones are
+# recorded SKIP, never PASS), --list-stages derives the list from this
+# script's own run_* call sites so it cannot drift.
+RECORD_LEDGER=0
+ONLY_PATTERNS=()
+usage() {
+  cat >&2 <<'USAGE'
+usage: verify.sh [--record] [--only SUBSTRING]... [--list-stages] [--help]
+
+  --record          also write the performance ledger rows (default: read-only)
+  --only SUBSTRING  run only stages whose name contains SUBSTRING
+                    (repeatable, case-insensitive); unselected stages are
+                    recorded as SKIP and never counted as PASS.  Use --only
+                    only when the change cannot causally affect the skipped
+                    stages (e.g. editing scripts/render-diff.py cannot
+                    affect the isolated builds, smokes, or perf gates).
+                    A Part close-out still requires the full run.
+  --list-stages     print the stages this script would run, then exit
+USAGE
+}
+while [ "$#" -gt 0 ]; do
+  case "$1" in
+    --record) RECORD_LEDGER=1; shift ;;
+    --only)
+      [ "$#" -ge 2 ] || { echo "verify: --only needs a substring" >&2; exit 2; }
+      ONLY_PATTERNS+=("$(printf '%s' "$2" | tr '[:upper:]' '[:lower:]')")
+      shift 2 ;;
+    --list-stages)
+      grep -oE 'run_(deterministic|live) "[^"]+"' "$0" | sed 's/^run_[a-z]* "//; s/"$//'
+      exit 0 ;;
+    --help|-h) usage; exit 0 ;;
+    *) usage; exit 2 ;;
+  esac
+done
+
+stage_selected() {
+  # No --only means everything runs, byte-identical to before.
+  [ "${#ONLY_PATTERNS[@]}" -eq 0 ] && return 0
+  local name
+  name="$(printf '%s' "$1" | tr '[:upper:]' '[:lower:]')"
+  local pattern
+  for pattern in "${ONLY_PATTERNS[@]}"; do
+    case "$name" in
+      *"$pattern"*) return 0 ;;
+    esac
+  done
+  return 1
+}
+
 DETERMINISTIC_NAMES=()
 DETERMINISTIC_RESULTS=()
+DETERMINISTIC_TIMES=()
 LIVE_NAMES=()
 LIVE_RESULTS=()
+LIVE_TIMES=()
 
 cleanup() {
   rm -rf -- "$VERIFY_ROOT"
 }
 trap cleanup EXIT
 
+# The third argument is the wall-clock time recorded in the Stage timings
+# section; paths that never ran the stage (skip/N-A records) leave it "-".
 record_deterministic() {
   DETERMINISTIC_NAMES+=("$1")
   DETERMINISTIC_RESULTS+=("$2")
+  DETERMINISTIC_TIMES+=("${3:--}")
 }
 
 record_live() {
   LIVE_NAMES+=("$1")
   LIVE_RESULTS+=("$2")
+  LIVE_TIMES+=("${3:--}")
 }
 
 run_deterministic() {
   local name="$1"
   shift
   printf '\n==> %s\n' "$name"
+  if ! stage_selected "$name"; then
+    record_deterministic "$name" "SKIP (not selected)"
+    return 0
+  fi
+  local start=$SECONDS
   if "$@"; then
-    record_deterministic "$name" PASS
+    record_deterministic "$name" PASS "$((SECONDS - start))s"
     return 0
   else
     local status=$?
-    record_deterministic "$name" "FAIL ($status)"
+    record_deterministic "$name" "FAIL ($status)" "$((SECONDS - start))s"
     OVERALL_FAILURE=1
     return "$status"
   fi
@@ -60,12 +111,17 @@ run_live() {
   local name="$1"
   shift
   printf '\n==> %s\n' "$name"
+  if ! stage_selected "$name"; then
+    record_live "$name" "SKIP (not selected)"
+    return 0
+  fi
+  local start=$SECONDS
   if "$@"; then
-    record_live "$name" PASS
+    record_live "$name" PASS "$((SECONDS - start))s"
     return 0
   else
     local status=$?
-    record_live "$name" "FAIL ($status)"
+    record_live "$name" "FAIL ($status)" "$((SECONDS - start))s"
     OVERALL_FAILURE=1
     return "$status"
   fi
@@ -252,6 +308,25 @@ print_summary() {
       "${LIVE_NAMES[$index]}" \
       "${LIVE_RESULTS[$index]}"
   done
+
+  # Per-stage wall-clock times.  This is a separate section (not a third
+  # column) because CI locks summary lines with grep -Fx; the two tables
+  # above must stay byte-identical.
+  local total=0
+  local time
+  printf '\nStage timings\n'
+  printf '%-48s %s\n' Stage Time
+  for ((index = 0; index < ${#DETERMINISTIC_NAMES[@]}; index++)); do
+    time="${DETERMINISTIC_TIMES[$index]}"
+    printf '%-48s %s\n' "${DETERMINISTIC_NAMES[$index]}" "$time"
+    [ "$time" = "-" ] || total=$((total + ${time%s}))
+  done
+  for ((index = 0; index < ${#LIVE_NAMES[@]}; index++)); do
+    time="${LIVE_TIMES[$index]}"
+    printf '%-48s %s\n' "${LIVE_NAMES[$index]}" "$time"
+    [ "$time" = "-" ] || total=$((total + ${time%s}))
+  done
+  printf '%-48s %s\n' Total "${total}s"
 }
 
 for command in "$SBCL_COMMAND" git node npm python3 tmux script stty jq tar sha256sum; do
@@ -516,9 +591,11 @@ if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
   if [ -x "$LIVE_PROJECT/cadr" ]; then
     run_live "DeepSeek live TUI" \
       "$LIVE_PROJECT/scripts/live-tui-smoke.sh" || true
-  else
+  elif stage_selected "DeepSeek live TUI"; then
     record_live "DeepSeek live TUI" "FAIL (isolated cadr unavailable)"
     OVERALL_FAILURE=1
+  else
+    record_live "DeepSeek live TUI" "SKIP (not selected)"
   fi
 else
   skip_live "DeepSeek live TUI" "DEEPSEEK_API_KEY is not set"
