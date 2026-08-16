@@ -206,6 +206,188 @@
       (max 0 (- height (length screen)))
       :initial-element ""))))
 
+(defun style-search-match-text (text current-p)
+  ;; Baseline interactive-mode.ts createInteractiveTui: themed search
+  ;; match styles (underline / bold+inverse over the search colors).
+  (let ((colored
+          (concatenate
+           'string
+           (theme-background-ansi :search-match-bg :enabled-p t)
+           (theme-foreground-ansi :search-match-text :enabled-p t)
+           text
+           (format nil "~C[39m" #\Escape)
+           (format nil "~C[49m" #\Escape))))
+    (if current-p
+        (format nil "~C[1;7m~A~C[22;27m" #\Escape colored #\Escape)
+        (format nil "~C[4m~A~C[24m" #\Escape colored #\Escape))))
+
+(defun renderer-refresh-search (renderer document height)
+  ;; Baseline tui-alt-screen.ts refreshSearch: recompute matches over
+  ;; the current document, resolve the selection by mode, and reveal it.
+  (let ((search (terminal-renderer-alt-search-state renderer)))
+    (when search
+      (if (zerop
+           (length
+            (normalize-search-query
+             (alt-search-state-query search))))
+          (setf (alt-search-state-matches search) nil
+                (alt-search-state-selected-index search) -1
+                (alt-search-state-selected-key search) nil
+                (alt-search-state-selection-mode search) :retain)
+          (let* ((matches
+                   (find-alt-screen-search-matches
+                    document (alt-search-state-query search)))
+                 (mode (alt-search-state-selection-mode search))
+                 (key (alt-search-state-selected-key search))
+                 (exact
+                   (and key
+                        (position key matches
+                                  :key #'search-match-key
+                                  :test #'string=)))
+                 (count (length matches))
+                 (selected
+                   (cond
+                     ((zerop count) -1)
+                     ((eq mode :query)
+                      (or (position-if
+                           (lambda (match)
+                             (>= (search-source-span-row
+                                  (first
+                                   (search-match-segments match)))
+                                 (alt-search-state-anchor-row search)))
+                           matches)
+                          0))
+                     ((eq mode :next)
+                      (let ((base
+                              (or exact
+                                  (min (alt-search-state-selected-index
+                                        search)
+                                       (1- count)))))
+                        (if (minusp base) 0 (mod (1+ base) count))))
+                     ((eq mode :previous)
+                      (let ((base
+                              (or exact
+                                  (min (alt-search-state-selected-index
+                                        search)
+                                       (1- count)))))
+                        (if (minusp base)
+                            (1- count)
+                            (mod (1- base) count))))
+                     (t
+                      (or exact
+                          (min (max 0
+                                    (alt-search-state-selected-index
+                                     search))
+                               (1- count)))))))
+            (setf (alt-search-state-matches search) matches
+                  (alt-search-state-selected-index search) selected
+                  (alt-search-state-selected-key search)
+                  (and (>= selected 0)
+                       (search-match-key (nth selected matches)))
+                  (alt-search-state-selection-mode search) :retain)
+            (when (and (not (eq mode :retain)) (>= selected 0))
+              (let* ((match (nth selected matches))
+                     (first-seg
+                       (first (search-match-segments match)))
+                     (last-seg
+                       (car (last (search-match-segments match))))
+                     (before (terminal-renderer-scroll-top renderer))
+                     (visible-bottom (+ before height -1)))
+                (when (or (< (search-source-span-row first-seg) before)
+                          (> (search-source-span-row last-seg)
+                             visible-bottom))
+                  (setf (terminal-renderer-stick-to-bottom-p renderer)
+                        nil)
+                  (setf (terminal-renderer-scroll-top renderer)
+                        (max 0
+                             (min (- (search-source-span-row first-seg)
+                                     (floor height 3))
+                                  (max 0
+                                       (- (length document)
+                                          height)))))))))))))
+
+(defun apply-search-highlights (renderer lines)
+  ;; Baseline tui-alt-screen.ts applySearchHighlights: style the match
+  ;; ranges visible in the viewport slice.
+  (let ((search (terminal-renderer-alt-search-state renderer)))
+    (if (or (null search)
+            (minusp (alt-search-state-selected-index search))
+            (null (alt-search-state-matches search)))
+        lines
+        (let ((top (terminal-renderer-scroll-top renderer))
+              (selected (alt-search-state-selected-index search)))
+          (loop for line in lines
+                for viewport-row from 0
+                collect
+                (if (image-line-p line)
+                    line
+                    (let ((ranges nil))
+                      (loop for match
+                              in (alt-search-state-matches search)
+                            for match-index from 0
+                            do (dolist (segment
+                                        (search-match-segments match))
+                                 (when (= (search-source-span-row segment)
+                                          (+ top viewport-row))
+                                   (push (list
+                                          (search-source-span-start-col
+                                           segment)
+                                          (search-source-span-end-col
+                                           segment)
+                                          (= match-index selected))
+                                         ranges))))
+                      (if (null ranges)
+                          line
+                          (let ((width (visible-width line)))
+                            (dolist (range
+                                     (sort ranges #'> :key #'first))
+                              (destructuring-bind
+                                  (start-col end-col current-p) range
+                                (let ((start (min start-col width))
+                                      (end (min end-col width)))
+                                  (when (> end start)
+                                    (setf line
+                                          (concatenate
+                                           'string
+                                           (slice-by-column
+                                            line 0 start t)
+                                           (style-search-match-text
+                                            (slice-by-column
+                                             line start
+                                             (- end start) t)
+                                            current-p)
+                                           (slice-by-column
+                                            line end
+                                            (max 0 (- width end))
+                                            t)))))))
+                            line)))))))))
+
+(defun overlay-search-bar (renderer lines width)
+  ;; The find bar docks at the top right (baseline: 40% width, at least
+  ;; 24 columns, one column of margin).
+  (let ((search (terminal-renderer-alt-search-state renderer)))
+    (if (null search)
+        lines
+        (let* ((bar-width (max 24 (floor (* width 2) 5)))
+               (bar
+                 (render-search-bar
+                  (alt-search-state-query search) bar-width
+                  (alt-search-state-selected-index search)
+                  (length (alt-search-state-matches search))))
+               (left-edge (max 0 (- width bar-width 1))))
+          (loop for line in lines
+                for row from 0
+                collect
+                (if (< row (length bar))
+                    (concatenate
+                     'string
+                     (slice-by-column line 0 left-edge t)
+                     (nth row bar)
+                     (slice-by-column
+                      line (+ left-edge bar-width)
+                      (max 0 (- width left-edge bar-width)) t))
+                    line))))))
+
 (defun render-alt-frame
     (renderer lines &key
                       (cursor-row
@@ -252,11 +434,15 @@
              (terminal-renderer-stick-to-bottom-p
               renderer)
              t))))
+    (when (terminal-renderer-alt-search-state renderer)
+      (renderer-refresh-search renderer document height))
     (let* ((selected
-             (apply-renderer-selection
+             (apply-search-highlights
               renderer
-              (alt-viewport-lines
-               renderer document height)))
+              (apply-renderer-selection
+               renderer
+               (alt-viewport-lines
+                renderer document height))))
            (selected
              ;; pi@53fa77ccd tui-alt-screen.ts:969-981
              ;; compositeFlashes: surviving flash lines overlay the
@@ -295,6 +481,8 @@
                        line
                        (slice-by-column
                         line 0 width t))))
+           (current
+             (overlay-search-bar renderer current width))
           (current
             (apply-alt-scrollbar
              renderer current width height))

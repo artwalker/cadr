@@ -53,6 +53,7 @@
                               :serial t
                               :components ((:file "terminal-protocol")
                                            (:file "virtual-terminal")
+                                           (:file "alt-screen-search")
                                            (:file "lifecycle-input")
                                            (:file "main-screen")
                                            (:file "alt-screen")))

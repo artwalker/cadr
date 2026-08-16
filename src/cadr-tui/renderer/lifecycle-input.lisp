@@ -13,6 +13,10 @@
   ;; thumb transiently after scroll activity, :always reserves a
   ;; column, :hidden never paints.
   (scrollbar-mode :auto :type symbol)
+  ;; v0.84.2 fullscreenExitOutput: :transcript replays the document on
+  ;; exit (the baseline default); :resume-hint leaves the screen and
+  ;; prints only the resume hint.
+  (exit-output-mode :transcript :type symbol)
   (scrollbar-activity-at nil :type (or null double-float))
   open-url-function
   (last-document nil :type list)
@@ -41,6 +45,11 @@
   ;; reverse-video messages composited top-right in fullscreen mode.
   (flash-entries nil :type list)
   (flash-next-id 0 :type integer)
+  ;; v0.84.2: the transcript search session, while the find bar is open.
+  (alt-search-state nil)
+  ;; v0.84.2 tui-alt-screen.ts copySelection: a host clipboard function
+  ;; with a verified success path; nil falls back to an OSC 52 write.
+  (copy-selection-function nil)
   image-protocol
   saved-capabilities
   ;; Stashed main-screen render state for live TUI-mode round-trips
@@ -66,6 +75,8 @@
        (show-hardware-cursor-p nil)
        (clear-on-shrink-p nil)
       (scrollbar-mode :auto)
+       (exit-output-mode :transcript)
+       copy-selection-function
        open-url-function)
   (%make-terminal-renderer
    :terminal terminal
@@ -81,7 +92,23 @@
    (if (member scrollbar-mode '(:auto :always :hidden))
        scrollbar-mode
        :auto)
+   :exit-output-mode
+   (if (member exit-output-mode '(:transcript :resume-hint))
+       exit-output-mode
+       :transcript)
+   :copy-selection-function copy-selection-function
    :open-url-function open-url-function))
+
+(defun renderer-open-search (renderer)
+  ;; Baseline tui-alt-screen.ts openSearch: focus the existing bar or
+  ;; open one anchored at the current viewport top.
+  (unless (terminal-renderer-alt-search-state renderer)
+    (setf (terminal-renderer-alt-search-state renderer)
+          (make-alt-search-state
+           (terminal-renderer-scroll-top renderer)))))
+
+(defun renderer-close-search (renderer)
+  (setf (terminal-renderer-alt-search-state renderer) nil))
 
 (defun renderer-flash (renderer message &optional (duration-ms 1000))
   ;; pi@53fa77ccd components/alt-screen-flash.ts:20-38 — transient
@@ -278,6 +305,7 @@ in-place repaint executes.  Production leaves this NIL; the harness
   renderer)
 
 (defun renderer-before-stop (renderer)
+  (renderer-close-search renderer)
   (when
       (and
        (not
@@ -352,18 +380,24 @@ in-place repaint executes.  Production leaves this NIL; the harness
                #\Escape
                +alt-screen-exit+
                +autowrap-disable+)
-       (loop for line in
-             (terminal-renderer-last-document
-              renderer)
-             for row from 0
-             do
-             (when (plusp row)
-               (write-string
-                (format nil "~C~C"
-                        #\Return #\Newline)
-                stream))
-             (format stream "~C~C[2K~A~C[0m"
-                     #\Return #\Escape line #\Escape))
+       ;; v0.84.2 fullscreenExitOutput: resume-hint skips the transcript
+       ;; replay; the session's resume hint prints instead.
+       (unless
+           (eq :resume-hint
+               (terminal-renderer-exit-output-mode
+                renderer))
+         (loop for line in
+               (terminal-renderer-last-document
+                renderer)
+               for row from 0
+               do
+               (when (plusp row)
+                 (write-string
+                  (format nil "~C~C"
+                          #\Return #\Newline)
+                  stream))
+               (format stream "~C~C[2K~A~C[0m"
+                       #\Return #\Escape line #\Escape)))
        (format stream
                "~C[0m~A~C~C~C[?25h~C[?2026l"
                #\Escape +autowrap-enable+
@@ -901,17 +935,28 @@ model is the port's segmentation source)."
                nil "~{~A~^~%~}"
                (nreverse lines))))
         (when (plusp (length text))
-          ;; pi@53fa77ccd tui-alt-screen.ts:896 — the fullscreen copy
-          ;; confirmation is a flash, not a status.
-          (renderer-flash renderer "Copied!")
-          (terminal-write
-           (terminal-renderer-terminal
-            renderer)
-           (format nil "~C]52;c;~A~C"
-                   #\Escape
-                   (utf8-base64 text)
-                   (code-char 7)))
-          t)))))
+          (let ((copier
+                  (terminal-renderer-copy-selection-function
+                   renderer)))
+            (if copier
+                ;; v0.84.2: the host clipboard path reports success; a
+                ;; bare OSC 52 write can flash "Copied!" without
+                ;; reaching the system clipboard.
+                (renderer-flash
+                 renderer
+                 (if (funcall copier text) "Copied!" "Copy failed"))
+                (progn
+                  ;; pi@53fa77ccd tui-alt-screen.ts:896 — the fullscreen
+                  ;; copy confirmation is a flash, not a status.
+                  (renderer-flash renderer "Copied!")
+                  (terminal-write
+                   (terminal-renderer-terminal
+                    renderer)
+                   (format nil "~C]52;c;~A~C"
+                           #\Escape
+                           (utf8-base64 text)
+                           (code-char 7)))))))
+          t))))
 
 (defun renderer-handle-mouse
     (renderer event)
@@ -1135,6 +1180,46 @@ model is the port's segmentation source)."
           (terminal-rows
            (terminal-renderer-terminal
             renderer))))
+    ;; v0.84.2: while the find bar is open it consumes keyboard input;
+    ;; only the four search actions stay live.
+    (when (keybinding-matches-p
+           keybindings data
+           "tui.altScreen.search")
+      (renderer-open-search renderer)
+      (return-from renderer-handle-input t))
+    (let ((search (terminal-renderer-alt-search-state renderer)))
+      (when search
+        (cond
+          ((keybinding-matches-p
+            keybindings data
+            "tui.altScreen.searchNext")
+           (setf (alt-search-state-selection-mode search) :next))
+          ((keybinding-matches-p
+            keybindings data
+            "tui.altScreen.searchPrevious")
+           (setf (alt-search-state-selection-mode search) :previous))
+          ((keybinding-matches-p
+            keybindings data
+            "tui.altScreen.searchClose")
+           (renderer-close-search renderer))
+          ((member data (list (string #\Rubout) (string #\Backspace))
+                   :test #'string=)
+           (let ((query (alt-search-state-query search)))
+             (when (plusp (length query))
+               ;; Drop the trailing grapheme, not the trailing codepoint.
+               (let ((clusters (grapheme-clusters query)))
+                 (setf (alt-search-state-query search)
+                       (apply #'concatenate 'string
+                              (butlast clusters)))))))
+          ((and (plusp (length data))
+                (every (lambda (character)
+                         (and (graphic-char-p character)
+                              (not (char= character #\Rubout))))
+                       data))
+           (setf (alt-search-state-query search)
+                 (concatenate 'string
+                              (alt-search-state-query search) data))))
+        (return-from renderer-handle-input t)))
     (cond
       ((keybinding-matches-p
         keybindings data
@@ -1160,6 +1245,17 @@ model is the port's segmentation source)."
         "tui.altScreen.halfPageDown")
        (renderer-scroll-by
         renderer (max 1 (floor height 2)))
+       t)
+      ;; v0.84.2: one-line viewport scrolling.
+      ((keybinding-matches-p
+        keybindings data
+        "tui.altScreen.lineUp")
+       (renderer-scroll-by renderer -1)
+       t)
+      ((keybinding-matches-p
+        keybindings data
+        "tui.altScreen.lineDown")
+       (renderer-scroll-by renderer 1)
        t)
       ((keybinding-matches-p
         keybindings data

@@ -14,6 +14,8 @@
     (:thinking-text . "#808080")
     (:selected-bg . "#3a3a4a")
     (:scrollbar-thumb . "#3a3a4a")
+    (:search-match-bg . "#3a3a4a")
+    (:search-match-text . "#d4d4d4")
     (:user-message-bg . "#343541")
     (:user-message-text . "#d4d4d4")
     (:custom-message-bg . "#2d2838")
@@ -72,6 +74,8 @@
     (:thinking-text . "#6c6c6c")
     (:selected-bg . "#d0d0e0")
     (:scrollbar-thumb . "#d0d0e0")
+    (:search-match-bg . "#d0d0e0")
+    (:search-match-text . "#1f2328")
     (:user-message-bg . "#e8e8e8")
     (:user-message-text . "#1f2328")
     (:custom-message-bg . "#ede7f6")
@@ -119,6 +123,7 @@
 (defparameter +background-theme-color-keys+
   '(:selected-bg
     :scrollbar-thumb
+    :search-match-bg
     :user-message-bg
     :custom-message-bg
     :tool-pending-bg
