@@ -217,9 +217,11 @@
            (t nil))))))
 
 (defun sdk-tool-filter
-    (explicit-tools no-tools exclude-tools)
+    (explicit-tools no-tools exclude-tools &optional default-tool-names)
   (let ((excluded
-          (copy-list exclude-tools)))
+          (copy-list exclude-tools))
+        (default-names
+          (or default-tool-names +default-coding-tool-names+)))
     (lambda (candidates)
       (remove-if
        (lambda (tool)
@@ -242,7 +244,7 @@
                         (not
                          (member
                           name
-                          +default-coding-tool-names+
+                          default-names
                           :test #'string=)))))))))
        candidates))))
 
@@ -352,7 +354,10 @@
          (provider-config nil)
          (tool-filter
            (sdk-tool-filter
-            tools no-tools exclude-tools))
+            tools no-tools exclude-tools
+            (and settings
+                 (parse-default-tools-setting
+                  (sdk-settings-value settings "defaultTools")))))
          (base-tools
            (append
             (make-all-coding-tools resolved-cwd)

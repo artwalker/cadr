@@ -83,6 +83,17 @@
       :fullscreen
       :regular))
 
+(defun parse-default-tools-setting (value)
+  ;; Baseline v0.84.2 settings-manager.ts getDefaultTools: a string array
+  ;; passes through as a copy; anything else is absent.
+  (and (vectorp value)
+       (every #'stringp value)
+       (coerce value 'list)))
+
+(defun settings-default-tools (manager)
+  (parse-default-tools-setting
+   (settings-value manager "defaultTools")))
+
 (defun settings-fullscreen-scrollbar (manager)
   ;; pi@53fa77ccd settings-manager.ts:1138-1141 — "always"/"hidden" pass
   ;; through; everything else falls back to "auto".  No effect in

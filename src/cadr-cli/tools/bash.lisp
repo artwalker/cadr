@@ -578,6 +578,7 @@
      (number-property
       "Timeout in seconds (optional, no default timeout)"))
     '("command"))
+   :constrained-sampling (experimental-tool-sampling)
    :execution-mode :sequential
    :executor
    (lambda (call-id arguments)

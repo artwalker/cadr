@@ -712,7 +712,11 @@
                   (or
                    (cli-arguments-tools command)
                    (append
-                    +default-coding-tool-names+
+                    ;; Baseline v0.84.2 sdk.ts: the defaultTools setting
+                    ;; overrides the built-in default selection.
+                    (or
+                     (settings-default-tools settings-manager)
+                     +default-coding-tool-names+)
                     (mapcar
                      #'cadr-ai:tool-name
                      (remove-if

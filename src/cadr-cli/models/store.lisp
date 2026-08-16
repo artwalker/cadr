@@ -116,6 +116,48 @@
     headers)
    :compat (cadr-ai::model-compat model)))
 
+(defun model-compat-json-key (name)
+  ;; camelCase wire key to the compat plist's uppercase kebab keyword.
+  (intern
+   (string-upcase
+    (with-output-to-string (out)
+      (loop for character across name
+            do (when (upper-case-p character)
+                 (write-char #\- out))
+               (write-char character out))))
+   :keyword))
+
+(defparameter +model-compat-boolean-keys+
+  '("supportsDeveloperRole" "supportsLongCacheRetention"
+    "supportsStrictMode" "supportsOpenAIGrammarTools"
+    "supportsAdditionalTools" "supportsToolSearch"
+    "supportsEagerToolInputStreaming" "sendSessionAffinityHeaders"
+    "supportsCacheControlOnTools" "supportsTemperature"
+    "forceAdaptiveThinking" "allowEmptySignature"
+    "supportsStrictTools" "supportsToolReferences"))
+
+(defparameter +model-compat-enum-keys+
+  '("sessionAffinityFormat" "deferredToolsMode" "cacheControlFormat"
+    "thinkingFormat"))
+
+(defun parse-model-compat (object)
+  ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum
+  ;; compat keys from models.json.  The routing-object keys
+  ;; (openRouterRouting, vercelGatewayRouting) are not parsed yet.
+  (when (hash-table-p object)
+    (loop for key being the hash-keys of object
+          using (hash-value value)
+          append
+          (cond
+            ((member key +model-compat-boolean-keys+ :test #'string=)
+             (list (model-compat-json-key key)
+                   (not (null value))))
+            ((and (member key +model-compat-enum-keys+ :test #'string=)
+                  (stringp value))
+             (list (model-compat-json-key key)
+                   (model-compat-json-key value)))
+            (t nil)))))
+
 (defun json-model (provider object base-url
                    provider-api provider-headers)
   (let ((id (cadr-ai::json-get object "id")))
@@ -165,4 +207,6 @@
      (merge-header-sources
       provider-headers
       (cadr-ai::json-object-alist
-       (cadr-ai::json-get object "headers"))))))
+       (cadr-ai::json-get object "headers")))
+     :compat
+     (parse-model-compat (cadr-ai::json-get object "compat")))))

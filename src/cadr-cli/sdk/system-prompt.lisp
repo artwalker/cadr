@@ -124,7 +124,7 @@
           skills)
          output))
       (format output
-              "~%Current working directory: ~A"
+              "~%Current working directory: ~A~%"
               (or cwd ".")))))
 
 (defun provider-header-table (headers)

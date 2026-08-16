@@ -586,3 +586,55 @@
              (cadr-cli::agent-session-services-diagnostics
               services)))
         (cadr-cli::agent-session-dispose session)))))
+
+(test goal12-sdk-default-tools-setting-selects-initial-builtin-tools
+  ;; Mirrors default-tools-setting.test.ts (v0.84.2): the defaultTools
+  ;; setting replaces the built-in default selection; explicit options
+  ;; keep precedence.
+  (with-test-directory (temporary)
+    (multiple-value-bind (session)
+        (cadr-cli::create-agent-session
+         :cwd temporary
+         :agent-directory (merge-pathnames "agent/" temporary)
+         :model (goal12-sdk-model)
+         :provider :faux
+         :thinking-level :off
+         :stream-function #'goal12-sdk-stream
+         :session-manager
+         (cadr-cli::session-manager-in-memory temporary)
+         :settings-manager
+         (cadr-cli::make-memory-sdk-settings-manager
+          (cadr-ai::json-object
+           "defaultTools" (vector "grep" "find"))))
+      (is (equal '("find" "grep")
+                 (sort
+                  (mapcar
+                   #'cadr-ai:tool-name
+                   (cadr-agent::registry-tools
+                    (cadr-agent::agent-tool-registry
+                     (cadr-cli::agent-session-agent session))))
+                  #'string<)))
+      (cadr-cli::agent-session-dispose session))
+    ;; Explicit :tools still wins over the setting.
+    (multiple-value-bind (session)
+        (cadr-cli::create-agent-session
+         :cwd temporary
+         :agent-directory (merge-pathnames "agent/" temporary)
+         :model (goal12-sdk-model)
+         :provider :faux
+         :thinking-level :off
+         :stream-function #'goal12-sdk-stream
+         :session-manager
+         (cadr-cli::session-manager-in-memory temporary)
+         :settings-manager
+         (cadr-cli::make-memory-sdk-settings-manager
+          (cadr-ai::json-object
+           "defaultTools" (vector "grep")))
+         :tools '("read"))
+      (is (equal '("read")
+                 (mapcar
+                  #'cadr-ai:tool-name
+                  (cadr-agent::registry-tools
+                   (cadr-agent::agent-tool-registry
+                    (cadr-cli::agent-session-agent session))))))
+      (cadr-cli::agent-session-dispose session))))

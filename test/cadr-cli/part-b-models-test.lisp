@@ -951,3 +951,59 @@
           (is (eq t (first result)))
           (is (= 0 (second result)))
           (is (search "cadr auth check" (third result))))))))
+
+(test model-registry-parses-compat-overrides-from-models-json
+  ;; v0.84.2 model-config.ts ProviderCompatSchema: compat overrides in
+  ;; models.json reach the model compat plist; supportsAdditionalTools
+  ;; joined the schema in that release.
+  (with-test-directory (root)
+    (let ((models-path
+            (merge-pathnames "agent/models.json" root))
+          (auth-path
+            (merge-pathnames "agent/auth.json" root)))
+      (write-json
+       models-path
+       (args
+        "providers"
+        (args
+         "goal20faux"
+         (args
+          "baseUrl" "http://127.0.0.1:9/v1"
+          "api" "openai-responses"
+          "models"
+          (vector
+           (args
+            "id" "faux-compat"
+            "compat"
+            (args
+             "supportsAdditionalTools" t
+             "supportsStrictMode" nil
+             "sessionAffinityFormat" "openrouter")))))))
+      (write-json
+       auth-path
+       (args
+        "goal20faux"
+        (args "type" "api_key" "key" "faux")))
+      (let* ((registry
+               (cadr-cli:make-model-registry
+                :path models-path
+                :credentials
+                (cadr-cli:make-file-auth-storage
+                 auth-path)))
+             (model
+               (find
+                "faux-compat"
+                (cadr-cli:model-registry-all registry)
+                :key #'cadr-ai:model-id
+                :test #'string=)))
+        (is (null (cadr-cli:model-registry-error registry)))
+        (is (not (null model)))
+        (is (eq t
+                (cadr-ai::model-compat-value
+                 model :supports-additional-tools nil)))
+        (is (eq nil
+                (cadr-ai::model-compat-value
+                 model :supports-strict-mode t)))
+        (is (eq :openrouter
+                (cadr-ai::model-compat-value
+                 model :session-affinity-format nil)))))))

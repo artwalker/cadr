@@ -391,15 +391,12 @@
         (wire-message-to-json
          (cadr-agent:agent-event-message event))))
       (:message-update
+       ;; NOTE (goal 20 v0.84.2 upgrade): the baseline adds a cumulative
+       ;; `usage` field to this wire event.  That change is event-diff
+       ;; visible, so it lands together with the baselineCommit bump
+       ;; (upgrade step 4), not here.
        (cadr-ai::json-put
         object "assistantMessageEvent"
-        ;; pi@53fa77ccd modes/json-event.ts toJsonEvent: wire events
-        ;; strip the cumulative snapshot entirely. message_update
-        ;; carries only the delta; message_start carries the initial
-        ;; message, deltas build it, message_end carries the final
-        ;; authoritative one. Emitting `message` here would put a
-        ;; full snapshot on every delta and diverge from the baseline
-        ;; wire shape.
         (let ((stream-object
                 (stream-event-to-json
                  (cadr-agent:agent-event-stream-event

@@ -661,6 +661,7 @@
         (string-property "Replacement text for this targeted edit."))
        '("oldText" "newText"))))
     '("path" "edits"))
+   :constrained-sampling (experimental-tool-sampling)
    :execution-mode :sequential
    :executor
    (lambda (call-id arguments)
