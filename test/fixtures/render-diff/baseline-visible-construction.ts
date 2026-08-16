@@ -26,6 +26,7 @@ import { SkillInvocationMessageComponent } from "../src/modes/interactive/compon
 import { AssistantMessageComponent } from "../src/modes/interactive/components/assistant-message.ts";
 import { initTheme, theme } from "../src/modes/interactive/theme/theme.ts";
 import { createEventBus } from "../src/core/event-bus.ts";
+import { CredentialSynchronizationError } from "../src/core/model-runtime.ts";
 import { formatMissingSessionCwdPrompt, MissingSessionCwdError } from "../src/core/session-cwd.ts";
 import { printTimings, resetTimings, time } from "../src/core/timings.ts";
 import { listModels } from "../src/cli/list-models.ts";
@@ -469,6 +470,9 @@ await handlePackageCommand(["update", "--models"]);
 process.exitCode = 0;
 
 printAuthCommandHelp();
+const { main: constructionMain } = await import("../src/main.ts");
+await constructionMain(["auth", "check", "--provider", "provider-one", "--bogus"]);
+process.exitCode = 0;
 createGrepToolDefinition("/tmp").renderResult(
 	{
 		content: [{ type: "text", text: "long line" }],
@@ -843,8 +847,16 @@ Object.assign(interactive, {
 		strikethrough: (value: string) => value,
 		underline: (value: string) => value,
 	}),
-	footer: { invalidate() {} },
-	footerDataProvider: { clearExtensionStatuses() {}, setAvailableProviderCount() {} },
+	footer: {
+		invalidate() {},
+		setSession() {},
+		setAutoCompactEnabled() {},
+	},
+	footerDataProvider: {
+		clearExtensionStatuses() {},
+		setAvailableProviderCount() {},
+		setCwd() {},
+	},
 	editor: { addToHistory() {}, setText() {}, getText: () => "", borderColor: "" },
 	defaultEditor: { onEscape: undefined, onExtensionShortcut: undefined, setAutocompleteProvider() {} },
 	ui: {
@@ -1261,6 +1273,69 @@ interactive.showLoadedResources = () => {};
 interactive.maybeSaveImplicitProjectTrustAfterReload = () => true;
 interactive.session.modelRuntime.getError = () => "catalog failure";
 await invoke("handleReloadCommand");
+
+// v0.84.2 credential-store and catalog-refresh failure arms.
+modelRuntime.listCredentials = async () => {
+	throw new Error("credential store unreadable (construction drive)");
+};
+await invoke("showOAuthSelector", "logout");
+modelRuntime.listCredentials = async () => [{ providerId: "oauth-provider", type: "oauth" }];
+modelRuntime.logout = async () => {
+	throw new CredentialSynchronizationError("oauth-provider", "logout", undefined, {});
+};
+await invoke("showOAuthSelector", "logout");
+await (constructedSelectors.findLast((component) => component.constructor.name === "OAuthSelectorComponent") as any)
+	.onSelectCallback("oauth-provider", "oauth");
+modelRuntime.login = async () => {
+	throw new CredentialSynchronizationError("provider-one", "login", undefined, {});
+};
+await invoke("showLoginDialog", "provider-one", "Provider One");
+
+modelRuntime.getAvailableSnapshot = () => [codexModel];
+await invoke("completeProviderAuthentication", "openai-codex", "OpenAI Codex", "oauth", unknownModel);
+modelRuntime.refresh = async () => ({ aborted: true, errors: new Map() });
+await invoke("completeProviderAuthentication", "openai-codex", "OpenAI Codex", "oauth", unknownModel);
+modelRuntime.refresh = async () => ({ aborted: false, errors: new Map([["openai-codex", new Error("catalog drive")]]) });
+await invoke("completeProviderAuthentication", "openai-codex", "OpenAI Codex", "oauth", unknownModel);
+modelRuntime.refresh = async () => {
+	throw new Error("catalog unreachable (construction drive)");
+};
+await invoke("completeProviderAuthentication", "openai-codex", "OpenAI Codex", "oauth", unknownModel);
+await new Promise((resolve) => setImmediate(resolve));
+
+// An earlier drive installs an own-property stub for findExactModelMatch;
+// bind the real method back so the refresh arms below execute.
+interactive.findExactModelMatch = InteractiveMode.prototype["findExactModelMatch"];
+modelRuntime.refresh = async () => ({ aborted: false, errors: new Map([["provider-one", new Error("catalog drive")]]) });
+await invoke("handleModelCommand", "zz-no-such-entry");
+await new Promise((resolve) => setImmediate(resolve));
+modelRuntime.refresh = async () => {
+	throw new Error("catalog unreachable (construction drive)");
+};
+await invoke("handleModelCommand", "zz-no-such-entry");
+await new Promise((resolve) => setImmediate(resolve));
+// Timeout arm: fire the refresh deadline immediately so the caller-side
+// abort rejects the race and the catch reports the timed-out text.
+const realSetTimeout = globalThis.setTimeout;
+(globalThis as unknown as { setTimeout: (fn: () => void) => unknown }).setTimeout = (fn) => {
+	fn();
+	return 0;
+};
+await invoke("handleModelCommand", "zz-no-such-entry");
+globalThis.setTimeout = realSetTimeout;
+modelRuntime.refresh = async () => ({ errors: new Map(), aborted: false });
+
+invoke("handleStartupSubmit", "queued while starting");
+interactive.chatContainer = new Container();
+invoke("showManagedToolStatus", { type: "warning", message: "managed tool drive" });
+invoke("showManagedToolStatus", { type: "info", message: "managed tool drive" });
+
+interactive.switchTuiMode = () => false;
+interactive.statusContainer = new Container();
+invoke("showSettingsSelector");
+(constructedSelectors.at(-1) as any).getSettingsList().onChange("tui-mode", "fullscreen");
+interactive.switchTuiMode = () => true;
+(constructedSelectors.at(-1) as any).getSettingsList().onChange("tui-mode", "fullscreen");
 
 interactive.session.isBashRunning = true;
 invoke("setupEditorSubmitHandler");

@@ -3,7 +3,7 @@
   "baselineCommit": "914cf1472e715297caa30db4b9535d534a9eb718",
   "entries": [
     {
-  "id": "VS-cc123433bc7e2cc8",
+  "id": "VS-5b4d79218b4929c5",
       "branchId": "B-fd13d93a29bf",
   "reason": "main.ts:150 'Failed to parse auth command' fires only when parseCredentialPrintCommand throws a non-CredentialPrintError; all twelve baseline throw sites (cli/credential-print.ts:38,51,56,68,71,74,99,111,140,143,145,149) throw CredentialPrintError with a message, so the fallback is unreachable through any user input.",
       "obstacleKind": "unreachable-in-baseline",
@@ -19,7 +19,7 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-d4d0b32d60b2e0c6",
+  "id": "VS-6447d2fd0b8dfeac",
       "branchId": "B-3f0215f4a9d2",
   "reason": "main.ts:211 'Failed to resolve credential' fires only on a non-CredentialPrintError throw; resolveCredentialForPrint throws only CredentialPrintError and ModelRuntime.create({allowModelNetwork:false}) reports models.json failures as values (core/model-config.ts:251,261,271), never throws.",
       "obstacleKind": "unreachable-in-baseline",
@@ -35,7 +35,7 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-e8cd9970dc0c8f65",
+  "id": "VS-bb58c66ea271c03f",
       "branchId": "B-fa0be7fade22",
   "reason": "main.ts:633 'Failed to export session' fires only when exportFromFile throws a value without a message; every baseline throw site (core/export-html/index.ts:245,248,293) throws an Error with a message.",
       "obstacleKind": "unreachable-in-baseline",
@@ -51,7 +51,7 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-d2c9430c3e8a2be8",
+  "id": "VS-6ff70f58a3779492",
       "branchId": "B-85d3c79ec77b",
   "reason": "package-manager-cli.ts:733 'Unknown model catalog refresh error' fires only when refreshModelCatalogs throws a messageless value; its network and parse failures are all Errors with messages.",
       "obstacleKind": "unreachable-in-baseline",
@@ -67,7 +67,7 @@
       "userDecisionId": "USER-2026-08-10-001"
     },
     {
-  "id": "VS-8c176b0d80173ba4",
+  "id": "VS-e6a6aff1812e4741",
       "branchId": "B-c5a60ab5ff3b",
   "reason": "package-manager-cli.ts:870 'Unknown package command error' is the catch-all fallback for messageless throws around package operations and the self-update runner; every baseline failure path produces an Error with a message.",
       "obstacleKind": "unreachable-in-baseline",
@@ -143,22 +143,6 @@
         "command": ["id", "-u"],
         "expected": "0",
         "observed": "0"
-      },
-      "userDecisionId": "USER-2026-08-10-001"
-    },
-    {
-  "id": "VS-a4a4690dcdd9cc0a",
-      "branchId": "B-6e91fc06717b",
-  "reason": "tools-manager.ts:349 'not found. Install with: pkg install' fires only when platform() === 'android' (Termux); the gate runs on Linux/Android-free hosts.",
-      "obstacleKind": "unavailable-operating-system",
-      "baselineEvidence": {
-        "path": "packages/coding-agent/src/utils/tools-manager.ts",
-    "line": 349
-      },
-      "probe": {
-        "command": ["node", "-p", "process.platform"],
-        "expected": "android",
-        "observed": "linux"
       },
       "userDecisionId": "USER-2026-08-10-001"
     }

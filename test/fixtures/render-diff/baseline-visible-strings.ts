@@ -1667,11 +1667,15 @@ if (instrumentRoot) {
 				`\tconst values = typeof value === \"string\" ? [value] : Array.isArray(value) && value.every((item) => typeof item === \"string\") ? value : undefined;\n` +
 				`\tif (!values || values.length === 0) return value;\n` +
 				`\tconst visibleValue = values.join(\"\\n\");\n` +
+				`\t// chalk styles each output line separately, so a fixed fragment\n` +
+				`\t// spanning a line boundary (leading or trailing \"\\n\") is split by\n` +
+				`\t// SGR codes in the colored value; match against the stripped copy.\n` +
+				`\tconst plainValue = visibleValue.replace(/\\x1b\\[[0-9;]*m/g, \"\");\n` +
 				`\tconst state = globalThis as typeof globalThis & { __cadrRenderDiffPendingVisibleSpans?: Array<{ key: string; begin: string; end: string; candidates: string[] }>; __cadrRenderDiffPendingVisibleKeys?: Set<string>; __cadrRenderDiffRawStderrWrite?: (chunk: string) => unknown; __cadrRenderDiffConstructMarkers?: Set<string>; __cadrRenderDiffConstructFlushInstalled?: boolean };\n` +
 				`\tconst keys = (state.__cadrRenderDiffPendingVisibleKeys ??= new Set());\n` +
 				`\tfor (const [, branchId, parts] of branches) {\n` +
 				`\t\tlet offset = 0;\n` +
-				`\t\tif (!parts.every((part) => { const found = visibleValue.indexOf(part, offset); if (found < 0) return false; offset = found + part.length; return true; })) continue;\n` +
+				`\t\tif (!parts.every((part) => { const found = plainValue.indexOf(part, offset); if (found < 0) return false; offset = found + part.length; return true; })) continue;\n` +
 				`\t\tconst key = \`\${siteId}/\${branchId}\`;\n` +
 				`\t\tif (keys.has(key)) continue;\n` +
 				`\t\tkeys.add(key);\n` +
