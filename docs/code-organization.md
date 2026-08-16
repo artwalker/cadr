@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=8 needs-rewrite=140 no-rewrite=145 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=0 needs-rewrite=146 no-rewrite=147 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -284,14 +284,14 @@ files with unrelated facilities fail.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-evals/artifacts.lisp` | 168 | 11 | Validate, hash, persist, and reference eval artifacts. | pass | pending evaluation | — | — |
-| `src/cadr-evals/harness-table.lisp` | 359 | 17 | Define eval harness rows/tables, canonical group keys, and iteration wrappers. | pass · large | pending evaluation | — | — |
-| `src/cadr-evals/harness.lisp` | 730 | 29 | Run a coding-agent eval lifecycle and normalize transcript, usage, and cleanup. | pass · large | pending evaluation | — | — |
-| `src/cadr-evals/main.lisp` | 154 | 5 | Parse eval CLI arguments, dispatch suites, and validate result shape. | pass | pending evaluation | — | — |
-| `src/cadr-evals/package.lisp` | 100 | 2 | Declare the public eval package and session snapshot artifact name. | pass | pending evaluation | — | — |
-| `src/cadr-evals/reporter.lisp` | 308 | 14 | Persist eval case records and finish a harness report. | pass · large | pending evaluation | — | — |
-| `src/cadr-evals/suites.lisp` | 479 | 21 | Define the smoke and extension-authoring eval suites and judges. | pass · large | pending evaluation | — | — |
-| `src/cadr-evals/summary.lisp` | 733 | 31 | Pair observations, compute correctness/efficiency summaries, and render comparison reports. | pass · large | pending evaluation | — | — |
+| `src/cadr-evals/artifacts.lisp` | 168 | 11 | Validate, hash, persist, and reference eval artifacts. | pass | no-rewrite | The slash-joined path at :136-138 doubles as the persisted JSON reference (byte-pinned in runs.jsonl); structs and keyword dispatch are native. | 20 |
+| `src/cadr-evals/harness-table.lisp` | 359 | 17 | Define eval harness rows/tables, canonical group keys, and iteration wrappers. | pass · large | needs-rewrite | Re-implements run-eval-harness's copy-run-merge at :298-325 plus a redundant hash copy per run; removable with identical artifacts. | 20 |
+| `src/cadr-evals/harness.lisp` | 730 | 29 | Run a coding-agent eval lifecycle and normalize transcript, usage, and cleanup. | pass · large | needs-rewrite | length+nthcdr+find-if integer indexing into the message list at :373-382; retaining the pre-prompt tail is O(1) and observably identical. | 20 |
+| `src/cadr-evals/main.lisp` | 154 | 5 | Parse eval CLI arguments, dispatch suites, and validate result shape. | pass | needs-rewrite | The --flag= prefix-check+subseq clause is hand-copied per option with the magic length recomputed 4x (:33-56); a prefix helper collapses both. | 20 |
+| `src/cadr-evals/package.lisp` | 100 | 2 | Declare the public eval package and session snapshot artifact name. | pass | no-rewrite | Flat export list is the defpackage idiom; defparameter (not defconstant) for a string constant is the correct portable choice. | 20 |
+| `src/cadr-evals/reporter.lisp` | 308 | 14 | Persist eval case records and finish a harness report. | pass · large | needs-rewrite | append-at-end accumulation at :276-282 (O(n^2)); push/nreverse preserves observable order. | 20 |
+| `src/cadr-evals/suites.lisp` | 479 | 21 | Define the smoke and extension-authoring eval suites and judges. | pass · large | needs-rewrite | The (or (json-get ...) "") coalesce is hand-copied ~8x in nested lambdas at :253-296; one string-accessor helper. | 20 |
+| `src/cadr-evals/summary.lisp` | 733 | 31 | Pair observations, compute correctness/efficiency summaries, and render comparison reports. | pass · large | needs-rewrite | format-summary-signed accepts and ignores fraction-digits (:515-522) while every call site passes 1 — a vestigial TS signature parameter. | 20 |
 
 ### 2.5 `cadr-protocol`
 
