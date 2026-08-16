@@ -8,18 +8,18 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=293 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=294 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 293 Lisp files and 120,740 physical lines.  The form
+The audited tree contains 294 Lisp files and 121,951 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
 |---|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
 | `cadr-core` | 7 | 471 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
-| `cadr-ai` | 61 | 25,818 | 46 | 13 | 6 | 34 | 1 | 65 | 2 | 0 |
-| `cadr-agent` | 36 | 16,085 | 49 | 6 | 23 | 35 | 15 | 53 | 3 | 1 |
-| `cadr-cli` | 114 | 48,020 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
-| `cadr-tui` | 49 | 23,093 | 40 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
+| `cadr-ai` | 61 | 26,341 | 46 | 13 | 6 | 34 | 1 | 66 | 2 | 0 |
+| `cadr-agent` | 37 | 16,279 | 49 | 7 | 23 | 35 | 15 | 54 | 3 | 1 |
+| `cadr-cli` | 114 | 48,345 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
+| `cadr-tui` | 49 | 23,262 | 40 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
 | `cadr-server` | 11 | 2,764 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
 | `cadr-protocol` | 5 | 1,427 | 4 | 0 | 0 | 0 | 0 | 5 | 0 | 0 |
@@ -151,6 +151,7 @@ as permanent:
 | `src/cadr-tui/renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp` | separate terminal protocols, deterministic virtual terminal, lifecycle/input, and screen-specific rendering | keep terminal polymorphism and closed renderer state; main- and alt-screen algorithms remain explicit owners |
 | `src/cadr-agent/{session,storage,loop}/*.lisp` | separate codecs, journals, migration/discovery/export, storage protocols/backends, lifecycle events, tool execution, turns, and loop entrypoints | keep serialized tags and mutable closed state explicit; retain CLOS only for the storage protocol and keep B3 time/atomic decisions delegated before extraction |
 | `src/cadr-agent/summarization.lisp` | one non-bypassable owner for retry classification, abort-aware backoff, cache isolation, and fresh routing identity across every summary request | keep as a plain function over the closed agent/request protocol; `check-summarization-choke-point.sh` proves all compaction, split-turn, and branch call sites pass through it, so a macro or class would add syntax without another invariant |
+| `src/cadr-agent/harness-events.lisp` | harness run lifecycle event bus (v0.84.2 baseline `harness/events.ts`) with buffered watch semantics | keep as a plain listener-registry class plus functions; the bus is a closed notification channel, not an open dispatch protocol |
 | `src/cadr-agent/extensions/*.lisp` | separate context/UI contracts, API copying/events, registration, snapshots, rendering, provider projection, commands/templates, and lifecycle dispatch | keep the frozen macro/event surface explicit; preserve B3 cancellation and injected output ownership rather than introducing a second host abstraction |
 | `src/cadr-tui/threads.lisp` | bounded join/forced-stop cleanup for terminal workers | keep as one function over SBCL's closed thread primitive; wrapping threads in a new class would not remove another invariant |
 | `src/cadr-core/{package,threads,cancellation,atomic-file,redacted-print,time,paths}.lisp` | one bottom-layer owner for the repeated failure-safety decisions and the user-level path layout | keep as the dependency-free internal leaf approved in Goal 14 B3; product packages retain only compatibility delegation where required |

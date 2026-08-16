@@ -408,7 +408,11 @@
     ;; settings-fullscreen-scrollbar, and
     ;; settings-mermaid-rendering-mode (bootstrap/settings.lisp, the
     ;; v0.84.1 settings readers).
-    (is (= 120 definition-count)
+    ;; +1 goal 20 v0.84.2 baseline upgrade: settings-default-tools
+    ;; (bootstrap/settings.lisp, the v0.84.2 defaultTools reader).
+    ;; +1 goal 20 v0.84.2 baseline upgrade: parse-default-tools-setting
+    ;; (bootstrap/settings.lisp, shared by the raw and SDK managers).
+    (is (= 122 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -1221,7 +1225,12 @@
     ;; +2 goal 18 sentinel adjudication: no-models-available-message and
     ;; no-model-selected-message joined no-api-key-found-message in
     ;; support/release.lisp as the single message owners.
-    (is (= 253 definition-count)
+    ;; +11 goal 20 v0.84.2 baseline upgrade: the strict-schema family in
+    ;; capabilities/grammar-tools.lisp (condition, key list, error helper,
+    ;; structured/null probes, node/root strictifiers, parameter getter),
+    ;; cadr-user-agent in support/release.lisp, and the
+    ;; optional-null-normalization pair in support/grammar-coercion.lisp.
+    (is (= 264 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
@@ -1269,7 +1278,11 @@
               ;; +1 export #:provider-oauth-subscription-p (goal 18
               ;; provider metadata: bootstrap/commands.lisp consumes
               ;; the isUsingSubscription port).
-              "47ac5dd0a816a0b3e72e2652817f10b0127c3c3969dc0053730e53070aaf43e6"
+              ;; +5 goal 20 v0.84.2 baseline upgrade: tool-call-namespace,
+              ;; assistant-message-end-turn, make-strict-json-schema,
+              ;; get-json-schema-tool-parameters,
+              ;; unsupported-strict-json-schema-error.
+              "d098e719c558f86f9d66db13bc6a5b59dbfb0d81df4ce8a6354ad9f0b65ec950"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
