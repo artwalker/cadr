@@ -193,3 +193,23 @@
     "a b  "
     (cadr-agent::substitute-prompt-arguments
      "$1 $2 $3 $4" '("a" "b")))))
+
+(test skills-prompt-header-matches-baseline-core-formatter
+  ;; Baseline packages/coding-agent/src/core/skills.ts:343-346, the
+  ;; formatter that buildSystemPrompt actually imports — goal 20 found
+  ;; cadr had transcribed the unused harness variant (no leading blank
+  ;; line, and "Read the full skill file" instead of naming the read
+  ;; tool).
+  (let* ((skill
+           (cadr-agent::make-skill
+            :name "demo"
+            :description "Demo skill"
+            :content "x"
+            :file-path "/skills/demo/SKILL.md"))
+         (formatted
+           (cadr-agent::format-skills-for-system-prompt (list skill)))
+         (expected
+           (format
+            nil
+            "~%~%The following skills provide specialized instructions for specific tasks.~%Use the read tool to load a skill's file when the task matches its description.~%When a skill file references a relative path, resolve it against the skill directory (parent of SKILL.md / dirname of the path) and use that absolute path in tool commands.~%~%<available_skills>~%  <skill>~%    <name>demo</name>~%    <description>Demo skill</description>~%    <location>/skills/demo/SKILL.md</location>~%  </skill>~%</available_skills>")))
+    (is (string= expected formatted))))

@@ -493,6 +493,11 @@ and inspect them before sharing.
   REPL.
 - By explicit user decision, every selector wraps in both directions, including
   the few original pi selectors that clamp at a boundary.
+- Baseline ambiguity on record: pi carries two skills-formatter
+  implementations whose texts differ (`packages/coding-agent/src/core/skills.ts`
+  vs `packages/agent/src/harness/system-prompt.ts`). cadr locks the core
+  variant, the one `buildSystemPrompt` actually imports. If upstream ever
+  unifies on the harness text, this becomes a difference to re-adjudicate.
 - By explicit user decision, bash tool titles omit the explicit-timeout suffix
   and always render as `$ <command>`.
 - By explicit user decision, OpenAI OAuth authorization requests and Codex

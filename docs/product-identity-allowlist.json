@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 651,
+  "expected_findings": 652,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4593,6 +4593,14 @@
       "line": "(defun parse-mapping-cell (line cell-start cell-end row pi-file line-start)",
       "occurrences": 1,
       "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
+    },
+    {
+      "path": "README.md",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "- Baseline ambiguity on record: pi carries two skills-formatter",
+      "occurrences": 1,
+      "reason": "README differences section records an upstream dual-implementation ambiguity by name."
     }
   ],
   "opaque_files": [
