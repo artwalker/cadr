@@ -1223,24 +1223,35 @@
     (return-from latex-parse-command ""))
   (let ((command nil)
         (first (latex-parser-peek parser)))
-    (if (and first
-             (or (and (char>= first #\a) (char<= first #\z))
-                 (and (char>= first #\A) (char<= first #\Z))))
-        (let ((start (latex-parser-position parser)))
-          (loop while (and (not (latex-parser-done-p parser))
-                           (let ((c (latex-parser-peek parser)))
-                             (or (and (char>= c #\a)
-                                      (char<= c #\z))
-                                 (and (char>= c #\A)
-                                      (char<= c #\Z)))))
-                do (incf (latex-parser-position parser)))
-          (setf command
-                (subseq (latex-parser-source parser)
-                        start
-                        (latex-parser-position parser))))
-        (progn
-          (setf command (string first))
-          (incf (latex-parser-position parser))))
+    (cond
+      ((or (eql first #\Newline) (eql first #\Return))
+       ;; Baseline v0.84.2 latex.ts: a line break directly after the
+       ;; backslash is one space (CRLF counts once).
+       (incf (latex-parser-position parser))
+       (when (and (eql first #\Return)
+                  (not (latex-parser-done-p parser))
+                  (eql (latex-parser-peek parser) #\Newline))
+         (incf (latex-parser-position parser)))
+       (setf command nil)
+       (return-from latex-parse-command " "))
+      ((and first
+            (or (and (char>= first #\a) (char<= first #\z))
+                (and (char>= first #\A) (char<= first #\Z))))
+       (let ((start (latex-parser-position parser)))
+         (loop while (and (not (latex-parser-done-p parser))
+                          (let ((c (latex-parser-peek parser)))
+                            (or (and (char>= c #\a)
+                                     (char<= c #\z))
+                                (and (char>= c #\A)
+                                     (char<= c #\Z)))))
+               do (incf (latex-parser-position parser)))
+         (setf command
+               (subseq (latex-parser-source parser)
+                       start
+                       (latex-parser-position parser)))))
+      (t
+       (setf command (string first))
+       (incf (latex-parser-position parser))))
     (cond
       ((string= command "\\")
        (format nil "~%"))
@@ -1549,9 +1560,13 @@
             previous))))
 
 (defun latex-parse-required-argument-value (parser)
+  ;; Baseline v0.84.2 latex.ts: any whitespace is skipped here, not just
+  ;; space and tab.
   (loop while (and (not (latex-parser-done-p parser))
-                   (member (latex-parser-peek parser)
-                           '(#\Space #\Tab) :test #'char=))
+                   (let ((peek (latex-parser-peek parser)))
+                     (member peek
+                             '(#\Space #\Tab #\Newline #\Return #\Page)
+                             :test #'char=)))
         do (incf (latex-parser-position parser)))
   (when (latex-parser-done-p parser)
     (setf (latex-parser-supported-p parser) nil)

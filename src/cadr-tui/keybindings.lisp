@@ -73,8 +73,15 @@
     ("tui.altScreen.pageDown" . ("pageDown"))
     ("tui.altScreen.halfPageUp" . nil)
     ("tui.altScreen.halfPageDown" . nil)
+    ;; v0.84.2: one-line scrolling and transcript search actions.
+    ("tui.altScreen.lineUp" . nil)
+    ("tui.altScreen.lineDown" . nil)
     ("tui.altScreen.previousPrompt" . ("ctrl+shift+up"))
     ("tui.altScreen.nextPrompt" . ("ctrl+shift+down"))
+    ("tui.altScreen.search" . ("ctrl+shift+f"))
+    ("tui.altScreen.searchNext" . ("enter" "ctrl+g"))
+    ("tui.altScreen.searchPrevious" . ("shift+enter" "ctrl+shift+g"))
+    ("tui.altScreen.searchClose" . ("escape"))
     ("tui.altScreen.top" . ("home"))
     ("tui.altScreen.bottom" . ("end"))))
 

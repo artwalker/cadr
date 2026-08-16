@@ -2,12 +2,14 @@
 
 (defstruct (stdin-buffer
             (:constructor make-stdin-buffer
-                (&key (timeout-milliseconds 10))))
+                (&key (timeout-milliseconds 50)
+                      (escape-timeout-milliseconds 10))))
   (buffer "" :type string)
   (paste-p nil :type boolean)
   (paste-buffer "" :type string)
   pending-kitty-codepoint
-  (timeout-milliseconds 10 :type (integer 0 *)))
+  (timeout-milliseconds 50 :type (integer 0 *))
+  (escape-timeout-milliseconds 10 :type (integer 0 *)))
 
 (defun string-suffix-p (suffix string)
   (and (<= (length suffix) (length string))

@@ -240,7 +240,9 @@
     :initform nil
     :accessor process-terminal-keyboard-prefix-time)
    (stdin-buffer
-    :initform (make-stdin-buffer)
+    :initform (make-stdin-buffer
+               :escape-timeout-milliseconds
+               (resolve-escape-timeout-milliseconds))
     :accessor process-terminal-stdin-buffer)
    (stdin-prefix-time
     :initform nil
@@ -565,6 +567,21 @@
                            terminal candidate))))))))
   forward)
 
+(defun resolve-escape-timeout-milliseconds ()
+  ;; Baseline terminal.ts resolveEscapeTimeoutMs (v0.84.2): an explicit
+  ;; CADR_TUI_ESC_TIMEOUT override wins; SSH transports get a longer
+  ;; reassembly window for legacy Alt+key input.
+  (let ((configured
+          (ignore-errors
+           (parse-integer
+            (or (uiop:getenv "CADR_TUI_ESC_TIMEOUT") "")))))
+    (cond
+      ((and configured (plusp configured)) configured)
+      ((or (uiop:getenv "SSH_CONNECTION")
+           (uiop:getenv "SSH_TTY"))
+       100)
+      (t 10))))
+
 (defun elapsed-seconds (start)
   (/ (- (get-internal-real-time) start)
      internal-time-units-per-second))
@@ -624,7 +641,18 @@
             (process-terminal-stdin-prefix-time terminal)))
       (when
           (and started
-               (>= (elapsed-seconds started) 0.01d0))
+               (>= (elapsed-seconds started)
+                   ;; Baseline v0.84.2 stdin-buffer.ts: a lone ESC flushes
+                   ;; after the escape timeout; any longer incomplete
+                   ;; sequence gets the sequence timeout.
+                   (let ((buffer
+                           (process-terminal-stdin-buffer terminal)))
+                     (/ (if (string= (stdin-buffer-contents buffer)
+                                     (string #\Escape))
+                            (stdin-buffer-escape-timeout-milliseconds
+                             buffer)
+                            (stdin-buffer-timeout-milliseconds buffer))
+                        1000d0))))
         (dolist
             (sequence
              (stdin-buffer-flush
