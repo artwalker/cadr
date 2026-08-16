@@ -166,3 +166,35 @@
                  :thinking-start :thinking-delta :thinking-end
                  :tool-call-start :tool-call-delta :tool-call-end :done)
                (mapcar #'cadr-ai:stream-event-type (nreverse events))))))
+
+(test proxy-toolcall-end-merges-only-present-keys
+  ;; Baseline v0.84.2 proxy.ts toolcall_end: Object.assign(content,
+  ;; toolCall) — a final toolCall carrying only some keys must not wipe
+  ;; the streamed partial values for the keys it omits.
+  (let* ((model (cadr-ai:make-model
+                 :id "proxy" :provider :openai :api :openai-responses
+                 :base-url "https://example.invalid" :max-tokens 100))
+         (response
+           (cadr-agent:stream-proxy
+            model
+            (cadr-ai:make-context
+             :system-prompt "system"
+             :messages (list (cadr-ai:make-user-message :content "hello")))
+            (lambda (event) (declare (ignore event)))
+            :auth-token "secret" :proxy-url "https://proxy.invalid"
+            :request-sse-function
+            (lambda (request consumer &key abort-p)
+              (declare (ignore request abort-p))
+              (dolist (json
+                       '("{\"type\":\"start\"}"
+                         "{\"type\":\"toolcall_start\",\"contentIndex\":0,\"id\":\"stream-id\",\"toolName\":\"read\"}"
+                         "{\"type\":\"toolcall_delta\",\"contentIndex\":0,\"delta\":\"{\\\"path\\\":\\\"a\\\"}\"}"
+                         "{\"type\":\"toolcall_end\",\"contentIndex\":0,\"toolCall\":{\"id\":\"final-id\"}}"
+                         "{\"type\":\"done\",\"reason\":\"toolUse\",\"usage\":{\"input\":1,\"output\":1,\"cacheRead\":0,\"cacheWrite\":0,\"totalTokens\":2,\"cost\":{\"input\":0,\"output\":0,\"cacheRead\":0,\"cacheWrite\":0,\"total\":0}}}"))
+                (funcall consumer (cadr-ai::make-sse-event :data json))))))
+         (call (first (cadr-ai:assistant-message-content response))))
+    (is (string= "final-id" (cadr-ai:tool-call-id call)))
+    (is (string= "read" (cadr-ai:tool-call-name call)))
+    (is (string= "a"
+                 (cadr-ai::json-get
+                  (cadr-ai:tool-call-arguments call) "path")))))

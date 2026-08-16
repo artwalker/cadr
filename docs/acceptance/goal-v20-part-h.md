@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,585 lines**
+Denominator: **295 files / 122,587 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 35 | 20,793 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,320 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,322 | 76.9% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
@@ -438,7 +438,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/models.lisp` | 1 | 288 |
 | `src/cadr-cli/config.lisp` | 1 | 288 |
 | `src/cadr-cli/tool-manager.lisp` | 1 | 286 |
-| `src/cadr-agent/proxy.lisp` | 1 | 246 |
+| `src/cadr-agent/proxy.lisp` | 1 | 248 |
 | `src/cadr-agent/messages.lisp` | 1 | 243 |
 | `src/cadr-ai/types.lisp` | 1 | 241 |
 | `src/cadr-tui/stdin-buffer.lisp` | 1 | 231 |

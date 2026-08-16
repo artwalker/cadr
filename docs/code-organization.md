@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122585 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122587 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -79,7 +79,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/loop/turns.lisp` | 392 | 15 | Prepare, stream, retry, compact, and finalize one agent turn. | pass | needs-rewrite | One-field options plist built and immediately read back at :82-86/:117/:125 — a TS object-literal transliteration with no contract justification. | 20 |
 | `src/cadr-agent/messages.lisp` | 243 | 24 | Convert agent-specific message envelopes and file-operation summaries to model-facing messages. | pass | needs-rewrite | cond/typep dispatch at :82-98 silently drops unmatched types and is hand-copied at :192-242; a defgeneric family owns it with identical output. | 20 |
 | `src/cadr-agent/package.lisp` | 455 | 1 | Declare the public `cadr-agent` package surface. | pass | no-rewrite | The flat export list is CL's only wildcard-free contract form; zero logic to Lisp-ify. | 20 |
-| `src/cadr-agent/proxy.lisp` | 246 | 9 | Translate proxy-provider events into native agent stream events. | pass | needs-rewrite | copy-list+setf-nth padding at :55-60 and per-delta string rebuilds at :104-146 — the quadratic pattern nappend-string/stream-state exists to kill. | 20 |
+| `src/cadr-agent/proxy.lisp` | 248 | 9 | Translate proxy-provider events into native agent stream events. | pass | needs-rewrite | copy-list+setf-nth padding at :55-60 and per-delta string rebuilds at :104-146 — the quadratic pattern nappend-string/stream-state exists to kill. | 20 |
 | `src/cadr-agent/resources.lisp` | 739 | 30 | Load, validate, substitute, and format prompts and skills as agent resources. | pass · large | no-rewrite | Post-12F-4 the frontmatter pop-iterates; the remaining hand index loop at :380-452 is the documented single-pass no-reexpansion contract over strings. | 20 |
 | `src/cadr-agent/runtime.lisp` | 435 | 28 | Own agent event emission, queued steering/follow-up input, mutation state, abort, and shutdown. | pass · large | needs-rewrite | drain-agent-queue (:211-247) hand-copies queue dispatch into three ecases and enqueue repeats one nconc block thrice; one pending-queue struct owns it. | 20 |
 | `src/cadr-agent/schema.lisp` | 893 | 20 | Validate JSON Schema definitions and tool arguments with local reference support. | pass · large | needs-rewrite | 51 hand-copied (multiple-value-bind (v present-p) (gethash ...)) guards transcribe TS !== undefined; a when-present macro, identical errors. | 20 |
