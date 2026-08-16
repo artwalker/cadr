@@ -153,6 +153,23 @@
         (:tool-call-end
          (let ((block (nth index (cadr-ai:assistant-message-content message))))
            (when (typep block 'cadr-ai:tool-call)
+             (let ((final (cadr-ai::json-get object "toolCall")))
+               (when (hash-table-p final)
+                 ;; Baseline proxy.ts: Object.assign(content, toolCall) —
+                 ;; only keys present on the wire replace the partial.
+                 (setf (cadr-ai:tool-call-id block)
+                       (or (cadr-ai::json-get final "id") "")
+                       (cadr-ai:tool-call-name block)
+                       (or (cadr-ai::json-get final "name") "")
+                       (cadr-ai:tool-call-arguments block)
+                       (or (cadr-ai::json-get final "arguments")
+                           (cadr-ai::json-object)))
+                 (when (cadr-ai::json-present-p final "thoughtSignature")
+                   (setf (cadr-ai:tool-call-thought-signature block)
+                         (cadr-ai::json-get final "thoughtSignature")))
+                 (when (cadr-ai::json-present-p final "namespace")
+                   (setf (cadr-ai:tool-call-namespace block)
+                         (cadr-ai::json-get final "namespace")))))
              (remhash index partial-json)
              (emit-event :tool-call block))))
         (:done

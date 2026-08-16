@@ -392,3 +392,34 @@
              (cadr-ai::json-get
               (second records) "futureEntry")
              "x")))))))
+
+(test session-v3-set-name-nil-clears-durably
+  ;; Baseline v0.84.2 conformance case "clears session names durably":
+  ;; setName(undefined) clears the name and the clearing survives reload.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "name-clear"
+              :timestamp 100)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "hi" :timestamp 101))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "answer"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 102))
+      (cadr-agent:session-set-name session "Temporary")
+      (is (string= "Temporary" (cadr-agent::session-name session)))
+      (cadr-agent:session-set-name session nil)
+      (is (null (cadr-agent::session-name session)))
+      (let ((loaded
+              (cadr-agent:load-session
+               (cadr-agent:session-path session))))
+        (is (null (cadr-agent::session-name loaded)))))))

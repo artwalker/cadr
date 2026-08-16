@@ -521,11 +521,12 @@
     name " ")))
 
 (defun session-set-name (session name)
-  (unless (stringp name)
+  ;; Baseline v0.84.2: setName accepts undefined to clear the name.
+  (unless (or (null name) (stringp name))
     (session-failure
      (session-path session) nil
      "Session name must be a string"))
-  (let* ((sanitized (sanitize-session-name name))
+  (let* ((sanitized (and name (sanitize-session-name name)))
          (entry
            (make-session-child-entry
             session :session-info)))
@@ -536,6 +537,7 @@
       (setf
        (session-name session)
        (and
+        sanitized
         (plusp (length sanitized))
         sanitized)))))
 

@@ -59,6 +59,7 @@
                              (:file "compaction")
                              (:file "branch-summarization")
                              (:file "proxy")
+                             (:file "harness-events")
                              (:module "loop"
                               :serial t
                               :components
@@ -96,6 +97,7 @@
                              (:file "extensions-wave2-test")
                              (:file "extensions-wave3-test")
                              (:file "goal12-extension-api-test")
+                             (:file "harness-events-test")
                              (:file "shutdown-test"))))
   :perform (test-op (operation component)
              (declare (ignore operation component))

@@ -316,13 +316,14 @@
 
 (defun harness-session-set-name
     (session name)
+  ;; Baseline v0.84.2: setName accepts undefined to clear the name.
   (let ((entry
           (make-storage-child-entry
            (harness-session-storage session)
            :session-info)))
     (setf
      (session-entry-name entry)
-     (sanitize-session-name name))
+     (and name (sanitize-session-name name)))
     (harness-session-append-entry
      session entry)))
 

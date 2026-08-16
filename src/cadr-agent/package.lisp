@@ -87,6 +87,14 @@
    #:format-file-operations
    #:serialize-conversation
    #:stream-proxy
+   #:make-run-start-event
+   #:make-run-end-event
+   #:harness-event-type
+   #:harness-event-bus
+   #:make-harness-event-bus
+   #:harness-event-bus-on
+   #:harness-event-bus-emit
+   #:harness-event-bus-watch
    #:agent-steering-mode
    #:agent-follow-up-mode
    #:agent-event
