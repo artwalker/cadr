@@ -412,7 +412,9 @@
     ;; (bootstrap/settings.lisp, the v0.84.2 defaultTools reader).
     ;; +1 goal 20 v0.84.2 baseline upgrade: parse-default-tools-setting
     ;; (bootstrap/settings.lisp, shared by the raw and SDK managers).
-    (is (= 122 definition-count)
+    ;; +1 goal 20 v0.84.2 baseline upgrade:
+    ;; settings-fullscreen-exit-output (bootstrap/settings.lisp).
+    (is (= 123 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -750,7 +752,11 @@
     ;; replace-markdown-code-spans).
     ;; +1 goal 20 12E-6: +kitty-escape-prefix+ (main-screen.lisp), one
     ;; shared Kitty marker instance instead of a per-line format.
-    (is (= 327 definition-count)
+    ;; +6 goal 20 v0.84.2 baseline upgrade: the transcript search port
+    ;; (renderer-open-search/renderer-close-search in lifecycle-input;
+    ;; style-search-match-text, renderer-refresh-search,
+    ;; apply-search-highlights, overlay-search-bar in alt-screen.lisp).
+    (is (= 333 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

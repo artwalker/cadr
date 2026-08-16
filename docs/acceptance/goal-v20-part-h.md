@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **294 files / 121,951 lines**
+Denominator: **295 files / 122,557 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 34 | 20,312 | 16.7% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,793 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,167 | 77.2% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,292 | 76.9% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 16.7% of lines (34 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 22.8% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 77.2% of lines.
+- **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 76.9% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -345,7 +345,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 856 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 101 | `provider_stream.stream_roundtrip` |
-| `src/cadr-cli/arguments.lisp` | 734 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
+| `src/cadr-cli/arguments.lisp` | 752 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 319 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/interactive/entries.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/frame.lisp` | 238 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -364,8 +364,9 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/editor.lisp` | 1,976 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/input.lisp` | 376 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/alt-screen.lisp` | 424 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,234 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/alt-screen-search.lisp` | 179 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/alt-screen.lisp` | 612 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,330 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/main-screen.lisp` | 616 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -380,16 +381,16 @@ is added or the path is booked unpairable above.
 
 | module | files | lines |
 |---|---:|---:|
-| `src/cadr-cli/interactive` | 27 | 16,396 |
+| `src/cadr-cli/interactive` | 27 | 16,449 |
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
-| `src/cadr-cli/bootstrap` | 5 | 5,581 |
+| `src/cadr-cli/bootstrap` | 5 | 5,628 |
 | `src/cadr-ai/providers` | 12 | 5,106 |
 | `src/cadr-tui/mermaid` | 12 | 5,054 |
 | `src/cadr-cli/extensions` | 9 | 3,488 |
 | `src/cadr-cli/packages` | 6 | 3,329 |
 | `src/cadr-cli/tools` | 9 | 2,627 |
 | `src/cadr-cli/sdk` | 8 | 2,469 |
-| `src/cadr-cli/modes` | 8 | 2,314 |
+| `src/cadr-cli/modes` | 8 | 2,318 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,928 |
 | `src/cadr-ai/oauth` | 10 | 1,772 |
 | `src/cadr-agent/storage` | 4 | 1,526 |
@@ -399,7 +400,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
 | `src/cadr-cli/support` | 13 | 1,168 |
 | `src/cadr-ai/transport` | 2 | 1,080 |
-| `src/cadr-cli/settings` | 3 | 910 |
+| `src/cadr-cli/settings` | 3 | 926 |
 | `src/cadr-agent/schema.lisp` | 1 | 893 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 884 |
 | `src/cadr-ai/support` | 7 | 881 |
@@ -416,7 +417,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-protocol/schema.lisp` | 1 | 620 |
 | `src/cadr-agent/session` | 2 | 609 |
 | `src/cadr-tui/autocomplete.lisp` | 1 | 592 |
-| `src/cadr-tui/theme.lisp` | 1 | 563 |
+| `src/cadr-tui/theme.lisp` | 1 | 568 |
 | `src/cadr-tui/components` | 2 | 561 |
 | `src/cadr-cli/migration.lisp` | 1 | 509 |
 | `src/cadr-protocol/cbor.lisp` | 1 | 508 |
