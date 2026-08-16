@@ -53,7 +53,38 @@
                                    response status)
     (selectable-github-copilot-model-ids response)))
 
-(defun request-github-copilot-token (github-token &optional enterprise-domain)
+(defun enable-github-copilot-model
+    (access model-id &optional enterprise-domain)
+  ;; Baseline enableGitHubCopilotModel: some models (Claude, Grok) must be
+  ;; enabled on the account before they can be used.  Returns true when
+  ;; the endpoint accepted the policy change.
+  (handler-case
+      (multiple-value-bind (object status)
+          (oauth-flow-post-json
+           (format nil "~A/models/~A/policy"
+                   (github-copilot-base-url access enterprise-domain)
+                   model-id)
+           (json-object "state" "enabled")
+           (github-copilot-request-headers
+            access
+            '("openai-intent" . "chat-policy")
+            '("x-interaction-type" . "chat-policy")))
+        (declare (ignore object))
+        (and (>= status 200) (< status 300)))
+    (error () nil)))
+
+(defun enable-all-github-copilot-models
+    (access &optional enterprise-domain)
+  ;; Baseline enableAllGitHubCopilotModels over the static catalog.  The
+  ;; baseline runs four requests in flight per batch; cadr's OAuth
+  ;; transport is synchronous, so the batches collapse to a sequential
+  ;; walk (strictly gentler on the endpoint).
+  (dolist (metadata (list-model-metadata :github-copilot))
+    (enable-github-copilot-model
+     access (model-metadata-id metadata) enterprise-domain)))
+
+(defun request-github-copilot-token
+    (github-token &optional enterprise-domain enable-models-p)
   (let ((domain (or enterprise-domain "github.com")))
     (multiple-value-bind (response status)
         (oauth-flow-request
@@ -66,6 +97,10 @@
       (let ((access (required-oauth-string response "token" "GitHub Copilot"))
             (expires (positive-oauth-number response "expires_at"
                                             "GitHub Copilot")))
+        ;; Baseline loginGitHubCopilot: enable policies before the model
+        ;; listing so the fresh states are reflected in it.
+        (when enable-models-p
+          (enable-all-github-copilot-models access enterprise-domain))
         (make-oauth-credential
          :provider :github-copilot
          :access access
@@ -121,7 +156,8 @@
                    (required-oauth-string token-response "access_token" "GitHub")))
             (runtime-auth-interaction-notify
              interaction '(:type :progress :message "Enabling models..."))
-            (request-github-copilot-token github-token enterprise-domain)))))))
+            (request-github-copilot-token
+             github-token enterprise-domain t)))))))
 
 (defun refresh-github-copilot-oauth-credential (credential)
   (request-github-copilot-token

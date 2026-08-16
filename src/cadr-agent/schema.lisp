@@ -809,9 +809,69 @@
            candidate))
       (walk schema value))))
 
+(defun schema-rejects-null-p (schema)
+  ;; Baseline utils/validation.ts: the deletion test inside
+  ;; normalizeOptionalNulls is
+  ;; getSubSchemaValidator(schema)?.Check(null) === false.  A schema the
+  ;; validator cannot compile yields undefined, which is not false, so the
+  ;; baseline keeps the key; mirror that by treating anything but a clean
+  ;; validation failure as "does not reject".
+  (cond
+    ((eq schema t) nil)
+    ((null schema) t)
+    ((not (hash-table-p schema)) nil)
+    (t (handler-case
+           (progn (validate-json-schema-instance schema 'null) nil)
+         (native-schema-error () t)
+         (error () nil)))))
+
+(defun normalize-optional-nulls (value schema)
+  ;; Baseline utils/validation.ts normalizeOptionalNulls: delete object
+  ;; properties whose value is null when the property is not required and
+  ;; its schema rejects null, before coercion.  Runs before
+  ;; Value.Convert in the baseline; here it runs before
+  ;; coerce-json-schema-instance.
+  (cond
+    ((vectorp value)
+     (multiple-value-bind (items present-p) (gethash "items" schema)
+       (when present-p
+         (cond
+           ((vectorp items)
+            (loop for index below (min (length value) (length items))
+                  do (normalize-optional-nulls
+                      (aref value index) (aref items index))))
+           ((hash-table-p items)
+            (loop for item across value
+                  do (normalize-optional-nulls item items)))))))
+    ((hash-table-p value)
+     (multiple-value-bind (properties present-p)
+         (gethash "properties" schema)
+       (when present-p
+         (let ((required
+                 (coerce (or (gethash "required" schema) #()) 'list)))
+           (loop for key being the hash-keys of properties
+                 using (hash-value property-schema)
+                 do (multiple-value-bind (property-value present-p)
+                        (gethash key value)
+                      (when present-p
+                        (if (and (eq property-value 'null)
+                                 (not (member key required
+                                              :test #'string=))
+                                 (not
+                                  (and (hash-table-p property-schema)
+                                       (stringp
+                                        (gethash "$ref"
+                                                 property-schema))))
+                                 (schema-rejects-null-p property-schema))
+                            (remhash key value)
+                            (normalize-optional-nulls
+                             property-value property-schema)))))))))
+    (t nil)))
+
 (defun validate-tool-arguments (tool arguments)
   (handler-case
       (let ((schema (cadr-ai:tool-parameters tool)))
+        (normalize-optional-nulls arguments schema)
         (validate-json-schema-instance
          schema
          (coerce-json-schema-instance schema arguments)))

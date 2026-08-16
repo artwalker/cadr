@@ -30,6 +30,14 @@
 (defun cadr-version ()
   +cadr-version+)
 
+(defun cadr-user-agent ()
+  ;; Baseline packages/ai/src/utils/pi-user-agent.ts getPiUserAgent, with
+  ;; cadr identity.  The baseline guards node:os behind a browser check;
+  ;; cadr is always native, so the OS triple is always available.
+  (format nil "~A (~A ~A; ~A)"
+          (cadr-product-slug)
+          (software-type) (software-version) (machine-type)))
+
 (defun read-baseline-anchor ()
   "Goal 18 L2.1: the single owner of the fixed pi baseline is the
 BASELINE file at the repository root ('<full-commit> <vX.Y.Z> <distance>');

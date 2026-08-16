@@ -211,17 +211,21 @@
                (json-object
                 "type" "function"
                 "function"
-                (let ((function
-                        (json-object
-                         "name" (tool-name tool)
-                         "description" (tool-description tool)
-                         "parameters" (tool-parameters tool))))
-                  (when (completions-strict-mode-p model)
-                    (json-put
-                     function "strict"
-                     (not (null
-                           (resolve-json-schema-strict-sampling
-                            tool t)))))
+                (let* ((supports-strict (completions-strict-mode-p model))
+                       ;; Baseline openai-completions.ts convertTools:
+                       ;; resolve throws on a "require" mismatch; strict
+                       ;; tools send the strictified schema.
+                       (strict
+                         (resolve-json-schema-strict-sampling
+                          tool supports-strict))
+                       (function
+                         (json-object
+                          "name" (tool-name tool)
+                          "description" (tool-description tool)
+                          "parameters"
+                          (get-json-schema-tool-parameters tool strict))))
+                  (when supports-strict
+                    (json-put function "strict" (eq strict t)))
                   function)))))))
 
 (defun completions-provider-match-p (model providers fragments)
@@ -234,9 +238,10 @@
   (or (model-compat-value model :max-tokens-field nil)
       (if (completions-provider-match-p
            model
-           '(:ant-ling :minimax :minimax-cn :moonshotai
+           '(:ant-ling :deepseek :minimax :minimax-cn :moonshotai
              :moonshotai-cn :together)
-           '("api.ant-ling.com" "api.moonshot." "api.together."))
+           '("api.ant-ling.com" "api.moonshot." "api.together."
+             "deepseek.com"))
           :max-tokens
           :max-completion-tokens)))
 

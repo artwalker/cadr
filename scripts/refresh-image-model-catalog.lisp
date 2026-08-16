@@ -2,18 +2,23 @@
 
 (require :asdf)
 
+(let ((setup
+        (or (uiop:getenv "QUICKLISP_SETUP")
+            (namestring
+             (merge-pathnames "quicklisp/setup.lisp"
+                              (user-homedir-pathname))))))
+  (unless (probe-file setup)
+    (error "Quicklisp setup not found: ~A" setup))
+  (load setup))
+
 (defparameter *root*
   (uiop:pathname-parent-directory-pathname
    (uiop:pathname-directory-pathname
     (truename *load-truename*))))
 
-(dolist (relative
-         '("src/cadr-ai/package.lisp"
-           "src/cadr-ai/conditions.lisp"
-           "src/cadr-ai/types.lisp"
-           "src/cadr-ai/json.lisp"
-           "src/cadr-ai/models.lisp"))
-  (load (truename (merge-pathnames relative *root*))))
+(asdf:load-asd (truename (merge-pathnames "cadr-core.asd" *root*)))
+(asdf:load-asd (truename (merge-pathnames "cadr-ai.asd" *root*)))
+(asdf:load-system "cadr-ai")
 
 (defparameter *source-path*
   (merge-pathnames

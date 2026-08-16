@@ -49,6 +49,7 @@
    #:tool-call-name
    #:tool-call-arguments
    #:tool-call-thought-signature
+   #:tool-call-namespace
    #:cost
    #:make-cost
    #:cost-input
@@ -82,6 +83,7 @@
    #:assistant-message-stop-reason
    #:assistant-message-error-message
    #:assistant-message-raw-stop-reason
+   #:assistant-message-end-turn
    #:assistant-message-diagnostics
    #:assistant-message-timestamp
    #:assistant-message-diagnostic
@@ -286,6 +288,9 @@
    #:append-grammar-json-delta
    #:get-grammar-tool-input
    #:resolve-json-schema-strict-sampling
+   #:unsupported-strict-json-schema-error
+   #:make-strict-json-schema
+   #:get-json-schema-tool-parameters
    #:resolve-grammar-constrained-sampling
    #:create-grammar-tool-input-properties
    #:split-deferred-tools

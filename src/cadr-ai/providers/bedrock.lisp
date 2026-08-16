@@ -151,6 +151,22 @@
       "source"
       (json-object "bytes" (image-content-data block))))))
 
+(defun sanitize-bedrock-document (value)
+  ;; Baseline bedrock-converse-stream.ts sanitizeBedrockDocument: Bedrock
+  ;; documents reject empty member names; drop them recursively.
+  (cond
+    ((vectorp value)
+     (map 'vector #'sanitize-bedrock-document value))
+    ((hash-table-p value)
+     (let ((result (make-hash-table :test #'equal)))
+       (loop for key being the hash-keys of value
+             using (hash-value nested)
+             when (plusp (length key))
+               do (setf (gethash key result)
+                        (sanitize-bedrock-document nested)))
+       result))
+    (t value)))
+
 (defun bedrock-text-blocks (content &key required-p)
   (let ((blocks
           (if (stringp content)
@@ -244,7 +260,8 @@
                               "toolUseId" (tool-call-id block)
                               "name" (tool-call-name block)
                               "input"
-                              (tool-call-arguments block))))))
+                              (sanitize-bedrock-document
+                               (tool-call-arguments block)))))))
               (when blocks
                 (push
                  (json-object
@@ -299,20 +316,25 @@
                   collect
                   (json-object
                    "toolSpec"
-                   (let ((spec
-                           (json-object
-                            "name" (tool-name tool)
-                            "description"
-                            (tool-description tool)
-                            "inputSchema"
+                   (let* ((supports-strict
+                            (model-compat-value
+                             model :supports-strict-mode nil))
+                          ;; Baseline bedrock-converse-stream.ts
+                          ;; convertToolConfig.
+                          (strict
+                            (resolve-json-schema-strict-sampling
+                             tool supports-strict))
+                          (spec
                             (json-object
-                             "json"
-                             (tool-parameters tool)))))
-                     (when
-                         (and
-                          (model-compat-value
-                           model :supports-strict-mode nil)
-                          (tool-strict-p tool))
+                             "name" (tool-name tool)
+                             "description"
+                             (tool-description tool)
+                             "inputSchema"
+                             (json-object
+                              "json"
+                              (get-json-schema-tool-parameters
+                               tool strict)))))
+                     (when (eq strict t)
                        (json-put spec "strict" t))
                      spec)))))))
     (cond

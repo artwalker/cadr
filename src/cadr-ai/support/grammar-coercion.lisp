@@ -205,17 +205,69 @@
 (defun copy-json-value (value)
   (parse-json (stringify-json value)))
 
+(defun schema-rejects-null-p (schema)
+  ;; Baseline: getSubSchemaValidator(schema)?.Check(null) === false.  An
+  ;; uncompilable schema is not false, so the baseline keeps the key;
+  ;; anything but a clean rejection is treated as "does not reject".
+  (cond
+    ((eq schema t) nil)
+    ((null schema) t)
+    ((not (hash-table-p schema)) nil)
+    (t (not (schema-valid-p 'null schema)))))
+
+(defun normalize-optional-nulls (value schema)
+  ;; Baseline utils/validation.ts normalizeOptionalNulls: delete object
+  ;; properties whose value is null when the property is not required and
+  ;; its schema rejects null.  Runs before Value.Convert in the baseline;
+  ;; here before coerce-schema-value.  Twin of the full-validator version
+  ;; in src/cadr-agent/schema.lisp.
+  (cond
+    ((vectorp value)
+     (let ((items (json-get schema "items")))
+       (cond
+         ((vectorp items)
+          (loop for index below (min (length value) (length items))
+                do (normalize-optional-nulls
+                    (aref value index) (aref items index))))
+         ((hash-table-p items)
+          (loop for item across value
+                do (normalize-optional-nulls item items))))))
+    ((hash-table-p value)
+     (let ((properties (json-get schema "properties")))
+       (when (hash-table-p properties)
+         (let ((required
+                 (coerce (or (json-get schema "required") #()) 'list)))
+           (loop for key being the hash-keys of properties
+                 using (hash-value property-schema)
+                 do (when (json-present-p value key)
+                      (let ((property-value (json-get value key)))
+                        (if (and (eq property-value 'null)
+                                 (not (member key required
+                                              :test #'string=))
+                                 (not
+                                  (and (hash-table-p property-schema)
+                                       (stringp
+                                        (json-get
+                                         property-schema "$ref"))))
+                                 (schema-rejects-null-p property-schema))
+                            (remhash key value)
+                            (normalize-optional-nulls
+                             property-value property-schema)))))))))))
+
 (defun validate-tool-arguments (tool call)
   (let* ((schema (tool-parameters tool))
          (arguments
-           (copy-json-value (tool-call-arguments call)))
-         (coerced (coerce-schema-value arguments schema)))
-    (unless (schema-valid-p coerced schema)
-      (error
-       "Validation failed for tool ~S.~%Received arguments:~%~A"
-       (tool-call-name call)
-       (stringify-json (tool-call-arguments call))))
-    coerced))
+           (copy-json-value (tool-call-arguments call))))
+    ;; normalize-optional-nulls mutates the clone, mirroring the baseline
+    ;; structuredClone-then-delete order.
+    (normalize-optional-nulls arguments schema)
+    (let ((coerced (coerce-schema-value arguments schema)))
+      (unless (schema-valid-p coerced schema)
+        (error
+         "Validation failed for tool ~S.~%Received arguments:~%~A"
+         (tool-call-name call)
+         (stringify-json (tool-call-arguments call))))
+      coerced)))
 
 (defun validate-tool-call (tools call)
   (let ((tool

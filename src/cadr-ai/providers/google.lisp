@@ -93,17 +93,45 @@
                        "user")
             "parts" parts))))
 
-(defun google-tools (tools)
+(defun google-tools (tools &key (supports-strict-mode-p t))
   (json-array
    (json-object
     "functionDeclarations"
     (list-json-array
      (loop for tool in tools
            collect
-           (json-object
-            "name" (tool-name tool)
-            "description" (tool-description tool)
-            "parametersJsonSchema" (tool-parameters tool)))))))
+           (let ((strict
+                   ;; Baseline google-shared.ts convertTools: per-tool
+                   ;; strict resolution, throwing on "require" mismatch.
+                   (resolve-json-schema-strict-sampling
+                    tool supports-strict-mode-p)))
+             (json-object
+              "name" (tool-name tool)
+              "description" (tool-description tool)
+              "parametersJsonSchema"
+              (get-json-schema-tool-parameters tool (eq strict t)))))))))
+
+(defun gemini-major-version (model-id)
+  ;; Baseline google-shared.ts getGeminiMajorVersion.
+  (let* ((lowered (string-downcase model-id))
+         (rest
+           (cond
+             ((uiop:string-prefix-p "gemini-live-" lowered)
+              (subseq lowered 12))
+             ((uiop:string-prefix-p "gemini-" lowered)
+              (subseq lowered 7))
+             (t nil))))
+    (when rest
+      (let ((end (or (position-if-not #'digit-char-p rest)
+                     (length rest))))
+        (when (plusp end)
+          (parse-integer rest :end end))))))
+
+(defun supports-google-strict-tool-sampling-p (model)
+  ;; Baseline supportsGoogleStrictToolSampling: Gemini 3+ enforces
+  ;; required function parameters in validated tool-calling modes.
+  (let ((major (gemini-major-version (model-id model))))
+    (and major (>= major 3))))
 
 (defun gemini-3.6-flash-p (model)
   (string-equal "gemini-3.6-flash" (model-id model)))
@@ -185,7 +213,11 @@
     (when (plusp (hash-table-count generation-config))
       (json-put payload "generationConfig" generation-config))
     (when (context-tools context)
-      (json-put payload "tools" (google-tools (context-tools context))))
+      (json-put payload "tools"
+                (google-tools
+                 (context-tools context)
+                 :supports-strict-mode-p
+                 (supports-google-strict-tool-sampling-p model))))
     (let ((thinking-config
             (google-thinking-config model reasoning)))
       (when thinking-config
@@ -283,7 +315,9 @@
             :raw-stop-reason raw-stop
             :stop-reason (map-simple-stop-reason raw-stop))))
     (update-google-usage message (json-get response "usageMetadata"))
-    (when (tool-call-present-p message)
+    ;; Baseline v0.84.2: toolUse overrides only a clean stop.
+    (when (and (eq (assistant-message-stop-reason message) :stop)
+               (tool-call-present-p message))
       (setf (assistant-message-stop-reason message) :tool-use))
     message))
 
@@ -399,7 +433,8 @@
                 (assistant-message-raw-stop-reason message) raw-stop
                 (assistant-message-stop-reason message)
                 (map-simple-stop-reason raw-stop))
-          (when (tool-call-present-p message)
+          (when (and (eq (assistant-message-stop-reason message) :stop)
+                     (tool-call-present-p message))
             (setf (assistant-message-stop-reason message) :tool-use))))
       (update-google-usage message (json-get payload "usageMetadata"))))
   nil)

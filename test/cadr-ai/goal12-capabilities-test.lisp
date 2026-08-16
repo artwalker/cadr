@@ -108,8 +108,27 @@
          (strict
            (cadr-ai:make-tool
             :name "strict"
+            :parameters schema
             :constrained-sampling
-            (list :type :json-schema :strict :require))))
+            (list :type :json-schema :strict :require)))
+         (unconvertible
+           ;; v0.84.2: a schema outside the strict subset (here: $ref) is
+           ;; not strict-samplable; :require turns that into an error.
+           (cadr-ai:make-tool
+            :name "unconvertible"
+            :parameters
+            (cadr-ai::json-object
+             "$ref" "#/definitions/query")
+            :constrained-sampling
+            (list :type :json-schema :strict :require)))
+         (unconvertible-prefer
+           (cadr-ai:make-tool
+            :name "unconvertible-prefer"
+            :parameters
+            (cadr-ai::json-object
+             "$ref" "#/definitions/query")
+            :constrained-sampling
+            (list :type :json-schema :strict :prefer))))
     (let ((resolved
             (cadr-ai:resolve-grammar-constrained-sampling grammar t)))
       (is (eq :lark (getf resolved :format)))
@@ -117,6 +136,10 @@
     (is-true (cadr-ai:resolve-json-schema-strict-sampling strict t))
     (signals error
       (cadr-ai:resolve-json-schema-strict-sampling strict nil))
+    (signals error
+      (cadr-ai:resolve-json-schema-strict-sampling unconvertible t))
+    (is-false
+      (cadr-ai:resolve-json-schema-strict-sampling unconvertible-prefer t))
     (is (string= "hello"
                  (cadr-ai:get-grammar-tool-input
                   "search"

@@ -65,7 +65,11 @@
   (id "" :type string)
   (name "" :type string)
   (arguments (make-hash-table :test #'equal) :type hash-table)
-  (thought-signature nil :type (or null string)))
+  (thought-signature nil :type (or null string))
+  ;; OpenAI Responses namespace for calls to dynamically loaded or
+  ;; namespaced tools.  Wire-level only: like the baseline, the session
+  ;; codec does not persist it.
+  (namespace nil :type (or null string)))
 
 (defstruct (cost
             (:constructor make-cost
@@ -124,7 +128,8 @@
             (:constructor %make-assistant-message
                 (&key content api provider model response-model response-id
                       usage stop-reason
-                      error-message raw-stop-reason diagnostics timestamp)))
+                      error-message raw-stop-reason end-turn diagnostics
+                      timestamp)))
   (content nil :type list)
   (api nil :type symbol)
   (provider nil :type symbol)
@@ -135,6 +140,10 @@
   (stop-reason :pending :type symbol)
   (error-message nil :type (or null string))
   (raw-stop-reason nil :type (or null string))
+  ;; Provider indication of whether the model explicitly ended its turn.
+  ;; Preserved for debugging and does not currently affect agent control
+  ;; flow.  Wire-level only: the baseline does not persist it either.
+  (end-turn nil :type (or null boolean))
   (diagnostics nil :type list)
   (timestamp (unix-milliseconds) :type integer))
 
@@ -149,6 +158,7 @@
                                     (stop-reason :pending)
                                     error-message
                                     raw-stop-reason
+                                    end-turn
                                     (diagnostics nil)
                                     (timestamp (unix-milliseconds)))
   (%make-assistant-message
@@ -162,6 +172,7 @@
    :stop-reason stop-reason
    :error-message error-message
    :raw-stop-reason raw-stop-reason
+   :end-turn end-turn
    :diagnostics diagnostics
    :timestamp timestamp))
 

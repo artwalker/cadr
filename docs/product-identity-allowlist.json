@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 652,
+  "expected_findings": 653,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4601,6 +4601,14 @@
       "line": "- Baseline ambiguity on record: pi carries two skills-formatter",
       "occurrences": 1,
       "reason": "README differences section records an upstream dual-implementation ambiguity by name."
+    },
+    {
+      "path": "src/cadr-ai/support/release.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  ;; Baseline packages/ai/src/utils/pi-user-agent.ts getPiUserAgent, with",
+      "occurrences": 1,
+      "reason": "Source-parity provenance comment names the baseline file the cadr-user-agent helper transcribes."
     }
   ],
   "opaque_files": [

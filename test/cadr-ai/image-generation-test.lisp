@@ -4,7 +4,7 @@
 
 (test openrouter-image-catalog-is-exact
   (let ((models (cadr-ai:list-image-models :openrouter)))
-    (is (= 40 (length models)))
+    (is (= 43 (length models)))
     (is (every
          (lambda (model)
            (and

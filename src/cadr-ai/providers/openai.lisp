@@ -59,7 +59,8 @@
         (values signature nil))))
 
 (defun openai-input-items
-    (model context &key grammar-properties deferred-tools tool-options)
+    (model context &key grammar-properties deferred-tools deferred-tools-mode
+                        tool-options)
   (let ((items nil)
         (message-index 0)
         (loaded-tool-names (make-hash-table :test #'equal)))
@@ -166,6 +167,23 @@
                                  (tool-call-arguments block))))))
                     (when item-id
                       (json-put item "id" item-id))
+                    ;; Baseline openai-responses-shared.ts: the namespace
+                    ;; replays only for the same model or for a call to a
+                    ;; deferred tool.
+                    (let ((namespace (tool-call-namespace block)))
+                      (when (and namespace
+                                 (or (and (eq (assistant-message-provider
+                                               message)
+                                              (model-provider model))
+                                          (eq (assistant-message-api message)
+                                              (model-api model))
+                                          (string=
+                                           (assistant-message-model message)
+                                           (model-id model)))
+                                     (and deferred-tools
+                                          (gethash (tool-call-name block)
+                                                   deferred-tools))))
+                        (json-put item "namespace" namespace)))
                     (push item items))))))))
         ((typep message 'tool-result-message)
          (multiple-value-bind (call-id item-id)
@@ -197,34 +215,48 @@
                    (push tool loaded))))
              (when loaded
                (setf loaded (nreverse loaded))
-               (let* ((names (mapcar #'tool-name loaded))
-                      (search-id
-                        (format nil "cadr_tool_load_~A"
-                                (short-hash
-                                 (format nil "~A:~{~A~^,~}"
-                                         (tool-result-message-tool-call-id message)
-                                         names)))))
-                 (push
-                  (json-object
-                   "type" "tool_search_call"
-                   "call_id" search-id
-                   "execution" "client"
-                   "status" "completed"
-                   "arguments"
-                   (json-object "query" (format nil "~{~A~^ ~}" names)
-                                "limit" (length names)))
-                  items)
-                 (push
-                  (json-object
-                   "type" "tool_search_output"
-                   "call_id" search-id
-                   "execution" "client"
-                   "status" "completed"
-                   "tools"
-                   (openai-tools model loaded
-                                 :defer-loading-p t
-                                 :options tool-options))
-                  items))))
+               (cond
+                 ;; Baseline openai-responses-shared.ts: in additional-tools
+                 ;; mode the loaded tools arrive as one developer item.
+                 ((eq deferred-tools-mode :additional-tools)
+                  (push
+                   (json-object
+                    "type" "additional_tools"
+                    "role" "developer"
+                    "tools"
+                    (openai-tools model loaded
+                                  :options tool-options))
+                   items))
+                 ((eq deferred-tools-mode :tool-search)
+                  (let* ((names (mapcar #'tool-name loaded))
+                         (search-id
+                           (format nil "cadr_tool_load_~A"
+                                   (short-hash
+                                    (format nil "~A:~{~A~^,~}"
+                                            (tool-result-message-tool-call-id
+                                             message)
+                                            names)))))
+                    (push
+                     (json-object
+                      "type" "tool_search_call"
+                      "call_id" search-id
+                      "execution" "client"
+                      "status" "completed"
+                      "arguments"
+                      (json-object "query" (format nil "~{~A~^ ~}" names)
+                                   "limit" (length names)))
+                     items)
+                    (push
+                     (json-object
+                      "type" "tool_search_output"
+                      "call_id" search-id
+                      "execution" "client"
+                      "status" "completed"
+                      "tools"
+                      (openai-tools model loaded
+                                    :defer-loading-p t
+                                    :options tool-options))
+                     items))))))
          (when (content-has-images-p
                 (tool-result-message-content message))
            (push
@@ -258,34 +290,51 @@
                   (if (member :supports-openai-grammar-tools options :test #'eq)
                       (getf options :supports-openai-grammar-tools)
                       (model-compat-value model :supports-openai-grammar-tools nil)))
+                ;; Baseline convertResponsesTools: options.strict defaults
+                ;; to false; a JSON null is passed through as :null.
+                (default-strict
+                  (if (member :strict options :test #'eq)
+                      (getf options :strict)
+                      nil))
                 (grammar
-                  (resolve-grammar-constrained-sampling tool supports-grammar))
-                (encoded
-                  (if grammar
-                      (json-object
-                       "type" "custom"
-                       "name" (tool-name tool)
-                       "description" (tool-description tool)
-                       "format"
+                  (resolve-grammar-constrained-sampling tool supports-grammar)))
+           (if grammar
+               (let ((encoded
                        (json-object
-                        "type" "grammar"
-                        "syntax"
-                        (string-downcase
-                         (symbol-name (getf grammar :format)))
-                        "definition" (getf grammar :definition)))
-                      (json-object
-                       "type" "function"
-                       "name" (tool-name tool)
-                       "description" (tool-description tool)
-                       "parameters" (tool-parameters tool)))))
-           (when (and (not grammar) supports-strict)
-             (json-put
-              encoded "strict"
-              (not (null
-                    (resolve-json-schema-strict-sampling tool t)))))
-           (when defer-loading-p
-             (json-put encoded "defer_loading" t))
-           encoded))))
+                        "type" "custom"
+                        "name" (tool-name tool)
+                        "description" (tool-description tool)
+                        "format"
+                        (json-object
+                         "type" "grammar"
+                         "syntax"
+                         (string-downcase
+                          (symbol-name (getf grammar :format)))
+                         "definition" (getf grammar :definition)))))
+                 (when defer-loading-p
+                   (json-put encoded "defer_loading" t))
+                 encoded)
+               (let* ((constrained-strict
+                        ;; Called unconditionally, as in the baseline: a
+                        ;; "require" tool errors even when strict mode is
+                        ;; unsupported and no strict flag is emitted.
+                        (resolve-json-schema-strict-sampling
+                         tool supports-strict))
+                      (strict
+                        (if (eq constrained-strict t) t default-strict))
+                      (encoded
+                        (json-object
+                         "type" "function"
+                         "name" (tool-name tool)
+                         "description" (tool-description tool)
+                         "parameters"
+                         (get-json-schema-tool-parameters
+                          tool (eq strict t)))))
+                 (when supports-strict
+                   (json-put encoded "strict" strict))
+                 (when defer-loading-p
+                   (json-put encoded "defer_loading" t))
+                 encoded))))))
 
 (defun responses-session-affinity-format (model)
   (model-compat-value
@@ -341,8 +390,14 @@
   (let* ((oauth-token (provider-oauth-access-token provider))
          (key (or oauth-token (require-api-key provider)))
          (account-id (provider-oauth-account-id provider))
-         (supports-tool-search
-           (model-compat-value model :supports-tool-search nil))
+         (deferred-tools-mode
+           ;; Baseline buildParams: additional-tools beats tool-search.
+           (cond
+             ((model-compat-value model :supports-additional-tools nil)
+              :additional-tools)
+             ((model-compat-value model :supports-tool-search nil)
+              :tool-search)
+             (t nil)))
          (supports-grammar
            (model-compat-value model :supports-openai-grammar-tools nil))
          (grammar-properties
@@ -356,13 +411,14 @@
             "stream" (and stream-p t)
             "store" nil)))
     (multiple-value-setq (immediate-tools deferred-tools)
-      (split-deferred-tools context supports-tool-search))
+      (split-deferred-tools context (not (null deferred-tools-mode))))
     (json-put
      payload "input"
      (openai-input-items
       model context
       :grammar-properties grammar-properties
       :deferred-tools deferred-tools
+      :deferred-tools-mode deferred-tools-mode
       :tool-options
       (list
        :supports-strict-mode
@@ -464,7 +520,8 @@
              (let ((arguments (json-get item "arguments")))
                (if (non-empty-string-p arguments)
                    (parse-json-with-repair arguments)
-                   (json-object))))))
+                   (json-object)))
+             :namespace (json-get item "namespace"))))
           (t nil))))
 
 (defun update-openai-usage (message usage)
@@ -529,7 +586,8 @@
                            (or (json-get item "call_id") "")
                            (or (json-get item "id") ""))
                :name (or (json-get item "name") "")
-               :arguments (json-object)))
+               :arguments (json-object)
+               :namespace (json-get item "namespace")))
              (t nil))))
     (when block
       (let ((content-index (append-content-block message block)))
@@ -722,7 +780,10 @@
                              ""))))
                   (when (non-empty-string-p arguments)
                     (setf (tool-call-arguments block)
-                          (parse-streaming-json arguments))))
+                          (parse-streaming-json arguments)))
+                  (let ((namespace (json-get item "namespace")))
+                    (when namespace
+                      (setf (tool-call-namespace block) namespace))))
                 (emit-event emit :tool-call-end message
                             :content-index content-index
                             :tool-call block))))))
@@ -740,6 +801,11 @@
                  (assistant-message-raw-stop-reason message) status
                  (assistant-message-stop-reason message)
                  (map-simple-stop-reason status))
+           ;; Baseline mapCodexEvents: preserve the provider's end_turn
+           ;; indication (only Codex sends it).
+           (when (json-present-p response "end_turn")
+             (setf (assistant-message-end-turn message)
+                   (eq (json-get response "end_turn") t)))
            (update-openai-usage message (json-get response "usage"))
            (when (and (eq :stop
                           (assistant-message-stop-reason message))

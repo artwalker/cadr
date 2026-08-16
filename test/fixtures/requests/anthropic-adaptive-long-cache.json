@@ -42,7 +42,8 @@
         },
         "required": [
           "path"
-        ]
+        ],
+        "additionalProperties": false
       },
       "cache_control": {
         "type": "ephemeral",

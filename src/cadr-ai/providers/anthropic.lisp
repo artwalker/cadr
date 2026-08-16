@@ -242,28 +242,50 @@
   (list-json-array
    (loop for tool in tools
          for index from 0
+         for supports-strict =
+           (model-compat-value model :supports-strict-tools nil)
+         ;; Baseline anthropic-messages.ts convertTools: resolve throws on
+         ;; a "require" mismatch, and strict tools send the strictified
+         ;; schema; others send the legacy {type,properties,required}
+         ;; shape.
+         for strict =
+           (resolve-json-schema-strict-sampling tool supports-strict)
+         for parameters = (get-json-schema-tool-parameters tool strict)
          for encoded =
+         (if (eq strict t)
+             (let ((merged (copy-json-value parameters)))
+               (json-put merged "type" "object")
+               (json-put merged "properties"
+                         (or (json-get parameters "properties")
+                             (json-object)))
+               (json-put merged "required"
+                         (or (json-get parameters "required") #()))
+               merged)
+             (json-object
+              "type" "object"
+              "properties" (or (json-get parameters "properties")
+                               (json-object))
+              "required" (or (json-get parameters "required") #())))
+         for encoded-tool =
          (json-object
           "name" (tool-name tool)
           "description" (tool-description tool)
-          "input_schema" (tool-parameters tool))
+          "input_schema" encoded)
          do
          (when (model-compat-value
                 model :supports-eager-tool-input-streaming t)
-           (json-put encoded "eager_input_streaming" t))
-         (when (and (model-compat-value
-                     model :supports-strict-tools nil)
-                    (tool-strict-p tool))
-           (json-put encoded "strict" t))
+           (json-put encoded-tool "eager_input_streaming" t))
+         (when (eq strict t)
+           (json-put encoded-tool "strict" t))
          (when (and cache-control
                     (not defer-loading-p)
                     (model-compat-value
                      model :supports-cache-control-on-tools t)
                     (= index (1- (length tools))))
-           (json-put encoded "cache_control" cache-control))
+           (json-put encoded-tool "cache_control" cache-control))
          (when defer-loading-p
-           (json-put encoded "defer_loading" t))
-         collect encoded)))
+           (json-put encoded-tool "defer_loading" t))
+         collect encoded-tool)))
 
 (defun anthropic-thinking-options (model reasoning)
   (when (model-reasoning-p model)
@@ -366,30 +388,44 @@
      :url (format nil "~A/v1/messages"
                   (strip-trailing-slash (model-base-url model)))
      :headers
-     (append
-      `(("content-type" . "application/json")
-        ("accept" . ,(if stream-p
-                         "text/event-stream"
-                         "application/json")))
-      (if oauth-token
-          `(("authorization" . ,(format nil "Bearer ~A" key))
-            ("anthropic-beta"
-             . "claude-code-20250219,oauth-2025-04-20")
-            ("x-app" . "cli"))
-          `(("x-api-key" . ,key)))
-      '(("anthropic-version" . "2023-06-01"))
-      (when (and (context-tools context)
-                 (not
-                  (model-compat-value
-                   model :supports-eager-tool-input-streaming t)))
-        '(("anthropic-beta"
-           . "fine-grained-tool-streaming-2025-05-14")))
-      (when (and cache-control
-                 (non-empty-string-p session-id)
-                 (model-compat-value
-                  model :send-session-affinity-headers nil))
-        `(("x-session-affinity" . ,session-id)))
-      (model-headers model))
+     (let ((headers
+             (append
+              `(("content-type" . "application/json")
+                ("accept" . ,(if stream-p
+                                 "text/event-stream"
+                                 "application/json")))
+              (if oauth-token
+                  `(("authorization" . ,(format nil "Bearer ~A" key))
+                    ("anthropic-beta"
+                     . "claude-code-20250219,oauth-2025-04-20")
+                    ("x-app" . "cli"))
+                  `(("x-api-key" . ,key)))
+              '(("anthropic-version" . "2023-06-01"))
+              (when (and (context-tools context)
+                         (not
+                          (model-compat-value
+                           model :supports-eager-tool-input-streaming t)))
+                '(("anthropic-beta"
+                   . "fine-grained-tool-streaming-2025-05-14")))
+              (when (and cache-control
+                         (non-empty-string-p session-id)
+                         (model-compat-value
+                          model :send-session-affinity-headers nil))
+                `(("x-session-affinity" . ,session-id)))
+              (model-headers model))))
+       (if (eq (model-provider model) :kimi-coding)
+           (progn
+             ;; Baseline anthropic-messages.ts mergeClientHeaders: the
+             ;; kimi-coding endpoint is pinned to the OS-describing
+             ;; product UA, so any inherited user-agent is dropped first.
+             (setf headers
+                   (delete-if
+                    (lambda (pair)
+                      (string-equal (car pair) "user-agent"))
+                    headers))
+             (append headers
+                     (list (cons "User-Agent" (cadr-user-agent)))))
+           headers))
      :payload payload
      :stream-p stream-p
      :provider :anthropic)))

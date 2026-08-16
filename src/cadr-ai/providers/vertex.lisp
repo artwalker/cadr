@@ -93,7 +93,11 @@
     (when (plusp (hash-table-count generation-config))
       (json-put payload "generationConfig" generation-config))
     (when (context-tools context)
-      (json-put payload "tools" (google-tools (context-tools context))))
+      (json-put payload "tools"
+                (google-tools
+                 (context-tools context)
+                 :supports-strict-mode-p
+                 (supports-google-strict-tool-sampling-p model))))
     (let ((thinking (google-thinking-config model reasoning)))
       (when thinking
         (json-put payload "thinkingConfig" thinking)))
