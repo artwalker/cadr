@@ -124,7 +124,12 @@
           skills)
          output))
       (format output
-              "~%Current working directory: ~A~%"
+              ;; Baseline v0.84.2 system-prompt.ts: the custom-prompt
+              ;; branch (:69) ends the cwd line with a trailing newline;
+              ;; the default branch (:159) does not.
+              (if custom-prompt
+                  "~%Current working directory: ~A~%"
+                  "~%Current working directory: ~A")
               (or cwd ".")))))
 
 (defun provider-header-table (headers)

@@ -322,9 +322,11 @@ const controller = new InteractiveThemeController(
 		invalidate() {},
 		requestRender() {},
 	},
-	{ getThemeSetting: () => "dark" },
-	() => {},
-	() => {},
+	{
+		getSettingsManager: () => ({ getThemeSetting: () => "dark" }) as any,
+		showError: () => {},
+		onChanged: () => {},
+	},
 );
 controller.setThemeName("missing-goal17-theme", true);
 
@@ -872,7 +874,7 @@ Object.assign(interactive, {
 	activeStatusIndicator: undefined,
 	options: { alt: false },
 	keybindings: { getEffectiveConfig: () => ({}) },
-	themeController: { getTerminalTheme: () => "dark" },
+	themeController: { getTerminalTheme: () => "dark", getThemeSelection: () => "dark" },
 });
 
 const invoke = (name: string, ...args: unknown[]) => InteractiveMode.prototype[name].apply(interactive, args);

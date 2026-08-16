@@ -217,7 +217,7 @@
       :model (cadr-ai:faux-get-model handle)
       :system-prompt
       (format nil
-              "Event differential fixed system prompt.~%Current working directory: ~A"
+              "Event differential fixed system prompt.~%Current working directory: ~A~%"
               (string-right-trim "/" (namestring cwd)))
       :tools (list (fixture-tool))
       :extension-host host

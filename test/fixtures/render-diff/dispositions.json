@@ -410,12 +410,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "12da0d3c1cb7cbe117ed789fed731ad2ef14bee296a90a6d38e13098dec41071",
-          "cadr": "468f63990fdcdd8d11ba6fc463ff68c258ec8cbc01763aac95eaa210eaee7dce"
+          "pi": "f8564ed2eb45713248a02c65b9cadebc18b01a0762b39e05c39b4a658d3e2b5e",
+          "cadr": "60928922eb88a13ff9f06568313de570289da65654f95a55eb4c2d8fa6b9a6b4"
         },
         "narrow": {
-          "pi": "40cf091a5ff1b5a51f3cab01638c097c8ddf540beed4a7d034e2046c702ee8fd",
-          "cadr": "63c669b74b52e00218908ecbc03806229176686dab3c5e075731cb8fe5760944"
+          "pi": "a2b5d144e131290886457dd0d1c95214960e8a044fa55a5fa1e751e5aba238f6",
+          "cadr": "ad33705a9d58873e0f9fcd544d0d20445755f6f2ca6341fcd1dc6c0da7eadb86"
         }
       },
       "note": "cadr's CHANGELOG links point at github.com/artwalker/cadr (I04), one cell shorter per URL than earendil-works/pi, so markdown lines reflow and the viewport shows a one-entry-earlier slice of the same changelog; all visible text is otherwise identical. ANSI segmentation differs (I01)."
@@ -707,12 +707,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0ec1bd224d6e9427e01c15420d2fcb85913a3c6aa8fed073d3afbcda029bae6c",
-          "cadr": "0ec1bd224d6e9427e01c15420d2fcb85913a3c6aa8fed073d3afbcda029bae6c"
+          "pi": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0",
+          "cadr": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0"
         },
         "narrow": {
-          "pi": "b9f3f6109479871248e39e1e9f51ed58ec453151347d770e6a09079d75775243",
-          "cadr": "b9f3f6109479871248e39e1e9f51ed58ec453151347d770e6a09079d75775243"
+          "pi": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e",
+          "cadr": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e"
         }
       },
       "note": "At conversation-content/cjk-emoji [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -787,12 +787,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "90a32ccb0b52468f05f45a7e82f5dcaf52ffd52387ddc0f016bd32c061224657",
-          "cadr": "90a32ccb0b52468f05f45a7e82f5dcaf52ffd52387ddc0f016bd32c061224657"
+          "pi": "d1c740a5e312dcda1c5db074f31c5efb8cf5f375452c8ae2fae25b04200ea11b",
+          "cadr": "d1c740a5e312dcda1c5db074f31c5efb8cf5f375452c8ae2fae25b04200ea11b"
         },
         "narrow": {
-          "pi": "a496d36e88c02e8db81474828dd12b82dda7be8bb814a39a4e1af98272c77fc5",
-          "cadr": "a496d36e88c02e8db81474828dd12b82dda7be8bb814a39a4e1af98272c77fc5"
+          "pi": "a0f72ef98f48d4d14c16466a601ac095e5d81133e24cc8cfbf55d59cba6a14a3",
+          "cadr": "a0f72ef98f48d4d14c16466a601ac095e5d81133e24cc8cfbf55d59cba6a14a3"
         }
       },
       "note": "At conversation-content/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1629,8 +1629,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "af4878738102c4d9ca5174da33491bbbeff24f600348512ea068e13a283856f3",
-          "cadr": "af4878738102c4d9ca5174da33491bbbeff24f600348512ea068e13a283856f3"
+          "pi": "b739297b70b21cd6b9e260f717c8a904d840c17189bb56a3b42db4b9ca7063f8",
+          "cadr": "b739297b70b21cd6b9e260f717c8a904d840c17189bb56a3b42db4b9ca7063f8"
         }
       },
       "note": "At overlays-core/overlay-settings [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -1647,8 +1647,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "79252b689013bf4df39160f1df047246593decbb2bc6590c64c0950ed1421f55",
-          "cadr": "a5fbd962653ba942954cd0481d04ec824e692f0e4167b476730d529e08340f76"
+          "pi": "5fe369f64e113b94907dad2da79d60070a6380570af29c35128a58362b6d136a",
+          "cadr": "3a61e6ad29b8f223cf967451ba0835ebc5b13b7d00193ff72ba5c8370dcd4c6c"
         }
       },
       "note": "At overlays-core/overlay-settings [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4608,12 +4608,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "0db711c36cc663bb5cc479b5a4f830db9493637937baaa9fb3e964fcd2e1d78b",
-          "cadr": "0db711c36cc663bb5cc479b5a4f830db9493637937baaa9fb3e964fcd2e1d78b"
+          "pi": "072078ac079c5a52a1b63beca789ea462b1bc26cf5f1915e42558be65061185a",
+          "cadr": "072078ac079c5a52a1b63beca789ea462b1bc26cf5f1915e42558be65061185a"
         },
         "narrow": {
-          "pi": "96733e837bb6e6dc8130563b3b2eef09004bd8a19ab690f7e08cd69cf5b00aa4",
-          "cadr": "96733e837bb6e6dc8130563b3b2eef09004bd8a19ab690f7e08cd69cf5b00aa4"
+          "pi": "dfed24bc9676e28ebe341291b553e54c436c2ae6f58242432a40e7070836ca50",
+          "cadr": "dfed24bc9676e28ebe341291b553e54c436c2ae6f58242432a40e7070836ca50"
         }
       },
       "note": "At tools-success/edit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4718,12 +4718,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c",
-          "cadr": "43c8232f0e9e9581714d595ff54b7457695d9f6e309769172771a3e9aa39c14c"
+          "pi": "810f384a483ef1b08f5b6173f9640b485e1ca3e7c9d529361937e389c1f786fa",
+          "cadr": "810f384a483ef1b08f5b6173f9640b485e1ca3e7c9d529361937e389c1f786fa"
         },
         "narrow": {
-          "pi": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8",
-          "cadr": "8bd25be0ff13e713079c685876984a6ef63203295d6816291bb6a6bae5ea32a8"
+          "pi": "0696d606ad739a364ec7a2dc67d749d18ac3d42e08854e79084421b3a0f258b4",
+          "cadr": "0696d606ad739a364ec7a2dc67d749d18ac3d42e08854e79084421b3a0f258b4"
         }
       },
       "note": "At tools-success/ls [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4740,12 +4740,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "787fbd52bc74af253b5dc8033477877780d0e165bd1c2fedb445e4df0661f5ab",
-          "cadr": "787fbd52bc74af253b5dc8033477877780d0e165bd1c2fedb445e4df0661f5ab"
+          "pi": "4b9e198e535cdf72f9307268d138028f22dd7b253acaedffc4660fbaeb3866b1",
+          "cadr": "4b9e198e535cdf72f9307268d138028f22dd7b253acaedffc4660fbaeb3866b1"
         },
         "narrow": {
-          "pi": "0cfc23273636e255872a179619949fddc30d33e52f46ca4a3f9fcc593e265bf5",
-          "cadr": "0cfc23273636e255872a179619949fddc30d33e52f46ca4a3f9fcc593e265bf5"
+          "pi": "fc0043639e5d99208d4534baf79c1d0a31cae78f8bf23044ca517a345f92c020",
+          "cadr": "fc0043639e5d99208d4534baf79c1d0a31cae78f8bf23044ca517a345f92c020"
         }
       },
       "note": "At tools-success/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4784,12 +4784,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bbcb83d6da265833b8209ff037863d5ebdd4c5f3cd1b128d4aa133daa4702232",
-          "cadr": "bbcb83d6da265833b8209ff037863d5ebdd4c5f3cd1b128d4aa133daa4702232"
+          "pi": "62fc86a9d7e33f1726b6455173675aadad38d97d6e84239563299f283b08ec98",
+          "cadr": "62fc86a9d7e33f1726b6455173675aadad38d97d6e84239563299f283b08ec98"
         },
         "narrow": {
-          "pi": "2898194532829f0550aa7d28f044ddb7dffcb7dfa155e41e8a78789bd3e2a27f",
-          "cadr": "2898194532829f0550aa7d28f044ddb7dffcb7dfa155e41e8a78789bd3e2a27f"
+          "pi": "ccca643f9ea00d8298846e3f0840eee7e534eafcde378f0715bbc69d160034e6",
+          "cadr": "ccca643f9ea00d8298846e3f0840eee7e534eafcde378f0715bbc69d160034e6"
         }
       },
       "note": "At tools-success/read-range [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -4828,12 +4828,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "614d344d9da1805c6ff96bf7eec7c7a5f02d6f4d0769a09fbb01475ec87082f5",
-          "cadr": "614d344d9da1805c6ff96bf7eec7c7a5f02d6f4d0769a09fbb01475ec87082f5"
+          "pi": "430a68dd3575c48d409d66081c8408b6bd4048e62ba3a85a51154e4ee00496d4",
+          "cadr": "430a68dd3575c48d409d66081c8408b6bd4048e62ba3a85a51154e4ee00496d4"
         },
         "narrow": {
-          "pi": "d7418b165aa27d0b8a3fbb0698658ee4c24d3d50209d781cda5c253ebd4aa0eb",
-          "cadr": "d7418b165aa27d0b8a3fbb0698658ee4c24d3d50209d781cda5c253ebd4aa0eb"
+          "pi": "e8d3a465f58a30f09e1ca4d3e7fed3f1dcca2837e8dced305af2d81977c97cb7",
+          "cadr": "e8d3a465f58a30f09e1ca4d3e7fed3f1dcca2837e8dced305af2d81977c97cb7"
         }
       },
       "note": "At tools-success/write [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
@@ -6651,8 +6651,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "def027de4267157848618d5405cf38319133e8e6fc6a0df5cea316142ba55511",
-          "cadr": "fe303f966e005f13a401ea4ed5b739a3ff5e1b5474191fc80a4d92e09af72b8f"
+          "pi": "ef8cf5e24d2403f3515484d88fe72a62465134864dabe385e839ed869857906e",
+          "cadr": "11c0aebd0da6c0763f997c1e6d09d57a2c7e296d4bd14e7ce70d93870e635c27"
         }
       },
       "note": "At selector-state-sweep/settings-auto-resize-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6668,8 +6668,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "077361393f23417f79baf3e33c49e4ee7a2dfcc8054469f2f19d34aa872ba6bd",
-          "cadr": "077361393f23417f79baf3e33c49e4ee7a2dfcc8054469f2f19d34aa872ba6bd"
+          "pi": "c37308eb02a65358b61e4f6ad34290f403f35324f4be3f0ecc121b1a19bb349a",
+          "cadr": "c37308eb02a65358b61e4f6ad34290f403f35324f4be3f0ecc121b1a19bb349a"
         }
       },
       "note": "At selector-state-sweep/settings-auto-resize-row [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6686,8 +6686,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "bb4481a44c61d4a56239053d408412fdd059075e58bfe65cf751e7a9ec7a2ee5",
-          "cadr": "a8b607516d08becd54a1f81a6542e238fa1155027db6c6eefe74a2f4ea8f4d24"
+          "pi": "741d5ba827e469c38a7e543b96d1b61f770fe86bebf05c37281305a7ac7b0e9d",
+          "cadr": "810d73e7b8cb57d56aca9b5df1b567184cd59cf91276df35cecabdd65fb259e6"
         }
       },
       "note": "At selector-state-sweep/settings-image-rows [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6703,8 +6703,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a7e92f81fdd424fd67ca32f76bbf6252ff92ee78686d611adff41543f5933d40",
-          "cadr": "a7e92f81fdd424fd67ca32f76bbf6252ff92ee78686d611adff41543f5933d40"
+          "pi": "5c6e2cd0d87f5bdabb6e6371c730acfe1d7a1b29659a1e12fffa81ddb5d0e7b1",
+          "cadr": "5c6e2cd0d87f5bdabb6e6371c730acfe1d7a1b29659a1e12fffa81ddb5d0e7b1"
         }
       },
       "note": "At selector-state-sweep/settings-image-rows [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -6721,8 +6721,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "572e781130e5f5ccf18e14dabb3edeccc6ac5f8900ec1173cf6875237b405229",
-          "cadr": "2982d199e82595c049f07ef6911f4fbaf33c6ec6713a88247d382e7e07233599"
+          "pi": "a90813a618ee3056f828622d2b8b6c32f6a7f3dc5273e73cce0d3b1008167022",
+          "cadr": "19d61b84bbb0745d85407e8ec4b063e65d04d6762a12e83b3c80abf54b3e5348"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
@@ -6738,8 +6738,8 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "5437a2497de1589e0fb456c3f7b696aefad70e8cc5c04f8c013864fad6f04fd7",
-          "cadr": "5437a2497de1589e0fb456c3f7b696aefad70e8cc5c04f8c013864fad6f04fd7"
+          "pi": "6dd0712a09bd97d0548dac8748d06e2aef234c95c29ff6b9a13be6576c3ec1d9",
+          "cadr": "6dd0712a09bd97d0548dac8748d06e2aef234c95c29ff6b9a13be6576c3ec1d9"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [narrow] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
@@ -7655,12 +7655,12 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "9a375bb613bddaa31c5d96583bff8279060d151e97df1fbb31312556b3b87b8f",
-          "cadr": "63b6af7a57d34092f994efe1419aa831190e89dca1e58357312eabdbb711bca9"
+          "pi": "9e04229fa850074c83604ecabf4ffe712f25c24a255d0ee9555fcd754395af1b",
+          "cadr": "6ece1d028db64854245bf6c071f823a1eb1f85c8c12419e004a9d11556aa60ff"
         },
         "wide": {
-          "pi": "3160bd350a77e6d08ffb7d8b29c22be571e6e9fbf48f6b3d66236612bf0762b0",
-          "cadr": "d8b0fcbc67c73d4fb6ea75aec6e1ab375b1ca83274532575cd52e99af13a61db"
+          "pi": "3de072872c8a7c30c55af79fad65495fab0e050ce07383ff8873c452137ec391",
+          "cadr": "8c7ca55c5d5a900104a5e21bec6843e8bf2180e9d31f771dcba5c876bb6e4f20"
         }
       },
       "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.84.2. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
@@ -7816,12 +7816,12 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "cf6d85a13b843ad72e90ea4ed2b3ff53b8918ee4cad2ebc87db41f708da2323f",
-          "cadr": "85a943a3aa0d932f8ff5ee67e41367d9b23a7d9a4046ac2163b05b8d7ca5b90c"
+          "pi": "5dc9d70d4835aa9230b18dcb3f3bcd5dc3a142cfcb85da085bdea9b8024e2bef",
+          "cadr": "87e99b8f01d597c39ba265d96e2ba7956dae0b05b672f15d78cb77ef6494d1d0"
         },
         "wide": {
-          "pi": "887db10b50fed9da0bd51668306cbe27953e1c782ba8dc90a09c340197d30ba5",
-          "cadr": "7fd4d070210cf4fc7fa6d079bebf4618c29c111a14feac500fe732aac94f559e"
+          "pi": "ac6d2e02da2375351554253332838b63408e38b71dff3f5a6182cba4124b6773",
+          "cadr": "2da914fb9de66e68376433e602cf9e19ae275322763868f58be7c812f76b9c3f"
         }
       },
       "note": "At example-notify/notify-ready both sides finished the faux turn that fires agent_end. OSC 777 title is I04 product identity (Pi vs Cadr). Residual deltas are startup chrome, I04 wrapping, and I01 ANSI segmentation."
@@ -7839,12 +7839,12 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "32889a7c15eef416053c432bd95d9bcc383a66df36f4790b82ce7b79f0dc3d19",
-          "cadr": "fcedcea7e8651422677f95da2a21c70c0c761f376b5b6ef9d48418ed97e033b1"
+          "pi": "92ef45b54af72f26af11cdb2f04544c7c557cffeace8350af1783049e0de4c6b",
+          "cadr": "be6fdc3dd22e3adbd554ca899f6b0347b15d17f95ad1a7f249b2468532fbec75"
         },
         "wide": {
-          "pi": "c522428a864cbe98a9b02fa42bd104104f3cf82eb69586b8656945744129ce2f",
-          "cadr": "1d0beab2582e802c8231d4473edac8ceaa872f89ce3f780628648b5a9f657776"
+          "pi": "ca031b38122e62c96bac66a8b40880f414de0668eb542ec655261e8079ff0a6f",
+          "cadr": "32d5fccaa299b6a03e634f56e7254a2bea2d7503bb4b97d4ebaa76222163afdb"
         }
       },
       "note": "At example-notify/process-exit the notify turn is gone; remaining deltas are startup chrome / I04 wrapping and I01 ANSI teardown, not the OSC payload."
@@ -8215,12 +8215,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "c620c180982d6b3d5fa0b58cb9e46623aec18ed763325ec49bdd22194ec0870c",
-          "cadr": "ba4714e97f78d8983f9b99f205a31eb79d33b94a8c82d54a1168a506c925bf93"
+          "pi": "cd04d836991783464ce0ca7f1c6b435fe732b242c226282251d3eb6a1e499d2e",
+          "cadr": "b5fcc50c807ffc88e4c895021d16bcd12ee6fd2f8b67eb27566142721b373b0f"
         },
         "narrow": {
-          "pi": "0f89fe1946d359336384dbcdf8f7a1aa58c8ad0cd240c243a8f8db178a802b36",
-          "cadr": "6ec19112f1d49ad06e74b0b461d0b07cdfcd459aca52162c417f199164354223"
+          "pi": "7bdfeb12fdc60e0899b0200bb70989f15008319a9aedaba4101333900c154bd6",
+          "cadr": "c23eed95ffbe89e58e05fa956f195108147225c5f296138061585b75d0f4bc4d"
         }
       },
       "note": "At example-reload-runtime/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
@@ -8238,12 +8238,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a1ce8f466f65cdbb312d6474d2e9bbc42301612e6d0987c7f3c540a93e3ae180",
-          "cadr": "190d43139c36b901624b83f2284ba3dcf87959ef6373a0080f6638b1d36f108a"
+          "pi": "02b5969eb0d1fa113405b1b0f4cb9c795c7076ab61ae65a8c169fd6d3aa95e06",
+          "cadr": "ab6f0e07452c8c9c1991fc5bb9759a913890220cf17160139a2b10bf623d48c3"
         },
         "narrow": {
-          "pi": "8977d5d5d3d761286de2942f4dbb83404aa5e5ad0e0f26157932565cca26fed3",
-          "cadr": "1c321f2d6453dc25234c04a143c4102d0babc66c42f19b6aac07521924d113e3"
+          "pi": "229ea3370e03dfa48bedb6277db0404bc296b7b57c989cb5aa742b394dc14ed8",
+          "cadr": "69e8c48ec2d542ad2b480c98b3137cf9024759d7fd8eeae1c44e0071e69f3cce"
         }
       },
       "note": "At example-reload-runtime/reload-queued both sides show Queued /reload-runtime as a follow-up command. Residual deltas are tool chrome, I04 identity wrapping, and I01 ANSI segmentation."
@@ -8261,12 +8261,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6b2b2807bdc7a055a72b637b85373167d9936c4c0916f54f1c508537682698b9",
-          "cadr": "1c4cf34078362d651b487571274f90aa399805e1e8975176de2bbcc08ee25a86"
+          "pi": "f24f6eb826621008e222acd80a5527d9efd5178bee18974619a2309c60b1cef3",
+          "cadr": "87c5fdb012fc1daa23617bbc0e71d5744621380f27466c4e5a1a8a72a202168a"
         },
         "narrow": {
-          "pi": "53b48f35e18bba67017e22b2609149e4ba913edc12646ba26a779f096536eefb",
-          "cadr": "b648c52453b84b0dea4b9b0bdc1da08fa2b3ca7e2797a6995389b30399e96031"
+          "pi": "3065636aad72c380c5affa64f591ccafd1bb05ffb70610de47a1f4f898c993b1",
+          "cadr": "8b2b07f13f9d35339d2909100cd0b003a1e6db7e7363f91ed79423eae88209b9"
         }
       },
       "note": "At example-send-user-message/ask-turn both sides show the faux reply ask reply. after /ask ping. Residual deltas are startup chrome, I04 identity wrapping, and I01 ANSI segmentation."
@@ -8307,12 +8307,12 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "83918b47a05b02c90d1eb0a3ac1a7c04551bf29b5d0f0ee2acbf99c77cdb9513",
-          "cadr": "bef601ecb45e84e48a76952c09809deb6580916522deedcd4abd4e7d38230fe9"
+          "pi": "0beef7b8aca25e8f203dfb7a54653f52727b54a445a4bb64ca92731627615bb4",
+          "cadr": "1233884b52257ec57b03668b5dc2385043851fb9039938e14af1b15f4d47b931"
         },
         "narrow": {
-          "pi": "38103b98d37518122cdd5b881b3271e949c9696d1e31cb2ff3448081f473dc53",
-          "cadr": "ec27515af711a8da5d919b1316c1469ed8debc93ab88e8ee2fea75f20e954e18"
+          "pi": "9acea230cb8c79f4921e61c3fe9db1d5ab41152990e3de07f35ed6ed9503c001",
+          "cadr": "32b9301889494f31dd8001f4347b6398ff223b76e40a0c0d2046935064eb677c"
         }
       },
       "note": "At example-send-user-message/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
@@ -8377,11 +8377,11 @@
       "screenSha256": {
         "wide": {
           "pi": "527c62b4c74be62c15b6af5b5d68995587bf43dc391a96e94f79e5689575546f",
-          "cadr": "868eda83a1dcd60aefb8ad87e7bd422ef4a01be1407593b70fe964c205d5d78f"
+          "cadr": "d95cd76b2e83b5866c479761e83bb71f2983eec550ae54498d294c7951185f1b"
         },
         "narrow": {
           "pi": "539c981daba050dbf0883d112dbf7c77cb5a06901083fbf260693a1045aca479",
-          "cadr": "ecca680143be70342997952cd4a97435ccd95df95710c3e550a85dd585f3d271"
+          "cadr": "9188e4f24262199d9069921818cc35d815b70f56be040aaf9a8e7d0fe151e7f8"
         }
       },
       "note": "At example-todo/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
@@ -8400,11 +8400,11 @@
       "screenSha256": {
         "wide": {
           "pi": "03fe741865d8c045908b0dbdb512ba41a5fb12834a635ba1a065c31c8d667701",
-          "cadr": "6e7c8265a578cdc3baef7ff39e602ed48d1c8736113eb75051c355af22da0159"
+          "cadr": "a7bc747d31a6d4f45e602ea320fba11af402706ee19d5079aa31560f77b0bc4f"
         },
         "narrow": {
           "pi": "c7d0c9bdfe9d7c5c8aa5231763a74e64fc9eaf581fd46d4e71b5cf45b4db45ad",
-          "cadr": "85d60dbedea07c1052d1259c22a256b91ec1f83903672d119ded8c8c0a1212e2"
+          "cadr": "f24ab10237fe7c972bb896e5455a59c10600f62c9850beb62020111eca16d64b"
         }
       },
       "note": "At example-todo/todo-added both sides record the faux todo add. Residual deltas are result chrome (pi custom renderer vs cadr tool text), I04 identity wrapping, and I01 ANSI segmentation."

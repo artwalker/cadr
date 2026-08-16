@@ -478,6 +478,24 @@
              "Current working directory: /tmp/project"
              prompt))))))
 
+(test system-prompt-cwd-line-newline-matches-baseline-branches
+  ;; Baseline v0.84.2 system-prompt.ts: the custom-prompt branch (:69)
+  ;; ends the cwd line with a trailing newline; the default branch
+  ;; (:159) does not.
+  (let ((custom
+          (cadr-cli:build-system-prompt
+           :custom-prompt "Custom"
+           :cwd "/tmp/project"))
+        (default
+          (cadr-cli:build-system-prompt
+           :cwd "/tmp/project")))
+    (is (uiop:string-suffix-p
+         custom
+         (format nil "Current working directory: /tmp/project~%")))
+    (is (uiop:string-suffix-p
+         default
+         "Current working directory: /tmp/project"))))
+
 (test provider-lifecycle-extension-hooks-run-on-the-real-stream-surface
   (let ((request-payload nil)
         (request-headers nil)

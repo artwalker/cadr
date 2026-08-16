@@ -1474,7 +1474,7 @@ render loopback login received
               :system-prompt
               (format
                nil
-               "Render differential fixed system prompt.~%Current working directory: ~A"
+               "Render differential fixed system prompt.~%Current working directory: ~A~%"
                (render-baseline-cwd cwd))
               :tools tools
               :session session
