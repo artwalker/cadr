@@ -11,6 +11,10 @@
                     :type hash-table)
   (project-overrides (empty-json-object)
                      :type hash-table)
+  ;; Runtime-only overrides (e.g. --use-theme): merged last, never
+  ;; written to disk.
+  (runtime-overrides (empty-json-object)
+                     :type hash-table)
   (errors nil :type list)
   (lock
     (sb-thread:make-mutex
@@ -83,10 +87,22 @@
 
 (defun settings-effective-object (manager)
   (merge-json-objects
-   (settings-manager-global manager)
-   (if (settings-manager-project-trusted-p manager)
-       (settings-manager-project manager)
-       (empty-json-object))))
+   (merge-json-objects
+    (settings-manager-global manager)
+    (if (settings-manager-project-trusted-p manager)
+        (settings-manager-project manager)
+        (empty-json-object)))
+   (settings-manager-runtime-overrides manager)))
+
+(defun settings-override-runtime-value (manager key value)
+  ;; Set a runtime-only override: visible through the effective object,
+  ;; never persisted.
+  (sb-thread:with-mutex
+      ((settings-manager-lock manager))
+    (cadr-ai::json-put
+     (settings-manager-runtime-overrides manager)
+     key value))
+  value)
 
 (defun settings-value (manager key &optional default)
   (cadr-ai::json-get

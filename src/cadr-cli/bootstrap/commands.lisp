@@ -434,6 +434,14 @@
              "settings.json"
              (cadr-core:project-config-directory cwd))
             :project-trusted-p project-trusted-p))
+         (_use-theme-override
+           ;; Baseline v0.84.2 main.ts: --use-theme applies a runtime
+           ;; (non-persisted) settings override for this invocation.
+           (when (cli-arguments-use-theme command)
+             (settings-override-runtime-value
+              settings-manager
+              "theme"
+              (cli-arguments-use-theme command))))
          (model-registry
            (make-model-registry
             :path
@@ -2090,6 +2098,22 @@
               (or
                (cli-arguments-offline-p command)
                (offline-mode-p))))
+           :tool-ensure-function
+           ;; Baseline v0.84.2 interactive-mode.ts: fd/rg are ensured
+           ;; after the UI mounts; progress surfaces as a status, not
+           ;; stdout noise.
+           (lambda ()
+             (let ((output
+                     (make-string-output-stream)))
+               (ensure-tool :fd :output output)
+               (ensure-tool :rg :output output)
+               (let ((text
+                       (string-trim
+                        '(#\Space #\Tab #\Newline #\Return)
+                        (get-output-stream-string output))))
+                 (when (and (plusp (length text))
+                            status-consumer)
+                   (funcall status-consumer text)))))
            :footer-state-function
            #'current-footer-state
            :footer-cwd cwd
@@ -2444,6 +2468,8 @@
             (string-upcase
              (settings-fullscreen-scrollbar settings-manager))
             :keyword)
+           :exit-output-mode
+           (settings-fullscreen-exit-output settings-manager)
            :initial-notices
            ;; Baseline interactive-mode.ts:910-911 — the SDK's
            ;; modelFallbackMessage is a startup warning; with no

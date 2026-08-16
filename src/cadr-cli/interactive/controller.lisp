@@ -147,7 +147,8 @@ interactive-mode.ts:5956-5960).")
     (terminal alt-p
      &key show-hardware-cursor-p
        clear-on-shrink-p
-       (scrollbar-mode :auto))
+       (scrollbar-mode :auto)
+       (exit-output-mode :transcript))
   (cadr-tui:make-terminal-renderer
    terminal
    :alt-p alt-p
@@ -155,6 +156,15 @@ interactive-mode.ts:5956-5960).")
    show-hardware-cursor-p
    :clear-on-shrink-p clear-on-shrink-p
    :scrollbar-mode scrollbar-mode
+   :exit-output-mode exit-output-mode
+   :copy-selection-function
+   ;; v0.84.2 tui-alt-screen.ts copySelection: the native/platform
+   ;; clipboard with a verified success path, OSC 52 as its own
+   ;; fallback inside copy-to-clipboard.
+   (lambda (text)
+     (handler-case
+         (progn (copy-to-clipboard text) t)
+       (condition () nil)))
    :open-url-function
    #'open-tui-url))
 
@@ -232,6 +242,7 @@ interactive-mode.ts:5956-5960).")
        set-extension-ui-function
        version-update-check-function
        package-update-check-function
+       tool-ensure-function
        extension-overlay-opened-function
        footer-state-function
        footer-cwd
@@ -309,6 +320,7 @@ interactive-mode.ts:5956-5960).")
        show-hardware-cursor-p
        clear-on-shrink-p
        (scrollbar-mode :auto)
+       (exit-output-mode :transcript)
        (clock-function #'tui-monotonic-seconds)
        (sleep-function #'sleep)
        (terminal
@@ -395,7 +407,8 @@ interactive-mode.ts:5956-5960).")
             show-hardware-cursor-p
             :clear-on-shrink-p
             clear-on-shrink-p
-            :scrollbar-mode scrollbar-mode))
+            :scrollbar-mode scrollbar-mode
+            :exit-output-mode exit-output-mode))
          (lock
            (sb-thread:make-mutex
             :name "cadr-tui-state"))
@@ -416,6 +429,7 @@ interactive-mode.ts:5956-5960).")
          (unwrap-tui-turn-dispatch nil)
          (version-update-worker nil)
          (package-update-worker nil)
+         (tool-ensure-worker nil)
          (session-loader-worker nil)
          (custom-ui-lock
            (sb-thread:make-mutex
@@ -2651,6 +2665,17 @@ interactive-mode.ts:5956-5960).")
                   package-update-check-function))
               (condition () nil)))
           :name "cadr-package-update-check")))
+      (when tool-ensure-function
+        ;; Baseline v0.84.2 interactive-mode.ts: fd/rg download runs
+        ;; after the UI mounts so a slow fetch cannot freeze startup.
+        (setf
+         tool-ensure-worker
+         (sb-thread:make-thread
+          (lambda ()
+            (handler-case
+                (funcall tool-ensure-function)
+              (condition () nil)))
+          :name "cadr-tool-ensure")))
       (setf *tui-mode-switch-hook* #'switch-tui-mode
             *alt-screen-flash-function*
             (and alt-p
@@ -2867,7 +2892,8 @@ interactive-mode.ts:5956-5960).")
            session-loader-worker))
         (dolist (update-worker
                  (list version-update-worker
-                       package-update-worker))
+                       package-update-worker
+                       tool-ensure-worker))
           (when (and update-worker
                      (sb-thread:thread-alive-p
                       update-worker))

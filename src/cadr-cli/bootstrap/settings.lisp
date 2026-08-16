@@ -101,6 +101,13 @@
   (settings-choice-value
    manager "fullscreenScrollbar" '("auto" "always" "hidden") "auto"))
 
+(defun settings-fullscreen-exit-output (manager)
+  ;; Baseline v0.84.2 settings-manager.ts getFullscreenExitOutput.
+  (if (string= (settings-value manager "fullscreenExitOutput" "")
+               "resume-hint")
+      :resume-hint
+      :transcript))
+
 (defun settings-mermaid-rendering-mode (manager)
   ;; pi@53fa77ccd settings-manager.ts:1252-1255 — markdown.mermaid is
   ;; nested; "off"/"final" pass through, anything else is "streaming".
@@ -586,6 +593,16 @@
               (settings-tui-mode settings-manager)))
             :values '("regular" "fullscreen"))
            (make-settings-option
+            :id "fullscreen-exit-output"
+            :label "Fullscreen exit output"
+            :description
+            "Print the transcript or only a session resume hint when exiting fullscreen mode"
+            :value
+            (string-downcase
+             (symbol-name
+              (settings-fullscreen-exit-output settings-manager)))
+            :values '("transcript" "resume-hint"))
+           (make-settings-option
             :id "fullscreen-scrollbar"
             :label "Fullscreen scrollbar"
             :description
@@ -702,6 +719,10 @@
               (settings-set
                settings-manager "tuiMode" value
                :scope :global)))
+         ((string= id "fullscreen-exit-output")
+          (settings-set
+           settings-manager "fullscreenExitOutput" value
+           :scope :global))
          ((string= id "fullscreen-scrollbar")
           (settings-set
            settings-manager "fullscreenScrollbar" value

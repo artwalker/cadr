@@ -38,6 +38,9 @@
   (prompt-templates nil :type list)
   (no-prompt-templates-p nil :type boolean)
   (themes nil :type list)
+  ;; Baseline v0.84.2 --use-theme: initial interactive theme for this
+  ;; run (applied as a startup settings override).
+  use-theme
   (no-themes-p nil :type boolean)
   (no-context-files-p nil :type boolean)
   list-models
@@ -382,6 +385,20 @@
                     nil
                     "Invalid TUI mode ~S. Valid values: regular, fullscreen"
                     mode))))))
+            ((string= argument "--use-theme")
+             ;; Baseline v0.84.2 cli/args.ts: space form only; a missing
+             ;; or dash-prefixed value is not consumed.
+             (let ((theme-name (first argv)))
+               (if (or (null theme-name)
+                       (cli-string-prefix-p "-" theme-name))
+                   (add-cli-diagnostic
+                    arguments :error
+                    "--use-theme requires a theme name")
+                   (progn
+                     (setf
+                      (cli-arguments-use-theme arguments)
+                      theme-name)
+                     (pop argv)))))
             ((or (string= argument "--print")
                  (string= argument "-p"))
              (set-cli-flag arguments :print)
@@ -587,6 +604,7 @@
            "  --prompt-template <path>       Load a prompt template file or directory (can be used multiple times)"
            "  --no-prompt-templates, -np     Disable prompt template discovery and loading"
            "  --theme <path>                 Load a theme file or directory (can be used multiple times)"
+           "  --use-theme <name[/name]>      Set the initial interactive theme for this run"
            "  --no-themes                    Disable theme discovery and loading"
            "  --no-context-files, -nc        Disable AGENTS.md and CLAUDE.md discovery and loading"
            "  --export <file>                Export session file to HTML and exit"

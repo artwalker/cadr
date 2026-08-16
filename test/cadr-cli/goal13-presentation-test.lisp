@@ -29,7 +29,8 @@
   '(:accent :border :border-accent :border-muted
     :success :error :warning :muted :dim :text
    :thinking-text
-   :selected-bg :scrollbar-thumb :user-message-bg :user-message-text
+   :selected-bg :scrollbar-thumb :search-match-bg :search-match-text
+   :user-message-bg :user-message-text
     :custom-message-bg :custom-message-text
     :custom-message-label
     :tool-pending-bg :tool-success-bg :tool-error-bg
@@ -712,6 +713,15 @@
                     "[compaction: 42k tokens]")))
                (goal13-note-semantic-probe
                 seen (first probe) (second probe) (third probe))))
+           ;; v0.84.2 search highlight tokens style the alt-screen find bar.
+           (goal13-note-semantic-probe
+            seen :search-match-bg
+            (cadr-tui::style-search-match-text "find" nil)
+            "find" :background-p t)
+           (goal13-note-semantic-probe
+            seen :search-match-text
+            (cadr-tui::style-search-match-text "find" nil)
+            "find")
            (let* ((error-rendered
                     (goal13-rendered-lines
                      (cadr-cli::render-tui-entry
@@ -1003,8 +1013,8 @@
              +goal13-semantic-theme-keys+
              (cadr-tui:terminal-theme-color-keys
               (cadr-tui:current-theme))))
-           (is (= 56 (length +goal13-semantic-theme-keys+)))
-           (is (= 56 (hash-table-count seen)))
+           (is (= 58 (length +goal13-semantic-theme-keys+)))
+           (is (= 58 (hash-table-count seen)))
            (is
             (null
              (set-difference
@@ -1254,7 +1264,7 @@
              ("cadr-ai" 61)
              ("cadr-agent" 37)
              ("cadr-cli" 114)
-             ("cadr-tui" 49)
+             ("cadr-tui" 50)
              ("cadr-storage" 2)
              ("cadr-server" 11)
              ("cadr-protocol" 5)
@@ -1262,7 +1272,7 @@
          (total 0))
     (is
      (search
-      "GOAL13_LISP_IDIOM_AUDIT files=294 systems=9 axes=6 rewrite=1 keep=8"
+      "GOAL13_LISP_IDIOM_AUDIT files=295 systems=9 axes=6 rewrite=1 keep=8"
       audit))
     (dolist (spec systems)
       (destructuring-bind (system expected) spec
@@ -1280,7 +1290,7 @@
             (format nil "| `~A` | ~D |" system expected)
             audit)
            "~A has no current module-audit row" system))))
-    (is (= 294 total))
+    (is (= 295 total))
     (dolist
         (heading
          '("### 1. Manually maintained invariants"
@@ -1305,7 +1315,7 @@
            "src/cadr-cli/interactive/{state,status,user-bash,transcript,tool-rendering,entries,pending-messages,frame,extension-ui,autocomplete,themes,controller}.lisp"
            "src/cadr-tui/components/{markdown,image,tool-block,status,select-list}.lisp"
            "src/cadr-tui/composition/{protocol,text-box,rich-content,settings-list,loaders,root}.lisp"
-           "src/cadr-tui/renderer/{terminal-protocol,virtual-terminal,lifecycle-input,main-screen,alt-screen}.lisp"
+           "src/cadr-tui/renderer/{terminal-protocol,virtual-terminal,alt-screen-search,lifecycle-input,main-screen,alt-screen}.lisp"
            "src/cadr-agent/{session,storage,loop}/*.lisp"
            "src/cadr-agent/harness-events.lisp"
            "src/cadr-agent/extensions/*.lisp"

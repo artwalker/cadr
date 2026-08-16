@@ -14,6 +14,8 @@
     ("thinkingText" . :thinking-text)
     ("selectedBg" . :selected-bg)
     ("scrollbarThumb" . :scrollbar-thumb)
+    ("searchMatchBg" . :search-match-bg)
+    ("searchMatchText" . :search-match-text)
     ("userMessageBg" . :user-message-bg)
     ("userMessageText" . :user-message-text)
     ("customMessageBg" . :custom-message-bg)
@@ -127,6 +129,8 @@
           (or
            (string= name "thinkingMax")
            (string= name "scrollbarThumb")
+           (string= name "searchMatchBg")
+           (string= name "searchMatchText")
            (nth-value 1
                       (gethash name colors)))
         (error "Missing required theme color token: ~A"
@@ -231,6 +235,29 @@
            :scrollbar-thumb
            (resolve-tui-theme-value
             (gethash "selectedBg" colors)
+            variables))
+          overrides))
+       ;; v0.84.2: the search-match colors fall back to selectedBg/text.
+       (unless
+           (nth-value 1
+                      (gethash "searchMatchBg"
+                               colors))
+         (push
+          (cons
+           :search-match-bg
+           (resolve-tui-theme-value
+            (gethash "selectedBg" colors)
+            variables))
+          overrides))
+       (unless
+           (nth-value 1
+                      (gethash "searchMatchText"
+                               colors))
+         (push
+          (cons
+           :search-match-text
+           (resolve-tui-theme-value
+            (gethash "text" colors)
             variables))
           overrides))
         (collect-values
