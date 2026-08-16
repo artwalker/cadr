@@ -451,7 +451,7 @@
             (make-file-auth-storage
              (default-auth-path))))
          (image-normalizer
-           ;; pi@53fa77ccd utils/tool-result-images.ts via
+           ;; pi@914cf1472 utils/tool-result-images.ts via
            ;; agent-session.ts:517-520.
            (progn
              (setf
@@ -477,6 +477,12 @@
             (cli-arguments-provider command)
             :api-key
             (cli-arguments-api-key command)))
+         (catalog-refresh-lock
+           (sb-thread:make-mutex :name "cadr-catalog-refresh"))
+         (catalog-refresh-done
+           (sb-thread:make-waitqueue :name "cadr-catalog-refresh"))
+         (catalog-refresh-in-flight-p nil)
+         (catalog-refresh-result nil)
          (scope-patterns
            (or
             (cli-arguments-models command)
@@ -874,7 +880,7 @@
            (let ((provider
                    (provider-config-provider config)))
              (or
-              ;; pi@53fa77ccd footer.ts:139-141 — Kimi Coding is
+              ;; pi@914cf1472 footer.ts:139-141 — Kimi Coding is
               ;; subscription-backed despite API-key authentication.
               (string-equal
                (provider-key
@@ -1163,7 +1169,7 @@
            (refresh-auth provider :logout)
            (values
             provider
-            ;; pi@53fa77ccd model-runtime.ts:532 — non-nil when the
+            ;; pi@914cf1472 model-runtime.ts:532 — non-nil when the
             ;; credential was removed but the local snapshot did not
             ;; sync.
             (model-registry-error model-registry)))
@@ -1401,8 +1407,25 @@
            available-models)
          (refresh-model-catalogs ()
            ;; Worker side of the selector-open catalog refresh: re-read
-           ;; the registry without holding the TUI lock.
-           (refresh-available-models))
+           ;; the registry without holding the TUI lock.  Baseline
+           ;; v0.84.2 model-catalog-refresh.ts: a second caller while one
+           ;; refresh is in flight shares that run's result.
+           (sb-thread:with-mutex (catalog-refresh-lock)
+             (when catalog-refresh-in-flight-p
+               (sb-thread:condition-wait
+                catalog-refresh-done catalog-refresh-lock)
+               (return-from refresh-model-catalogs
+                 catalog-refresh-result))
+             (setf catalog-refresh-in-flight-p t))
+           (unwind-protect
+               (let ((result (refresh-available-models)))
+                 (sb-thread:with-mutex (catalog-refresh-lock)
+                   (setf catalog-refresh-result result))
+                 result)
+             (sb-thread:with-mutex (catalog-refresh-lock)
+               (setf catalog-refresh-in-flight-p nil)
+               (sb-thread:condition-broadcast
+                catalog-refresh-done))))
          (apply-model-catalog-refresh (selector failure)
            ;; Lock side of the selector-open catalog refresh: apply the
            ;; baseline terminal refresh state to SELECTOR.  FAILURE is
@@ -1624,7 +1647,7 @@
               status-consumer
               "Model selection saved to settings")))
          (scoped-models-selector ()
-           ;; v0.84.1: the selector opens even with an empty catalog; the
+           ;; v0.84.2: the selector opens even with an empty catalog; the
            ;; baseline dropped the "No models available" early exit.
            (make-scoped-models-selector-state
             :all-models available-models
@@ -2346,7 +2369,7 @@
                    (file-auth-storage-path
                     (model-registry-credentials model-registry))
                    (default-auth-path)))
-              ;; pi@53fa77ccd model-runtime.ts:532 — non-nil when the
+              ;; pi@914cf1472 model-runtime.ts:532 — non-nil when the
               ;; credential saved but the local snapshot did not sync.
               (model-registry-error model-registry)))
            :auth-status-function #'authentication-status
@@ -2444,7 +2467,7 @@
            :startup-expanded-lines
            startup-expanded
            :alt-p
-           ;; pi@53fa77ccd interactive-mode.ts:530-531 — the CLI flag
+           ;; pi@914cf1472 interactive-mode.ts:530-531 — the CLI flag
            ;; wins over the tuiMode setting; default regular.
            (eq :fullscreen
                (or (cli-arguments-tui-mode command)

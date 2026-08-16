@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "53fa77ccd8a279eb87e92294ef3687b03ff80112",
+  "baselineCommit": "914cf1472e715297caa30db4b9535d534a9eb718",
   "classes": {
     "I01": {
       "kind": "intentional-difference",
@@ -25,7 +25,7 @@
     "I05": {
       "kind": "intentional-difference",
       "textCovering": true,
-      "summary": "Login-cancel only (textCovering). User-approved goal 13 ruling: cancelling /login is a normal user action and must not produce error-level output. pi v0.84.1 (53fa77ccd) regressed this path: packages/coding-agent/src/utils/abort.ts:3 throws Error('The operation was aborted'), while packages/coding-agent/src/modes/interactive/interactive-mode.ts:5666 only suppresses errorMsg === 'Login cancelled', so Escape-cancel of OAuth/device-code/loopback/API-key login now renders a red 'Error: Failed to login to ... / Failed to save API key for ...: This operation was aborted' line. cadr keeps the approved suppression (docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Retires when the upstream regression is fixed; then reverts to byte-for-byte alignment."
+      "summary": "Login-cancel only (textCovering). User-approved goal 13 ruling: cancelling /login is a normal user action and must not produce error-level output. pi v0.84.2 (914cf1472) regressed this path: packages/coding-agent/src/utils/abort.ts:3 throws Error('The operation was aborted'), while packages/coding-agent/src/modes/interactive/interactive-mode.ts:5666 only suppresses errorMsg === 'Login cancelled', so Escape-cancel of OAuth/device-code/loopback/API-key login now renders a red 'Error: Failed to login to ... / Failed to save API key for ...: This operation was aborted' line. cadr keeps the approved suppression (docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Retires when the upstream regression is fixed; then reverts to byte-for-byte alignment."
     }
   },
   "entries": [
@@ -1092,7 +1092,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] pi v0.84.1 renders a red 'Error: Failed to save API key for Render Auth: This operation was aborted' line above the three probe turns after cancelling the API-key login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-api-key/api-key-post-cancel [wide] pi v0.84.2 renders a red 'Error: Failed to save API key for Render Auth: This operation was aborted' line above the three probe turns after cancelling the API-key login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -1128,7 +1128,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-api-key/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to save API key for Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-api-key/process-exit [wide] pi v0.84.2 keeps the red 'Error: Failed to save API key for Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-api-key",
@@ -1192,7 +1192,7 @@
           "cadr": "6c0dd094b964b5b6bb123590ec6d334fc9431f1573af0f01cb7e1e51615d8000"
         }
       },
-      "note": "At overlays-auth-oauth/login-cancelled [wide+narrow] pi v0.84.1 renders a red 'Error: Failed to login to Render Auth: This operation was aborted' line after Escape cancels the OAuth login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/login-cancelled [wide+narrow] pi v0.84.2 renders a red 'Error: Failed to login to Render Auth: This operation was aborted' line after Escape cancels the OAuth login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1234,7 +1234,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-oauth/login-post-cancel [wide] pi v0.84.1 retains the red 'Error: Failed to login to Render Auth: This operation was aborted' line above the three probe turns after cancelling the OAuth login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/login-post-cancel [wide] pi v0.84.2 retains the red 'Error: Failed to login to Render Auth: This operation was aborted' line above the three probe turns after cancelling the OAuth login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1270,7 +1270,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-oauth/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to login to Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-oauth/process-exit [wide] pi v0.84.2 keeps the red 'Error: Failed to login to Render Auth: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-oauth",
@@ -1334,7 +1334,7 @@
           "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
         }
       },
-      "note": "At overlays-auth-device-code/login-device-cancelled [wide+narrow] pi v0.84.1 renders a red 'Error: Failed to login to Render Device: This operation was aborted' line after Escape cancels the device-code login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/login-device-cancelled [wide+narrow] pi v0.84.2 renders a red 'Error: Failed to login to Render Device: This operation was aborted' line after Escape cancels the device-code login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -1353,7 +1353,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] pi v0.84.1 retains the red 'Error: Failed to login to Render Device: This operation was aborted' line above the three probe turns after cancelling the device-code login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/login-device-post-cancel [wide] pi v0.84.2 retains the red 'Error: Failed to login to Render Device: This operation was aborted' line above the three probe turns after cancelling the device-code login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -1389,7 +1389,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-device-code/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to login to Render Device: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-device-code/process-exit [wide] pi v0.84.2 keeps the red 'Error: Failed to login to Render Device: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-device-code",
@@ -2011,7 +2011,7 @@
           "cadr": "052398f390ef57b40f552e7b08aa2fa2b11027ecb45c7e4924dd593662134677"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] pi v0.84.1 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [wide] pi v0.84.2 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2030,7 +2030,7 @@
           "cadr": "9052a4c6b8bcb36be4a1034779a5756c0a534bea7cff61b8b84759f77d4815e4"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] pi v0.84.1 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-cancelled [narrow] pi v0.84.2 renders a red 'Error: Failed to login to Render Loopback: This operation was aborted' line after Escape cancels the loopback login; cadr suppresses the cancellation notice per the user-approved goal 13 ruling (I05, docs/open-questions.md OQ-G18-AUTH-CANCEL-14). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2049,7 +2049,7 @@
           "cadr": "5a3bca224f064ee7fc2041c5e3dae4a031b2fa72eb6ec5bb082628ce1f69942d"
         }
       },
-      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] pi v0.84.1 retains the red 'Error: Failed to login to Render Loopback: This operation was aborted' line above the three probe turns after cancelling the loopback login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/login-loopback-post-cancel [wide] pi v0.84.2 retains the red 'Error: Failed to login to Render Loopback: This operation was aborted' line above the three probe turns after cancelling the loopback login; cadr suppresses the cancellation notice (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -2085,7 +2085,7 @@
           "cadr": "819b4c550870841a1e52ea61809c2535ab1b16396b3fe40bcb6dc259804c0784"
         }
       },
-      "note": "At overlays-auth-browser-callback/process-exit [wide] pi v0.84.1 keeps the red 'Error: Failed to login to Render Loopback: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
+      "note": "At overlays-auth-browser-callback/process-exit [wide] pi v0.84.2 keeps the red 'Error: Failed to login to Render Loopback: This operation was aborted' line through the post-cancel teardown; cadr suppresses it (I05, goal 13 ruling). Remaining differences: product-identity padding (I04) and ANSI segmentation (I01)."
     },
     {
       "scenario": "overlays-auth-browser-callback",
@@ -4113,7 +4113,7 @@
           "cadr": "3c3afd8605f0cba3804540323a48be95e2c014b719aafd5c21ca588dc1c8ba9e"
         }
       },
-      "note": "At tool-bash-abort/bash-tool-aborted [narrow] under pi v0.84.1 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi byte-for-byte including the Error line; only the raw ANSI segmentation differs (I01)."
+      "note": "At tool-bash-abort/bash-tool-aborted [narrow] under pi v0.84.2 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi byte-for-byte including the Error line; only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -4131,7 +4131,7 @@
           "cadr": "586865f95c8f86eadc3b1ca19149f4103c8eb4d088d2a78aa23285853c6854ad"
         }
       },
-      "note": "At tool-bash-abort/bash-tool-aborted [wide] under pi v0.84.1 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At tool-bash-abort/bash-tool-aborted [wide] under pi v0.84.2 an abort during tool execution ends the turn without invoking the provider (Error: This operation was aborted), so the post-exit probe consumes the single follow-up response; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -4148,7 +4148,7 @@
           "cadr": "e5ca0cda55297f275cba7e463315ed3308b58d1719cf5b80cdc343e391e24097"
         }
       },
-      "note": "At tool-bash-abort/process-exit [narrow] under pi v0.84.1 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi byte-for-byte through the exit teardown; only the raw ANSI segmentation differs (I01)."
+      "note": "At tool-bash-abort/process-exit [narrow] under pi v0.84.2 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi byte-for-byte through the exit teardown; only the raw ANSI segmentation differs (I01)."
     },
     {
       "scenario": "tool-bash-abort",
@@ -4166,7 +4166,7 @@
           "cadr": "d3f3c027fdedd44ca4a49aa097fc3db5b4867360940a72802c5d3f8ac725b1cc"
         }
       },
-      "note": "At tool-bash-abort/process-exit [wide] under pi v0.84.1 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
+      "note": "At tool-bash-abort/process-exit [wide] under pi v0.84.2 the abort flow ends the turn with Error: This operation was aborted and no post-exit probe delivery; cadr matches pi including the Error line; the screens differ only in the product-identity padding columns beside <PRODUCT_TITLE> (I04) and in ANSI segmentation (I01)."
     },
     {
       "scenario": "tools-failure",
@@ -6870,7 +6870,7 @@
           "cadr": "e62598c37b13a18f021a7a62968e525abc80c7205e71142ac6e19a6695aa00ff"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.1 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.2 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -7663,7 +7663,7 @@
           "cadr": "d8b0fcbc67c73d4fb6ea75aec6e1ab375b1ca83274532575cd52e99af13a61db"
         }
       },
-      "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.84.1. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
+      "note": "At example-custom-header/header-on both sides paint the block mascot and shitty coding agent v0.84.2. cadr still renders startup chrome under the custom header (product banner lives in startup-lines). Residual deltas are that chrome, I04 wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-custom-header",

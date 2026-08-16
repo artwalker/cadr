@@ -45,7 +45,7 @@
   (no-context-files-p nil :type boolean)
   list-models
   (offline-p nil :type boolean)
-  ;; pi@53fa77ccd cli/args.ts:180-186: --tui-mode replaces --alt;
+  ;; pi@914cf1472 cli/args.ts:180-186: --tui-mode replaces --alt;
   ;; NIL means the settings manager's tuiMode decides.
   tui-mode
   (verbose-p nil :type boolean)
@@ -362,7 +362,7 @@
                   (cli-arguments-list-models arguments)
                   t)))
             ((string= argument "--tui-mode")
-             ;; pi@53fa77ccd cli/args.ts:180-191 — space form only;
+             ;; pi@914cf1472 cli/args.ts:180-191 — space form only;
              ;; a missing or dash-prefixed value is not consumed.
              (let ((mode (first argv)))
                (cond

@@ -1,6 +1,6 @@
 # cadr
 
-**cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd)**
+**cadr 0.2.0 · aligned with pi v0.84.2 (+0, 914cf1472)**
 
 `cadr` is a native Common Lisp coding agent for SBCL, behaviorally aligned
 with the original pi while remaining idiomatic Lisp.
@@ -12,10 +12,8 @@ CADR Lisp Machine.
 ## Relationship to pi
 
 Behavior is pinned to
-[`earendil-works/pi@53fa77ccd8a279eb87e92294ef3687b03ff80112`](https://github.com/earendil-works/pi/tree/53fa77ccd8a279eb87e92294ef3687b03ff80112).
-That commit is `v0.84.1-38-g53fa77ccd`: it is 38 commits ahead of the latest
-published `v0.84.1` tag, so Goal 10 correctly retained it instead of
-downgrading to the tag.
+[`earendil-works/pi@914cf1472e715297caa30db4b9535d534a9eb718`](https://github.com/earendil-works/pi/tree/914cf1472e715297caa30db4b9535d534a9eb718),
+the `v0.84.2` release tag.
 That implementation and its tests are the behavioral reference for provider
 payloads, streaming events, agent-loop semantics, tools, sessions, extensions,
 and terminal interaction.

@@ -303,7 +303,7 @@
     (is (search
          (format nil "~C[1m" #\Escape)
          (format nil "~{~A~^~%~}" lines)))
-    ;; pi@53fa77ccd packages/tui/src/components/markdown.ts:807-851
+    ;; pi@914cf1472 packages/tui/src/components/markdown.ts:807-851
     ;; emits table borders as literal box glyphs.  Only inline cell content
     ;; and the header receive theme styling.
     (is (char= #\┌ (char (first lines) 0)))
@@ -1050,7 +1050,7 @@
       (cadr-tui:reset-current-theme))))
 
 (test goal17-autocomplete-unselected-description-owns-the-column-gap
-  ;; Fixed pi@53fa77ccd select-list.ts:139-171 keeps the unselected prefix
+  ;; Fixed pi@914cf1472 select-list.ts:139-171 keeps the unselected prefix
   ;; and primary label plain, then starts the dim description span at the
   ;; entire inter-column gap.  This locks the span boundary independently of
   ;; a terminal screen diff.

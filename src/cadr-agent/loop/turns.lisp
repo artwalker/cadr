@@ -47,7 +47,7 @@
            (run-agent-lifecycle
             agent :context
             (list :messages messages)))
-         ;; pi@53fa77ccd agent-loop.ts:295 converts agent-level
+         ;; pi@914cf1472 agent-loop.ts:295 converts agent-level
          ;; messages to LLM messages when building the provider
          ;; context (config.convertToLlm).  Without the conversion,
          ;; bash-execution/custom/branch-summary/compaction-summary
@@ -86,7 +86,7 @@
                 (agent-aborted-p agent))))
            (message
              (if (agent-aborted-p agent)
-                 ;; pi@53fa77ccd — an abort already pending when the
+                 ;; pi@914cf1472 — an abort already pending when the
                  ;; turn reaches the provider call (the escape-during-
                  ;; tool-execution case) ends the turn with the
                  ;; AbortError text and never invokes the provider;

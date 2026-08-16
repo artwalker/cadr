@@ -1444,7 +1444,7 @@
       (:word-right (editor-move-word-forward editor))
       (:up (editor-move-vertical editor -1))
       (:down (editor-move-vertical editor 1))
-      ;; pi@53fa77ccd components/editor.ts:768-777 — the dedicated
+      ;; pi@914cf1472 components/editor.ts:768-777 — the dedicated
       ;; history actions always browse entries (never move the
       ;; cursor) and cancel autocomplete first.
       (:history-previous

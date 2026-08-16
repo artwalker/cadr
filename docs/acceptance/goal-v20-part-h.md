@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,557 lines**
+Denominator: **295 files / 122,580 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 35 | 20,793 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,472 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,292 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,315 | 76.9% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
@@ -383,7 +383,7 @@ is added or the path is booked unpairable above.
 |---|---:|---:|
 | `src/cadr-cli/interactive` | 27 | 16,449 |
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
-| `src/cadr-cli/bootstrap` | 5 | 5,628 |
+| `src/cadr-cli/bootstrap` | 5 | 5,651 |
 | `src/cadr-ai/providers` | 12 | 5,106 |
 | `src/cadr-tui/mermaid` | 12 | 5,054 |
 | `src/cadr-cli/extensions` | 9 | 3,488 |

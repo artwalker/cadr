@@ -31,22 +31,22 @@ COMMON_TRACE_COUNTS = {
 }
 COMMON_ABSOLUTE_P99_US = 16_000
 FIXED_BASELINE_DIST_SHA256 = {
-    "tui": "d51b9badda1e0619031580a5a85f9d9c55dc9f054e850fda9d41bd498dd5832a",
-    "ai": "30e582e0778f19a26803780d4357d93ee4b6e8d7003f36f3ad2c4da7eef96e1f",
-    "agent": "61dc6fd151b0d45ff23b5b0860995d29d84c627473277fddef40ebbfdbba535b",
-    "coding_agent": "80d463fd2915be496c17f7933bb5248c6b8217408a4c5be04478e99832fa5e65",
+    "tui": "897358300f9abff3028d7ea07ca5df6e5b343fcf7579130ce098abc933b37479",
+    "ai": "6ea7a794b02bb1ebf6f20d48be246ceaee480e94b5f9e8b2162c4ca9fb2f7975",
+    "agent": "b141f890e211eafe49ffda498cc41edd08f60cf0ab4aaca9d2b18aad0d17b5a7",
+    "coding_agent": "44c64982bb381813c263b967162121da60e55a8a154295eeb60790ea97c60864",
 }
 FIXED_BASELINE_OBJECT_IDS = {
-    "package_lock_object_id": "48e638d5e8c16ae069701062109a5fe8631dac58",
-    "tui_object_id": "5242fa72b689a6f96d47e0a9a986ddd16ac49ae8",
-    "interactive_mode_object_id": "720f9b0f9f710271d99efe2f44787698593835f6",
-    "alt_screen_object_id": "fa7063e4c682cf07adb72b166aeb5a4275a84c9a",
+    "package_lock_object_id": "1f77aa69a44915990ba2e4f41573cb2b7005b0ca",
+    "tui_object_id": "5172a9a142c582f8d8ad9c8c85772f1b093cc5a7",
+    "interactive_mode_object_id": "6d5e6b884fc7729b517c17ab18acea9f9a672776",
+    "alt_screen_object_id": "783a92ab8f064ee6d5b1407d2d9f8d81c42ab892",
 }
 FIXED_BASELINE_DEPENDENCY_TREE_SHA256 = (
-    "8122bd0e9dd89de9cc79ae2cd63d6cc7fd7d21e5981a65e0cd58925d766ce9cc"
+    "b9847a32b8c1d8a83b1cd76f3b07c29cc7406c414dfb6728862dca12b24796ee"
 )
 FIXED_BASELINE_ARTIFACT_SHA256 = (
-    "ed1f1303fa9a1dd1808431aa7cb667faf4a244d6e0e62d18f9f21dad70814dfc"
+    "a8e9db54cfcbc1d137dd5377390211c05ec97117d8f7558aac6166e3cba2834b"
 )
 
 

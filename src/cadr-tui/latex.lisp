@@ -1,10 +1,10 @@
 (in-package #:cadr-tui)
 
-;;; pi@53fa77ccd packages/tui/src/latex.ts — terminal-friendly Unicode
+;;; pi@914cf1472 packages/tui/src/latex.ts — terminal-friendly Unicode
 ;;; rendering of basic LaTeX math.  Data tables are transcribed
 ;;; verbatim; the parser is a direct port of LatexParser.
 
-;; generated from pi@53fa77ccd packages/tui/src/latex.ts data tables
+;; generated from pi@914cf1472 packages/tui/src/latex.ts data tables
 (defparameter +latex-symbols+
   (list
    (cons "alpha" "α")

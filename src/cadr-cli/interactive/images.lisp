@@ -226,7 +226,7 @@
 
 (defun normalize-tool-result-images
     (content &key (auto-resize-p t))
-  ;; pi@53fa77ccd utils/tool-result-images.ts — normalize image blocks
+  ;; pi@914cf1472 utils/tool-result-images.ts — normalize image blocks
   ;; once as tool results enter history.  Processing failures keep the
   ;; original block (the tool produced it; a missing backend must not
   ;; delete tool output), and untouched images return the original

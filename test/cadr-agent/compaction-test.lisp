@@ -1066,7 +1066,7 @@
       (cadr-agent::truncate-summary-tool-result text)))))
 
 (test goal17-summary-tool-result-truncates-by-javascript-utf16-code-units
-  ;; pi@53fa77ccd compaction/utils.ts:88-99 uses String.length and slice,
+  ;; pi@914cf1472 compaction/utils.ts:88-99 uses String.length and slice,
   ;; whose unit is UTF-16 rather than Unicode scalar values.
   (let* ((emoji (string (code-char #x1f642)))
          (text

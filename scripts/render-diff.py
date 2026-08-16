@@ -201,8 +201,8 @@ def validate_unmodeled_site_review(
         raise HarnessFailure(
             "stale unmodeled-sink review entries: " + ", ".join(stale)
         )
-PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.84.1"
-PI_AI_MODEL_DATA_SHA256 = "6ab689189e7cb3de5cdb126312a3e60e8ac35fe5ee5f1b63d00f711c8a430c73"
+PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.84.2"
+PI_AI_MODEL_DATA_SHA256 = "0262785a76b0eb2eec596cd8a7ab2ee23eef89d2ef1bb1211c4f0a1944dacf41"
 KEYS = {
     "enter": b"\r",
     "escape": b"\x1b",
@@ -2666,11 +2666,11 @@ def normalize_fixed_values(data: bytes) -> bytes:
         (b"extensions/broken/index.ts", b"extensions/broken/<ENTRY>"),
         (b"extensions/broken/extension.lisp", b"extensions/broken/<ENTRY>"),
         (
-            b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v0.84.1",
+            b"pi\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v0.84.2",
             b"<PRODUCT>\x1b[39m\x1b[22m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (
-            b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.1",
+            b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.2",
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         # I01: this host's tmux replay of the baseline banner omits the
@@ -2678,11 +2678,11 @@ def normalize_fixed_values(data: bytes) -> bytes:
         # envelope onto the same I04 placeholder the bold form already
         # produces so the exact screen pair stays stable.
         (
-            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.1\x1b[39m",
+            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.2\x1b[39m",
             b"\x1b[1m\x1b[38;2;138;190;183m<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>\x1b[39m",
         ),
         (
-            b"pi\x1b[38;2;102;102;102m v0.84.1",
+            b"pi\x1b[38;2;102;102;102m v0.84.2",
             b"<PRODUCT>\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (
@@ -2690,7 +2690,7 @@ def normalize_fixed_values(data: bytes) -> bytes:
             b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>",
         ),
         (b"cadr v0.2.0\x1b[22m", b"<PRODUCT> v<VERSION>\x1b[22m"),
-        (b"pi v0.84.1", b"<PRODUCT> v<VERSION>"),
+        (b"pi v0.84.2", b"<PRODUCT> v<VERSION>"),
         (b"cadr v0.2.0", b"<PRODUCT> v<VERSION>"),
         (b"\x1b]0;\xcf\x80 - ", b"\x1b]0;<PRODUCT> - "),
         (b"\x1b]0;cadr - ", b"\x1b]0;<PRODUCT> - "),
@@ -3726,7 +3726,7 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("render-diff fake GitHub CLI contract drifted")
         if normalized(sample, "pi", sandbox) != sample:
             raise HarnessFailure("normalization altered whitespace or ANSI color bytes")
-        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.1"
+        pi_header = b"pi\x1b[0m\x1b[38;2;102;102;102m v0.84.2"
         cadr_header = b"cadr\x1b[0m\x1b[38;2;102;102;102m v0.2.0"
         expected_header = b"<PRODUCT>\x1b[0m\x1b[38;2;102;102;102m v<VERSION>"
         if normalize_fixed_values(pi_header) != expected_header:
@@ -3734,7 +3734,7 @@ def self_test(args: argparse.Namespace) -> int:
         if normalize_fixed_values(cadr_header) != expected_header:
             raise HarnessFailure("cadr styled product header normalization drifted")
         unbold_pi_header = (
-            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.1\x1b[39m"
+            b"\x1b[38;2;138;190;183mpi\x1b[38;2;102;102;102m v0.84.2\x1b[39m"
         )
         unbold_expected = (
             b"\x1b[1m\x1b[38;2;138;190;183m<PRODUCT>\x1b[0m"
@@ -3744,7 +3744,7 @@ def self_test(args: argparse.Namespace) -> int:
             raise HarnessFailure("pi unbold product header normalization drifted")
         bold_pi_header = (
             b"\x1b[1m\x1b[38;2;138;190;183mpi\x1b[0m"
-            b"\x1b[38;2;102;102;102m v0.84.1\x1b[39m"
+            b"\x1b[38;2;102;102;102m v0.84.2\x1b[39m"
         )
         if normalize_fixed_values(unbold_pi_header) != normalize_fixed_values(
             bold_pi_header

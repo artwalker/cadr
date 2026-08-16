@@ -303,7 +303,7 @@ def valid_baseline_report():
         "kind": "pi-goal11-structural-baseline",
         "provenance": {
             "source_revision": (
-                "53fa77ccd8a279eb87e92294ef3687b03ff80112"
+                "914cf1472e715297caa30db4b9535d534a9eb718"
             ),
             "tracked_worktree_clean": True,
             "loaded_dist_tree_sha256": dict(GATE.FIXED_BASELINE_DIST_SHA256),
@@ -720,7 +720,7 @@ class ContinuousInputGateTest(unittest.TestCase):
                 lambda candidate, _base: candidate["parameters"].update(samples=4),
             ),
             (
-                "fixed baseline revision is not 53fa77ccd",
+                "fixed baseline revision is not 914cf1472",
                 lambda _report, base: base["provenance"].update(
                     source_revision="wrong"
                 ),

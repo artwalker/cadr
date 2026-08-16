@@ -424,7 +424,7 @@
                       (string-equal (car pair) "user-agent"))
                     headers))
              (append headers
-                     (list (cons "User-Agent" (cadr-user-agent)))))
+                     (list (cons "User-Agent" (cadr-os-user-agent)))))
            headers))
      :payload payload
      :stream-p stream-p

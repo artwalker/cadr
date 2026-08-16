@@ -155,7 +155,7 @@ Returns the deduped list and a list of collision records
                  (getf entry :name)))))
 
 (defun load-project-context-files (cwd)
-  ;; pi@53fa77ccd core/resource-loader.ts:70-88: the first existing
+  ;; pi@914cf1472 core/resource-loader.ts:70-88: the first existing
   ;; candidate wins per ancestor directory.
   (let ((files nil))
     (dolist (directory

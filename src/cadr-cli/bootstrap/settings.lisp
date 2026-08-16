@@ -53,7 +53,7 @@
          nil)))))
 
 (defun settings-clear-on-shrink-p (manager)
-  ;; pi@53fa77ccd settings-manager.ts:1093-1099 gives an explicit setting
+  ;; pi@914cf1472 settings-manager.ts:1093-1099 gives an explicit setting
   ;; precedence over the environment and defaults to false.
   (settings-boolean-value
    manager "terminal"
@@ -77,7 +77,7 @@
         default)))
 
 (defun settings-tui-mode (manager)
-  ;; pi@53fa77ccd settings-manager.ts:1128-1130 — only the exact string
+  ;; pi@914cf1472 settings-manager.ts:1128-1130 — only the exact string
   ;; "fullscreen" selects fullscreen; everything else is regular.
   (if (string= (settings-value manager "tuiMode" "") "fullscreen")
       :fullscreen
@@ -95,7 +95,7 @@
    (settings-value manager "defaultTools")))
 
 (defun settings-fullscreen-scrollbar (manager)
-  ;; pi@53fa77ccd settings-manager.ts:1138-1141 — "always"/"hidden" pass
+  ;; pi@914cf1472 settings-manager.ts:1138-1141 — "always"/"hidden" pass
   ;; through; everything else falls back to "auto".  No effect in
   ;; regular TUI mode.
   (settings-choice-value
@@ -109,7 +109,7 @@
       :transcript))
 
 (defun settings-mermaid-rendering-mode (manager)
-  ;; pi@53fa77ccd settings-manager.ts:1252-1255 — markdown.mermaid is
+  ;; pi@914cf1472 settings-manager.ts:1252-1255 — markdown.mermaid is
   ;; nested; "off"/"final" pass through, anything else is "streaming".
   (let ((mode
           (settings-nested-value
@@ -463,7 +463,7 @@
               settings-manager
               "hideThinkingBlock" nil)
             :values (list t nil))
-           ;; pi@53fa77ccd settings-selector.ts:539-546
+           ;; pi@914cf1472 settings-selector.ts:539-546
            (make-settings-option
             :id "mermaid-rendering"
             :label "Mermaid diagrams"
@@ -581,7 +581,7 @@
             (cadr-ai:supported-thinking-levels
              (cadr-agent:agent-model agent))
             :submenu :thinking)
-           ;; pi@53fa77ccd settings-selector.ts:634-646
+           ;; pi@914cf1472 settings-selector.ts:634-646
            (make-settings-option
             :id "tui-mode"
             :label "TUI mode"
@@ -709,7 +709,7 @@
            "markdown" "mermaid" value
            :scope :global))
          ((string= id "tui-mode")
-          ;; pi@53fa77ccd interactive-mode.ts:4557-4567: switch the
+          ;; pi@914cf1472 interactive-mode.ts:4557-4567: switch the
           ;; running renderer first, persist only on success.
           (if *tui-mode-switch-hook*
               (when (funcall *tui-mode-switch-hook* value)

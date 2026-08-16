@@ -170,10 +170,10 @@
         (performance (goal12-read-project-file "docs/performance.md"))
         (manifest-source (goal12-read-project-file "examples/manifest.sexp"))
         (identity
-          "GOAL12_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 source=670/507/163/0 examples=99/99/0"))
-    (is (search "| `coding-agent` | 309 | 263 | 46 | 0 |" ledger))
-    (is (search "| `tui` | 44 | 39 | 5 | 0 |" ledger))
-    (is (search "| **Total** | **670** | **507** | **163** | **0** |" ledger))
+          "GOAL12_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 source=677/510/167/0 examples=99/99/0"))
+    (is (search "| `coding-agent` | 310 | 263 | 47 | 0 |" ledger))
+    (is (search "| `tui` | 46 | 40 | 6 | 0 |" ledger))
+    (is (search "| **Total** | **677** | **510** | **167** | **0** |" ledger))
     (is (search "Implemented; not measurable on this platform" ledger))
     (is (search "all 99" readme :test #'char-equal))
     ;; Goal 20 Part F adjudication (2026-08-14): the load/behavior gap for

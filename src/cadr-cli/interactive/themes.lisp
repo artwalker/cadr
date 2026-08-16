@@ -224,7 +224,7 @@
              (gethash "thinkingXhigh" colors)
              variables))
            overrides))
-       ;; pi@53fa77ccd theme.ts:326-332 — optional scrollbarThumb
+       ;; pi@914cf1472 theme.ts:326-332 — optional scrollbarThumb
        ;; falls back to selectedBg.
        (unless
            (nth-value 1

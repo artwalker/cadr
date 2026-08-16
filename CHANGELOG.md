@@ -28,7 +28,7 @@ tag/Release step.
   dominated `journal_append`.
 
 - Goal 18 Part L: re-anchored the fixed pi baseline to v0.84.1.
-  cadr 0.2.0 · aligned with pi v0.84.1 (+0, 53fa77ccd).  `--alt` is replaced
+  cadr 0.2.0 · aligned with pi v0.84.2 (+0, 914cf1472).  `--alt` is replaced
   by `--tui-mode regular|fullscreen` with the baseline diagnostics; the
   `tuiMode`, `fullscreenScrollbar`, and `markdown.mermaid` settings are
   honored; alt-screen navigation defaults moved to the baseline's

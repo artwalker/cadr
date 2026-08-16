@@ -303,7 +303,7 @@
              (extension-flag-definition-default flag)))))
       (setf (extension-snapshot-retired-p old) t)
       (maybe-release-extension-snapshot old))
-    ;; pi@53fa77ccd extensions/loader.ts:205-218,410-424 — invalidating
+    ;; pi@914cf1472 extensions/loader.ts:205-218,410-424 — invalidating
     ;; stale extension contexts eagerly unsubscribes their event-bus
     ;; listeners; prune every listener whose bundle left the snapshot.
     (let ((live-bundles

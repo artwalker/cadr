@@ -30,7 +30,7 @@
 (defun cadr-version ()
   +cadr-version+)
 
-(defun cadr-user-agent ()
+(defun cadr-os-user-agent ()
   ;; Baseline packages/ai/src/utils/pi-user-agent.ts getPiUserAgent, with
   ;; cadr identity.  The baseline guards node:os behind a browser check;
   ;; cadr is always native, so the OS triple is always available.
