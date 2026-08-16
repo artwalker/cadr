@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=24 needs-rewrite=133 no-rewrite=136 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=53fa77ccd8a279eb87e92294ef3687b03ff80112 files=293 lines=121105 assets=5 unevaluated=13 needs-rewrite=137 no-rewrite=143 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -307,17 +307,17 @@ files with unrelated facilities fail.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-server/config.lisp` | 45 | 6 | Resolve server state, auth, instance, and socket paths. | pass | pending evaluation | — | — |
-| `src/cadr-server/handler.lisp` | 101 | 1 | Dispatch one local server request to supervisor operations. | pass | pending evaluation | — | — |
-| `src/cadr-server/ipc.lisp` | 317 | 14 | Serve and call the framed Unix-socket server transport. | pass · large | pending evaluation | — | — |
-| `src/cadr-server/main.lisp` | 211 | 10 | Parse server CLI operations and run server or stream-client entry points. | pass | pending evaluation | — | — |
-| `src/cadr-server/package.lisp` | 59 | 1 | Declare the public `cadr-server` package surface. | pass | pending evaluation | — | — |
-| `src/cadr-server/protocol.lisp` | 49 | 5 | Encode/decode the server control-plane JSON messages. | pass | pending evaluation | — | — |
-| `src/cadr-server/radius.lisp` | 737 | 43 | Manage opt-in Radius registration, heartbeat, recovery, and redacted token use. | pass · large | pending evaluation | — | — |
-| `src/cadr-server/rpc-process.lisp` | 417 | 26 | Own one child `cadr --mode rpc` process, pending calls, event/UI callbacks, and teardown. | pass · large | pending evaluation | — | — |
-| `src/cadr-server/storage.lisp` | 195 | 15 | Persist server machine and instance records. | pass | pending evaluation | — | — |
-| `src/cadr-server/supervisor.lisp` | 609 | 27 | Supervise live RPC child instances, streams, persistence, and recovery. | pass · large | pending evaluation | — | — |
-| `src/cadr-server/types.lisp` | 24 | 4 | Define machine/instance record values and timestamps. | pass | pending evaluation | — | — |
+| `src/cadr-server/config.lisp` | 45 | 6 | Resolve server state, auth, instance, and socket paths. | pass | no-rewrite | Four path accessors (:19-45) each add only a contract filename over the single directory-resolution decision at :9-17. | 20 |
+| `src/cadr-server/handler.lisp` | 101 | 1 | Dispatch one local server request to supervisor operations. | pass | needs-rewrite | The extract-instanceId/unknown-instance block is hand-copied 4x (:36-96); one dispatch table owns the policy. | 20 |
+| `src/cadr-server/ipc.lisp` | 317 | 14 | Serve and call the framed Unix-socket server transport. | pass · large | no-rewrite | Stringly-typed upgrade sniff at :154-168 is the wire contract; stream lifecycle, per-message handler-case, and mutex writes are native. | 20 |
+| `src/cadr-server/main.lisp` | 211 | 10 | Parse server CLI operations and run server or stream-client entry points. | pass | needs-rewrite | Five branches hand-copy (print-server-response (ipc-request ...)) at :140-186; a command->request-constructor table. | 20 |
+| `src/cadr-server/package.lisp` | 59 | 1 | Declare the public `cadr-server` package surface. | pass | no-rewrite | Pure defpackage manifest; canonical idiom, nothing TS-shaped. | 20 |
+| `src/cadr-server/protocol.lisp` | 49 | 5 | Encode/decode the server control-plane JSON messages. | pass | no-rewrite | String keys are the byte-level client contract; optional-field emission is already data-driven (:36-48). | 20 |
+| `src/cadr-server/radius.lisp` | 737 | 43 | Manage opt-in Radius registration, heartbeat, recovery, and redacted token use. | pass · large | needs-rewrite | heartbeat-radius-machine and heartbeat-radius-pi (:467-577) hand-copy one retry-or-reregister skeleton; a shared HOF owns it. | 20 |
+| `src/cadr-server/rpc-process.lisp` | 417 | 26 | Own one child `cadr --mode rpc` process, pending calls, event/UI callbacks, and teardown. | pass · large | no-rewrite | Interface-style setter generics are the mock seam; condition-variable rendezvous and pending-map rollback are Lisp-native. | 20 |
+| `src/cadr-server/storage.lisp` | 195 | 15 | Persist server machine and instance records. | pass | needs-rewrite | upsert-instance does position-then-setf-nth array mutation on a list (:171-181); member+setf-car or mapcar rebuild is single-pass. | 20 |
+| `src/cadr-server/supervisor.lisp` | 609 | 27 | Supervise live RPC child instances, streams, persistence, and recovery. | pass · large | no-rewrite | Defensive clone-instance-record snapshots are the machine-enforced invariant against cross-thread mutation of persisted records. | 20 |
+| `src/cadr-server/types.lisp` | 24 | 4 | Define machine/instance record values and timestamps. | pass | no-rewrite | Two defstructs plus a named copy alias naming the snapshot discipline; minimal and native. | 20 |
 
 ### 2.7 `cadr-storage`
 
