@@ -211,6 +211,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
              "real source parity ledger"
              "source parity drift self-test"
              "cadr-side mapping existence"
+             "image-derived mapping freshness"
              "summarization choke point"
              "deterministic FiveAM"
              "FiveAM check-count ledger"

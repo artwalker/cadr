@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 642,
+  "expected_findings": 651,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4545,6 +4545,54 @@
       "line": "    # the 12F-2 span-iteration rewrite; pi still pays the quadratic",
       "occurrences": 1,
       "reason": "Ceiling comment records that the pinned baseline still pays the quadratic accumulation cadr removed in 12F-2."
+    },
+    {
+      "path": "scripts/derive-source-parity-mappings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                                                   pi-file line-start)))",
+      "occurrences": 1,
+      "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
+    },
+    {
+      "path": "scripts/derive-source-parity-mappings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                                           :pi-file pi-file",
+      "occurrences": 2,
+      "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
+    },
+    {
+      "path": "scripts/derive-source-parity-mappings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "                       (pi-file (string-trim",
+      "occurrences": 1,
+      "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
+    },
+    {
+      "path": "scripts/derive-source-parity-mappings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "              (piece-pi-file piece)",
+      "occurrences": 2,
+      "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
+    },
+    {
+      "path": "scripts/derive-source-parity-mappings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  pi-file          ; trimmed first-column pi path",
+      "occurrences": 2,
+      "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
+    },
+    {
+      "path": "scripts/derive-source-parity-mappings.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "(defun parse-mapping-cell (line cell-start cell-end row pi-file line-start)",
+      "occurrences": 1,
+      "reason": "Goal 20 N0 derivation script: pi-file names the fixed-baseline source path each ledger row maps from."
     }
   ],
   "opaque_files": [

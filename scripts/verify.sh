@@ -377,6 +377,17 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "image-derived mapping freshness" \
+    "$SBCL_COMMAND" --script \
+      "$PROJECT_DIRECTORY/scripts/derive-source-parity-mappings.lisp" \
+      --check ||
+    DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "image-derived mapping freshness" "cadr-side mapping existence failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "summarization choke point adversarial self-test" \
     "$PROJECT_DIRECTORY/scripts/test-summarization-choke-point.sh" ||
     DETERMINISTIC_READY=0
