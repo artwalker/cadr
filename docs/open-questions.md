@@ -6,6 +6,27 @@ must not enter implementation.
 
 Items awaiting adjudication:
 
+- `OQ-G20-MODEL-VISIBLE-TEXT-GATE`: **a byte-level gate for what is sent to
+  the model** (goal 20 prompt review, item A). Every other axis is gated
+  (render-diff watches the screen, source-parity watches files), but
+  nothing watches the bytes on the wire: the skills-block text drift was
+  found by a human reading output, not by a gate. Proposal shape: golden
+  snapshots of the composed system prompt (default and custom branches),
+  the skills block, prompt templates, compaction/branch-summary templates,
+  extension-injected text, and the version banner — each with an explicit
+  denominator, per the lesson that a coverage gate without a declared
+  denominator becomes the next I04. Gate addition, so it waits here.
+
+- `OQ-G20-DOCS-CONTENT-PARITY`: **whether user-facing doc content is a
+  parity obligation** (goal 20 prompt review, item D). cadr ships 11 user
+  docs named after pi's (`extensions.md`, `keybindings.md`, `themes.md`,
+  `sdk.md`, …); the source ledger counts only `packages/**/*.ts`, so doc
+  content is out of every ledger. The decision needed: either docs
+  content parity is in scope (build the fifth ledger for it) or it is
+  explicitly out — recorded here either way, so nobody assumes someone
+  else is watching it.
+
+
 - `OQ-G20-UNDO-STACK-CAP`: **capping the editor undo stack**. Goal 20 queue
   item 12G-1 proposed a depth cap because every push stores a full-buffer
   `copy-tree` snapshot (`src/cadr-tui/undo-stack.lisp:7-10`). Executor
@@ -17,6 +38,53 @@ Items awaiting adjudication:
   difference; (c) bound by snapshot *bytes* rather than count, keeping
   shallow-buffer sessions fully undoable. No implementation before
   adjudication.
+
+  **Adjudicated (advisor, 2026-08-16; user delegated the decision and
+  retains the veto): option (c), a byte budget rather than a depth cap.**
+
+  Grounds, in order of weight:
+
+  1. **It is the only option that preserves the baseline's felt behaviour.**
+     Unbounded, in practice, means "undo as far back as you like". A depth
+     cap makes editing a 20-line config and a 2000-line source file equally
+     undoable for N steps, when the former never cost anything to keep. A
+     byte budget leaves small buffers **fully** undoable and truncates only
+     when memory is genuinely at stake, so the difference is unobservable in
+     almost every real session.
+  2. **It measures exactly, with no estimation.** The snapshot is a plist
+     (`editor-snapshot`, `src/cadr-tui/editor.lisp:148-154`) whose mass is
+     the `:text` string; `:pastes` is a small alist and the rest are fixnums.
+     `(length text)` is the size, not a proxy for it. This was the deciding
+     check — **had the byte size needed estimating, option (a) would have
+     been the honest choice**, because an approximate ceiling that fails at
+     the extreme is worse than no ceiling.
+  3. **It keeps the registered intentional difference as narrow as
+     possible.** (b) reads "undo depth changed" — a user-visible functional
+     change. (c) reads "the oldest history in an extreme buffer is dropped",
+     which a user is unlikely ever to reach. A narrow difference is easier
+     for the next reader to judge correctly.
+
+  Not (a): the baseline's unboundedness is an oversight rather than a
+  decision, and cadr's `copy-tree` full snapshot costs two whole-buffer
+  copies per keystroke. This project has already been bitten once by a cost
+  that only appears in long sessions — goal 11 began with the user reporting
+  that the TUI "gets very laggy after a while".
+
+  Not (b): it pays **both** prices — user-visible behaviour changes *and*
+  a large buffer can still exhaust the budget.
+
+  Implementation requirements, binding:
+
+  - **Measure before naming a number.** Sample snapshot sizes from real
+    sessions and publish the distribution; do not pick a limit first.
+    (development-policy §5.5: the criterion may not precede the
+    measurement.)
+  - **Gate-validity proof**: construct a session that exceeds the budget and
+    assert that the oldest snapshot is dropped *and* that undo still works
+    correctly within the remaining budget.
+  - When registering the intentional difference, state the **trigger
+    condition** (buffer size × edit count), not "for performance". A reason
+    that does not say when the difference appears cannot be checked later.
 
 - `OQ-G20-AGENT-EVAL-TOOL`: **a Lisp evaluation tool for the agent (not for
   humans)**. On 2026-08-13 the user raised "cadr is written in Lisp; could the
