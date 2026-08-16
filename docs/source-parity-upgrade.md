@@ -90,6 +90,45 @@ checklist.
 | RPC methods / exit codes / session format | none |
 | files | +182/−36 .ts (7 renames) under `packages/`; of these **+104/−29 non-test** — the hand pass counted 88/27, undercounting again |
 
+### v0.84.2 enumeration result (53fa77ccd → v0.84.2, generated 2026-08-16)
+
+| Class | Delta |
+|---|---|
+| CLI flags | +`--use-theme` |
+| slash commands | none |
+| settings keys | +`defaultTools`, +`fullscreenExitOutput` |
+| extension events | none |
+| exported components | none |
+| keybinding actions | +`tui.altScreen.lineDown`, +`lineUp`, +`search`, +`searchClose`, +`searchNext`, +`searchPrevious` |
+| providers | none |
+| environment variables | none |
+| theme tokens | +`searchMatchBg`, +`searchMatchText` |
+| error classes | none |
+| tool files | none |
+| extension type fields | none |
+| public API exports | 34 → 34 |
+| RPC methods / exit codes / session format | none |
+| files | +20/−1 .ts under `packages/`; of these **+8/−1 non-test** |
+
+v0.84.2 file dispositions (four-column TSV, gate run green 2026-08-16):
+
+```text
+status	old_path	new_path	decision
+A	-	packages/agent/src/harness/events.ts	implement: harness run_start/run_end event bus; port into cadr-agent harness and add a ledger row
+A	-	packages/agent/src/search/index.ts	implement: session-search interface, refactor of harness/session/search.ts (#7797); port and add a ledger row
+A	-	packages/agent/src/search/scanning.ts	implement: scanning session search, refactor of harness/session/search.ts (#7797); port and add a ledger row
+A	-	packages/ai/src/api/cloudflare-gateway-binding.ts	assess at port: Workers AI binding transport, cadr runs no Workers runtime; port what is reachable, ledger row records the wiring evidence
+A	-	packages/ai/src/utils/pi-user-agent.ts	implement: User-Agent helper; port (as cadr identity) and add a ledger row
+A	-	packages/coding-agent/src/modes/interactive/model-catalog-refresh.ts	implement: single-flight model-catalog refresh coordinator; port and add a ledger row
+A	-	packages/tui/src/alt-screen-search.ts	implement: alt-screen search (pairs with 6 new keybinding actions and 2 theme tokens); port and add a ledger row
+A	-	packages/tui/test/render-churn-bench.ts	test-side render bench; cadr equivalent is the goal 11 render bench; add a ledger row recording that mapping
+D	packages/agent/src/harness/session/search.ts	-	remove the obsolete ledger row; capability superseded by packages/agent/src/search/ (#7797), cadr mapping unchanged (own session/storage pipeline)
+```
+
+The 81 modified non-test files are governed by the existing behavioral and
+source re-audit; their deltas are ported into the Lisp tree under the goal 20
+baseline-upgrade ruling before the fixed ledger moves to v0.84.2.
+
 This mode enters only the six-column package tables headed by `Baseline file`,
 ignores prose and summary tables, accepts exactly the three ledger verdicts,
 and fails on malformed separators/rows, duplicates, a row count different from
