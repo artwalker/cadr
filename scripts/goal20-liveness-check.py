@@ -4,8 +4,9 @@
 n captures (default 3). Fail if any run's worst inter-output gap exceeds
 the booked N_i. Failure prints the full gap list, not just red.
 
-Outside render-diff gate --tier core. Default check is the silence-
-injection scenario (the P0-4 lock). --all walks the booked table.
+Outside render-diff gate --tier core. Default path only locks the
+P0-4 silence defect (liveness-ttt-agent-turn). The booked table is a
+local --all instrument, never a CI obligation (board 2026-08-17 A).
 
 Usage:
   python3 scripts/goal20-liveness-check.py
@@ -219,6 +220,12 @@ def main() -> int:
             failed += 1
 
     print(f"liveness summary: checked={checked} fail={failed}")
+    if not args.all:
+        print(
+            "liveness scope: default path locks P0-4 silence (ttt); "
+            "full table is local --all, not CI",
+            file=sys.stderr,
+        )
     return 1 if failed else 0
 
 

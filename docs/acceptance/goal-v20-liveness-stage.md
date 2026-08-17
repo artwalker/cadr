@@ -24,6 +24,17 @@ stage) runs the silence-injection scenario
 `liveness-ttt-agent-turn` / wide / cadr, n=3. That is the P0-4 lock.
 `--all` walks the full booked table (cadr side).
 
+## Scope (board 2026-08-17, option A)
+
+The default path **only** locks the P0-4 silence defect (the ttt
+cell). The booked 67-cell table is a **local `--all` instrument**,
+not a CI obligation. Thresholds come from a same-machine baseline
+measurement; CI must not judge them (playbook §3). `--all` never
+enters CI.
+
+Run `--all` locally before pushing a batch that touches
+render / stream / TUI, and in every Part K module-close `verify.sh`.
+
 `verify.sh` runs this stage from `PROJECT_DIRECTORY`, not the
 isolated tar copy. Capture calls `git -C <repo>` to verify the
 baseline cache; the isolated tree has no `.git` (CI-1f:

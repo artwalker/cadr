@@ -198,6 +198,9 @@ run_statistical_liveness() {
   # with "fatal: not a git repository". Same cwd as
   # run_render_diff_gate. Isolated cadr is only the "build
   # succeeded" gate below.
+  # Default is the P0-4 ttt lock only. The 67-cell table is a
+  # local --all instrument and must not enter this stage (board
+  # 2026-08-17 option A; thresholds are machine-bound).
   (
     cd "$PROJECT_DIRECTORY"
     python3 test/goal20-liveness-check-test.py

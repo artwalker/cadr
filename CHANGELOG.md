@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Statistical liveness default path is documented as the P0-4 silence
+  lock only (`liveness-ttt-agent-turn`). The booked table is a local
+  `--all` instrument and does not enter CI (board 2026-08-17 A).
+
 - Healed two source-parity mapping positions after the unused-helper
   deletions (`credential-for-print` 192→183,
   `render-truncated-text` 1524→1514). Verdicts and key set unchanged.
