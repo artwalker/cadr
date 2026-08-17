@@ -27,6 +27,13 @@
   (and (protocol-object-p object)
        (gethash key object)))
 
+(defun optional-field-p (object key predicate)
+  ;; Absent-or-valid is one decision. The copied
+  ;; (or (not present) (pred ...)) form made each new optional
+  ;; key a second owner of the same guard.
+  (or (not (object-present-p object key))
+      (funcall predicate (object-value object key))))
+
 (defun sequence-value-p (value)
   (and (vectorp value)
        (not (typep value
@@ -164,8 +171,7 @@
       (timestamp-p (object-value value key)))
     '("input" "output" "cacheRead" "cacheWrite"
       "totalTokens"))
-   (or (not (object-present-p value "reasoning"))
-       (timestamp-p (object-value value "reasoning")))
+   (optional-field-p value "reasoning" #'timestamp-p)
    (let ((cost (object-value value "cost")))
      (and (exact-object-keys-p
            cost
@@ -198,10 +204,10 @@
          (exact-object-keys-p
           value '("type" "thinking") '("redacted"))
          (stringp (object-value value "thinking"))
-         (or
-          (not (object-present-p value "redacted"))
-          (member (object-value value "redacted")
-                  '(nil t)))))
+         (optional-field-p
+          value "redacted"
+          (lambda (item)
+            (member item '(nil t))))))
        ((and (member "image" allowed :test #'string=)
              (string= type "image"))
         (and
@@ -258,22 +264,17 @@
           (object-value value "status")
           '("streaming" "complete" "error" "aborted"))
          (model-ref-p (object-value value "model"))
-         (or
-          (not (object-present-p value "responseModel"))
-          (nonempty-string-p
-           (object-value value "responseModel")))
-         (or
-          (not (object-present-p value "usage"))
-          (usage-p (object-value value "usage")))
-         (or
-          (not (object-present-p value "stopReason"))
-          (one-of-string-p
-           (object-value value "stopReason")
-           '("stop" "length" "tool_use"
-             "error" "aborted")))
-         (or
-          (not (object-present-p value "errorMessage"))
-          (stringp (object-value value "errorMessage")))
+         (optional-field-p
+          value "responseModel" #'nonempty-string-p)
+         (optional-field-p value "usage" #'usage-p)
+         (optional-field-p
+          value "stopReason"
+          (lambda (item)
+            (one-of-string-p
+             item
+             '("stop" "length" "tool_use"
+               "error" "aborted"))))
+         (optional-field-p value "errorMessage" #'stringp)
          (timestamp-p (object-value value "timestamp"))))
        ((string= role "tool")
         (and
@@ -291,16 +292,12 @@
           (object-value value "content")
           (lambda (content)
             (content-p content '("text" "image"))))
-         (or
-          (not (object-present-p value "details"))
-          (json-value-p (object-value value "details")))
+         (optional-field-p value "details" #'json-value-p)
          (one-of-string-p
           (object-value value "status")
           '("running" "complete" "error"))
          (member (object-value value "isError") '(nil t))
-         (or
-          (not (object-present-p value "usage"))
-          (usage-p (object-value value "usage")))
+         (optional-field-p value "usage" #'usage-p)
          (timestamp-p (object-value value "timestamp"))))
        (t nil)))))
 
@@ -316,8 +313,7 @@
          "queuedSteerCount")))
     '("name"))
    (nonempty-string-p (object-value value "id"))
-   (or (not (object-present-p value "name"))
-       (stringp (object-value value "name")))
+   (optional-field-p value "name" #'stringp)
    (nonempty-string-p (object-value value "cwd"))
    (timestamp-p (object-value value "createdAt"))
    (timestamp-p (object-value value "updatedAt"))
@@ -370,8 +366,7 @@
     '("auth" "version" "busy" "session_locked"
       "not_found" "invalid_request"))
    (stringp (object-value value "message"))
-   (or (not (object-present-p value "details"))
-       (json-value-p (object-value value "details")))))
+   (optional-field-p value "details" #'json-value-p)))
 
 (defun command-p (value)
   (and
@@ -385,17 +380,12 @@
          (exact-object-keys-p
           value '("command")
           '("cwd" "name" "model" "thinkingLevel"))
-         (or (not (object-present-p value "cwd"))
-             (nonempty-string-p
-              (object-value value "cwd")))
-         (or (not (object-present-p value "name"))
-             (stringp (object-value value "name")))
-         (or (not (object-present-p value "model"))
-             (model-ref-p (object-value value "model")))
-         (or
-          (not (object-present-p value "thinkingLevel"))
-          (thinking-level-p
-           (object-value value "thinkingLevel")))))
+         (optional-field-p
+          value "cwd" #'nonempty-string-p)
+         (optional-field-p value "name" #'stringp)
+         (optional-field-p value "model" #'model-ref-p)
+         (optional-field-p
+          value "thinkingLevel" #'thinking-level-p)))
        ((member command '("attach" "detach" "abort")
                 :test #'string=)
         (and

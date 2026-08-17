@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K3: `cadr-protocol` encoder limits live on
+  `cbor-writer`, frame decode uses a cursor, optional schema
+  fields share `optional-field-p`. FiveAM 18683 → 18691.
+
 - Goal 20 Part K2: `cadr-storage` stays `no-rewrite` (I verdicts
   undrifted). Theme index recount 197 → 198.
 

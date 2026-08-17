@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122618 assets=5 unevaluated=0 needs-rewrite=147 no-rewrite=147 in-progress=0 done=1 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122617 assets=5 unevaluated=0 needs-rewrite=144 no-rewrite=147 in-progress=0 done=4 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -298,11 +298,16 @@ files with unrelated facilities fail.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-protocol/cbor.lisp` | 508 | 37 | Encode and decode bounded RFC 8949 CBOR values. | pass · large | needs-rewrite | The encoder threads four limit args positionally through every recursive call (:162-255) while the decoder already bundles them in cbor-reader (:281-289). | 20 |
+| `src/cadr-protocol/cbor.lisp` | 492 | 38 | Encode and decode bounded RFC 8949 CBOR values. | pass · large | done | Encoder limits now live on cbor-writer, matching cbor-reader. I0: one owner of the three limits, not four positionals on every recursive arm. | 20 |
 | `src/cadr-protocol/codec.lisp` | 121 | 10 | Compose message validation, CBOR, and framing into incremental client/server codecs. | pass | no-rewrite | Condition flattening at :29-33 is the wire-observable error text (bounded, parity-pinned); CL has no standard :cause to preserve instead. | 20 |
-| `src/cadr-protocol/framing.lisp` | 145 | 15 | Encode and incrementally decode bounded length-prefixed frames. | pass | needs-rewrite | consume-pending memmoves the buffer per frame (:97-101, JS splice transcribed); the in-house cursor pattern exists in cbor.lisp:286. | 20 |
+| `src/cadr-protocol/framing.lisp` | 170 | 18 | Encode and incrementally decode bounded length-prefixed frames. | pass | done | consume-pending advances offset; compact is amortized on append. I0: O(1) consume, same cursor as cbor-reader. | 20 |
 | `src/cadr-protocol/package.lisp` | 33 | 1 | Declare the public `cadr-protocol` package surface. | pass | no-rewrite | Defpackage-only; flat :export list is the CL API-surface idiom. | 20 |
-| `src/cadr-protocol/schema.lisp` | 620 | 33 | Validate and parse every protocol v2 client/server message shape. | pass · large | needs-rewrite | The optional-field guard (or (not present) (pred ...)) is hand-copied 10+ times (:202-398); one predicate combinator, identical validator behavior. | 20 |
+| `src/cadr-protocol/schema.lisp` | 610 | 34 | Validate and parse every protocol v2 client/server message shape. | pass · large | done | optional-field-p owns absent-or-valid. I0: one decision, identical validators. | 20 |
+
+Part K3 (2026-08-18): three needs-rewrite rows done. package.lisp
+and codec.lisp kept no-rewrite (I reasons still hold; wc 33 / 121).
+Report: `docs/acceptance/goal-v20-part-k2.md` is K2;
+`docs/acceptance/goal-v20-part-k3.md` is this close.
 
 ### 2.6 `cadr-server`
 

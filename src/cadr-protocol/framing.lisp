@@ -77,6 +77,9 @@
                 :element-type '(unsigned-byte 8)
                 :adjustable t
                 :fill-pointer 0))
+  ;; Unread start. consume-pending only advances this (cbor-reader
+  ;; offset). The JS splice at the old :97-101 replace is gone.
+  (offset 0 :type integer)
   (state :open :type keyword))
 
 (defun make-frame-decoder (&key max-frame-length)
@@ -85,20 +88,40 @@
 
 (defun frame-decoder-fail (decoder control &rest arguments)
   (setf (frame-decoder-state decoder) :failed
+        (frame-decoder-offset decoder) 0
         (fill-pointer
          (frame-decoder-pending decoder)) 0)
   (apply #'frame-fail control arguments))
 
+(defun pending-unread (decoder)
+  (- (length (frame-decoder-pending decoder))
+     (frame-decoder-offset decoder)))
+
+(defun compact-pending (decoder)
+  (let* ((pending (frame-decoder-pending decoder))
+         (offset (frame-decoder-offset decoder))
+         (n (pending-unread decoder)))
+    (when (plusp offset)
+      (replace pending pending
+               :start1 0 :start2 offset :end2 (+ offset n))
+      (setf (fill-pointer pending) n
+            (frame-decoder-offset decoder) 0))))
+
 (defun append-pending (decoder chunk)
+  (when (> (frame-decoder-offset decoder) 4096)
+    (compact-pending decoder))
   (let ((pending (frame-decoder-pending decoder)))
     (loop for byte across chunk
           do (vector-push-extend byte pending))))
 
 (defun consume-pending (decoder count)
-  (let* ((pending (frame-decoder-pending decoder))
-         (remaining (- (length pending) count)))
-    (replace pending pending :start1 0 :start2 count)
-    (setf (fill-pointer pending) remaining)))
+  (incf (frame-decoder-offset decoder) count))
+
+(defun frame-payload-length-at (bytes start)
+  (+ (ash (aref bytes start) 24)
+     (ash (aref bytes (+ start 1)) 16)
+     (ash (aref bytes (+ start 2)) 8)
+     (aref bytes (+ start 3))))
 
 (defun frame-decoder-push (decoder chunk)
   (case (frame-decoder-state decoder)
@@ -114,9 +137,10 @@
   (let ((frames nil)
         (pending (frame-decoder-pending decoder)))
     (loop
-      (when (< (length pending) 4)
+      (when (< (pending-unread decoder) 4)
         (return))
-      (let ((length (frame-payload-length pending)))
+      (let* ((start (frame-decoder-offset decoder))
+             (length (frame-payload-length-at pending start)))
         (when (> length
                  (frame-decoder-max-frame-length decoder))
           (frame-decoder-fail
@@ -124,9 +148,11 @@
            "Frame length ~D exceeds configured limit of ~D"
            length
            (frame-decoder-max-frame-length decoder)))
-        (when (< (length pending) (+ 4 length))
+        (when (< (pending-unread decoder) (+ 4 length))
           (return))
-        (push (subseq pending 4 (+ 4 length))
+        (push (subseq pending
+                      (+ start 4)
+                      (+ start 4 length))
               frames)
         (consume-pending decoder (+ 4 length))))
     (nreverse frames)))
@@ -137,8 +163,7 @@
      (frame-fail "Frame decoder has ended"))
     (:failed
      (frame-fail "Frame decoder has failed")))
-  (unless (zerop
-           (length (frame-decoder-pending decoder)))
+  (unless (zerop (pending-unread decoder))
     (frame-decoder-fail
      decoder "Truncated frame at end of stream"))
   (setf (frame-decoder-state decoder) :ended)

@@ -343,3 +343,18 @@
     (signals cadr-protocol:protocol-validation-error
       (cadr-protocol:message-decoder-push
        oversized (octets 0 0 0 4)))))
+
+(test optional-field-p-is-absent-or-predicate
+  ;; Red when the helper does not exist (old copied (or (not present)
+  ;; (pred)) sites).
+  (let ((empty (make-hash-table :test #'equal))
+        (ok (make-hash-table :test #'equal))
+        (bad (make-hash-table :test #'equal)))
+    (setf (gethash "x" ok) "hi"
+          (gethash "x" bad) 1)
+    (is-true
+     (cadr-protocol::optional-field-p empty "x" #'stringp))
+    (is-true
+     (cadr-protocol::optional-field-p ok "x" #'stringp))
+    (is-false
+     (cadr-protocol::optional-field-p bad "x" #'stringp))))

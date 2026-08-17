@@ -149,6 +149,17 @@
     (signals-message cadr-protocol:frame-error "ended"
       (cadr-protocol:frame-decoder-end decoder))))
 
+(test frame-decoder-consume-advances-offset-not-splice
+  ;; Red on the old replace/fill-pointer splice.
+  (let* ((wire
+           (cadr-protocol:encode-frame (octets 1 2 3)))
+         (decoder (cadr-protocol:make-frame-decoder)))
+    (cadr-protocol:frame-decoder-push decoder wire)
+    (is (plusp (cadr-protocol::frame-decoder-offset decoder)))
+    (is (>= (length
+             (cadr-protocol::frame-decoder-pending decoder))
+            (length wire)))))
+
 (test frame-rejects-invalid-maximum-lengths
   (dolist (maximum
            (list -1

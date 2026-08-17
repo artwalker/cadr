@@ -215,3 +215,9 @@
      #(1 2 3) :max-container-length 2))
   (signals-message cadr-protocol:cbor-error "limit"
     (cadr-protocol:encode-cbor "ab" :max-byte-length 2)))
+
+(test encode-cbor-writer-owns-the-three-limits
+  ;; Red on the old positional-limit encode-cbor-value.
+  (is (fboundp 'cadr-protocol::cbor-writer-max-byte-length))
+  (is (fboundp 'cadr-protocol::cbor-writer-max-container-length))
+  (is (fboundp 'cadr-protocol::cbor-writer-max-depth)))

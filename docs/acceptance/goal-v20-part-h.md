@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,618 lines**
+Denominator: **295 files / 122,617 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 35 | 20,792 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,501 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,325 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,324 | 76.9% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
@@ -414,13 +414,13 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/composition` | 2 | 708 |
 | `src/cadr-tui/terminal-image.lisp` | 1 | 677 |
 | `src/cadr-ai/websocket.lisp` | 1 | 622 |
-| `src/cadr-protocol/schema.lisp` | 1 | 620 |
+| `src/cadr-protocol/schema.lisp` | 1 | 610 |
 | `src/cadr-agent/session` | 2 | 609 |
 | `src/cadr-tui/autocomplete.lisp` | 1 | 592 |
 | `src/cadr-tui/theme.lisp` | 1 | 568 |
 | `src/cadr-tui/components` | 2 | 561 |
 | `src/cadr-cli/migration.lisp` | 1 | 509 |
-| `src/cadr-protocol/cbor.lisp` | 1 | 508 |
+| `src/cadr-protocol/cbor.lisp` | 1 | 492 |
 | `src/cadr-tui/overlay.lisp` | 1 | 481 |
 | `src/cadr-ai/package.lisp` | 1 | 480 |
 | `src/cadr-evals/suites.lisp` | 1 | 479 |
@@ -449,9 +449,9 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/branch-summarization.lisp` | 1 | 187 |
 | `src/cadr-ai/image-models.generated.lisp` | 1 | 185 |
 | `src/cadr-tui/keybindings.lisp` | 1 | 183 |
+| `src/cadr-protocol/framing.lisp` | 1 | 170 |
 | `src/cadr-evals/artifacts.lisp` | 1 | 168 |
 | `src/cadr-evals/main.lisp` | 1 | 154 |
-| `src/cadr-protocol/framing.lisp` | 1 | 145 |
 | `src/cadr-tui/word-navigation.lisp` | 1 | 141 |
 | `src/cadr-tui/fuzzy.lisp` | 1 | 134 |
 | `src/cadr-protocol/codec.lisp` | 1 | 121 |

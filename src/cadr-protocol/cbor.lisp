@@ -55,62 +55,64 @@
     (or max-depth +default-max-cbor-depth+)
     +maximum-configured-cbor-depth+)))
 
-(defun make-octet-writer ()
-  (make-array 256
-              :element-type '(unsigned-byte 8)
-              :adjustable t
-              :fill-pointer 0))
+(defstruct (cbor-writer
+            (:constructor %make-cbor-writer
+                (max-byte-length
+                 max-container-length max-depth)))
+  ;; Same ownership as cbor-reader (:281-289): the three limits
+  ;; live on the buffer, not as positionals on every recursive arm.
+  (octets (make-array 256
+                      :element-type '(unsigned-byte 8)
+                      :adjustable t
+                      :fill-pointer 0)
+          :type (vector (unsigned-byte 8)))
+  (max-byte-length 0 :type integer)
+  (max-container-length 0 :type integer)
+  (max-depth 0 :type integer))
 
-(defun writer-ensure (writer count limit)
-  (when (> (+ (fill-pointer writer) count) limit)
+(defun writer-ensure (writer count)
+  (when (> (+ (fill-pointer (cbor-writer-octets writer))
+              count)
+           (cbor-writer-max-byte-length writer))
     (cbor-fail
      "CBOR byte length exceeds configured limit of ~D"
-     limit)))
+     (cbor-writer-max-byte-length writer))))
 
-(defun writer-byte (writer value limit)
-  (writer-ensure writer 1 limit)
-  (vector-push-extend (logand value #xff) writer))
+(defun writer-byte (writer value)
+  (writer-ensure writer 1)
+  (vector-push-extend
+   (logand value #xff)
+   (cbor-writer-octets writer)))
 
-(defun writer-bytes (writer bytes limit)
-  (writer-ensure writer (length bytes) limit)
+(defun writer-bytes (writer bytes)
+  (writer-ensure writer (length bytes))
   (loop for byte across bytes
-        do (vector-push-extend byte writer)))
+        do (vector-push-extend
+            byte (cbor-writer-octets writer))))
 
-(defun writer-uint (writer value width limit)
+(defun writer-uint (writer value width)
   (loop for shift downfrom (* 8 (1- width)) to 0 by 8
         do (writer-byte
             writer
-            (ldb (byte 8 shift) value)
-            limit)))
+            (ldb (byte 8 shift) value))))
 
-(defun cbor-write-argument
-    (writer major-type value max-byte-length)
+(defun cbor-write-argument (writer major-type value)
   (let ((prefix (ash major-type 5)))
     (cond
       ((< value 24)
-       (writer-byte writer
-                    (logior prefix value)
-                    max-byte-length))
+       (writer-byte writer (logior prefix value)))
       ((<= value #xff)
-       (writer-byte writer
-                    (logior prefix 24)
-                    max-byte-length)
-       (writer-byte writer value max-byte-length))
+       (writer-byte writer (logior prefix 24))
+       (writer-byte writer value))
       ((<= value #xffff)
-       (writer-byte writer
-                    (logior prefix 25)
-                    max-byte-length)
-       (writer-uint writer value 2 max-byte-length))
+       (writer-byte writer (logior prefix 25))
+       (writer-uint writer value 2))
       ((<= value +maximum-uint32+)
-       (writer-byte writer
-                    (logior prefix 26)
-                    max-byte-length)
-       (writer-uint writer value 4 max-byte-length))
+       (writer-byte writer (logior prefix 26))
+       (writer-uint writer value 4))
       (t
-       (writer-byte writer
-                    (logior prefix 27)
-                    max-byte-length)
-       (writer-uint writer value 8 max-byte-length)))))
+       (writer-byte writer (logior prefix 27))
+       (writer-uint writer value 8)))))
 
 (defun valid-unicode-scalar-string-p (text)
   (loop for character across text
@@ -129,16 +131,15 @@
       (cbor-fail
        "CBOR text strings must contain valid Unicode scalar values"))))
 
-(defun cbor-write-text
-    (writer text max-byte-length)
-  (let ((bytes (string-octets-strict text)))
-    (when (> (length bytes) max-byte-length)
+(defun cbor-write-text (writer text)
+  (let ((bytes (string-octets-strict text))
+        (limit (cbor-writer-max-byte-length writer)))
+    (when (> (length bytes) limit)
       (cbor-fail
        "CBOR text string length exceeds configured limit of ~D"
-       max-byte-length))
-    (cbor-write-argument
-     writer 3 (length bytes) max-byte-length)
-    (writer-bytes writer bytes max-byte-length)))
+       limit))
+    (cbor-write-argument writer 3 (length bytes))
+    (writer-bytes writer bytes)))
 
 (defun finite-real-p (value)
   (and (realp value)
@@ -159,20 +160,18 @@
        (not (typep value
                    '(vector (unsigned-byte 8))))))
 
-(defun encode-cbor-value
-    (writer value max-byte-length max-container-length max-depth
-     depth ancestors)
-  (when (> depth max-depth)
+(defun encode-cbor-value (writer value depth ancestors)
+  (when (> depth (cbor-writer-max-depth writer))
     (cbor-fail
      "CBOR nesting depth exceeds configured limit of ~D"
-     max-depth))
+     (cbor-writer-max-depth writer)))
   (cond
     ((eq value 'null)
-     (writer-byte writer #xf6 max-byte-length))
+     (writer-byte writer #xf6))
     ((null value)
-     (writer-byte writer #xf4 max-byte-length))
+     (writer-byte writer #xf4))
     ((eq value t)
-     (writer-byte writer #xf5 max-byte-length))
+     (writer-byte writer #xf5))
     ((integerp value)
      (unless (<= (- +maximum-safe-integer+)
                  value
@@ -180,10 +179,8 @@
        (cbor-fail
         "CBOR integers must be safe JavaScript integers"))
      (if (minusp value)
-         (cbor-write-argument
-          writer 1 (- -1 value) max-byte-length)
-         (cbor-write-argument
-          writer 0 value max-byte-length)))
+         (cbor-write-argument writer 1 (- -1 value))
+         (cbor-write-argument writer 0 value)))
     ((realp value)
      (unless (finite-real-p value)
        (cbor-fail "CBOR numbers must be finite"))
@@ -191,68 +188,56 @@
             (bits (logand
                    (sb-kernel:double-float-bits double)
                    #xffffffffffffffff)))
-       (writer-byte writer #xfb max-byte-length)
-       (writer-uint writer bits 8 max-byte-length)))
+       (writer-byte writer #xfb)
+       (writer-uint writer bits 8)))
     ((stringp value)
-     (cbor-write-text writer value max-byte-length))
+     (cbor-write-text writer value))
     ((byte-string-p value)
-     (let ((bytes (byte-string-octets value)))
-       (when (> (length bytes) max-byte-length)
+     (let ((bytes (byte-string-octets value))
+           (limit (cbor-writer-max-byte-length writer)))
+       (when (> (length bytes) limit)
          (cbor-fail
           "CBOR byte string length exceeds configured limit of ~D"
-          max-byte-length))
-       (cbor-write-argument
-        writer 2 (length bytes) max-byte-length)
-       (writer-bytes writer bytes max-byte-length)))
+          limit))
+       (cbor-write-argument writer 2 (length bytes))
+       (writer-bytes writer bytes)))
     ((cbor-sequence-p value)
      (when (gethash value ancestors)
        (cbor-fail "CBOR values must not contain cycles"))
-     (when (> (length value) max-container-length)
+     (when (> (length value)
+              (cbor-writer-max-container-length writer))
        (cbor-fail
         "CBOR array length exceeds configured limit of ~D"
-        max-container-length))
+        (cbor-writer-max-container-length writer)))
      (setf (gethash value ancestors) t)
      (unwind-protect
           (progn
-            (cbor-write-argument
-             writer 4 (length value) max-byte-length)
+            (cbor-write-argument writer 4 (length value))
             (loop for item across value
                   do (encode-cbor-value
-                      writer item
-                      max-byte-length
-                      max-container-length
-                      max-depth
-                      (1+ depth)
-                      ancestors)))
+                      writer item (1+ depth) ancestors)))
        (remhash value ancestors)))
     ((cbor-map-p value)
      (when (gethash value ancestors)
        (cbor-fail "CBOR values must not contain cycles"))
      (when (> (hash-table-count value)
-              max-container-length)
+              (cbor-writer-max-container-length writer))
        (cbor-fail
         "CBOR map length exceeds configured limit of ~D"
-        max-container-length))
+        (cbor-writer-max-container-length writer)))
      (setf (gethash value ancestors) t)
      (unwind-protect
           (progn
             (cbor-write-argument
-             writer 5 (hash-table-count value)
-             max-byte-length)
+             writer 5 (hash-table-count value))
             (maphash
              (lambda (key item)
                (unless (stringp key)
                  (cbor-fail
                   "CBOR map keys must be strings"))
-               (cbor-write-text
-                writer key max-byte-length)
+               (cbor-write-text writer key)
                (encode-cbor-value
-                writer item
-                max-byte-length
-                max-container-length
-                max-depth
-                (1+ depth)
-                ancestors))
+                writer item (1+ depth) ancestors))
              value))
        (remhash value ancestors)))
     (t
@@ -268,15 +253,14 @@
        resolved-depth)
       (resolved-cbor-limits
        max-byte-length max-container-length max-depth)
-    (let ((writer (make-octet-writer)))
+    (let ((writer
+            (%make-cbor-writer
+             resolved-byte-length
+             resolved-container-length
+             resolved-depth)))
       (encode-cbor-value
-       writer value
-       resolved-byte-length
-       resolved-container-length
-       resolved-depth
-       0
-       (make-hash-table :test #'eq))
-      (copy-seq writer))))
+       writer value 0 (make-hash-table :test #'eq))
+      (copy-seq (cbor-writer-octets writer)))))
 
 (defstruct (cbor-reader
             (:constructor %make-cbor-reader
