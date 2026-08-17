@@ -85,8 +85,9 @@ tag/Release step.
   line numbers to `<NODE_LINE>:<NODE_COLUMN>` so Node patch releases
   do not move fatal-crash I04 pairs.
 
-- Re-pin `fatal-crash/{wide,narrow}/fatal-crash` pi `screenSha256`
-  after the node:internal collapse. cadr SHAs unchanged.
+- Re-pin `fatal-crash/{wide,narrow}/fatal-crash` baseline-side
+  `screenSha256` after the node:internal collapse. cadr SHAs
+  unchanged.
 
 - Goal 20 P0-4: extension `send-message` with trigger-turn no longer
   runs the agent turn on the TUI input thread, so streaming text, tool
