@@ -502,6 +502,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "fetch-depth: 0"
                   "bsdutils"
                   "ca-certificates"
+                  "fd-find"
                   "ripgrep"
                   "sbcl-2.6.7-x86-64-linux-binary.tar.bz2?download"
                   "4ed82aa7d5b1d87cbafb41ab9abc87d942d18eeac2485ee5a6c46b95aa694d19"
