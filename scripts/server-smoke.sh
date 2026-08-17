@@ -119,6 +119,15 @@ if ! printf '%s' "$RPC" | jq -e \
   printf 'rpc stdout: %s\n' "$RPC" >&2
   exit 1
 fi
+# CI-1a step 1: print both sides of sessionId so one run tells
+# "child has no session" from "supervisor did not copy it".
+status_sid="$(printf '%s' "$STATUS" | jq -r '.instance.sessionId // empty')"
+child_sid="$(printf '%s' "$RPC" | jq -r '.response.data.sessionId // empty')"
+printf 'server smoke: status sessionId=%s\n' \
+  "${status_sid:-ABSENT}" >&2
+printf 'server smoke: get_state sessionId=%s\n' \
+  "${child_sid:-ABSENT}" >&2
+printf 'server smoke: get_state stdout: %s\n' "$RPC" >&2
 
 STOP="$(
   CADR_SERVER_DIR="$TEST_ROOT/server" \
