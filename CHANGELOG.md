@@ -81,6 +81,11 @@ tag/Release step.
 - RPC `get_state` omits the `model` key when no model is selected,
   matching baseline `JSON.stringify` of an undefined optional field.
 
+- Render-diff semantic screens collapse the cadr checkout root to
+  `<CADR_ROOT>` (same family as `ROOT/docs`). Exact-pair mismatches
+  print the pi/cadr `.screen` bytes. Dispositions are not re-pinned
+  in this change.
+
 - Goal 20 P0-4: extension `send-message` with trigger-turn no longer
   runs the agent turn on the TUI input thread, so streaming text, tool
   blocks, and the working indicator can paint during the turn. The

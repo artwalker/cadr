@@ -622,6 +622,67 @@ class RenderDiffGateTest(unittest.TestCase):
         ):
             RENDER_DIFF.validate_interface_registry(uncaptured, manifest, ROOT)
 
+    def test_cadr_checkout_root_normalizes_after_docs_and_is_stable(self) -> None:
+        checkout_file = str(ROOT / "examples/extensions/commands.lisp").encode()
+        self.assertEqual(
+            RENDER_DIFF.normalize_fixed_values(checkout_file),
+            b"<CADR_ROOT>/examples/extensions/commands.lisp",
+        )
+        self.assertEqual(
+            RENDER_DIFF.normalize_fixed_values(checkout_file),
+            RENDER_DIFF.normalize_fixed_values(
+                b"<CADR_ROOT>/examples/extensions/commands.lisp"
+            ),
+        )
+        docs_file = str(ROOT / "docs" / "x.md").encode()
+        normalized_docs = RENDER_DIFF.normalize_fixed_values(docs_file)
+        self.assertNotIn(b"<CADR_ROOT>/docs", normalized_docs)
+        wrapped = bytearray()
+        root = str(ROOT).encode()
+        mid = max(1, len(root) // 2)
+        wrapped.extend(root[:mid])
+        wrapped.extend(b"\n")
+        wrapped.extend(root[mid:])
+        wrapped.extend(b"/examples/extensions/commands.lisp")
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(bytes(wrapped), "cadr"),
+            b"<CADR_ROOT>/examples/extensions/commands.lisp",
+        )
+
+    def test_exact_pair_drift_dumps_analysis_screens(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            analysis = Path(temporary)
+            (analysis / "demo.wide.startup.pi.screen").write_bytes(b"PI-SCREEN\n")
+            (analysis / "demo.wide.startup.cadr.screen").write_bytes(b"CADR-SCREEN\n")
+            with self.assertRaisesRegex(
+                RENDER_DIFF.HarnessFailure,
+                "semantic screen pair drifted outside the exact I04",
+            ):
+                RENDER_DIFF.validate_result_adjudications(
+                    [
+                        {
+                            "key": "demo/wide/startup",
+                            "scenario": "demo",
+                            "dimension": "wide",
+                            "checkpoint": "startup",
+                            "screenEqual": False,
+                            "textGeometryEqual": True,
+                            "piScreenSha256": "a" * 64,
+                            "cadrScreenSha256": "b" * 64,
+                            "adjudication": {
+                                "classes": ["I04"],
+                                "kinds": ["intentional-difference"],
+                                "note": "demo pair for dump-on-drift",
+                                "screenSha256": {
+                                    "pi": "c" * 64,
+                                    "cadr": "d" * 64,
+                                },
+                            },
+                        }
+                    ],
+                    analysis_root=analysis,
+                )
+
     def test_bash_output_path_normalization_is_bounded_to_product_temp_files(self) -> None:
         pi_path = b"Full output: /tmp/pi-bash-2ccded83dc83b1f8.log"
         cadr_path = b"Full output: /tmp/cadr-bash-3994869173-466576989544909805.log"

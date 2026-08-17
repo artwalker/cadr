@@ -2661,6 +2661,10 @@ def normalize_fixed_values(data: bytes) -> bytes:
         # baseline package, cadr beside its own source root.
         (b"<PI_BASELINE>/packages/coding-agent/docs/", b"<PRODUCT_DOCS>/"),
         ((str(ROOT / "docs") + "/").encode(), b"<PRODUCT_DOCS>/"),
+        # Checkout root is install-location, same family as ROOT/docs.
+        # Docs must stay PRODUCT_DOCS; apply those replacements first.
+        ((str(ROOT) + "/").encode(), b"<CADR_ROOT>/"),
+        (str(ROOT).encode(), b"<CADR_ROOT>"),
         # The broken-extension fixture's entry file carries each product's
         # own extension entry convention (index.ts vs extension.lisp).
         (b"extensions/broken/index.ts", b"extensions/broken/<ENTRY>"),
@@ -3024,6 +3028,15 @@ def normalized_screen(data: bytes, side: str) -> bytes:
     result = re.sub(
         rb"(<DOCS>/[^ \r\n]+) +(?=\r?\n)", rb"\1", result
     )
+    # Checkout root on semantic screens (example-commands source path).
+    # After docs, so ROOT/docs is not rewritten to <CADR_ROOT>/docs.
+    # Consume trailing grid pads: pre-normalization path length varies
+    # by worktree, same as the docs/crash-id rules.
+    root_pattern = screen_wrapped_literal_pattern(str(ROOT).encode())
+    result = re.sub(root_pattern, b"<CADR_ROOT>", result)
+    result = re.sub(
+        rb"(<CADR_ROOT>/[^ \r\n]+) +(?=\r?\n)", rb"\1", result
+    )
     result = re.sub(prefix + rb"/home", b"<HOME>", result)
     result = re.sub(prefix + rb"/workspace", b"<CWD>", result)
     result = re.sub(prefix, b"<SANDBOX>", result)
@@ -3349,9 +3362,41 @@ BOILERPLATE_DISPOSITION_NOTES = frozenset(
 )
 
 
+def dump_exact_pair_screens(
+    result: dict[str, Any], analysis_root: Path | None
+) -> None:
+    if analysis_root is None:
+        return
+    for side in ("pi", "cadr"):
+        path = (
+            analysis_root
+            / (
+                f"{result.get('scenario')}.{result.get('dimension')}."
+                f"{result.get('checkpoint')}.{side}.screen"
+            )
+        )
+        if not path.is_file():
+            print(
+                f"render-diff: missing {side} screen {path}",
+                file=sys.stderr,
+            )
+            continue
+        data = path.read_bytes()
+        print(
+            f"render-diff: {result.get('key')} {side} screen "
+            f"({len(data)} bytes) {path}",
+            file=sys.stderr,
+        )
+        sys.stderr.buffer.write(data[:8192])
+        if len(data) > 8192:
+            sys.stderr.buffer.write(b"\n...[truncated]\n")
+        sys.stderr.buffer.write(b"\n")
+
+
 def validate_result_adjudications(
     results: list[dict[str, Any]],
     text_covering_classes: frozenset[str] = frozenset(),
+    analysis_root: Path | None = None,
 ) -> None:
     for result in results:
         adjudication = result.get("adjudication")
@@ -3382,6 +3427,7 @@ def validate_result_adjudications(
         }
         if actual_pair != expected_pair:
             class_label = "/".join(sorted(classes - {"I01"})) or "I01"
+            dump_exact_pair_screens(result, analysis_root)
             raise HarnessFailure(
                 "semantic screen pair drifted outside the exact "
                 f"{class_label} disposition: {result['key']}"
@@ -3579,7 +3625,9 @@ def analyze(args: argparse.Namespace) -> int:
                 )
                 previous = offsets
     validate_result_adjudications(
-        results, text_covering_disposition_classes(disposition_data)
+        results,
+        text_covering_disposition_classes(disposition_data),
+        analysis_root=analysis_root,
     )
     required_keys = {
         result["key"]
@@ -3769,6 +3817,22 @@ def self_test(args: argparse.Namespace) -> int:
         unrelated_output = b"Full output: /tmp/custom-bash-2ccded83dc83b1f8.log"
         if normalize_fixed_values(unrelated_output) != unrelated_output:
             raise HarnessFailure("bash-output path normalization escaped its grammar")
+        checkout_file = (
+            str(ROOT / "examples/extensions/commands.lisp")
+        ).encode()
+        if normalize_fixed_values(checkout_file) != (
+            b"<CADR_ROOT>/examples/extensions/commands.lisp"
+        ):
+            raise HarnessFailure("cadr checkout-root path normalization drifted")
+        if normalize_fixed_values(checkout_file) != normalize_fixed_values(
+            b"<CADR_ROOT>/examples/extensions/commands.lisp"
+        ):
+            raise HarnessFailure(
+                "two checkout roots must collapse to one <CADR_ROOT> token"
+            )
+        docs_under_root = (str(ROOT / "docs" / "x.md")).encode()
+        if b"<CADR_ROOT>/docs" in normalize_fixed_values(docs_under_root):
+            raise HarnessFailure("ROOT/docs must stay a docs placeholder")
         screen = tmux_screen(
             b"\x1b[2J\x1b[H\x1b[31mred\x1b[0m", 12, 4, sandbox / "tmux"
         )
