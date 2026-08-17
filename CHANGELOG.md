@@ -77,6 +77,10 @@ tag/Release step.
 
 ### Added
 
+- Theme index in `docs/test-matrix.md`: every `test/**/*.lisp` and
+  `test/**/*.py` file (197) under the nine FiveAM systems plus live
+  runner, Python gates, and fixtures. Anchor unchanged.
+
 - Statistical liveness stage (goal 20 12E-1): booked per-scenario
   `N_i` from the 2026-08-15 measurement, `verify.sh` checks the
   silence-injection scenario n=3, and a failure prints the full
