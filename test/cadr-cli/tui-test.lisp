@@ -4819,11 +4819,12 @@
   ;; While the flag is set the frame omits the working indicator, so a
   ;; window render is identical to the settle frame.
   (let ((state (cadr-cli::make-tui-state)))
-    (flet ((event (type &key message tool-call)
+    (flet ((event (type &key message tool-call tool-result)
              (cadr-cli::tui-handle-agent-event
               state
               (cadr-agent::make-agent-event
-               :type type :message message :tool-call tool-call)))
+               :type type :message message :tool-call tool-call
+               :tool-result tool-result)))
            (render-busy-frame ()
              (multiple-value-bind (lines row column)
                  (cadr-cli::render-tui-state
@@ -4873,7 +4874,60 @@
                (cadr-ai:make-tool-call
                 :id "call-1" :name "read"
                 :arguments (args "path" "x")))
-        (is (null (cadr-cli::tui-state-settle-window-p state))))
+        (is (null (cadr-cli::tui-state-settle-window-p state)))
+        ;; tool-end re-opens once no sibling is running.  Persist of a
+        ;; large bash result lives in this gap; a wall-clock tick used
+        ;; to paint Took+loader and ratchet the previous Took off the
+        ;; top of tools-significant-states/bash-overlong-line.
+        (event :tool-execution-end
+               :tool-call
+               (cadr-ai:make-tool-call
+                :id "call-1" :name "read"
+                :arguments (args "path" "x"))
+               :tool-result
+               (cadr-ai:make-tool-result-message
+                :tool-call-id "call-1"
+                :tool-name "read"
+                :content
+                (list
+                 (cadr-ai:make-text-content :text "ok"))))
+        (is (cadr-cli::tui-state-settle-window-p state))
+        (is (null (search "Working..." (render-busy-frame)))))
+      ;; A still-running sibling keeps the loader visible.
+      (event :agent-start)
+      (let ((first
+              (cadr-ai:make-tool-call
+               :id "call-a" :name "read"
+               :arguments (args "path" "a")))
+            (second
+              (cadr-ai:make-tool-call
+               :id "call-b" :name "read"
+               :arguments (args "path" "b"))))
+        (event :tool-execution-start :tool-call first)
+        (event :tool-execution-start :tool-call second)
+        (is (null (cadr-cli::tui-state-settle-window-p state)))
+        (event :tool-execution-end
+               :tool-call first
+               :tool-result
+               (cadr-ai:make-tool-result-message
+                :tool-call-id "call-a"
+                :tool-name "read"
+                :content
+                (list
+                 (cadr-ai:make-text-content :text "a"))))
+        (is (null (cadr-cli::tui-state-settle-window-p state)))
+        (is (search "Working..." (render-busy-frame)))
+        (event :tool-execution-end
+               :tool-call second
+               :tool-result
+               (cadr-ai:make-tool-result-message
+                :tool-call-id "call-b"
+                :tool-name "read"
+                :content
+                (list
+                 (cadr-ai:make-text-content :text "b"))))
+        (is (cadr-cli::tui-state-settle-window-p state))
+        (is (null (search "Working..." (render-busy-frame)))))
       ;; agent-settled also lifts it (unwind path).
       (event :agent-start)
       (let ((message

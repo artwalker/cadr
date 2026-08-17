@@ -212,11 +212,15 @@ over millisecond-scale persistence work in that window, so an unguarded flush
 could paint "complete final text + loader", a frame two rows taller than the
 settle frame; because the terminal viewport only ratchets downward, that
 overscroll survived as trailing blank rows the baseline never shows. Cadr marks
-the window from the last stream block-end through turn resolution
+the window from the last stream block-end through turn resolution, and
+again at `tool-execution-end` when no sibling tool is still running
 (`settle-window-p` in `src/cadr-cli/interactive/state.lisp`, maintained by
 `src/cadr-cli/interactive/tool-rendering.lisp`) and omits the working indicator
 from frames rendered inside it, so a window render is row-identical to the
-settle frame. `goal18-message-end-render-suppression-covers-the-settle-window`
+settle frame. The tool-end opening covers the persist gap after a large
+bash result, where a wall-clock tick would otherwise paint Took+loader
+and ratchet the previous Took off the top of the viewport.
+`goal18-message-end-render-suppression-covers-the-settle-window`
 in `test/cadr-cli/tui-test.lisp` locks the flag transitions and the frame
 consequence.
 

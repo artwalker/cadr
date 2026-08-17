@@ -10,7 +10,7 @@ otherwise unavailable capability, or materially reduce code.
 
 <!-- GOAL13_LISP_IDIOM_AUDIT files=295 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 295 Lisp files and 122,625 physical lines.  The form
+The audited tree contains 295 Lisp files and 122,629 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |

@@ -74,10 +74,11 @@
   footer-component
   (working-visible-p t :type boolean)
   (agent-working-p nil :type boolean)
-  ;; Set between an assistant message-end and the event that resolves
-  ;; the turn (agent-end, agent-settled, retry, next tool or message).
+  ;; Set between an assistant message-end or a completed tool-end
+  ;; (no sibling still running) and the event that resolves the turn
+  ;; (agent-end, agent-settled, retry, next tool or message).
   ;; While set the working indicator is omitted from rendered frames;
-  ;; see tool-rendering.lisp :message-end for the baseline rationale.
+  ;; see tool-rendering.lisp :message-end / :tool-execution-end.
   (settle-window-p nil :type boolean)
   working-message
   working-indicator-frames

@@ -891,7 +891,10 @@
                 rendered
                 (tui-entry-custom-result-rendered-p
                  entry)
-                (not (null handled-p))))))))
+                (not (null handled-p)))))
+           (unless (loop for other in (tui-state-entries state) for block = (tui-entry-tool-block other)
+                         thereis (and block (eq (cadr-tui:tool-block-status block) :running)))
+             (setf (tui-state-settle-window-p state) t)))))
       (:compaction-start
        (setf
         (tui-state-status-message state)

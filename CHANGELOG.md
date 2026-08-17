@@ -73,6 +73,11 @@ tag/Release step.
 
 ### Fixed
 
+- After a bash tool completes, the settle window stays open until the
+  next message or sibling tool starts, so a wall-clock tick during
+  persist cannot paint Took+loader and ratchet the previous Took line
+  off the render-diff viewport.
+
 - RPC `get_state` now emits JSON `null` for a missing model instead of
   raising on the no-model sentinel. cadr-server spawn retries
   `get_state` until the child reports a non-empty `sessionId` before

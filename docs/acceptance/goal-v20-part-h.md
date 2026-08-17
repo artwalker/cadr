@@ -291,12 +291,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,625 lines**
+Denominator: **295 files / 122,629 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 20,793 | 17.0% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,797 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,501 | 6.1% | single reference vs previous cadr |
 | `pairable-uncovered` | 236 | 94,331 | 76.9% | blocked by Part A hard condition 2 |
 
@@ -349,9 +349,9 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/bootstrap/main.lisp` | 319 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/interactive/entries.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/frame.lisp` | 238 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-cli/interactive/state.lisp` | 298 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/state.lisp` | 299 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 456 | `goal11.continuous_alt_input` |
-| `src/cadr-cli/interactive/tool-rendering.lisp` | 996 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 999 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 799 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 212 | `cli_dispatch.list_models_registry` |
 | `src/cadr-tui/components/image.lisp` | 45 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
