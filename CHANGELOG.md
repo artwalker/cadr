@@ -73,6 +73,10 @@ tag/Release step.
 
 ### Fixed
 
+- Render-diff `<CADR_ROOT>` paths absorb a hard wrap and the
+  continuation-line pad so CI and local wrap points converge.
+  Does not re-pin I04 pairs in this change.
+
 - RPC `steer` / `follow_up` and busy `prompt` +
   `streamingBehavior` run `:input` hooks off the JSONL reader,
   matching a new prompt. A second hook invocation can no longer

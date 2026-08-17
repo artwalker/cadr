@@ -647,6 +647,29 @@ class RenderDiffGateTest(unittest.TestCase):
             RENDER_DIFF.normalized_screen(bytes(wrapped), "cadr"),
             b"<CADR_ROOT>/examples/extensions/commands.lisp",
         )
+        ci_suffix = b"<CADR_ROOT>/examples/extension\ns/commands.lisp"
+        local_suffix = b"<CADR_ROOT>/examples/extensions/comman\nds.lisp"
+        expected = b"<CADR_ROOT>/examples/extensions/commands.lisp"
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(ci_suffix, "cadr"), expected
+        )
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(ci_suffix, "cadr"),
+            RENDER_DIFF.normalized_screen(local_suffix, "cadr"),
+        )
+        styled = (
+            b"\x1b[1m\x1b[38;2;138;190;183m<CADR_ROOT>/examples/extension"
+            b"\x1b[0m\x1b[38;2;138;190;183m\n"
+            b"\x1b[39m \x1b[1m\x1b[38;2;138;190;183ms/commands.lisp\x1b[0m"
+        )
+        styled_out = RENDER_DIFF.normalized_screen(styled, "cadr")
+        self.assertIn(expected, styled_out)
+        self.assertNotIn(b"extension\n", styled_out)
+        self.assertNotIn(b"\ns/", styled_out)
+        leftover = b"examples/extension\ns/commands.lisp"
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(leftover, "cadr"), leftover
+        )
 
     def test_exact_pair_drift_dumps_analysis_screens(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -820,6 +843,10 @@ class RenderDiffGateTest(unittest.TestCase):
         )
         leftover = b"User said file.ts:588:17 and timers:523:7"
         self.assertEqual(RENDER_DIFF.normalized_screen(leftover, "pi"), leftover)
+        leftover_wrap = b"User said time\nrs:523:7 without a node prefix"
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(leftover_wrap, "pi"), leftover_wrap
+        )
 
     def test_wrapped_fatal_crash_values_are_normalized_only_in_crash_output(self) -> None:
         cadr = (

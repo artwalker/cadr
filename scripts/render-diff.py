@@ -2873,6 +2873,38 @@ def screen_wrapped_literal_pattern(value: bytes) -> bytes:
     return separator.join(re.escape(value[index : index + 1]) for index in range(len(value)))
 
 
+# After ROOT collapses to <CADR_ROOT>, the rest of a checkout path can
+# still hard-wrap (narrow example-commands splits "extensions" at
+# different columns on CI vs a local worktree). Join those fragments
+# so wrap points converge. Spaces are only a wrap/pad, never a path
+# byte, so a same-line "foo bar" stays two tokens.
+_CADR_ROOT_PATH_BYTES = frozenset(
+    b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789._/-"
+)
+_WRAPPED_CADR_ROOT_PATH = re.compile(
+    rb"<CADR_ROOT>(?:"
+    rb"(?:\x1b\[[0-9;]*m)*"
+    rb"(?:[ \t]*(?:\x1b\[[0-9;]*m)*\r?\n"
+    rb"(?:\x1b\[[0-9;]*m)*[ \t]*(?:\x1b\[[0-9;]*m)*)?"
+    rb"[A-Za-z0-9._/-]"
+    rb")+"
+)
+
+
+def collapse_wrapped_cadr_root_paths(data: bytes) -> bytes:
+    """Absorb grid wraps and continuation pads inside a <CADR_ROOT> path."""
+
+    def join_path(match: re.Match[bytes]) -> bytes:
+        rest = match.group(0)[len(b"<CADR_ROOT>") :]
+        rest = re.sub(rb"\x1b\[[0-9;]*m", b"", rest)
+        rest = re.sub(rb"[\t\r\n ]+", b"", rest)
+        if not rest or any(byte not in _CADR_ROOT_PATH_BYTES for byte in rest):
+            return match.group(0)
+        return b"<CADR_ROOT>" + rest
+
+    return _WRAPPED_CADR_ROOT_PATH.sub(join_path, data)
+
+
 def strip_node_inspect_stack_colors(data: bytes) -> bytes:
     """Drop Node's FORCE_COLOR stack-frame gray so I04 path rules still match.
 
@@ -3058,6 +3090,7 @@ def normalized_screen(data: bytes, side: str) -> bytes:
     # by worktree, same as the docs/crash-id rules.
     root_pattern = screen_wrapped_literal_pattern(str(ROOT).encode())
     result = re.sub(root_pattern, b"<CADR_ROOT>", result)
+    result = collapse_wrapped_cadr_root_paths(result)
     result = re.sub(
         rb"(<CADR_ROOT>/[^ \r\n]+) +(?=\r?\n)", rb"\1", result
     )
@@ -3876,6 +3909,25 @@ def self_test(args: argparse.Namespace) -> int:
         leftover = b"User said file.ts:588:17 and 521:7"
         if normalized_screen(leftover, "cadr") != leftover:
             raise HarnessFailure("node:internal normalization escaped its grammar")
+        leftover_wrap = b"User said time\nrs:523:7 without a node prefix"
+        if normalized_screen(leftover_wrap, "cadr") != leftover_wrap:
+            raise HarnessFailure(
+                "node:internal wrap collapse escaped its grammar"
+            )
+        ci_root_wrap = b"<CADR_ROOT>/examples/extension\ns/commands.lisp"
+        local_root_wrap = b"<CADR_ROOT>/examples/extensions/comman\nds.lisp"
+        expected_root = b"<CADR_ROOT>/examples/extensions/commands.lisp"
+        if normalized_screen(ci_root_wrap, "cadr") != expected_root:
+            raise HarnessFailure("wrapped checkout-root path must still collapse")
+        if normalized_screen(ci_root_wrap, "cadr") != normalized_screen(
+            local_root_wrap, "cadr"
+        ):
+            raise HarnessFailure(
+                "wrapped checkout-root paths must collapse across wrap points"
+            )
+        leftover_root_wrap = b"examples/extension\ns/commands.lisp"
+        if normalized_screen(leftover_root_wrap, "cadr") != leftover_root_wrap:
+            raise HarnessFailure("checkout-root wrap collapse escaped its grammar")
         local_wrapped = b"    at process.processTimers (node:internal/time\nrs:523:7)"
         ci_wrapped = b"    at process.processTimers (node:internal/time\nrs:521:7)"
         expected_wrapped = (
