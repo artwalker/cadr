@@ -801,8 +801,25 @@ class RenderDiffGateTest(unittest.TestCase):
             RENDER_DIFF.normalized_screen(colored, "pi"),
             b"    at Timeout.<anonymous> (<PI_BASELINE>/packages/coding-agent/test/"
             b"goal15-render-driver.ts:<DRIVER_LINE>:<DRIVER_COLUMN>)\n"
-            b"    at listOnTimeout (node:internal/timers:588:17)",
+            b"    at listOnTimeout (node:internal/timers:<NODE_LINE>:<NODE_COLUMN>)",
         )
+
+    def test_node_internal_frames_collapse_across_patch_line_numbers(self) -> None:
+        local = b"    at listOnTimeout (node:internal/timers:588:17)\n"
+        local += b"    at process.processTimers (node:internal/timers:523:7)"
+        ci = b"    at listOnTimeout (node:internal/timers:585:17)\n"
+        ci += b"    at process.processTimers (node:internal/timers:521:7)"
+        expected = (
+            b"    at listOnTimeout (node:internal/timers:<NODE_LINE>:<NODE_COLUMN>)\n"
+            b"    at process.processTimers (node:internal/timers:<NODE_LINE>:<NODE_COLUMN>)"
+        )
+        self.assertEqual(RENDER_DIFF.normalized_screen(local, "pi"), expected)
+        self.assertEqual(
+            RENDER_DIFF.normalized_screen(local, "pi"),
+            RENDER_DIFF.normalized_screen(ci, "pi"),
+        )
+        leftover = b"User said file.ts:588:17 and timers:523:7"
+        self.assertEqual(RENDER_DIFF.normalized_screen(leftover, "pi"), leftover)
 
     def test_wrapped_fatal_crash_values_are_normalized_only_in_crash_output(self) -> None:
         cadr = (

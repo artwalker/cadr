@@ -81,9 +81,10 @@ tag/Release step.
 - RPC `get_state` omits the `model` key when no model is selected,
   matching baseline `JSON.stringify` of an undefined optional field.
 
-- Render-diff pins captured `rg` with `--sort=path` as well as
-  `--threads=1`, so grep hit order does not follow filesystem
-  `readdir`. Dispositions are not re-pinned in this change.
+- Render-diff semantic screens collapse `node:internal/<module>:N:M`
+  line numbers to `<NODE_LINE>:<NODE_COLUMN>` so Node patch releases
+  do not move fatal-crash I04 pairs. Dispositions are not re-pinned
+  in this change.
 
 - Goal 20 P0-4: extension `send-message` with trigger-turn no longer
   runs the agent turn on the TUI input thread, so streaming text, tool

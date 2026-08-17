@@ -2970,6 +2970,23 @@ def normalized_screen(data: bytes, side: str) -> bytes:
             b"goal15-render-driver.ts:<DRIVER_LINE>:<DRIVER_COLUMN>",
             result,
         )
+    # Node core stack frames change line numbers across patch releases
+    # (CI 22.23 vs local 22.22).  Only node:internal/<module>:N:M.
+    wrapped_node_digits = rb"[0-9](?:(?:\r?\n)?[0-9])*"
+    node_internal_frame = (
+        rb"node:internal/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)"
+        + separator
+        + rb":"
+        + wrapped_node_digits
+        + separator
+        + rb":"
+        + wrapped_node_digits
+    )
+    result = re.sub(
+        node_internal_frame,
+        rb"node:internal/\1:<NODE_LINE>:<NODE_COLUMN>",
+        result,
+    )
     # Wrap-tolerant variants: on narrow screens a long sandbox path wraps
     # mid-string and the single-line prefix rules above cannot match,
     # leaving per-run temp suffixes in the semantic screen.  The wrapped
@@ -3837,6 +3854,22 @@ def self_test(args: argparse.Namespace) -> int:
         docs_under_root = (str(ROOT / "docs" / "x.md")).encode()
         if b"<CADR_ROOT>/docs" in normalize_fixed_values(docs_under_root):
             raise HarnessFailure("ROOT/docs must stay a docs placeholder")
+        local_timer = b"    at listOnTimeout (node:internal/timers:588:17)"
+        ci_timer = b"    at listOnTimeout (node:internal/timers:585:17)"
+        expected_timer = (
+            b"    at listOnTimeout (node:internal/timers:<NODE_LINE>:<NODE_COLUMN>)"
+        )
+        if normalized_screen(local_timer, "cadr") != expected_timer:
+            raise HarnessFailure("node:internal line-number normalization drifted")
+        if normalized_screen(local_timer, "cadr") != normalized_screen(
+            ci_timer, "cadr"
+        ):
+            raise HarnessFailure(
+                "node:internal frames must collapse across Node patch lines"
+            )
+        leftover = b"User said file.ts:588:17 and 521:7"
+        if normalized_screen(leftover, "cadr") != leftover:
+            raise HarnessFailure("node:internal normalization escaped its grammar")
         screen = tmux_screen(
             b"\x1b[2J\x1b[H\x1b[31mred\x1b[0m", 12, 4, sandbox / "tmux"
         )
