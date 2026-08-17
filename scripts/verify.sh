@@ -612,18 +612,38 @@ fi
 run_live "credential-gated FiveAM" \
   "$LIVE_PROJECT/scripts/test-live.sh" || true
 
-if [ -n "${DEEPSEEK_API_KEY:-}" ]; then
+opencode_go_live_credential_ready() {
+  if [ -n "${OPENCODE_API_KEY:-}" ]; then
+    return 0
+  fi
+  local auth="${HOME}/.cadr/agent/auth.json"
+  if [ ! -f "$auth" ]; then
+    return 1
+  fi
+  python3 - "$auth" <<'PY'
+import json, sys
+try:
+    obj = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+cred = obj.get("opencode-go") or {}
+key = cred.get("key") if isinstance(cred, dict) else ""
+sys.exit(0 if isinstance(key, str) and key.strip() else 1)
+PY
+}
+
+if opencode_go_live_credential_ready; then
   if [ -x "$LIVE_PROJECT/cadr" ]; then
-    run_live "DeepSeek live TUI" \
+    run_live "OpenCode Go live TUI" \
       "$LIVE_PROJECT/scripts/live-tui-smoke.sh" || true
-  elif stage_selected "DeepSeek live TUI"; then
-    record_live "DeepSeek live TUI" "FAIL (isolated cadr unavailable)"
+  elif stage_selected "OpenCode Go live TUI"; then
+    record_live "OpenCode Go live TUI" "FAIL (isolated cadr unavailable)"
     OVERALL_FAILURE=1
   else
-    record_live "DeepSeek live TUI" "SKIP (not selected)"
+    record_live "OpenCode Go live TUI" "SKIP (not selected)"
   fi
 else
-  skip_live "DeepSeek live TUI" "DEEPSEEK_API_KEY is not set"
+  skip_live "OpenCode Go live TUI" "OpenCode Go API key is not configured"
 fi
 
 print_summary

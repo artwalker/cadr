@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Default live vehicle is OpenCode Go `mimo-v2.5`. `prepare-opencode-go-credential`
+  accepts `auth.json` or `OPENCODE_API_KEY`. A default live item locks a
+  nonempty thinking stream. Native DeepSeek FiveAM items still skip
+  without `DEEPSEEK_API_KEY`.
+
 - `unix-milliseconds` reads real milliseconds from
   `sb-ext:get-time-of-day`. The old `get-universal-time * 1000` path
   quantized every timestamp and ID to a whole second. Matches

@@ -158,3 +158,79 @@
               (prepare))))
         (delete-file path)
         (is (null (prepare)))))))
+
+(defun call-with-environment-value (name value thunk)
+  (let ((previous (uiop:getenv name)))
+    (unwind-protect
+         (progn
+           (if value
+               (setf (uiop:getenv name) value)
+               (sb-posix:unsetenv name))
+           (funcall thunk))
+      (if previous
+          (setf (uiop:getenv name) previous)
+          (sb-posix:unsetenv name)))))
+
+(test prepare-opencode-go-credential-accepts-auth-file-or-environment
+  (with-test-directory (directory)
+    (let ((path (merge-pathnames "auth.json" directory)))
+      (call-with-environment-value
+       "OPENCODE_API_KEY" nil
+       (lambda ()
+         (is (null
+              (cadr-live-test-support:prepare-opencode-go-credential
+               path)))))
+      (call-with-environment-value
+       "OPENCODE_API_KEY" "env-opencode-key"
+       (lambda ()
+         (let ((credential
+                 (cadr-live-test-support:prepare-opencode-go-credential
+                  path)))
+           (is (typep credential 'cadr-ai:api-key-credential))
+           (is (string=
+                "env-opencode-key"
+                (cadr-ai:api-key-credential-key credential))))))
+      (cadr-ai:write-auth-credential
+       path
+       (cadr-ai:make-api-key-credential
+        :provider :opencode-go
+        :key "file-opencode-key"))
+      (call-with-environment-value
+       "OPENCODE_API_KEY" "env-opencode-key"
+       (lambda ()
+         (is (string=
+              "file-opencode-key"
+              (cadr-ai:api-key-credential-key
+               (cadr-live-test-support:prepare-opencode-go-credential
+                path))))))
+      (call-with-environment-value
+       "OPENCODE_API_KEY" nil
+       (lambda ()
+         (is (string=
+              "file-opencode-key"
+              (cadr-ai:api-key-credential-key
+               (cadr-live-test-support:prepare-opencode-go-credential
+                path)))))))))
+
+(test live-sse-thinking-content-fields-ignore-usage-and-effort-echo
+  (let ((payload
+          (cadr-ai::json-object
+           "reasoning"
+           (cadr-ai::json-object "effort" "medium" "summary" nil)
+           "usage"
+           (cadr-ai::json-object "reasoning_tokens" 80)
+           "delta"
+           (cadr-ai::json-object
+            "reasoning_content" "step one"
+            "content" "answer"))))
+    (is (equal
+         '("reasoning_content")
+         (cadr-live-test-support:live-sse-thinking-content-fields
+          payload)))
+    (is-true
+     (cadr-live-test-support:provider-endpoint-unavailable-p
+      "Upstream request failed: Endpoint is unavailable."))
+    (is
+     (not
+      (cadr-live-test-support:provider-endpoint-unavailable-p
+       "reasoning_content missing")))))

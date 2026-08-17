@@ -105,7 +105,7 @@
                 (run-isolated-live-cli
                  directory
                  '("--provider" "opencode-go"
-                   "--model" "deepseek-v4-flash"
+                   "--model" "mimo-v2.5"
                    "--print"
                    "--no-session"
                    "--no-tools"

@@ -28,6 +28,9 @@
     :markers '("Paris"))
    (cadr-live-test-support:make-live-test-spec
     :name
+    'cadr-ai/live-tests::live-opencode-go-mimo-stream-emits-thinking)
+   (cadr-live-test-support:make-live-test-spec
+    :name
     'cadr-evals/live-tests::live-deepseek-self-extension-write-reload-and-invoke
     :policy :model-behavior)
    (cadr-live-test-support:make-live-test-spec

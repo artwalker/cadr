@@ -141,9 +141,10 @@
 
 (asdf:defsystem "cadr-ai/live-tests"
   :description "Credential-gated live tests for cadr-ai"
-  :depends-on ("fiveam" "cadr-ai")
+  :depends-on ("fiveam" "cadr-ai" "cadr-live-test-support")
   :serial t
   :components ((:module "test/cadr-ai"
                 :serial t
                 :components ((:file "live-package")
-                             (:file "live-provider-test")))))
+                             (:file "live-provider-test")
+                             (:file "opencode-go-live-test")))))

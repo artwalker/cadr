@@ -1,6 +1,6 @@
 # Gate denominators (Goal 20 Part M)
 
-<!-- GOAL20_TEST_CHECKS systems=9 checks=18673 pass=18673 skip=0 fail=0 -->
+<!-- GOAL20_TEST_CHECKS systems=9 checks=18683 pass=18683 skip=0 fail=0 -->
 
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
 `scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green
@@ -93,6 +93,7 @@ above are unchanged. Recount: 197 files.
 | json | `test/cadr-ai/json-test.lisp` |
 | support | `test/cadr-ai/live-package.lisp` |
 | live provider | `test/cadr-ai/live-provider-test.lisp` |
+| opencode-go live | `test/cadr-ai/opencode-go-live-test.lisp` |
 | models runtime | `test/cadr-ai/models-runtime-test.lisp` |
 | openai completions | `test/cadr-ai/openai-completions-test.lisp` |
 | support (package) | `test/cadr-ai/package.lisp` |

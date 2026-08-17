@@ -20,6 +20,7 @@ jobs:
       ANTHROPIC_API_KEY: ""
       DEEPSEEK_API_KEY: ""
       OPENAI_API_KEY: ""
+      OPENCODE_API_KEY: ""
     steps:
       - name: Check out source
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
@@ -89,6 +90,6 @@ jobs:
           set -euo pipefail
           log="$RUNNER_TEMP/cadr-verify.log"
           ./scripts/verify.sh 2>&1 | tee "$log"
-          grep -Fx 'Items: 8, run: 0, pass: 0, skip: 8, fail: 0' "$log"
-          grep -Fx 'Checks: 8, pass: 0, skip: 8, fail: 0' "$log"
-          grep -Fx 'DeepSeek live TUI                                SKIP (DEEPSEEK_API_KEY is not set)' "$log"
+          grep -Fx 'Items: 9, run: 0, pass: 0, skip: 9, fail: 0' "$log"
+          grep -Fx 'Checks: 9, pass: 0, skip: 9, fail: 0' "$log"
+          grep -Fx 'OpenCode Go live TUI                             SKIP (OpenCode Go API key is not configured)' "$log"

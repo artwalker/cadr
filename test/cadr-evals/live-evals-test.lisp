@@ -106,7 +106,7 @@
     (assert-live-smoke-eval
      (cadr-evals:run-smoke-eval
       :provider "opencode-go"
-      :model "deepseek-v4-flash")
+      :model "mimo-v2.5")
      "opencode-go")))
 
 (test live-deepseek-self-extension-write-reload-and-invoke

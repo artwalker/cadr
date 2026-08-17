@@ -21,6 +21,8 @@
    #:prepare-kimi-coding-credential
    #:prepare-openai-codex-credential
    #:provider-quota-exhausted-p
+   #:provider-endpoint-unavailable-p
+   #:live-sse-thinking-content-fields
    #:write-live-test-report))
 
 (in-package #:cadr-live-test-support)
@@ -41,6 +43,42 @@
   failure-output
   nature
   basis)
+
+(defun provider-endpoint-unavailable-p (text)
+  "True when TEXT is a provider-side endpoint/route outage, not a parse miss."
+  (and text
+       (search "endpoint is unavailable" text :test #'char-equal)))
+
+(defun live-sse-thinking-content-fields (value &optional acc)
+  "Collect keys whose values are nonempty thinking/reasoning strings.
+
+Usage counters (`reasoning_tokens`) and request echoes
+(`reasoning: {effort, summary}`) are not content.  A live sweep
+treats leftover string fields as a suspected parse miss."
+  (cond
+    ((hash-table-p value)
+     (maphash
+      (lambda (key child)
+        (when (and (stringp key)
+                   (member key
+                           '("reasoning" "reasoning_content"
+                             "reasoning_text" "thinking")
+                           :test #'string-equal)
+                   (stringp child)
+                   (plusp (length child)))
+          (pushnew key acc :test #'string-equal))
+        (setf acc (live-sse-thinking-content-fields child acc)))
+      value)
+     acc)
+    ((vectorp value)
+     (loop for child across value
+           do (setf acc
+                    (live-sse-thinking-content-fields child acc)))
+     acc)
+    ((consp value)
+     (dolist (child value acc)
+       (setf acc (live-sse-thinking-content-fields child acc))))
+    (t acc)))
 
 (defun provider-quota-exhausted-p (text)
   "True when TEXT carries a provider-side quota/usage-limit message.
@@ -154,18 +192,44 @@ instead of a suspected product defect."
             'cadr-ai:api-key-credential)
      credential)))
 
+(defun live-support-environment-value (name)
+  (let ((value (uiop:getenv name)))
+    (and value
+         (let ((trimmed
+                 (string-trim
+                  '(#\Space #\Tab #\Newline #\Return)
+                  value)))
+           (and (plusp (length trimmed))
+                trimmed)))))
+
 (defun prepare-opencode-go-credential
     (&optional
        (path (cadr-cli:default-auth-path)))
-  (unless (probe-file path)
-    (return-from prepare-opencode-go-credential nil))
-  (let ((credential
-          (cadr-ai:read-auth-credential
-           path :opencode-go)))
-    (and
-     (typep credential
-            'cadr-ai:api-key-credential)
-     credential)))
+  "OpenCode Go API key from auth.json or OPENCODE_API_KEY.
+
+File wins when both exist so an isolated HOME with a written
+credential is not overridden by a leftover process environment.
+OPENCODE_API_KEY is the DeepSeek-style env gate for machines that
+never wrote auth.json."
+  (or
+   (when (probe-file path)
+     (let ((credential
+             (cadr-ai:read-auth-credential
+              path :opencode-go)))
+       (and
+        (typep credential
+               'cadr-ai:api-key-credential)
+        (plusp
+         (length
+          (cadr-ai:api-key-credential-key credential)))
+        credential)))
+   (let ((key
+           (live-support-environment-value
+            "OPENCODE_API_KEY")))
+     (and key
+          (cadr-ai:make-api-key-credential
+           :provider :opencode-go
+           :key key)))))
 
 (defun prepare-openai-codex-credential
     (&optional

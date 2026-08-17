@@ -12,7 +12,8 @@
                 trimmed)))))
 
 (defun run-live-stream
-    (provider-id api-key model-id messages)
+    (provider-id api-key model-id messages
+     &key reasoning)
   (multiple-value-bind (provider model)
       (cadr-ai:instantiate-provider
        provider-id
@@ -27,8 +28,18 @@
          "Follow the requested output format exactly and do not call tools."
          :messages messages)
         (lambda (event)
-          (push event events)))
+          (push event events))
+        :reasoning reasoning)
        (nreverse events)))))
+
+(defun live-thinking-text (message)
+  (let ((block
+          (find-if
+           (lambda (item)
+             (typep item 'cadr-ai:thinking-content))
+           (cadr-ai:assistant-message-content message))))
+    (and block
+         (cadr-ai:thinking-content-thinking block))))
 
 (defun assert-live-stream-result
     (message events expected)
@@ -95,3 +106,33 @@
               (assert-live-stream-result
                second-message second-events
                "FIRST_OK:SECOND_OK")))))))
+
+(test live-opencode-go-mimo-stream-emits-thinking
+  (let ((credential
+          (cadr-live-test-support:prepare-opencode-go-credential)))
+    (if
+        (not
+         (typep credential
+                'cadr-ai:api-key-credential))
+        (skip "OpenCode Go API key is not configured")
+        (multiple-value-bind (message events)
+            (run-live-stream
+             :opencode-go
+             (cadr-ai:api-key-credential-key credential)
+             "mimo-v2.5"
+             (list
+              (cadr-ai:make-user-message
+               :content
+               "Think through why 17 is prime, then reply with one short sentence."))
+             :reasoning :medium)
+          (is (eq :stop
+                  (cadr-ai:assistant-message-stop-reason
+                   message)))
+          (is (find :thinking-start events
+                    :key #'cadr-ai:stream-event-type)
+              "opencode-go mimo-v2.5 stream had no :thinking-start: ~S"
+              (mapcar #'cadr-ai:stream-event-type events))
+          (is (and (stringp (live-thinking-text message))
+                   (plusp (length (live-thinking-text message))))
+              "opencode-go mimo-v2.5 thinking content was empty: ~S"
+              (live-thinking-text message))))))

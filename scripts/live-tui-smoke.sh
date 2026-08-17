@@ -9,8 +9,32 @@ if [ ! -x "$CADR" ]; then
   exit 1
 fi
 
-if [ -z "${DEEPSEEK_API_KEY:-}" ]; then
-  echo "live TUI smoke: DEEPSEEK_API_KEY is not set" >&2
+opencode_go_key() {
+  if [ -n "${OPENCODE_API_KEY:-}" ]; then
+    printf '%s' "$OPENCODE_API_KEY"
+    return 0
+  fi
+  local auth="${HOME}/.cadr/agent/auth.json"
+  if [ ! -f "$auth" ]; then
+    return 1
+  fi
+  python3 - "$auth" <<'PY'
+import json, sys
+try:
+    obj = json.load(open(sys.argv[1], encoding="utf-8"))
+except Exception:
+    sys.exit(1)
+cred = obj.get("opencode-go") or {}
+key = cred.get("key") if isinstance(cred, dict) else ""
+if not isinstance(key, str) or not key.strip():
+    sys.exit(1)
+sys.stdout.write(key)
+PY
+}
+
+OPENCODE_GO_KEY="$(opencode_go_key || true)"
+if [ -z "$OPENCODE_GO_KEY" ]; then
+  echo "live TUI smoke: OpenCode Go API key is not configured" >&2
   exit 2
 fi
 
@@ -28,18 +52,36 @@ cleanup() {
   rm -rf -- "$SMOKE_ROOT"
 }
 trap cleanup EXIT
-mkdir -p "$SMOKE_ROOT/home" "$SMOKE_ROOT/project"
+mkdir -p "$SMOKE_ROOT/home/.cadr/agent" "$SMOKE_ROOT/project"
+SMOKE_AUTH="$SMOKE_ROOT/home/.cadr/agent/auth.json"
+OPENCODE_API_KEY="$OPENCODE_GO_KEY" SMOKE_AUTH="$SMOKE_AUTH" python3 - <<'PY'
+import json, os, pathlib
+path = pathlib.Path(os.environ["SMOKE_AUTH"])
+path.write_text(
+    json.dumps(
+        {
+            "opencode-go": {
+                "type": "api_key",
+                "key": os.environ["OPENCODE_API_KEY"],
+            }
+        }
+    )
+    + "\n",
+    encoding="utf-8",
+)
+path.chmod(0o600)
+PY
 
 tmux new-session -d -s "$SESSION" -x 90 -y 28
 tmux send-keys -t "$SESSION" -l \
-  "cd '$SMOKE_ROOT/project' && before=\$(stty -g) && HOME='$SMOKE_ROOT/home' '$CADR' --provider deepseek --model deepseek-v4-flash; after=\$(stty -g); if [ \"\$before\" = \"\$after\" ]; then touch '$SMOKE_ROOT/terminal-restored'; fi"
+  "cd '$SMOKE_ROOT/project' && before=\$(stty -g) && HOME='$SMOKE_ROOT/home' '$CADR' --provider opencode-go --model mimo-v2.5; after=\$(stty -g); if [ \"\$before\" = \"\$after\" ]; then touch '$SMOKE_ROOT/terminal-restored'; fi"
 tmux send-keys -t "$SESSION" Enter
 
 attempt=0
 while [ "$attempt" -lt 300 ]; do
   SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
   if printf '%s\n' "$SCREEN" | grep -Fq "Cadr can explain its own features" &&
-    printf '%s\n' "$SCREEN" | grep -Fq "deepseek-v4-flash"; then
+    printf '%s\n' "$SCREEN" | grep -Fq "mimo-v2.5"; then
     break
   fi
   attempt=$((attempt + 1))
@@ -278,4 +320,4 @@ if [ ! -f "$SMOKE_ROOT/terminal-restored" ]; then
   exit 1
 fi
 
-echo "live TUI smoke: autocomplete, undo, kill-ring, DeepSeek two-turn edit, resize, CJK, and terminal restore passed"
+echo "live TUI smoke: autocomplete, undo, kill-ring, OpenCode Go two-turn edit, resize, CJK, and terminal restore passed"

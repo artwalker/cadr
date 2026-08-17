@@ -1945,7 +1945,7 @@ class ReleaseVerificationContractTest(unittest.TestCase):
             release_verify.index("export CADR_RELEASE_GATE=1"),
             release_verify.index("scripts/verify.sh"),
         )
-        self.assertIn('skip_live "DeepSeek live TUI"', default_verify)
+        self.assertIn('skip_live "OpenCode Go live TUI"', default_verify)
         helper_start = default_verify.index("skip_live() {")
         helper = default_verify[helper_start:]
         helper = helper[: helper.index("}\n") + 2]

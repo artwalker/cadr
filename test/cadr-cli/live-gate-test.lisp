@@ -157,6 +157,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                             (list (namestring pathname))))))))
       (dolist (case
                 '(("cadr-ai/tests" "live-provider-test.lisp")
+                  ("cadr-ai/tests" "opencode-go-live-test.lisp")
                   ("cadr-cli/tests" "live-test.lisp")
                   ("cadr-evals/tests" "live-evals-test.lisp")))
         (destructuring-bind (system forbidden-suffix) case
@@ -229,7 +230,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
              "deterministic TUI harness"
              "fixed-baseline render differential"
              "credential-gated FiveAM"
-             "DeepSeek live TUI")))
+             "OpenCode Go live TUI")))
     (is-true source)
     (when source
       (let ((previous -1))
@@ -248,7 +249,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
       (is (search "goal11-stability.json" source))
       (is (search "render-diff.py\" gate" source))
       (is (search "render-diff-analysis" source))
-      (is (search "DEEPSEEK_API_KEY" source))
+      (is (search "OPENCODE_API_KEY" source))
       (is (search "Deterministic stages" source))
       (is (search "Live stages" source))
       (is (not (search ".github/workflows" source)))
@@ -511,6 +512,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "ANTHROPIC_API_KEY: \"\""
                   "DEEPSEEK_API_KEY: \"\""
                   "OPENAI_API_KEY: \"\""
+                  "OPENCODE_API_KEY: \"\""
                   "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
                   "persist-credentials: false"
                   "fetch-depth: 0"
@@ -537,9 +539,9 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "\"trivial-gray-streams\""
                   "\"slynk\""
                   "./scripts/verify.sh"
-                  "grep -Fx 'Items: 8, run: 0, pass: 0, skip: 8, fail: 0'"
-                  "grep -Fx 'Checks: 8, pass: 0, skip: 8, fail: 0'"
-                  "grep -Fx 'DeepSeek live TUI                                SKIP (DEEPSEEK_API_KEY is not set)'"))
+                  "grep -Fx 'Items: 9, run: 0, pass: 0, skip: 9, fail: 0'"
+                  "grep -Fx 'Checks: 9, pass: 0, skip: 9, fail: 0'"
+                  "grep -Fx 'OpenCode Go live TUI                             SKIP (OpenCode Go API key is not configured)'"))
         (is (search required source) "Missing CI contract: ~A" required))
       (is (= 1 (count-substring "./scripts/verify.sh" source)))
       (is (= 3 (count-substring "\"$SBCL\"" source)))
