@@ -327,6 +327,13 @@ files with unrelated facilities fail.
 | `src/cadr-storage/package.lisp` | 19 | 1 | Declare the minimal SQLite adapter package. | pass | no-rewrite | Pure defpackage facade; import-from/re-export is the canonical CL mechanism for a stable API surface. | 20 |
 | `src/cadr-storage/sqlite.lisp` | 12 | 3 | Wrap SQLite open, close, and migration operations. | pass | no-rewrite | A deliberate 12-line forwarding shim; the double-colon reference at :4 is fixed at cadr-agent's defpackage, not here. | 20 |
 
+Part K2 (2026-08-18): both rows kept no-rewrite. I line
+counts still match (`wc -l` 19 / 12). package.lisp is still
+only a defpackage facade; sqlite.lisp is still the 12-line
+forwarder, `cadr-agent::open-sqlite-session-database` still
+at :4. No rewrite invented. Report:
+`docs/acceptance/goal-v20-part-k2.md`.
+
 ### 2.8 `cadr-tui`
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |

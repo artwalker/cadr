@@ -60,7 +60,7 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Recount: 197 files.
+above are unchanged. Recount: 198 files.
 
 ### cadr-core
 

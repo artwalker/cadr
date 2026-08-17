@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K2: `cadr-storage` stays `no-rewrite` (I verdicts
+  undrifted). Theme index recount 197 → 198.
+
 - Default live vehicle is OpenCode Go `mimo-v2.5`. `prepare-opencode-go-credential`
   accepts `auth.json` or `OPENCODE_API_KEY`. A default live item locks a
   nonempty thinking stream. Native DeepSeek FiveAM items still skip
