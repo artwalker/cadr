@@ -351,7 +351,7 @@
 (test goal12-codex-websocket-cached-probe-cli-matches-baseline-options
   (multiple-value-bind (output error-output status)
       (uiop:run-program
-       (list "sbcl" "--script"
+       (list (or (uiop:getenv "SBCL") "sbcl") "--script"
              (namestring
               (fixture-path "scripts/codex-websocket-cached-probe.lisp"))
              "--help")

@@ -36,6 +36,7 @@ jobs:
             printf 'HOME=%s/cadr-home\n' "$RUNNER_TEMP"
             printf 'QUICKLISP_SETUP=%s/cadr-home/quicklisp/setup.lisp\n' "$RUNNER_TEMP"
             printf 'SBCL=%s/sbcl/bin/sbcl\n' "$RUNNER_TEMP"
+            printf 'PATH=%s/sbcl/bin:%s\n' "$RUNNER_TEMP" "$PATH"
           } >> "$GITHUB_ENV"
 
       - name: Install system dependencies

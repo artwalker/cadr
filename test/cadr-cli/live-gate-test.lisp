@@ -491,6 +491,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "HOME=%s/cadr-home"
                   "QUICKLISP_SETUP=%s/cadr-home/quicklisp/setup.lisp"
                   "SBCL=%s/sbcl/bin/sbcl"
+                  "PATH=%s/sbcl/bin:%s"
                   "$GITHUB_ENV"
                   "ANTHROPIC_API_KEY: \"\""
                   "DEEPSEEK_API_KEY: \"\""
