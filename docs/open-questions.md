@@ -286,7 +286,13 @@ Adjudicated and implemented:
   must still go through a fresh proposal and item-by-item adjudication;
 - `OQ-G10-D2-SLYNK-REPL`: on 2026-08-01 the off-by-default, loopback-only
   Slynk runtime REPL and the exactly pinned third-party dependency closure were
-  each approved;
+  each approved. `slynk:stop-server` returning does not mean the listen
+  port is free: CI (`8c346646a`) widened the release contract to "the
+  loopback port is reusable within 1 second" (20 attempts × 50 ms
+  `EADDRINUSE` retry in `test/cadr-cli/remote-repl-test.lisp`). Product
+  `call-with-remote-repl` still calls `stop-server` once and ignores
+  errors; the bound is a test/ops contract, not a change to start/stop
+  semantics.
 - After Goal 10 Part B was adjudicated by the user as a no-op, the two items
   were implemented according to the approved proposal and re-frozen.
 
