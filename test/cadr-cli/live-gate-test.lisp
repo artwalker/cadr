@@ -497,6 +497,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "OPENAI_API_KEY: \"\""
                   "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd"
                   "persist-credentials: false"
+                  "fetch-depth: 0"
                   "bsdutils"
                   "ca-certificates"
                   "sbcl-2.6.7-x86-64-linux-binary.tar.bz2?download"
