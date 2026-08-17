@@ -9,6 +9,7 @@ if [ ! -x "$CADR" ] || [ ! -x "$CADR_SERVER" ]; then
   echo "server smoke: build ./cadr and ./cadr-server first" >&2
   exit 1
 fi
+echo "server smoke: using $CADR and $CADR_SERVER" >&2
 
 TEST_ROOT="$(mktemp -d)"
 SERVER_PID=""
@@ -83,21 +84,30 @@ while true; do
   sleep 0.02
 done
 
-STATUS="$(
-  CADR_SERVER_DIR="$TEST_ROOT/server" \
-    "$CADR_SERVER" status "$INSTANCE_ID"
-)" || {
-  echo "server smoke: status command failed" >&2
-  cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
-  exit 1
-}
-if ! printf '%s' "$STATUS" | jq -e --arg id "$INSTANCE_ID" \
-  '.ok and .instance.id == $id and .instance.sessionId != null' \
-  >/dev/null; then
-  echo "server smoke: status payload rejected" >&2
-  printf 'status stdout: %s\n' "$STATUS" >&2
-  exit 1
-fi
+session_tries=0
+while true; do
+  STATUS="$(
+    CADR_SERVER_DIR="$TEST_ROOT/server" \
+      "$CADR_SERVER" status "$INSTANCE_ID"
+  )" || {
+    echo "server smoke: status command failed" >&2
+    cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+    exit 1
+  }
+  if printf '%s' "$STATUS" | jq -e --arg id "$INSTANCE_ID" \
+    '.ok and .instance.id == $id and .instance.sessionId != null' \
+    >/dev/null; then
+    break
+  fi
+  session_tries=$((session_tries + 1))
+  if [ "$session_tries" -ge 200 ]; then
+    echo "server smoke: instance $INSTANCE_ID never reported a sessionId" >&2
+    printf 'status stdout: %s\n' "$STATUS" >&2
+    cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+    exit 1
+  fi
+  sleep 0.02
+done
 
 RPC="$(
   CADR_SERVER_DIR="$TEST_ROOT/server" \
