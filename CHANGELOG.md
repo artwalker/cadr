@@ -73,6 +73,11 @@ tag/Release step.
 
 ### Fixed
 
+- Re-pin `fatal-crash/narrow/fatal-crash` baseline-side
+  `screenSha256` after the wrapped `node:internal` module collapse.
+  cadr and wide SHAs unchanged. Does not declare the render
+  differential green.
+
 - Render-diff `node:internal/<module>:N:M` collapse now allows a
   hard wrap inside the module name (narrow `processTimers` splits
   `timers` so `521:7` / `523:7` no longer leak). Does not re-pin
