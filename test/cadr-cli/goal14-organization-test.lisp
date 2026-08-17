@@ -1249,7 +1249,9 @@
     ;; structured/null probes, node/root strictifiers, parameter getter),
     ;; cadr-user-agent in support/release.lisp, and the
     ;; optional-null-normalization pair in support/grammar-coercion.lisp.
-    (is (= 264 definition-count)
+    ;; +4 Goal 20 K7: keyed-collection-value, signal-http-timeout,
+    ;; call-with-models-runtime-error, faux-stream-block.
+    (is (= 268 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

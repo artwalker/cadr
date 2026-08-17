@@ -938,3 +938,46 @@
     (is (typep condition 'cadr-ai:authentication-error))
     (is (string= "Device flow timed out"
                  (cadr-ai:cadr-error-message condition)))))
+
+(test oauth-reserved-keys-strip-wire-fields-from-metadata
+  (let* ((credential
+           (cadr-ai::make-oauth-credential
+            :provider :xai
+            :access "tok"
+            :refresh "ref"
+            :expires 9
+            :account-id "acct"
+            :metadata '(("extra" . "keep") ("type" . "nope"))))
+         (object (cadr-ai::credential-json credential))
+         (round (cadr-ai::json-credential :xai object)))
+    (is (string= "oauth" (cadr-ai::json-get object "type")))
+    (is (string= "keep"
+                 (cdr (assoc "extra"
+                             (cadr-ai::oauth-credential-metadata round)
+                             :test #'string=))))
+    (is (null
+         (assoc "type"
+                (cadr-ai::oauth-credential-metadata round)
+                :test #'string=)))))
+
+(test parse-device-authorization-owns-radius-interval-default
+  (let ((device
+          (cadr-ai::parse-device-authorization
+           (cadr-ai::json-object
+            "device_code" "device"
+            "user_code" "user"
+            "verification_uri" "https://radius.example/activate"
+            "interval" "not-a-number"
+            "expires_in" 60)
+           "Radius"
+           :interval-policy :or-default
+           :default-interval 5)))
+    (is (string= "device" (getf device :device-code)))
+    (is (equal "not-a-number" (getf device :interval)))))
+
+(test radius-client-identity-is-one-constant
+  (is (string= "pi-gateway" cadr-ai::+radius-oauth-client-id+))
+  (is (search
+       "client_id=pi-gateway"
+       (cadr-ai::radius-authorization-url
+        "https://gateway.example" "challenge" "state"))))

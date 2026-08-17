@@ -181,72 +181,30 @@
           (oauth-credential-refresh credential)))
    (oauth-credential-refresh credential)))
 
-(defun login-openai-oauth (auth-path
-                           &key
-                             (output *standard-output*)
-                             (open-browser *oauth-browser-open-function*)
-                             auth-url-function
-                             auth-prompt-function)
-  (multiple-value-bind (verifier challenge)
-      (generate-pkce)
-    (let* ((state (oauth-state))
-           (url (openai-authorization-url challenge state)))
-      (unless auth-prompt-function
-        (present-oauth-auth-url
-         url output auth-url-function))
-      (handler-case
-          (funcall open-browser url)
-        (error ()
-          (format output
-                  "Could not open a browser automatically; use the URL above.~%")
-          (finish-output output)))
-      (let ((credential
-              (exchange-openai-authorization-code
-               (if auth-prompt-function
-                   (wait-for-oauth-authorization
-                    state
-                    (lambda (cancelled-p)
-                      (wait-for-openai-oauth-code
-                       state cancelled-p))
-                    auth-prompt-function
-                    (list
-                     :type :manual-code
-                     :title
-                     (oauth-login-title
-                      +openai-codex-oauth-metadata+)
-                     :url url
-                     :instructions
-                     (oauth-provider-metadata-auth-url-instructions
-                      +openai-codex-oauth-metadata+)
-                     :message
-                     (oauth-provider-metadata-manual-input-message
-                      +openai-codex-oauth-metadata+)
-                     :placeholder +openai-oauth-redirect-uri+))
-                   (wait-for-openai-oauth-code state))
-               verifier)))
-        (unless (non-empty-string-p
-                 (oauth-credential-account-id credential))
-          (error 'authentication-error
-                 :message
-                 "OpenAI OAuth token does not contain chatgpt_account_id"))
-        (when auth-path
-          (write-auth-credential auth-path credential))
-        credential))))
-
-(defun login-anthropic-oauth
+(defun login-pkce-browser-oauth
     (auth-path
      &key
        (output *standard-output*)
        (open-browser *oauth-browser-open-function*)
        auth-url-function
-       auth-prompt-function)
-  ;; This mirrors the fixed reference implementation but remains live-unverified.
+       auth-prompt-function
+       warning
+       state-function
+       authorization-url
+       metadata
+       placeholder
+       wait
+       exchange
+       after-credential)
+  ;; Shared PKCE + browser + optional manual-code prompt. OpenAI and
+  ;; Anthropic only differ in state, URL, wait, and exchange.
   (multiple-value-bind (verifier challenge)
       (generate-pkce)
-    (let* ((state verifier)
-           (url (anthropic-authorization-url challenge state)))
-      (format output
-              "Anthropic subscription OAuth is unverified and may violate provider terms.~%")
+    (let* ((state (funcall state-function verifier))
+           (url (funcall authorization-url challenge state)))
+      (when warning
+        (format output "~A~%" warning)
+        (finish-output output))
       (unless auth-prompt-function
         (present-oauth-auth-url
          url output auth-url-function))
@@ -261,28 +219,86 @@
                    (wait-for-oauth-authorization
                     state
                     (lambda (cancelled-p)
-                      (wait-for-oauth-code
-                       state 53692 "/callback" "Anthropic"
-                       cancelled-p))
+                      (funcall wait state cancelled-p))
                     auth-prompt-function
                     (list
                      :type :manual-code
-                     :title
-                     (oauth-login-title
-                      +anthropic-oauth-metadata+)
+                     :title (oauth-login-title metadata)
                      :url url
                      :instructions
                      (oauth-provider-metadata-auth-url-instructions
-                      +anthropic-oauth-metadata+)
+                      metadata)
                      :message
                      (oauth-provider-metadata-manual-input-message
-                      +anthropic-oauth-metadata+)
-                     :placeholder +anthropic-oauth-redirect-uri+))
-                   (wait-for-oauth-code
-                    state 53692 "/callback" "Anthropic")))
+                      metadata)
+                     :placeholder placeholder))
+                   (funcall wait state nil)))
              (credential
-               (exchange-anthropic-authorization-code
-                code state verifier)))
+               (funcall exchange code state verifier)))
+        (when after-credential
+          (funcall after-credential credential))
         (when auth-path
           (write-auth-credential auth-path credential))
         credential))))
+
+(defun login-openai-oauth (auth-path
+                           &key
+                             (output *standard-output*)
+                             (open-browser *oauth-browser-open-function*)
+                             auth-url-function
+                             auth-prompt-function)
+  (login-pkce-browser-oauth
+   auth-path
+   :output output
+   :open-browser open-browser
+   :auth-url-function auth-url-function
+   :auth-prompt-function auth-prompt-function
+   :state-function (lambda (verifier)
+                     (declare (ignore verifier))
+                     (oauth-state))
+   :authorization-url #'openai-authorization-url
+   :metadata +openai-codex-oauth-metadata+
+   :placeholder +openai-oauth-redirect-uri+
+   :wait
+   (lambda (state cancelled-p)
+     (wait-for-openai-oauth-code state cancelled-p))
+   :exchange
+   (lambda (code state verifier)
+     (declare (ignore state))
+     (exchange-openai-authorization-code code verifier))
+   :after-credential
+   (lambda (credential)
+     (unless (non-empty-string-p
+              (oauth-credential-account-id credential))
+       (error 'authentication-error
+              :message
+              "OpenAI OAuth token does not contain chatgpt_account_id")))))
+
+(defun login-anthropic-oauth
+    (auth-path
+     &key
+       (output *standard-output*)
+       (open-browser *oauth-browser-open-function*)
+       auth-url-function
+       auth-prompt-function)
+  ;; This mirrors the fixed reference implementation but remains live-unverified.
+  (login-pkce-browser-oauth
+   auth-path
+   :output output
+   :open-browser open-browser
+   :auth-url-function auth-url-function
+   :auth-prompt-function auth-prompt-function
+   :warning
+   "Anthropic subscription OAuth is unverified and may violate provider terms."
+   :state-function #'identity
+   :authorization-url #'anthropic-authorization-url
+   :metadata +anthropic-oauth-metadata+
+   :placeholder +anthropic-oauth-redirect-uri+
+   :wait
+   (lambda (state cancelled-p)
+     (wait-for-oauth-code
+      state 53692 "/callback" "Anthropic" cancelled-p))
+   :exchange
+   (lambda (code state verifier)
+     (exchange-anthropic-authorization-code
+      code state verifier))))

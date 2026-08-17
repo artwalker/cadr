@@ -1,5 +1,13 @@
 (in-package #:cadr-ai)
 
+(defun oauth-callback-provider-key (provider-name)
+  ;; Display name → id. page.lisp and parse-oauth-callback-request
+  ;; share this; they must not string-equal the same names again.
+  (cond
+    ((string-equal provider-name "Anthropic") :anthropic)
+    ((string-equal provider-name "Radius") :radius)
+    (t nil)))
+
 (defun hex-value (character)
   (or (digit-char-p character 16)
       (error 'authentication-error
@@ -89,14 +97,14 @@
         (cond
           ((not (string= path expected-path))
            (values nil 404 :route-not-found nil))
-          ((and provider-name
-                (string-equal provider-name "Anthropic")
+          ((and (eq (oauth-callback-provider-key provider-name)
+                    :anthropic)
                 (non-empty-string-p (gethash "error" query)))
            (values
             nil 400 :provider-error
             (format nil "Error: ~A" (gethash "error" query))))
-          ((and provider-name
-                (string-equal provider-name "Anthropic")
+          ((and (eq (oauth-callback-provider-key provider-name)
+                    :anthropic)
                 (or
                  (not (non-empty-string-p (gethash "code" query)))
                  (not (non-empty-string-p (gethash "state" query)))))
@@ -104,8 +112,8 @@
           ((not (string= (or (gethash "state" query) "")
                          expected-state))
            (values nil 400 :state-mismatch nil))
-          ((and provider-name
-                (string-equal provider-name "Radius")
+          ((and (eq (oauth-callback-provider-key provider-name)
+                    :radius)
                 (non-empty-string-p (gethash "error" query)))
            (values
             nil 400 :provider-error

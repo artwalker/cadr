@@ -926,20 +926,25 @@
      :oauth-to-auth-strategy nil
      :model-filter-strategy nil)))
 
-(defparameter +provider-definition-row-keys+
-  '(:id :baseline-source :name :protocol :protocols :base-url :auth-types
-    :default-model :key-environment :required-environment :dynamic-models-p
-    :supports-images-p :supports-tools-p :reasoning-p :oauth-metadata
-    :api-key-name :environment-names :api-key-auth-strategy
-    :oauth-login-strategy :oauth-refresh-strategy :oauth-to-auth-strategy
-    :model-filter-strategy))
+(defun provider-definition-row-keys ()
+  ;; Slot names from MOP. Adding a slot is the row contract; do not
+  ;; hand-copy 22 keywords again.
+  (let ((class (find-class 'provider-definition)))
+    (unless (sb-mop:class-finalized-p class)
+      (sb-mop:finalize-inheritance class))
+    (mapcar
+     (lambda (name)
+       (intern (symbol-name name) :keyword))
+     (mapcar #'sb-mop:slot-definition-name
+             (sb-mop:class-slots class)))))
 
 (defun validate-provider-definition-row (row)
   (let ((keys (loop for tail on row by #'cddr
-                    collect (car tail))))
-    (unless (and (= (length keys) (length +provider-definition-row-keys+))
-                 (null (set-difference keys +provider-definition-row-keys+))
-                 (null (set-difference +provider-definition-row-keys+ keys)))
+                    collect (car tail)))
+        (expected (provider-definition-row-keys)))
+    (unless (and (= (length keys) (length expected))
+                 (null (set-difference keys expected))
+                 (null (set-difference expected keys)))
       (error 'configuration-error
              :message (format nil "Invalid provider declaration fields for ~A"
                               (getf row :id)))))

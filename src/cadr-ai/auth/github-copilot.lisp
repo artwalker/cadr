@@ -1,24 +1,11 @@
 (in-package #:cadr-ai)
 
 (defun parse-github-device-authorization (object)
-  (let ((verification
-          (required-oauth-string
-           object "verification_uri" "GitHub")))
-    (unless (trusted-oauth-url-p verification)
-      (error 'authentication-error
-             :message
-             "Untrusted verification_uri in device code response"))
-    (list
-     :device-code
-     (required-oauth-string object "device_code" "GitHub")
-     :user-code
-     (required-oauth-string object "user_code" "GitHub")
-     :verification-uri verification
-     :interval
-     (let ((value (json-get object "interval")))
-       (and (numberp value) value))
-     :expires-in
-     (positive-oauth-number object "expires_in" "GitHub"))))
+  (parse-device-authorization
+   object "GitHub"
+   :interval-policy :number
+   :untrusted-message
+   "Untrusted verification_uri in device code response"))
 
 (defun github-copilot-base-url (token &optional enterprise-domain)
   (let* ((marker "proxy-ep=")

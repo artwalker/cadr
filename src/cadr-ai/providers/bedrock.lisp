@@ -476,6 +476,24 @@
     (format nil "~4,'0D~2,'0D~2,'0DT~2,'0D~2,'0D~2,'0DZ"
             year month day hour minute second)))
 
+(defun bedrock-sigv4-headers
+    (url headers payload credentials region options)
+  (multiple-value-bind (authorization signed)
+      (aws-sigv4-authorization
+       :method "POST"
+       :url url
+       :headers headers
+       :payload (stringify-json payload)
+       :access-key-id (getf credentials :access-key-id)
+       :secret-access-key (getf credentials :secret-access-key)
+       :session-token (getf credentials :session-token)
+       :region region
+       :service "bedrock"
+       :timestamp
+       (or (getf options :timestamp)
+           (iso8601-basic-now)))
+    (set-header signed "authorization" authorization)))
+
 (defmethod build-request
     ((provider bedrock-provider) model context
      &key stream-p max-tokens temperature reasoning
@@ -586,27 +604,9 @@
                 (format nil "Bearer ~A"
                         (getf credentials :bearer-token)))))
         (:access-keys
-         (multiple-value-bind (authorization signed)
-             (aws-sigv4-authorization
-              :method "POST"
-              :url url
-              :headers headers
-              :payload (stringify-json payload)
-              :access-key-id
-              (getf credentials :access-key-id)
-              :secret-access-key
-              (getf credentials :secret-access-key)
-              :session-token
-              (getf credentials :session-token)
-              :region region
-              :service "bedrock"
-              :timestamp
-              (or (getf options :timestamp)
-                  (iso8601-basic-now)))
-           (setf headers
-                 (set-header signed
-                             "authorization"
-                             authorization))))
+         (setf headers
+               (bedrock-sigv4-headers
+                url headers payload credentials region options)))
         (:profile
          (let ((loaded
                  (load-bedrock-profile-credentials
@@ -623,27 +623,9 @@
                     (format nil
                             "AWS profile ~A has no static credentials"
                             (getf credentials :profile))))
-           (multiple-value-bind (authorization signed)
-               (aws-sigv4-authorization
-                :method "POST"
-                :url url
-                :headers headers
-                :payload (stringify-json payload)
-                :access-key-id
-                (getf loaded :access-key-id)
-                :secret-access-key
-                (getf loaded :secret-access-key)
-                :session-token
-                (getf loaded :session-token)
-                :region region
-                :service "bedrock"
-                :timestamp
-                (or (getf options :timestamp)
-                    (iso8601-basic-now)))
-             (setf headers
-                   (set-header signed
-                               "authorization"
-                               authorization)))))
+           (setf headers
+                 (bedrock-sigv4-headers
+                  url headers payload loaded region options))))
         (otherwise
          (error 'configuration-error
                 :message

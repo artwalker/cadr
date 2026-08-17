@@ -42,13 +42,25 @@
               (push (gethash name unique) immediate)))
         (values (nreverse immediate) deferred)))))
 
-(defun sampling-value (sampling key)
+(defun keyed-collection-value (object key)
+  ;; One owner for hash-or-plist lookup. Keywords look up the
+  ;; downcased name first (sampling); strings use json-get / intern
+  ;; (schema). Inverse conventions stay here, not at each caller.
   (cond
-    ((hash-table-p sampling)
-     (or (gethash (string-downcase (symbol-name key)) sampling)
-         (gethash key sampling)))
-    ((listp sampling) (getf sampling key))
+    ((hash-table-p object)
+     (if (keywordp key)
+         (or (gethash (string-downcase (symbol-name key)) object)
+             (gethash key object))
+         (json-get object key)))
+    ((listp object)
+     (getf object
+           (if (keywordp key)
+               key
+               (intern (string-upcase key) :keyword))))
     (t nil)))
+
+(defun sampling-value (sampling key)
+  (keyed-collection-value sampling key))
 
 (defun sampling-type (sampling)
   (let ((type (sampling-value sampling :type)))
@@ -58,10 +70,7 @@
       (string (intern (string-upcase (substitute #\- #\_ type)) :keyword)))))
 
 (defun schema-value (schema key)
-  (cond
-    ((hash-table-p schema) (json-get schema key))
-    ((listp schema) (getf schema (intern (string-upcase key) :keyword)))
-    (t nil)))
+  (keyed-collection-value schema key))
 
 (defun get-grammar-tool-input (tool-name arguments input-property)
   (let ((value (schema-value arguments input-property)))

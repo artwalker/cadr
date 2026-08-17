@@ -28,6 +28,9 @@
   (format stream ":provider ~A :access [REDACTED] :refresh [REDACTED]"
           (oauth-credential-provider value)))
 
+(defparameter +oauth-reserved-credential-keys+
+  '("type" "access" "refresh" "expires" "accountId"))
+
 (defparameter *provider-auth-locks* (make-hash-table))
 (defparameter *provider-auth-locks-lock*
   (sb-thread:make-mutex :name "cadr-ai provider auth lock table"))
@@ -83,7 +86,7 @@
                    (oauth-credential-account-id credential)))
        (dolist (entry (oauth-credential-metadata credential))
          (unless (member (car entry)
-                         '("type" "access" "refresh" "expires" "accountId")
+                         +oauth-reserved-credential-keys+
                          :test #'string=)
            (json-put object (car entry) (cdr entry))))
        object))))
@@ -109,7 +112,7 @@
           (remove-if
            (lambda (entry)
              (member (car entry)
-                     '("type" "access" "refresh" "expires" "accountId")
+                     +oauth-reserved-credential-keys+
                      :test #'string=))
            (json-object-alist object))))
         (t nil)))))

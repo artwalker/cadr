@@ -124,7 +124,7 @@
    (case reason
      (:success
       (cond
-        ((string-equal provider-name "Radius")
+        ((eq (oauth-callback-provider-key provider-name) :radius)
          "Signed in to Radius. You may now close this page.")
         (t
          (format nil
@@ -132,11 +132,11 @@
                  provider-name))))
      (:route-not-found "Callback route not found.")
      (:state-mismatch
-      (if (string-equal provider-name "Radius")
+      (if (eq (oauth-callback-provider-key provider-name) :radius)
           "OAuth state mismatch."
           "State mismatch."))
      (:provider-error
-      (if (string-equal provider-name "Anthropic")
+      (if (eq (oauth-callback-provider-key provider-name) :anthropic)
           "Anthropic authentication did not complete."
           (or details "OAuth authentication did not complete.")))
      (:missing-code-or-state "Missing code or state parameter.")
@@ -145,5 +145,5 @@
       "Internal error while processing OAuth callback.")
      (otherwise "OAuth authentication did not complete."))
    (and (eq reason :provider-error)
-        (string-equal provider-name "Anthropic")
+        (eq (oauth-callback-provider-key provider-name) :anthropic)
         details)))

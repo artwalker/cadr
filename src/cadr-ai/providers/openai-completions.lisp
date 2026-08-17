@@ -668,12 +668,11 @@
 (defun chat-stream-block (state key type emit
                           &key (signature "reasoning_content"))
   (let* ((message (provider-stream-state-message state))
-         (index
+         (entry
            (gethash key
                     (provider-stream-state-block-indices state)))
-         (block
-           (and index
-                (nth index (assistant-message-content message)))))
+         (index (car entry))
+         (block (cdr entry)))
     (unless block
       (setf block
             (ecase type
@@ -684,7 +683,7 @@
       (setf index (append-content-block message block)
             (gethash key
                      (provider-stream-state-block-indices state))
-            index)
+            (cons index block))
       (emit-event emit
                   (ecase type
                     (:text :text-start)
@@ -720,13 +719,11 @@
 (defun chat-stream-tool-block (state tool-index delta emit)
   (let* ((key (+ 100000 tool-index))
          (message (provider-stream-state-message state))
-         (content-index
+         (entry
            (gethash key
                     (provider-stream-state-block-indices state)))
-         (block
-           (and content-index
-                (nth content-index
-                     (assistant-message-content message)))))
+         (content-index (car entry))
+         (block (cdr entry)))
     (unless block
       (setf block
             (make-tool-call
@@ -739,7 +736,7 @@
             content-index (append-content-block message block)
             (gethash key
                      (provider-stream-state-block-indices state))
-            content-index
+            (cons content-index block)
             (gethash key
                      (provider-stream-state-partial-json state))
             "")
@@ -770,9 +767,9 @@
 (defun finish-chat-stream-blocks (state emit)
   (let ((message (provider-stream-state-message state)))
     (maphash
-     (lambda (key index)
-       (let ((block (nth index
-                         (assistant-message-content message))))
+     (lambda (key entry)
+       (let ((index (car entry))
+             (block (cdr entry)))
          (cond
            ((typep block 'text-content)
             (emit-event emit :text-end message

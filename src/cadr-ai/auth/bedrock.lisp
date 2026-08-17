@@ -201,10 +201,14 @@
 (defun bedrock-arn-region (model-id)
   (when (uiop:string-prefix-p "arn:" model-id)
     (let ((parts (split-on-character model-id #\:)))
-      (when (and (>= (length parts) 4)
-                 (string= "bedrock" (nth 2 parts))
-                 (non-empty-string-p (nth 3 parts)))
-        (nth 3 parts)))))
+      (when (>= (length parts) 4)
+        (destructuring-bind
+            (arn partition service region &rest rest)
+            parts
+          (declare (ignore arn partition rest))
+          (when (and (string= "bedrock" service)
+                     (non-empty-string-p region))
+            region))))))
 
 (defun resolve-bedrock-region
     (model-id explicit-region environment-region

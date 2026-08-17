@@ -218,52 +218,38 @@
                 (redactor #'redact-secrets)
                 (user-message-function #'default-fatal-user-message)
                 (exit-function #'uiop:quit))
+  ;; SBCL-only tree. The old #-sbcl branch copied this boundary
+  ;; without *invoke-debugger-hook*.
   (let ((fatal-marker (gensym "FATAL-")))
     (labels ((fail (condition)
-             (values
-              fatal-marker
-              (prepare-fatal-condition-report
-              condition
-              :program-name program-name
-              :crash-directory crash-directory
-              :secrets secrets
-              :redactor redactor
-              :user-message-function user-message-function
-              :exit-function exit-function))))
-    #+sbcl
-    (multiple-value-bind (marker values-or-report)
-        (block fatal-boundary
-          (let ((sb-ext:*invoke-debugger-hook*
-                  (lambda (condition previous-hook)
-                    (declare (ignore previous-hook))
-                    (return-from fatal-boundary
-                      (fail condition)))))
-            (handler-bind
-                ((serious-condition
-                   (lambda (condition)
-                     ;; Prepare the redacted diagnostic at the failure site,
-                     ;; then unwind terminal cleanup before user output.
-                     (return-from fatal-boundary
-                       (fail condition)))))
-              (values nil
-                      (multiple-value-list
-                       (funcall function))))))
-      (if (eq marker fatal-marker)
-          (emit-fatal-condition-report
-           values-or-report :exit-function exit-function)
-          (values-list values-or-report)))
-    #-sbcl
-    (multiple-value-bind (marker values-or-report)
-        (block fatal-boundary
-          (handler-bind
-              ((serious-condition
-                 (lambda (condition)
-                   (return-from fatal-boundary
-                     (fail condition)))))
-            (values nil
-                    (multiple-value-list
-                     (funcall function)))))
-      (if (eq marker fatal-marker)
-          (emit-fatal-condition-report
-           values-or-report :exit-function exit-function)
-          (values-list values-or-report))))))
+               (values
+                fatal-marker
+                (prepare-fatal-condition-report
+                 condition
+                 :program-name program-name
+                 :crash-directory crash-directory
+                 :secrets secrets
+                 :redactor redactor
+                 :user-message-function user-message-function
+                 :exit-function exit-function))))
+      (multiple-value-bind (marker values-or-report)
+          (block fatal-boundary
+            (let ((sb-ext:*invoke-debugger-hook*
+                    (lambda (condition previous-hook)
+                      (declare (ignore previous-hook))
+                      (return-from fatal-boundary
+                        (fail condition)))))
+              (handler-bind
+                  ((serious-condition
+                     (lambda (condition)
+                       ;; Prepare the redacted diagnostic at the failure site,
+                       ;; then unwind terminal cleanup before user output.
+                       (return-from fatal-boundary
+                         (fail condition)))))
+                (values nil
+                        (multiple-value-list
+                         (funcall function))))))
+        (if (eq marker fatal-marker)
+            (emit-fatal-condition-report
+             values-or-report :exit-function exit-function)
+            (values-list values-or-report))))))

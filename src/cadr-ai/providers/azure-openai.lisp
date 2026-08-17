@@ -58,21 +58,11 @@
       model))
 
 (defmethod build-request :around
-    ((provider provider) model context
-     &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata)
+    ((provider provider) model context &rest args)
   (let* ((resolved-model (cloudflare-model provider model))
          (request
-           (call-next-method
-            provider resolved-model context
-            :stream-p stream-p
-            :max-tokens max-tokens
-            :temperature temperature
-            :reasoning reasoning
-            :cache-retention cache-retention
-            :session-id session-id
-            :tool-choice tool-choice
-            :metadata metadata))
+           (apply #'call-next-method
+                  provider resolved-model context args))
          (provider-id (model-provider model))
          (headers (request-spec-headers request)))
     (case provider-id
@@ -193,8 +183,7 @@
 
 (defmethod build-request
     ((provider azure-openai-provider) model context
-     &key stream-p max-tokens temperature reasoning
-       cache-retention session-id tool-choice metadata)
+     &rest args)
   (let* ((key (require-api-key provider))
          (base (azure-base-url provider model))
          (deployment
@@ -205,20 +194,13 @@
          (delegate
            (make-openai-provider :api-key key))
          (request
-           (build-request
-            delegate
-            (copy-model-with model
-                             :api :openai-responses
-                             :base-url base)
-            context
-            :stream-p stream-p
-            :max-tokens max-tokens
-            :temperature temperature
-            :reasoning reasoning
-            :cache-retention cache-retention
-            :session-id session-id
-            :tool-choice tool-choice
-            :metadata metadata)))
+           (apply #'build-request
+                  delegate
+                  (copy-model-with model
+                                   :api :openai-responses
+                                   :base-url base)
+                  context
+                  args)))
     (json-put (request-spec-payload request)
               "model" deployment)
     (setf

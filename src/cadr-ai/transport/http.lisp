@@ -564,21 +564,7 @@
   (let ((result (copy-list headers)))
     (unless (header-present-p result "host")
       (push
-       (cons "Host"
-             (if
-                 (or
-                  (and
-                   (string= "http"
-                            (parsed-url-scheme parsed))
-                   (= 80 (parsed-url-port parsed)))
-                  (and
-                   (string= "https"
-                            (parsed-url-scheme parsed))
-                   (= 443 (parsed-url-port parsed))))
-                 (parsed-url-host parsed)
-                 (format nil "~A:~D"
-                         (parsed-url-host parsed)
-                         (parsed-url-port parsed))))
+       (cons "Host" (parsed-url-authority parsed))
        result))
     (unless (header-present-p result
                               "content-length")
@@ -729,6 +715,14 @@
             request
             (response-error-message body)))))
 
+(defun signal-http-timeout (cause)
+  (error
+   'timeout-error
+   :message
+   (format nil "HTTP request timed out: ~A" cause)
+   :cause cause
+   :retryable-p t))
+
 (defun slurp-stream (stream)
   (if (binary-stream-p stream)
       (utf8-string
@@ -758,33 +752,12 @@
     (transport-error (condition)
       (error condition))
     (native-http-timeout (cause)
-      (error
-       'timeout-error
-       :message
-       (format nil
-               "HTTP request timed out: ~A"
-               cause)
-       :cause cause
-       :retryable-p t))
+      (signal-http-timeout cause))
     (sb-sys:io-timeout (cause)
-      (error
-       'timeout-error
-       :message
-       (format nil
-               "HTTP request timed out: ~A"
-               cause)
-       :cause cause
-       :retryable-p t))
+      (signal-http-timeout cause))
     (sb-bsd-sockets:operation-timeout-error
         (cause)
-      (error
-       'timeout-error
-       :message
-       (format nil
-               "HTTP request timed out: ~A"
-               cause)
-       :cause cause
-       :retryable-p t))
+      (signal-http-timeout cause))
     (error (cause)
       (signal-native-http-network-error cause))))
 

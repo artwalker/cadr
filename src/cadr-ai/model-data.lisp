@@ -16,6 +16,14 @@
    (loop for key being the hash-keys of object collect key)
    #'string<))
 
+(defun walk-model-data-groups (groups on-invalid-group on-model)
+  (dolist (api (model-data-sorted-keys groups))
+    (let ((group (json-get groups api)))
+      (if (not (hash-table-p group))
+          (funcall on-invalid-group api)
+          (dolist (model-id (model-data-sorted-keys group))
+            (funcall on-model api group model-id))))))
+
 (defun read-model-data-provider-ids (directory)
   (let ((ids
           (loop for path in (uiop:directory-files directory)
@@ -32,15 +40,16 @@
         (models (make-hash-table :test #'equal)))
     (unless (hash-table-p groups)
       (error "~A.json must contain a JSON object" provider-id))
-    (dolist (api (model-data-sorted-keys groups))
-      (let ((group (json-get groups api)))
-        (unless (hash-table-p group)
-          (error "~A API group ~S must be an object" path api))
-        (dolist (model-id (model-data-sorted-keys group))
-          (when (nth-value 1 (gethash model-id models))
-            (error "~A contains model ~A in more than one API group"
-                   path model-id))
-          (setf (gethash model-id models) api))))
+    (walk-model-data-groups
+     groups
+     (lambda (api)
+       (error "~A API group ~S must be an object" path api))
+     (lambda (api group model-id)
+       (declare (ignore group))
+       (when (nth-value 1 (gethash model-id models))
+         (error "~A contains model ~A in more than one API group"
+                path model-id))
+       (setf (gethash model-id models) api)))
     (when (zerop (hash-table-count models))
       (error "~A contains no generated model data" path))
     models))
@@ -228,23 +237,23 @@
                        nil)))
                  (actual-models (make-hash-table :test #'equal)))
              (when (hash-table-p groups)
-               (dolist (api (model-data-sorted-keys groups))
-                 (let ((group (json-get groups api)))
-                   (if (not (hash-table-p group))
-                       (push (format nil "~A API group ~S must be an object"
-                                     filename api)
-                             errors)
-                       (dolist (model-id (model-data-sorted-keys group))
-                         (if (nth-value 1 (gethash model-id actual-models))
-                             (push
-                              (format nil "~A/~A appears in more than one API group"
-                                      provider-id model-id)
-                              errors)
-                             (setf (gethash model-id actual-models) api))
-                         (setf errors
-                               (validate-model-data-value
-                                (json-get group model-id)
-                                provider-id model-id api errors))))))
+               (walk-model-data-groups
+                groups
+                (lambda (api)
+                  (push (format nil "~A API group ~S must be an object"
+                                filename api)
+                        errors))
+                (lambda (api group model-id)
+                  (if (nth-value 1 (gethash model-id actual-models))
+                      (push
+                       (format nil "~A/~A appears in more than one API group"
+                               provider-id model-id)
+                       errors)
+                      (setf (gethash model-id actual-models) api))
+                  (setf errors
+                        (validate-model-data-value
+                         (json-get group model-id)
+                         provider-id model-id api errors))))
                (let ((expected-ids (model-data-sorted-keys expected-models))
                      (actual-ids (model-data-sorted-keys actual-models)))
                  (unless (equal expected-ids actual-ids)

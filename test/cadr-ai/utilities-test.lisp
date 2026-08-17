@@ -309,3 +309,27 @@ second" (cadr-ai:content-text content)))
                      third))
         (is (string< first second))
         (is (string< second third))))))
+
+(test retry-abort-during-wait-uses-one-owner
+  (let ((calls 0)
+        (finished nil))
+    (let ((result
+            (cadr-ai:retry-assistant-call
+             (lambda ()
+               (incf calls)
+               (utility-error-message "terminated"))
+             (cadr-ai:make-retry-policy
+              :max-retries 3
+              :base-delay-milliseconds 10)
+             :abort-p (constantly t)
+             :sleep-function
+             (lambda (seconds)
+               (declare (ignore seconds)))
+             :on-retry-finished
+             (lambda (success attempt error)
+               (declare (ignore success attempt error))
+               (setf finished t)))))
+      (is (eq :aborted
+              (cadr-ai:assistant-message-stop-reason result)))
+      (is (= 1 calls))
+      (is-true finished))))

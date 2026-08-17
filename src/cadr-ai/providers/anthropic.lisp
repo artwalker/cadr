@@ -185,31 +185,30 @@
         (loaded-tool-names (make-hash-table :test #'equal))
         (allow-empty-signature-p
           (model-compat-value model :allow-empty-signature nil)))
-    (loop with index = 0
-          while (< index (length prepared))
-          for message = (nth index prepared)
+    (loop while prepared
+          for message = (first prepared)
           do
           (cond
             ((typep message 'tool-result-message)
              (let ((blocks nil))
-               (loop while (and (< index (length prepared))
-                                (typep (nth index prepared)
+               (loop while (and prepared
+                                (typep (first prepared)
                                        'tool-result-message))
                      do (dolist
                             (block
                              (anthropic-tool-result-blocks
-                              (nth index prepared)
+                              (pop prepared)
                               allow-empty-signature-p
                               deferred-tools
                               loaded-tool-names))
-                          (push block blocks))
-                        (incf index))
+                          (push block blocks)))
                (push
                 (json-object
                  "role" "user"
                  "content" (list-json-array (nreverse blocks)))
                 result)))
             ((typep message 'assistant-message)
+             (pop prepared)
              (let ((content
                      (anthropic-message-content
                       message allow-empty-signature-p)))
@@ -217,9 +216,9 @@
                  (push
                   (json-object "role" "assistant"
                                "content" content)
-                  result)))
-             (incf index))
+                  result))))
             ((typep message 'user-message)
+             (pop prepared)
              (let ((content
                      (anthropic-message-content
                       message allow-empty-signature-p)))
@@ -229,10 +228,9 @@
                  (push
                   (json-object "role" "user"
                                "content" content)
-                  result)))
-             (incf index))
+                  result))))
             (t
-             (incf index))))
+             (pop prepared))))
     (add-anthropic-cache-control-to-messages
      (list-json-array (nreverse result))
      cache-control)))

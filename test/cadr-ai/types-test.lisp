@@ -24,3 +24,10 @@
     (is (string= "hello" (first-text message)))
     (is (eq :stop (assistant-message-stop-reason message)))
     (is (= 0 (usage-total (assistant-message-usage message))))))
+
+(test assistant-message-constructor-is-the-defstruct-owner
+  (is (null (fboundp 'cadr-ai::%make-assistant-message)))
+  (let ((message (cadr-ai:make-assistant-message :model "owned")))
+    (is (string= "owned" (cadr-ai:assistant-message-model message)))
+    (is (eq :pending
+            (cadr-ai:assistant-message-stop-reason message)))))

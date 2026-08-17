@@ -5,6 +5,21 @@
     :initarg :code
     :reader models-runtime-error-code)))
 
+(defun call-with-models-runtime-error (code message thunk)
+  ;; One wrap: unknown errors become models-runtime-error. Already
+  ;; typed runtime/cancel errors pass through.
+  (handler-case
+      (funcall thunk)
+    (models-runtime-error (condition)
+      (error condition))
+    (authentication-cancelled (condition)
+      (error condition))
+    (error (cause)
+      (error 'models-runtime-error
+             :code code
+             :message message
+             :cause cause))))
+
 (defstruct (memory-credential-store
             (:constructor %make-memory-credential-store))
   (entries (make-hash-table) :type hash-table)
@@ -274,18 +289,13 @@
         :test #'string=))
 
 (defun runtime-credential (runtime provider-id)
-  (handler-case
-      (credential-store-read
-       (models-runtime-credential-store runtime)
-       provider-id)
-    (error (cause)
-      (error 'models-runtime-error
-             :code :auth
-             :message
-             (format nil
-                     "Credential store read failed for ~A"
-                     provider-id)
-             :cause cause))))
+  (call-with-models-runtime-error
+   :auth
+   (format nil "Credential store read failed for ~A" provider-id)
+   (lambda ()
+     (credential-store-read
+      (models-runtime-credential-store runtime)
+      provider-id))))
 
 (defun oauth-credential-expiring-p
     (credential &optional (minimum-validity-milliseconds 300000))
@@ -299,30 +309,26 @@
           (runtime-provider-oauth-refresh-function provider)))
     (unless refresh
       (return-from runtime-refresh-oauth nil))
-    (handler-case
-        (credential-store-modify
-         (models-runtime-credential-store runtime)
-         (runtime-provider-id provider)
-         (lambda (current)
-           (cond
-             ((not (typep current 'oauth-credential))
-              nil)
-             ((not (oauth-credential-expiring-p current))
-              nil)
-             (t
-              (let ((refreshed
-                      (funcall refresh current)))
-                (unless (typep refreshed 'oauth-credential)
-                  (error "OAuth refresh returned an invalid credential"))
-                refreshed)))))
-      (error (cause)
-        (error 'models-runtime-error
-               :code :oauth
-               :message
-               (format nil
-                       "OAuth refresh failed for ~A"
-                       (runtime-provider-id provider))
-               :cause cause)))))
+    (call-with-models-runtime-error
+     :oauth
+     (format nil "OAuth refresh failed for ~A"
+             (runtime-provider-id provider))
+     (lambda ()
+       (credential-store-modify
+        (models-runtime-credential-store runtime)
+        (runtime-provider-id provider)
+        (lambda (current)
+          (cond
+            ((not (typep current 'oauth-credential))
+             nil)
+            ((not (oauth-credential-expiring-p current))
+             nil)
+            (t
+             (let ((refreshed
+                     (funcall refresh current)))
+               (unless (typep refreshed 'oauth-credential)
+                 (error "OAuth refresh returned an invalid credential"))
+               refreshed)))))))))
 
 (defun runtime-resolve-api-key-auth
     (runtime provider credential overrides)
@@ -331,19 +337,16 @@
   (let ((resolver
           (runtime-provider-auth-resolver provider)))
     (if resolver
-        (handler-case
-            (funcall resolver
-                     credential
-                     (models-runtime-environment runtime)
-                     overrides)
-          (error (cause)
-            (error 'models-runtime-error
-                   :code :auth
-                   :message
-                   (format nil
-                           "API key auth resolution failed for ~A"
-                           (runtime-provider-id provider))
-                   :cause cause)))
+        (call-with-models-runtime-error
+         :auth
+         (format nil
+                 "API key auth resolution failed for ~A"
+                 (runtime-provider-id provider))
+         (lambda ()
+           (funcall resolver
+                    credential
+                    (models-runtime-environment runtime)
+                    overrides)))
         (when (and (typep credential 'api-key-credential)
                    (non-empty-string-p
                     (api-key-credential-key credential)))
@@ -427,18 +430,15 @@
                  (runtime-provider-auth-check-function
                   provider)))
            (if check
-               (handler-case
-                   (funcall
-                    check credential
-                    (models-runtime-environment runtime))
-                 (error (cause)
-                   (error 'models-runtime-error
-                          :code :auth
-                          :message
-                          (format nil
-                                  "API key auth check failed for provider ~A"
-                                  provider-id)
-                          :cause cause)))
+               (call-with-models-runtime-error
+                :auth
+                (format nil
+                        "API key auth check failed for provider ~A"
+                        provider-id)
+                (lambda ()
+                  (funcall
+                   check credential
+                   (models-runtime-environment runtime))))
                (let ((auth
                        (runtime-resolve-api-key-auth
                         runtime provider credential nil)))
@@ -467,20 +467,11 @@
                        "~A does not support API key login"
                        (runtime-provider-name provider))))
       (let ((credential
-              (handler-case
-                  (funcall login interaction)
-                (models-runtime-error (condition)
-                  (error condition))
-                (authentication-cancelled (condition)
-                  (error condition))
-                (error (cause)
-                  (error 'models-runtime-error
-                         :code :auth
-                         :message
-                         (format nil
-                                 "API key login failed for ~A"
-                                 provider-id)
-                         :cause cause)))))
+              (call-with-models-runtime-error
+               :auth
+               (format nil "API key login failed for ~A" provider-id)
+               (lambda ()
+                 (funcall login interaction)))))
         (unless (typep credential 'api-key-credential)
           (error 'models-runtime-error
                  :code :auth
@@ -491,21 +482,16 @@
         (setf
          (api-key-credential-provider credential)
          provider-id)
-        (handler-case
-            (credential-store-modify
-             (models-runtime-credential-store runtime)
-             provider-id
-             (lambda (current)
-               (declare (ignore current))
-               credential))
-          (error (cause)
-            (error 'models-runtime-error
-                   :code :auth
-                   :message
-                   (format nil
-                           "Credential store modify failed for ~A"
-                           provider-id)
-                   :cause cause)))
+        (call-with-models-runtime-error
+         :auth
+         (format nil "Credential store modify failed for ~A" provider-id)
+         (lambda ()
+           (credential-store-modify
+            (models-runtime-credential-store runtime)
+            provider-id
+            (lambda (current)
+              (declare (ignore current))
+              credential))))
         credential))))
 
 (defun models-runtime-provider-for-login (runtime provider-id)
@@ -527,20 +513,16 @@
      (setf (api-key-credential-provider credential) provider-id))
     (oauth-credential
      (setf (oauth-credential-provider credential) provider-id)))
-  (handler-case
-      (credential-store-modify
-       (models-runtime-credential-store runtime)
-       provider-id
-       (lambda (current)
-         (declare (ignore current))
-         credential))
-    (error (cause)
-      (error 'models-runtime-error
-             :code :auth
-             :message
-             (format nil "Credential store modify failed for ~A"
-                     provider-id)
-             :cause cause)))
+  (call-with-models-runtime-error
+   :auth
+   (format nil "Credential store modify failed for ~A" provider-id)
+   (lambda ()
+     (credential-store-modify
+      (models-runtime-credential-store runtime)
+      provider-id
+      (lambda (current)
+        (declare (ignore current))
+        credential))))
   credential)
 
 (defun models-runtime-login-oauth
@@ -556,18 +538,11 @@
                      (runtime-provider-name provider))))
     (persist-runtime-login-credential
      runtime provider-id
-     (handler-case
-         (funcall login interaction)
-       (models-runtime-error (condition)
-         (error condition))
-       (authentication-cancelled (condition)
-         (error condition))
-       (error (cause)
-         (error 'models-runtime-error
-                :code :auth
-                :message
-                (format nil "OAuth login failed for ~A" provider-id)
-                :cause cause)))
+     (call-with-models-runtime-error
+      :auth
+      (format nil "OAuth login failed for ~A" provider-id)
+      (lambda ()
+        (funcall login interaction)))
      'oauth-credential)))
 
 (defun models-runtime-login

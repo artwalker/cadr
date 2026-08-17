@@ -562,14 +562,12 @@
     message))
 
 (defun openai-stream-block (state output-index)
-  (let ((content-index
+  (let ((entry
           (gethash output-index
                    (provider-stream-state-block-indices state))))
-    (values (and content-index
-                 (nth content-index
-                      (assistant-message-content
-                       (provider-stream-state-message state))))
-            content-index)))
+    (if (consp entry)
+        (values (cdr entry) (car entry))
+        (values nil nil))))
 
 (defun create-openai-stream-block (state item output-index emit)
   (let* ((message (provider-stream-state-message state))
@@ -593,7 +591,7 @@
       (let ((content-index (append-content-block message block)))
         (setf (gethash output-index
                        (provider-stream-state-block-indices state))
-              content-index)
+              (cons content-index block))
         (cond
           ((typep block 'text-content)
            (emit-event emit :text-start message
@@ -719,9 +717,10 @@
                                                  output-index
                                                  emit))
                (setf content-index
-                     (gethash
-                      output-index
-                      (provider-stream-state-block-indices state))))
+                     (car
+                      (gethash
+                       output-index
+                       (provider-stream-state-block-indices state)))))
              (cond
                ((typep block 'text-content)
                 (let ((blocks (json-get item "content")))

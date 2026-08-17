@@ -143,37 +143,27 @@
            (let ((delay
                    (* (retry-policy-base-delay-milliseconds policy)
                       (expt 2 (1- attempt)))))
-             (when on-retry-scheduled
-               (funcall on-retry-scheduled
-                        attempt maximum delay last-error))
-             (when (and abort-p (funcall abort-p))
-               (when on-retry-finished
-                 (funcall on-retry-finished
-                          nil attempt last-error))
-               (return
-                 (make-assistant-message
-                  :api (assistant-message-api message)
-                  :provider (assistant-message-provider message)
-                  :model (assistant-message-model message)
-                  :content
-                  (assistant-message-content message)
-                  :usage (assistant-message-usage message)
-                  :stop-reason :aborted)))
-             (when (plusp delay)
-               (funcall sleep-function
-                        (/ delay 1000d0)))
-             (when (and abort-p (funcall abort-p))
-               (when on-retry-finished
-                 (funcall on-retry-finished
-                          nil attempt last-error))
-               (return
-                 (make-assistant-message
-                  :api (assistant-message-api message)
-                  :provider (assistant-message-provider message)
-                  :model (assistant-message-model message)
-                  :content
-                  (assistant-message-content message)
-                  :usage (assistant-message-usage message)
-                  :stop-reason :aborted)))
-             (when on-retry-attempt-start
-               (funcall on-retry-attempt-start)))))))))
+             (flet ((aborted-message ()
+                      (when on-retry-finished
+                        (funcall on-retry-finished
+                                 nil attempt last-error))
+                      (make-assistant-message
+                       :api (assistant-message-api message)
+                       :provider (assistant-message-provider message)
+                       :model (assistant-message-model message)
+                       :content
+                       (assistant-message-content message)
+                       :usage (assistant-message-usage message)
+                       :stop-reason :aborted)))
+               (when on-retry-scheduled
+                 (funcall on-retry-scheduled
+                          attempt maximum delay last-error))
+               (when (and abort-p (funcall abort-p))
+                 (return (aborted-message)))
+               (when (plusp delay)
+                 (funcall sleep-function
+                          (/ delay 1000d0)))
+               (when (and abort-p (funcall abort-p))
+                 (return (aborted-message)))
+               (when on-retry-attempt-start
+                 (funcall on-retry-attempt-start))))))))))

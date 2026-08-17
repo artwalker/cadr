@@ -46,8 +46,7 @@
                               (json-object
                                "name" (tool-call-name block)
                                "args" (tool-call-arguments block))))
-                        (when (search "gemini-3"
-                                      (string-downcase (model-id model)))
+                        (when (google-gemini-3-model-p model)
                           (json-put call "id" (tool-call-id block)))
                         (let ((part
                                 (json-object "functionCall" call)))
@@ -71,8 +70,7 @@
                  (json-object
                   "name" (tool-result-message-tool-name message)
                   "response" response)))
-           (when (search "gemini-3"
-                         (string-downcase (model-id model)))
+           (when (google-gemini-3-model-p model)
              (json-put function-response
                        "id"
                        (tool-result-message-tool-call-id message)))
@@ -110,6 +108,10 @@
               "description" (tool-description tool)
               "parametersJsonSchema"
               (get-json-schema-tool-parameters tool (eq strict t)))))))))
+
+(defun google-gemini-3-model-p (model)
+  ;; Baseline google-shared.ts: gemini-3 tool-call/result ids.
+  (search "gemini-3" (string-downcase (model-id model))))
 
 (defun gemini-major-version (model-id)
   ;; Baseline google-shared.ts getGeminiMajorVersion.

@@ -463,6 +463,31 @@
 (defun faux-stream-aborted-p (abort-p)
   (cadr-core:cancellation-predicate-aborted-p abort-p))
 
+(defun faux-stream-block
+    (handle abort-p emit-fn partial index
+     partial-block start-event chunks apply-chunk
+     delta-event end-event &rest end-args)
+  ;; One emit skeleton for thinking / text / tool-call.
+  (let ((before-end (getf end-args :before-end))
+        (event-args (copy-list end-args)))
+    (remf event-args :before-end)
+    (setf (assistant-message-content partial)
+          (append (assistant-message-content partial)
+                  (list partial-block)))
+    (faux-emit emit-fn start-event partial :content-index index)
+    (dolist (chunk chunks)
+      (faux-wait-for-chunk handle chunk)
+      (when (faux-stream-aborted-p abort-p)
+        (return-from faux-stream-block :aborted))
+      (funcall apply-chunk partial-block chunk)
+      (faux-emit emit-fn delta-event partial
+                 :content-index index :delta chunk))
+    (when before-end
+      (funcall before-end))
+    (apply #'faux-emit emit-fn end-event partial
+           :content-index index event-args)
+    nil))
+
 (defun faux-emit-aborted (on-event partial)
   (let ((aborted (faux-aborted-partial-message partial)))
     (faux-emit on-event :error aborted :reason :aborted)
@@ -497,99 +522,71 @@
       (loop for block in (assistant-message-content message)
             for index from 0
             do
-            (cond
-            ((typep block 'thinking-content)
-             (let ((partial-block
-                     (make-thinking-content
-                      :thinking "")))
-               (setf (assistant-message-content partial)
-                     (append (assistant-message-content partial)
-                             (list partial-block)))
-               (faux-emit
-                #'emit-event :thinking-start partial
-                :content-index index)
-               (dolist (chunk
+            (when
+                (eq :aborted
+                    (cond
+                      ((typep block 'thinking-content)
+                       (faux-stream-block
+                        handle abort-p #'emit-event partial index
+                        (make-thinking-content :thinking "")
+                        :thinking-start
                         (faux-split-string
-                         handle (thinking-content-thinking block)))
-                 (faux-wait-for-chunk handle chunk)
-                 (when (faux-stream-aborted-p abort-p)
-                   (return-from faux-stream
-                     (finish
-                      (faux-emit-aborted #'emit-event partial))))
-                 (setf (thinking-content-thinking partial-block)
-                       (concatenate
-                        'string
-                        (thinking-content-thinking partial-block)
-                        chunk))
-                 (faux-emit
-                  #'emit-event :thinking-delta partial
-                  :content-index index :delta chunk))
-               (faux-emit
-                #'emit-event :thinking-end partial
-                :content-index index
-                :content
-                (thinking-content-thinking block))))
-            ((typep block 'text-content)
-             (let ((partial-block
-                     (make-text-content
-                      :text "")))
-               (setf (assistant-message-content partial)
-                     (append (assistant-message-content partial)
-                             (list partial-block)))
-               (faux-emit
-                #'emit-event :text-start partial
-                :content-index index)
-               (dolist (chunk
+                         handle (thinking-content-thinking block))
+                        (lambda (partial-block chunk)
+                          (setf (thinking-content-thinking
+                                 partial-block)
+                                (concatenate
+                                 'string
+                                 (thinking-content-thinking
+                                  partial-block)
+                                 chunk)))
+                        :thinking-delta :thinking-end
+                        :content
+                        (thinking-content-thinking block)))
+                      ((typep block 'text-content)
+                       (faux-stream-block
+                        handle abort-p #'emit-event partial index
+                        (make-text-content :text "")
+                        :text-start
                         (faux-split-string
-                         handle (text-content-text block)))
-                 (faux-wait-for-chunk handle chunk)
-                 (when (faux-stream-aborted-p abort-p)
-                   (return-from faux-stream
-                     (finish
-                      (faux-emit-aborted #'emit-event partial))))
-                 (setf (text-content-text partial-block)
-                       (concatenate
-                        'string
-                        (text-content-text partial-block)
-                        chunk))
-                 (faux-emit
-                  #'emit-event :text-delta partial
-                  :content-index index :delta chunk))
-               (faux-emit
-                #'emit-event :text-end partial
-                :content-index index
-                :content (text-content-text block))))
-            ((typep block 'tool-call)
-             (let ((partial-block
-                     (make-tool-call
-                      :id (tool-call-id block)
-                      :name (tool-call-name block)
-                      :arguments (json-object))))
-               (setf (assistant-message-content partial)
-                     (append (assistant-message-content partial)
-                             (list partial-block)))
-               (faux-emit
-                #'emit-event :tool-call-start partial
-                :content-index index)
-               (dolist (chunk
-                        (faux-split-string
-                         handle
-                         (stringify-json
-                          (tool-call-arguments block))))
-                 (faux-wait-for-chunk handle chunk)
-                 (when (faux-stream-aborted-p abort-p)
-                   (return-from faux-stream
-                     (finish
-                      (faux-emit-aborted #'emit-event partial))))
-                (faux-emit
-                  #'emit-event :tool-call-delta partial
-                  :content-index index :delta chunk))
-               (setf (tool-call-arguments partial-block)
-                     (tool-call-arguments block))
-               (faux-emit
-                #'emit-event :tool-call-end partial
-                :content-index index
-                :tool-call block)))))
+                         handle (text-content-text block))
+                        (lambda (partial-block chunk)
+                          (setf (text-content-text partial-block)
+                                (concatenate
+                                 'string
+                                 (text-content-text partial-block)
+                                 chunk)))
+                        :text-delta :text-end
+                        :content (text-content-text block)))
+                      ((typep block 'tool-call)
+                       (let ((partial-block
+                               (make-tool-call
+                                :id (tool-call-id block)
+                                :name (tool-call-name block)
+                                :arguments (json-object))))
+                         (faux-stream-block
+                          handle abort-p #'emit-event
+                          partial index
+                          partial-block
+                          :tool-call-start
+                          (faux-split-string
+                           handle
+                           (stringify-json
+                            (tool-call-arguments block)))
+                          (lambda (partial-block chunk)
+                            (declare (ignore
+                                      partial-block chunk)))
+                          :tool-call-delta :tool-call-end
+                          :before-end
+                          (lambda ()
+                            (setf (tool-call-arguments
+                                   partial-block)
+                                  (tool-call-arguments block)))
+                          :tool-call block)))
+                      (t nil)))
+              (return-from faux-stream
+                (finish
+                 (faux-emit-aborted #'emit-event partial)))))
       (when (eq :pending (assistant-message-stop-reason message))
         (error "Faux response ended without a stop reason"))
       (when (member (assistant-message-stop-reason message)

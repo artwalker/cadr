@@ -6,9 +6,6 @@
    :method-name "Radius"
    :auth-url-instructions "Continue in your browser."))
 
-(defparameter +radius-oauth-client-id+ "pi-gateway")
-(defparameter +radius-oauth-scope+ "gateway offline_access")
-
 (defun normalize-radius-gateway (gateway)
   (string-right-trim "/" gateway))
 
@@ -30,19 +27,12 @@
     (ensure-oauth-response-success "Radius" "device authorization"
                                    response status)
     (let ((device
-            (list
-             :device-code
-             (required-oauth-string response "device_code" "Radius")
-             :user-code
-             (required-oauth-string response "user_code" "Radius")
-             :verification-uri
-             (required-oauth-string response "verification_uri" "Radius")
-             :interval (or (json-get response "interval") 5)
-             :expires-in
-             (positive-oauth-number response "expires_in" "Radius"))))
-      (unless (trusted-oauth-url-p (getf device :verification-uri))
-        (error 'authentication-error
-               :message "Untrusted verification URI in Radius OAuth response"))
+            (parse-device-authorization
+             response "Radius"
+             :interval-policy :or-default
+             :default-interval 5
+             :untrusted-message
+             "Untrusted verification URI in Radius OAuth response")))
       (notify-device-authorization interaction device)
       (oauth-token-credential
        :radius

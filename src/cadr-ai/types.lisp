@@ -124,12 +124,7 @@
   (details nil :type list)
   (error nil))
 
-(defstruct (assistant-message
-            (:constructor %make-assistant-message
-                (&key content api provider model response-model response-id
-                      usage stop-reason
-                      error-message raw-stop-reason end-turn diagnostics
-                      timestamp)))
+(defstruct assistant-message
   (content nil :type list)
   (api nil :type symbol)
   (provider nil :type symbol)
@@ -146,35 +141,6 @@
   (end-turn nil :type (or null boolean))
   (diagnostics nil :type list)
   (timestamp (unix-milliseconds) :type integer))
-
-(defun make-assistant-message (&key
-                                    (content nil)
-                                    api
-                                    provider
-                                    (model "")
-                                    response-model
-                                    response-id
-                                    (usage (make-usage))
-                                    (stop-reason :pending)
-                                    error-message
-                                    raw-stop-reason
-                                    end-turn
-                                    (diagnostics nil)
-                                    (timestamp (unix-milliseconds)))
-  (%make-assistant-message
-   :content content
-   :api api
-   :provider provider
-   :model model
-   :response-model response-model
-   :response-id response-id
-   :usage usage
-   :stop-reason stop-reason
-   :error-message error-message
-   :raw-stop-reason raw-stop-reason
-   :end-turn end-turn
-   :diagnostics diagnostics
-   :timestamp timestamp))
 
 (defstruct tool-result-message
   (tool-call-id "" :type string)

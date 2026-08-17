@@ -52,7 +52,11 @@
            "messages"
            (openai-chat-messages
             model context :normalize-id normalize-id)))
-        (key (require-api-key provider)))
+        (key (require-api-key provider))
+        (affinity-p
+          (and (non-empty-string-p session-id)
+               (not (eq (normalize-cache-retention cache-retention)
+                        :none)))))
     (when max-tokens
       (json-put payload "max_tokens" max-tokens))
     (when (not (null temperature))
@@ -72,9 +76,7 @@
            (or (model-thinking-level-value model reasoning)
                (string-downcase (symbol-name reasoning))))
           (json-put payload "prompt_mode" "reasoning")))
-    (when (and (non-empty-string-p session-id)
-               (not (eq (normalize-cache-retention cache-retention)
-                        :none)))
+    (when affinity-p
       (json-put payload "prompt_cache_key" session-id))
     (make-request-spec
      :url
@@ -87,10 +89,7 @@
                          "text/event-stream"
                          "application/json"))
         ("authorization" . ,(format nil "Bearer ~A" key)))
-      (when (and (non-empty-string-p session-id)
-                 (not
-                  (eq (normalize-cache-retention cache-retention)
-                      :none)))
+      (when affinity-p
         `(("x-affinity" . ,session-id)))
       (model-headers model))
      :payload payload

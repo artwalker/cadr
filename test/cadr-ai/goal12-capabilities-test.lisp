@@ -296,3 +296,29 @@
                runtime model (cadr-ai:make-images-context :input '("prompt")))))
         (is (equal '("ok") (cadr-ai:assistant-images-output result)))
         (is (= 1 (length calls)))))))
+
+(test event-stream-preserves-fifo-without-nconc
+  (let ((stream (cadr-ai:make-event-stream)))
+    (dotimes (i 20)
+      (cadr-ai:event-stream-push stream i))
+    (is (equal
+         (loop repeat 20
+               collect (cadr-ai:event-stream-next stream))
+         (loop for i below 20 collect i)))))
+
+(test provider-definition-row-keys-come-from-mop
+  (is (not (boundp 'cadr-ai::+provider-definition-row-keys+)))
+  (let ((keys (cadr-ai::provider-definition-row-keys)))
+    (is (member :id keys))
+    (is (member :model-filter-strategy keys))
+    (is (= (length keys)
+           (1+
+            (length
+             (cadr-ai::provider-definition-compared-slots)))))))
+
+(test google-gemini-3-model-p-owns-tool-id-sniff
+  (is (cadr-ai::google-gemini-3-model-p
+       (make-model :id "gemini-3.6-flash")))
+  (is (not
+       (cadr-ai::google-gemini-3-model-p
+        (make-model :id "gemini-2.5-pro")))))

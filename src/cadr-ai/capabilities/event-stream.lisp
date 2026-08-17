@@ -4,6 +4,7 @@
 
 (defclass event-stream ()
   ((queue :initform nil :accessor event-stream-queue)
+   (queue-tail :initform nil :accessor event-stream-queue-tail)
    (done-p :initform nil :accessor event-stream-done-p)
    (result-ready-p :initform nil :accessor event-stream-result-ready-p)
    (result-value :initform nil :accessor event-stream-result-value)
@@ -22,8 +23,12 @@
 (defun event-stream-push (stream event)
   (sb-thread:with-mutex ((event-stream-lock stream))
     (unless (event-stream-done-p stream)
-      (setf (event-stream-queue stream)
-            (nconc (event-stream-queue stream) (list event)))
+      ;; FIFO cell, not nconc. Same order as Array.push; tail is O(1).
+      (let ((cell (list event)))
+        (if (event-stream-queue-tail stream)
+            (setf (cdr (event-stream-queue-tail stream)) cell)
+            (setf (event-stream-queue stream) cell))
+        (setf (event-stream-queue-tail stream) cell))
       (when (funcall (event-stream-complete-p stream) event)
         (setf (event-stream-done-p stream) t
               (event-stream-result-ready-p stream) t
@@ -49,7 +54,10 @@
               (event-stream-condition stream)
               (event-stream-lock stream)))
     (if (event-stream-queue stream)
-        (values (pop (event-stream-queue stream)) nil)
+        (let ((event (pop (event-stream-queue stream))))
+          (unless (event-stream-queue stream)
+            (setf (event-stream-queue-tail stream) nil))
+          (values event nil))
         (values nil t))))
 
 (defun event-stream-result (stream)

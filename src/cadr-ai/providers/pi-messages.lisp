@@ -170,16 +170,16 @@
           (gethash index
                    (provider-stream-state-partial-json state))
           ""
+          (gethash index
+                   (provider-stream-state-block-indices state))
+          call
           (assistant-message-content message)
           (append (assistant-message-content message)
                   (list call)))
          (emit-event emit :tool-call-start message
                      :content-index index)))
       ((string= type "toolcall_delta")
-       (let* ((piece (or (json-get data "delta") ""))
-              (block
-                (nth index
-                     (assistant-message-content message))))
+       (let ((piece (or (json-get data "delta") "")))
          (setf
           (gethash index
                    (provider-stream-state-partial-json state))
@@ -194,8 +194,9 @@
                      :delta piece)))
       ((string= type "toolcall_end")
        (let ((block
-               (nth index
-                    (assistant-message-content message))))
+               (gethash
+                index
+                (provider-stream-state-block-indices state))))
          (when (typep block 'tool-call)
            (let ((json
                    (gethash

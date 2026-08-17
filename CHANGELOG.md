@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K7: `cadr-ai` 28 rewrite files share one
+  owner each (device parse, reserved keys, PKCE login,
+  stream blocks, runtime error wrap). Generated catalogs
+  untouched. FiveAM 18748 → 18768.
+
 - Goal 20 Part K6 follow-up: `with-present` owns every schema
   present-p bind; `call-signaled-operation` owns abort/classify
   for remove and temps. FiveAM 18738 → 18748.

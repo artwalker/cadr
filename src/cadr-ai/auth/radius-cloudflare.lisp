@@ -1,5 +1,8 @@
 (in-package #:cadr-ai)
 
+(defparameter +radius-oauth-client-id+ "pi-gateway")
+(defparameter +radius-oauth-scope+ "gateway offline_access")
+
 (defun radius-authorization-url
     (endpoint challenge state
      &key
@@ -10,9 +13,9 @@
    endpoint
    (form-encode
     `(("response_type" . "code")
-      ("client_id" . "pi-gateway")
+      ("client_id" . ,+radius-oauth-client-id+)
       ("redirect_uri" . ,redirect-uri)
-      ("scope" . "gateway offline_access")
+      ("scope" . ,+radius-oauth-scope+)
       ("code_challenge" . ,challenge)
       ("code_challenge_method" . "S256")
       ("handoff" . "url")

@@ -123,35 +123,83 @@
                      provider field)))
     value))
 
-(defun parse-xai-device-authorization (object)
+(defun device-authorization-interval
+    (object policy &optional default)
+  (let ((value (json-get object "interval")))
+    (ecase policy
+      (:positive
+       (and (numberp value) (plusp value) value))
+      (:number
+       (and (numberp value) value))
+      (:or-default
+       (or value default))
+      (:positive-or-default
+       (if (and (numberp value) (plusp value))
+           value
+           default)))))
+
+(defun parse-device-authorization
+    (object provider
+     &key https-only-p
+       (complete :omit)
+       (interval-policy :positive)
+       default-interval
+       default-expires-in
+       untrusted-message)
+  ;; One parse for xAI / Kimi / GitHub / Radius. Keyword options
+  ;; keep the four wire contracts; they do not re-copy the field
+  ;; walk.
   (let* ((verification
            (required-oauth-string
-            object "verification_uri" "xAI"))
-         (complete
-           (json-get object "verification_uri_complete"))
-         (interval (json-get object "interval")))
-    (unless (trusted-oauth-url-p verification :https-only-p t)
-      (error 'authentication-error
-             :message
-             "Untrusted verification URI in xAI OAuth response"))
-    (when (and complete
-               (not
-                (trusted-oauth-url-p complete
-                                     :https-only-p t)))
-      (error 'authentication-error
-             :message
-             "Untrusted verification URI in xAI OAuth response"))
+            object "verification_uri" provider))
+         (complete-value
+           (ecase complete
+             (:omit nil)
+             (:optional
+              (json-get object "verification_uri_complete"))
+             (:required
+              (required-oauth-string
+               object "verification_uri_complete" provider))))
+         (message
+           (or untrusted-message
+               (format nil
+                       "Untrusted verification URI in ~A OAuth response"
+                       provider))))
+    (unless (trusted-oauth-url-p verification
+                                 :https-only-p https-only-p)
+      (error 'authentication-error :message message))
+    (when (and complete-value
+               (not (trusted-oauth-url-p
+                     complete-value
+                     :https-only-p https-only-p)))
+      (error 'authentication-error :message message))
     (list
      :device-code
-     (required-oauth-string object "device_code" "xAI")
+     (required-oauth-string object "device_code" provider)
      :user-code
-     (required-oauth-string object "user_code" "xAI")
+     (required-oauth-string object "user_code" provider)
      :verification-uri verification
-     :verification-uri-complete complete
+     :verification-uri-complete complete-value
      :interval
-     (and (numberp interval) (plusp interval) interval)
+     (device-authorization-interval
+      object interval-policy default-interval)
      :expires-in
-     (positive-oauth-number object "expires_in" "xAI"))))
+     (if default-expires-in
+         (let ((expires (json-get object "expires_in")))
+           (if (and (numberp expires) (plusp expires))
+               expires
+               default-expires-in))
+         (positive-oauth-number
+          object "expires_in" provider)))))
+
+(defun parse-xai-device-authorization (object)
+  (parse-device-authorization
+   object "xAI"
+   :https-only-p t
+   :complete :optional
+   :interval-policy :positive
+   :untrusted-message
+   "Untrusted verification URI in xAI OAuth response"))
 
 (defun oauth-token-credential
     (provider object
@@ -181,31 +229,11 @@
         expiry-skew-milliseconds))))
 
 (defun parse-kimi-device-authorization (object)
-  (let ((verification
-          (required-oauth-string
-           object "verification_uri" "Kimi Code"))
-        (complete
-          (required-oauth-string
-           object "verification_uri_complete" "Kimi Code"))
-        (interval (json-get object "interval"))
-        (expires-in (json-get object "expires_in")))
-    (unless (and (trusted-oauth-url-p verification)
-                 (trusted-oauth-url-p complete))
-      (error 'authentication-error
-             :message
-             "Invalid Kimi Code device authorization response"))
-    (list
-     :device-code
-     (required-oauth-string
-      object "device_code" "Kimi Code")
-     :user-code
-     (required-oauth-string
-      object "user_code" "Kimi Code")
-     :verification-uri verification
-     :verification-uri-complete complete
-     :interval
-     (if (and (numberp interval) (plusp interval))
-         interval 5)
-     :expires-in
-     (if (and (numberp expires-in) (plusp expires-in))
-         expires-in 900))))
+  (parse-device-authorization
+   object "Kimi Code"
+   :complete :required
+   :interval-policy :positive-or-default
+   :default-interval 5
+   :default-expires-in 900
+   :untrusted-message
+   "Invalid Kimi Code device authorization response"))
