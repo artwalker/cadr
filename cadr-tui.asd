@@ -106,6 +106,7 @@
                              (:file "mermaid-golden-test")
                              (:file "mermaid-transform-data")
                              (:file "mermaid-transform-test")
+                             (:file "lispification-i0-test")
                              (:file "terminal-test")
                              (:file "terminal-parity-test")
                              (:file "manual-acceptance-test"))))

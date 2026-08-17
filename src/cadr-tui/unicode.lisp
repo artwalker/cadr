@@ -873,13 +873,13 @@ The walk stops early when FUNCTION returns true."
 (defun extract-segments
     (text before-end after-start total-width
      &optional strict-after-p)
-  (let ((before "")
-        (after "")
+  (let ((before (make-string-output-stream))
+        (after (make-string-output-stream))
+        (pending (make-string-output-stream))
         (before-width 0)
         (after-width 0)
         (column 0)
         (index 0)
-        (pending-before "")
         (after-started-p nil)
         (state (make-ansi-state)))
     (loop while (< index (length text))
@@ -890,14 +890,11 @@ The walk stops early when FUNCTION returns true."
                 (process-ansi-code state code)
                 (cond
                   ((< column before-end)
-                   (setf pending-before
-                         (concatenate
-                          'string pending-before code)))
+                   (write-string code pending))
                   ((and after-started-p
                         (>= column after-start)
                         (< column total-width))
-                   (setf after
-                         (concatenate 'string after code))))
+                   (write-string code after)))
                 (setf index ansi-end))
               (let* ((next-ansi
                        (or (position #\Escape text
@@ -912,11 +909,10 @@ The walk stops early when FUNCTION returns true."
                       ((and (< column before-end)
                             (<= (+ column cluster-width)
                                 before-end))
-                       (setf before
-                             (concatenate
-                              'string before
-                              pending-before cluster)
-                             pending-before "")
+                       (write-string
+                        (get-output-stream-string pending)
+                        before)
+                       (write-string cluster before)
                        (incf before-width cluster-width))
                       ((and (>= column after-start)
                             (< column total-width)
@@ -924,19 +920,18 @@ The walk stops early when FUNCTION returns true."
                                 (<= (+ column cluster-width)
                                     total-width)))
                        (unless after-started-p
-                         (setf after
-                               (concatenate
-                                'string after
-                                (ansi-state-active-codes
-                                 state))
-                               after-started-p t))
-                       (setf after
-                             (concatenate
-                              'string after cluster))
+                         (write-string
+                          (ansi-state-active-codes state)
+                          after)
+                         (setf after-started-p t))
+                       (write-string cluster after)
                        (incf after-width cluster-width)))
                     (incf column cluster-width)))
                 (setf index next-ansi))))
-    (values before before-width after after-width)))
+    (values (get-output-stream-string before)
+            before-width
+            (get-output-stream-string after)
+            after-width)))
 
 (defun truncate-fragment-to-width (text maximum-width)
   (slice-with-width text 0 maximum-width t))
@@ -1122,16 +1117,16 @@ The walk stops early when FUNCTION returns true."
 
 (defun break-long-wrap-token (text width state)
   (let ((lines nil)
-        (current (ansi-state-active-codes state))
+        (current (make-string-output-stream))
         (current-width 0)
         (index 0))
+    (write-string (ansi-state-active-codes state) current)
     (loop while (< index (length text))
           for ansi-end = (ansi-sequence-end text index)
           do
           (if ansi-end
               (let ((code (subseq text index ansi-end)))
-                (setf current
-                      (concatenate 'string current code))
+                (write-string code current)
                 (process-ansi-code state code)
                 (setf index ansi-end))
               (let* ((next-ansi
@@ -1149,19 +1144,22 @@ The walk stops early when FUNCTION returns true."
                                   width))
                       (push
                        (concatenate
-                        'string current
+                        'string
+                        (get-output-stream-string current)
                         (ansi-state-line-end-reset state))
                        lines)
                       (setf current
-                            (ansi-state-active-codes state)
-                            current-width 0))
-                    (setf current
-                          (concatenate
-                           'string current cluster))
+                            (make-string-output-stream)
+                            current-width 0)
+                      (write-string
+                       (ansi-state-active-codes state)
+                       current))
+                    (write-string cluster current)
                     (incf current-width cluster-width)))
                 (setf index next-ansi))))
-    (when (plusp (length current))
-      (push current lines))
+    (let ((tail (get-output-stream-string current)))
+      (when (plusp (length tail))
+        (push tail lines)))
     (nreverse lines)))
 
 (defun wrap-logical-line (line width)
@@ -1173,62 +1171,68 @@ The walk stops early when FUNCTION returns true."
     (return-from wrap-logical-line (list line)))
   (let ((wrapped nil)
         (state (make-ansi-state))
-        (current "")
+        (current (make-string-output-stream))
         (current-width 0))
-    (dolist (token (split-wrap-tokens line))
-      (let* ((text (wrap-token-text token))
-             (token-width (visible-width text))
-             (space-p (eq (wrap-token-kind token) :space)))
-        (cond
-          ((and (> token-width width)
-                (not space-p))
-           (when (plusp (length current))
+    (flet ((current-string ()
+             (get-output-stream-string current))
+           (reset-current (seed)
+             (setf current (make-string-output-stream)
+                   current-width 0)
+             (when (and seed (plusp (length seed)))
+               (write-string seed current))))
+      (dolist (token (split-wrap-tokens line))
+        (let* ((text (wrap-token-text token))
+               (token-width (visible-width text))
+               (space-p (eq (wrap-token-kind token) :space)))
+          (cond
+            ((and (> token-width width)
+                  (not space-p))
+             (let ((so-far (current-string)))
+               (when (plusp (length so-far))
+                 (push
+                  (concatenate
+                   'string
+                   (string-right-trim
+                    '(#\Space #\Tab #\Newline #\Return)
+                    so-far)
+                   (ansi-state-line-end-reset state))
+                  wrapped)))
+             (reset-current nil)
+             (let ((broken
+                     (break-long-wrap-token
+                      text width state)))
+               (dolist (complete (butlast broken))
+                 (push complete wrapped))
+               (reset-current (or (car (last broken)) ""))
+               (setf current-width
+                     (visible-width (or (car (last broken)) "")))))
+            ((and (plusp current-width)
+                  (> (+ current-width token-width)
+                     width))
              (push
               (concatenate
                'string
                (string-right-trim
                 '(#\Space #\Tab #\Newline #\Return)
-                current)
+                (current-string))
                (ansi-state-line-end-reset state))
               wrapped)
-             (setf current ""
-                   current-width 0))
-           (let ((broken
-                   (break-long-wrap-token
-                    text width state)))
-             (dolist (complete (butlast broken))
-               (push complete wrapped))
-             (setf current (or (car (last broken)) "")
-                   current-width
-                   (visible-width current))))
-          ((and (plusp current-width)
-                (> (+ current-width token-width)
-                   width))
-           (push
-            (concatenate
-             'string
-             (string-right-trim
-              '(#\Space #\Tab #\Newline #\Return)
-              current)
-             (ansi-state-line-end-reset state))
-            wrapped)
-           (if space-p
-               (setf current
+             (if space-p
+                 (reset-current (ansi-state-active-codes state))
+                 (progn
+                   (reset-current
+                    (concatenate
+                     'string
                      (ansi-state-active-codes state)
-                     current-width 0)
-               (setf current
-                     (concatenate
-                      'string
-                      (ansi-state-active-codes state)
-                      text)
-                     current-width token-width)))
-          (t
-           (setf current
-                 (concatenate 'string current text))
-           (incf current-width token-width)))
-        (update-ansi-state state text)))
-    (when (plusp (length current))
-      (push current wrapped))
+                     text))
+                   (setf current-width token-width))))
+            (t
+             (write-string text current)
+             (incf current-width token-width)))
+          (update-ansi-state state text)))
+      (let ((tail (current-string)))
+        (when (plusp (length tail))
+          (push tail wrapped))))
     (let ((result (nreverse wrapped)))
       (if result
           (mapcar

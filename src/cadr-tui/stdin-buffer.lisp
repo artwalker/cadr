@@ -58,14 +58,15 @@
 
 (defun stdin-buffer-extract (buffer text)
   (let ((sequences nil)
-        (position 0))
-    (loop while (< position (length text))
-          for remaining = (subseq text position)
+        (position 0)
+        (length (length text)))
+    (loop while (< position length)
           do
-          (if (char= (char remaining 0) #\Escape)
-              (let ((sequence-length
-                      (complete-terminal-sequence-length
-                       remaining)))
+          (if (char= (char text position) #\Escape)
+              (let* ((remaining (subseq text position))
+                     (sequence-length
+                       (complete-terminal-sequence-length
+                        remaining)))
                 (unless sequence-length
                   (return))
                 (when (and (= sequence-length 2)
@@ -86,7 +87,7 @@
                  sequences
                  (stdin-buffer-emit-sequence
                   buffer
-                  (subseq remaining 0 1)
+                  (subseq text position (1+ position))
                   sequences))
                 (incf position))))
     (values (nreverse sequences)

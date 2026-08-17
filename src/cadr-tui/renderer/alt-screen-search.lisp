@@ -1,5 +1,8 @@
 (in-package #:cadr-tui)
 
+(defparameter +search-whitespace-characters+
+  '(#\Space #\Tab #\Newline #\Return #\Page))
+
 ;;; Baseline v0.84.2 tui/alt-screen-search.ts: transcript search for the
 ;;; fullscreen viewport — a whitespace-normalizing matcher over the
 ;;; grapheme-mapped document, plus the overlay bar's presentation.
@@ -50,8 +53,7 @@
                    (let ((cluster-width (visible-width cluster)))
                      (if (and (plusp (length cluster))
                               (every (lambda (c)
-                                       (member c '(#\Space #\Tab #\Newline
-                                                   #\Return #\Page)))
+                                       (member c +search-whitespace-characters+))
                                      cluster))
                          (progn
                            (when (plusp corpus-length)
@@ -79,7 +81,7 @@
      (let ((pending nil))
        (loop for character across query
              do (if (member character
-                            '(#\Space #\Tab #\Newline #\Return #\Page))
+                            +search-whitespace-characters+)
                     (setf pending t)
                     (progn
                       (when pending

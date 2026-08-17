@@ -18,16 +18,26 @@
    :cursor (length value)
    :prompt prompt))
 
+(defun single-line-input-reset-yank (input)
+  (setf
+   (single-line-input-last-yank-start input) nil
+   (single-line-input-last-yank-end input) nil)
+  input)
+
+(defun single-line-input-clear-action (input)
+  ;; One owner for the 3-form reset (action + yank span).
+  ;; pi@914cf1472 packages/tui/src/input.ts Input reset sites.
+  (setf (single-line-input-last-action input) nil)
+  (single-line-input-reset-yank input))
+
 (defun single-line-input-set-value (input value)
   (setf
    (single-line-input-value input) value
    (single-line-input-cursor input)
    (min
     (single-line-input-cursor input)
-    (length value))
-   (single-line-input-last-action input) nil
-   (single-line-input-last-yank-start input) nil
-   (single-line-input-last-yank-end input) nil)
+    (length value)))
+  (single-line-input-clear-action input)
   input)
 
 (defun single-line-input-snapshot (input)
@@ -39,12 +49,6 @@
   (undo-stack-push
    (single-line-input-undo-stack input)
    (single-line-input-snapshot input)))
-
-(defun single-line-input-reset-yank (input)
-  (setf
-   (single-line-input-last-yank-start input) nil
-   (single-line-input-last-yank-end input) nil)
-  input)
 
 (defun single-line-input-replace-range
     (input start end replacement)
@@ -87,9 +91,7 @@
         (single-line-input-value input)
         cursor)
        cursor ""))
-    (setf (single-line-input-last-action input)
-          nil)
-    (single-line-input-reset-yank input))
+    (single-line-input-clear-action input))
   input)
 
 (defun single-line-input-delete-forward (input)
@@ -101,9 +103,7 @@
        input cursor
        (next-cluster-boundary value cursor)
        ""))
-    (setf (single-line-input-last-action input)
-          nil)
-    (single-line-input-reset-yank input))
+    (single-line-input-clear-action input))
   input)
 
 (defun single-line-input-kill-range
@@ -219,10 +219,8 @@
        (single-line-input-value input)
        (getf snapshot :value)
        (single-line-input-cursor input)
-       (getf snapshot :cursor)
-       (single-line-input-last-action input)
-       nil)
-      (single-line-input-reset-yank input)))
+       (getf snapshot :cursor))
+      (single-line-input-clear-action input)))
   input)
 
 (defun normalize-single-line-paste (text)
@@ -261,53 +259,44 @@
             (single-line-input-cursor input)
             (single-line-input-cursor input)
             clean))
-         (setf
-          (single-line-input-last-action input) nil)
-         (single-line-input-reset-yank input)))
+         (single-line-input-clear-action input)))
       (:left
        (setf
         (single-line-input-cursor input)
         (previous-cluster-boundary
          (single-line-input-value input)
-         (single-line-input-cursor input))
-        (single-line-input-last-action input) nil)
-       (single-line-input-reset-yank input))
+         (single-line-input-cursor input)))
+       (single-line-input-clear-action input))
       (:right
        (setf
         (single-line-input-cursor input)
         (next-cluster-boundary
          (single-line-input-value input)
-         (single-line-input-cursor input))
-        (single-line-input-last-action input) nil)
-       (single-line-input-reset-yank input))
+         (single-line-input-cursor input)))
+       (single-line-input-clear-action input))
       ((:line-start :home)
-       (setf
-        (single-line-input-cursor input) 0
-        (single-line-input-last-action input) nil)
-       (single-line-input-reset-yank input))
+       (setf (single-line-input-cursor input) 0)
+       (single-line-input-clear-action input))
       ((:line-end :end)
        (setf
         (single-line-input-cursor input)
         (length
-         (single-line-input-value input))
-        (single-line-input-last-action input) nil)
-       (single-line-input-reset-yank input))
+         (single-line-input-value input)))
+       (single-line-input-clear-action input))
       (:word-left
        (setf
         (single-line-input-cursor input)
         (find-word-backward
          (single-line-input-value input)
-         (single-line-input-cursor input))
-        (single-line-input-last-action input) nil)
-       (single-line-input-reset-yank input))
+         (single-line-input-cursor input)))
+       (single-line-input-clear-action input))
       (:word-right
        (setf
         (single-line-input-cursor input)
         (find-word-forward
          (single-line-input-value input)
-         (single-line-input-cursor input))
-        (single-line-input-last-action input) nil)
-       (single-line-input-reset-yank input))
+         (single-line-input-cursor input)))
+       (single-line-input-clear-action input))
       (:backspace
        (single-line-input-delete-backward input))
       (:delete

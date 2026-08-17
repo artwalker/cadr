@@ -294,10 +294,14 @@
            (viewport-start
              (max 0 (- working-height
                        terminal-height)))
-           (result (copy-list base-lines)))
-      (loop while (< (length result) working-height)
-            do (setf result
-                     (nconc result (list ""))))
+           (result
+             (make-array
+              working-height
+              :initial-element "")))
+      (loop for line in base-lines
+            for index from 0
+            below working-height
+            do (setf (aref result index) line))
       (dolist (entry (nreverse rendered))
         (destructuring-bind
             (lines row column width) entry
@@ -306,15 +310,15 @@
                 for index = (+ viewport-start row
                                offset)
                 when (between-p
-                      index 0 (1- (length result)))
+                      index 0 (1- working-height))
                   do
                   (setf
-                   (nth index result)
+                   (aref result index)
                    (composite-overlay-line
-                    (nth index result)
+                    (aref result index)
                     line column width
                     terminal-width)))))
-      (loop for line in result
+      (loop for line across result
             collect
             (if (= (visible-width line)
                    terminal-width)

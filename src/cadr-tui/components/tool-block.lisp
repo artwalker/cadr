@@ -140,22 +140,25 @@
 
 (defun word-diff-tokens (text)
   (let ((tokens nil)
-        (current "")
+        (pieces nil)
         current-kind)
     (labels
         ((flush ()
-           (when (plusp (length current))
-             (push (cons current-kind current) tokens)
-             (setf current ""
+           (when pieces
+             (push
+              (cons current-kind
+                    (apply #'concatenate 'string
+                           (nreverse pieces)))
+              tokens)
+             (setf pieces nil
                    current-kind nil))))
       (dolist (cluster (grapheme-clusters text))
         (let ((kind (word-diff-token-kind cluster)))
           (when (and current-kind
                      (not (eq current-kind kind)))
             (flush))
-          (setf current-kind kind
-                current
-                (concatenate 'string current cluster))))
+          (setf current-kind kind)
+          (push cluster pieces)))
       (flush))
     (nreverse tokens)))
 
@@ -265,31 +268,25 @@
           (if (and data (eq (first data) :removed))
               (let ((removed (list data))
                     (added nil))
-                (loop while
-                      (and remaining
-                           (let ((next
-                                   (diff-line-data
-                                    (first remaining))))
-                             (and next
-                                  (eq (first next)
-                                      :removed))))
+                (loop for next =
+                        (and remaining
+                             (diff-line-data
+                              (first remaining)))
+                      while (and next
+                                 (eq (first next) :removed))
                       do
-                      (push
-                       (diff-line-data (pop remaining))
-                       removed))
+                      (pop remaining)
+                      (push next removed))
                 (setf removed (nreverse removed))
-                (loop while
-                      (and remaining
-                           (let ((next
-                                   (diff-line-data
-                                    (first remaining))))
-                             (and next
-                                  (eq (first next)
-                                      :added))))
+                (loop for next =
+                        (and remaining
+                             (diff-line-data
+                              (first remaining)))
+                      while (and next
+                                 (eq (first next) :added))
                       do
-                      (push
-                       (diff-line-data (pop remaining))
-                       added))
+                      (pop remaining)
+                      (push next added))
                 (setf added (nreverse added))
                 (if (and (= 1 (length removed))
                          (= 1 (length added)))

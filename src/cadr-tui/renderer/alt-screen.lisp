@@ -516,8 +516,7 @@
               (< visible-cursor-row height)))
            (output
              (with-output-to-string (stream)
-               (format stream "~C[?2026h"
-                       #\Escape)
+               (write-string +synchronized-update-begin+ stream)
                (cond
                  (full-p
                   (when
@@ -577,8 +576,7 @@
                                  #\l)))
                    (format stream "~C[?25l"
                            #\Escape))
-               (format stream "~C[?2026l"
-                       #\Escape))))
+               (write-string +synchronized-update-end+ stream))))
       (terminal-write terminal output)
       (setf
        (terminal-renderer-previous-lines renderer)

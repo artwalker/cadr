@@ -65,7 +65,9 @@
              (eql width
                   (text-component-cached-width component)))
       (return-from component-render
-        (text-component-cached-lines component)))
+        (if (eq (text-component-cached-lines component) :blank)
+            nil
+            (text-component-cached-lines component))))
     (when
         (zerop
          (length
@@ -75,7 +77,7 @@
       (setf
        (text-component-cached-text component) text
        (text-component-cached-width component) width
-       (text-component-cached-lines component) nil)
+       (text-component-cached-lines component) :blank)
       (return-from component-render nil))
     (let* ((padding-x
              (max 0 (text-component-padding-x component)))
@@ -84,8 +86,11 @@
            (available-width
              (max 1 (- width (* 2 padding-x))))
            (normalized
-             (cl-ppcre:regex-replace-all
-              (string #\Tab) text "   "))
+             (with-output-to-string (out)
+               (loop for character across text
+                     do (if (char= character #\Tab)
+                            (write-string "   " out)
+                            (write-char character out)))))
            (margin
              (make-string padding-x
                           :initial-element #\Space))

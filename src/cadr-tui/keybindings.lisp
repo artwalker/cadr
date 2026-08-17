@@ -85,12 +85,60 @@
     ("tui.altScreen.top" . ("home"))
     ("tui.altScreen.bottom" . ("end"))))
 
+(defparameter +logical-key-events+
+  '(("app.interrupt" . :interrupt)
+    ("app.clear" . :clear)
+    ("app.exit" . :eof)
+    ("app.debug" . :debug)
+    ("app.message.followUp" . :follow-up)
+    ("app.message.dequeue" . :dequeue)
+    ("app.session.new" . :session-new)
+    ("app.session.tree" . :session-tree)
+    ("app.session.fork" . :session-fork)
+    ("app.session.resume" . :session-resume)
+    ("app.model.cycleForward" . :model-cycle-forward)
+    ("app.model.cycleBackward" . :model-cycle-backward)
+    ("tui.editor.cursorUp" . :up)
+    ("tui.editor.cursorDown" . :down)
+    ("tui.editor.historyPrevious" . :history-previous)
+    ("tui.editor.historyNext" . :history-next)
+    ("tui.editor.cursorLeft" . :left)
+    ("tui.editor.cursorRight" . :right)
+    ("tui.editor.cursorWordLeft" . :word-left)
+    ("tui.editor.cursorWordRight" . :word-right)
+    ("tui.editor.cursorLineStart" . :line-start)
+    ("tui.editor.cursorLineEnd" . :line-end)
+    ("tui.editor.jumpForward" . :jump-forward)
+    ("tui.editor.jumpBackward" . :jump-backward)
+    ("tui.editor.pageUp" . :page-up)
+    ("tui.editor.pageDown" . :page-down)
+    ("tui.editor.deleteCharBackward" . :backspace)
+    ("tui.editor.deleteCharForward" . :delete)
+    ("tui.editor.deleteWordBackward"
+     . :delete-word-backward)
+    ("tui.editor.deleteWordForward"
+     . :delete-word-forward)
+    ("tui.editor.deleteToLineStart"
+     . :delete-line-start)
+    ("tui.editor.deleteToLineEnd"
+     . :delete-line-end)
+    ("tui.editor.yank" . :yank)
+    ("tui.editor.yankPop" . :yank-pop)
+    ("tui.editor.undo" . :undo)
+    ("tui.input.newLine" . :newline)
+    ("tui.input.submit" . :enter)
+    ("tui.input.tab" . :tab)))
+
 (defstruct (keybindings-manager
             (:constructor %make-keybindings-manager))
   definitions
   user-bindings
   resolved
-  conflicts)
+  conflicts
+  ;; Flattened (key-id . kind) built at rebuild.  event-kind-for-raw-key
+  ;; parse-key's once and walks this instead of rescanning
+  ;; +logical-key-events+ through matches-key (input.ts key table).
+  event-kinds)
 
 (defun normalized-binding-keys (value)
   (let ((keys
@@ -136,12 +184,49 @@
     (dolist (claim (nreverse claims))
       (when (> (length (cdr claim)) 1)
         (push claim conflicts)))
-    (setf
-     (keybindings-manager-resolved manager)
-     (nreverse resolved)
-     (keybindings-manager-conflicts manager)
-     (nreverse conflicts)))
+    (let ((resolved-final (nreverse resolved))
+          (conflicts-final (nreverse conflicts)))
+      (setf
+       (keybindings-manager-resolved manager)
+       resolved-final
+       (keybindings-manager-conflicts manager)
+       conflicts-final
+       (keybindings-manager-event-kinds manager)
+       (logical-event-kind-entries resolved-final))))
   manager)
+
+(defun logical-event-kind-entries (resolved)
+  ;; First name in +logical-key-events+ that owns a key wins, matching
+  ;; the old loop order.
+  (let ((entries nil))
+    (dolist (pair +logical-key-events+)
+      (let* ((name (car pair))
+             (kind (cdr pair))
+             (keys (cdr (assoc name resolved :test #'string=))))
+        (dolist (key keys)
+          (push (cons key kind) entries))))
+    (nreverse entries)))
+
+(defun logical-key-id-matches-data-p (key-id data parsed)
+  ;; Same specials as matches-key, but parse-key is supplied by the
+  ;; caller so the dispatch table does not recompile scanners.
+  (multiple-value-bind (key mask)
+      (split-key-id key-id)
+    (when (and (= (length data) 1)
+               (string= key "h")
+               (= mask +key-modifier-control+)
+               (= (codepoint (char data 0)) 8))
+      (return-from logical-key-id-matches-data-p t))
+    (let ((control
+            (and (= mask +key-modifier-control+)
+                 (raw-control-codepoint-for-key key))))
+      (when (and control
+                 (= (length data) 1)
+                 (= (codepoint (char data 0)) control))
+        (return-from logical-key-id-matches-data-p t))))
+  (and parsed
+       (string= (canonical-key-id parsed)
+                (canonical-key-id key-id))))
 
 (defun make-keybindings-manager
     (&key

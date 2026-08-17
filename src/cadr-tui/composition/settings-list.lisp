@@ -208,7 +208,7 @@
                        (setting-item-label item)))))
              (rendered
                (loop for index from start below end
-                     for item = (nth index items)
+                     for item in (nthcdr start items)
                      for selected-p = (= index selected)
                      for prefix =
                        (if selected-p

@@ -328,3 +328,22 @@
     (cadr-tui:tui-request-render root)
     (is (= 1 (length frames)))
     (cadr-tui:component-dispose root)))
+
+(test protocol-generics-documented
+  (dolist (name '(cadr-tui:component-render
+                  cadr-tui:component-handle-event
+                  cadr-tui:component-invalidate
+                  cadr-tui:component-dispose
+                  cadr-tui:component-wants-key-release-p
+                  cadr-tui:component-focusable-p))
+    (is (documentation name 'function))))
+
+(test loader-defaults-one-owner
+  (is (equal cadr-tui::+loader-default-frames+
+             (cadr-tui::loader-frames nil)))
+  (is (= 0.08d0 (cadr-tui::loader-interval-seconds nil)))
+  (is (= 0.2d0 (cadr-tui::loader-interval-seconds 0.2d0))))
+
+(test select-list-height-default
+  (is (= 5 (cadr-tui::select-list-height
+            (cadr-tui:make-select-list)))))

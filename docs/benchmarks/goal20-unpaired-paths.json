@@ -2,7 +2,7 @@
  "schemaVersion": 1,
  "denominator": {
   "files": 295,
-  "lines": 122411
+  "lines": 122475
  },
  "pairedMetrics": [
   "cli_dispatch.argv_parse",

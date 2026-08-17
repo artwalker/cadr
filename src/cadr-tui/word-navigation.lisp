@@ -40,15 +40,33 @@
                      :end2 cursor))))
    segments))
 
+(defun scan-word-while
+    (text position direction predicate &key (limit most-positive-fixnum))
+  (let ((step (if (eq direction :backward) -1 1))
+        (end (if (eq direction :backward) 0 (length text)))
+        (seen 0))
+    (loop while (and (/= position end) (< seen limit))
+          for index = (if (eq direction :backward)
+                          (1- position)
+                          position)
+          while (funcall predicate (char text index))
+          do (incf position step)
+             (incf seen))
+    position))
+
+(defun word-body-character-p (character)
+  (and (not (navigation-whitespace-p character))
+       (not (navigation-punctuation-p character))
+       (not (navigation-cjk-p character))))
+
 (defun find-word-backward
     (text cursor &key atomic-segments)
   (let ((position (max 0 (min cursor (length text)))))
     (when (zerop position)
       (return-from find-word-backward 0))
-    (loop while (and (> position 0)
-                     (navigation-whitespace-p
-                      (char text (1- position))))
-          do (decf position))
+    (setf position
+          (scan-word-while
+           text position :backward #'navigation-whitespace-p))
     (when (zerop position)
       (return-from find-word-backward 0))
     (let ((atomic
@@ -60,45 +78,24 @@
     (let ((character (char text (1- position))))
       (cond
         ((navigation-punctuation-p character)
-         (loop while
-                 (and (> position 0)
-                      (navigation-punctuation-p
-                       (char text (1- position))))
-               do (decf position)))
+         (scan-word-while
+          text position :backward #'navigation-punctuation-p))
         ((navigation-cjk-p character)
-         (loop repeat 2
-               while (and (> position 0)
-                          (navigation-cjk-p
-                           (char text (1- position))))
-               do (decf position)))
+         (scan-word-while
+          text position :backward #'navigation-cjk-p
+          :limit 2))
         (t
-         (loop while
-                 (and (> position 0)
-                      (let ((candidate
-                              (char text (1- position))))
-                        (and
-                         (not
-                          (navigation-whitespace-p
-                           candidate))
-                         (not
-                          (navigation-punctuation-p
-                           candidate))
-                         (not
-                          (navigation-cjk-p
-                           candidate)))))
-               do (decf position)))))
-    position))
+         (scan-word-while
+          text position :backward #'word-body-character-p))))))
 
 (defun find-word-forward
     (text cursor &key atomic-segments)
   (let ((position (max 0 (min cursor (length text)))))
     (when (= position (length text))
       (return-from find-word-forward position))
-    (loop while
-            (and (< position (length text))
-                 (navigation-whitespace-p
-                  (char text position)))
-          do (incf position))
+    (setf position
+          (scan-word-while
+           text position :forward #'navigation-whitespace-p))
     (when (= position (length text))
       (return-from find-word-forward position))
     (let ((atomic
@@ -110,32 +107,12 @@
     (let ((character (char text position)))
       (cond
         ((navigation-punctuation-p character)
-         (loop while
-                 (and (< position (length text))
-                      (navigation-punctuation-p
-                       (char text position)))
-               do (incf position)))
+         (scan-word-while
+          text position :forward #'navigation-punctuation-p))
         ((navigation-cjk-p character)
-         (loop repeat 2
-               while
-                 (and (< position (length text))
-                      (navigation-cjk-p
-                       (char text position)))
-               do (incf position)))
+         (scan-word-while
+          text position :forward #'navigation-cjk-p
+          :limit 2))
         (t
-         (loop while
-                 (and (< position (length text))
-                      (let ((candidate
-                              (char text position)))
-                        (and
-                         (not
-                          (navigation-whitespace-p
-                           candidate))
-                         (not
-                          (navigation-punctuation-p
-                           candidate))
-                         (not
-                          (navigation-cjk-p
-                           candidate)))))
-               do (incf position)))))
-    position))
+         (scan-word-while
+          text position :forward #'word-body-character-p))))))

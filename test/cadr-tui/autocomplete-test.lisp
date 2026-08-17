@@ -287,3 +287,15 @@
     (is
      (cadr-tui:autocomplete-provider-should-trigger-file-completion-p
       provider '("plain") 0 5))))
+
+(test autocomplete-dead-when-gone
+  (let ((source
+          (uiop:read-file-string
+           (asdf:system-relative-pathname
+            "cadr-tui" "src/cadr-tui/autocomplete.lisp"))))
+    (is (null
+         (search
+          "(zerop
+                (length
+                 (autocomplete-provider-commands"
+          source)))))

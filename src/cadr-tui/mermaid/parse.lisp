@@ -11,8 +11,8 @@
 ;;; not that kind of diagram, or when it exceeds a cap — the renderer tries
 ;;; each in turn and falls back to a framed copy of the source when they all
 ;;; decline.  Statements are split on `;` with `%%` comments and quoted spans
-;;; opaque; all further parsing works on code-point lists (SBCL characters
-;;; are code points, so string indexing maps directly onto JS [...s]).
+;;; opaque; further parsing walks the source string with CHAR (JS [...s]
+;;; indexes code points; SBCL characters are already code points).
 
 (in-package #:cadr-tui)
 
@@ -32,7 +32,11 @@
                 gm-state-endpoint gm-strip-cardinality-prefix
                 gm-strip-cardinality-suffix gm-trailing-head))
 
-(defun gm-char-list (s) (coerce s 'list))
+(defun gm-char-list (s) s)
+(defun gm-char (chars i)
+  ;; grok-mermaid parse.js indexes a code-point array.  SBCL characters
+  ;; are code points, so CHAR is the O(1) equivalent of nth on a list.
+  (and (< i (length chars)) (char chars i)))
 (defun gm-list-string (chars) (coerce chars 'string))
 
 ;;; chars[i..i+len) equals string s.
@@ -40,7 +44,7 @@
   (let ((len (length s)))
     (and (<= (+ i len) (length chars))
          (loop for k from 0 below len
-               always (char= (nth (+ i k) chars) (char s k))))))
+               always (char= (char chars (+ i k)) (char s k))))))
 
 (defun gm-trim-start (s)
   (let ((start 0))
@@ -288,7 +292,7 @@
     (let ((group (list (first first)))
           (i (second first)))
       (loop do (let ((j (gm-skip-spaces chars i)))
-                (unless (and (< j (length chars)) (char= (nth j chars) #\&))
+                (unless (and (< j (length chars)) (char= (gm-char chars j) #\&))
                   (return))
                 (let ((next (gm-parse-node chars (1+ j) graph)))
                   (unless next
@@ -299,8 +303,8 @@
 
 (defun gm-skip-spaces (chars i)
   (loop while (and (< i (length chars))
-                   (or (char= (nth i chars) #\Space)
-                       (char= (nth i chars) #\Tab)))
+                   (or (char= (gm-char chars i) #\Space)
+                       (char= (gm-char chars i) #\Tab)))
         do (incf i))
   i)
 
@@ -308,7 +312,7 @@
 (defun gm-parse-node (chars start graph)
   (let* ((i (gm-skip-spaces chars start))
          (id-start i))
-    (loop while (and (< i (length chars)) (gm-is-id-char (nth i chars)))
+    (loop while (and (< i (length chars)) (gm-is-id-char (gm-char chars i)))
           do (incf i))
     (if (= i id-start)
         (return-from gm-parse-node nil))
@@ -327,8 +331,8 @@
 ;;; Dispatch on the bracket following an id to pick shape and closing token.
 ;;; Returns (shape label after unclosed); unclosed is a closer string or NIL.
 (defun gm-read-shape-at (chars i)
-  (let ((c (nth i chars))
-        (n (nth (1+ i) chars)))
+  (let ((c (gm-char chars i))
+        (n (gm-char chars (1+ i))))
     (cond ((and c (char= c #\[))
            (cond ((and n (char= n #\[)) (gm-read-shape chars (+ i 2) "]]" "rect"))
                  ((and n (char= n #\()) (gm-read-shape chars (+ i 2) ")]" "round"))
@@ -351,15 +355,15 @@
 (defun gm-read-shape (chars start closer shape)
   (let ((j start))
     (loop while (and (< j (length chars))
-                     (or (char= (nth j chars) #\Space)
-                         (char= (nth j chars) #\Tab)))
+                     (or (char= (gm-char chars j) #\Space)
+                         (char= (gm-char chars j) #\Tab)))
           do (incf j))
-    (let ((quoted (and (< j (length chars)) (char= (nth j chars) #\")))
+    (let ((quoted (and (< j (length chars)) (char= (gm-char chars j) #\")))
           (i start)
           (text "")
           (in-quotes nil))
       (loop while (< i (length chars))
-            do (let ((c (nth i chars)))
+            do (let ((c (gm-char chars i)))
                  (cond ((and quoted (char= c #\"))
                         (setf in-quotes (not in-quotes))
                         (setf text (concatenate 'string text (string c)))
@@ -389,14 +393,14 @@
         (left "none"))
     ;; A leading o/x decorates the tail, but only directly before an operator.
     (when (and (< i (length chars))
-               (or (char= (nth i chars) #\o) (char= (nth i chars) #\x))
+               (or (char= (gm-char chars i) #\o) (char= (gm-char chars i) #\x))
                (< (1+ i) (length chars))
-               (let ((n (nth (1+ i) chars)))
+               (let ((n (gm-char chars (1+ i))))
                  (or (char= n #\-) (char= n #\.) (char= n #\=))))
-      (setf left (if (char= (nth i chars) #\o) "circle" "cross"))
+      (setf left (if (char= (gm-char chars i) #\o) "circle" "cross"))
       (incf i))
     (let ((op-start i))
-      (loop while (and (< i (length chars)) (gm-is-link-char (nth i chars)))
+      (loop while (and (< i (length chars)) (gm-is-link-char (gm-char chars i)))
             do (incf i))
       (if (= i op-start)
           (return-from gm-parse-link nil))
@@ -414,15 +418,15 @@
             (when trailing
               (setf right (first trailing))
               (setf i (second trailing)))))
-        (if (and (< i (length chars)) (char= (nth i chars) #\|))
+        (if (and (< i (length chars)) (char= (gm-char chars i) #\|))
             (progn
               (incf i)
               (let ((l-start i))
                 (loop while (and (< i (length chars))
-                                 (not (char= (nth i chars) #\|)))
+                                 (not (char= (gm-char chars i) #\|)))
                       do (incf i))
                 (let ((label (gm-clean-label (gm-list-string (subseq chars l-start i)))))
-                  (when (and (< i (length chars)) (char= (nth i chars) #\|))
+                  (when (and (< i (length chars)) (char= (gm-char chars i) #\|))
                     (incf i))
                   (list left right line (gm-non-empty label) i))))
             (progn
@@ -430,15 +434,15 @@
                   (let* ((text-start (gm-skip-spaces chars i))
                          (j text-start))
                     (loop while (and (< j (length chars))
-                                     (not (gm-is-link-char (nth j chars))))
+                                     (not (gm-is-link-char (gm-char chars j))))
                           do (incf j))
                     (if (and (< j (length chars))
                              (> j text-start)
-                             (not (char= (nth j chars) #\<)))
+                             (not (char= (gm-char chars j) #\<)))
                         (let* ((text (gm-list-string (subseq chars text-start j)))
                                (op2-start j))
                           (loop while (and (< j (length chars))
-                                           (gm-is-link-char (nth j chars)))
+                                           (gm-is-link-char (gm-char chars j)))
                                 do (incf j))
                           (let ((op2 (gm-list-string (subseq chars op2-start j))))
                             (when (find #\> op2)
@@ -462,12 +466,12 @@
 
 ;;; A trailing o/x head, only when followed by a statement boundary.
 (defun gm-trailing-head (chars i)
-  (let ((head (cond ((and (< i (length chars)) (char= (nth i chars) #\o)) "circle")
-                    ((and (< i (length chars)) (char= (nth i chars) #\x)) "cross")
+  (let ((head (cond ((and (< i (length chars)) (char= (gm-char chars i) #\o)) "circle")
+                    ((and (< i (length chars)) (char= (gm-char chars i) #\x)) "cross")
                     (t nil))))
     (unless head
       (return-from gm-trailing-head nil))
-    (let* ((after (if (< (1+ i) (length chars)) (nth (1+ i) chars) nil))
+    (let* ((after (gm-char chars (1+ i)))
            (boundary (or (null after)
                          (char= after #\Space)
                          (char= after #\Tab)
@@ -778,11 +782,11 @@
                        ;; glued to a name.
                        (let ((glued-l (and (char= (char op 0) #\o)
                                            (plusp pos)
-                                           (gm-is-id-char (nth (1- pos) chars))))
+                                           (gm-is-id-char (gm-char chars (1- pos)))))
                              (glued-r (and (char= (char op (1- (length op))) #\o)
                                            (< (+ pos (length op)) (length chars))
                                            (gm-is-id-char
-                                            (nth (+ pos (length op)) chars)))))
+                                            (gm-char chars (+ pos (length op)))))))
                          (unless (or glued-l glued-r)
                            (setf found (list pos op (second entry)
                                              (third entry) (fourth entry)))

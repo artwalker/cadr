@@ -480,17 +480,6 @@
     (let ((path-prefix
             (autocomplete-path-prefix before force-p)))
       (when path-prefix
-        (when (and
-               (plusp (length path-prefix))
-               (char= (char path-prefix 0) #\/)
-               (zerop
-                (length
-                 (autocomplete-provider-commands
-                  provider)))
-               (null
-                (find #\/ path-prefix :start 1))
-               (> (length path-prefix) 1))
-          nil)
         (let ((items
                 (autocomplete-direct-suggestions
                  provider path-prefix)))

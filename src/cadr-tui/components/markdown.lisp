@@ -641,11 +641,9 @@
          (available-for-cells
            (- available-width overhead))
          (natural-widths
-           (make-list column-count
-                      :initial-element 0))
+           (make-array column-count :initial-element 0))
          (minimum-widths
-           (make-list column-count
-                      :initial-element 1)))
+           (make-array column-count :initial-element 1)))
     (dolist (row rows)
       (loop for index below column-count
             for rendered =
@@ -655,13 +653,13 @@
                default-style-function)
             do
             (setf
-             (nth index natural-widths)
+             (aref natural-widths index)
              (max
-              (nth index natural-widths)
+              (aref natural-widths index)
               (visible-width rendered))
-             (nth index minimum-widths)
+             (aref minimum-widths index)
              (max
-              (nth index minimum-widths)
+              (aref minimum-widths index)
               (markdown-longest-word-width
                rendered 30)))))
     (let ((minimum-total
@@ -679,7 +677,7 @@
                     (max 0 (1- width)))
                   :initial-value 0))
                (growth
-                 (loop for width in minimum-widths
+                 (loop for width across minimum-widths
                        collect
                        (if (plusp weight-total)
                            (floor
@@ -692,14 +690,14 @@
                  (- remaining
                     (reduce #'+ growth
                             :initial-value 0))))
-          (setf
-           minimum-widths
-           (loop for amount in growth
-                 collect (1+ amount)))
-          (loop for tail on minimum-widths
+          (loop for index below column-count
+                for amount in growth
+                do (setf (aref minimum-widths index)
+                         (1+ amount)))
+          (loop for index below column-count
                 while (plusp leftover)
                 do
-                (incf (first tail))
+                (incf (aref minimum-widths index))
                 (decf leftover))
           (setf minimum-total
                 (reduce #'+ minimum-widths
@@ -709,19 +707,20 @@
                  (reduce #'+ natural-widths
                          :initial-value 0))
               available-width)
-          (mapcar #'max
-                  natural-widths minimum-widths)
+          (loop for natural across natural-widths
+                for minimum across minimum-widths
+                collect (max natural minimum))
           (let* ((growth-potential
-                   (loop for natural in natural-widths
-                         for minimum in minimum-widths
+                   (loop for natural across natural-widths
+                         for minimum across minimum-widths
                          sum (max 0 (- natural minimum))))
                  (extra
                    (max 0
                         (- available-for-cells
                            minimum-total)))
                  (widths
-                   (loop for natural in natural-widths
-                         for minimum in minimum-widths
+                   (loop for natural across natural-widths
+                         for minimum across minimum-widths
                          for delta =
                            (max 0 (- natural minimum))
                          collect
@@ -740,7 +739,7 @@
                   for grew-p = nil
                   do
                   (loop for tail on widths
-                        for natural in natural-widths
+                        for natural across natural-widths
                         while (plusp remaining)
                         when (< (first tail) natural)
                           do

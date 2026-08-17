@@ -298,3 +298,8 @@
   (is (string=
        (concatenate 'string (csi "7m") "x" (csi "27m"))
        (cadr-tui:theme-inverse "x"))))
+
+(test theme-keyword-one-owner
+  (is (eq :dark (cadr-tui::ensure-theme-keyword "dark")))
+  (is (eq :thinking-high
+          (cadr-tui::theme-thinking-color-key "high"))))

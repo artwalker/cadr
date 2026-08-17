@@ -15,28 +15,13 @@
     (write-string prefix stream)
     (format stream "~C[0m" #\Escape)))
 
-(defparameter +kitty-escape-prefix+
-    (format nil "~C_G" #\Escape)
-  "Kitty image-protocol marker; one instance instead of a fresh format per line (goal 20, 12E-6).")
-
-(defun kitty-parameter-integer
-    (line parameter)
-  (let ((position
-          (search parameter line)))
-    (when position
-      (parse-integer
-       line
-       :start (+ position
-                 (length parameter))
-       :junk-allowed t))))
-
 (defun kitty-image-id (line)
-  (when (search +kitty-escape-prefix+ line)
-    (kitty-parameter-integer line "i=")))
+  (when (search +kitty-control-prefix+ line)
+    (kitty-line-parameter-integer line "i=")))
 
 (defun kitty-image-rows (line)
-  (if (search +kitty-escape-prefix+ line)
-      (or (kitty-parameter-integer line "r=")
+  (if (search +kitty-control-prefix+ line)
+      (or (kitty-line-parameter-integer line "r=")
           1)
       1))
 
@@ -179,8 +164,7 @@
            (max 1 (terminal-rows terminal)))
          (output
            (with-output-to-string (stream)
-             (format stream "~C[?2026h"
-                     #\Escape)
+             (write-string +synchronized-update-begin+ stream)
              (when clear-p
                (write-kitty-deletions
                 stream
@@ -198,8 +182,7 @@
                      (write-char #\Newline stream))
                    (write-main-frame-line
                     stream terminal line))
-             (format stream "~C[?2026l"
-                     #\Escape))))
+             (write-string +synchronized-update-end+ stream))))
     (terminal-write terminal output)
     (let ((last-row
             (max 0 (1- (length current)))))
@@ -383,8 +366,7 @@
                  cursor-row cursor-column)))
             (let ((output
                     (with-output-to-string (stream)
-                      (format stream "~C[?2026h"
-                              #\Escape)
+                      (write-string +synchronized-update-begin+ stream)
                       (when
                           (frame-image-change-p
                            current previous)
@@ -418,8 +400,7 @@
                           (when (plusp move-back)
                             (format stream "~C[~DA"
                                     #\Escape move-back))))
-                      (format stream "~C[?2026l"
-                              #\Escape))))
+                      (write-string +synchronized-update-end+ stream))))
           (terminal-write terminal output)
           (setf
                (terminal-renderer-cursor-row renderer)
@@ -478,8 +459,7 @@
                (final-row render-end)
                (output
                  (with-output-to-string (stream)
-                   (format stream "~C[?2026h"
-                           #\Escape)
+                   (write-string +synchronized-update-begin+ stream)
                    (when
                        (frame-image-change-p
                         current previous)
@@ -586,8 +566,7 @@
                        (when (plusp extra-lines)
                          (format stream "~C[~DA"
                                  #\Escape extra-lines))))
-                   (format stream "~C[?2026l"
-                           #\Escape))))
+                   (write-string +synchronized-update-end+ stream))))
           (terminal-write terminal output)
           (setf
            (terminal-renderer-cursor-row renderer)

@@ -336,6 +336,13 @@
 (defparameter +base64-alphabet+
   "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/")
 
+(defparameter +base64-decode-table+
+  (let ((table (make-array 256 :initial-element nil)))
+    (loop for index from 0
+          for character across +base64-alphabet+
+          do (setf (aref table (char-code character)) index))
+    table))
+
 (defun encode-base64-ascii (text)
   (let ((bytes
           (map 'vector #'codepoint text)))
@@ -428,7 +435,9 @@
                 rows)))))
 
 (defun base64-value (character)
-  (position character +base64-alphabet+))
+  (let ((code (char-code character)))
+    (and (< code 256)
+         (aref +base64-decode-table+ code))))
 
 (defun decode-base64 (text)
   (let ((clean

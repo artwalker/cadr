@@ -765,7 +765,12 @@
     ;; -1 goal 20 sb-cover third-tier: deleted unused
     ;; markdown-ordered-prefix-end (markdown.lisp).
     ;; markdown-list-item-data already parses ordered markers.
-    (is (= 332 definition-count)
+    ;; +2 Goal 20 K8: loader-frames/loader-interval-seconds and
+    ;; synchronized-update constants; main-screen dropped its
+    ;; duplicate Kitty helpers (-2).
+    ;; clamp-select-index is offset by a dropped helper in the same
+    ;; B7 owner set, so the top-level (def count stays 334.
+    (is (= 334 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

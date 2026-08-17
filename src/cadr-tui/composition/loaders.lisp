@@ -41,6 +41,14 @@
   '("⠋" "⠙" "⠹" "⠸" "⠼"
     "⠴" "⠦" "⠧" "⠇" "⠏"))
 
+(defun loader-frames (indicator-frames)
+  (copy-list (or indicator-frames +loader-default-frames+)))
+
+(defun loader-interval-seconds (interval-seconds)
+  (if (and interval-seconds (plusp interval-seconds))
+      interval-seconds
+      0.08d0))
+
 (defun loader-component-request-render (loader)
   (let ((ui (loader-component-ui loader)))
     (cond
@@ -86,14 +94,9 @@
            :spinner-color-function spinner-color-function
            :message-color-function message-color-function
            :message message
-           :frames
-           (copy-list
-            (or indicator-frames +loader-default-frames+))
+           :frames (loader-frames indicator-frames)
            :interval-seconds
-           (if (and interval-seconds
-                    (plusp interval-seconds))
-               interval-seconds
-               0.08d0)
+           (loader-interval-seconds interval-seconds)
            :render-indicator-verbatim-p
            (not (null indicator-frames)))))
     (loader-component-update-display loader)
@@ -157,11 +160,9 @@
   (loader-component-stop loader)
   (setf
    (loader-component-frames loader)
-   (copy-list (or frames +loader-default-frames+))
+   (loader-frames frames)
    (loader-component-interval-seconds loader)
-   (if (and interval-seconds (plusp interval-seconds))
-       interval-seconds
-       0.08d0)
+   (loader-interval-seconds interval-seconds)
    (loader-component-current-frame loader) 0
    (loader-component-render-indicator-verbatim-p loader)
    (not (null frames)))
@@ -204,13 +205,9 @@
            :spinner-color-function spinner-color-function
            :message-color-function message-color-function
            :message message
-           :frames
-           (copy-list
-            (or indicator-frames +loader-default-frames+))
+           :frames (loader-frames indicator-frames)
            :interval-seconds
-           (if (and interval-seconds
-                    (plusp interval-seconds))
-               interval-seconds 0.08d0)
+           (loader-interval-seconds interval-seconds)
            :render-indicator-verbatim-p
            (not (null indicator-frames)))))
     (loader-component-update-display loader)

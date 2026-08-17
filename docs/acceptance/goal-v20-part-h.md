@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,411 lines**
+Denominator: **295 files / 122,475 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 20,767 | 17.0% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,766 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,474 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,170 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,235 | 76.9% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
@@ -354,24 +354,24 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 996 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 799 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 212 | `cli_dispatch.list_models_registry` |
-| `src/cadr-tui/components/image.lisp` | 45 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/components/markdown.lisp` | 1,554 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/components/tool-block.lisp` | 626 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/composition/protocol.lisp` | 127 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/components/tool-block.lisp` | 623 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/protocol.lisp` | 143 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/composition/text-box.lisp` | 275 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/editor.lisp` | 1,976 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/input.lisp` | 376 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/keys.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/alt-screen-search.lisp` | 179 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/alt-screen.lisp` | 612 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,330 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/main-screen.lisp` | 616 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/editor.lisp` | 1,994 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/alt-screen.lisp` | 610 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,337 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/terminal.lisp` | 910 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/unicode.lisp` | 1,298 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
+| `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 
 ### 6.3 Pairable, not yet paired
 
@@ -385,13 +385,13 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
 | `src/cadr-cli/bootstrap` | 5 | 5,651 |
 | `src/cadr-ai/providers` | 12 | 5,083 |
-| `src/cadr-tui/mermaid` | 12 | 5,034 |
+| `src/cadr-tui/mermaid` | 12 | 5,035 |
 | `src/cadr-cli/extensions` | 9 | 3,488 |
 | `src/cadr-cli/packages` | 6 | 3,322 |
 | `src/cadr-cli/tools` | 9 | 2,623 |
 | `src/cadr-cli/sdk` | 8 | 2,474 |
 | `src/cadr-cli/modes` | 8 | 2,333 |
-| `src/cadr-tui/latex.lisp` | 1 | 1,928 |
+| `src/cadr-tui/latex.lisp` | 1 | 1,950 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
 | `src/cadr-agent/storage` | 4 | 1,532 |
 | `src/cadr-cli/models` | 4 | 1,489 |
@@ -411,22 +411,22 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/resources.lisp` | 1 | 739 |
 | `src/cadr-evals/harness.lisp` | 1 | 737 |
 | `src/cadr-evals/summary.lisp` | 1 | 732 |
-| `src/cadr-tui/composition` | 2 | 708 |
-| `src/cadr-tui/terminal-image.lisp` | 1 | 677 |
+| `src/cadr-tui/composition` | 2 | 705 |
+| `src/cadr-tui/terminal-image.lisp` | 1 | 686 |
 | `src/cadr-ai/websocket.lisp` | 1 | 622 |
 | `src/cadr-protocol/schema.lisp` | 1 | 610 |
 | `src/cadr-agent/session` | 2 | 609 |
-| `src/cadr-tui/autocomplete.lisp` | 1 | 592 |
-| `src/cadr-tui/theme.lisp` | 1 | 568 |
-| `src/cadr-tui/components` | 2 | 561 |
+| `src/cadr-tui/autocomplete.lisp` | 1 | 581 |
+| `src/cadr-tui/theme.lisp` | 1 | 562 |
+| `src/cadr-tui/components` | 2 | 558 |
 | `src/cadr-cli/migration.lisp` | 1 | 509 |
 | `src/cadr-protocol/cbor.lisp` | 1 | 492 |
-| `src/cadr-tui/overlay.lisp` | 1 | 481 |
+| `src/cadr-tui/overlay.lisp` | 1 | 485 |
 | `src/cadr-ai/package.lisp` | 1 | 480 |
 | `src/cadr-evals/suites.lisp` | 1 | 468 |
 | `src/cadr-agent/package.lisp` | 1 | 456 |
 | `src/cadr-agent/runtime.lisp` | 1 | 421 |
-| `src/cadr-tui/input-component.lisp` | 1 | 419 |
+| `src/cadr-tui/input-component.lisp` | 1 | 408 |
 | `src/cadr-ai/model-data.lisp` | 1 | 407 |
 | `src/cadr-ai/crypto.lisp` | 1 | 367 |
 | `src/cadr-cli/resource-loader.lisp` | 1 | 365 |
@@ -438,9 +438,10 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/models.lisp` | 1 | 288 |
 | `src/cadr-cli/config.lisp` | 1 | 288 |
 | `src/cadr-cli/tool-manager.lisp` | 1 | 286 |
+| `src/cadr-tui/keybindings.lisp` | 1 | 268 |
 | `src/cadr-agent/messages.lisp` | 1 | 253 |
 | `src/cadr-agent/proxy.lisp` | 1 | 251 |
-| `src/cadr-tui/stdin-buffer.lisp` | 1 | 231 |
+| `src/cadr-tui/stdin-buffer.lisp` | 1 | 232 |
 | `src/cadr-ai/images.lisp` | 1 | 222 |
 | `src/cadr-ai/auth.lisp` | 1 | 207 |
 | `src/cadr-ai/types.lisp` | 1 | 207 |
@@ -448,13 +449,12 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/terminal-colors.lisp` | 1 | 191 |
 | `src/cadr-agent/branch-summarization.lisp` | 1 | 185 |
 | `src/cadr-ai/image-models.generated.lisp` | 1 | 185 |
-| `src/cadr-tui/keybindings.lisp` | 1 | 183 |
 | `src/cadr-protocol/framing.lisp` | 1 | 170 |
 | `src/cadr-evals/artifacts.lisp` | 1 | 168 |
 | `src/cadr-evals/main.lisp` | 1 | 158 |
-| `src/cadr-tui/word-navigation.lisp` | 1 | 141 |
 | `src/cadr-tui/fuzzy.lisp` | 1 | 134 |
 | `src/cadr-protocol/codec.lisp` | 1 | 121 |
+| `src/cadr-tui/word-navigation.lisp` | 1 | 118 |
 | `src/cadr-cli/repl.lisp` | 1 | 112 |
 | `src/cadr-core/atomic-file.lisp` | 1 | 106 |
 | `src/cadr-evals/package.lisp` | 1 | 100 |

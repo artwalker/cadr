@@ -1,5 +1,10 @@
 (in-package #:cadr-tui)
 
+(defparameter +synchronized-update-begin+
+  (format nil "~C[?2026h" #\Escape))
+(defparameter +synchronized-update-end+
+  (format nil "~C[?2026l" #\Escape))
+
 (defclass terminal ()
   ((columns
     :initarg :columns

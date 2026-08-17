@@ -132,6 +132,17 @@
           "^~C\\[1;(\\d+)(?::(\\d+))?([HF])$"
           #\Escape))
 
+(defparameter +kitty-scanner+
+  (cl-ppcre:create-scanner +kitty-pattern+))
+(defparameter +modify-other-keys-scanner+
+  (cl-ppcre:create-scanner +modify-other-keys-pattern+))
+(defparameter +modified-arrow-scanner+
+  (cl-ppcre:create-scanner +modified-arrow-pattern+))
+(defparameter +modified-function-scanner+
+  (cl-ppcre:create-scanner +modified-function-pattern+))
+(defparameter +modified-home-end-scanner+
+  (cl-ppcre:create-scanner +modified-home-end-pattern+))
+
 (defun regex-capture
     (text starts ends index)
   (let ((start (aref starts index))
@@ -142,7 +153,7 @@
 (defun parse-kitty-key-data (data)
   (multiple-value-bind
         (start end starts ends)
-      (cl-ppcre:scan +kitty-pattern+ data)
+      (cl-ppcre:scan +kitty-scanner+ data)
     (declare (ignore end))
     (when start
       (let* ((codepoint
@@ -178,7 +189,7 @@
 (defun parse-modify-other-keys-data (data)
   (multiple-value-bind
         (start end starts ends)
-      (cl-ppcre:scan +modify-other-keys-pattern+ data)
+      (cl-ppcre:scan +modify-other-keys-scanner+ data)
     (declare (ignore end))
     (when start
       (list
@@ -195,7 +206,7 @@
            (if text (parse-integer text) 1)))
     (multiple-value-bind
           (start end starts ends)
-        (cl-ppcre:scan +modified-arrow-pattern+ data)
+        (cl-ppcre:scan +modified-arrow-scanner+ data)
       (declare (ignore end))
       (when start
         (let ((key
@@ -219,7 +230,7 @@
               (regex-capture data starts ends 1)))))))
     (multiple-value-bind
           (start end starts ends)
-        (cl-ppcre:scan +modified-home-end-pattern+ data)
+        (cl-ppcre:scan +modified-home-end-scanner+ data)
       (declare (ignore end))
       (when start
         (return-from parse-modified-functional-key-data
@@ -242,7 +253,7 @@
             (regex-capture data starts ends 1))))))
     (multiple-value-bind
           (start end starts ends)
-        (cl-ppcre:scan +modified-function-pattern+ data)
+        (cl-ppcre:scan +modified-function-scanner+ data)
       (declare (ignore end))
       (when start
         (let* ((number

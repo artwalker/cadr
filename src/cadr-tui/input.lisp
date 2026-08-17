@@ -142,56 +142,13 @@
     (127 :backspace)
     (otherwise nil)))
 
-(defparameter +logical-key-events+
-  '(("app.interrupt" . :interrupt)
-    ("app.clear" . :clear)
-    ("app.exit" . :eof)
-    ("app.debug" . :debug)
-    ("app.message.followUp" . :follow-up)
-    ("app.message.dequeue" . :dequeue)
-    ("app.session.new" . :session-new)
-    ("app.session.tree" . :session-tree)
-    ("app.session.fork" . :session-fork)
-    ("app.session.resume" . :session-resume)
-    ("app.model.cycleForward" . :model-cycle-forward)
-    ("app.model.cycleBackward" . :model-cycle-backward)
-    ("tui.editor.cursorUp" . :up)
-    ("tui.editor.cursorDown" . :down)
-    ("tui.editor.historyPrevious" . :history-previous)
-    ("tui.editor.historyNext" . :history-next)
-    ("tui.editor.cursorLeft" . :left)
-    ("tui.editor.cursorRight" . :right)
-    ("tui.editor.cursorWordLeft" . :word-left)
-    ("tui.editor.cursorWordRight" . :word-right)
-    ("tui.editor.cursorLineStart" . :line-start)
-    ("tui.editor.cursorLineEnd" . :line-end)
-    ("tui.editor.jumpForward" . :jump-forward)
-    ("tui.editor.jumpBackward" . :jump-backward)
-    ("tui.editor.pageUp" . :page-up)
-    ("tui.editor.pageDown" . :page-down)
-    ("tui.editor.deleteCharBackward" . :backspace)
-    ("tui.editor.deleteCharForward" . :delete)
-    ("tui.editor.deleteWordBackward"
-     . :delete-word-backward)
-    ("tui.editor.deleteWordForward"
-     . :delete-word-forward)
-    ("tui.editor.deleteToLineStart"
-     . :delete-line-start)
-    ("tui.editor.deleteToLineEnd"
-     . :delete-line-end)
-    ("tui.editor.yank" . :yank)
-    ("tui.editor.yankPop" . :yank-pop)
-    ("tui.editor.undo" . :undo)
-    ("tui.input.newLine" . :newline)
-    ("tui.input.submit" . :enter)
-    ("tui.input.tab" . :tab)))
-
 (defun event-kind-for-raw-key (data)
-  (let ((manager (get-keybindings)))
-    (loop for (name . kind)
-          in +logical-key-events+
-          when (keybinding-matches-p
-                manager data name)
+  (let* ((manager (get-keybindings))
+         (parsed (parse-key data)))
+    (loop for (key-id . kind)
+          in (keybindings-manager-event-kinds manager)
+          when (logical-key-id-matches-data-p
+                key-id data parsed)
             do (return kind))))
 
 (defun decode-complete-escape-event (data)

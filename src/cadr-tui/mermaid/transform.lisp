@@ -223,7 +223,7 @@
                      (format nil "^( {0,3}~A)((?:[\\t ][^\\n]*)?(?:\\n|$))"
                              bull)))
            (pos 0)
-           (raw ""))
+           (raw-stream (make-string-output-stream)))
       (loop while (< pos (length src))
             for rest = (subseq src pos)
             do (when (cl-ppcre:scan *mermaid-hr-scanner* rest)
@@ -247,44 +247,45 @@
                               (let ((idx (mermaid-first-nonspace line)))
                                 (+ (length cap1)
                                    (if (> idx 4) 1 idx)))))
-                        (cur-raw item-raw)
-                        (cur-src (subseq rest iend)))
-                   (loop while (plusp (length cur-src))
-                         do (let* ((nl (position #\Newline cur-src))
-                                   (raw-line (if nl
-                                                 (subseq cur-src 0 nl)
-                                                 cur-src))
-                                   (next-line raw-line))
-                              (when (or (mermaid-fences-begin-p next-line indent)
-                                        (mermaid-heading-begin-p next-line indent)
-                                        (mermaid-blockquote-begin-p next-line indent)
-                                        (mermaid-next-bullet-p next-line indent bull)
-                                        (cl-ppcre:scan
-                                         *mermaid-hr-scanner*
-                                         (concatenate 'string next-line
-                                                      (string #\Newline))))
-                                (loop-finish))
-                              (let ((nonspace (mermaid-first-nonspace next-line)))
-                                (when (and (plusp (length
-                                                   (string-trim '(#\Space #\Tab)
-                                                                next-line)))
-                                           (< nonspace indent)
-                                           blank-p)
-                                  (loop-finish)))
-                              (setf cur-raw
-                                    (concatenate
-                                     'string cur-raw raw-line
-                                     (if nl (string #\Newline) "")))
-                              (setf cur-src
-                                    (if nl (subseq cur-src (1+ nl)) ""))
-                              (setf blank-p
-                                    (zerop (length
-                                            (string-trim '(#\Space #\Tab)
-                                                         next-line))))))
+                        (cur-src (subseq rest iend))
+                        (cur-raw
+                          (with-output-to-string (cur-stream)
+                            (write-string item-raw cur-stream)
+                            (loop while (plusp (length cur-src))
+                                  do (let* ((nl (position #\Newline cur-src))
+                                            (raw-line (if nl
+                                                          (subseq cur-src 0 nl)
+                                                          cur-src))
+                                            (next-line raw-line))
+                                       (when (or (mermaid-fences-begin-p next-line indent)
+                                                 (mermaid-heading-begin-p next-line indent)
+                                                 (mermaid-blockquote-begin-p next-line indent)
+                                                 (mermaid-next-bullet-p next-line indent bull)
+                                                 (cl-ppcre:scan
+                                                  *mermaid-hr-scanner*
+                                                  (concatenate 'string next-line
+                                                               (string #\Newline))))
+                                         (loop-finish))
+                                       (let ((nonspace (mermaid-first-nonspace next-line)))
+                                         (when (and (plusp (length
+                                                            (string-trim '(#\Space #\Tab)
+                                                                         next-line)))
+                                                    (< nonspace indent)
+                                                    blank-p)
+                                           (loop-finish)))
+                                       (write-string raw-line cur-stream)
+                                       (when nl (write-char #\Newline cur-stream))
+                                       (setf cur-src
+                                             (if nl (subseq cur-src (1+ nl)) ""))
+                                       (setf blank-p
+                                             (zerop (length
+                                                     (string-trim '(#\Space #\Tab)
+                                                                  next-line)))))))))
                    (incf pos (length cur-raw))
-                   (setf raw (concatenate 'string raw cur-raw)))))
-      (when (plusp (length raw))
-        (string-right-trim '(#\Newline #\Return #\Space #\Tab) raw)))))
+                   (write-string cur-raw raw-stream))))
+      (let ((raw (get-output-stream-string raw-stream)))
+        (when (plusp (length raw))
+          (string-right-trim '(#\Newline #\Return #\Space #\Tab) raw))))))
 
 (defun mermaid-lex-top-level (src)
   "Return a list of (:code raw text lang) or (:raw raw) top-level tokens."

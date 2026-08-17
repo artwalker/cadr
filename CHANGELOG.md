@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K8: `cadr-tui` 29 rewrite files share one
+  owner each (char/string walks, rebuild key dispatch,
+  layout vectors, compiled scanners). Generated
+  `mermaid/width-data.lisp` untouched. FiveAM 18768 → 18841.
+
 - Goal 20 Part K7: `cadr-ai` 28 rewrite files share one
   owner each (device parse, reserved keys, PKCE login,
   stream blocks, runtime error wrap). Generated catalogs

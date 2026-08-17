@@ -59,3 +59,13 @@
         (cadr-tui:find-word-forward
          text 6
          :atomic-segments (list marker))))))
+
+(test word-scan-one-owner
+  (is (= 0
+         (cadr-tui::scan-word-while
+          "  hi" 2 :backward
+          #'cadr-tui::navigation-whitespace-p)))
+  (is (= 2
+         (cadr-tui::scan-word-while
+          "hi " 0 :forward
+          #'cadr-tui::word-body-character-p))))

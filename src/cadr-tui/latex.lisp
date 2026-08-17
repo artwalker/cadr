@@ -799,14 +799,32 @@
 
 (defstruct (latex-matrix-node
             (:constructor make-latex-matrix-node))
-  (lines nil :type list)
+  (lines #() :type vector)
   (baseline 0 :type integer))
 
 (defstruct (latex-layout
             (:constructor make-latex-layout))
-  (lines nil :type list)
+  (lines #() :type vector)
   (width 0 :type integer)
   (baseline 0 :type integer))
+
+(defun latex-as-line-vector (lines)
+  (if (vectorp lines)
+      lines
+      (coerce lines 'vector)))
+
+(defun latex-layout-line-at (layout index)
+  (let ((lines (latex-layout-lines layout)))
+    (and (< index (length lines)) (aref lines index))))
+
+(defun latex-push-layout-node (parser node)
+  ;; pi@914cf1472 packages/tui/src/latex.ts layoutNodes.push — O(1) append
+  ;; plus the marker index.  The list+append form was quadratic.
+  (vector-push-extend node (latex-parser-layout-nodes parser))
+  (1- (length (latex-parser-layout-nodes parser))))
+
+(defun latex-layout-node-at (nodes index)
+  (and (< index (length nodes)) (aref nodes index)))
 
 (defun latex-pad-layout-line (line width &optional centered)
   (let ((padding
@@ -821,7 +839,7 @@
 (defun latex-join-layouts (layouts)
   (when (null layouts)
     (return-from latex-join-layouts
-      (make-latex-layout :lines (list ""))))
+      (make-latex-layout :lines (vector ""))))
   (let* ((baseline
            (reduce #'max layouts
                    :key #'latex-layout-baseline))
@@ -831,7 +849,7 @@
                           (- (length (latex-layout-lines layout))
                              (latex-layout-baseline layout)
                              1))))
-         (lines nil))
+         (lines (make-array 0 :adjustable t :fill-pointer 0)))
     (loop for row from 0 to (+ baseline below)
           do (let ((line
                      (with-output-to-string (stream)
@@ -845,22 +863,23 @@
                                         (length
                                          (latex-layout-lines layout))))
                                 (latex-pad-layout-line
-                                 (nth source-row
-                                      (latex-layout-lines layout))
+                                 (latex-layout-line-at
+                                  layout source-row)
                                  (latex-layout-width layout))
                                 (format nil "~VA"
                                         (latex-layout-width layout)
                                         ""))
                             stream))))))
-               (push (latex-trim-end line) lines)))
+               (vector-push-extend (latex-trim-end line) lines)))
     (make-latex-layout
-     :lines (nreverse lines)
+     :lines (latex-as-line-vector lines)
      :width (reduce #'+ layouts :key #'latex-layout-width)
      :baseline baseline)))
 
 (defun latex-render-layout (source nodes)
-  (let ((rendered-lines nil)
-        (first-baseline 0))
+  (let ((rendered-lines (make-array 0 :adjustable t :fill-pointer 0))
+        (first-baseline 0)
+        (have-baseline-p nil))
     (dolist (source-line (cl-ppcre:split "\\n" source))
       (let ((layouts nil)
             (position 0)
@@ -884,7 +903,8 @@
                  (at
                    (search marker source-line :start2 position))
                  (node
-                   (nth (parse-integer index-string) nodes)))
+                   (latex-layout-node-at
+                    nodes (parse-integer index-string))))
             (declare (ignore index))
             (when (and at node)
               (when (> at position)
@@ -919,7 +939,7 @@
                             " ")
                            (t ""))))
                   (push (make-latex-layout
-                         :lines (list text)
+                         :lines (vector text)
                          :width (visible-width text))
                         layouts)))
               (cond
@@ -940,22 +960,23 @@
                    (push
                     (make-latex-layout
                      :lines
-                     (append
-                      (mapcar
-                       (lambda (line)
-                         (latex-pad-layout-line
-                          line width t))
-                       (latex-layout-lines numerator))
-                      (list
-                       (format nil " ~A "
-                               (make-string
-                                content-width
-                                :initial-element #\─)))
-                      (mapcar
-                       (lambda (line)
-                         (latex-pad-layout-line
-                          line width t))
-                       (latex-layout-lines denominator)))
+                     (latex-as-line-vector
+                      (append
+                       (map 'list
+                            (lambda (line)
+                              (latex-pad-layout-line
+                               line width t))
+                            (latex-layout-lines numerator))
+                       (list
+                        (format nil " ~A "
+                                (make-string
+                                 content-width
+                                 :initial-element #\─)))
+                       (map 'list
+                            (lambda (line)
+                              (latex-pad-layout-line
+                               line width t))
+                            (latex-layout-lines denominator))))
                      :width width
                      :baseline
                      (length (latex-layout-lines numerator)))
@@ -976,24 +997,25 @@
                    (push
                     (make-latex-layout
                      :lines
-                     (append
-                      (when (latex-operator-node-upper node)
-                        (list
-                         (format nil "~A "
-                                 (latex-pad-layout-line
-                                  (latex-operator-node-upper node)
-                                  content-width t))))
-                      (list
-                       (format nil "~A "
-                               (latex-pad-layout-line
-                                (latex-operator-node-operator node)
-                                content-width t)))
-                      (when (latex-operator-node-lower node)
-                        (list
-                         (format nil "~A "
-                                 (latex-pad-layout-line
-                                  (latex-operator-node-lower node)
-                                  content-width t)))))
+                     (latex-as-line-vector
+                      (append
+                       (when (latex-operator-node-upper node)
+                         (list
+                          (format nil "~A "
+                                  (latex-pad-layout-line
+                                   (latex-operator-node-upper node)
+                                   content-width t))))
+                       (list
+                        (format nil "~A "
+                                (latex-pad-layout-line
+                                 (latex-operator-node-operator node)
+                                 content-width t)))
+                       (when (latex-operator-node-lower node)
+                         (list
+                          (format nil "~A "
+                                  (latex-pad-layout-line
+                                   (latex-operator-node-lower node)
+                                   content-width t))))))
                      :width (1+ content-width)
                      :baseline
                      (if (latex-operator-node-upper node) 1 0))
@@ -1002,17 +1024,17 @@
                  (let ((width
                          (max 0
                               (reduce #'max
-                                      (mapcar #'visible-width
-                                              (latex-matrix-node-lines
-                                               node))
+                                      (map 'list #'visible-width
+                                           (latex-matrix-node-lines
+                                            node))
                                       :initial-value 0))))
                    (push
                     (make-latex-layout
                      :lines
-                     (mapcar
-                      (lambda (line)
-                        (latex-pad-layout-line line width))
-                      (latex-matrix-node-lines node))
+                     (map 'vector
+                          (lambda (line)
+                            (latex-pad-layout-line line width))
+                          (latex-matrix-node-lines node))
                      :width width
                      :baseline (latex-matrix-node-baseline node))
                     layouts))))
@@ -1032,30 +1054,30 @@
                        (format nil " ~A" trimmed)
                        trimmed)))
             (push (make-latex-layout
-                   :lines (list text)
+                   :lines (vector text)
                    :width (visible-width text))
                   layouts)))
         (let ((line-layout
                 (latex-join-layouts (nreverse layouts))))
-          (when (null rendered-lines)
+          (unless have-baseline-p
             (setf first-baseline
-                  (latex-layout-baseline line-layout)))
-          (setf rendered-lines
-                (nconc rendered-lines
-                       (latex-layout-lines line-layout))))))
+                  (latex-layout-baseline line-layout)
+                  have-baseline-p t))
+          (loop for line across (latex-layout-lines line-layout)
+                do (vector-push-extend line rendered-lines)))))
     (make-latex-layout
-     :lines rendered-lines
+     :lines (latex-as-line-vector rendered-lines)
      :width
      (max 0
           (reduce #'max
-                  (mapcar #'visible-width rendered-lines)
+                  (map 'list #'visible-width rendered-lines)
                   :initial-value 0))
      :baseline first-baseline)))
 
 (defstruct (latex-parser
             (:constructor %make-latex-parser))
   (source "" :type string)
-  (layout-nodes nil :type list)
+  (layout-nodes #() :type vector)
   (display-p nil :type boolean)
   (position 0 :type integer)
   (supported-p t :type boolean)
@@ -1063,7 +1085,10 @@
 
 (defun make-latex-parser (source layout-nodes display-p)
   (%make-latex-parser
-   :source source :layout-nodes layout-nodes
+   :source source
+   :layout-nodes
+   (or layout-nodes
+       (make-array 0 :adjustable t :fill-pointer 0))
    :display-p display-p))
 
 (defun latex-parser-done-p (parser)
@@ -1096,8 +1121,9 @@
                         (1- (length value)))))
           (and (plusp (length digits))
                (every #'digit-char-p digits)
-               (nth (parse-integer digits)
-                    (latex-parser-layout-nodes parser))))))))
+               (latex-layout-node-at
+                (latex-parser-layout-nodes parser)
+                (parse-integer digits))))))))
 
 (defun latex-parse-sequence (parser end-character)
   (let ((result (make-string-output-stream)))
@@ -1187,12 +1213,12 @@
                                     (latex-matrix-node-lines
                                      node)))))
                          (setf
-                          (nth last
-                               (latex-matrix-node-lines node))
+                          (aref (latex-matrix-node-lines node)
+                                last)
                           (format nil "~A~C"
-                                  (nth last
-                                       (latex-matrix-node-lines
-                                        node))
+                                  (aref
+                                   (latex-matrix-node-lines node)
+                                   last)
                                   character))
                          (write-string current result)
                          (incf
@@ -1320,18 +1346,13 @@
                   parser (not should-stack))))
            (if should-stack
                (let ((index
-                       (length
-                        (latex-parser-layout-nodes parser))))
-                 (setf
-                  (latex-parser-layout-nodes parser)
-                  (append
-                   (latex-parser-layout-nodes parser)
-                   (list
-                    (make-latex-fraction-node
-                     :numerator
-                     (latex-normalize-output numerator)
-                     :denominator
-                     (latex-normalize-output denominator)))))
+                       (latex-push-layout-node
+                        parser
+                        (make-latex-fraction-node
+                         :numerator
+                         (latex-normalize-output numerator)
+                         :denominator
+                         (latex-normalize-output denominator)))))
                  (format nil "~C~D~C"
                          (code-char #xf000) index
                          (code-char #xf001)))
@@ -1519,16 +1540,11 @@
                use-display-limits
                (or lower upper))
           (let ((index
-                  (length
-                   (latex-parser-layout-nodes parser))))
-            (setf
-             (latex-parser-layout-nodes parser)
-             (append
-              (latex-parser-layout-nodes parser)
-              (list
-               (make-latex-operator-node
-                :operator operator :lower lower
-                :upper upper))))
+                  (latex-push-layout-node
+                   parser
+                   (make-latex-operator-node
+                    :operator operator :lower lower
+                    :upper upper))))
             (format nil "~C~D~C"
                     (code-char #xf000) index
                     (code-char #xf001)))
@@ -1770,45 +1786,55 @@
 
 (defun latex-render-matrix (parser environment body)
   (let* ((matrix
-           (remove-if-not
-            (lambda (row) (some #'plusp (mapcar #'length row)))
-            (mapcar
-             (lambda (row)
-               (mapcar
-                (lambda (cell)
-                  (latex-trim
-                   (latex-render-nested parser cell nil)))
-                (cl-ppcre:split "&" row)))
-             (latex-split-environment-rows body))))
+           (mapcar
+            #'latex-as-line-vector
+            (remove-if-not
+             (lambda (row) (some #'plusp (map 'list #'length row)))
+             (mapcar
+              (lambda (row)
+                (mapcar
+                 (lambda (cell)
+                   (latex-trim
+                    (latex-render-nested parser cell nil)))
+                 (cl-ppcre:split "&" row)))
+              (latex-split-environment-rows body)))))
          (column-count
            (max 0
                 (reduce #'max
                         (mapcar #'length matrix)
                         :initial-value 0)))
          (column-widths
-           (loop for column from 0 below column-count
-                 collect
-                 (max 0
-                      (reduce #'max
-                              (mapcar
-                               (lambda (row)
-                                 (visible-width
-                                  (or (nth column row) "")))
-                               matrix)
-                              :initial-value 0))))
+           (let ((widths
+                   (make-array column-count :initial-element 0)))
+             (loop for column from 0 below column-count
+                   do (setf
+                       (aref widths column)
+                       (max 0
+                            (reduce #'max
+                                    (mapcar
+                                     (lambda (row)
+                                       (visible-width
+                                        (if (< column (length row))
+                                            (aref row column)
+                                            "")))
+                                     matrix)
+                                    :initial-value 0))))
+             widths))
          (rows
            (mapcar
             (lambda (row)
               (format nil "~{~A~^ │ ~}"
                       (loop for column from 0 below column-count
-                            for cell = (or (nth column row) "")
+                            for cell = (if (< column (length row))
+                                           (aref row column)
+                                           "")
                             collect
                             (format nil "~A~A"
                                     cell
                                     (make-string
                                      (max 0
-                                          (- (nth column
-                                                  column-widths)
+                                          (- (aref column-widths
+                                                   column)
                                              (visible-width cell)))
                                      :initial-element
                                      (code-char #xf002))))))
@@ -1851,15 +1877,11 @@
     (if (<= (length lines) 1)
         (or (first lines) "")
         (let ((index
-                (length
-                 (latex-parser-layout-nodes parser))))
-          (setf
-           (latex-parser-layout-nodes parser)
-           (append
-            (latex-parser-layout-nodes parser)
-            (list
-             (make-latex-matrix-node
-              :lines lines :baseline 0))))
+                (latex-push-layout-node
+                 parser
+                 (make-latex-matrix-node
+                  :lines (latex-as-line-vector lines)
+                  :baseline 0))))
           (format nil "~C~D~C"
                   (code-char #xf000) index
                   (code-char #xf001))))))
@@ -1892,7 +1914,7 @@ syntax.  DISPLAY-P stacks fractions and operator limits vertically."
     (setf nodes (latex-parser-layout-nodes parser))
     (when (null rendered)
       (return-from render-latex nil))
-    (when (null nodes)
+    (when (zerop (length nodes))
       (return-from render-latex
         (literal-string-replace-all
          rendered +latex-protected-space+ " ")))
@@ -1905,7 +1927,7 @@ syntax.  DISPLAY-P stacks fractions and operator limits vertically."
                       (lambda (line)
                         (zerop
                          (length (latex-trim line))))
-                      lines)))
+                      (coerce lines 'list))))
                (if non-empty
                    (reduce #'min
                            (mapcar
@@ -1918,11 +1940,11 @@ syntax.  DISPLAY-P stacks fractions and operator limits vertically."
       (latex-trim-end
        (literal-string-replace-all
         (format nil "~{~A~^~%~}"
-                (mapcar
-                 (lambda (line)
-                   (latex-trim-end
-                    (subseq line
-                            (min indentation
-                                 (length line)))))
-                 lines))
+                (map 'list
+                     (lambda (line)
+                       (latex-trim-end
+                        (subseq line
+                                (min indentation
+                                     (length line)))))
+                     lines))
         +latex-protected-space+ " ")))))

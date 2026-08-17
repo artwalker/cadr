@@ -36,12 +36,19 @@
   (keyboard-protocol-negotiator-mode
    negotiator))
 
+(defparameter +kitty-protocol-reply-scanner+
+  (cl-ppcre:create-scanner
+   (format nil "^~C\\[\\?(\\d+)u$" #\Escape)))
+
+(defparameter +device-attributes-reply-scanner+
+  (cl-ppcre:create-scanner
+   (format nil "^~C\\[\\?[\\d;]*c$" #\Escape)))
+
 (defun parse-keyboard-protocol-sequence (sequence)
   (multiple-value-bind
         (start end starts ends)
       (cl-ppcre:scan
-       (format nil "^~C\\[\\?(\\d+)u$"
-               #\Escape)
+       +kitty-protocol-reply-scanner+
        sequence)
     (declare (ignore end))
     (when start
@@ -55,8 +62,7 @@
            (aref ends 0)))))))
   (when
       (cl-ppcre:scan
-       (format nil "^~C\\[\\?[\\d;]*c$"
-               #\Escape)
+       +device-attributes-reply-scanner+
        sequence)
     (list :device-attributes)))
 

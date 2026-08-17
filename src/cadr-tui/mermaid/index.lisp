@@ -63,49 +63,47 @@
                                                 "dropped, unreadable final line: \"~A\""
                                                 dropped)))))))))
 
+(defun gm-drawn (canvas warnings)
+  (when canvas
+    (list :canvas canvas :warnings warnings)))
+
+;;; One parse→layout owner per kind.  Goldens pin the emitted bytes.
+(defparameter +gm-draw-kinds+
+  (list
+   (cons "flowchart"
+         (lambda (src)
+           (let ((graph (gm-parse-graph src)))
+             (gm-drawn
+              (and graph
+                   (if (null (gm-graph-groups graph))
+                       (gm-layout-flowchart graph)
+                       (gm-layout-grouped graph)))
+              (and graph (gm-graph-warnings graph))))))
+   (cons "state"
+         (lambda (src)
+           (let ((state (gm-parse-state src)))
+             (gm-drawn (and state (gm-layout-flowchart state)) nil))))
+   (cons "class"
+         (lambda (src)
+           (let ((cls (gm-parse-class src)))
+             (gm-drawn
+              (and cls (gm-layout-class (first cls) (second cls)))
+              nil))))
+   (cons "er"
+         (lambda (src)
+           (let ((er (gm-parse-er src)))
+             (gm-drawn
+              (and er (gm-layout-class (first er) (second er)))
+              nil))))
+   (cons "sequence"
+         (lambda (src)
+           (let ((seq (gm-parse-sequence src)))
+             (gm-drawn (and seq (gm-layout-sequence seq)) nil))))))
+
 ;;; Dispatch on the declared diagram type; NIL means nothing was drawn.
 (defun gm-draw (src)
-  (let ((kind (gm-diagram-kind src)))
-    (cond ((string= kind "flowchart")
-           (let ((graph (gm-parse-graph src)))
-             (when (null graph)
-               (return-from gm-draw nil))
-             (let ((canvas (if (null (gm-graph-groups graph))
-                               (gm-layout-flowchart graph)
-                               (gm-layout-grouped graph))))
-               (when (null canvas)
-                 (return-from gm-draw nil))
-               (list :canvas canvas :warnings (gm-graph-warnings graph)))))
-          ((string= kind "state")
-           (let ((state (gm-parse-state src)))
-             (when (null state)
-               (return-from gm-draw nil))
-             (let ((canvas (gm-layout-flowchart state)))
-               (when (null canvas)
-                 (return-from gm-draw nil))
-               (list :canvas canvas :warnings nil))))
-          ((string= kind "class")
-           (let ((cls (gm-parse-class src)))
-             (when (null cls)
-               (return-from gm-draw nil))
-             (let ((canvas (gm-layout-class (first cls) (second cls))))
-               (when (null canvas)
-                 (return-from gm-draw nil))
-               (list :canvas canvas :warnings nil))))
-          ((string= kind "er")
-           (let ((er (gm-parse-er src)))
-             (when (null er)
-               (return-from gm-draw nil))
-             (let ((canvas (gm-layout-class (first er) (second er))))
-               (when (null canvas)
-                 (return-from gm-draw nil))
-               (list :canvas canvas :warnings nil))))
-          ((string= kind "sequence")
-           (let ((seq (gm-parse-sequence src)))
-             (when (null seq)
-               (return-from gm-draw nil))
-             (let ((canvas (gm-layout-sequence seq)))
-               (when (null canvas)
-                 (return-from gm-draw nil))
-               (list :canvas canvas :warnings nil))))
-          (t nil))))
+  (let ((drawer
+          (cdr (assoc (gm-diagram-kind src)
+                      +gm-draw-kinds+
+                      :test #'string=))))
+    (and drawer (funcall drawer src))))

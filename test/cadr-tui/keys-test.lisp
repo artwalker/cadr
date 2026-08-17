@@ -150,3 +150,13 @@
        (cadr-tui:key-release-p
         (format nil "~C[200~~90:62:3F:A5~C[201~~"
                 #\Escape #\Escape)))))
+
+(test keys-scanners-are-compiled
+  (is (not (null cadr-tui::+kitty-scanner+)))
+  (is (not (null cadr-tui::+modified-arrow-scanner+)))
+  (cadr-tui:set-kitty-protocol-active t)
+  (is (string=
+       "left"
+       (cadr-tui:parse-key
+        (format nil "~C[57417u" #\Escape))))
+  (cadr-tui:set-kitty-protocol-active nil))

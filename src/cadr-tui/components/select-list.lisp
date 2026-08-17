@@ -10,7 +10,7 @@
   (items nil :type list)
   (query "" :type string)
   (selected 0 :type (integer 0 *))
-  (height 8 :type (integer 1 *))
+  (height 5 :type (integer 1 *))
   (show-filter-p t :type boolean)
   (min-primary-column-width 32
                             :type (integer 1 *))
@@ -121,13 +121,10 @@
 
 (defun render-select-list
     (list width &key (ansi-theme-p nil))
+  (clamp-select-index list)
   (let* ((items (select-list-filtered-items list))
          (count (length items))
-         (selected
-           (if (zerop count)
-               0
-               (min (select-list-selected list)
-                    (1- count))))
+         (selected (select-list-selected list))
          (height (select-list-height list))
          (start
            (max

@@ -1,5 +1,20 @@
 (in-package #:cadr-tui)
 
+(defstruct editor-atomic-span
+  (start 0 :type (integer 0 *))
+  (end 0 :type (integer 0 *))
+  paste-id)
+
+(defun editor-span-start (span)
+  (if (consp span)
+      (first span)
+      (editor-atomic-span-start span)))
+
+(defun editor-span-end (span)
+  (if (consp span)
+      (second span)
+      (editor-atomic-span-end span)))
+
 (defstruct editor-autocomplete-request
   (generation 0 :type (integer 0 *))
   signal
@@ -321,22 +336,25 @@
               for end = (position #\] text :start found)
               do
               (when end
-                (push (list found (1+ end) id)
+                (push (make-editor-atomic-span
+                       :start found
+                       :end (1+ end)
+                       :paste-id id)
                       spans))
               (setf start
                     (if end (1+ end)
                         (+ found (length prefix)))))))
-    (sort spans #'< :key #'first)))
+    (sort spans #'< :key #'editor-atomic-span-start)))
 
 (defun editor-atomic-span-at
     (editor cursor &key before-p)
   (find-if
    (lambda (span)
      (if before-p
-         (and (> cursor (first span))
-              (<= cursor (second span)))
-         (and (>= cursor (first span))
-              (< cursor (second span)))))
+         (and (> cursor (editor-span-start span))
+              (<= cursor (editor-span-end span)))
+         (and (>= cursor (editor-span-start span))
+              (< cursor (editor-span-end span)))))
    (editor-paste-marker-spans editor)))
 
 (defun editor-previous-boundary (editor)
@@ -346,7 +364,7 @@
            (editor-atomic-span-at
             editor cursor :before-p t)))
     (if span
-        (first span)
+        (editor-span-start span)
         (previous-cluster-boundary text cursor))))
 
 (defun editor-next-boundary (editor)
@@ -355,7 +373,7 @@
          (span
            (editor-atomic-span-at editor cursor)))
     (if span
-        (second span)
+        (editor-span-end span)
         (next-cluster-boundary text cursor))))
 
 (defun previous-cluster-boundary (text cursor)
@@ -479,11 +497,11 @@
                 editor cursor :before-p t))
              (start
                (if span
-                   (first span)
+                   (editor-span-start span)
                    (editor-previous-boundary editor))))
         (editor-delete-range
          editor start cursor
-         :paste-id (and span (third span))))))
+         :paste-id (and span (editor-atomic-span-paste-id span))))))
   (editor-exit-history editor)
   (editor-cancel-autocomplete editor)
   (setf (multiline-editor-last-action editor) nil)
@@ -499,11 +517,11 @@
                (editor-atomic-span-at editor cursor))
              (end
                (if span
-                   (second span)
+                   (editor-span-end span)
                    (editor-next-boundary editor))))
         (editor-delete-range
          editor cursor end
-         :paste-id (and span (third span))))))
+         :paste-id (and span (editor-atomic-span-paste-id span))))))
   (editor-exit-history editor)
   (editor-cancel-autocomplete editor)
   (setf (multiline-editor-last-action editor) nil)
@@ -545,12 +563,12 @@
   (or
    (position-if
     (lambda (span)
-      (and (>= cursor (first span))
-           (< cursor (second span))))
+      (and (>= cursor (editor-span-start span))
+           (< cursor (editor-span-end span))))
     spans)
    (position-if
     (lambda (span)
-      (= cursor (second span)))
+      (= cursor (editor-span-end span)))
     spans :from-end t)
    0))
 
@@ -567,7 +585,7 @@
             (multiline-editor-preferred-column editor)
             (visible-width
              (subseq text
-                     (first span)
+                     (editor-span-start span)
                      cursor))))
          (target (+ current direction)))
     (setf
@@ -583,13 +601,13 @@
            (editor-history-previous editor)
            (setf
             (multiline-editor-cursor editor)
-            (first span))))
+            (editor-span-start span))))
       ((>= target (length spans))
        (if (multiline-editor-history-index editor)
            (editor-history-next editor)
            (setf
             (multiline-editor-cursor editor)
-            (second span))))
+            (editor-span-end span))))
       (t
        (let ((target-span
                (nth target spans)))
@@ -624,7 +642,7 @@
   (loop for span in (editor-paste-marker-spans editor)
         collect
         (subseq (multiline-editor-text editor)
-                (first span) (second span))))
+                (editor-span-start span) (editor-span-end span))))
 
 (defun editor-move-word-backward (editor)
   (let* ((text (multiline-editor-text editor))
@@ -899,15 +917,15 @@
       (let ((payload
               (cdr
                (assoc
-                (third span)
+                (editor-atomic-span-paste-id span)
                 (multiline-editor-pastes editor)))))
         (when payload
           (setf text
                 (concatenate
                  'string
-                 (subseq text 0 (first span))
+                 (subseq text 0 (editor-span-start span))
                  payload
-                 (subseq text (second span)))))))))
+                 (subseq text (editor-span-end span)))))))))
 
 (defun editor-clear (editor)
   (setf

@@ -346,8 +346,8 @@ in-place repaint executes.  Production leaves this NIL; the harness
     (terminal-write
      (terminal-renderer-terminal renderer)
      (format
-      nil "~C[?2026h~A~A~A~C[?2026l"
-      #\Escape
+      nil "~A~A~A~A~A"
+      +synchronized-update-begin+
       (if
           (eq :kitty
               (terminal-renderer-image-protocol
@@ -359,7 +359,7 @@ in-place repaint executes.  Production leaves this NIL; the harness
           +mouse-disable+
           "")
       +autowrap-enable+
-      #\Escape)))
+      +synchronized-update-end+)))
   renderer)
 
 (defun renderer-after-stop (renderer)
@@ -376,8 +376,8 @@ in-place repaint executes.  Production leaves this NIL; the harness
     (terminal-write
      (terminal-renderer-terminal renderer)
      (with-output-to-string (stream)
-       (format stream "~C[?2026h~A~A"
-               #\Escape
+       (format stream "~A~A~A"
+               +synchronized-update-begin+
                +alt-screen-exit+
                +autowrap-disable+)
        ;; v0.84.2 fullscreenExitOutput: resume-hint skips the transcript
@@ -399,10 +399,11 @@ in-place repaint executes.  Production leaves this NIL; the harness
                (format stream "~C~C[2K~A~C[0m"
                        #\Return #\Escape line #\Escape)))
        (format stream
-               "~C[0m~A~C~C~C[?25h~C[?2026l"
+               "~C[0m~A~C~C~C[?25h~A"
                #\Escape +autowrap-enable+
                #\Return #\Newline
-               #\Escape #\Escape)))
+               #\Escape
+               +synchronized-update-end+)))
     (when
         (terminal-renderer-saved-capabilities
          renderer)
@@ -453,8 +454,8 @@ controlling mode flag and repaint afterwards."
     (terminal-write
      (terminal-renderer-terminal renderer)
      (format
-      nil "~C[?2026h~A~A~A~C[?2026l"
-      #\Escape
+      nil "~A~A~A~A~A"
+      +synchronized-update-begin+
       (if
           (eq :kitty
               (terminal-renderer-image-protocol
@@ -466,13 +467,15 @@ controlling mode flag and repaint afterwards."
           +mouse-disable+
           "")
       +autowrap-enable+
-      #\Escape))
+      +synchronized-update-end+))
     (terminal-write
      (terminal-renderer-terminal renderer)
      (format
-      nil "~C[?2026h~A~C[?25h~C[?2026l"
-      #\Escape +alt-screen-exit+
-      #\Escape #\Escape))
+      nil "~A~A~C[?25h~A"
+      +synchronized-update-begin+
+      +alt-screen-exit+
+      #\Escape
+      +synchronized-update-end+))
     (setf
      (terminal-renderer-alt-screen-active-p renderer)
      nil))
@@ -621,11 +624,15 @@ controlling mode flag and repaint afterwards."
                maximum
                (terminal-renderer-scroll-top renderer)))
          (lines
-           (or (terminal-renderer-prepared-source-lines renderer)
-               (terminal-renderer-last-document renderer))))
+           (coerce
+            (or (terminal-renderer-prepared-source-lines renderer)
+                (terminal-renderer-last-document renderer)
+                '())
+            'vector))
+         (line-count (length lines)))
     (loop for row = (+ current direction) then (+ row direction)
-          while (and (<= 0 row) (< row (min count (length lines))))
-          when (osc133-prompt-start-line-p (nth row lines))
+          while (and (<= 0 row) (< row (min count line-count)))
+          when (osc133-prompt-start-line-p (aref lines row))
             do (when (/= row current)
                  (setf
                   (terminal-renderer-scroll-top renderer) row

@@ -12,13 +12,29 @@
     :accessor component-focused-p)))
 
 (defgeneric component-render
-    (component width &key focused-p))
+    (component width &key focused-p)
+  (:documentation
+   "Return the visible lines of COMPONENT at WIDTH."))
 
-(defgeneric component-handle-event (component event))
-(defgeneric component-invalidate (component))
-(defgeneric component-dispose (component))
-(defgeneric component-wants-key-release-p (component))
-(defgeneric component-focusable-p (component))
+(defgeneric component-handle-event (component event)
+  (:documentation
+   "Consume EVENT. Return (values handled-p result)."))
+
+(defgeneric component-invalidate (component)
+  (:documentation
+   "Drop cached paint. Return COMPONENT."))
+
+(defgeneric component-dispose (component)
+  (:documentation
+   "Release timers/threads. Return COMPONENT."))
+
+(defgeneric component-wants-key-release-p (component)
+  (:documentation
+   "True when COMPONENT listens for key-up."))
+
+(defgeneric component-focusable-p (component)
+  (:documentation
+   "True when COMPONENT can take keyboard focus."))
 
 (defmethod component-render
     ((component component) width &key focused-p)

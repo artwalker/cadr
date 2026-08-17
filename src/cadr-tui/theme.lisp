@@ -244,15 +244,16 @@
         gray-index
         cube-index)))
 
+(defun ensure-theme-keyword (value)
+  (etypecase value
+    (keyword value)
+    (symbol
+     (intern (string-upcase (symbol-name value)) :keyword))
+    (string
+     (intern (string-upcase value) :keyword))))
+
 (defun canonical-theme-name (name)
-  (let ((canonical
-          (etypecase name
-            (keyword name)
-            (symbol
-             (intern (string-upcase (symbol-name name))
-                     :keyword))
-            (string
-             (intern (string-upcase name) :keyword)))))
+  (let ((canonical (ensure-theme-keyword name)))
     (unless (member canonical '(:dark :light))
       (error "Unknown built-in theme: ~S" name))
     canonical))
@@ -504,14 +505,7 @@
                enabled-p enabled-p-supplied-p))
 
 (defun theme-thinking-color-key (level)
-  (case
-      (etypecase level
-        (keyword level)
-        (symbol
-         (intern (string-upcase (symbol-name level))
-                 :keyword))
-        (string
-         (intern (string-upcase level) :keyword)))
+  (case (ensure-theme-keyword level)
     (:off :thinking-off)
     (:minimal :thinking-minimal)
     (:low :thinking-low)
