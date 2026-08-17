@@ -73,6 +73,11 @@ tag/Release step.
 
 ### Fixed
 
+- Re-pin `example-commands/{wide,narrow}/commands-path` cadr
+  `screenSha256` after checkout root collapsed to `<CADR_ROOT>`.
+  Baseline-side SHAs unchanged. Does not declare the render
+  differential green.
+
 - Recorded the 2026-08-17 role rulings in the adjudication log and
   advisor playbook (executor never writes a ruling; advisor is
   read-only on shared CI state; differential pins are local truth).

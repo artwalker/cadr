@@ -7518,11 +7518,11 @@
       "screenSha256": {
         "narrow": {
           "pi": "7be648510bdae49db5b6a0d95fee1e6bd27f23b37eb9f157d814bdc5e7c2a054",
-          "cadr": "94782fa1b6d978b068c06cccfbc73006ea4b5871498faf37f8877e8dbdc55a60"
+          "cadr": "25f6fbd21cb303d8646eb022c035ddd84fcb1958c103e8c607cfdc339015ec34"
         },
         "wide": {
           "pi": "111f51b2fd9fea6eb18548806a9048eb3646363d1ed0652ea5bcfac84c082217",
-          "cadr": "84c7d7db8b7a6ccb1fedbea1e9c34e5c5f738a51fc274c60198320fd6eecbf7e"
+          "cadr": "89c616576504267cc3ecc67b83619dccbce7d93f6e0c570b78dbf8cffc1044b6"
         }
       },
       "note": "At example-commands/commands-path both sides opened the View source path? confirm after selecting /commands. Residual deltas are path/chrome layout, I04 identity wrapping, and I01 ANSI segmentation."
