@@ -16,6 +16,74 @@
         (error "opcode ~D, expected ~D" read-opcode opcode))
       read-payload)))
 
+(defun goal20-unmasked-frame-bytes (payload)
+  (let ((output
+          (flexi-streams:make-in-memory-output-stream
+           :element-type '(unsigned-byte 8))))
+    (cadr-ai::write-websocket-frame
+     output 1 payload :mask-p nil :fin-p t)
+    (flexi-streams:get-output-stream-sequence output)))
+
+(defun goal20-extended-length-bytes (length marker)
+  (let ((output
+          (flexi-streams:make-in-memory-output-stream
+           :element-type '(unsigned-byte 8))))
+    (cadr-ai::write-websocket-length output length marker)
+    (flexi-streams:get-output-stream-sequence output)))
+
+(test goal20-websocket-frame-uses-the-length-helper
+  ;; sb-cover A-class: write-websocket-length had no call site.
+  ;; The helper is not a drop-in for the first length byte: that byte
+  ;; carries the mask bit, and (= marker 126) would then pick 8 bytes
+  ;; for a masked 16-bit frame.
+  (let ((source
+          (uiop:read-file-string
+           (merge-pathnames
+            "src/cadr-ai/websocket.lisp"
+            (asdf:system-source-directory "cadr-ai")))))
+    (is
+     (search
+      "(write-websocket-length stream length 126)"
+      source))
+    (is
+     (search
+      "(write-websocket-length stream length 127)"
+      source)))
+  (is (not (= (logior 126 #x80) 126)))
+  (is
+   (equalp
+    #(0 126)
+    (goal20-extended-length-bytes 126 126)))
+  (is
+   (equalp
+    #(0 0 0 0 0 1 0 0)
+    (goal20-extended-length-bytes 65536 127))))
+
+(test goal20-websocket-unmasked-length-prefix-matches-rfc6455
+  (let ((short
+          (goal20-unmasked-frame-bytes
+           (make-array 125 :element-type '(unsigned-byte 8)
+                       :initial-element 1)))
+        (mid
+          (goal20-unmasked-frame-bytes
+           (make-array 126 :element-type '(unsigned-byte 8)
+                       :initial-element 1)))
+        (u16
+          (goal20-unmasked-frame-bytes
+           (make-array 65535 :element-type '(unsigned-byte 8)
+                       :initial-element 1)))
+        (u64
+          (goal20-unmasked-frame-bytes
+           (make-array 65536 :element-type '(unsigned-byte 8)
+                       :initial-element 1))))
+    (is (= 125 (aref short 1)))
+    (is (= 126 (aref mid 1)))
+    (is (equalp #(0 126) (subseq mid 2 4)))
+    (is (= 126 (aref u16 1)))
+    (is (equalp #(255 255) (subseq u16 2 4)))
+    (is (= 127 (aref u64 1)))
+    (is (equalp #(0 0 0 0 0 1 0 0) (subseq u64 2 10)))))
+
 (test goal20-websocket-64-bit-length-roundtrips-65536-bytes
   ;; 12A-1: marker=127 used to skip the first of eight length bytes
   ;; (`for value = 0 then read-byte`), so payloads >= 65536 desynced

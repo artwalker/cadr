@@ -81,6 +81,12 @@ tag/Release step.
 
 ### Fixed
 
+- `write-websocket-frame` now calls `write-websocket-length` for
+  the 16-bit and 64-bit extended fields. The helper no longer
+  writes the first length byte, so a masked 16-bit frame cannot
+  be mistaken for a 64-bit form. Not a write-side pair of the
+  64-bit read bug. FiveAM 18640 → 18652.
+
 - Wire `oauth-selector-handle-raw-input` into the overlay
   raw-input dispatch, matching the other selectors. Paste and
   custom keybindings now reach the OAuth selector. FiveAM
@@ -100,6 +106,9 @@ tag/Release step.
   matching a new prompt. A second hook invocation can no longer
   block confirm/editor answers. Unconditional `rpc-ui-diag`
   prints removed from the RPC UI product path.
+
+- Booked the unpaired-path denominator at 122640 after wiring
+  the WebSocket extended-length helper.
 
 - Booked the unpaired-path denominator at 122638 after wiring
   OAuth selector raw-input.

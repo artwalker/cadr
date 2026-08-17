@@ -124,7 +124,11 @@ NIL means that the caller must send the original, uncompressed body."
     (utf8-octets (concatenate 'string key +websocket-guid+)))))
 
 (defun write-websocket-length (stream length marker)
-  (write-byte marker stream)
+  ;; Extended length only. MARKER is 126 (2 bytes) or 127 (8 bytes).
+  ;; The first length byte (marker plus the mask bit) stays in
+  ;; write-websocket-frame: this helper used to write MARKER itself
+  ;; and then branch on (= MARKER 126), so a masked 16-bit frame
+  ;; (marker 254) would emit eight length bytes.
   (loop for shift downfrom (* 8 (1- (if (= marker 126) 2 8))) to 0 by 8
         do (write-byte (ldb (byte 8 shift) length) stream)))
 
@@ -137,12 +141,10 @@ NIL means that the caller must send the original, uncompressed body."
        (write-byte (logior (if mask-p #x80 0) length) stream))
       ((<= length #xffff)
        (write-byte (logior (if mask-p #x80 0) 126) stream)
-       (write-byte (ldb (byte 8 8) length) stream)
-       (write-byte (ldb (byte 8 0) length) stream))
+       (write-websocket-length stream length 126))
       (t
        (write-byte (logior (if mask-p #x80 0) 127) stream)
-       (loop for shift downfrom 56 to 0 by 8
-             do (write-byte (ldb (byte 8 shift) length) stream))))
+       (write-websocket-length stream length 127)))
     (when mask-p (write-sequence mask stream))
     (dotimes (index length)
       (write-byte
