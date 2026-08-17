@@ -89,6 +89,11 @@ tag/Release step.
 
 ### Fixed
 
+- Settings-list space matches the baseline: activate only when
+  search is off or the query is empty; otherwise space and paste
+  keep spaces in the search box (baseline settings-list.ts:187).
+  FiveAM 18652 → 18657.
+
 - `write-websocket-frame` now calls `write-websocket-length` for
   the 16-bit and 64-bit extended fields. The helper no longer
   writes the first length byte, so a masked 16-bit frame cannot
@@ -114,6 +119,9 @@ tag/Release step.
   matching a new prompt. A second hook invocation can no longer
   block confirm/editor answers. Unconditional `rpc-ui-diag`
   prints removed from the RPC UI product path.
+
+- Booked the unpaired-path denominator at 122586 after aligning
+  settings-list space with the baseline.
 
 - Booked the unpaired-path denominator at 122575 after deleting
   six unused sb-cover A-class helpers.

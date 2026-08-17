@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122575 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122586 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -341,7 +341,7 @@ files with unrelated facilities fail.
 | `src/cadr-tui/composition/protocol.lisp` | 127 | 30 | Define the component, focus, container, render, event, and disposal protocols. | pass | needs-rewrite | The six protocol defgenerics (:14-21) carry zero docstrings though this file owns the TUI contract (I0.1 requires them). | 20 |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | 10 | Compose cached Markdown and image components. | pass | no-rewrite | cons+make-list assembly at :239-259 copies image.ts char-for-char, but emitted bytes are the render-diff contract and dispatch is keyword-native. | 20 |
 | `src/cadr-tui/composition/root.lisp` | 317 | 23 | Own the TUI root, focus routing, render scheduling, and overlay stack. | pass | no-rewrite | The 11-field keyword double-spelling (:106-149) is exported public API with external callers; compile-time keyword checking beats brevity. | 20 |
-| `src/cadr-tui/composition/settings-list.lisp` | 459 | 30 | Implement settings-list behavior and the shared editor-component adapters. | pass · large | needs-rewrite | nth-per-row in the render loop (:210-211); worse, the space-literal surgery at :364-379 may diverge from the baseline search behavior — flagged for parity check. | 20 |
+| `src/cadr-tui/composition/settings-list.lisp` | 470 | 30 | Implement settings-list behavior and the shared editor-component adapters. | pass · large | needs-rewrite | nth-per-row in the render loop (:210-211). Space confirms only when search is off or the query is empty (baseline settings-list.ts:187). | 20 |
 | `src/cadr-tui/composition/text-box.lisp` | 275 | 23 | Implement text, spacer, box, and truncated-text components. | pass | needs-rewrite | JS-truthiness transcription killed the blank-text cache (:76-78 caches nil which :62 never reads); plus cl-ppcre for one char at :87-88. | 20 |
 | `src/cadr-tui/editor.lisp` | 1,976 | 87 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | pass · large | needs-rewrite | Paste spans are bare positional triples decoded with first/second/third at ~7 hand-copied sites (:324-909); a defstruct enforces the layout mechanically. | 20 |
 | `src/cadr-tui/fuzzy.lisp` | 134 | 8 | Score and filter fuzzy text matches. | pass | no-rewrite | Mutation-heavy index loop at :18-51 is idiomatic over CL string-vectors; score constants are the observable ordering contract. | 20 |

@@ -362,21 +362,32 @@
        (funcall
         (settings-list-component-on-cancel component)))
       (:text
-       (if (string= (or (input-event-text event) "") " ")
-           (settings-list-activate-item component)
-           (when
-               (and
-                (settings-list-component-search-enabled-p component)
-                (settings-list-component-search-input component))
-             (let ((sanitized
-                     (remove #\Space
-                             (or (input-event-text event) ""))))
-               (when (plusp (length sanitized))
-                 (single-line-input-handle-event
+       ;; Baseline settings-list.ts:187: space confirms only when
+       ;; search is off or the query is empty. A nonempty query
+       ;; treats space as a search character; paste keeps spaces.
+       ;; The old path stripped #\Space, so "Apple Terminal"
+       ;; became "AppleTerminal".
+       (let ((text (or (input-event-text event) "")))
+         (if (and (string= text " ")
+                  (or (not (settings-list-component-search-enabled-p
+                            component))
+                      (let ((input
+                              (settings-list-component-search-input
+                               component)))
+                        (and input
+                             (zerop
+                              (length
+                               (single-line-input-value input)))))))
+             (settings-list-activate-item component)
+             (when
+                 (and
+                  (settings-list-component-search-enabled-p component)
                   (settings-list-component-search-input component)
-                  (make-input-event
-                   :kind :text :text sanitized))
-                 (settings-list-apply-filter component))))))
+                  (plusp (length text)))
+               (single-line-input-handle-event
+                (settings-list-component-search-input component)
+                event)
+               (settings-list-apply-filter component)))))
       ((:backspace :delete)
        (when
            (and

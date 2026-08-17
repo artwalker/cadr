@@ -222,6 +222,58 @@
      component (cadr-tui:make-input-event :kind :escape))
     (is (= 1 cancelled))))
 
+(test settings-list-space-is-search-text-when-query-is-nonempty
+  ;; Baseline settings-list.ts:187. Empty query: space still
+  ;; activates. Nonempty query: space is a search character.
+  ;; Paste keeps spaces (no strip).
+  (let ((changes nil)
+        (items
+          (list
+           (cadr-tui:make-setting-item
+            :id "apple" :label "Apple Terminal"
+            :current-value "off"
+            :values '("off" "on"))
+           (cadr-tui:make-setting-item
+            :id "other" :label "Other"
+            :current-value "off"
+            :values '("off" "on")))))
+    (let ((component
+            (cadr-tui:make-settings-list-component
+             items 5
+             :search-enabled-p t
+             :on-change
+             (lambda (id value)
+               (push (list id value) changes)))))
+      (cadr-tui:component-handle-event
+       component (cadr-tui:make-input-event :kind :text :text " "))
+      (is (equal '(("apple" "on")) changes))
+      (cadr-tui:component-handle-event
+       component (cadr-tui:make-input-event :kind :text :text "Apple"))
+      (setf changes nil)
+      (cadr-tui:component-handle-event
+       component (cadr-tui:make-input-event :kind :text :text " "))
+      (is (null changes))
+      (is (string=
+           "Apple "
+           (cadr-tui:single-line-input-value
+            (cadr-tui::settings-list-component-search-input
+             component)))))
+    (let ((paster
+            (cadr-tui:make-settings-list-component
+             items 5 :search-enabled-p t)))
+      (cadr-tui:component-handle-event
+       paster
+       (cadr-tui:make-input-event :kind :text :text "Apple Terminal"))
+      (is (string=
+           "Apple Terminal"
+           (cadr-tui:single-line-input-value
+            (cadr-tui::settings-list-component-search-input
+             paster))))
+      (is (search
+           "Apple Terminal"
+           (format nil "~{~A~^~%~}"
+                   (cadr-tui:component-render paster 50)))))))
+
 (test goal12-tui-editor-component-protocol-covers-both-editors
   (dolist (editor
            (list (cadr-tui:make-multiline-editor :text "multi")
