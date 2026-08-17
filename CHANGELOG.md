@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Healed two source-parity mapping positions after the unused-helper
+  deletions (`credential-for-print` 192→183,
+  `render-truncated-text` 1524→1514). Verdicts and key set unchanged.
+
 - Goal 20: model and session selectors cache filter and haystack
   work across frames. Fuzzy matching downcases each candidate once
   per filter instead of once per token.
