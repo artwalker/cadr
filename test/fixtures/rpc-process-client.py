@@ -1,13 +1,80 @@
 #!/usr/bin/env python3
 import json
 import os
+import select
 import subprocess
 import sys
+import time
+
+EXPECTED_UI_METHODS = {
+    "notify",
+    "setStatus",
+    "setWidget",
+    "setTitle",
+    "set_editor_text",
+    "select",
+    "confirm",
+    "input",
+    "editor",
+}
+UI_DRAIN_SECONDS = 2.0
 
 
 def send(process, value):
     process.stdin.write(json.dumps(value, separators=(",", ":")) + "\n")
     process.stdin.flush()
+
+
+def ui_methods(records):
+    return {
+        record.get("method")
+        for record in records
+        if record.get("type") == "extension_ui_request"
+    }
+
+
+def answer_ui_request(process, record, eof_mode):
+    method = record.get("method")
+    if eof_mode and method in {"select", "confirm", "input", "editor"}:
+        return "eof"
+    if method == "select":
+        send(
+            process,
+            {
+                "type": "extension_ui_response",
+                "id": record["id"],
+                "value": "beta",
+            },
+        )
+    elif method == "confirm":
+        send(
+            process,
+            {
+                "type": "extension_ui_response",
+                "id": record["id"],
+                "cancelled": True,
+            },
+        )
+    elif method == "input":
+        if record.get("title") != "Timeout":
+            send(
+                process,
+                {
+                    "type": "extension_ui_response",
+                    "id": record["id"],
+                    "value": "typed",
+                },
+            )
+    elif method == "editor":
+        send(
+            process,
+            {
+                "type": "extension_ui_response",
+                "id": record["id"],
+                "value": "after",
+            },
+        )
+    return "ok"
 
 
 def main():
@@ -51,6 +118,7 @@ def main():
 
     records = []
     saw_agent_end = False
+    ui_mode = len(sys.argv) == 4
     while not saw_agent_end:
         line = process.stdout.readline()
         if not line:
@@ -58,8 +126,7 @@ def main():
         record = json.loads(line)
         records.append(record)
         if record.get("type") == "extension_ui_request":
-            method = record.get("method")
-            if eof_mode and method in {"select", "confirm", "input", "editor"}:
+            if answer_ui_request(process, record, eof_mode) == "eof":
                 process.stdin.close()
                 return_code = process.wait(timeout=10)
                 stderr = process.stderr.read()
@@ -69,44 +136,29 @@ def main():
                     )
                 print('{"eof_cleanup":true}')
                 return
-            if method == "select":
-                send(
-                    process,
-                    {
-                        "type": "extension_ui_response",
-                        "id": record["id"],
-                        "value": "beta",
-                    },
-                )
-            elif method == "confirm":
-                send(
-                    process,
-                    {
-                        "type": "extension_ui_response",
-                        "id": record["id"],
-                        "cancelled": True,
-                    },
-                )
-            elif method == "input":
-                if record.get("title") != "Timeout":
-                    send(
-                        process,
-                        {
-                            "type": "extension_ui_response",
-                            "id": record["id"],
-                            "value": "typed",
-                        },
-                    )
-            elif method == "editor":
-                send(
-                    process,
-                    {
-                        "type": "extension_ui_response",
-                        "id": record["id"],
-                        "value": "after",
-                    },
-                )
         saw_agent_end = record.get("type") == "agent_end"
+
+    # First agent_end can precede confirm/editor if another turn settles
+    # while the :input hook is still writing dialogs. Keep stdin open and
+    # drain for a bound so those requests are answered.
+    if ui_mode and not EXPECTED_UI_METHODS.issubset(ui_methods(records)):
+        deadline = time.monotonic() + UI_DRAIN_SECONDS
+        while time.monotonic() < deadline:
+            if EXPECTED_UI_METHODS.issubset(ui_methods(records)):
+                break
+            remaining = deadline - time.monotonic()
+            ready, _, _ = select.select(
+                [process.stdout], [], [], max(0.0, remaining)
+            )
+            if not ready:
+                break
+            line = process.stdout.readline()
+            if not line:
+                break
+            record = json.loads(line)
+            records.append(record)
+            if record.get("type") == "extension_ui_request":
+                answer_ui_request(process, record, eof_mode)
 
     process.stdin.close()
     return_code = process.wait(timeout=10)
@@ -133,30 +185,21 @@ def main():
     ) == 1
     assert any(record.get("type") == "message_update" for record in records)
     assert any(record.get("type") == "agent_end" for record in records)
-    if len(sys.argv) == 4:
-        methods = {
-            record.get("method")
-            for record in records
-            if record.get("type") == "extension_ui_request"
-        }
-        expected = {
-            "notify",
-            "setStatus",
-            "setWidget",
-            "setTitle",
-            "set_editor_text",
-            "select",
-            "confirm",
-            "input",
-            "editor",
-        }
-        missing = expected - methods
+    if ui_mode:
+        methods = ui_methods(records)
+        missing = EXPECTED_UI_METHODS - methods
         if missing:
+            tail = [
+                f"{record.get('type')}:{record.get('method')}"
+                for record in records[-8:]
+            ]
             raise AssertionError(
                 "extension_ui_request missing "
                 + ", ".join(sorted(str(name) for name in missing))
                 + "; got "
                 + ", ".join(sorted(str(name) for name in methods))
+                + "; tail "
+                + " ".join(tail)
             )
     print(
         json.dumps(
