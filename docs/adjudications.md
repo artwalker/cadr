@@ -146,3 +146,77 @@ threshold, so N came from measured data rather than taste — the discipline
 the earlier `cold_start` band lacked. Its fd-reuse finding (tracking only
 `openpty` polluted the log with 5.8MB of unrelated reads) is recorded so
 the next person does not rediscover it.
+
+---
+
+## 2026-08-16 — Undo stack: a byte budget, not a depth cap
+
+**Ruled**: advisor, under the user's standing delegation of technical
+decisions (2026-08-16). **Recorded in**:
+[`open-questions.md`](open-questions.md) `OQ-G20-UNDO-STACK-CAP`.
+
+**Decided**: option (c) — bound the editor undo stack by snapshot bytes
+rather than by entry count.
+
+**Why it was decidable**: the deciding fact was measurability, not
+preference. The snapshot is a plist whose mass is a single `:text` string
+(`src/cadr-tui/editor.lisp:148-154`), so `(length text)` *is* the size. Had
+it needed estimating, option (a) — keep parity, accept the cost — would
+have been the honest answer, because an approximate ceiling that fails at
+the extreme is worse than none.
+
+**How it reached the queue is the part worth keeping.** The advisor listed
+"cap the undo stack" as work to do regardless of benchmarks, having checked
+the cost but **not the baseline**. The executor refused the instruction,
+citing `packages/tui/src/undo-stack.ts:11-13` — the baseline stack is
+unbounded, so a cap is a new mechanism relative to pi and owed an
+open-questions entry before any implementation. The refusal was correct and
+the advisor's item was retracted.
+
+The executor then proposed option (c), which appears in neither the
+advisor's item nor the external report: bound by bytes so that shallow
+buffers stay fully undoable. **The adopted answer came from the party being
+instructed, not the party instructing.**
+
+**Standing consequence**: "this is obviously more sensible" is not grounds.
+Anything absent from the baseline is a new mechanism and goes through
+open-questions first, however reasonable it looks — and the advisor is as
+prone to this as anyone, which is why the executor's objection channel has
+to stay usable.
+
+---
+
+## 2026-08-16 — `accepted-gap` must name a compensating check, and may not dress backlog as limitation
+
+**Ruled**: advisor, under the user's standing delegation of technical
+decisions. **Recorded in**:
+`test/fixtures/render-diff/visible-string-unmodeled-review.json`
+(`packages/tui/src/tui-alt-screen.ts:438`).
+
+**Decided**: `accepted-gap` remains the correct class when the extractor
+genuinely cannot traverse a shape, but an entry using it must **name the
+compensating check that closes the loop**, with a file:line citation — and it
+must not offer "no scenario exercises this" as a reason when a scenario is
+writable with the existing harness.
+
+**Why it was decidable**: the registry's own precedent already sets the higher
+bar. `packages/coding-agent/src/core/timings.ts:48` ends its reason with *"cadr
+prints the identical title (`src/cadr-cli/support/timings.lisp:37`)"* — the
+extractor is blind, so the entry points at what is not. The v0.84.2
+alt-screen-search entry stacked two reasons and cited nothing. Measurement
+settled the second half: `startup-first` already issues `{"send": "ctrl+d"}`,
+so `{"send": "ctrl+shift+f"}` is directly expressible and the overlay is
+reachable — **an unwritten scenario, not an unreachable one.**
+
+**What the gap actually left open**: `" Find transcript"` matches the baseline
+byte-for-byte, **leading space included, and nothing asserts it**. The leading
+space is exactly what a later cleanup trims. Six commits earlier, `9e06ab61c`
+fixed this same defect shape — cadr had transcribed the harness variant of the
+skills prompt block and *dropped its leading blank line*. The shape recurred in
+new code with no guard.
+
+**Standing consequence**: a verdict class that means "genuinely needs no
+coverage" and a verdict class that means "not covered yet" cannot be the same
+class. Once they merge, the registry can no longer distinguish permanent
+limitations from backlog, and the backlog stops being visible to anyone
+counting gaps.

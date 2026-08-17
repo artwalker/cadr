@@ -579,8 +579,27 @@ written by `scripts/goal20-part-a-noise-bands.py` to
 | 2026-08-14T14:08:42Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,418.0 | 0.0 | 360,272 |
 | 2026-08-14T15:57:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 310,513.3 | 0.0 | 360,272 |
 | 2026-08-14T17:09:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 299,350.2 | 3,996.0 | 360,272 |
+| 2026-08-14T18:46:59Z | verify-isolated | Friend-MachineD | `isolated-copy` | 263,188.5 | 0.0 | 360,272 |
+| 2026-08-14T19:49:16Z | verify-isolated | Friend-MachineD | `isolated-copy` | 258,283.8 | 0.0 | 360,272 |
+| 2026-08-14T20:40:57Z | verify-isolated | Friend-MachineD | `isolated-copy` | 279,704.1 | 0.0 | 360,272 |
+| 2026-08-14T21:46:49Z | verify-isolated | Friend-MachineD | `isolated-copy` | 270,446.5 | 0.0 | 360,272 |
+| 2026-08-14T22:39:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 308,357.6 | 0.0 | 360,272 |
+| 2026-08-14T23:52:06Z | verify-isolated | Friend-MachineD | `isolated-copy` | 271,246.5 | 4,007.0 | 360,272 |
+| 2026-08-15T00:30:19Z | verify-isolated | Friend-MachineD | `isolated-copy` | 292,736.1 | 3,955.0 | 360,272 |
+| 2026-08-15T04:33:07Z | verify-isolated | Friend-MachineD | `isolated-copy` | 278,056.2 | 0.0 | 360,272 |
+| 2026-08-15T06:04:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 320,233.4 | 0.0 | 360,272 |
+| 2026-08-15T06:20:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 279,408.7 | 0.0 | 360,272 |
+| 2026-08-15T07:39:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 284,147.8 | 0.0 | 360,272 |
+| 2026-08-15T08:59:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 253,515.0 | 0.0 | 360,272 |
+| 2026-08-15T11:06:11Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,622.0 | 0.0 | 360,272 |
+| 2026-08-15T12:41:19Z | verify-isolated | Friend-MachineD | `isolated-copy` | 241,840.6 | 0.0 | 360,272 |
+| 2026-08-15T14:08:24Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,848.1 | 0.0 | 360,272 |
+| 2026-08-15T15:20:00Z | verify-isolated | Friend-MachineD | `isolated-copy` | 290,825.9 | 3,967.0 | 360,272 |
+| 2026-08-15T16:40:01Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,406.6 | 3,964.0 | 360,272 |
+| 2026-08-15T17:51:43Z | verify-isolated | Friend-MachineD | `isolated-copy` | 247,026.9 | 0.0 | 360,272 |
+| 2026-08-15T19:09:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 248,317.5 | 0.0 | 360,272 |
 
-Latest vs previous: `verify-isolated` (2026-08-14T17:09:15Z) versus `verify-isolated` (2026-08-14T15:57:44Z).
+Latest vs previous: `verify-isolated` (2026-08-15T19:09:32Z) versus `verify-isolated` (2026-08-15T17:51:43Z).
 
 <!-- GOAL20_PERF_HISTORY_END -->
 
@@ -594,21 +613,21 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-14T21:24:07Z) on `Friend-MachineD`, git `34f771b392d1`, ratio_gate=`enforced`, quick=no, samples=5
+Current: `paired-paths` (2026-08-15T12:07:28Z) on `Friend-MachineD`, git `400dbadf4978`, ratio_gate=`enforced`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-14T17:38:30Z) on `Friend-MachineD`, git `6211fff2f2d7`, ratio_gate=`enforced`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-14T21:24:07Z) on `Friend-MachineD`, git `34f771b392d1`, ratio_gate=`enforced`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 6.5 | 4.0 | 1.64× | 1.89× | 3.00× |
-| `cli_dispatch.help_render` | 4.2 | 0.7 | 5.92× | 7.39× | 6.00× |
-| `cli_dispatch.list_models_registry` | 2,334.4 | 4,152.4 | 0.56× | 0.57× | 1.50× |
-| `cli_dispatch.list_models_render` | 3,641.9 | 1,249.6 | 2.91× | 2.78× | 4.00× |
-| `provider_stream.stream_roundtrip` | 5,883.7 | 5,791.6 | 1.02× | 1.58× | 2.50× |
-| `session_pipeline.session_load` | 7,635.5 | 1,703.0 | 4.48× | 6.71× | 9.00× |
-| `session_pipeline.context_walk` | 112.0 | 94.5 | 1.19× | 0.99× | 2.00× |
-| `storage_journal.journal_read` | 5,992.6 | 1,528.4 | 3.92× | 5.42× | 8.00× |
-| `storage_journal.journal_append` | 3,785.1 | 1,721.7 | 2.20× | 1.90× | 12.00× |
+| `cli_dispatch.argv_parse` | 6.5 | 4.1 | 1.59× | 1.64× | 3.00× |
+| `cli_dispatch.help_render` | 4.3 | 0.8 | 5.36× | 5.92× | 6.00× |
+| `cli_dispatch.list_models_registry` | 2,900.0 | 4,420.8 | 0.66× | 0.56× | 1.50× |
+| `cli_dispatch.list_models_render` | 4,203.1 | 1,321.0 | 3.18× | 2.91× | 4.00× |
+| `provider_stream.stream_roundtrip` | 6,252.8 | 4,833.1 | 1.29× | 1.02× | 2.50× |
+| `session_pipeline.session_load` | 7,203.0 | 1,684.9 | 4.28× | 4.48× | 9.00× |
+| `session_pipeline.context_walk` | 110.0 | 101.0 | 1.09× | 1.19× | 2.00× |
+| `storage_journal.journal_read` | 5,956.3 | 1,514.5 | 3.93× | 3.92× | 8.00× |
+| `storage_journal.journal_append` | 4,373.3 | 1,977.8 | 2.21× | 2.20× | 12.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
@@ -617,9 +636,9 @@ Previous: `paired-paths` (2026-08-14T17:38:30Z) on `Friend-MachineD`, git `6211f
 | 2026-08-14T16:48:03Z | paired-paths | `c287896cec9e` | no | enforced | 2.15× | 5.05× | 5.79× | 2.91× |
 | 2026-08-14T17:38:30Z | paired-paths | `6211fff2f2d7` | no | enforced | 1.90× | 5.42× | 6.71× | 2.78× |
 | 2026-08-14T21:24:07Z | paired-paths | `34f771b392d1` | no | enforced | 2.20× | 3.92× | 4.48× | 2.91× |
+| 2026-08-15T12:07:28Z | paired-paths | `400dbadf4978` | no | enforced | 2.21× | 3.93× | 4.28× | 3.18× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
-
 ## Goal 20 Part O remaining-path profiles
 
 The four paired paths still above 1.0× after probes 7a–7d are captured

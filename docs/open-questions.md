@@ -17,6 +17,61 @@ Items awaiting adjudication:
   denominator, per the lesson that a coverage gate without a declared
   denominator becomes the next I04. Gate addition, so it waits here.
 
+  **Adjudicated (advisor, 2026-08-16; user delegated, retains the veto):
+  build it, but as a cross-implementation differential against the pinned
+  pi, NOT as golden snapshots of cadr against itself.**
+
+  The advisor's first draft proposed goldens keyed to the three slots of
+  `context` (`src/cadr-ai/types.lisp:185-188`), arguing the denominator was
+  closed by the type. **That argument is wrong and the draft was
+  withdrawn.** Model-visible bytes reach a provider without passing through
+  those slots, verified in-tree:
+
+  - `src/cadr-ai/provider.lisp:431` synthesises `"No result provided"` for
+    a tool call with no result — text present in no `context`.
+  - `src/cadr-ai/providers/openai.lisp:118` injects fabricated message ids
+    (`msg_cadr_~D`) during serialisation.
+  - `src/cadr-agent/compaction.lisp:255` and
+    `src/cadr-agent/branch-summarization.lisp:125` each build a separate
+    sub-context from their own system prompt.
+
+  **And the decisive objection**: the defect that motivated this gate
+  happened in `format-skills-for-system-prompt`
+  (`src/cadr-agent/resources.lisp:718`) — the string was already wrong
+  *before* it reached `context-system-prompt`. A gate on the three slots
+  would not have caught it. That is the same failure this project rejected
+  in the liveness proposal a day earlier: a gate that misses the defect
+  that prompted it.
+
+  Goldens are also the wrong instrument here for a reason already on the
+  record: snapshotting cadr against itself is how thirteen defective
+  full-screen SHAs shipped green. A composed prompt interpolates absolute
+  paths, cwd and tool descriptions, so any unrelated edit rewrites the
+  snapshot and the update becomes reflexive — the boilerplate-approval
+  failure mode `development-policy` §5.4.1 already forbids.
+
+  **Shape of the accepted gate**: drive pinned pi and cadr through the same
+  scripted scenario, capture what each *actually sends* — after
+  composition, after provider serialisation, after extension request hooks
+  — and diff. The project already owns this oracle: the pinned baseline
+  and the PTY harness. Placing the capture at the wire, not at the struct,
+  makes composition bugs, serialisation injections and out-of-band
+  sub-contexts all visible in one place, and it removes the
+  self-snapshot problem because the expectation comes from pi.
+
+  **Implementation requirements, binding:**
+
+  - **Gate-validity proof first**: revert the skills-block fix
+    (`9e06ab61c`) in a scratch tree and confirm the differential goes red
+    on it. A gate that cannot catch the defect it was built for does not
+    ship.
+  - **Declare the denominator** — which scenarios, which providers, which
+    branches (default vs custom prompt) — and state what it does not
+    cover.
+  - Normalisation is fail-closed and follows the render-diff precedent:
+    only user-approved substitutions confined to exact delimiters; raw
+    bytes stay the authority.
+
 - `OQ-G20-DOCS-CONTENT-PARITY`: **whether user-facing doc content is a
   parity obligation** (goal 20 prompt review, item D). cadr ships 11 user
   docs named after pi's (`extensions.md`, `keybindings.md`, `themes.md`,

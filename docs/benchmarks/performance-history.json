@@ -135,6 +135,177 @@
       "coldStartMedianUs": 299350.15625,
       "frame5000MedianUs": 3996.0000000000005,
       "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T18:46:59Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 263188.46875,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T19:49:16Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 258283.765625,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T20:40:57Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 279704.125,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T21:46:49Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 270446.46875,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T22:39:46Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 308357.5625,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-14T23:52:06Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 271246.53125,
+      "frame5000MedianUs": 4007.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T00:30:19Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 292736.125,
+      "frame5000MedianUs": 3955.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T04:33:07Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 278056.25,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T06:04:32Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 320233.4375,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T06:20:37Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 279408.6875,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T07:39:32Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 284147.84375,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T08:59:15Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 253515.015625,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T11:06:11Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 269622.0,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T12:41:19Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 241840.59375,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T14:08:24Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 267848.0625,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T15:20:00Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 290825.9375,
+      "frame5000MedianUs": 3967.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T16:40:01Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 269406.625,
+      "frame5000MedianUs": 3963.9999999999995,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T17:51:43Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 247026.859375,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
+    },
+    {
+      "recordedAt": "2026-08-15T19:09:32Z",
+      "label": "verify-isolated",
+      "gitHead": "isolated-copy",
+      "machine": "Friend-MachineD",
+      "coldStartMedianUs": 248317.515625,
+      "frame5000MedianUs": 0.0,
+      "frame5000MedianBytes": 360272.0
     }
   ]
 }

@@ -311,6 +311,38 @@ independently audited.**
 
 Coverage-type metrics must state what they measure. Example: the construction suite for `baseline-visible-strings` is TypeScript and drives the fixed-baseline pi, so **its 672/672 measures how completely the scenario set drives the baseline's branches, not cadr's conformance**, and it is structurally incapable of finding a string cadr is missing. For every metric of this kind, the report must state the measured object honestly and must not present it with a stronger meaning.
 
+### 7. A gate result names the state it measured, and that state is a commit
+
+A green run proves something about the tree it ran in. When the repository is
+being edited concurrently, **the working tree is not any commit** — it is the
+author's current desk. A gate run there attests to a state that no reviewer can
+check out and that will never be pushed.
+
+**So a gate result that will be quoted as evidence is produced in a clean
+checkout of the commit it speaks for**, and the report names that commit:
+
+```
+W=$(mktemp -d); git worktree add -q "$W/h" <commit> && (cd "$W/h" && ./scripts/test-cl.sh)
+```
+
+**Why this is written down** (advisor, 2026-08-16): the advisor reported
+`18589/18589` for a batch of ported commits, having run the suite in the live
+working tree while the executor was mid-edit. **`HEAD` had been red for twelve
+commits at that moment** — a hand-pinned count in
+`test/cadr-cli/goal12-examples-test.lisp` disagreed with `docs/source-parity.md`
+after a legitimate reclassification changed the ledger and not the pin. The
+executor's uncommitted fix was on disk, so the run was green and the claim was
+false. This is the second instance of the same error; the first read a
+working-tree file count as evidence about a script's behaviour while the same
+file was being edited.
+
+**A related trap in this repository's own harness**: `scripts/test-cl.sh` does
+not print `cadr test summary` when a suite aborts — it emits
+`incomplete FiveAM accounting; expected exactly 9 suite summaries`. Grepping
+only for the summary line therefore returns nothing on failure, which reads as
+"the run did not happen" rather than "the run failed". **Green means nine suite
+summaries were seen, not that no failure line was found.**
+
 ## 6. Standing uses of Lisp's capabilities (advisor investigation 2026-08-13; user adjudicated it into standing form)
 
 **This section records practices, not any one goal's tasks.** goal 20 Part N is their first engineering application; **this section remains in force after Part N closes out.** Every item adds zero dependencies (`sb-introspect`, `sb-mop`, `trace`, `sb-cover`, and `sb-sprof` all ship with SBCL; slynk was approved by `OQ-G10-D2-SLYNK-REPL` on 2026-08-01 and ships with the image).
