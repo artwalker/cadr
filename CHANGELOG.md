@@ -73,6 +73,9 @@ tag/Release step.
 
 ### Fixed
 
+- Booked the unpaired-path denominator at 122644 after the
+  process-modes UI diagnostics added 18 lines to RPC UI.
+
 - RPC process-modes UI path prints hook/dispatch/client
   diagnostics for confirm and editor so a missing pair can be
   located on the next CI run. Required method set unchanged.
