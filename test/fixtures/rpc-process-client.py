@@ -139,7 +139,7 @@ def main():
             for record in records
             if record.get("type") == "extension_ui_request"
         }
-        assert {
+        expected = {
             "notify",
             "setStatus",
             "setWidget",
@@ -149,7 +149,15 @@ def main():
             "confirm",
             "input",
             "editor",
-        }.issubset(methods)
+        }
+        missing = expected - methods
+        if missing:
+            raise AssertionError(
+                "extension_ui_request missing "
+                + ", ".join(sorted(str(name) for name in missing))
+                + "; got "
+                + ", ".join(sorted(str(name) for name in methods))
+            )
     print(
         json.dumps(
             {
