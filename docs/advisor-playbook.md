@@ -113,6 +113,10 @@ twelve commits while the live tree looked green.
 ## 5. Per-commit-type verification recipes
 
 **Re-pin commits** (dispositions, fixture digests):
+- key dispositions by the triple `(scenario, checkpoint, dimensions)`.
+  Keying only `(scenario, checkpoint)` collapses 432 rows to 304
+  (128 duplicate keys). Goal 20 §9 handover counted that artifact
+  twice; the verdict was unaffected.
 - entry count unchanged (or the delta explained), key set identical;
 - the **only** changed field is the digest (`screenSha256` or equivalent);
   classes, reasons, and per-class usage counts show zero change — diff them
