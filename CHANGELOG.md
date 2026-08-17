@@ -83,8 +83,10 @@ tag/Release step.
 
 - Render-diff semantic screens collapse `node:internal/<module>:N:M`
   line numbers to `<NODE_LINE>:<NODE_COLUMN>` so Node patch releases
-  do not move fatal-crash I04 pairs. Dispositions are not re-pinned
-  in this change.
+  do not move fatal-crash I04 pairs.
+
+- Re-pin `fatal-crash/{wide,narrow}/fatal-crash` pi `screenSha256`
+  after the node:internal collapse. cadr SHAs unchanged.
 
 - Goal 20 P0-4: extension `send-message` with trigger-turn no longer
   runs the agent turn on the TUI input thread, so streaming text, tool
