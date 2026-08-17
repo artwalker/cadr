@@ -281,6 +281,58 @@
              (cadr-server:instance-record-status
               (second records))))))))
 
+(defclass silent-session-rpc-process
+    (fake-rpc-process)
+  ())
+
+(defmethod cadr-server::rpc-process-send
+    ((process silent-session-rpc-process)
+     command)
+  (push command (fake-commands process))
+  (let ((type
+          (cadr-ai::json-get command "type")))
+    (if (string= type "get_state")
+        (cadr-ai::json-object
+         "type" "response"
+         "id" (cadr-ai::json-get command "id")
+         "success" t
+         "command" "get_state"
+         "data" (cadr-ai::json-object))
+        (cadr-ai::json-object
+         "type" "response"
+         "id" (cadr-ai::json-get command "id")
+         "success" t
+         "command" type))))
+
+(test spawn-requires-child-session-id-before-online
+  (with-server-directory (directory)
+    (let* ((processes
+             (make-array 0
+                         :adjustable t
+                         :fill-pointer 0))
+           (supervisor
+             (cadr-server:make-server-supervisor
+              :server-directory directory
+              :rpc-process-factory
+              (lambda (cwd)
+                (declare (ignore cwd))
+                (let ((process
+                        (make-instance
+                         'silent-session-rpc-process)))
+                  (vector-push-extend
+                   process processes)
+                  process))
+              :radius
+              (cadr-server::make-dormant-radius-presence)))
+           (cadr-server::*spawn-session-sync-attempts*
+             1))
+      (signals error
+        (cadr-server:supervisor-spawn-instance
+         supervisor :cwd "/tmp/work"))
+      (is (null
+           (cadr-server:supervisor-list-live-instances
+            supervisor))))))
+
 (test unexpected-child-exit-converges-to-error
   (with-server-directory (directory)
     (let* ((processes

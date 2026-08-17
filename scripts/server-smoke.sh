@@ -92,12 +92,10 @@ STATUS="$(
   cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
   exit 1
 }
-# sessionId is filled from the child's get_state. Isolated CI workers
-# come up online before that field exists (run 31987492420 waited 4s
-# and it never appeared). The socket contract is id + online; session
-# attachment is checked by the get_state RPC below if present.
+# online implies sessionId: spawn syncs get_state before :online.
+# de74def1c dropped this check as a temporary diagnostic; restored.
 if ! printf '%s' "$STATUS" | jq -e --arg id "$INSTANCE_ID" \
-  '.ok and .instance.id == $id and .instance.status == "online"' \
+  '.ok and .instance.id == $id and .instance.status == "online" and .instance.sessionId != null' \
   >/dev/null; then
   echo "server smoke: status payload rejected" >&2
   printf 'status stdout: %s\n' "$STATUS" >&2

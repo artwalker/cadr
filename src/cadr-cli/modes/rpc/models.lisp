@@ -4,21 +4,26 @@
   '(:off :minimal :low :medium :high :xhigh :max))
 
 (defun model-to-rpc-json (model)
-  (cadr-ai::json-object
-   "id" (cadr-ai:model-id model)
-   "name" (cadr-ai::model-name model)
-   "provider"
-   (string-downcase
-    (symbol-name
-     (cadr-ai:model-provider model)))
-   "api"
-   (rpc-symbol-name
-    (cadr-ai:model-api model))
-   "baseUrl" (cadr-ai:model-base-url model)
-   "reasoning" (cadr-ai:model-reasoning-p model)
-   "contextWindow"
-   (cadr-ai:model-context-window model)
-   "maxTokens" (cadr-ai:model-max-tokens model)))
+  ;; Baseline RpcSessionState.model is optional. A credential-free
+  ;; child keeps the no-model sentinel; get_state must still report
+  ;; sessionId instead of raising on NIL.
+  (if (null model)
+      'null
+      (cadr-ai::json-object
+       "id" (cadr-ai:model-id model)
+       "name" (cadr-ai::model-name model)
+       "provider"
+       (string-downcase
+        (symbol-name
+         (cadr-ai:model-provider model)))
+       "api"
+       (rpc-symbol-name
+        (cadr-ai:model-api model))
+       "baseUrl" (cadr-ai:model-base-url model)
+       "reasoning" (cadr-ai:model-reasoning-p model)
+       "contextWindow"
+       (cadr-ai:model-context-window model)
+       "maxTokens" (cadr-ai:model-max-tokens model))))
 
 (defun metadata-to-model (metadata)
   (cadr-agent::metadata-model-copy metadata))

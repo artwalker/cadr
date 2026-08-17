@@ -244,6 +244,35 @@
               data "sessionFile")))))))
   (live-instance-record live))
 
+(defparameter *spawn-session-sync-attempts* 50)
+(defparameter *spawn-session-sync-interval* 0.02)
+
+(defun live-session-id-ready-p (live)
+  (let ((session-id
+          (instance-record-session-id
+           (live-instance-record live))))
+    (and (stringp session-id)
+         (plusp (length session-id)))))
+
+(defun sync-instance-record-until-session
+    (supervisor live)
+  (loop
+    for attempt from 1
+    to *spawn-session-sync-attempts*
+    do
+       (sync-instance-record
+        supervisor live)
+       (when (live-session-id-ready-p live)
+         (return-from
+          sync-instance-record-until-session
+          (live-instance-record live)))
+       (when (< attempt
+                *spawn-session-sync-attempts*)
+         (sleep
+          *spawn-session-sync-interval*)))
+  (error
+   "RPC child did not report a sessionId"))
+
 (defun refresh-session-metadata-p
     (command)
   (member
@@ -289,7 +318,7 @@
             (supervisor-process-factory
              supervisor)
             cwd))
-          (sync-instance-record
+          (sync-instance-record-until-session
            supervisor live)
           (let ((registered
                   (radius-register-pi

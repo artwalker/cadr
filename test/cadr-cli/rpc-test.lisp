@@ -176,6 +176,42 @@
              (cadr-ai::json-get
               (third records) "command")))))))
 
+(test rpc-get-state-succeeds-when-agent-model-is-nil
+  (with-test-directory (directory)
+    (let* ((output
+             (make-string-output-stream))
+           (state
+             (make-rpc-test-state
+              directory output))
+           (agent
+             (cadr-cli::rpc-state-agent state)))
+      (setf (cadr-agent:agent-model agent) nil)
+      (cadr-cli::rpc-handle-line
+       state
+       "{\"id\":\"state-nil\",\"type\":\"get_state\"}")
+      (let* ((records
+               (rpc-output-records output))
+             (record (first records))
+             (data
+               (cadr-ai::json-get record "data")))
+        (is (= 1 (length records)))
+        (is (eq t
+                (cadr-ai::json-get
+                 record "success")))
+        (is (string=
+             "get_state"
+             (cadr-ai::json-get
+              record "command")))
+        (is (eq 'null
+                (cadr-ai::json-get data "model")))
+        (is (stringp
+             (cadr-ai::json-get
+              data "sessionId")))
+        (is (plusp
+             (length
+              (cadr-ai::json-get
+               data "sessionId"))))))))
+
 (test rpc-prompt-acknowledges-once-and-streams-agent-events
   (with-test-directory (directory)
     (let* ((output
