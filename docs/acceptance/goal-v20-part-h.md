@@ -291,16 +291,16 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,586 lines**
+Denominator: **295 files / 122,613 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 20,765 | 16.9% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,792 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,501 | 6.1% | single reference vs previous cadr |
 | `pairable-uncovered` | 236 | 94,320 | 76.9% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 16.9% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
 - **K-blocked** until a new pair or a booked unpairable finding: 76.9% of lines.
 
@@ -343,7 +343,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/truncate.lisp` | 312 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 563 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/providers/openai-completions.lisp` | 856 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/providers/openai-completions.lisp` | 883 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 101 | `provider_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 752 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 319 | `cli_dispatch.list_models_render` |

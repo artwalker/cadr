@@ -647,7 +647,26 @@
     (update-openai-chat-usage message (json-get response "usage"))
     message))
 
-(defun chat-stream-block (state key type emit)
+(defun first-completions-reasoning-field (delta)
+  ;; Baseline openai-completions.ts:492-501. First nonempty string
+  ;; among the three fields; later fields are ignored so a provider
+  ;; that emits two of them (chutes.ai) does not double the block.
+  (dolist (field '("reasoning_content" "reasoning" "reasoning_text"))
+    (let ((value (json-get delta field)))
+      (when (non-empty-string-p value)
+        (return (values field value))))))
+
+(defun completions-thinking-signature (provider-id field)
+  ;; Baseline openai-completions.ts:507-509. opencode-go history
+  ;; replay expects the llama.cpp key when the stream used
+  ;; `reasoning`.
+  (if (and (eq provider-id :opencode-go)
+           (string= field "reasoning"))
+      "reasoning_content"
+      field))
+
+(defun chat-stream-block (state key type emit
+                          &key (signature "reasoning_content"))
   (let* ((message (provider-stream-state-message state))
          (index
            (gethash key
@@ -661,7 +680,7 @@
               (:text (make-text-content))
               (:thinking
                (make-thinking-content
-                :signature "reasoning_content"))))
+                :signature signature))))
       (setf index (append-content-block message block)
             (gethash key
                      (provider-stream-state-block-indices state))
@@ -674,11 +693,13 @@
                   :content-index index))
     (values block index)))
 
-(defun append-chat-text-delta (state key type delta emit)
+(defun append-chat-text-delta (state key type delta emit
+                               &key (signature "reasoning_content"))
   (when (and (stringp delta)
              (plusp (length delta)))
     (multiple-value-bind (block index)
-        (chat-stream-block state key type emit)
+        (chat-stream-block state key type emit
+                           :signature signature)
       (ecase type
         (:text
          (setf (text-content-text block)
@@ -804,9 +825,15 @@
           (let ((delta (json-get choice "delta"))
                 (finish-reason
                   (json-get choice "finish_reason")))
-            (append-chat-text-delta
-             state :thinking :thinking
-             (json-get delta "reasoning_content") emit)
+            (multiple-value-bind (field value)
+                (first-completions-reasoning-field delta)
+              (when field
+                (append-chat-text-delta
+                 state :thinking :thinking value emit
+                 :signature
+                 (completions-thinking-signature
+                  (assistant-message-provider message)
+                  field))))
             (append-chat-text-delta
              state :text :text
              (json-get delta "content") emit)

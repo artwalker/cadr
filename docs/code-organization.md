@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122586 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122613 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -142,7 +142,7 @@ files with unrelated facilities fail.
 | `src/cadr-ai/providers/mistral.lisp` | 98 | 4 | Adapt Mistral Conversations reasoning and tool-call identifiers. | pass | needs-rewrite | Session/cache-affinity decision hand-copied at :75-78 vs :90-93 plus a duplicated hash-input branch; bind once in the let*. | 20 |
 | `src/cadr-ai/providers/pi-messages.lisp` | 254 | 6 | Implement pi Messages request rewriting and event/response reduction. | pass | needs-rewrite | nth per stream event at :181/:197 while a hash keyed by the same index exists at :170-172; store blocks in it. | 20 |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | 2 | Adapt Google Vertex endpoints and signed request construction. | pass | no-rewrite | {location} substring sniffing at :7 is the baseline base-URL config contract; credential fallback is or/let* idiom with signaled errors. | 20 |
-| `src/cadr-ai/providers/openai-completions.lisp` | 856 | 31 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | pass · large | needs-rewrite | Magic +100000 key namespacing with nth lookups at :657/:700/:707/:753; store the block object in block-indices instead. | 20 |
+| `src/cadr-ai/providers/openai-completions.lisp` | 883 | 33 | Implement OpenAI-compatible Chat Completions request, response, tool, and stream semantics. | pass · large | needs-rewrite | Magic +100000 key namespacing with nth lookups at :668/:720/:727/:773; store the block object in block-indices instead. | 20 |
 | `src/cadr-ai/providers/openai.lisp` | 829 | 17 | Implement OpenAI Responses request, response, tool, reasoning, and stream semantics. | pass · large | needs-rewrite | openai-stream-block does nth random access per delta at :564-572; block-indices can hold the block object. | 20 |
 | `src/cadr-ai/providers/definitions.lisp` | 1,035 | 14 | Validate and own the complete 38-provider declaration matrix and environment inputs. | pass · large | needs-rewrite | +provider-definition-row-keys+ at :929-935 hand-copies 22 slot names that sb-mop already derives at :36-42. | 20 |
 | `src/cadr-ai/providers/registry.lisp` | 157 | 2 | Instantiate declared providers through the appropriate native protocol class. | pass | no-rewrite | Five metadata-or-fallback ifs at :124-148 share a shape but are five distinct decisions — the explicit chain is the auditable parity contract. | 20 |

@@ -89,6 +89,13 @@ tag/Release step.
 
 ### Fixed
 
+- Completions streams read the first nonempty of
+  `reasoning_content`, `reasoning`, and `reasoning_text`
+  (baseline openai-completions.ts:489-509). Dual emit does not
+  double the thinking block. OpenCode Go `reasoning` uses the
+  `reasoning_content` signature so history replay matches.
+  FiveAM 18657 → 18665.
+
 - Settings-list space matches the baseline: activate only when
   search is off or the query is empty; otherwise space and paste
   keep spaces in the search box (baseline settings-list.ts:187).
@@ -119,6 +126,9 @@ tag/Release step.
   matching a new prompt. A second hook invocation can no longer
   block confirm/editor answers. Unconditional `rpc-ui-diag`
   prints removed from the RPC UI product path.
+
+- Booked the unpaired-path denominator at 122613 after completions
+  reasoning-field coverage.
 
 - Booked the unpaired-path denominator at 122586 after aligning
   settings-list space with the baseline.

@@ -348,3 +348,83 @@
              "terminal"
              (cadr-ai:assistant-message-error-message
               message)))))))
+
+(defun completions-thinking-from-delta (model delta)
+  ;; Baseline openai-completions.ts:489-509. One SSE chunk, then
+  ;; inspect the thinking block (if any).
+  (let* ((provider
+           (cadr-ai:make-openai-completions-provider
+            :api-key "test"))
+         (state
+           (cadr-ai::make-provider-stream-state
+            :message (cadr-ai::empty-assistant-message model)))
+         (payload
+           (cadr-ai::stringify-json
+            (cadr-ai::json-object
+             "id" "chatcmpl-think"
+             "choices"
+             (vector
+              (cadr-ai::json-object
+               "delta" delta
+               "finish_reason" 'cadr-ai::null))))))
+    (cadr-ai::reduce-provider-sse-event
+     provider state
+     (cadr-ai::make-sse-event :data payload)
+     (lambda (event) (declare (ignore event))))
+    (let ((block
+            (find-if
+             (lambda (item)
+               (typep item 'cadr-ai:thinking-content))
+             (cadr-ai:assistant-message-content
+              (cadr-ai::provider-stream-state-message state)))))
+      (values
+       (and block (cadr-ai:thinking-content-thinking block))
+       (and block (cadr-ai:thinking-content-signature block))))))
+
+(test openai-completions-stream-reads-first-nonempty-reasoning-field
+  ;; Baseline openai-completions.ts:492-509. First nonempty of
+  ;; reasoning_content / reasoning / reasoning_text. Dual emit
+  ;; does not double. opencode-go + reasoning uses the
+  ;; reasoning_content signature.
+  (let ((model
+          (cadr-ai:make-model
+           :id "mimo-v2.5"
+           :provider :opencode-go
+           :api :openai-completions
+           :base-url "https://opencode.ai/zen/go/v1"
+           :max-tokens 1024
+           :reasoning-p t)))
+    (multiple-value-bind (text signature)
+        (completions-thinking-from-delta
+         model
+         (cadr-ai::json-object "reasoning" "via reasoning"))
+      (is (string= "via reasoning" text))
+      (is (string= "reasoning_content" signature)))
+    (multiple-value-bind (text signature)
+        (completions-thinking-from-delta
+         model
+         (cadr-ai::json-object "reasoning_text" "via text"))
+      (is (string= "via text" text))
+      (is (string= "reasoning_text" signature)))
+    (multiple-value-bind (text signature)
+        (completions-thinking-from-delta
+         model
+         (cadr-ai::json-object
+          "reasoning_content" "once"
+          "reasoning" "once"))
+      (is (string= "once" text))
+      (is (string= "reasoning_content" signature)))
+    (let ((other
+            (cadr-ai:make-model
+             :id "other"
+             :provider :deepseek
+             :api :openai-completions
+             :base-url "https://api.deepseek.com"
+             :max-tokens 1024
+             :reasoning-p t)))
+      (multiple-value-bind (text signature)
+          (completions-thinking-from-delta
+           other
+           (cadr-ai::json-object "reasoning" "plain"))
+        (is (string= "plain" text))
+        (is (string= "reasoning" signature))))))
