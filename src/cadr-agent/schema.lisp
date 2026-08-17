@@ -16,11 +16,16 @@
                      (native-schema-error-json-pointer condition)))
                (if (zerop (length pointer)) "/" pointer))))))
 
-(defmacro when-present ((value object key) &body body)
-  ;; TS !== undefined. One owner of the present-p guard; errors stay
-  ;; at the call site so the pointer/reason text does not drift.
-  `(multiple-value-bind (,value present-p)
+(defmacro with-present ((value present-p object key) &body body)
+  ;; Baseline packages/ai/src/utils/validation.ts: a key is present
+  ;; when it is not undefined. One owner of gethash's two values;
+  ;; pointer/reason text stays at the call site.
+  `(multiple-value-bind (,value ,present-p)
        (gethash ,key ,object)
+     ,@body))
+
+(defmacro when-present ((value object key) &body body)
+  `(with-present (,value present-p ,object ,key)
      (when present-p
        ,@body)))
 
@@ -85,8 +90,7 @@
               (schema-fail pointer
                            "Reference ~S does not resolve to a schema"
                            reference))
-            (multiple-value-bind (next present-p)
-                (gethash segment current)
+            (with-present (next present-p current segment)
               (unless present-p
                 (schema-fail pointer
                              "Reference ~S does not resolve to a schema"
@@ -130,8 +134,7 @@
              pointer
              "type must be a valid type name or a non-empty array of unique type names"))))
        (validate-nonnegative-integer (node key pointer)
-         (multiple-value-bind (value present-p)
-             (gethash key node)
+         (with-present (value present-p node key)
            (when (and present-p
                       (not (and (integerp value)
                                 (>= value 0))))
@@ -160,8 +163,7 @@
        (walk (node pointer)
          (unless (hash-table-p node)
            (schema-fail pointer "Expected a JSON Schema object"))
-         (multiple-value-bind (type present-p)
-             (gethash "type" node)
+         (with-present (type present-p node "type")
            (when present-p
              (validate-type type
                             (schema-pointer pointer "type"))))
@@ -172,8 +174,7 @@
          (dolist (key '("minimum" "maximum"
                         "exclusiveMinimum" "exclusiveMaximum"
                         "multipleOf"))
-           (multiple-value-bind (value present-p)
-               (gethash key node)
+           (with-present (value present-p node key)
              (when (and present-p
                         (not (realp value)))
                (schema-fail
@@ -185,8 +186,7 @@
                (schema-fail
                 (schema-pointer pointer key)
                 "multipleOf must be greater than zero"))))
-         (multiple-value-bind (required present-p)
-             (gethash "required" node)
+         (with-present (required present-p node "required")
            (when present-p
              (unless (and (schema-array-p required)
                           (every #'stringp required)
@@ -198,16 +198,14 @@
                (schema-fail
                 (schema-pointer pointer "required")
                 "required must be an array of unique strings"))))
-         (multiple-value-bind (enum present-p)
-             (gethash "enum" node)
+         (with-present (enum present-p node "enum")
            (when (and present-p
                       (not (and (schema-array-p enum)
                                 (plusp (length enum)))))
              (schema-fail
               (schema-pointer pointer "enum")
               "enum must be a non-empty array")))
-         (multiple-value-bind (pattern present-p)
-             (gethash "pattern" node)
+         (with-present (pattern present-p node "pattern")
            (when present-p
              (unless (stringp pattern)
                (schema-fail
@@ -223,8 +221,7 @@
          (dolist (key '("properties" "patternProperties"
                         "$defs" "definitions"
                         "dependentSchemas"))
-           (multiple-value-bind (value present-p)
-               (gethash key node)
+           (with-present (value present-p node key)
              (when present-p
                (walk-schema-map
                 value (schema-pointer pointer key)))))
@@ -236,14 +233,12 @@
                         "then"
                         "else"
                         "propertyNames"))
-           (multiple-value-bind (value present-p)
-               (gethash key node)
+           (with-present (value present-p node key)
              (when (and present-p
                         (not (or (eq value t)
                                  (null value))))
                (walk value (schema-pointer pointer key)))))
-         (multiple-value-bind (items present-p)
-             (gethash "items" node)
+         (with-present (items present-p node "items")
            (when present-p
              (cond
                ((hash-table-p items)
@@ -261,13 +256,11 @@
                  (schema-pointer pointer "items")
                  "items must be a schema or an array of schemas")))))
          (dolist (key '("allOf" "anyOf" "oneOf"))
-           (multiple-value-bind (value present-p)
-               (gethash key node)
+           (with-present (value present-p node key)
              (when present-p
                (walk-schema-array
                 value (schema-pointer pointer key)))))
-         (multiple-value-bind (dependencies present-p)
-             (gethash "dependentRequired" node)
+         (with-present (dependencies present-p node "dependentRequired")
            (when present-p
              (unless (hash-table-p dependencies)
                (schema-fail
@@ -290,8 +283,7 @@
                     key)
                    "Dependency must be an array of unique strings")))
               dependencies)))
-         (multiple-value-bind (reference present-p)
-             (gethash "$ref" node)
+         (with-present (reference present-p node "$ref")
            (when present-p
              (resolve-local-schema-reference
               schema reference
@@ -308,8 +300,7 @@
       (loop for key being the hash-keys of left
             using (hash-value value)
             always
-            (multiple-value-bind (other present-p)
-                (gethash key right)
+            (with-present (other present-p right key)
               (and present-p
                    (json-schema-value-equal-p
                     value other))))))
@@ -358,16 +349,14 @@
            (return-from walk candidate))
          (let ((next-active
                  (acons node candidate active)))
-           (multiple-value-bind (reference present-p)
-               (gethash "$ref" node)
+           (with-present (reference present-p node "$ref")
              (when present-p
                (walk
                 (resolve-local-schema-reference
                  root reference
                  (schema-pointer pointer "$ref"))
                 candidate pointer next-active)))
-           (multiple-value-bind (type present-p)
-               (gethash "type" node)
+           (with-present (type present-p node "type")
              (when
                  (and present-p
                       (if (stringp type)
@@ -381,16 +370,14 @@
                            (coerce type 'list))))
                (schema-fail pointer
                             "Expected type ~S" type)))
-           (multiple-value-bind (expected present-p)
-               (gethash "const" node)
+           (with-present (expected present-p node "const")
              (when (and present-p
                         (not
                          (json-schema-value-equal-p
                           candidate expected)))
                (schema-fail pointer
                             "Value does not match const")))
-           (multiple-value-bind (choices present-p)
-               (gethash "enum" node)
+           (with-present (choices present-p node "enum")
              (when
                  (and present-p
                       (notany
@@ -401,14 +388,12 @@
                (schema-fail pointer
                             "Value is not in enum")))
            (dolist (key '("allOf"))
-             (multiple-value-bind (schemas present-p)
-                 (gethash key node)
+             (with-present (schemas present-p node key)
                (when present-p
                  (loop for item across schemas
                        do (walk item candidate
                                 pointer next-active)))))
-           (multiple-value-bind (schemas present-p)
-               (gethash "anyOf" node)
+           (with-present (schemas present-p node "anyOf")
              (when (and present-p
                         (notany
                          (lambda (item)
@@ -417,8 +402,7 @@
                          (coerce schemas 'list)))
                (schema-fail pointer
                             "Value does not match anyOf")))
-           (multiple-value-bind (schemas present-p)
-               (gethash "oneOf" node)
+           (with-present (schemas present-p node "oneOf")
              (when
                  (and present-p
                       (/= 1
@@ -429,15 +413,13 @@
                            (coerce schemas 'list))))
                (schema-fail pointer
                             "Value does not match exactly one oneOf schema")))
-           (multiple-value-bind (not-schema present-p)
-               (gethash "not" node)
+           (with-present (not-schema present-p node "not")
              (when (and present-p
                         (matches-p not-schema candidate
                                    next-active))
                (schema-fail pointer
                             "Value matches forbidden schema")))
-           (multiple-value-bind (if-schema present-p)
-               (gethash "if" node)
+           (with-present (if-schema present-p node "if")
              (when present-p
                (let ((branch
                        (if
@@ -445,9 +427,7 @@
                                       next-active)
                            "then"
                            "else")))
-                 (multiple-value-bind (branch-schema
-                                       branch-present-p)
-                     (gethash branch node)
+                 (with-present (branch-schema branch-present-p node branch)
                    (when branch-present-p
                      (walk branch-schema candidate
                            pointer next-active))))))
@@ -463,22 +443,19 @@
              (validate-number node candidate pointer)))
          candidate)
        (validate-object (node object pointer active)
-         (multiple-value-bind (minimum present-p)
-             (gethash "minProperties" node)
+         (with-present (minimum present-p node "minProperties")
            (when (and present-p
                       (< (hash-table-count object) minimum))
              (schema-fail pointer
                           "Object has fewer than ~D properties"
                           minimum)))
-         (multiple-value-bind (maximum present-p)
-             (gethash "maxProperties" node)
+         (with-present (maximum present-p node "maxProperties")
            (when (and present-p
                       (> (hash-table-count object) maximum))
              (schema-fail pointer
                           "Object has more than ~D properties"
                           maximum)))
-         (multiple-value-bind (required present-p)
-             (gethash "required" node)
+         (with-present (required present-p node "required")
            (when present-p
              (loop for key across required
                    unless (nth-value 1 (gethash key object))
@@ -493,8 +470,7 @@
            (when properties
              (maphash
               (lambda (key property-schema)
-                (multiple-value-bind (item present-p)
-                    (gethash key object)
+                (with-present (item present-p object key)
                   (when present-p
                     (walk property-schema item
                           (schema-pointer pointer key)
@@ -516,9 +492,7 @@
                              active)))
                    patterns))
                 (unless matched-p
-                  (multiple-value-bind (additional
-                                        additional-present-p)
-                      (gethash "additionalProperties" node)
+                  (with-present (additional additional-present-p node "additionalProperties")
                     (when additional-present-p
                       (cond
                         ((null additional)
@@ -530,8 +504,7 @@
                                (schema-pointer pointer key)
                                active))))))))
             object))
-         (multiple-value-bind (dependencies present-p)
-             (gethash "dependentRequired" node)
+         (with-present (dependencies present-p node "dependentRequired")
            (when present-p
              (maphash
               (lambda (key required)
@@ -546,8 +519,7 @@
                            "Property ~S requires property ~S"
                            key dependency))))
               dependencies)))
-         (multiple-value-bind (dependencies present-p)
-             (gethash "dependentSchemas" node)
+         (with-present (dependencies present-p node "dependentSchemas")
            (when present-p
              (maphash
               (lambda (key dependency-schema)
@@ -555,8 +527,7 @@
                   (walk dependency-schema object
                         pointer active)))
               dependencies)))
-         (multiple-value-bind (property-schema present-p)
-             (gethash "propertyNames" node)
+         (with-present (property-schema present-p node "propertyNames")
            (when present-p
              (maphash
               (lambda (key item)
@@ -566,22 +537,19 @@
                       active))
               object))))
        (validate-array (node array pointer active)
-         (multiple-value-bind (minimum present-p)
-             (gethash "minItems" node)
+         (with-present (minimum present-p node "minItems")
            (when (and present-p
                       (< (length array) minimum))
              (schema-fail pointer
                           "Array has fewer than ~D items"
                           minimum)))
-         (multiple-value-bind (maximum present-p)
-             (gethash "maxItems" node)
+         (with-present (maximum present-p node "maxItems")
            (when (and present-p
                       (> (length array) maximum))
              (schema-fail pointer
                           "Array has more than ~D items"
                           maximum)))
-         (multiple-value-bind (unique present-p)
-             (gethash "uniqueItems" node)
+         (with-present (unique present-p node "uniqueItems")
            (when (and present-p unique)
              (loop for index below (length array)
                    do
@@ -595,8 +563,7 @@
                            (schema-fail
                             (schema-pointer pointer other)
                             "Array items must be unique")))))
-         (multiple-value-bind (items present-p)
-             (gethash "items" node)
+         (with-present (items present-p node "items")
            (when present-p
              (cond
                ((hash-table-p items)
@@ -615,9 +582,7 @@
                                 item
                                 (schema-pointer pointer index)
                                 active)
-                          (multiple-value-bind
-                                (additional additional-present-p)
-                              (gethash "additionalItems" node)
+                          (with-present (additional additional-present-p node "additionalItems")
                             (when additional-present-p
                               (cond
                                 ((null additional)
@@ -628,8 +593,7 @@
                                  (walk additional item
                                        (schema-pointer pointer index)
                                        active)))))))))))
-         (multiple-value-bind (contains present-p)
-             (gethash "contains" node)
+         (with-present (contains present-p node "contains")
            (when (and present-p
                       (notany
                        (lambda (item)
@@ -638,22 +602,19 @@
              (schema-fail pointer
                           "Array does not contain a matching item"))))
        (validate-string (node string pointer)
-         (multiple-value-bind (minimum present-p)
-             (gethash "minLength" node)
+         (with-present (minimum present-p node "minLength")
            (when (and present-p
                       (< (length string) minimum))
              (schema-fail pointer
                           "String is shorter than ~D characters"
                           minimum)))
-         (multiple-value-bind (maximum present-p)
-             (gethash "maxLength" node)
+         (with-present (maximum present-p node "maxLength")
            (when (and present-p
                       (> (length string) maximum))
              (schema-fail pointer
                           "String is longer than ~D characters"
                           maximum)))
-         (multiple-value-bind (pattern present-p)
-             (gethash "pattern" node)
+         (with-present (pattern present-p node "pattern")
            (when (and present-p
                       (not (cl-ppcre:scan pattern string)))
              (schema-fail pointer
@@ -666,15 +627,13 @@
                     ("exclusiveMinimum" ,#'<=)
                     ("exclusiveMaximum" ,#'>=)))
            (destructuring-bind (key predicate) entry
-             (multiple-value-bind (limit present-p)
-                 (gethash key node)
+             (with-present (limit present-p node key)
                (when (and present-p
                           (funcall predicate number limit))
                  (schema-fail pointer
                               "Number violates ~A ~A"
                               key limit)))))
-         (multiple-value-bind (divisor present-p)
-             (gethash "multipleOf" node)
+         (with-present (divisor present-p node "multipleOf")
            (when present-p
              (let* ((quotient (/ number divisor))
                     (distance
@@ -688,8 +647,7 @@
   value)
 
 (defun schema-coercion-types (schema)
-  (multiple-value-bind (type present-p)
-      (gethash "type" schema)
+  (with-present (type present-p schema "type")
     (cond
       ((not present-p) nil)
       ((stringp type) (list type))
@@ -766,8 +724,7 @@
                        return converted
                      finally (return candidate))))
          (walk (node candidate)
-           (multiple-value-bind (reference present-p)
-               (gethash "$ref" node)
+           (with-present (reference present-p node "$ref")
              (when present-p
                (setf candidate
                      (walk
@@ -780,8 +737,7 @@
                (when properties
                  (maphash
                   (lambda (key property-schema)
-                    (multiple-value-bind (item present-p)
-                        (gethash key candidate)
+                    (with-present (item present-p candidate key)
                       (when present-p
                         (setf (gethash key candidate)
                               (walk property-schema item)))))
@@ -795,8 +751,7 @@
                             (walk additional item))))
                   candidate))))
            (when (vectorp candidate)
-             (multiple-value-bind (items present-p)
-                 (gethash "items" node)
+             (with-present (items present-p node "items")
                (when present-p
                  (cond
                    ((hash-table-p items)
@@ -809,8 +764,7 @@
                           do (setf (aref candidate index)
                                    (walk (aref items index)
                                          (aref candidate index)))))))))
-           (multiple-value-bind (schemas present-p)
-               (gethash "allOf" node)
+           (with-present (schemas present-p node "allOf")
              (when present-p
                (loop for item across schemas
                      do (setf candidate (walk item candidate)))))

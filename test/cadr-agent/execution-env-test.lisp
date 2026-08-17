@@ -130,6 +130,33 @@
             :force-p t))))
       (cadr-agent::execution-env-cleanup environment))))
 
+(test execution-env-remove-and-temps-share-signaled-operation
+  (is (fboundp 'cadr-agent::call-signaled-operation))
+  (with-session-directories (sessions cwd other-cwd)
+    (values sessions other-cwd)
+    (let* ((environment
+             (cadr-agent::make-node-execution-env :cwd cwd))
+           (signal
+             (cadr-agent::make-extension-cancellation-signal)))
+      (cadr-agent::abort-extension-cancellation-signal signal)
+      (dolist (thunk
+               (list
+                (lambda ()
+                  (cadr-agent::execution-env-remove
+                   environment "missing" :signal signal))
+                (lambda ()
+                  (cadr-agent::execution-env-create-temp-directory
+                   environment :signal signal))
+                (lambda ()
+                  (cadr-agent::execution-env-create-temp-file
+                   environment :signal signal))))
+        (multiple-value-bind (value error)
+            (funcall thunk)
+          (is (null value))
+          (is (eq :aborted
+                  (cadr-agent::harness-operation-error-code
+                   error))))))))
+
 (test node-execution-environment-executes-streams-times-out-and-aborts
   (with-session-directories (sessions cwd other-cwd)
     (values sessions other-cwd)

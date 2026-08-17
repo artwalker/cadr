@@ -21,7 +21,7 @@ was already the shared storage owner).
 |---|---|
 | branch-summarization | `llm-passthrough-message-p` / `agent-message-to-llm` |
 | compaction | one reverse walk; `compaction-field` |
-| execution-env | exists-p uses `call-file-operation`; not-found is `:not-found` |
+| execution-env | `call-signaled-operation` owns abort/classify; exists-p / remove / temps use it |
 | extensions/context | `assert-extension-deliver-as`; dead `(or … nil)` gone |
 | extensions/registration | register-* owns `&key`; define-* keeps Goal 12 frozen lambda lists |
 | extensions/rendering | `render-extension-named` |
@@ -34,7 +34,7 @@ was already the shared storage owner).
 | messages | `agent-message-to-llm` generic |
 | proxy | `nappend-string` |
 | runtime | `agent-queue-messages` / `set-agent-queue-messages` |
-| schema | `when-present` |
+| schema | `with-present` owns every present-p bind; `when-present` wraps it |
 | session/codec | push/nreverse diagnostics; `usage-cost-amount` |
 | session/journal | `put-session-details-and-usage` |
 | session/migration | `case` on interned type |
@@ -81,5 +81,5 @@ Leave them.
 Several agent files have H cells. Req 8 Date.now() is not
 used. Existing agent FiveAM is the before/after.
 
-Blocked: 0. FiveAM 18725 → 18738. derive 680/680 expected.
+Blocked: 0. FiveAM 18725 → 18738 → 18748. derive 680/680.
 `--all` is the known load-sensitive instrument; N_i untouched.

@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K6 follow-up: `with-present` owns every schema
+  present-p bind; `call-signaled-operation` owns abort/classify
+  for remove and temps. FiveAM 18738 → 18748.
+
 - Goal 20 Part K6: `cadr-agent` 23 rewrite files share one
   owner each (queue slots, when-present, authoring macros,
   message generic, tail pointer). FiveAM 18725 → 18738.

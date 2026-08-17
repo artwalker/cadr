@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122553 assets=5 unevaluated=0 needs-rewrite=111 no-rewrite=147 in-progress=0 done=37 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122485 assets=5 unevaluated=0 needs-rewrite=111 no-rewrite=147 in-progress=0 done=37 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -57,7 +57,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/summarization.lisp` | 86 | 4 | Own the shared conversation-summary prompt, request, and retry contract. | pass | no-rewrite | The or/progn nil-witness at :48-61 distinguishes nil-return from abort at an external boundary; retry/cache/routing already single-owned via closure injection. | 20 |
 | `src/cadr-agent/compaction.lisp` | 873 | 34 | Estimate context, choose a cut point, and execute the compaction lifecycle. | pass · large | done | one reverse walk; compaction-field. I0: one extension-vs-generated pick. | 20 |
 | `src/cadr-agent/conditions.lisp` | 43 | 9 | Define agent-layer condition types. | pass | no-rewrite | The condition hierarchy IS the Lisp mechanism; slotted conditions carry payload and messages live at signal sites, consumed via handler-case. | 20 |
-| `src/cadr-agent/execution-env.lisp` | 877 | 55 | Implement the replaceable filesystem/process execution environment used by tools and harnesses. | pass · large | done | exists-p uses call-file-operation. I0: not-found is :not-found, not a second skeleton. | 20 |
+| `src/cadr-agent/execution-env.lisp` | 855 | 56 | Implement the replaceable filesystem/process execution environment used by tools and harnesses. | pass · large | done | call-signaled-operation. I0: abort/classify one owner. | 20 |
 | `src/cadr-agent/export-html/template.css` | 1,066 | 0 | Provide the exact vendored baseline stylesheet embedded in offline session exports. | pass · large | n/a | Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate | — |
 | `src/cadr-agent/export-html/template.html` | 55 | 0 | Provide the exact HTML shell embedded in offline session exports. | pass | n/a | Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate | — |
 | `src/cadr-agent/export-html/template.js` | 1,864 | 0 | Provide the exact vendored baseline browser renderer embedded in session exports. | pass · large | n/a | Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate | — |
@@ -82,7 +82,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/proxy.lisp` | 251 | 9 | Translate proxy-provider events into native agent stream events. | pass | done | nappend-string. I0: deltas are amortized linear. | 20 |
 | `src/cadr-agent/resources.lisp` | 739 | 30 | Load, validate, substitute, and format prompts and skills as agent resources. | pass · large | no-rewrite | Post-12F-4 the frontmatter pop-iterates; the remaining hand index loop at :380-452 is the documented single-pass no-reexpansion contract over strings. | 20 |
 | `src/cadr-agent/runtime.lisp` | 421 | 30 | Own agent event emission, queued steering/follow-up input, mutation state, abort, and shutdown. | pass · large | done | agent-queue-messages / set-agent-queue-messages. I0: one queue slot owner. | 20 |
-| `src/cadr-agent/schema.lisp` | 896 | 21 | Validate JSON Schema definitions and tool arguments with local reference support. | pass · large | done | when-present. I0: one present-p guard. | 20 |
+| `src/cadr-agent/schema.lisp` | 850 | 22 | Validate JSON Schema definitions and tool arguments with local reference support. | pass · large | done | with-present. I0: one present-p guard. | 20 |
 | `src/cadr-agent/session/codec.lisp` | 556 | 31 | Encode, decode, validate, and identify session entries and metadata. | pass | done | push/nreverse diagnostics; usage-cost-amount. I0: one coerce owner. | 20 |
 | `src/cadr-agent/session/discovery.lisp` | 154 | 5 | Discover, list, continue, and resolve session files. | pass | no-rewrite | The octet loop at :41-77 implements the byte-counted 1MiB scan cap with mid-line cutoff and per-line :skip — inexpressible with read-line. | 20 |
 | `src/cadr-agent/session/export-html.lisp` | 455 | 24 | Embed assets and export a session as baseline-compatible offline HTML. | pass | no-rewrite | String-keyed color alists at :46-152 must stay string-keyed (camelCase CSS vars are the byte contract); hand-rolled base64 honors the no-new-deps policy. | 20 |

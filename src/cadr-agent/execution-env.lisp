@@ -201,24 +201,36 @@
        (t :unknown))
      message :path path :cause cause)))
 
+(defun call-signaled-operation
+    (signal function &optional path)
+  ;; Baseline packages/agent/src/harness/env/nodejs.ts abortResult
+  ;; :123 then try / toFileError :97. Temps pass no path
+  ;; (createTempDir :671).
+  (let ((error
+          (execution-aborted-error signal path)))
+    (if error
+        (values nil error)
+        (handler-case
+            (values (funcall function) nil)
+          (error (cause)
+            (values
+             nil
+             (if path
+                 (classify-file-error cause path)
+                 (execution-error
+                  :unknown
+                  (princ-to-string cause)
+                  :cause cause))))))))
+
 (defun call-file-operation
     (environment path signal function)
   (let ((absolute
           (execution-path environment path)))
-    (let ((error
-            (execution-aborted-error
-             signal absolute)))
-      (if error
-          (values nil error)
-          (handler-case
-              (values
-               (funcall function absolute)
-               nil)
-            (error (cause)
-              (values
-               nil
-               (classify-file-error
-                cause absolute))))))))
+    (call-signaled-operation
+     signal
+     (lambda ()
+       (funcall function absolute))
+     absolute)))
 
 (defun execution-env-read-text-file
     (environment path &key signal)
@@ -384,9 +396,8 @@
 
 (defun execution-env-exists-p
     (environment path &key signal)
-  ;; Not-found is success=false, not an error. Same abort/classify
-  ;; skeleton as call-file-operation; only the missing-file policy
-  ;; differs.
+  ;; Baseline nodejs.ts:644-648. Not-found is success=false.
+  ;; Abort/classify stay in call-file-operation.
   (multiple-value-bind (value error)
       (call-file-operation
        environment path signal
@@ -417,37 +428,25 @@
 (defun execution-env-remove
     (environment path
      &key recursive-p force-p signal)
-  (let ((absolute
-          (execution-path environment path)))
-    (let ((error
-            (execution-aborted-error
-             signal absolute)))
-      (if error
-          (values nil error)
-          (handler-case
-              (progn
-                (cond
-                  ((uiop:directory-exists-p
-                    absolute)
-                   (if recursive-p
-                       (uiop:delete-directory-tree
-                        (uiop:ensure-directory-pathname
-                         absolute)
-                        :validate t
-                        :if-does-not-exist
-                        (if force-p :ignore :error))
-                       (sb-posix:rmdir absolute)))
-                  ((probe-file absolute)
-                   (delete-file absolute))
-                  ((not force-p)
-                   (error "No such file: ~A"
-                          absolute)))
-                (values nil nil))
-            (error (cause)
-              (values
-               nil
-               (classify-file-error
-                cause absolute))))))))
+  ;; Baseline nodejs.ts:661-668 rm + toFileError. Abort/classify
+  ;; live in call-file-operation; only the rm policy stays here.
+  (call-file-operation
+   environment path signal
+   (lambda (absolute)
+     (cond
+       ((uiop:directory-exists-p absolute)
+        (if recursive-p
+            (uiop:delete-directory-tree
+             (uiop:ensure-directory-pathname absolute)
+             :validate t
+             :if-does-not-exist
+             (if force-p :ignore :error))
+            (sb-posix:rmdir absolute)))
+       ((probe-file absolute)
+        (delete-file absolute))
+       ((not force-p)
+        (error "No such file: ~A" absolute)))
+     nil)))
 
 (defun unique-execution-temp-path
     (prefix suffix directory-p)
@@ -488,43 +487,22 @@
 (defun execution-env-create-temp-directory
     (environment &key (prefix "tmp-") signal)
   (declare (ignore environment))
-  (let ((error
-          (execution-aborted-error signal)))
-    (if error
-        (values nil error)
-        (handler-case
-            (values
-             (unique-execution-temp-path
-              prefix "" t)
-             nil)
-          (error (cause)
-            (values
-             nil
-             (execution-error
-              :unknown
-              (princ-to-string cause)
-              :cause cause)))))))
+  ;; Baseline nodejs.ts:671-676 mkdtemp + toFileError, no path.
+  (call-signaled-operation
+   signal
+   (lambda ()
+     (unique-execution-temp-path prefix "" t))))
 
 (defun execution-env-create-temp-file
     (environment
      &key (prefix "") (suffix "") signal)
   (declare (ignore environment))
-  (let ((error
-          (execution-aborted-error signal)))
-    (if error
-        (values nil error)
-        (handler-case
-            (values
-             (unique-execution-temp-path
-              prefix suffix nil)
-             nil)
-          (error (cause)
-            (values
-             nil
-             (execution-error
-              :unknown
-              (princ-to-string cause)
-              :cause cause)))))))
+  ;; Baseline nodejs.ts:679-688. Lisp picks a unique path instead
+  ;; of mkdtemp+uuid; abort/classify stay in call-signaled-operation.
+  (call-signaled-operation
+   signal
+   (lambda ()
+     (unique-execution-temp-path prefix suffix nil))))
 
 (defun environment-alist ()
   (loop for entry in (sb-ext:posix-environ)

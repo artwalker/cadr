@@ -291,16 +291,16 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,553 lines**
+Denominator: **295 files / 122,485 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 20,770 | 16.9% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,770 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,488 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,295 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,227 | 76.9% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 16.9% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
 - **K-blocked** until a new pair or a booked unpairable finding: 76.9% of lines.
 
@@ -401,10 +401,10 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/support` | 13 | 1,168 |
 | `src/cadr-ai/transport` | 2 | 1,080 |
 | `src/cadr-cli/settings` | 3 | 926 |
-| `src/cadr-agent/schema.lisp` | 1 | 896 |
 | `src/cadr-ai/support` | 7 | 881 |
-| `src/cadr-agent/execution-env.lisp` | 1 | 877 |
 | `src/cadr-agent/compaction.lisp` | 1 | 873 |
+| `src/cadr-agent/execution-env.lisp` | 1 | 855 |
+| `src/cadr-agent/schema.lisp` | 1 | 850 |
 | `src/cadr-agent/sqlite-storage.lisp` | 1 | 834 |
 | `src/cadr-ai/auth` | 5 | 820 |
 | `src/cadr-agent/resources.lisp` | 1 | 739 |

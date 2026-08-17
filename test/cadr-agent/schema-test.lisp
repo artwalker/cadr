@@ -157,13 +157,23 @@
       (is (= 2 (aref (gethash "items" validated) 1))))))
 
 (test when-present-owns-gethash-present-p
-  (is (fboundp 'cadr-agent::when-present))
+  (is (macro-function 'cadr-agent::when-present))
+  (is (macro-function 'cadr-agent::with-present))
   (let ((table (make-hash-table :test #'equal)))
     (setf (gethash "a" table) 1)
+    (setf (gethash "nil" table) nil)
     (is (eql
          1
          (cadr-agent::when-present (value table "a")
            value)))
     (is (null
          (cadr-agent::when-present (value table "missing")
-           value)))))
+           value)))
+    (is (equal
+         '(nil t)
+         (cadr-agent::with-present (value present-p table "nil")
+           (list value present-p))))
+    (is (equal
+         '(nil nil)
+         (cadr-agent::with-present (value present-p table "missing")
+           (list value present-p))))))
