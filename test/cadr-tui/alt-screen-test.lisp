@@ -775,3 +775,27 @@
      0.0d0)
     (is (null
          (cadr-tui::renderer-live-flash-lines renderer 40)))))
+
+(test alt-screen-search-overlay-literals-match-baseline
+  ;; Baseline packages/tui/src/alt-screen-search.ts:143-149
+  ;; (pi@914cf1472). AltScreenSearchComponent.render composes the
+  ;; overlay title at runtime, so the extractor never sees these
+  ;; literals. Expected strings are copied from the TypeScript, not
+  ;; from cadr.
+  (let* ((empty (cadr-tui::render-search-bar "" 40 0 0))
+         (miss (cadr-tui::render-search-bar "q" 40 0 0))
+         (hit (cadr-tui::render-search-bar "q" 40 0 3))
+         (empty-title
+           (cadr-tui::strip-terminal-sequences (first empty)))
+         (miss-title
+           (cadr-tui::strip-terminal-sequences (first miss)))
+         (hit-title
+           (cadr-tui::strip-terminal-sequences (first hit))))
+    (is (= 2 (length empty)))
+    (is (eql 0 (search " Find transcript" empty-title)))
+    (is (not (search "No matches " empty-title)))
+    (is (eql 0 (search " Find transcript" miss-title)))
+    (is (search "No matches " miss-title))
+    (is (eql 0 (search " Find transcript" hit-title)))
+    (is (search "1/3 " hit-title))
+    (is (not (search "No matches " hit-title)))))
