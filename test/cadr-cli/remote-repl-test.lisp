@@ -242,24 +242,33 @@
                                (cadr-agent:session-id
                                 (cadr-agent:agent-session agent))))))
                (is (null (cadr-cli:active-agent)))
-               (let ((socket
-                       (make-instance
-                        'sb-bsd-sockets:inet-socket
-                        :type :stream
-                        :protocol :tcp)))
-                 (unwind-protect
-                      (progn
-                        (setf
-                         (sb-bsd-sockets:sockopt-reuse-address
-                          socket)
-                         t)
-                        (sb-bsd-sockets:socket-bind
-                         socket
-                         (sb-bsd-sockets:make-inet-address
-                          "127.0.0.1")
-                         port)
-                        (is-true t))
-                   (sb-bsd-sockets:socket-close socket))))
+               (let ((bound nil))
+                 (dotimes (attempt 20)
+                   (let ((socket
+                           (make-instance
+                            'sb-bsd-sockets:inet-socket
+                            :type :stream
+                            :protocol :tcp)))
+                     (unwind-protect
+                          (handler-case
+                              (progn
+                                (setf
+                                 (sb-bsd-sockets:sockopt-reuse-address
+                                  socket)
+                                 t)
+                                (sb-bsd-sockets:socket-bind
+                                 socket
+                                 (sb-bsd-sockets:make-inet-address
+                                  "127.0.0.1")
+                                 port)
+                                (setf bound t)
+                                (return))
+                            (sb-bsd-sockets:address-in-use-error ()
+                              (sleep 0.05)))
+                       (sb-bsd-sockets:socket-close socket))))
+                 (is-true bound
+                          "Slynk still held 127.0.0.1:~D after stop-server"
+                          port)))
           (setf
            (symbol-function 'remote-repl-probe)
            original-function))))))

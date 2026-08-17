@@ -462,7 +462,8 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
             (multiple-value-bind (status output) (check)
               (is (not (zerop status)))
               (is (search "root cadr binary is stale" output))
-              (is (search "2030-01-01T00:00:00+00:00" output)))
+              ;; git %cI is either ...+00:00 or ...Z depending on version
+              (is (search "2030-01-01T00:00:00" output)))
             (uiop:run-program
              (list "touch" "-d" "2031-01-01T00:00:00Z"
                    (namestring binary)))
