@@ -2972,9 +2972,15 @@ def normalized_screen(data: bytes, side: str) -> bytes:
         )
     # Node core stack frames change line numbers across patch releases
     # (CI 22.23 vs local 22.22).  Only node:internal/<module>:N:M.
+    # The module name itself can hard-wrap (narrow fatal-crash splits
+    # "timers" into "time" + "rs:N:M"); digits were already wrap-tolerant.
     wrapped_node_digits = rb"[0-9](?:(?:\r?\n)?[0-9])*"
+    wrapped_node_module = (
+        rb"([A-Za-z0-9_.-](?:(?:\r?\n)?[/A-Za-z0-9_.-])*)"
+    )
     node_internal_frame = (
-        rb"node:internal/([A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)"
+        rb"node:internal/"
+        + wrapped_node_module
         + separator
         + rb":"
         + wrapped_node_digits
@@ -3870,6 +3876,22 @@ def self_test(args: argparse.Namespace) -> int:
         leftover = b"User said file.ts:588:17 and 521:7"
         if normalized_screen(leftover, "cadr") != leftover:
             raise HarnessFailure("node:internal normalization escaped its grammar")
+        local_wrapped = b"    at process.processTimers (node:internal/time\nrs:523:7)"
+        ci_wrapped = b"    at process.processTimers (node:internal/time\nrs:521:7)"
+        expected_wrapped = (
+            b"    at process.processTimers (node:internal/time\n"
+            b"rs:<NODE_LINE>:<NODE_COLUMN>)"
+        )
+        if normalized_screen(local_wrapped, "cadr") != expected_wrapped:
+            raise HarnessFailure(
+                "wrapped node:internal module name must still collapse"
+            )
+        if normalized_screen(local_wrapped, "cadr") != normalized_screen(
+            ci_wrapped, "cadr"
+        ):
+            raise HarnessFailure(
+                "wrapped node:internal frames must collapse across Node patch lines"
+            )
         screen = tmux_screen(
             b"\x1b[2J\x1b[H\x1b[31mred\x1b[0m", 12, 4, sandbox / "tmux"
         )

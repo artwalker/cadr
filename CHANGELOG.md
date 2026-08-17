@@ -73,6 +73,11 @@ tag/Release step.
 
 ### Fixed
 
+- Render-diff `node:internal/<module>:N:M` collapse now allows a
+  hard wrap inside the module name (narrow `processTimers` splits
+  `timers` so `521:7` / `523:7` no longer leak). Does not re-pin
+  I04 pairs in this change.
+
 - Re-pin `example-commands/{wide,narrow}/commands-path` cadr
   `screenSha256` after checkout root collapsed to `<CADR_ROOT>`.
   Baseline-side SHAs unchanged. Does not declare the render
