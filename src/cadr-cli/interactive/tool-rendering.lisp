@@ -594,7 +594,7 @@
         (copy-list
          (cadr-agent:agent-event-follow-up event))))
       (:message-start
-       (setf (tui-state-settle-window-p state) nil)
+       (when (typep message 'cadr-ai:user-message) (setf (tui-state-settle-window-p state) nil))
        (typecase message
          (cadr-ai:user-message
           (append-tui-user-message
@@ -628,17 +628,14 @@
          (cadr-agent:compaction-summary-agent-message
           (seed-tui-message state message))))
       (:message-update
-       ;; Block boundaries open and close the settle window just like
-       ;; message-end does: once a block ends, the remaining chain to
-       ;; the resolution event is synchronous and unobservable to the
-       ;; baseline's renderer (see :message-end below).
+       ;; Block-end opens the settle window like message-end.  A new
+       ;; tool-call block lifts it.  Text/thinking deltas do not: after
+       ;; a completed tool they would reopen the Took+loader gap.
        (when stream-event
          (case (cadr-ai:stream-event-type stream-event)
            ((:text-end :thinking-end :tool-call-end)
             (setf (tui-state-settle-window-p state) t))
-           ((:text-start :text-delta
-             :thinking-start :thinking-delta
-             :tool-call-start :tool-call-delta)
+           ((:tool-call-start :tool-call-delta)
             (setf (tui-state-settle-window-p state) nil))))
        (when
            (and

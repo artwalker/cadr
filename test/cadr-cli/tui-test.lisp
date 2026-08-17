@@ -4819,12 +4819,13 @@
   ;; While the flag is set the frame omits the working indicator, so a
   ;; window render is identical to the settle frame.
   (let ((state (cadr-cli::make-tui-state)))
-    (flet ((event (type &key message tool-call tool-result)
+    (flet ((event (type &key message tool-call tool-result stream-event)
              (cadr-cli::tui-handle-agent-event
               state
               (cadr-agent::make-agent-event
                :type type :message message :tool-call tool-call
-               :tool-result tool-result)))
+               :tool-result tool-result
+               :stream-event stream-event)))
            (render-busy-frame ()
              (multiple-value-bind (lines row column)
                  (cadr-cli::render-tui-state
@@ -4892,7 +4893,26 @@
                 (list
                  (cadr-ai:make-text-content :text "ok"))))
         (is (cadr-cli::tui-state-settle-window-p state))
-        (is (null (search "Working..." (render-busy-frame)))))
+        (is (null (search "Working..." (render-busy-frame))))
+        ;; The follow-up assistant message-start must not lift
+        ;; suppression: that gap is the remaining tall-frame window
+        ;; after tool-end (byte-limit persist then "observed" text).
+        (let ((follow
+                (cadr-ai:make-assistant-message
+                 :api :faux :provider :faux :model "faux-1"
+                 :content
+                 (list
+                  (cadr-ai:make-text-content
+                   :text "byte limit observed."))
+                 :stop-reason :stop)))
+          (event :message-start :message follow)
+          (is (cadr-cli::tui-state-settle-window-p state))
+          (event :message-update :message follow
+                 :stream-event
+                 (cadr-ai:make-stream-event
+                  :type :text-delta :delta "x"))
+          (is (cadr-cli::tui-state-settle-window-p state))
+          (is (null (search "Working..." (render-busy-frame))))))
       ;; A still-running sibling keeps the loader visible.
       (event :agent-start)
       (let ((first
