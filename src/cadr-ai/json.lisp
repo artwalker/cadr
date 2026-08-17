@@ -545,19 +545,6 @@
     (t
      "")))
 
-(defun content-text-blocks (content type-key)
-  (cond
-    ((stringp content)
-     (json-array (json-object "type" type-key "text" content)))
-    ((or (listp content) (vectorp content))
-     (list-json-array
-      (loop for item across (coerce content 'vector)
-            when (typep item 'text-content)
-              collect (json-object "type" type-key
-                                   "text" (text-content-text item)))))
-    (t
-     #())))
-
 (defun data-url (image)
   (format nil "data:~A;base64,~A"
           (image-content-mime-type image)

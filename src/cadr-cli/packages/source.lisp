@@ -301,13 +301,6 @@
           "--legacy-peer-deps")
          sources))))))
 
-(defun package-source-with-ref (source)
-  (if (package-source-ref source)
-      (format nil "~A@~A"
-              (package-source-repo source)
-              (package-source-ref source))
-      (package-source-repo source)))
-
 (defun dedupe-package-sources
     (user-sources project-sources
      &key user-base project-base)

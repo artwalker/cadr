@@ -98,27 +98,26 @@ A 4 + B1 98 + B2 172; cadr-ai 183 = A 4 + B1 33 + B2 146; cadr-agent
 = B1 40 + B2 3; cadr-evals 33 = B1 24 + B2 9; cadr-core 1 = B2 1;
 cadr-storage 0.
 
-### Class A: unreachable (20 records, 8 functions)
+### Class A: unreachable (originally 20 records, 8 functions)
 
-Each of these functions occurs exactly once in the whole tree — its
+Each of these functions occurred exactly once in the whole tree — its
 own `defun`. Not exported, not registered, not referenced from tests
-or examples (verified by textual search over `src/`, `test/`,
-`examples/`, `scripts/`, `*.asd`; computed-symbol indirection cannot
-be excluded mechanically but is unlikely for unexported helpers):
+or examples. Goal 20 split them: two were missed wires and were
+connected; six were leftover helpers and were deleted.
 
-| Function | File | Records |
-|---|---|---:|
-| `auth-credential-value` | `src/cadr-cli/models/credential-print.lisp:183` | 2 |
-| `content-text-blocks` | `src/cadr-ai/json.lisp:548` | 3 |
-| `gm-to-ansi` | `src/cadr-tui/mermaid/ansi.lisp:24` | 1 |
-| `markdown-ordered-prefix-end` | `src/cadr-tui/components/markdown.lisp:809` | 3 |
-| `oauth-selector-handle-raw-input` | `src/cadr-cli/interactive/selectors/auth.lisp:498` | 8 |
-| `package-source-with-ref` | `src/cadr-cli/packages/source.lisp:304` | 1 |
-| `trailing-lines` | `src/cadr-cli/interactive/frame.lisp:3` | 1 |
-| `write-websocket-length` | `src/cadr-ai/websocket.lisp:126` | 1 |
+| Function | File | Records | Disposition |
+|---|---|---:|---|
+| `oauth-selector-handle-raw-input` | `src/cadr-cli/interactive/selectors/auth.lisp:498` | 8 | wired (`ecd6762ae`) |
+| `write-websocket-length` | `src/cadr-ai/websocket.lisp:126` | 1 | wired (`675e69b31`) |
+| `auth-credential-value` | `src/cadr-cli/models/credential-print.lisp` | 2 | deleted: leftover `getAuthCredential` port; print/check extract slots inline |
+| `content-text-blocks` | `src/cadr-ai/json.lisp` | 3 | deleted: unused sibling of `content-text`; providers emit typed JSON inline |
+| `gm-to-ansi` | `src/cadr-tui/mermaid/ansi.lisp` | 1 | deleted: grok-mermaid SGR convenience; TUI paints via `mermaid-themed-lines` |
+| `markdown-ordered-prefix-end` | `src/cadr-tui/components/markdown.lisp` | 3 | deleted: leftover `N. ` detector; `markdown-list-item-data` already parses markers |
+| `package-source-with-ref` | `src/cadr-cli/packages/source.lisp` | 1 | deleted: leftover `repo@ref` formatter; clone uses repo and `--branch` separately |
+| `trailing-lines` | `src/cadr-cli/interactive/frame.lisp` | 1 | deleted: leftover last-n helper; baseline `trailingLines` is edit-diff context owned by `generate-edit-display-diff` |
 
-Conclusion: dead code, not test gaps. Removal is a user decision
-(policy: ask before removing behavior); booked here.
+Conclusion: "no call site" was a symptom. Two were missed wires; six
+were extra. Baseline `trailingLines` is not this TUI helper.
 
 ### Class B1: untested entries (683 records, 238 top-level forms)
 

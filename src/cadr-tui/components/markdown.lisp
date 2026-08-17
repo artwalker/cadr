@@ -806,16 +806,6 @@
          #\└ #\┴ #\┘ widths
          ansi-theme-p))))))
 
-(defun markdown-ordered-prefix-end (line)
-  (let ((dot (position #\. line)))
-    (when (and dot (plusp dot)
-               (< (1+ dot) (length line))
-               (char= (char line (1+ dot))
-                      #\Space)
-               (every #'digit-char-p
-                      (subseq line 0 dot)))
-      (+ dot 2))))
-
 (defun markdown-heading-level (line)
   (loop for character across line
         while (char= character #\#)

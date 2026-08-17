@@ -1,11 +1,5 @@
 (in-package #:cadr-cli)
 
-(defun trailing-lines (lines count)
-  (if (<= (length lines) count)
-      lines
-      (nthcdr (- (length lines) count)
-              lines)))
-
 (defun render-tui-overlay-lines (overlay width now)
   (cond
     ((session-selector-state-p overlay)

@@ -180,15 +180,6 @@
         (:xai #'cadr-ai::refresh-xai-oauth-credential)
         (otherwise nil)))))
 
-(defun auth-credential-value (credential)
-  ;; Baseline getAuthCredential: the API key or the OAuth access token.
-  (cond
-    ((typep credential 'cadr-ai:api-key-credential)
-     (cadr-ai:api-key-credential-key credential))
-    ((typep credential 'cadr-ai:oauth-credential)
-     (cadr-ai:oauth-credential-access credential))
-    (t nil)))
-
 (defun credential-for-print
     (storage provider kind
      &key refresh-function

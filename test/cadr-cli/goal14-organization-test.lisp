@@ -573,7 +573,10 @@
     ;; +4 goal 20 P0-4: *tui-input-thread*, tui-input-thread-p,
     ;; call-extension-host-turn-without-blocking-tui,
     ;; wrap-extension-host-tui-turn-dispatch (extension-ui.lisp).
-    (is (= 274 definition-count)
+    ;; -1 goal 20 sb-cover third-tier: deleted unused trailing-lines
+    ;; (interactive/frame.lisp). Last-n is owned by user-bash/tool-block
+    ;; /overlay; baseline trailingLines is edit-diff context.
+    (is (= 273 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"
@@ -759,7 +762,10 @@
     ;; (renderer-open-search/renderer-close-search in lifecycle-input;
     ;; style-search-match-text, renderer-refresh-search,
     ;; apply-search-highlights, overlay-search-bar in alt-screen.lisp).
-    (is (= 333 definition-count)
+    ;; -1 goal 20 sb-cover third-tier: deleted unused
+    ;; markdown-ordered-prefix-end (markdown.lisp).
+    ;; markdown-list-item-data already parses ordered markers.
+    (is (= 332 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

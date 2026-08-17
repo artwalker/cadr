@@ -79,6 +79,14 @@ tag/Release step.
   gap list. Outside `render-diff.py gate --tier core`.
   FiveAM anchor 18633 → 18636.
 
+### Removed
+
+- Goal 20 sb-cover third-tier: deleted six unused helpers
+  (`auth-credential-value`, `content-text-blocks`, `gm-to-ansi`,
+  `markdown-ordered-prefix-end`, `package-source-with-ref`,
+  `trailing-lines`). Each had no caller; live paths already own
+  the work. Denominator 122640 → 122575.
+
 ### Fixed
 
 - `write-websocket-frame` now calls `write-websocket-length` for
@@ -106,6 +114,9 @@ tag/Release step.
   matching a new prompt. A second hook invocation can no longer
   block confirm/editor answers. Unconditional `rpc-ui-diag`
   prints removed from the RPC UI product path.
+
+- Booked the unpaired-path denominator at 122575 after deleting
+  six unused sb-cover A-class helpers.
 
 - Booked the unpaired-path denominator at 122640 after wiring
   the WebSocket extended-length helper.
