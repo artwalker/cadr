@@ -519,6 +519,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "\"flexi-streams\""
                   "\"usocket\""
                   "\"trivial-gray-streams\""
+                  "\"slynk\""
                   "./scripts/verify.sh"
                   "grep -Fx 'Items: 8, run: 0, pass: 0, skip: 8, fail: 0'"
                   "grep -Fx 'Checks: 8, pass: 0, skip: 8, fail: 0'"

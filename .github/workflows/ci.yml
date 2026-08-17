@@ -81,7 +81,7 @@ jobs:
             --eval "(quicklisp-quickstart:install :path \"${HOME}/quicklisp/\" :dist-url \"http://beta.quicklisp.org/dist/quicklisp/2026-01-01/distinfo.txt\")"
           "$SBCL" --noinform --non-interactive \
             --load "$QUICKLISP_SETUP" \
-            --eval '(ql:quickload (list "cl+ssl" "cl-ppcre" "sqlite" "cl-jpeg" "png-read" "fiveam" "babel" "bordeaux-threads" "flexi-streams" "usocket" "trivial-gray-streams"))'
+            --eval '(ql:quickload (list "cl+ssl" "cl-ppcre" "sqlite" "cl-jpeg" "png-read" "fiveam" "babel" "bordeaux-threads" "flexi-streams" "usocket" "trivial-gray-streams" "slynk"))'
 
       - name: Run the complete credential-free gate
         shell: bash
