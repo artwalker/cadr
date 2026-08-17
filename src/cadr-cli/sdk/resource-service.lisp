@@ -259,63 +259,66 @@
                   (list append-source)
                   ((or string pathname)
                    (list append-source)))))))
-    (multiple-value-bind (skills skill-diagnostics)
+    (let (skills skill-diagnostics
+          prompts prompt-diagnostics
+          themes final-diagnostics)
+      (multiple-value-setq (skills skill-diagnostics)
         (sdk-apply-resource-list-override
          (sdk-resource-loader-skills-override loader)
          (resource-snapshot-skills snapshot)
-         diagnostics)
-      (multiple-value-bind (prompts prompt-diagnostics)
-          (sdk-apply-resource-list-override
-           (sdk-resource-loader-prompts-override loader)
-           (resource-snapshot-prompts snapshot)
-           skill-diagnostics)
-        (multiple-value-bind (themes final-diagnostics)
-            (sdk-apply-resource-list-override
-             (sdk-resource-loader-themes-override loader)
-             (resource-snapshot-themes snapshot)
-             prompt-diagnostics)
-          (setf
-           (sdk-resource-loader-extension-report loader)
-           report
-           (sdk-resource-loader-snapshot loader)
-           snapshot
-           (sdk-resource-loader-skills loader)
-           skills
-           (sdk-resource-loader-prompts loader)
-           prompts
-           (sdk-resource-loader-themes loader)
-           themes
-           (sdk-resource-loader-context-files loader)
-           (if
-               (sdk-resource-loader-context-files-override
-                loader)
-               (funcall
-                (sdk-resource-loader-context-files-override
-                 loader)
-                (copy-tree context-files))
-               context-files)
-           (sdk-resource-loader-system-prompt loader)
-           (if
-               (sdk-resource-loader-system-prompt-override
-                loader)
-               (funcall
-                (sdk-resource-loader-system-prompt-override
-                 loader)
-                system)
-               system)
-           (sdk-resource-loader-append-system-prompt
+         diagnostics))
+      (multiple-value-setq (prompts prompt-diagnostics)
+        (sdk-apply-resource-list-override
+         (sdk-resource-loader-prompts-override loader)
+         (resource-snapshot-prompts snapshot)
+         skill-diagnostics))
+      (multiple-value-setq (themes final-diagnostics)
+        (sdk-apply-resource-list-override
+         (sdk-resource-loader-themes-override loader)
+         (resource-snapshot-themes snapshot)
+         prompt-diagnostics))
+      (setf
+       (sdk-resource-loader-extension-report loader)
+       report
+       (sdk-resource-loader-snapshot loader)
+       snapshot
+       (sdk-resource-loader-skills loader)
+       skills
+       (sdk-resource-loader-prompts loader)
+       prompts
+       (sdk-resource-loader-themes loader)
+       themes
+       (sdk-resource-loader-context-files loader)
+       (if
+           (sdk-resource-loader-context-files-override
             loader)
-           (if
-               (sdk-resource-loader-append-system-prompt-override
-                loader)
-               (funcall
-                (sdk-resource-loader-append-system-prompt-override
-                 loader)
-                (copy-list append-prompts))
-               append-prompts)
-           (sdk-resource-loader-diagnostics loader)
-           final-diagnostics)))))
-  loader)
+           (funcall
+            (sdk-resource-loader-context-files-override
+             loader)
+            (copy-tree context-files))
+           context-files)
+       (sdk-resource-loader-system-prompt loader)
+       (if
+           (sdk-resource-loader-system-prompt-override
+            loader)
+           (funcall
+            (sdk-resource-loader-system-prompt-override
+             loader)
+            system)
+           system)
+       (sdk-resource-loader-append-system-prompt
+        loader)
+       (if
+           (sdk-resource-loader-append-system-prompt-override
+            loader)
+           (funcall
+            (sdk-resource-loader-append-system-prompt-override
+             loader)
+            (copy-list append-prompts))
+           append-prompts)
+       (sdk-resource-loader-diagnostics loader)
+       final-diagnostics))
+    loader))
 
 (defgeneric sdk-resource-loader-extensions (loader))
 

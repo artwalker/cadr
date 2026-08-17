@@ -287,9 +287,8 @@ with a diagnostic.  Returns (values shortcuts diagnostics)."
                        path path))
                 diagnostics)
                (setf resolved (delete existing resolved)))
-             (setf resolved
-                   (nconc resolved (list definition))))))))
-    (values resolved (nreverse diagnostics))))
+             (push definition resolved))))))
+    (values (nreverse resolved) (nreverse diagnostics))))
 
 (defun effective-extension-shortcuts (host)
   (resolve-extension-shortcuts host (cadr-tui:get-keybindings)))

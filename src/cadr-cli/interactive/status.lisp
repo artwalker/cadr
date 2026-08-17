@@ -3,39 +3,28 @@
 (defstruct (status-log
             (:constructor make-status-log ()))
   (entries nil :type list)
-  last-status-index)
+  tail
+  last-status-cell)
+
+(defun status-log-append (log item)
+  (let ((cell (list item)))
+    (if (status-log-tail log)
+        (setf (cdr (status-log-tail log)) cell)
+        (setf (status-log-entries log) cell))
+    (setf (status-log-tail log) cell)
+    cell))
 
 (defun status-log-add-content (log text)
-  (setf
-   (status-log-entries log)
-   (append
-    (status-log-entries log)
-    (list (cons :content text)))
-   (status-log-last-status-index log)
-   nil)
+  (status-log-append log (cons :content text))
+  (setf (status-log-last-status-cell log) nil)
   log)
 
 (defun status-log-show (log text)
-  (let ((index
-          (status-log-last-status-index log)))
-    (if (and index
-             (= index
-                (1- (length
-                     (status-log-entries log)))))
-        (setf
-         (nth index (status-log-entries log))
-         (cons :status text))
-        (progn
-          (setf
-           (status-log-entries log)
-           (append
-            (status-log-entries log)
-            (list (cons :status text))))
-          (setf
-           (status-log-last-status-index log)
-           (1-
-            (length
-             (status-log-entries log)))))))
+  (let ((cell (status-log-last-status-cell log)))
+    (if (and cell (eq cell (status-log-tail log)))
+        (setf (car cell) (cons :status text))
+        (setf (status-log-last-status-cell log)
+              (status-log-append log (cons :status text)))))
   log)
 
 (defstruct (startup-input-queue

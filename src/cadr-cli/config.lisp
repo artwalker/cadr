@@ -110,11 +110,18 @@
     (or (cadr-ai::json-get providers name)
         (cadr-ai::json-object))))
 
+(defparameter +oauth-login-providers+
+  '((:openai-codex . cadr-ai:refresh-openai-oauth-credential)
+    (:anthropic . cadr-ai:refresh-anthropic-oauth-credential)))
+
 (defun oauth-refresh-function (provider)
+  (or (cdr (assoc provider +oauth-login-providers+))
+      (error "No OAuth refresh for ~S" provider)))
+
+(defun oauth-login-function (provider)
   (ecase provider
-    (:openai-codex
-     #'cadr-ai:refresh-openai-oauth-credential)
-    (:anthropic #'cadr-ai:refresh-anthropic-oauth-credential)))
+    (:openai-codex *openai-login-function*)
+    (:anthropic *anthropic-login-function*)))
 
 (defun resolve-stored-credential (path provider)
   (let ((credential
@@ -254,23 +261,12 @@
     (cond
       ((string= command "/login")
        (let ((provider (parse-auth-provider (second parts))))
-         (ecase provider
-           (:openai-codex
-            (funcall *openai-login-function*
-                     auth-path
-                     :output output
-                     :auth-url-function
-                     auth-url-function
-                     :auth-prompt-function
-                     auth-prompt-function))
-           (:anthropic
-            (funcall *anthropic-login-function*
-                     auth-path
-                     :output output
-                     :auth-url-function
-                     auth-url-function
-                     :auth-prompt-function
-                     auth-prompt-function)))
+         (funcall
+          (oauth-login-function provider)
+          auth-path
+          :output output
+          :auth-url-function auth-url-function
+          :auth-prompt-function auth-prompt-function)
          (format output "~(~A~) login stored in ~A~%"
                  provider (namestring auth-path))
          (when on-change

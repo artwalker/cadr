@@ -380,6 +380,105 @@
            (getf (getf options :retry)
                  :maximum-retries)))))
 
+(test compare-package-versions-walks-tokens-not-nth
+  (is (> (cadr-cli::compare-package-versions "5.0.0-beta.20"
+                                             "5.0.0-beta.9")
+         0))
+  (is (< (cadr-cli::compare-package-versions "1.0" "1.0.1")
+         0))
+  (is (= 0 (cadr-cli::compare-package-versions "1.0" "1.0.0"))))
+
+(test optional-integer-coerces-json-null-to-default
+  (let ((arguments (cadr-ai::json-object "limit" 'null)))
+    (is (= 500 (cadr-cli::optional-integer arguments "limit" 500))))
+  (let ((arguments (cadr-ai::json-object)))
+    (is (= 500 (cadr-cli::optional-integer arguments "limit" 500))))
+  (let ((arguments (cadr-ai::json-object "limit" 12)))
+    (is (= 12 (cadr-cli::optional-integer arguments "limit" 500)))))
+
+(test git-url-prefix-is-case-sensitive
+  (is (cadr-cli::string-prefix-p "git:" "git:https://example.com"))
+  (is (not (cadr-cli::string-prefix-p
+            "git:" "GIT:https://example.com"))))
+
+(test xterm-16-table-is-a-vector
+  (is (equal '(0 0 0) (cadr-cli::xterm-color-to-rgb 0)))
+  (is (equal '(255 255 255) (cadr-cli::xterm-color-to-rgb 15)))
+  (is (equal '(255 0 0) (cadr-cli::xterm-color-to-rgb 9))))
+
+(test llama-positive-number-owns-context-window-guard
+  (is (null (cadr-cli::llama-positive-number 0)))
+  (is (null (cadr-cli::llama-positive-number "8")))
+  (is (= 4096 (cadr-cli::llama-positive-number 4096))))
+
+(test kebab-keyword-to-camel-owns-tool-result-keys
+  (is (string= "fullOutputPath"
+               (cadr-cli::kebab-keyword-to-camel :full-output-path)))
+  (is (string= "diff" (cadr-cli::kebab-keyword-to-camel :diff)))
+  (is (string= "resultLimitReached"
+               (cadr-cli::kebab-keyword-to-camel :result-limit-reached))))
+
+(test format-key-text-star-matches-string-wrapper
+  (is (string=
+       (cadr-cli::format-key-text "ctrl+c/escape")
+       (cadr-cli::format-key-text* '("ctrl+c" "escape"))))
+  (is (string=
+       (cadr-cli::format-key-text "alt+enter" :capitalize-p t)
+       (cadr-cli::format-key-text* '("alt+enter") :capitalize-p t))))
+
+(test daxnuts-rgb-grid-matches-hex-parse
+  (is (equal '(187 186 184) (cadr-cli::daxnuts-rgb-at 0 0)))
+  (is (= 16 (length cadr-cli::+daxnuts-image-lines+)))
+  (is (search (format nil "~C[38;2;" #\Escape)
+              (first cadr-cli::+daxnuts-image-lines+))))
+
+(test llama-gated-approval-text-uses-keyword
+  (is (string= "Manual approval is required"
+               (cadr-cli::llama-gated-approval-text :manual)))
+  (is (string= "Accept the access terms"
+               (cadr-cli::llama-gated-approval-text :auto)))
+  (is (string= "Accept the access terms"
+               (cadr-cli::llama-gated-approval-text "manual"))))
+
+(test wrap-transcript-lines-splices-osc-markers
+  (let* ((lines (cadr-cli::wrap-transcript-lines '("one" "two")))
+         (start cadr-cli::+osc-133-start+)
+         (end (concatenate 'string
+                           cadr-cli::+osc-133-end+
+                           cadr-cli::+osc-133-final+)))
+    (is (eql 0 (search start (first lines))))
+    (is (eql 0 (search end (second lines))))
+    (is (string= "one" (subseq (first lines) (length start))))
+    (is (string= "two" (subseq (second lines) (length end))))))
+
+(test config-resource-kinds-owns-the-four-types
+  (is (equal '(:extensions :skills :prompts :themes)
+             (cadr-cli::config-resource-kinds)))
+  (is (string= "foo"
+               (cadr-cli::config-selector-entry-target "foo")))
+  (is (string= "bar"
+               (cadr-cli::config-selector-entry-target "+bar"))))
+
+(test llama-search-status-text-maps-searching-keyword
+  (let ((search (cadr-cli::make-llama-search-state :status :searching)))
+    (is (string= "Searching Hugging Face…"
+                 (cadr-cli::llama-search-status-text search)))))
+
+(test model-registry-sort-predicate-is-provider-then-id
+  (let ((left (cadr-ai:make-model :id "b" :provider :openai))
+        (right (cadr-ai:make-model :id "a" :provider :openai))
+        (other (cadr-ai:make-model :id "z" :provider :anthropic)))
+    (is (cadr-cli::model-registry-sort-predicate other left))
+    (is (cadr-cli::model-registry-sort-predicate right left))
+    (is (not (cadr-cli::model-registry-sort-predicate left right)))))
+
+(test parse-queue-mode-owns-rpc-mode-strings
+  (is (eq :all (cadr-cli::parse-queue-mode "all" "steering")))
+  (is (eq :one-at-a-time
+          (cadr-cli::parse-queue-mode "one-at-a-time" "follow-up")))
+  (signals error
+    (cadr-cli::parse-queue-mode "bogus" "steering")))
+
 (test external-editor-is-private-and-failure-preserves-content
   (let ((observed-mode nil)
         (observed-path nil))

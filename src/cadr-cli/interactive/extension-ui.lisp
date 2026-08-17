@@ -23,6 +23,26 @@
    :title title
    :input (cadr-tui:make-single-line-input :prompt "> ")))
 
+(defun extension-dialog-chrome
+    (title width body-lines body-row body-column footer)
+  (let ((prefix
+          (list
+           (selector-border-line width)
+           ""
+           (selector-component-text-line
+            (cadr-tui:theme-foreground
+             :accent title :enabled-p t)
+            width)
+           "")))
+    (values
+     (append
+      prefix body-lines
+      (list "")
+      (component-text-lines footer width)
+      (list "" (selector-border-line width)))
+     (+ (length prefix) body-row)
+     body-column)))
+
 (defmethod cadr-tui:component-render
     ((dialog extension-input-dialog) width &key focused-p)
   (declare (ignore focused-p))
@@ -30,34 +50,17 @@
       (cadr-tui:render-single-line-input
        (extension-input-dialog-input dialog)
        width)
-    (let ((prefix
-            (list
-             (selector-border-line width)
-             ""
-             (selector-component-text-line
-              (cadr-tui:theme-foreground
-               :accent (extension-input-dialog-title dialog)
-               :enabled-p t)
-              width)
-             "")))
-      (values
-       (append
-        prefix input-lines
-        (append
-         (list "")
-         (component-text-lines
-          (format
-           nil "~A  ~A"
-           (selector-keybinding-hint
-            (cadr-tui:get-keybindings)
-            "tui.select.confirm" "submit")
-           (selector-keybinding-hint
-            (cadr-tui:get-keybindings)
-            "tui.select.cancel" "cancel"))
-          width)
-         (list "" (selector-border-line width))))
-       (+ (length prefix) input-row)
-       input-column))))
+    (extension-dialog-chrome
+     (extension-input-dialog-title dialog)
+     width input-lines input-row input-column
+     (format
+      nil "~A  ~A"
+      (selector-keybinding-hint
+       (cadr-tui:get-keybindings)
+       "tui.select.confirm" "submit")
+      (selector-keybinding-hint
+       (cadr-tui:get-keybindings)
+       "tui.select.cancel" "cancel")))))
 
 (defmethod cadr-tui:component-handle-event
     ((dialog extension-input-dialog) event)
@@ -92,40 +95,23 @@
       (cadr-tui:render-editor
        (extension-editor-dialog-editor dialog)
        width :focused-p t)
-    (let ((prefix
-            (list
-             (selector-border-line width)
-             ""
-             (selector-component-text-line
-              (cadr-tui:theme-foreground
-               :accent (extension-editor-dialog-title dialog)
-               :enabled-p t)
-              width)
-             "")))
-      (values
-       (append
-        prefix editor-lines
-        (append
-         (list "")
-         (component-text-lines
-          (format
-           nil "~A  ~A  ~A  ~A"
-           (selector-keybinding-hint
-            (cadr-tui:get-keybindings)
-            "tui.select.confirm" "submit")
-           (selector-keybinding-hint
-            (cadr-tui:get-keybindings)
-            "tui.input.newLine" "newline")
-           (selector-keybinding-hint
-            (cadr-tui:get-keybindings)
-            "tui.select.cancel" "cancel")
-           (selector-keybinding-hint
-            (cadr-tui:get-keybindings)
-            "app.editor.external" "external editor"))
-          width)
-         (list "" (selector-border-line width))))
-       (+ (length prefix) editor-row)
-       editor-column))))
+    (extension-dialog-chrome
+     (extension-editor-dialog-title dialog)
+     width editor-lines editor-row editor-column
+     (format
+      nil "~A  ~A  ~A  ~A"
+      (selector-keybinding-hint
+       (cadr-tui:get-keybindings)
+       "tui.select.confirm" "submit")
+      (selector-keybinding-hint
+       (cadr-tui:get-keybindings)
+       "tui.input.newLine" "newline")
+      (selector-keybinding-hint
+       (cadr-tui:get-keybindings)
+       "tui.select.cancel" "cancel")
+      (selector-keybinding-hint
+       (cadr-tui:get-keybindings)
+       "app.editor.external" "external editor")))))
 
 (defmethod cadr-tui:component-handle-event
     ((dialog extension-editor-dialog) event)

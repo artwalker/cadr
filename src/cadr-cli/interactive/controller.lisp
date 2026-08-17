@@ -2765,62 +2765,38 @@ interactive-mode.ts:5956-5960).")
                         (t
                          (multiple-value-bind
                             (action value handled-p)
-                          (cond
-                            ((and
-                              (plusp (length input))
-                              (session-selector-state-p
-                               overlay))
-                             (session-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (tree-selector-state-p
-                               overlay))
-                             (tree-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (user-message-selector-state-p
-                               overlay))
-                             (user-message-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (model-selector-state-p
-                               overlay))
-                             (model-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (scoped-models-selector-state-p
-                               overlay))
-                             (scoped-models-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (trust-selector-state-p
-                               overlay))
-                             (trust-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (settings-selector-state-p
-                               overlay))
-                             (settings-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (oauth-selector-state-p
-                               overlay))
-                             (oauth-selector-handle-raw-input
-                              overlay input))
-                            ((and
-                              (plusp (length input))
-                              (framed-select-state-p overlay))
-                             (framed-select-state-handle-raw-input
-                              overlay input))
-                            (t
-                             (values nil nil nil)))
+                          (if (plusp (length input))
+                              (cond
+                                ((session-selector-state-p overlay)
+                                 (session-selector-handle-raw-input
+                                  overlay input))
+                                ((tree-selector-state-p overlay)
+                                 (tree-selector-handle-raw-input
+                                  overlay input))
+                                ((user-message-selector-state-p overlay)
+                                 (user-message-selector-handle-raw-input
+                                  overlay input))
+                                ((model-selector-state-p overlay)
+                                 (model-selector-handle-raw-input
+                                  overlay input))
+                                ((scoped-models-selector-state-p overlay)
+                                 (scoped-models-selector-handle-raw-input
+                                  overlay input))
+                                ((trust-selector-state-p overlay)
+                                 (trust-selector-handle-raw-input
+                                  overlay input))
+                                ((settings-selector-state-p overlay)
+                                 (settings-selector-handle-raw-input
+                                  overlay input))
+                                ((oauth-selector-state-p overlay)
+                                 (oauth-selector-handle-raw-input
+                                  overlay input))
+                                ((framed-select-state-p overlay)
+                                 (framed-select-state-handle-raw-input
+                                  overlay input))
+                                (t
+                                 (values nil nil nil)))
+                              (values nil nil nil))
                         (if handled-p
                             (progn
                               (handle-overlay-action

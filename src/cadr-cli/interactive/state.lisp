@@ -238,12 +238,15 @@
    (cadr-ai:model-reasoning-p model)
    thinking))
 
+(defun tui-multiline-editor-p (editor)
+  (typep editor 'cadr-tui:multiline-editor))
+
 (defun synchronize-tui-editor-border (state editor)
-  (when (typep editor 'cadr-tui:multiline-editor)
+  (when (tui-multiline-editor-p editor)
     (unless
         (eq
          :bash-mode
-         (cadr-tui::multiline-editor-border-color-key
+         (cadr-tui:multiline-editor-border-color-key
           editor))
       (cadr-tui:editor-set-border-mode
        editor :thinking
@@ -251,18 +254,18 @@
   editor)
 
 (defun tui-editor-component-text (editor)
-  (if (typep editor 'cadr-tui:multiline-editor)
+  (if (tui-multiline-editor-p editor)
       (cadr-tui:editor-text editor)
       (cadr-tui:editor-component-text editor)))
 
 (defun tui-editor-component-set-text (editor text)
-  (if (typep editor 'cadr-tui:multiline-editor)
+  (if (tui-multiline-editor-p editor)
       (cadr-tui:editor-set-text editor text)
       (cadr-tui:editor-component-set-text editor text)))
 
 (defun tui-editor-component-clear (editor)
-  (if (typep editor 'cadr-tui:multiline-editor)
-      (cadr-tui::editor-clear editor)
+  (if (tui-multiline-editor-p editor)
+      (cadr-tui:editor-clear editor)
       (cadr-tui:editor-component-set-text editor "")))
 
 (defun tui-editor-bash-input-p (editor)
@@ -276,7 +279,7 @@
 
 (defun synchronize-tui-editor-input-border
     (state editor)
-  (when (typep editor 'cadr-tui:multiline-editor)
+  (when (tui-multiline-editor-p editor)
     (if (tui-editor-bash-input-p editor)
         (cadr-tui:editor-set-border-mode
          editor :bash)
@@ -288,7 +291,7 @@
 (defun handle-tui-editor-event
     (state editor event)
   (multiple-value-bind (action value)
-      (if (typep editor 'cadr-tui:multiline-editor)
+      (if (tui-multiline-editor-p editor)
           (cadr-tui:editor-handle-event editor event)
           (cadr-tui:component-handle-event editor event))
     ;; Submission owns its border until dispatched work settles.

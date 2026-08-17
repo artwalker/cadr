@@ -38,13 +38,13 @@
     ((uiop:os-windows-p)
      (let ((candidates
              (remove nil
-                     (list
-                      (and (uiop:getenv "ProgramFiles")
-                           (format nil "~A\\Git\\bin\\bash.exe"
-                                   (uiop:getenv "ProgramFiles")))
-                      (and (uiop:getenv "ProgramFiles(x86)")
-                           (format nil "~A\\Git\\bin\\bash.exe"
-                                   (uiop:getenv "ProgramFiles(x86)")))))))
+                     (loop for name in '("ProgramFiles"
+                                         "ProgramFiles(x86)")
+                           for root = (uiop:getenv name)
+                           collect
+                           (and root
+                                (format nil "~A\\Git\\bin\\bash.exe"
+                                        root))))))
        (let ((shell (or (find-if #'probe-file candidates)
                         (executable-on-path "bash.exe"))))
          (if shell

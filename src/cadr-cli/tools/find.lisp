@@ -15,7 +15,7 @@
          (canonical-base
            (and (uiop:directory-exists-p base)
                 (truename (uiop:ensure-directory-pathname base))))
-         (limit (or (optional-integer arguments "limit" 1000) 1000)))
+         (limit (optional-integer arguments "limit" 1000)))
     (unless canonical-base
       (error "[fd error]: Search path '~A' is not a directory.~%[fd error]: No valid search paths given."
              (namestring base)))

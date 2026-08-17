@@ -180,6 +180,8 @@
    #:editor-autocomplete-visible-p
    #:editor-autocomplete-items
    #:editor-handle-event
+   #:editor-clear
+   #:multiline-editor-border-color-key
    #:render-editor
    #:single-line-input
    #:make-single-line-input

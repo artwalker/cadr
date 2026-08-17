@@ -20,10 +20,9 @@
       (reset-timings namespace))
     (let* ((state (gethash namespace *timing-namespaces*))
            (now (funcall *timing-clock*)))
-      (setf (getf state :timings)
-            (append (getf state :timings)
-                    (list (cons label (- now (getf state :last-time)))))
-            (getf state :last-time) now
+      (push (cons label (- now (getf state :last-time)))
+            (getf state :timings))
+      (setf (getf state :last-time) now
             (gethash namespace *timing-namespaces*) state)))
   nil)
 
@@ -32,7 +31,7 @@
     (maphash
      (lambda (namespace state)
        (let ((timings (remove-if (lambda (entry) (minusp (cdr entry)))
-                                 (getf state :timings))))
+                                 (nreverse (copy-list (getf state :timings))))))
          (when timings
            (let ((title (format nil "Startup Timings: ~(~A~)" namespace)))
              (format output "~%--- ~A ---~%" title)

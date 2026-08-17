@@ -1,7 +1,7 @@
 (in-package #:cadr-cli)
 
 (defun read-tool-file (cwd arguments &key context)
-  (let* ((offset (or (optional-integer arguments "offset" 1) 1))
+  (let* ((offset (optional-integer arguments "offset" 1))
          (limit (optional-integer arguments "limit"))
          (display-path (required-string arguments "path"))
          (path

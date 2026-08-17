@@ -328,9 +328,24 @@
          when (typep block 'cadr-ai:text-content)
            collect (cadr-ai:text-content-text block))))
 
-(defun tool-result-detail (result key json-key)
+(defun kebab-keyword-to-camel (key)
+  (let ((name (string-downcase (symbol-name key))))
+    (with-output-to-string (out)
+      (loop with upcase-p = nil
+            for char across name
+            do
+            (cond
+              ((char= char #\-)
+               (setf upcase-p t))
+              (upcase-p
+               (write-char (char-upcase char) out)
+               (setf upcase-p nil))
+              (t (write-char char out)))))))
+
+(defun tool-result-detail (result key &optional json-key)
   (let ((details
-          (cadr-ai:tool-result-message-details result)))
+          (cadr-ai:tool-result-message-details result))
+        (json-key (or json-key (kebab-keyword-to-camel key))))
     (cond
       ((hash-table-p details)
        (cadr-ai::json-get details json-key))
@@ -354,7 +369,7 @@
         (cadr-ai:tool-call-name call) "edit")
        (let ((diff
                (tool-result-detail
-                result :diff "diff")))
+                result :diff)))
          (if (and (stringp diff)
                   (plusp (length diff)))
              diff
@@ -363,10 +378,10 @@
         (cadr-ai:tool-call-name call) "bash")
        (let* ((truncated-p
                 (tool-result-detail
-                 result :truncated "truncated"))
+                 result :truncated))
               (full-output-path
                 (tool-result-detail
-                 result :full-output-path "fullOutputPath"))
+                 result :full-output-path))
               (footer-start
                 (and
                  truncated-p
@@ -448,33 +463,33 @@
 (defun tool-result-presentation-lines (call result)
   (let ((name (cadr-ai:tool-call-name call)))
     (labels
-        ((detail (key json-key)
-           (tool-result-detail result key json-key))
+        ((detail (key)
+           (tool-result-detail result key))
          (nested-truncation ()
-           (detail :truncation "truncation")))
+           (detail :truncation)))
       (let ((warning
               (cond
                 ((string-equal name "bash")
                  (let ((full-output-path
-                         (detail :full-output-path "fullOutputPath")))
-                   (when (and (detail :truncated "truncated")
+                         (detail :full-output-path)))
+                   (when (and (detail :truncated)
                               (stringp full-output-path)
                               (plusp (length full-output-path)))
                      (format
                       nil "[Full output: ~A. ~A]"
                       full-output-path
                       (if
-                          (eq (detail :truncated-by "truncatedBy")
+                          (eq (detail :truncated-by)
                               :lines)
                           (format
                            nil "Truncated: showing ~D of ~D lines"
-                           (detail :output-lines "outputLines")
-                           (detail :total-lines "totalLines"))
+                           (detail :output-lines)
+                           (detail :total-lines))
                           (format
                            nil "Truncated: ~D lines shown (~A limit)"
-                           (detail :output-lines "outputLines")
+                           (detail :output-lines)
                            (format-byte-size
-                            (or (detail :max-bytes "maxBytes")
+                            (or (detail :max-bytes)
                                 +maximum-output-bytes+))))))))
                 ((string-equal name "read")
                  (let ((truncation
@@ -507,25 +522,21 @@
                   (nested-truncation)
                   :limit-kind "results"
                   :limit-count
-                  (detail :result-limit-reached
-                          "resultLimitReached")))
+                  (detail :result-limit-reached)))
                 ((string-equal name "grep")
                  (search-truncation-presentation-warning
                   (nested-truncation)
                   :limit-kind "matches"
                   :limit-count
-                  (detail :match-limit-reached
-                          "matchLimitReached")
+                  (detail :match-limit-reached)
                   :lines-truncated-p
-                  (detail :lines-truncated
-                          "linesTruncated")))
+                  (detail :lines-truncated)))
                 ((string-equal name "ls")
                  (search-truncation-presentation-warning
                   (nested-truncation)
                   :limit-kind "entries"
                   :limit-count
-                  (detail :entry-limit-reached
-                          "entryLimitReached"))))))
+                  (detail :entry-limit-reached))))))
         (and warning (list warning))))))
 
 (defun find-tool-entry (state call-id)

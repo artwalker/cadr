@@ -1126,50 +1126,50 @@ shows the terminal message with the given style."
 
 (defun render-scoped-models-selector
     (state width)
-  (let ((lines
-          (render-selector-frame
-           (make-selector-frame
-    :sections
-    (list
-     (list
-      :lines
-      (let* ((items
-               (scoped-models-selector-visible-items
-                state))
-             (selected
-               (scoped-models-selector-state-selected
-                state)))
-        (multiple-value-bind (visible start end total)
-            (selector-frame-visible-slice items selected 8)
-          (declare (ignore total))
-          (multiple-value-bind
-                (enabled unavailable all-p)
-              (scoped-models-selector-counts state)
-            (append
+  (multiple-value-bind (input-lines input-row input-column)
+      (selector-input-rendering
+       (scoped-models-selector-state-query state)
+       width)
+    (render-selector-frame
+     (make-selector-frame
+      :sections
+      (list
        (list
-        (selector-border-line width)
-        ""
-        (selector-component-text-line
-         (cadr-tui:theme-foreground
-          :accent
-          (cadr-tui:theme-bold "Model Configuration"))
-         width :padding-x 0)
-        (selector-component-text-line
-         (cadr-tui:theme-foreground
-          :muted
-          (format
-           nil "Session-only. ~A to save to settings."
-           (scoped-models-binding-label
-            state "app.models.save")))
-         width :padding-x 0)
-        ""
-        (first
-         (nth-value
-          0
-          (selector-input-rendering
-           (scoped-models-selector-state-query state)
-           width)))
-        "")
+        :lines
+        (list
+         (selector-border-line width)
+         ""
+         (selector-component-text-line
+          (cadr-tui:theme-foreground
+           :accent
+           (cadr-tui:theme-bold "Model Configuration"))
+          width :padding-x 0)
+         (selector-component-text-line
+          (cadr-tui:theme-foreground
+           :muted
+           (format
+            nil "Session-only. ~A to save to settings."
+            (scoped-models-binding-label
+             state "app.models.save")))
+          width :padding-x 0)
+         ""))
+       (list :component input-lines input-row input-column)
+       (list
+        :lines
+        (let* ((items
+                 (scoped-models-selector-visible-items
+                  state))
+               (selected
+                 (scoped-models-selector-state-selected
+                  state)))
+          (multiple-value-bind (visible start end total)
+              (selector-frame-visible-slice items selected 8)
+            (declare (ignore total))
+            (multiple-value-bind
+                  (enabled unavailable all-p)
+                (scoped-models-selector-counts state)
+              (append
+       (list "")
        (if visible
            (loop
              for item in visible
@@ -1306,11 +1306,5 @@ shows the terminal message with the given style."
                 :warning " (unsaved)")
                ""))
           width))
-        (list (selector-border-line width))))))))))
-           width)))
-    (values
-     lines 5
-     (min (max 0 (1- width))
-          (+ 2
-             (cadr-tui:visible-width
-              (scoped-models-selector-state-query state)))))))
+                          (list (selector-border-line width))))))))))
+     width)))

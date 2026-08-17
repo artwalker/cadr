@@ -305,6 +305,7 @@
     (user-sources project-sources
      &key user-base project-base)
   (let ((result nil)
+        (tail nil)
         (seen (make-hash-table :test #'equal)))
     (dolist (entry
              (append
@@ -322,20 +323,16 @@
         (let ((identity
                 (package-source-identity
                  source base)))
-          (multiple-value-bind (index found-p)
+          (multiple-value-bind (cell found-p)
               (gethash identity seen)
             (if found-p
                 (when (eq scope :project)
-                  (setf (nth index result)
-                        (cons scope source)))
-                (progn
-                  (setf
-                   (gethash identity seen)
-                   (length result))
-                  (setf result
-                        (append
-                         result
-                         (list
-                          (cons scope
-                                source))))))))))
+                  (setf (car cell) (cons scope source)))
+                (let ((cell (list (cons scope source))))
+                  (setf (gethash identity seen) cell)
+                  (if tail
+                      (setf (cdr tail) cell
+                            tail cell)
+                      (setf result cell
+                            tail cell))))))))
     result))

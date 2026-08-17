@@ -108,79 +108,35 @@
              (list path)))))))
 
 (defun package-resource-paths (records)
-  (let ((global-extensions nil)
-        (project-extensions nil)
-        (global-skills nil)
-        (project-skills nil)
-        (global-prompts nil)
-        (project-prompts nil)
-        (global-themes nil)
-        (project-themes nil))
+  (let ((global (make-hash-table :test #'eq))
+        (project (make-hash-table :test #'eq)))
     (dolist (record records)
       (let* ((root (getf record :path))
              (scope
-               (if (eq :project
-                       (getf record :scope))
-                   :project :global)))
+               (if (eq :project (getf record :scope))
+                   :project :global))
+             (buckets (if (eq scope :project) project global)))
         (when root
-          (multiple-value-bind
-                (manifest manifest-p)
+          (multiple-value-bind (manifest manifest-p)
               (read-package-pi-manifest root)
-            (dolist
-                (path
-                 (package-record-resource-values
-                  root manifest manifest-p
-                  :extensions))
-              (if (eq scope :project)
-                  (push path project-extensions)
-                  (push path global-extensions)))
-            (dolist
-                (path
-                 (package-record-resource-values
-                  root manifest manifest-p
-                  :skills))
-              (if (eq scope :project)
-                  (push path project-skills)
-                  (push path global-skills)))
-            (dolist
-                (path
-                 (package-record-resource-values
-                  root manifest manifest-p
-                  :prompts))
-              (if (eq scope :project)
-                  (push path project-prompts)
-                  (push path global-prompts)))
-            (dolist
-                (path
-                 (package-record-resource-values
-                  root manifest manifest-p
-                  :themes))
-              (if (eq scope :project)
-                  (push path project-themes)
-                  (push path global-themes)))))))
-    (setf
-     global-extensions (nreverse global-extensions)
-     project-extensions (nreverse project-extensions)
-     global-skills (nreverse global-skills)
-     project-skills (nreverse project-skills)
-     global-prompts (nreverse global-prompts)
-     project-prompts (nreverse project-prompts)
-     global-themes (nreverse global-themes)
-     project-themes (nreverse project-themes))
-    (list
-     :extensions
-     (append project-extensions global-extensions)
-     :skills
-     (append project-skills global-skills)
-     :prompts
-     (append project-prompts global-prompts)
-     :themes
-     (append project-themes global-themes)
-     :global-extensions global-extensions
-     :project-extensions project-extensions
-     :global-skills global-skills
-     :project-skills project-skills
-     :global-prompts global-prompts
-     :project-prompts project-prompts
-     :global-themes global-themes
-     :project-themes project-themes)))
+            (dolist (field +package-manifest-resource-fields+)
+              (dolist (path
+                       (package-record-resource-values
+                        root manifest manifest-p (car field)))
+                (push path (gethash (car field) buckets))))))))
+    (let ((result nil))
+      (dolist (field +package-manifest-resource-fields+)
+        (let* ((kind (car field))
+               (global-paths (nreverse (gethash kind global)))
+               (project-paths (nreverse (gethash kind project))))
+          (setf (getf result kind)
+                (append project-paths global-paths))
+          (setf (getf result
+                      (intern (format nil "GLOBAL-~A" kind)
+                              :keyword))
+                global-paths)
+          (setf (getf result
+                      (intern (format nil "PROJECT-~A" kind)
+                              :keyword))
+                project-paths)))
+      result)))

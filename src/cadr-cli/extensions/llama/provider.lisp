@@ -38,22 +38,15 @@
         value)))
      (normalize-llama-server-url value))))
 
+(defun llama-positive-number (value)
+  (and (numberp value) (plusp value) value))
+
 (defun llama-model (info server-url)
   (let ((context-window
           (or
-           (and
-            (numberp
-             (llama-model-info-context-window info))
-            (plusp
-             (llama-model-info-context-window info))
+           (llama-positive-number
             (llama-model-info-context-window info))
-           (and
-            (numberp
-             (llama-model-info-training-context-window
-              info))
-            (plusp
-             (llama-model-info-training-context-window
-              info))
+           (llama-positive-number
             (llama-model-info-training-context-window
              info))
            128000)))

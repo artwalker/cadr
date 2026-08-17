@@ -456,6 +456,25 @@ directory-style extensions."
                  return candidate)
            (format nil "~{~A~^/~}" segments)))))
 
+(defparameter +startup-expanded-help+
+  '(("escape to interrupt" "escape" "to interrupt")
+    ("ctrl+c to clear" "ctrl+c" "to clear")
+    ("ctrl+c twice to exit" "ctrl+c twice" "to exit")
+    ("ctrl+d to exit (empty)" "ctrl+d" "to exit (empty)")
+    ("ctrl+z to suspend" "ctrl+z" "to suspend")
+    ("ctrl+k to delete to end" "ctrl+k" "to delete to end")
+    (:cycle-models)
+    ("ctrl+o to expand tools" "ctrl+o" "to expand tools")
+    ("/ for commands" "/" "for commands")
+    ("! to run bash" "!" "to run bash")))
+
+(defun startup-expanded-help-lines (cycle-help-line)
+  (loop for row in +startup-expanded-help+
+        for text = (if (eq (first row) :cycle-models)
+                       cycle-help-line
+                       (first row))
+        when text collect text))
+
 (defun make-tui-startup-lines
     (resources
      &key
@@ -737,20 +756,12 @@ directory-style extensions."
              (append
               (remove
                nil
-               (list
-                logo
-                "escape to interrupt"
-                "ctrl+c to clear"
-                "ctrl+c twice to exit"
-                "ctrl+d to exit (empty)"
-                "ctrl+z to suspend"
-                "ctrl+k to delete to end"
-                cycle-help-line
-                "ctrl+o to expand tools"
-                "/ for commands"
-                "! to run bash"
-                ""
-                "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr."))
+               (append
+                (list logo)
+                (startup-expanded-help-lines cycle-help-line)
+                (list
+                 ""
+                 "Cadr can explain its own features and look up its docs. Ask it how to use or extend Cadr.")))
               (let ((blocks (sections t)))
                 (when blocks
                   (append (list "") blocks))))))
@@ -793,16 +804,7 @@ directory-style extensions."
        (expanded-help (line)
          (let ((parts
                  (assoc
-                  line
-                  '(("escape to interrupt" "escape" "to interrupt")
-                    ("ctrl+c to clear" "ctrl+c" "to clear")
-                    ("ctrl+c twice to exit" "ctrl+c twice" "to exit")
-                    ("ctrl+d to exit (empty)" "ctrl+d" "to exit (empty)")
-                    ("ctrl+z to suspend" "ctrl+z" "to suspend")
-                    ("ctrl+k to delete to end" "ctrl+k" "to delete to end")
-                    ("ctrl+o to expand tools" "ctrl+o" "to expand tools")
-                    ("/ for commands" "/" "for commands")
-                    ("! to run bash" "!" "to run bash"))
+                  line +startup-expanded-help+
                   :test #'string=)))
            (cond
              (parts

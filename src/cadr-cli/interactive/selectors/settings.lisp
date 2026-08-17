@@ -469,70 +469,58 @@
 (defun settings-selector-handle-event
     (state event)
   (unless (eq (settings-selector-state-mode state) :main)
-    (case (cadr-tui:input-event-kind event)
-      (:up
-       (multiple-value-bind (updated change)
-           (settings-selector-submenu-move state -1)
-         (declare (ignore updated))
-         (return-from settings-selector-handle-event
-           (values :changed change))))
-      (:down
-       (multiple-value-bind (updated change)
-           (settings-selector-submenu-move state 1)
-         (declare (ignore updated))
-         (return-from settings-selector-handle-event
-           (values :changed change))))
-      (:page-up
-       (multiple-value-bind (updated change)
-           (settings-selector-submenu-move state -10)
-         (declare (ignore updated))
-         (return-from settings-selector-handle-event
-           (values :changed change))))
-      (:page-down
-       (multiple-value-bind (updated change)
-           (settings-selector-submenu-move state 10)
-         (declare (ignore updated))
-         (return-from settings-selector-handle-event
-           (values :changed change))))
-      ((:enter :submit)
-       (multiple-value-bind (updated change)
-           (settings-selector-activate-submenu state)
-         (declare (ignore updated))
-         (return-from settings-selector-handle-event
-           (values :changed change))))
-      (:text
-       (when (string= (or (cadr-tui:input-event-text event) "")
-                      " ")
-         (multiple-value-bind (updated change)
-             (settings-selector-activate-submenu state)
-           (declare (ignore updated))
-           (return-from settings-selector-handle-event
-             (values :changed change)))))
-      ((:escape :cancel)
-       (let ((mode (settings-selector-state-mode state))
-             (change nil))
-         (if (member mode '(:theme-light :theme-dark))
-             (progn
-               (setf (settings-selector-state-mode state)
-                     :theme-automatic)
-               (setf change
-                     (list
-                      :id "theme-preview"
-                      :value
-                      (settings-selector-automatic-theme-setting
-                       state))))
-             (progn
-               (when (member mode
-                             '(:theme-single :theme-automatic))
+    (flet ((unwrap (updater)
+             (multiple-value-bind (updated change)
+                 (funcall updater)
+               (declare (ignore updated))
+               (return-from settings-selector-handle-event
+                 (values :changed change)))))
+      (case (cadr-tui:input-event-kind event)
+        (:up
+         (unwrap (lambda ()
+                   (settings-selector-submenu-move state -1))))
+        (:down
+         (unwrap (lambda ()
+                   (settings-selector-submenu-move state 1))))
+        (:page-up
+         (unwrap (lambda ()
+                   (settings-selector-submenu-move state -10))))
+        (:page-down
+         (unwrap (lambda ()
+                   (settings-selector-submenu-move state 10))))
+        ((:enter :submit)
+         (unwrap (lambda ()
+                   (settings-selector-activate-submenu state))))
+        (:text
+         (when (string= (or (cadr-tui:input-event-text event) "")
+                        " ")
+           (unwrap (lambda ()
+                     (settings-selector-activate-submenu state)))))
+        ((:escape :cancel)
+         (let ((mode (settings-selector-state-mode state))
+               (change nil))
+           (if (member mode '(:theme-light :theme-dark))
+               (progn
+                 (setf (settings-selector-state-mode state)
+                       :theme-automatic)
                  (setf change
                        (list
                         :id "theme-preview"
                         :value
-                        (settings-selector-state-original-theme
+                        (settings-selector-automatic-theme-setting
                          state))))
-               (settings-selector-close-submenu state)))
-       (return-from settings-selector-handle-event
-           (values :changed change))))))
+               (progn
+                 (when (member mode
+                               '(:theme-single :theme-automatic))
+                   (setf change
+                         (list
+                          :id "theme-preview"
+                          :value
+                          (settings-selector-state-original-theme
+                           state))))
+                 (settings-selector-close-submenu state)))
+           (return-from settings-selector-handle-event
+             (values :changed change)))))))
   (case (cadr-tui:input-event-kind event)
     (:up
      (settings-selector-move state -1)
@@ -805,6 +793,29 @@
        :dim "  Enter to select · Esc to go back")
       width :padding-x 0))))
 
+(defun render-settings-automatic-theme-chrome (width body)
+  (append
+   (list
+    (selector-component-text-line
+     (cadr-tui:theme-foreground
+      :accent
+      (cadr-tui:theme-bold "Automatic Theme"))
+     width :padding-x 0)
+    "")
+   (component-text-lines
+    (cadr-tui:theme-foreground
+     :muted
+     "Choose themes for terminal light and dark appearance.")
+    width :padding-x 0)
+   (list
+    (component-text-line
+     (cadr-tui:theme-foreground
+      :muted
+      "Light/dark detection requires terminal support.")
+     width :padding-x 0)
+    "")
+   body))
+
 (defun render-settings-selector
     (state width)
   (when (eq :main (settings-selector-state-mode state))
@@ -858,74 +869,20 @@
           state width "Theme"
           "Select a theme, or choose Automatic to follow terminal appearance."))
         (:theme-light
-         (append
-          (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :accent
-             (cadr-tui:theme-bold "Automatic Theme"))
-            width :padding-x 0)
-           "")
-          (component-text-lines
-           (cadr-tui:theme-foreground
-            :muted
-            "Choose themes for terminal light and dark appearance.")
-           width :padding-x 0)
-          (list
-           (component-text-line
-            (cadr-tui:theme-foreground
-             :muted
-             "Light/dark detection requires terminal support.")
-            width :padding-x 0)
-           "")
+         (render-settings-automatic-theme-chrome
+          width
           (render-settings-select-submenu
            state width "Light Theme"
            "Select the theme to use for light terminal appearance")))
         (:theme-dark
-         (append
-          (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :accent
-             (cadr-tui:theme-bold "Automatic Theme"))
-            width :padding-x 0)
-           "")
-          (component-text-lines
-           (cadr-tui:theme-foreground
-            :muted
-            "Choose themes for terminal light and dark appearance.")
-           width :padding-x 0)
-          (list
-           (component-text-line
-            (cadr-tui:theme-foreground
-             :muted
-             "Light/dark detection requires terminal support.")
-            width :padding-x 0)
-           "")
+         (render-settings-automatic-theme-chrome
+          width
           (render-settings-select-submenu
            state width "Dark Theme"
            "Select the theme to use for dark terminal appearance")))
         (:theme-automatic
-         (append
-          (list
-           (selector-component-text-line
-            (cadr-tui:theme-foreground
-             :accent
-             (cadr-tui:theme-bold "Automatic Theme"))
-            width :padding-x 0)
-           "")
-          (component-text-lines
-           (cadr-tui:theme-foreground
-            :muted
-            "Choose themes for terminal light and dark appearance.")
-           width :padding-x 0)
-          (list
-           (component-text-line
-            (cadr-tui:theme-foreground
-             :muted
-             "Light/dark detection requires terminal support.")
-            width :padding-x 0)
-           "")
+         (render-settings-automatic-theme-chrome
+          width
           (render-settings-option-list
            (settings-selector-submenu-options state)
            (settings-selector-submenu-options state)

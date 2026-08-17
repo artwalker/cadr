@@ -12,7 +12,7 @@
   (let* ((path
            (resolve-tool-path
             cwd (optional-string arguments "path" ".")))
-         (limit (or (optional-integer arguments "limit" 500) 500)))
+         (limit (optional-integer arguments "limit" 500)))
     (unless (probe-file path)
       (error "Path not found: ~A" (namestring path)))
     (let ((directory (uiop:directory-exists-p path)))

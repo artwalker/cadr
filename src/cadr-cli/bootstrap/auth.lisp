@@ -24,33 +24,29 @@
                   (loop for auth-type in
                         (getf record :auth-types)
                         collect
-                        (make-oauth-selector-option
-                         :id id
-                         :name name
-                         :auth-type auth-type
-                         :method-name
-                         (let ((metadata
-                                 (and
-                                  (eq auth-type :oauth)
-                                  (getf record :oauth-metadata))))
+                        (let ((metadata
+                                (and
+                                 (eq auth-type :oauth)
+                                 (getf record :oauth-metadata))))
+                          (make-oauth-selector-option
+                           :id id
+                           :name name
+                           :auth-type auth-type
+                           :method-name
                            (if metadata
                                (cadr-ai:oauth-provider-metadata-method-name
                                 metadata)
                                (format nil "~A ~A" name
                                        (if (eq auth-type :oauth)
                                            "account"
-                                           "API key"))))
-                         :login-label
-                         (let ((metadata
-                                 (and
-                                  (eq auth-type :oauth)
-                                  (getf record :oauth-metadata))))
+                                           "API key")))
+                           :login-label
                            (and metadata
                                 (cadr-ai:oauth-provider-metadata-login-label
-                                 metadata)))
-                         :status
-                         (and status-function
-                              (funcall status-function id))))))
+                                 metadata))
+                           :status
+                           (and status-function
+                                (funcall status-function id)))))))
          #'string-lessp
          :key #'oauth-selector-option-name))))
 

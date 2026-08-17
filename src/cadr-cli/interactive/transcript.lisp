@@ -7,6 +7,18 @@
 (defparameter +osc-133-final+
   (format nil "~C]133;C~C" #\Escape (code-char 7)))
 
+(defun wrap-transcript-lines (lines)
+  (when lines
+    (let ((copy (copy-list lines)))
+      (setf
+       (first copy)
+       (concatenate 'string +osc-133-start+ (first copy))
+       (car (last copy))
+       (concatenate
+        'string +osc-133-end+ +osc-133-final+
+        (car (last copy))))
+      copy)))
+
 (defun output-padding-string (output-pad)
   (make-string
    (if (member output-pad '(0 1))
@@ -88,20 +100,7 @@
           width)))))
     (if contains-tool-p
         lines
-        (if lines
-            (let ((copy (copy-list lines)))
-              (setf
-               (first copy)
-               (concatenate
-                'string +osc-133-start+
-                (first copy))
-               (car (last copy))
-               (concatenate
-                'string +osc-133-end+
-                +osc-133-final+
-                (car (last copy))))
-              copy)
-            nil))))
+        (wrap-transcript-lines lines))))
 
 (defun assistant-price-known-p (message)
   (not
@@ -808,16 +807,7 @@
                :syntax-highlight-function
                #'tui-syntax-highlight)
               :user-message-bg)))
-       (when lines
-         (setf
-          (first lines)
-          (concatenate
-           'string +osc-133-start+ (first lines))
-          (car (last lines))
-          (concatenate
-           'string +osc-133-end+ +osc-133-final+
-           (car (last lines)))))
-       lines))
+       (or (wrap-transcript-lines lines) lines)))
     (:assistant
      (let ((lines
              (render-assistant-blocks
@@ -830,14 +820,7 @@
             lines
             (not
              (tui-entry-has-tool-calls-p entry)))
-         (setf
-          (first lines)
-          (concatenate
-           'string +osc-133-start+ (first lines))
-          (car (last lines))
-          (concatenate
-           'string +osc-133-end+ +osc-133-final+
-           (car (last lines)))))
+         (setf lines (wrap-transcript-lines lines)))
        lines))
     (:tool
      (let ((custom-call

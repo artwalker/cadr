@@ -1,5 +1,11 @@
 (in-package #:cadr-cli)
 
+(defun parse-queue-mode (mode noun)
+  (cond
+    ((string= mode "all") :all)
+    ((string= mode "one-at-a-time") :one-at-a-time)
+    (t (error "Invalid ~A mode: ~A" noun mode))))
+
 (defun rpc-last-assistant-text (agent)
   (let ((message
           (find-if
@@ -242,30 +248,16 @@
       ((string= type "set_steering_mode")
        (setf
         (cadr-agent:agent-steering-mode agent)
-        (let ((mode
-                (require-rpc-string
-                 object "mode")))
-          (cond
-            ((string= mode "all") :all)
-            ((string= mode "one-at-a-time")
-             :one-at-a-time)
-            (t
-             (error "Invalid steering mode: ~A"
-                    mode)))))
+        (parse-queue-mode
+         (require-rpc-string object "mode")
+         "steering"))
        (rpc-success id type))
       ((string= type "set_follow_up_mode")
        (setf
         (cadr-agent:agent-follow-up-mode agent)
-        (let ((mode
-                (require-rpc-string
-                 object "mode")))
-          (cond
-            ((string= mode "all") :all)
-            ((string= mode "one-at-a-time")
-             :one-at-a-time)
-            (t
-             (error "Invalid follow-up mode: ~A"
-                    mode)))))
+        (parse-queue-mode
+         (require-rpc-string object "mode")
+         "follow-up"))
        (rpc-success id type))
       ((string= type "compact")
        (let ((result

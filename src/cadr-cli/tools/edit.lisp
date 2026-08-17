@@ -185,6 +185,17 @@
        "Could not find edits[~D] in ~A. The oldText must match exactly including all whitespace and newlines."
        index path)))
 
+(defun edit-no-changes-error (path replacement-count)
+  ;; pi@914cf1472 packages/coding-agent/src/core/tools/edit-diff.ts:286-293
+  ;; getNoChangeError — one owner for the single vs multiple copy.
+  (if (= replacement-count 1)
+      (error
+       "No changes made to ~A. The replacement produced identical content. This might indicate an issue with special characters or the text not existing as expected."
+       path)
+      (error
+       "No changes made to ~A. The replacements produced identical content."
+       path)))
+
 (defun edit-duplicate-error (path index total occurrences)
   (if (= total 1)
       (error
@@ -620,13 +631,8 @@
                    (updated
                      (apply-replacements original replacements)))
               (when (string= original updated)
-                (if (= 1 (length replacements))
-                    (error
-                     "No changes made to ~A. The replacement produced identical content. This might indicate an issue with special characters or the text not existing as expected."
-                     display-path)
-                    (error
-                     "No changes made to ~A. The replacements produced identical content."
-                     display-path)))
+                (edit-no-changes-error
+                 display-path (length replacements)))
               (values
                (generate-edit-display-diff
                 original updated replacements)
@@ -708,13 +714,8 @@
                 (setf replacement-count
                       (length replacements))
                 (when (string= original updated)
-                  (if (= replacement-count 1)
-                      (error
-                       "No changes made to ~A. The replacement produced identical content. This might indicate an issue with special characters or the text not existing as expected."
-                       display-path)
-                      (error
-                       "No changes made to ~A. The replacements produced identical content."
-                       display-path)))
+                  (edit-no-changes-error
+                   display-path replacement-count))
                 (multiple-value-bind
                       (diff first-line groups)
                     (generate-edit-display-diff

@@ -57,14 +57,15 @@
 
 (defun detect-cache-miss
     (prior-messages current-message
-     &key model-price-function)
+     &key model-price-function previous any-reported-cache-p)
   (let ((previous
-          (find-if
-           (lambda (item)
-             (typep item
-                    'cadr-ai:assistant-message))
-           prior-messages
-           :from-end t)))
+          (or previous
+              (find-if
+               (lambda (item)
+                 (typep item
+                        'cadr-ai:assistant-message))
+               prior-messages
+               :from-end t))))
     (unless previous
       (return-from detect-cache-miss nil))
     (multiple-value-bind
@@ -75,6 +76,7 @@
                (+ current-input current-read current-write))
              (reported-cache-p
                (or
+                any-reported-cache-p
                 (some #'assistant-reported-cache-p
                       prior-messages)
                 (plusp (+ current-read current-write)))))
@@ -142,7 +144,8 @@
 
 (defun compute-cache-waste
     (items &key model-price-function)
-  (let ((prior nil)
+  (let ((previous nil)
+        (any-reported-cache-p nil)
         (misses nil))
     (dolist (item items)
       (cond
@@ -153,7 +156,8 @@
            (member
             (cadr-agent:session-entry-type item)
             '(:compaction :branch-summary))))
-         (setf prior nil))
+         (setf previous nil
+               any-reported-cache-p nil))
         (t
          (let ((message
                  (if (typep item 'cadr-agent:session-entry)
@@ -162,13 +166,17 @@
            (when (typep message 'cadr-ai:assistant-message)
              (let ((miss
                      (detect-cache-miss
-                      prior message
+                      nil message
+                      :previous previous
+                      :any-reported-cache-p any-reported-cache-p
                       :model-price-function
                       model-price-function)))
                (when miss
                  (push miss misses)))
-             (setf prior
-                   (append prior (list message))))))))
+             (setf any-reported-cache-p
+                   (or any-reported-cache-p
+                       (assistant-reported-cache-p message))
+                   previous message))))))
     (setf misses (nreverse misses))
     (make-cache-waste
      :missed-tokens

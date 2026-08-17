@@ -1,5 +1,12 @@
 (in-package #:cadr-cli)
 
+(defun llama-gated-approval-text (gated)
+  ;; huggingface.lisp stores :manual/:auto. Comparing the wire
+  ;; string "manual" here is always NIL (pi index.ts:143).
+  (if (eq gated :manual)
+      "Manual approval is required"
+      "Accept the access terms"))
+
 (defun llama-runtime-for-command ()
   (and
    *active-native-model-registry*
@@ -280,9 +287,8 @@ notice, quantization select with sizes, cancellable download."
       (let ((details (hugging-face-details hf repository)))
         (when (getf details :gated)
           (let* ((approval
-                  (if (string= (getf details :gated) "manual")
-                      "Manual approval is required"
-                      "Accept the access terms"))
+                  (llama-gated-approval-text
+                   (getf details :gated)))
                  (choice
                   (llama-view-select
                    view

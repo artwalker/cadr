@@ -578,32 +578,25 @@
                       :thinking)))
          (_startup-model-config
            (when startup-model
-             (setf
-              config
-              (provider-config-for-model
-               model-registry startup-model
-               :api-key
-               (and
-                (cli-arguments-provider command)
-                (string-equal
-                 (provider-key
-                  (cadr-ai:model-provider
-                   startup-model))
-                 (provider-key
-                  (cli-arguments-provider command)))
-                (cli-arguments-api-key command))
-               :base-url
-               (and
-                (cli-arguments-provider command)
-                (string-equal
-                 (provider-key
-                  (cadr-ai:model-provider
-                   startup-model))
-                 (provider-key
-                  (cli-arguments-provider command)))
-                (cli-arguments-base-url
-                 command))
-               :allow-missing-auth-p t))))
+             (let ((matched-provider-p
+                     (and
+                      (cli-arguments-provider command)
+                      (string-equal
+                       (provider-key
+                        (cadr-ai:model-provider startup-model))
+                       (provider-key
+                        (cli-arguments-provider command))))))
+               (setf
+                config
+                (provider-config-for-model
+                 model-registry startup-model
+                 :api-key
+                 (and matched-provider-p
+                      (cli-arguments-api-key command))
+                 :base-url
+                 (and matched-provider-p
+                      (cli-arguments-base-url command))
+                 :allow-missing-auth-p t)))))
          ;; Baseline model-resolver.ts:650-651 — with no authenticated
          ;; model and no explicit --model/--provider the session keeps a
          ;; NIL model (the footer sentinel "no-model"); sending then
@@ -1832,36 +1825,31 @@
                     (list :name name :description description
                           :argument-hint argument-hint
                           :source :builtin))
-              (loop for definition in
-                    (cadr-agent::extension-snapshot-commands snapshot)
-                    collect
-                    (list
-                     :name
-                     (cadr-agent::extension-command-definition-name definition)
-                     :description
-                     (cadr-agent::extension-command-definition-description definition)
-                     :argument-hint
-                     (cadr-agent::extension-command-definition-argument-hint definition)
-                     :source :extension
-                     :source-info
-                     (list
-                      :path
-                      (cadr-agent::extension-definition-origin definition))))
-              (loop for definition in
-                    (cadr-agent::extension-snapshot-templates snapshot)
-                    collect
-                    (list
-                     :name
-                     (cadr-agent::extension-template-definition-name definition)
-                     :description
-                     (cadr-agent::extension-template-definition-description definition)
-                     :argument-hint
-                     (cadr-agent::extension-template-definition-argument-hint definition)
-                     :source :prompt-template
-                     :source-info
-                     (list
-                      :path
-                      (cadr-agent::extension-definition-origin definition)))))))
+              (loop for (source reader name-of description-of hint-of)
+                    in
+                    `((:extension
+                       ,#'cadr-agent::extension-snapshot-commands
+                       ,#'cadr-agent::extension-command-definition-name
+                       ,#'cadr-agent::extension-command-definition-description
+                       ,#'cadr-agent::extension-command-definition-argument-hint)
+                      (:prompt-template
+                       ,#'cadr-agent::extension-snapshot-templates
+                       ,#'cadr-agent::extension-template-definition-name
+                       ,#'cadr-agent::extension-template-definition-description
+                       ,#'cadr-agent::extension-template-definition-argument-hint))
+                    nconc
+                    (loop for definition in (funcall reader snapshot)
+                          collect
+                          (list
+                           :name (funcall name-of definition)
+                           :description (funcall description-of definition)
+                           :argument-hint (funcall hint-of definition)
+                           :source source
+                           :source-info
+                           (list
+                            :path
+                            (cadr-agent::extension-definition-origin
+                             definition))))))))
          (extension-tool-records ()
            (let ((host
                    (cli-extension-manager-host extension-manager)))
@@ -2289,24 +2277,12 @@
                   (cadr-agent::message-to-json message) out))))
            :busy-input-function
            (lambda (text)
-             (multiple-value-bind
-                   (message handled-p)
-                 (cadr-agent::apply-agent-input-hooks
-                  agent text :interactive
-                  :streaming-behavior :steer)
-               (unless handled-p
-                 (cadr-agent:agent-steer
-                  agent message))))
+             (apply-input-or-queue
+              agent text :interactive :steer))
            :follow-up-input-function
            (lambda (text)
-             (multiple-value-bind
-                   (message handled-p)
-                 (cadr-agent::apply-agent-input-hooks
-                  agent text :interactive
-                  :streaming-behavior :follow-up)
-               (unless handled-p
-                 (cadr-agent:agent-follow-up
-                  agent message))))
+             (apply-input-or-queue
+              agent text :interactive :follow-up))
            :dequeue-function
            (lambda ()
              (multiple-value-bind (steering follow-up)

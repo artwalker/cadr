@@ -1106,41 +1106,44 @@
       (t
        (format nil "~Dy" (floor seconds 31536000))))))
 
+(defun session-selector-gutter-prefixes (nodes)
+  ;; One reverse walk owns last-p / ancestor-continues
+  ;; (session-selector.ts:262-269). Public nodes stay (depth . record).
+  (let* ((count (length nodes))
+         (depths (make-array count))
+         (prefixes (make-array count :initial-element ""))
+         (next-at-depth (make-hash-table :test #'eql)))
+    (loop for node in nodes
+          for index from 0
+          do (setf (aref depths index) (car node)))
+    (loop for index from (1- count) downto 0
+          for depth = (aref depths index)
+          do
+          (when (plusp depth)
+            (setf
+             (aref prefixes index)
+             (with-output-to-string (output)
+               (loop for level from 1 below depth
+                     do
+                     (write-string
+                      (if (gethash level next-at-depth) "│  " "   ")
+                      output))
+               (write-string
+                (if (gethash depth next-at-depth) "├─ " "└─ ")
+                output))))
+          (setf (gethash depth next-at-depth) t)
+          (maphash
+           (lambda (level present)
+             (declare (ignore present))
+             (when (> level depth)
+               (remhash level next-at-depth)))
+           next-at-depth))
+    prefixes))
+
 (defun session-selector-node-prefix
     (nodes index)
-  (let* ((depth (car (nth index nodes)))
-         (count (length nodes)))
-    (when (zerop depth)
-      (return-from session-selector-node-prefix ""))
-    (with-output-to-string (output)
-      (loop for level from 1 below depth
-            for continues-p =
-              (loop for cursor from (1+ index)
-                    below count
-                    for later-depth =
-                      (car (nth cursor nodes))
-                    when (< later-depth level)
-                      return nil
-                    when (= later-depth level)
-                      return t
-                    finally (return nil))
-            do
-            (write-string
-             (if continues-p "│  " "   ")
-             output))
-      (let ((last-p
-              (loop for cursor from (1+ index)
-                    below count
-                    for later-depth =
-                      (car (nth cursor nodes))
-                    when (< later-depth depth)
-                      return t
-                    when (= later-depth depth)
-                      return nil
-                    finally (return t))))
-        (write-string
-         (if last-p "└─ " "├─ ")
-         output)))))
+  (let ((prefixes (session-selector-gutter-prefixes nodes)))
+    (or (aref prefixes index) "")))
 
 (defun render-session-selector (selector width)
   (when
@@ -1184,6 +1187,8 @@
            (session-selector-state-name-filter selector))
          (nodes
            (session-selector-visible-nodes selector))
+         (prefixes
+           (session-selector-gutter-prefixes nodes))
          (selected
            (session-selector-state-selected selector))
          (title
@@ -1375,8 +1380,7 @@
                 (session-search-record-path record)
                 (session-selector-state-confirming-delete-path
                  selector))
-             for prefix =
-               (session-selector-node-prefix nodes index)
+             for prefix = (or (aref prefixes index) "")
              for raw-label =
                (session-selector-record-label record)
              for right-part =

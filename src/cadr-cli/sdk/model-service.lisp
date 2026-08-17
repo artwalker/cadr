@@ -83,32 +83,38 @@
   (cadr-ai:models-runtime-providers
    (sdk-model-runtime-native-runtime runtime)))
 
+(defun sdk-configured-models-unshadowed
+    (runtime models &optional provider-id)
+  ;; Configured models hidden by a native provider of the same id,
+  ;; optionally filtered to one provider.
+  (let ((native-provider-ids
+          (mapcar
+           #'cadr-ai:runtime-provider-id
+           (sdk-model-runtime-providers runtime))))
+    (remove-if
+     (lambda (model)
+       (or
+        (member (cadr-ai:model-provider model)
+                native-provider-ids)
+        (and provider-id
+             (not (eq provider-id
+                      (cadr-ai:model-provider model))))))
+     models)))
+
 (defun sdk-model-runtime-models
     (runtime &optional provider)
-  (let* ((native
+  (let* ((provider-id
+           (and provider (provider-symbol-from-key provider)))
+         (native
            (cadr-ai:models-runtime-models
             (sdk-model-runtime-native-runtime runtime)
-            (and provider
-                 (provider-symbol-from-key provider))))
-         (native-provider-ids
-           (mapcar
-            #'cadr-ai:runtime-provider-id
-            (sdk-model-runtime-providers runtime)))
+            provider-id))
          (configured
-           (remove-if
-            (lambda (model)
-              (or
-               (member
-                (cadr-ai:model-provider model)
-                native-provider-ids)
-               (and provider
-                    (not
-                     (eq
-                      (cadr-ai:model-provider model)
-                      (provider-symbol-from-key
-                       provider))))))
+           (sdk-configured-models-unshadowed
+            runtime
             (model-registry-all
-             (sdk-model-runtime-registry runtime)))))
+             (sdk-model-runtime-registry runtime))
+            provider-id)))
     (append native configured)))
 
 (defun sdk-model-runtime-model
@@ -273,24 +279,12 @@
              (cadr-ai:models-runtime-available-models
               (sdk-model-runtime-native-runtime runtime)
               provider-id))
-           (native-provider-ids
-             (mapcar
-              #'cadr-ai:runtime-provider-id
-              (sdk-model-runtime-providers runtime)))
            (configured
-             (remove-if
-              (lambda (model)
-                (or
-                 (member
-                  (cadr-ai:model-provider model)
-                  native-provider-ids)
-                 (and provider-id
-                      (not
-                       (eq provider-id
-                           (cadr-ai:model-provider
-                            model))))))
+             (sdk-configured-models-unshadowed
+              runtime
               (model-registry-available-models
-               (sdk-model-runtime-registry runtime)))))
+               (sdk-model-runtime-registry runtime))
+              provider-id)))
       (append native configured))))
 
 (defun sdk-model-runtime-list-credentials (runtime)

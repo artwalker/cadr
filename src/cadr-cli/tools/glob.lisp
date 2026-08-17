@@ -164,8 +164,7 @@
          (base
            (resolve-tool-path
             cwd (optional-string arguments "path" ".")))
-         (limit (or (optional-integer arguments "limit" 1000)
-                    1000))
+         (limit (optional-integer arguments "limit" 1000))
          (scanner (glob-scanner pattern))
          (_
            (unless (uiop:directory-exists-p base)

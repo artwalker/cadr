@@ -14,9 +14,29 @@
      :name "cadr-rpc-dialog-result")))
 
 (defun rpc-dialog-default (method)
-  (case method
-    (:confirm nil)
-    (otherwise nil)))
+  (declare (ignore method))
+  nil)
+
+(defun rpc-dialog-request-object
+    (method-name title
+     &key message options placeholder prefill timeout-ms)
+  (let ((request
+          (cadr-ai::json-object
+           "type" "extension_ui_request"
+           "method" method-name
+           "title" title)))
+    (when message
+      (cadr-ai::json-put request "message" message))
+    (when options
+      (cadr-ai::json-put
+       request "options" (coerce options 'vector)))
+    (when placeholder
+      (cadr-ai::json-put request "placeholder" placeholder))
+    (when prefill
+      (cadr-ai::json-put request "prefill" prefill))
+    (when timeout-ms
+      (cadr-ai::json-put request "timeout" timeout-ms))
+    request))
 
 (defun rpc-dialog-result (method response)
   (if (or (null response)
@@ -116,71 +136,38 @@
   (lambda (method arguments)
     (case method
       (:select
-       (let ((request
-               (cadr-ai::json-object
-                "type" "extension_ui_request"
-                "method" "select"
-                "title" (getf arguments :title)
-                "options"
-                (coerce
-                 (getf arguments :options)
-                 'vector))))
-         (when (getf arguments :timeout-ms)
-           (cadr-ai::json-put
-            request "timeout"
-            (getf arguments :timeout-ms)))
-         (rpc-dialog-request
-          state :select request
-          :signal (getf arguments :signal)
-          :timeout-ms
-          (getf arguments :timeout-ms))))
+       (rpc-dialog-request
+        state :select
+        (rpc-dialog-request-object
+         "select" (getf arguments :title)
+         :options (getf arguments :options)
+         :timeout-ms (getf arguments :timeout-ms))
+        :signal (getf arguments :signal)
+        :timeout-ms (getf arguments :timeout-ms)))
       (:confirm
-       (let ((request
-               (cadr-ai::json-object
-                "type" "extension_ui_request"
-                "method" "confirm"
-                "title" (getf arguments :title)
-                "message" (getf arguments :message))))
-         (when (getf arguments :timeout-ms)
-           (cadr-ai::json-put
-            request "timeout"
-            (getf arguments :timeout-ms)))
-         (rpc-dialog-request
-          state :confirm request
-          :signal (getf arguments :signal)
-          :timeout-ms
-          (getf arguments :timeout-ms))))
+       (rpc-dialog-request
+        state :confirm
+        (rpc-dialog-request-object
+         "confirm" (getf arguments :title)
+         :message (getf arguments :message)
+         :timeout-ms (getf arguments :timeout-ms))
+        :signal (getf arguments :signal)
+        :timeout-ms (getf arguments :timeout-ms)))
       (:input
-       (let ((request
-               (cadr-ai::json-object
-                "type" "extension_ui_request"
-                "method" "input"
-                "title" (getf arguments :title))))
-         (when (getf arguments :placeholder)
-           (cadr-ai::json-put
-            request "placeholder"
-            (getf arguments :placeholder)))
-         (when (getf arguments :timeout-ms)
-           (cadr-ai::json-put
-            request "timeout"
-            (getf arguments :timeout-ms)))
-         (rpc-dialog-request
-          state :input request
-          :signal (getf arguments :signal)
-          :timeout-ms
-          (getf arguments :timeout-ms))))
+       (rpc-dialog-request
+        state :input
+        (rpc-dialog-request-object
+         "input" (getf arguments :title)
+         :placeholder (getf arguments :placeholder)
+         :timeout-ms (getf arguments :timeout-ms))
+        :signal (getf arguments :signal)
+        :timeout-ms (getf arguments :timeout-ms)))
       (:editor
-       (let ((request
-               (cadr-ai::json-object
-                "type" "extension_ui_request"
-                "method" "editor"
-                "title" (getf arguments :title))))
-         (when (getf arguments :prefill)
-           (cadr-ai::json-put
-            request "prefill"
-            (getf arguments :prefill)))
-         (rpc-dialog-request
-          state :editor request)))
+       (rpc-dialog-request
+        state :editor
+        (rpc-dialog-request-object
+         "editor" (getf arguments :title)
+         :prefill (getf arguments :prefill))))
       (:notify
        (let ((fields
                (list

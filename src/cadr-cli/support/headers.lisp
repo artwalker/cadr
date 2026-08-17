@@ -62,20 +62,14 @@
      session defaults provider-headers
      request-headers)))
 
+(defparameter +stream-setting-defaults+
+  '((:timeout-ms . :http-idle-timeout-ms)
+    (:websocket-connect-timeout-ms . :websocket-connect-timeout-ms)
+    (:retry . :retry)))
+
 (defun merge-stream-settings (settings request)
   (let ((result (copy-list request)))
-    (unless (getf result :timeout-ms)
-      (setf (getf result :timeout-ms)
-            (getf settings
-                  :http-idle-timeout-ms)))
-    (unless (getf result
-                  :websocket-connect-timeout-ms)
-      (setf
-       (getf result
-             :websocket-connect-timeout-ms)
-       (getf settings
-             :websocket-connect-timeout-ms)))
-    (unless (getf result :retry)
-      (setf (getf result :retry)
-            (getf settings :retry)))
-    result))
+    (dolist (pair +stream-setting-defaults+ result)
+      (unless (getf result (car pair))
+        (setf (getf result (car pair))
+              (getf settings (cdr pair)))))))

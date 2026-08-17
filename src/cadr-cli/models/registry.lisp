@@ -18,6 +18,17 @@
 (defvar *native-extension-host* nil)
 (defvar *active-native-model-registry* nil)
 
+(defun model-registry-sort-predicate (left right)
+  ;; One owner for /model and --list-models order
+  ;; (pi@914cf1472 model registry provider then id).
+  (let ((left-provider
+          (provider-key (cadr-ai:model-provider left)))
+        (right-provider
+          (provider-key (cadr-ai:model-provider right))))
+    (if (string= left-provider right-provider)
+        (string< (cadr-ai:model-id left) (cadr-ai:model-id right))
+        (string< left-provider right-provider))))
+
 (defun model-registry-native-provider-p
     (registry provider)
   (and
@@ -68,20 +79,7 @@
       (append
        static
        (cadr-ai:models-runtime-models runtime))
-      (lambda (left right)
-        (let ((left-provider
-                (provider-key
-                 (cadr-ai:model-provider left)))
-              (right-provider
-                (provider-key
-                 (cadr-ai:model-provider right))))
-          (if (string= left-provider right-provider)
-              (string<
-               (cadr-ai:model-id left)
-               (cadr-ai:model-id right))
-              (string<
-               left-provider
-               right-provider)))))))
+      #'model-registry-sort-predicate)))
   registry)
 
 (defun sync-model-registry-native-providers
@@ -331,21 +329,7 @@
            providers))
         (setf
          (model-registry-models registry)
-         (sort models
-               (lambda (left right)
-                 (let ((left-provider
-                         (provider-key
-                          (cadr-ai:model-provider left)))
-                       (right-provider
-                         (provider-key
-                          (cadr-ai:model-provider right))))
-                   (if (string= left-provider
-                                right-provider)
-                       (string<
-                        (cadr-ai:model-id left)
-                        (cadr-ai:model-id right))
-                       (string< left-provider
-                                right-provider)))))
+         (sort models #'model-registry-sort-predicate)
          (model-registry-provider-settings registry)
          settings
          (model-registry-error registry)

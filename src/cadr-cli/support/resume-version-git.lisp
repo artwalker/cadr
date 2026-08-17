@@ -59,24 +59,22 @@
 (defun compare-package-versions (first second)
   (let ((left (version-tokens first))
         (right (version-tokens second)))
-    (loop for index below
-          (max (length left) (length right))
-          for a = (or (nth index left) "0")
-          for b = (or (nth index right) "0")
-          unless (string= a b)
-            do
-            (return
-              (cond
-                ((and (numeric-version-token-p a)
-                      (numeric-version-token-p b))
-                 (signum
-                  (- (parse-integer a)
-                     (parse-integer b))))
-                ((numeric-version-token-p a) 1)
-                ((numeric-version-token-p b) -1)
-                (t
-                 (if (string< a b) -1 1))))
-          finally (return 0))))
+    (loop
+      (let ((a (or (pop left) "0"))
+            (b (or (pop right) "0")))
+        (cond
+          ((and (null left) (null right) (string= a b))
+           (return 0))
+          ((string= a b))
+          ((and (numeric-version-token-p a)
+                (numeric-version-token-p b))
+           (return
+             (signum
+              (- (parse-integer a)
+                 (parse-integer b)))))
+          ((numeric-version-token-p a) (return 1))
+          ((numeric-version-token-p b) (return -1))
+          (t (return (if (string< a b) -1 1))))))))
 
 (defun cadr-user-agent (version)
   (format nil "~A/~A (~(~A~); sbcl/~A; ~(~A~))"

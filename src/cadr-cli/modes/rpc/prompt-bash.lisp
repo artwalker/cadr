@@ -31,6 +31,19 @@
           images))
         (cadr-ai:make-user-message :content text))))
 
+(defun apply-input-or-queue (agent message source behavior)
+  ;; One owner for "run input hooks, then steer/follow-up unless
+  ;; a hook already handled the message".
+  (multiple-value-bind (processed handled-p)
+      (cadr-agent::apply-agent-input-hooks
+       agent message source
+       :streaming-behavior behavior)
+    (unless handled-p
+      (if (eq behavior :steer)
+          (cadr-agent:agent-steer agent processed)
+          (cadr-agent:agent-follow-up agent processed)))
+    (values processed handled-p)))
+
 (defun rpc-apply-input-hooks-off-reader
     (state agent id type message behavior)
   ;; Prompt already runs :input hooks on cadr-rpc-prompt. Steer and
@@ -40,17 +53,7 @@
   (sb-thread:make-thread
    (lambda ()
      (handler-case
-         (multiple-value-bind
-               (processed handled-p)
-             (cadr-agent::apply-agent-input-hooks
-              agent message :rpc
-              :streaming-behavior behavior)
-           (unless handled-p
-             (if (eq behavior :steer)
-                 (cadr-agent:agent-steer
-                  agent processed)
-                 (cadr-agent:agent-follow-up
-                  agent processed))))
+         (apply-input-or-queue agent message :rpc behavior)
        (error (condition)
          (rpc-write-object
           state

@@ -13,7 +13,9 @@
          (subseq display 1))
         display)))
 
-(defun format-key-text (key &key capitalize-p)
+(defun format-key-text* (keys &key capitalize-p)
+  ;; List-level owner. String format-key-text only exists so
+  ;; raw-key-hint can still take a literal "ctrl+c/escape" hint.
   (format
    nil "~{~A~^/~}"
    (mapcar
@@ -23,22 +25,25 @@
        (mapcar
         (lambda (part)
           (format-key-part part capitalize-p))
-        (uiop:split-string alternative :separator '(#\+)))))
-    (uiop:split-string key :separator '(#\/)))))
+        (if (stringp alternative)
+            (uiop:split-string alternative :separator '(#\+))
+            (list (princ-to-string alternative))))))
+    keys)))
+
+(defun format-key-text (key &key capitalize-p)
+  (format-key-text*
+   (uiop:split-string key :separator '(#\/))
+   :capitalize-p capitalize-p))
 
 (defun key-text (keybinding)
-  (format-key-text
-   (format
-    nil "~{~A~^/~}"
-    (cadr-tui:keybinding-keys
-     (cadr-tui:get-keybindings) keybinding))))
+  (format-key-text*
+   (cadr-tui:keybinding-keys
+    (cadr-tui:get-keybindings) keybinding)))
 
 (defun key-display-text (keybinding)
-  (format-key-text
-   (format
-    nil "~{~A~^/~}"
-    (cadr-tui:keybinding-keys
-     (cadr-tui:get-keybindings) keybinding))
+  (format-key-text*
+   (cadr-tui:keybinding-keys
+    (cadr-tui:get-keybindings) keybinding)
    :capitalize-p t))
 
 (defun raw-key-hint (key description)

@@ -88,16 +88,19 @@ Returns the deduped list and a list of collision records
       :key name-function)
      (nreverse collisions))))
 
-(defun load-skills-at-paths (paths)
+(defun load-resources-at-paths (paths loader-fn)
   (let ((items nil)
         (diagnostics nil))
     (dolist (path paths)
       (multiple-value-bind (loaded warnings)
-          (cadr-agent::load-skills path)
+          (funcall loader-fn path)
         (setf items (nconc items loaded)
               diagnostics
               (nconc diagnostics warnings))))
     (values items diagnostics)))
+
+(defun load-skills-at-paths (paths)
+  (load-resources-at-paths paths #'cadr-agent::load-skills))
 
 (defun explicit-resource-directory (path)
   (let ((resolved
@@ -113,15 +116,8 @@ Returns the deduped list and a list of collision records
       (t resolved))))
 
 (defun load-prompts-at-paths (paths)
-  (let ((items nil)
-        (diagnostics nil))
-    (dolist (path paths)
-      (multiple-value-bind (loaded warnings)
-          (cadr-agent::load-prompt-templates path)
-        (setf items (nconc items loaded)
-              diagnostics
-              (nconc diagnostics warnings))))
-    (values items diagnostics)))
+  (load-resources-at-paths
+   paths #'cadr-agent::load-prompt-templates))
 
 (defun load-themes-at-paths (paths)
   (let ((items nil))
@@ -212,16 +208,18 @@ Returns the deduped list and a list of collision records
                (project-config-directories
                 (default-resource-loader-cwd loader))
                nil))
+         (no-skills-p
+           (default-resource-loader-no-skills-p loader))
+         (no-prompts-p
+           (default-resource-loader-no-prompts-p loader))
+         (no-themes-p
+           (default-resource-loader-no-themes-p loader))
          (global-skill-paths
            (append
-            (unless
-                (default-resource-loader-no-skills-p
-                 loader)
+            (unless no-skills-p
               (list
                (merge-pathnames "skills/" agent)))
-            (unless
-                (default-resource-loader-no-skills-p
-                 loader)
+            (unless no-skills-p
               (default-resource-loader-package-global-skill-paths
                loader))
             (mapcar
@@ -229,14 +227,12 @@ Returns the deduped list and a list of collision records
              (default-resource-loader-explicit-skill-paths
               loader))))
          (project-skill-paths
-           (unless
-               (default-resource-loader-no-skills-p
-                loader)
+           (unless no-skills-p
              (append
               (mapcar
-              (lambda (config)
-                (merge-pathnames "skills/" config))
-              configs)
+               (lambda (config)
+                 (merge-pathnames "skills/" config))
+               configs)
               (default-resource-loader-package-project-skill-paths
                loader)
               (mapcar
@@ -245,14 +241,10 @@ Returns the deduped list and a list of collision records
                      :skill-paths)))))
          (global-prompt-paths
            (append
-            (unless
-                (default-resource-loader-no-prompts-p
-                 loader)
+            (unless no-prompts-p
               (list
                (merge-pathnames "prompts/" agent)))
-            (unless
-                (default-resource-loader-no-prompts-p
-                 loader)
+            (unless no-prompts-p
               (default-resource-loader-package-global-prompt-paths
                loader))
             (mapcar
@@ -260,14 +252,12 @@ Returns the deduped list and a list of collision records
              (default-resource-loader-explicit-prompt-paths
               loader))))
          (project-prompt-paths
-           (unless
-               (default-resource-loader-no-prompts-p
-                loader)
+           (unless no-prompts-p
              (append
               (mapcar
-              (lambda (config)
-                (merge-pathnames "prompts/" config))
-              configs)
+               (lambda (config)
+                 (merge-pathnames "prompts/" config))
+               configs)
               (default-resource-loader-package-project-prompt-paths
                loader)
               (mapcar
@@ -276,9 +266,7 @@ Returns the deduped list and a list of collision records
                      :prompt-paths)))))
          (theme-paths
            (append
-            (unless
-                (default-resource-loader-no-themes-p
-                 loader)
+            (unless no-themes-p
               (append
               (list
                (merge-pathnames "themes/" agent))

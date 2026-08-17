@@ -1508,57 +1508,78 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
     ("!" . "Run bash command")
     ("!!" . "Run bash command without adding it to context")))
 
+(defparameter +hotkeys-markdown-sections+
+  '(("Navigation"
+     ("Move cursor / browse history"
+      "tui.editor.cursorUp" "tui.editor.cursorDown"
+      "tui.editor.cursorLeft" "tui.editor.cursorRight")
+     ("Move by word"
+      "tui.editor.cursorWordLeft" "tui.editor.cursorWordRight")
+     ("Start of line" "tui.editor.cursorLineStart")
+     ("End of line" "tui.editor.cursorLineEnd")
+     ("Jump forward to character" "tui.editor.jumpForward")
+     ("Jump backward to character" "tui.editor.jumpBackward")
+     ("Scroll by page" "tui.editor.pageUp" "tui.editor.pageDown"))
+    ("Editing"
+     ("Send message" "tui.input.submit")
+     ("New line" "tui.input.newLine")
+     ("Delete word backwards" "tui.editor.deleteWordBackward")
+     ("Delete word forwards" "tui.editor.deleteWordForward")
+     ("Delete to start of line" "tui.editor.deleteToLineStart")
+     ("Delete to end of line" "tui.editor.deleteToLineEnd")
+     ("Paste the most-recently-deleted text" "tui.editor.yank")
+     ("Cycle through the deleted text after pasting" "tui.editor.yankPop")
+     ("Undo" "tui.editor.undo"))
+    ("Other"
+     ("Path completion / accept autocomplete" "tui.input.tab")
+     ("Cancel autocomplete / abort streaming" "app.interrupt")
+     ("Clear editor (first) / exit (second)" "app.clear")
+     ("Exit (when editor is empty)" "app.exit")
+     ("Suspend to background" "app.suspend")
+     ("Cycle thinking level" "app.thinking.cycle")
+     ("Cycle models" "app.model.cycleForward" "app.model.cycleBackward")
+     ("Open model selector" "app.model.select")
+     ("Toggle tool output expansion" "app.tools.expand")
+     ("Toggle thinking block visibility" "app.thinking.toggle")
+     ("Edit message in external editor" "app.editor.external")
+     ("Copy last assistant message" "app.message.copy")
+     ("Queue follow-up message" "app.message.followUp")
+     ("Restore queued messages" "app.message.dequeue")
+     ("Paste image or text from clipboard" "app.clipboard.pasteImage")
+     (:literal "/" "Slash commands")
+     (:literal "!" "Run bash command")
+     (:literal "!!" "Run bash command (excluded from context)"))))
+
 (defun hotkeys-command-markdown (&optional user-bindings)
   (let ((manager
           (cadr-tui:make-keybindings-manager
            :user-bindings user-bindings)))
     (labels
         ((display (name)
-           (format-key-text
-            (format
-             nil "~{~A~^/~}"
-             (cadr-tui:keybinding-keys manager name))
+           (format-key-text*
+            (cadr-tui:keybinding-keys manager name)
             :capitalize-p t)))
-      (format
-       nil
-       "**Navigation**~%| Key | Action |~%|-----|--------|~%| `~A` / `~A` / `~A` / `~A` | Move cursor / browse history |~%| `~A` / `~A` | Move by word |~%| `~A` | Start of line |~%| `~A` | End of line |~%| `~A` | Jump forward to character |~%| `~A` | Jump backward to character |~%| `~A` / `~A` | Scroll by page |~%~%**Editing**~%| Key | Action |~%|-----|--------|~%| `~A` | Send message |~%| `~A` | New line |~%| `~A` | Delete word backwards |~%| `~A` | Delete word forwards |~%| `~A` | Delete to start of line |~%| `~A` | Delete to end of line |~%| `~A` | Paste the most-recently-deleted text |~%| `~A` | Cycle through the deleted text after pasting |~%| `~A` | Undo |~%~%**Other**~%| Key | Action |~%|-----|--------|~%| `~A` | Path completion / accept autocomplete |~%| `~A` | Cancel autocomplete / abort streaming |~%| `~A` | Clear editor (first) / exit (second) |~%| `~A` | Exit (when editor is empty) |~%| `~A` | Suspend to background |~%| `~A` | Cycle thinking level |~%| `~A` / `~A` | Cycle models |~%| `~A` | Open model selector |~%| `~A` | Toggle tool output expansion |~%| `~A` | Toggle thinking block visibility |~%| `~A` | Edit message in external editor |~%| `~A` | Copy last assistant message |~%| `~A` | Queue follow-up message |~%| `~A` | Restore queued messages |~%| `~A` | Paste image or text from clipboard |~%| `/` | Slash commands |~%| `!` | Run bash command |~%| `!!` | Run bash command (excluded from context) |"
-       (display "tui.editor.cursorUp")
-       (display "tui.editor.cursorDown")
-       (display "tui.editor.cursorLeft")
-       (display "tui.editor.cursorRight")
-       (display "tui.editor.cursorWordLeft")
-       (display "tui.editor.cursorWordRight")
-       (display "tui.editor.cursorLineStart")
-       (display "tui.editor.cursorLineEnd")
-       (display "tui.editor.jumpForward")
-       (display "tui.editor.jumpBackward")
-       (display "tui.editor.pageUp")
-       (display "tui.editor.pageDown")
-       (display "tui.input.submit")
-       (display "tui.input.newLine")
-       (display "tui.editor.deleteWordBackward")
-       (display "tui.editor.deleteWordForward")
-       (display "tui.editor.deleteToLineStart")
-       (display "tui.editor.deleteToLineEnd")
-       (display "tui.editor.yank")
-       (display "tui.editor.yankPop")
-       (display "tui.editor.undo")
-       (display "tui.input.tab")
-       (display "app.interrupt")
-       (display "app.clear")
-       (display "app.exit")
-       (display "app.suspend")
-       (display "app.thinking.cycle")
-       (display "app.model.cycleForward")
-       (display "app.model.cycleBackward")
-       (display "app.model.select")
-       (display "app.tools.expand")
-       (display "app.thinking.toggle")
-       (display "app.editor.external")
-       (display "app.message.copy")
-       (display "app.message.followUp")
-       (display "app.message.dequeue")
-       (display "app.clipboard.pasteImage")))))
+      (with-output-to-string (out)
+        (loop for (title . rows) in +hotkeys-markdown-sections+
+              for rest-sections on +hotkeys-markdown-sections+
+              for first = t then nil
+              do
+              (unless first (write-char #\Newline out))
+              (format out "**~A**~%| Key | Action |~%|-----|--------|~%"
+                      title)
+              (loop for row in rows
+                    for rest-rows on rows
+                    for line =
+                    (if (eq (first row) :literal)
+                        (format nil "| `~A` | ~A |"
+                                (second row) (third row))
+                        (format nil "| ~{`~A`~^ / ~} | ~A |"
+                                (mapcar #'display (rest row))
+                                (first row)))
+                    do
+                    (write-string line out)
+                    (when (or (cdr rest-rows) (cdr rest-sections))
+                      (write-char #\Newline out))))))))
 
 (defun write-hotkeys-command
     (output &optional user-bindings)

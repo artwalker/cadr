@@ -143,28 +143,18 @@
            (if (hash-table-p provider)
                (merge-json-objects retry provider)
                retry)))
-    (list
-     :enabled-p
-     (if (hash-table-p source)
-         (eq t (cadr-ai::json-get source "enabled" t))
-         t)
-     :max-retries
-     (if (hash-table-p source)
-         (cadr-ai::json-get source "maxRetries" 3)
-         3)
-     :base-delay-ms
-     (if (hash-table-p source)
-         (cadr-ai::json-get source "baseDelayMs" 2000)
-         2000)
-     :max-retry-delay-ms
-     (if (hash-table-p source)
-         (cadr-ai::json-get
-          source "maxRetryDelayMs" 60000)
-         60000)
-     :timeout-ms
-     (if (hash-table-p source)
-         (cadr-ai::json-get source "timeoutMs")
-         nil))))
+    (flet ((field (key default)
+             (if (hash-table-p source)
+                 (cadr-ai::json-get source key default)
+                 default)))
+      (list
+       :enabled-p
+       (eq t (field "enabled" t))
+       :max-retries (field "maxRetries" 3)
+       :base-delay-ms (field "baseDelayMs" 2000)
+       :max-retry-delay-ms
+       (field "maxRetryDelayMs" 60000)
+       :timeout-ms (field "timeoutMs" nil)))))
 
 (defun sdk-settings-http-idle-timeout-ms
     (manager)

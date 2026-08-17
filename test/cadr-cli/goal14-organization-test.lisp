@@ -417,7 +417,10 @@
     ;; +1 goal 20 CI-1d: rpc-apply-input-hooks-off-reader
     ;; (modes/rpc/prompt-bash.lisp). Steer/follow_up must not run
     ;; blocking :input hooks on the JSONL reader.
-    (is (= 124 definition-count)
+    ;; +4 goal 20 K9: +hotkeys-markdown-sections+ (sessions),
+    ;; +settings-fallback-keys+ (settings), apply-input-or-queue
+    ;; (prompt-bash), rpc-dialog-request-object (rpc/ui).
+    (is (= 128 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)
@@ -576,7 +579,10 @@
     ;; -1 goal 20 sb-cover third-tier: deleted unused trailing-lines
     ;; (interactive/frame.lisp). Last-n is owned by user-bash/tool-block
     ;; /overlay; baseline trailingLines is edit-diff context.
-    (is (= 273 definition-count)
+    ;; +16 goal 20 K9: format-key-text*, wrap-transcript-lines,
+    ;; kebab-keyword-to-camel, startup help table, dialog chrome,
+    ;; armin 2D helpers, daxnuts parse cache, tui-multiline-editor-p.
+    (is (= 289 definition-count)
         "B6 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-cli/tui.lisp"

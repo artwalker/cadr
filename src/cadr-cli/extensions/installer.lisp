@@ -1,11 +1,9 @@
 (in-package #:cadr-cli)
 
 (defun string-prefix-p (prefix value)
-  (and
-   (<= (length prefix) (length value))
-   (string-equal
-    prefix value
-    :end2 (length prefix))))
+  ;; Baseline git.ts:174 startsWith is case-sensitive. string-equal
+  ;; accepted "GIT:…" as a git URL.
+  (uiop:string-prefix-p prefix value))
 
 (defun split-path-segments (path)
   (let ((segments nil)

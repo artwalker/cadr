@@ -3,6 +3,8 @@
 (defparameter +default-thinking-level+ :medium)
 
 (defun docs-directory ()
+  ;; cadr-ai public package text is B10-frozen; these stay CLI
+  ;; names over unexported cadr-ai owners.
   (cadr-ai::cadr-docs-directory))
 
 (defun get-provider-login-help ()

@@ -278,10 +278,14 @@
     (or value default)))
 
 (defun optional-integer (arguments key &optional default)
+  ;; Same null→default as optional-string. JSON null and a missing
+  ;; key both take DEFAULT (pi tool argument bags).
   (let ((value (cadr-ai::json-get arguments key default)))
+    (when (eq value 'null)
+      (setf value nil))
     (unless (or (null value) (integerp value))
       (error "~A must be an integer" key))
-    value))
+    (or value default)))
 
 (defun object-schema (properties required)
   (let ((schema

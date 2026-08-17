@@ -1,5 +1,23 @@
 (in-package #:cadr-cli)
 
+(defparameter +settings-fallback-keys+
+  '(("skill-commands" . "enableSkillCommands")
+    ("show-hardware-cursor" . "showHardwareCursor")
+    ("editor-padding" . "editorPaddingX")
+    ("output-padding" . "outputPad")
+    ("autocomplete-max-visible" . "autocompleteMaxVisible")
+    ("transport" . "transport")
+    ("http-idle-timeout" . "httpIdleTimeoutMs")
+    ("hide-thinking" . "hideThinkingBlock")
+    ("cache-miss-notices" . "showCacheMissNotices")
+    ("collapse-changelog" . "collapseChangelog")
+    ("quiet-startup" . "quietStartup")
+    ("install-telemetry" . "enableInstallTelemetry")
+    ("default-project-trust" . "defaultProjectTrust")
+    ("double-escape-action" . "doubleEscapeAction")
+    ("tree-filter-mode" . "treeFilterMode")
+    ("theme" . "theme")))
+
 (defun default-agent-directory ()
   ;; Thin forwarder: cadr-core owns the layout decision (including the
   ;; CADR_CODING_AGENT_DIR override); this name stays for CLI callers.
@@ -302,16 +320,17 @@
                           value))))
              "alt+enter")
             :capitalize-p t))
-         (options
+         (first-option
+           (make-settings-option
+            :id "autocompact"
+            :label "Auto-compact"
+            :description
+            "Automatically compact context when it gets too large"
+            :value
+            (cadr-agent::agent-auto-compact-p agent)
+            :values (list t nil)))
+         (rest-options
            (list
-            (make-settings-option
-             :id "autocompact"
-             :label "Auto-compact"
-             :description
-             "Automatically compact context when it gets too large"
-             :value
-             (cadr-agent::agent-auto-compact-p agent)
-             :values (list t nil))
             (make-settings-option
              :id "auto-resize-images"
              :label "Auto-resize images"
@@ -617,39 +636,38 @@
              "Color theme for the interface"
              :value current-theme
              :values theme-names
-             :submenu :theme))))
-    (when supports-images-p
-      (setf
-       options
-       (append
-        (subseq options 0 1)
-        (list
-         (make-settings-option
-          :id "show-images"
-          :label "Show images"
-          :description "Render images inline in terminal"
-          :value
-          (if (hash-table-p terminal)
-              (eq t
-                  (cadr-ai::json-get
-                   terminal "showImages" t))
-              t)
-          :values (list t nil))
-         (make-settings-option
-          :id "image-width-cells"
-          :label "Image width"
-          :description
-          "Preferred inline image width in terminal cells"
-          :value
-          (let ((value
-                  (and
-                   (hash-table-p terminal)
-                   (cadr-ai::json-get
-                    terminal "imageWidthCells" 60))))
-            (if (member value '(60 80 120)) value 60))
-          :values '(60 80 120)))
-        (subseq options 1))))
-    (make-settings-selector-state
+             :submenu :theme)))
+         (options
+           (append
+            (list first-option)
+            (when supports-images-p
+              (list
+               (make-settings-option
+                :id "show-images"
+                :label "Show images"
+                :description "Render images inline in terminal"
+                :value
+                (if (hash-table-p terminal)
+                    (eq t
+                        (cadr-ai::json-get
+                         terminal "showImages" t))
+                    t)
+                :values (list t nil))
+               (make-settings-option
+                :id "image-width-cells"
+                :label "Image width"
+                :description
+                "Preferred inline image width in terminal cells"
+                :value
+                (let ((value
+                        (and
+                         (hash-table-p terminal)
+                         (cadr-ai::json-get
+                          terminal "imageWidthCells" 60))))
+                  (if (member value '(60 80 120)) value 60))
+                :values '(60 80 120))))
+            rest-options)))
+      (make-settings-selector-state
      :options options
      :theme-names theme-names
      :current-theme current-theme
@@ -752,37 +770,7 @@
           (let ((key
                   (cdr
                    (assoc
-                    id
-                    '(("skill-commands"
-                       . "enableSkillCommands")
-                      ("show-hardware-cursor"
-                       . "showHardwareCursor")
-                      ("editor-padding"
-                       . "editorPaddingX")
-                      ("output-padding"
-                       . "outputPad")
-                      ("autocomplete-max-visible"
-                       . "autocompleteMaxVisible")
-                      ("transport" . "transport")
-                      ("http-idle-timeout"
-                       . "httpIdleTimeoutMs")
-                      ("hide-thinking"
-                       . "hideThinkingBlock")
-                      ("cache-miss-notices"
-                       . "showCacheMissNotices")
-                      ("collapse-changelog"
-                       . "collapseChangelog")
-                      ("quiet-startup"
-                       . "quietStartup")
-                      ("install-telemetry"
-                       . "enableInstallTelemetry")
-                      ("default-project-trust"
-                       . "defaultProjectTrust")
-                      ("double-escape-action"
-                       . "doubleEscapeAction")
-                      ("tree-filter-mode"
-                       . "treeFilterMode")
-                      ("theme" . "theme"))
+                    id +settings-fallback-keys+
                     :test #'string=))))
             (when key
               (settings-set

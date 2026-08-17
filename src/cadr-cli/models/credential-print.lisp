@@ -123,10 +123,9 @@
                   (setf credentials-p t))
                  (t (setf no-refresh-p t))))
               (t
-               (setf forwarded
-                     (append forwarded (list argument))))))
+               (push argument forwarded))))
       (list :kind kind
-            :arguments forwarded
+            :arguments (nreverse forwarded)
             :json-p json-p
             :credentials-p credentials-p
             :no-refresh-p no-refresh-p
@@ -313,8 +312,8 @@
                  (auth-command-model-match-p
                   available provider
                   (getf model-spec :model))
-               (setf candidates
-                     (append candidates (list provider)))))
+               (push provider candidates)))
+           (setf candidates (nreverse candidates))
            (unless candidates
              (error 'auth-command-error
                     :message
@@ -328,9 +327,8 @@
                    storage provider kind
                    (or minimum-expiry-ms 300000))))
             (when value
-              (setf resolved
-                    (append resolved
-                            (list (cons provider value)))))))
+              (push (cons provider value) resolved))))
+        (setf resolved (nreverse resolved))
         (cond
           ((null resolved)
            (let* ((provider-id (first candidates))

@@ -266,36 +266,28 @@
        (list value)))))
   arguments)
 
+(defparameter +cli-boolean-flag-slots+
+  '((:continue . cli-arguments-continue-p)
+    (:no-session . cli-arguments-no-session-p)
+    (:no-tools . cli-arguments-no-tools-p)
+    (:no-builtin-tools . cli-arguments-no-builtin-tools-p)
+    (:no-extensions . cli-arguments-no-extensions-p)
+    (:print . cli-arguments-print-p)
+    (:no-skills . cli-arguments-no-skills-p)
+    (:no-prompt-templates . cli-arguments-no-prompt-templates-p)
+    (:no-themes . cli-arguments-no-themes-p)
+    (:no-context-files . cli-arguments-no-context-files-p)
+    (:offline . cli-arguments-offline-p)
+    (:verbose . cli-arguments-verbose-p)
+    (:no-tui . cli-arguments-no-tui-p)
+    (:help . cli-arguments-help-p)
+    (:version . cli-arguments-version-p)))
+
 (defun set-cli-flag (arguments key)
+  ;; +cli-flag-options+ already names the flags. Boolean slots live
+  ;; here; :approve/:no-approve stay special because they write two
+  ;; fields (baseline --approve / --no-approve).
   (case key
-    (:continue
-     (setf (cli-arguments-continue-p arguments) t))
-    (:no-session
-     (setf (cli-arguments-no-session-p arguments) t))
-    (:no-tools
-     (setf (cli-arguments-no-tools-p arguments) t))
-    (:no-builtin-tools
-     (setf (cli-arguments-no-builtin-tools-p arguments) t))
-    (:no-extensions
-     (setf (cli-arguments-no-extensions-p arguments) t))
-    (:print
-     (setf (cli-arguments-print-p arguments) t))
-    (:no-skills
-     (setf (cli-arguments-no-skills-p arguments) t))
-    (:no-prompt-templates
-     (setf
-      (cli-arguments-no-prompt-templates-p arguments)
-      t))
-    (:no-themes
-     (setf (cli-arguments-no-themes-p arguments) t))
-    (:no-context-files
-     (setf
-      (cli-arguments-no-context-files-p arguments)
-      t))
-    (:offline
-     (setf (cli-arguments-offline-p arguments) t))
-    (:verbose
-     (setf (cli-arguments-verbose-p arguments) t))
     (:approve
      (setf
       (cli-arguments-project-trust-override arguments) t
@@ -306,12 +298,12 @@
       (cli-arguments-project-trust-override arguments) nil
       (cli-arguments-project-trust-override-supplied-p
        arguments) t))
-    (:no-tui
-     (setf (cli-arguments-no-tui-p arguments) t))
-    (:help
-     (setf (cli-arguments-help-p arguments) t))
-    (:version
-     (setf (cli-arguments-version-p arguments) t)))
+    (otherwise
+     (let ((accessor
+             (cdr (assoc key +cli-boolean-flag-slots+))))
+       (when accessor
+         (funcall (fdefinition `(setf ,accessor))
+                  t arguments)))))
   arguments)
 
 (defun cli-option-token-p (value)

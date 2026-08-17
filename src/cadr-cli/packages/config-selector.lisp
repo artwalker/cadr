@@ -32,6 +32,9 @@
     (:prompts "prompts/" "md" nil)
     (:themes "themes/" "json" nil)))
 
+(defun config-resource-kinds ()
+  (mapcar #'first +config-resource-specifications+))
+
 (defun config-resource-type-label (type)
   (ecase type
     (:extensions "Extensions")
@@ -375,10 +378,7 @@
                  (plusp (length pattern)))
         (let* ((prefix (char pattern 0))
                (override-p (find prefix "!+-"))
-               (target
-                 (if override-p
-                     (subseq pattern 1)
-                     pattern)))
+               (target (config-selector-entry-target pattern)))
           (when
               (config-pattern-matches-p
                path target root
@@ -403,7 +403,7 @@
           manager cwd agent-directory include-project-p))
       (let ((root (getf record :path))
             (entry (getf record :entry)))
-        (dolist (type '(:extensions :skills :prompts :themes))
+        (dolist (type (config-resource-kinds))
           (multiple-value-bind (patterns supplied-p)
               (config-package-entry-filter entry type)
             (dolist (path (config-package-resource-files root type))
@@ -446,7 +446,7 @@
   (let ((items nil)
         (seen (make-hash-table :test #'equal))
         (base (uiop:ensure-directory-pathname base-directory)))
-    (dolist (type '(:extensions :skills :prompts :themes))
+    (dolist (type (config-resource-kinds))
       (let* ((key (string-downcase (symbol-name type)))
              (entries (config-settings-array object key))
              (plain
@@ -639,7 +639,7 @@
           (config-resource-group-label
            state representative))
          flat)
-        (dolist (type '(:extensions :skills :prompts :themes))
+        (dolist (type (config-resource-kinds))
           (let ((typed
                   (sort
                    (remove-if-not
@@ -721,10 +721,7 @@
           (when (and (stringp pattern)
                      (plusp (length pattern)))
             (let* ((prefix (char pattern 0))
-                   (target
-                     (if (find prefix "!+-")
-                         (subseq pattern 1)
-                         pattern)))
+                   (target (config-selector-entry-target pattern)))
               (when
                   (config-pattern-matches-p
                    (config-resource-item-path item)
@@ -754,10 +751,7 @@
       (when (and (stringp entry)
                  (plusp (length entry)))
         (let* ((prefix (char entry 0))
-               (target
-                 (if (find prefix "!+-")
-                     (subseq entry 1)
-                     entry)))
+               (target (config-selector-entry-target entry)))
           (when
               (or
                (config-pattern-matches-p
@@ -978,7 +972,7 @@
       (gethash
        (string-downcase (symbol-name type))
        entry)))
-   '(:extensions :skills :prompts :themes)))
+   (config-resource-kinds)))
 
 (defun config-selector-set-package-state
     (state item scope next)

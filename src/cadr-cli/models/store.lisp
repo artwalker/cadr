@@ -90,31 +90,16 @@
 
 (defun copy-model-with-overrides
     (model &key provider base-url headers)
-  (cadr-ai:make-model
-   :id (cadr-ai:model-id model)
-   :name (cadr-ai::model-name model)
-   :provider
-   (or provider (cadr-ai:model-provider model))
-   :api (cadr-ai:model-api model)
-   :base-url
-   (or base-url (cadr-ai:model-base-url model))
-   :max-tokens
-   (cadr-ai:model-max-tokens model)
-   :context-window
-   (cadr-ai:model-context-window model)
-   :supports-images-p
-   (cadr-ai:model-supports-images-p model)
-   :supports-tools-p
-   (cadr-ai:model-supports-tools-p model)
-   :reasoning-p
-   (cadr-ai:model-reasoning-p model)
-   :thinking-level-map
-   (cadr-ai::model-thinking-level-map model)
-   :headers
-   (merge-header-sources
-    (cadr-ai::model-headers model)
-    headers)
-   :compat (cadr-ai::model-compat model)))
+  (let ((copy (cadr-ai::copy-model model)))
+    (when provider
+      (setf (cadr-ai:model-provider copy) provider))
+    (when base-url
+      (setf (cadr-ai:model-base-url copy) base-url))
+    (setf (cadr-ai::model-headers copy)
+          (merge-header-sources
+           (cadr-ai::model-headers model)
+           headers))
+    copy))
 
 (defun model-compat-json-key (name)
   ;; camelCase wire key to the compat plist's uppercase kebab keyword.

@@ -264,56 +264,41 @@
                   (unless
                       (model-entry-present-p
                        model scoped)
-                    (setf scoped
-                          (append
-                           scoped
-                           (list
-                            (list
-                             :model model
-                             :thinking
-                             thinking))))))
-                (setf diagnostics
-                      (append
-                       diagnostics
-                       (list
-                        (model-scope-diagnostic
-                         :no-match pattern
-                         (format nil
-                                 "No models match pattern ~S"
-                                 pattern)))))))
+                    (push
+                     (list :model model :thinking thinking)
+                     scoped)))
+                (push
+                 (model-scope-diagnostic
+                  :no-match pattern
+                  (format nil
+                          "No models match pattern ~S"
+                          pattern))
+                 diagnostics)))
           (multiple-value-bind
                 (model thinking warning)
               (parse-scoped-model-pattern
                pattern models)
             (when warning
-              (setf diagnostics
-                    (append
-                     diagnostics
-                     (list
-                      (model-scope-diagnostic
-                       :invalid-thinking-level
-                       pattern warning)))))
+              (push
+               (model-scope-diagnostic
+                :invalid-thinking-level
+                pattern warning)
+               diagnostics))
             (if model
                 (unless
                     (model-entry-present-p
                      model scoped)
-                  (setf scoped
-                        (append
-                         scoped
-                         (list
-                          (list
-                           :model model
-                           :thinking thinking)))))
-                (setf diagnostics
-                      (append
-                       diagnostics
-                       (list
-                        (model-scope-diagnostic
-                         :no-match pattern
-                         (format nil
-                                 "No models match pattern ~S"
-                                 pattern)))))))))
-    (values scoped diagnostics)))
+                  (push
+                   (list :model model :thinking thinking)
+                   scoped))
+                (push
+                 (model-scope-diagnostic
+                  :no-match pattern
+                  (format nil
+                          "No models match pattern ~S"
+                          pattern))
+                 diagnostics)))))
+    (values (nreverse scoped) (nreverse diagnostics))))
 
 (defun enabled-model-ids-for-patterns
     (scoped diagnostics)

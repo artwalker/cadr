@@ -87,7 +87,7 @@ away from zero."
   (results nil :type list)
   (filtered nil :type list)
   (selected 0 :type (integer 0 *))
-  (status "Type at least 2 characters" :type string)
+  (status "Type at least 2 characters")
   (query "" :type string)
   (generation 0 :type (integer 0 *))
   (cache (make-hash-table :test #'equal))
@@ -321,6 +321,12 @@ primary column window."
    (list "")
    (llama-search-result-lines search width)))
 
+(defun llama-search-status-text (search)
+  (let ((status (llama-search-state-status search)))
+    (if (eq status :searching)
+        "Searching Hugging Face…"
+        (or status ""))))
+
 (defun llama-search-result-lines (search width)
   (let* ((filtered (llama-search-state-filtered search))
          (max-visible 10)
@@ -335,7 +341,7 @@ primary column window."
          (end (min (+ start max-visible) count)))
     (append
      (loop for index from start below end
-           for model = (nth index filtered)
+           for model in (nthcdr start filtered)
            for id = (getf model :id)
            for details =
            (format
@@ -370,17 +376,15 @@ primary column window."
          (selector-fit-line
           (cadr-tui:theme-foreground
            :dim
-           (format nil "  ~A" (llama-search-state-status search))
+           (format nil "  ~A" (llama-search-status-text search))
            :enabled-p t)
           width)))
-       ((string=
-         (llama-search-state-status search)
-         "Searching Hugging Face…")
+       ((eq (llama-search-state-status search) :searching)
         (list
          (selector-fit-line
           (cadr-tui:theme-foreground
            :dim
-           (format nil "  ~A" (llama-search-state-status search))
+           (format nil "  ~A" "Searching Hugging Face…")
            :enabled-p t)
           width)))))))
 
@@ -437,7 +441,7 @@ stale responses discarded by generation and query identity."
         (t
          (setf
           (llama-search-state-status search)
-          "Searching Hugging Face…")
+          :searching)
          (render)
          (sb-thread:make-thread
           (lambda ()

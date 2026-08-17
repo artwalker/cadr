@@ -88,19 +88,29 @@
         (cadr-core:stop-thread-for-cleanup
          stderr-reader :timeout 1.0d0)))))
 
+(defun ripgrep-file-lines (file cache)
+  (or (gethash file cache)
+      (setf (gethash file cache)
+            (text-lines
+             (uiop:read-file-string
+              file :external-format :utf-8)))))
+
 (defun ripgrep-context-block
-    (file line-number context-count relative)
+    (file line-number context-count relative &optional cache)
   (handler-case
       (let* ((lines
-               (text-lines
-                (uiop:read-file-string
-                 file :external-format :utf-8)))
+               (if cache
+                   (ripgrep-file-lines file cache)
+                   (text-lines
+                    (uiop:read-file-string
+                     file :external-format :utf-8))))
              (index (1- line-number))
              (start (max 0 (- index context-count)))
              (end (min (length lines)
                        (+ index context-count 1)))
              (output nil)
-             (truncated-p nil))
+             (truncated-p nil)
+             (slice (and lines (subseq lines start end))))
         (if (null lines)
             (values
              (list
@@ -108,11 +118,12 @@
                       relative line-number))
              nil)
             (progn
-              (loop for context-index from start below end
+              (loop for context-index from start
+                    for line in slice
                     for marker = (if (= context-index index) #\: #\-)
                     do
                     (multiple-value-bind (display-line line-truncated-p)
-                        (truncate-tool-line (nth context-index lines))
+                        (truncate-tool-line line)
                       (when line-truncated-p
                         (setf truncated-p t))
                       (push
@@ -122,6 +133,8 @@
                        output)))
               (values (nreverse output) truncated-p))))
     (condition ()
+      (when cache
+        (remhash file cache))
       (values
        (list
         (format nil "~A:~D: (unable to read file)"
@@ -140,15 +153,13 @@
                (or (cadr-ai::json-get arguments "ignoreCase")
                    (cadr-ai::json-get arguments "ignore_case"))))
          (context-count
-           (max 0
-                (or (optional-integer arguments "context" 0) 0)))
-         (limit (max 1
-                     (or (optional-integer arguments "limit" 100)
-                         100)))
+           (max 0 (optional-integer arguments "context" 0)))
+         (limit (max 1 (optional-integer arguments "limit" 100)))
          (output nil)
          (match-count 0)
          (match-limit-reached-p nil)
-         (lines-truncated-p nil))
+         (lines-truncated-p nil)
+         (file-cache (make-hash-table :test #'equal)))
     (unless (probe-file base)
       (error "Path not found: ~A" (namestring base)))
     (let* ((directory-base (uiop:directory-exists-p base))
@@ -201,7 +212,8 @@
                                 output))
                              (multiple-value-bind (block truncated-p)
                                  (ripgrep-context-block
-                                  file line-number context-count relative)
+                                  file line-number context-count relative
+                                  file-cache)
                                (when truncated-p
                                  (setf lines-truncated-p t))
                                (dolist (entry block)

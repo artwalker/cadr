@@ -34,12 +34,32 @@
       (lower #\▄)
       (t #\Space))))
 
+(defun armin-grid-height ()
+  (ceiling +armin-height+ 2))
+
 (defun make-armin-grid (&optional final-p)
-  (loop for row below (ceiling +armin-height+ 2)
-        collect
-        (loop for x below +armin-width+
-              collect
-              (if final-p (armin-cell x row) #\Space))))
+  (let* ((height (armin-grid-height))
+         (grid (make-array (list height +armin-width+)
+                           :initial-element #\Space)))
+    (when final-p
+      (dotimes (row height)
+        (dotimes (x +armin-width+)
+          (setf (aref grid row x) (armin-cell x row)))))
+    grid))
+
+(defun copy-armin-grid (grid)
+  (let ((copy (make-array (array-dimensions grid))))
+    (dotimes (row (array-dimension grid 0))
+      (dotimes (column (array-dimension grid 1))
+        (setf (aref copy row column) (aref grid row column))))
+    copy))
+
+(defun armin-grid-row-string (grid row)
+  (let* ((width (array-dimension grid 1))
+         (text (make-string width)))
+    (dotimes (column width)
+      (setf (char text column) (aref grid row column)))
+    text))
 
 (defclass armin-component (cadr-tui:component)
   ((ui :initarg :ui :reader armin-component-ui)
@@ -58,7 +78,7 @@
    (cached-lines :initform nil :accessor armin-component-cached-lines)))
 
 (defparameter +armin-effects+
-  '(:typewriter :scanline :rain :fade :crt :glitch :dissolve))
+  #(:typewriter :scanline :rain :fade :crt :glitch :dissolve))
 
 (defun make-armin-component
     (ui &key effect (start-p t))
@@ -67,34 +87,43 @@
            'armin-component :ui ui
            :effect
            (or effect
-               (nth (random (length +armin-effects+))
-                    +armin-effects+)))))
+               (aref +armin-effects+
+                     (random (length +armin-effects+)))))))
     (when (eq (armin-component-effect component) :dissolve)
-      (setf
-       (armin-component-current-grid component)
-       (loop repeat (ceiling +armin-height+ 2)
-             collect
-             (loop repeat +armin-width+
-                   collect
-                   (aref " ░▒▓█▀▄" (random 7))))))
+      (let ((grid (make-armin-grid nil)))
+        (dotimes (row (array-dimension grid 0))
+          (dotimes (column +armin-width+)
+            (setf (aref grid row column)
+                  (aref " ░▒▓█▀▄" (random 7)))))
+        (setf (armin-component-current-grid component) grid)))
     (when start-p (armin-component-start component))
     component))
 
 (defun armin-copy-cell (component position)
   (let ((row (floor position +armin-width+))
-        (column (mod position +armin-width+)))
-    (when (< row (length (armin-component-final-grid component)))
-      (setf
-       (nth column
-            (nth row
-                 (armin-component-current-grid component)))
-       (nth column
-            (nth row
-                 (armin-component-final-grid component))))
+        (column (mod position +armin-width+))
+        (final (armin-component-final-grid component)))
+    (when (< row (array-dimension final 0))
+      (setf (aref (armin-component-current-grid component) row column)
+            (aref final row column))
       t)))
 
+(defun armin-copy-row (destination source row)
+  (dotimes (column +armin-width+)
+    (setf (aref destination row column)
+          (aref source row column))))
+
+(defun armin-rotate-row (source row offset)
+  (let ((shift (mod offset +armin-width+))
+        (result (make-array +armin-width+ :element-type 'character)))
+    (dotimes (column +armin-width+)
+      (setf (aref result column)
+            (aref source row (mod (+ column shift) +armin-width+))))
+    result))
+
 (defun armin-component-tick (component)
-  (let* ((height (length (armin-component-final-grid component)))
+  (let* ((final (armin-component-final-grid component))
+         (height (array-dimension final 0))
          (effect (armin-component-effect component))
          (position (armin-component-position component))
          (done-p nil))
@@ -110,12 +139,9 @@
        (if (>= position height)
            (setf done-p t)
            (progn
-             (setf
-              (nth position
-                   (armin-component-current-grid component))
-              (copy-list
-               (nth position
-                    (armin-component-final-grid component))))
+             (armin-copy-row
+              (armin-component-current-grid component)
+              final position)
              (incf position))))
       (:fade
        (loop repeat 15
@@ -134,17 +160,11 @@
       (:crt
        (let* ((middle (floor height 2))
               (top (max 0 (- middle position)))
-              (bottom (min (1- height) (+ middle position))))
-         (setf (armin-component-current-grid component)
-               (make-armin-grid nil))
+              (bottom (min (1- height) (+ middle position)))
+              (current (make-armin-grid nil)))
          (loop for row from top to bottom
-               do
-               (setf
-                (nth row
-                     (armin-component-current-grid component))
-                (copy-list
-                 (nth row
-                      (armin-component-final-grid component)))))
+               do (armin-copy-row current final row))
+         (setf (armin-component-current-grid component) current)
          (incf position)
          (setf done-p (> position height))))
       (:glitch
@@ -152,38 +172,31 @@
            (progn
              (setf
               (armin-component-current-grid component)
-              (mapcar #'copy-list
-                      (armin-component-final-grid component))
+              (copy-armin-grid final)
               done-p t))
-           (progn
-             (setf
-              (armin-component-current-grid component)
-              (mapcar
-               (lambda (row)
-                 (let ((offset (- (random 7) 3)))
-                   (if (< (random 10) 3)
-                       (append
-                        (subseq row (mod offset +armin-width+))
-                        (subseq row 0 (mod offset +armin-width+)))
-                       (copy-list row))))
-               (armin-component-final-grid component)))
+           (let ((current (make-armin-grid nil)))
+             (dotimes (row height)
+               (if (< (random 10) 3)
+                   (let ((rotated
+                           (armin-rotate-row
+                            final row (- (random 7) 3))))
+                     (dotimes (column +armin-width+)
+                       (setf (aref current row column)
+                             (aref rotated column))))
+                   (armin-copy-row current final row)))
+             (setf (armin-component-current-grid component) current)
              (incf position))))
       (:rain
        (dotimes (column +armin-width+)
          (let ((row (mod (+ position column) height)))
-           (setf
-            (nth column
-                 (nth row
-                      (armin-component-current-grid component)))
-            (nth column
-                 (nth row
-                      (armin-component-final-grid component))))))
+           (setf (aref (armin-component-current-grid component)
+                       row column)
+                 (aref final row column))))
        (incf position)
        (when (>= position (* height 2))
          (setf
           (armin-component-current-grid component)
-          (mapcar #'copy-list
-                  (armin-component-final-grid component))
+          (copy-armin-grid final)
           done-p t))))
     (setf
      (armin-component-position component) position
@@ -224,21 +237,21 @@
       (return-from cadr-tui:component-render
         (armin-component-cached-lines component)))
     (let* ((available (max 0 (1- width)))
+           (grid (armin-component-current-grid component))
            (lines
              (append
-              (mapcar
-               (lambda (row)
-                 (let* ((raw (coerce row 'string))
-                        (clipped
-                          (subseq raw 0 (min available
-                                             (length raw)))))
-                   (concatenate
-                    'string " "
-                    (cadr-tui:theme-foreground :accent clipped)
-                    (make-string
-                     (max 0 (- available (length clipped)))
-                     :initial-element #\Space))))
-               (armin-component-current-grid component))
+              (loop for row below (array-dimension grid 0)
+                    collect
+                    (let* ((raw (armin-grid-row-string grid row))
+                           (clipped
+                             (subseq raw 0 (min available
+                                                (length raw)))))
+                      (concatenate
+                       'string " "
+                       (cadr-tui:theme-foreground :accent clipped)
+                       (make-string
+                        (max 0 (- available (length clipped)))
+                        :initial-element #\Space))))
               (list
                (concatenate
                 'string " "

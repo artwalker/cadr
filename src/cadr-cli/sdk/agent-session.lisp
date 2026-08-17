@@ -295,6 +295,19 @@
        :all :one-at-a-time))
   agent)
 
+(defun sdk-agent-session-dispatch
+    (event on-event lock source listeners-fn)
+  (when on-event
+    (funcall on-event event))
+  (let ((snapshot
+          (sb-thread:with-mutex (lock)
+            (copy-list
+             (if listeners-fn
+                 (funcall listeners-fn source)
+                 source)))))
+    (dolist (entry snapshot)
+      (funcall (car entry) event))))
+
 (defun create-agent-session
     (&key
        (cwd (uiop:getcwd))
@@ -368,7 +381,8 @@
          (listener-lock
            (sb-thread:make-mutex
             :name "cadr SDK subscribers"))
-         (wrapper nil))
+         (wrapper nil)
+         (wrapper-cell (cons nil nil)))
     (declare (ignore _loader))
     (multiple-value-setq (selected-model fallback)
       (sdk-select-initial-model
@@ -419,14 +433,11 @@
                    runtime))
               :on-event
               (lambda (event)
-                (when on-event
-                  (funcall on-event event))
-                (let ((snapshot
-                        (sb-thread:with-mutex
-                            (listener-lock)
-                          (copy-list listeners))))
-                  (dolist (entry snapshot)
-                    (funcall (car entry) event)))))))
+                (sdk-agent-session-dispatch
+                 event on-event listener-lock
+                 (or (car wrapper-cell) listeners)
+                 (and (car wrapper-cell)
+                      #'agent-session-listeners))))))
       (when extension-host
         (setf
          (cadr-agent::extension-host-reload-function extension-host)
@@ -451,25 +462,16 @@
              :model-runtime runtime
              :cwd resolved-cwd
              :listeners listeners
-             :listener-lock listener-lock))
+             :listener-lock listener-lock)
+            (car wrapper-cell) wrapper)
       (setf (cadr-agent::agent-thinking-level agent)
             selected-thinking)
-      ;; The closure and the object share LISTENERS through this explicit
-      ;; indirection: subscribe mutates the object, so mirror it before each
-      ;; dispatch without replacing the event spine.
       (setf
        (cadr-agent::agent-on-event agent)
        (lambda (event)
-         (when on-event
-           (funcall on-event event))
-         (let ((snapshot
-                 (sb-thread:with-mutex
-                     (listener-lock)
-                   (copy-list
-                    (agent-session-listeners
-                     wrapper)))))
-           (dolist (entry snapshot)
-             (funcall (car entry) event)))))
+         (sdk-agent-session-dispatch
+          event on-event listener-lock wrapper
+          #'agent-session-listeners)))
       (sdk-apply-agent-settings agent settings)
       (values
        wrapper

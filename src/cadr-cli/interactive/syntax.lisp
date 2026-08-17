@@ -884,7 +884,14 @@
                 (if formatter
                     (funcall formatter text)
                     text)
-                output))))
+                output)))
+           (advance (end &key (clear-lisp-form-p nil))
+             (setf previous-word nil
+                   pending-function-p nil
+                   expect-type-p nil
+                   index end)
+             (when clear-lisp-form-p
+               (setf lisp-form-name-p nil))))
         (loop while (< index (length code))
               for character = (char code index)
               for comment-length =
@@ -900,10 +907,7 @@
                                     (+ index comment-length))
                           (length code))))
                    (emit index end "comment")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         index end)))
+                   (advance end)))
                 ((and
                   (member language
                           '("c" "cpp" "css" "go"
@@ -922,10 +926,7 @@
                               (+ close 2)
                               (length code))))
                    (emit index end "comment")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         index end)))
+                   (advance end)))
                 ((and
                   (member language
                           '("javascript" "typescript")
@@ -939,11 +940,7 @@
                          (simple-syntax-regexp-end
                           code index)))
                    (emit index end "string")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         lisp-form-name-p nil
-                         index end)))
+                   (advance end :clear-lisp-form-p t)))
                 ((and
                   (string= language "python")
                   (char= character #\@))
@@ -958,10 +955,7 @@
                               #\Newline #\Return))))
                          do (incf end))
                    (emit index end "meta")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         index end)))
+                   (advance end)))
                 ((member character
                          '(#\" #\' #\`))
                  (let ((quote character)
@@ -980,10 +974,7 @@
                             (return)))
                          (incf end))
                    (emit index end "string")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         index end)))
+                   (advance end)))
                 ((and
                   lisp-form-name-p
                   (string= language "lisp")
@@ -1002,11 +993,7 @@
                               #\( #\) #\" #\' #\;))))
                          do (incf end))
                    (emit index end "keyword")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         lisp-form-name-p nil
-                         index end)))
+                   (advance end :clear-lisp-form-p t)))
                 ((simple-syntax-identifier-start-p
                   character)
                  (let ((end (1+ index)))
@@ -1054,11 +1041,7 @@
                             '(#\. #\_))))
                          do (incf end))
                    (emit index end "number")
-                   (setf previous-word nil
-                         pending-function-p nil
-                         expect-type-p nil
-                         lisp-form-name-p nil
-                         index end)))
+                   (advance end :clear-lisp-form-p t)))
                 ((char= character #\()
                  (cond
                    ((string= language "lisp")

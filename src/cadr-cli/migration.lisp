@@ -10,6 +10,9 @@
   "Rename entry point for the content migrations; rebound by tests to
 exercise the baseline failure arms (migrations.ts:148).")
 
+(defparameter +managed-binary-names+
+  '("fd" "rg" "fd.exe" "rg.exe"))
+
 (defun legacy-product-name ()
   (format nil "~C~C-cl" #\p #\i))
 
@@ -339,7 +342,7 @@ to bin/, printing the green baseline line when anything moved."
         (bin-directory (cadr-core:agent-bin-directory))
         (moved-p nil))
     (when (uiop:directory-exists-p tools-directory)
-      (dolist (name '("fd" "rg" "fd.exe" "rg.exe"))
+      (dolist (name +managed-binary-names+)
         (let ((old (merge-pathnames name tools-directory))
               (new (merge-pathnames name bin-directory)))
           (when (probe-file old)
@@ -405,7 +408,7 @@ tools/ entries other than the auto-extracted fd/rg binaries."
                  (lambda (name)
                    (let ((lower (string-downcase name)))
                      (or (member lower
-                                 '("fd" "rg" "fd.exe" "rg.exe")
+                                 +managed-binary-names+
                                  :test #'string=)
                          (and (plusp (length name))
                               (char= (char name 0) #\.)))))
