@@ -68,18 +68,28 @@
                (state
                  (funcall
                   (find-symbol "MAKE-INITIAL-SNAKE-STATE" package)))
+               (renders 0)
+               (tui
+                 (cadr-tui:make-tui-root
+                  :render-function
+                  (lambda (lines)
+                    (declare (ignore lines))
+                    (incf renders))))
                (component
                  (make-instance
                   (find-symbol "SNAKE-COMPONENT" package)
                   :state state
-                  :tui (cadr-tui:make-tui-root)
+                  :tui tui
                   :done (lambda (value) value)
                   :save (lambda (value) value)
                   :paused-p t))
                (before (cadr-tui:component-render component 100)))
           (is (find-if (lambda (line) (search "SNAKE" line)) before))
           (is (find-if (lambda (line) (search "██" line)) before))
-          (funcall (find-symbol "SNAKE-TICK" package) state)
+          (funcall (find-symbol "SNAKE-COMPONENT-ADVANCE" package)
+                   component)
+          (is (plusp renders)
+              "timer tick did not request a repaint")
           (let ((after (cadr-tui:component-render component 100)))
             (is (not (equal before after))
                 "a game tick did not reach the rendered frame")))))))
@@ -113,17 +123,28 @@
                (state
                  (funcall
                   (find-symbol "MAKE-INITIAL-INVADERS-STATE" package)))
+               (renders 0)
+               (tui
+                 (cadr-tui:make-tui-root
+                  :render-function
+                  (lambda (lines)
+                    (declare (ignore lines))
+                    (incf renders))))
                (component
                  (make-instance
                   (find-symbol "SPACE-INVADERS-COMPONENT" package)
                   :state state
-                  :tui (cadr-tui:make-tui-root)
+                  :tui tui
                   :done (lambda (value) value)
                   :save (lambda (value) value)
                   :paused-p t))
                (frame (cadr-tui:component-render component 100)))
           (is (find-if (lambda (line) (search "SPACE INVADERS" line)) frame))
-          (is (find-if (lambda (line) (search "Score" line)) frame)))))))
+          (is (find-if (lambda (line) (search "Score" line)) frame))
+          (funcall (find-symbol "SPACE-INVADERS-ADVANCE" package)
+                   component)
+          (is (plusp renders)
+              "timer tick did not request a repaint"))))))
 
 (test goal20-ttt-agent-action-repaints-the-live-overlay
   ;; Goal 20 P0-2 behavior lock (baseline updateState,

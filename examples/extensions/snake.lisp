@@ -119,6 +119,15 @@
    (lock :initform (sb-thread:make-mutex :name "snake example state")
          :reader snake-component-lock)))
 
+(defun snake-component-advance (component)
+  "Timer tick (baseline snake.ts:90-97): mutate then requestRender.
+User-input paths do not call this; tui-dispatch-event already
+request-renders after component-handle-event (root.lisp:207-208)."
+  (sb-thread:with-mutex ((snake-component-lock component))
+    (snake-tick (snake-component-state component)))
+  (cadr-tui:tui-request-render (snake-component-tui component))
+  component)
+
 (defun snake-component-start (component)
   (unless (snake-component-running-p component)
     (setf (snake-component-running-p component) t)
@@ -130,10 +139,7 @@
                      do (sleep +snake-tick-seconds+)
                         (when (and (snake-component-running-p component)
                                    (not (snake-component-paused-p component)))
-                          (sb-thread:with-mutex ((snake-component-lock component))
-                            (snake-tick (snake-component-state component)))
-                          (cadr-tui:tui-request-render
-                           (snake-component-tui component)))))
+                          (snake-component-advance component))))
              :name "cadr snake example timer"))))
   component)
 
@@ -281,9 +287,7 @@ box width by visible length (snake.ts:229-233)."
            (setf (snake-state-next-direction state) direction))
          (when (and (example-render-diff-harness-p)
                     (not (snake-state-game-over-p state)))
-           (sb-thread:with-mutex ((snake-component-lock component))
-             (snake-tick state))
-           (cadr-tui:tui-request-render (snake-component-tui component)))))))
+           (snake-component-advance component))))))
   (values nil nil))
 
 (defmethod cadr-tui:component-dispose ((component snake-component))

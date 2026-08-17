@@ -267,6 +267,16 @@
   (declare (ignore component))
   t)
 
+(defun space-invaders-advance (component)
+  "Timer tick (baseline space-invaders.ts:144-151): mutate then
+requestRender. Restart and key paths go through handle-event;
+tui-dispatch-event request-renders those (root.lisp:207-208)."
+  (sb-thread:with-mutex ((space-invaders-lock component))
+    (invaders-tick (space-invaders-state component)
+                   (space-invaders-keys component)))
+  (cadr-tui:tui-request-render (space-invaders-tui component))
+  component)
+
 (defun space-invaders-start (component)
   (unless (space-invaders-running-p component)
     (setf (space-invaders-running-p component) t)
@@ -278,11 +288,7 @@
                      do (sleep +invaders-tick-seconds+)
                         (when (and (space-invaders-running-p component)
                                    (not (space-invaders-paused-p component)))
-                          (sb-thread:with-mutex ((space-invaders-lock component))
-                            (invaders-tick (space-invaders-state component)
-                                           (space-invaders-keys component)))
-                          (cadr-tui:tui-request-render
-                           (space-invaders-tui component)))))
+                          (space-invaders-advance component))))
              :name "cadr space invaders example timer"))))
   component)
 

@@ -77,6 +77,14 @@ tag/Release step.
 
 ### Added
 
+- P0-2 / P0-3 request-render pairing: timer ticks share
+  `snake-component-advance` / `space-invaders-advance` (baseline
+  snake.ts:90-97, space-invaders.ts:144-151). User-input sites stay
+  on `tui-dispatch-event` (root.lisp:207-208). Behavior tests now
+  assert the timer requested a frame. Gate-validity in
+  `docs/acceptance/goal-v20-p0-2-request-render.md`.
+  FiveAM 18668 → 18670.
+
 - Theme index in `docs/test-matrix.md`: every `test/**/*.lisp` and
   `test/**/*.py` file (197) under the nine FiveAM systems plus live
   runner, Python gates, and fixtures. Anchor unchanged.
