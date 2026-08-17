@@ -83,8 +83,8 @@ tag/Release step.
 
 - Render-diff semantic screens collapse the cadr checkout root to
   `<CADR_ROOT>` (same family as `ROOT/docs`). Exact-pair mismatches
-  print the pi/cadr `.screen` bytes. Dispositions are not re-pinned
-  in this change.
+  print the baseline/cadr `.screen` bytes. Dispositions are not
+  re-pinned in this change.
 
 - Goal 20 P0-4: extension `send-message` with trigger-turn no longer
   runs the agent turn on the TUI input thread, so streaming text, tool

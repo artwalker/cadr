@@ -3367,7 +3367,10 @@ def dump_exact_pair_screens(
 ) -> None:
     if analysis_root is None:
         return
-    for side in ("pi", "cadr"):
+    expected_pair = result.get("adjudication", {}).get("screenSha256")
+    if not isinstance(expected_pair, dict):
+        return
+    for side in expected_pair:
         path = (
             analysis_root
             / (
