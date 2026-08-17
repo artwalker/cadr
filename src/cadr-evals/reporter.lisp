@@ -273,13 +273,13 @@
   (let ((observation
           (reporter-case-observation case)))
     (when observation
-      (setf
+      ;; append-at-end is the TS array-push transliteration
+      ;; (O(n) copy per case). push is O(1); finish nreverses
+      ;; so the exported list and the summary stay chronological.
+      (push
+       observation
        (eval-harness-reporter-observations
-        reporter)
-       (append
-        (eval-harness-reporter-observations
-         reporter)
-        (list observation)))))
+        reporter))))
   case)
 
 (defun eval-reporter-finish
@@ -289,6 +289,12 @@
              'eval-harness-reporter)
     (artifact-type-error
      reporter 'eval-harness-reporter))
+  (setf
+   (eval-harness-reporter-observations
+    reporter)
+   (nreverse
+    (eval-harness-reporter-observations
+     reporter)))
   (let ((output
           (eval-harness-reporter-output
            reporter)))

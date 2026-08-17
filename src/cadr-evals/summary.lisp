@@ -512,9 +512,9 @@
       (format nil "~,1F%"
               (* 100d0 value))))
 
-(defun format-summary-signed
-    (value fraction-digits)
-  (declare (ignore fraction-digits))
+(defun format-summary-signed (value)
+  ;; Baseline formatSigned (summary.ts:334) takes fractionDigits;
+  ;; every cadr call site passed 1 and the parameter was ignored.
   (format nil "~A~,1F"
           (if (minusp value)
               "-"
@@ -653,8 +653,7 @@
                          (*
                           100d0
                           (correctness-lift-summary-lift
-                           correctness))
-                         1)
+                           correctness)))
                         (format-summary-percentage
                          (correctness-lift-summary-candidate-pass-rate
                           correctness))
@@ -671,7 +670,7 @@
                              value))
                    (lambda (value)
                      (format-summary-signed
-                      value 1))
+                      value))
                    (correctness-lift-summary-eligible-pairs
                     correctness)))
           (format stream "~%~A"
@@ -685,7 +684,7 @@
                    (lambda (value)
                      (format nil "~Ams"
                              (format-summary-signed
-                              value 1)))
+                              value)))
                    (correctness-lift-summary-eligible-pairs
                     correctness)))
           (format stream "~%~A"

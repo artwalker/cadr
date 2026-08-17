@@ -146,6 +146,54 @@
          root :validate t
          :if-does-not-exist :ignore)))))
 
+(test eval-reporter-records-observations-newest-first-until-finish
+  ;; Red on the old append-at-end body: the slot was already
+  ;; chronological before finish.
+  (let ((root (cadr-evals::make-eval-root)))
+    (unwind-protect
+         (let ((reporter
+                 (cadr-evals:make-eval-harness-reporter
+                  :artifact-directory root
+                  :output
+                  (make-string-output-stream))))
+           (cadr-evals:eval-reporter-record-case
+            reporter
+            (reporter-test-case
+             "without-docs" 0 "run-baseline"))
+           (cadr-evals:eval-reporter-record-case
+            reporter
+            (reporter-test-case
+             "with-docs" 1 "run-candidate"))
+           (let ((before
+                   (cadr-evals:eval-harness-reporter-observations
+                    reporter)))
+             (is (= 2 (length before)))
+             (is (string=
+                  "with-docs"
+                  (cadr-evals::harness-observation-harness
+                   (first before))))
+             (is (string=
+                  "without-docs"
+                  (cadr-evals::harness-observation-harness
+                   (second before)))))
+           (cadr-evals:eval-reporter-finish
+            reporter :completed)
+           (let ((after
+                   (cadr-evals:eval-harness-reporter-observations
+                    reporter)))
+             (is (string=
+                  "without-docs"
+                  (cadr-evals::harness-observation-harness
+                   (first after))))
+             (is (string=
+                  "with-docs"
+                  (cadr-evals::harness-observation-harness
+                   (second after))))))
+      (when (probe-file root)
+        (uiop:delete-directory-tree
+         root :validate t
+         :if-does-not-exist :ignore)))))
+
 (test eval-harness-reporter-interrupted-notice-is-exact
   (let* ((output
            (make-string-output-stream))

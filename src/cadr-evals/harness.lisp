@@ -365,28 +365,35 @@
         internal-time-units-per-second)))
 
 (defun last-assistant-since
-    (agent start)
+    (messages pre-prompt-tail)
+  ;; Baseline pi-harness.ts:92-97 slices from messages.length.
+  ;; append-agent-message nconcs onto the last cons
+  ;; (events.lisp:151-164). Eval agents set :auto-compact-p nil
+  ;; so maybe-compact-agent will not replace the list
+  ;; (compaction.lisp:839-840). CDR of the pre-prompt tail is
+  ;; the new turn without a second walk from the head.
   (find-if
    (lambda (message)
      (typep message
             'cadr-ai:assistant-message))
-   (nthcdr
-    start
-    (cadr-agent:agent-messages
-     agent))
+   (if pre-prompt-tail
+       (cdr pre-prompt-tail)
+       messages)
    :from-end t))
 
 (defun prompt-eval-agent
     (agent content)
-  (let ((start
-          (length
+  (let ((pre-prompt-tail
+          (last
            (cadr-agent:agent-messages
             agent))))
     (cadr-agent:agent-prompt
      agent content)
     (let ((assistant
             (last-assistant-since
-             agent start)))
+             (cadr-agent:agent-messages
+              agent)
+             pre-prompt-tail)))
       (unless assistant
         (error
          "Agent run completed without an assistant message"))

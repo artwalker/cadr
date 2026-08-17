@@ -149,3 +149,52 @@
      :candidate
      (make-test-eval-harness "candidate")
      :repetitions 0)))
+
+(test wrap-eval-harness-reuses-run-eval-harness-merge
+  (let* ((inner
+           (cadr-evals:make-eval-harness
+            :name "inner"
+            :run
+            (lambda (input set-artifact)
+              (declare (ignore input))
+              (funcall set-artifact
+                       "from-setter" "via-setter")
+              (let ((result
+                      (cadr-evals::make-eval-result
+                       :output "ok"
+                       :artifacts
+                       (make-hash-table
+                        :test #'equal))))
+                (setf
+                 (gethash
+                  "from-result"
+                  (cadr-evals:eval-result-artifacts
+                   result))
+                 "via-result")
+                result))))
+         (rows
+           (cadr-evals:eval-harness-table
+            "set"
+            :baseline inner
+            :candidate
+            (make-test-eval-harness "other")))
+         (result
+           (cadr-evals:run-eval-harness
+            (cadr-evals:eval-harness-row-harness
+             (first rows))
+            (cadr-ai::json-object "id" "x")))
+         (artifacts
+           (cadr-evals:eval-result-artifacts
+            result)))
+    (is (string=
+         "via-setter"
+         (gethash "from-setter" artifacts)))
+    (is (string=
+         "via-result"
+         (gethash "from-result" artifacts)))
+    (is (not
+         (null
+          (cadr-evals:parse-eval-harness-iteration-artifact
+           (gethash
+            cadr-evals:+eval-harness-iteration-artifact+
+            artifacts)))))))

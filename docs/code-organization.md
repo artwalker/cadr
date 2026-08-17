@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122608 assets=5 unevaluated=0 needs-rewrite=140 no-rewrite=147 in-progress=0 done=8 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122593 assets=5 unevaluated=0 needs-rewrite=134 no-rewrite=147 in-progress=0 done=14 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -286,13 +286,17 @@ files with unrelated facilities fail.
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-evals/artifacts.lisp` | 168 | 11 | Validate, hash, persist, and reference eval artifacts. | pass | no-rewrite | The slash-joined path at :136-138 doubles as the persisted JSON reference (byte-pinned in runs.jsonl); structs and keyword dispatch are native. | 20 |
-| `src/cadr-evals/harness-table.lisp` | 359 | 17 | Define eval harness rows/tables, canonical group keys, and iteration wrappers. | pass · large | needs-rewrite | Re-implements run-eval-harness's copy-run-merge at :298-325 plus a redundant hash copy per run; removable with identical artifacts. | 20 |
-| `src/cadr-evals/harness.lisp` | 730 | 29 | Run a coding-agent eval lifecycle and normalize transcript, usage, and cleanup. | pass · large | needs-rewrite | length+nthcdr+find-if integer indexing into the message list at :373-382; retaining the pre-prompt tail is O(1) and observably identical. | 20 |
-| `src/cadr-evals/main.lisp` | 154 | 5 | Parse eval CLI arguments, dispatch suites, and validate result shape. | pass | needs-rewrite | The --flag= prefix-check+subseq clause is hand-copied per option with the magic length recomputed 4x (:33-56); a prefix helper collapses both. | 20 |
+| `src/cadr-evals/harness-table.lisp` | 339 | 17 | Define eval harness rows/tables, canonical group keys, and iteration wrappers. | pass · large | done | wrap-eval-harness calls run-eval-harness. I0: one copy+overlay owner. | 20 |
+| `src/cadr-evals/harness.lisp` | 737 | 29 | Run a coding-agent eval lifecycle and normalize transcript, usage, and cleanup. | pass · large | done | last-assistant-since keeps the pre-prompt tail cons. I0: no integer index into the message list. | 20 |
+| `src/cadr-evals/main.lisp` | 158 | 6 | Parse eval CLI arguments, dispatch suites, and validate result shape. | pass | done | argument-after-prefix owns --flag=. I0: prefix length computed once. | 20 |
 | `src/cadr-evals/package.lisp` | 100 | 2 | Declare the public eval package and session snapshot artifact name. | pass | no-rewrite | Flat export list is the defpackage idiom; defparameter (not defconstant) for a string constant is the correct portable choice. | 20 |
-| `src/cadr-evals/reporter.lisp` | 308 | 14 | Persist eval case records and finish a harness report. | pass · large | needs-rewrite | append-at-end accumulation at :276-282 (O(n^2)); push/nreverse preserves observable order. | 20 |
-| `src/cadr-evals/suites.lisp` | 479 | 21 | Define the smoke and extension-authoring eval suites and judges. | pass · large | needs-rewrite | The (or (json-get ...) "") coalesce is hand-copied ~8x in nested lambdas at :253-296; one string-accessor helper. | 20 |
-| `src/cadr-evals/summary.lisp` | 733 | 31 | Pair observations, compute correctness/efficiency summaries, and render comparison reports. | pass · large | needs-rewrite | format-summary-signed accepts and ignores fraction-digits (:515-522) while every call site passes 1 — a vestigial TS signature parameter. | 20 |
+| `src/cadr-evals/reporter.lisp` | 314 | 14 | Persist eval case records and finish a harness report. | pass · large | done | push then nreverse at finish. I0: record is O(1), summary order unchanged. | 20 |
+| `src/cadr-evals/suites.lisp` | 468 | 22 | Define the smoke and extension-authoring eval suites and judges. | pass · large | done | json-string owns empty-string coalesce. I0: one accessor for the hello judge. | 20 |
+| `src/cadr-evals/summary.lisp` | 732 | 31 | Pair observations, compute correctness/efficiency summaries, and render comparison reports. | pass · large | done | format-summary-signed is one-argument. I0: vestigial TS fractionDigits gone. | 20 |
+
+Part K5 (2026-08-18): six needs-rewrite rows done. Two
+no-rewrite rows kept (I wc/duty undrifted). Report:
+`docs/acceptance/goal-v20-part-k5.md`.
 
 ### 2.5 `cadr-protocol`
 

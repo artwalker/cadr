@@ -341,3 +341,12 @@
     (is (search
          "Latency  -4159.5ms (candidate 30694.2ms, baseline 34853.7ms)"
          formatted))))
+
+(test format-summary-signed-has-no-fraction-digits
+  ;; Red on the old two-argument TS leftover signature.
+  (is (string=
+       "+100.0"
+       (cadr-evals::format-summary-signed 100d0)))
+  (is (string=
+       "-1.5"
+       (cadr-evals::format-summary-signed -1.5d0))))

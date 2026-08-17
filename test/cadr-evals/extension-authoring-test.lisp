@@ -27,6 +27,19 @@
       (cadr-evals::prepare-default-prompt-override
        "no boundary"))))
 
+(test json-string-coalesces-missing-to-empty
+  (is (fboundp 'cadr-evals::json-string))
+  (is (string=
+       ""
+       (cadr-evals::json-string
+        (cadr-ai::json-object)
+        "type")))
+  (is (string=
+       "tool_call"
+       (cadr-evals::json-string
+        (cadr-ai::json-object "type" "tool_call")
+        "type"))))
+
 (test extension-authoring-harness-table-registers-baseline-and-candidate
   (let ((rows
           (cadr-evals:extension-authoring-harness-table

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K5: `cadr-evals` flag prefix, harness merge,
+  message tail, reporter push, JSON string accessor, and
+  one-argument signed format each have one owner.
+  FiveAM 18699 → 18722.
+
 - Goal 20 Part K4: `cadr-server` instance lookup, IPC client
   wrap, instance upsert, and Radius heartbeat share one owner
   each. FiveAM 18691 → 18699.

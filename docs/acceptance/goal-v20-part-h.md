@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,608 lines**
+Denominator: **295 files / 122,593 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 35 | 20,792 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,492 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,324 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,309 | 76.9% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
@@ -408,9 +408,9 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/sqlite-storage.lisp` | 1 | 860 |
 | `src/cadr-ai/auth` | 5 | 820 |
 | `src/cadr-agent/resources.lisp` | 1 | 739 |
+| `src/cadr-evals/harness.lisp` | 1 | 737 |
 | `src/cadr-ai/capabilities` | 6 | 734 |
-| `src/cadr-evals/summary.lisp` | 1 | 733 |
-| `src/cadr-evals/harness.lisp` | 1 | 730 |
+| `src/cadr-evals/summary.lisp` | 1 | 732 |
 | `src/cadr-tui/composition` | 2 | 708 |
 | `src/cadr-tui/terminal-image.lisp` | 1 | 677 |
 | `src/cadr-ai/websocket.lisp` | 1 | 622 |
@@ -423,17 +423,17 @@ is added or the path is booked unpairable above.
 | `src/cadr-protocol/cbor.lisp` | 1 | 492 |
 | `src/cadr-tui/overlay.lisp` | 1 | 481 |
 | `src/cadr-ai/package.lisp` | 1 | 480 |
-| `src/cadr-evals/suites.lisp` | 1 | 479 |
+| `src/cadr-evals/suites.lisp` | 1 | 468 |
 | `src/cadr-agent/package.lisp` | 1 | 455 |
 | `src/cadr-agent/runtime.lisp` | 1 | 435 |
 | `src/cadr-tui/input-component.lisp` | 1 | 419 |
 | `src/cadr-ai/model-data.lisp` | 1 | 398 |
 | `src/cadr-ai/crypto.lisp` | 1 | 367 |
 | `src/cadr-cli/resource-loader.lisp` | 1 | 365 |
-| `src/cadr-evals/harness-table.lisp` | 1 | 359 |
 | `src/cadr-tui/package.lisp` | 1 | 352 |
+| `src/cadr-evals/harness-table.lisp` | 1 | 339 |
 | `src/cadr-agent/tool.lisp` | 1 | 318 |
-| `src/cadr-evals/reporter.lisp` | 1 | 308 |
+| `src/cadr-evals/reporter.lisp` | 1 | 314 |
 | `src/cadr-cli/package.lisp` | 1 | 289 |
 | `src/cadr-ai/models.lisp` | 1 | 288 |
 | `src/cadr-cli/config.lisp` | 1 | 288 |
@@ -451,7 +451,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/keybindings.lisp` | 1 | 183 |
 | `src/cadr-protocol/framing.lisp` | 1 | 170 |
 | `src/cadr-evals/artifacts.lisp` | 1 | 168 |
-| `src/cadr-evals/main.lisp` | 1 | 154 |
+| `src/cadr-evals/main.lisp` | 1 | 158 |
 | `src/cadr-tui/word-navigation.lisp` | 1 | 141 |
 | `src/cadr-tui/fuzzy.lisp` | 1 | 134 |
 | `src/cadr-protocol/codec.lisp` | 1 | 121 |

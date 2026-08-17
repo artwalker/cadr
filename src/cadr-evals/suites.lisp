@@ -244,6 +244,11 @@
      "@sinclair/typebox"
      "@earendil-works/pi-coding-agent")))
 
+(defun json-string (object key)
+  ;; JSON missing/false is NIL; string= needs "". One owner
+  ;; instead of eight (or json-get "") copies in the hello judge.
+  (or (cadr-ai::json-get object key) ""))
+
 (defun matching-hello-tool-call-p
     (events)
   (some
@@ -252,22 +257,16 @@
          (and
           (string=
            "tool_call"
-           (or
-            (cadr-ai::json-get call "type")
-            ""))
+           (json-string call "type"))
           (string=
            "hello"
-           (or
-            (cadr-ai::json-get call "name")
-            ""))
+           (json-string call "name"))
           (string=
            "Bob"
-           (or
+           (json-string
             (cadr-ai::json-get
-             (cadr-ai::json-get
-              call "arguments")
-             "name")
-            "")))
+             call "arguments")
+            "name")))
        (let ((call-id
                (cadr-ai::json-get call "id")))
          (some
@@ -275,25 +274,18 @@
             (and
              (string=
               "tool_result"
-              (or
-               (cadr-ai::json-get
-                result "type")
-               ""))
+              (json-string result "type"))
              (string=
               call-id
-              (or
-               (cadr-ai::json-get
-                result "toolCallId")
-               ""))
+              (json-string
+               result "toolCallId"))
              (null
               (cadr-ai::json-get
                result "error"))
              (string=
               "Hello, Bob!"
-              (or
-               (cadr-ai::json-get
-                result "content")
-               ""))))
+              (json-string
+               result "content"))))
           events))))
    events))
 
@@ -354,10 +346,7 @@
     (unless
         (string=
          "Hello, Bob!"
-         (or
-          (cadr-ai::json-get
-           output "response")
-          ""))
+         (json-string output "response"))
       (push
        "final response was not exactly Hello, Bob!"
        failures))

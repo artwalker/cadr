@@ -270,59 +270,39 @@
    (eval-harness-name harness)
    :run
    (lambda (input set-artifact)
-     (let* ((artifact
-              (cadr-ai::json-object
-               "schemaVersion" 1
-               "evalSet" eval-set
-               "groupKey"
-               (derive-eval-group-key
-                input repetition)
-               "harness"
-               (eval-harness-name harness)
-               "baseline"
-               (eval-harness-name baseline)
-               "candidates"
-               (coerce
-                (mapcar
-                 #'eval-harness-name
-                 candidates)
-                'vector)
-               "repetition" repetition))
-            (context
-              (make-hash-table
-               :test #'equal)))
+     (let ((artifact
+             (cadr-ai::json-object
+              "schemaVersion" 1
+              "evalSet" eval-set
+              "groupKey"
+              (derive-eval-group-key
+               input repetition)
+              "harness"
+              (eval-harness-name harness)
+              "baseline"
+              (eval-harness-name baseline)
+              "candidates"
+              (coerce
+               (mapcar
+                #'eval-harness-name
+                candidates)
+               'vector)
+              "repetition" repetition)))
        (funcall
         set-artifact
         +eval-harness-iteration-artifact+
         artifact)
+       ;; run-eval-harness already owns copy+overlay
+       ;; (harness-table.ts:141 spreads context then run).
+       ;; A second hash copy here was a third owner of the
+       ;; same merge.
        (let ((result
-               (funcall
-                (eval-harness-run-function
-                 harness)
-                input
-                (lambda (name value)
-                  (setf (gethash name context)
-                        value)))))
-         (unless (typep result 'eval-result)
-           (artifact-type-error result
-                                'eval-result))
-         (let ((merged
-                 (copy-json-object context)))
-           (maphash
-            (lambda (name value)
-              (setf (gethash name merged)
-                    value))
-            (or
-             (eval-result-artifacts result)
-             (make-hash-table
-              :test #'equal)))
-           (setf
-            (gethash
-             +eval-harness-iteration-artifact+
-             merged)
-            artifact
-            (eval-result-artifacts result)
-            merged))
+               (run-eval-harness harness input)))
+         (setf
+          (gethash
+           +eval-harness-iteration-artifact+
+           (eval-result-artifacts result))
+          artifact)
          result)))))
 
 (defun eval-harness-table

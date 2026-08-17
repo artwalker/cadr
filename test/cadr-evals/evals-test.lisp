@@ -226,3 +226,53 @@
                 (cadr-evals:eval-result-usage
                  result)
                 "toolCalls")))))))
+
+(test parse-eval-arguments-owns-flag-equals-prefix
+  ;; Red on the old body: --suite= was unknown, and
+  ;; argument-after-prefix did not exist.
+  (is (fboundp 'cadr-evals::argument-after-prefix))
+  (multiple-value-bind
+        (provider model suite)
+      (cadr-evals::parse-eval-arguments
+       '("--provider" "p" "--model=m" "--suite=smoke"))
+    (is (string= "p" provider))
+    (is (string= "m" model))
+    (is (string= "smoke" suite)))
+  (multiple-value-bind
+        (provider model suite)
+      (cadr-evals::parse-eval-arguments
+       '("--provider=opencode-go" "--model" "mimo-v2.5"))
+    (is (string= "opencode-go" provider))
+    (is (string= "mimo-v2.5" model))
+    (is (string= "smoke" suite)))
+  (signals error
+    (cadr-evals::parse-eval-arguments
+     '("--provider="))))
+
+(test last-assistant-since-reads-pre-prompt-tail
+  ;; Red on the old (agent start) integer-index signature.
+  (let* ((old
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-text-content
+              :text "old"))))
+         (user
+           (cadr-ai:make-user-message
+            :content "hi"))
+         (new
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-text-content
+              :text "new"))))
+         (messages (list old)))
+    (let ((pre (last messages)))
+      (setf (cdr pre) (list user new))
+      (is (eq
+           new
+           (cadr-evals::last-assistant-since
+            messages pre)))
+      (is (null
+           (cadr-evals::last-assistant-since
+            messages (last messages)))))))

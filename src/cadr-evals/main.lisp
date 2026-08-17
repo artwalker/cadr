@@ -1,5 +1,15 @@
 (in-package #:cadr-evals)
 
+(defun argument-after-prefix (argument prefix)
+  ;; One owner of --flag= . Baseline run-evals.mjs:36-44 copies
+  ;; startsWith+slice per option and recomputes the prefix length
+  ;; each time. Empty suffix stays unknown: the baseline only
+  ;; slices when the argument is longer than the prefix.
+  (let ((prefix-length (length prefix)))
+    (when (and (> (length argument) prefix-length)
+               (string= prefix argument :end2 prefix-length))
+      (subseq argument prefix-length))))
+
 (defun parse-eval-arguments (arguments)
   (let ((provider nil)
         (model nil)
@@ -30,30 +40,24 @@
                "Missing value for --suite"))
             (setf suite
                   (pop arguments)))
-           ((and
-             (> (length argument)
-                (length "--provider="))
-             (string=
-              "--provider="
-              argument
-              :end2
-              (length "--provider=")))
-            (setf provider
-                  (subseq
-                   argument
-                   (length "--provider="))))
-           ((and
-             (> (length argument)
-                (length "--model="))
-             (string=
-              "--model="
-              argument
-              :end2
-              (length "--model=")))
-            (setf model
-                  (subseq
-                   argument
-                   (length "--model="))))
+           ((let ((value
+                    (argument-after-prefix
+                     argument "--provider=")))
+              (when value
+                (setf provider value)
+                t)))
+           ((let ((value
+                    (argument-after-prefix
+                     argument "--model=")))
+              (when value
+                (setf model value)
+                t)))
+           ((let ((value
+                    (argument-after-prefix
+                     argument "--suite=")))
+              (when value
+                (setf suite value)
+                t)))
            (t
             (error
              "Unknown eval argument: ~A"
