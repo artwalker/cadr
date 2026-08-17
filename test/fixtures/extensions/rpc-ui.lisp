@@ -5,6 +5,11 @@
  :handler
  (lambda (event context)
    (declare (ignore event))
+   (format
+    *error-output*
+    "rpc-ui-diag: hook-start thread=~A~%"
+    (sb-thread:thread-name sb-thread:*current-thread*))
+   (force-output *error-output*)
    (cadr-agent:extension-context-notify
     context "rpc-notify" :level :warning)
    (cadr-agent:extension-context-set-status
@@ -26,17 +31,23 @@
             context "Pick" '("alpha" "beta")
             :timeout-ms 2000))
          (confirmed
-           (cadr-agent:extension-context-confirm
-            context "Confirm" "Continue?"
-            :timeout-ms 2000))
+           (progn
+             (format *error-output* "rpc-ui-diag: hook-call confirm~%")
+             (force-output *error-output*)
+             (cadr-agent:extension-context-confirm
+              context "Confirm" "Continue?"
+              :timeout-ms 2000)))
          (input
            (cadr-agent:extension-context-input
             context "Input"
             :placeholder "value"
             :timeout-ms 2000))
          (edited
-           (cadr-agent:extension-context-editor
-            context "Edit" :prefill "before")))
+           (progn
+             (format *error-output* "rpc-ui-diag: hook-call editor~%")
+             (force-output *error-output*)
+             (cadr-agent:extension-context-editor
+              context "Edit" :prefill "before"))))
      (unless
          (and
           (string= choice "beta")

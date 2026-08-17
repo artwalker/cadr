@@ -73,6 +73,10 @@ tag/Release step.
 
 ### Fixed
 
+- RPC process-modes UI path prints hook/dispatch/client
+  diagnostics for confirm and editor so a missing pair can be
+  located on the next CI run. Required method set unchanged.
+
 - Re-pin `fatal-crash/narrow/fatal-crash` baseline-side
   `screenSha256` after the wrapped `node:internal` module collapse.
   cadr and wide SHAs unchanged. Does not declare the render

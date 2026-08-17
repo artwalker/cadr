@@ -76,6 +76,13 @@
      (rpc-pending-dialog-method pending)
      (rpc-pending-dialog-response pending))))
 
+(defun rpc-ui-diag (state control &rest args)
+  (let ((stream
+          (or (rpc-state-error-output state)
+              *error-output*)))
+    (apply #'format stream control args)
+    (force-output stream)))
+
 (defun rpc-dialog-request
     (state method request
      &key signal timeout-ms)
@@ -85,11 +92,22 @@
        (and signal
             (cadr-agent:extension-cancellation-aborted-p
              signal)))
+    (rpc-ui-diag
+     state
+     "rpc-ui-diag: skip-write ~A closing=~A~%"
+     method
+     (rpc-state-closing-p state))
     (return-from rpc-dialog-request
       (rpc-dialog-default method)))
   (let* ((id (rpc-next-id state))
          (pending
            (make-rpc-pending-dialog :method method)))
+    (rpc-ui-diag
+     state
+     "rpc-ui-diag: dispatch ~A id=~A thread=~A~%"
+     method
+     id
+     (sb-thread:thread-name sb-thread:*current-thread*))
     (cadr-ai::json-put request "id" id)
     (sb-thread:with-mutex
         ((rpc-state-pending-lock state))

@@ -126,6 +126,11 @@ def main():
         record = json.loads(line)
         records.append(record)
         if record.get("type") == "extension_ui_request":
+            print(
+                f"rpc-ui-diag: client recv {record.get('method')}",
+                file=sys.stderr,
+                flush=True,
+            )
             if answer_ui_request(process, record, eof_mode) == "eof":
                 process.stdin.close()
                 return_code = process.wait(timeout=10)
@@ -142,6 +147,12 @@ def main():
     # while the :input hook is still writing dialogs. Keep stdin open and
     # drain for a bound so those requests are answered.
     if ui_mode and not EXPECTED_UI_METHODS.issubset(ui_methods(records)):
+        print(
+            "rpc-ui-diag: drain start methods="
+            + ",".join(sorted(str(name) for name in ui_methods(records))),
+            file=sys.stderr,
+            flush=True,
+        )
         deadline = time.monotonic() + UI_DRAIN_SECONDS
         while time.monotonic() < deadline:
             if EXPECTED_UI_METHODS.issubset(ui_methods(records)):
@@ -158,7 +169,18 @@ def main():
             record = json.loads(line)
             records.append(record)
             if record.get("type") == "extension_ui_request":
+                print(
+                    f"rpc-ui-diag: client recv {record.get('method')} (drain)",
+                    file=sys.stderr,
+                    flush=True,
+                )
                 answer_ui_request(process, record, eof_mode)
+        print(
+            "rpc-ui-diag: drain end methods="
+            + ",".join(sorted(str(name) for name in ui_methods(records))),
+            file=sys.stderr,
+            flush=True,
+        )
 
     process.stdin.close()
     return_code = process.wait(timeout=10)
