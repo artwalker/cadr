@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -eu
+set -euo pipefail
 
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
 CADR="$PROJECT_DIRECTORY/cadr"
@@ -58,28 +58,77 @@ if ! INSTANCE_ID="$(printf '%s' "$SPAWN" | jq -er '.instance.id')"; then
   exit 1
 fi
 
-CADR_SERVER_DIR="$TEST_ROOT/server" \
-  "$CADR_SERVER" list |
-  jq -e --arg id "$INSTANCE_ID" \
+online_tries=0
+while true; do
+  LIST="$(
+    CADR_SERVER_DIR="$TEST_ROOT/server" \
+      "$CADR_SERVER" list
+  )" || {
+    echo "server smoke: list command failed" >&2
+    cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+    exit 1
+  }
+  if printf '%s' "$LIST" | jq -e --arg id "$INSTANCE_ID" \
     '.ok and any(.instances[]; .id == $id and .status == "online")' \
-    >/dev/null
+    >/dev/null; then
+    break
+  fi
+  online_tries=$((online_tries + 1))
+  if [ "$online_tries" -ge 200 ]; then
+    echo "server smoke: instance $INSTANCE_ID never went online" >&2
+    printf 'list stdout: %s\n' "$LIST" >&2
+    cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+    exit 1
+  fi
+  sleep 0.02
+done
 
-CADR_SERVER_DIR="$TEST_ROOT/server" \
-  "$CADR_SERVER" status "$INSTANCE_ID" |
-  jq -e --arg id "$INSTANCE_ID" \
-    '.ok and .instance.id == $id and .instance.sessionId != null' \
-    >/dev/null
+STATUS="$(
+  CADR_SERVER_DIR="$TEST_ROOT/server" \
+    "$CADR_SERVER" status "$INSTANCE_ID"
+)" || {
+  echo "server smoke: status command failed" >&2
+  cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+  exit 1
+}
+if ! printf '%s' "$STATUS" | jq -e --arg id "$INSTANCE_ID" \
+  '.ok and .instance.id == $id and .instance.sessionId != null' \
+  >/dev/null; then
+  echo "server smoke: status payload rejected" >&2
+  printf 'status stdout: %s\n' "$STATUS" >&2
+  exit 1
+fi
 
-CADR_SERVER_DIR="$TEST_ROOT/server" \
-  "$CADR_SERVER" rpc "$INSTANCE_ID" '{"type":"get_state"}' |
-  jq -e \
-    '.ok and .response.success and .response.command == "get_state"' \
-    >/dev/null
+RPC="$(
+  CADR_SERVER_DIR="$TEST_ROOT/server" \
+    "$CADR_SERVER" rpc "$INSTANCE_ID" '{"type":"get_state"}'
+)" || {
+  echo "server smoke: rpc command failed" >&2
+  cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+  exit 1
+}
+if ! printf '%s' "$RPC" | jq -e \
+  '.ok and .response.success and .response.command == "get_state"' \
+  >/dev/null; then
+  echo "server smoke: rpc payload rejected" >&2
+  printf 'rpc stdout: %s\n' "$RPC" >&2
+  exit 1
+fi
 
-CADR_SERVER_DIR="$TEST_ROOT/server" \
-  "$CADR_SERVER" stop "$INSTANCE_ID" |
-  jq -e --arg id "$INSTANCE_ID" \
-    '.ok and .instanceId == $id' \
-    >/dev/null
+STOP="$(
+  CADR_SERVER_DIR="$TEST_ROOT/server" \
+    "$CADR_SERVER" stop "$INSTANCE_ID"
+)" || {
+  echo "server smoke: stop command failed" >&2
+  cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+  exit 1
+}
+if ! printf '%s' "$STOP" | jq -e --arg id "$INSTANCE_ID" \
+  '.ok and .instanceId == $id' \
+  >/dev/null; then
+  echo "server smoke: stop payload rejected" >&2
+  printf 'stop stdout: %s\n' "$STOP" >&2
+  exit 1
+fi
 
 echo "server smoke: spawn/list/status/RPC/stop over Unix socket passed"
