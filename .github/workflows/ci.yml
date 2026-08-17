@@ -1,14 +1,14 @@
 name: CI
 
 on:
-  push:
-  pull_request:
+  workflow_dispatch:
 
 # This workflow runs with all provider credentials empty, so every live
 # stage skips, and it does not set CADR_RELEASE_GATE=1.  A green CI run
 # therefore means "deterministic gates pass", NOT "release gate green" —
 # the release gate still requires a local verify.sh plus verify-release.sh
-# (goal 20, queue 11b).
+# (goal 20, queue 11b). Remote execution is workflow_dispatch only.
+# Daily verification is local test-cl.sh / verify.sh.
 
 permissions:
   contents: read

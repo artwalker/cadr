@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- CI runs only on `workflow_dispatch`. Push and pull-request
+  triggers are gone. Daily path is local `test-cl.sh` / `verify.sh`.
+  FiveAM 18722 → 18725.
+
 - Goal 20 Part K5: `cadr-evals` flag prefix, harness merge,
   message tail, reporter push, JSON string accessor, and
   one-argument signed format each have one owner.

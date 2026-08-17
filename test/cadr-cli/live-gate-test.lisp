@@ -541,7 +541,8 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "./scripts/verify.sh"
                   "grep -Fx 'Items: 9, run: 0, pass: 0, skip: 9, fail: 0'"
                   "grep -Fx 'Checks: 9, pass: 0, skip: 9, fail: 0'"
-                  "grep -Fx 'OpenCode Go live TUI                             SKIP (OpenCode Go API key is not configured)'"))
+                  "grep -Fx 'OpenCode Go live TUI                             SKIP (OpenCode Go API key is not configured)'"
+                  "workflow_dispatch:"))
         (is (search required source) "Missing CI contract: ~A" required))
       (is (= 1 (count-substring "./scripts/verify.sh" source)))
       (is (= 3 (count-substring "\"$SBCL\"" source)))
@@ -551,6 +552,8 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "./scripts/test-cl.sh"
                   "./scripts/test-live.sh"
                   "pull_request_target"
+                  "push:"
+                  "pull_request:"
                   "actions/cache"
                   "actions/upload-artifact"
                   "actions/download-artifact"
