@@ -10,7 +10,7 @@ otherwise unavailable capability, or materially reduce code.
 
 <!-- GOAL13_LISP_IDIOM_AUDIT files=295 systems=9 axes=6 rewrite=1 keep=8 -->
 
-The audited tree contains 295 Lisp files and 122,587 physical lines.  The form
+The audited tree contains 295 Lisp files and 122,625 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:
 
 | system | files | lines | structs | classes | generics | methods | macros | `handler-case` | `handler-bind` | `restart-case` |
@@ -18,10 +18,10 @@ inventory below is syntactic evidence, not a quality score:
 | `cadr-core` | 7 | 471 | 1 | 0 | 0 | 0 | 1 | 3 | 0 | 0 |
 | `cadr-ai` | 61 | 26,341 | 46 | 13 | 6 | 34 | 1 | 66 | 2 | 0 |
 | `cadr-agent` | 37 | 16,281 | 49 | 7 | 23 | 35 | 15 | 54 | 3 | 1 |
-| `cadr-cli` | 114 | 48,511 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
+| `cadr-cli` | 114 | 48,520 | 68 | 20 | 6 | 30 | 0 | 93 | 2 | 0 |
 | `cadr-tui` | 50 | 23,730 | 40 | 17 | 22 | 74 | 0 | 9 | 0 | 0 |
 | `cadr-storage` | 2 | 31 | 0 | 0 | 0 | 0 | 0 | 0 | 0 | 0 |
-| `cadr-server` | 11 | 2,764 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
+| `cadr-server` | 11 | 2,793 | 7 | 5 | 10 | 14 | 0 | 20 | 0 | 0 |
 | `cadr-protocol` | 5 | 1,427 | 4 | 0 | 0 | 0 | 0 | 5 | 0 | 0 |
 | `cadr-evals` | 8 | 3,031 | 17 | 0 | 0 | 0 | 0 | 4 | 0 | 0 |
 

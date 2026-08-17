@@ -78,6 +78,9 @@ tag/Release step.
   `get_state` until the child reports a non-empty `sessionId` before
   marking the instance online.
 
+- RPC `get_state` omits the `model` key when no model is selected,
+  matching baseline `JSON.stringify` of an undefined optional field.
+
 - Goal 20 P0-4: extension `send-message` with trigger-turn no longer
   runs the agent turn on the TUI input thread, so streaming text, tool
   blocks, and the working indicator can paint during the turn. The

@@ -202,8 +202,9 @@
              "get_state"
              (cadr-ai::json-get
               record "command")))
-        (is (eq 'null
-                (cadr-ai::json-get data "model")))
+        (is (not
+             (cadr-ai::json-present-p
+              data "model")))
         (is (stringp
              (cadr-ai::json-get
               data "sessionId")))

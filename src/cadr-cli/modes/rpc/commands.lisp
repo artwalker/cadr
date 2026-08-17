@@ -109,9 +109,6 @@
       ((string= type "get_state")
        (let ((data
                (cadr-ai::json-object
-                "model"
-                (model-to-rpc-json
-                 (cadr-agent:agent-model agent))
                 "thinkingLevel"
                 (rpc-symbol-name
                  (cadr-agent::agent-thinking-level
@@ -147,6 +144,13 @@
                    (length steering)
                    (length follow-up)
                    (length next-turn))))))
+         (let ((model
+                 (cadr-agent:agent-model
+                  agent)))
+           (when model
+             (cadr-ai::json-put
+              data "model"
+              (model-to-rpc-json model))))
          (when (cadr-agent:session-name session)
            (cadr-ai::json-put
             data "sessionName"
