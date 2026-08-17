@@ -81,6 +81,11 @@ tag/Release step.
 
 ### Fixed
 
+- Re-pin `example-commands/narrow/commands-path` cadr
+  `screenSha256` after wrapped `<CADR_ROOT>` path join. Baseline-side
+  and wide SHAs unchanged. Local official core gate EXIT:0
+  (120/122). Does not declare the CI differential green.
+
 - Render-diff `<CADR_ROOT>` paths absorb a hard wrap and the
   continuation-line pad so CI and local wrap points converge.
   Does not re-pin I04 pairs in this change.
