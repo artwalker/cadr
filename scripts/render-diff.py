@@ -2321,6 +2321,7 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
             # scheduling-dependent and flips under gate load.  Pin every
             # captured rg invocation to the deterministic single-threaded
             # walker; the config file applies equally to pi and Cadr.
+            # --sort=path is also pinned: one thread still follows readdir.
             "RIPGREP_CONFIG_PATH": str(DEFAULT_MANIFEST.parent / "ripgrep.conf"),
             "TERM": "xterm-256color",
             "COLORTERM": "truecolor",

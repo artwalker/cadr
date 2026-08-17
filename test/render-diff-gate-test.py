@@ -370,9 +370,9 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertEqual(env["COLORTERM"], "truecolor")
 
     def test_captured_processes_pin_ripgrep_to_the_deterministic_walker(self) -> None:
-        # Both products invoke rg without --sort, so result order follows
-        # rg's parallel walker and flips under gate load.  The harness must
-        # pin every captured rg invocation to the single-threaded walker.
+        # Both products invoke rg without --sort.  Parallel walk order
+        # flips under load; a single thread still follows readdir.  The
+        # harness pins one thread and path-sorted hits.
         with tempfile.TemporaryDirectory(prefix="cadr-render-env-") as temporary:
             env = RENDER_DIFF.fixed_environment(
                 Path(temporary), 100, 32, Path(temporary) / "ready"
@@ -380,10 +380,9 @@ class RenderDiffGateTest(unittest.TestCase):
         config = Path(env["RIPGREP_CONFIG_PATH"])
         self.assertTrue(config.is_file())
         self.assertEqual(config.name, "ripgrep.conf")
-        self.assertIn(
-            "--threads=1",
-            config.read_text(encoding="utf-8").splitlines(),
-        )
+        lines = config.read_text(encoding="utf-8").splitlines()
+        self.assertIn("--threads=1", lines)
+        self.assertIn("--sort=path", lines)
 
     def test_gate_captures_every_manifest_pair_before_real_analysis(self) -> None:
         manifest = RENDER_DIFF.load_manifest(
