@@ -156,6 +156,26 @@
        (cadr-core:milliseconds-to-utc-iso8601
         1785760496789))))
 
+(test unix-milliseconds-has-subsecond-resolution
+  ;; Baseline Date.now() advances inside a second.  The old
+  ;; get-universal-time path returned only * 1000, so samples 3ms
+  ;; apart were identical unless they crossed a second boundary.
+  (let ((samples
+          (loop repeat 8
+                collect (progn
+                          (sleep 0.003d0)
+                          (cadr-core:unix-milliseconds)))))
+    (is (> (length (remove-duplicates samples)) 1)
+        "unix-milliseconds stayed on a 1s quantum: ~S" samples))
+  (let* ((now (cadr-core:unix-milliseconds))
+         (coarse
+           (* 1000
+              (- (get-universal-time)
+                 cadr-core::+unix-universal-time-offset+))))
+    (is (<= (abs (- now coarse)) 2000)
+        "unix-milliseconds ~A drifted more than 2s from wall clock ~A"
+        now coarse)))
+
 (test production-cleanup-joins-cannot-bypass-cadr-core
   (let* ((root (asdf:system-source-directory "cadr-core"))
          (source-root (merge-pathnames "src/" root))

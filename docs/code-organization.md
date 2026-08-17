@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122613 assets=5 unevaluated=0 needs-rewrite=148 no-rewrite=147 in-progress=0 done=0 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122618 assets=5 unevaluated=0 needs-rewrite=147 no-rewrite=147 in-progress=0 done=1 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -392,7 +392,14 @@ files with unrelated facilities fail.
 | `src/cadr-core/paths.lisp` | 95 | 19 | Own the single user-level path layout consumed by every cadr system. | pass | no-rewrite | Most-TS spot: eleven isomorphic one-line merge-pathnames bodies at :42-84. Right in Lisp: the set is a registry of distinct paths with per-entry provenance comments, one decision owned once — a macro would add indirection without removing a decision. | 20 |
 | `src/cadr-core/redacted-print.lisp` | 44 | 6 | Provide the secret-safe print-object registry that keeps credentials opaque everywhere. | pass | no-rewrite | Most-TS spot: hand-rolled replace-all at :22-36. Right in Lisp: cadr-core is the zero-dependency layer, and define-redacted-print-object at :13-20 is the tree-wide model of a machine-enforced benefit. | 20 |
 | `src/cadr-core/threads.lisp` | 47 | 2 | Bound cleanup waits and terminate unresponsive workers instead of hanging exit paths. | pass | no-rewrite | Most-TS spot: the catch-all (condition () timed-out) at :19. Right in Lisp: bounded cleanup must never throw, the sentinel disambiguates timeout from result, and keyword outcomes are idiomatic. | 20 |
-| `src/cadr-core/time.lisp` | 66 | 5 | Own UTC/ISO time and ID formatting primitives. | pass | needs-rewrite | unix-milliseconds at :5-7 is second-granular (get-universal-time) while named milliseconds; pi Date.now() is real ms, so this is a precision gap vs the baseline. Fix changes observable timestamp/ID precision — needs baseline-locked assertions first (Part K). | 20 |
+| `src/cadr-core/time.lisp` | 71 | 5 | Own UTC/ISO time and ID formatting primitives. | pass | done | unix-milliseconds used get-universal-time (*1000) so every clock/ID landed on .000. Now sb-ext:get-time-of-day (real ms), matching baseline Date.now(). I0: named milliseconds actually are milliseconds — contract/可测. | 20 |
+
+Part J (2026-08-17) amended the K process: consume I verdicts
+instead of re-asking the two questions; no new pairing harness when
+Part H has no cell; assertions-first may share the rewrite commit
+when the new test is red on the old body. Full text:
+`docs/acceptance/goal-v20-part-j.md` and `goal20-draft.md` K
+unified requirements 7–9.
 
 ## 3. Verdict summary and expected distribution
 

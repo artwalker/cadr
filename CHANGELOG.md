@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- `unix-milliseconds` reads real milliseconds from
+  `sb-ext:get-time-of-day`. The old `get-universal-time * 1000` path
+  quantized every timestamp and ID to a whole second. Matches
+  baseline `Date.now()`. FiveAM 18670 → 18673.
+
 - Statistical liveness default path is documented as the P0-4 silence
   lock only (`liveness-ttt-agent-turn`). The booked table is a local
   `--all` instrument and does not enter CI (board 2026-08-17 A).

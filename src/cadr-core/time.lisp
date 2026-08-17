@@ -3,8 +3,13 @@
 (defconstant +unix-universal-time-offset+ 2208988800)
 
 (defun unix-milliseconds ()
-  (* 1000 (- (get-universal-time)
-             +unix-universal-time-offset+)))
+  "Unix epoch milliseconds.  Baseline Date.now() is real ms, not
+second*1000.  get-universal-time is second-granular and made every
+timestamp/ID land on .000 — UUID v7, RPC ids, OAuth expiry, session
+export.  sb-ext:get-time-of-day is the matching SBCL clock."
+  (multiple-value-bind (seconds microseconds)
+      (sb-ext:get-time-of-day)
+    (+ (* seconds 1000) (floor microseconds 1000))))
 
 (defun milliseconds-to-utc-iso8601
     (milliseconds &key (fraction-digits 3))
